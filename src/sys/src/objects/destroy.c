@@ -32,7 +32,7 @@ PetscErrorCode PetscObjectDestroy(PetscObject obj)
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
+    SETERRQ1(PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",obj->class_name);
   }
   PetscFunctionReturn(0);
 }

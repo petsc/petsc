@@ -333,7 +333,6 @@ PetscErrorCode PetscEnd(void)
 }
 
 PetscTruth   PetscOptionsPublish = PETSC_FALSE;
-EXTERN PetscErrorCode        PetscLogInfoAllow(PetscTruth,char *);
 EXTERN PetscErrorCode        PetscSetUseTrMalloc_Private(void);
 extern PetscTruth petscsetmallocvisited;
 static char       emacsmachinename[256];

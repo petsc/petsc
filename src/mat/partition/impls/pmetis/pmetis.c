@@ -32,7 +32,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   PetscErrorCode           ierr;
   int                      *locals,size,rank;
   int                      *vtxdist,*xadj,*adjncy,itmp = 0;
-  int                      wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3], edgecut, i,j;
+  int                      wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3],  i,j;
   Mat                      mat = part->adj,newmat;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mat->data;
   PetscTruth               flg;
@@ -87,7 +87,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   options[0] = 0;
   /* ParMETIS has no error conditions ??? */
   ParMETIS_V3_PartKway(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,
-                       options,&edgecut,locals,&parmetis->comm_pmetis);
+                       options,&parmetis->cuts,locals,&parmetis->comm_pmetis);
   ierr = PetscFree(tpwgts);CHKERRQ(ierr);
   ierr = PetscFree(ubvec);CHKERRQ(ierr);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
