@@ -132,14 +132,14 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
 #  Location of SuperLU
 #
-SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux.a
-SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC
-PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
+#SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux_gcc_pgf90.a
+#SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC
+#PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
 #
 #  Location of SuperLU_DIST
 #
 SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
-SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux.a /home/petsc/software/SuperLU/superlu_linux.a
+SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux_gcc_pgf90.a
 PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
 #
 # ------------------------------------------------------------------------------
