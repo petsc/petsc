@@ -3,5 +3,10 @@ PETSc names that should be changed.
 
  - files: ksp/interface/itXXXX -> kspXXX
 
- - VecAXBY -> VecAXPBY
+ - VecAXBY ->? VecAXPBY
+     - more consistent with other Vec routines
+
+ - PLogXXX ->? PetscLogXXX  
+     - unique to PETSc so no chance of conflicts with external software,
+       but longer
 
