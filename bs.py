@@ -325,24 +325,24 @@ class BS (install.base.Base):
     self.setupBuild()
 
     # add to database list of packages in current project
-    try:
-      import SIDL.Loader
-      import SIDLLanguage.Parser
-      import SIDLLanguage.Visitor
+##    try:
+##      import SIDL.Loader
+##      import SIDLLanguage.Parser
+##      import SIDLLanguage.Visitor
 
-      compiler = SIDLLanguage.Parser.Parser(SIDL.Loader.createClass('ANL.SIDLCompilerI.SIDLCompiler'))
-      if argDB.has_key('installedpackages'):
-        ipackages = argDB['installedpackages']
-      else: ipackages = []
-      for source in self.filesets['sidl'].getFiles():
-        tree = compiler.parseFile(source)
-        v = SIDLLanguage.Visitor.Visitor(SIDL.Loader.createClass('ANL.SIDLVisitorI.GetPackageNames'))
-        tree.accept(v)
-        for p in v.getnames():
-          if not p in ipackages:
-            ipackages.append(p)
-      argDB['installedpackages'] = ipackages
-    except: pass
+##      compiler = SIDLLanguage.Parser.Parser(SIDL.Loader.createClass('ANL.SIDLCompilerI.SIDLCompiler'))
+##      if argDB.has_key('installedpackages'):
+##        ipackages = argDB['installedpackages']
+##      else: ipackages = []
+##      for source in self.filesets['sidl'].getFiles():
+##        tree = compiler.parseFile(source)
+##        v = SIDLLanguage.Visitor.Visitor(SIDL.Loader.createClass('ANL.SIDLVisitorI.GetPackageNames'))
+##        tree.accept(v)
+##        for p in v.getnames():
+##          if not p in ipackages:
+##            ipackages.append(p)
+##      argDB['installedpackages'] = ipackages
+##    except: pass
 
     try:
       if target is None:               target = argDB.target

@@ -1,4 +1,37 @@
+import maker
+
 import ihooks
+
+class Hooks(ihooks.Hooks, maker.Maker):
+  def __init__(self):
+    ihooks.Hooks.__init__(self)
+    import bs
+    import nargs
+    import BSTemplates.sidlDefaults
+
+    self.argDB     = nargs.ArgDict('ArgDict')
+    self.usingSIDL = BSTemplates.sidlDefaults.UsingSIDL(bs.Project('', ''), [], argDB = self.argDB)
+    return
+
+  def getImplementations(self):
+    dirs = []
+##    for proj in self.argDB['installedprojects']:
+##      try:
+##        maker = self.getMakeModule(proj.getRoot()).PetscMake(argDB = self.argDB)
+##        maker.main([])
+##        # Must call this after main()
+##        sidl  = maker.getSIDLDefaults().usingSIDL
+##        if 'Python' in sidl.serverLanguages:
+##          for package in sidl.getPackages():
+##            dirs.append(sidl.getServerRootDir('Python', package))
+##      except ImportError: pass
+    return dirs
+
+  # sys interface replacement
+  def default_path(self):
+    import sys
+    projects = map(lambda proj: self.usingSIDL.getClientRootDir('Python', root = proj.getRoot()), self.argDB['installedprojects'])
+    return sys.path+projects+self.getImplementations()
 
 class Loader(ihooks.FancyModuleLoader):
   def find_module(self, name, path = None):
@@ -127,6 +160,6 @@ class Importer(ihooks.ModuleImporter):
     return self.import_it(name[i+1:], name, parent, force_load=1)
 
 # Setup custom loading
-loader   = Loader()
+loader   = Loader(Hooks())
 importer = Importer(loader)
 importer.install()
