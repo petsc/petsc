@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.160 1996/03/21 00:10:43 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.161 1996/03/23 20:42:31 bsmith Exp balay $";
 #endif
 
 /*
@@ -1559,7 +1559,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   return 0;
 }
 
-int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
+static int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
 
