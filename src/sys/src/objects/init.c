@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.33 1999/03/03 20:53:17 bsmith Exp balay $";
+static char vcid[] = "$Id: init.c,v 1.34 1999/03/09 21:17:23 balay Exp bsmith $";
 #endif
 /*
 
@@ -566,6 +566,7 @@ int OptionsCheckInitial_Alice(void)
     (*PetscHelpPrintf)(comm," -trdebug: enables extended checking for memory corruption\n");
     (*PetscHelpPrintf)(comm," -optionstable: dump list of options inputted\n");
     (*PetscHelpPrintf)(comm," -optionsleft: dump list of unused options\n");
+    (*PetscHelpPrintf)(comm," -get_resident_set_size: print memory usage at end of run\n");
 #if defined (USE_PETSC_LOG)
     (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");
     (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");

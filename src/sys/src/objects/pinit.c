@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.11 1999/03/01 04:53:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.12 1999/03/03 20:53:23 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -152,7 +152,8 @@ int PetscInitializeNoArguments(void)
 .  -trmalloc_off - Indicates not to use error-checking malloc
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
--  -no_signal_handler - Indicates not to trap error signals
+.  -no_signal_handler - Indicates not to trap error signals
+-  -get_resident_set_size - Print memory usage at end of run
 
    Options Database Keys for Profiling:
    See the 'Profiling' chapter of the users manual for details.

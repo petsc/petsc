@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.34 1998/11/10 16:14:02 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.35 1998/12/17 21:56:50 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -61,6 +61,7 @@ static char vcid[] = "$Id: mem.c,v 1.34 1998/11/10 16:14:02 balay Exp balay $";
 .   mem - memory usage in bytes
 
    Options Database Key:
+.  -get_resident_set_size - Print memory usage at end of run
 .  -trmalloc_log - Activate logging of memory usage
 
    Notes:
