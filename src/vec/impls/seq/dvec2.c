@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.27 1996/03/19 21:23:01 bsmith Exp balay $ */
+/* $Id: dvec2.c,v 1.28 1996/04/25 23:54:51 balay Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -12,13 +12,13 @@
 #include "draw.h"          
 #include "pinclude/pviewer.h"
 
+/*
 static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data;
   register int n = x->n, i;
   Scalar   sum,*xx = x->array, *yy;
 
-  /* This could be unrolled to reuse x[j] values */
   for (i=0; i<nv; i++) {
     sum = 0.0;
     yy = ((Vec_Seq *)(y[i]->data))->array;
@@ -28,9 +28,202 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
   PLogFlops(nv*(2*x->n-1));
   return 0;
 }
+*/
+static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
+{
+  Vec_Seq *xv = (Vec_Seq *)xin->data;
+  register int n = xv->n,i,j,nv_rem,j_rem;
+  Scalar   sum0,sum1,sum2,sum3,*y0,*y1,*y2,*y3,x0,x1,x2,x3,*x;
+  Vec      *yy;
+  
+  /*
+  for (i=0; i<nv_rem; i++) {
+    sum = 0.0;
+    y = ((Vec_Seq *)(yin[i]->data))->array;
+    DOT(sum,x,y,n);
+    *z++ = sum;
+  } 
+  i  = nv - nv_rem;
+  yy = yin + nv_rem;
+*/
+
+  sum0 = 0;
+  sum1 = 0;
+  sum2 = 0;
+
+  i      = nv;
+  nv_rem = nv&0x3;
+  yy     = yin;
+  j    = n;
+  x    = xv->array;
+
+  switch (nv_rem) {
+  case 3:
+  y0   = ((Vec_Seq *)(yy[0]->data))->array;
+  y1   = ((Vec_Seq *)(yy[1]->data))->array;
+  y2   = ((Vec_Seq *)(yy[2]->data))->array;
+    switch (j_rem=j&0x3) {
+    case 3: 
+      x2 = x[2]; 
+      sum0 += x2*y0[2]; sum1 += x2*y1[2]; 
+      sum2 += x2*y2[2]; 
+    case 2: 
+      x1 = x[1]; 
+      sum0 += x1*y0[1]; sum1 += x1*y1[1]; 
+      sum2 += x1*y2[1]; 
+    case 1: 
+      x0 = x[0]; 
+      sum0 += x0*y0[0]; sum1 += x0*y1[0]; 
+      sum2 += x0*y2[0]; 
+    case 0: 
+      x  += j_rem;
+      y0 += j_rem;
+      y1 += j_rem;
+      y2 += j_rem;
+      j  -= j_rem;
+      break;
+    }
+    while (j>0) {
+      x0 = x[0];
+      x1 = x[1];
+      x2 = x[2];
+      x3 = x[3];
+      x += 4;
+      
+      sum0 += x0*y0[0] + x1*y0[1] + x2*y0[2] + x3*y0[3]; y0+=4;
+      sum1 += x0*y1[0] + x1*y1[1] + x2*y1[2] + x3*y1[3]; y1+=4;
+      sum2 += x0*y2[0] + x1*y2[1] + x2*y2[2] + x3*y2[3]; y2+=4;
+      j -= 4;
+    }
+    z[0] = sum0;
+    z[1] = sum1;
+    z[2] = sum2;
+    break;
+  case 2:
+  y0   = ((Vec_Seq *)(yy[0]->data))->array;
+  y1   = ((Vec_Seq *)(yy[1]->data))->array;
+    switch (j_rem=j&0x3) {
+    case 3: 
+      x2 = x[2]; 
+      sum0 += x2*y0[2]; sum1 += x2*y1[2]; 
+    case 2: 
+      x1 = x[1]; 
+      sum0 += x1*y0[1]; sum1 += x1*y1[1]; 
+    case 1: 
+      x0 = x[0]; 
+      sum0 += x0*y0[0]; sum1 += x0*y1[0]; 
+    case 0: 
+      x  += j_rem;
+      y0 += j_rem;
+      y1 += j_rem;
+      j  -= j_rem;
+      break;
+    }
+    while (j>0) {
+      x0 = x[0];
+      x1 = x[1];
+      x2 = x[2];
+      x3 = x[3];
+      x += 4;
+      
+      sum0 += x0*y0[0] + x1*y0[1] + x2*y0[2] + x3*y0[3]; y0+=4;
+      sum1 += x0*y1[0] + x1*y1[1] + x2*y1[2] + x3*y1[3]; y1+=4;
+      j -= 4;
+    }
+    z[0] = sum0;
+    z[1] = sum1;
+ 
+    break;
+  case 1:
+  y0   = ((Vec_Seq *)(yy[0]->data))->array;
+    switch (j_rem=j&0x3) {
+    case 3: 
+      x2 = x[2]; sum0 += x2*y0[2];
+    case 2: 
+      x1 = x[1]; sum0 += x1*y0[1];
+    case 1: 
+      x0 = x[0]; sum0 += x0*y0[0];
+    case 0: 
+      x  += j_rem;
+      y0 += j_rem;
+      j  -= j_rem;
+      break;
+    }
+    while (j>0) {
+      sum0 += x[0]*y0[0] + x[1]*y0[1] + x[2]*y0[2] + x[3]*y0[3]; y0+=4;
+      j -= 4; x+=4;
+    }
+    z[0] = sum0;
+
+    break;
+  case 0:
+    break;
+  }
+  z  += nv_rem;
+  i  -= nv_rem;
+  yy += nv_rem;
+
+  while (i >0) {
+    sum0 = 0;
+    sum1 = 0;
+    sum2 = 0;
+    sum3 = 0;
+    y0   = ((Vec_Seq *)(yy[0]->data))->array;
+    y1   = ((Vec_Seq *)(yy[1]->data))->array;
+    y2   = ((Vec_Seq *)(yy[2]->data))->array;
+    y3   = ((Vec_Seq *)(yy[3]->data))->array;
+    yy  += 4;
+
+    j = n;
+    x = xv->array;
+    switch (j_rem=j&0x3) {
+    case 3: 
+      x2 = x[2]; 
+      sum0 += x2*y0[2]; sum1 += x2*y1[2]; 
+      sum2 += x2*y2[2]; sum3 += x2*y3[2];
+    case 2: 
+      x1 = x[1]; 
+      sum0 += x1*y0[1]; sum1 += x1*y1[1]; 
+      sum2 += x1*y2[1]; sum3 += x1*y3[1];
+    case 1: 
+      x0 = x[0]; 
+      sum0 += x0*y0[0]; sum1 += x0*y1[0]; 
+      sum2 += x0*y2[0]; sum3 += x0*y3[0];
+    case 0: 
+      x  += j_rem;
+      y0 += j_rem;
+      y1 += j_rem;
+      y2 += j_rem;
+      y3 += j_rem;
+      j  -= j_rem;
+      break;
+    }
+    while (j>0) {
+      x0 = x[0];
+      x1 = x[1];
+      x2 = x[2];
+      x3 = x[3];
+      x += 4;
+      
+      sum0 += x0*y0[0] + x1*y0[1] + x2*y0[2] + x3*y0[3]; y0+=4;
+      sum1 += x0*y1[0] + x1*y1[1] + x2*y1[2] + x3*y1[3]; y1+=4;
+      sum2 += x0*y2[0] + x1*y2[1] + x2*y2[2] + x3*y2[3]; y2+=4;
+      sum3 += x0*y3[0] + x1*y3[1] + x2*y3[2] + x3*y3[3]; y3+=4;
+      j -= 4;
+    }
+    z[0] = sum0;
+    z[1] = sum1;
+    z[2] = sum2;
+    z[3] = sum3;
+    z   += 4;
+    i   -= 4;
+  }
+  return 0;
+}
+    
 
 static int VecMax_Seq(Vec xin,int* idx,double * z )
-{
+{ 
   Vec_Seq         *x = (Vec_Seq *) xin->data;
   register int    i, j=0, n = x->n;
   register double max = -1.e40, tmp;
