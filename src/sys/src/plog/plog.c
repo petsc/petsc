@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.64 1996/01/16 17:43:33 balay Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.65 1996/01/22 01:15:15 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -12,43 +12,6 @@ static char vcid[] = "$Id: plog.c,v 1.64 1996/01/16 17:43:33 balay Exp curfman $
 #include "sys.h"
 #include "pinclude/petscfix.h"
 #include "pinclude/ptime.h"
-
-/*@C 
-   PetscObjectSetName - Sets a string name associated with a PETSc object.
-
-   Input Parameters:
-.  obj - the Petsc variable
-.  name - the name to give obj
-
-.keywords: object, set, name
-
-.seealso: PetscObjectGetName()
-@*/
-int PetscObjectSetName(PetscObject obj,char *name)
-{
-  if (!obj) SETERRQ(1,"PetscObjectSetName:Null object");
-  obj->name = name;
-  return 0;
-}
-
-/*@C
-   PetscObjectGetName - Gets a string name associated with a PETSc object.
-
-   Input Parameters:
-.  obj - the Petsc variable
-.  name - the name associated with obj
-
-.keywords: object, get, name
-
-.seealso: PetscObjectSetName()
-@*/
-int PetscObjectGetName(PetscObject obj,char **name)
-{
-  if (!obj) SETERRQ(1,"PetscObjectGetName:Null object");
-  if (!name) SETERRQ(1,"PetscObjectGetName:Void location for name");
-  *name = obj->name;
-  return 0;
-}
 
 static int PrintInfo = 0;
 
@@ -98,8 +61,13 @@ int PLogInfo(PetscObject obj,char *format,...)
 #define ACTIONBEGIN  2
 #define ACTIONEND    3
 
+/*
+    flops contains cumulative flops 
+    mem contains current memory usage
+    memmax contains maximum memory usage so far
+*/
 typedef struct {
-  double      time;
+  double      time,flops,mem,maxmem;
   int         cookie,type,event,id1,id2,id3;
 } Events;
 
@@ -118,6 +86,7 @@ static Objects *objects = 0;
 
 static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
 static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
+static int     maxobjectsspace = CHUNCK, maxeventsspace = CHUNCK;
 static double  ObjectsType[20][4];
 
 static int     EventsStage = 0;    /* which log sessions are we using */
@@ -248,17 +217,25 @@ int phc(PetscObject obj)
 {
   if (nevents >= eventsspace) {
     Events *tmp;
+    double end,start;
+    PetscTime(start);
     tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PetscFree(events);
+    maxeventsspace = 2*eventsspace+CHUNCK;
     events = tmp; eventsspace += CHUNCK;
+    PetscTime(end); BaseTime += (end - start);
   }
   if (nobjects >= objectsspace) {
     Objects *tmp;
+    double end,start;
+    PetscTime(start);
     tmp = (Objects *) PetscMalloc((objectsspace+CHUNCK)*sizeof(Objects));CHKPTRQ(tmp);
     PetscMemcpy(tmp,objects,objectsspace*sizeof(Objects));
     PetscFree(objects);
+    maxobjectsspace = 2*objectsspace+CHUNCK;
     objects = tmp; objectsspace += CHUNCK;
+    PetscTime(end); BaseTime += (end - start);
   }
   PetscTime(events[nevents].time); events[nevents].time -= BaseTime;
   events[nevents].cookie  = obj->cookie - PETSC_COOKIE - 1;
@@ -266,6 +243,12 @@ int phc(PetscObject obj)
   events[nevents].id1     = nobjects;
   events[nevents].id2     = -1;
   events[nevents].id3     = -1;
+  events[nevents].flops   = _TotalFlops;
+  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  events[nevents].mem -= (eventsspace*sizeof(Events) +
+                          objectsspace*sizeof(Objects));
+  events[nevents].maxmem -= (maxeventsspace*sizeof(Events) +
+                          maxobjectsspace*sizeof(Objects));
   events[nevents++].event = CREATE;
   objects[nobjects].parent= -1;
   objects[nobjects].obj   = obj;
@@ -283,10 +266,14 @@ int phd(PetscObject obj)
   PetscObject parent;
   if (nevents >= eventsspace) {
     Events *tmp;
+    double end,start;
+    PetscTime(start);
     tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PetscFree(events);
     events = tmp; eventsspace += CHUNCK;
+    maxeventsspace = 2*eventsspace+CHUNCK;
+    PetscTime(end); BaseTime += (end - start);
   }
   PetscTime(events[nevents].time); events[nevents].time -= BaseTime;
   events[nevents].event     = DESTROY;
@@ -294,6 +281,12 @@ int phd(PetscObject obj)
   events[nevents].type      = obj->type;
   events[nevents].id1       = obj->id;
   events[nevents].id2       = -1;
+  events[nevents].flops   = _TotalFlops;
+  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  events[nevents].mem -= (eventsspace*sizeof(Events) +
+                          objectsspace*sizeof(Objects));
+  events[nevents].maxmem -= (maxeventsspace*sizeof(Events) +
+                          maxobjectsspace*sizeof(Objects));
   events[nevents++].id3     = -1;
   if (obj->parent) {objects[obj->id].parent   = obj->parent->id;}
   else {objects[obj->id].parent   = -1;}
@@ -324,10 +317,14 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
  double ltime;
  if (nevents >= eventsspace) {
     Events *tmp;
+    double end,start;
+    PetscTime(start);
     tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PetscFree(events);
+    maxeventsspace = 2*eventsspace+CHUNCK;
     events = tmp; eventsspace += CHUNCK;
+    PetscTime(end); BaseTime += (end - start);
   }
   PetscTime(ltime);
   events[nevents].time = ltime - BaseTime;
@@ -336,6 +333,12 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   if (o3) events[nevents].id3     = o3->id; else events[nevents].id3 = -1;
   events[nevents].type   = event;
   events[nevents].cookie = 0;
+  events[nevents].flops   = _TotalFlops;
+  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  events[nevents].mem -= (eventsspace*sizeof(Events) +
+                          objectsspace*sizeof(Objects));
+  events[nevents].maxmem -= (maxeventsspace*sizeof(Events) +
+                          maxobjectsspace*sizeof(Objects));
   events[nevents++].event= ACTIONBEGIN;
   if (t != 1) return 0;
   EventsType[EventsStage][event][COUNT]++;
@@ -351,10 +354,14 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
  double ltime;
  if (nevents >= eventsspace) {
     Events *tmp;
+    double end,start;
+    PetscTime(start);
     tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
     PetscFree(events);
+    maxeventsspace = 2*eventsspace+CHUNCK;
     events = tmp; eventsspace += CHUNCK;
+    PetscTime(end); BaseTime += (end - start);
   }
   PetscTime(ltime);
   events[nevents].time   = ltime - BaseTime;
@@ -363,6 +370,12 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   if (o3) events[nevents].id3    = o3->id; else events[nevents].id3 = -1;
   events[nevents].type   = event;
   events[nevents].cookie = 0;
+  events[nevents].flops   = _TotalFlops;
+  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  events[nevents].mem -= (eventsspace*sizeof(Events) +
+                          objectsspace*sizeof(Objects));
+  events[nevents].maxmem -= (maxeventsspace*sizeof(Events) +
+                          maxobjectsspace*sizeof(Objects));
   events[nevents++].event= ACTIONEND;
   if (t != 1) return 0;
   EventsType[EventsStage][event][TIME] += ltime;
@@ -549,10 +562,12 @@ int PLogDump(char* name)
   fprintf(fd,"Clock Resolution %g\n",0.0);
   fprintf(fd,"Events %d\n",nevents);
   for ( i=0; i<nevents; i++ ) {
-    fprintf(fd,"%g %d %d %d %d %d %d\n",events[i].time,
+    fprintf(fd,"%g %d %d %d %d %d %d %g %g %g\n",events[i].time,
                               events[i].event,
                               events[i].cookie,events[i].type,events[i].id1,
-                              events[i].id2,events[i].id3);
+                              events[i].id2,events[i].id3,
+                              events[i].flops,events[i].mem,
+                              events[i].maxmem);
   }
   for ( i=0; i<nobjects; i++ ) {
     fprintf(fd,"%d %d\n",objects[i].parent,(int)objects[i].mem);
@@ -813,7 +828,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   if (maxt) ftot = totf/maxt; else ftot = 0;
   MPIU_fprintf(comm,fd,"Flops/sec:   %5.3e   %5.3e              %5.3e\n",
                                                fmin,fmax,ftot);
-  TrGetMaximumAllocated(&mem);
+  TrSpace(PETSC_NULL,PETSC_NULL,&mem);
   if (mem > 0.0) {
     MPI_Reduce(&mem,&maxmem,1,MPI_DOUBLE,MPI_MAX,0,comm);
     MPI_Reduce(&mem,&minmem,1,MPI_DOUBLE,MPI_MIN,0,comm);
