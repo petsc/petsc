@@ -2,20 +2,16 @@
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 FFLAGS   = 
-SOURCEC  = zoptions.c zksp.c zpc.c zsnes.c zsys.c zmat.c zvec.c zsles.c \
-           zdraw.c zda.c zviewer.c zis.c zplog.c zstart.c zstartf.c zts.c \
-	   zao.c zf90.c
-SOURCEF  = somefort.F
-SOURCEH  = zpetsc.h
-OBJSC    = zoptions.o zksp.o zpc.o zsnes.o zsys.o zmat.o zvec.o zsles.o \
-           zdraw.o zda.o zviewer.o zis.o zplog.o zstart.o zstartf.o zts.o \
-	   zao.o zf90.o
-OBJSF    = somefort.o
+SOURCEC  = zf90.c f90_nag.c
+SOURCEF  = 
+SOURCEH  = 
+OBJSC    = zf90.o f90_nag.o
+OBJSF    = 
 LIBBASE  = libpetscfortran
 MANSEC   = 7
-LOCDIR   = src/fortran/custom/
+LOCDIR   = src/fortran/f90/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
