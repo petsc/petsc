@@ -15,7 +15,7 @@ class Compiler (build.processor.Compiler):
 
   def checkCompiler(self):
     '''Checks the compatibility of the supplied compiler'''
-    import config.compilers
+    import config.setCompilers
 
     if self.processor is None:
       self.processor = self.argDB['CXX']
