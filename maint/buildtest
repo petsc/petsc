@@ -75,7 +75,7 @@ if ($day == Fri) then
 endif
 if ($day == Sat) then
   set M =(snake     eagle      ryan      elvis      doc       ptera     merlin    )
-  set B =(O         g_complex  O         O_complex g_complex O         g_complex )
+  set B =(O         g          O         O_complex g_complex O         g_complex )
   set A =(hpux      sun4_local IRIX  freebsd_nolog rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1          1         1         1         1         3         )
   set J2=(0         2          2         2         2         2         4         )
