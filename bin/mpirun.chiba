@@ -273,7 +273,10 @@ if [ $showtimes = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id Running "
   date
 fi
-
+#
+if [ $showoutput = "yes" ] ; then
+  /my/bin/pdsh -w $node0 xterm -disply $DISPLAY -e tail -f /var/spool/pbs/spool/$pbs_job_id
+fi
 #
   status="R"
   while [ "$status" = "R" ] ; do
