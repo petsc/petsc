@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.34 1995/11/02 04:16:00 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.35 1995/11/09 22:26:45 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -330,7 +330,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   int        rank = x->rank, *owners = x->ownership, start = owners[rank];
-  int        end = owners[rank+1], i, j, alreadycached;
+  int        end = owners[rank+1], i;
   Scalar     *xx = x->array;
 
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { SETERRQ(1,
@@ -348,33 +348,21 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
     }
     else {
       if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"VecSetValues_MPI:Out of range");
-      /* check if this index has already been cached */
-      alreadycached = 0;
-      for ( j=0; j<x->stash.n; j++ ) {
-        if (x->stash.idx[j] == ix[i]) {
-          if (addv == INSERT_VALUES) x->stash.array[j] = y[i];
-          else                       x->stash.array[j] += y[i];
-          alreadycached = 1; 
-          break;
-        }
-      }
-      if (!alreadycached) {
         if (x->stash.n == x->stash.nmax) {/* cache is full */
           int    *idx, nmax = x->stash.nmax;
           Scalar *array;
-          array = (Scalar *) PetscMalloc( (nmax+10)*sizeof(Scalar) + 
-                                     (nmax+10)*sizeof(int) ); CHKPTRQ(array);
-          PLogObjectMemory(xin,10*(sizeof(Scalar) + sizeof(int)));
-          idx = (int *) (array + nmax + 10);
+          array = (Scalar *) PetscMalloc( (nmax+200)*sizeof(Scalar) + 
+                                     (nmax+200)*sizeof(int) ); CHKPTRQ(array);
+          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
+          idx = (int *) (array + nmax + 200);
           PetscMemcpy(array,x->stash.array,nmax*sizeof(Scalar));
           PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
           if (x->stash.array) PetscFree(x->stash.array);
           x->stash.array = array; x->stash.idx = idx;
-          x->stash.nmax += 10;
+          x->stash.nmax += 200;
         }
         x->stash.array[x->stash.n] = y[i];
         x->stash.idx[x->stash.n++] = ix[i];
-      }
     }
   }
   return 0;
