@@ -57,7 +57,7 @@ libf: $(LIBNAME)($(OBJSF))
 #
 #3. To make shared libs do in PETSC_DIR:
 #   make BOPT=g all fortran shared
-#   If the regular libraries are already built, you have to rebuilt them.
+#   If the regular libraries are already built, you have to rebuild them.
 #
 #4. To build an example uisng petsc shared library do:
 #   cd petsc/src/sles/tutorials
