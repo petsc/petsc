@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.7 1995/09/30 19:29:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.8 1995/10/01 21:52:45 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -10,74 +10,168 @@ static char vcid[] = "$Id: bdfact.c,v 1.7 1995/09/30 19:29:09 bsmith Exp bsmith 
 /* COMMENT: I have chosen to hide column permutation in the pivots,
    rather than put it in the Mat->col slot.*/
 
-int MatLUFactor_SeqBDiag(Mat matin,IS row,IS col,double f)
+int MatLUFactorSymbolic_SeqBDiag(Mat A,IS row,IS col,double f,Mat *fact)
 {
-  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
-  int          info, i, nb = mat->nb;
-  Scalar       *submat;
+  return MatConvert(A,MATSAME,fact);
+}
 
-  if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
-    "MatLUFactor_SeqBDiag:factoriz only for main diagonal");
-  if (!mat->pivots) {
-    mat->pivots = (int *) PETSCMALLOC( mat->m*sizeof(int) );CHKPTRQ(mat->pivots);
-  }
-  submat = mat->diagv[0];
-  for (i=0; i<mat->bdlen[0]; i++) {
-    LAgetrf_(&nb,&nb,&submat[i*nb*nb],&nb,&mat->pivots[i*nb],&info);
-    if (info) SETERRQ(1,"MatLUFactor_SeqBDiag:Bad LU factorization");
-  }
-  matin->factor = FACTOR_LU;
+int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
+                                  int levels,Mat *fact)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          ierr, n = a->m;
+  if (n != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
+  if (levels != 0)
+    SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Only ILU(0) is supported");
+  ierr = MatConvert(A,MATSAME,fact); CHKERRQ(ierr);
   return 0;
 }
 
-int MatLUFactorSymbolic_SeqBDiag(Mat matin,IS row,IS col,double f,Mat *fact)
+int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
 {
-  int ierr;
-  ierr = MatConvert(matin,MATSAME,fact); CHKERRQ(ierr);
-  return 0;
-}
+  Mat          C = *B;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data;
+  int          info, i, k, d, d2, dgk, row, col, nb = a->nb, nd = a->nd;
+  int          *diag = a->diag, ds, dn, m = a->m, mainbd = a->mainbd;
+  Scalar       *submat, **dv = a->diagv, *dd = dv[mainbd];
 
-int MatLUFactorNumeric_SeqBDiag(Mat matin,Mat *fact)
-{
-  return MatLUFactor(*fact,0,0,1.0);
-}
-
-int MatSolve_SeqBDiag(Mat matin,Vec xx,Vec yy)
-{
-  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
-  int          one = 1, info, i, nb = mat->nb;
-  Scalar       *x, *y;
-  Scalar       *submat;
-
-  if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
-    "MatSolve_SeqBDiag:Triangular solves only for main diag");
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
-  if (matin->factor == FACTOR_LU) {
-    submat = mat->diagv[0];
-    for (i=0; i<mat->bdlen[0]; i++) {
-      LAgetrs_("N",&nb,&one,&submat[i*nb*nb],&nb,&mat->pivots[i*nb],y+i*nb,&nb,&info);
+  if (nb == 1) {
+    for ( k=0; k<m-1; k++ ) {
+      for ( d=0; d<mainbd; d++ ) {
+        if (diag[d] >= k) {
+          dv[d][k] /= dd[k];
+          row = k + diag[d];
+          for ( d2=d+1; d2<nd; d2++ ) {
+            dn  = diag[d2];
+            col = row - dn;
+            dgk = k - col;
+            if (dn > 0) { /* lower triangle */
+              if (dgk > 0) { /* lower triangle */
+                for ( ds=0; ds<mainbd; ds++ ) {
+                  if (diag[ds] <= dgk) {
+                    if (diag[ds] == dgk) dv[d2][col] -= dv[d][k] * dv[ds][col];
+                    break;
+                  }
+                }
+              } else { /* upper triangle */
+                for ( ds=mainbd; ds<nd; ds++ ) {
+                  if (diag[ds] <= dgk) {
+                    if (diag[ds] == dgk) dv[d2][col] -= dv[d][k] * dv[ds][k];
+                    break;
+                  }
+                }
+              }
+            } else { /* upper triangle */
+              if (dgk > 0) { /* lower triangle */
+                for ( ds=0; ds<mainbd; ds++ ) {
+                  if (diag[ds] <= dgk) {
+                    if (diag[ds] == dgk) dv[d2][row] -= dv[d][k] * dv[ds][col];
+                    break;
+                  }
+                }
+              } else { /* upper triangle */
+                for ( ds=mainbd; ds<nd; ds++ ) {
+                  if (diag[ds] <= dgk) {
+                    if (diag[ds] == dgk) dv[d2][row] -= dv[d][k] * dv[ds][k];
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } 
+  else {
+    if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
+      "MatLUFactorNumeric_SeqBDiag:factoriz only for main diagonal");
+    if (!a->pivots) {
+      a->pivots = (int *) PETSCMALLOC(a->m*sizeof(int)); CHKPTRQ(a->pivots);
+    }
+    submat = a->diagv[0];
+    for (i=0; i<a->bdlen[0]; i++) {
+      LAgetrf_(&nb,&nb,&submat[i*nb*nb],&nb,&a->pivots[i*nb],&info);
+      if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad LU factorization");
     }
   }
-  else SETERRQ(1,"MatSolve_SeqBDiag:Matrix must be factored to solve");
-  if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad solve");
+  C->factor = FACTOR_LU;
   return 0;
 }
 
-int MatSolveTrans_SeqBDiag(Mat matin,Vec xx,Vec yy)
+int MatLUFactor_SeqBDiag(Mat A,IS row,IS col,double f)
 {
-  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
-  int          one = 1, info, i, nb = mat->nb;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          i, ierr;
+  Mat          C;
+
+  ierr = MatLUFactorSymbolic_SeqBDiag(A,row,col,f,&C); CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric_SeqBDiag(A,&C); CHKERRQ(ierr);
+
+  /* free all the data structures from mat */
+  if (!a->user_alloc) { /* Free the actual diagonals */
+    for (i=0; i<a->nd; i++) PETSCFREE( a->diagv[i] );
+  } /* What to do for user allocation of diags?? */
+  if (a->pivots) PETSCFREE(a->pivots);
+  PETSCFREE(a->diagv); PETSCFREE(a->diag);
+  PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
+  PETSCFREE(a);
+  PetscMemcpy(A,C,sizeof(struct _Mat));
+  PETSCHEADERDESTROY(C);
+
+  return 0;
+}
+
+int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          one = 1, info, i, d, loc, ierr, mainbd = a->mainbd;
+  int          nb = a->nb, m = a->m;
+  Scalar       *x, *y, *dvmain = a->diagv[mainbd], sum;
+  Scalar       *submat;
+
+  if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqBDiag:Not for unfactored matrix.");
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+
+  if (nb == 1) {
+    for (i=0; i<m; i++) {
+      sum = x[i];
+      for (d=0; d<mainbd; d++) {
+        loc = i - a->diag[d];
+        if (loc >= 0) sum -= a->diagv[d][loc] * y[loc];
+      }
+      y[i] = sum/dvmain[i];
+    }
+  } else {
+    if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
+      "MatSolve_SeqBDiag:Block triangular solves only for main diag");
+    PetscMemcpy(y,x,m*sizeof(Scalar));
+    submat = a->diagv[0];
+    for (i=0; i<a->bdlen[0]; i++) {
+      LAgetrs_("N",&nb,&one,&submat[i*nb*nb],&nb,&a->pivots[i*nb],
+               y+i*nb,&nb,&info);
+      if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad triangular solve");
+    }
+  }
+  return 0;
+}
+
+int MatSolveTrans_SeqBDiag(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          one = 1, info, i, ierr, nb = a->nb, m = a->m;
   Scalar       *x, *y, *submat;
 
-  if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
+  if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
     "MatSolveTrans_SeqBDiag:Triangular solves only for main diag");
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
-  if (matin->factor == FACTOR_LU) {
-    submat = mat->diagv[0];
-    for (i=0; i<mat->bdlen[0]; i++) {
-      LAgetrs_("T",&nb,&one,&submat[i*nb*nb],&nb,&mat->pivots[i*nb],y+i*nb,&nb,&info);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  PetscMemcpy(y,x,m*sizeof(Scalar));
+  if (A->factor == FACTOR_LU) {
+    submat = a->diagv[0];
+    for (i=0; i<a->bdlen[0]; i++) {
+      LAgetrs_("T",&nb,&one,&submat[i*nb*nb],&nb,&a->pivots[i*nb],y+i*nb,&nb,&info);
     }
   }
   else SETERRQ(1,"MatSolveTrans_SeqBDiag:Matrix must be factored to solve");
@@ -85,26 +179,26 @@ int MatSolveTrans_SeqBDiag(Mat matin,Vec xx,Vec yy)
   return 0;
 }
 
-int MatSolveAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
+int MatSolveAdd_SeqBDiag(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
-  int          one = 1, info, ierr, i, nb = mat->nb;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          one = 1, info, ierr, i, nb = a->nb, m = a->m;
   Scalar       *x, *y, sone = 1.0, *submat;
   Vec          tmp = 0;
 
-  if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
+  if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
     "MatSolveAdd_SeqBDiag:Triangular solves only for main diag");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
-    PLogObjectParent(matin,tmp);
+    PLogObjectParent(A,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
-  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
-  if (matin->factor == FACTOR_LU) {
-    submat = mat->diagv[0];
-    for (i=0; i<mat->bdlen[0]; i++) {
-      LAgetrs_("N",&nb,&one,&submat[i*nb*nb],&nb,&mat->pivots[i*nb],y+i*nb,&nb,&info);
+  PetscMemcpy(y,x,m*sizeof(Scalar));
+  if (A->factor == FACTOR_LU) {
+    submat = a->diagv[0];
+    for (i=0; i<a->bdlen[0]; i++) {
+      LAgetrs_("N",&nb,&one,&submat[i*nb*nb],&nb,&a->pivots[i*nb],y+i*nb,&nb,&info);
     }
   }
   if (info) SETERRQ(1,"MatSolveAdd_SeqBDiag:Bad solve");
@@ -112,26 +206,26 @@ int MatSolveAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
   else VecAXPY(&sone,zz,yy);
   return 0;
 }
-int MatSolveTransAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
+int MatSolveTransAdd_SeqBDiag(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqBDiag  *mat = (Mat_SeqBDiag *) matin->data;
-  int           one = 1, info,ierr, i, nb = mat->nb;
+  Mat_SeqBDiag  *a = (Mat_SeqBDiag *) A->data;
+  int           one = 1, info,ierr, i, nb = a->nb, m = a->m;
   Scalar        *x, *y, sone = 1.0, *submat;
   Vec           tmp;
 
-  if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
+  if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
     "MatSolveTransAdd_SeqBDiag:Triangular solves only for main diag");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
-    PLogObjectParent(matin,tmp);
+    PLogObjectParent(A,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
-  PetscMemcpy(y,x,mat->m*sizeof(Scalar));
-  if (matin->factor == FACTOR_LU) {
-    submat = mat->diagv[0];
-    for (i=0; i<mat->bdlen[0]; i++) {
-      LAgetrs_("T",&nb,&one,&submat[i*nb*nb],&nb,&mat->pivots[i*nb],y+i*nb,&nb,&info);
+  PetscMemcpy(y,x,m*sizeof(Scalar));
+  if (A->factor == FACTOR_LU) {
+    submat = a->diagv[0];
+    for (i=0; i<a->bdlen[0]; i++) {
+      LAgetrs_("T",&nb,&one,&submat[i*nb*nb],&nb,&a->pivots[i*nb],y+i*nb,&nb,&info);
     }
   }
   if (info) SETERRQ(1,"MatSolveTransAdd_SeqBDiag:Bad solve");
