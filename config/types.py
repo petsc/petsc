@@ -13,8 +13,8 @@ class Configure(config.base.Configure):
     return
 
   def setupHelp(self, help):
-    #import nargs
-    #help.addArgument('Types', '-enable-complex', nargs.ArgBool(None, 0, 'Complex arithmetic flag'))
+    import nargs
+    help.addArgument('Types', '-with-endian=<big or little>', nargs.Arg(None, None, 'Are bytes stored in big or little endian?'))
     return
 
   def check(self, typeName, defaultType = None):
@@ -167,40 +167,47 @@ class Configure(config.base.Configure):
 
   def checkEndian(self):
     '''If the machine is bgi endian, defines WORDS_BIGENDIAN'''
-    endian   = 'unknown'
-    # See if sys/param.h defines the BYTE_ORDER macro
-    includes = '#include <sys/types.h>\n#include <sys/param.h>\n'
-    body     = '''
-    #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
-      bogus endian macros
-    #endif
-    '''
-    if self.checkCompile(includes, body):
-      # It does, so check whether it is defined to BIG_ENDIAN or not
-      body = '''
-      #if BYTE_ORDER != BIG_ENDIAN
-        not big endian
+    if 'with-endian' in self.framework.argDB:
+      endian = self.framework.argDB['with-endian']
+    else:
+      # See if sys/param.h defines the BYTE_ORDER macro
+      includes = '#include <sys/types.h>\n#include <sys/param.h>\n'
+      body     = '''
+      #if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
+        bogus endian macros
       #endif
       '''
       if self.checkCompile(includes, body):
-        endian = 'big'
+        # It does, so check whether it is defined to BIG_ENDIAN or not
+        body = '''
+        #if BYTE_ORDER != BIG_ENDIAN
+          not big endian
+        #endif
+        '''
+        if self.checkCompile(includes, body):
+          endian = 'big'
+        else:
+          endian = 'little'
       else:
-        endian = 'little'
-    else:
-      body = '''
-      /* Are we little or big endian?  From Harbison&Steele. */
-      union
-      {
-        long l;
-        char c[sizeof(long)];
-      } u;
-      u.l = 1;
-      exit(u.c[sizeof(long) - 1] == 1);
-      '''
-      if self.checkRun('', body, defaultArg = 'isLittleEndian'):
-        endian = 'little'
-      else:
-        endian = 'big'
+        if not self.framework.argDB['with-batch']:
+          body = '''
+          /* Are we little or big endian?  From Harbison&Steele. */
+          union
+          {
+            long l;
+            char c[sizeof(long)];
+          } u;
+          u.l = 1;
+          exit(u.c[sizeof(long) - 1] == 1);
+          '''
+          if self.checkRun('', body, defaultArg = 'isLittleEndian'):
+            endian = 'little'
+          else:
+            endian = 'big'
+        else:
+          self.framework.batchBodies += '{union {long l;char c[sizeof(long)];} u;u.l = 1;fprintf(output,"  \'  --with-endian=%s\',\\n",(u.c[sizeof(long) - 1] == 1) ? "little" : "big");}'
+          #dummy value
+          endian = 'little'
     if endian == 'big':
       self.addDefine('WORDS_BIGENDIAN', 1)
     return
@@ -215,16 +222,22 @@ class Configure(config.base.Configure):
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%d\\n", sizeof('+typeName+'));\n'
     typename = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p')
     if not typename in self.framework.argDB:
-      if self.checkRun(includes, body) and os.path.exists(filename):
-        f    = file(filename)
-        size = int(f.read())
-        f.close()
-        os.remove(filename)
-      elif not typename == 'sizeof_long_long':
-        raise RuntimeError('Unable to determine '+typename)
+      if not self.framework.argDB['with-batch']:
+        if self.checkRun(includes, body) and os.path.exists(filename):
+          f    = file(filename)
+          size = int(f.read())
+          f.close()
+          os.remove(filename)
+        elif not typename == 'sizeof_long_long':
+          raise RuntimeError('Unable to determine '+typename)
+        else:
+          self.framework.log.write('Compiler does not support long long\n')
+          size = 0
       else:
-        self.framework.log.write('Compiler does not support long long\n')
-        size = 0
+        self.framework.batchIncludes += '#include <stdlib.h>\n#include <stdio.h>\n'
+        self.framework.batchBodies += 'fprintf(output, "  \'--sizeof_'+typeName.replace(' ','_').replace('*','p')+'=%d\',\\n", sizeof('+typeName+'));'
+        # dummy value
+        size = 4
     else:
       size = self.framework.argDB[typename]
     self.addDefine(typename.upper(), size)
@@ -244,7 +257,9 @@ class Configure(config.base.Configure):
     while(val[0]) {val[0] <<= 1; i++;}
     fprintf(f, "%d\\n", i);\n
     '''
-    if not 'bits_per_byte' in self.framework.argDB:
+    if 'bits_per_byte' in self.framework.argDB:
+      bits = self.framework.argDB['bits_per_byte']
+    elif not self.framework.argDB['with-batch']:
       if self.checkRun(includes, body) and os.path.exists(filename):
         f    = file(filename)
         bits = int(f.read())
@@ -253,7 +268,10 @@ class Configure(config.base.Configure):
       else:
         raise RuntimeError('Unable to determine bits per byte')
     else:
-      bits = self.framework.argDB['bits_per_byte']      
+      self.framework.batchBodies += '{int i = 0;char val[2];val[0]=\'\\1\';val[1]=\'\\0\'; while(val[0]) {val[0] <<= 1; i++;} fprintf(output, "  \'--bits_per_byte=%d\',\\n", i);}\n'
+      # dummy value
+      bits = 8
+
     self.addDefine('BITS_PER_BYTE', bits)
     return
 
@@ -272,4 +290,26 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkEndian)
     map(lambda type: self.executeTest(self.checkSizeof, type), ['void *', 'short', 'int', 'long', 'long long', 'float', 'double'])
     self.executeTest(self.checkBitsPerByte)
+
+    # do not know what file to put this in
+    if self.framework.argDB['with-batch'] and self.framework.batchBodies:
+      args = filter(lambda a: not a.endswith('-configModules=PETSc.Configure') , self.framework.clArgs)
+      import nargs
+      if not nargs.Arg.findArgument('PETSC_ARCH', args):
+        args.append('-PETSC_ARCH='+self.framework.argDB['PETSC_ARCH'])
+      args=repr(args)[1:-1]
+      
+      body = 'FILE *output = fopen("reconfigure","w");fprintf(output," \\nconfigure_options = [\\n");'+self.framework.batchBodies+'fprintf(output,"  '+args+'\\n  ]\\nif __name__ == \'__main__\':\\n  import os\\n  import sys\\n  sys.path.insert(0,os.path.abspath(os.path.join(\'config\')))\\n  import configure\\n  configure.petsc_configure(configure_options)\\n")\n'
+
+      if self.checkLink('#include <stdio.h>\n'+self.framework.batchIncludes,body , cleanup = 0):
+        self.framework.logClear()
+        print '=================================================================================\r'
+        print '    Since your compute nodes require use of a batch system or mpirun you must:   \r'
+        print ' 1) Submit ./conftest to your batch system (this will generate the file reconfigure)\r'
+        print ' 2) Run "python reconfigure" (to complete the configure process).                \r'
+        print '=================================================================================\r'
+        import sys
+        sys.exit(0);
+      else:
+        raise RuntimeError("Unable to generate test file for batch system;\n send configure.log to petsc-maint@mcs.anl.gov\n")
     return

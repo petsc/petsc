@@ -12,6 +12,10 @@ class Configure(config.base.Configure):
   def getDefineName(self, funcName):
     return 'HAVE_'+funcName.upper()
 
+  def setupHelp(self, help):
+    import nargs
+    help.addArgument('Functions', '-with-memcmp-ok=<0 or 1>', nargs.Arg(None, 0, 'Does memcmp() work correctly?'))
+    
   def haveFunction(self, function):
     return self.getDefineName(function) in self.defines
 
@@ -64,9 +68,13 @@ class Configure(config.base.Configure):
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
-    if self.framework.argDB['can-execute']:
+    if self.framework.argDB['with-memcmp-ok']: return
+    if not self.framework.argDB['with-batch']:
       if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
         raise RuntimeError('Failed to find 8-bit clean memcmp()')
+    else:
+      self.framework.batchIncludes += '#include <string.h>\n#include <stdio.h>\nvoid exit(int);\n\n'
+      self.framework.batchBodies += '{char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nif (memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1) {\nfprintf(output,"memcmp() does not properly copy the 8th bit\\n");\nexit(1);} else fprintf(output,"  \'--with-memcmp-ok=1\',\\n");}\n'
     return
 
   def checkSysinfo(self):

@@ -485,7 +485,7 @@ class Configure(script.Script):
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
       self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable')
       return ('', 1)
-    if not self.framework.argDB['can-execute']:
+    if self.framework.argDB['with-batch']:
       if defaultOutputArg:
         if defaultOutputArg in self.framework.argDB:
           return (self.framework.argDB[defaultOutputArg], 0)

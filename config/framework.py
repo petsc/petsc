@@ -77,6 +77,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.argDB['CPPFLAGS']   = ''
     if not 'LDFLAGS' in self.argDB:
       self.argDB['LDFLAGS']  = ''
+    self.batchIncludes       = ''
+    self.batchBodies         = ''
     return
 
   def __getstate__(self):
@@ -136,7 +138,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
-    help.addArgument('Framework', '-can-execute',         nargs.ArgBool(None, 1, 'Disable this option on a batch system'))
+    help.addArgument('Framework', '-with-batch',         nargs.ArgBool(None, 0, 'Machine uses a batch system to submit jobs'))
     return help
 
   def getCleanup(self):

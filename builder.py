@@ -459,7 +459,7 @@ class Builder(logging.Logger):
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
       self.logWrite('ERROR while running executable: '+self.linkerObj+' is not executable')
       return ('', 1)
-    if not self.argDB['can-execute']:
+    if self.argDB['with-batch']:
       if defaultOutputArg:
         if defaultOutputArg in self.argDB:
           return (self.argDB[defaultOutputArg], 0)
