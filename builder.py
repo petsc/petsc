@@ -352,15 +352,16 @@ class Builder(logging.Logger):
 
     config = self.getConfiguration()
     if target is None:
-      target = self.getLinkerTarget(source[0], shared)
-    if self.shouldLink(source, target):
-      if callable(self.getLinkerObject()):
-        output, error, status, outputFiles = self.getLinkerObject()(source, target)
-        check(None, status, output, error)
-      else:
-        output, error, status = script.Script.executeShellCommand(self.getLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
-        outputFiles = {'Linked ELF': sets.Set([target])}
-      self.updateOutputFiles(config.outputFiles, outputFiles)
+      if len(source) and not source[0] is None:
+        target = self.getLinkerTarget(source[0], shared)
+    if not target is None and self.shouldLink(source, target):
+        if callable(self.getLinkerObject()):
+          output, error, status, outputFiles = self.getLinkerObject()(source, target)
+          check(None, status, output, error)
+        else:
+          output, error, status = script.Script.executeShellCommand(self.getLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
+          outputFiles = {'Linked ELF': sets.Set([target])}
+        self.updateOutputFiles(config.outputFiles, outputFiles)
     else:
       output      = ''
       error       = ''
