@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.54 1999/02/03 15:31:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.55 1999/03/17 23:25:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,6 +24,7 @@ extern int          PetscBeganMPI;
 #define optionsgetdoublearray_        OPTIONSGETDOUBLEARRAY
 #define optionsgetstring_             OPTIONSGETSTRING
 #define petscgetprogramname           PETSCGETPROGRAMNAME
+#define optionsinsertfile_            OPTIONSINSERTFILE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscgetarchtype_             petscgetarchtype
 #define optionssetvalue_              optionssetvalue
@@ -35,108 +36,100 @@ extern int          PetscBeganMPI;
 #define optionsgetstring_             optionsgetstring
 #define optionsgetintarray_           optionsgetintarray
 #define petscgetprogramname_          petscgetprogramname
+#define optionsinsertfile_            optionsinsertfile
 #endif
 
 EXTERN_C_BEGIN
 
 /* ---------------------------------------------------------------------*/
 
+void optionsinsertfile_( CHAR file, int *__ierr,int len )
+{
+  char *c1;
+
+  FIXCHAR(file,len,c1);
+  *__ierr = OptionsInsertFile(c1);
+  FREECHAR(file,c1);
+}
+
 void optionssetvalue_(CHAR name,CHAR value,int *__ierr, int len1,int len2)
 {
   char *c1,*c2;
-  int  ierr;
 
   FIXCHAR(name,len1,c1);
   FIXCHAR(value,len2,c2);
-  ierr = OptionsSetValue(c1,c2);
+  *__ierr = OptionsSetValue(c1,c2);
   FREECHAR(name,c1);
   FREECHAR(value,c2);
-  *__ierr = ierr;
 }
 
 void optionsclearvalue_(CHAR name,int *__ierr, int len1)
 {
   char *c1;
-  int  ierr;
 
   FIXCHAR(name,len1,c1);
-  ierr = OptionsClearValue(c1);
+  *__ierr = OptionsClearValue(c1);
   FREECHAR(name,c1);
-  *__ierr = ierr;
 }
 
 void optionshasname_(CHAR pre,CHAR name,int *flg,int *__ierr,int len1,int len2){
   char *c1,*c2;
-  int  ierr;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  ierr = OptionsHasName(c1,c2,flg);
+  *__ierr = OptionsHasName(c1,c2,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-  *__ierr = ierr;
 }
 
 void optionsgetint_(CHAR pre,CHAR name,int *ivalue,int *flg,int *__ierr,int len1,int len2)
 {
   char *c1,*c2;
-  int  ierr;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  ierr = OptionsGetInt(c1,c2,ivalue,flg);
+  *__ierr = OptionsGetInt(c1,c2,ivalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-  *__ierr = ierr;
 }
 
-void optionsgetdouble_(CHAR pre,CHAR name,double *dvalue,int *flg,int *__ierr,
-                       int len1,int len2){
-  char *c1,*c2;
-  int  ierr;
-
-  FIXCHAR(pre,len1,c1);
-  FIXCHAR(name,len2,c2);
-  ierr = OptionsGetDouble(c1,c2,dvalue,flg);
-  FREECHAR(pre,c1);
-  FREECHAR(name,c2);
-  *__ierr = ierr;
-}
-
-void optionsgetdoublearray_(CHAR pre,CHAR name,
-              double *dvalue,int *nmax,int *flg,int *__ierr,int len1,int len2)
+void optionsgetdouble_(CHAR pre,CHAR name,double *dvalue,int *flg,int *__ierr,int len1,int len2)
 {
   char *c1,*c2;
-  int  ierr;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  ierr = OptionsGetDoubleArray(c1,c2,dvalue,nmax,flg);
+  *__ierr = OptionsGetDouble(c1,c2,dvalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-
-  *__ierr = ierr;
 }
 
-void optionsgetintarray_(CHAR pre,CHAR name,int *dvalue,int *nmax,int *flg,
-                         int *__ierr,int len1,int len2)
+void optionsgetdoublearray_(CHAR pre,CHAR name,double *dvalue,int *nmax,int *flg,int *__ierr,int len1,int len2)
 {
   char *c1,*c2;
-  int  ierr;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  ierr = OptionsGetIntArray(c1,c2,dvalue,nmax,flg);
+  *__ierr = OptionsGetDoubleArray(c1,c2,dvalue,nmax,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-
-  *__ierr = ierr;
 }
 
-void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,
-                       int *__ierr, int len1, int len2,int len){
+void optionsgetintarray_(CHAR pre,CHAR name,int *dvalue,int *nmax,int *flg,int *__ierr,int len1,int len2)
+{
+  char *c1,*c2;
+
+  FIXCHAR(pre,len1,c1);
+  FIXCHAR(name,len2,c2);
+  *__ierr = OptionsGetIntArray(c1,c2,dvalue,nmax,flg);
+  FREECHAR(pre,c1);
+  FREECHAR(name,c2);
+}
+
+void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,int *__ierr, int len1, int len2,int len)
+{
   char *c1,*c2,*c3;
-  int  ierr,len3;
+  int  len3;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
@@ -148,11 +141,9 @@ void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,
     len3 = len - 1;
 #endif
 
-  ierr = OptionsGetString(c1,c2,c3,len3,flg);
+  *__ierr = OptionsGetString(c1,c2,c3,len3,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-
-  *__ierr = ierr;
 }
 
 void petscgetarchtype_(CHAR str,int *__ierr,int len)
@@ -169,7 +160,7 @@ void petscgetarchtype_(CHAR str,int *__ierr,int len)
 void petscgetprogramname_(CHAR name, int *__ierr,int len_in )
 {
   char *tmp;
-  int len;
+  int  len;
 #if defined(USES_CPTOFCD)
   tmp = _fcdtocp(name);
   len = _fcdlen(name) - 1;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.204 1999/03/23 16:04:59 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.205 1999/03/31 16:04:19 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -85,7 +85,7 @@ int PetscSetProgramName(const char name[])
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsInsertFile"
-/*@
+/*@C
      OptionsInsertFile - Inserts options into the database from a file.
 
      Not collective: but only processes that call this routine will set the options
