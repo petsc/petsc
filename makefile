@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.315 2000/08/16 19:20:34 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.316 2000/08/17 04:49:59 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -42,12 +42,12 @@ info:
 	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
 	  echo "Fortran Compiler version:" ; ${C_FCV} ; fi
 	-@echo "-----------------------------------------"
-	-@grep PETSC_VERSION_NUMBER include/petscversion.h | ${SED} "s/........//"
+	-@grep PETSC_VERSION_NUMBER ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags:"
-	-@grep "define " bmake/${PETSC_ARCH}/petscconf.h
+	-@grep "define " ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"
