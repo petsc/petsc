@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.10 1995/03/21 23:17:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.11 1995/03/23 05:00:13 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -9,9 +9,9 @@ static char vcid[] = "$Id: general.c,v 1.10 1995/03/21 23:17:56 bsmith Exp bsmit
 typedef struct {
   int n,sorted; 
   int *idx;
-} IndexiGeneral;
+} IS_General;
 
-static int ISidestroy(PetscObject obj)
+static int ISDestroy_General(PetscObject obj)
 {
   IS is = (IS) obj;
   FREE(is->data); 
@@ -19,22 +19,22 @@ static int ISidestroy(PetscObject obj)
   PETSCHEADERDESTROY(is); return 0;
 }
 
-static int ISiIndices(IS in,int **idx)
+static int ISGetIndices_General(IS in,int **idx)
 {
-  IndexiGeneral *sub = (IndexiGeneral *) in->data;
+  IS_General *sub = (IS_General *) in->data;
   *idx = sub->idx; return 0;
 }
 
-static int ISiSize(IS is,int *size)
+static int ISGetSize_General(IS is,int *size)
 {
-  IndexiGeneral *sub = (IndexiGeneral *)is->data;
+  IS_General *sub = (IS_General *)is->data;
   *size = sub->n; return 0;
 }
 
 
-static int ISiInverse(IS is, IS *isout)
+static int ISInvertPermutation_General(IS is, IS *isout)
 {
-  IndexiGeneral *sub = (IndexiGeneral *)is->data;
+  IS_General *sub = (IS_General *)is->data;
   int           i,ierr, *ii,n = sub->n,*idx = sub->idx;
   ii = (int *) MALLOC( n*sizeof(int) ); CHKPTR(ii);
   for ( i=0; i<n; i++ ) {
@@ -46,11 +46,11 @@ static int ISiInverse(IS is, IS *isout)
   return 0;
 }
 
-static int ISgview(PetscObject obj, Viewer viewer)
+static int ISView_General(PetscObject obj, Viewer viewer)
 {
-  IS            is = (IS) obj;
-  IndexiGeneral *sub = (IndexiGeneral *)is->data;
-  int           i,n = sub->n,*idx = sub->idx;
+  IS         is = (IS) obj;
+  IS_General *sub = (IS_General *)is->data;
+  int        i,n = sub->n,*idx = sub->idx;
   if (is->isperm) {
     ViewerPrintf(viewer,"Index set is permutation\n");
   }
@@ -61,8 +61,9 @@ static int ISgview(PetscObject obj, Viewer viewer)
   return 0;
 }
   
-static struct _ISOps myops = { ISiSize,ISiSize,
-                               ISiIndices,0,ISiInverse};
+static struct _ISOps myops = { ISGetSize_General,ISGetSize_General,
+                               ISGetIndices_General,0,
+                               ISInvertPermutation_General};
 /*@
     ISCreateSequential - Creates data structure for 
      a index set containing a list of integers.
@@ -74,15 +75,15 @@ static struct _ISOps myops = { ISiSize,ISiSize,
 @*/
 int ISCreateSequential(int n,int *idx,IS *is)
 {
-  int     i, sorted = 1, size = sizeof(IndexiGeneral) + n*sizeof(int);
-  int     min, max;
-  IS      Nindex;
-  IndexiGeneral *sub;
+  int        i, sorted = 1, size = sizeof(IS_General) + n*sizeof(int);
+  int        min, max;
+  IS         Nindex;
+  IS_General *sub;
 
   *is = 0;
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
   PLogObjectCreate(Nindex);
-  sub            = (IndexiGeneral *) MALLOC(size); CHKPTR(sub);
+  sub            = (IS_General *) MALLOC(size); CHKPTR(sub);
   sub->idx       = (int *) (sub+1);
   sub->n         = n;
   for ( i=1; i<n; i++ ) {
@@ -99,8 +100,8 @@ int ISCreateSequential(int n,int *idx,IS *is)
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
   Nindex->ops     = &myops;
-  Nindex->destroy = ISidestroy;
-  Nindex->view    = ISgview;
+  Nindex->destroy = ISDestroy_General;
+  Nindex->view    = ISView_General;
   Nindex->isperm  = 0;
   *is = Nindex; return 0;
 }
