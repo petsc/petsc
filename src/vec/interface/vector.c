@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.103 1997/03/01 15:43:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.104 1997/03/09 17:56:54 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -913,7 +913,7 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 #undef __FUNC__  
 #define __FUNC__ "VecMAXPY"
 /*@C
-   VecMAXPY - Computes x = x + \sum alpha[j] y[j]
+   VecMAXPY - Computes x = x + sum alpha[j] y[j]
 
    Input Parameters:
 .  nv - number of scalars and x-vectors

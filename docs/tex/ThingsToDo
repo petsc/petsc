@@ -99,6 +99,10 @@ Lois  - Add SLES example showing multiple linear solves with same matrices but
   To do sometime soon:
 -----------------------------------------------------------------------
 
+ - Provide a way to view suitable options for any PETSc object. I see two ways?
+    - may a file viewer option that prints the stuff in XXXPrintHelp()... or
+    - add an function in the abstract base class printhelp() just like destroy() and view()
+
  - Provide tools that help with imposing BCs but retaining matrix symmetry.
    Is this even possible or just academics dreaming in their ivory towers?
 
