@@ -86,6 +86,21 @@ EXTERN_C_BEGIN
 EXTERN int VecView_MPI_Draw(Vec,PetscViewer);
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecPlaceArray_MPI"
+int VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
+{
+  int     ierr;
+  Vec_MPI *v = (Vec_MPI *)vin->data;
+
+  PetscFunctionBegin;
+  v->array = (PetscScalar *)a;
+  if (v->localrep) {
+    ierr = VecPlaceArray(v->localrep,a);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
@@ -119,7 +134,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecSetValuesBlocked_MPI,
             VecDestroy_MPI,
             VecView_MPI,
-            VecPlaceArray_Seq,
+            VecPlaceArray_MPI,
             VecReplaceArray_Seq,
             VecDot_Seq,
             VecTDot_Seq,

@@ -16,7 +16,7 @@ include ${PETSC_DIR}/bmake/common/test
 # all: builds the c, fortran, and f90 libraries
 all:
 	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
-all_build: chk_petsc_dir info info_h chklib_dir deletelibs blaslapack build shared
+all_build: chk_petsc_dir info info_h chklib_dir deletelibs blaslapack mpich build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -121,6 +121,16 @@ blaslapack:
         ${MV} libfblas.a libflapack.a ${PETSC_ARCH};\
         echo "Completed building Fortran Blas/Lapack libraries";\
         echo "========================================="; fi
+#
+#  Compiles MPICH if found
+mpich:
+	-@releasename=`ls -d mpich*`;\
+        if [ -d $${releasename}/${PETSC_ARCH} -a ! -d $${releasename}/${PETSC_ARCH}/lib ] ; then cd $${releasename} ;\
+          echo "=========================================";\
+          echo "Compiling and installing " $${releasename};\
+          make; make install; \
+          echo "=========================================";\
+        fi;
 #
 # Builds PETSc test examples for a given BOPT and architecture
 #

@@ -31,7 +31,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
       seem to have the DGESVD() lapack routines
   */
 #if defined(PETSC_MISSING_LAPACK_GESVD) 
-  SETERRQ(PETSC_ERR_SUP,"GESVD - Lapack routine is unavilable\nNot able to provide singular value estimates.");
+  SETERRQ(PETSC_ERR_SUP,"GESVD - Lapack routine is unavailable\nNot able to provide singular value estimates.");
 #else
 #if !defined(PETSC_USE_COMPLEX)
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
@@ -131,7 +131,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 
   /* compute eigenvalues */
 #if defined(PETSC_MISSING_LAPACK_GEEV) 
-  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
+  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #else
   LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
 #endif
@@ -167,7 +167,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 
   /* compute eigenvalues */
 #if defined(PETSC_MISSING_LAPACK_GEEV) 
-  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
+  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavailable\nNot able to provide eigen values.");
 #else
   LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
 #endif
