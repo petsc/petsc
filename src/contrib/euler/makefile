@@ -214,6 +214,9 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 #
 # Define LAPACK here, just to test the scoop with ESSL on poseidon
+# Note: We get significantly different convergence results for 
+# matrix-free Newton-Krylov methods when using ESSL's ddot.
 #
-# LAPACK_LIB = /ump/hpcc/home3/mcinnes/lapack/lapack.a
+  DOT = /ump/hpcc/home3/mcinnes/work/blas/ddot.o
+  LAPACK_LIB = $(DOT) -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
 # LAPACK_LIB = -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a
