@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1998/10/19 22:14:14 bsmith Exp balay $ 
+# $Id: base.site,v 1.24 1998/11/20 17:13:49 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -11,7 +11,7 @@
 #  FORTRAN code (such as I/O or special Fortran runtimes).  
 #
 #FC_LIB         =  /usr/lib/libf2c.a  -lm
-FC_LIB         =  /soft/gnu/packages/egcs-1.0.2/lib/libf2c.a -lm
+#FC_LIB         =  /soft/gnu/packages/egcs-1.0.2/lib/libf2c.a -lm
 FC_LIB         =  -lg2c -lm
 #
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
