@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.70 1995/10/11 17:55:35 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.71 1995/10/12 04:38:00 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -1145,13 +1145,14 @@ static int MatSetOption_MPIRowbs(Mat A,MatOption op)
   else if (op == STRUCTURALLY_SYMMETRIC_MATRIX) {
     a->mat_is_structurally_symmetric = 1;
   }
-  else if (op == NO_NEW_DIAGONALS ||
-           op == YES_NEW_DIAGONALS)
+  else if (op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_MPIRowbs:Option ignored\n");
   else if (op == COLUMN_ORIENTED) 
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIRowbs:COLUMN_ORIENTED not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIRowbs:COLUMN_ORIENTED");}
+  else if (op == NO_NEW_DIAGONALS)
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIRowbs:NO_NEW_DIAGONALS");}
   else 
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIRowbs:Option not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIRowbs:unknown option");}
   return 0;
 }
 

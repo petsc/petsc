@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.97 1995/10/11 22:09:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.98 1995/10/11 22:17:17 bsmith Exp curfman $";
 #endif
 
 #include "aij.h"
@@ -335,11 +335,11 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
            op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
   else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:COLUMN_ORIENTED not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:COLUMN_ORIENTED");}
   else if (op == NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:NO_NEW_DIAGONALS not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:NO_NEW_DIAGONALS");}
   else 
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:Option not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:unknown option");}
   return 0;
 }
 

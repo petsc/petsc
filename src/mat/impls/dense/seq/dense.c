@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.63 1995/10/11 15:19:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.64 1995/10/12 13:40:47 curfman Exp curfman $";
 #endif
 
 /*
@@ -557,7 +557,7 @@ static int MatSetOption_SeqDense(Mat A,MatOption op)
            op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_SeqDense:Option ignored\n");
   else 
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqDense:Option not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqDense:unknown option");}
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.41 1995/10/11 20:58:30 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.42 1995/10/12 13:40:09 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -508,9 +508,9 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
            op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_MPIBDiag:Option ignored\n");
   else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:COLUMN_ORIENTED not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:COLUMN_ORIENTED");}
   else 
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:Option not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIBDiag:unknown option");}
   return 0;
 }
 

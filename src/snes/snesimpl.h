@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.25 1995/08/31 16:36:57 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.26 1995/09/12 20:40:27 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -44,9 +44,10 @@ struct _SNES {
   /* --- Routines and data that are unique to each particular solver --- */
 
   int   (*setup)(SNES);             /* sets up the nonlinear solver */
+  int   setup_called;               /* true if setup has been called */
   int   (*solve)(SNES,int*);        /* actual nonlinear solver */
   int   (*setfromoptions)(SNES);    /* sets options from database */
-  int   (*printhelp)(SNES);         /* prints info */
+  int   (*printhelp)(SNES);         /* prints help info */
   void  *data;                      /* implementationspecific data */
 
   /* ------------------  Parameters -------------------------------------- */
@@ -73,10 +74,10 @@ struct _SNES {
   int      conv_hist_len;      /* amount of convergence history space */
   int      nfailures;          /* number of unsuccessful step attempts */
 
-  /* ---------------------------- SUMS Stuff ---------------------------- */
-  /* unconstrained minimization stuff ... For now we share everything else
+  /* ---------------------------- SUMS Data ---------------------------- */
+  /* unconstrained minimization info ... For now we share everything else
      with the nonlinear equations code.  We should find a better way to deal 
-     with this; the naming conventions are confusing.   Perhaps use unions? */
+     with this; the naming conventions are confusing.  Perhaps use unions? */
 
   int      (*computeumfunction)(SNES,Vec,double*,void*);
   double   fc;                /* function value */

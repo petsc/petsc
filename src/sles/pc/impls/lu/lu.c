@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.45 1995/10/01 21:52:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.46 1995/10/07 20:47:40 curfman Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -16,9 +16,8 @@ typedef struct {
   MatOrdering ordering;   /* matrix ordering */
 } PC_LU;
 
-
 /*@
-   PCLUSetUseInplace - Tells the system to do an in-place factorization.
+   PCLUSetUseInPlace - Tells the system to do an in-place factorization.
    For some implementations, for instance, dense matrices, this enables the 
    solution of much larger problems. 
 
@@ -34,10 +33,11 @@ $  -pc_lu_in_place
    matrix multiplication, which is not possible here because the matrix has 
    been factored in-place, replacing the original matrix.
 
-.keywords: PC, set, factorization, direct, inplace, in-place, LU, Cholesky
+.keywords: PC, set, factorization, direct, inplace, in-place, LU
 
+.seealso: PCILUSetUseInPlace()
 @*/
-int PCLUSetUseInplace(PC pc)
+int PCLUSetUseInPlace(PC pc)
 {
   PC_LU *dir;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
@@ -50,7 +50,7 @@ int PCLUSetUseInplace(PC pc)
 static int PCSetFromOptions_LU(PC pc)
 {
   if (OptionsHasName(pc->prefix,"-pc_lu_in_place")) {
-    PCLUSetUseInplace(pc);
+    PCLUSetUseInPlace(pc);
   }
   return 0;
 }
@@ -110,6 +110,7 @@ static int PCSetUp_LU(PC pc)
     /* this uses an arbritrary 5.0 as the fill factor! User may set
        with the option -mat_lu_fill */
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,5.0); CHKERRQ(ierr);
+    dir->fact = pc->pmat;
   }
   else {
     if (!pc->setupcalled) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.41 1995/10/06 18:30:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.42 1995/10/07 20:47:33 curfman Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -51,11 +51,45 @@ int PCILUSetLevels(PC pc,int levels)
   return 0;
 }
 
+/*@
+   PCILUSetUseInPlace - Tells the system to do an in-place incomplete factorization.
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_ilu_in_place
+
+   Note:
+   PCILUSetUseInPlace() is intended for use with matrix-free variants of
+   Krylov methods, or when a different matrices are employed for the linear
+   system and preconditioner.  Do NOT use this option if the linear system
+   matrix also serves as the preconditioning matrix, since the factored
+   matrix overwrites the original matrix.  Currently, this option
+   is supported only for the MATSEQBDIAG matrix format.
+
+.keywords: PC, set, factorization, inplace, in-place, ILU
+
+.seealso:  PCLUSetUseInPlace()
+@*/
+int PCILUSetUseInPlace(PC pc)
+{
+  PC_ILU *dir;
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  dir = (PC_ILU *) pc->data;
+  if (pc->type != PCILU) return 0;
+  dir->inplace = 1;
+  return 0;
+}
+
 static int PCSetFromOptions_ILU(PC pc)
 {
   int         levels;
   if (OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels)) {
     PCILUSetLevels(pc,levels);
+  }
+  if (OptionsHasName(pc->prefix,"-pc_ilu_in_place")) {
+    PCILUSetUseInPlace(pc);
   }
   return 0;
 }
@@ -68,6 +102,7 @@ static int PCPrintHelp_ILU(PC pc)
   MPIU_printf(pc->comm," -mat_order name: ordering to reduce fill",p);
   MPIU_printf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   MPIU_printf(pc->comm," %spc_ilu_levels levels: levels of fill\n",p);
+  MPIU_printf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
   return 0;
 }
 
@@ -81,11 +116,11 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   if (lu->levels == 1)
-    MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",
-    lu->levels);
+    MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",lu->levels);
   else
-    MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",
-    lu->levels);
+    MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",lu->levels);
+  if (lu->inplace) MPIU_fprintf(pc->comm,fd,"         in-place factorization\n");
+  else MPIU_fprintf(pc->comm,fd,"         out-of-place factorization\n");
   if (lu->ordering == ORDER_NATURAL)  order = "Natural";
   else if (lu->ordering == ORDER_ND)  order = "Nested Dissection";
   else if (lu->ordering == ORDER_1WD) order = "One-way Dissection";
@@ -107,25 +142,42 @@ static int PCSetUp_ILU(PC pc)
   double      f;
   PC_ILU      *ilu = (PC_ILU *) pc->data;
 
-  ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
-  ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
-  if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
-  if (!pc->setupcalled) {
+  if (ilu->inplace) {
+    ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
+    ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
+    if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
     if (setups[pc->pmat->type]) {
       ierr = (*setups[pc->pmat->type])(pc);
     }
     f = 1.0 + .5*ilu->levels;
-    ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,f,ilu->levels,
-                                &ilu->fact); CHKERRQ(ierr);
-    PLogObjectParent(pc,ilu->fact);
+    /* this uses an arbritrary 5.0 as the fill factor! User may set
+       with the option -mat_ilu_fill */
+    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,f,ilu->levels); CHKERRQ(ierr);
+    ilu->fact = pc->pmat;
   }
-  else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
-    ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
-    ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,2.0,ilu->levels,
+  else {
+    ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
+    ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
+    if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
+    if (!pc->setupcalled) {
+      if (setups[pc->pmat->type]) {
+        ierr = (*setups[pc->pmat->type])(pc);
+      }
+      /* this uses an arbritrary 5.0 as the fill factor! User may set
+         with the option -mat_ilu_fill */
+      f = 1.0 + .5*ilu->levels;
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,f,ilu->levels,
                                 &ilu->fact); CHKERRQ(ierr);
-    PLogObjectParent(pc,ilu->fact);
+      PLogObjectParent(pc,ilu->fact);
+    }
+    else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
+      ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,2.0,ilu->levels,
+                                  &ilu->fact); CHKERRQ(ierr);
+      PLogObjectParent(pc,ilu->fact);
+    }
+    ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact); CHKERRQ(ierr);
   }
-  ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact); CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.87 1995/10/11 17:55:12 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.88 1995/10/12 13:41:03 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -986,11 +986,11 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
            op == YES_NEW_DIAGONALS)
     PLogInfo((PetscObject)A,"Info:MatSetOption_MPIAIJ:Option ignored\n");
   else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:COLUMN_ORIENTED not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:COLUMN_ORIENTED");}
   else if (op == NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:NO_NEW_DIAGONALS not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:NO_NEW_DIAGONALS");}
   else 
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:Option not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_MPIAIJ:unknown option");}
   return 0;
 }
 

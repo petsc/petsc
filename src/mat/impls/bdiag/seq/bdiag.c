@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.58 1995/10/11 03:53:33 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.59 1995/10/12 13:43:13 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1125,9 +1125,9 @@ static int MatSetOption_SeqBDiag(Mat A,MatOption op)
            op == STRUCTURALLY_SYMMETRIC_MATRIX)
     PLogInfo((PetscObject)A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
   else if (op == COLUMN_ORIENTED)
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:COLUMN_ORIENTED not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:COLUMN_ORIENTED");}
   else 
-    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:Option not supported");}
+    {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqBDiag:unknown option");}
   return 0;
 }
 
@@ -1253,6 +1253,7 @@ extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,int,Mat*);
 extern int MatLUFactorNumeric_SeqBDiag(Mat,Mat*);
 extern int MatLUFactor_SeqBDiag(Mat,IS,IS,double);
+extern int MatILUFactor_SeqBDiag(Mat,IS,IS,double,int);
 extern int MatSolve_SeqBDiag(Mat,Vec,Vec);
 extern int MatSolveAdd_SeqBDiag(Mat,Vec,Vec,Vec);
 extern int MatSolveTrans_SeqBDiag(Mat,Vec,Vec);
@@ -1276,7 +1277,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag, 0,
        0, 0, 0,
        MatGetSubMatrix_SeqBDiag, 0,
-       MatCopyPrivate_SeqBDiag, 0, 0 };
+       MatCopyPrivate_SeqBDiag, 0, 0,
+       MatILUFactor_SeqBDiag, 0, 0 };
 
 /*@C
    MatCreateSeqBDiag - Creates a sequential block diagonal matrix.
