@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.2 2000/12/04 21:14:37 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.3 2000/12/04 21:36:24 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -118,14 +118,14 @@ int main(int argc,char **argv)
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   UserCtx *user = (UserCtx*)dummy;
-  int     ierr,gxs,gxm,i,N;
+  int     ierr,xs,xm,i,N;
   Scalar  *u,*lambda,*w = user->w,*fu,*fw = user->fw,*flambda,d;
 
   PetscFunctionBegin;
 
   ierr = VecPackScatter(user->packer,U,user->w,user->u,user->lambda);CHKERRQ(ierr);
 
-  ierr = DAGetGhostCorners(user->da1,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetCorners(user->da1,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(user->da1,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAVecGetArray(user->da1,user->u,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecGetArray(user->da1,user->fu,(void**)&fu);CHKERRQ(ierr);
@@ -134,19 +134,19 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   d    = (N-1.0)*(N-1.0);
 
   /* derivative of L() w.r.t. w */
-  if (gxs == 0) { /* only first processor computes this */
+  if (xs == 0) { /* only first processor computes this */
     fw[0] = -d*lambda[0];
   }
 
   /* derivative of L() w.r.t. u */
-  for (i=gxs; i<gxs+gxm; i++) {
+  for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   fu[0]   = 2.*u[0]   + d*lambda[0]   + d*lambda[1];
     else if (i == N-1) fu[N-1] = 2.*u[N-1] + d*lambda[N-1] + d*lambda[N-2];
     else               fu[i]   = 2.*u[i]   + d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]);
   } 
 
   /* derivative of L() w.r.t. lambda */
-  for (i=gxs; i<gxs+gxm; i++) {
+  for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   flambda[0]   = d*u[0] - d*w[0];
     else if (i == N-1) flambda[N-1] = d*u[N-1];
     else               flambda[i]   = d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0;
