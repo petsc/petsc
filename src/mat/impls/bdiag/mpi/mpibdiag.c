@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.36 1995/10/04 15:06:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.37 1995/10/04 15:14:53 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -567,8 +567,6 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        0,0,0,
        0};
 
-extern int PCSetUp_BJacobiMPIBDiag(PC);
-
 /*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.
 
@@ -614,13 +612,12 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 {
   Mat          mat;
   Mat_MPIBDiag *mbd;
-  Mat_SeqBDiag *mlocal;
   int          ierr, i, k, *ldiag;
   Scalar       **ldiagv = 0;
 
   *newmat       = 0;
-  if ((N%nb)) 
-    SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad column number");
+  if (nb <= 0) SETERRQ(1,"MatCreateMPIBDiag:Blocksize must be positive");
+  if ((N%nb)) SETERRQ(1,"MatCreateMPIBDiag:Invalid block size - bad column number");
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
   PLogObjectCreate(mat);
   mat->data	= (void *) (mbd = PETSCNEW(Mat_MPIBDiag)); CHKPTRQ(mbd);
@@ -715,9 +712,6 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mbd->Mvctx     = 0;
   mbd->assembled = 0;
 
-  /* set preconditioner modules */
-  mat->pcsetups.bjacobi = PCSetUp_BJacobiMPIBDiag;
-
   *newmat = mat;
   return 0;
 }
@@ -748,8 +742,7 @@ $     diag = i/nb - j/nb  (integer division)
 
 .seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-int MatSeqBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
-                    Scalar ***diagv)
+int MatSeqBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,Scalar ***diagv)
 {
   Mat_MPIBDiag *pdmat;
   Mat_SeqBDiag *dmat;
@@ -767,5 +760,156 @@ int MatSeqBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
   *diag  = dmat->diag;
   *bdlen = dmat->bdlen;
   *diagv = dmat->diagv;
+  return 0;
+}
+
+#include "sysio.h"
+
+int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
+{
+  Mat          A;
+  int          i, nz, ierr, j,rstart, rend, fd;
+  Scalar       *vals,*svals;
+  PetscObject  vobj = (PetscObject) bview;
+  MPI_Comm     comm = vobj->comm;
+  MPI_Status   status;
+  int          header[4],mytid,numtid,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
+  int          *ourlens,*sndcounts = 0,*procsnz = 0, jj,*mycols,*smycols;
+  int          tag = ((PetscObject)bview)->tag;
+
+  MPI_Comm_size(comm,&numtid); MPI_Comm_rank(comm,&mytid);
+  if (!mytid) {
+    ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+    ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
+    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:not matrix object");
+  }
+
+  MPI_Bcast(header+1,3,MPI_INT,0,comm);
+  M = header[1]; N = header[2];
+  /* determine ownership of all rows */
+  m = M/numtid + ((M % numtid) > mytid);
+  rowners = (int *) PETSCMALLOC((numtid+2)*sizeof(int)); CHKPTRQ(rowners);
+  MPI_Allgather(&m,1,MPI_INT,rowners+1,1,MPI_INT,comm);
+  rowners[0] = 0;
+  for ( i=2; i<=numtid; i++ ) {
+    rowners[i] += rowners[i-1];
+  }
+  rstart = rowners[mytid]; 
+  rend   = rowners[mytid+1]; 
+
+  /* distribute row lengths to all processors */
+  ourlens = (int*) PETSCMALLOC( (rend-rstart)*sizeof(int) ); CHKPTRQ(ourlens);
+  if (!mytid) {
+    rowlengths = (int*) PETSCMALLOC( M*sizeof(int) ); CHKPTRQ(rowlengths);
+    ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
+    sndcounts = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(sndcounts);
+    for ( i=0; i<numtid; i++ ) sndcounts[i] = rowners[i+1] - rowners[i];
+    MPI_Scatterv(rowlengths,sndcounts,rowners,MPI_INT,ourlens,rend-rstart,MPI_INT,0,comm);
+    PETSCFREE(sndcounts);
+  }
+  else {
+    MPI_Scatterv(0,0,0,MPI_INT,ourlens,rend-rstart,MPI_INT, 0,comm);
+  }
+
+  if (!mytid) {
+    /* calculate the number of nonzeros on each processor */
+    procsnz = (int*) PETSCMALLOC( numtid*sizeof(int) ); CHKPTRQ(procsnz);
+    PetscZero(procsnz,numtid*sizeof(int));
+    for ( i=0; i<numtid; i++ ) {
+      for ( j=rowners[i]; j< rowners[i+1]; j++ ) {
+        procsnz[i] += rowlengths[j];
+      }
+    }
+    PETSCFREE(rowlengths);
+
+    /* determine max buffer needed and allocate it */
+    maxnz = 0;
+    for ( i=0; i<numtid; i++ ) {
+      maxnz = PETSCMAX(maxnz,procsnz[i]);
+    }
+    cols = (int *) PETSCMALLOC( maxnz*sizeof(int) ); CHKPTRQ(cols);
+
+    /* read in my part of the matrix column indices  */
+    nz = procsnz[0];
+    mycols = (int *) PETSCMALLOC( nz*sizeof(int) ); CHKPTRQ(mycols);
+    ierr = SYRead(fd,mycols,nz,SYINT); CHKERRQ(ierr);
+
+    /* read in every one elses and ship off */
+    for ( i=1; i<numtid; i++ ) {
+      nz = procsnz[i];
+      ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
+      MPI_Send(cols,nz,MPI_INT,i,tag,comm);
+    }
+    PETSCFREE(cols);
+  }
+  else {
+    /* determine buffer space needed for message */
+    nz = 0;
+    for ( i=0; i<m; i++ ) {
+      nz += ourlens[i];
+    }
+    mycols = (int*) PETSCMALLOC( nz*sizeof(int) ); CHKPTRQ(mycols);
+
+    /* receive message of column indices*/
+    MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);
+    MPI_Get_count(&status,MPI_INT,&maxnz);
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:something is wrong with file");
+  }
+
+  /* uses a block size of 1, this is not good! */
+  ierr = MatCreateMPIBDiag(comm,m,M,N,0,1,0,0,newmat);CHKERRQ(ierr);
+  A = *newmat;
+  MatSetOption(A,COLUMNS_SORTED); 
+
+  if (!mytid) {
+    vals = (Scalar *) PETSCMALLOC( maxnz*sizeof(Scalar) ); CHKPTRQ(vals);
+
+    /* read in my part of the matrix numerical values  */
+    nz = procsnz[0];
+    ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+    
+    /* insert into matrix */
+    jj      = rstart;
+    smycols = mycols;
+    svals   = vals;
+    for ( i=0; i<m; i++ ) {
+      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
+      smycols += ourlens[i];
+      svals   += ourlens[i];
+      jj++;
+    }
+
+    /* read in other processors and ship out */
+    for ( i=1; i<numtid; i++ ) {
+      nz = procsnz[i];
+      ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+      MPI_Send(vals,nz,MPIU_SCALAR,i,A->tag,comm);
+    }
+    PETSCFREE(procsnz);
+  }
+  else {
+    /* receive numeric values */
+    vals = (Scalar*) PETSCMALLOC( nz*sizeof(Scalar) ); CHKPTRQ(vals);
+
+    /* receive message of values*/
+    MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);
+    MPI_Get_count(&status,MPIU_SCALAR,&maxnz);
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:something is wrong with file");
+
+    /* insert into matrix */
+    jj      = rstart;
+    smycols = mycols;
+    svals   = vals;
+    for ( i=0; i<m; i++ ) {
+      ierr = MatSetValues(A,1,&jj,ourlens[i],smycols,svals,INSERT_VALUES);CHKERRQ(ierr);
+      smycols += ourlens[i];
+      svals   += ourlens[i];
+      jj++;
+    }
+  }
+  PETSCFREE(ourlens); PETSCFREE(vals); PETSCFREE(mycols); PETSCFREE(rowners);
+
+  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }

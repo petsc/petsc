@@ -38,7 +38,7 @@ extern void   *malloc(long unsigned int );
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern int    abort();
 extern int    exit(int);
-};
+}
 
 #else
 extern char   *getwd(char *);
@@ -85,7 +85,7 @@ extern void   perror(const char *);
 extern double atof(const char *);
 extern void   free(void *);
 extern void   *malloc(long unsigned int );
-};
+}
 
 #else
 extern char   *mktemp(char *);
@@ -109,7 +109,7 @@ extern int    abort();
 extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
-};
+}
 
 #else
 extern int    getdomainname(char *,int);
@@ -137,7 +137,7 @@ extern int    free(void *);
 extern void   *malloc(long unsigned int );
 extern int    abort();
 extern double rint(double);
-};
+}
 
 #else
 extern char   *getenv( char *);
@@ -162,7 +162,7 @@ extern void   *malloc(long unsigned int );
 extern int    readlink(const char *,char *,int);
 extern void   usleep(unsigned int);
 extern unsigned int sleep(unsigned int);
-};
+}
 
 #else
 extern char   *mktemp(char *);
@@ -241,7 +241,7 @@ extern int    abort();
 extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
-};
+}
 
 #else
 extern char   *getenv( char *);

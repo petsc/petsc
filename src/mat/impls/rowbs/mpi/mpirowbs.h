@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.19 1995/09/01 04:52:24 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.20 1995/09/12 03:25:35 bsmith Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -52,6 +52,8 @@ typedef struct {
   double     alpha;             /* restart for failed factorization */
   int        ierr;              /* BS factorization error */
   int        failures;          /* number of BS factorization failures */
+
+  int        mat_is_structurally_symmetric; 
 } Mat_MPIRowbs;
 
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {fprintf(stderr, \

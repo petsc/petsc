@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.11 1995/09/30 19:29:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.12 1995/10/01 02:27:08 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -15,7 +15,8 @@ static char vcid[] = "$Id: matio.c,v 1.11 1995/09/30 19:29:59 bsmith Exp bsmith 
 extern int MatLoad_MPIRowbs(Viewer,MatType,Mat *);
 extern int MatLoad_SeqAIJ(Viewer,MatType,Mat *);
 extern int MatLoad_SeqRow(Viewer,MatType,Mat *);
-extern int MatLoad_MPIAIJ(Viewer,MatType,Mat *);
+extern int MatLoad_MPIAIJorMPIRow(Viewer,MatType,Mat *);
+extern int MatLoad_MPIBDiag(Viewer,MatType,Mat *);
 
 /* @
    MatLoad - Loads a matrix that has been stored in binary format
@@ -61,7 +62,10 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
     ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATMPIAIJ || type == MATMPIROW) {
-    ierr = MatLoad_MPIAIJ(bview,type,newmat); CHKERRQ(ierr);
+    ierr = MatLoad_MPIAIJorMPIRow(bview,type,newmat); CHKERRQ(ierr);
+  }
+  else if (type == MATMPIBDIAG) {
+    ierr = MatLoad_MPIBDiag(bview,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATSEQROW) {
     ierr = MatLoad_SeqRow(bview,type,newmat); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjmpiaij.c,v 1.20 1995/10/01 21:52:09 bsmith Exp $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.1 1995/10/04 03:24:11 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: bjmpiaij.c,v 1.20 1995/10/01 21:52:09 bsmith Exp $";
    This file knows about storage formats for MPIAIJ matrices.
    This code is nearly identical to that for the MPIROW format;
 */
-#include "src/mat/impls/aij/mpi/mpiaij.h"
-#include "pcimpl.h"
-#include "bjacobi.h"
+#include "mpiaij.h"
+#include "src/pc/pcimpl.h"
+#include "src/pc/impls/bjacobi/bjacobi.h"
 #include "sles.h"
 
 typedef struct {
@@ -108,4 +108,5 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
 
   return 0;
 }
+
 

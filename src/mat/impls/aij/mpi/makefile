@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq \
            $(CONF)
-SOURCEC  = mpiaij.c mmaij.c maijfact.c
+SOURCEC  = mpiaij.c mmaij.c maijfact.c mpiaijpc.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = mpiaij.o mmaij.o maijfact.o
+OBJSC    = mpiaij.o mmaij.o maijfact.o mpiaijpc.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = order

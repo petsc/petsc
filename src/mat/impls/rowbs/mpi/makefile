@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq \
            $(BS_INCLUDE) $(CONF) -D__DIR__='"mat/impls/rowbs/mpi/"'
-SOURCEC  = mpirowbs.c cholbs.c
+SOURCEC  = mpirowbs.c cholbs.c ilubs.c iccbs.c
 SOURCEF  =
 SOURCEH  = mpirowbs.h
-OBJSC    = mpirowbs.o cholbs.o
+OBJSC    = mpirowbs.o cholbs.o ilubs.o iccbs.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     =

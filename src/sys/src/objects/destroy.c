@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.14 1995/09/06 03:04:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.15 1995/10/01 21:51:51 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
@@ -62,7 +62,7 @@ extern "C" {
 #endif
 extern void sleep(int);
 #if defined(__cplusplus)
-};
+}
 #endif
 
 /*@

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.27 1995/09/21 20:10:03 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.28 1995/10/01 21:52:24 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -37,20 +37,8 @@ struct _MatOps {
             (*getsubmatrixinplace)(Mat,IS,IS),
             (*copyprivate)(Mat,Mat *),
             (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec),
-            (*ilufactor)(Mat,IS,IS,double),
+            (*ilufactor)(Mat,IS,IS,double,int),
             (*incompletecholeskyfactor)(Mat,IS,double);
-};
-
-/*   
-     Each matrix has to know how to set up its own (matrix specific) preconditioners
-     Note that this introduces a loop in the "inheritence" tree. 
-*/
-#include "pc.h"
-
-struct _PCSetUps  {
-  int (*icc)(PC);
-  int (*ilu)(PC);
-  int (*bjacobi)(PC);
 };
 
 #define FACTOR_LU       1
@@ -62,7 +50,6 @@ struct _Mat {
   void             *data;
   int              factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
   double           lupivotthreshold;
-  struct _PCSetUps pcsetups;
 };
 
 /* Since most (all?) of the parallel matrix assemblies use this stashing,

@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq \
            $(CONF)
-SOURCEC  = mmbdiag.c mpibdiag.c
+SOURCEC  = mmbdiag.c mpibdiag.c mpibdpc.c
 SOURCEF  =
 SOURCEH  = mpibdiag.h
-OBJSC    = mmbdiag.o mpibdiag.o
+OBJSC    = mmbdiag.o mpibdiag.o mpibdpc.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = 2

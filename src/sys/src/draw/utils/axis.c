@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.20 1995/08/24 22:30:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.21 1995/09/30 19:30:45 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: axis.c,v 1.20 1995/08/24 22:30:18 bsmith Exp bsmith $
 #if defined(PARCH_alpha) && defined(__cplusplus)
 extern "C" {
 extern double   rint(double);
-};
+}
 #endif
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.92 1995/09/30 19:28:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.93 1995/10/01 21:52:32 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -836,44 +836,92 @@ static int MatScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n;
-  int        *irow, *icol, nrows, ncols, *cwork, shift = a->indexshift;
+  int        nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
+  int        *irow, *icol, nrows, ncols, *cwork, shift = a->indexshift,*ssmap;
+  int        first,step,*starts;
   Scalar     *vwork;
   Mat        C;
 
   if (!a->assembled) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:Not for unassembled matrix");  
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
-
-  smap  = (int *) PETSCMALLOC((1+oldcols)*sizeof(int)); CHKPTRQ(smap);
-  cwork = (int *) PETSCMALLOC((1+ncols)*sizeof(int)); CHKPTRQ(cwork);
-  vwork = (Scalar *) PETSCMALLOC((1+ncols)*sizeof(Scalar)); CHKPTRQ(vwork);
-  PetscZero(smap,oldcols*sizeof(int));
-  for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
-
-  /* Create and fill new matrix */
-  ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,0,&C);CHKERRQ(ierr);
-  for (i=0; i<nrows; i++) {
-    nznew  = 0;
-    kstart = a->i[irow[i]]+shift; 
-    kend   = kstart + a->ilen[irow[i]];
-    for ( k=kstart; k<kend; k++ ) {
-      if (smap[a->j[k]+shift]) {
-        cwork[nznew]   = smap[a->j[k]+shift] - 1;
-        vwork[nznew++] = a->a[k];
+  
+  if (ISStrideGetInfo(iscol,&first,&step) && step == 1) {
+    /* special case of contiguous rows */
+    cwork  = (int *) PETSCMALLOC((3*ncols+1)*sizeof(int)); CHKPTRQ(cwork);
+    lens   = cwork + ncols;
+    starts = lens + ncols;
+    /* loop over new rows determining lens and starting points */
+    for (i=0; i<nrows; i++) {
+      kstart  = a->i[irow[i]]+shift; 
+      kend    = kstart + a->ilen[irow[i]];
+      for ( k=kstart; k<kend; k++ ) {
+        if (a->j[k] >= first) {
+          starts[i] = k;
+          break;
+	}
+      }
+      lens[i] = 0;
+      while (k < kend) {
+        if (a->j[k++] >= first+ncols) break;
+        lens[i]++;
       }
     }
-    ierr = MatSetValues(C,1,&i,nznew,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
+    /* create submatrix */
+    ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+    /* loop over rows inserting into submatrix */
+    for (i=0; i<nrows; i++) {
+      for ( k=0; k<lens[i]; k++ ) {
+        cwork[k] = a->j[k+starts[i]] - first;
+      }
+      vwork = a->a + starts[i];
+      ierr = MatSetValues(C,1,&i,lens[i],cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    PETSCFREE(cwork);
+  }
+  else {
+    ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
+    smap  = (int *) PETSCMALLOC((1+oldcols)*sizeof(int)); CHKPTRQ(smap);
+    ssmap = smap + shift;
+    cwork = (int *) PETSCMALLOC((1+2*ncols)*sizeof(int)); CHKPTRQ(cwork);
+    lens  = cwork + ncols;
+    vwork = (Scalar *) PETSCMALLOC((1+ncols)*sizeof(Scalar)); CHKPTRQ(vwork);
+    PetscZero(smap,oldcols*sizeof(int));
+    for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
+    /* determine lens of each row */
+    for (i=0; i<nrows; i++) {
+      kstart  = a->i[irow[i]]+shift; 
+      kend    = kstart + a->ilen[irow[i]];
+      lens[i] = 0;
+      for ( k=kstart; k<kend; k++ ) {
+        if (ssmap[a->j[k]]) {
+          lens[i]++;
+        }
+      }
+    }
+    /* Create and fill new matrix */
+    ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+    for (i=0; i<nrows; i++) {
+      nznew  = 0;
+      kstart = a->i[irow[i]]+shift; 
+      kend   = kstart + a->ilen[irow[i]];
+      for ( k=kstart; k<kend; k++ ) {
+        if (ssmap[a->j[k]]) {
+          cwork[nznew]   = ssmap[a->j[k]] - 1;
+          vwork[nznew++] = a->a[k];
+        }
+      }
+      ierr = MatSetValues(C,1,&i,nznew,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
+    }
+    /* Free work space */
+    ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
+    PETSCFREE(smap); PETSCFREE(cwork); PETSCFREE(vwork);
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-  /* Free work space */
-  PETSCFREE(smap); PETSCFREE(cwork); PETSCFREE(vwork);
   ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
   *B = C;
   return 0;
 }

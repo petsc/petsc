@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.7 1995/07/17 20:43:22 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.8 1995/08/07 22:02:01 bsmith Exp bsmith $ */
 /*
    This is to provide some name space protection from Lapack and Blas 
 allow the appropriate single or double precision version to be used.
@@ -242,7 +242,7 @@ extern void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 #endif
 
 #if defined(__cplusplus)
-};
+}
 #endif
 
 #endif

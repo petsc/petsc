@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.18 1995/08/21 18:11:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.19 1995/08/24 22:27:16 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -30,7 +30,7 @@ int ieee_flags(char*,char*,char*,char**);
 int ieee_handler(char *,char *,
                  sigfpe_handler_type(int,int,struct sigcontext*,char *));
 #if defined(__cplusplus)
-};
+}
 #endif
 struct { int code_no; char *name; } error_codes[] = {
        { FPE_INTDIV_TRAP	, "integer divide" } ,

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.44 1995/10/02 20:15:28 gropp Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.45 1995/10/02 20:19:12 curfman Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -208,7 +208,7 @@ void abort_function(MPI_Comm *comm,int *flag)
 #if defined(PARCH_sun4) && defined(__cplusplus)
 extern "C" {
   extern int malloc_debug(int);
-};
+}
 #elif defined(PARCH_sun4)
   extern int malloc_debug(int);
 #endif

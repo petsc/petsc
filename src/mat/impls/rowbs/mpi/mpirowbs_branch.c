@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.66 1995/10/01 02:26:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.67 1995/10/03 18:38:37 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -355,7 +355,12 @@ static int MatSetValues_MPIRowbs(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
       ierr = StashValues_Private(&mrow->stash,im[i],n,in,v+i*n,av);CHKERRQ(ierr);
     }
   }
-  if (mrow->mat_is_symmetric) return 0;
+
+  /*
+     user has indicated that they are building a symmetric matrix and will 
+     insert all of the values.
+  */
+  if (mrow->mat_is_structurally_symmetric) return 0;
 
   /* The following code adds zeros to the symmetric counterpart (ILU) */
   /* this is only needed to insure that the matrix is structurally symmetric */
@@ -1128,7 +1133,13 @@ static int MatSetOption_MPIRowbs(Mat mat,MatOption op)
   else if (op == COLUMNS_SORTED)            mrow->sorted      = 1;
   else if (op == NO_NEW_NONZERO_LOCATIONS)  mrow->nonew       = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) mrow->nonew       = 0;
-  else if (op == SYMMETRIC_MATRIX)          mrow->mat_is_symmetric = 1;
+  else if (op == SYMMETRIC_MATRIX){
+    mrow->mat_is_symmetric = 1;
+    mrow->mat_is_structurally_symmetric = 1;
+  }
+  else if (op == STRUCTURALLY_SYMMETRIC_MATRIX){
+    mrow->mat_is_structurally_symmetric = 1;
+  }
   else if (op == COLUMN_ORIENTED) 
     SETERRQ(1,"MatSetOption_MPIRowbs:Column oriented not supported");
   return 0;
@@ -1323,6 +1334,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   mrow->n    = mrow->N; /* each row stores all columns */
   mrow->imax = (int *) PETSCMALLOC( (mrow->m+1)*sizeof(int) );CHKPTRQ(mrow->imax);
   mrow->mat_is_symmetric = 0;
+  mrow->mat_is_structurally_symmetric = 0;
 
   /* build local table of row ownerships */
   mrow->rowners = (int *) PETSCMALLOC((mrow->numtids+2)*sizeof(int));CHKPTRQ(mrow->rowners);
@@ -1582,9 +1594,9 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
  
   }
   PETSCFREE(rowners);
+  mrow->nz = mrow->maxnz;
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  mrow->nz = header[3];
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.83 1995/10/01 21:52:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.84 1995/10/03 18:38:30 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1425,7 +1425,7 @@ static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat)
 
 #include "sysio.h"
 
-int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
+int MatLoad_MPIAIJorMPIRow(Viewer bview,MatType type,Mat *newmat)
 {
   Mat          A;
   int          i, nz, ierr, j,rstart, rend, fd;
@@ -1441,7 +1441,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
   if (!mytid) {
     ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
-    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJ:not matrix object");
+    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:not matrix object");
   }
 
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
@@ -1514,7 +1514,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
     /* receive message of column indices*/
     MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);
     MPI_Get_count(&status,MPI_INT,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIRowbs:something is wrong with file");
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:something is wrong with file");
   }
 
   /* loop over local rows, determining number of off diagonal entries */
@@ -1577,7 +1577,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
     /* receive message of values*/
     MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);
     MPI_Get_count(&status,MPIU_SCALAR,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIRowbs:something is wrong with file");
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

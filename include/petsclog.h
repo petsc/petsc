@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.17 1995/09/13 01:44:45 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.18 1995/09/30 19:31:53 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -41,6 +41,7 @@
 #define MAT_BackwardSolve                       26
 #define MAT_Load                                27
 #define MAT_View                                28
+#define MAT_ILUFactor                           29
 
 #define VEC_Dot                                 30
 #define VEC_Norm                                31
@@ -79,7 +80,9 @@
 #define SNES_GradientEval                       65
 #define SNES_HessianEval                        66
 
-/* event numbers 70 to 89 are reserved for applications */
+#define MAT_GetSubMatrix                        70
+
+/* event numbers 80 to 99 are reserved for applications */
 
 /* Global flop counter */
 extern double _TotalFlops;
