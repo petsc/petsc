@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.9 1996/08/08 14:45:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.10 1996/09/11 02:54:25 bsmith Exp bsmith $";
 #endif
 /*
        Code for Time Stepping with implicit backwards Euler.
@@ -211,7 +211,8 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
     ierr = MatScale(&mone,*AA); CHKERRQ(ierr);
     ierr = MatShift(&mdt,*AA); CHKERRQ(ierr);
   }
-  if (*BB != *AA && *str != SAME_PRECONDITIONER) {
+  ierr = MatGetType(*BB,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  if (*BB != *AA && *str != SAME_PRECONDITIONER && mtype != MATSHELL) {
     ierr = MatScale(&mone,*BB); CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB); CHKERRQ(ierr);
   }
