@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.115 1999/03/18 03:43:43 bsmith Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.116 1999/03/19 01:10:51 balay Exp bsmith $ 
 #endif
 
 /*
@@ -230,8 +230,13 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
   Draw        draw;
   double      *xx,*yy;
   DrawLG      lg;
+  PetscTruth  isnull;
 
   PetscFunctionBegin;
+  ierr = ViewerDrawGetDraw(v,0,&draw); CHKERRQ(ierr);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
   ierr = ViewerDrawGetDrawLG(v,0,&lg); CHKERRQ(ierr);
   ierr = DrawLGGetDraw(lg,&draw); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.315 1999/03/24 15:20:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.316 1999/03/26 00:38:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -568,7 +568,6 @@ int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   int        ierr;
   Draw       draw;
   double     xr,yr,xl,yl,h,w;
-
   PetscTruth isnull;
 
   PetscFunctionBegin;
