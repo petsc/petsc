@@ -551,7 +551,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k]; 
     if (row < 0) continue;
-#if defined(PETSC_USE_BOPT_g)  
+#if defined(PETSC_USE_DEBUG)  
     if (row >= a->mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,a->mbs-1);
 #endif
     rp   = aj + ai[row]; 
@@ -562,7 +562,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
       col = in[l]; 
-#if defined(PETSC_USE_BOPT_g)  
+#if defined(PETSC_USE_DEBUG)  
       if (col >= a->nbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",col,a->nbs-1);
 #endif
       if (col < row) continue; /* ignore lower triangular block */
@@ -782,13 +782,6 @@ PetscErrorCode MatZeroRows_SeqSBAIJ_Check_Blocks(PetscInt idx[],PetscInt n,Petsc
   PetscFunctionReturn(0);
 }
   
-#undef __FUNCT__  
-#define __FUNCT__ "MatZeroRows_SeqSBAIJ"
-PetscErrorCode MatZeroRows_SeqSBAIJ(Mat A,IS is,const PetscScalar *diag)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"No support for this function yet");
-}
 
 /* Only add/insert a(i,j) with i<=j (blocks). 
    Any a(i,j) with i>j input by user is ingored. 
@@ -812,7 +805,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
     row  = im[k];       /* row number */ 
     brow = row/bs;      /* block row number */ 
     if (row < 0) continue;
-#if defined(PETSC_USE_BOPT_g)  
+#if defined(PETSC_USE_DEBUG)  
     if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->m-1);
 #endif
     rp   = aj + ai[brow]; /*ptr to beginning of column value of the row block*/
@@ -823,7 +816,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
 
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)  
+#if defined(PETSC_USE_DEBUG)  
       if (in[l] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->m-1);
 #endif
       col = in[l]; 
@@ -1272,7 +1265,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        MatSetOption_SeqSBAIJ,
        MatZeroEntries_SeqSBAIJ,
-/*25*/ MatZeroRows_SeqSBAIJ,
+/*25*/ 0,
        0,
        0,
        MatCholeskyFactorSymbolic_SeqSBAIJ,

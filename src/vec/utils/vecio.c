@@ -73,22 +73,32 @@ and PetscWriteBinary() to see how this may be done.
 PetscErrorCode VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
 {
   PetscErrorCode ierr;
-  PetscTruth     isbinary,isnetcdf,flg;
+  PetscTruth     isbinary,flg;
   char           vtype[256],*prefix;
+#if defined(PETSC_HAVE_PNETCDF)
+  PetscTruth     isnetcdf;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidPointer(newvec,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
   if ((!isbinary) && (!isnetcdf)) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary or NetCDF viewer");
+#else
+  if (!isbinary)  SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
+#endif
 
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
+#if defined(PETSC_HAVE_PNETCDF)
   if (isnetcdf) {
     ierr = VecLoad_Netcdf(viewer,newvec);CHKERRQ(ierr);
-  } else {
+  } else
+#endif
+  {
     Vec            factory;
     MPI_Comm       comm;
     PetscErrorCode (*r)(PetscViewer,const VecType,Vec*);
@@ -120,11 +130,11 @@ PetscErrorCode VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_PNETCDF)
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Netcdf"
 PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 {
-#if defined(PETSC_HAVE_PNETCDF)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,N,n,bs;
@@ -163,11 +173,8 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#else
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with NetCDF to use this viewer");
-#endif
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"
@@ -251,45 +258,56 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec
     nierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(nierr);
     nierr = -1; MPI_Bcast(&nierr,1,MPIU_INT,0,comm);
     SETERRQ(ierr,"Error loading vector");
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Default"
 PetscErrorCode VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 {
-  PetscTruth isbinary,isnetcdf;
+  PetscTruth     isbinary;
+#if defined(PETSC_HAVE_PNETCDF)
+  PetscTruth     isnetcdf;
+#endif
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
   if ((!isbinary) && (!isnetcdf)) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary or NetCDF viewer");
+#else
+  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
+#endif
 
+#if defined(PETSC_HAVE_PNETCDF)
   if (isnetcdf) {
     ierr = VecLoadIntoVector_Netcdf(viewer,vec);CHKERRQ(ierr);
-  } else {
+  } else 
+#endif
+  {
     ierr = VecLoadIntoVector_Binary(viewer,vec);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_PNETCDF)
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Netcdf"
 PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 {
-#if defined(PETSC_HAVE_PNETCDF)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt         i,N,rows,n,bs;
-  PetscInt         ncid,start;
-  PetscScalar *avec;
-  MPI_Comm    comm;
-  MPI_Request request;
-  MPI_Status  status;
-  PetscMap    map;
-  PetscTruth  isnetcdf,flag;
-  char        name[NC_MAX_NAME];
+  PetscInt       i,N,rows,n,bs;
+  PetscInt       ncid,start;
+  PetscScalar    *avec;
+  MPI_Comm       comm;
+  MPI_Request    request;
+  MPI_Status     status;
+  PetscMap       map;
+  PetscTruth     isnetcdf,flag;
+  char           name[NC_MAX_NAME];
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
@@ -315,11 +333,8 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#else
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with NetCDF to use this viewer");
-#endif
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Binary"

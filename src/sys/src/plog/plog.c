@@ -1390,7 +1390,7 @@ PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[])
     "------------------------------------------------------------------------------------------------------------------------\n");
                                                                                                           CHKERRQ(ierr);
 
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   ierr = PetscFPrintf(comm, fd, "\n\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "      #                                                        #\n");CHKERRQ(ierr);

@@ -208,7 +208,7 @@ void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,PetscErrorCode (PETSC_STDCALL *rhs)(
 
 #endif
 
-#if defined (PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined (PETSC_HAVE_ADIC)
 void PETSC_STDCALL matregisterdaad_(PetscErrorCode *ierr)
 {
   *ierr = MatRegisterDAAD();

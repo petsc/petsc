@@ -10,7 +10,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 /* Prepare for use of SSE instructions */
 
-#ifdef PETSC_USE_BOPT_g
+#ifdef PETSC_USE_DEBUG
 typedef struct {float field[4];} _sse_register;
 #  define SSE_SCOPE_BEGIN { float _aligned_stack[35]; \
                             _sse_register *XMM0,*XMM1,*XMM2,*XMM3,*XMM4,*XMM5,*XMM6,*XMM7; \
@@ -32,7 +32,7 @@ typedef struct {float field[4];} _sse_register;
 
 /* For use with SSE Inlined Assembly Blocks */
 /* Note: SSE_ macro invokations must NOT be followed by a ; */
-#ifdef PETSC_USE_BOPT_g
+#ifdef PETSC_USE_DEBUG
 #  define SSE_INLINE_BEGIN_0                 SSE_INLINE_BEGIN_3(NULL,NULL,NULL)
 #  define SSE_INLINE_END_0                   SSE_INLINE_END_3
 
@@ -70,7 +70,7 @@ typedef struct {float field[4];} _sse_register;
 #define _SSE_STORE_REG(reg)                  AV(SSE_STORE_PS(SSE_ARG_1,FLOAT_0,reg) : : "r"(reg) )
 #define _SSE_INLINE_RESUME                   __asm__ __volatile__ (
 
-#ifdef PETSC_USE_BOPT_g
+#ifdef PETSC_USE_DEBUG
 #  define _SSE_DEBUG_REG(reg)                  _SSE_INLINE_HALT; _SSE_STORE_REG(reg); _SSE_INLINE_RESUME
 #else
 #  define _SSE_DEBUG_REG(reg)

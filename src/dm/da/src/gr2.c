@@ -254,11 +254,11 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
 EXTERN PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, PetscInt d, PetscInt *dims);
 
+#if defined(PETSC_HAVE_HDF4)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_HDF4_DA2d"
 PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
   PetscInt dims[2];
   DA  da;
@@ -277,19 +277,15 @@ PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
   ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
   ierr = VecView_MPI_HDF4_Ex(natural, viewer, 2, dims);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
-#else /* !defined(PETSC_HAVE_HDF4) */
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with HDF4 to use this viewer");
-#endif    
 }
+#endif
 
+#if defined(PETSC_HAVE_PNETCDF)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Netcdf_DA"
 PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_PNETCDF)
   PetscErrorCode ierr;
   PetscInt ncid,xstart,xdim_num=1;
   PetscInt            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
@@ -356,13 +352,9 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   ierr = VecDestroy(natural);CHKERRQ(ierr);
   ierr = VecDestroy(xyz);CHKERRQ(ierr);
   ierr = DADestroy(dac);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
-#else /* !defined(PETSC_HAVE_PNETCDF) */
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with NETCDF to use this viewer");
-#endif    
 }
+#endif
 
 EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
@@ -371,19 +363,29 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecView_MPI_DA"
 PetscErrorCode VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
-  DA         da;
+  DA             da;
   PetscErrorCode ierr;
-  PetscInt dim;
-  Vec        natural;
-  PetscTruth isdraw,ishdf4,isnetcdf;
-  char       *prefix;
+  PetscInt       dim;
+  Vec            natural;
+  PetscTruth     isdraw;
+#if defined(PETSC_HAVE_HDF4)
+  PetscTruth     ishdf4;
+#endif
+#if defined(PETSC_HAVE_PNETCDF)
+  PetscTruth     isnetcdf;
+#endif
+  char           *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF4)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+#endif
   if (isdraw) {
     ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     if (dim == 1) {
@@ -393,6 +395,7 @@ PetscErrorCode VecView_MPI_DA(Vec xin,PetscViewer viewer)
     } else {
       SETERRQ1(PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DA %D",dim);
     }
+#if defined(PETSC_HAVE_HDF4)
   } else if (ishdf4) {
     ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     switch (dim) {
@@ -402,8 +405,11 @@ PetscErrorCode VecView_MPI_DA(Vec xin,PetscViewer viewer)
     default:
       SETERRQ1(PETSC_ERR_SUP,"Cannot view HDF4 vector associated with this dimensional DA %D",dim);
     }
+#endif
+#if defined(PETSC_HAVE_PNETCDF)
   } else if (isnetcdf) {
     ierr = VecView_MPI_Netcdf_DA(xin,viewer);CHKERRQ(ierr);
+#endif
   } else {
     /* call viewer on natural ordering */
     ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
@@ -425,10 +431,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecLoadIntoVector_Binary_DA"
 PetscErrorCode VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
 {
-  DA   da;
+  DA             da;
   PetscErrorCode ierr;
-  Vec  natural;
-  char *prefix;
+  Vec            natural;
+  char           *prefix;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);

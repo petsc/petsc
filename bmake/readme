@@ -1,4 +1,0 @@
-
-  The bmake directory contains all the base makefiles that are 
-included in your actual makefile. See the users manual for a 
-description of all the flags and rules in the makefiles.

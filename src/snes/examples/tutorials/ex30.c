@@ -1077,7 +1077,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     }    
 
     if (param->output_to_file)
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
       PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Mat file \"%s\"\n",param->filename);
 #else
       PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);
@@ -1200,7 +1200,7 @@ PetscErrorCode DoOutput(DMMG *dmmg, PetscInt its)
     ierr = VecAssemblyBegin(pars);CHKERRQ(ierr); ierr = VecAssemblyEnd(pars);CHKERRQ(ierr); 
 
     /* create viewer */
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
     ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,param->filename,PETSC_FILE_CREATE,&viewer);CHKERRQ(ierr);
 #else
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,param->filename,PETSC_FILE_CREATE,&viewer);CHKERRQ(ierr);

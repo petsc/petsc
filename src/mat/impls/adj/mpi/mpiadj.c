@@ -341,13 +341,13 @@ PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscInt *i,PetscInt *j,Pe
 {
   Mat_MPIAdj     *b = (Mat_MPIAdj *)B->data;
   PetscErrorCode ierr;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   PetscInt       ii;
 #endif
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   if (i[0] != 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
   for (ii=1; ii<B->m; ii++) {
     if (i[ii] < 0 || i[ii] < i[ii-1]) {

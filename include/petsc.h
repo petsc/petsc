@@ -301,7 +301,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2))
 #else
 #define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2),r1) || (*(r2) = (t2*)(*(r1)+m1),0))
@@ -335,7 +335,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3))
 #else
 #define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),0))
@@ -372,7 +372,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4))
 #else
 #define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),0))
@@ -412,7 +412,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5))
 #else
 #define PetscMalloc5(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),*(r5) = (t5*)(*(r4)+m4),0))
@@ -456,7 +456,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5) || PetscMalloc((m6)*sizeof(t6),r6))
 #else
 #define PetscMalloc6(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),*(r5) = (t5*)(*(r4)+m4),*(r6) = (t6*)(*(r5)+m5),0))
@@ -523,7 +523,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree2(m1,m2)   (PetscFree(m1))
@@ -550,7 +550,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree3(m1,m2,m3)   (PetscFree(m1))
@@ -578,7 +578,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree4(m1,m2,m3,m4)   (PetscFree(m1))
@@ -607,7 +607,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscFree5(m1,m2,m3,m4,m5)   (PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree5(m1,m2,m3,m4,m5)   (PetscFree(m1))
@@ -638,7 +638,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m1))

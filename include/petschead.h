@@ -127,7 +127,16 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 
 /* ---------------------------------------------------------------------------------------*/
 
-#if !defined(PETSC_HAVE_CRAY90_POINTER)
+#if !defined(PETSC_USE_DEBUG)
+
+#define PetscValidHeaderSpecific(h,ck,arg)
+#define PetscValidHeader(h,arg)
+#define PetscValidPointer(h,arg)
+#define PetscValidCharPointer(h,arg)
+#define PetscValidIntPointer(h,arg)
+#define PetscValidScalarPointer(h,arg)
+
+#elif !defined(PETSC_HAVE_CRAY90_POINTER)
 /* 
     Macros to test if a PETSc object is valid and if pointers are
 valid
@@ -235,6 +244,15 @@ valid
 #endif
 #define PetscValidDoublePointer(h,arg) PetscValidScalarPointer(h,arg)
 
+#if !defined(PETSC_USE_DEBUG)
+
+#define PetscCheckSameType(a,arga,b,argb)
+#define PetscValidType(a,arg)
+#define PetscCheckSameComm(a,arga,b,argb)
+#define PetscCheckSameTypeAndComm(a,arga,b,argb)
+
+#else
+
 /*
     For example, in the dot product between two vectors,
   both vectors must be either Seq or MPI, not one of each 
@@ -258,6 +276,8 @@ valid
 #define PetscCheckSameTypeAndComm(a,arga,b,argb) {\
   PetscCheckSameType(a,arga,b,argb);\
   PetscCheckSameComm(a,arga,b,argb);}
+
+#endif
 
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.

@@ -295,7 +295,7 @@ PetscErrorCode StageLogGetCurrent(StageLog stageLog, int *stage)
   } else {
     ierr = StackTop(stageLog->stack, stage);CHKERRQ(ierr);
   }
-#ifdef PETSC_USE_BOPT_g
+#ifdef PETSC_USE_DEBUG
   if (*stage != stageLog->curStage) {
     SETERRQ2(PETSC_ERR_PLIB, "Inconsistency in stage log: stage %d should be %d", *stage, stageLog->curStage);
   }

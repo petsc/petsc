@@ -210,7 +210,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
     if (im[i] >= mat->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->M-1);
 #endif
     if (im[i] >= rstart && im[i] < rend) {
@@ -223,7 +223,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
         else if (in[j] >= mat->N) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->N-1);}
 #endif
         else {
@@ -1680,7 +1680,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*70*/ 0,
        0,
        MatSetColoring_MPIAIJ,
+#if defined(PETSC_HAVE_ADIC)
        MatSetValuesAdic_MPIAIJ,
+#else
+       0,
+#endif
        MatSetValuesAdifor_MPIAIJ,
 /*75*/ 0,
        0,
@@ -2675,6 +2679,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_ADIC)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesAdic_MPIAIJ"
 PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat A,void *advalues)
@@ -2687,6 +2692,7 @@ PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat A,void *advalues)
   ierr = MatSetValuesAdic_SeqAIJ(a->B,advalues);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesAdifor_MPIAIJ"
@@ -3556,7 +3562,7 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
   PetscMPIInt            *rprocs,*sprocs,tag=ctx->tag,rank; 
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->n,row,*b_othi,*b_othj;
   PetscScalar            *rvalues,*svalues,*b_otha,*bufa,*bufA;
-  PetscInt               i,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj,*sstarts,*sstartsj,len;
+  PetscInt               i,k,l,nrecvs,nsends,nrows,*rrow,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             *sstatus,rstatus;
   PetscInt               *cols;

@@ -18,13 +18,13 @@ int main(int argc,char **argv)
   PetscScalar    value;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscViewer    mviewer;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",PETSC_FILE_CREATE,&mviewer);CHKERRQ(ierr);
 #endif
 
@@ -53,13 +53,13 @@ int main(int argc,char **argv)
 
   ierr = DAView(da,viewer);CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   ierr = DAView(da,mviewer);CHKERRQ(ierr);
   ierr = VecView(global,mviewer);CHKERRQ(ierr);
 #endif
 
   /* Free memory */
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_MATLAB)
   ierr = PetscViewerDestroy(mviewer);CHKERRQ(ierr);
 #endif
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

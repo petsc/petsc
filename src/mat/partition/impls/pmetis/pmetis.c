@@ -54,7 +54,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   if (!(vtxdist[rank+1] - vtxdist[rank])) {
     SETERRQ(PETSC_ERR_LIB,"Does not support any processor with no entries");
   }
-#if defined(PETSC_USE_BOPT_g)
+#if defined(PETSC_USE_DEBUG)
   /* check that matrix has no diagonal entries */
   {
     int rstart;
