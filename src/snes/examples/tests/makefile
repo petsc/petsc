@@ -104,13 +104,11 @@ runex6:
            if (diff output/ex6_1.out ex6_1.tmp) then true; \
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
-
 runex7:
 	-@$(MPIRUN) ex7 -snes_smonitor  > ex7_1.tmp 2>&1;   \
            if (diff output/ex7_1.out ex7_1.tmp) then true; \
            else echo "Possible problem with ex7_1, diffs above"; fi; \
            $(RM) -f ex7_1.tmp
-
 runex8:
 	-@$(MPIRUN) -np 2 ex8 -snes_smonitor  > ex8_1.tmp 2>&1;   \
            if (diff output/ex8_1.out ex8_1.tmp) then true; \
