@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.52 2000/07/10 18:56:33 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.53 2000/08/01 20:01:21 bsmith Exp $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -431,8 +431,8 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   if (size == 1) {
     *nproc    = 0;
     *procs    = PETSC_NULL;
-    *numprocs = PETSC_NULL;
-    *indices  = PETSC_NULL;
+    *numprocs = (int* )PetscMalloc(sizeof(int ));CHKPTRQ(*numprocs); (*numprocs)[0] = 0;
+    *indices  = (int**)PetscMalloc(sizeof(int*));CHKPTRQ(*indices ); (*indices)[0]  = PETSC_NULL;
     PetscFunctionReturn(0);
   }
 
@@ -829,10 +829,11 @@ int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,int *nproc,
   int ierr,i;
 
   PetscFunctionBegin;
-  if (procs) {ierr = PetscFree(*procs);CHKERRQ(ierr);}
-  if (numprocs) {ierr = PetscFree(*numprocs);CHKERRQ(ierr);}
-  if (indices) {
-    for (i=0; i<*nproc; i++) {
+  if (*procs) {ierr = PetscFree(*procs);CHKERRQ(ierr);}
+  if (*numprocs) {ierr = PetscFree(*numprocs);CHKERRQ(ierr);}
+  if (*indices) {
+    if ((*indices)[0]) {ierr = PetscFree((*indices)[0]);CHKERRQ(ierr);}
+    for (i=1; i<*nproc; i++) {
       if ((*indices)[i]) {ierr = PetscFree((*indices)[i]);CHKERRQ(ierr);}
     }
     ierr = PetscFree(*indices);CHKERRQ(ierr);
