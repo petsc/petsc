@@ -1446,7 +1446,7 @@ PetscErrorCode DAGetDiagonal_MFFD(DA da,Vec U,Vec a)
 }
 #endif
 
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"
 EXTERN_C_END
@@ -1574,26 +1574,6 @@ PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
   ierr = DARestoreAdicMFArray(da,PETSC_FALSE,(void **)&ad_f,(void**)&ad_fstart,&tdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-#else
-
-#undef __FUNCT__
-#define __FUNCT__ "DAComputeJacobian1WithAdic"
-PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DAMultiplyByJacobian1WithAdic"
-PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
-}
-
 #endif
 
 #undef __FUNCT__
@@ -1724,7 +1704,7 @@ PetscErrorCode DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 
   PetscFunctionBegin;
   if (da->adicmf_lf) {
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
     ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_ERR_SUP_SYS,"Requires ADIC to be installed and cannot use complex numbers");

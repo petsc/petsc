@@ -414,11 +414,11 @@ PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MATLAB)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Matlab"
 PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_64BIT_INT)
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,*lens;
   PetscInt       i,N = xin->N;
@@ -446,24 +446,20 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
   }
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#else
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with Matlab to use this viewer");
-#endif
 }
+#endif
 
+#if defined(PETSC_HAVE_PNETCDF)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Netcdf"
 PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 {
-#if defined(PETSC_HAVE_PNETCDF)
   PetscErrorCode ierr;
   int         n = xin->n,ncid,xdim,xdim_num=1,xin_id,xstart;
   MPI_Comm    comm = xin->comm;  
   PetscScalar *xarray;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
   ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
   if (ncid < 0) SETERRQ(PETSC_ERR_ORDER,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
@@ -477,21 +473,15 @@ PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
   ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL);CHKERRQ(ierr);
   ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&n,xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
-#else 
-    PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
-#endif
   PetscFunctionReturn(0);
-#else /* !defined(PETSC_HAVE_PNETCDF) */
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with NetCDF to use this viewer");
-#endif
 }
+#endif
 
+#if defined(PETSC_HAVE_HDF4)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_HDF4_Ex"
 PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
 {
-#if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
   int            len, i, j, k, cur, bs, n, N;
@@ -538,18 +528,14 @@ PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
   ierr = PetscFree(xlf);CHKERRQ(ierr);
   ierr = PetscFree(xf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#else /* !defined(PETSC_HAVE_HDF4) */
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with HDF4 to use this viewer");
- 
-#endif
 }
+#endif
 
+#if defined(PETSC_HAVE_HDF4)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_HDF4"
 PetscErrorCode VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
   PetscErrorCode  bs, dims[1];
 
@@ -557,11 +543,8 @@ PetscErrorCode VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
   dims[0] = xin->N / bs;
   ierr = VecView_MPI_HDF4_Ex(xin, viewer, 1, dims);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-#else /* !defined(PETSC_HAVE_HDF4) */
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with HDF4 to use this viewer");
-#endif
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI"
