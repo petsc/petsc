@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.105 1997/01/06 20:29:45 balay Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.106 1997/01/14 22:57:02 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -66,6 +66,8 @@ int SNESView(SNES snes,Viewer viewer)
       snes->rtol, snes->atol, snes->trunctol, snes->xtol);
     PetscFPrintf(snes->comm,fd,
     "  total number of linear solver iterations=%d\n",snes->linear_its);
+     PetscFPrintf(snes->comm,fd,
+     "  total number of function evaluation=%d\n",snes->nfuncs);
     if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
       PetscFPrintf(snes->comm,fd,"  min function tolerance=%g\n",snes->fmin);
     if (snes->ksp_ewconv) {
@@ -661,6 +663,7 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
     SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   PLogEventBegin(SNES_FunctionEval,snes,x,y,0);
   ierr = (*snes->computefunction)(snes,x,y,snes->funP); CHKERRQ(ierr);
+  snes->nfuncs++;
   PLogEventEnd(SNES_FunctionEval,snes,x,y,0);
   return 0;
 }
@@ -733,6 +736,7 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,0,"Only for SNES_UNCONSTRAINED_MINIMIZATION");
   PLogEventBegin(SNES_MinimizationFunctionEval,snes,x,y,0);
   ierr = (*snes->computeumfunction)(snes,x,y,snes->umfunP); CHKERRQ(ierr);
+  snes->nfuncs++;
   PLogEventEnd(SNES_MinimizationFunctionEval,snes,x,y,0);
   return 0;
 }
