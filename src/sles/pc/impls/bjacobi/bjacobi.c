@@ -516,6 +516,32 @@ int PCBJacobiSetLocalBlocks(PC pc,int blocks,int *lens)
 
 /* -----------------------------------------------------------------------------------*/
 
+/*S
+   PCBJACOBI - Use block Jacobi preconditioning, each block is (approximately) solved with 
+           its own SLES object.
+
+   Options Database Keys:
+.  -pc_bjacobi_truelocal - Activates PCBJacobiSetUseTrueLocal()
+
+   Notes: Each processor can have one or more blocks, but a block cannot be shared by more
+     than one processor. Defaults to one block per processor.
+
+     To set options on the solvers for each block append -sub_ to all the SLES, KSP, and PC
+        options database keys. For example, -sub_pc_type ilu -sub_pc_ilu_levels 1 -sub_ksp_type preonly
+        
+     To set the options on the solvers seperate for each block call PCBJacobiGetSubSLES()
+         and set the options directly on the resulting SLES object (you can access its KSP and PC
+         with SLESGetKSP() and SLESGetPC())
+
+   Level: beginner
+
+   Concepts: block Jacobi
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCASM, PCBJacobiSetUseTrueLocal(), PCBJacobiGetSubSLES(), PCBJacobiSetTotalBlocks(),
+           PCBJacobiSetLocalBlocks(), PCSetModifySubmatrices()
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_BJacobi"

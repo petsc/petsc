@@ -534,7 +534,32 @@ int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------------ */
+/*S
+   PCCholesky - Uses a direct solver, based on Cholesky factorization, as a preconditioner
+
+   Options Database Keys:
++  -pc_cholesky_reuse_ordering - Activate PCLUSetReuseOrdering()
+.  -pc_cholesky_reuse_fill - Activates PCLUSetReuseFill()
+.  -pc_cholesky_fill <fill> - Sets fill amount
+.  -pc_cholesky_damping <damping> - Sets damping amount
+.  -pc_cholesky_in_place - Activates in-place factorization
+-  -pc_cholesky_mat_ordering_type <nd,rcm,...> - Sets ordering routine
+
+   Notes: Not all options work for all matrix formats
+
+   Level: beginner
+
+   Concepts: Cholesky factorization, direct solver
+
+   Notes: Usually this will compute an "exact" solution in one iteration and does 
+          not need a Krylov method (i.e. you can use -ksp_type preonly, or 
+          KSPSetType(ksp,KSPPREONLY) for the Krylov method
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCILU, PCLU, PCICC, PCCholeskySetReuseOrdering(), PCCholeskySetReuseFill(), PCGetFactoredMatrix(),
+           PCCholeskySetFill(), PCCholeskySetDamping(), PCCholeskySetUseInPlace(), PCCholeskySetMatOrdering()
+
+S*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

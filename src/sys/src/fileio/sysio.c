@@ -130,7 +130,7 @@ int PetscByteSwapDouble(double *buff,int n)
    Output Parameters:
 .  p - the buffer
 
-   Options Database:
+   Options Database Key:
 .   -binary_longints - indicates the file was generated on a Cray vector 
          machine (not the T3E/D) and the ints are stored as 64 bit 
          quantities, otherwise they are stored as 32 bit
@@ -521,7 +521,7 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence,int *offset)
    Output Parameters:
 .  p - the buffer
 
-   Options Database:
+   Options Database Key:
 .   -binary_longints - indicates the file was generated on a Cray vector 
          machine (not the T3E/D) and the ints are stored as 64 bit 
          quantities, otherwise they are stored as 32 bit

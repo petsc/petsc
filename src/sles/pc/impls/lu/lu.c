@@ -622,6 +622,37 @@ int PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
 
 /* ------------------------------------------------------------------------ */
 
+/*S
+   PCLU - Uses a direct solver, based on LU factorization, as a preconditioner
+
+   Options Database Keys:
++  -pc_lu_reuse_ordering - Activate PCLUSetReuseOrdering()
+.  -pc_lu_reuse_fill - Activates PCLUSetReuseFill()
+.  -pc_lu_fill <fill> - Sets fill amount
+.  -pc_lu_damping <damping> - Sets damping amount
+.  -pc_lu_in_place - Activates in-place factorization
+.  -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
+.  -pc_lu_pivoting - dttol
+-  -pc_lu_pivot_in_blocks <true,false>
+
+   Notes: Not all options work for all matrix formats
+          Run with -help to see additional options for particular matrix formats or factorization
+          algorithms
+
+   Level: beginner
+
+   Concepts: LU factorization, direct solver
+
+   Notes: Usually this will compute an "exact" solution in one iteration and does 
+          not need a Krylov method (i.e. you can use -ksp_type preonly, or 
+          KSPSetType(ksp,KSPPREONLY) for the Krylov method
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+           PCILU, PCCHOLESKY, PCICC, PCLUSetReuseOrdering(), PCLUSetReuseFill(), PCGetFactoredMatrix(),
+           PCLUSetFill(), PCLUSetDamping(), PCLUSetUseInPlace(), PCLUSetMatOrdering(), PCLUSetPivoting(),
+           PCLUSetPivotingInBlocks()
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_LU"

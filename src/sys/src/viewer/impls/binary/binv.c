@@ -100,7 +100,7 @@ int PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
     Input Paramter:
 .   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
 
-    Options Database:
+    Options Database Key:
 .   -viewer_binary_skip_info
 
     Level: advanced

@@ -37,7 +37,7 @@ static EH eh = 0;
 .  p - specific error number
 -  ctx - error handler context
 
-   Options Database:
+   Options Database Key:
 .   -on_error_emacs <machinename>
 
    Level: developer

@@ -354,7 +354,7 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 .   function - the function that defines the nonlinear system
 -   jacobian - optional function to compute Jacobian
 
-    Options Database:
+    Options Database Keys:
 +    -dmmg_snes_monitor
 .    -dmmg_jacobian_fd
 .    -dmmg_jacobian_ad

@@ -168,7 +168,7 @@ int KSPSetUp(KSP ksp)
    Output Parameter:
 .  its - number of iterations required
 
-   Options Database:
+   Options Database Keys:
 +  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
 .  -ksp_plot_eigenvalues - plot the computed eigenvalues in an X-window
 .  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the 

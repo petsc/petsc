@@ -112,7 +112,7 @@ $                 CG, CHEBYCHEV, and RICHARDSON
 $   KSP_NATURAL_NORM - supported  by cg, cr, and cgs 
 
 
-   Options Database:
+   Options Database Key:
 .   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
 
    Notes: 

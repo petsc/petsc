@@ -15,6 +15,19 @@ int PCApply_None(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/*S
+     PCNONE - This is used when you wish to employ a nonpreconditioned
+             Krylov method. 
+
+   Level: beginner
+
+  Concepts: preconditioners
+
+  Notes: This is implemented by a VecCopy()
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+S*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_None"
