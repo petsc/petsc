@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.24 1999/12/13 01:46:54 bsmith Exp bsmith $*/
+/*$Id: zts.c,v 1.25 2000/01/11 21:03:48 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ts.h"
@@ -41,12 +41,14 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL tsdefaultcomputejacobian_(TS *ts,double *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,int *ierr)
+/* function */
+void tsdefaultcomputejacobian_(TS *ts,double *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,int *ierr)
 {
   *ierr = TSDefaultComputeJacobian(*ts,*t,*xx1,J,B,flag,ctx);
 }
 
-void PETSC_STDCALL tsdefaultcomputejacobiancolor_(TS *ts,double *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,int *ierr)
+/* function */
+void tsdefaultcomputejacobiancolor_(TS *ts,double *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,int *ierr)
 {
   *ierr = TSDefaultComputeJacobianColor(*ts,*t,*xx1,J,B,flag,*(MatFDColoring*)ctx);
 }

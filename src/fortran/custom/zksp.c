@@ -1,4 +1,4 @@
-/*$Id: zksp.c,v 1.42 1999/12/20 20:05:25 bsmith Exp bsmith $*/
+/*$Id: zksp.c,v 1.43 2000/01/11 21:03:48 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ksp.h"
@@ -67,7 +67,7 @@
 #endif
 
 EXTERN_C_BEGIN
-
+/* function */
 void kspdefaultconverged_(KSP *ksp,int *n,double *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
 {
   if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
@@ -152,33 +152,35 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
 /*
         These are not usually called from Fortran but allow Fortran users 
    to transparently set these monitors from .F code
+   
+   functions, hence no STDCALL
 */
-void PETSC_STDCALL kspdefaultmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  kspdefaultmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
 {
   *ierr = KSPDefaultMonitor(*ksp,*it,*norm,ctx);
 }
  
-void PETSC_STDCALL kspsingularvaluemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  kspsingularvaluemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
 {
   *ierr = KSPSingularValueMonitor(*ksp,*it,*norm,ctx);
 }
 
-void PETSC_STDCALL ksplgmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  ksplgmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
 {
   *ierr = KSPLGMonitor(*ksp,*it,*norm,ctx);
 }
 
-void PETSC_STDCALL ksplgtruemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  ksplgtruemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
 {
   *ierr = KSPLGTrueMonitor(*ksp,*it,*norm,ctx);
 }
 
-void PETSC_STDCALL ksptruemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  ksptruemonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
 {
   *ierr = KSPTrueMonitor(*ksp,*it,*norm,ctx);
 }
 
-void PETSC_STDCALL kspvecviewmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
+void  kspvecviewmonitor_(KSP *ksp,int *it,double *norm,void *ctx,int *ierr)
 {
   *ierr = KSPVecViewMonitor(*ksp,*it,*norm,ctx);
 }

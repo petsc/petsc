@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.43 1999/12/13 01:50:46 bsmith Exp bsmith $*/
+/*$Id: zsnes.c,v 1.44 2000/01/11 21:03:48 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "snes.h"
@@ -171,22 +171,24 @@ void PETSC_STDCALL matcreatesnewsmf_(SNES *snes,Vec *x,Mat *J,int *ierr)
   *ierr = MatCreateSNESMF(*snes,*x,J);
 }
 
-void PETSC_STDCALL sneslgmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *ierr)
+/* functions, hence no STDCALL */
+
+void sneslgmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *ierr)
 {
   *ierr = SNESLGMonitor(*snes,*its,*fgnorm,dummy);
 }
 
-void PETSC_STDCALL snesdefaultmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *ierr)
+void snesdefaultmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *ierr)
 {
   *ierr = SNESDefaultMonitor(*snes,*its,*fgnorm,dummy);
 }
 
-void PETSC_STDCALL snesvecviewmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *ierr)
+void snesvecviewmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *ierr)
 {
   *ierr = SNESVecViewMonitor(*snes,*its,*fgnorm,dummy);
 }
 
-void PETSC_STDCALL snesvecviewupdatemonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *ierr)
+void snesvecviewupdatemonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *ierr)
 {
   *ierr = SNESVecViewUpdateMonitor(*snes,*its,*fgnorm,dummy);
 }
@@ -459,13 +461,14 @@ void PETSC_STDCALL snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsne
   These can be used directly from Fortran but are mostly so that 
   Fortran SNESSetJacobian() will properly handle the defaults being passed in.
 
+  functions, hence no STDCALL
 */
-void PETSC_STDCALL snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,
+void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,
                                  void *ctx,int *ierr)
 {
   *ierr = SNESDefaultComputeJacobian(*snes,*x,m,p,type,ctx);
 }
-void PETSC_STDCALL snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,
+void  snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,
                                              MatStructure* type,void *ctx,int *ierr)
 {
   *ierr = SNESDefaultComputeJacobianColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
