@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.30 1996/07/02 18:07:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.31 1996/07/08 01:36:09 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -131,10 +131,10 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
     ierr = MatLoad_MPIDense(viewer,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATMPIROWBS) {
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
     ierr = MatLoad_MPIRowbs(viewer,type,newmat); CHKERRQ(ierr);
 #else
-    SETERRQ(1,"MatLoad:MATMPIROWBS does not support complex numbers or c++");
+    SETERRQ(1,"MatLoad:MATMPIROWBS does not support complex numbers");
 #endif
   }
   else if (type == MATSEQBAIJ) {
