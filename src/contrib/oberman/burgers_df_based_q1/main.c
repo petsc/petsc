@@ -52,31 +52,37 @@ int AppCtxSolve(AppCtx* appctx)
 
   /*  1) Create vector to contain load and various work vectors  */
   ierr = AppCtxCreateVector(appctx); CHKERRQ(ierr);
+
   /*  2) Create the sparse matrix, with correct nonzero pattern  */
   ierr = AppCtxCreateMatrix(appctx); CHKERRQ(ierr);
+
   /*  A) Set the quadrature values for the reference square element  */
   ierr = AppCtxSetReferenceElement(appctx);CHKERRQ(ierr);
+
   /*  3) Set the right hand side values into the vectors   */
   ierr = AppCtxSetRhs(appctx); CHKERRQ(ierr);
 
+  /*  4) Set the stiffness matrix entries   */
   /* The coeff of diffusivity.  LATER call a function set equations */
   appctx->equations.eta =-0.04;  
-  /*  4) Set the stiffness matrix entries   */
   ierr = AppCtxSetMatrix(appctx); CHKERRQ(ierr);
-
-/* MatView(algebra->A, VIEWER_STDOUT_SELF); */
+  /* MatView(algebra->A, VIEWER_STDOUT_SELF); */
 
   /*  5) Create the nonlinear solver context  */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRQ(ierr);
 
   /*  6) Set function evaluation rountine and vector */
   ierr = SNESSetFunction(snes,algebra->f ,FormStationaryFunction,(void *)appctx); CHKERRQ(ierr);
+  
   /*  7) Set Jacobian   */ 
   ierr = SNESSetJacobian(snes, algebra->J, algebra->J, FormStationaryJacobian,(void *)appctx);CHKERRQ(ierr);
+  
   /*  8) Set Solver Options, could put internal options here      */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  
   /*  9) Initial guess */
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
+  
   /*  10) Solve the non-linear system  */
   ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);
 

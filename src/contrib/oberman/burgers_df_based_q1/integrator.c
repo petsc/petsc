@@ -4,6 +4,8 @@
  compute the  Jacobian, Stiffness, Rhs etc */
 
 /*-----------------------------------------------------------------------*/
+/*  7) Set Jacobian   */
+
 #undef __FUNC__
 #define __FUNC__ "ComputeJacobian"
 
@@ -68,6 +70,8 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 }
 
 /*----------------------------------------------------------------------*/
+/*  6) Set function evaluation rountine and vector */
+
 #undef __FUNC__
 #define __FUNC__ "ComputeNonlinear"
 /* input is x, output the nonlinear part into f for a particular element */
@@ -111,6 +115,8 @@ Put the result in index k.  Add all possibilities up to get contribution to k, a
 }
 
 /*-----------------------------------------------------------------------*/
+/*  3) Set the right hand side values into the vectors   */
+
 int ComputeRHS( DFP f, DFP g, AppElement *phi, double *integrals){
   int i,j;
   /* need to go over each element , then each variable */
@@ -128,6 +134,8 @@ PetscFunctionReturn(0);
 }
 
 /*---------------------------------------------------------------------------- 
+  4) Set the stiffness matrix entries
+
 ComputeMatrix: 
    computes integrals of gradients of local phi_i and phi_j on the given quadrangle 
 by changing variables to the reference quadrangle and reference basis elements phi_i 
@@ -172,7 +180,9 @@ int ComputeMatrix( AppElement *phi, double *result){
 PetscFunctionReturn(0);
 }
 
-/*-------------------------------------------------------------------------------------- 
+/*---------------------------------------------------------------------------- 
+  A) Set the quadrature values for the reference square element
+
 The following functions set the reference element, and the local element for the quadrature.  
 Set reference element is called only once, at initialization, while set reference element 
 must be called over each element.  */
@@ -213,6 +223,9 @@ PetscFunctionReturn(0);
 
 
 /*-------------------------------------------------------------*/
+/* 6) Set function evaluation rountine and vector (non-linear parts), and
+   7) Set Jacobian */
+
 int SetLocalElement(AppElement *phi, double *coords)
 {
   int i,j,k;
