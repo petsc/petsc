@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.60 1996/04/25 23:31:30 balay Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.61 1996/07/02 18:04:36 bsmith Exp curfman $";
 #endif
 
 /*
@@ -846,14 +846,15 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 }
 
 /*@
-     VecScatterRemap - Remaps the from and to indices in a 
-        vector scatter context. EXPERTS ONLY.
+   VecScatterRemap - Remaps the "from" and "to" indices in a 
+   vector scatter context. FOR EXPERTS ONLY!
 
   Input Parameters:
 .   scat - vector scatter context
-.   from - remapping for from indices (may be PETSC_NULL)
-.   to   - remapping for to indices (may be PETSC_NULL)
+.   from - remapping for "from" indices (may be PETSC_NULL)
+.   to   - remapping for "to" indices (may be PETSC_NULL)
 
+.keywords: Vec, scatter, remap
 @*/
 int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
 {
