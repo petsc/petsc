@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.111 1998/02/18 21:23:57 balay Exp bsmith $ 
+# $Id: buildtest,v 1.112 1998/02/19 13:08:38 bsmith Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -59,7 +59,7 @@ if ($day == Tue) then
   set H=($PETSC  $TMP       $TMP       $TMP          $TMP        $LOIS       $SB          $CCST       $TMP        $SB         $TMP         )
 endif
 if ($day == Wed) then
-  set M =(snake  maple      violet     snowy         clyde       ptera       lava         quad        maverick    yukon       homer        )
+  set M =(snake  maple      violet     snowy         tri63       ptera       lava         quad        maverick    yukon       homer        )
   set B =(g      g_c++      O          g_complex     Opg_complex Opg         Opg_c++      Opg_complex O           g           O            )
   set A =(hpux   solaris    IRIX       freebsd       rs6000_p4   alpha_uni   solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared     shared      shared      shared      noshared     )
@@ -69,7 +69,7 @@ if ($day == Wed) then
   set J4=(6      6          6          5             5           0           0            5           6           4           6            )
   set J5=(0      8          7          10            10          0           0            10          7           7           7            )
   set J6=(0      0          8          0             0           0           0            0           8           8           8            )
-  set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $SB          $CCST       $TMP        $SB         $TMP         )
+  set H=($PETSC  $TMP       $TMP       $TMP          $TMP        $LOIS       $SB          $CCST       $TMP        $SB         $TMP         )
 endif
 if ($day == Thu) then
   set M =(snake  maple      violet     snowy         tri63       ptera       lava         quad        maverick    yukon       homer        )
