@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.43 1996/03/31 16:50:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.44 1996/04/08 15:53:45 curfman Exp curfman $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -35,9 +35,8 @@ int  amult(Mat,Vec,Vec);
 
 int main(int Argc, char **Args)
 {
-  int         x_mesh = 15,levels = 3,cycles = 1;
-  int         i,smooths = 1,flg;
-  int         *N, use_jacobi = 0;
+  int         x_mesh = 15,levels = 3,cycles = 1, use_jacobi = 0;
+  int         i, smooths = 1, flg, *N;
   MGType      am = MGMULTIPLICATIVE;
   Mat         cmat,mat[20],fmat;
   SLES        csles,sles[20],slesmg;
@@ -90,7 +89,7 @@ int main(int Argc, char **Args)
   /* zero is finest level */
   for ( i=0; i<levels-1; i++ ) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0); CHKERRA(ierr);
-    ierr = MatCreateShell(MPI_COMM_WORLD,N[i+1],N[i],(void *)0,&mat[i]);CHKERRA(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRA(ierr);
     ierr = MatShellSetOperation(mat[i],MAT_MULT,(void*)restrct);CHKERRA(ierr);
     ierr = MatShellSetOperation(mat[i],MAT_MULT_TRANS_ADD,(void*)interpolate);CHKERRA(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
@@ -137,7 +136,7 @@ int main(int Argc, char **Args)
   ierr = MGSetR(pcmg,0,x); CHKERRA(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
-  ierr = MatCreateShell(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
+  ierr = MatCreateShell(MPI_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
   ierr = MatShellSetOperation(fmat,MAT_MULT,(void*)amult); CHKERRA(ierr);
   ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN); 
   CHKERRA(ierr);
