@@ -6,6 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex4.c
 EXAMPLESF       = ex1f.F
+EXAMPLESFH      = ex1f.h
 MANSEC          = TS
 
 include ${PETSC_DIR}/bmake/common/base
