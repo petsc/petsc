@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.85 1996/01/24 05:46:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.86 1996/01/26 04:34:07 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
 
 #include "bdiag.h"
 #include "vec/vecimpl.h"
-y
+
 static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
                                  Scalar *v,InsertMode is)
 {
@@ -22,7 +22,7 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
       if (row >= a->m) SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
       for (j=0; j<n; j++) {
         if (in[j] < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative column");
-        if (in[j] >= a->n) SETERRQ(1,"MatSetValues_SeqBDiag:Column too large");
+        if (in[j] >= a->n) SETERRQ(1,"MatSetValues_SeqBDiag:Col. too large");
         ldiag = row - in[j]; /* diagonal number */
         dfound = 0;
         if (roworiented) {
