@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.33 2001/01/15 21:49:32 bsmith Exp balay $
+!  $Id: user.F,v 1.34 2001/03/07 20:46:12 balay Exp bsmith $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -1781,7 +1781,7 @@
 #define r23(i) rxy(5,i)
 #define r33(i) rxy(6,i)
 #define r44(i) rxy(7,i)
-#undef eptr(j,i)
+#undef eptr
 #define eptr(j,i) evec(i,j)
 #else
       Scalar xyz(nvertices,3)
