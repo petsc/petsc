@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.1 2000/01/06 20:50:44 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.2 2000/01/11 20:59:37 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -19,12 +19,13 @@
 
     Eventually we'll attach this beast to a MPI_Comm
 */
-typedef enum {PETSC_OPTION_INT, PETSC_OPTION_NAME, PETSC_OPTION_DOUBLE} PetscOptionType;
+typedef enum {PETSC_OPTION_INT, PETSC_OPTION_NAME, PETSC_OPTION_DOUBLE, PETSC_OPTION_LIST} PetscOptionType;
 typedef struct _p_PetscOptionsAMS* PetscOptionsAMS;
 struct _p_PetscOptionsAMS {
   char            *option;
   char            *text;
   void            *data;
+  void            *edata;
   PetscTruth      set;
   PetscOptionType type;
   PetscOptionsAMS next;
@@ -98,20 +99,26 @@ int OptionsSelectEnd(MPI_Comm comm)
           sprintf(value,"%d",*(int*)amspub.next->data);
           break;
         case PETSC_OPTION_DOUBLE:
-          sprintf(value,"%g",*(int*)amspub.next->data);
+          sprintf(value,"%g",*(double*)amspub.next->data);
           break;
         case PETSC_OPTION_NAME:
+          break;
+        case PETSC_OPTION_LIST:
+          ierr = PetscStrcpy(value,*(char**)amspub.next->data);CHKERRQ(ierr);
           break;
       }
       ierr = OptionsSetValue(option,value);CHKERRQ(ierr);
     }
     ierr   = PetscStrfree(amspub.next->text);CHKERRQ(ierr);
     ierr   = PetscStrfree(amspub.next->option);CHKERRQ(ierr);
-    if (amspub.next->data) {ierr = PetscFree(amspub.next->data);CHKERRQ(ierr);}
-    last   = amspub.next;
+    if (amspub.next->data)  {ierr = PetscFree(amspub.next->data);CHKERRQ(ierr);}
+    if (amspub.next->edata) {ierr = PetscFree(amspub.next->edata);CHKERRQ(ierr);}
+    last        = amspub.next;
     amspub.next = amspub.next->next;
-    ierr   = PetscFree(last);CHKERRQ(ierr);
+    ierr        = PetscFree(last);CHKERRQ(ierr);
   }
+  ierr = AMS_Memory_grant_access(amspub.amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_destroy(amspub.amem);CHKERRQ(ierr);
   ierr = PetscStrfree(amspub.prefix);CHKERRQ(ierr); amspub.prefix = 0;
   PetscFunctionReturn(0);
 }
@@ -124,11 +131,13 @@ static int OptionsSelectCreate(char *opt,char *text,PetscOptionsAMS *amsopt)
   PetscOptionsAMS next;
 
   PetscFunctionBegin;
-  *amsopt         = PetscNew(struct _p_PetscOptionsAMS);CHKPTRQ(amsopt);
-  (*amsopt)->next = 0;
-  (*amsopt)->set  = PETSC_FALSE;
-  ierr            = PetscStrallocpy(text,&(*amsopt)->text);CHKERRQ(ierr);
-  ierr            = PetscStrallocpy(opt,&(*amsopt)->option);CHKERRQ(ierr);
+  *amsopt          = PetscNew(struct _p_PetscOptionsAMS);CHKPTRQ(amsopt);
+  (*amsopt)->next  = 0;
+  (*amsopt)->set   = PETSC_FALSE;
+  (*amsopt)->data  = 0;
+  (*amsopt)->edata = 0;
+  ierr             = PetscStrallocpy(text,&(*amsopt)->text);CHKERRQ(ierr);
+  ierr             = PetscStrallocpy(opt,&(*amsopt)->option);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amspub.amem,opt,&(*amsopt)->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   if (!amspub.next) {
@@ -195,4 +204,25 @@ int OptionsSelectName(MPI_Comm comm,char *opt,char *text)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "OptionsSelectList"
+int OptionsSelectList(MPI_Comm comm,char *opt,char *ltext,char **text,int ntext,char *defaultv)
+{
+  int             ierr;
+  PetscOptionsAMS amsopt;
+  char            ldefault[128];
 
+  PetscFunctionBegin;
+  ierr = OptionsSelectCreate(opt,ltext,&amsopt);CHKERRQ(ierr);
+  amsopt->type           = PETSC_OPTION_LIST;
+  amsopt->data           = (void *) PetscMalloc(ntext*sizeof(char*));CHKERRQ(ierr);
+  ierr = PetscMemcpy(amsopt->data,text,ntext*sizeof(char*));CHKERRQ(ierr);
+
+  ierr = AMS_Memory_add_field(amspub.amem,ltext,amsopt->data,ntext,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  amsopt->edata             = (void *) PetscMalloc(sizeof(char*));CHKERRQ(ierr);
+  *(char **)(amsopt->edata) = defaultv;
+  ierr = PetscStrcpy(ldefault,ltext);CHKERRQ(ierr);
+  ierr = PetscStrcat(ldefault,"default");CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amspub.amem,ldefault,amsopt->edata,1,AMS_STRING,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
