@@ -325,7 +325,7 @@ typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 
 EXTERN int MatCopy(Mat,Mat,MatStructure);
 EXTERN int MatView(Mat,PetscViewer);
-
+EXTERN int MatIsSymmetric(Mat,PetscTruth*);
 EXTERN int MatLoad(PetscViewer,const MatType,Mat*);
 EXTERN int MatMerge(MPI_Comm,Mat,Mat*);
 
