@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.41 2000/10/20 20:26:07 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.42 2001/01/15 21:43:52 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -522,6 +522,9 @@ int PetscFinalize(void)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);CHKERRQ(ierr);
     }
   }
+
+  /* make sure this unused option does not get printed */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&flg1);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_BOPT_g)
   ierr = PetscOptionsHasName(PETSC_NULL,"-options_left_off",&flg2);CHKERRQ(ierr);
