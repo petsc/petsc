@@ -190,7 +190,7 @@ void petscignoreerrorhandler_(int *line,char *fun,char *file,char *dir,int *n,in
   *ierr = PetscIgnoreErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-static void (PETSC_STDCALL *f2)(int*,CHAR PETSC_MIXED_LEN(),CHAR PETSC_MIXED_LEN(),CHAR PETSC_MIXED_LEN(),int*,int*,CHAR PETSC_MIXED_LEN(),void*,int* PETSC_END_LEN() PETSC_END_LEN() PETSC_END_LEN() PETSC_END_LEN());
+static void (PETSC_STDCALL *f2)(int*,CHAR PETSC_MIXED_LEN(len1),CHAR PETSC_MIXED_LEN(len2),CHAR PETSC_MIXED_LEN(len3),int*,int*,CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4));
 static int ourerrorhandler(int line,char *fun,char *file,char *dir,int n,int p,char *mess,void *ctx)
 {
   int ierr = 0,len1,len2,len3,len4;
@@ -200,7 +200,18 @@ static int ourerrorhandler(int line,char *fun,char *file,char *dir,int n,int p,c
   PetscStrlen(dir,&len3);
   PetscStrlen(mess,&len4);
 
-#if defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
+#if defined(PETSC_USES_CPTOFCD)
+ {
+   CHAR fun_c,file_c,dir_c,ness_c;
+
+   fun_c  = _cptofcd(fun,len1);
+   file_c = _cptofcd(file,len2);
+   dir_c  = _cptofcd(dir,len3);
+   mess_c = _cptofcd(mess,len4);
+   (*f2)(&line_c,fun_c,file_c,dir,&n,&p,mess_c,ctx,&ierr,len1,len2,len3,len4);
+
+ }
+#elif defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
   (*f2)(&line,fun,len1,file,len2,dir,len3,&n,&p,mess,len4,ctx,&ierr);
 #else
   (*f2)(&line,fun,file,dir,&n,&p,mess,ctx,&ierr,len1,len2,len3,len4);
@@ -208,7 +219,7 @@ static int ourerrorhandler(int line,char *fun,char *file,char *dir,int n,int p,c
   return ierr;
 }
 
-void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,CHAR PETSC_MIXED_LEN(),CHAR PETSC_MIXED_LEN(),CHAR PETSC_MIXED_LEN(),int*,int*,CHAR PETSC_MIXED_LEN(),void*,int* PETSC_END_LEN() PETSC_END_LEN() PETSC_END_LEN() PETSC_END_LEN()),void *ctx,int *ierr)
+void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,CHAR PETSC_MIXED_LEN(len1),CHAR PETSC_MIXED_LEN(len2),CHAR PETSC_MIXED_LEN(len3),int*,int*,CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,int *ierr)
 {
   if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) {
     *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);
