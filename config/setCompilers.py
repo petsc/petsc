@@ -461,7 +461,6 @@ class Configure(config.base.Configure):
       flag = ''
     self.addSubstitution('RPATH', flag)
     self.slpath = flag
-    self.framework.slpath = flag
     return
 
   def configure(self):
