@@ -364,6 +364,7 @@ extern int NLFDAADSetCtx_DAAD(NLF,void*);
 extern int NLFDAADSetResidual_DAAD(NLF,Vec);
 EXTERN_C_END
 
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 /*
           This is pre-beta FAS code. It's design should not be taken seriously!
@@ -485,6 +486,7 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
   theend:
   PetscFunctionReturn(0);
 }
+#endif
 
 /* ===========================================================================================================*/
 
@@ -658,6 +660,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     dmmg[i]->updatejacobianperiod = period;
   }
 
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   { 
     PetscTruth flg;
     ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fas",&flg);CHKERRQ(ierr);
@@ -700,6 +703,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
       }
     }
   }
+#endif
    
   PetscFunctionReturn(0);
 }
