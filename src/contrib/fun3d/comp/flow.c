@@ -2621,11 +2621,7 @@ int ReadRestartFile(GRID *grid)
 /* Used in establishing the links between FORTRAN common blocks and C        */
 /*                                                                           */
 /*===========================================================================*/
-void f77CLINK(p1,p2,p3,p4)
-CINFO  *p1;
-CRUNGE *p2;
-CGMCOM *p3;
-CREFGEOM *p4;
+void f77CLINK(CINFO  *p1,CRUNGE *p2,CGMCOM *p3,CREFGEOM *p4)
 {
    c_info  = p1;
    c_runge = p2;
