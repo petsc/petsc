@@ -1,4 +1,4 @@
-# $Id: base,v 1.63 2000/06/07 17:34:29 balay Exp $ 
+# $Id: common_win32,v 1.1 2000/09/05 19:55:57 balay Exp balay $ 
 #
 #  Sets the rule used to remove collections of libraries (different under NT and 95!)
 #
@@ -12,66 +12,7 @@ RM               = deltree /y
 CP               = copy /y
 !endif
 #
-# Regular petsc-makefile variables
-#
-AR               = lib /nologo
-OMAKE            = nmake /nologo
-RANLIB           = 
-SHELL            = cmd
-# ######################### C and Fortran compiler ########################
-#
-C_CC             = cl /nologo 
-C_FC             = df /fpp:"/m" /nologo
-C_CLINKER        = cl /nologo  $(COPTFLAGS)
-C_FLINKER        = df /nologo $(FOPTFLAGS)
-C_SYS_LIB        = kernel32.lib user32.lib  gdi32.lib advapi32.lib
-# ---------------------------- BOPT=g options ----------------------------
-G_COPTFLAGS      = /MTd /Z7 /W2
-G_FOPTFLAGS      = /threads /dbglibs /debug:full
-# ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = /MT /O2 /W2
-O_FOPTFLAGS      = /threads /optimize:5 /fast
-# ########################## C++ compiler ##################################
-#
-CXX_CC           = cl /nologo /TP /GX
-## patch for the cref/stdcall problem with using fortran blas
-!IF "$(BLAS_FC)" == "TRUE"
-CXX_FC           = df /iface:(cref,nomixed_str_len_arg)  /fpp:"/m" /nologo
-!ELSE
-CXX_FC           = df /fpp:"/m" /nologo
-!ENDIF
-CXX_CLINKER      = cl /nologo  $(COPTFLAGS)
-CXX_FLINKER      = df /nologo $(FOPTFLAGS)
-CXX_SYS_LIB      = kernel32.lib user32.lib  gdi32.lib advapi32.lib
-# ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   = /MTd /Z7 /W2
-GCXX_FOPTFLAGS   = /threads /dbglibs /debug:full
-# ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = /MT /O2 /W2
-OCXX_FOPTFLAGS   = /threads /optimize:5 /fast
-# -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  = /MTd /Z7 /W2 /Zm200
-GCOMP_FOPTFLAGS  = /threads /dbglibs /debug:full
-# --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = /MT /O2 /W2 /Zm200
-OCOMP_FOPTFLAGS  = /threads /optimize:4
-############################ PETSc install options ###########################
-G_PETSCFLAGS     = /DPETSC_USE_DEBUG  /DPETSC_USE_LOG /DPETSC_USE_BOPT_g /DPETSC_USE_STACK
-O_PETSCFLAGS     = /DPETSC_USE_DEBUG  /DPETSC_USE_BOPT_O /DPETSC_USE_LOG
-GCXX_PETSCFLAGS  = /DPETSC_USE_DEBUG  /DPETSC_USE_LOG /DPETSC_USE_BOPT_g /DPETSC_USE_STACK
-OCXX_PETSCFLAGS  = /DPETSC_USE_DEBUG  /DPETSC_USE_BOPT_O /DPETSC_USE_LOG
-GCOMP_PETSCFLAGS = /DPETSC_USE_DEBUG  /DPETSC_USE_LOG /DPETSC_USE_BOPT_g \
-	           /DPETSC_USE_STACK /DPETSC_USE_COMPLEX
-OCOMP_PETSCFLAGS = /DPETSC_USE_DEBUG /DPETSC_USE_BOPT_O /DPETSC_USE_LOG /DPETSC_USE_COMPLEX 
-##################################################################################
-#
-#   PETSc installers should very rarely ever need to edit anything below this 
-#
-##################################################################################
-
-PARCH    = nt
-#
-# Variables from base\common.var
+# Variables from base\common_variables
 #
 LDIR	       = $(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)
 PDIR	       = $(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)
@@ -278,19 +219,3 @@ $*.obj
 !IF "$(BOPT)" == "g_complex" || "$(BOPT)" == "O_complex"
 CLINKER = $(FLINKER)
 !ENDIF
-
-
-################################################################
-# Notes:
-#	MDd Multithread-DLL-debug (libraries)
-#       MTd Multi-Thread-debug
-#	MD  MultiThread-DLL
-#	
-#	/Z7 Debug
-#	W2  Warnings at level 2
-#	/Gz __stdcall calling convention. Required by the fortran interface
-#	/Zl no default libs. useful for blaslapack..
-
-# BOPT=O -> Multithread, DLL, Optimized.
-# /fast - not used for df as it might change the way arithmetic is done
-# giving incorrect results.
