@@ -45,6 +45,7 @@ void* ad_adic_deriv_init(int dsize, int bsize)
     freeList = 0;
     bucketList = curBucket;
     nCount = 0;
+    return(bucketList);
 }
 
 
@@ -55,7 +56,7 @@ void ad_adic_deriv_final()
     if (bucketList) {
 	genlist_t* block = bucketList;
 	genlist_t* tmp;
-	while (tmp = block->next) {
+	while ((tmp = block->next)) {
 	    free(block);
 	    block = tmp;
 	}

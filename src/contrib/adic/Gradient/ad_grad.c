@@ -32,7 +32,7 @@ void ad_AD_ResetShadowVar()
 
 void ad_grad_axpy_n(int arity, void* ddz, ...)
 {
-  int     i, j, n, count = 0;
+  int     i, j, count = 0;
   static double   alphas[100], *z;
   static DERIV_TYPE* grads[100];
   va_list parg;

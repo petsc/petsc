@@ -4,11 +4,9 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
     void* ad_map_init(int dsize, int msize, int bsize, int asize)
     { 
         int 	i;
-        Pair*	pa;
         MapEntry*	entry;
 	char*	pblock;
 
@@ -49,18 +47,17 @@ extern "C" {
         freeList = 0;
 	blockList = 0;
 	curBlock = 0;
+        return(map);
     }
 
 
 
     void ad_map_cleanup()
     {
-        int 	i;
-	
 if (blockList) {
     genlist_t* block = blockList;
     genlist_t* tmp;
-    while (tmp = block->next) {
+    while ((tmp = block->next)) {
         free(block);
 	block = tmp;
     }
@@ -190,6 +187,7 @@ if (blockList) {
 	genlist_t*	list = freeList;
 	freeList = (genlist_t*)ptr;
 	freeList->next = list;
+        return(freeList);
    }
 
 
@@ -199,6 +197,7 @@ void* ad_map_free(void* key)
 {
     void** p = (void**)ad_map_get(key);
     *(p-1) = (void*)1;
+    return(*p);
 }
 
 

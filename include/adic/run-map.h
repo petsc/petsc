@@ -40,7 +40,6 @@ extern "C" {
         double* top;
         void* desc;
     } ArrayEntry;
-    static ArrayEntry	array;
 
 
     void* ad_map_init(int dsize, int msize, int bsize, int asize);
