@@ -1,4 +1,4 @@
-# $Id: base,v 1.49 1999/02/07 20:04:13 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:57:53 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -64,70 +64,4 @@ OCOMP_PETSCFLAGS =   -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
 
 PARCH            = sun4
 
-include ${PETSC_DIR}/bmake/common
-
-libc: ${LIBNAME}(${OBJSC} ${SOBJSC})
-libadic: ${LIBNAME}(${OBJSADIC})
-libf: ${LIBNAME}(${OBJSF})
-
-#############
-#
-#   These are alternative rules for Fortran compilers that 
-#   do not understand the .F suffix
-
-#.F.f:
-#	-${RM} __$*.f
-#	-${CC} -E -P -traditional-cpp -x c ${FCPPFLAGS} $*.F | grep -v '^C' > __$*.f
-#.F.o:
-#	-${RM} __$*.f
-#	-${CC} -E -P -traditional-cpp -x c ${FCPPFLAGS} $*.F | grep -v '^C' > __$*.f
-#	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-#	-${RM} __$*.f
-#
-#.F.a:
-#	-${RM} __$*.f
-#	-${CC} -E -P -traditional-cpp -x c ${FCPPFLAGS}  $*.F | grep -v '^C' > __$*.f
-#	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
-#	-${AR} cr ${LIBNAME} $*.o
-#	-${RM} __$*.f
-#
-SLSUFFIX = so.1.0 
-shared: chkopts_basic
-	-@ if [ "${BOPT}" != "Opg" ] && [ "${BOPT}" != "Opg_c++" ] \
-	&&  [ "${BOPT}" != "Opg_complex" ] ; then \
-	echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-            if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${AR} x ../$$LIBNAME.a ;\
-	      gcc ${COPTFLAGS} -fPIC -shared  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	      ${RM} -f * ; \
-	    fi; \
-	  fi; \
-	done; \
-	cd ../ ; \
-	${RM} -rf tmp; \
-	fi
-
-oshared: chkopts_basic
-	-${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-        echo "building ${LIBNAME}.${SLSUFFIX}"; \
-	${AR} x ${LIBNAME}.a ;\
-	gcc ${COPTFLAGS} -fPIC -shared *.o  -o ${LIBNAME}.${SLSUFFIX}; \
-	cd ../ ; \
-	${RM} -rf tmp
-
+include ${PETSC_DIR}/bmake/common_variables
