@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.19 2000/09/06 19:17:35 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.20 2000/09/07 14:01:11 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -284,8 +284,6 @@ int MatRestoreRow_SeqSBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 #define __FUNC__ "MatTranspose_SeqSBAIJ"
 int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
 { 
-  Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. MatTranspose() should not be called");
   PetscFunctionReturn(0);
@@ -605,8 +603,6 @@ int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 #define __FUNC__ "MatSetValuesBlocked_SeqSBAIJ"
 int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
