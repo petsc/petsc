@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.11 1995/04/13 14:40:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.12 1995/04/15 03:26:09 bsmith Exp curfman $";
 #endif
 /*
        General indices as a list of integers
@@ -11,16 +11,17 @@ typedef struct {
 } IS_Stride;
 
 /*@
-    ISStrideGetInfo - Returns the first index in a stride index set and 
-          the stride width.
+   ISStrideGetInfo - Returns the first index in a stride index set and 
+   the stride width.
 
-  Input Parameters:
-.   is - the index set
+   Input Parameter:
+.  is - the index set
 
-  Output Parameters:
-.   first, step - the first index and the step length
+   Output Parameters:
+.  first - the first index
+.  step - the stride width
 
-  Notes:
+   Notes:
    Returns info on stride index set. This is a pseudo-public function.
 @*/
 int ISStrideGetInfo(IS is,int *first,int *step)
@@ -92,19 +93,19 @@ static struct _ISOps myops = { ISGetSize_Stride,ISGetSize_Stride,
                                ISGetIndices_Stride,
                                ISRestoreIndices_Stride,0};
 /*@
-    ISCreateStrideSequential - Creates data structure for 
-     a index set containing a list of evenly spaced integers.
+   ISCreateStrideSequential - Creates a data structure for an index set 
+   containing a list of evenly spaced integers.
 
-  Input Parameters:
-.   n - the length of the index set
-.   first - the first element in the index set
-.   step - the change to the next index
-.   comm - the MPI communicator
+   Input Parameters:
+.  n - the length of the index set
+.  first - the first element in the index set
+.  step - the change to the next index
+.  comm - the MPI communicator
 
-  Output Parameters:
-.   is - the location to stash the index set
+   Output Parameter:
+.  is - the location to stash the index set
 
-  Keywords: index set,stride
+.keywords: IS, index set, create, stride, sequential
 @*/
 int ISCreateStrideSequential(MPI_Comm comm,int n,int first,int step,IS *is)
 {
