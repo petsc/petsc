@@ -12,7 +12,7 @@ class Framework(base.Base):
     '''Setup the project, argument database, and source database'''
     try:
       import gc
-      gc.set_debug(gc.DEBUG_LEAK)
+      #gc.set_debug(gc.DEBUG_LEAK)
     except ImportError: pass
     base.Base.__init__(self, clArgs, argDB)
     import build.builder
@@ -381,6 +381,20 @@ class Framework(base.Base):
       print 'Running bk push on '+p.getRoot()
       self.executeShellCommand('cd '+p.getRoot()+'; bk push')
 
+  def getHeadRevision(self, proj):
+    import install.retrieval
+    return install.retrieval.Retriever().bkHeadRevision(proj.getRoot())
+
+  def t_makeStamp(self):
+    import build.buildGraph
+
+    bsProj = self.getInstalledProject('bk://sidl.bkbits.net/BuildSystem')
+    stamp  = {}
+    stamp[bsProj.getUrl()] = self.getHeadRevision(bsProj)
+    for p in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
+      stamp[p.getUrl()] = self.getHeadRevision(p)
+    return stamp
+
   def t_default(self):
     '''Activate, configure, build, and install this project'''
     return ['activate', 'configure', 'compile', 'install']
@@ -473,6 +487,13 @@ class Framework(base.Base):
     '''Hook for user operations after project activation, but before build'''
     return
 
+  def stampBuild(self):
+    '''Create a version stamp for this build, store it in the RDict and log it'''
+    stamp = self.executeTarget('makeStamp')
+    self.argDB['stamp-'+self.project.getUrl()] = stamp
+    self.debugPrint('Build stamp: '+str(stamp), 4, 'build')
+    return stamp
+
   def executeGraph(self, graph, start = None, input = None, end = None):
     '''Execute a BuildGraph'''
     output = None
@@ -521,6 +542,7 @@ class Framework(base.Base):
         self.executeTarget('configure')
         target.remove('configure')
       self.setupBuild()
+      self.stampBuild()
       map(self.executeTarget, target)
     except Exception, e:
       print str(e)

@@ -7,8 +7,8 @@ import urlparse
 urlparse.uses_netloc.extend(['bk', 'ssh'])
 
 class Retriever(install.urlMapping.UrlMapping):
-  def __init__(self):
-    install.urlMapping.UrlMapping.__init__(self)
+  def __init__(self, stamp = None):
+    install.urlMapping.UrlMapping.__init__(self, stamp = stamp)
     return
 
   def removeRoot(self,root,canExist,force = 0):
@@ -77,15 +77,30 @@ class Retriever(install.urlMapping.UrlMapping):
     return (url, authUrl, wasAuth)
 
   def testAuthorizedUrl(self, authUrl):
-    return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+authUrl)
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(authUrl)
+    return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+location)
 
   def getBKParentURL(self, root):
     '''Return the parent URL for the BK repository at "root"'''
     return self.executeShellCommand('cd '+root+'; bk parent')[21:]
 
+  def bkHeadRevision(self, root):
+    '''Return the last change set revision in the repository'''
+    return self.executeShellCommand('cd '+root+'; bk changes -and:REV: | head -1')
+
+  def bkClone(self, url, root):
+    '''Clone a Bitkeeper repository located at "url" into "root"
+       - If self.stamp exists, clone only up to that revision'''
+    if not self.stamp is None and url in self.stamp:
+      return self.executeShellCommand('bk clone -r'+self.stamp[url]+' '+url+' '+root)
+    return self.executeShellCommand('bk clone '+url+' '+root)
+
   def bkRetrieve(self, url, root, canExist = 0, force = 0):
     self.debugPrint('Retrieving '+url+' --> '+root+' via bk', 3, 'install')
     if os.path.exists(root):
+      if not self.stamp is None and url in self.stamp:
+        if not self.stamp[url] == self.bkHeadRevision(root):
+          raise RuntimeError('Existing stamp for '+url+' does not match revision of repository in '+root)
       (url, authUrl, wasAuth) = self.getAuthorizedUrl(self.getBKParentURL(root))
       if not wasAuth:
         self.debugPrint('Changing parent from '+url+' --> '+authUrl, 1, 'install')
@@ -107,12 +122,12 @@ class Retriever(install.urlMapping.UrlMapping):
       try:
         self.testAuthorizedUrl(authUrl)
         self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+authUrl)
-        output = self.executeShellCommand('bk clone '+authUrl+' '+root)
+        output = self.bkClone(authUrl, root)
       except RuntimeError:
         pass
       else:
         return root
-      output = self.executeShellCommand('bk clone '+url+' '+root)
+      output = self.bkClone(url, root)
     return root
 
   def sshRetrieve(self, url, root, canExist = 0, force = 0):

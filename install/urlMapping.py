@@ -6,8 +6,9 @@ import urlparse
 urlparse.uses_netloc.extend(['bk', 'ssh'])
 
 class UrlMapping (base.Base):
-  def __init__(self, clArgs = None, argDB = None):
+  def __init__(self, clArgs = None, argDB = None, stamp = None):
     base.Base.__init__(self, clArgs, argDB)
+    self.stamp   = stamp
     self.urlMaps = []
     self.setupUrlMapping()
     return

@@ -5,9 +5,9 @@ import os
 import sys
 
 class Builder(install.urlMapping.UrlMapping):
-  def __init__(self):
-    install.urlMapping.UrlMapping.__init__(self)
-    self.retriever = install.retrieval.Retriever()
+  def __init__(self, stamp = None):
+    install.urlMapping.UrlMapping.__init__(self, stamp = stamp)
+    self.retriever = install.retrieval.Retriever(stamp)
     return
 
   def getMakeModule(self, root, name = 'make'):

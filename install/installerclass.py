@@ -4,13 +4,13 @@ import os
 import sys
 
 class Installer(install.urlMapping.UrlMapping):
-  def __init__(self, clArgs = None, argDB = None):
+  def __init__(self, clArgs = None, argDB = None, stamp = None):
     import install.build
     import install.retrieval
 
-    install.urlMapping.UrlMapping.__init__(self, clArgs, argDB)
-    self.retriever = install.retrieval.Retriever()
-    self.builder   = install.build.Builder()
+    install.urlMapping.UrlMapping.__init__(self, clArgs, argDB, stamp)
+    self.retriever = install.retrieval.Retriever(stamp)
+    self.builder   = install.build.Builder(stamp)
     self.force     = self.argDB['forceInstall']
     self.checkPython()
     self.checkNumeric()
