@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.84 2000/09/28 21:13:39 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.85 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -94,7 +94,6 @@ int GetElasticityMatrix(int m,Mat *newmat)
 {
   int        i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
   int        ict,nz,base,r1,r2,N,*rowkeep,nstart,ierr;
-  PetscTruth set;
   IS         iskeep;
   double     **K,norm;
   Mat        mat,submat = 0,*submatb;
