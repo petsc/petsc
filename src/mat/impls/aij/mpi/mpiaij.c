@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.142 1996/04/26 00:25:06 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.143 1996/05/07 20:43:35 balay Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1372,13 +1372,15 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
            if n is given)
 .  d_nz - number of nonzeros per row in diagonal portion of local submatrix
            (same for all local rows)
-.  d_nzz - number of nonzeros per row in diagonal portion of local submatrix
-           or null (possibly different for each row).  You must leave room
-           for the diagonal entry even if it is zero.
-.  o_nz - number of nonzeros per row in off-diagonal portion of local
+.  d_nzz - array containing the number of nonzeros in the various rows of the 
+           diagonal portion of local submatrix (possibly different for each row)
+           or PETSC_NULL. You must leave room for the diagonal entry even if
+           it is zero.
+.  o_nz - number of nonzeros per row in the off-diagonal portion of local
            submatrix (same for all local rows).
-.  o_nzz - number of nonzeros per row in off-diagonal portion of local 
-           submatrix or null (possibly different for each row).
+.  o_nzz - array containing the number of nonzeros in the various rows of the
+           off-diagonal portion of the local submatrix (possibly different for
+           each row) or PETSC_NULL.
 
    Output Parameter:
 .  A - the matrix 

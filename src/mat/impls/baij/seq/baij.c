@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.51 1996/06/24 21:45:45 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.52 1996/06/25 16:03:11 balay Exp curfman $";
 #endif
 
 /*
@@ -1493,8 +1493,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
    MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block
    compressed row) format.  For good matrix assembly performance the
    user should preallocate the matrix storage by setting the parameter nz
-   (or nzz).  By setting these parameters accurately, performance can be
-   increased by more than a factor of 50.
+   (or the array nzz).  By setting these parameters accurately, performance
+   during matrix assembly can be increased by more than a factor of 50.
 
    Input Parameters:
 .  comm - MPI communicator, set to MPI_COMM_SELF
@@ -1502,8 +1502,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
 .  m - number of rows
 .  n - number of columns
 .  nz - number of block nonzeros per block row (same for all rows)
-.  nzz - number of block nonzeros per block row or PETSC_NULL
-         (possibly different for each row)
+.  nzz - array containing the number of block nonzeros in the various block rows 
+         (possibly different for each block row) or PETSC_NULL
 
    Output Parameter:
 .  A - the matrix 

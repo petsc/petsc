@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.170 1996/04/26 00:02:52 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.171 1996/05/03 19:26:39 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1325,15 +1325,16 @@ extern int MatUseDXML_SeqAIJ(Mat);
    MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  For good matrix assembly performance
    the user should preallocate the matrix storage by setting the parameter nz
-   (or nzz).  By setting these parameters accurately, performance can be
-   increased by more than a factor of 50.
+   (or the array nzz).  By setting these parameters accurately, performance
+   during matrix assembly can be increased by more than a factor of 50.
 
    Input Parameters:
 .  comm - MPI communicator, set to MPI_COMM_SELF
 .  m - number of rows
 .  n - number of columns
 .  nz - number of nonzeros per row (same for all rows)
-.  nzz - number of nonzeros per row or null (possibly different for each row)
+.  nzz - array containing the number of nonzeros in the various rows
+         (possibly different for each row) or PETSC_NULL
 
    Output Parameter:
 .  A - the matrix 
