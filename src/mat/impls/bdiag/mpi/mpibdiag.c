@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.10 1995/06/08 03:10:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.10 1995/06/08 03:10:02 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -93,7 +93,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   recv_waits = (MPI_Request *) PETSCMALLOC((nreceives+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
-    MPI_Irecv((void *)(rvalues+3*nmax*i),3*nmax,MPI_SCALAR,MPI_ANY_SOURCE,tag,
+    MPI_Irecv((void *)(rvalues+3*nmax*i),3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
   }
 
@@ -119,7 +119,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   count = 0;
   for ( i=0; i<numtids; i++ ) {
     if (procs[i]) {
-      MPI_Isend((void*)(svalues+3*starts[i]),3*nprocs[i],MPI_SCALAR,i,tag,
+      MPI_Isend((void*)(svalues+3*starts[i]),3*nprocs[i],MPIU_SCALAR,i,tag,
                 comm,send_waits+count++);
     }
   }
@@ -153,7 +153,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
     MPI_Waitany(nrecvs,mbd->recv_waits,&imdex,&recv_status);
     /* unpack receives into our local space */
     values = mbd->rvalues + 3*imdex*mbd->rmax;
-    MPI_Get_count(&recv_status,MPI_SCALAR,&n);
+    MPI_Get_count(&recv_status,MPIU_SCALAR,&n);
     n = n/3;
     for ( i=0; i<n; i++ ) {
       row = (int) PETSCREAL(values[3*i]) - mbd->rstart;
@@ -442,15 +442,12 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
       Mat_BDiag *Ambd = (Mat_BDiag*) mbd->A->data;
 
       if (!mytid) {
-        for (i=0; i<Ambd->nd; i++)
-              printf("i=%d, Adiag=%d\n",i,Ambd->diag[i]);
         ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->nb,
-                                 mbd->gdiag,0,&A);
+                                 mbd->gdiag,0,&A); CHKERRQ(ierr);
       }
       else {
-        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,0,0,&A);
+        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,0,0,&A); CHKERRQ(ierr);
       }
-      CHKERRQ(ierr);
 
       /* Copy the matrix ... This isn't the most efficient means,
          but it's quick for now */
@@ -614,6 +611,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   if (m == PETSC_DECIDE) {
     if ((M%nb)) SETERRQ(1,"Invalid block size.  Bad global row number.");
     m = M/mbd->numtids + ((M % mbd->numtids) > mbd->mytid);
+    if ((m%nb)) SETERRQ(1,"Invalid block size.  Bad local row number.");
   }
   mbd->N   = N;
   mbd->M   = M;
@@ -647,10 +645,10 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   for (i=0; i<nd; i++) {
     mbd->gdiag[i] = diag[i];
     if (diag[i] > 0) { /* lower triangular */
-      if (diag[i] < mbd->rend) {ldiag[k] = diag[i] - mbd->brstart; k++;}
+      if (diag[i] < mbd->brend) {ldiag[k] = diag[i] - mbd->brstart; k++;}
     } else { /* upper triangular */
       if (mbd->M/nb - diag[i] > mbd->N/nb) {
-        if (mbd->M/nb + diag[i] > mbd->rstart)
+        if (mbd->M/nb + diag[i] > mbd->brstart)
           {ldiag[k] = diag[i] - mbd->brstart; k++;}
       } else {
         if (mbd->M/nb > mbd->brstart)
