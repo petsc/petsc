@@ -106,10 +106,9 @@ class UsingSIDL (logging.Logger):
 
   def setupIncludeDirectories(self):
     rootDir = self.getRootDir()
-    print 'rootDir: '+rootDir
     for lang in SIDLConstants.getLanguages():
       self.includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = os.path.join(rootDir, 'server')))
-      if self.compilerDefaults.generatesAllStubs():
+      if not self.compilerDefaults.generatesAllStubs() and not lang in self.internalClientLanguages[self.getBasePackage()]:
         self.includeDirs[lang].append(self.getClientRootDir(lang, root = rootDir))
     # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
     self.includeDirs['Python'].append(os.path.join(rootDir, 'python'))
