@@ -14,6 +14,7 @@ petsc/docs/manual
 petsc/src/apps
 petsc/src/usg
 petsc/src/contrib/flash
+petsc/src/contrib/elliott
 petsc/src/contrib/tutorials.tar.gz
 petsc/src/mat/impls/baij/seq/dgedi.ff
 petsc/src/mat/impls/baij/seq/dgefa.ff
