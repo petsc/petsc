@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.18 1998/05/12 18:50:59 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.19 1998/06/24 13:23:34 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -93,6 +93,7 @@ AMS_LIB     = -L/home/bsmith/ams/lib/lib/rs6000 -lalicepub -lutilmt -lutil -lpth
 #    have it listed above in the LAPACK_LIB line above.
 #
 #PCONF         =  -DHAVE_ESSL -DHAVE_MPE -DHAVE_PVODE
-PCONF         =  -DHAVE_ESSL -DHAVE_BLOCKSOLVE  -DHAVE_AMS
+#PCONF         =  -DHAVE_ESSL -DHAVE_BLOCKSOLVE  -DHAVE_AMS
+PCONF         =  -DHAVE_ESSL -DHAVE_BLOCKSOLVE
 #
 EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${ADIC_LIB} ${AMS_LIB}
