@@ -369,6 +369,14 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
   _4_ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __tmp;
 
+#define MatPreallocateSymmetricInitialize(comm,nrows,ncols,dnz,onz) 0; \
+{ \
+  int _4_ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__end; \
+  _4_ierr = PetscMalloc(2*__tmp*sizeof(int),&dnz);CHKERRQ(_4_ierr);onz = dnz + __tmp;\
+  _4_ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(_4_ierr);\
+  _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr);\
+  _4_ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __tmp;
+
 #define MatPreallocateSetLocal(map,nrows,rows,ncols,cols,dnz,onz) 0;\
 {\
   int __l;\
