@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.43 1996/04/19 13:46:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.44 1996/06/13 21:35:39 bsmith Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -129,13 +129,13 @@ int PetscSetDisplay(MPI_Comm comm,char *display,int n)
 
 static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
 
-/*@C
+/*@
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
    Input Parameters:
 .  comm - Communicator to sequentialize.  
-.  ng   - Number in group.  This many processes are allowed to execute
-   at the same time.  Usually one.  
+.  ng   - Number in processor group.  This many processes are allowed to execute
+   at the same time (usually 1)
 
    Notes:
    PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd() provide a
@@ -147,10 +147,14 @@ $  PetscSequentialPhaseEnd( comm, 1 );
 $
    Often, the sequential code contains output statements (e.g., printf) to
    be executed.  Note that you may need to flush the I/O buffers before
-   calling PetscSequentialPhaseEnd(); also note that some systems do
-   not propagate I/O in any  order to the controling terminal (in other words, 
+   calling PetscSequentialPhaseEnd().  Also, note that some systems do
+   not propagate I/O in any order to the controling terminal (in other words, 
    even if you flush the output, you may not get the data in the order
    that you want).
+
+.seealso: PetscSequentialPhaseEnd()
+
+.keywords: sequential, phase, begin
 @*/
 int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 {
@@ -185,16 +189,21 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   return 0;
 }
 
-/*@C
+/*@
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 
    Input Parameters:
 .  comm - Communicator to sequentialize.  
-.  ng   - Number in group.  This many processes are allowed to execute
-   at the same time.  Usually one.  
+.  ng   - Number in processor group.  This many processes are allowed to execute
+   at the same time (usually 1)
+
 
    Notes:
-   See PetscSequentialPhaseBegin for more details.
+   See PetscSequentialPhaseBegin() for more details.
+
+.seealso: PetscSequentialPhaseBegin()
+
+.keywords: sequential, phase, end
 @*/
 int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
 {
