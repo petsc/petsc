@@ -31,7 +31,7 @@ X11_LIB        = /usr/local/X11R6/lib/libX11.a
 #
 MPI_LIB        = /home/petsc/mpich/lib/freebsd/ch_p4/libmpi.a
 MPI_INCLUDE    = -I/home/petsc/mpich/include 
-MPIRUN         = /home/petsc/mpich/bin/mpirun -p4ssport 4132 \
+MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_p4/mpirun -p4ssport 4132 \
                   -machinefile $(PETSC_DIR)/maint/hosts.local
 #
 # Optional location of BlockSolve, if you do not have BlockSolve, then
