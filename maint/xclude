@@ -1,4 +1,4 @@
-petsc/src/contrib/RamgPetsc.c
+petsc/src/contrib/RamgPetsc.C
 petsc/src/contrib/pc
 petsc/src/contrib/mixedrealcomplex
 petsc/src/contrib/psparse
