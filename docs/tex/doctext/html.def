@@ -21,13 +21,6 @@ eop        %n</BODY></HTML>%n
 bop        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">%n<HTML>%n\
 <HEAD>%n<META NAME="GENERATOR" CONTENT="DOCTEXT">%n
 # Arglist form   this is for + . . - lists
-%s_arg_list %n<DL>%n
-%s_arg_inlist %n<DT><B>
-%e_arg_inlist </B>
-%s_defn_inlist <DD>
-%e_defn_inlist %n
-%e_arg_list </DL>%n
-# Here's an alternative
 s_arg_list %n<TABLE border="0" cellpadding="0" cellspacing="0">
 s_arg_inlist %n<TR><TD><B>
 e_arg_inlist </B></TD>
