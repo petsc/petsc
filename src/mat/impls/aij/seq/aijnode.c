@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.34 1996/02/29 22:35:21 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.35 1996/03/07 23:37:09 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -245,7 +245,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   Scalar     sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
   Scalar     *v1, *v2, *v3, *v4, *v5,*x, *y;
   int        *idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
-  int        m = a->m, shift = a->indexshift;
+  int        shift = a->indexshift;
   
   if (!a->inode.size)SETERRQ(1,"MatMult_SeqAIJ_Inode: Missing Inode Structure");
   node_max = a->inode.node_count;                
@@ -411,7 +411,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       SETERRQ(1,"MatMult_SeqAIJ_Inode:Node size not yet supported");
     }
   }
-  PLogFlops(2*a->nz - m);
+  PLogFlops(2*a->nz - a->m);
   return 0;
 }
 /* ----------------------------------------------------------- */

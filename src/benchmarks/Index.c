@@ -8,7 +8,7 @@ int main( int argc, char **argv)
   double    t1, t2, value;
   int       i, ierr,z[100000], intval, tmp;
   SYRandom  r;
-  Scalar    x[100000],y[100000],
+  Scalar    x[100000],y[100000];
 
   PetscInitialize(&argc, &argv,0,0,0);
   ierr = SYRandomCreate( MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
