@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.186 1996/09/20 03:56:04 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.187 1996/09/23 16:21:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -77,8 +77,8 @@ static int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,i
                            PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        ierr,i,ishift = a->indexshift,*collengths,*cia,*cja,n = A->n;
-  int        nz = a->i[n]+ishift,row,*jj,m,col;
+  int        ierr,i,ishift = a->indexshift,*collengths,*cia,*cja,n = A->n,m = A->m;
+  int        nz = a->i[m]+ishift,row,*jj,mr,col;
  
   *nn     = A->n;
   if (!ia) return 0;
@@ -88,7 +88,7 @@ static int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,i
     collengths = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(collengths);
     PetscMemzero(collengths,n*sizeof(int));
     cia        = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(cia);
-    cja        = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cja);
+    cja        = (int *) PetscMalloc( (nz+1)*sizeof(int) ); CHKPTRQ(cja);
     jj = a->j;
     for ( i=0; i<nz; i++ ) {
       collengths[jj[i] + ishift]++;
@@ -99,24 +99,12 @@ static int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,i
     }
     PetscMemzero(collengths,n*sizeof(int));
     jj = a->j;
-    for ( row=0; row<n; row++ ) {
-      m = a->i[row+1] - a->i[row];
-      for ( i=0; i<m; i++ ) {
-
+    for ( row=0; row<m; row++ ) {
+      mr = a->i[row+1] - a->i[row];
+      for ( i=0; i<mr; i++ ) {
         col = *jj++ + ishift;
-printf("row col %d %d\n",row,col);
         cja[cia[col] + collengths[col]++ - oshift] = row + oshift;  
       }
-    }
-
-    jj = cja;
-    for ( i=0; i<n; i++ ) {
-      m = cia[i+1] - cia[i];
-      printf("Column %d length %d\n",i,m);
-      for ( row = 0; row < m; row++ ) {
-        printf("%d ",*jj++);
-      }
-      printf("\n");
     }
     PetscFree(collengths);
     *ia = cia; *ja = cja;
@@ -316,17 +304,17 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
-  if (format == ASCII_FORMAT_INFO) {
+  if (format == VIEWER_FORMAT_ASCII_INFO) {
     return 0;
   } 
-  else if (format == ASCII_FORMAT_INFO_DETAILED) {
+  else if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg1); CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg2); CHKERRQ(ierr);
     if (flg1 || flg2) fprintf(fd,"  not using I-node routines\n");
     else     fprintf(fd,"  using I-node routines: found %d nodes, limit used is %d\n",
         a->inode.node_count,a->inode.limit);
   }
-  else if (format == ASCII_FORMAT_MATLAB) {
+  else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     fprintf(fd,"%% Size = %d %d \n",m,a->n);
     fprintf(fd,"%% Nonzeros = %d \n",a->nz);
     fprintf(fd,"zzz = zeros(%d,3);\n",a->nz);
@@ -344,7 +332,7 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     }
     fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
   } 
-  else if (format == ASCII_FORMAT_COMMON) {
+  else if (format == VIEWER_FORMAT_ASCII_COMMON) {
     for ( i=0; i<m; i++ ) {
       fprintf(fd,"row %d:",i);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
@@ -1384,6 +1372,9 @@ int MatPrintHelp_SeqAIJ(Mat A)
   return 0;
 }
 static int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg);
+extern int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
+extern int MatColoringPatch_SeqAIJ(Mat,int,int *,ISColoring *);
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,MatRestoreRow_SeqAIJ,
@@ -1414,7 +1405,9 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetRowIJ_SeqAIJ,
        MatRestoreRowIJ_SeqAIJ,
        MatGetColumnIJ_SeqAIJ,
-       MatRestoreColumnIJ_SeqAIJ};
+       MatRestoreColumnIJ_SeqAIJ,
+       MatFDColoringCreate_SeqAIJ,
+       MatColoringPatch_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
