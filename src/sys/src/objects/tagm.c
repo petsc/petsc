@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.5 1998/10/19 22:17:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tagm.c,v 1.6 1999/02/28 20:00:43 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites
@@ -111,6 +111,76 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 
   ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
+
+  if (*tagvalp == *tag - 1) {
+    tagvalp[0]++;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscCommGetNewTag" 
+/*@
+    PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All 
+    processors that share the communicator MUST call this routine EXACTLY the same
+    number of times.  This tag should only be used with the current object's
+    communicator; do NOT use it with any other MPI communicator.
+
+    Collective on comm
+
+    Input Parameter:
+.   comm - the PETSc communicator
+
+    Output Parameter:
+.   tag - the new tag
+
+.keywords: comm, get, new, tag
+
+.seealso: PetscCommRestoreNewTag(),PetscObjectGetNewTag(),PetscObjectRestoreNewTag()
+@*/
+int PetscCommGetNewTag(MPI_Comm comm,int *tag)
+{
+  int ierr,*tagvalp=0,flag;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(tag);
+
+  ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied");
+
+  if (*tagvalp < 1) SETERRQ(PETSC_ERR_PLIB,0,"Out of tags for communicator");
+  *tag = tagvalp[0]--;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscCommRestoreNewTag" 
+/*@
+    PetscCommRestoreNewTag - Restores a new tag from a PETSc comm. All 
+    processors that share the communicator MUST call this routine EXACTLY 
+    the same number of times. 
+
+    Collective on comm
+
+    Input Parameter:
+.   comm - the PETSc communicator
+
+    Output Parameter:
+.   tag - the new tag
+
+.keywords: comm, restore, new, tag
+
+.seealso:  PetscCommRestoreNewTag(),PetscObjectGetNewTag(),PetscObjectRestoreNewTag()
+@*/
+int PetscCommRestoreNewTag(MPI_Comm comm,int *tag)
+{
+  int ierr,*tagvalp=0,flag;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(tag);
+
+  ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad communicator supplied");
 
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
