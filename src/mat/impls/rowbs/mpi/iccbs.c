@@ -1,21 +1,28 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.13 1996/06/08 17:21:36 curfman Exp curfman $";
+static char vcid[] = "$Id: iccbs.c,v 1.14 1996/06/08 20:08:13 curfman Exp curfman $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
-   Note that BlockSolve95 works with a scaled and permuted linear system, 
-   where the diagonal of the scaled matrix is 1:
+
+   Note that BlockSolve95 works with a scaled and permuted preconditioning matrix.
+   If the linear system matrix and preconditioning matrix are the same, we then
+   work directly with the permuted and scaled linear system:
       - original system:  Ax = b
-      - scaled system:    Cz = f, where
-                              C = D^{-1/2} A D^{-1/2}
-                              z = D^{1/2} x
-                              f = D^{-1/2} b
-                              D = diagonal of A
-   Thus, we use pre-solve and post-solve phases to handle scaling and permutation
-   of the original system.  Note that by default the scaled residual norm is
-   monitored for the ILU/ICC preconditioners of BlockSolve95.  Use the option
+      - permuted and scaled system:   Cz = f, where
+             C = P D^{-1/2} A D^{-1/2}
+             z = P D^{1/2} x
+             f = P D^{-1/2} b
+             D = diagonal of A
+             P = permutation matrix determined by coloring
+   In this case, we use pre-solve and post-solve phases to handle scaling and
+   permutation, and by default the scaled residual norm is monitored for the
+   ILU/ICC preconditioners.  Use the option
      -ksp_bsmonitor
    to print both the scaled and unscaled residual norms.
+
+   If the preconditioning matrix differs from the linear system matrix, then we
+   work directly ith the original linear system, and just do the scaling and
+   permutation within PCApply().
 */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -104,6 +111,12 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
   Mat          Amat, Pmat;
   int          ierr;
 
+  ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  if (Amat != Pmat && Amat->type == MATMPIROWBS)
+    SETERRQ(1,"PCSetUp_ICC_MPIRowbs:Does not support different Amat and\n\
+      Pmat with MATMPIROWBS format for both.  Use a different format for\n\
+      Amat (e.g., MATMPIAIJ) and keep Pmat the same.");
+
   pc ->destroy        = PCDestroy_ICC_MPIRowbs;
   icc->implctx        = (void *) (iccbs = PetscNew(PCiBS)); CHKPTRQ(iccbs);
   if (icc->bs_iter) { /* Set BlockSolve iterative solver defaults */
@@ -121,7 +134,6 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
     iccbs->max_it     = 0;
     iccbs->rnorm      = 0.0;
     iccbs->guess_zero = 0;
-    ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
     if (Amat->type == MATMPIROWBS) {
       pc->presolve    = PCPreSolve_MPIRowbs;
       pc->postsolve   = PCPostSolve_MPIRowbs;
