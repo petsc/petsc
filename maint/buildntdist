@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.42 2000/03/27 21:53:19 balay Exp balay $ 
+# $Id: buildntdist,v 1.43 2000/06/06 22:48:47 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -50,8 +50,9 @@ find $tmpdir/petscnt -type d -name output -exec /bin/rm -rf {} \;
 /bin/rm -rf bmake/alpha* bmake/sun4* bmake/solaris* bmake/hpux 
 /bin/rm -rf bmake/paragon bmake/rs6000* bmake/freebsd* bmake/linux 
 /bin/rm -rf bmake/nt_gnu bmake/t3d bmake/t3e bmake/IRIX* bmake/i386*
-/bin/rm -f  bmake/common. bmake/common bmake/ascired*
-/bin/rm -rf src/blaslapack/examples
+/bin/rm -rf bmake/ascired*
+/bin/rm -f  bmake/common. bmake/common 
+/bin/rm -rf src/blaslapack/examples 
 #
 # Eliminate the '#requirespackage' stuff
 #

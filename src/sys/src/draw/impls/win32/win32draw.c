@@ -1,4 +1,4 @@
-/* $Id: ximpl.h,v 1.14 2000/05/05 22:13:35 balay Exp $ */
+/* $Id: win32draw.c,v 1.1 2000/06/07 17:44:51 balay Exp balay $ */
 
 #include "src/sys/src/draw/drawimpl.h"
 #include "src/sys/src/draw/impls/win32/win32draw.h"
