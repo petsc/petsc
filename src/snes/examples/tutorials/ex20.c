@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.12 2001/03/16 20:20:35 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.13 2001/03/16 20:55:38 bsmith Exp bsmith $ */
 
 
 static char help[] ="Solves nonlinear Radiative Transport PDE with multigrid.\n\
@@ -273,7 +273,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         } else if (i == mx-1) {
 
           /* right-hand (east) boundary */ 
-          tw = x[k][j][i];   
+          tw = x[k][j][i-1];   
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
