@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.50 2000/08/17 04:53:40 bsmith Exp bsmith $*/
+/*$Id: zsnes.c,v 1.51 2000/08/21 20:06:27 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -262,17 +262,17 @@ void PETSC_STDCALL snescubiclinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec
 {
   *ierr = SNESCubicLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
-void PETSC_STDCALL snesquadraticlinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,double*fnorm,
+void snesquadraticlinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,double*fnorm,
                                         double *ynorm,double *gnorm,int *flag,int *ierr)
 {
   *ierr = SNESQuadraticLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
-void PETSC_STDCALL snesnolinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,double*fnorm,
+void snesnolinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,double*fnorm,
                                         double *ynorm,double *gnorm,int *flag,int *ierr)
 {
   *ierr = SNESNoLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
-void PETSC_STDCALL snesnolinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,double*fnorm,
+void snesnolinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,double*fnorm,
                                         double *ynorm,double *gnorm,int *flag,int *ierr)
 {
   *ierr = SNESNoLineSearchNoNorms(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
@@ -304,25 +304,25 @@ void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (*f)(SNES*,void *,Vec*,Vec
   
 
 /*--------------------------------------------------------------------------------------------*/
-void PETSC_STDCALL snesconverged_um_ls_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
+void snesconverged_um_ls_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
                                        void *ct,int *ierr)
 {
   *ierr = SNESConverged_UM_LS(*snes,*a,*b,*c,r,ct);
 }
 
-void PETSC_STDCALL snesconverged_um_tr_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
+void snesconverged_um_tr_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
                                        void *ct,int *ierr)
 {
   *ierr = SNESConverged_UM_TR(*snes,*a,*b,*c,r,ct);
 }
 
-void PETSC_STDCALL snesconverged_eq_tr_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
+void snesconverged_eq_tr_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
                                        void *ct,int *ierr)
 {
   *ierr = SNESConverged_EQ_TR(*snes,*a,*b,*c,r,ct);
 }
 
-void PETSC_STDCALL snesconverged_eq_ls_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
+void snesconverged_eq_ls_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
                                        void *ct,int *ierr)
 {
   *ierr = SNESConverged_EQ_LS(*snes,*a,*b,*c,r,ct);

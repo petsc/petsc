@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.378 2000/08/17 04:51:22 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.379 2000/09/05 17:20:21 balay Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3722,7 +3722,7 @@ int MatSetUnfactored(Mat mat)
 int MatGetType(Mat mat,MatType *type,char **name)
 {
   int  itype = (int)mat->type;
-  char *matname[10];
+  char *matname[15];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
