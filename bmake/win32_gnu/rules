@@ -18,9 +18,6 @@ RANLIB   = ranlib
 SHELL    = /bin/sh
 CLINKER  = gcc ${COPTFLAGS}
 FLINKER  = g77 ${FOPTFLAGS}
-
-FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE
-
 SYS_LIB  = -ladvapi32
 
 include ${PETSC_DIR}/bmake/common

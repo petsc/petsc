@@ -1,4 +1,4 @@
-# $Id: base,v 1.27 1998/04/09 00:15:10 balay Exp balay $ 
+# $Id: base,v 1.28 1998/04/09 20:43:59 balay Exp balay $ 
 
 PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
@@ -16,8 +16,6 @@ RANLIB   = ranlib
 SHELL    = /bin/sh
 CLINKER  = gcc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 FLINKER  = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
-
-FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 
 SYS_LIB  = -lc
 

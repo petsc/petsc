@@ -1,4 +1,4 @@
-# $Id: base,v 1.20 1998/04/03 22:37:11 balay Exp balay $ 
+# $Id: base,v 1.21 1998/04/09 21:06:05 balay Exp balay $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
@@ -43,7 +43,6 @@ FLINKER = /home/alice/egcs/rs6000/bin/g77 -Wl,-bbigtoc ${FOPTFLAGS}
 
 SHELL   = /bin/sh
 SYS_LIB = -lisode
-FCONF   = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 
 # AIX apparently does not remotely resemble EITHER System V or BSD 4.x.
 # By defining _POSIX_SOURCE , there is some hope that it will pretend that

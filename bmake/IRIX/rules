@@ -1,4 +1,4 @@
-# $Id: base,v 1.11 1998/04/08 22:03:37 balay Exp balay $ 
+# $Id: base,v 1.12 1998/04/09 20:26:38 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -n32 -woff 1048 -DPARCH_IRIX
@@ -30,8 +30,6 @@ SYS_LIB  = -lfpe -lsun
 #
 #  For SGI 64 bit machines use the PETSC_ARCH IRIX64
 #
-FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DPARCH_IRIX
-
 SHELL    = /bin/sh
 
 include ${PETSC_DIR}/bmake/common
