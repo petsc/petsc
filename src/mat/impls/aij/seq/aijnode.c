@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.15 1995/11/27 23:32:13 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.16 1995/11/28 23:14:17 balay Exp balay $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: aijnode.c,v 1.15 1995/11/27 23:32:13 balay Exp balay 
 */
 #include "aij.h"                
 
-extern int Mat_AIJ_CheckInode(Mat);
-extern int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
-extern int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
+int Mat_AIJ_CheckInode(Mat);
+static int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
+static int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 
 static int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
 {
