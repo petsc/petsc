@@ -58,13 +58,13 @@ ex5: ex5.o  chkopts
 	-$(CLINKER) -o ex5 ex5.o $(PETSC_LIB)
 	$(RM) ex5.o
 
+ex5f: ex5f.o  chkopts
+	-$(FLINKER) -o ex5f ex5f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex5f.o
+
 ex6: ex6.o  chkopts
 	-$(CLINKER) -o ex6 ex6.o $(PETSC_LIB)
 	$(RM) ex6.o
-
-ex6f: ex6f.o  chkopts
-	-$(FLINKER) -o ex6f ex6f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-	$(RM) ex6f.o
 
 ex7: ex7.o  chkopts
 	-$(CLINKER) -o ex7 ex7.o $(PETSC_LIB)
@@ -83,13 +83,11 @@ runex1:
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   $(RM) -f ex1_1.tmp
-
 runex1f:
 	-@$(MPIRUN) ex1f -snes_smonitor > ex1f_1.tmp 2>&1;   \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   $(RM) -f ex1f_1.tmp
-
 runex2:
 	-@$(MPIRUN) ex2 -nox -snes_smonitor -snes_view \
 		-pc_type jacobi >ex2_1.tmp 2>&1;	\
@@ -102,7 +100,6 @@ runex2_2:
 	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   $(RM) -f ex2_2.tmp
-
 runex3:
 	-@$(MPIRUN) -np 2 ex3 -nox -snes_smonitor  > ex3_1.tmp 2>&1;	  \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
@@ -114,18 +111,6 @@ runex3_2:
 	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   $(RM) -f ex3_2.tmp
-
-runex6:
-	-@$(MPIRUN) ex6 -snes_smonitor > ex6_1.tmp 2>&1;   \
-	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
-	   else echo "Possible problem with ex6_1, diffs above"; fi; \
-	   $(RM) -f ex6_1.tmp
-runex6_2:
-	-@$(MPIRUN) ex6 -snes_mf -snes_smonitor > ex6_2.tmp 2>&1;   \
-	   if (diff output/ex6_2.out ex6_2.tmp) then true; \
-	   else echo "Possible problem with ex6_2, diffs above"; fi; \
-	   $(RM) -f ex6_2.tmp
-
 runex4:
 	-@$(MPIRUN) ex4 -nox > ex4_1.tmp 2>&1;	 \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
@@ -173,7 +158,6 @@ runex5_7:
 	   if (diff output/ex5_7.out ex5_7.tmp) then true; \
 	   else echo "Possible problem with ex5_7, diffs above"; fi; \
 	   $(RM) -f ex5_7.tmp
-
 runex5f:
 	-@$(MPIRUN) -np 4 ex5f -snes_mf -Nx 4 -Ny 1 -snes_smonitor > ex5f_1.tmp 2>&1; \
 	   if (diff output/ex5f_1.out ex5f_1.tmp) then true; \
@@ -189,37 +173,15 @@ runex5f_3:
 	   if (diff output/ex5f_3.out ex5f_3.tmp) then true; \
 	   else echo "Possible problem with ex5f_3, diffs above"; fi; \
 	   $(RM) -f ex5f_3.tmp
-
-runex7:
-	-@$(MPIRUN) ex7 -snes_smonitor	> ex7_1.tmp 2>&1;   \
-	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
-	   else echo "Possible problem with ex7_1, diffs above"; fi; \
-	   $(RM) -f ex7_1.tmp
-runex9:
-	-@$(MPIRUN) -np 2 ex9 -snes_smonitor  > ex9_1.tmp 2>&1;	  \
-	   if (diff output/ex9_1.out ex9_1.tmp) then true; \
-	   else echo "Possible problem with ex9_1, diffs above"; fi; \
-	   $(RM) -f ex9_1.tmp
-
-runex9_2:
-	-@$(MPIRUN) -np 8 ex9 -snes_smonitor  > ex9_2.tmp 2>&1;	  \
-	   if (diff output/ex9_1.out ex9_2.tmp) then true; \
-	   else echo "Possible problem with ex9_1, diffs above"; fi; \
-	   $(RM) -f ex9_2.tmp
-runex9_3:
-	-@$(MPIRUN) -np 8 ex9 -star -snes_smonitor  > ex9_3.tmp 2>&1;	\
-	   if (diff output/ex9_1.out ex9_3.tmp) then true; \
-	   else echo "Possible problem with ex9_1, diffs above"; fi; \
-	   $(RM) -f ex9_3.tmp
-runex10:
-	-@$(MPIRUN) -np 2 ex10 -n 10 -snes_smonitor  > ex10_1.tmp 2>&1;	  \
-	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
-	   else echo "Possible problem with ex10_1, diffs above"; fi; \
-	   $(RM) -f ex10_1.tmp
-runex12:
-	-@$(MPIRUN) -np 2 ex12 -n 10 -snes_smonitor  > ex12_1.tmp 2>&1;	  \
-	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
-	   else echo "Possible problem with ex12_1, diffs above"; fi; \
-	   $(RM) -f ex12_1.tmp
+runex6:
+	-@$(MPIRUN) ex6 -snes_smonitor > ex6_1.tmp 2>&1;   \
+	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
+	   else echo "Possible problem with ex6_1, diffs above"; fi; \
+	   $(RM) -f ex6_1.tmp
+runex6_2:
+	-@$(MPIRUN) ex6 -snes_mf -snes_smonitor > ex6_2.tmp 2>&1;   \
+	   if (diff output/ex6_2.out ex6_2.tmp) then true; \
+	   else echo "Possible problem with ex6_2, diffs above"; fi; \
+	   $(RM) -f ex6_2.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
