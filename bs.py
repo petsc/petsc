@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import atexit
 import cPickle
+import commands
 import os
 import os.path
 import string

@@ -51,7 +51,7 @@ class FileSet (bs.Maker):
 
   def extend(self, list):
     if isinstance(list, FileSet):
-      for item in group.getFiles():
+      for item in list.getFiles():
         self.append(item)
     else:
       for item in list:
