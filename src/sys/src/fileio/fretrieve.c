@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.30 2000/05/05 22:13:54 balay Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.31 2000/05/10 16:39:17 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -361,10 +361,10 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 @*/
 int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
-  char              *par,buf[1024],tmpdir[256];
+  char              *par,buf[1024],tmpdir[256],urlget[256];
   FILE              *fp;
   int               i,rank,ierr,len = 0;
-  PetscTruth        flg1,flg2,sharedtmp;
+  PetscTruth        flg1,flg2,sharedtmp,exists;
 
   PetscFunctionBegin;
   *found = PETSC_FALSE;
@@ -395,8 +395,19 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 #endif
     ierr = PetscStrcpy(par,PETSC_PYTHON);CHKERRQ(ierr);
     ierr = PetscStrcat(par," ");CHKERRQ(ierr);
-    ierr = PetscStrcat(par,PETSC_DIR);CHKERRQ(ierr);
-    ierr = PetscStrcat(par,"/bin/urlget.py ");CHKERRQ(ierr);
+
+    ierr = PetscStrcpy(urlget,PETSC_DIR);CHKERRQ(ierr);
+    ierr = PetscStrcat(urlget,"/bin/urlget.py");CHKERRQ(ierr);
+    ierr = PetscTestFile(urlget,'r',&exists);CHKERRQ(ierr);
+    if (!exists) {
+      ierr = PetscTestFile("urlget.py",'r',&exists);CHKERRQ(ierr);
+      if (!exists) {
+        SETERRQ1(1,1,"Cannot locate PETSc python script urlget.py in %s or current directory",urlget);
+      }
+      ierr = PetscStrcpy(urlget,"urlget.py");CHKERRQ(ierr);
+    }
+    ierr = PetscStrcat(par,urlget);CHKERRQ(ierr);
+    ierr = PetscStrcat(par," ");CHKERRQ(ierr);
 
     /* are we using an alternative /tmp? */
     if (flg1) {
@@ -412,21 +423,22 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     if (!fgets(buf,1024,fp)) {
       SETERRQ1(1,1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
     }
+    PLogInfo(0,"PetscFileRetrieve:Message back from Python: %s\n",buf);
 
+    ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
+    ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);
+    ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
+    if (flg1 || flg2) {
+      SETERRQ1(1,1,"PetscFileRetrieve:Did not find file %s",libname);
+    } else {
+      *found = PETSC_TRUE;
+    }
     /* Check for \n and make it 0 */
     for (i=0; i<1024; i++) {
       if (buf[i] == '\n') {
         buf[i] = 0;
         break;
       }
-    }
-    ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
-    ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);
-    ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
-    if (flg1 || flg2) {
-      PLogInfo(0,"PetscFileRetrieve:Did not find file %s",libname);
-    } else {
-      *found = PETSC_TRUE;
     }
     ierr = PetscStrncpy(llibname,buf,llen);CHKERRQ(ierr);
     ierr = PetscFree(par);CHKERRQ(ierr);
