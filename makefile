@@ -125,7 +125,7 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES bmake/common
 	etags -a -f TAGS_MAKEFILES makefile src/*/src/makefile src/makefile 
 	etags -a -f TAGS_MAKEFILES src/*/impls/makefile src/*/impls/*/makefile
-	etags -a -f TAGS_MAKEFILES src/*/utils/makefile
+	etags -a -f TAGS_MAKEFILES src/*/utils/makefile src/*/interface/makefile
 	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS_MAKEFILES bmake/common bmake/sun4/sun4* 
 	etags -a -f TAGS_MAKEFILES bmake/rs6000/rs6000* 
