@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.6 1996/01/30 16:08:15 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.7 1996/01/30 22:11:16 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -24,7 +24,7 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
   int         **idx, *n, *w1, *w2, *w3, *w4, *rtable,**table,**data;
   int         size, rank, m,i,j,k, ierr, **rbuf, row, proc, mct, msz, **outdat, **ptr;
-  int         *ctr, sum, *pa, tag, *tmp,bsz, nmsg , *isz, *isz1, **xdata, rstart;
+  int         *ctr, sum, *pa, tag, *tmp,bsz, nmsg , *isz, *isz1, **xdata, *xtable,rstart;
   int         cstart, *ai, *aj, *bi, *bj, *garray, bsz1, **rbuf2;
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits,*send_waits2,*recv_waits2 ;
@@ -252,7 +252,7 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   
   /* Do work on recieved messages*/
   {
-    int ct, ct1, ct2, *xtable;
+    int ct, ct1, ct2;
     int oct2, l, start, end, val, max1, max2;
   
     
@@ -394,13 +394,23 @@ int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   PetscFree(ctr);
   PetscFree(pa);
   PetscFree(rbuf[0]);
-  PetscFree(rbuf);
+  PetscFree(rbuf); 
+  PetscFree(rbuf2[0]); 
+  PetscFree(rbuf2); 
   PetscFree(send_waits);
   PetscFree(recv_waits);
+  PetscFree(send_waits2);
+  PetscFree(recv_waits2);
   PetscFree(table[0]);
   PetscFree(table);
   PetscFree(data);
   PetscFree(send_status);
+  PetscFree(recv_status);
+  PetscFree(isz);
+  PetscFree(isz1);
+  PetscFree(xtable);
+  PetscFree(xdata);
+  
   /* Dont forget to ISRestoreIndices */
   return 0;
 }
