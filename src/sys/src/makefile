@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.67 1998/05/08 16:12:41 bsmith Exp balay $ 
+# $Id: makefile,v 1.68 1998/06/04 22:34:46 balay Exp balay $ 
 
 ALL: lib 
 CFLAGS	  = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' -DPETSC_BOPT='"${BOPT}"' \
@@ -10,7 +10,7 @@ SOURCEH	  =
 OBJSC	  = 
 OBJSF	  =
 LIBBASE	  = libpetscsys
-DIRS	  = dll error fileio memory objects time utils plog mpiuni
+DIRS	  = error dll fileio memory objects time utils plog mpiuni
 LOCDIR	  = src/sys/src/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
