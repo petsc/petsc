@@ -8,12 +8,12 @@
 [<A HREF="../manual.html#Node49"> Section 4.3 of Users Manual</A>]
 </H2> 
 
-To solve linear systems, users should employ the
+The
 <A HREF="../SLES/index.html">Scalable Linear Equations Solvers (SLES)</A>
-component, which provides an easy-to-use interface to the combination of
+component, provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the KSP and
 <A HREF="../PC/index.html">PC</A>
-components, respectively).  SLES users can set various Krylov
+components, respectively) and direct solvers.  SLES users can set various Krylov
 subspace options at runtime via the options database (e.g., 
 <font face ="Courier">
 -ksp_type cg
@@ -25,9 +25,9 @@ codes by first extracting the KSP context from the SLES context via
 and then directly calling the KSP routines listed below (e.g., 
 <A HREF="../KSP/KSPSetType.html">KSPSetType()</A>
 ).
-Both KSP and PC components can be used directly to create and
-destroy solvers; this approach is not needed for most users but
-rather is intended for library developers.
+KSP components can be used directly to create and
+destroy solvers; this is not needed for users but
+is intended for library developers.
 
 <P>
 

@@ -8,14 +8,14 @@
 [<A HREF="../manual.html#Node46"> Chapter 4 of Users Manual</A>]
 </H2>
 
-To solve linear systems, users should employ the
 Scalable Linear Equations Solvers (SLES)
-component, which provides an easy-to-use interface to the combination of
+component, provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the
 <A HREF="../KSP/index.html">KSP</A> and 
 <A HREF="../PC/index.html">PC</A> 
-components, respectively).  SLES users can set various Krylov
-subspace and preconditioning options at runtime via the options database (e.g., 
+components, respectively) and sequential direct solvers. 
+SLES users can set various Krylov
+and preconditioning options at runtime via the options database (e.g., 
 <font face ="Courier">
 -pc_type jacobi -ksp_type gmres
 </font face>
@@ -24,13 +24,13 @@ SLES users can also set KSP and PC options directly in application
 codes by first extracting the KSP and/or PC context from the SLES context via
 <A HREF="../SLES/SLESGetKSP.html">SLESGetKSP()</A>/
 <A HREF="../SLES/SLESGetPC.html">SLESGetPC()</A>
-and then directly calling the KSP and PC routines listed below (e.g., 
+and then directly calling the KSP and PC routines (e.g., 
 <A HREF="../KSP/KSPSetType.html">KSPSetType()</A>/
 <A HREF="../PC/PCSetType.html">PCSetType()</A>
 ).
 Both KSP and PC components can be used directly to create and
-destroy solvers; this approach is not needed for most users but
-rather is intended for library developers.
+destroy solvers; this is not needed for users but
+is intended for library developers.
 
 <P>
 
