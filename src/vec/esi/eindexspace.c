@@ -19,12 +19,12 @@ esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace
   int      ierr,n,N;
   MPI_Comm *comm;
 
-  ierr = sourceIndexSpace.getRunTimeModel("MPI",static_cast<void *>(comm));
+  ierr = sourceIndexSpace.getRunTimeModel("MPI",reinterpret_cast<void *&>(comm));
   ierr = sourceIndexSpace.getGlobalSize(N);
   {
     ::esi::IndexSpace<int> *amap;
 
-    ierr = sourceIndexSpace.getInterface("esi::IndexSpace",static_cast<void *>(amap));
+    ierr = sourceIndexSpace.getInterface("esi::IndexSpace",reinterpret_cast<void *&>(amap));
     ierr = amap->getLocalSize(n);
   }
   ierr = PetscMapCreateMPI(*comm,n,N,&this->map);

@@ -27,7 +27,7 @@ int VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
     t = new esi::petsc::Vector<double,int>(xin);
     ierr = t->getInterface("esi::Vector",xin->esivec);
   }
-  *v = static_cast<esi::Vector<double,int>* >(xin->esivec);
+  *v = reinterpret_cast<esi::Vector<double,int>* >(xin->esivec);
   PetscFunctionReturn(0);
 }
 
@@ -89,7 +89,7 @@ int VecPlaceArray_ESI(Vec vin,const PetscScalar *a)
   int                                  ierr;
 
   PetscFunctionBegin;
-  ierr = v->evec->getInterface("esi::VectorReplaceAccess",static_cast<void *>(vr));CHKERRQ(ierr);
+  ierr = v->evec->getInterface("esi::VectorReplaceAccess",reinterpret_cast<void *&>(vr));CHKERRQ(ierr);
   ierr = vr->setArrayPointer((PetscScalar*)a,vin->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -284,7 +284,7 @@ int VecMDot_ESI(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMAXPY_ESI"
-int VecMAXPY_ESI(int nv,const PetscScalar *a,Vec xin,const Vec yin[])
+int VecMAXPY_ESI(int nv,const PetscScalar *a,Vec xin, Vec yin[])
 {
   Vec_ESI                 *x = (Vec_ESI *)xin->data;
   int                     ierr,i;
