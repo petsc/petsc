@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.45 1997/01/02 13:09:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.46 1997/03/26 01:36:37 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -16,7 +16,8 @@ Input arguments are:\n\
 
 int main(int argc,char **args)
 {
-  int        ierr, its, set, flg;
+  int        ierr, its, flg;
+  PetscTruth set;
   double     norm,tsetup,tsolve;
   Scalar     zero = 0.0, none = -1.0;
   Vec        x, b, u;

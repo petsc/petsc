@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.55 1997/06/05 12:59:23 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.56 1997/06/18 12:53:47 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -65,7 +65,6 @@ extern int KSPGMRESSetRestart(KSP, int);
 extern int KSPGMRESSetPreAllocateVectors(KSP);
 extern int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
 extern int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP,int);
-extern int KSPGMRESUnmodifiedGramSchmidtOrthogonalizationLocal(KSP,int);
 extern int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
 extern int KSPGMRESIROrthogonalization(KSP,int);
 extern int KSPGMRESDGKSOrthogonalization(KSP,int);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.36 1996/08/22 20:07:49 curfman Exp $";
+static char vcid[] = "$Id: ex1.c,v 1.1 1996/12/10 13:57:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -11,13 +11,14 @@ static char help[] =
 
 int main(int argc,char **argv)
 {
-  Mat       mat, fact;
-  MatType   type;
-  MatInfo   info;
-  int       m = 10, n = 10, i = 4, j = 6, ierr, set, rstart, rend;
-  Scalar    value = 1.0;
-  Vec       x, y, b;
-  double    norm;
+  Mat        mat, fact;
+  MatType    type;
+  MatInfo    info;
+  int        m = 10, n = 10, i = 4, j = 6, ierr, rstart, rend;
+  PetscTruth set;
+  Scalar     value = 1.0;
+  Vec        x, y, b;
+  double     norm;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 

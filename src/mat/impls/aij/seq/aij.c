@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.226 1997/06/27 00:11:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.227 1997/07/01 21:45:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1558,9 +1558,12 @@ int MatPermute_SeqAIJ(Mat A, IS rowp, IS colp, Mat *B)
   Scalar     *vwork;
   int        i, ierr, nz, m = a->m, n = a->n, *cwork;
   int        *row,*col,*cnew,j,*lens;
+  IS         icolp,irowp;
 
-  ierr = ISGetIndices(rowp,&row); CHKERRQ(ierr);
-  ierr = ISGetIndices(colp,&col); CHKERRQ(ierr);
+  ierr = ISInvertPermutation(rowp,&irowp); CHKERRQ(ierr);
+  ierr = ISGetIndices(irowp,&row); CHKERRQ(ierr);
+  ierr = ISInvertPermutation(colp,&icolp); CHKERRQ(ierr);
+  ierr = ISGetIndices(icolp,&col); CHKERRQ(ierr);
   
   /* determine lengths of permuted rows */
   lens = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(lens);
@@ -1580,8 +1583,10 @@ int MatPermute_SeqAIJ(Mat A, IS rowp, IS colp, Mat *B)
   PetscFree(cnew);
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(rowp,&row); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(colp,&col); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(irowp,&row); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(icolp,&col); CHKERRQ(ierr);
+  ierr = ISDestroy(irowp); CHKERRQ(ierr);
+  ierr = ISDestroy(icolp); CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.51 1997/06/15 14:07:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.52 1997/07/02 11:21:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -78,6 +78,8 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   int           ierr, (*eval_fct)(SNES,Vec,Vec);
   MPI_Comm      comm;
 
+  PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
+
   PetscObjectGetComm((PetscObject)mat,&comm);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   snes = ctx->snes;
@@ -142,12 +144,6 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   }
 #endif
 
-  /* 
-     the plogeventbegin() below should really be above,
-     but they cannot be nested so it excludes the time 
-     to compute h
-  */
-  PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
   /* Safeguard for step sizes too small */
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}

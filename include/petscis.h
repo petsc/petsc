@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.33 1996/11/19 16:34:06 bsmith Exp balay $ */
+/* $Id: is.h,v 1.34 1997/05/23 18:39:08 balay Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -45,6 +45,8 @@ extern int   ISBlockGetBlockSize(IS,int *);
 extern int   ISStride(IS,PetscTruth*);
 extern int   ISStrideGetInfo(IS,int *,int*);
 
+/* --------------------------------------------------------------------------*/
+
 /*
    ISLocalToGlobalMappings are mappings from an arbitrary
   local ordering from 0 to n-1 to a global PETSc ordering 
@@ -68,6 +70,8 @@ extern int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
   }
 #define ISLocalToGlobalMappingReference(mp) mp->refcnt++;
 extern int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
+
+/* --------------------------------------------------------------------------*/
 
 /*
      ISColorings are sets of IS's that define a coloring

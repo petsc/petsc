@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.93 1997/06/06 21:55:05 balay Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.94 1997/06/18 12:49:58 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -176,8 +176,6 @@ int KSPSetFromOptions(KSP ksp)
 
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization); }
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt_local",&flg);CHKERRQ(ierr);
-  if (flg) { KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalizationLocal); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_dgksorthog",&flg);CHKERRQ(ierr);

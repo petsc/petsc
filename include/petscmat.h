@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.136 1997/06/05 12:59:23 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.137 1997/07/01 22:18:03 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -61,7 +61,7 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_NEW_NONZERO_ALLOCATION_ERROR} MatOption;
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
-extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,int*);
+extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,PetscTruth*);
 
 extern int MatGetValues(Mat,int,int*,int,int*,Scalar*);
 extern int MatGetRow(Mat,int,int *,int **,Scalar**);

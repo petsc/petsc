@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.55 1997/04/09 23:59:56 bsmith Exp balay $";
+static char vcid[] = "$Id: stride.c,v 1.56 1997/05/23 18:39:41 balay Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -56,7 +56,7 @@ int ISInvertPermutation_Stride(IS is, IS *perm)
 
 .keywords: IS, index set, stride, get, information
 
-.seealso: ISCreateStride(), ISGetLocalSize(), ISGetSize()
+.seealso: ISCreateStride(), ISGetSize()
 @*/
 int ISStrideGetInfo(IS is,int *first,int *step)
 {
@@ -84,7 +84,7 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 
 .keywords: IS, index set, stride, get, information
 
-.seealso: ISCreateStride(), ISGetLocalSize(), ISGetSize()
+.seealso: ISCreateStride(), ISGetSize()
 @*/
 int ISStride(IS is,PetscTruth *flag)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.83 1997/05/23 18:34:36 balay Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.84 1997/06/05 12:55:50 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -717,8 +717,7 @@ int ViewerInitializeDrawXSelf_Private()
 
   if (VIEWER_DRAWX_SELF_PRIVATE) return 0;
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,&flg);
-         CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_self_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAWX_SELF_PRIVATE); CHKERRQ(ierr);
   return 0;
@@ -732,8 +731,7 @@ int ViewerInitializeDrawXWorld_Private_0()
 
   if (VIEWER_DRAWX_WORLD_PRIVATE_0) return 0;
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);
-         CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAWX_WORLD_PRIVATE_0); CHKERRQ(ierr);
   return 0;
@@ -747,8 +745,7 @@ int ViewerInitializeDrawXWorld_Private_1()
 
   if (VIEWER_DRAWX_WORLD_PRIVATE_1) return 0;
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);
-         CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAWX_WORLD_PRIVATE_1); CHKERRQ(ierr);
   return 0;
@@ -762,8 +759,7 @@ int ViewerInitializeDrawXWorld_Private_2()
 
   if (VIEWER_DRAWX_WORLD_PRIVATE_2) return 0;
   xywh[0] = PETSC_DECIDE; xywh[1] = PETSC_DECIDE; xywh[2] = 300; xywh[3] = 300;
-  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);
-         CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-draw_world_geometry",xywh,&size,&flg);CHKERRQ(ierr);
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,0,xywh[0],xywh[1],xywh[2],xywh[3],
                          &VIEWER_DRAWX_WORLD_PRIVATE_2); CHKERRQ(ierr);
   return 0;
@@ -788,6 +784,13 @@ int ViewerDestroyDrawX_Private()
   if (VIEWER_DRAWX_SELF_PRIVATE) {
     ierr = ViewerDestroy(VIEWER_DRAWX_SELF_PRIVATE); CHKERRQ(ierr);
   }
+  /*
+      Free any viewers created with the VIEWER_DRAWX_(MPI_Comm comm) trick.
+  */
+  ierr = VIEWER_DRAWX_Destroy(PETSC_COMM_WORLD); CHKERRQ(ierr);
+  ierr = VIEWER_DRAWX_Destroy(PETSC_COMM_SELF); CHKERRQ(ierr);
+  ierr = VIEWER_DRAWX_Destroy(MPI_COMM_WORLD); CHKERRQ(ierr);
+  ierr = VIEWER_DRAWX_Destroy(MPI_COMM_SELF); CHKERRQ(ierr);
   return 0;
 }
 
@@ -830,6 +833,24 @@ Viewer VIEWER_DRAWX_(MPI_Comm comm)
   return viewer;
 }
 
+/*
+       If there is a Viewer associated with this communicator it is destroyed.
+*/
+int VIEWER_DRAWX_Destroy(MPI_Comm comm)
+{
+  int    ierr,flag;
+  Viewer viewer;
+
+  if (Petsc_Viewer_Drawx_keyval == MPI_KEYVAL_INVALID) {
+    return 0;
+  }
+  MPI_Attr_get( comm, Petsc_Viewer_Drawx_keyval, (void **)&viewer, &flag );
+  if (flag) { 
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    MPI_Attr_delete(comm,Petsc_Viewer_Drawx_keyval);
+  } 
+  return 0;
+}
 
 
 

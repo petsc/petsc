@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.14 1997/01/01 03:39:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.15 1997/01/22 18:44:10 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -46,8 +46,8 @@ int main(int argc,char **args)
   Viewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
   char       stagename[6][16]; /* names of profiling stages */
-  PetscTruth table = PETSC_FALSE;
-  int        ierr, its, set, flg, i,loops  = 2;
+  PetscTruth table = PETSC_FALSE,set;
+  int        ierr, its, flg, i,loops  = 2;
   double     norm, tsetup, tsolve;
   Scalar     zero = 0.0, none = -1.0;
 

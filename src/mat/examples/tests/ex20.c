@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.35 1996/11/07 15:09:50 bsmith Exp $";
+static char vcid[] = "$Id: ex20.c,v 1.1 1996/12/10 13:57:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
@@ -9,10 +9,11 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 
 int main(int argc,char **args)
 {
-  Mat     C, A; 
-  int     i, j, m = 5, n = 4, I, J, ierr, set, rank;
-  Scalar  v;
-  MatType mtype;
+  Mat        C, A; 
+  int        i, j, m = 5, n = 4, I, J, ierr, rank;
+  PetscTruth set;
+  Scalar     v;
+  MatType    mtype;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.41 1997/06/10 04:05:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.42 1997/06/11 02:37:46 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -124,7 +124,8 @@ $    Scalar *values of all nonzeros
  @*/  
 int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 {
-  int         ierr,set,flg;
+  int         ierr,flg;
+  PetscTruth  set;
   MatType     type;
   ViewerType  vtype;
   MPI_Comm    comm;

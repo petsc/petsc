@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.38 1997/06/05 12:51:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: borthog.c,v 1.39 1997/06/11 02:26:54 curfman Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -57,6 +57,9 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
   double     sqrit, delta0, delta1, delta2, delta3, delta4, delta5, delta6;
   double     rho0, rho1, dnorm;
   int        ierr;
+
+  /* the next line is wrong! */
+  rho1 = 0.0;
 
   PLogEventBegin(KSP_GMRESOrthogonalization, ksp, 0, 0, 0);
   /* Don't allocate small arrays */

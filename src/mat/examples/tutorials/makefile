@@ -25,8 +25,8 @@ BUILDEXAMPLES_6 =
 BUILDEXAMPLES_7 =
 BUILDEXAMPLES_9 =
 
-EXAMPLESC      = 
-EXAMPLESF      =
+EXAMPLESC       = ex1.c
+EXAMPLESF       =
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB) 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.1 1996/12/10 13:58:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.2 1997/01/01 03:38:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
@@ -9,13 +9,14 @@ static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
 int main(int argc,char **args)
 {
-  Mat      C; 
-  MatType  type;
-  MatInfo  info;
-  int      i, j, m = 3, n = 2, rank, size, low, high, iglobal;
-  int      I, J, ierr, ldim, set,flg;
-  Scalar   v,  one = 1.0;
-  Vec      u, b;
+  Mat        C; 
+  MatType    type;
+  MatInfo    info;
+  int        i, j, m = 3, n = 2, rank, size, low, high, iglobal;
+  int        I, J, ierr, ldim, flg;
+  PetscTruth set;
+  Scalar     v,  one = 1.0;
+  Vec        u, b;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);

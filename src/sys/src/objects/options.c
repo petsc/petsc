@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.131 1997/05/28 23:19:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.132 1997/06/05 12:52:10 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -355,11 +355,13 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   if (!flag) {
     ierr = MPI_Init(argc,args); CHKERRQ(ierr);
     PetscBeganMPI    = 1;
-    PETSC_COMM_WORLD = MPI_COMM_WORLD;
-  } else if (!PETSC_COMM_WORLD) PETSC_COMM_WORLD = MPI_COMM_WORLD;
-
+    PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
+    /* PETSC_COMM_WORLD = MPI_COMM_WORLD; */
+  } else if (!PETSC_COMM_WORLD) {
+    PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
+    /* PETSC_COMM_WORLD = MPI_COMM_WORLD; */
+  }
   PetscInitializedCalled = 1;
-
 
   MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
   MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);

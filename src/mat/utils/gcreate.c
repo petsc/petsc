@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.101 1997/01/06 20:26:03 balay Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.102 1997/01/27 18:17:25 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -60,8 +60,9 @@ $    -mat_mpibaij  : block AIJ type, uses MatCreateMPIBAIJ()
  @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *A)
 {
-  MatType type;
-  int     set, ierr, bs=1, flg;
+  MatType    type;
+  PetscTruth set;
+  int        ierr, bs=1, flg;
 
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   switch (type) {
