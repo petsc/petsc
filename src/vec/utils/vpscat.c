@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.135 2000/04/23 04:15:07 bsmith Exp balay $*/
+/*$Id: vpscat.c,v 1.136 2000/05/05 22:14:53 balay Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1808,7 +1808,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   int                    *source,*lens,rank,*owners;
   int                    size,*lowner,*start,found,lengthy;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
-  int                    *owner,*starts,count,tag = xin->tag,slen,ierr;
+  int                    *owner,*starts,count,tag = ctx->tag,slen,ierr;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
   MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
@@ -2142,7 +2142,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   int                    *source,nprocslocal,*lens,rank = y->rank,*owners = yin->map->range;
   int                    ierr,size = y->size,*lowner,*start;
   int                    *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
-  int                    *owner,*starts,count,tag = yin->tag,slen;
+  int                    *owner,*starts,count,tag = ctx->tag,slen;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,found;
   MPI_Comm               comm = yin->comm;
   MPI_Request            *send_waits,*recv_waits;
@@ -2354,7 +2354,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
 {
   int         *lens,rank,*owners = xin->map->range,size,found;
   int         *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work,*local_inidx,*local_inidy;
-  int         *owner,*starts,count,tag = xin->tag,slen,ierr,start;
+  int         *owner,*starts,count,tag = ctx->tag,slen,ierr,start;
   int         *rvalues,*svalues,base,imdex,nmax,*values,last;
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits;

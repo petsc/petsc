@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.130 2000/05/04 14:04:33 balay Exp balay $*/
+/*$Id: lu.c,v 1.131 2000/05/05 22:17:06 balay Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -8,50 +8,51 @@
 
 typedef struct {
   Mat             fact;             /* factored matrix */
-  PetscReal       fill,actualfill; /* expected and actual fill in factor */
+  PetscReal       actualfill;      /* actual fill in factor */
   int             inplace;          /* flag indicating in-place factorization */
   IS              row,col;         /* index sets used for reordering */
   MatOrderingType ordering;         /* matrix ordering */
-  int             reuseorering;     /* reuses previous reordering computed */
-  int             reusefill;        /* reuse fill from previous LU */
+  PetscTruth      reuseorering;     /* reuses previous reordering computed */
+  PetscTruth      reusefill;        /* reuse fill from previous LU */
+  MatLUInfo       info;
 } PC_LU;
 
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetReuseOrdering_LU"
+#define __FUNC__ /*<a name="PCLUSetReuseOrdering_LU"></a>*/"PCLUSetReuseOrdering_LU"
 int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
 
   PetscFunctionBegin;
   lu               = (PC_LU*)pc->data;
-  lu->reuseorering = (int)flag;
+  lu->reuseorering = flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetReuseFill_LU"
+#define __FUNC__ /*<a name="PCLUSetReuseFill_LU"></a>*/"PCLUSetReuseFill_LU"
 int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
 
   PetscFunctionBegin;
   lu = (PC_LU*)pc->data;
-  lu->reusefill = (int)flag;
+  lu->reusefill = flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_LU"
+#define __FUNC__ /*<a name="PCSetFromOptions_LU"></a>*/"PCSetFromOptions_LU"
 static int PCSetFromOptions_LU(PC pc)
 {
   int        ierr;
   PetscTruth flg;
-  PetscReal  fill;
+  PetscReal  fill,dtcol;
   char       tname[256];
 
   PetscFunctionBegin;
@@ -75,12 +76,16 @@ static int PCSetFromOptions_LU(PC pc)
   if (flg) {
     ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
   }
+  ierr = OptionsGetDouble(pc->prefix,"-pc_lu_column_pivoting",&dtcol,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCLUSetColumnPivoting(pc,dtcol);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_LU"
+#define __FUNC__ /*<a name="PCPrintHelp_LU"></a>*/"PCPrintHelp_LU"
 static int PCPrintHelp_LU(PC pc,char *p)
 {
   int ierr;
@@ -96,11 +101,12 @@ static int PCPrintHelp_LU(PC pc,char *p)
   ierr = (*PetscHelpPrintf)(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_ordering:                          \n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_reuse_fill:                             \n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_column_pivoting <r>: r = 0 no pivoting, r = 1 full column pivoting\n",p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCView_LU"
+#define __FUNC__ /*<a name="PCView_LU"></a>*/"PCView_LU"
 static int PCView_LU(PC pc,Viewer viewer)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
@@ -131,7 +137,7 @@ static int PCView_LU(PC pc,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCGetFactoredMatrix_LU"
+#define __FUNC__ /*<a name="PCGetFactoredMatrix_LU"></a>*/"PCGetFactoredMatrix_LU"
 static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -143,7 +149,7 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCSetUp_LU"
+#define __FUNC__ /*<a name="PCSetUp_LU"></a>*/"PCSetUp_LU"
 static int PCSetUp_LU(PC pc)
 {
   int        ierr;
@@ -151,14 +157,14 @@ static int PCSetUp_LU(PC pc)
   PC_LU      *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (dir->reusefill && pc->setupcalled) dir->fill = dir->actualfill;
+  if (dir->reusefill && pc->setupcalled) dir->info.fill = dir->actualfill;
 
   if (dir->inplace) {
     if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
     if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
     ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,dir->fill);CHKERRQ(ierr);
+    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&dir->info);CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
     MatInfo info;
@@ -171,7 +177,7 @@ static int PCSetUp_LU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
@@ -189,7 +195,7 @@ static int PCSetUp_LU(PC pc)
         if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
@@ -200,7 +206,7 @@ static int PCSetUp_LU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCDestroy_LU"
+#define __FUNC__ /*<a name="PCDestroy_LU"></a>*/"PCDestroy_LU"
 static int PCDestroy_LU(PC pc)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -216,7 +222,7 @@ static int PCDestroy_LU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApply_LU"
+#define __FUNC__ /*<a name="PCApply_LU"></a>*/"PCApply_LU"
 static int PCApply_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -229,7 +235,7 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCApplyTranspose_LU"
+#define __FUNC__ /*<a name="PCApplyTranspose_LU"></a>*/"PCApplyTranspose_LU"
 static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -245,21 +251,21 @@ static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetFill_LU"
+#define __FUNC__ /*<a name="PCLUSetFill_LU"></a>*/"PCLUSetFill_LU"
 int PCLUSetFill_LU(PC pc,PetscReal fill)
 {
   PC_LU *dir;
 
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
-  dir->fill = fill;
+  dir->info.fill = fill;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetUseInPlace_LU"
+#define __FUNC__ /*<a name="PCLUSetUseInPlace_LU"></a>*/"PCLUSetUseInPlace_LU"
 int PCLUSetUseInPlace_LU(PC pc)
 {
   PC_LU *dir;
@@ -273,7 +279,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetMatOrdering_LU"
+#define __FUNC__ /*<a name="PCLUSetMatOrdering_LU"></a>*/"PCLUSetMatOrdering_LU"
 int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -286,10 +292,24 @@ int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PCLUSetColumnPivoting_LU"></a>*/"PCLUSetColumnPivoting_LU"
+int PCLUSetColumnPivoting_LU(PC pc,PetscReal dtcol)
+{
+  PC_LU *dir = (PC_LU*)pc->data;
+
+  PetscFunctionBegin;
+  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(1,1,"Column pivot tolerance is %g must be between 0 and 1",dtcol);
+  dir->info.dtcol = dtcol;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /* -----------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetReuseOrdering"
+#define __FUNC__ /*<a name="PCLUSetReuseOrdering"></a>*/"PCLUSetReuseOrdering"
 /*@
    PCLUSetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -324,7 +344,7 @@ int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetReuseFill"
+#define __FUNC__ /*<a name="PCLUSetReuseFill"></a>*/"PCLUSetReuseFill"
 /*@
    PCLUSetReuseFill - When matrices with same nonzero structure are LU factored,
    this causes later ones to use the fill computed in the initial factorization.
@@ -358,7 +378,7 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetFill"
+#define __FUNC__ /*<a name="PCLUSetFill"></a>*/"PCLUSetFill"
 /*@
    PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
@@ -399,7 +419,7 @@ int PCLUSetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetUseInPlace"
+#define __FUNC__ /*<a name="PCLUSetUseInPlace"></a>*/"PCLUSetUseInPlace"
 /*@
    PCLUSetUseInPlace - Tells the system to do an in-place factorization.
    For dense matrices, this enables the solution of much larger problems. 
@@ -444,7 +464,7 @@ int PCLUSetUseInPlace(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCLUSetMatOrdering"
+#define __FUNC__ /*<a name="PCLUSetMatOrdering"></a>*/"PCLUSetMatOrdering"
 /*@
     PCLUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used it the LU factorization.
@@ -474,11 +494,43 @@ int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PCLUSetColumnPivoting"></a>*/"PCLUSetColumnPivoting"
+/*@
+    PCLUSetColumnPivoting - Determines when column pivoting is done during LU. 
+      For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
+      it is never done. For the Matlab factorization this is used.
+
+    Collective on PC
+
+    Input Parameters:
++   pc - the preconditioner context
+-   dtcol - 0.0 implies no pivoting, 1.0 complete column pivoting (slower, requires more memory but more stable)
+
+    Options Database Key:
+.   -pc_lu_column_pivoting - dttol
+
+    Level: intermediate
+
+.seealso: PCILUSetMatOrdering()
+@*/
+int PCLUSetColumnPivoting(PC pc,PetscReal dtcol)
+{
+  int ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetColumnPivoting_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,dtcol);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------------------ */
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_LU"
+#define __FUNC__ /*<a name="PCCreate_LU"></a>*/"PCCreate_LU"
 int PCCreate_LU(PC pc)
 {
   int   ierr;
@@ -489,12 +541,13 @@ int PCCreate_LU(PC pc)
 
   dir->fact             = 0;
   dir->inplace          = 0;
-  dir->fill             = 5.0;
+  dir->info.fill        = 5.0;
+  dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
   dir->col              = 0;
   dir->row              = 0;
   ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
-  dir->reusefill        = 0;
-  dir->reuseorering     = 0;
+  dir->reusefill        = PETSC_FALSE;
+  dir->reuseorering     = PETSC_FALSE;
   pc->data              = (void*)dir;
 
   pc->ops->destroy           = PCDestroy_LU;
@@ -517,6 +570,8 @@ int PCCreate_LU(PC pc)
                     PCLUSetReuseOrdering_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseFill_C","PCLUSetReuseFill_LU",
                     PCLUSetReuseFill_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetColumnPivoting_C","PCLUSetColumnPivoting_LU",
+                    PCLUSetColumnPivoting_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

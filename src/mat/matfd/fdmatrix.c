@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.69 2000/05/18 20:36:53 balay Exp balay $*/
+/*$Id: fdmatrix.c,v 1.70 2000/05/18 21:29:02 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -511,7 +511,6 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   Scalar        dx,mone = -1.0,*y,*xx,*w3_array;
   Scalar        *vscale_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
-  MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
   void          *fctx = coloring->fctx;
   PetscTruth    flg;
@@ -655,12 +654,11 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 @*/
 int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           (*f)(void *,PetscReal,Vec,Vec,void*)= (int (*)(void *,PetscReal,Vec,Vec,void *))coloring->f;
+  int           (*f)(void *,PetscReal,Vec,Vec,void*)=(int (*)(void *,PetscReal,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow;
   Scalar        dx,mone = -1.0,*y,*xx,*w3_array;
   Scalar        *vscale_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
-  MPI_Comm      comm = coloring->comm;
   Vec           w1,w2,w3;
   void          *fctx = coloring->fctx;
   PetscTruth    flg;
