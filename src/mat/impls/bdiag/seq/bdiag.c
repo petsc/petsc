@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.26 1995/06/21 05:28:57 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.27 1995/06/22 13:47:44 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -30,12 +30,14 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
    the gathered elements ... It does NOT currently allocate additional
    space! 
  */
-  if (m!=1) SETERRQ(1,"Currently can set only 1 row at a time.");
+  if (m!=1) SETERRQ(1,
+     "MatSetValues_BDiag: Currently can set only 1 row at a time.");
   if (nb == 1) {
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row  = idxm[kk];   
-      if (row < 0) SETERRQ(1,"Negative row index");
-      if (row >= dmat->m) SETERRQ(1,"Row index too large");
+      if (row < 0) SETERRQ(1,"MatSetValues_BDiag: Negative row index.");
+      if (row >= dmat->m) 
+        SETERRQ(1,"MatSetValues_BDiag: Row index too large.");
       for (j=0; j<nz; j++) {
         ldiag = row - idxn[j]; /* diagonal number */
         dfound = 0;
@@ -50,20 +52,21 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERRQ(1,
-               "Does not support allocation of additional memory." );
+ "MatSetValues_BDiag: Allocation of additional memory not supported yet." );
             break;
           }
         }
         if (!dfound) SETERRQ(1,
-         "Diagonal not allocated.  Set all diagonals in matrix creation.");
+ "MatSetValues_BDiag: Diagonal not allocated; set all diags at mat creation.");
       }
     }
   } else {
 
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row    = idxm[kk];   
-      if (row < 0) SETERRQ(1,"Negative row index");
-      if (row >= dmat->m) SETERRQ(1,"Row index too large");
+      if (row < 0) SETERRQ(1,"MatSetValues_BDiag: Negative row index.");
+      if (row >= dmat->m) 
+        SETERRQ(1,"MatSetValues_BDiag: Row index too large.");
       shift = (row/nb)*nb*nb + row%nb;
       for (j=0; j<nz; j++) {
         ldiag = row/nb - idxn[j]/nb; /* block diagonal */
@@ -79,12 +82,12 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERRQ(1,
-                "Does not support allocation of additional memory." );
+ "MatSetValues_BDiag: Allocation of additional memory not supported yet." );
             break;
           }
         }
         if (!dfound) SETERRQ(1,
-         "Diagonal not allocated.  Set all diagonals in matrix creation.");
+ "MatSetValues_BDiag: Diagonal not allocated; set all diags at mat creation.");
       }
     }
   }
@@ -241,7 +244,7 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
   /* Currently this code doesn't use wavefront orderings, although
      we should eventually incorporate that option */
   VecGetArray(xx,&x); VecGetArray(bb,&b);
-  if (mainbd == -1) SETERRQ(1,"Main diagonal not set.");
+  if (mainbd == -1) SETERRQ(1,"MatRelax_BDiag: Main diagonal not set.");
   dvmain = mat->diagv[mainbd];
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
@@ -611,13 +614,15 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
   Scalar    *val, *dv, zero = 0.0;
   PetscObject vobj = (PetscObject) ptr;
 
-  if (!mat->assembled) SETERRQ(1,"Cannot view unassembled matrix");
+  if (!mat->assembled) 
+    SETERRQ(1,"MatView_BDiag: Cannot view unassembled matrix.");
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   if (vobj && vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
-    SETERRQ(1,"Matlab viewer not yet supported for block diagonal format.");
+    SETERRQ(1,
+      "MatView_BDiag: Matlab viewer not yet supported for BDiag format.");
   }
   if (vobj && vobj->cookie == DRAW_COOKIE) {
     DrawCtx draw = (DrawCtx) ptr;
@@ -773,8 +778,10 @@ static int MatGetDiagonal_BDiag(Mat matin,Vec v)
   int    i, j, n, ibase, nb = mat->nb, iloc;
   Scalar *x, *dvmain;
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
-  if (n != mat->m) SETERRQ(1,"Nonconforming matrix and vector");
-  if (mat->mainbd == -1) SETERRQ(1,"Main diagonal is not set.");
+  if (n != mat->m) 
+     SETERRQ(1,"MatGetDiagonal_BDiag: Nonconforming matrix and vector.");
+  if (mat->mainbd == -1) 
+     SETERRQ(1,"MatGetDiagonal_BDiag: Main diagonal is not set.");
   dvmain = mat->diagv[mat->mainbd];
   if (mat->nb == 1) {
     for (i=0; i<mat->m; i++) x[i] = dvmain[i];
@@ -801,14 +808,16 @@ static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
-    if (rows[i] < 0 || rows[i] > m) SETERRQ(1,"Index out of range.");
+    if (rows[i] < 0 || rows[i] > m) 
+      SETERRQ(1,"MatZeroRows_BDiag: Index out of range.");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
     PETSCMEMSET(val,0,nz*sizeof(Scalar));
     ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERTVALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
   }
   if (diag) {
-    if (l->mainbd == -1) SETERRQ(1,"Main diagonal does not exist.");
+    if (l->mainbd == -1) 
+      SETERRQ(1,"MatZeroRows_BDiag: Main diagonal does not exist.");
     dvmain = l->diagv[l->mainbd];
     for ( i=0; i<N; i++ ) dvmain[rows[i]] = *diag;
   }
@@ -836,8 +845,8 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   Scalar    *vwork, *val;
   Mat       newmat;
 
-  if (!mat->assembled) 
-    SETERRQ(1,"Cannot extract submatrix from unassembled matrix");  
+  if (!mat->assembled) SETERRQ(1,
+    "MatGetSubMatrix_BDiag: Cannot extract submatrix from unassembled matrix");
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&newr); CHKERRQ(ierr);
@@ -946,7 +955,8 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
 
 #define  MIN(a,b) ((a) < (b) ? (a) : (b))
   *newmat       = 0;
-  if ((n%nb) || (m%nb)) SETERRQ(1,"Invalid block size.");
+  if ((n%nb) || (m%nb)) 
+    SETERRQ(1,"MatCreateSequentialBDiag: Invalid block size.");
   if (!nd) nda = nd + 1;
   else nda = nd;
   PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATBDIAG,comm);
