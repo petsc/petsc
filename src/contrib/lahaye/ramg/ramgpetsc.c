@@ -1,4 +1,4 @@
-/*$Id: ramgpetsc.c,v 1.15 2001/07/05 20:50:12 bsmith Exp bsmith $*/
+/*$Id: ramgpetsc.c,v 1.16 2001/07/20 21:26:53 bsmith Exp bsmith $*/
 
 #include "ramgfunc.h"
 #include "petscfunc.h"
@@ -80,7 +80,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 {
    int                numnodes, numnonzero, nnz_count; 
    int                j, I, J, ncols_getrow, *cols_getrow,*diag; 
-   Scalar             *vals_getrow, rowentry; 
+   Scalar             *vals_getrow;
    MatInfo            info;
    Mat_SeqAIJ         *aij = (Mat_SeqAIJ*)pmat->data;
 
