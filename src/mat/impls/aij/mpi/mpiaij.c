@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.240 1998/04/27 03:54:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.241 1998/05/06 15:28:09 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -627,7 +627,8 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
     MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
   }
   PetscFree(lrows);
- /* wait on sends */
+
+  /* wait on sends */
   if (nsends) {
     send_status = (MPI_Status *) PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr        = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);

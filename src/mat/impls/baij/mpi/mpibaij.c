@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.118 1998/04/15 22:50:46 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.119 1998/04/27 03:52:09 curfman Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1604,6 +1604,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
+  PetscTruth     localdiag;
   
   PetscFunctionBegin;
   ierr = ISGetSize(is,&N); CHKERRQ(ierr);
@@ -1697,11 +1698,25 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
   PLogObjectParent(A,istmp);
 
-  ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
+  /*
+        Zero the required rows. If the "diagonal block" of the matrix
+     is square and the user wishes to set the diagonal we use seperate
+     code so that MatSetValues() is not called for each diagonal allocating
+     new memory, thus calling lots of mallocs and slowing things down.
+
+       Contributed by: Mathew Knepley
+  */
+  localdiag = PETSC_FALSE;
+  if (diag && (l->A->M == l->A->N)) {
+    localdiag = PETSC_TRUE;
+    ierr      = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
+  } else {
+    ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
+  }
   ierr = MatZeroRows(l->B,istmp,0); CHKERRQ(ierr);
   ierr = ISDestroy(istmp); CHKERRQ(ierr);
 
-  if (diag) {
+  if (diag && (localdiag == PETSC_FALSE)) {
     for ( i = 0; i < slen; i++ ) {
       row = lrows[i] + rstart_bs;
       ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES); CHKERRQ(ierr);
@@ -1721,6 +1736,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
 
   PetscFunctionReturn(0);
 }
+
 extern int MatPrintHelp_SeqBAIJ(Mat);
 #undef __FUNC__  
 #define __FUNC__ "MatPrintHelp_MPIBAIJ"
