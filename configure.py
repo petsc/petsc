@@ -19,6 +19,7 @@ class Configure:
     self.framework = framework
     self.defines   = {}
     self.subst     = {}
+    self.argSubst  = {}
     self.help      = {}
     # Interaction with Autoconf
     self.m4           = '/usr/bin/m4'
@@ -32,6 +33,11 @@ class Configure:
     self.shell = '/bin/sh'
     # Preprocessing, compiling, and linking
     self.language     = []
+    self.setupPreprocessor()
+    self.setupCCompiler()
+    self.setupCXXCompiler()
+    self.setupF77Compiler()
+    self.setupLinker()
     self.pushLanguage('C')
     return
 
@@ -44,6 +50,12 @@ class Configure:
   def addSubstitution(self, name, value, comment = ''):
     '''Designate that "@name@" should be replaced by "value" in all files which experience substitution'''
     self.subst[name] = value
+    if comment: self.addHelp(name, comment)
+    return
+
+  def addArgumentSubstitution(self, name, arg, comment = ''):
+    '''Designate that "@name@" should be replaced by argDB["arg"] in all files which experience substitution'''
+    self.argSubst[name] = arg
     if comment: self.addHelp(name, comment)
     return
 
@@ -65,6 +77,7 @@ class Configure:
     else:
       value = defaultValue
     if not value is None:
+      name = name.replace('-', '_')
       if not conversion is None:
         setattr(self, name, conversion(value))
       else:
@@ -72,96 +85,173 @@ class Configure:
     return
 
   def getExecutable(self, name, path = '', getFullPath = 0, comment = '', resultName = ''):
-    if not path: path = os.environ['PATH']
+    if not path or path[-1] == ':': path += os.environ['PATH']
     if not resultName: resultName = name
+    found = 0
     for dir in path.split(':'):
       prog = os.path.join(dir, name)
 
+      self.framework.log.write('Checking for program '+prog+'...')
       if os.path.isfile(prog) and os.access(prog, os.X_OK):
         if getFullPath:
           setattr(self, resultName, os.path.abspath(prog))
         else:
           setattr(self, resultName, name)
         self.addSubstitution(resultName.upper(), getattr(self, resultName), comment = comment)
+        found = 1
+        self.framework.log.write('found\n')
         break
-    return
+      self.framework.log.write('not found\n')
+    return found
+
+  def getExecutables(self, names, path = '', getFullPath = 0, comment = '', resultName = ''):
+    for name in names:
+      if self.getExecutable(name, path, getFullPath, comment, resultName):
+        return name
+    return None
 
   ###############################################
   # Preprocessor, Compiler, and Linker Operations
   def pushLanguage(self, language):
     self.language.append(language)
-    return self.setLanguage(language)
+    return self.setLanguage(self.language[-1])
 
   def popLanguage(self):
     self.language.pop()
     return self.setLanguage(self.language[-1])
 
   def setLanguage(self, language):
-    self.language[-1] = language
     if language == 'C':
-      self.compilerName = 'CC'
+      self.compilerDefines = 'confdefs.h'
     elif language == 'C++':
-      self.compilerName = 'CXX'
+      self.compilerDefines = 'confdefs.h'
     elif language == 'F77':
-      self.compilerName = 'FC'
+      self.compilerDefines = 'confdefs.h'
     else:
       raise RuntimeError('Unknown language: '+language)
+    return
 
-    self.compiler = self.framework.argDB[self.compilerName]
+  def setupCCompiler(self):
+    if not self.framework.argDB.has_key('CC'):
+      if not self.getExecutables(['gcc', 'cc', 'xlC', 'xlc', 'pgcc'], resultName = 'CC'):
+        raise RuntimeError('Could not find a C compiler. Please set with the option -CC')
+      self.framework.argDB['CC'] = self.CC
+    if not self.framework.argDB.has_key('CFLAGS'):
+      self.framework.argDB['CFLAGS'] = '-g -Wall'
+    return self.framework.argDB['CC']
 
+  def setupCXXCompiler(self):
+    if not self.framework.argDB.has_key('CXX'):
+      if not self.getExecutables(['g++', 'c++', 'CC', 'xlC', 'pgCC', 'cxx', 'cc++', 'cl'], resultName = 'CXX'):
+        raise RuntimeError('Could not find a C++ compiler. Please set with the option -CXX')
+      self.framework.argDB['CXX'] = self.CXX
+    if not self.framework.argDB.has_key('CXXFLAGS'):
+      self.framework.argDB['CXXFLAGS'] = '-g -Wall'
+    return self.framework.argDB['CXX']
+
+  def setupF77Compiler(self):
+    if not self.framework.argDB.has_key('FC'):
+      if not self.getExecutables(['g77', 'f77', 'pgf77'], resultName = 'FC'):
+        raise RuntimeError('Could not find a Fortran 77 compiler. Please set with the option -FC')
+      self.framework.argDB['FC'] = self.FC
+    if not self.framework.argDB.has_key('FFLAGS'):
+      self.framework.argDB['FFLAGS'] = '-g'
+    return self.framework.argDB['FC']
+
+  def setupPreprocessor(self):
+    if not self.framework.argDB.has_key('CPP'):
+      self.framework.argDB['CPP'] = self.setupCCompiler()+' -E'
+    if not self.framework.argDB.has_key('CXXCPP'):
+      self.framework.argDB['CXXCPP'] = self.setupCXXCompiler()+' -E'
+    if not self.framework.argDB.has_key('CPPFLAGS'):
+      self.framework.argDB['CPPFLAGS'] = ''
+    return self.framework.argDB['CPP']
+
+  def setupLinker(self):
+    if not self.framework.argDB.has_key('LDFLAGS'):
+      self.framework.argDB['LDFLAGS'] = ''
+    return
+
+  def getCompiler(self):
+    language = self.language[-1]
     if language == 'C':
-      # Interaction with the preprocessor
-      self.cpp        = self.framework.argDB['CPP']
-      self.cppFlags   = self.framework.argDB['CPPFLAGS']
-      self.cppCmd     = self.cpp+' '+self.cppFlags
-      # Interaction with the compiler
-      self.compilerDefines = 'confdefs.h'
-      self.compilerSource  = 'conftest.c'
-      self.compilerObj     = 'conftest.o'
+      self.compilerName   = 'CC'
+      self.compilerSource = 'conftest.c'
+      self.compilerObj    = 'conftest.o'
+    elif language == 'C++':
+      self.compilerName   = 'CXX'
+      self.compilerSource = 'conftest.cc'
+      self.compilerObj    = 'conftest.o'
+    elif language == 'F77':
+      self.compilerName   = 'FC'
+      self.compilerSource = 'conftest.f'
+      self.compilerObj    = 'conftest.o'
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    self.compiler = self.framework.argDB[self.compilerName]
+    return self.compiler
+
+  def getCppCmd(self):
+    language = self.language[-1]
+    self.getCompiler()
+    if language == 'C':
+      self.cpp      = self.framework.argDB['CPP']
+      self.cppFlags = self.framework.argDB['CPPFLAGS']
+      self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
+    elif language == 'C++':
+      self.cpp      = self.framework.argDB['CXXCPP']
+      self.cppFlags = self.framework.argDB['CPPFLAGS']
+      self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
+    elif language == 'F77':
+      self.cpp      = self.framework.argDB['CPP']
+      self.cppFlags = self.framework.argDB['CPPFLAGS']
+      self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    return self.cppCmd
+
+  def getCompilerCmd(self):
+    language = self.language[-1]
+    self.getCompiler()
+    if language == 'C':
       self.compilerFlags   = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
       self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-      # Interaction with the linker
+    elif language == 'C++':
+      self.compilerFlags   = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
+      self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+    elif language == 'F77':
+      self.compilerFlags  = self.framework.argDB['FFLAGS']
+      self.compilerCmd    = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    return self.compilerCmd
+
+  def getLinkerCmd(self):
+    language = self.language[-1]
+    self.getCompiler()
+    if language == 'C':
       self.linker      = self.compiler
       self.linkerObj   = 'conftest'
       self.linkerFlags = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
       self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
     elif language == 'C++':
-      # Interaction with the preprocessor
-      self.cpp        = self.framework.argDB['CXXCPP']
-      self.cppFlags   = self.framework.argDB['CPPFLAGS']
-      self.cppCmd     = self.cpp+' '+self.cppFlags
-      # Interaction with the compiler
-      self.compilerDefines = 'confdefs.h'
-      self.compilerSource  = 'conftest.cc'
-      self.compilerObj     = 'conftest.o'
-      self.compilerFlags   = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
-      self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-      # Interaction with the linker
       self.linker      = self.compiler
       self.linkerObj   = 'conftest'
       self.linkerFlags = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
       self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
     elif language == 'F77':
-      # Interaction with the preprocessor
-      self.cpp        = self.framework.argDB['CXXCPP']
-      self.cppFlags   = self.framework.argDB['CPPFLAGS']
-      self.cppCmd     = self.cpp+' '+self.cppFlags
-      # Interaction with the compiler
-      self.compilerSource = 'conftest.f'
-      self.compilerObj    = 'conftest.o'
-      self.compilerFlags  = self.framework.argDB['FFLAGS']
-      self.compilerCmd    = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-      # Interaction with the linker
       self.linker      = self.compiler
       self.linkerObj   = 'conftest'
       self.linkerFlags = self.framework.argDB['FFLAGS']+' '+self.framework.argDB['LDFLAGS']
       self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
     else:
       raise RuntimeError('Unknown language: '+language)
-    return
+    return self.linkerCmd
 
   def getCode(self, includes, body = None):
     language = self.language[-1]
+    if includes and not includes[-1] == '\n':
+      includes += '\n'
     if language == 'C' or language == 'C++':
       codeStr = '#include "confdefs.h"\n'+includes
       if not body is None:
@@ -176,10 +266,13 @@ class Configure:
     return codeStr
 
   def outputPreprocess(self, codeStr):
+    command = self.getCppCmd()
     self.framework.outputHeader(self.compilerDefines)
-    self.framework.log.write('Executing: '+self.cppCmd+'\n')
-    (input, output, err) = os.popen3(self.cppCmd)
-    input.write(self.getCode(codeStr))
+    f = file(self.compilerSource, 'w')
+    f.write(self.getCode(codeStr))
+    f.close()
+    self.framework.log.write('Executing: '+command+'\n')
+    (input, output, err) = os.popen3(command)
     input.close()
     out   = ''
     ready = select.select([output], [], [], 0.1)
@@ -188,32 +281,40 @@ class Configure:
     err.close()
     output.close()
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
+    if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     return out
 
   def checkPreprocess(self, codeStr):
+    command = self.getCppCmd()
     self.framework.outputHeader(self.compilerDefines)
-    self.framework.log.write('Executing: '+self.cppCmd+'\n')
-    (input, output, err) = os.popen3(self.cppCmd)
-    input.write(self.getCode(codeStr))
+    f = file(self.compilerSource, 'w')
+    f.write(self.getCode(codeStr))
+    f.close()
+    self.framework.log.write('Executing: '+command+'\n')
+    (input, output, err) = os.popen3(command)
     input.close()
     out   = ''
     ready = select.select([err], [], [], 0.1)
     if len(ready[0]):
       # Log failure of preprocessor
       out = ready[0][0].read()
-      if out: self.framework.log.write('ERR (preprocessor): '+out)
+      if out:
+        self.framework.log.write('ERR (preprocessor): '+out)
+        self.framework.log.write('Source:\n'+self.getCode(codeStr))
     err.close()
     output.close()
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
+    if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     return not len(out)
 
   def outputCompile(self, includes = '', body = '', cleanup = 1):
+    command = self.getCompilerCmd()
     self.framework.outputHeader(self.compilerDefines)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body))
     f.close()
-    self.framework.log.write('Executing: '+self.compilerCmd+'\n')
-    (input, output, err) = os.popen3(self.compilerCmd)
+    self.framework.log.write('Executing: '+command+'\n')
+    (input, output, err) = os.popen3(command)
     input.close()
     out   = ''
     ready = select.select([err], [], [], 0.1)
@@ -236,8 +337,8 @@ class Configure:
   def outputLink(self, includes, body, cleanup = 1):
     out = self.outputCompile(includes, body, cleanup = 0)
     if len(out): return out
-    self.framework.log.write('Executing: '+self.linkerCmd+'\n')
-    (input, output, err) = os.popen3(self.linkerCmd)
+    self.framework.log.write('Executing: '+self.getLinkerCmd()+'\n')
+    (input, output, err) = os.popen3(self.getLinkerCmd())
     input.write(self.getCode(includes, body))
     input.close()
     out   = ''
@@ -247,7 +348,7 @@ class Configure:
       out = ready[0][0].read()
       if out:
         self.framework.log.write('ERR (linker): '+out)
-        self.framework.log.write(' in '+self.linkerCmd+'\n')
+        self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
     err.close()
     output.close()
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
@@ -260,6 +361,9 @@ class Configure:
   def checkRun(self, includes, body):
     if not self.checkLink(includes, body, cleanup = 0): return 0
     success = 0
+    if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
+      self.framework.log.write('ERR (executable): '+self.linkerObj+' is not executable')
+      return success
     command = './'+self.linkerObj
     self.framework.log.write('Executing: '+command+'\n')
     (status, output) = commands.getstatusoutput(command)
@@ -367,6 +471,40 @@ class Configure:
   def configure(self):
     pass
 
+class Help:
+  def __init__(self, framework):
+    self.framework = framework
+    self.options   = {}
+    self.sections  = []
+    return
+
+  def setTitle(self, title):
+    self.title = title
+
+  def addOption(self, section, name, comment):
+    if self.options.has_key(section):
+      if self.options[section].has_key(name):
+        raise RuntimeError('Duplicate configure option '+name+' in section '+section)
+      self.options[section][name] = comment
+    else:
+      self.sections.append(section)
+      self.options[section] = {name: comment}
+    return
+
+  def output(self):
+    print self.title
+    for i in range(len(self.title)): sys.stdout.write('-')
+    print
+    nameLen = 1
+    for section in self.sections:
+      nameLen = max([nameLen, max(map(len, self.options[section].keys()))+1])
+    for section in self.sections:
+      print section+':'
+      format  = '  -%-'+str(nameLen)+'s: %s'
+      for item in self.options[section].items():
+        print format % item
+    return
+
 class Framework(Configure):
   def __init__(self, clArgs = None):
     self.argDB      = self.setupArgDB(clArgs)
@@ -384,6 +522,10 @@ class Framework(Configure):
     return nargs.ArgDict('ArgDict', clArgs)
 
   def setFromOptions(self):
+    if not self.argDB.has_key('configModules'):
+      self.argDB['configModules'] = ['PETSc.Configure']
+    if not isinstance(self.argDB['configModules'], list):
+      self.argDB['configModules'] = [self.argDB['configModules']]
     for moduleName in self.argDB['configModules']:
       self.children.append(__import__(moduleName, globals(), locals(), ['Configure']).Configure(self))
 
@@ -452,6 +594,8 @@ class Framework(Configure):
     name = match.group('name')
     if self.subst.has_key(name):
       return self.subst[name]
+    elif self.argSubst.has_key(name):
+      return self.argDB[self.argSubst[name]]
     else:
       for child in self.children:
         if not hasattr(child, 'subst') or not isinstance(child.defines, dict):
@@ -460,13 +604,18 @@ class Framework(Configure):
           substPrefix = self.getSubstitutionPrefix(child)
         else:
           substPrefix = prefix
-        if substPrefix: substPrefix = substPrefix+'_'
-        if substPrefix and name.startswith(substPrefix):
-          childName = name.replace(substPrefix, '', 1)
+        if substPrefix:
+          substPrefix = substPrefix+'_'
+          if name.startswith(substPrefix):
+            childName = name.replace(substPrefix, '', 1)
+          else:
+            continue
         else:
           childName = name
         if child.subst.has_key(childName):
           return child.subst[childName]
+        elif child.argSubst.has_key(childName):
+          return self.argDB[child.argSubst[childName]]
     return '@'+name+'_UNKNOWN@'
 
   def substituteFile(self, inName, outName):
@@ -489,6 +638,8 @@ class Framework(Configure):
   def dumpSubstitutions(self):
     for pair in self.subst.items():
       print pair[0]+'  --->  '+pair[1]
+    for pair in self.argSubst.items():
+      print pair[0]+'  --->  '+self.argDB[pair[1]]
     for child in self.children:
       if not hasattr(child, 'subst') or not isinstance(child.defines, dict): continue
       substPrefix = self.getSubstitutionPrefix(child)
@@ -497,6 +648,11 @@ class Framework(Configure):
           print substPrefix+'_'+pair[0]+'  --->  '+pair[1]
         else:
           print pair[0]+'  --->  '+pair[1]
+      for pair in child.argSubst.items():
+        if substPrefix:
+          print substPrefix+'_'+pair[0]+'  --->  '+self.argDB[pair[1]]
+        else:
+          print pair[0]+'  --->  '+self.argDB[pair[1]]
     return
 
   def outputDefine(self, f, name, value = None, comment = ''):
@@ -549,8 +705,40 @@ class Framework(Configure):
     f.close()
     return
 
+  def configureHelp(self, help):
+    help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
+    return
+
+  def configureClear(self):
+    del self.argDB['CC']
+    del self.argDB['CFLAGS']
+    del self.argDB['CXX']
+    del self.argDB['CXXFLAGS']
+    del self.argDB['FC']
+    del self.argDB['FFLAGS']
+    del self.argDB['CPP']
+    del self.argDB['CXXCPP']
+    del self.argDB['CPPFLAGS']
+    del self.argDB['LDFLAGS']
+    del self.argDB['LIBS']
+    del self.argDB['configModules']
+    del self.argDB['clear']
+    return
+
   def configure(self):
     '''Configure the system'''
+    if self.argDB.has_key('clear') and int(self.argDB['clear']):
+      self.configureClear()
+      return
+    if self.argDB.has_key('help') and int(self.argDB['help']):
+      help = Help(self)
+      help.setTitle('Python Configure Help')
+      self.configureHelp(help)
+      for child in self.children:
+        if hasattr(child, 'configureHelp'): child.configureHelp(help)
+      help.output()
+      del self.argDB['help']
+      return
     for child in self.children:
       print 'Configuring '+child.__module__
       child.configure()
@@ -560,6 +748,7 @@ class Framework(Configure):
 
 if __name__ == '__main__':
   framework = Framework(sys.argv[1:])
+  framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
   framework.configure()
   framework.dumpSubstitutions()
