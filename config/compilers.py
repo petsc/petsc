@@ -172,6 +172,7 @@ class Configure(config.base.Configure):
       if self.checkLink(None,'       call d1chk()\n'):
         self.fortranMangling = mangler[i]
         self.addDefine(manglDEF[i],1)
+        self.framework.argDB['LIBS'] = oldLIBS
         break
       self.framework.argDB['LIBS'] = oldLIBS
     else:
