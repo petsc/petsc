@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.297 1999/06/30 23:51:10 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.298 1999/09/02 14:53:22 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1360,8 +1360,8 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat a = aij->A, b = aij->B;
-  int ierr,s1,s2,s3;
+  Mat        a = aij->A, b = aij->B;
+  int        ierr,s1,s2,s3;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(mat,&s2,&s3);CHKERRQ(ierr);
@@ -1746,6 +1746,20 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   int          ierr, i,size,flag1 = 0, flag2 = 0;
 
   PetscFunctionBegin;
+
+  if (d_nz < -1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"d_nz cannot be less than -1: value %d",d_nz);
+  if (o_nz < -1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"o_nz cannot be less than -1: value %d",o_nz);
+  if (d_nnz) {
+    for (i=0; i<m; i++) {
+      if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"d_nnz cannot be less than -1: local row %d value %d",i,d_nnz[i]);
+    }
+  }
+  if (o_nnz) {
+    for (i=0; i<m; i++) {
+      if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"o_nnz cannot be less than -1: local row %d value %d",i,o_nnz[i]);
+    }
+  }
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_mpiaij",&flag1);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_mpi",&flag2);CHKERRQ(ierr);
