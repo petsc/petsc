@@ -1,14 +1,13 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.14 1998/03/24 20:59:12 balay Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.15 1998/04/03 23:13:50 bsmith Exp curfman $";
 #endif
 /*
-         Provides a general mechanism to allow one to register
-    new routines in dynamic libraries for many of the PETSc objects including KSP and PC.
+    Provides a general mechanism to allow one to register new routines in
+    dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
 */
 #include "petsc.h"
 #include "sys.h"
-
 
 #undef __FUNC__  
 #define __FUNC__ "DLRegisterGetPathAndFunction"
@@ -41,8 +40,8 @@ DLLibraryList DLLibrariesLoaded = 0;
 #undef __FUNC__  
 #define __FUNC__ "PetscInitialize_DynamicLibraries"
 /*
-      PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
-            search path.
+    PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
+    search path.
 */ 
 int PetscInitialize_DynamicLibraries(void)
 {
@@ -90,7 +89,7 @@ int PetscInitialize_DynamicLibraries(void)
 #undef __FUNC__  
 #define __FUNC__ "PetscFinalize_DynamicLibraries"
 /*
-      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries
+     PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
 */ 
 int PetscFinalize_DynamicLibraries(void)
 {
@@ -123,29 +122,29 @@ int PetscFinalize_DynamicLibraries(void)
 
 /* ------------------------------------------------------------------------------*/
 struct FuncList_struct {
-  int                    (*routine)(void *);
-  char                   *path;
-  char                   *name;               
-  char                   *rname;            /* name of create function in link library */
-  struct FuncList_struct *next;
+  int                    (*routine)(void *); /* the routine */
+  char                   *path;              /* path of link library containing routine */
+  char                   *name;              /* string to identify routine */
+  char                   *rname;             /* routine name in dynamic library */
+  struct FuncList_struct *next;              /* next pointer */
 };
 typedef struct FuncList_struct FuncList;
 
 struct _DLList {
-    FuncList *head, *tail;
-    char     *regname;        /* registration type name */
+    FuncList *head, *tail;   /* head and tail of DLList */
+    char     *regname;       /* registration type name */
     DLList   next;
 };
 
 /*
-     Keep a linked list of DLLists so that we may destroy all the left-over ones
+     Keep a linked list of DLLists so that we can destroy all the left-over ones.
 */
 static DLList dlallhead = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "DLRegisterCreate"
 /*
-  DLRegisterCreate - create a name registry.
+  DLRegisterCreate - Creates a name registry.
 
 .seealso: DLRegister(), DLRegisterDestroy()
 */
@@ -171,20 +170,27 @@ int DLRegisterCreate(DLList *fl )
   PetscFunctionReturn(0);
 }
 
-
-/*M
-   DLRegister - Given a routine and a string id, 
-                save that routine in the specified registry
-    Input Parameters:
-.      fl       - pointer registry
-.      name     - string for routine
-.      rname    - routine name in dynamic library
-.      fnc      - function pointer (optional if using dynamic libraries)
-
+/*
+   DLRegister - Given a routine and a string id, saves that routine in the
+   specified registry.
 
    Synopsis:
-    int DLRegister(DLList *fl, char *name, char *rname,int (*fnc)(void *))
+   int DLRegister(DLList *fl, char *name, char *rname,int (*fnc)(void *))
 
+   Input Parameters:
++  fl    - pointer registry
+.  name  - string to identify routine
+.  rname - routine name in dynamic library
+-  fnc   - function pointer (optional if using dynamic libraries)
+
+   Notes:
+   Users who wish to register new methods for use by a particular PETSc
+   component (e.g., SNES) should generally call the registration routine
+   for that particular component (e.g., SNESRegister()) instead of
+   calling DLRegister() directly.
+
+.seealso: DLRegisterCreate(), DLRegisterDestroy(), SNESRegister(), KSPRegister(),
+          PCRegister(), TSRegister()
 */
 
 #undef __FUNC__  
@@ -214,7 +220,6 @@ int DLRegister_Private( DLList *fl, char *name, char *rname,int (*fnc)(void *))
   if ((*fl)->tail) (*fl)->tail->next = entry;
   else             (*fl)->head       = entry;
   (*fl)->tail = entry;
-  
 
   PetscFunctionReturn(0);
 }
@@ -222,12 +227,14 @@ int DLRegister_Private( DLList *fl, char *name, char *rname,int (*fnc)(void *))
 #undef __FUNC__  
 #define __FUNC__ "DLRegisterDestroy"
 /*
-    DLRegisterDestroy - Destroy a list of registered routines
+    DLRegisterDestroy - Destroys a list of registered routines.
 
     Input Parameter:
-.   fl   - pointer to list
+.   fl  - pointer to list
+
+.seealso: DLRegisterCreate(), DLRegister()
 */
-int DLRegisterDestroy(DLList fl )
+int DLRegisterDestroy(DLList fl)
 {
   FuncList *entry, *next;
   DLList   tmp = dlallhead;
@@ -285,17 +292,23 @@ int DLRegisterDestroyAll(void)
 #undef __FUNC__  
 #define __FUNC__ "DLRegisterFind"
 /*
-    DLRegisterFind - givn a name, find the matching routine
+    DLRegisterFind - Given a name, finds the matching routine.
 
     Input Parameters:
-.   comm - processors looking for routine
++   comm - processors looking for routine
 .   fl   - pointer to list
-.   name - name string
+-   name - name string
 
-    The id or name must have been registered with the DLList before calling this 
-    routine.
+    Output Parameters:
+.   r - the routine
+
+    Notes:
+    The routine's id or name MUST be registered with the DLList via
+    DLRegister() before DLRegisterFind() can be called.
+
+.seealso: DLRegister()
 */
-int DLRegisterFind(MPI_Comm comm,DLList fl, char *name, int (**r)(void *))
+int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
 {
   FuncList *entry = fl->head;
   char     *function, *path;
@@ -344,7 +357,7 @@ int DLRegisterFind(MPI_Comm comm,DLList fl, char *name, int (**r)(void *))
   }
 
 #if defined(USE_DYNAMIC_LIBRARIES)
-  /* Function never registered; try for it anyways */
+  /* Function never registered; try for it anyway */
   ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
   if (path) PetscFree(path);
   if (r) {
@@ -368,11 +381,16 @@ int DLRegisterFind(MPI_Comm comm,DLList fl, char *name, int (**r)(void *))
 /*
    DLRegisterPrintTypes - Prints the methods available.
 
-   Input Parameters:
-.  comm   - The communicator (usually MPI_COMM_WORLD)
-.  fd     - file to print to, usually stdout
-.  list   - list of types
+   Collective over MPI_Comm
 
+   Input Parameters:
++  comm   - the communicator (usually MPI_COMM_WORLD)
+.  fd     - file to print to, usually stdout
+.  prefix - prefix to prepend to name (optional)
+.  name   - option string
+-  list   - list of types
+
+.seealso: DLRegister()
 */
 int DLRegisterPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
 {
