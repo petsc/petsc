@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.35 1998/03/16 18:55:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.36 1998/04/03 23:15:06 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
@@ -79,6 +79,34 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PCApplyTrans_BJacobi_MPIAIJ"
+int PCApplyTrans_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
+{
+  int               ierr,its;
+  PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
+  PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
+  Scalar            *x_array,*x_true_array, *y_array,*y_true_array;
+
+  PetscFunctionBegin;
+  /* 
+      The VecPlaceArray() is to avoid having to copy the 
+    y vector into the bjac->x vector. The reason for 
+    the bjac->x vector is that we need a sequential vector
+    for the sequential solve.
+  */
+  ierr = VecGetArray(x,&x_array); CHKERRQ(ierr); 
+  ierr = VecGetArray(y,&y_array); CHKERRQ(ierr); 
+  ierr = VecGetArray(bjac->x,&x_true_array); CHKERRQ(ierr); 
+  ierr = VecGetArray(bjac->y,&y_true_array); CHKERRQ(ierr);  
+  ierr = VecPlaceArray(bjac->x,x_array); CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->y,y_array); CHKERRQ(ierr); 
+  ierr = SLESSolveTrans(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->x,x_true_array); CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->y,y_true_array);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PCSetUp_BJacobi_MPIAIJ"
 int PCSetUp_BJacobi_MPIAIJ(PC pc)
 {
@@ -126,6 +154,7 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
 
     pc->destroy       = PCDestroy_BJacobi_MPIAIJ;
     pc->apply         = PCApply_BJacobi_MPIAIJ;
+    pc->applytrans    = PCApplyTrans_BJacobi_MPIAIJ;
     pc->setuponblocks = PCSetUpOnBlocks_BJacobi_MPIAIJ;
 
     bjac         = (PC_BJacobi_MPIAIJ *) PetscMalloc(sizeof(PC_BJacobi_MPIAIJ));CHKPTRQ(bjac);
@@ -193,6 +222,7 @@ int PCSetUp_BJacobi_SeqAIJ(PC pc)
 
     pc->destroy       = PCDestroy_BJacobi_MPIAIJ;
     pc->apply         = PCApply_BJacobi_MPIAIJ;
+    pc->applytrans    = PCApplyTrans_BJacobi_MPIAIJ;
     pc->setuponblocks = PCSetUpOnBlocks_BJacobi_MPIAIJ;
 
     bjac         = (PC_BJacobi_MPIAIJ *) PetscMalloc(sizeof(PC_BJacobi_MPIAIJ));CHKPTRQ(bjac);
