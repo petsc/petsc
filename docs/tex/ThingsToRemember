@@ -105,21 +105,18 @@ Location of email sent to petsc-maint:
   it may be processed with /usr/local/req/petsc-maint/bin/petsctkreq
   make sure that /usr/local/req/petsc-maint/bin/ is in your path.
 
-FTP log file.
-charlotte  /usr/adm/xferlog
+FTP log files:
+  login to charlotte.mcs.anl.gov; see files /usr/adm/xferlog.XXXXXXXXX
 
 To determine who is on the PETSc users mailing list send
    to majordom@mcs.anl.gov "who petsc-users"
 
-
 To unsubscribe a person from petsc-users use
    unsubscribe petsc-users name
-
 
 To add an object to the PETSc logging:
   - Add object to plog.h, plog.c, petscview, petscview.cfg, plogmpe.c
     ... anything else?
-
 
 Delete (or "outdate") range of versions from RCS file:
   rcs -o[r1]:[r2] file, where r1 and r2 denote beginning and ending of range
@@ -127,8 +124,6 @@ Delete (or "outdate") range of versions from RCS file:
 
 To run parallel jobs using the /tmp/petsc installations: Use, e.g.,
     mpirun -machinefile $PETSC_DIR/maint/hosts.local -np 2 ex1
-
-
 
 To encrypt things for the ftp site, on ryan or violet 
 run crypt password < file > coded file. To unencrypt do
