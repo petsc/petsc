@@ -1,7 +1,7 @@
 #! /bin/sh
 #
 # Default values
-num=2
+num=1
 max_minutes=10
 USE_MYRINET=${USE_MYRINET-no}
 infiles=""
@@ -9,6 +9,8 @@ outfiles=""
 verbose="no"
 keep_output="no"
 clear_bogus_head="no"
+shared="no"
+nolocal=""
 #
 # Process arguments
 while [ $# -gt 0 ] ; do
@@ -18,6 +20,10 @@ while [ $# -gt 0 ] ; do
     -np) 
     num=$1
     shift
+    ;;
+    -shared) 
+    shared="yes"
+    nolocal="-nolocal"
     ;;
     -maxtime)
     max_minutes=$1
@@ -93,13 +99,17 @@ while [ $# -gt 0 ] ; do
     newprogargs="$newprogargs $arg"
     shift
     case $arg in 
-    -f|-f0|-f1) 
+    -f|-f0|-f1|-options_file) 
       infiles="$infiles $1"
       newprogargs="$newprogargs `basename $1`"
       if [ -e "$1.info" ] ; then
         infiles="$infiles $1.info"
       fi
       shift
+    ;;
+    -start_in_debugger|-on_error_attach_debugger) 
+      shared="yes"
+      nolocal="-nolocal"
     ;;
   esac
 done
@@ -176,64 +186,73 @@ export PATH
 DISPLAY=$DISPLAY
 export DISPLAY
 cd $rundir
-mpirun.ch_p4 -np $num -machinefile \$PBS_NODEFILE $programbase $newprogargs
+mpirun.ch_p4 -np $num $nolocal -machinefile \$PBS_NODEFILE $programbase $newprogargs
 #
 exit 0;
 EOF
 fi
 
-# Interactive wait  
-# qsub -i doesn't do what you want (it is really like qsub -i (run $SHELL) )
-pbs_job_id=`qsub ./.mpirun$$`
-pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
+if [ $shared = "yes" ] ; then
+  head -$num ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
+  PBS_NODEFILE=`pwd`/.pbsnodefile.$$
+  export PBS_NODEFILE
+  chi_file -copy $rundir -m $PBS_NODEFILE
+  chmod u+x ./.mpirun$$
+  ./.mpirun$$
+else 
+#
+#  submit to batch system
+#  qsub -i doesn't do what you want (it is really like qsub -i (run $SHELL) )
+  pbs_job_id=`qsub ./.mpirun$$`
+  pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
 #
 #
-# Handle control c from user
+#  Handle control c from user
 #
-trap "qdel $pbs_job_id ; echo Killing job; exit" 2
+  trap "qdel $pbs_job_id ; echo Killing job; exit" 2
 #
-echo -n "PBS Job $pbs_job_id Submitted to queue " 
-date
+  echo -n "PBS Job $pbs_job_id Submitted to queue " 
+  date
 
-# Spin until qstat returns a non-zero return code
+#  Spin until qstat returns a non-zero return code
 #
-status="Q"
-while [ "$status" = "Q" ] ; do
-  sleep 5
-  lstatus=`qstat $pbs_job_id 2> /dev/null`
-  status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-  echo -n "."
-done
-echo " "
+  status="Q"
+  while [ "$status" = "Q" ] ; do
+    sleep 5
+    lstatus=`qstat $pbs_job_id 2> /dev/null`
+    status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
+    echo -n "."
+  done
+  echo " "
 # 
-echo -n "PBS Job $pbs_job_id Running "
-date
+  echo -n "PBS Job $pbs_job_id Running "
+  date
 #
-status="R"
-while [ "$status" = "R" ] ; do
-  sleep 2
-  lstatus=`qstat $pbs_job_id 2> /dev/null`
-  status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-  echo -n "."
-done
-echo " "
+  status="R"
+  while [ "$status" = "R" ] ; do
+    sleep 2
+    lstatus=`qstat $pbs_job_id 2> /dev/null`
+    status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
+    echo -n "."
+  done
+  echo " "
 #
-echo -n "PBS Job $pbs_job_id Job no longer running "
-date
+  echo -n "PBS Job $pbs_job_id Job no longer running "
+  date
 #
-outstat=""
-while [ "$outstat" != "Unknown Job" ] ; do
-  sleep 2
-  outstat=`qstat $pbs_job_id 2>&1 | sed -e 's/^.*Unknown Job.*$/Unknown Job/'`
-  echo -n "."
-done
-echo " "
+  outstat=""
+  while [ "$outstat" != "Unknown Job" ] ; do
+    sleep 2
+    outstat=`qstat $pbs_job_id 2>&1 | sed -e 's/^.*Unknown Job.*$/Unknown Job/'`
+    echo -n "."
+  done
+  echo " "
 #
-echo -n "PBS Job $pbs_job_id No longer existing "
-date
+  echo -n "PBS Job $pbs_job_id No longer existing "
+  date
 #
-# Move the output to the stdout/err of the process running this script
-if [ -s .mpirun$$.o$pbs_job_num ] ; then
+#  Move the output to the stdout/err of the process running this script
+  if [ -s .mpirun$$.o$pbs_job_num ] ; then
     # This deletes the first two lines, which contain bogus output 
     # due to a PBS bug.
     if [ "$clear_bogus_head" = "yes" ] ; then
@@ -245,16 +264,18 @@ if [ -s .mpirun$$.o$pbs_job_num ] ; then
             cat .mpirun$$.o$pbs_job_num 
 	fi
     fi
-fi
-if [ -s .mpirun$$.e$pbs_job_num ] ; then
+  fi
+  if [ -s .mpirun$$.e$pbs_job_num ] ; then
     if [ -n "$stderrfile" ] ; then
         cat .mpirun$$.e$pbs_job_num >$stderrfile
     else
         cat .mpirun$$.e$pbs_job_num >&2
     fi
+  fi
 fi
+
 if [ "$keep_output" != "yes" ] ; then
     rm -rf .mpirun$$* 
-    rm -f .pbsnodefile.${pbs_job_num}.cc*
+    rm -f .pbsnodefile*
     rm -rf $rundir
 fi
