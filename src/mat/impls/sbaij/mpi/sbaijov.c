@@ -53,23 +53,24 @@ typedef enum {MINE,OTHER} WhoseOwner;
        data[is_max + 1 + Mbs*i) = data(is[i])
         ...
 */
-#undef USEBcol /* not working yet! e.g., mpirun -np 3 ex92 -mat_size 100 -nd 1 (02/24/2004) */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Once"
 static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 {
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
   int         len,idx,*idx_i,isz,col,*n,*data1,**data1_start,*data2,*data2_i,*data,*data_i,
-              size,rank,Mbs,i,j,k,ierr,nrqs,*odata1,*odata2,
-              tag1,tag2,flag,proc_id,**odata2_ptr,waits_idx,*ctable=0,*btable,len_b;
-  int         nrqr,*id_r1,*len_r1,proc_end,*iwork,*len_s,*data1_i;
+              size,rank,Mbs,i,j,k,ierr,nrqs,nrqr,*odata1,*odata2,
+              tag1,tag2,flag,proc_id,**odata2_ptr,*ctable=0,*btable,len_b;
+  int         *id_r1,*len_r1,proc_end=0,*iwork,*len_s;
   char        *t_p;
   MPI_Comm    comm;
-  MPI_Request *s_waits1,*s_waits2,r_req,*r_waits1;
+  MPI_Request *s_waits1,*s_waits2,r_req;
   MPI_Status  *s_status,r_status;
   PetscBT     *table=0;  /* mark indices of this processor's is[] */
   PetscBT     table_i;
   PetscBT     otable; /* mark indices of other processors' is[] */ 
+  int         bs=c->bs,Bn = c->B->n,Bnbs = Bn/bs,*Bowners;  
+  IS          is_local,is_gl;
 
   PetscFunctionBegin;
 
@@ -83,6 +84,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 
   /* 1. Send this processor's is[] to other processors */
   /*---------------------------------------------------*/
+  /* allocate spaces */
   ierr = PetscMalloc(is_max*sizeof(int),&n);CHKERRQ(ierr);
   len = 0;
   for (i=0; i<is_max; i++) {
@@ -94,15 +96,14 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   } else {
     len += 1 + is_max; /* max length of data1 for one processor */
   }
-  /* ierr = PetscPrintf(PETSC_COMM_SELF, " [%d] len=%d, is_max: %d\n",rank,len,is_max); */
+
+  ierr = PetscMalloc((size*len+1)*sizeof(int),&data1);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(int*),&data1_start);CHKERRQ(ierr);
+  for (i=0; i<size; i++) data1_start[i] = data1 + i*len;
 
   ierr   = PetscMalloc(size*3*sizeof(int),&len_s);CHKERRQ(ierr);
   btable = len_s + size;
   iwork  = btable + size;
-  
-  ierr = PetscMalloc((size*len+1)*sizeof(int),&data1);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(int*),&data1_start);CHKERRQ(ierr);
-  for (i=0; i<size; i++) data1_start[i] = data1 + i*len;
   
   if (is_max){
     /* create hash table ctable which maps c->row to proc_id) */
@@ -120,46 +121,17 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     for (i=0; i<is_max; i++) {
       table[i]  = t_p  + (Mbs/PETSC_BITS_PER_BYTE+1)*i; 
     }
-
-#ifdef USEBcol
-    Vec        vfrom_mpi,vto_seq;
-    int        bs=c->bs,Bn = c->B->n,Bnbs = Bn/bs,N,low,*Bowners;  
-    PetscScalar garray[Bnbs],*array;
-#ifdef NEW
-    IS is_local,is_gl;
+   
     ierr = ISCreateGeneral(comm,Bnbs,c->garray,&is_local);CHKERRQ(ierr);
     ierr = ISAllGather(is_local, &is_gl);CHKERRQ(ierr);
-    if (rank == 1){
-      ierr = ISView(is_gl,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    }
-    ierr = ISDestroy(is_gl);
-    ierr = ISDestroy(is_local);
-    
-#endif /* NEW */
-    /* create vfrom_mpi, a mpi vector holding local B->garray */
-    for (i=0; i<Bnbs; i++) garray[i] = c->garray[i];
-    ierr = VecCreateMPIWithArray(comm,Bnbs,PETSC_DECIDE,garray,&vfrom_mpi);CHKERRQ(ierr);
- 
-    /* create vto_seq, a seq vector for holding B->garray of all processors */
-    ierr = VecGetSize(vfrom_mpi,&N);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(vfrom_mpi,&low,PETSC_NULL);CHKERRQ(ierr);
+    ierr = ISDestroy(is_local);CHKERRQ(ierr);
     
     ierr = PetscMalloc((size+1)*sizeof(int),&Bowners);CHKERRQ(ierr);
-    ierr = MPI_Allgather(&low,1,MPI_INT,Bowners,1,MPI_INT,comm);CHKERRQ(ierr);
-    Bowners[size] = N;
-    ierr = VecConvertMPIToSeqAll(vfrom_mpi,&vto_seq);CHKERRQ(ierr);
-    
-    if (rank == 0){
-      /* ierr = VecView(vto_seq,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-      for (i = 0; i<=size; i++){
-        ierr = PetscPrintf(PETSC_COMM_SELF," Bowners[%d]=%d, N=%d\n",i,Bowners[i],N);
-      }
-    } 
-    ierr = VecDestroy(vfrom_mpi);CHKERRQ(ierr);
-#endif
+    ierr = MPI_Allgather(&Bnbs,1,MPI_INT,Bowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+    Bowners[0] = 0;
+    for (i=0; i<size; i++) Bowners[i+1] += Bowners[i];
 
-#ifdef USEBcol
-    /* hash table table_i[idx] = 1 if idx is an index of one of the is[] array
+    /* hash table table_i[idx] = 1 if idx is on is[] array
                                = 0 otherwise */
     table_i = table[0]; 
     ierr    = PetscBTMemzero(Mbs,table_i);CHKERRQ(ierr);
@@ -172,39 +144,26 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       ierr = ISRestoreIndices(is[i],&idx_i);CHKERRQ(ierr);
     }
 
-    ierr = VecGetArray(vto_seq,&array);
+    /* hash table btable[id_proc] = 1 if a col index of B-matrix in [id_proc] is on is[] array 
+                                  = 0 otherwise */
+    ierr = ISGetIndices(is_gl,&idx_i);
     for (i=0; i<size; i++){
       btable[i] = 0;
       for (j = Bowners[i]; j<Bowners[i+1]; j++){ /* go through B cols */
-        idx = (int)array[j];
+        idx = idx_i[j];
         if(PetscBTLookup(table_i,idx)){
           btable[i] = 1; 
           break;
         }
       }
-
-      if (!btable[i]){ /* go through A cols */
-        for (j = c->rowners[i]; j<c->rowners[i+1]; j++){
-          if(PetscBTLookup(table_i,j)){
-            btable[i] = 1; 
-            break;
-          }
-        }
-      }
-    }
-    if (rank == 1){ 
-      for (i=0; i<size; i++) printf(" %d\n",btable[i]);
     } 
-    ierr = VecRestoreArray(vto_seq,&array);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is_gl,&idx_i);CHKERRQ(ierr);
     ierr = PetscFree(Bowners);CHKERRQ(ierr); 
-    ierr = VecDestroy(vto_seq);CHKERRQ(ierr);
-#endif
+    ierr = ISDestroy(is_gl);CHKERRQ(ierr); 
   } /* if (is_max) */
 
   /* evaluate communication - mesg to who, length, and buffer space */
-  for (i=0; i<size; i++) {
-    len_s[i] = 0;
-  }
+  for (i=0; i<size; i++) len_s[i] = 0;
   
   /* header of data1 */
   for (proc_id=0; proc_id<size; proc_id++){
@@ -229,28 +188,20 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       *data1_start[rank] = idx; data1_start[rank]++; /* for local proccessing */
       proc_end = ctable[idx];
       for (proc_id=0;  proc_id<=proc_end; proc_id++){ /* for others to process */
-        if (proc_id != rank ){
-#ifdef USEBcol
-          if ( (proc_id < proc_end && btable[proc_id]) || proc_id == proc_end){ 
-#endif
-            *data1_start[proc_id] = idx; data1_start[proc_id]++;
-            len_s[proc_id]++;
-#ifdef USEBcol
-          } 
-#endif
-        }
+        if (proc_id == rank ) continue; /* done before this loop */
+        if (proc_id < proc_end && !btable[proc_id]) continue;   /* no need for sending idx to [proc_id] */
+        *data1_start[proc_id] = idx; data1_start[proc_id]++;
+        len_s[proc_id]++;
       }
     } 
-  
     /* update header data */
     for (proc_id=0; proc_id<=proc_end; proc_id++){ 
       if (proc_id== rank) continue;
       *(data1 + proc_id*len + 1 + i) = len_s[proc_id] - iwork[proc_id];
       iwork[proc_id] = len_s[proc_id] ;
     } 
-    
     ierr = ISRestoreIndices(is[i],&idx_i);CHKERRQ(ierr);
-  } /* for (i=0; i<is_max; i++) */
+  } 
 
   nrqs = 0; nrqr = 0;
   for (i=0; i<size; i++){
@@ -282,12 +233,12 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       k++;
     }
   }
-  ierr = PetscFree(data1_start);CHKERRQ(ierr);
   
   /* 2. Do local work on this processor's is[] */
   /*-------------------------------------------*/
   ierr = PetscBTCreate(Mbs,otable);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,data1,MINE,&data,table);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,data1_start[rank],MINE,&data,table);CHKERRQ(ierr);
+  ierr = PetscFree(data1_start);CHKERRQ(ierr);
   
   /* 3. Receive other's is[] and process. Then send back */
   /*-----------------------------------------------------*/
