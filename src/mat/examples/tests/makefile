@@ -27,6 +27,7 @@ TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		  ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
 		  ex52.PETSc ex52.rm clean
 TESTEXAMPLES_3  = ex36.PETSc runex36 ex36.rm clean
+TESTEXAMPLES_9  = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
 		  ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
@@ -51,6 +52,7 @@ BUILDEXAMPLES_2 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm ex12.PETSc 
 		  ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
 		  ex53.PETSc ex53.rm clean
 BUILDEXAMPLES_3 = ex36.PETSc ex36.rm clean
+BUILDEXAMPLES_9 = ex36.PETSc ex36.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex4.PETSc\
 		  ex4.rm ex5.PETSc ex5.rm ex6.PETSc ex6.rm\
 		  ex10.PETSc ex10.rm ex14.PETSc ex14.rm ex15.PETSc\

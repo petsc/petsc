@@ -112,6 +112,7 @@ clean:
 #    6 - C examples that don't work with complex numbers 
 #    7 - C examples that require BlockSolve
 #    8 - Fortran .F examples that don't work with complex numbers
+#    9 - uniprocessor version of 3
 #
 testexamples_1: $(TESTEXAMPLES_1)
 testexamples_2: $(TESTEXAMPLES_2)
@@ -121,6 +122,7 @@ testexamples_5: $(TESTEXAMPLES_5)
 testexamples_6: $(TESTEXAMPLES_6)
 testexamples_7: $(TESTEXAMPLES_7)
 testexamples_8: $(TESTEXAMPLES_8)
+testexamples_9: $(TESTEXAMPLES_9)
 buildexamples_1: $(BUILDEXAMPLES_1)
 buildexamples_2: $(BUILDEXAMPLES_2)
 buildexamples_3: $(BUILDEXAMPLES_3)
@@ -129,6 +131,7 @@ buildexamples_5: $(BUILDEXAMPLES_5)
 buildexamples_6: $(BUILDEXAMPLES_6)
 buildexamples_7: $(BUILDEXAMPLES_7)
 buildexamples_8: $(BUILDEXAMPLES_8)
+buildexamples_9: $(BUILDEXAMPLES_9)
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
