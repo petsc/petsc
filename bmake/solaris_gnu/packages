@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 1998/03/16 21:11:03 balay Exp balay $ 
+# $Id: base.site,v 1.2 1998/03/19 02:01:29 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -26,9 +26,9 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lnsl -lsocket -lgen
+MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_shmem/ -lmpi -lnsl -lthread -lgen
 MPI_INCLUDE    = -I/home/petsc/mpich/include 
-MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
+MPIRUN         = /home/petsc/mpich/lib/solaris/ch_shmem/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -37,7 +37,7 @@ MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
 #
 # Optional location of MPE
 #
-MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
+MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_shmem/ -lmpe -lpmpi
 MPE_INCLUDE   = -I/home/petsc/mpich/mpe
 #
 # Optional location of BlockSolve (MPI version)
