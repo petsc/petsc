@@ -70,7 +70,7 @@ EXTERN PetscErrorCode MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
 EXTERN PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN PetscErrorCode MatILUDTFactor_SeqAIJ(Mat,MatFactorInfo*,IS,IS,Mat*);
+EXTERN PetscErrorCode MatILUDTFactor_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatLoad_SeqAIJ(PetscViewer,const MatType,Mat*);
 EXTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
 EXTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);

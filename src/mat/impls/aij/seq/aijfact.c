@@ -47,7 +47,7 @@ EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,PetscScalar*,PetscInt*,PetscSca
 
      ------------------------------------------------------------
 */
-PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
+PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
 {
 #if defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
   PetscFunctionBegin;
@@ -252,7 +252,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   PetscLogInfo(A,"MatILUDTFactor_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
   PetscLogInfo(A,"MatILUDTFactor_SeqAIJ:for best performance.\n");
 
-  ierr = MatILUDTFactor_Inode(A,info,isrow,iscol,fact);CHKERRQ(ierr);
+  ierr = MatILUDTFactor_Inode(A,isrow,iscol,info,fact);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 #endif

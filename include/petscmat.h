@@ -889,7 +889,7 @@ EXTERN PetscErrorCode MatILUFactorSymbolic(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatICCFactorSymbolic(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatICCFactor(Mat,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric(Mat,MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatILUDTFactor(Mat,MatFactorInfo*,IS,IS,Mat *);
+EXTERN PetscErrorCode MatILUDTFactor(Mat,IS,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatGetInertia(Mat,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode MatSolve(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatForwardSolve(Mat,Vec,Vec);

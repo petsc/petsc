@@ -744,7 +744,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       ierr = MatGetOrdering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
       if (ilu->row) {ierr = PetscLogObjectParent(pc,ilu->row);CHKERRQ(ierr);}
       if (ilu->col) {ierr = PetscLogObjectParent(pc,ilu->col);CHKERRQ(ierr);}
-      ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
@@ -755,11 +755,11 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         if (ilu->row) {ierr = PetscLogObjectParent(pc,ilu->row);CHKERRQ(ierr);}
         if (ilu->col) {ierr = PetscLogObjectParent(pc,ilu->col);CHKERRQ(ierr);}
       }
-      ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else if (!ilu->reusefill) { 
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
-      ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else {
       ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);

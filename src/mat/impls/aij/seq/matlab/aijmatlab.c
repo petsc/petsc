@@ -11,7 +11,7 @@ typedef struct {
   PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*MatView)(Mat,PetscViewer);
   PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*MatILUDTFactor)(Mat,MatFactorInfo*,IS,IS,Mat*);
+  PetscErrorCode (*MatILUDTFactor)(Mat,IS,IS,MatFactorInfo*,Mat*);
   PetscErrorCode (*MatDestroy)(Mat);
 } Mat_Matlab;
 
@@ -255,7 +255,7 @@ PetscErrorCode MatLUFactorSymbolic_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info
 /* --------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactor_Matlab"
-PetscErrorCode MatILUDTFactor_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
+PetscErrorCode MatILUDTFactor_Matlab(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *F)
 {
   PetscErrorCode ierr;
   size_t     len;

@@ -74,7 +74,7 @@ struct _MatOps {
   PetscErrorCode (*scale)(const PetscScalar *,Mat);
   PetscErrorCode (*shift)(const PetscScalar *,Mat);
   PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
-  PetscErrorCode (*iludtfactor)(Mat,MatFactorInfo*,IS,IS,Mat *);
+  PetscErrorCode (*iludtfactor)(Mat,IS,IS,MatFactorInfo*,Mat *);
   /*50*/
   PetscErrorCode (*setblocksize)(Mat,PetscInt);
   PetscErrorCode (*getrowij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);

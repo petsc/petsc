@@ -1584,9 +1584,9 @@ PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 
    Input Parameters:
 +  mat - the matrix
-.  info - information about the factorization to be done
 .  row - row permutation
--  col - column permutation
+.  col - column permutation
+-  info - information about the factorization to be done
 
    Output Parameters:
 .  fact - the factored matrix
@@ -1607,7 +1607,7 @@ PetscErrorCode MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-PetscErrorCode MatILUDTFactor(Mat mat,MatFactorInfo *info,IS row,IS col,Mat *fact)
+PetscErrorCode MatILUDTFactor(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
 
@@ -1615,16 +1615,16 @@ PetscErrorCode MatILUDTFactor(Mat mat,MatFactorInfo *info,IS row,IS col,Mat *fac
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   MatPreallocated(mat);
-  PetscValidPointer(info,2);
-  if (row) PetscValidHeaderSpecific(row,IS_COOKIE,3);
-  if (col) PetscValidHeaderSpecific(col,IS_COOKIE,4);
+  if (row) PetscValidHeaderSpecific(row,IS_COOKIE,2);
+  if (col) PetscValidHeaderSpecific(col,IS_COOKIE,3);
+  PetscValidPointer(info,4);
   PetscValidPointer(fact,5);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->iludtfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->iludtfactor)(mat,info,row,col,fact);CHKERRQ(ierr);
+  ierr = (*mat->ops->iludtfactor)(mat,row,col,info,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)*fact);CHKERRQ(ierr);
 

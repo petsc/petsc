@@ -1,8 +1,9 @@
 #include "src/mat/impls/csr/inode/inode.h"
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
+EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatInodeAdjustForInodes_Inode(Mat,IS*,IS*);
 EXTERN PetscErrorCode MatInodeGetInodeSizes_Inode(Mat,PetscInt*,PetscInt*[],PetscInt*);
-
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_Inode"
@@ -162,7 +163,7 @@ PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUDTFactor_Inode"
-PetscErrorCode MatILUDTFactor_Inode(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
+PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
 
@@ -186,7 +187,7 @@ PetscErrorCode MatLUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_Inode"
-PetscErrorCode MatILUFactorSymbolic_Inode(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
+PetscErrorCode MatILUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
 
