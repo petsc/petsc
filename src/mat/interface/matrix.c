@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.105 1995/10/26 19:01:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.106 1995/10/26 19:17:24 curfman Exp curfman $";
 #endif
 
 /*
@@ -145,7 +145,7 @@ $      (which is in many cases the same as the default)
 $    FILE_FORMAT_INFO - basic information about the matrix
 $      size and structure (not the matrix entries)
 $    FILE_FORMAT_INFO_DETAILED - more detailed information about the 
-$      matrix structure.
+$      matrix structure
 
 .keywords: matrix, view, visualize, output, print, write, draw
 
@@ -869,6 +869,9 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
     int    i, nz, m, n, *cwork, rstart, rend;
     ierr = MatGetSize(mat,&m,&n); CHKERRQ(ierr);
     switch (newtype) {
+      case MATSEQAIJ:
+        ierr = MatCreateSeqAIJ(mat->comm,m,n,0,0,M); CHKERRQ(ierr); 
+        break;
       case MATSEQROW:
         ierr = MatCreateSeqRow(mat->comm,m,n,0,0,M); CHKERRQ(ierr); 
         break;
@@ -920,8 +923,6 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
     ierr = MatAssemblyEnd(*M,FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
   else {
-    /* Format-specific implementations should determine memory
-       allocation info for increased efficiency. */
     ierr = (*mat->ops.convert)(mat,newtype,M); CHKERRQ(ierr);
   }
   PLogEventEnd(MAT_Convert,mat,0,0,0); 
