@@ -1,0 +1,5 @@
+#! /bin/csh
+
+set TMP=/home/petsc/petsc-dev
+set MACH=dreamcast
+set ARCH=freebsd5.1

@@ -1,0 +1,7 @@
+#! /bin/csh
+
+# does not work anymore
+
+set TMP=/Users/petsc/petsc-dev
+set MACH=playstation
+set MACH=darwin6.8

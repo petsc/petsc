@@ -1,0 +1,5 @@
+#! /bin/csh
+#
+set TMP=/sandbox/petsc/petsc-dev
+set MACH=spark
+set ARCH=solaris2.9
