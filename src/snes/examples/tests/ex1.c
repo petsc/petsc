@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.61 1999/02/27 16:21:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.62 1999/03/07 17:20:10 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -18,7 +18,7 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
    Routines: SNESSolve(); SNESSetFromOptions(); SNESSetConvergenceHistory();
    Routines: MatGetColoring(); MatFDColoringCreate(); MatFDColoringSetFromOptions();
    Routines: MatFDColoringDestroy(); ISColoringDestroy();
-   Routines: DrawOpenX();
+   Routines: DrawOpenX(); DrawTensorContour(); DrawDestroy();
    Processors: 1
 T*/
 
@@ -82,6 +82,7 @@ int main( int argc, char **argv )
   int            i, ierr, its, N, flg, matrix_free, size, fd_coloring, hist_its[50]; 
   double         bratu_lambda_max = 6.81, bratu_lambda_min = 0., history[50];
   MatFDColoring  fdcoloring;           
+  Scalar         *array;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
@@ -224,7 +225,9 @@ int main( int argc, char **argv )
      Draw contour plot of solution
   */
   ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
-  ierr = DrawTensorContour(draw,user.mx,user.my,0,0,x); CHKERRA(ierr);
+  ierr = VecGetArray(x,&array);CHKERRQ(ierr);
+  ierr = DrawTensorContour(draw,user.mx,user.my,0,0,array); CHKERRA(ierr);
+  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
 
   /* 
      Print the convergence history.  This is intended just to demonstrate

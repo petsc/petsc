@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.25 1999/03/07 17:25:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.26 1999/03/08 19:50:45 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -77,6 +77,32 @@ int DrawScalePopup(Draw popup,double min,double max)
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  int    m,n;
+  double *x,*y,min,max;
+  Scalar *v;
+  int    showgrid;
+} ZoomCtx;
+
+#undef __FUNC__  
+#define __FUNC__ "DrawTensorContour_Zoom"
+static int DrawTensorContour_Zoom(Draw win,void *dctx)
+{
+  int     i,ierr;
+  ZoomCtx *ctx = (ZoomCtx *) dctx;
+
+  PetscFunctionBegin;
+  ierr = DrawTensorContourPatch(win,ctx->m,ctx->n,ctx->x,ctx->y,ctx->max,ctx->min,ctx->v);CHKERRQ(ierr);
+  if (ctx->showgrid) {
+    for ( i=0; i<ctx->m; i++ ) {
+      ierr = DrawLine(win,ctx->x[i],ctx->y[0],ctx->x[i],ctx->y[ctx->n-1],DRAW_BLACK);CHKERRQ(ierr);
+    }
+    for ( i=0; i<ctx->n; i++ ) {
+      ierr = DrawLine(win,ctx->x[0],ctx->y[i],ctx->x[ctx->m-1],ctx->y[i],DRAW_BLACK);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DrawTensorContour"
@@ -108,9 +134,9 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
   PetscTruth    isnull;
   Draw          popup;
   MPI_Comm      comm;
-  double        *x,*y;
-  int           xin=1,yin=1,i,showgrid,size;
-  double        h, min, max;
+  int           xin=1,yin=1,i,size;
+  double        h;
+  ZoomCtx       ctx;
 
   PetscFunctionBegin;
   ierr = DrawIsNull(win,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
@@ -126,50 +152,45 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
   ierr = DrawGetPopup(win,&popup); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(win); CHKERRQ(ierr);
 
-  max = min = PetscReal(v[0]);
+  ctx.v   = v;
+  ctx.m   = m;
+  ctx.n   = n;
+  ctx.max = ctx.min = PetscReal(v[0]);
   for ( i=0; i<N; i++ ) {
-    if (max < PetscReal(v[i])) max = PetscReal(v[i]);
-    if (min > PetscReal(v[i])) min = PetscReal(v[i]);
+    if (ctx.max < PetscReal(ctx.v[i])) ctx.max = PetscReal(ctx.v[i]);
+    if (ctx.min > PetscReal(ctx.v[i])) ctx.min = PetscReal(ctx.v[i]);
   }
-  if (max - min < 1.e-7) {min -= 5.e-8; max += 5.e-8;}
+  if (ctx.max - ctx.min < 1.e-7) {ctx.min -= 5.e-8; ctx.max += 5.e-8;}
 
   /* Draw the scale window */
-  ierr = DrawScalePopup(popup,min,max); CHKERRQ(ierr);
+  ierr = DrawScalePopup(popup,ctx.min,ctx.max); CHKERRQ(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&showgrid);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&ctx.showgrid);CHKERRQ(ierr);
 
   /* fill up x and y coordinates */
   if (!xi) {
-    xin = 0; 
-    x = (double *) PetscMalloc( m*sizeof(double) ); CHKPTRQ(x);
-    h = 1.0/(m-1);
-    x[0] = 0.0;
-    for ( i=1; i<m; i++ ) x[i] = x[i-1] + h;
+    xin      = 0; 
+    ctx.x    = (double *) PetscMalloc( ctx.m*sizeof(double) ); CHKPTRQ(ctx.x);
+    h        = 1.0/(ctx.m-1);
+    ctx.x[0] = 0.0;
+    for ( i=1; i<ctx.m; i++ ) ctx.x[i] = ctx.x[i-1] + h;
   } else {
-    x = (double *) xi;
+    ctx.x = (double *) xi;
   }
   if (!yi) {
-    yin = 0; 
-    y = (double *) PetscMalloc( n*sizeof(double) ); CHKPTRQ(y);
-    h = 1.0/(n-1);
-    y[0] = 0.0;
-    for ( i=1; i<n; i++ ) y[i] = y[i-1] + h;
+    yin      = 0; 
+    ctx.y    = (double *) PetscMalloc( ctx.n*sizeof(double) ); CHKPTRQ(ctx.y);
+    h        = 1.0/(ctx.n-1);
+    ctx.y[0] = 0.0;
+    for ( i=1; i<ctx.n; i++ ) ctx.y[i] = ctx.y[i-1] + h;
   } else {
-    y = (double *)yi;
+    ctx.y = (double *)yi;
   }
-  ierr = DrawTensorContourPatch(win,m,n,x,y,max,min,v);CHKERRQ(ierr);
-  if (showgrid) {
-    for ( i=0; i<m; i++ ) {
-      ierr = DrawLine(win,x[i],y[0],x[i],y[n-1],DRAW_BLACK);CHKERRQ(ierr);
-    }
-    for ( i=0; i<n; i++ ) {
-      ierr = DrawLine(win,x[0],y[i],x[m-1],y[i],DRAW_BLACK);CHKERRQ(ierr);
-    }
-  }
-  ierr = DrawFlush(win);CHKERRQ(ierr);
+
+  ierr = DrawZoom(win,(int (*)(Draw,void *))DrawTensorContour_Zoom,&ctx);CHKERRQ(ierr);
     
-  if (!xin) PetscFree(x); 
-  if (!yin) PetscFree(y);
+  if (!xin) PetscFree(ctx.x); 
+  if (!yin) PetscFree(ctx.y);
 
   PetscFunctionReturn(0);
 }
