@@ -165,7 +165,7 @@ class Transform (Maker):
     return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+'.o')
 
   def updateSourceDB(self, source):
-    sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time());
+    sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time())
 
   def execute(self):
     return self.products
