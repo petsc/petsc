@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c pxxt.c
+SOURCEC	 = mpiaij.c mmaij.c mpiaijpc.c mpiov.c fdmpiaij.c pxxt.c superlu_dist.c
 SOURCEF	 =
 SOURCEH	 = mpiaij.h
-OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o pxxt.o
+OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o pxxt.o superlu_dist.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 = 
