@@ -18,7 +18,7 @@ typedef struct _Space {
 
 #undef __FUNCT__
 #define __FUNCT__ "GetMoreSpace"
-int GetMoreSpace(int size,FreeSpaceList *list) {
+int GetMoreSpace(long size,FreeSpaceList *list) {
   FreeSpaceList a;
   int ierr;
 
@@ -229,6 +229,9 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
     ca += cnzi;
     cj += cnzi;
   }
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+                         
   /* Free temp */
   ierr = PetscFree(temp);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
@@ -323,7 +326,7 @@ int MatApplyPtAP_SeqAIJ_Symbolic(Mat A,Mat P,Mat *C) {
   /*         P^T*A*P will take A(NxN) and create C(N/2xN/2). */
   /*         If C has same sparsity pattern as A, nnz(C)~1/2*nnz(A). */
   /*         Is this reasonable???? */
-  ierr          = GetMoreSpace((ai[am]*pn)/pm,&free_space);
+  ierr          = GetMoreSpace((ai[am]/pm)*pn,&free_space);
   current_space = free_space;
 
   /* Determine fill for each row of C: */
@@ -419,7 +422,8 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
   int        aishift=a->indexshift,pishift=p->indexshift,cishift=c->indexshift;
-  int        *ai=a->i,*aj=a->j,*apj,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj,*ci=c->i,*cj=c->j,*cjj;
+  int        *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
+  int        *ci=c->i,*cj=c->j,*cjj;
   int        an=A->N,am=A->M,pn=P->N,pm=P->M,cn=C->N,cm=C->M;
   int        i,j,k,anzi,pnzi,apnzj,pnzj,cnzj,prow,crow;
   MatScalar  *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
@@ -439,13 +443,14 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
   ierr = PetscLogEventBegin(logkey_matapplyptap_numeric,A,P,C,0);CHKERRQ(ierr);
   flops = 0;
 
-  ierr = PetscMalloc(cn*(sizeof(MatScalar)+sizeof(int)),&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+sizeof(int)));CHKERRQ(ierr);
-  apj = (int *)(apa + cn);
+  ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(int)),&apa);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+2*sizeof(int)));CHKERRQ(ierr);
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
+  apj      = (int *)(apa + cn);
+  apjdense = apj + cn;
+
   for (i=0;i<am;i++) {
-CHKMEMQ;
     /* Form sparse row of A*P */
     anzi  = ai[i+1] - ai[i];
     apnzj = 0;
@@ -455,14 +460,11 @@ CHKMEMQ;
       pjj  = pj + pi[prow];
       paj  = pa + pi[prow];
       for (k=0;k<pnzj;k++) {
-        if (apa[pjj[k]] != 0.0) {
-CHKMEMQ;
-          apj[apnzj++]=pjj[k];
-CHKMEMQ;
+        if (!apjdense[pjj[k]]) {
+          apjdense[pjj[k]] = -1; 
+          apj[apnzj++]     = pjj[k];
         }
-CHKMEMQ;
         apa[pjj[k]] += (*aa)*paj[k];
-CHKMEMQ;
       }
       flops += 2*pnzj;
       aa++;
@@ -480,7 +482,7 @@ CHKMEMQ;
       cjj  = cj + ci[crow];
       caj  = ca + ci[crow];
       /* Perform the sparse axpy operation.  Note cjj includes apj. */
-      for (k=0;k<cnzj;k++) {
+      for (k=0;nextap<apnzj;k++) {
         if (cjj[k]==apj[nextap]) {
           caj[k] += (*pA)*apa[apj[nextap++]];
         }
@@ -489,10 +491,10 @@ CHKMEMQ;
       pA++;
     }
 
+    /* Zero the current row info for A*P */
     for (j=0;j<apnzj;j++) {
-CHKMEMQ;
-      apa[apj[j]] = 0.;
-CHKMEMQ;
+      apa[apj[j]]      = 0.;
+      apjdense[apj[j]] = 0;
     }
   }
   ierr = PetscFree(apa);CHKERRQ(ierr);
@@ -501,13 +503,22 @@ CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
+extern PetscTruth MemoryIntensive;
+static int logkey_matapplyptap  = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatApplyPtAP_SeqAIJ"
 int MatApplyPtAP_SeqAIJ(Mat A,Mat P,Mat *C) {
   int ierr;
 
   PetscFunctionBegin;
+  if (!logkey_matapplyptap) {
+    ierr = PetscLogEventRegister(&logkey_matapplyptap,"MatApplyPtAP",MAT_COOKIE);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(logkey_matapplyptap,A,P,C,0);CHKERRQ(ierr);
   ierr = MatApplyPtAP_SeqAIJ_Symbolic(A,P,C);CHKERRQ(ierr);
   ierr = MatApplyPtAP_SeqAIJ_Numeric(A,P,*C);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(logkey_matapplyptap,A,P,C,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
