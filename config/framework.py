@@ -4,8 +4,8 @@ import os
 import re
 
 class Framework(config.base.Configure):
-  def __init__(self, clArgs = None, argDB = None):
-    self.argDB = self.setupArgDB(clArgs, argDB)
+  def __init__(self, clArgs = None, argDB = None, loadArgDB = 1):
+    self.argDB = self.setupArgDB(clArgs, argDB, loadArgDB)
     config.base.Configure.__init__(self, self)
     self.children   = []
     self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
@@ -22,11 +22,11 @@ class Framework(config.base.Configure):
       self.argDB['LDFLAGS']  = ''
     return
 
-  def setupArgDB(self, clArgs, initDB):
+  def setupArgDB(self, clArgs, initDB, loadArgDB = 1):
     self.clArgs = clArgs
     if initDB is None:
       import RDict
-      argDB = RDict.RDict()
+      argDB = RDict.RDict(load = loadArgDB)
     else:
       argDB = initDB
     return argDB

@@ -63,7 +63,7 @@ import os
 class RDict(dict):
   '''An RDict is a typed dictionary, which may be hierarchically composed. All elements derive from the
 Arg class, which wraps the usual value.'''
-  def __init__(self, parentAddr = None, parentDirectory = None):
+  def __init__(self, parentAddr = None, parentDirectory = None, load = 1):
     import atexit
     import xdrlib
 
@@ -82,7 +82,7 @@ Arg class, which wraps the usual value.'''
     self.stopCmd         = cPickle.dumps(('stop',))
     self.writeLogLine('Greetings')
     self.connectParent(self.parentAddr, self.parentDirectory)
-    self.load()
+    if load: self.load()
     atexit.register(self.shutdown)
     return
 
