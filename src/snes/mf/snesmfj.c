@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.24 1996/01/11 20:14:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.25 1996/01/23 00:19:51 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -34,6 +34,12 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   Vec           w = ctx->w,U,F;
   int           ierr;
 
+  /* We log matrix-free matrix-vector products separately, so that we can
+     separate the performance monitoring from the cases that use conventional
+     storage.  We may eventually modify event logging to associate events
+     with particular objects, hence alleviating the more general problem. */
+  PLogEventBegin(MAT_MatrixFreeMult,dx,y,0,0);
+
   ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
 
@@ -58,6 +64,8 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   h = 1.0/h;
   ierr = VecScale(&h,y); CHKERRQ(ierr);
   if (ctx->sp) { ierr = PCNullSpaceRemove(ctx->sp,y); CHKERRQ(ierr);}
+
+  PLogEventEnd(MAT_MatrixFreeMult,dx,y,0,0);
   return 0;
 }
 /*@C
