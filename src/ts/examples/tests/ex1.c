@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.6 1996/04/09 02:24:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.7 1996/04/18 14:33:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -139,7 +139,7 @@ int main(int argc,char **argv)
          The user provides the RHS as a Shell matrix.
     */
     ierr = MatCreateShell(MPI_COMM_WORLD,m,M,M,M,&appctx,&A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A,MAT_MULT,RHSMatrixFree);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A,MAT_MULT,(void*)RHSMatrixFree);CHKERRQ(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
   } else if (problem == linear_no_time) {
     /*
@@ -161,7 +161,7 @@ int main(int argc,char **argv)
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
     ierr = MatCreateShell(MPI_COMM_WORLD,m,M,M,M,&appctx,&A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A,MAT_MULT,RHSMatrixFree);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(A,MAT_MULT,(void*)RHSMatrixFree);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);  
   } else if (problem == nonlinear) {
     /*

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.13 1996/03/04 21:50:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.14 1996/03/23 16:56:55 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -23,6 +23,7 @@ static char vcid[] = "$Id: zksp.c,v 1.13 1996/03/04 21:50:23 bsmith Exp bsmith $
 #define kspappendoptionsprefix_      KSPAPPENDOPTIONSPREFIX
 #define kspgettype_               KSPGETTYPE
 #define kspgetpreconditionerside_ KSPGETPRECONDITIONERSIDE
+#define kspbuildsolution_         KSPBUILDSOLUTION
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define kspregisterdestroy_       kspregisterdestroy
 #define kspregisterall_           kspregisterall
@@ -39,6 +40,7 @@ static char vcid[] = "$Id: zksp.c,v 1.13 1996/03/04 21:50:23 bsmith Exp bsmith $
 #define kspappendoptionsprefix_   kspappendoptionsprefix
 #define kspgettype_               kspgettype
 #define kspgetpreconditionerside_ kspgetpreconditionerside
+#define kspbuildsolution_         kspbuildsolution
 #endif
 
 #if defined(__cplusplus)
@@ -50,7 +52,7 @@ void kspgettype_(KSP ksp,KSPType *type,CHAR name,int *__ierr,int len)
   char *tname;
   if (FORTRANNULL(type)) type = PETSC_NULL;
   *__ierr = KSPGetType((KSP)MPIR_ToPointer(*(int*)ksp),type,&tname);
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
   if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
