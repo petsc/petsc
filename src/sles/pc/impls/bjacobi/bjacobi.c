@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.30 1995/07/20 23:43:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.31 1995/07/26 02:25:01 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -136,12 +136,12 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
        jac->n);
   MPIU_fprintf(pc->comm,fd,"    Block Jacobi: number of blocks = %d\n",jac->n);
   MPIU_fprintf(pc->comm,fd,
-     "     Local solve info for each block in next KSP and PC objects:\n");
+     "    Local solve info for each block is in the following KSP and PC objects:\n");
   MPI_Comm_rank(pc->comm,&mytid);
   MPIU_Seq_begin(pc->comm,1);
-  fprintf(fd,"Proc %d: number of local blocks = %d, first local block = %d\n",
+  fprintf(fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
     mytid,jac->n_local,jac->first_local);
-  SLESView(jac->sles[0],viewer); /* currently only 1 block per processor */
+  SLESView(jac->sles[0],STDOUT_VIEWER); /* currently only 1 block per proc */
   fflush(fd);
   MPIU_Seq_end(pc->comm,1);
   return 0;
@@ -160,7 +160,6 @@ int PCCreate_BJacobi(PC pc)
   pc->view          = PCView_BJacobi;
   pc->type          = PCBJACOBI;
   pc->data          = (void *) jac;
-  pc->view          = PCView_BJacobi;
   jac->n            = 0;
   jac->n_local      = 1;
   jac->first_local  = mytid;
@@ -179,6 +178,9 @@ int PCCreate_BJacobi(PC pc)
 
    Options Database Key:
 $  -pc_bjacobi_blocks  blocks
+
+   Note:  
+   Currently only 1 block per processor is supported.
 
 .keywords:  set, number, Jacobi, blocks
 
