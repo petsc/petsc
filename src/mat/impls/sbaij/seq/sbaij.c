@@ -1336,8 +1336,8 @@ EXTERN_C_END
 +  A - the symmetric matrix 
 .  bs - size of block
 .  nz - number of block nonzeros per block row (same for all rows)
--  nnz - array containing the number of block nonzeros in the various block rows 
-         (possibly different for each block row) or PETSC_NULL
+-  nnz - array containing the number of block nonzeros in the upper triangular plus
+         diagonal portion of each block (possibly different for each block row) or PETSC_NULL
 
    Options Database Keys:
 .   -mat_no_unroll - uses code that does not unroll the loops in the 
@@ -1347,10 +1347,6 @@ EXTERN_C_END
    Level: intermediate
 
    Notes:
-   The block AIJ format is compatible with standard Fortran 77
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
-
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.  For additional details, see the users manual chapter on
@@ -1506,8 +1502,8 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
 .  bs - size of block
 .  m - number of rows, or number of columns
 .  nz - number of block nonzeros per block row (same for all rows)
--  nnz - array containing the number of block nonzeros in the various block rows 
-         (possibly different for each block row) or PETSC_NULL
+-  nnz - array containing the number of block nonzeros in the upper triangular plus
+         diagonal portion of each block (possibly different for each block row) or PETSC_NULL
 
    Output Parameter:
 .  A - the symmetric matrix 
@@ -1520,9 +1516,6 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
    Level: intermediate
 
    Notes:
-   The block AIJ format is compatible with standard Fortran 77
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
