@@ -1,0 +1,51 @@
+
+The Mathematics and Computer Science (MCS) Division of Argonne National
+                      Laboratory invites outstanding candidates to apply for a postdoctoral position in
+                      the area of enabling technologies for software interoperability among toolkits
+                      used in the solution of large-scale distributed-memory PDE-based applications.
+                      Of particular interest for this project is research into the abstractions and
+                      interfaces required to enable interoperability with a number of different mesh
+                      management packages. We are especially interested in interfaces that address
+                      complementary functionalities and that would allow the user to "plug and play"
+                      with different meshes, solvers, partitioners, and visualization tools.
+
+                      The successful candidate will perform basic research in softwareinteroperability
+                      techniques targeted toward state-of-the-art numericaltool packages within the
+                      ALICE framework (for more information on the ALICE project see
+                      http://www.mcs.anl.gov/alice ). This work will support a number of ongoing
+                      application projects, particularly our joint ASCI ASAP project with University of
+                      Chicago to model astrophysical thermonuclear flashes on neutron stars. In
+                      addition, the successful candidate will have access to state-of-the-art computing
+                      and visualization facilities including an 80-node IBM SP supercomputer and a
+                      128-processor SGI Origin with 12 reality engine pipes running a CAVE
+                      immersive visualization environment and several ImmersaDesks.
+
+                      We seek candidates with expertise in one or more of the following
+                      areas: software interoperability mechanisms, parallel mesh management
+                      techniques, and the solution of large-scale applications on distributed-memory
+                      computers. In addition, experience with object-oriented programming paradigms
+                      and software architecture design is desired. Candidates must have a Ph.D. in
+                      computer science, applied mathematics, or an engineering discipline and have
+                      received their Ph.D. not more than three years prior to the beginning of the
+                      appointment. The appointment is available immediately and is for a one-year term
+                      (renewable).
+
+                      Argonne is located in the southwestern Chicago suburbs, offering the advantages
+                      of affordable housing, good schools, and easy access to the cultural attractions of
+                      the city. 
+
+                      Resumes should be addressed to 
+
+                                                Sue Walker
+                                               Box mcs-alice
+                                          Employment and Placement
+                                          Argonne National Laboratory
+                                            9700 S. Cass Avenue
+                                             Argonne, IL 60439
+
+                      and must include a statement of research goals and the names and addresses of
+                      three references. For additional information or to submit resumes electronically,
+                      please contact Lori Freitag (630-252-7246; freitag@mcs.anl.gov ) or to submit
+                      resumes electronically, please send e-mail to griffin@mcs.anl.gov .
+
+                      Argonne is an affirmative action/equal opportunity employer. 
