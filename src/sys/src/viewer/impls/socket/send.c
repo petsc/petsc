@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.37 1996/07/02 18:08:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.38 1996/08/04 23:13:58 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -38,7 +38,7 @@ typedef unsigned long   u_long;
 #include <stropts.h>
 #endif
 
-#include "matlab.h"
+#include "src/viewer/impls/matlab/matlab.h"
 #include "pinclude/petscfix.h"
 
 /*

@@ -1,6 +1,6 @@
-/* $Id: mpibaij.h,v 1.1 1996/06/03 19:55:56 balay Exp balay $ */
+/* $Id: mpibaij.h,v 1.2 1996/06/04 21:40:30 balay Exp bsmith $ */
 
-#include "baij.h"
+#include "src/mat/impls/baij/seq/baij.h"
 
 #if !defined(__MPIBAIJ_H)
 #define __MPIBAIJ_H

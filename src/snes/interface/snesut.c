@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.18 1996/06/27 15:42:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesut.c,v 1.19 1996/06/30 17:10:07 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
-#include "snesimpl.h"       /*I   "snes.h"   I*/
+#include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
 /*@C
    SNESDefaultMonitor - Default SNES monitoring routine.

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.65 1996/04/06 18:47:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.66 1996/04/09 23:08:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -58,7 +58,7 @@ static char vcid[] = "$Id: gmres.c,v 1.65 1996/04/06 18:47:00 curfman Exp bsmith
 
 #include <math.h>
 #include <stdio.h>
-#include "gmresp.h"       /*I  "ksp.h"  I*/
+#include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 #include "pinclude/pviewer.h"
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30

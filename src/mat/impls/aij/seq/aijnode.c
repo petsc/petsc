@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.46 1996/05/19 23:28:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.47 1996/07/02 18:06:16 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
 */
-#include "aij.h"                
+#include "src/mat/impls/aij/seq/aij.h"                
 
 int Mat_AIJ_CheckInode(Mat);
 static int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.50 1996/04/09 02:23:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.51 1996/07/22 17:27:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: eisen.c,v 1.50 1996/04/09 02:23:59 curfman Exp bsmith
  method. But it requires actually solving the preconditioned problem 
  with both left and right preconditioning. 
 */
-#include "pcimpl.h"           /*I "pc.h" I*/
+#include "src/pc/pcimpl.h"           /*I "pc.h" I*/
 #include "pinclude/pviewer.h"
 
 typedef struct {

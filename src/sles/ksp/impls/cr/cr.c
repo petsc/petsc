@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.27 1996/04/04 22:02:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.28 1996/04/05 05:57:51 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: cr.c,v 1.27 1996/04/04 22:02:58 bsmith Exp bsmith $";
 #include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "kspimpl.h"
+#include "src/ksp/kspimpl.h"
 
 static int KSPSetUp_CR(KSP ksp)
 {

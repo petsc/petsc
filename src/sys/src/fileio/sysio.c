@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.12 1996/04/01 03:12:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.13 1996/04/09 23:08:39 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -9,7 +9,9 @@ static char vcid[] = "$Id: sysio.c,v 1.12 1996/04/01 03:12:30 curfman Exp bsmith
 #include "petsc.h"
 #include "sys.h"
 #include <errno.h>
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
+#endif
 
 #if defined(HAVE_SWAPPED_BYTES)
 /*

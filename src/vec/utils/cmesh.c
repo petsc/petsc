@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.26 1996/07/08 22:16:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.27 1996/08/06 04:01:05 bsmith Exp bsmith $";
 #endif
 
-#include "drawimpl.h"   /*I "draw.h" I*/
+#include "src/draw/drawimpl.h"   /*I "draw.h" I*/
 #include "vec.h"        /*I "vec.h" I*/
 
 /*@

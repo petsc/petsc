@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.56 1996/07/08 22:20:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.57 1996/07/10 01:50:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -100,7 +100,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   int     ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr, set;
   IS      iskeep;
   double  **K, norm;
-  Mat     mat, submat = 0;
+  Mat     mat, submat = 0,*submatb;
   MatType type;
 
   m /= 2;   /* This is done just to be consistent with the old example */
@@ -162,7 +162,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
     ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERRQ(ierr);
   }
   ierr = ISCreateSeq(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,iskeep,iskeep,MAT_INITIAL_MATRIX,&submat);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb);CHKERRQ(ierr);
+  submat = *submatb; PetscFree(submatb);
   PetscFree(rowkeep);
   ierr = ISDestroy(iskeep);  CHKERRQ(ierr);
   ierr = MatDestroy(mat); CHKERRQ(ierr);

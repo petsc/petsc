@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.26 1996/08/06 19:36:50 curfman Exp curfman $";
+static char vcid[] = "$Id: baijfact.c,v 1.27 1996/08/06 23:00:43 curfman Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
 */
 
-#include "baij.h"
+#include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 

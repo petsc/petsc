@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.69 1996/07/02 13:46:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.70 1996/07/02 13:56:14 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
-#include "pcimpl.h"                 /*I "pc.h"  I*/
-#include "ilu.h"
-#include "matimpl.h"
+#include "src/pc/pcimpl.h"                 /*I "pc.h"  I*/
+#include "src/pc/impls/ilu/ilu.h"
+#include "src/mat/matimpl.h"
 #include "pinclude/pviewer.h"
 
 extern int PCSetUp_ILU_MPIRowbs(PC);

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: pcnull.c,v 1.4 1996/02/08 18:26:33 bsmith Exp balay $";
+static char vcid[] = "$Id: pcnull.c,v 1.5 1996/04/25 23:59:27 balay Exp bsmith $";
 #endif
 /*
     Routines to project vectors out of null spaces.
 */
 
 #include "petsc.h"
-#include "pcimpl.h"      /*I "pc.h" I*/
+#include "src/pc/pcimpl.h"      /*I "pc.h" I*/
 #include <stdio.h>
 #include "src/sys/nreg.h"
 #include "sys.h"

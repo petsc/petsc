@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: daltol.c,v 1.2 1996/03/19 21:29:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: daltol.c,v 1.3 1996/07/02 23:59:34 curfman Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "daimpl.h"    /*I   "da.h"   I*/
+#include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@
    DALocalToLocalBegin - Maps from a local vector (including ghost points

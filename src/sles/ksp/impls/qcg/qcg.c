@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.26 1996/04/04 22:03:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.27 1996/04/05 05:58:11 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: qcg.c,v 1.26 1996/04/04 22:03:19 bsmith Exp bsmith $"
 
 #include <stdio.h>
 #include <math.h>
-#include "kspimpl.h"
-#include "qcg.h"
+#include "src/ksp/kspimpl.h"
+#include "src/ksp/impls/qcg/qcg.h"
 
 static int QuadraticRoots_Private(Vec,Vec,double*,double*,double*);
 

@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.14 1996/01/01 01:01:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.15 1996/03/19 21:23:32 bsmith Exp bsmith $";
 #endif
 
-#include "kspimpl.h"  /*I "ksp.h" I*/
+#include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
 /* 
   This code inplements Paul Fischer's initial guess code for situations where
   a linear system is solved repeatedly 

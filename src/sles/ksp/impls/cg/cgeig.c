@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.25 1996/04/04 22:03:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.26 1996/04/09 23:08:08 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -7,8 +7,7 @@ static char vcid[] = "$Id: cgeig.c,v 1.25 1996/04/04 22:03:02 bsmith Exp bsmith 
 */
 #include <stdio.h>
 #include <math.h>
-#include "kspimpl.h"  /*I "ksp.h" I*/
-#include "cgctx.h"
+#include "src/ksp/impls/cg/cgctx.h"
 static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
 
 #if !defined(PETSC_COMPLEX)

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.70 1996/07/08 22:16:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.71 1996/07/17 23:15:34 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
 */
 
 #include "draw.h"     /*I "draw.h" I*/
-#include "kspimpl.h"  /*I "ksp.h" I*/
+#include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
 #include "sys.h"
 
 extern int KSPGetTypeFromOptions_Private(KSP,KSPType *);

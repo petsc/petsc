@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: tone.c,v 1.6 1995/11/09 22:31:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.7 1995/12/13 04:10:53 bsmith Exp bsmith $";
 #endif
 /*
     Code for drawing color interpolated triangles using X-windows.
 */
 #if defined(HAVE_X11)
-#include "ximpl.h"
+#include "src/draw/impls/x/ximpl.h"
 
 #define SHIFT_VAL 6
 

@@ -1,6 +1,6 @@
-/* $Id: mpidense.h,v 1.9 1996/01/01 22:33:07 curfman Exp bsmith $ */
+/* $Id: mpidense.h,v 1.10 1996/01/24 05:45:49 bsmith Exp bsmith $ */
 
-#include "dense.h"
+#include "src/mat/impls/dense/seq/dense.h"
 
   /*  Data stuctures for basic parallel dense matrix  */
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.28 1996/07/12 13:59:27 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.29 1996/08/06 04:02:02 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: asm.c,v 1.28 1996/07/12 13:59:27 balay Exp bsmith $";
        n_local = maximum over all processors of n_local_true
 
 */
-#include "pcimpl.h"     /*I "pc.h" I*/
+#include "src/pc/pcimpl.h"     /*I "pc.h" I*/
 #include "sles.h"
 
 typedef struct {

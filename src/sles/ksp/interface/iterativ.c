@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.49 1996/06/27 15:43:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.50 1996/06/30 17:10:02 curfman Exp bsmith $";
 #endif
 
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: iterativ.c,v 1.49 1996/06/27 15:43:21 bsmith Exp curf
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include "kspimpl.h"   /*I "ksp.h" I*/
+#include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 /*
   KSPDefaultFreeWork - Free work vectors

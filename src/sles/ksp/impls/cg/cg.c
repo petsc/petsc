@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.47 1996/04/20 04:19:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.48 1996/07/08 22:17:15 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: cg.c,v 1.47 1996/04/20 04:19:03 bsmith Exp bsmith $";
 */
 #include <stdio.h>
 #include <math.h>
-#include "cgctx.h"       /*I "ksp.h" I*/
+#include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
 extern int KSPComputeExtremeSingularValues_CG(KSP,Scalar *,Scalar *);
 
 int KSPSetUp_CG(KSP ksp)

@@ -1,14 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.19 1996/01/01 01:03:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.20 1996/04/26 00:51:27 bsmith Exp bsmith $";
 #endif
 
 /*
    Support for the MPIBDIAG matrix-vector multiply
 */
-#include "mpibdiag.h"
+#include "src/mat/impls/bdiag/mpi/mpibdiag.h"
 #include "src/vec/vecimpl.h"
-#include "../seq/bdiag.h"
 
 int MatSetUpMultiply_MPIBDiag(Mat mat)
 {

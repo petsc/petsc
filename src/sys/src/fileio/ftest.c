@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ftest.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ftest.c,v 1.3 1996/04/10 04:28:47 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
-#include "files.h"
+#include "src/sys/src/files.h"
 
 /*+
   SYiTestFile - Test for a file existing with a specified mode.

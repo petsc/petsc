@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.23 1996/03/04 05:15:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.24 1996/03/19 21:25:03 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
 */
-#include "pcimpl.h"   /*I "pc.h" I*/
+#include "src/pc/pcimpl.h"   /*I "pc.h" I*/
 #include <math.h>
 
 typedef struct {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.29 1996/03/19 21:22:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreatev.c,v 1.30 1996/04/07 22:46:43 curfman Exp bsmith $";
 #endif
 
 
@@ -45,7 +45,7 @@ int VecCreate(MPI_Comm comm,int n,Vec *V)
   return VecCreateSeq(comm,n,V);
 }
 
-#include "vecimpl.h"
+#include "src/vec/vecimpl.h"
 /*@C
    VecGetType - Gets the vector type and name (as a string) from the vector.
 

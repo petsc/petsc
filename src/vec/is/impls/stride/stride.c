@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.42 1996/07/08 22:16:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.43 1996/07/22 16:59:11 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
 */
-#include "isimpl.h"             /*I   "is.h"   I*/
+#include "src/is/isimpl.h"             /*I   "is.h"   I*/
 #include "pinclude/pviewer.h"
 
 typedef struct {
@@ -33,7 +33,12 @@ typedef struct {
 @*/
 int ISStrideGetInfo(IS is,int *first,int *step)
 {
-  IS_Stride *sub = (IS_Stride *) is->data;
+  IS_Stride *sub;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(first);
+  PetscValidIntPointer(step);
+
+  sub = (IS_Stride *) is->data;
   if (is->type != IS_STRIDE_SEQ) return 0;
   *first = sub->first; *step = sub->step;
   return 1;
@@ -87,7 +92,7 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
     if (is->isperm) {
       fprintf(fd,"Index set is permutation\n");
     }
-    fprintf(fd,"Number of indices in set %d\n",n);
+    fprintf(fd,"Number of indices in (stride) set %d\n",n);
     for ( i=0; i<n; i++ ) {
       fprintf(fd,"%d %d\n",i,sub->first + i*sub->step);
     }
@@ -116,8 +121,11 @@ static int ISSorted_Stride(IS is, PetscTruth* flg)
 static struct _ISOps myops = { ISGetSize_Stride,
                                ISGetSize_Stride,
                                ISGetIndices_Stride,
-                               ISRestoreIndices_Stride,0,
-                               ISSort_Stride, ISSorted_Stride };
+                               ISRestoreIndices_Stride,
+                               0,
+                               ISSort_Stride, 
+                               ISSorted_Stride };
+
 /*@C
    ISCreateStrideSeq - Creates a data structure for an index set 
    containing a list of evenly spaced integers.
@@ -142,13 +150,13 @@ int ISCreateStrideSeq(MPI_Comm comm,int n,int first,int step,IS *is)
   IS_Stride *sub;
 
   *is = 0;
-   if (n < 0) SETERRQ(1,"ISCreateStrideSeq:Number of indices < 0");
+  if (n < 0) SETERRQ(1,"ISCreateStrideSeq:Number of indices < 0");
   if (step == 0) SETERRQ(1,"ISCreateStrideSeq:Step must be nonzero");
 
   PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_STRIDE_SEQ,comm); 
   PLogObjectCreate(Nindex);
   PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _IS));
-  sub            = (IS_Stride *) PetscMalloc(sizeof(IS_Stride)); CHKPTRQ(sub);
+  sub            = PetscNew(IS_Stride); CHKPTRQ(sub);
   sub->n         = n;
   sub->first     = first;
   sub->step      = step;

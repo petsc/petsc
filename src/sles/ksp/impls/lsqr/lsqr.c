@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.25 1996/04/04 22:03:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.26 1996/04/05 05:58:03 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: lsqr.c,v 1.25 1996/04/04 22:03:13 bsmith Exp bsmith $
 #include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "kspimpl.h"
+#include "src/ksp/kspimpl.h"
 
 static int KSPSetUp_LSQR(KSP ksp)
 {

@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.64 1996/07/03 14:00:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.65 1996/07/08 22:20:53 bsmith Exp bsmith $";
 #endif
 
-#include "slesimpl.h"     /*I  "sles.h"    I*/
+#include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 #include "pinclude/pviewer.h"
 
 /*@ 

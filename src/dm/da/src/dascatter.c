@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: dascatter.c,v 1.2 1996/03/19 21:29:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dascatter.c,v 1.3 1996/04/20 04:21:49 bsmith Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "daimpl.h"    /*I   "da.h"   I*/
+#include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@C
    DAGetScatter - Gets the local to global, local to global, and 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: frame.c,v 1.6 1995/06/23 12:41:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: frame.c,v 1.7 1995/11/09 22:31:34 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: frame.c,v 1.6 1995/06/23 12:41:11 bsmith Exp bsmith $
    The region has 6 parameters.  These are the dimensions of the actual frame.
  */
 
-#include "ximpl.h"
+#include "src/draw/impls/x/ximpl.h"
 
 extern int   XiGetColor( Draw_X *, char *, int );
 

@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.13 1996/03/19 21:23:01 bsmith Exp curfman $ */
+/* $Id: bvec1.c,v 1.14 1996/03/21 21:50:31 curfman Exp bsmith $ */
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -7,8 +7,8 @@
 */
 
 #include <math.h>
-#include "vecimpl.h" 
-#include "dvecimpl.h" 
+#include "src/vec/vecimpl.h" 
+#include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/plapack.h"
 
 static int VecDot_Seq(Vec xin, Vec yin,Scalar *z )

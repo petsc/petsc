@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: dadestroy.c,v 1.4 1996/04/17 21:06:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.5 1996/06/27 14:56:34 bsmith Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "daimpl.h"    /*I   "da.h"   I*/
+#include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@C
    DADestroy - Destroy a distributed array.

@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: dtexts.c,v 1.5 1996/04/20 04:20:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dtexts.c,v 1.6 1996/07/08 22:21:15 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include "drawimpl.h"  /*I "draw.h" I*/
+#include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 /*@
    DrawTextSetSize - Sets the size for charactor text.  The width is

@@ -1,4 +1,4 @@
-/* $Id: ls.h,v 1.3 1995/06/14 19:55:54 curfman Exp curfman $ */
+/* $Id: ls.h,v 1.4 1995/07/22 20:37:39 curfman Exp bsmith $ */
 
 /* 
    Context for a Newton line search method for solving
@@ -7,7 +7,7 @@
 
 #ifndef __SNES_EQLS_H
 #define __SNES_EQLS_H
-#include "snesimpl.h"
+#include "src/snes/snesimpl.h"
 
 typedef struct {
   int (*LineSearch)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);

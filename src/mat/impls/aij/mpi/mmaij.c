@@ -1,14 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.27 1996/06/22 00:11:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.28 1996/07/08 22:19:18 bsmith Exp bsmith $";
 #endif
 
 
 /*
    Support for the parallel AIJ matrix vector multiply
 */
-#include "mpiaij.h"
+#include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
-#include "../seq/aij.h"
 
 int MatSetUpMultiply_MPIAIJ(Mat mat)
 {

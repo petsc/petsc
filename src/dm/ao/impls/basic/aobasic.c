@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.4 1996/07/08 22:24:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodebug.c,v 1.5 1996/07/10 01:52:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: aodebug.c,v 1.4 1996/07/08 22:24:27 bsmith Exp bsmith
   entire orderings on each processor.
 */
 
-#include "aoimpl.h"
+#include "src/ao/aoimpl.h"
 #include "pinclude/pviewer.h"
 #include "sys.h"
 

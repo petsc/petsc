@@ -4,7 +4,7 @@ ALL: lib
 
 # This matrix dependency should be fixed!
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'   \
-           $(BS_INCLUDE) -I../../../../src/mat -I../..
+           $(BS_INCLUDE) 
 SOURCEC  = icc.c
 SOURCEF  =
 SOURCEH  = icc.h

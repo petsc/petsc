@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.178 1996/07/11 04:09:32 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.179 1996/08/06 04:02:17 bsmith Exp bsmith $";
 #endif
 
 /*
 B    Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
 */
-#include "aij.h"
+#include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "petsc.h"

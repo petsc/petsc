@@ -2,11 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
-	   -I.. -I../impls/aij/seq -I../impls/aij/mpi \
-           -I../impls/row/seq -I../impls/row/mpi \
-           -I../impls/bdiag/seq -I../impls/bdiag/mpi \
-           -I../impls/rowbs/mpi
+CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
 SOURCEC  = gcreate.c convert.c stash.c axpy.c zerodiag.c matio.c
 SOURCEF  =
 SOURCEH  =

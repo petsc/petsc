@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: rpath.c,v 1.3 1996/03/08 05:46:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rpath.c,v 1.4 1996/03/19 21:24:22 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
-#include "files.h"
+#include "src/sys/src/files.h"
 
 
 /*@C

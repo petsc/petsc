@@ -1,18 +1,18 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.74 1996/07/10 01:48:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.75 1996/08/04 23:11:10 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
 */
 
 #include <math.h>
-#include "vecimpl.h"          /*I  "vec.h"   I*/
-#include "dvecimpl.h" 
+#include "src/vec/vecimpl.h"          /*I  "vec.h"   I*/
+#include "src/vec/impls/dvecimpl.h" 
 
-#include "../bvec1.c"
-#include "../dvec2.c"
+#include "src/vec/impls/bvec1.c"
+#include "src/vec/impls/dvec2.c"
 
 int VecNorm_Seq(Vec xin,NormType type,double* z )
 {
@@ -240,7 +240,8 @@ static int VecDestroy_Seq(PetscObject obj )
 static int VecDuplicate_Seq(Vec,Vec*);
 
 static struct _VeOps DvOps = {VecDuplicate_Seq, 
-            VecGetVecs_Default, VecDestroyVecs_Default, VecDot_Seq, VecMDot_Seq,
+            VecDuplicateVecs_Default, VecDestroyVecs_Default, 
+            VecDot_Seq, VecMDot_Seq,
             VecNorm_Seq,  VecDot_Seq, VecMDot_Seq,
             VecScale_Seq, VecCopy_Seq,
             VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXPBY_Seq,

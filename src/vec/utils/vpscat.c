@@ -2,7 +2,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.59 1996/07/24 03:48:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.60 1996/08/04 23:10:58 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -10,9 +10,9 @@ static char vcid[] = "$Id: vpscat.c,v 1.59 1996/07/24 03:48:28 bsmith Exp bsmith
 
 #include "sys.h"
 #include "src/is/isimpl.h"
-#include "vecimpl.h"                     /*I "vec.h" I*/
-#include "impls/dvecimpl.h"
-#include "impls/mpi/pvecimpl.h"
+#include "src/vec/vecimpl.h"                     /*I "vec.h" I*/
+#include "src/vec/impls/dvecimpl.h"
+#include "src/vec/impls/mpi/pvecimpl.h"
 #include "pinclude/pviewer.h"
 
 int VecScatterView_MPI(PetscObject obj,Viewer viewer)

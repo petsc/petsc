@@ -1,6 +1,6 @@
-/* $Id: dense.h,v 1.2 1995/11/21 22:23:55 curfman Exp curfman $ */
+/* $Id: dense.h,v 1.3 1996/04/09 20:24:20 curfman Exp bsmith $ */
 
-#include "matimpl.h"
+#include "src/mat/matimpl.h"
 #include <math.h>
 
 #if !defined(__DENSE_H)

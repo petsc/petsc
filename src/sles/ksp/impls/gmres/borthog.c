@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.27 1996/06/17 20:54:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.28 1996/07/07 17:34:47 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: borthog.c,v 1.27 1996/06/17 20:54:02 bsmith Exp bsmit
     VecMDot() arguments within the code MUST remain in the order
     given for correct computation of inner products.
 */
-#include "gmresp.h"
+#include "src/ksp/impls/gmres/gmresp.h"
 #include <math.h>
 
 /*

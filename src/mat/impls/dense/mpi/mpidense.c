@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.43 1996/07/08 22:19:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.44 1996/08/06 04:02:14 bsmith Exp bsmith $";
 #endif
 
 /*
    Basic functions for basic parallel dense matrices.
 */
     
-#include "mpidense.h"
+#include "src/mat/impls/dense/mpi/mpidense.h"
 #include "src/vec/vecimpl.h"
 
 static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,

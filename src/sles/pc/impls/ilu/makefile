@@ -3,7 +3,7 @@ PETSC_DIR = ../../../..
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
-           -I../.. $(BS_INCLUDE) -I../.. -I../../../../src/mat
+           $(BS_INCLUDE)
 SOURCEC  = ilu.c
 SOURCEF  =
 SOURCEH  = 

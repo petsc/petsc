@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.89 1996/08/04 23:11:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.90 1996/08/06 18:10:25 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
-#include "pcimpl.h"            /*I "pc.h" I*/
+#include "src/pc/pcimpl.h"            /*I "pc.h" I*/
 #include "pinclude/pviewer.h"
 
 extern int PCPrintTypes_Private(MPI_Comm,char*,char*);
@@ -83,8 +83,9 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   *newpc          = 0;
   MPI_Comm_size(comm,&size);
   if (size == 1) initialtype = PCILU;
+  else           initialtype = PCBJACOBI;
 
-  PetscHeaderCreate(pc,_PC,PC_COOKIE,initaltype,comm);
+  PetscHeaderCreate(pc,_PC,PC_COOKIE,initialtype,comm);
   PLogObjectCreate(pc);
   pc->type               = -1;
   pc->vec                = 0;
@@ -455,9 +456,21 @@ $      Pmat does not have the same nonzero structure.
  @*/
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
+  MatType type;
+  int     ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(Amat,MAT_COOKIE);
   PetscValidHeaderSpecific(Pmat,MAT_COOKIE);
+
+  /*
+      BlockSolve95 cannot use default BJacobi preconditioning
+  */
+  ierr = MatGetType(Amat,&type,PETSC_NULL); CHKERRQ(ierr);
+  if (type == MATMPIROWBS) {
+    if (pc->type == PCBJACOBI) {
+      ierr = PCSetType(pc,PCILU); CHKERRQ(ierr);
+    }
+  }
 
   pc->mat  = Amat;
   pc->pmat = Pmat;

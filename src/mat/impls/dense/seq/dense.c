@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.106 1996/08/05 17:38:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.107 1996/08/06 04:02:12 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
 */
 
-#include "dense.h"
+#include "src/mat/impls/dense/seq/dense.h"
 #include "pinclude/plapack.h"
 #include "pinclude/pviewer.h"
 

@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.10 1996/03/19 21:25:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.11 1996/07/02 18:06:16 bsmith Exp bsmith $";
 #endif
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
 
 */
-#include "aij.h"
+#include "src/mat/impls/aij/seq/aij.h"
 
 #if defined(HAVE_ESSL) && !defined(__cplusplus)
 /* #include <essl.h> This doesn't work!  */

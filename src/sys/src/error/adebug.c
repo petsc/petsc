@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.48 1996/08/01 20:50:45 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.49 1996/08/02 22:25:00 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -8,7 +8,9 @@ static char vcid[] = "$Id: adebug.c,v 1.48 1996/08/01 20:50:45 bsmith Exp balay 
 #include <signal.h> 
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <stdio.h>
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
+#endif 
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

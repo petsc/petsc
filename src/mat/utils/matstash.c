@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.84 1996/04/12 23:41:27 curfman Exp $";
+static char vcid[] = "$Id: stash.c,v 1.10 1996/04/26 00:52:43 bsmith Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"
-#include "matimpl.h"
+#include "src/mat/matimpl.h"
 
 #define CHUNCKSIZE   5000
 /*

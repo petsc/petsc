@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.15 1996/04/04 22:03:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.16 1996/04/05 05:58:05 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: preonly.c,v 1.15 1996/04/04 22:03:14 bsmith Exp bsmit
 #include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "kspimpl.h"
+#include "src/ksp/kspimpl.h"
 
 static int KSPSetUp_PREONLY(KSP ksp)
 {

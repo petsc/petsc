@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.16 1996/03/04 05:16:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.17 1996/07/02 18:07:37 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: xinit.c,v 1.16 1996/03/04 05:16:47 bsmith Exp bsmith 
 
 #include <stdio.h>
 #if defined(HAVE_X11)
-#include "ximpl.h"
+#include "src/draw/impls/x/ximpl.h"
 
 extern int XiUniformHues(Draw_X *,int);
 extern int Xi_wait_map( Draw_X*);

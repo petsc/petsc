@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.19 1996/08/06 04:02:50 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.20 1996/08/06 16:51:30 balay Exp bsmith $";
 #endif
 
-#include "mpibaij.h"
+#include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/vec/vecimpl.h"
 
 #include "draw.h"

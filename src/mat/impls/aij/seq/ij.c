@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.16 1996/02/13 23:29:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.17 1996/03/08 05:47:13 bsmith Exp bsmith $";
 #endif
 
-#include "aij.h"
+#include "src/mat/impls/aij/seq/aij.h"
 
 /*
   MatToSymmetricIJ_SeqAIJ - Convert a sparse AIJ matrix to IJ format 

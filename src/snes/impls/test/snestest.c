@@ -1,10 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.25 1996/03/26 00:11:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.26 1996/07/08 22:23:08 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
-#include "snesimpl.h"
+#include "src/snes/snesimpl.h"
 
 typedef struct {
   int complete_print;

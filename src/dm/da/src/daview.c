@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.10 1996/06/09 20:02:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.11 1996/07/08 22:23:44 bsmith Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "daimpl.h"    /*I   "da.h"   I*/
+#include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@
    DAView - Visualizes a distributed array object.

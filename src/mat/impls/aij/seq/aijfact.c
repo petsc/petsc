@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.63 1996/08/06 19:37:05 curfman Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.64 1996/08/06 23:01:07 curfman Exp bsmith $";
 #endif
 
-#include "aij.h"
+#include "src/mat/impls/aij/seq/aij.h"
 /*
     Factorization code for AIJ format. 
 */

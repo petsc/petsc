@@ -3,7 +3,7 @@ PETSC_DIR = ../../../../..
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
-	   -I../../.. $(SUPERLU_INCLUDE)
+	   $(SUPERLU_INCLUDE)
 SOURCEC  = baij.c baij2.c baijfact.c dgefa.c dgedi.c dgefa3.c
 SOURCEF  =
 SOURCEH  = baij.h

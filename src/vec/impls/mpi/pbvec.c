@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.61 1996/04/07 22:46:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.62 1996/08/04 23:11:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: pbvec.c,v 1.61 1996/04/07 22:46:13 curfman Exp bsmith
 #include <math.h>
 #include "pvecimpl.h"   /*I  "vec.h"   I*/
 
-#include "../bvec1.c"
-#include "../dvec2.c"
+#include "src/vec/impls/bvec1.c"
+#include "src/vec/impls/dvec2.c"
 #include "pdvec.c"
 #include "pvec2.c"
 
@@ -36,7 +36,7 @@ static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 static int VecDuplicate_MPI( Vec, Vec *);
 
 static struct _VeOps DvOps = { VecDuplicate_MPI, 
-            VecGetVecs_Default, VecDestroyVecs_Default, VecDot_MPI, 
+            VecDuplicateVecs_Default, VecDestroyVecs_Default, VecDot_MPI, 
             VecMDot_MPI,
             VecNorm_MPI, VecDot_MPI, 
             VecMDot_MPI,

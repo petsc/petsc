@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: sregis.c,v 1.10 1996/03/08 05:47:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.11 1996/07/02 18:06:44 bsmith Exp bsmith $";
 #endif
 
-#include "../../matimpl.h"     /*I       "mat.h"   I*/
+#include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
 
 extern int MatOrder_Natural(int*,int*,int*,int*,int*);
 extern int MatOrder_ND(int*,int*,int*,int*,int*);

@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2.c,v 1.1 1996/02/04 21:06:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2f.c,v 1.2 1996/03/23 18:35:40 bsmith Exp bsmith $";
 #endif
 /*
      Fortran interface for SDA routines.
 */
 #include "src/fortran/custom/zpetsc.h"
 
-#include "sda.h"
+#include "src/contrib/sda/src/sda.h"
 
 #ifdef HAVE_FORTRAN_CAPS
 #define sdadestroy_           SDADESTROY

@@ -6,7 +6,7 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I.. -I../..
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = pbvec.c
 SOURCEF  =
 SOURCEH  = pvecimpl.h pdvec.c pvec2.c

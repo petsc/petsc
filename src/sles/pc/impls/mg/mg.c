@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.50 1996/05/11 04:04:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.51 1996/07/22 17:32:35 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
 */
-#include "mgimpl.h"                    /*I "pc.h" I*/
+#include "src/pc/impls/mg/mgimpl.h"                    /*I "pc.h" I*/
 #include "pinclude/pviewer.h"          /*I "mg.h" I*/
 
 /*

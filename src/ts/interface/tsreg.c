@@ -1,10 +1,10 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.6 1996/03/26 04:47:26 bsmith Exp balay $";
+static char vcid[] = "$Id: tsreg.c,v 1.7 1996/04/26 00:12:38 balay Exp bsmith $";
 #endif
 
-#include "tsimpl.h"      /*I "ts.h"  I*/
+#include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
 #include "src/sys/nreg.h"      
 #include "pinclude/pviewer.h"
 #include <math.h>

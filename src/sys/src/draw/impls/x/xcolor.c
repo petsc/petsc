@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.16 1995/12/08 04:54:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.17 1995/12/13 04:11:54 bsmith Exp bsmith $";
 #endif
 /*
     Code for managing color the X implementation of the Draw routines.
 */
 #if defined(HAVE_X11)
-#include "ximpl.h"
+#include "src/draw/impls/x/ximpl.h"
 
 static char *(colornames[]) = { "white", "black", "red", "green", 
                                 "cyan", "blue", "magenta", "aquamarine",

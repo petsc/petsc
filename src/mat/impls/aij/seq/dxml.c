@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: dxml.c,v 1.3 1995/11/02 04:30:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dxml.c,v 1.4 1996/03/19 21:25:53 bsmith Exp bsmith $";
 #endif
 
 /* 
         Provides an interface to the DEC Alpha DXML library
      At the moment the DXNL library only offers sparse matrix vector product.
 */
-#include "aij.h"
+#include "src/mat/impls/aij/seq/aij.h"
 
 #if defined(HAVE_DXML) && !defined(__cplusplus)
 

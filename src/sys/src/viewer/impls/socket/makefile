@@ -2,8 +2,7 @@ PETSC_DIR = ../../../..
 
 
 ALL: lib 
-CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
-            -I../.. $(MATLAB_INCLUDE)
+CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' $(MATLAB_INCLUDE)
 SOURCEC   = senddense.c send.c  sendsparse.c
 SOURCEF   =
 SOURCEH   = matlab.h

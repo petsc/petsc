@@ -1,6 +1,6 @@
 PETSC_DIR = ../
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I..
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = tex/manual/manual.tex www/www.html tex/manual/part1.tex \

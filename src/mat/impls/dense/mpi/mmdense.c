@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: mmdense.c,v 1.5 1995/11/03 02:59:00 bsmith Exp balay $";
+static char vcid[] = "$Id: mmdense.c,v 1.6 1996/04/26 00:01:58 balay Exp bsmith $";
 #endif
 
 /*
    Support for the parallel dense matrix vector multiply
 */
-#include "mpidense.h"
+#include "src/mat/impls/dense/mpi/mpidense.h"
 #include "src/vec/vecimpl.h"
 
 int MatSetUpMultiply_MPIDense(Mat mat)

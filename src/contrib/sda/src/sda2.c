@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2.c,v 1.3 1996/03/31 16:52:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.4 1996/04/17 22:05:30 bsmith Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).
 */
 
-#include "sda.h"    /*I   "da.h"   I*/
+#include "src/contrib/sda/src/sda.h"    /*I   "da.h"   I*/
 
 struct _SDA {
   DA  da;

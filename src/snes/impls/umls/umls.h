@@ -4,7 +4,7 @@
 
 #ifndef __SNES_UMLS_H
 #define __SNES_UMLS_H
-#include "snesimpl.h"
+#include "src/snes/snesimpl.h"
 
 typedef struct {
 /* ------------------------- Line search routine ------------------------- */

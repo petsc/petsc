@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.41 1996/07/15 17:29:54 balay Exp balay $";
+static char vcid[] = "$Id: umtr.c,v 1.42 1996/07/15 17:55:30 balay Exp bsmith $";
 #endif
 
 #include <math.h>
-#include "umtr.h"                /*I "snes.h" I*/
-#include "kspimpl.h"
-#include "qcg.h"
+#include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
+#include "src/ksp/kspimpl.h"
+#include "src/ksp/impls/qcg/qcg.h"
 #include "pinclude/pviewer.h"
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: dvecimpl.h,v 1.4 1996/01/22 19:01:05 bsmith Exp bsmith $ */
+/* $Id: dvecimpl.h,v 1.5 1996/08/04 23:11:06 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 
@@ -11,7 +11,7 @@
 #ifndef __DVECIMPL 
 #define __DVECIMPL
 
-#include "vecimpl.h"
+#include "src/vec/vecimpl.h"
 
 typedef struct { 
   VECHEADER

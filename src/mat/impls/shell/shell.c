@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.36 1996/04/26 00:04:39 balay Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.37 1996/08/04 23:12:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: shell.c,v 1.36 1996/04/26 00:04:39 balay Exp bsmith $
 */
 
 #include "petsc.h"
-#include "matimpl.h"        /*I "mat.h" I*/
+#include "src/mat/matimpl.h"        /*I "mat.h" I*/
 #include "src/vec/vecimpl.h"  
 
 typedef struct {

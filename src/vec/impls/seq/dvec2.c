@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.33 1996/05/13 17:03:54 balay Exp balay $ */
+/* $Id: dvec2.c,v 1.34 1996/05/14 17:20:42 balay Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -7,8 +7,8 @@
 #include "src/inline/dot.h"
 #include "src/inline/setval.h"
 #include "src/inline/axpy.h"
-#include "vecimpl.h"             
-#include "dvecimpl.h"   
+#include "src/vec/vecimpl.h"             
+#include "src/vec/impls/dvecimpl.h"   
 #include "draw.h"          
 #include "pinclude/pviewer.h"
 

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.63 1996/08/04 23:12:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.64 1996/08/06 04:02:46 bsmith Exp bsmith $";
 #endif
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-#include "baij.h"
+#include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "petsc.h"

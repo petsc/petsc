@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: daindex.c,v 1.5 1996/07/02 18:08:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: daindex.c,v 1.6 1996/07/08 01:05:21 curfman Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "daimpl.h"    /*I   "da.h"   I*/
+#include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@C
    DAGetGlobalIndices - Returns the global node number of all local nodes,

@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ao.c,v 1.2 1996/07/02 18:09:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.3 1996/07/08 22:24:23 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
-#include "aoimpl.h"      /*I "ao.h" I*/
+#include "src/ao/aoimpl.h"      /*I "ao.h" I*/
 
 
 /*@

@@ -2,8 +2,7 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../..  $(PCONF)\
-          $(CONF) -D__DIR__='"ts/impls/explicit/"'
+CFLAGS   =  $(PETSC_INCLUDE) $(PCONF) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = 
 SOURCEF  =
 SOURCEH  = 

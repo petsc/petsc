@@ -1,6 +1,6 @@
-/* $Id: mpibdiag.h,v 1.9 1995/12/30 22:32:49 bsmith Exp bsmith $ */
+/* $Id: mpibdiag.h,v 1.10 1996/01/24 05:46:24 bsmith Exp bsmith $ */
 
-#include "bdiag.h"
+#include "src/mat/impls/bdiag/seq/bdiag.h"
 
 /* 
    Mat_MPIBDiag - Parallel, block-diagonal format, where each diagonal

@@ -1,6 +1,6 @@
-/* $Id: aij.h,v 1.27 1996/02/23 21:01:10 curfman Exp curfman $ */
+/* $Id: aij.h,v 1.28 1996/04/09 20:24:16 curfman Exp bsmith $ */
 
-#include "matimpl.h"
+#include "src/mat/matimpl.h"
 #include <math.h>
 
 #if !defined(__AIJ_H)

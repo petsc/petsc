@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: baij2.c,v 1.5 1996/07/08 22:19:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.6 1996/08/06 04:02:46 bsmith Exp bsmith $";
 #endif
 
-#include "baij.h"
+#include "src/mat/impls/baij/seq/baij.h"
 #include "petsc.h"
 #include "src/inline/bitarray.h"
 

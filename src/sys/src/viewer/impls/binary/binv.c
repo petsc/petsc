@@ -1,12 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.22 1996/06/24 15:30:48 balay Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.23 1996/07/10 01:51:28 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "pinclude/pviewer.h"
 #include <stdio.h>
 #include <fcntl.h>
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
+#endif
 
 struct _Viewer {
   VIEWERHEADER

@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.11 1995/11/01 23:19:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.12 1995/11/03 03:07:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-#include "order.h"
+#include "src/mat/impls/order/order.h"
 
 /*
     MatOrder_QMD - Find the Quotient Minimum Degree ordering of a given matrix.

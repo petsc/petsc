@@ -2,8 +2,7 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../.. \
-           -I$(PETSC_DIR)/src/ksp -I$(PETSC_DIR)/src/ksp/impls/qcg 
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
 SOURCEC  = umtr.c
 SOURCEF  =
 SOURCEH  = umtr.h

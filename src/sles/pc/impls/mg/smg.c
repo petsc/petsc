@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: smg.c,v 1.6 1995/07/20 23:43:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: smg.c,v 1.7 1996/05/11 04:04:19 bsmith Exp bsmith $";
 #endif
 /*
      Additive Multigrid V Cycle routine    
 */
-#include "mgimpl.h"
+#include "src/pc/impls/mg/mgimpl.h"
 
 /*
        MGACycle_Private - Given an MG structure created with MGCreate() runs 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.63 1996/07/31 15:55:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.64 1996/08/03 14:30:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,9 +9,9 @@ static char vcid[] = "$Id: vscat.c,v 1.63 1996/07/31 15:55:17 bsmith Exp bsmith 
 */
 
 #include "src/is/isimpl.h"
-#include "vecimpl.h"                     /*I "vec.h" I*/
-#include "impls/dvecimpl.h"
-#include "impls/mpi/pvecimpl.h"
+#include "src/vec/vecimpl.h"                     /*I "vec.h" I*/
+#include "src/vec/impls/dvecimpl.h"
+#include "src/vec/impls/mpi/pvecimpl.h"
 
 
 /*

@@ -3,7 +3,7 @@ PETSC_DIR = ../../../../..
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
-	   -I../../.. -I../seq $(BS_INCLUDE)
+	   $(BS_INCLUDE)
 SOURCEC  = mpirowbs.c cholbs.c ilubs.c iccbs.c
 SOURCEF  =
 SOURCEH  = mpirowbs.h

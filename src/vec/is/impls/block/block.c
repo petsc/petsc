@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.1 1996/07/31 21:50:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.2 1996/08/04 23:10:48 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
 */
-#include "isimpl.h"
+#include "src/is/isimpl.h"
 #include "pinclude/pviewer.h"
 #include "sys.h"
 
@@ -19,8 +19,10 @@ typedef struct {
 
 static int ISDestroy_Block(PetscObject obj)
 {
-  IS is = (IS) obj;
-  PetscFree(is->data); 
+  IS       is = (IS) obj;
+  IS_Block *is_block = (IS_Block *) is->data;
+  PetscFree(is_block->idx); 
+  PetscFree(is_block); 
   PLogObjectDestroy(is);
   PetscHeaderDestroy(is); return 0;
 }
@@ -105,7 +107,7 @@ static int ISView_Block(PetscObject obj, Viewer viewer)
 static int ISSort_Block(IS is)
 {
   IS_Block *sub = (IS_Block *)is->data;
-  int        ierr;
+  int      ierr;
 
   if (sub->sorted) return 0;
   ierr = PetscSortInt(sub->n, sub->idx); CHKERRQ(ierr);
@@ -146,16 +148,16 @@ static struct _ISOps myops = { ISGetSize_Block,
 @*/
 int ISCreateBlockSeq(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 {
-  int      i, sorted = 1, size = sizeof(IS_Block) + n*sizeof(int),min, max;
+  int      i, sorted = 1, min, max;
   IS       Nindex;
   IS_Block *sub;
 
   *is = 0;
   PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_BLOCK_SEQ,comm); 
   PLogObjectCreate(Nindex);
-  sub            = (IS_Block *) PetscMalloc(size); CHKPTRQ(sub);
-  PLogObjectMemory(Nindex,size + sizeof(struct _IS));
-  sub->idx       = (int *) (sub+1);
+  sub            = PetscNew(IS_Block); CHKPTRQ(sub);
+  PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _IS));
+  sub->idx       = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;
   for ( i=1; i<n; i++ ) {
     if (idx[i] < idx[i-1]) {sorted = 0; break;}
@@ -182,9 +184,8 @@ int ISCreateBlockSeq(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 int ISBlockGetIndices(IS in,int **idx)
 {
   IS_Block *sub;
-
-  PetscValidPointer(idx);
   PetscValidHeaderSpecific(in,IS_COOKIE);
+  PetscValidPointer(idx);
 
   sub = (IS_Block *) in->data;
   *idx = sub->idx; 
@@ -193,14 +194,17 @@ int ISBlockGetIndices(IS in,int **idx)
 
 int ISBlockRestoreIndices(IS in,int **idx)
 {
-  PetscValidPointer(idx);
   PetscValidHeaderSpecific(in,IS_COOKIE);
+  PetscValidPointer(idx);
   return 0;
 }
 
 int ISGetBlockSize(IS is,int *size)
 {
-  IS_Block *sub = (IS_Block *)is->data;
+  IS_Block *sub;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidPointer(size);
+  sub = (IS_Block *)is->data;
   *size = sub->bs; 
   return 0;
 }

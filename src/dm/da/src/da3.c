@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.38 1996/07/02 18:08:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.39 1996/07/08 22:23:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: da3.c,v 1.38 1996/07/02 18:08:55 bsmith Exp bsmith $"
    File created by Peter Mell  7/14/95
  */
 
-#include "daimpl.h"     /*I   "da.h"    I*/
+#include "src/da/daimpl.h"     /*I   "da.h"    I*/
 #include "pinclude/pviewer.h"
 #include <math.h>
 #include "draw.h"

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.25 1996/04/05 05:58:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: tfqmr.c,v 1.26 1996/04/11 14:08:01 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: tfqmr.c,v 1.25 1996/04/05 05:58:08 bsmith Exp curfman
 #include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "kspimpl.h"
+#include "src/ksp/kspimpl.h"
 
 static int KSPSetUp_TFQMR(KSP ksp)
 {

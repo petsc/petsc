@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.22 1996/04/05 16:34:09 balay Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.23 1996/04/20 04:18:39 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
 */
 #include "vec.h"   /*I "vec.h" I*/
-#include "vecimpl.h"
+#include "src/vec/vecimpl.h"
 
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.

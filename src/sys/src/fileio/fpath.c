@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: fpath.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.3 1996/03/19 21:24:22 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
 */
-#include "files.h"
+#include "src/sys/src/files.h"
 
 #if defined(HAVE_PWD_H)
 /*@C

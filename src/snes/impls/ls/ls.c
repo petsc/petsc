@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.67 1996/03/25 23:13:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.68 1996/04/20 04:21:35 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
-#include "ls.h"
+#include "src/snes/impls/ls/ls.h"
 #include "pinclude/pviewer.h"
 
 /*

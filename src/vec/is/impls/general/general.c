@@ -1,23 +1,27 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.45 1996/07/08 22:16:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.46 1996/07/22 16:59:15 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
-#include "isimpl.h"
+#include "src/is/isimpl.h"
 #include "pinclude/pviewer.h"
 #include "sys.h"
 
 typedef struct {
-  int n,sorted; 
+  int n;         /* number of indices */ 
+  int sorted;    /* indicates the indices are sorted */ 
   int *idx;
 } IS_General;
 
 static int ISDestroy_General(PetscObject obj)
 {
-  IS is = (IS) obj;
-  PetscFree(is->data); 
+  IS         is = (IS) obj;
+  IS_General *is_general = (IS_General *) is->data;
+
+  PetscFree(is_general->idx);
+  PetscFree(is_general); 
   PLogObjectDestroy(is);
   PetscHeaderDestroy(is); return 0;
 }
@@ -33,7 +37,6 @@ static int ISGetSize_General(IS is,int *size)
   IS_General *sub = (IS_General *)is->data;
   *size = sub->n; return 0;
 }
-
 
 static int ISInvertPermutation_General(IS is, IS *isout)
 {
@@ -91,7 +94,8 @@ static int ISSorted_General(IS is, PetscTruth *flg)
 
 static struct _ISOps myops = { ISGetSize_General,
                                ISGetSize_General,
-                               ISGetIndices_General,0,
+                               ISGetIndices_General,
+                               0,
                                ISInvertPermutation_General,
                                ISSort_General,
                                ISSorted_General };
@@ -113,17 +117,16 @@ static struct _ISOps myops = { ISGetSize_General,
 @*/
 int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
 {
-  int        i, sorted = 1, size = sizeof(IS_General) + n*sizeof(int);
-  int        min, max;
+  int        i, sorted = 1, min, max;
   IS         Nindex;
   IS_General *sub;
 
   *is = 0;
   PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_SEQ,comm); 
   PLogObjectCreate(Nindex);
-  sub            = (IS_General *) PetscMalloc(size); CHKPTRQ(sub);
-  PLogObjectMemory(Nindex,size + sizeof(struct _IS));
-  sub->idx       = (int *) (sub+1);
+  sub            = PetscNew(IS_General); CHKPTRQ(sub);
+  PLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(int)+sizeof(struct _IS));
+  sub->idx       = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;
   for ( i=1; i<n; i++ ) {
     if (idx[i] < idx[i-1]) {sorted = 0; break;}
@@ -144,6 +147,7 @@ int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
   Nindex->isperm  = 0;
   *is = Nindex; return 0;
 }
+
 
 
 

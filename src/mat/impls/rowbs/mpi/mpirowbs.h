@@ -1,10 +1,10 @@
-/* $Id: mpirowbs.h,v 1.29 1996/06/08 16:30:42 curfman Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.30 1996/08/04 23:12:40 bsmith Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX) && \
     !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
 
-#include "matimpl.h"
+#include "src/mat/matimpl.h"
 #include <math.h>
 
 #if defined(__cplusplus)

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: dasub.c,v 1.4 1996/06/26 03:21:22 curfman Exp curfman $";
+static char vcid[] = "$Id: dasub.c,v 1.5 1996/06/26 18:58:38 curfman Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "daimpl.h"    /*I   "da.h"   I*/
+#include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@
    DAGetProcessorSubset - Returns a communicator consisting only of the

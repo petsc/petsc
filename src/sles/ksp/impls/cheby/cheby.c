@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.40 1996/04/05 05:58:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: cheby.c,v 1.41 1996/04/06 16:54:00 curfman Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: cheby.c,v 1.40 1996/04/05 05:58:00 bsmith Exp curfman
 #include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "kspimpl.h"    /*I "ksp.h" I*/
-#include "chebctx.h"
+#include "src/ksp/kspimpl.h"    /*I "ksp.h" I*/
+#include "src/ksp/impls/cheby/chebctx.h"
 #include "pinclude/pviewer.h"
 
 int KSPSetUp_Chebychev(KSP ksp)

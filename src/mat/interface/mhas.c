@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: mhas.c,v 1.3 1996/03/19 21:25:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: mhas.c,v 1.4 1996/03/28 22:14:22 curfman Exp bsmith $";
 #endif
 
 
 #include "petsc.h"
-#include "matimpl.h"        /*I "mat.h" I*/
+#include "src/mat/matimpl.h"        /*I "mat.h" I*/
        
 /*@
     MatHasOperation - Determines if the given matrix supports the particular

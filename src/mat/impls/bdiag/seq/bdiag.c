@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.110 1996/08/06 19:37:29 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.111 1996/08/06 20:51:34 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
 
-#include "bdiag.h"
+#include "src/mat/impls/bdiag/seq/bdiag.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 

@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.12 1995/09/04 17:24:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: mgfunc.c,v 1.13 1995/12/12 22:48:00 curfman Exp bsmith $";
 #endif
 
-#include "mgimpl.h"       /*I "sles.h" I*/
+#include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
                           /*I "mg.h"   I*/
 
 /*@C

@@ -2,11 +2,10 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
-	   -I../../.. -I../seq -I../../../../vec 
+CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
 SOURCEC	 = mpibaij.c mbaijfact.c mmbaij.c mpibaijpc.c baijpc.c baijov.c
 SOURCEF	 =
-SOURCEH	 = 
+SOURCEH	 = mpibaij.h
 OBJSC	 = mpibaij.o  mbaijfact.o mmbaij.o mpibaijpc.o baijpc.o baijov.o
 OBJSF	 =
 LIBBASE	 = libpetscmat

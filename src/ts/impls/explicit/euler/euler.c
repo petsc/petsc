@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: euler.c,v 1.2 1996/01/31 03:59:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: euler.c,v 1.3 1996/03/23 18:34:49 bsmith Exp bsmith $";
 #endif
 /*
        Code for Time Stepping with explicit Euler.
 */
 #include <math.h>
-#include "tsimpl.h"                /*I   "ts.h"   I*/
+#include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
 #include "pinclude/pviewer.h"
 
 

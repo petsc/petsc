@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.7 1996/04/09 02:23:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.8 1996/04/20 04:21:03 bsmith Exp bsmith $";
 #endif
 /*
        Code for Time Stepping with implicit backwards Euler.
 */
 #include <math.h>
-#include "tsimpl.h"                /*I   "ts.h"   I*/
+#include "src/ts/tsimpl.h"                /*I   "ts.h"   I*/
 #include "pinclude/pviewer.h"
 
 

@@ -256,6 +256,18 @@ extern int    atoi(char*);
 #endif
 #endif
 
+/* -----------------------Windows NT ---------------------------------------*/
+#if defined(PARCH_nt)
+
+#if defined(__cplusplus)
+extern "C" {
+}
+
+#else
+
+#endif
+#endif
+
 #endif
 
 

@@ -1,7 +1,7 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) -I.. -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
+CFLAGS	        = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
 FFLAGS	        = 
 SOURCEC	        = 
 SOURCEF	        =

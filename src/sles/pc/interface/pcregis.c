@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.25 1995/12/21 16:41:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.26 1996/01/01 01:02:31 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-#include "pcimpl.h"          /*I   "pc.h"   I*/
+#include "src/pc/pcimpl.h"          /*I   "pc.h"   I*/
 
 extern int PCCreate_Jacobi(PC);
 extern int PCCreate_BJacobi(PC);

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: dacorn.c,v 1.3 1996/02/23 02:44:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.4 1996/03/19 21:29:33 bsmith Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "daimpl.h"    /*I   "da.h"   I*/
+#include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@
    DAGetCorners - Returns the global (x,y,z) indices of the lower left

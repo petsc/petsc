@@ -1,12 +1,12 @@
-/* $Id: pvecimpl.h,v 1.7 1995/11/01 19:08:38 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.8 1996/08/04 21:16:15 bsmith Exp bsmith $ */
 /* 
  */
 
 #ifndef __PVECIMPL
 #define __PVECIMPL
 
-#include "vecimpl.h"
-#include "dvecimpl.h"
+#include "src/vec/vecimpl.h"
+#include "src/vec/impls/dvecimpl.h"
 
 /* The first two elements of this structure should remain the same */
 typedef struct {

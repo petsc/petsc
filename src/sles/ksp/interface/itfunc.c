@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.62 1996/07/22 17:42:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.63 1996/07/25 23:35:08 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
 */
 #include "petsc.h"
 #include "draw.h"
-#include "kspimpl.h"   /*I "ksp.h" I*/
+#include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 /*@
    KSPComputeExtremeSingularValues - Computes the extreme singular values

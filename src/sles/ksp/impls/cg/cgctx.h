@@ -6,7 +6,7 @@
 #define __CG
 
 #include "petsc.h"
-#include "kspimpl.h"
+#include "src/ksp/kspimpl.h"
 
 typedef struct {
   Scalar    emin, emax;           /* eigenvalues */

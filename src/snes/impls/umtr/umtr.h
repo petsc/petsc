@@ -1,4 +1,4 @@
-/* $Id: umtr.h,v 1.1 1995/07/20 16:49:21 curfman Exp curfman $ */
+/* $Id: umtr.h,v 1.2 1995/07/29 04:37:29 curfman Exp bsmith $ */
 
 /*
     Context for a Newton trust region method (unconstrained minimization)
@@ -6,7 +6,7 @@
 
 #ifndef __SNES_UMTR_H
 #define __SNES_UMTR_H
-#include "snesimpl.h"
+#include "src/snes/snesimpl.h"
 
 typedef struct {
   double delta0;	/* used to initialize trust region parameter */

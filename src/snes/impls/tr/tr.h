@@ -1,4 +1,4 @@
-/* $Id: tr.h,v 1.5 1995/07/22 19:47:21 curfman Exp curfman $ */
+/* $Id: tr.h,v 1.6 1995/07/27 03:01:07 curfman Exp bsmith $ */
 
 /*
    Context for a Newton trust region method for solving a system 
@@ -7,7 +7,7 @@
 
 #ifndef __SNES_EQTR_H
 #define __SNES_EQTR_H
-#include "snesimpl.h"
+#include "src/snes/snesimpl.h"
 
 typedef struct {
   /* ---- Parameters used by the trust region method  ---- */

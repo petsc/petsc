@@ -1,7 +1,7 @@
 PETSC_DIR = ../../../..
 ALL: lib 
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../..
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
 FFLAGS   =
 SOURCEC  = cg.c cgeig.c
 SOURCEF  =

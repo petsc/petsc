@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.35 1996/04/05 05:57:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: bcgs.c,v 1.36 1996/04/06 16:54:34 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: bcgs.c,v 1.35 1996/04/05 05:57:53 bsmith Exp curfman 
 #include <stdio.h>
 #include <math.h>
 #include "petsc.h"
-#include "kspimpl.h"
+#include "src/ksp/kspimpl.h"
 
 static int KSPSetUp_BCGS(KSP ksp)
 {

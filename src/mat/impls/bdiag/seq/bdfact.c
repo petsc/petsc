@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.35 1996/08/06 20:59:03 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.36 1996/08/06 23:00:59 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
 
-#include "bdiag.h"
+#include "src/mat/impls/bdiag/seq/bdiag.h"
 #include "src/inline/ilu.h"
 
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,

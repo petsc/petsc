@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.8 1996/08/01 15:01:16 balay Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.9 1996/08/06 14:36:31 balay Exp bsmith $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
   and to find submatrices that were shared across processors.
 */
-#include "mpibaij.h"
+#include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/inline/bitarray.h"
 
 static int MatIncreaseOverlap_MPIBAIJ_Once(Mat, int, IS *);

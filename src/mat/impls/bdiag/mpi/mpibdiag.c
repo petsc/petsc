@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.89 1996/07/25 18:55:36 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.90 1996/08/06 04:02:39 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
 */
 
-#include "mpibdiag.h"
+#include "src/mat/impls/bdiag/mpi/mpibdiag.h"
 #include "src/vec/vecimpl.h"
 
 static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,

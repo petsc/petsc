@@ -1,7 +1,7 @@
 ALL: lib 
 PETSC_DIR = ../../../..
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../../ 
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = tfqmr.c
 SOURCEF  =
 OBJSC    = tfqmr.o

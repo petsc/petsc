@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.49 1996/07/02 18:07:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.50 1996/07/08 22:20:46 bsmith Exp bsmith $";
 #endif
 
-#include "mpiaij.h"
-#include "mpibdiag.h"
+#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "src/mat/impls/bdiag/mpi/mpibdiag.h"
 
 /* This file contains a generic conversion routine and implementation specific
    versions for increased efficiency. */

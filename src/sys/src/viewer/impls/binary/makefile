@@ -1,8 +1,7 @@
 PETSC_DIR = ../../../..
 
 ALL: lib 
-CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
-            -I../..  $(XINCLUDEDIR)
+CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC   = binv.c
 SOURCEF   =
 SOURCEH   =

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.20 1996/03/19 21:26:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.21 1996/07/02 18:06:44 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix reordering routines.
 */
-#include "../../matimpl.h"
-#include "sys/nreg.h"
+#include "src/mat/matimpl.h"
+#include "src/sys/nreg.h"
 #include "sys.h"
 
 static NRList *__MatReorderingList = 0;

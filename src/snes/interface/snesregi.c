@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.11 1996/01/01 01:05:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesregi.c,v 1.12 1996/03/26 00:11:24 curfman Exp bsmith $";
 #endif
 
-#include "snesimpl.h"     /*I  "snes.h"  I*/
+#include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
 extern int SNESCreate_EQ_LS(SNES);
 extern int SNESCreate_EQ_TR(SNES);
 extern int SNESCreate_UM_TR(SNES);

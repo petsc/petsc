@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: dadist.c,v 1.3 1996/03/19 21:29:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: dadist.c,v 1.4 1996/04/17 04:09:39 curfman Exp bsmith $";
 #endif
  
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "daimpl.h"    /*I   "da.h"   I*/
+#include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 /*@C
    DAGetDistributedVector - Gets a distributed vector for a 

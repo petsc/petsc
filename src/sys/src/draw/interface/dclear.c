@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: dclear.c,v 1.5 1996/07/08 18:31:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dclear.c,v 1.6 1996/07/08 22:21:15 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include "drawimpl.h"  /*I "draw.h" I*/
+#include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 /*@
    DrawClear - Clears graphical output.

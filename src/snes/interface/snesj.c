@@ -1,10 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.31 1996/08/05 19:34:50 curfman Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.32 1996/08/05 19:36:09 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
-#include "snesimpl.h"    /*I  "snes.h"  I*/
+#include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
 
 /*@C
    SNESDefaultComputeJacobian - Computes the Jacobian using finite 
