@@ -29,18 +29,14 @@ def modifyfile(filename):
 
     outbuf = '<html>\n<body BGCOLOR="FFFFFF">\n' + header + '\n' + body + '</body>\n</html>\n'
 
-    #fix http://www-unix.mcs.anl.gov/petsc/petsc-current/docs
-    w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/')
+    #fix http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-current/docs/
+    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-current/docs/')
     outbuf = w.sub('',outbuf)
 
-    #fix http://www-unix.mcs.anl.gov/petsc/petsc-current/include (for petscversion.h)
-    w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/petsc-current/include/')
+    #fix  http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-current/include/ (for petscversion.h)
+    w = re.compile(r'http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-current/include/')
     outbuf = w.sub('',outbuf)
 
-    # now revert all the links to the splitmanuals back to the website
-    w = re.compile(r'splitmanual/')
-    outbuf = w.sub('http://www-unix.mcs.anl.gov/petsc/petsc-current/docs/splitmanual/',outbuf)
-    
     # Now overwrite the original file 
     outfilename = filename
     try:
