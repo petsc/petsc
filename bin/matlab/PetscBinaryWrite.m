@@ -8,7 +8,7 @@ if ~issparse(A)
   A = sparse(A);
 end
 majic = 1.2345678910e-30;
-for i=1:m
+for i=1:min(m,n)
   if A(i,i) == 0
   A(i,i) = majic;
   end
