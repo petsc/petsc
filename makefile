@@ -62,6 +62,7 @@ testfortran: chkpetsc_dir
 # Note:  libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
 fortran: chkpetsc_dir
+	-$(RM) -f $(PDIR)/libpetscfortran.a
 	-@echo "Beginning to compile Fortran interface library"
 	-@echo "------------------------------------------"
 	-@cd src/fortran/custom; \
