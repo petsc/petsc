@@ -469,7 +469,11 @@ class UsingF90 (UsingCompiler):
     compileCxx.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
     compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compileCxx.includeDirs.extend(self.includeDirs['executable'])
-    return [compile.TagCxx(self.usingSIDL.sourceDB), compileCxx, compile.TagF90(self.usingSIDL.sourceDB), compile.CompileF90(self.usingSIDL.sourceDB, library)]
+    compileF90 = compile.CompileF90(self.usingSIDL.sourceDB, library)
+    compileF90.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
+    compileF90.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileF90.includeDirs.extend(self.includeDirs['executable'])
+    return [compile.TagCxx(self.usingSIDL.sourceDB), compileCxx, compile.TagF90(self.usingSIDL.sourceDB), compileF90]
 
 class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
