@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.22 1995/11/01 23:15:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.23 1995/11/06 02:35:45 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -188,6 +188,7 @@ int MPIU_Seq_begin(MPI_Comm comm,int ng )
   }
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
+  if (np == 1) return 0;
   if (lidx != 0) {
     MPI_Recv( (void*)0, 0, MPI_INT, lidx-1, 0, local_comm, &status );
   }
@@ -218,6 +219,7 @@ int MPIU_Seq_end(MPI_Comm comm,int ng )
 
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
+  if (np == 1) return 0;
   MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
   /* Send to the first process in the next group OR to the first process
