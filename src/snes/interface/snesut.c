@@ -261,7 +261,7 @@ int SNESDefaultSMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
    Output Parameter:
 .   reason  - one of
 $  SNES_CONVERGED_FNORM_ABS       - (fnorm < atol),
-$  SNES_CONVERGED_PNORM_RELATIVE  - (pnorm == 0.0),
+$  SNES_CONVERGED_PNORM_RELATIVE  - (pnorm < xtol*xnorm),
 $  SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
 $  SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
 $  SNES_DIVERGED_FNORM_NAN        - (fnorm == NaN),
@@ -297,7 +297,7 @@ int SNESConverged_EQ_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnor
   } else if (fnorm < snes->atol) {
     PetscLogInfo(snes,"SNESConverged_EQ_LS:Converged due to function norm %g < %g\n",fnorm,snes->atol);
     *reason = SNES_CONVERGED_FNORM_ABS;
-  } else if (pnorm == 0.0) {
+  } else if (pnorm < snes->xtol*xnorm) {
     PetscLogInfo(snes,"SNESConverged_EQ_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm);
     *reason = SNES_CONVERGED_PNORM_RELATIVE;
   } else if (snes->nfuncs > snes->max_funcs) {
