@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.161 2001/03/23 23:25:00 balay Exp balay $*/
+/*$Id: da2.c,v 1.162 2001/03/28 19:42:42 balay Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1074,7 +1074,7 @@ int DAPrintHelp(DA da)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DARefine"
-/*@
+/*@C
    DARefine - Creates a new distributed array that is a refinement of a given
    distributed array.
 

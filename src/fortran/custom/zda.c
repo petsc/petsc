@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.40 2001/01/17 19:48:31 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.41 2001/03/20 16:06:35 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -24,6 +24,7 @@
 #define daload_                      DALOAD
 #define dasetfieldname_              DASETFIELDNAME
 #define dagetfieldname_              DAGETFIELDNAME
+#define darefine_                    DAREFINE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dagetlocalvector_            dagetlocalvector
 #define darestorelocalvector_        darestorelocalvector
@@ -44,9 +45,15 @@
 #define dagetislocaltoglobalmappingblck_ dagetislocaltoglobalmappingblck
 #define dasetfieldname_              dasetfieldname
 #define dagetfieldname_              dagetfieldname
+#define darefine_                    darefine
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL darefine_(DA *da,MPI_Comm *comm,DA *daref, int *ierr )
+{
+  *ierr = DARefine(*da,(MPI_Comm)PetscToPointerComm(*comm),daref);
+}
 
 void PETSC_STDCALL dagetinterpolation_(DA *dac,DA *daf,Mat *A,Vec *scale,int *ierr)
 {
@@ -95,11 +102,11 @@ void PETSC_STDCALL dagetislocaltoglobalmappingblck_(DA *da,ISLocalToGlobalMappin
   *ierr = DAGetISLocalToGlobalMappingBlck(*da,map);
 }
 
-void PETSC_STDCALL dagetcoloring_(DA *da,MatType *mtype,ISColoring *coloring,Mat *J,int *ierr)
+void PETSC_STDCALL dagetcoloring_(DA *da,ISColoringType *ctype,MatType *mtype,ISColoring *coloring,Mat *J,int *ierr)
 {
   if (FORTRANNULLOBJECT(coloring)) coloring = PETSC_NULL;
   if (FORTRANNULLOBJECT(J))        J        = PETSC_NULL;
-  *ierr = DAGetColoring(*da,*mtype,coloring,J);
+  *ierr = DAGetColoring(*da,*ctype,*mtype,coloring,J);
 }
 
 void PETSC_STDCALL daview_(DA *da,PetscViewer *vin,int *ierr)
