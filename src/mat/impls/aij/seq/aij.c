@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.145 1996/02/09 15:00:43 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.146 1996/02/09 15:11:50 curfman Exp bsmith $";
 #endif
 
 /*
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: aij.c,v 1.145 1996/02/09 15:00:43 curfman Exp curfman
 #include "petsc.h"
 #include "inline/bitarray.h"
 
-extern int MatToSymmetricIJ_SeqAIJ(Mat_SeqAIJ*,int**,int**);
+extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int**,int**);
 
 static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
 {
@@ -39,7 +39,7 @@ static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
     return 0;
   }
 
-  ierr = MatToSymmetricIJ_SeqAIJ( a, &ia, &ja ); CHKERRQ(ierr);
+  ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,a->indexshift, &ia, &ja);CHKERRQ(ierr);
   ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
 
   PetscFree(ia); PetscFree(ja);
@@ -236,10 +236,10 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for (i=0; i<m; i++) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(PETSC_COMPLEX)
-        fprintf(fd,"%d %d  %18.16e  %18.16e \n",i+1,a->j[j],real(a->a[j]),
+        fprintf(fd,"%d %d  %18.16e  %18.16e \n",i+1,a->j[j]+!shift,real(a->a[j]),
                    imag(a->a[j]));
 #else
-        fprintf(fd,"%d %d  %18.16e\n", i+1, a->j[j], a->a[j]);
+        fprintf(fd,"%d %d  %18.16e\n", i+1, a->j[j]+!shift, a->a[j]);
 #endif
       }
     }
@@ -1307,8 +1307,11 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   B->view             = MatView_SeqAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold, \
+  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold,
                           &flg); CHKERRQ(ierr);
+  b->ilu_preserve_row_sums = PETSC_FALSE;
+  ierr = OptionsHasName(PETSC_NULL,"-pc_ilu_preserve_row_sums",
+                        (int*) &b->ilu_preserve_row_sums); CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
   b->indexshift       = 0;
@@ -1426,6 +1429,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->sorted      = a->sorted;
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
+  c->ilu_preserve_row_sums = a->ilu_preserve_row_sums;
 
   if (a->diag) {
     c->diag = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(c->diag);
