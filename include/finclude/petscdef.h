@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.4 1998/08/25 20:38:13 balay Exp balay $;
+!  $Id: petscdef.h,v 1.5 1998/08/25 22:23:40 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -11,29 +11,41 @@
 #define PetscTruth    integer
 #define PetscDataType integer
 
+!
+! The real*8,complex*16 notatiton is used so that the 
+! PETSc double/complex variables are not affected by 
+! compiler options like -r4,-r8, sometimes invoked 
+! by the user. NAG compiler doesn't like integer*4,real*8
+!
+! ???? All integers should also be chnaged to PetscFortranInt ?????
+!
+
 #if (SIZEOF_VOIDP == 8)
 #define PetscOffset        integer*8
 #define PetscFortranAddr   integer*8
+#elif defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
+#define PetscOffset        integer
+#define PetscFortranAddr   integer
 #else
 #define PetscOffset        integer*4
 #define PetscFortranAddr   integer*4
 #endif
 
 #if (SIZEOF_INT == 8)
-#define PetscInt integer*8
+#define PetscFortranInt integer*8
+#elif defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
+#define PetscFortranInt integer
 #else
-#define PetscInt integer*4
+#define PetscFortranInt integer*4
 #endif
-!
-! The real*8,complex*16 notatiton is used so that the 
-! PETSc double/complex variables are not affected by 
-! compiler options like -r4,-r8, sometimes invoked 
-! by the user. 
-!
-! ???? All integers should also be chnaged to PetscInt ?????
-!
-#define PetscDouble real*8
-#define PetscComplex complex*16
+
+#if defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
+#define PetscFortranDouble  double precision
+#define PetscFortranComplex complex (KIND=SELECTED_REAL_KIND(14))
+#else
+#define PetscFortranDouble  real*8
+#define PetscFortranComplex complex*16
+#endif
 !
 !     Flags
 !
@@ -46,7 +58,7 @@
       parameter (PETSC_FP_TRAP_OFF = 0, PETSC_FP_TRAP_ON = 1) 
 
 
-      PetscDouble PETSC_DEFAULT_DOUBLE_PRECISION
+      PetscFortranDouble PETSC_DEFAULT_DOUBLE_PRECISION
 
       parameter (PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
 
@@ -96,21 +108,13 @@
 !
 !     Representation of complex i
 !
-#if defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
-      complex (KIND=SELECTED_REAL_KIND(14)) PETSC_i
-#else
-      PetscComplex PETSC_i
-#endif
+      PetscFortranComplex PETSC_i
       parameter (PETSC_i = (0.0d0,1.0d0))
 !
 !     Macro for templating between real and complex
 !
 #if defined(USE_PETSC_COMPLEX)
-#if defined (HAVE_NAGF90) || defined (HAVE_SOLARISF90)
-#define Scalar       complex (KIND=SELECTED_REAL_KIND(14))
-#else
-#define Scalar       PetscComplex
-#endif
+#define Scalar       PetscFortranComplex
 !
 ! F90 uses real(), conjg() when KIND parameter is used.
 !
@@ -123,17 +127,17 @@
 #endif
 #define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
 #else
+#define Scalar       PetscFortranDouble
 #define PetscReal(a) a
 #define PetscConj(a) a
-#define Scalar       PetscDouble
 #define MPIU_SCALAR  MPI_DOUBLE_PRECISION
 #endif
 
 !
 !     Basic constants
 ! 
-      PetscDouble PETSC_PI,PETSC_DEGREES_TO_RADIANS
-      PetscDouble PETSC_MAX,PETSC_MIN
+      PetscFortranDouble PETSC_PI,PETSC_DEGREES_TO_RADIANS
+      PetscFortranDouble PETSC_MAX,PETSC_MIN
 
       parameter (PETSC_PI = 3.14159265358979323846264d0)
       parameter (PETSC_DEGREES_TO_RADIANS = 0.01745329251994d0)
@@ -150,7 +154,7 @@
 !     timing etc.
 !
 #define PetscObject PetscFortranAddr
-#define PLogDouble  PetscDouble
+#define PLogDouble  PetscFortranDouble
 
 
 
