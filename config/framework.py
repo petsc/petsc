@@ -353,6 +353,10 @@ class Framework(config.base.Configure):
     if list: searchdirs.append(list[-1])
     list = self.listDirs('/opt/ibmcmp/xlf/','[0-9.]*/bin')
     if list: searchdirs.append(list[-1])
+    list = self.listDirs('/opt/','intel_cc_[0-9.]*/bin')
+    if list: searchdirs.append(list[-1])
+    list = self.listDirs('/opt/','intel_fc_[0-9.]*/bin')
+    if list: searchdirs.append(list[-1])
     
     help.addArgument('Framework', '-help',                nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
     help.addArgument('Framework', '-h',                   nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
