@@ -18,7 +18,7 @@ class Framework(base.Base):
     self.filesets        = {}
     self.configureHeader = None
     self.builder         = build.builder.Builder(None)
-    self.setupSourceDB(os.path.join(self.project.getRoot(), 'bsSource.db'))
+    self.setupSourceDB(self.project)
     self.setupDependencies()
     self.createTmpDir()
     return
@@ -42,35 +42,24 @@ class Framework(base.Base):
     base.Base.setupArgDB(self, argDB, clArgs)
     return argDB
 
-  def setupSourceDB(self, filename):
-    '''Load any existing source database and use the project root to make all paths absolute
-       - Also register the save method, provide the argument database, and clear update flags if necessary'''
-    self.sourceDBFilename = filename
-    self.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
-    if os.path.exists(self.sourceDBFilename):
+  def setupSourceDB(self, proj):
+    '''Load any existing source database for the given project, and register its save method'''
+    filename = os.path.join(self.proj.getRoot(), 'bsSource.db')
+    root     = project.ProjectPath('', proj.getUrl())
+    self.debugPrint('Reading source database for '+proj.getUrl()+' from '+filename, 2, 'sourceDB')
+    if os.path.exists(filename):
       try:
-        dbFile        = open(self.sourceDBFilename, 'r')
-        self.sourceDB = self.makeSourceDBPathsAbsolute(cPickle.load(dbFile))
+        dbFile        = open(filename, 'r')
+        self.sourceDB = cPickle.load(dbFile)
+        self.sourceDB.filename = filename
         dbFile.close()
       except Exception:
-        self.sourceDB = sourceDatabase.SourceDB(self.argDB)
+        self.debugPrint('Source database '+filename+' could not be read. Creating a new one', 2, 'sourceDB')
+        self.sourceDB = sourceDatabase.SourceDB(root, filename)
     else:
-      self.sourceDB = sourceDatabase.SourceDB(self.argDB)
-    atexit.register(self.saveSourceDB)
-    if not self.argDB['restart']:
-      for source in self.sourceDB:
-        self.sourceDB.clearUpdateFlag(source)
-    return
-
-  def saveSourceDB(self):
-    '''Save the source database to a file. The saved database with have path names relative to the project root.'''
-    if os.path.exists(os.path.dirname(self.sourceDBFilename)):
-      self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
-      dbFile = open(self.sourceDBFilename, 'w')
-      cPickle.dump(self.makeSourceDBPathsRelative(self.sourceDB), dbFile)
-      dbFile.close()
-    else:
-      self.debugPrint('Could not save source database in '+self.sourceDBFilename, 1, 'sourceDB')
+      self.debugPrint('Source database '+filename+' does not exist. Creating a new one', 2, 'sourceDB')
+      self.sourceDB = sourceDatabase.SourceDB(root, filename)
+    atexit.register(self.sourceDB.save)
     return
 
   def makeSourceDBPathsAbsolute(self, sourceDB):
@@ -356,10 +345,7 @@ class Framework(base.Base):
     return
 
   def t_purge(self):
-    '''Purge a value from a database:
-  - With -fileset=<set name>, it purge an entire set from the source database
-  - With -fileset=<filename>, it purge one file from the source database
-  - With -regExp=<re>, it purge all files matching the expression from the source database'''
+    '''Purge a fileset from the source database, identified using -fileset=<set name>'''
     if 'fileset' in self.argDB:
       setName = self.argDB['fileset']
       if setName in self.filesets:
@@ -370,28 +356,12 @@ class Framework(base.Base):
             del self.sourceDB[f]
           except KeyError:
             print 'File '+f+' not found for purge'
-      elif setName in self.sourceDB:
-        self.debugPrint('Purging '+setName, 3, 'sourceDB')
-        del self.sourceDB[setName]
       else:
         print 'FileSet '+setName+' not found for purge'
-    else:
-      import re
-
-      purgeRE = re.compile(self.argDB['regExp'])
-      purges  = []
-      for key in self.sourceDB:
-        m = purgeRE.match(key)
-        if m: purges.append(key)
-      for source in purges:
-        self.debugPrint('Purging '+source, 3, 'sourceDB')
-        del self.sourceDB[source]
     return
 
   def t_update(self):
-    '''Purge a value in the source database:
-  - With -fileset=<set name>, it updates an entire set
-  - With -fileset=<filename>, it updates one file'''
+    '''Update a value in the source database, identifier using -fileset=<set name>'''
     if 'fileset' in self.argDB:
       setName = self.argDB['fileset']
       if setName in self.filesets:
@@ -402,22 +372,8 @@ class Framework(base.Base):
             self.sourceDB.updateSource(f)
           except KeyError:
             print 'File '+f+' not found in source database'
-      elif setName in self.sourceDB:
-        self.debugPrint('Updating '+setName, 3, 'sourceDB')
-        self.sourceDB.updateSource(setName)
       else:
         print 'FileSet '+setName+' not found for update'
-    else:
-      import re
-
-      updateRE = re.compile(self.argDB['regExp'])
-      updates  = []
-      for key in self.sourceDB:
-        m = updateRE.match(key)
-        if m: updates.append(key)
-      for source in updates:
-        self.debugPrint('Updating '+source, 3, 'sourceDB')
-        self.sourceDB.updateSource(source)
     return
 
   def setupProject(self):

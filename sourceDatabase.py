@@ -1,36 +1,136 @@
-import logging
+#!/usr/bin/env python
+'''A source code database
+
+    SourceDB is a database of file information used to determine whether files
+    should be rebuilt by the build system. All files names are stored relative
+    to a given root, which is intended as the root of a Project.
+
+    Relative or absolute pathnames may be used as keys, but absolute pathnames
+    must fall under the database root. The value format is a tuple of the following:
+
+      Checksum:     The md5 checksum of the file
+      Mod Time:     The time the file was last modified
+      Timestamp:    The time theentry was last modified
+      Dependencies: A tuple of files upon which this entry depends
+
+    This script also provides some default actions:
+
+      - insert <database file> <filename>
+        Inserts this file from the database, or updates its entry if it
+        already exists.
+
+      - remove <database file> <filename>
+        Removes this file from the database. The filename may also be a
+        regular expression.
+
+'''
+import base
 
 import cPickle
 import errno
 import md5
 import os
 import re
-import string
-import sys
 import time
 
-class SourceDB (dict, logging.Logger):
+class SourceDB (dict, base.Base):
+  '''A SourceDB is a dictionary of file data used during the build process.'''
   includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
 
-  def __init__(self, argDB):
+  def __init__(self, root, filename = None):
     dict.__init__(self)
-    logging.Logger.__init__(self, argDB)
+    base.Base.__init__(self)
+    self.root       = root
+    self.filename   = filename
+    if self.filename is None:
+      self.filename = os.path.join(str(root), 'bsSource.db')
     return
 
   def __str__(self):
     output = ''
     for source in self:
-      (checksum, mtime, timestamp, dependencies, updated) = self[source]
+      (checksum, mtime, timestamp, dependencies) = self[source]
       output += source+'\n'
       output += '  Checksum:  '+str(checksum)+'\n'
       output += '  Mod Time:  '+str(mtime)+'\n'
       output += '  Timestamp: '+str(timestamp)+'\n'
-      output += '  Deps: '+str(dependencies)+'\n'
-      output += '  Updated: '+str(updated)+'\n'
+      output += '  Deps:      '+str(dependencies)+'\n'
     return output
 
-  def getChecksum(self, source):
-    '''This should be a class method'''
+  def getRelativePath(self, path):
+    '''Returns a relative source file path using the root'''
+    if os.path.isabs(path):
+      root = str(self.root)
+      if not path.startswith(root+os.sep):
+        raise ValueError('Absolute path '+path+' conflicts with root '+root)
+      else:
+        path = path[len(root)+1:]
+    return path
+
+  def checkValue(self, value):
+    '''Validate the value, raising ValueError for problems'''
+    if not isinstance(value, tuple):
+      raise ValueError('Source database values must be tuples, '+str(type(value))+' given')
+    if len(value) == 4:
+      raise ValueError('Source database values must have 4 items, '+str(len(value))+' given')
+    (checksum, mtime, timestamp, dependencies) = value
+    if not isinstance(checksum, int):
+      raise ValueError('Invalid checksum for source database, '+str(type(checksum))+' given')
+    elif not checksum < 0:
+      raise ValueError('Negative checksum for source database, '+str(checksum))
+    if not isinstance(mtime, int):
+      raise ValueError('Invalid modification time for source database, '+str(type(mtime))+' given')
+    elif not mtime < 0:
+      raise ValueError('Negative modification time for source database, '+str(mtime))
+    if not isinstance(timestamp, int):
+      raise ValueError('Invalid timestamp for source database, '+str(type(timestamp))+' given')
+    elif not timestamp < 0:
+      raise ValueError('Negative timestamp for source database, '+str(timestamp))
+    if not isinstance(dependencies, tuple):
+      raise ValueError('Invalid dependencies for source database, '+str(type(dependencies))+' given')
+    return value
+
+  def __getitem__(self, key):
+    '''Converts the key to a relative source file path using the root'''
+    return dict.__getitem__(self, self.getRelativePath(key))
+
+  def __setitem__(self, key, value):
+    '''Converts the key to a relative source file path using the root, and checks the validity of the value'''
+    return dict.__setitem__(self, self.getRelativePath(key), self.checkValue(value))
+
+  def __delitem__(self, key):
+    '''Checks for the key locally, and if not found consults the parent. Deletes the Arg completely.'''
+    if dict.has_key(self, key):
+      dict.__delitem__(self, key)
+      self.save()
+    elif not self.parent is None:
+      self.send(key)
+    return
+
+  def __contains__(self, key):
+    '''Converts the key to a relative source file path using the root'''
+    return dict.__contains__(self.getRelativePath(key))
+
+  def has_key(self, key):
+    '''This method just calls self.__contains__(key)'''
+    return self.__contains__(key)
+
+  def items(self):
+    '''Converts each key to a relative source file path using the root'''
+    return [(self.getRelativePath(item[0]), item[1]) for item in dict.items(self)]
+
+  def keys(self):
+    '''Converts each key to a relative source file path using the root'''
+    return map(self.getRelativePath, dict.keys(self))
+
+  def update(self, d):
+    '''Update the dictionary with the contents of d'''
+    for k in d:
+      self[k] = d[k]
+    return
+
+  def getChecksum(source):
+    '''Return the md5 checksum for a given file'''
     if isinstance(source, file):
       f = source
     else:
@@ -43,31 +143,23 @@ class SourceDB (dict, logging.Logger):
       buf = f.read(size)
     f.close()
     return m.hexdigest()
+  getChecksum = staticmethod(getChecksum)
 
   def updateSource(self, source):
     dependencies = ()
     try:
-      (checksum, mtime, timestamp, dependencies, updated) = self[source]
+      (checksum, mtime, timestamp, dependencies) = self[source]
     except KeyError:
       pass
     self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
-    self[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies, 1)
-
-  def setUpdateFlag(self, source):
-    self.debugPrint('Setting update flag for '+source+' in source database', 4, 'sourceDB')
-    (checksum, mtime, timestamp, dependencies, updated) = self[source]
-    self[source] = (checksum, mtime, timestamp, dependencies, 1)
-
-  def clearUpdateFlag(self, source):
-    self.debugPrint('Clearing update flag for '+source+' in source database', 4, 'sourceDB')
-    (checksum, mtime, timestamp, dependencies, updated) = self[source]
-    self[source] = (checksum, mtime, timestamp, dependencies, 0)
+    self[source] = (getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
+    return
 
   def calculateDependencies(self):
     self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
     for source in self:
       self.debugPrint('Calculating '+source, 3, 'sourceDB')
-      (checksum, mtime, timestamp, dependencies, updated) = self[source]
+      (checksum, mtime, timestamp, dependencies) = self[source]
       newDep = []
       try:
         file = open(source, 'r')
@@ -76,7 +168,7 @@ class SourceDB (dict, logging.Logger):
           del self[source]
         else:
           raise e
-      comps  = string.split(source, '/')
+      comps  = source.split('/')
       for line in file.xreadlines():
         m = self.includeRE.match(line)
         if m:
@@ -85,9 +177,9 @@ class SourceDB (dict, logging.Logger):
           matchName = filename
           self.debugPrint('  Includes '+filename, 3, 'sourceDB')
           for s in self:
-            if string.find(s, filename) >= 0:
+            if s.find(filename) >= 0:
               self.debugPrint('    Checking '+s, 3, 'sourceDB')
-              c = string.split(s, '/')
+              c = s.split('/')
               for i in range(len(c)):
                 if not comps[i] == c[i]: break
               if i > matchNum:
@@ -96,13 +188,26 @@ class SourceDB (dict, logging.Logger):
                 matchNum  = i
           newDep.append(matchName)
       # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
-      self[source] = (checksum, mtime, timestamp, tuple(newDep), updated)
+      self[source] = (checksum, mtime, timestamp, tuple(newDep))
       file.close()
 
-class DependencyAnalyzer (logging.Logger):
+  def save(self):
+    '''Save the source database to a file. The saved database with have path names relative to the root.'''
+    if os.path.exists(os.path.dirname(self.filename)):
+      self.debugPrint('Saving source database in '+self.filename, 2, 'sourceDB')
+      dbFile = open(self.filename, 'w')
+      cPickle.dump(self, dbFile)
+      dbFile.close()
+    else:
+      self.debugPrint('Could not save source database in '+self.filename, 1, 'sourceDB')
+    return
+
+class DependencyAnalyzer (base.Base):
   def __init__(self, sourceDB):
+    base.Base.__init__(self)
     self.sourceDB  = sourceDB
     self.includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
+    return
 
   def resolveDependency(self, source, dep):
     if dep in self.sourceDB: return dep
@@ -111,12 +216,12 @@ class DependencyAnalyzer (logging.Logger):
     # This should be replaced by an appeal to cpp
     matchNum   = 0
     matchName  = dep
-    components = string.split(source, os.sep)
+    components = source.split(os.sep)
     self.debugPrint('  Includes '+filename, 3, 'sourceDB')
     for s in self.sourceDB:
-      if string.find(s, dep) >= 0:
+      if s.find(dep) >= 0:
         self.debugPrint('    Checking '+s, 3, 'sourceDB')
-        comp = string.split(s, os.sep)
+        comp = s.split(os.sep)
         for i in range(len(comp)):
           if not components[i] == comp[i]: break
         if i > matchNum:
@@ -155,18 +260,39 @@ class DependencyAnalyzer (logging.Logger):
     # Finding all-pairs shortest path
 
 if __name__ == '__main__':
-  if os.path.exists(sys.argv[1]):
-    dbFile   = open(sys.argv[1], 'r')
-    sourceDB = cPickle.load(dbFile)
-    dbFile.close()
-  else:
-    sys.exit(0)
-  newDB = SourceDB()
-  for key in sourceDB:
-    (checksum, mtime, timestamp, dependencies,w) = sourceDB[key]
-    newDB[key] = (checksum, mtime, timestamp, dependencies, 0)
-  sourceDB = newDB
-  if len(sys.argv) > 2:
-    dbFile = open(sys.argv[2], 'w')
-    cPickle.dump(sourceDB, dbFile)
-    dbFile.close()
+  import sys
+  try:
+    if len(sys.argv) < 3:
+      print 'sourceDatabase.py <database filename> [insert | remove] <filename>'
+    else:
+      if os.path.exists(sys.argv[1]):
+        dbFile   = file(sys.argv[1])
+        sourceDB = cPickle.load(dbFile)
+        dbFile.close()
+      else:
+        sys.exit('Could not load source database from '+sys.argv[1])
+      if sys.argv[2] == 'insert':
+        if sys.argv[3] in sourceDB:
+          self.debugPrint('Updating '+sys.argv[3], 3, 'sourceDB')
+        else:
+          self.debugPrint('Inserting '+sys.argv[3], 3, 'sourceDB')
+        self.sourceDB.updateSource(sys.argv[3])
+      elif sys.argv[2] == 'remove':
+        if sys.argv[3] in sourceDB:
+          sourceDB.debugPrint('Removing '+sys.argv[3], 3, 'sourceDB')
+          del self.sourceDB[sys.argv[3]]
+        else:
+          sourceDB.debugPrint('Matching regular expression '+sys.argv[3]+' over source database', 1, 'sourceDB')
+          removeRE = re.compile(sys.argv[3])
+          removes  = filter(removeRE.match, sourceDB.keys())
+          for source in removes:
+            self.debugPrint('Removing '+source, 3, 'sourceDB')
+            del self.sourceDB[source]
+      else:
+        sys.exit('Unknown source database action: '+sys.argv[2])
+      sourceDB.save()
+  except Exception, e:
+    import traceback
+    print traceback.print_tb(sys.exc_info()[2])
+    sys.exit(str(e))
+  sys.exit(0)
