@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.178 1999/05/04 18:48:06 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.179 1999/05/12 03:35:01 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -279,7 +279,7 @@ extern int MatColoringPatch(Mat,int,int *,ISColoring*);
     Data structures used to compute Jacobian vector products 
   efficiently using finite differences.
 */
-#define MAT_FDCOLORING_COOKIE PETSC_COOKIE + 22
+#define MAT_FDCOLORING_COOKIE PETSC_COOKIE + 23
 
 typedef struct _p_MatFDColoring *MatFDColoring;
 
