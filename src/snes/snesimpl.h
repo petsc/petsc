@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.23 1995/08/07 22:01:28 bsmith Exp curfman $ */
+/* $Id: snesimpl.h,v 1.24 1995/08/21 16:03:02 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -79,22 +79,23 @@ struct _SNES {
      with this; the naming conventions are confusing.   Perhaps use unions? */
 
   int      (*computeumfunction)(SNES,Vec,double*,void*);
-  double   fc;                /* function values */
+  double   fc;                /* function value */
   void     *umfunP;           /* function pointer */
   SNESType method_class;
   double   deltatol;          /* trust region convergence tolerance */
   double   fmin;              /* minimum tolerance for function value */
   int      set_method_called; /* flag indicating set_method has been called */
 /*
-   These are REALLY ugly and don't belon here, but since they must 
-  be destroyed at the end we have to put them somewhere.
-*/
+   These are REALLY ugly and don't belong here, but since they must 
+  be destroyed at the conclusion we have to put them somewhere.
+ */
   int      ksp_ewconv;        /* flag indicating Eisenstat-Walker KSP 
-                                 convergence test */
-  void     *kspconvctx;
-  Mat      mfshell;           /* MatShell for Matrix free from command line*/
+                                 convergence criteria */
+  void     *kspconvctx;       /* KSP convergence context */
+  Mat      mfshell;           /* MatShell for matrix-free from command line */
 };
 
+/* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {
   int    version;             /* flag indicating version 1 or 2 of test */
   double rtol_0;              /* initial rtol */
