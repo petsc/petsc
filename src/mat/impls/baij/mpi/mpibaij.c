@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.46 1997/01/06 20:25:27 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.47 1997/01/13 17:27:40 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -70,7 +70,7 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
 }
 #define CHUNKSIZE  10
 
-#define  MatSetValues_SeqBAIJ_A_Private( new_A, row, col, value) \
+#define  MatSetValues_SeqBAIJ_A_Private( row, col, value) \
 { \
  \
     brow = row/bs;  \
@@ -82,7 +82,8 @@ static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n
         if (rp[_i] > bcol) break; \
         if (rp[_i] == bcol) { \
           bap  = ap +  bs2*_i + bs*cidx + ridx; \
-	    *bap  = value; \
+          if (addv == ADD_VALUES) *bap += value;  \
+          else                    *bap  = value;  \
           goto _noinsert; \
         } \
       } \
@@ -146,6 +147,7 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   int         rend_orig=baij->rend_bs,cstart_orig=baij->cstart_bs;
   int         cend_orig=baij->cend_bs,bs=baij->bs;
 
+  /* Some Variables required in the macro */
   Mat A = baij->A;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) (A)->data; 
   int         *rp,ii,nrow,_i,rmax,N; 
@@ -171,7 +173,7 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
         if (in[j] >= cstart_orig && in[j] < cend_orig){
           col = in[j] - cstart_orig;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          MatSetValues_SeqBAIJ_A_Private(baij->A,row,col,value);
+          MatSetValues_SeqBAIJ_A_Private(row,col,value);
           /* ierr = MatSetValues_SeqBAIJ(baij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
 #if defined(PETSC_BOPT_g)
