@@ -22,9 +22,9 @@ all: chkpetsc_dir
 
 fortran: chkpetsc_dir
 	-@cd fortran/custom; \
-          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=libfast
+          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	-@cd fortran/auto; \
-          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=libfast   
+          $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast   
 	$(RANLIB) $(PDIR)/libpetscfortran.a
     
 ranlib:
