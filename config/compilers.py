@@ -298,6 +298,8 @@ class Configure(config.base.Configure):
         # Check for full object name
         m = re.match(r'^/.*\.o$', arg)
         if m:
+          if re.match(r'(crt0.o|crt1.o|crtbegin.o)', os.path.basename(arg)):
+            continue
           if not arg in lflags:
             lflags.append(arg)
             #print 'Found full object spec: '+arg
