@@ -32,9 +32,9 @@ manual.ps:
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit
 	cat ../../www/www.cit | sed 's/+man+../+man+www/g' > www.cit 
-	/home/bsmith/bin/sun4/tohtml -mapman www.cit manual.tex -notopnames \
+	tohtml -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../www/petsc.cit -nobottomnav
-	/home/bsmith/bin/sun4/tohtml -mapman www.cit manual.tex -notopnames \
+	tohtml -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../www/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv manual.html manual_html.html
