@@ -17,6 +17,10 @@
 #define PetscTruth integer
 #define PetscDataType integer
 #define PetscFPTrap integer
+
+#define PetscErrorCode integer
+#define PetscCookie integer
+#define PetscEvent integer
 !
 !
 ! The real*8,complex*16 notatiton is used so that the 

@@ -54,7 +54,6 @@ int main(int argc,char **argv)
     ierr = VecView(z,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
   ierr = VecDestroy(z);CHKERRQ(ierr);
