@@ -1281,6 +1281,9 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
    The residual value that is tested may be an approximation; routines 
    that need exact values should compute them.
 
+   In the default PETSc convergence test, the precise values of reason
+   are macros such as KSP_CONVERGED_RTOL, which are defined in petscksp.h.
+
    Level: advanced
 
 .keywords: KSP, set, convergence, test, context
