@@ -172,11 +172,7 @@ int MatSetFromOptions(Mat B)
   }
   if (!B->type_name) {
     ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
-    if (size == 1) {
-      ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-    } else {
-      ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
-    }
+    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
   }
 #if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
   ierr = MatESISetFromOptions(B);CHKERRQ(ierr);

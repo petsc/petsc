@@ -144,7 +144,7 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DAGetMatrix(user.da,MATMPIAIJ,&J);CHKERRQ(ierr);
+  ierr = DAGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
   A    = J;
 
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);

@@ -467,7 +467,8 @@ EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat);
 
     Input Parameter:
 +   da - the distributed array
--   mtype - either MATMPIAIJ or MATMPIBAIJ
+-   mtype - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, or
+            any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
 
     Output Parameters:
 .   J  - matrix with the correct nonzero structure

@@ -141,7 +141,7 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   if (flg) {
     outtype = mtype;
   }
-  if (!outtype) outtype = MATMPIAIJ;
+  if (!outtype) outtype = MATAIJ;
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);  
   ierr = MatCreate(comm,0,0,0,0,&factory);CHKERRQ(ierr);

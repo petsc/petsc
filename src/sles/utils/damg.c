@@ -402,11 +402,7 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 
   if (galerkin) {
     ierr = MPI_Comm_size(dmmg[nlevels-1]->comm,&size);CHKERRQ(ierr);
-    if (size == 1) {
-      ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATSEQAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
-    } else {
-      ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATMPIAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
-    }
+    ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->B);CHKERRQ(ierr);
     for (i=nlevels-2; i>-1; i--) {
       ierr = MatSeqAIJPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
@@ -419,11 +415,7 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 
       if (!dmmg[i]->B && !galerkin) {
         ierr = MPI_Comm_size(dmmg[i]->comm,&size);CHKERRQ(ierr);
-        if (size == 1) {
-          ierr = DMGetMatrix(dmmg[i]->dm,MATSEQAIJ,&dmmg[i]->B);CHKERRQ(ierr);
-        } else {
-          ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
-        }
+        ierr = DMGetMatrix(dmmg[i]->dm,MATAIJ,&dmmg[i]->B);CHKERRQ(ierr);
       } 
       if (!dmmg[i]->J) {
         dmmg[i]->J = dmmg[i]->B;

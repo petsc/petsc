@@ -163,7 +163,7 @@
 !                         products within Newton-Krylov method
 !
 
-      call DAGetMatrix(da,MATMPIAIJ,J,ierr)
+      call DAGetMatrix(da,MATAIJ,J,ierr)
 
 #if defined(PETSC_HAVE_ADIFOR)
       call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
