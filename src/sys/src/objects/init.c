@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.5 1998/05/05 14:02:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.6 1998/05/06 19:01:47 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -305,13 +305,12 @@ int PetscCompareInitialize(double tol)
 extern int PetscInitialize_DynamicLibraries();
 extern int PetscFinalize_DynamicLibraries();
 
-/*
-       This may be called before PetscInitialize() so 
-    should not use PETSc specific calls.
+/*@
+      PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
+        the command line arguments.
 
-       Initializes PETSc without direct access to the 
-    command line options.
-*/
+.seealso: PetscInitialize(), PetscInitializeFortran()
+@*/
 #undef __FUNC__  
 #define __FUNC__ "PetscInitializeNoArguments"
 int PetscInitializeNoArguments(void)

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1998/04/16 02:13:08 curfman Exp balay $ 
+# $Id: makefile,v 1.36 1998/04/23 22:48:27 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -11,7 +11,7 @@ OBJSC		 =
 OBJSF		 = 
 LIBBASE		 = libpetscsnes
 LOCDIR		 = src/snes/examples/tutorials/
-TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc runex5\
 		   runex5_2 runex5_3 runex5_4 runex5_5 runex5_6 runex5_7 \
@@ -125,6 +125,12 @@ runex2_2:
 	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
+runex2_3:
+	-@${MPIRUN} -np 1 ex2 -nox -snes_cancelmonitors -snes_smonitor -trmalloc_off \
+		 -snes_view -pc_type jacobi >ex2_3.tmp 2>&1;	\
+	   if (diff output/ex2_1.out ex2_3.tmp) then true; \
+	   else echo "Possible problem with ex2_3, diffs above"; fi; \
+	   ${RM} -f ex2_3.tmp
 runex3:
 	-@${MPIRUN} -np 1 ex3 -nox -snes_cancelmonitors -snes_smonitor  > ex3_1.tmp 2>&1;	  \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
