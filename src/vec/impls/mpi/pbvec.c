@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.59 1996/03/19 21:23:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.60 1996/04/04 22:02:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -70,6 +70,8 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
   v->view        = VecView_MPI;
   s->n           = n;
   s->N           = N;
+  v->n           = n;
+  v->N           = N;
   s->size        = size;
   s->rank        = rank;
   s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(s->array);

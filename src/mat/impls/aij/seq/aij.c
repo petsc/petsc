@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.167 1996/04/05 16:56:58 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.168 1996/04/06 00:00:57 balay Exp curfman $";
 #endif
 
 /*
@@ -276,6 +276,22 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       }
     }
     fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
+  } 
+  else if (format == ASCII_FORMAT_COMMON) {
+    for ( i=0; i<m; i++ ) {
+      fprintf(fd,"row %d:",i);
+      for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+#if defined(PETSC_COMPLEX)
+        if (imag(a->a[j]) != 0.0 && real(a->a[j]) != 0.0)
+          fprintf(fd," %d %g + %g i",a->j[j]+shift,real(a->a[j]),imag(a->a[j]));
+        else if (real(a->a[j]) != 0.0)
+          fprintf(fd," %d %g ",a->j[j]+shift,real(a->a[j]));
+#else
+        if (a->a[j] != 0.0) fprintf(fd," %d %g ",a->j[j]+shift,a->a[j]);
+#endif
+      }
+      fprintf(fd,"\n");
+    }
   } 
   else {
     for ( i=0; i<m; i++ ) {
@@ -561,7 +577,7 @@ static int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 /* -------------------------------------------------------*/
 /* Should check that shapes of vectors and matrices match */
 /* -------------------------------------------------------*/
-static int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
+int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, alpha;
@@ -581,7 +597,7 @@ static int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-static int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
+int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, alpha;
@@ -600,7 +616,7 @@ static int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   return 0;
 }
 
-static int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
+int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, sum;
@@ -623,7 +639,7 @@ static int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-static int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *z, *v, sum;
@@ -668,7 +684,7 @@ int MatMarkDiag_SeqAIJ(Mat A)
   return 0;
 }
 
-static int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
+int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
                            double fshift,int its,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -1005,6 +1021,7 @@ static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
       M = a->i[i+1] - a->i[i];
       for ( j=0; j<M; j++ ) { (*v++) *= x;} 
     }
+    PLogFlops(nz);
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
@@ -1013,6 +1030,7 @@ static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
     for ( i=0; i<nz; i++ ) {
       (*v++) *= r[*jj++ + shift]; 
     }
+    PLogFlops(nz);
   }
   return 0;
 }
@@ -1323,11 +1341,11 @@ extern int MatUseDXML_SeqAIJ(Mat);
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users manual for details.
+   either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
-   allocation.  For additional details, see the users manual chapter on
+   allocation.  For additional details, see the users' manual chapter on
    matrices and the file $(PETSC_DIR)/Performance.
 
    By default, this format uses inodes (identical nodes) when possible, to 
@@ -1349,12 +1367,13 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
 {
   Mat        B;
   Mat_SeqAIJ *b;
-  int        i,len,ierr, flg;
+  int        i, len, ierr, flg;
 
-  *A      = 0;
+  *A                  = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQAIJ,comm);
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
+  PetscMemzero(b,sizeof(Mat_SeqAIJ));
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
   B->destroy          = MatDestroy_SeqAIJ;
   B->view             = MatView_SeqAIJ;
@@ -1372,9 +1391,9 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_oneindex", &flg); CHKERRQ(ierr);
   if (flg) b->indexshift = -1;
   
-  b->m       = m;
-  b->n       = n;
-  b->imax    = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(b->imax);
+  b->m = m; B->m = m; B->M = m;
+  b->n = n; B->n = n; B->N = n;
+  b->imax = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(b->imax);
   if (nnz == PETSC_NULL) {
     if (nz == PETSC_DEFAULT) nz = 10;
     else if (nz <= 0)        nz = 1;
@@ -1454,8 +1473,10 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->indexshift = shift;
   C->assembled  = PETSC_TRUE;
 
-  c->m          = a->m;
-  c->n          = a->n;
+  c->m = C->m   = a->m;
+  c->n = C->n   = a->n;
+  C->M          = a->m;
+  C->N          = a->n;
 
   c->imax       = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(c->imax);
   c->ilen       = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(c->ilen);

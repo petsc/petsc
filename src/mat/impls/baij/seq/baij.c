@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.28 1996/04/05 21:52:51 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.29 1996/04/06 00:00:43 balay Exp curfman $";
 #endif
 
 /*
@@ -168,6 +168,28 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   else if (format == ASCII_FORMAT_MATLAB) {
     SETERRQ(1,"MatView_SeqBAIJ_ASCII:Matlab format not supported");
   } 
+  else if (format == ASCII_FORMAT_COMMON) {
+    for ( i=0; i<a->mbs; i++ ) {
+      for ( j=0; j<bs; j++ ) {
+        fprintf(fd,"row %d:",i*bs+j);
+        for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
+          for ( l=0; l<bs; l++ ) {
+#if defined(PETSC_COMPLEX)
+          if (imag(a->a[bs2*k + l*bs + j]) != 0.0 && real(a->a[bs2*k + l*bs + j]) != 0.0)
+            fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
+              real(a->a[bs2*k + l*bs + j]),imag(a->a[bs2*k + l*bs + j]));
+          else if (real(a->a[bs2*k + l*bs + j]) != 0.0)
+            fprintf(fd," %d %g",bs*a->j[k]+l,real(a->a[bs2*k + l*bs + j]));
+#else
+          if (a->a[bs2*k + l*bs + j] != 0.0)
+            fprintf(fd," %d %g",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
+#endif
+          }
+        }
+        fprintf(fd,"\n");
+      }
+    } 
+  }
   else {
     for ( i=0; i<a->mbs; i++ ) {
       for ( j=0; j<bs; j++ ) {
@@ -921,9 +943,9 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        0};
 
 /*@C
-   MatCreateSeqBAIJ - Creates a sparse matrix in AIJ (compressed row) format
-   (the default parallel PETSc format).  For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameter nz
+   MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block
+   compressed row) format.  For good matrix assembly performance the
+   user should preallocate the matrix storage by setting the parameter nz
    (or nzz).  By setting these parameters accurately, performance can be
    increased by more than a factor of 50.
 
@@ -940,16 +962,16 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
 .  A - the matrix 
 
    Notes:
-   The BAIJ format, is fully compatible with standard Fortran 77
+   The block AIJ format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users manual for details.
+   either one (as in Fortran) or zero.  See the users' manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.  For additional details, see the users manual chapter on
    matrices and the file $(PETSC_DIR)/Performance.
 
-.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues()
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
 @*/
 int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 {
@@ -964,6 +986,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQBAIJ,comm);
   PLogObjectCreate(B);
   B->data = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
+  PetscMemzero(b,sizeof(Mat_SeqBAIJ));
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
   switch (bs) {
     case 1:
@@ -990,9 +1013,9 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->col              = 0;
   b->reallocs         = 0;
   
-  b->m       = m;
+  b->m       = m; B->m = m; B->M = m;
+  b->n       = n; B->n = n; B->N = n;
   b->mbs     = mbs;
-  b->n       = n;
   b->nbs     = nbs;
   b->imax    = (int *) PetscMalloc( (mbs+1)*sizeof(int) ); CHKPTRQ(b->imax);
   if (nnz == PETSC_NULL) {
@@ -1063,8 +1086,11 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   c->col        = 0;
   C->assembled  = PETSC_TRUE;
 
-  c->m          = a->m;
-  c->n          = a->n;
+  c->m = C->m   = a->m;
+  c->n = C->n   = a->n;
+  C->M          = a->m;
+  C->N          = a->n;
+
   c->bs         = a->bs;
   c->mbs        = a->mbs;
   c->nbs        = a->nbs;

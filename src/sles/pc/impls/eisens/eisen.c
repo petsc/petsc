@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.47 1996/03/26 04:46:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.48 1996/03/26 15:26:15 bsmith Exp curfman $";
 #endif
 
 /*
@@ -164,10 +164,17 @@ static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
 
 static int PCSetUp_Eisenstat(PC pc)
 {
-  int          ierr;
+  int          ierr, M, N;
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
   Vec          diag;
 
+  if (pc->setupcalled == 0) {
+    ierr = MatGetSize(pc->mat,&M,&N); CHKERRA(ierr);
+    ierr = MatCreateShell(pc->comm,M,N,(void*)pc,&eis->shell); CHKERRQ(ierr);
+    PLogObjectParent(pc,eis->shell);
+    ierr = MatShellSetOperation(eis->shell,MAT_MULT,(void*)PCMult_Eisenstat); 
+           CHKERRQ(ierr);
+  }
   if (!eis->usediag) return 0;
   if (pc->setupcalled == 0) {
     ierr = VecDuplicate(pc->vec,&diag); CHKERRQ(ierr);
@@ -184,7 +191,6 @@ static int PCSetUp_Eisenstat(PC pc)
 
 int PCCreate_Eisenstat(PC pc)
 {
-  int          ierr;
   PC_Eisenstat *eis = PetscNew(PC_Eisenstat); CHKPTRQ(eis);
   pc->apply         = PCApply_Eisenstat;
   pc->presolve      = PCPre_Eisenstat;
@@ -201,10 +207,6 @@ int PCCreate_Eisenstat(PC pc)
   eis->b            = 0;
   eis->diag         = 0;
   eis->usediag      = 0;
-  ierr = MatCreateShell(pc->comm,0,0,(void*) pc,&eis->shell); CHKERRQ(ierr);
-  PLogObjectParent(pc,eis->shell);
-  ierr = MatShellSetOperation(eis->shell,MAT_MULT,(void*)PCMult_Eisenstat); 
-         CHKERRQ(ierr);
   return 0;
 }
 

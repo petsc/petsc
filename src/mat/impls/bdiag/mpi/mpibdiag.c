@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.78 1996/03/22 22:36:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.79 1996/03/23 20:42:55 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -385,6 +385,10 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
+extern int MatMult_SeqBDiag(Mat A,Vec,Vec);
+extern int MatMultAdd_SeqBDiag(Mat A,Vec,Vec,Vec);
+extern int MatMultTrans_SeqBDiag(Mat A,Vec,Vec);
+extern int MatMultTransAdd_SeqBDiag(Mat A,Vec,Vec,Vec);
 static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -393,7 +397,7 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
-  ierr = MatMult(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
+  ierr = MatMult_SeqBDiag(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
   return 0;
 }
 
@@ -406,7 +410,7 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
-  ierr = MatMultAdd(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
+  ierr = MatMultAdd_SeqBDiag(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
 }
 
@@ -417,7 +421,7 @@ static int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
   Scalar       zero = 0.0;
 
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
-  ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = MatMultTrans_SeqBDiag(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
          (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
@@ -431,7 +435,7 @@ static int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
   int          ierr;
 
   ierr = VecCopy(yy,zz); CHKERRQ(ierr);
-  ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = MatMultTrans_SeqBDiag(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
          (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,
@@ -725,10 +729,16 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
 extern int MatPrintHelp_SeqBDiag(Mat);
 static int MatPrintHelp_MPIBDiag(Mat A)
 {
-  Mat_MPIBDiag *a   = (Mat_MPIBDiag*) A->data;
-
+  Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
   if (!a->rank) return MatPrintHelp_SeqBDiag(a->A);
   else return 0;
+}
+
+extern int MatScale_SeqBDiag(Mat);
+static int MatScale_MPIBDiag(Scalar *alpha,Mat A)
+{
+  Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
+  return MatScale_SeqBDiag(a->A);
 }
 
 /* -------------------------------------------------------------------*/
@@ -753,7 +763,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        0,0,0,0,0,
        0,0,0,
        0,0,MatGetValues_MPIBDiag,0,
-       MatPrintHelp_MPIBDiag};
+       MatPrintHelp_MPIBDiag,MatScale_MPIBDiag};
 
 /*@C
    MatCreateMPIBDiag - Creates a sparse parallel matrix in MPIBDiag format.

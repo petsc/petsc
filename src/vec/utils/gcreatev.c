@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.28 1996/01/29 23:59:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.29 1996/03/19 21:22:50 bsmith Exp curfman $";
 #endif
 
 
@@ -37,9 +37,7 @@ int VecCreate(MPI_Comm comm,int n,Vec *V)
 
   MPI_Comm_size(comm,&size);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
-  if (flg) {
-    PetscPrintf(comm,"VecCreate() option: -vec_mpi\n");
-  }
+  if (flg) {PetscPrintf(comm,"VecCreate() option: -vec_mpi\n");}
   ierr = OptionsHasName(PETSC_NULL,"-vec_mpi",&flg); CHKERRQ(ierr);
   if (size > 1 || flg) {
     return VecCreateMPI(comm,PETSC_DECIDE,n,V);

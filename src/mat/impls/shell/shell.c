@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.30 1996/03/31 16:50:54 bsmith Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.31 1996/04/03 16:33:31 curfman Exp curfman $";
 #endif
 
 /*
@@ -92,7 +92,7 @@ static struct _MatOps MatOps = {0,0,
 .  ctx - pointer to data needed by the shell matrix routines
 
    Output Parameter:
-.  mat - the matrix
+.  A - the matrix
 
    Notes:
    The shell matrix type is intended to provide a simple class to use
@@ -109,25 +109,25 @@ $   MatDestroy(mat);
 
 .seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext()
 @*/
-int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
+int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *A)
 {
-  Mat       newmat;
-  Mat_Shell *shell;
+  Mat       B;
+  Mat_Shell *b;
 
-  PetscHeaderCreate(newmat,_Mat,MAT_COOKIE,MATSHELL,comm);
-  PLogObjectCreate(newmat);
-  *mat              = newmat;
-  newmat->factor    = 0;
-  newmat->destroy   = MatDestroy_Shell;
-  newmat->assembled = PETSC_TRUE;
-  PetscMemcpy(&newmat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSHELL,comm);
+  PLogObjectCreate(B);
+  B->factor    = 0;
+  B->destroy   = MatDestroy_Shell;
+  B->assembled = PETSC_TRUE;
+  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
 
-  shell          = PetscNew(Mat_Shell); CHKPTRQ(shell);
-  PetscMemzero(shell,sizeof(Mat_Shell));
-  newmat->data   = (void *) shell;
-  shell->m       = m;
-  shell->n       = n;
-  shell->ctx     = ctx;
+  b          = PetscNew(Mat_Shell); CHKPTRQ(b);
+  PetscMemzero(b,sizeof(Mat_Shell));
+  B->data   = (void *) b;
+  b->m = m;  B->m = 0; B->M = m;
+  b->n = n;  B->n = 0; B->N = n;
+  b->ctx     = ctx;
+  *A = B;
   return 0;
 }
 

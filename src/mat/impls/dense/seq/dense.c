@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.100 1996/04/05 19:41:25 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.101 1996/04/06 00:40:57 curfman Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -239,7 +239,7 @@ static int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
 } 
 
 /* -----------------------------------------------------------------*/
-static int MatMultTrans_SeqDense(Mat A,Vec xx,Vec yy)
+int MatMultTrans_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v = mat->v, *x, *y;
@@ -249,7 +249,7 @@ static int MatMultTrans_SeqDense(Mat A,Vec xx,Vec yy)
   PLogFlops(2*mat->m*mat->n - mat->n);
   return 0;
 }
-static int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
+int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v = mat->v, *x, *y;
@@ -259,7 +259,7 @@ static int MatMult_SeqDense(Mat A,Vec xx,Vec yy)
   PLogFlops(2*mat->m*mat->n - mat->m);
   return 0;
 }
-static int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
+int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v = mat->v, *x, *y, *z;
@@ -270,14 +270,13 @@ static int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   PLogFlops(2*mat->m*mat->n);
   return 0;
 }
-static int MatMultTransAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
+int MatMultTransAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v = mat->v, *x, *y, *z;
   int          _One=1;
   Scalar       _DOne=1.0;
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  VecGetArray(zz,&z);
+  VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z);
   if (zz != yy) PetscMemcpy(y,z,mat->n*sizeof(Scalar));
   LAgemv_( "T", &(mat->m), &(mat->n), &_DOne, v, &(mat->m),x,&_One,&_DOne,y,&_One);
   PLogFlops(2*mat->m*mat->n);
@@ -459,10 +458,9 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   if (format == ASCII_FORMAT_INFO) {
     ;  /* do nothing for now */
   } 
-  /* We retain dense format as default; use ASCII_FORMAT_IMPL to get
-     sparse format output ... maybe should switch this? */
-  else if (format == ASCII_FORMAT_IMPL) {
+  else if (format == ASCII_FORMAT_COMMON) {
     for ( i=0; i<a->m; i++ ) {
+      v = a->v + i;
       fprintf(fd,"row %d:",i);
       for ( j=0; j<a->n; j++ ) {
 #if defined(PETSC_COMPLEX)
@@ -667,11 +665,14 @@ static int MatEqual_SeqDense(Mat A1,Mat A2, PetscTruth *flg)
 static int MatGetDiagonal_SeqDense(Mat A,Vec v)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
-  int          i, n;
-  Scalar       *x;
+  int          i, n, len;
+  Scalar       *x, zero = 0.0;
+
+  VecSet(&zero,v);
   VecGetArray(v,&x); VecGetSize(v,&n);
+  len = PetscMin(mat->m,mat->n);
   if (n != mat->m) SETERRQ(1,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
-  for ( i=0; i<mat->m; i++ ) {
+  for ( i=0; i<len; i++ ) {
     x[i] = mat->v[i*mat->m + i];
   }
   return 0;
@@ -686,22 +687,22 @@ static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
     if (m != mat->m) SETERRQ(1,"MatDiagonalScale_SeqDense:Left scaling vec wrong size");
-    PLogFlops(n*m);
     for ( i=0; i<m; i++ ) {
       x = l[i];
       v = mat->v + i;
       for ( j=0; j<n; j++ ) { (*v) *= x; v+= m;} 
     }
+    PLogFlops(n*m);
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
     if (n != mat->n) SETERRQ(1,"MatDiagonalScale_SeqDense:Right scaling vec wrong size");
-    PLogFlops(n*m);
     for ( i=0; i<n; i++ ) {
       x = r[i];
       v = mat->v + i*m;
       for ( j=0; j<m; j++ ) { (*v++) *= x;} 
     }
+    PLogFlops(n*m);
   }
   return 0;
 }
@@ -925,7 +926,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
    to control all matrix memory allocation.
 
    Output Parameter:
-.  newmat - the matrix
+.  A - the matrix
 
   Notes:
   The data input variable is intended primarily for Fortran programmers
@@ -936,44 +937,41 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
 
 .seealso: MatCreate(), MatSetValues()
 @*/
-int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
+int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
 {
-  Mat          mat;
-  Mat_SeqDense *l;
+  Mat          B;
+  Mat_SeqDense *b;
   int          ierr,flg;
 
-  *newmat        = 0;
+  *A            = 0;
+  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
+  PLogObjectCreate(B);
+  b             = (Mat_SeqDense *) PetscMalloc(sizeof(Mat_SeqDense)); CHKPTRQ(b);
+  PetscMemzero(b,sizeof(Mat_SeqDense));
+  PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  B->destroy    = MatDestroy_SeqDense;
+  B->view       = MatView_SeqDense;
+  B->factor     = 0;
+  PLogObjectMemory(B,sizeof(struct _Mat));
+  B->data       = (void *) b;
 
-  PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
-  PLogObjectCreate(mat);
-  l               = (Mat_SeqDense *) PetscMalloc(sizeof(Mat_SeqDense)); CHKPTRQ(l);
-  PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
-  mat->destroy    = MatDestroy_SeqDense;
-  mat->view       = MatView_SeqDense;
-  mat->factor     = 0;
-  PLogObjectMemory(mat,sizeof(struct _Mat));
-  mat->data       = (void *) l;
-
-  l->m            = m;
-  l->n            = n;
-  l->pivots       = 0;
-  l->roworiented  = 1;
+  b->m = m;  B->m = m; B->M = m;
+  b->n = n;  B->n = n; B->N = n;
+  b->pivots       = 0;
+  b->roworiented  = 1;
   if (data == PETSC_NULL) {
-    l->v = (Scalar*) PetscMalloc((m*n+1)*sizeof(Scalar)); CHKPTRQ(l->v);
-    PetscMemzero(l->v,m*n*sizeof(Scalar));
-    l->user_alloc = 0;
-    PLogObjectMemory(mat,n*m*sizeof(Scalar));
+    b->v = (Scalar*) PetscMalloc((m*n+1)*sizeof(Scalar)); CHKPTRQ(b->v);
+    PetscMemzero(b->v,m*n*sizeof(Scalar));
+    b->user_alloc = 0;
+    PLogObjectMemory(B,n*m*sizeof(Scalar));
   } 
   else { /* user-allocated storage */
-    l->v = data;
-    l->user_alloc = 1;
+    b->v = data;
+    b->user_alloc = 1;
   }
-
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatPrintHelp(mat); CHKERRQ(ierr);
-  }
-  *newmat = mat;
+  if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr);}
+  *A = B;
   return 0;
 }
 

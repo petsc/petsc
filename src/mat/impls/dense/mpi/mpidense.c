@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.35 1996/03/19 21:25:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.36 1996/03/23 20:42:28 bsmith Exp curfman $";
 #endif
 
 /*
@@ -370,6 +370,10 @@ static int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
+extern int MatMult_SeqDense(Mat A,Vec,Vec);
+extern int MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
+extern int MatMultTrans_SeqDense(Mat A,Vec,Vec);
+extern int MatMultTransAdd_SeqDense(Mat A,Vec,Vec,Vec);
 static int MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
@@ -379,7 +383,7 @@ static int MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);
   CHKERRQ(ierr);
-  ierr = MatMult(mdn->A,mdn->lvec,yy); CHKERRQ(ierr);
+  ierr = MatMult_SeqDense(mdn->A,mdn->lvec,yy); CHKERRQ(ierr);
   return 0;
 }
 
@@ -390,7 +394,7 @@ static int MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
 
   ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
-  ierr = MatMultAdd(mdn->A,mdn->lvec,yy,zz); CHKERRQ(ierr);
+  ierr = MatMultAdd_SeqDense(mdn->A,mdn->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
 }
 
@@ -401,7 +405,7 @@ static int MatMultTrans_MPIDense(Mat A,Vec xx,Vec yy)
   Scalar       zero = 0.0;
 
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
-  ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = MatMultTrans_SeqDense(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
          (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
@@ -415,7 +419,7 @@ static int MatMultTransAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
   int          ierr;
 
   ierr = VecCopy(yy,zz); CHKERRQ(ierr);
-  ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = MatMultTrans_SeqDense(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
          (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,
@@ -427,14 +431,16 @@ static int MatGetDiagonal_MPIDense(Mat A,Vec v)
 {
   Mat_MPIDense *a = (Mat_MPIDense *) A->data;
   Mat_SeqDense *aloc = (Mat_SeqDense *) a->A->data;
-  int          ierr, i, n, m = a->m, radd;
-  Scalar       *x;
+  int          ierr, len, i, n, m = a->m, radd;
+  Scalar       *x, zero = 0.0;
   
+  VecSet(&zero,v);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   ierr = VecGetSize(v,&n); CHKERRQ(ierr);
   if (n != a->M) SETERRQ(1,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
+  len = PetscMin(aloc->m,aloc->n);
   radd = a->rstart*m*m;
-  for ( i=0; i<m; i++ ) {
+  for ( i=0; i<len; i++ ) {
     x[i] = aloc->v[radd + i*m + i];
   }
   return 0;
@@ -763,6 +769,19 @@ static int MatTranspose_MPIDense(Mat A,Mat *matout)
   return 0;
 }
 
+#include "pinclude/plapack.h"
+static int MatScale_MPIDense(Scalar *alpha,Mat inA)
+{
+  Mat_MPIDense *A = (Mat_MPIDense *) inA->data;
+  Mat_SeqDense *a = (Mat_SeqDense *) A->A->data;
+  int          one = 1, nz;
+
+  nz = a->m*a->n;
+  BLscal_( &nz, alpha, a->v, &one );
+  PLogFlops(nz);
+  return 0;
+}
+
 static int MatConvertSameType_MPIDense(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
@@ -789,7 +808,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        0,0, MatGetArray_MPIDense, MatRestoreArray_MPIDense,
        0,0,0,MatConvertSameType_MPIDense,
        0,0,0,0,0,
-       0,0,MatGetValues_MPIDense};
+       0,0,MatGetValues_MPIDense,0,0,MatScale_MPIDense};
 
 /*@C
    MatCreateMPIDense - Creates a sparse parallel matrix in dense format.
@@ -915,10 +934,10 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   mat->factor   = A->factor;
   mat->assembled  = PETSC_TRUE;
 
-  a->m          = oldmat->m;
-  a->n          = oldmat->n;
-  a->M          = oldmat->M;
-  a->N          = oldmat->N;
+  a->m = mat->m = oldmat->m;
+  a->n = mat->n = oldmat->n;
+  a->M = mat->M = oldmat->M;
+  a->N = mat->N = oldmat->N;
   if (oldmat->factor) {
     a->factor = (FactorCtx *) (factor = PetscNew(FactorCtx)); CHKPTRQ(factor);
     /* copy factor contents ... add this code! */

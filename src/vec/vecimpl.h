@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.25 1996/03/15 03:13:30 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.26 1996/03/19 21:22:48 bsmith Exp curfman $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -44,6 +44,7 @@ struct _Vec {
   PETSCHEADER                            /* general PETSc header */
   struct _VeOps ops;                     /* vector operations */
   void          *data;                   /* implementation-specific data */
+  int           N, n;                    /* global, local vector size */
 };
 
 typedef enum { VEC_SCATTER_GENERAL, VEC_SCATTER_STRIDE, VEC_SCATTER_MPI,

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.56 1996/03/04 05:15:43 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.57 1996/03/19 21:25:33 bsmith Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -78,9 +78,11 @@ struct _Mat {
   int              factor;            /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
   double           lupivotthreshold;  /* threshold for pivoting */
   PetscTruth       assembled;         /* is the matrix assembled? */
-  PetscTruth       was_assembled;     /* new values have been inserted into assembled mat*/
-  int              num_ass;           /* number of times matrix has been assembled*/
-  PetscTruth       same_nonzero;      /* matrix has same nonzero pattern as previous*/
+  PetscTruth       was_assembled;     /* new values have been inserted into assembled mat */
+  int              num_ass;           /* number of times matrix has been assembled */
+  PetscTruth       same_nonzero;      /* matrix has same nonzero pattern as previous */
+  int              M, N;              /* global numbers of rows, columns */
+  int              m, n;              /* local numbers of rows, columns */
 };
 
 /* final argument for MatConvertXXX() */
