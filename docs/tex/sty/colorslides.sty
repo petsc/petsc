@@ -1,9 +1,93 @@
+
+\def\stripe{\ifvmode\else\par\vskip-\baselineskip\vskip12pt\fi
+\hbox to \hsize{\leaders\hrule height 4.5pt\hfil}\vskip-\baselineskip
+            \vskip 3.5pt 
+            \hbox to \hsize{\leaders\hrule height 1.5pt\hfil}
+            \vskip -10pt}
+\def\vt{\protect\begin{slide}}
+\def\ve{\vfil\protect\end{slide}}
+\def\vtt#1{\begin{slide}{}{\centerline{\bf #1}}\stripe\vfil\parskip8pt\medskip}
+\def\vttstar#1{\begin{slide*}{}{\bf #1}\stripe\vfil\parskip8pt\medskip}
+\def\vestar{\vfil\protect\end{slide*}}
+
+\setlength{\topmargin}{-2.150in}
+\setlength{\textheight}{7.5in}
+\setlength{\textwidth}{9.47in}
+\setlength{\oddsidemargin}{-0.42in}
+\setlength{\evensidemargin}{-0.12in}
+
+\slideframe{none}
+%
+%  Other colors not listed in color.sty
+%
+\newcommand{\White}{\RGBS 0 0 0 }
+%
+%   Below defines the background material printed on every slide
+%
+\special{!userdict begin /SlideBackground{1 1 0 setrgbcolor} def 
+                         /SlideBorder{0 .1 .9 setrgbcolor} def end}
+
+\def\SetRGBBackgrounds#1#2#3{\special{ps:userdict begin
+                          /SlideBackground{#1 #2 #3 setrgbcolor} def end}}
+\def\SetRGBBorders#1#2#3{\special{ps:userdict begin  
+                          /SlideBorder{#1 #2 #3 setrgbcolor} def end}}
+\def\SetRGBBackground #1 #2 #3 {\SetRGBBackgrounds{#1}{#2}{#3}}
+\def\SetRGBBorder #1 #2 #3 {\SetRGBBorders{#1}{#2}{#3}}
+
+\newcommand{\WhiteBackground}{\SetRGBBackground 0 0 0 }
+\newcommand{\RedBackground}{\SetRGBBackground 1 0 0 }
+\newcommand{\GreenBackground}{\SetRGBBackground 0 1 0 }
+\newcommand{\BlueBackground}{\SetRGBBackground 0 0 1 }
+\newcommand{\LightBlueBackground}{\SetRGBBackground  0 1 1 }
+\newcommand{\PurpleBackground}{\SetRGBBackground 1 0 1 }
+\newcommand{\BlackBackground}{\SetRGBBackground 0 0 0 }
+\newcommand{\LimeGreenBackground}{\SetRGBBackground 0.1961 0.8039 0.1961 }
+\newcommand{\OrangeBackground}{\SetRGBBackground 1 0.6471 0 }
+\newcommand{\VioletBackground}{\SetRGBBackground 0.9333 0.5098 0.9333 }
+\newcommand{\PinkBackground}{\SetRGBBackground 1 0.7529 0.7961 }
+\newcommand{\GoldBackground}{\SetRGBBackground 1 .8431 0  }
+\newcommand{\BrownBackground}{\SetRGBBackground 0.6471 0.1647 0.1647 }
+\newcommand{\MidnightBlueBackground}{\SetRGBBackground 0.0980 0.0980 0.4392 }
+\newcommand{\SteelBlueBackground}{\SetRGBBackground 0.2745 0.5098 0.7059 }
+\newcommand{\OrchidBackground}{\SetRGBBackground 0.8549 0.4392 0.8392 }
+\newcommand{\CyanBackground}{\SetRGBBackground 0 1 1 }
+\newcommand{\YellowBackground}{\SetRGBBackground 1 1 0 }
+\newcommand{\AquamarineBackground}{\SetRGBBackground 0.4980 1.0000 0.8314 }
+\newcommand{\DarkGreenBackground}{\SetRGBBackground 0 .3922 0 }
+\newcommand{\DimGreyBackground}{\SetRGBBackground 0.4118 0.4118 0.4118 }
+\newcommand{\NavyBackground}{\SetRGBBackground  0 0 0.5020 } 
+\newcommand{\SalmonBackground}{\SetRGBBackground 0.9804 0.5020 0.4471 }
+
+\newcommand{\WhiteBorder}{\SetRGBBorder 0 0 0 }
+\newcommand{\RedBorder}{\SetRGBBorder 1 0 0 }
+\newcommand{\GreenBorder}{\SetRGBBorder 0 1 0 }
+\newcommand{\BlueBorder}{\SetRGBBorder 0 0 1 }
+\newcommand{\LightBlueBorder}{\SetRGBBorder  0 1 1 }
+\newcommand{\PurpleBorder}{\SetRGBBorder 1 0 1 }
+\newcommand{\BlackBorder}{\SetRGBBorder 0 0 0 }
+\newcommand{\LimeGreenBorder}{\SetRGBBorder 0.1961 0.8039 0.1961 }
+\newcommand{\OrangeBorder}{\SetRGBBorder 1 0.6471 0 }
+\newcommand{\VioletBorder}{\SetRGBBorder 0.9333 0.5098 0.9333 }
+\newcommand{\PinkBorder}{\SetRGBBorder 1 0.7529 0.7961 }
+\newcommand{\GoldBorder}{\SetRGBBorder 1 .8431 0  }
+\newcommand{\BrownBorder}{\SetRGBBorder 0.6471 0.1647 0.1647 }
+\newcommand{\MidnightBlueBorder}{\SetRGBBorder 0.0980 0.0980 0.4392 }
+\newcommand{\SteelBlueBorder}{\SetRGBBorder 0.2745 0.5098 0.7059 }
+\newcommand{\OrchidBorder}{\SetRGBBorder 0.8549 0.4392 0.8392 }
+\newcommand{\CyanBorder}{\SetRGBBorder 0 1 1 }
+\newcommand{\YellowBorder}{\SetRGBBorder 1 1 0 }
+\newcommand{\AquamarineBorder}{\SetRGBBorder 0.4980 1.0000 0.8314 }
+\newcommand{\DarkGreenBorder}{\SetRGBBorder 0 .3922 0 }
+\newcommand{\DimGreyBorder}{\SetRGBBorder 0.4118 0.4118 0.4118 }
+\newcommand{\NavyBorder}{\SetRGBBorder  0 0 0.5020 } 
+\newcommand{\SalmonBorder}{\SetRGBBorder 0.9804 0.5020 0.4471 }
+
 \special{!userdict begin /bop-hook{
-   1 1 0 setrgbcolor   0   13 612 779 rectfill % Yellow background
-   0 .1 .9 setrgbcolor 0   13  20 779 rectfill % Border bottom
-                       0   13 612 20 rectfill % Border  right
-                       592 13  612 779 rectfill % Border  top
-                       0  772 612 792 rectfill % Border  left
+   SlideBackground   0   13  612 779 rectfill % Yellow background
+   SlideBorder       0   13  20  779 rectfill % Border bottom
+                     0   13  612 20  rectfill % Border  right
+                     592 13  612 779 rectfill % Border  top
+                     0   772 612 792 rectfill % Border  left
   /circtextdict 16 dict def
   circtextdict begin
     % return half the angle spanned by a string
@@ -114,15 +198,29 @@
     end
     grestore
   } def
-  gsave
+%  Beginning of ANL logo
+    gsave
     0 .3922 0 setrgbcolor
-    0 0 translate  .5 .5 scale  -90 rotate
+    0 0 translate  .6 .6 scale  -90 rotate
     /Helvetica-Bold findfont 10 scalefont setfont
-    -160 140 translate
+    -130 110 translate
     (ARGONNE    NATIONAL    LABORATORY) 10 90 55 cwcircletext
     (UNIVERSITY    OF    CHICAGO) 10 3 -90 55 ccwcircletext
     (                                               )
     /Symbol findfont 10 scalefont setfont
     10 3 -90 55 ccwcircletext
     104 18 10 1 10 -2 drawcenter grestore
-    0 0 0 setrgbcolor }def end}
+    0 0 0 setrgbcolor
+% Beginning of PETSc logo
+    gsave
+    0 .3922 0 setrgbcolor
+    0 0 translate  .6 .6 scale  -90 rotate
+    /Helvetica-Bold findfont 10 scalefont setfont
+    -1216 110 translate
+    (PORTABLE EXTENSIBLE TOOLKIT for SCIENTIFIC COMPUTATION) 10 90 55 cwcircletext
+    (http://www.mcs.anl.gov/petsc/petsc.html) 10 90 41 cwcircletext
+     1 1.6 scale /Helvetica-Bold findfont 18 scalefont setfont
+    -26 -5 moveto (PETSc) show
+   grestore
+    0 0 0 setrgbcolor  
+ } def end}
