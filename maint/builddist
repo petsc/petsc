@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.45 1998/04/13 16:20:43 bsmith Exp balay $ 
+# $Id: builddist,v 1.46 1998/04/13 17:42:43 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -62,7 +62,7 @@ endif
 
 
 tar cf ~/petsc$version.tar petsc$version
-#/bin/rm -r -f /mcs/tmp/petsc$version
+/bin/rm -r -f /mcs/tmp/petsc$version
 
 #
 #  To test locally and build petsc.solid
