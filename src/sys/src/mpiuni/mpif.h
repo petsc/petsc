@@ -1,5 +1,5 @@
 !
-!     $Id: mpif.h,v 1.11 2000/01/11 20:59:45 bsmith Exp balay $
+!     $Id: mpif.h,v 1.12 2000/01/14 23:56:20 balay Exp balay $
 !
 
 !     Trying to provide as little support for fortran code in petsc as needed
@@ -13,7 +13,7 @@
        parameter (MPI_COMM_NULL = 0)
        integer MPI_SUCCESS 
        parameter (MPI_SUCCESS = 0)
-       integerMPI_IDENT 
+       integer MPI_IDENT 
        parameter (MPI_IDENT = 0)
        integer MPI_UNEQUAL 
        parameter (MPI_UNEQUAL = 3)
