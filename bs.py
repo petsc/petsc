@@ -133,22 +133,31 @@ class BS (maker.Maker):
         del sourceDB[source]
 
   def t_update(self):
-    setName = argDB['fileset']
-    try:
-      self.debugPrint('Updating source database of fileset '+setName, 1, 'sourceDB')
-      for file in self.filesets[setName]:
-        if sourceDB.has_key(file):
+    if argDB.has_key('fileset'):
+      setName = argDB['fileset']
+      try:
+        self.debugPrint('Updating source database of fileset '+setName, 1, 'sourceDB')
+        for file in self.filesets[setName]:
           self.debugPrint('Updating '+file, 3, 'sourceDB')
           sourceDB.updateSource(file)
-        else:
-          self.debugPrint('Updating '+file, 3, 'sourceDB')
-          sourceDB.stickinSource(file)
-    except KeyError:
-      try:
-        self.debugPrint('Updating '+setName, 3, 'sourceDB')
-        sourceDB.updateSource(setName)
       except KeyError:
-        print 'FileSet '+setName+' not found for update'
+        try:
+          self.debugPrint('Updating '+setName, 3, 'sourceDB')
+          sourceDB.updateSource(setName)
+        except KeyError:
+          print 'FileSet '+setName+' not found for update'
+    else:
+      import re
+
+      print argDB['regExp']
+      updateRE = re.compile(argDB['regExp'])
+      updates  = []
+      for key in sourceDB:
+        m = updateRE.match(key)
+        if m: updates.append(key)
+      for source in updates:
+        self.debugPrint('Updating '+source, 3, 'sourceDB')
+        sourceDB.updateSource(source)
 
   def cleanup(self):
     self.saveSourceDB()
