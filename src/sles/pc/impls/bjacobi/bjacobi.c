@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.123 1999/01/31 16:08:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.124 1999/01/31 21:32:16 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -126,15 +126,17 @@ static int PCSetUp_BJacobi(PC pc)
       }
     }
 
-    ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
-    if (!f) {
-      SETERRQ(PETSC_ERR_SUP,0,"This matrix does not support getting diagonal block");
+    if (jac->use_true_local) {
+      ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
+      if (!f) {
+        SETERRQ(PETSC_ERR_SUP,0,"This matrix does not support getting diagonal block");
+      }
+      ierr = (*f)(pc->mat,&iscopy,scall,&mat);CHKERRQ(ierr);
+      if (iscopy) {
+        jac->tp_mat = mat;
+      }
     }
-    ierr = (*f)(pc->mat,&iscopy,scall,&mat);CHKERRQ(ierr);
-    if (iscopy) {
-      jac->tp_mat = mat;
-    }
-    if (pc->pmat != pc->mat) {
+    if (pc->pmat != pc->mat || !jac->use_true_local) {
       ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
       if (!f) {
         SETERRQ(PETSC_ERR_SUP,0,"This matrix does not support getting diagonal block");
