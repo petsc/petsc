@@ -4,14 +4,27 @@ import base
 
 import os
 
+class Machine (object):
+  def __init__(self, host, dir = os.path.join('/sandbox', 'petsc', 'petsc-3'), rsh = 'ssh -1', rcp = 'scp -q -B -oProtocol=1'):
+    '''Creates a machine description
+       - "host" is the host account, e.g. petsc@smash.mcs.anl.gov
+       - "dir" is the root directory of the install
+       - "rsh" is the remote shell command, e.g. ssh -1
+       - "rcp" is the remote copy command, e.g. scp -q -B -oProtocol=1'''
+    self.dir  = dir
+    self.rsh  = rsh
+    self.rcp  = rcp
+    self.host = host
+    return
+
 class RemoteBuild (base.Base):
-  def __init__(self, clArgs = None, argDB = None):
-    base.Base.__init__(self, clArgs, argDB)
-    self.dir  = os.path.join('/sandbox', 'petsc', 'petsc-3')
-    self.rsh  = 'ssh -1'
-    self.rcp  = 'scp -q -B -oProtocol=1'
-    self.user = 'petsc'
-    self.host = 'smash.mcs.anl.gov'
+  def __init__(self, machine, clArgs = None, argDB = None):
+    base.Base.__init__(self, machine, clArgs, argDB)
+    self.machine = machine
+    self.host    = machine.host
+    self.dir     = machine.dir
+    self.rsh     = machine.rsh
+    self.rcp     = machine.rcp
     return
 
   def setupArgDB(self, argDB, clArgs):
@@ -37,15 +50,15 @@ class RemoteBuild (base.Base):
 
   def clean(self):
     '''Remove all PETSc 3 files'''
-    command = [self.rsh, self.user+'@'+self.host, '-n', 'rm -rf '+self.dir]
+    command = [self.rsh, self.host, '-n', 'rm -rf '+self.dir]
     output  = self.executeShellCommand(' '.join(command))
-    command = [self.rsh, self.user+'@'+self.host, '-n', 'mkdir -m775 '+self.dir]
+    command = [self.rsh, self.host, '-n', 'mkdir -m775 '+self.dir]
     output  = self.executeShellCommand(' '.join(command))
     return
 
   def getBootstrap(self):
     '''Right now, we get bootstrap.py from our PETSc 2 repository, but later we should get it from the webpage'''
-    command = [self.rcp, os.path.join('/sandbox', 'petsc', 'petsc-test', 'python', 'BuildSystem', 'install', 'bootstrap.py'),  self.user+'@'+self.host+':'+self.dir]
+    command = [self.rcp, os.path.join('/sandbox', 'petsc', 'petsc-test', 'python', 'BuildSystem', 'install', 'bootstrap.py'),  self.host+':'+self.dir]
     output  = self.executeShellCommand(' '.join(command))
     return
 
@@ -53,13 +66,13 @@ class RemoteBuild (base.Base):
     '''Run the bootstrap installer
        - TODO: Remove the dependence on csh of the pipe'''
     self.getBootstrap()
-    command = [self.rsh, self.user+'@'+self.host, '-n', '"cd '+self.dir+'; ./bootstrap.py -batch |& tee bootstrap.log"']
+    command = [self.rsh, self.host, '-n', '"cd '+self.dir+'; ./bootstrap.py -batch |& tee bootstrap.log"']
     output  = self.executeShellCommand(' '.join(command))
     return
 
   def install(self, package, args = []):
     '''Install a normal package'''
-    command = [self.rsh, self.user+'@'+self.host, '-n', '"cd '+self.dir+';', os.path.join('.', 'BuildSystem', 'install', 'installer.py'), package]+args+['|& tee installer.log"']
+    command = [self.rsh, self.host, '-n', '"cd '+self.dir+';', os.path.join('.', 'BuildSystem', 'install', 'installer.py'), package]+args+['|& tee installer.log"']
     output  = self.executeShellCommand(' '.join(command))
     return
 
@@ -71,13 +84,13 @@ class RemoteBuild (base.Base):
 
   def copyLog(self):
     '''Copy all logs made during the build to a default location'''
-    command = [self.rcp, self.user+'@'+self.host+':'+os.path.join(self.dir, 'bootstrap.log'), os.path.join('/home', 'petsc', 'logs', 'nightly')]
+    command = [self.rcp, self.host+':'+os.path.join(self.dir, 'bootstrap.log'), os.path.join('/home', 'petsc', 'logs', 'nightly')]
     output  = self.executeShellCommand(' '.join(command))
-    command = [self.rcp, self.user+'@'+self.host+':'+os.path.join(self.dir, 'installer.log'), os.path.join('/home', 'petsc', 'logs', 'nightly')]
+    command = [self.rcp, self.host+':'+os.path.join(self.dir, 'installer.log'), os.path.join('/home', 'petsc', 'logs', 'nightly')]
     output  = self.executeShellCommand(' '.join(command))
-    command = [self.rcp, self.user+'@'+self.host+':'+os.path.join(self.dir, 'make.log'), os.path.join('/home', 'petsc', 'logs', 'nightly')]
+    command = [self.rcp, self.host+':'+os.path.join(self.dir, 'make.log'), os.path.join('/home', 'petsc', 'logs', 'nightly')]
     output  = self.executeShellCommand(' '.join(command))
-    return not status
+    return
 
   def run(self):
     if self.argDB['mode'] == 'build':
@@ -91,4 +104,4 @@ class RemoteBuild (base.Base):
 
 if __name__ == '__main__':
   import sys
-  RemoteBuild(sys.argv[1:]).run()
+  RemoteBuild(Machine('petsc@smash.mcs.anl.gov'), sys.argv[1:]).run()
