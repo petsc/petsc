@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.50 2000/10/30 03:28:19 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.51 2000/11/06 16:27:58 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -201,17 +201,39 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 #define __FUNC__ /*<a name="MatGetRowIJ_MPIAdj"></a>*/"MatGetRowIJ_MPIAdj"
 int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
 {
-  int        ierr,size;
+  int        ierr,size,i;
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size > 1) {*done = PETSC_FALSE; PetscFunctionReturn(0);}
-  if (oshift)   {*done = PETSC_FALSE; PetscFunctionReturn(0);}
   *m    = A->m;
   *ia   = a->i;
   *ja   = a->j;
   *done = PETSC_TRUE;
+  if (oshift) {
+    for (i=0; i<(*ia)[*m]; i++) {
+      (*ja)[i]++;
+    }
+    for (i=0; i<=(*m); i++) (*ia)[i]++;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatRestoreRowIJ_MPIAdj"></a>*/"MatRestoreRowIJ_MPIAdj"
+int MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
+{
+  int        i;
+  Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
+
+  PetscFunctionBegin;
+  if (oshift) {
+    for (i=0; i<=(*m); i++) (*ia)[i]--;
+    for (i=0; i<(*ia)[*m]; i++) {
+      (*ja)[i]--;
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +292,7 @@ static struct _MatOps MatOps_Values = {0,
        0,
        MatGetBlockSize_MPIAdj,
        MatGetRowIJ_MPIAdj,
-       0,
+       MatRestoreRowIJ_MPIAdj,
        0,
        0,
        0,
