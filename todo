@@ -6,6 +6,9 @@ PETSc configure
 
    Fix X11 test
 
+   Have configure generate bmake/init.csh init.sh that can be source
+   by .cshrc and friends and sets PETSC_DIR, MATLABPATH and PATH, others?
+
 Matrices
    Add getoverlap code for seq and mpi (mpi more important) sbaij matrices
 

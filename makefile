@@ -17,7 +17,7 @@ include ${PETSC_DIR}/bmake/common/test
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir
 	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
-all_build: chk_petsc_dir info info_h chklib_dir deletelibs blaslapack mpich build shared
+all_build: chk_petsc_dir info info_h chklib_dir deletelibs chk_fortranstubs blaslapack mpich build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -345,6 +345,13 @@ allcleanhtml:
 chk_concepts_dir: chk_loc
 	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
+#
+#  checks if should build Fortran stubs
+chk_fortranstubs:
+	-@if [ ! -f "${PETSC_DIR}/src/fortran/auto/makefile.src" ]; then \
+          ${OMAKE} PETSC_DIR=${PETSC_DIR} allfortranstubs ;\
+        fi
+
 # Builds Fortran stub files
 allfortranstubs:
 	-@which ${BFORT} > /dev/null 2>1;  \
