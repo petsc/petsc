@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.19 1997/01/06 20:43:11 bsmith Exp $";
+C "$Id: ex5f90.F,v 1.1 1997/01/17 03:17:20 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -19,7 +19,7 @@ C  Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
 C  Routines: SNESSolve(); SNESSetFromOptions(); DAView();
 C  Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
 C  Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-C  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+C  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndicesF90();
 C  Processors: n
 CT*/
 C
@@ -69,6 +69,7 @@ C  The following include statements are generally used in SNES Fortran
 C  programs:
 C     petsc.h  - base PETSc routines
 C     vec.h    - vectors
+C     vec.h90  - Fortran 90 interface to vectors
 C     mat.h    - matrices
 C     ksp.h    - Krylov subspace methods
 C     pc.h     - preconditioners
@@ -76,6 +77,7 @@ C     sles.h   - SLES interface
 C     snes.h   - SNES interface
 C  In addition, we need the following for use of distributed arrays
 C     da.h     - distributed arrays (DAs)
+C     da.h90   - Fortran 90 DA interface
 C  Other include statements may be needed if using additional PETSc
 C  routines in a Fortran program, e.g.,
 C     viewer.h - viewers
@@ -83,7 +85,9 @@ C     is.h     - index sets
 C
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/vec.h90"
 #include "include/FINCLUDE/da.h"
+#include "include/FINCLUDE/da.h90"
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/ksp.h"
 #include "include/FINCLUDE/pc.h"
@@ -147,8 +151,6 @@ C   - The element lx_a(ib) is element ib+1 in the vector localX
 C   - Here we add 1 to the base array index to facilitate the use of
 C     conventional Fortran 1-based array indexing.
 C
-#define lx_a(ib) lx_v(lx_i + (ib) + 1)
-#define lf_a(ib) lf_v(lf_i + (ib) + 1)
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                 Beginning of program
@@ -316,6 +318,7 @@ C
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/vec.h90"
 #include "include/FINCLUDE/da.h"
 #include "include/FINCLUDE/snes.h"
 
@@ -326,9 +329,7 @@ C
       Scalar   lambda, temp1, temp, hx, hy, sc, one
 
 C  Declarations for use with local arrays
-      Scalar   lx_v(1)
-      common   lx_v
-      integer  lx_i
+      Scalar, pointer ::  lx_v(:)
 
       common /params/ lambda
 
@@ -355,7 +356,7 @@ C      the array.
 C    - Note that the Fortran interface to VecGetArray() differs from the
 C      C version.  See the users manual for details.
 
-      call VecGetArray(localX,lx_v,lx_i,ierr)
+      call VecGetArrayF90(localX,lx_v,ierr)
 
 C  Get local grid boundaries (for 2-dimensional DA):
 C       xs, ys   - starting grid indices (no ghost points)
@@ -374,12 +375,12 @@ C  Compute initial guess over the locally owned part of the grid
       do 20 j=ys,ye
          temp = DBLE(min(j,my-j-1))*hy
          do 10 i=xs,xe
-            row = i - gxs + (j - gys)*gxm
+            row = i - gxs + (j - gys)*gxm + 1
             if (i .eq. 0 .or. j .eq. 0 
      &             .or. i .eq. mx-1 .or. j .eq. my-1) then
-              lx_a(row) = 0.0
+              lx_v(row) = 0.0
             else
-              lx_a(row) = temp1 *
+              lx_v(row) = temp1 *
      &          sqrt(min(DBLE(min(i,mx-i-1))*hx,temp))
             endif
  10      continue
@@ -388,7 +389,7 @@ C  Compute initial guess over the locally owned part of the grid
 
 C  Restore vector
 
-      call VecRestoreArray(localX,lx_v,lx_i,ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr)
 
 C  Insert values into global vector
 
@@ -414,6 +415,7 @@ C
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/vec.h90"
 #include "include/FINCLUDE/da.h"
 #include "include/FINCLUDE/snes.h"
 
@@ -427,9 +429,7 @@ C
 
 C  Declarations for use with local arrays
 
-      Scalar   lx_v(1), lf_v(1)
-      common   lx_v, lf_v
-      integer  lx_i, lf_i 
+      Scalar, pointer ::   lx_v(:), lf_v(:)
 
       common /params/ lambda
 
@@ -459,11 +459,9 @@ C    - For default PETSc vectors, VecGetArray() returns a pointer to
 C      the data array.  Otherwise, the routine is implementation dependent.
 C    - You MUST call VecRestoreArray() when you no longer need access to
 C      the array.
-C    - Note that the Fortran interface to VecGetArray() differs from the
-C      C version.  See the Fortran chapter of the users manual for details.
 
-      call VecGetArray(localX,lx_v,lx_i,ierr)
-      call VecGetArray(localF,lf_v,lf_i,ierr)
+      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(localF,lf_v,ierr)
 
 C  Get local grid boundaries
 
@@ -476,29 +474,29 @@ C  Get local grid boundaries
 C  Compute function over the locally owned part of the grid
 
       do 20 j=ys,ye
-         row = (j - gys)*gxm + xs - gxs - 1
+         row = (j - gys)*gxm + xs - gxs
          do 10 i=xs,xe
             row = row + 1
             if (i .eq. 0 .or. j .eq. 0 
      &             .or. i .eq. mx-1 .or. j .eq. my-1) then
-               lf_a(row) = lx_a(row)
+               lf_v(row) = lx_v(row)
             else
-               u = lx_a(row)
+               u = lx_v(row)
                uxx = hydhx * (two*u
-     &               - lx_a(row-1)
-     &               - lx_a(row+1))
+     &               - lx_v(row-1)
+     &               - lx_v(row+1))
                uyy = hxdhy * (two*u 
-     &               - lx_a(row-gxm) 
-     &               - lx_a(row+gxm))
-               lf_a(row) = uxx + uyy - sc*exp(u)
+     &               - lx_v(row-gxm) 
+     &               - lx_v(row+gxm))
+               lf_v(row) = uxx + uyy - sc*exp(u)
             endif
  10      continue
  20   continue
 
 C  Restore vectors
 
-      call VecRestoreArray(localX,lx_v,lx_i,ierr)
-      call VecRestoreArray(localF,lf_v,lf_i,ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call VecRestoreArrayF90(localF,lf_v,ierr)
 
 C  Insert values into global vector
 
@@ -534,7 +532,9 @@ C
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/vec.h90"
 #include "include/FINCLUDE/da.h"
+#include "include/FINCLUDE/da.h90"
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/snes.h"
@@ -554,16 +554,8 @@ C
 
 C  Declarations for use with local arrays
 
-      Scalar   lx_v(1)
-      common   lx_v
-      integer  ltog_a(0:1), ltog_i, lx_i
-
-C  Macro to facilitate use of the local-to-global mapping
-C  (obtained via DAGetGlobalIndices) in Fortran.  Note
-C  that this mapping is always 0-based (following the
-C  C convention) rather than 1-based.
-
-#define ltog_v(ib)  ltog_a(ltog_i + (ib))
+      Scalar, pointer ::  lx_v(:)
+      integer, pointer :: ltog_a(:)
 
 C  Set parameters
 
@@ -589,7 +581,7 @@ C  by placing code between these two statements.
 
 C  Get a pointer to vector data
 
-      call VecGetArray(localX,lx_v,lx_i,ierr)
+      call VecGetArrayF90(localX,lx_v,ierr)
 
 C  Get local grid boundaries
 
@@ -600,10 +592,8 @@ C  Get local grid boundaries
       xe = xs+xm-1
 
 C  Get the global node numbers for all local nodes, including ghost points
-C    - Note that the Fortran interface to DAGetGlobalIndices() differs from
-C      the C version.  See the Fortran chapter of the users manual for details.
 
-       call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
+       call DAGetGlobalIndicesF90(da,nloc,ltog_a,ierr)
 
 C  Compute entries for the locally owned part of the Jacobian.
 C   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -619,10 +609,11 @@ C   - Note that MatSetValues() uses 0-based row and column numbers
 C     in Fortran as well as in C.
 
       do 20 j=ys,ye
-         row = (j - gys)*gxm + xs - gxs - 1
+         row = (j - gys)*gxm + xs - gxs
          do 10 i=xs,xe
             row = row + 1
-            grow = ltog_v(row)
+            grow = ltog_a(row)
+
 C           boundary points
             if (i .eq. 0 .or. j .eq. 0 
      &             .or. i .eq. mx-1 .or. j .eq. my-1) then
@@ -633,14 +624,14 @@ C           interior grid points
                v(1) = -hxdhy
                v(2) = -hydhx
                v(3) = two*(hydhx + hxdhy) 
-     &                  - sc*lambda*exp(lx_a(row))
+     &                  - sc*lambda*exp(lx_v(row))
                v(4) = -hydhx
                v(5) = -hxdhy
-               col(1) = ltog_v(row - gxm)
-               col(2) = ltog_v(row - 1)
+               col(1) = ltog_a(row - gxm)
+               col(2) = ltog_a(row - 1)
                col(3) = grow
-               col(4) = ltog_v(row + 1)
-               col(5) = ltog_v(row + gxm)
+               col(4) = ltog_a(row + 1)
+               col(5) = ltog_a(row + gxm)
                call MatSetValues(jac,1,grow,5,col,v,
      &                           INSERT_VALUES,ierr)
             endif
@@ -653,7 +644,7 @@ C  Computations can be done while messages are in transition,
 C  by placing code between these two statements.
 
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call VecRestoreArray(localX,lx_v,lx_i,ierr)
+      call VecRestoreArrayF90(localX,lx_v,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
 
 C  Set flag to indicate that the Jacobian matrix retains an identical

@@ -13,8 +13,6 @@ Additional Capabilities that PETSc Needs:
   - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
 
-  - DAGetGlobalIndicesF90, MatGetArrayF90, VecDuplicateVecsF90() and restores.
-
   - Change MatConvert() and MatLoad() so that all matrix formats are not always loaded.
 
   - Add VecCreateWithData() and VecCreateXXXWithData().
