@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.183 2000/11/13 16:19:23 balay Exp balay $ 
+# $Id: buildtest,v 1.184 2000/11/14 17:10:56 balay Exp balay $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
 #
@@ -17,7 +17,7 @@ rsh $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all >>& ma
 
 rsh $MACH -n "cd $TMP;echo '****************************************************' >> maint/build_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/build_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP;/bin/cp maint/build_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs"
+rsh $MACH -n "cd $TMP;/bin/cp maint/build_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/build_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
 #
 #  Now run the test examples
@@ -30,7 +30,7 @@ end
 rsh $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP ;echo 'X******************************************************X' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 
-rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs"
+rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/examples_$ARCH.$BOPT.$MACH.log"
 
 
 
