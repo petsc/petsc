@@ -137,8 +137,8 @@ PetscErrorCode DADestroy(DA da)
   if (da->da_coordinates && da != da->da_coordinates) {ierr = DADestroy(da->da_coordinates);CHKERRQ(ierr);}
 
   if (da->dfill) {ierr = PetscFree(da->dfill);CHKERRQ(ierr);}
-  if (da->ofill) {ierr = PetscFree(da->ofill);CHKERRQ(ierr);
-  }
+  if (da->ofill) {ierr = PetscFree(da->ofill);CHKERRQ(ierr);}
+  if (da->e) {ierr = PetscFree(da->e);CHKERRQ(ierr);}
 
   PetscHeaderDestroy(da);
   PetscFunctionReturn(0);

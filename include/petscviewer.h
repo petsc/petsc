@@ -64,7 +64,7 @@ EXTERN PetscErrorCode PetscViewerRegister(const char*,const char*,const char*,Pe
    PetscViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   int PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
+   PetscErrorCode PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
 
    Not Collective
 

@@ -42,7 +42,7 @@ EXTERN PetscErrorCode PetscDrawRegister(const char*,const char*,const char*,Pets
    PetscDrawRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   int PetscDrawRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscDraw))
+   PetscErrorCode PetscDrawRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscDraw))
 
    Not Collective
 

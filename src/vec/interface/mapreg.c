@@ -89,7 +89,7 @@ PetscErrorCode PetscMapGetType(PetscMap map, PetscMapType *type)
   PetscMapRegisterDynamic - Adds a new map component implementation
 
   Synopsis:
-  PetscMapRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(PetscMap))
+  PetscErrorCode PetscMapRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(PetscMap))
 
   Not Collective
 

@@ -108,9 +108,10 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
   DA             da   = (DA)dmmg->dm;
   PetscScalar    zero = 0.0;
   Vec            uOldLocal, uLocal;
-  PetscScalar  **pOld;
-  PetscScalar  **p;
-  PetscInt       i,j,mx,my,xm,ym,xs,ys;
+  PetscScalar    *pOld;
+  PetscScalar    *p;
+  PetscInt       i,ne;
+  const PetscInt *e;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -119,18 +120,22 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
   ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, uOldLocal, (void *) &pOld);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, uLocal,    (void *) &p);CHKERRQ(ierr);
-  ierr = DAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  for(j = ys; j < ys+ym; j++) {
-    for(i = xs; i < xs+xm; i++) {
-      p[j][i] = pOld[j][i];
-    }
+  ierr = VecGetArray(uOldLocal, &pOld);CHKERRQ(ierr);
+  ierr = VecGetArray(uLocal,    &p);CHKERRQ(ierr);
+  ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
+  for(i = 0; i < ne; i++) {
+
+    /* this is nonsense, but copy each nodal value */
+    p[e[3*i]]   = pOld[e[3*i]];
+    p[e[3*i+1]] = pOld[e[3*i+1]];
+    p[e[3*i+2]] = pOld[e[3*i+2]];
   }
-  ierr = DAVecRestoreArray(da, uOldLocal, (void *) &pOld);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da, uLocal,    (void *) &p);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da, uLocal, ADD_VALUES, u);CHKERRQ(ierr);
+  ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(uOldLocal, &pOld);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uLocal,   &p);CHKERRQ(ierr);
+  ierr = DALocalToGlobalBegin(da, uLocal, u);CHKERRQ(ierr);
+  ierr = DALocalToGlobalEnd(da, uLocal, u);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da, &uLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -154,27 +159,35 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
   DA             da   = (DA)dmmg->dm;
-  UserContext   *user = (UserContext *) dmmg->user;
+  UserContext    *user = (UserContext *) dmmg->user;
   PetscScalar    phi  = user->phi;
-  PetscScalar  **array;
-  PetscReal      hx, hy;
-  PetscInt       i,j,mx,my,xm,ym,xs,ys;
+  PetscScalar    *array;
+  PetscInt       ne,i;
+  const PetscInt *e;
   PetscErrorCode ierr;
+  Vec            blocal;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx   = 1.0 / (PetscReal)(mx-1);
-  hy   = 1.0 / (PetscReal)(my-1);
-  ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, b, &array);CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++){
-    for(i=xs; i<xs+xm; i++){
-      array[j][i] = phi;
-    }
+  /* access a local vector with room for the ghost points */
+  ierr = DAGetLocalVector(da,&blocal);CHKERRQ(ierr);
+  ierr = VecGetArray(blocal, &array);CHKERRQ(ierr);
+
+  /* access the list of elements on this processor and loop over them */
+  ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
+  for (i=0; i<ne; i++) {
+
+    /* this is nonsense, but set each nodal value to phi (will actually do integration over element */
+    array[e[3*i]]   = phi;
+    array[e[3*i+1]] = phi;
+    array[e[3*i+2]] = phi;
   }
-  ierr = DAVecRestoreArray(da, b, &array);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(blocal, &array);CHKERRQ(ierr);
+  ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
+
+  /* add our partial sums over all processors into b */
+  ierr = DALocalToGlobalBegin(da,blocal,b);CHKERRQ(ierr);
+  ierr = DALocalToGlobalEnd(da,blocal,b);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&blocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -215,10 +228,12 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
   PetscScalar    identity[9] = {0.16666666667, 0.08333333333, 0.08333333333,
                                 0.08333333333, 0.16666666667, 0.08333333333,
                                 0.08333333333, 0.08333333333, 0.16666666667};
-  PetscScalar    values[9];
-  PetscInt       rows[3], cols[3];
+  PetscScalar    values[3][3];
+  PetscInt       idx[3];
   PetscReal      hx, hy, hx2, hy2, area;
-  PetscInt       i,j,mx,my,xm,ym,xs,ys;
+  PetscInt       i,mx,my,xm,ym,xs,ys;
+  PetscInt       ne;
+  const PetscInt *e;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -229,21 +244,20 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
   area = 0.5*hx*hy;
   hx2  = hx*hx/area;
   hy2  = hy*hy/area;
-  for(j = ys; j < ys+ym-1; j++) {
-    for(i = xs; i < xs+xm-1; i++) {
-      rows[0] = i;   cols[0] = j;
-      rows[1] = i+1; cols[1] = j;
-      rows[2] = i;   cols[2] = j+1;
-      values[0] = hx2 + hy2; values[1] = -hy2; values[2] = -hx2;
-      values[3] = -hy2;      values[4] = hy2;  values[5] = 0.0;
-      values[6] = -hx2;      values[7] = 0.0;  values[8] = hx2;
-      ierr = MatSetValues(jac,3,rows,3,cols,values,ADD_VALUES);CHKERRQ(ierr);
-      rows[0] = i+1; cols[0] = j+1;
-      rows[1] = i;   cols[1] = j+1;
-      rows[2] = i+1; cols[2] = j;
-      ierr = MatSetValues(jac,3,rows,3,cols,values,ADD_VALUES);CHKERRQ(ierr);
-    }
+
+  /* initially all elements have identical geometry so all element stiffness are identical */
+  values[0][0] = hx2 + hy2; values[0][1] = -hy2; values[0][2] = -hx2;
+  values[1][0] = -hy2;      values[1][1] = hy2;  values[1][2] = 0.0;
+  values[2][0] = -hx2;      values[2][1] = 0.0;  values[2][2] = hx2;
+
+  ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
+  for (i=0; i<ne; i++) {
+    idx[0] = e[3*i];
+    idx[1] = e[3*i+1];
+    idx[2] = e[3*i+2];
+    ierr = MatSetValuesLocal(jac,3,idx,3,idx,(PetscScalar*)values,ADD_VALUES);CHKERRQ(ierr);
   }
+  ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
