@@ -44,8 +44,8 @@ projects</a></font></strong></li>
       <p>&nbsp;</p>
       </td>
       <td width="549" valign="top">
-      <p align="left">&nbsp;These pages are for people interested in
-developing and contributing to the PETSc libraries. It is intended only
+      <p align="left">&nbsp;These pages are for people interested in using the development
+copy of PETSc or contributing to the PETSc libraries. It is intended only
 for people who are experienced with building, using and debugging
 PETSc. If you cannot use makefiles, a debugger and EMACS etags then
 please don't access these pages.<br>
@@ -69,15 +69,14 @@ For additional help on using BitKeeper you can use
  for the development version (updated nightly).</p>
 
 
-Use the automatic configuration <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
-install PETSc</a>,
-have trouble with the automatic configuration, please <b>do</b>
-contact us for help).
+Use config/configure.py <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
+install PETSc</a>, (trouble, please contact us petsc-maint@mcs.anl.gov).</p>
+
+Subscribe to the mailing list. Send mail to majordomo@mcs.anl.gov with the message: subscribe petsc-dev</p>
+
       <br>
-      <big style="font-weight: bold;">Updating PETSc:<br>
-      <br>
-      </big>The next time you need to update your copy of PETSc with
-the changes we made (since your last update), you can do the following:<br>
+      <big style="font-weight: bold;">Updating PETSc:</big><br>
+      </br>
       <ul>
         <li><font color="#800000">bk pull; cd python/BuildSystem; bk pull</font>(from inside the
 petsc-dev directory tree)</li>
@@ -92,7 +91,7 @@ key to <a href="mailot:petsc-maint@mcs.anl.gov">petsc-maint</a> along with a des
       <p align="left" style="font-weight: bold;"><big>Building
 Documentation:</big></p>
       <p align="left">The documentation tools are now automatically
-downloaded and installed by configure. However, as a failsafe, we
+downloaded and installed by config/configure.py. However, as a failsafe, we
 provide them here as well.</p>
       <p align="left">The following additional tools are required to
 build the PETSc documentation:</p>
@@ -100,14 +99,12 @@ build the PETSc documentation:</p>
         <li>
           <p align="left"><font size="4"><a
  href="ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz">Sowing</a>:</font>&nbsp;
-A text processing tools developed by Bill Gropp. This is automatically
-downloaded and installed by configure</p>
+A text processing tools developed by Bill Gropp</p>
         </li>
         <li>
           <p align="left"><font size="4"><a
  href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
-A text processing package required to generate the PETSc documentation.
-This is automatically downloaded and installed by configure</p>
+A text processing package required to generate the PETSc documentation.</p>
         </li>
         <li>
           <p align="left">A version of pdflatex <a
@@ -130,7 +127,7 @@ PETSc configure relies on <a
 which is in a different
 bitkeeper repository <b>bk://sidl.bkbits.net/BuildSystem</b>. This
 package is automatically downloaded (into petsc-dev/python) the first
-time configure is invoked.<br>
+time config/configure.py is invoked.<br>
       <br>
       <span style="font-weight: bold;"> </span></td>
     </tr>
