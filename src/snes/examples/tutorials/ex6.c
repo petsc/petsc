@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.50 1998/12/03 04:05:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.51 1999/01/12 23:17:53 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -16,6 +16,8 @@ with a user-provided preconditioner.  Input arguments are:\n\
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
    Routines: SNESSolve(); SNESSetFromOptions(); SNESGetSLES();
    Routines: SLESGetPC(); PCSetType(); PCShellSetApply(); PCSetType();
+   Routines: SNESSetConvergenceHistory(); SNESGetConvergenceHistory();
+   Routines: KSPSetResidualHistory(); KSPGetResidualHistory();
    Processors: 1
 T*/
 
@@ -42,10 +44,12 @@ int main( int argc, char **argv )
   SNES     snes;                 /* SNES context */
   SLES     sles;                 /* SLES context */
   PC       pc;                   /* PC context */
+  KSP      ksp;                  /* KSP context */
   Vec      x, r, F;              /* vectors */
   Mat      J, JPrec;             /* Jacobian, preconditioner matrices */
   int      ierr, its, n = 5, i, size, flg;
-  double   h, xp = 0.0;
+  int      *sres_hist_its, res_hist_len = 200, sres_hist_len = 10;
+  double   h, xp = 0.0, *res_hist, *sres_hist;
   Scalar   v, pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -103,6 +107,27 @@ int main( int argc, char **argv )
 
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
+  /*
+     Save all the linear residuals for all the Newton steps; this enables us
+     to retain complete convergence history for printing after the conclusion
+     of SNESSolve().  Alternatively, one could use the monitoring options
+           -snes_monitor -ksp_monitor
+     to see this information during the solver's execution; however, such
+     output during the run distorts performance evaluation data.  So, the
+     following is a good option when monitoring code performance, for example
+     when using -log_summary.
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
+  if (flg) {
+    ierr     = SNESGetSLES(snes,&sles);CHKERRA(ierr);
+    ierr     = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
+    res_hist = (double *) PetscMalloc(res_hist_len*sizeof(double));CHKPTRA(res_hist);
+    ierr     = KSPSetResidualHistory(ksp,res_hist,res_hist_len,PETSC_FALSE);CHKERRA(ierr);
+    sres_hist = (double *) PetscMalloc(sres_hist_len*sizeof(double));CHKPTRA(sres_hist);
+    sres_hist_its = (int*) PetscMalloc(sres_hist_len*sizeof(int));CHKPTRA(sres_hist_its);
+    ierr     = SNESSetConvergenceHistory(snes,sres_hist,sres_hist_its,sres_hist_len,PETSC_FALSE);CHKERRA(ierr);
+  }
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
      Store right-hand-side of PDE and exact solution
@@ -122,6 +147,18 @@ int main( int argc, char **argv )
   ierr = VecSet(&pfive,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its );
+
+  ierr = OptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
+  if (flg) {
+    ierr = KSPGetResidualHistory(ksp,PETSC_NULL,&res_hist_len);CHKERRA(ierr);
+    PetscDoubleView(res_hist_len,res_hist,VIEWER_STDOUT_SELF);
+    PetscFree(res_hist);
+    ierr = SNESGetConvergenceHistory(snes,PETSC_NULL,PETSC_NULL,&sres_hist_len);CHKERRA(ierr);
+    PetscDoubleView(sres_hist_len,sres_hist,VIEWER_STDOUT_SELF);
+    PetscIntView(sres_hist_len,sres_hist_its,VIEWER_STDOUT_SELF);
+    PetscFree(sres_hist);
+    PetscFree(sres_hist_its);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
