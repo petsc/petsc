@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.213 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: makefile,v 1.214 1998/03/23 22:12:16 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -243,7 +243,8 @@ TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
 TAGS_SRC_FILES      = src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
                       src/*/utils/*.[c,h] \
                       src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
-                      src/gvec/impls/*/*/*/*/*.[c,h] src/contrib/*/*.[c,h] \
+                      src/snes/interface/noise/*.[c,F,h] src/gvec/impls/*/*/*/*/*.[c,h] \
+		      src/contrib/*/*.[c,h] \
                       src/contrib/*/src/*.[c,h] src/fortran/custom/*.[c,h,F] \
 		      src/fortran/f90/*.[c,h,F] src/fortran/kernels/*.[c,h,F] \
 		      src/adic/blas/*.c src/lapack/src[1,2,3]/*.c
@@ -253,12 +254,14 @@ TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
                       src/*/interface/makefile \
                       src/*/utils/makefile \
                       src/*/impls/makefile src/*/impls/*/makefile src/*/impls/*/*/makefile \
-                      src/*/examples/makefile src/*/examples/*/makefile src/*/examples/*/*/makefile \
+                      src/snes/interface/noise/makefile src/*/examples/makefile \
+		      src/*/examples/*/makefile src/*/examples/*/*/makefile \
                       src/gvec/impls/*/*/*/*/makefile src/gvec/impls/*/*/*/makefile \
                       src/fortran/*/makefile \
                       src/contrib/*/makefile src/contrib/*/src/makefile \
                       src/contrib/*/examples/makefile src/contrib/*/examples/*/makefile \
-                      docs/makefile src/adic/*/makefile src/adic/lapack/*/makefile
+                      src/contrib/sif/*/makefile docs/makefile src/adic/*/makefile \
+		      src/adic/lapack/*/makefile 
 
 # Builds all etags files
 alletags:

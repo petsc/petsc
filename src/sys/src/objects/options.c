@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.170 1998/03/23 21:18:59 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.171 1998/03/24 16:59:26 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -1789,7 +1789,7 @@ $  -optionsleft : checked within PetscFinalize()
 
 .seealso: OptionsPrint()
 @*/
-int OptionsAllUsed()
+int OptionsAllUsed(void)
 {
   int  i,n = 0;
 

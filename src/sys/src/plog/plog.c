@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.179 1998/03/12 23:24:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.180 1998/03/23 21:26:31 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -514,7 +514,7 @@ $
 
 .seealso: PLogStagePush(), PLogStageRegister()
 @*/
-int PLogStagePop()
+int PLogStagePop(void)
 {
   PetscFunctionBegin;
   PetscTimeAdd(EventsStageTime[EventsStage]);
@@ -851,7 +851,7 @@ $      with USE_PETSC_LOG)
 
 .seealso: PLogDump(), PLogBegin(), PLogTraceBegin()
 @*/
-int PLogAllBegin()
+int PLogAllBegin(void)
 {
   int ierr;
 

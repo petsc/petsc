@@ -1,4 +1,4 @@
-/* $Id: petscadic.h,v 1.3 1997/05/23 18:07:10 balay Exp balay $ */
+/* $Id: petscadic.h,v 1.4 1997/05/23 18:34:05 balay Exp balay $ */
 
 /*
         EXPERIMENTAL CODE - Use at your own risk.
@@ -13,9 +13,9 @@
 #include "mat.h"  
 
 extern int ad_PetscInitialize(int *,char ***,char *,char*);
-extern int ad_PetscFinalize();
-extern int ad_AD_Init();
-extern int ad_AD_Final();
+extern int ad_PetscFinalize(void);
+extern int ad_AD_Init(void);
+extern int ad_AD_Final(void);
 
 typedef struct _p_PetscADICFunction *PetscADICFunction;
 

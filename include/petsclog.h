@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.116 1997/11/03 04:51:27 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.117 1998/03/23 21:27:32 bsmith Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -262,17 +262,17 @@ extern int (*_PLogPHD)(PetscObject);
 extern int        PLogObjectState(PetscObject,char *,...);
 extern int        PLogDestroy(void);
 extern int        PLogStagePush(int);
-extern int        PLogStagePop();
+extern int        PLogStagePop(void);
 extern int        PLogStageRegister(int,char*);
 extern int        PLogPrintSummary(MPI_Comm,char *);
-extern int        PLogBegin();
+extern int        PLogBegin(void);
 extern int        PLogTraceBegin(FILE *);
-extern int        PLogAllBegin();
+extern int        PLogAllBegin(void);
 extern int        PLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
                           int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject));
 extern int        PLogDump(char*);
 extern int        PLogEventRegister(int*,char*,char*);
-extern PLogDouble PetscGetFlops();
+extern PLogDouble PetscGetFlops(void);
 
 extern PLogDouble irecv_ct, isend_ct, wait_ct, wait_any_ct, recv_ct, send_ct;
 extern PLogDouble irecv_len, isend_len, recv_len, send_len;
