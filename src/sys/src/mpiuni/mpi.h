@@ -10,16 +10,15 @@
 #ifndef __MPI_BINDINGS
 #define __MPI_BINDINGS
 
-
-#if defined(__cplusplus)
-#if defined(PARCH_rs6000)  || defined(PARCH_alpha)
+#if defined(__cplusplus) 
+#if defined(PARCH_alpha) ||  defined(PARCH_solaris) || defined(PARCH_IRIX)
 extern "C" {
-extern void   abort(void);
+extern void  exit(int);
 }
 #endif
-#if defined(PARCH_freebsd) || defined(PARCH_IRIX) || defined(PARCH_t3d) || defined(PARCH_hpux) || defined(PARCH_sun4)
+#if defined(PARCH_freebsd) || defined(PARCH_rs6000)  || defined(PARCH_t3d) || defined(PARCH_hpux) || defined(PARCH_sun4)
 extern "C" {
-extern int abort();
+extern int exit(int);
 }
 #endif
 #endif
@@ -427,10 +426,14 @@ typedef char* MPI_Errhandler;
 #define MPI_Finalize() MPI_SUCCESS
 #define MPI_Initialized(flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Pcontrol(level) MPI_SUCCESS
-#define MPI_Abort(comm, errorcode) \
+/*#define MPI_Abort(comm, errorcode) \
                         (MPID_TMP = (void *) (comm), \
                          MPID_TMP = (void *) (errorcode), \
-                         fprintf(stderr,"[0] Aborting program!\n"), abort() )
+                         fprintf(stderr,"[0] Aborting program!\n"), abort() )*/
+#define MPI_Abort(comm, errorcode) \
+                        (MPID_TMP = (void *) (comm), \
+               PetscError(__LINE__,__DIR__,__FILE__,errorcode,"[0] Aborting program!"), \
+               exit(errorcode))
 /*#define MPI_NULL_COPY_FN(oldcomm, keyval, extra_state, \
                         attr_in, attr_out, flag ) 
 #define MPI_NULL_DELETE_FN(comm, keyval, attr, extra_state )\

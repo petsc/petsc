@@ -27,10 +27,10 @@ EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
 EXAMPLES_4    = ex1 ex2 ex4 ex5 ex6 ex10 ex14\
-		ex16 ex20 ex21 ex35
+		ex15 ex16 ex20 ex21 ex35
 RUNEXAMPLES_4 = runex1 runex2 runex2_2	runex4 runex5 runex6 \
 		runex10 runex14 runex15 runex15_2 \
-		runex16 runex20 runex21 runex22 runex35
+		runex16 runex20 runex21 runex35
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB)
