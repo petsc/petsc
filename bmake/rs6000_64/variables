@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.5 1999/03/31 18:38:56 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/04/02 22:05:51 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -20,7 +20,7 @@ C_SYS_LIB        = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
 G_COPTFLAGS      = -g  -qfullpath
 G_FOPTFLAGS      = -g  -qfullpath
 # ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -O3 -qmaxmem=4000 -w -qspill=3000
+O_COPTFLAGS      = -O3 -qstrict -qspill=3000
 O_FOPTFLAGS      = -O3 -w
 # ########################## C++ compiler ##################################
 #
@@ -34,13 +34,13 @@ CXX_SYS_LIB      = -lcomplex -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a
 GCXX_COPTFLAGS   = -g  -qfullpath
 GCXX_FOPTFLAGS   = -g  -qfullpath 
 # ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O3  -qmaxmem=4000 -qspill=3000
+OCXX_COPTFLAGS   = -O3 -qstrict -qspill=3000
 OCXX_FOPTFLAGS   = -O3
 # -------------------------- BOPT=g_complex options ------------------------
 GCOMP_COPTFLAGS  = -g  -qfullpath
 GCOMP_FOPTFLAGS  = -g  -qfullpath
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O3  -qmaxmem=4000 -qspill=3000
+OCOMP_COPTFLAGS  = -O3 -qstrict -qspill=3000
 OCOMP_FOPTFLAGS  = -O3
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
