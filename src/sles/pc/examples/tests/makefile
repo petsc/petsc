@@ -1,7 +1,8 @@
 IPETSCDIR = ../../../
 ALL: ex1
 
-CFLAGS   = $(OPT)  $(CONF) $(INCLUDEDIRS)
+CFLAGS   = $(OPT)  $(CONF) $(INCLUDEDIRS) $(BS_INCLUDE)
+
 SOURCEC  = 
 SOURCEF  =
 WSOURCEC = 
@@ -58,5 +59,9 @@ ex4: ex4.o
 ex5: ex5.o 
 	-$(CLINKER) -o ex5 ex5.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex5.o
+
+ex6: ex6.o 
+	-$(CLINKER) -o ex6 ex6.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex6.o
 
 include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
