@@ -65,12 +65,12 @@ class Configure(config.base.Configure):
 
     help.addArgument('PETSc', 'PETSC_DIR',                   nargs.Arg(None, None, 'The root directory of the PETSc installation'))
     help.addArgument('PETSc', 'PETSC_ARCH',                  nargs.Arg(None, None, 'The machine architecture'))
-    help.addArgument('PETSc', '-enable-debug',               nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
-    help.addArgument('PETSc', '-enable-log',                 nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
-    help.addArgument('PETSc', '-enable-stack',               nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
-    help.addArgument('PETSc', '-enable-dynamic',             nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
-    help.addArgument('PETSc', '-enable-etags',               nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
-    help.addArgument('PETSc', '-enable-fortran-kernels',     nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
+    help.addArgument('PETSc', '-with-debug',                 nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
+    help.addArgument('PETSc', '-with-log',                   nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
+    help.addArgument('PETSc', '-with-stack',                 nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
+    help.addArgument('PETSc', '-with-dynamic',               nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
+    help.addArgument('PETSc', '-with-etags',                 nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
+    help.addArgument('PETSc', '-with-fortran-kernels',       nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make', 'Specify make'))
     help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
@@ -86,13 +86,13 @@ class Configure(config.base.Configure):
 
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
-    self.useDebug = self.framework.argDB['enable-debug']
+    self.useDebug = self.framework.argDB['with-debug']
     self.addDefine('USE_DEBUG', self.useDebug)
-    self.useLog   = self.framework.argDB['enable-log']
+    self.useLog   = self.framework.argDB['with-log']
     self.addDefine('USE_LOG',   self.useLog)
-    self.useStack = self.framework.argDB['enable-stack']
+    self.useStack = self.framework.argDB['with-stack']
     self.addDefine('USE_STACK', self.useStack)
-    self.useFortranKernels = self.framework.argDB['enable-fortran-kernels']
+    self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
     return
 
@@ -128,13 +128,13 @@ class Configure(config.base.Configure):
 
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
-      - Specify --enable-dynamic
+      - Specify --with-dynamic
       - Find dlfcn.h and libdl
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.useDynamic = 0
     if not (self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') or (self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
-      self.useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
+      self.useDynamic = self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       self.addDefine('USE_DYNAMIC_LIBRARIES', self.useDynamic)
       if self.useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
@@ -554,7 +554,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureWin32NonCygwin)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
-    if self.framework.argDB['enable-etags']:                                    
+    if self.framework.argDB['with-etags']:                                    
       self.executeTest(self.configureETags)
     self.executeTest(self.configureDocs)
     self.bmakeDir = os.path.join('bmake', self.framework.argDB['PETSC_ARCH'])
