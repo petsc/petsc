@@ -249,12 +249,13 @@ class Configure(config.base.Configure):
     dir = os.path.abspath(os.path.join('/usr', 'local'))
     yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try /usr/local/*mpich*
-    ls = os.listdir(os.path.join('/usr','local'))
-    for dir in ls:
-      if dir.find('mpich') >= 0:
-        dir = os.path.join('/usr','local',dir)
-        if os.path.isdir(dir):
-          yield ('Frequent user install location (/usr/local/*mpich*)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+    if os.path.isdir(dir):
+      ls = os.listdir(dir)
+      for dir in ls:
+        if dir.find('mpich') >= 0:
+          dir = os.path.join('/usr','local',dir)
+          if os.path.isdir(dir):
+            yield ('Frequent user install location (/usr/local/*mpich*)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try ~/mpich*
     ls = os.listdir(os.getenv('HOME'))
     for dir in ls:
