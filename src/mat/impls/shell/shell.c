@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.9 1995/05/11 03:46:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.10 1995/06/08 03:09:32 bsmith Exp curfman $";
 #endif
 
 /*
@@ -83,7 +83,7 @@ $   MatShellSetMult(mat,mult);
 
 .seealso: MatShellSetMult(), MatShellSetMultTransAdd()
 @*/
-int MatShellCreate(MPI_Comm comm,int m, int n, void *ctx,Mat *mat)
+int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 {
   Mat      newmat;
   MatShell *shell;
@@ -120,7 +120,7 @@ int MatShellCreate(MPI_Comm comm,int m, int n, void *ctx,Mat *mat)
 
 .seealso: MatShellCreate(), MatShellSetMultTransAdd()
 @*/
-int MatShellSetMult(Mat mat, int (*mult)(void*,Vec,Vec))
+int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 {
   MatShell *shell;
   VALIDHEADER(mat,MAT_COOKIE);
@@ -146,7 +146,7 @@ int MatShellSetMult(Mat mat, int (*mult)(void*,Vec,Vec))
 
 .seealso: MatShellCreate(), MatShellSetMult()
 @*/
-int MatShellSetMultTransAdd(Mat mat, int (*mult)(void*,Vec,Vec,Vec))
+int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 {
   MatShell *shell;
   VALIDHEADER(mat,MAT_COOKIE);
