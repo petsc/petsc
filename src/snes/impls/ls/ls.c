@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.14 1995/05/12 03:35:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.15 1995/05/14 16:35:04 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -198,11 +198,14 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
 .  w - work vector
 .  fnorm - 2-norm of f
 
-   Output parameters:
+   Output Parameters:
 .  g - residual evaluated at new iterate y
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
+
+   Options Database Key:
+$  -snes_line_search basic
 
    Returns:
    1, indicating success of the step.
@@ -246,6 +249,9 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
    Returns:
    1 if the line search succeeds; 0 if the line search fails.
+
+   Options Database Key:
+$  -snes_line_search cubic
 
    Notes:
    This line search is taken from "Numerical Methods for Unconstrained 
@@ -392,7 +398,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  w - work vector
 .  fnorm - 2-norm of f
 
-   Output parameters:
+   Output Parameters:
 .  g - residual evaluated at new iterate y
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
@@ -400,6 +406,9 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
    Returns:
    1 if the line search succeeds; 0 if the line search fails.
+
+   Options Database Key:
+$  -snes_line_search quadratic
 
    Notes:
    Use SNESSetLineSearchRoutine()
@@ -501,10 +510,13 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  snes - nonlinear context obtained from SNESCreate()
 .  func - pointer to int function
 
-   Possible routines:
+   Available Routines:
 .  SNESCubicLineSearch() - default line search
 .  SNESQuadraticLineSearch() - quadratic line search
 .  SNESNoLineSearch() - the full Newton step (actually not a line search)
+
+    Options Database Keys:
+$   -snes_line_search [basic,quadratic,cubic]
 
    Calling sequence of func:
    func (SNES snes, Vec x, Vec f, Vec g, Vec y,
