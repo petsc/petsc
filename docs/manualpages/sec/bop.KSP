@@ -1,0 +1,28 @@
+
+<h2> KSP Overview </h2>
+
+To solve linear systems, users should generally employ the SLES
+component, which creates a simplified interface to the combination of
+a Krylov subspace iterative method and a preconditioner (in the
+lower-level KSP and PC modules, respectively).  Although both KSP and
+PC components can be used directly to create and destroy solvers, this
+approach is not recommended for most application programmers.
+
+<p>
+
+SLES users can set various Krylov subspace options at runtime using
+the options database (e.g., -ksp_type cg).  SLES users can also set
+KSP options directly in application codes by first extracting the KSP
+context from the SLES solver via
+<font face ="Courier">
+SLESGetKSP(SLES sles,KSP *ksp);
+</font face>
+and then directly calling KSP routines (e.g., 
+<font face ="Courier">
+KSPSetType(ksp,KSPCG)
+</font face>
+).
+
+<p>
+
+
