@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.20 1996/04/29 17:31:32 bsmith Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.21 1996/04/29 17:33:51 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -105,16 +105,9 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
         SETERRQ(1,"ViewerFileOpenBinary:Cannot create file for writing");
     } 
     else if (type == BINARY_RDONLY) {
-      char *infoname;
       if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
         SETERRQ(1,"ViewerFileOpenBinary:Cannot open file for reading");
       }
-      /* try to open info file */
-      infoname = (char *)PetscMalloc(PetscStrlen(name)+6); CHKPTRQ(infoname);
-      PetscStrcpy(infoname,name);
-      PetscStrcat(infoname,".info");
-      v->fdes_info = fopen(infoname,"r");
-      PetscFree(infoname);
     }
     else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY,0)) == -1) {
@@ -124,6 +117,16 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   }
   else v->fdes = -1;
   v->format    = 0;
+
+  /* try to open info file */
+  if (type == BINARY_RDONLY) {
+    char *infoname;
+    infoname = (char *)PetscMalloc(PetscStrlen(name)+6); CHKPTRQ(infoname);
+    PetscStrcpy(infoname,name);
+    PetscStrcat(infoname,".info");
+    v->fdes_info = fopen(infoname,"r");
+    PetscFree(infoname);
+  }
 #if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
