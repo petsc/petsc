@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.71 1996/02/26 03:03:03 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.72 1996/02/26 18:06:03 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -195,7 +195,7 @@ int PetscFinalize()
   ierr = OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2); CHKERRQ(ierr);
   if (flg1 || flg2){
     if (mname[0]) PLogDump(mname); 
-    else PLogDump(0);
+    else          PLogDump(0);
   }
   PLogDestroy();
 #endif
@@ -433,18 +433,16 @@ int OptionsCheckInitial_Private()
     ierr = OptionsHasName(PETSC_NULL,"-log", &log); CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-log_summary", &log_summary); CHKERRQ(ierr);
     
-    if (log_upshot && log_all) {  PLogAllUpshotBegin();  }
-    else if (log_upshot)  {  PLogUpshotBegin(); }
-    else {
-      if (log_all) {  PLogAllBegin();  }
-      else if (log || log_summary) {  PLogBegin(); }
-    }
+    if (log_upshot && log_all)   {  PLogAllUpshotBegin();  }
+    else if (log_upshot)         {  PLogUpshotBegin(); }
+    else if (log_all)            {  PLogAllBegin();  }
+    else if (log || log_summary) {  PLogBegin(); }
   }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
-  if (flg1) {  PLogAllBegin();  }
+  if (flg1)              {  PLogAllBegin();  }
   else if (flg2 || flg3) {  PLogBegin(); }
 #endif
 #endif
