@@ -169,7 +169,7 @@ PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) {
 
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
   if (f) {
-    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",mumps->MatPreallocate);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",(FCNVOID)mumps->MatPreallocate);CHKERRQ(ierr);
   }
   ierr = PetscFree(mumps);CHKERRQ(ierr);
 
