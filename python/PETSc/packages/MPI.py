@@ -305,7 +305,7 @@ class Configure(config.base.Configure):
       if dir.startswith('mpich') and os.path.isdir(os.path.join(packages, dir)):
         mpichDir = dir
     if mpichDir is None:
-      self.framework.log.write('Did not located already downloaded MPICH\n')
+      self.framework.log.write('Could not locate already downloaded MPICH\n')
       raise RuntimeError('Error locating MPICH directory')
     return os.path.join(packages, mpichDir)
 
