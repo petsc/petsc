@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.20 1995/07/20 17:53:18 curfman Exp curfman $ */
+/* $Id: ksp.h,v 1.21 1995/07/20 21:14:30 curfman Exp curfman $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -57,7 +57,7 @@ extern int KSPRichardsonSetScale(KSP , double);
 extern int KSPChebychevSetEigenvalues(KSP , double, double);
 extern int KSPCGGetEigenvalues(KSP, int n,double*,double*);
 extern int KSPGMRESSetRestart(KSP, int);
-extern int KSPGMRESSetUseUnmodifiedGrammSchmidt(KSP);
+extern int KSPGMRESSetUseUnmodifiedGramSchmidt(KSP);
 extern int KSPSetFromOptions(KSP);
 
 extern int KSPDefaultCGMonitor(KSP,int,double, void * );
