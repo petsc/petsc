@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.120 2001/05/15 18:15:07 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.121 2001/05/22 03:29:12 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -369,6 +369,23 @@ int MatCreateSNESMF(SNES snes,Vec x,Mat *J)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetBase_FD"
+int MatSNESMFSetBase_FD(Mat J,Vec U)
+{
+  int          ierr;
+  MatSNESMFCtx ctx;
+
+  PetscFunctionBegin;
+  ierr = MatSNESMFResetHHistory(J);CHKERRQ(ierr);
+  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
+  ctx->current_u = U;
+  ctx->usesnes   = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMF"
 /*@C
@@ -465,6 +482,7 @@ int MatCreateMF(Vec x,Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void(*)())MatSNESMFDestroy_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void(*)())MatSNESMFView_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_ASSEMBLY_END,(void(*)())MatSNESMFAssemblyEnd_Private);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
   PetscLogObjectParent(*J,mfctx->w);
 
   mfctx->mat = *J;
@@ -865,17 +883,14 @@ int MatSNESMFComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
 #define __FUNCT__ "MatSNESMFSetBase"
 int MatSNESMFSetBase(Mat J,Vec U)
 {
-  int          ierr;
-  MatSNESMFCtx ctx;
+  int  ierr,(*f)(Mat J,Vec U);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);
   PetscValidHeaderSpecific(U,VEC_COOKIE);
-
-  ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  if (ctx) {
-    ctx->current_u = U;
-    ctx->usesnes   = PETSC_FALSE;
+  ierr = PetscObjectQueryFunction((PetscObject)J,"MatSNESMFSetBase_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(J,U);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

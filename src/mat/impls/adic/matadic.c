@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.1 2001/05/11 03:02:34 bsmith Exp bsmith $*/
+/*$Id: matadic.c,v 1.2 2001/05/29 03:38:38 bsmith Exp bsmith $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -144,6 +144,7 @@ static struct _MatOps MatOps_Values = {0,
 
 /* --------------------------------------------------------------------------------*/
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetBase_AD"
 int MatSNESMFSetBase_AD(Mat J,Vec U)
@@ -156,6 +157,7 @@ int MatSNESMFSetBase_AD(Mat J,Vec U)
   ierr = DAGlobalToLocalEnd(a->da,U,INSERT_VALUES,a->localu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
