@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.57 2001/01/17 22:26:26 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.58 2001/01/29 18:55:17 bsmith Exp balay $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -189,8 +189,8 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
-     &                    ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
+     &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
          if (size .eq. 1) then
             call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,                &
