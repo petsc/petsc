@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.213 1997/04/07 15:27:32 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.214 1997/04/10 00:08:38 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2402,7 +2402,7 @@ basis with the commands
 \begin{verbatim}
    ierr = PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);
    ierr = PCBGSSetLocalBlocks(PC pc,int blocks,int *size);
-   ierr = PCASMSetTotalSubdomains(PC pc,int N,IS *is);
+   ierr = PCASMSetLocalSubdomains(PC pc,int N,IS *is);
 \end{verbatim}
 
 For the ASM preconditioner one can use the following command to set
@@ -2410,12 +2410,18 @@ the overlap to compute in constructing the subdomains.
 \begin{verbatim}
    ierr = PCASMSetOverlap(PC pc,int overlap);
 \end{verbatim}
-The \findex{PCASMSetOverlap}
- overlap defaults to 1, so if one desires that no additional overlap 
-be computed one must set an {\tt overlap} of 0. Note that one can
-define initial index sets {\tt is} with any overlap;
-the {\tt PCASMSetOverlap()} merely allows PETSc to extend 
-that overlap further, if desired.
+\findex{PCASMSetOverlap()}
+The overlap defaults to 1, so if one desires that no additional
+overlap be computed beyond what may have been set with a call to {\tt
+PCASMSetTotalSubdomains()} or {\tt PCASMSetLocalSubdomains()}, then
+{\tt overlap} must be set to be 0.  In particular, if one does {\em
+not} explicitly set the subdomains in an application code, then all
+overlap would be computed internally by PETSc, and using an overlap of
+0 would result in an ASM variant that is equivalent to the block
+Jacobi preconditioner.  Note that one can define initial index sets
+{\tt is} with {\em any} overlap via {\tt PCASMSetTotalSubdomains()} or
+{\tt PCASMSetLocalSubdomains()}; the routine {\tt PCASMSetOverlap()}
+merely allows PETSc to extend that overlap further if desired.
 
 \subsection{Shell Preconditioners}
 

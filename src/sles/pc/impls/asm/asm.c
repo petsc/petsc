@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.58 1997/03/26 01:35:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.59 1997/04/10 00:02:12 bsmith Exp curfman $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -339,6 +339,8 @@ int PCCreate_ASM(PC pc)
          (or PETSC_NULL for PETSc to determine subdomains)
 
     Notes:
+    By default the ASM preconditioner uses 1 block per processor.  
+
     These index sets cannot be destroyed until after completion of the
     linear solves for which the ASM preconditioner is being used.
 
@@ -380,6 +382,8 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 $    -pc_asm_blocks <blks>
 
     Note:
+    By default the ASM preconditioner uses 1 block per processor.  
+
     These index sets cannot be destroyed until after completion of the
     linear solves for which the ASM preconditioner is being used.
 
@@ -428,9 +432,27 @@ set specific index sets\n they cannot be set globally yet.");
     Options Database Key:
 $   -pc_asm_overlap <ovl>
 
+    Notes:
+    By default the ASM preconditioner uses 1 block per processor.  To use
+    multiple blocks per perocessor, see PCASMSetTotalSubdomains() and
+    PCASMSetLocalSubdomains() (and the option -pc_asm_blocks <blks>).
+
+    The overlap defaults to 1, so if one desires that no additional
+    overlap be computed beyond what may have been set with a call to
+    PCASMSetTotalSubdomains() or PCASMSetLocalSubdomains(), then ovl
+    must be set to be 0.  In particular, if one does not explicitly set
+    the subdomains an application code, then all overlap would be computed
+    internally by PETSc, and using an overlap of 0 would result in an ASM 
+    variant that is equivalent to the block Jacobi preconditioner.  
+
+    Note that one can define initial index sets with any overlap via
+    PCASMSetTotalSubdomains() or PCASMSetLocalSubdomains(); the routine
+    PCASMSetOverlap() merely allows PETSc to extend that overlap further
+    if desired.
+
 .keywords: PC, ASM, set, overlap
 
-.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubSLES(),
+.seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubSLES(),
           PCASMCreateSubdomains2D()
 @*/
 int PCASMSetOverlap(PC pc, int ovl)
