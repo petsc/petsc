@@ -2449,11 +2449,14 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
     ierr = PetscMalloc((rbuf2[idx][0]+1)*sizeof(int),&rbuf3[idx]);CHKERRQ(ierr);
     ierr = PetscMalloc((rbuf2[idx][0]+1)*sizeof(FLOAT),&rbuf4[idx]);CHKERRQ(ierr);
     ierr = MPI_Irecv(rbuf3[idx],rbuf2[idx][0],MPI_INT,r_status2[i].MPI_SOURCE,tag2,comm,r_waits3+idx);CHKERRQ(ierr);
+#if 0
 #if FLOAT == double      
     ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPI_DOUBLE,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
 #elif FLOAT == float      
     ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPI_FLOAT,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
 #endif
+#endif
+    ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPIU_SCALAR,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
   } 
   ierr = PetscFree(r_status2);CHKERRQ(ierr);
   ierr = PetscFree(r_waits2);CHKERRQ(ierr);
@@ -2535,11 +2538,14 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
           ct2 += ncols;
         }
       }
+#if 0
 #if FLOAT == double      
       ierr = MPI_Isend(sbuf_aa_i,req_size[i],MPI_DOUBLE,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
 #elif FLOAT == float      
       ierr = MPI_Isend(sbuf_aa_i,req_size[i],MPI_FLOAT,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
 #endif
+#endif
+      ierr = MPI_Isend(sbuf_aa_i,req_size[i],MPIU_SCALAR,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
     }
   } 
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&r_status4);CHKERRQ(ierr);
@@ -3048,11 +3054,14 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
     ierr = PetscMalloc((rbuf2[idx][0]+1)*sizeof(int),&rbuf3[idx]);CHKERRQ(ierr);
     ierr = PetscMalloc((rbuf2[idx][0]+1)*sizeof(FLOAT),&rbuf4[idx]);CHKERRQ(ierr);
     ierr = MPI_Irecv(rbuf3[idx],rbuf2[idx][0],MPI_INT,r_status2[i].MPI_SOURCE,tag2,comm,r_waits3+idx);CHKERRQ(ierr);
+#if 0
 #if FLOAT == double      
     ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPI_DOUBLE,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
 #elif FLOAT == float      
     ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPI_FLOAT,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
 #endif
+#endif
+    ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPIU_SCALAR,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
   } 
   ierr = PetscFree(r_status2);CHKERRQ(ierr);
   ierr = PetscFree(r_waits2);CHKERRQ(ierr);
@@ -3131,11 +3140,14 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
         ierr = PetscMemcpy(vals,Aval,ncols*sizeof(FLOAT));CHKERRQ(ierr);
         noutvals += ncols;
       }
+#if 0
 #if FLOAT == double      
       ierr = MPI_Isend(sbuf4_i,req_size[i],MPI_DOUBLE,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
 #elif FLOAT == float      
       ierr = MPI_Isend(sbuf4_i,req_size[i],MPI_FLOAT,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
 #endif
+#endif
+      ierr = MPI_Isend(sbuf4_i,req_size[i],MPIU_SCALAR,req_source[i],tag3,comm,s_waits4+i);CHKERRQ(ierr);
     }
   } 
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&r_status4);CHKERRQ(ierr);

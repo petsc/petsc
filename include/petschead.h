@@ -78,6 +78,11 @@ typedef struct {
   void           *cpp;                                    \
   int            amem;                                    \
   int            state;                                   \
+  int            int_idmax,real_idmax,scalar_idmax;       \
+  int            *intcomposeddata,*intcomposedstate,      \
+                 *realcomposedstate,*scalarcomposedstate; \
+  PetscReal      *realcomposeddata;                       \
+  PetscScalar    *scalarcomposeddata;                     \
   void           (**fortran_func_pointers)(void);       
 
   /*  ... */                               
@@ -263,10 +268,209 @@ struct _p_PetscObject {
 
 EXTERN int PetscObjectPublishBaseBegin(PetscObject);
 EXTERN int PetscObjectPublishBaseEnd(PetscObject);
+
 EXTERN int PetscObjectIncreaseState(PetscObject);
 EXTERN int PetscObjectGetState(PetscObject obj,int*);
-EXTERN int PetscObjectSetComposedData(PetscObject,char*,PetscDataType,void*);
-EXTERN int PetscObjectGetComposedData(PetscObject,char*,PetscDataType,void*,PetscTruth*);
+EXTERN int PetscRegisterComposedData(int *id);
+EXTERN int PetscObjectIncreaseIntComposeData(PetscObject obj);
+EXTERN int PetscObjectIncreaseRealComposeData(PetscObject obj);
+EXTERN int PetscObjectIncreaseScalarComposeData(PetscObject obj);
+EXTERN int globalcurrentstate,globalmaxstate;
+/*MC
+   PetscObjectSetIntComposedData - attach integer data to a PetscObject
+
+   Synopsis:
+   PetscObjectSetIntComposedData(PetscObject obj,int id,int data)
+
+   Not collective
+
+   Input parameters:
++  obj - the object to which data is to be attached
+.  id - the identifier for the data
+-  data - the data to  be attached
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   Level: developer
+M*/
+#define PetscObjectSetIntComposedData(obj,id,data)                   \
+0; {int ierr_;                                                       \
+  if ((obj)->int_idmax < globalmaxstate) {                           \
+    ierr_ = PetscObjectIncreaseIntComposeData(obj); CHKERRQ(ierr_);  \
+  }                                                                  \
+  (obj)->intcomposeddata[id] = data;                                 \
+  (obj)->intcomposedstate[id] = (obj)->state;                        \
+}
+/*MC
+   PetscObjectGetIntComposedData - retrieve integer data attached to an object
+
+   Synopsis:
+   PetscObjectGetIntComposedData(PetscObject obj,int id,int *data,PetscTruth *flag)
+
+   Not collective
+
+   Input parameters:
++  obj - the object from which data is to be retrieved
+-  id - the identifier for the data
+
+   Output parameters
++  data - the data to be retrieved
+-  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   The 'data' and 'flag' variables have to be "star" variables; you can not
+   pass an argument of '&data' or '&flag.
+
+   Level: developer
+M*/
+#define PetscObjectGetIntComposedData(obj,id,data,flag)              \
+0; {                                                                 \
+  if ((int)((obj)->intcomposedstate)) {                              \
+    if ((obj)->intcomposedstate[id] == (obj)->state) {               \
+      data = (obj)->intcomposeddata[id];                             \
+      flag = PETSC_TRUE;                                             \
+    } else {                                                         \
+      flag = PETSC_FALSE;                                            \
+    }                                                                \
+  } else flag = PETSC_FALSE;                                         \
+}
+/*MC
+   PetscObjectSetRealComposedData - attach real data to a PetscObject
+
+   Synopsis:
+   PetscObjectSetRealComposedData(PetscObject obj,int id,PetscReal data)
+
+   Not collective
+
+   Input parameters:
++  obj - the object to which data is to be attached
+.  id - the identifier for the data
+-  data - the data to  be attached
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   Level: developer
+M*/
+#define PetscObjectSetRealComposedData(obj,id,data)                  \
+0; {int ierr_;                                                       \
+  if ((obj)->real_idmax < globalmaxstate) {                          \
+    ierr_ = PetscObjectIncreaseRealComposeData(obj); CHKERRQ(ierr_); \
+  }                                                                  \
+  (obj)->realcomposeddata[id] = data;                                \
+  (obj)->realcomposedstate[id] = (obj)->state;                       \
+}
+/*MC
+   PetscObjectGetRealComposedData - retrieve real data attached to an object
+
+   Synopsis:
+   PetscObjectGetRealComposedData(PetscObject obj,int id,PetscReal *data,PetscTruth *flag)
+
+   Not collective
+
+   Input parameters:
++  obj - the object from which data is to be retrieved
+-  id - the identifier for the data
+
+   Output parameters
++  data - the data to be retrieved
+-  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   The 'data' and 'flag' variables have to be "star" variables; you can not
+   pass an argument of '&data' or '&flag.
+
+   Level: developer
+M*/
+#define PetscObjectGetRealComposedData(obj,id,data,flag)             \
+0; {                                                                 \
+  if ((int)((obj)->realcomposedstate)) {                             \
+    if ((obj)->realcomposedstate[id] == (obj)->state) {              \
+      data = (obj)->realcomposeddata[id];                            \
+      flag = PETSC_TRUE;                                             \
+    } else {                                                         \
+      flag = PETSC_FALSE;                                            \
+    }                                                                \
+  } else flag = PETSC_FALSE;                                         \
+}
+/*MC
+   PetscObjectSetScalarComposedData - attach scalar data to a PetscObject 
+
+   Synopsis:
+   PetscObjectSetScalarComposedData(PetscObject obj,int id,PetscScalar data)
+
+   Not collective
+
+   Input parameters:
++  obj - the object to which data is to be attached
+.  id - the identifier for the data
+-  data - the data to  be attached
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   Level: developer
+M*/
+#define PetscObjectSetScalarComposedData(obj,id,data)                 \
+0; {int ierr_;                                                        \
+  if ((obj)->scalar_idmax < globalmaxstate) {                         \
+    ierr_ = PetscObjectIncreaseScalarComposeData(obj); CHKERRQ(ierr_);\
+  }                                                                   \
+  (obj)->scalarcomposeddata[id] = data;                               \
+  (obj)->scalarcomposedstate[id] = (obj)->state;                      \
+}
+/*MC
+   PetscObjectGetScalarComposedData - retrieve scalar data attached to an object
+
+   Synopsis:
+   PetscObjectGetScalarComposedData(PetscObject obj,int id,PetscScalar *data,PetscTruth *flag)
+
+   Not collective
+
+   Input parameters:
++  obj - the object from which data is to be retrieved
+-  id - the identifier for the data
+
+   Output parameters
++  data - the data to be retrieved
+-  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   The 'data' and 'flag' variables have to be "star" variables; you can not
+   pass an argument of '&data' or '&flag.
+
+   Level: developer
+M*/
+#define PetscObjectGetScalarComposedData(obj,id,data,flag)           \
+0; {                                                                 \
+  if ((int)((obj)->scalarcomposedstate)) {                           \
+    if ((obj)->scalarcomposedstate[id] == (obj)->state) {            \
+      data = (obj)->scalarcomposeddata[id];                          \
+      flag = PETSC_TRUE;                                             \
+    } else {                                                         \
+      flag = PETSC_FALSE;                                            \
+    }                                                                \
+  } else flag = PETSC_FALSE;                                         \
+}
 
 PETSC_EXTERN_CXX_END
 #endif /* _PETSCHEAD_H */

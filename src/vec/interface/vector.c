@@ -371,26 +371,45 @@ $     NORM_INFINITY denotes max_i |x_i|
           VecNormBegin(), VecNormEnd()
 
 @*/
+static int id_norm1=0,id_norm2=0,id_normInf=0,id_normF=0,id_norm12=0;
 int VecNorm(Vec x,NormType type,PetscReal *val)  
 {
-  PetscTruth flg; int ierr; char *type_name;
+  PetscTruth flg; int type_id,ierr; char *type_name;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
   switch (type) {
-  case NORM_1 : type_name = "norm1"; break;
-  case NORM_2 : type_name = "norm2"; break;
-  case NORM_INFINITY : type_name = "normInf"; break;
-  case NORM_FROBENIUS : type_name = "normFrobenius"; break;
+  case NORM_1 :
+    if (!id_norm1) {
+      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
+    type_id = id_norm1; break;
+  case NORM_2 :
+    if (!id_norm2) {
+      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
+    type_id = id_norm2; break;
+  case NORM_1_AND_2 :
+    /* we don't handle this one yet */
+    if (!id_norm1) {
+      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
+    if (!id_norm2) {
+      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
+    type_id = id_norm12; break;
+  case NORM_INFINITY :
+    if (!id_normInf) {
+      ierr = PetscRegisterComposedData(&id_normInf); CHKERRQ(ierr);}
+    type_id = id_normInf; break;
+  case NORM_FROBENIUS :
+    if (!id_normF) {
+      ierr = PetscRegisterComposedData(&id_normF); CHKERRQ(ierr);}
+    type_id = id_normF; break;
   }
 
   /*
   if ((type == NORM_2) && (x->normvalid)) {
       *val = x->normcurrent;
   */
-  ierr = PetscObjectGetComposedData
-    ((PetscObject)x,type_name,PETSC_REAL,(void*)val,&flg); CHKERRQ(ierr);
+  PetscObjectGetRealComposedData((PetscObject)x,type_id,*val,flg);
   if (flg) PetscFunctionReturn(0);
   
 
@@ -413,8 +432,9 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
     x->normcurrent = *val;
     x->normvalid   = PETSC_TRUE;
   */
-  ierr = PetscObjectSetComposedData
-    ((PetscObject)x,type_name,PETSC_REAL,(void*)val); CHKERRQ(ierr);
+  if (type!=NORM_1_AND_2) {
+    PetscObjectSetRealComposedData((PetscObject)x,type_id,*val);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -1900,9 +1920,6 @@ int  VecMAXPY(int nv,const PetscScalar *alpha,Vec y,Vec *x)
    Output Parameter:
 .  a - location to put pointer to the array
 
-   Note: if you alter the data, call PetscObjectIncreaseState on the
-   vector when you're done.
-
    Fortran Note:
    This routine is used differently from Fortran 77
 $    Vec         x
@@ -1955,9 +1972,6 @@ int VecGetArray(Vec x,PetscScalar *a[])
 
    Output Parameter:
 .  a - location to put pointer to the array
-
-   Note: if you alter the data, call PetscObjectIncreaseState on the
-   vector when you're done.
 
    Fortran Note:
    This routine is not supported in Fortran.
@@ -2084,6 +2098,7 @@ int VecRestoreArray(Vec x,PetscScalar *a[])
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
   x->normvalid = PETSC_FALSE;
+  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
