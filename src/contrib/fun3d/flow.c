@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.43 2000/08/01 22:04:24 kaushik Exp bsmith $";*/
+/* "$Id: flow.c,v 1.44 2000/08/02 03:54:26 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -88,8 +88,9 @@ int main(int argc,char **args)
   int 		ierr,ileast;
   PetscTruth    flg;
   
-  ierr = PetscInitialize(&argc,&args,"testgrid/petsc.opt",help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc,&args,PETSC_NULL,help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
+  f77FORLINK();                               /* Link FORTRAN and C COMMONS */
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -105,6 +106,14 @@ int main(int argc,char **args)
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
+
+  c_info->alpha  = 3.0;
+  c_info->beta   = 15.0;
+  c_info->ivisc  = 0;
+  f_pntr.ileast  = 4;
+  ierr = OptionsGetDouble(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-beta",&c_info->beta,PETSC_NULL);CHKERRQ(ierr);
+  
   /*======================================================================*/
 
   /*Set the maximum number of threads for OpenMP */
@@ -113,15 +122,9 @@ int main(int argc,char **args)
   omp_set_num_threads(max_threads);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
 #endif
-  f77FORLINK();                               /* Link FORTRAN and C COMMONS */
  
-  f77OPENM(&rank);                            /* Open files for I/O         */
-
-  /*  Read input */
-
-  f77READR1(&ileast,&rank);
   f_pntr.jvisc   = c_info->ivisc;
-  f_pntr.ileast  = ileast;
+  /*  f_pntr.ileast  = 4; */
   c_gmcom->ilu0  = 1;
   c_gmcom->nsrch = 10;   
  
@@ -293,11 +296,6 @@ int main(int argc,char **args)
     user.grid->isnode,  user.grid->ivnode,  user.grid->ifnode,
     &rank); 
     */
-
-    /*f77FASFLO(&user.grid->nnodes,&user.grid->nsnode,&user.grid->nnfacet,
-    user.grid->isnode, user.grid->f2ntn,
-    user.grid->x,      user.grid->y,      user.grid->z,
-    qnode);*/
 
     /* Write residual,lift,drag,and moment history file */
     /*
@@ -561,9 +559,7 @@ int Update(SNES snes,void *ctx)
 
   ierr = VecGetArray(grid->res,&res);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
-  /*f77L2NORM(res,&grid->nnodesLoc,&grid->nnodes,grid->x,
-            grid->y,   grid->z,
-            grid->area,&rank);*/
+
   f77FORCE(&grid->nnodesLoc,&grid->nedgeLoc,  
             grid->isnode, grid->ivnode, 
            &grid->nnfacetLoc,grid->f2ntn,&grid->nnbound,
@@ -741,10 +737,16 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
 
   if (!rank) {
-    char spart_file[256],part_file[256];
+    char       spart_file[256],part_file[256];
+    PetscTruth exists;
+   
     ierr = OptionsGetString(PETSC_NULL,"-partition",spart_file,256,&flg);CHKERRQ(ierr);
-    sprintf(part_file,"%s.%d",spart_file,size);
-    fptr = fopen(part_file,"r");
+    ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
+    if (!exists) { /* try appending the number of processors */
+      sprintf(part_file,"%s.%d",spart_file,size);
+      ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
+    }
+    fptr = fopen(spart_file,"r");
     if (!fptr) SETERRQ1(1,1,"Cannot open file %s\n",part_file);
     for (inode = 0; inode < nnodes; inode++) {
       fscanf(fptr,"%d\n",&node1); 
