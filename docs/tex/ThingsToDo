@@ -10,9 +10,6 @@ Meta priorities:
   -  Vecscatter and DA are communication objects that manage the
 movement of data stored in Vec objects.
  
-  This is why I said yesterday I dislike DAGetDistributedVector()
-and DAGetLocalVector() and would like to change it to
-DAGenerateGlobalVector() and  DAGenerateLocalVector()
 
   - all XXXView() calls should either generate error or warning if viewer
     is not supported.
@@ -21,16 +18,17 @@ DAGenerateGlobalVector() and  DAGenerateLocalVector()
 
 > > 
 > >     An input array  
+        input scalar
 > >     An output scalar
 > >     An output array
 > > 
 > > In ISO C, these can be separated as
 > > 
 > >     An input array: const []
+         const *
 > >     An output scalar: *
 > >     An output array: []
 
-  - Fix all KSP methods to set ksp->its (see petsc-maint #1593)
 
   - Put in Hysom's fixes for ilu preallocation in docs/tex/hysom
 
@@ -972,3 +970,9 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
   X Add additional optimization to VecScatter() for case when MPI vector is gathered
     all onto one processor and all other processors get nothing.
+
+  X Fix all KSP methods to set ksp->its (see petsc-maint #1593)
+
+  X This is why I said yesterday I dislike DAGetDistributedVector()
+    and DAGetLocalVector() and would like to change it to
+    DAGenerateGlobalVector() and  DAGenerateLocalVector()
