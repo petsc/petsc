@@ -1,9 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.13 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.14 1997/08/22 15:11:48 bsmith Exp balay $";
 #endif
 
-#include "src/sys/src/files.h"
-#if defined (PARCH_IRIX64)
+#include "src/sys/src/files.h"<
+#if defined (PARCH_IRIX64) || defined (PARCH_IRIX)
 #include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
