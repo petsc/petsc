@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.115 1999/01/24 19:56:37 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.116 1999/02/03 17:22:42 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -7,8 +7,8 @@ static char vcid[] = "$Id: aijfact.c,v 1.115 1999/01/24 19:56:37 bsmith Exp bala
 #include "src/inline/dot.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_Flow_SeqAIJ"
-int MatOrder_Flow_SeqAIJ(Mat mat,MatReorderingType type,IS *irow,IS *icol)
+#define __FUNC__ "MatOrdering_Flow_SeqAIJ"
+int MatOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
 
@@ -639,10 +639,10 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
       ierr = MatMarkDiag_SeqAIJ(*fact); CHKERRQ(ierr);
     }
     ierr = MatMissingDiag_SeqAIJ(*fact); CHKERRQ(ierr);
-    b->row             = isrow;
-    b->col             = iscol;
-    b->icol            = isicol;
-    b->solve_work      = (Scalar *) PetscMalloc((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    b->row              = isrow;
+    b->col              = iscol;
+    b->icol             = isicol;
+    b->solve_work       = (Scalar *) PetscMalloc((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     PetscFunctionReturn(0);
   }

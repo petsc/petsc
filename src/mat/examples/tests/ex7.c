@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatGetReordering(C,ORDER_RCM,&perm,&iperm); CHKERRA(ierr);
+  ierr = MatGetOrdering(C,ORDER_RCM,&perm,&iperm); CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 

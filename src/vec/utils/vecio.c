@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.49 1999/03/04 22:30:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.50 1999/03/07 00:02:19 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -131,6 +131,9 @@ int VecLoad(Viewer viewer,Vec *newvec)
   PLogEventEnd(VEC_Load,viewer,0,0,0);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "VecLoadIntoVector_new"
 
 #undef __FUNC__  
 #define __FUNC__ "VecLoadIntoVector"

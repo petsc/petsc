@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.29 1998/11/04 21:10:09 bsmith Exp balay $";
+static char vcid[] = "$Id: zerodiag.c,v 1.30 1998/11/06 22:40:58 balay Exp bsmith $";
 #endif
 
 /*
@@ -24,12 +24,12 @@ static char vcid[] = "$Id: zerodiag.c,v 1.29 1998/11/04 21:10:09 bsmith Exp bala
     Input Parameters:
 +   mat  - matrix to reorder
 -   rmap,cmap - row and column permutations.  Usually obtained from 
-               MatGetReordering().
+               MatGetOrdering().
 
     Notes:
     This is not intended as a replacement for pivoting for matrices that
     have ``bad'' structure. It is only a stop-gap measure. Should be called
-    after a call to MatGetReordering(), this routine changes the column 
+    after a call to MatGetOrdering(), this routine changes the column 
     ordering defined in cis.
 
     Options Database Keys (When using SLES):

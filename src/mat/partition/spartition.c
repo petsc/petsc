@@ -1,25 +1,25 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spartition.c,v 1.8 1998/04/20 19:29:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spartition.c,v 1.9 1998/10/19 22:18:30 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
 #include "mat.h"
 
 EXTERN_C_BEGIN
-extern int PartitioningCreate_Current(Partitioning);
-extern int PartitioningCreate_Parmetis(Partitioning);
+extern int MatPartitioningCreate_Current(MatPartitioning);
+extern int MatPartitioningCreate_Parmetis(MatPartitioning);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningRegisterAll" 
+#define __FUNC__ "MatPartitioningRegisterAll" 
 /*@C
-  PartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
+  MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
 
   Not Collective
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to PartitioningRegister() for 
+  modify it to incorporate a call to MatPartitioningRegister() for 
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -30,17 +30,17 @@ EXTERN_C_END
 
 .keywords: matrix, Partitioning, register, all
 
-.seealso: PartitioningRegister(), PartitioningRegisterDestroy()
+.seealso: MatPartitioningRegister(), MatPartitioningRegisterDestroy()
 @*/
-int PartitioningRegisterAll(void)
+int MatPartitioningRegisterAll(void)
 {
   int         ierr;
 
   PetscFunctionBegin;
-  PartitioningRegisterAllCalled = 1;  
-  ierr = PartitioningRegister(PARTITIONING_CURRENT,0,"current",PartitioningCreate_Current);CHKERRQ(ierr);
+  MatPartitioningRegisterAllCalled = 1;  
+  ierr = MatPartitioningRegister(MATPARTITIONING_CURRENT,0,"current",MatPartitioningCreate_Current);CHKERRQ(ierr);
 #if defined(HAVE_PARMETIS)
-  ierr = PartitioningRegister(PARTITIONING_PARMETIS,0,"parmetis",PartitioningCreate_Parmetis);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONING_PARMETIS,0,"parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aopart.c,v 1.4 1998/04/27 13:53:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: aopart.c,v 1.5 1999/03/07 17:29:58 bsmith Exp bsmith $";
 #endif
 
 #include "ao.h"       /*I  "ao.h"  I*/
@@ -23,7 +23,7 @@ int AODataKeyPartition(AOData aodata,char *key)
 {
   AO              ao;
   Mat             adj;
-  Partitioning    part;
+  MatPartitioning    part;
   IS              is,isg;
   int             ierr;
   MPI_Comm        comm;
@@ -33,11 +33,11 @@ int AODataKeyPartition(AOData aodata,char *key)
   ierr = PetscObjectGetComm((PetscObject) aodata,&comm);CHKERRQ(ierr);
 
   ierr = AODataKeyGetAdjacency(aodata,key,&adj);CHKERRA(ierr);
-  ierr = PartitioningCreate(comm,&part);CHKERRA(ierr);
-  ierr = PartitioningSetAdjacency(part,adj);CHKERRA(ierr);
-  ierr = PartitioningSetFromOptions(part);CHKERRA(ierr);
-  ierr = PartitioningApply(part,&is);CHKERRA(ierr);
-  ierr = PartitioningDestroy(part); CHKERRA(ierr);
+  ierr = MatPartitioningCreate(comm,&part);CHKERRA(ierr);
+  ierr = MatPartitioningSetAdjacency(part,adj);CHKERRA(ierr);
+  ierr = MatPartitioningSetFromOptions(part);CHKERRA(ierr);
+  ierr = MatPartitioningApply(part,&is);CHKERRA(ierr);
+  ierr = MatPartitioningDestroy(part); CHKERRA(ierr);
   ierr = MatDestroy(adj);CHKERRQ(ierr);
   ierr = ISPartitioningToNumbering(is,&isg);CHKERRA(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);

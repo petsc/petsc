@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.321 1999/03/07 15:08:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.322 1999/03/09 21:44:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2188,7 +2188,7 @@ int MatTranspose(Mat mat,Mat *B)
 
 .keywords: matrix, transpose
 
-.seealso: MatGetReordering()
+.seealso: MatGetOrdering()
 @*/
 int MatPermute(Mat mat,IS row,IS col,Mat *B)
 {

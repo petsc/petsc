@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.8 1997/11/03 04:51:41 bsmith Exp balay $;
+!  $Id: petsclog.h,v 1.9 1998/03/24 16:11:25 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Plog package in PETSc
 !
@@ -12,8 +12,8 @@
        parameter (MAT_AssemblyBegin = 2)
        integer    MAT_AssemblyEnd
        parameter (MAT_AssemblyEnd = 3)
-       integer    MAT_GetReordering
-       parameter (MAT_GetReordering = 4)
+       integer    MAT_GetOrdering
+       parameter (MAT_GetOrdering = 4)
        integer    MAT_MultTrans
        parameter (MAT_MultTrans = 5)
        integer    MAT_MultAdd

@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.26 1999/03/05 04:02:33 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.27 1999/03/07 17:29:59 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -63,6 +63,7 @@ struct _p_DA {
 EXTERN_C_BEGIN
 extern int VecView_MPI_Binary_DA(Vec,Viewer);
 EXTERN_C_END
+extern int DAView_Binary(DA,Viewer);
 
 extern int DFShellCreateDA_Private(MPI_Comm,char**,DA,DF*);
 extern int DAGetGlobalToGlobal1_Private(DA,int**);

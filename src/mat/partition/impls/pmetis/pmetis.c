@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.13 1998/12/03 04:01:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.14 1998/12/17 22:10:56 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -19,20 +19,20 @@ typedef struct {
   int parallel;     /* use parallel partitioner for coarse problem */
   int indexing;     /* 0 indicates C indexing, 1 Fortran */
   int printout;     /* indicates if one wishes Metis to print info */
-} Partitioning_Parmetis;
+} MatPartitioning_Parmetis;
 
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel
 */
 #undef __FUNC__  
-#define __FUNC__ "PartitioningApply_Parmetis" 
-static int PartitioningApply_Parmetis(Partitioning part, IS *partitioning)
+#define __FUNC__ "MatPartitioningApply_Parmetis" 
+static int MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
 {
   int                   ierr,*locals,size,rank;
   int                   *vtxdist, *xadj,*adjncy,itmp = 0;
   Mat                   mat = part->adj;
   Mat_MPIAdj            *adj = (Mat_MPIAdj *)mat->data;
-  Partitioning_Parmetis *parmetis = (Partitioning_Parmetis*)part->data;
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
 
   PetscFunctionBegin;
   if (mat->type != MATMPIADJ) SETERRQ(PETSC_ERR_SUP,1,"Only MPIAdj matrix type supported");
@@ -62,10 +62,10 @@ static int PartitioningApply_Parmetis(Partitioning part, IS *partitioning)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningView_Parmetis" 
-int PartitioningView_Parmetis(Partitioning part,Viewer viewer)
+#define __FUNC__ "MatPartitioningView_Parmetis" 
+int MatPartitioningView_Parmetis(MatPartitioning part,Viewer viewer)
 {
-  Partitioning_Parmetis *parmetis = (Partitioning_Parmetis *)part->data;
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
   ViewerType            vtype;
   FILE                  *fd;
   int                   ierr,rank;
@@ -91,20 +91,20 @@ int PartitioningView_Parmetis(Partitioning part,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningParmetisSetCoarseSequential"
+#define __FUNC__ "MatPartitioningParmetisSetCoarseSequential"
 /*@
-     PartitioningParmetisSetCoarseSequential - Use the sequential code to 
+     MatPartitioningParmetisSetCoarseSequential - Use the sequential code to 
          do the partitioning of the coarse grid.
 
   Input Parameter:
 .  part - the partitioning context
 
-  Collective on Partitioning
+  Collective on MatPartitioning
 
 @*/
-int PartitioningParmetisSetCoarseSequential(Partitioning part)
+int MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 {
-  Partitioning_Parmetis *parmetis = (Partitioning_Parmetis *)part->data;
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
 
   PetscFunctionBegin;
   parmetis->parallel = 1;
@@ -112,35 +112,35 @@ int PartitioningParmetisSetCoarseSequential(Partitioning part)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningPrintHelp_Parmetis" 
-int PartitioningPrintHelp_Parmetis(Partitioning part)
+#define __FUNC__ "MatPartitioningPrintHelp_Parmetis" 
+int MatPartitioningPrintHelp_Parmetis(MatPartitioning part)
 {
   PetscFunctionBegin;
   (*PetscHelpPrintf)(part->comm,"ParMETIS options\n");
-  (*PetscHelpPrintf)(part->comm,"  -partitioning_parmetis_coarse_sequential\n");
+  (*PetscHelpPrintf)(part->comm,"  -mat_partitioning_parmetis_coarse_sequential\n");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningSetFromOptions_Parmetis" 
-int PartitioningSetFromOptions_Parmetis(Partitioning part)
+#define __FUNC__ "MatPartitioningSetFromOptions_Parmetis" 
+int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 {
   int                   ierr,flag;
 
   PetscFunctionBegin;
-  ierr = OptionsHasName(part->prefix,"-partitioning_parmetis_coarse_sequential",&flag);CHKERRQ(ierr);
+  ierr = OptionsHasName(part->prefix,"-mat_partitioning_parmetis_coarse_sequential",&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = PartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
+    ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningDestroy_Parmetis" 
-int PartitioningDestroy_Parmetis(Partitioning part)
+#define __FUNC__ "MatPartitioningDestroy_Parmetis" 
+int MatPartitioningDestroy_Parmetis(MatPartitioning part)
 {
-  Partitioning_Parmetis *parmetis = (Partitioning_Parmetis *)part->data;
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
   
   PetscFunctionBegin;
   PetscFree(parmetis);
@@ -150,13 +150,13 @@ int PartitioningDestroy_Parmetis(Partitioning part)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PartitioningCreate_Parmetis" 
-int PartitioningCreate_Parmetis(Partitioning part)
+#define __FUNC__ "MatPartitioningCreate_Parmetis" 
+int MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
-  Partitioning_Parmetis *parmetis;
+  MatPartitioning_Parmetis *parmetis;
 
   PetscFunctionBegin;
-  parmetis = PetscNew(Partitioning_Parmetis);CHKPTRQ(parmetis);
+  parmetis = PetscNew(MatPartitioning_Parmetis);CHKPTRQ(parmetis);
 
   parmetis->cuts       = 0;   /* output variable */
   parmetis->foldfactor = 150; /*folding factor */
@@ -164,12 +164,12 @@ int PartitioningCreate_Parmetis(Partitioning part)
   parmetis->indexing   = 0;   /* index numbering starts from 0 */
   parmetis->printout   = 0;   /* print no output while running */
 
-  part->apply          = PartitioningApply_Parmetis;
-  part->view           = PartitioningView_Parmetis;
-  part->destroy        = PartitioningDestroy_Parmetis;
-  part->printhelp      = PartitioningPrintHelp_Parmetis;
-  part->setfromoptions = PartitioningSetFromOptions_Parmetis;
-  part->type           = PARTITIONING_PARMETIS;
+  part->apply          = MatPartitioningApply_Parmetis;
+  part->view           = MatPartitioningView_Parmetis;
+  part->destroy        = MatPartitioningDestroy_Parmetis;
+  part->printhelp      = MatPartitioningPrintHelp_Parmetis;
+  part->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
+  part->type           = MATPARTITIONING_PARMETIS;
   part->data           = (void *) parmetis;
   PetscFunctionReturn(0);
 }
@@ -181,8 +181,8 @@ EXTERN_C_END
    Dummy function for compilers that don't like empty files.
 */
 #undef __FUNC__  
-#define __FUNC__ "PartitioningApply_Parmetis" 
-int PartitioningApply_Parmetis(void)
+#define __FUNC__ "MatPartitioningApply_Parmetis" 
+int MatPartitioningApply_Parmetis(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.6 1998/05/29 20:37:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.7 1998/12/03 04:02:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -14,9 +14,9 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -f1 <input_file> : second file to load (larger system)\n\n";
 
 /*T
-   Concepts: Mat^Reordering a matrix - loading a binary matrix and vector;
+   Concepts: Mat^Ordering a matrix - loading a binary matrix and vector;
    Concepts: PLog^Profiling multiple stages of code;
-   Routines: MatGetReordering();
+   Routines: MatGetOrdering();
    Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops();
    Routines: PetscBarrier(); PetscGetTime();
    Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   char              stagename[4][16]; /* names of profiling stages */
   IS                isrow,iscol;      /* row and column permutations */
   int               ierr, flg, i,loops  = 2;
-  MatReorderingType rtype = ORDER_RCM;
+  MatOrderingType   rtype = ORDER_RCM;
   PetscTruth        set;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -115,7 +115,7 @@ int main(int argc,char **args)
     sprintf(stagename[2*i+1],"SLESSetUp %d",i);
     PLogStageRegister(2*i+1,stagename[2*i+1]);
 
-    ierr = MatGetReordering(A,rtype,&isrow,&iscol); CHKERRQ(ierr);
+    ierr = MatGetOrdering(A,rtype,&isrow,&iscol); CHKERRQ(ierr);
 
     /*
        Conclude profiling this stage

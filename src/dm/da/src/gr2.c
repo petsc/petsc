@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.13 1999/03/04 14:42:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.14 1999/03/06 19:44:57 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -232,35 +232,13 @@ int VecView_MPI_Binary_DA(Vec xin,Viewer viewer)
   Vec            natural;
 
   PetscFunctionBegin;
-
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
-  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
   ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
   ierr = VecView(natural,viewer);CHKERRQ(ierr);
   ierr = VecDestroy(natural);
-
-  MPI_Comm_rank(comm,&rank);
-  if (!rank) {
-    FILE *file;
-    int  bs;
-
-    ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-    ierr = VecGetBlockSize(xin,&bs);CHKERRQ(ierr);
-    if (file && bs > 1) {
-      fprintf(file,"-vecload_block_size %d\n",bs);
-    } else if (file) {
-      int            dim,m,n,p,dof,swidth;
-      DAStencilType  stencil;
-      DAPeriodicType periodic;
-
-      ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
-      fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
-    }
-  } 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

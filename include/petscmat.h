@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.167 1999/02/09 15:12:55 bsmith Exp balay $ */
+/* $Id: mat.h,v 1.168 1999/02/15 21:55:30 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -188,15 +188,15 @@ extern int MatRetrieveValues(Mat);
 */
 
 typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,ORDER_RCM=3,
-              ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_FLOW,ORDER_NEW} MatReorderingType;
-extern int MatGetReordering(Mat,MatReorderingType,IS*,IS*);
-extern int MatGetReorderingTypeFromOptions(char *,MatReorderingType*);
-extern int MatReorderingRegister(MatReorderingType,MatReorderingType*,char*,
-                                 int(*)(Mat,MatReorderingType,IS*,IS*));
-extern int MatReorderingGetName(MatReorderingType,char **);
-extern int MatReorderingRegisterDestroy(void);
-extern int MatReorderingRegisterAll(void);
-extern int MatReorderingRegisterAllCalled;
+              ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_FLOW,ORDER_NEW} MatOrderingType;
+extern int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
+extern int MatGetOrderingTypeFromOptions(char *,MatOrderingType*);
+extern int MatOrderingRegister(MatOrderingType,MatOrderingType*,char*,
+                                 int(*)(Mat,MatOrderingType,IS*,IS*));
+extern int MatOrderingGetName(MatOrderingType,char **);
+extern int MatOrderingRegisterDestroy(void);
+extern int MatOrderingRegisterAll(void);
+extern int MatOrderingRegisterAllCalled;
 
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
@@ -279,28 +279,28 @@ extern int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void 
     These routines are for partitioning matrices: currently used only 
   for adjacency matrix, MatCreateSeqAdj() or MatCreateMPIAdj().
 */
-#define PARTITIONING_COOKIE PETSC_COOKIE + 25
+#define MATPARTITIONING_COOKIE PETSC_COOKIE + 25
 
-typedef struct _p_Partitioning *Partitioning;
+typedef struct _p_MatPartitioning *MatPartitioning;
 
-typedef enum {PARTITIONING_CURRENT,PARTITIONING_PARMETIS,PARTITIONING_NEW} PartitioningType;
+typedef enum {MATPARTITIONING_CURRENT,MATPARTITIONING_PARMETIS,MATPARTITIONING_NEW} MatPartitioningType;
 
-extern int PartitioningCreate(MPI_Comm,Partitioning*);
-extern int PartitioningSetType(Partitioning,PartitioningType);
-extern int PartitioningSetAdjacency(Partitioning,Mat);
-extern int PartitioningSetVertexWeights(Partitioning,double*);
-extern int PartitioningApply(Partitioning,IS*);
-extern int PartitioningDestroy(Partitioning);
-extern int PartitioningRegister(PartitioningType,PartitioningType *,char*,int(*)(Partitioning));
-extern int PartitioningRegisterAll(void);
-extern int PartitioningRegisterAllCalled;
-extern int PartitioningRegisterDestroy(void);
-extern int PartitioningView(Partitioning,Viewer);
-extern int PartitioningSetFromOptions(Partitioning);
-extern int PartitioningPrintHelp(Partitioning);
-extern int PartitioningGetType(Partitioning,PartitioningType*,char**);
+extern int MatPartitioningCreate(MPI_Comm,MatPartitioning*);
+extern int MatPartitioningSetType(MatPartitioning,MatPartitioningType);
+extern int MatPartitioningSetAdjacency(MatPartitioning,Mat);
+extern int MatPartitioningSetVertexWeights(MatPartitioning,double*);
+extern int MatPartitioningApply(MatPartitioning,IS*);
+extern int MatPartitioningDestroy(MatPartitioning);
+extern int MatPartitioningRegister(MatPartitioningType,MatPartitioningType *,char*,int(*)(MatPartitioning));
+extern int MatPartitioningRegisterAll(void);
+extern int MatPartitioningRegisterAllCalled;
+extern int MatPartitioningRegisterDestroy(void);
+extern int MatPartitioningView(MatPartitioning,Viewer);
+extern int MatPartitioningSetFromOptions(MatPartitioning);
+extern int MatPartitioningPrintHelp(MatPartitioning);
+extern int MatPartitioningGetType(MatPartitioning,MatPartitioningType*,char**);
 
-extern int PartitioningParmetisSetCoarseSequential(Partitioning);
+extern int MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 
 /*
     If you add entries here you must also add them to finclude/mat.h

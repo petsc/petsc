@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.18 1998/12/17 22:10:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.19 1998/12/21 01:01:19 bsmith Exp bsmith $";
 #endif
  
 
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: partition.c,v 1.18 1998/12/17 22:10:56 bsmith Exp bsm
    Simplest partitioning, keeps the current partitioning.
 */
 #undef __FUNC__  
-#define __FUNC__ "PartitioningApply_Current" 
-static int PartitioningApply_Current(Partitioning part, IS *partitioning)
+#define __FUNC__ "MatPartitioningApply_Current" 
+static int MatPartitioningApply_Current(MatPartitioning part, IS *partitioning)
 {
   int   ierr,m,rank,size;
 
@@ -31,14 +31,14 @@ static int PartitioningApply_Current(Partitioning part, IS *partitioning)
 
 EXTERN_C_BEGIN  
 #undef __FUNC__  
-#define __FUNC__ "PartitioningCreate_Current" 
-int PartitioningCreate_Current(Partitioning part)
+#define __FUNC__ "MatPartitioningCreate_Current" 
+int MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
-  part->apply   = PartitioningApply_Current;
+  part->apply   = MatPartitioningApply_Current;
   part->view    = 0;
   part->destroy = 0;
-  part->type    = PARTITIONING_CURRENT;
+  part->type    = MATPARTITIONING_CURRENT;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -48,77 +48,77 @@ EXTERN_C_END
 #include "src/sys/nreg.h"
 #include "sys.h"
 
-static NRList *__PartitioningList = 0;
-int PartitioningRegisterAllCalled = 0;
+static NRList *__MatPartitioningList = 0;
+int MatPartitioningRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningRegister" 
+#define __FUNC__ "MatPartitioningRegister" 
 /*@C
-   PartitioningRegister - Adds a new sparse matrix partitioning to the 
+   MatPartitioningRegister - Adds a new sparse matrix partitioning to the 
    matrix package. 
 
    Input Parameters:
-.  name - name of partitioning (for example PARTITIONING_CURRENT) or PARTITIONING_NEW
+.  name - name of partitioning (for example MATPARTITIONING_CURRENT) or MATPARTITIONING_NEW
 .  sname -  corresponding string for name
 .  order - routine that does partitioning
 
    Output Parameters:
-.  oname - number associated with the partitioning (for example PARTITIONING_CURRENT)
+.  oname - number associated with the partitioning (for example MATPARTITIONING_CURRENT)
 
    Not Collective
 
 .keywords: matrix, partitioning, register
 
-.seealso: PartitioningRegisterDestroy(), PartitioningRegisterAll()
+.seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
 @*/
-int PartitioningRegister(PartitioningType name,PartitioningType *oname,char *sname,int (*part)(Partitioning))
+int MatPartitioningRegister(MatPartitioningType name,MatPartitioningType *oname,char *sname,int (*part)(MatPartitioning))
 {
   int         ierr;
   static int  numberregistered = 0;
 
   PetscFunctionBegin;
-  if (!__PartitioningList) {
-    ierr = NRCreate(&__PartitioningList); CHKERRQ(ierr);
+  if (!__MatPartitioningList) {
+    ierr = NRCreate(&__MatPartitioningList); CHKERRQ(ierr);
   }
 
-  if (name == PARTITIONING_NEW) {
-    name = (PartitioningType) ((int) PARTITIONING_NEW + numberregistered++);
+  if (name == MATPARTITIONING_NEW) {
+    name = (MatPartitioningType) ((int) MATPARTITIONING_NEW + numberregistered++);
   }
   if (oname) *oname = name;
-  ierr = NRRegister(__PartitioningList,(int)name,sname,(int (*)(void*))part);CHKERRQ(ierr);
+  ierr = NRRegister(__MatPartitioningList,(int)name,sname,(int (*)(void*))part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningRegisterDestroy" 
+#define __FUNC__ "MatPartitioningRegisterDestroy" 
 /*@C
-   PartitioningRegisterDestroy - Frees the list of partitioning routines.
+   MatPartitioningRegisterDestroy - Frees the list of partitioning routines.
 
   Not Collective
 
 .keywords: matrix, register, destroy
 
-.seealso: PartitioningRegister(), PartitioningRegisterAll()
+.seealso: MatPartitioningRegister(), MatPartitioningRegisterAll()
 @*/
-int PartitioningRegisterDestroy(void)
+int MatPartitioningRegisterDestroy(void)
 {
   PetscFunctionBegin;
-  if (__PartitioningList) {
-    NRDestroy( __PartitioningList );
-    __PartitioningList = 0;
+  if (__MatPartitioningList) {
+    NRDestroy( __MatPartitioningList );
+    __MatPartitioningList = 0;
   }
-  PartitioningRegisterAllCalled = 0;
+  MatPartitioningRegisterAllCalled = 0;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningGetType"
+#define __FUNC__ "MatPartitioningGetType"
 /*@C
-   PartitioningGetType - Gets the Partitioning method type and name (as a string) 
+   MatPartitioningGetType - Gets the Partitioning method type and name (as a string) 
         from the partitioning context.
 
    Input Parameter:
-.  Partitioning - the partitioning context
+.  partitioning - the partitioning context
 
    Output Parameter:
 .  meth - partitioner type (or use PETSC_NULL)
@@ -128,21 +128,21 @@ int PartitioningRegisterDestroy(void)
 
 .keywords: Partitioning, get, method, name, type
 @*/
-int PartitioningGetType(Partitioning partitioning,PartitioningType *meth,char **name)
+int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *meth,char **name)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (!__PartitioningList) {ierr = PartitioningRegisterAll(); CHKERRQ(ierr);}
-  if (meth) *meth = (PartitioningType) partitioning->type;
-  if (name)  *name = NRFindName( __PartitioningList, (int)partitioning->type );
+  if (!__MatPartitioningList) {ierr = MatPartitioningRegisterAll(); CHKERRQ(ierr);}
+  if (meth) *meth = (MatPartitioningType) partitioning->type;
+  if (name)  *name = NRFindName( __MatPartitioningList, (int)partitioning->type );
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningApply" 
+#define __FUNC__ "MatPartitioningApply" 
 /*@C
-   PartitioningApply - Gets a partitioning for a matrix.
+   MatPartitioningApply - Gets a partitioning for a matrix.
 
    Input Parameters:
 .  matp - the matrix partitioning object
@@ -156,22 +156,22 @@ int PartitioningGetType(Partitioning partitioning,PartitioningType *meth,char **
    Options Database Keys:
    To specify the partitioning through the options database, use one of
    the following 
-$    -partitioning_type parmetis, -mat_partitioning current
+$    -mat_partitioning_type parmetis, -mat_partitioning current
    To see the partitioning result
-$    -partitioning_view
+$    -mat_partitioning_view
 
-   The user can define additional partitionings; see PartitioningRegister().
+   The user can define additional partitionings; see MatPartitioningRegister().
 
 .keywords: matrix, get, partitioning
 
-.seealso:  PartitioningGetTypeFromOptions(), PartitioningRegister()
+.seealso:  MatPartitioningGetTypeFromOptions(), MatPartitioningRegister()
 @*/
-int PartitioningApply(Partitioning matp,IS *partitioning)
+int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
   int         ierr,flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matp,PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(matp,MATPARTITIONING_COOKIE);
   if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (matp->adj->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
@@ -179,43 +179,43 @@ int PartitioningApply(Partitioning matp,IS *partitioning)
   ierr = (*matp->apply)(matp,partitioning);CHKERRQ(ierr);
   PLogEventEnd(MAT_Partitioning,matp,0,0,0); 
 
-  ierr = OptionsHasName(PETSC_NULL,"-partitioning_view",&flag);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_partitioning_view",&flag);
   if (flag) {
-    ierr = PartitioningView(matp,VIEWER_STDOUT_(matp->comm));CHKERRQ(ierr);
+    ierr = MatPartitioningView(matp,VIEWER_STDOUT_(matp->comm));CHKERRQ(ierr);
     ierr = ISView(*partitioning,VIEWER_STDOUT_(matp->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
  
 #undef __FUNC__  
-#define __FUNC__ "PartitioningSetAdjacency"
+#define __FUNC__ "MatPartitioningSetAdjacency"
 /*@C
-   PartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
+   MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
       partitioned.
 
    Input Parameters:
 .  part - the partitioning context
 .  adj - the adjacency matrix
 
-   Collective on Partitioning and Mat
+   Collective on MatPartitioning and Mat
 
 .keywords: Partitioning, adjacency
 
-.seealso: PartitioningCreate()
+.seealso: MatPartitioningCreate()
 @*/
-int PartitioningSetAdjacency(Partitioning part,Mat adj)
+int MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
   PetscValidHeaderSpecific(adj,MAT_COOKIE);
   part->adj = adj;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningDestroy"
+#define __FUNC__ "MatPartitioningDestroy"
 /*@C
-   PartitioningDestroy - Destroys the partitioning context.
+   MatPartitioningDestroy - Destroys the partitioning context.
 
    Input Parameters:
 .  part - the partitioning context
@@ -224,14 +224,14 @@ int PartitioningSetAdjacency(Partitioning part,Mat adj)
 
 .keywords: Partitioning, destroy, context
 
-.seealso: PartitioningCreate()
+.seealso: MatPartitioningCreate()
 @*/
-int PartitioningDestroy(Partitioning part)
+int MatPartitioningDestroy(MatPartitioning part)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
   if (--part->refct > 0) PetscFunctionReturn(0);
 
   if (part->destroy) {
@@ -243,9 +243,9 @@ int PartitioningDestroy(Partitioning part)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningCreate"
+#define __FUNC__ "MatPartitioningCreate"
 /*@C
-   PartitioningCreate - Creates a partitioning context.
+   MatPartitioningCreate - Creates a partitioning context.
 
    Input Parameter:
 .   comm - MPI communicator 
@@ -257,41 +257,41 @@ int PartitioningDestroy(Partitioning part)
 
 .keywords: Partitioning, create, context
 
-.seealso: PartitioningSetUp(), PartitioningApply(), PartitioningDestroy(),
-          PartitioningSetAdjacency()
+.seealso: MatPartitioningSetUp(), MatPartitioningApply(), MatPartitioningDestroy(),
+          MatPartitioningSetAdjacency()
 
 @*/
-int PartitioningCreate(MPI_Comm comm,Partitioning *newp)
+int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 {
-  Partitioning     part;
-  PartitioningType initialtype = PARTITIONING_CURRENT;
+  MatPartitioning     part;
+  MatPartitioningType initialtype = MATPARTITIONING_CURRENT;
   int              ierr;
 
   PetscFunctionBegin;
   *newp          = 0;
 
-  PetscHeaderCreate(part,_p_Partitioning,int,PARTITIONING_COOKIE,initialtype,"Partitioning",comm,PartitioningDestroy,
-                    PartitioningView);
+  PetscHeaderCreate(part,_p_MatPartitioning,int,MATPARTITIONING_COOKIE,initialtype,"MatPartitioning",comm,MatPartitioningDestroy,
+                    MatPartitioningView);
   PLogObjectCreate(part);
   part->type               = -1;
   MPI_Comm_size(comm,&part->n);
 
   /* this violates rule about seperating abstract from implementions*/
-  ierr = PartitioningSetType(part,initialtype);CHKERRQ(ierr);
+  ierr = MatPartitioningSetType(part,initialtype);CHKERRQ(ierr);
   *newp = part;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningView"
+#define __FUNC__ "MatPartitioningView"
 /*@ 
-   PartitioningView - Prints the partitioning data structure.
+   MatPartitioningView - Prints the partitioning data structure.
 
    Input Parameters:
 .  part - the partitioning context
 .  viewer - optional visualization context
 
-   Collective on Partitioning unless Viewer is VIEWER_STDOUT_SELF
+   Collective on MatPartitioning unless Viewer is VIEWER_STDOUT_SELF
 
    Note:
    The available visualization contexts include
@@ -308,21 +308,21 @@ int PartitioningCreate(MPI_Comm comm,Partitioning *newp)
 
 .seealso: ViewerASCIIOpen()
 @*/
-int PartitioningView(Partitioning  part,Viewer viewer)
+int MatPartitioningView(MatPartitioning  part,Viewer viewer)
 {
   ViewerType  vtype;
   int         ierr;
   char        *name;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
   if (viewer) {PetscValidHeader(viewer);} 
   else { viewer = VIEWER_STDOUT_SELF;}
 
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = PartitioningGetType(part,PETSC_NULL,&name); CHKERRQ(ierr);
-    ViewerASCIIPrintf(viewer,"Partitioning Object: %s\n",name);
+    ierr = MatPartitioningGetType(part,PETSC_NULL,&name); CHKERRQ(ierr);
+    ViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -337,9 +337,9 @@ int PartitioningView(Partitioning  part,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningPrintHelp"
+#define __FUNC__ "MatPartitioningPrintHelp"
 /*@ 
-   PartitioningPrintHelp - Prints all options to the partitioning object.
+   MatPartitioningPrintHelp - Prints all options to the partitioning object.
 
    Input Parameters:
 .  part - the partitioning context
@@ -350,16 +350,16 @@ int PartitioningView(Partitioning  part,Viewer viewer)
 
 .seealso: 
 @*/
-int PartitioningPrintHelp(Partitioning  part)
+int MatPartitioningPrintHelp(MatPartitioning  part)
 {
   int         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,PARTITIONING_COOKIE);
-  if (!PartitioningRegisterAllCalled) {ierr = PartitioningRegisterAll(); CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
+  if (!MatPartitioningRegisterAllCalled) {ierr = MatPartitioningRegisterAll(); CHKERRQ(ierr);}
 
-  (*PetscHelpPrintf)(part->comm,"Partitioning options ----------------------------------------------\n");
-  NRPrintTypes(part->comm,stdout,part->prefix,"partitioning_type",__PartitioningList);
+  (*PetscHelpPrintf)(part->comm,"MatPartitioning options ----------------------------------------------\n");
+  NRPrintTypes(part->comm,stdout,part->prefix,"mat_partitioning_type",__MatPartitioningList);
 
   if (part->printhelp) {
     ierr = (*part->printhelp)(part);CHKERRQ(ierr);
@@ -369,29 +369,29 @@ int PartitioningPrintHelp(Partitioning  part)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningSetType"
+#define __FUNC__ "MatPartitioningSetType"
 /*@
-   PartitioningSetType - Sets the type of partitioner to use
+   MatPartitioningSetType - Sets the type of partitioner to use
 
    Input Parameter:
 .  part - the partitioning context.
 .  type - a known method
 
-   Collective on Partitioning
+   Collective on MatPartitioning
 
    Options Database Command:
-$  -partitioning_type  <type>
+$  -mat_partitioning_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, parmetis)
 
 .keywords: partitioning, set, method, type
 @*/
-int PartitioningSetType(Partitioning part,PartitioningType type)
+int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 {
-  int ierr,(*r)(Partitioning);
+  int ierr,(*r)(MatPartitioning);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,PARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
   if (part->type == (int) type) PetscFunctionReturn(0);
 
   if (part->setupcalled) {
@@ -401,46 +401,46 @@ int PartitioningSetType(Partitioning part,PartitioningType type)
     part->setupcalled = 0;
   }
   /* Get the function pointers for the method requested */
-  if (!PartitioningRegisterAllCalled) {ierr = PartitioningRegisterAll(); CHKERRQ(ierr);}
-  r =  (int (*)(Partitioning))NRFindRoutine( __PartitioningList, (int)type, (char *)0 );
+  if (!MatPartitioningRegisterAllCalled) {ierr = MatPartitioningRegisterAll(); CHKERRQ(ierr);}
+  r =  (int (*)(MatPartitioning))NRFindRoutine( __MatPartitioningList, (int)type, (char *)0 );
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");}
   if (part->data) PetscFree(part->data);
 
-  part->destroy      = ( int (*)(Partitioning )) 0;
-  part->view         = ( int (*)(Partitioning,Viewer) ) 0;
+  part->destroy      = ( int (*)(MatPartitioning )) 0;
+  part->view         = ( int (*)(MatPartitioning,Viewer) ) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PartitioningSetFromOptions"
+#define __FUNC__ "MatPartitioningSetFromOptions"
 /*@
-   PartitioningSetFromOptions - Sets various partitioing options from the 
+   MatPartitioningSetFromOptions - Sets various partitioing options from the 
         options database.
 
    Input Parameter:
 .  part - the partitioning context.
 
-   Collective on Partitioning
+   Collective on MatPartitioning
 
    Options Database Command:
-$  -partitioning_type  <type>
+$  -mat_partitioning_type  <type>
 $      Use -help for a list of available methods
 $      (for instance, parmetis)
 
 .keywords: partitioning, set, method, type
 @*/
-int PartitioningSetFromOptions(Partitioning part)
+int MatPartitioningSetFromOptions(MatPartitioning part)
 {
   int              ierr,flag;
-  PartitioningType type;
+  MatPartitioningType type;
 
   PetscFunctionBegin;
 
-  if (!__PartitioningList) {ierr = PartitioningRegisterAll();CHKERRQ(ierr);}
-  ierr = NRGetTypeFromOptions(part->prefix,"-partitioning_type",__PartitioningList,&type,&flag);CHKERRQ(ierr);
+  if (!__MatPartitioningList) {ierr = MatPartitioningRegisterAll();CHKERRQ(ierr);}
+  ierr = NRGetTypeFromOptions(part->prefix,"-mat_partitioning_type",__MatPartitioningList,&type,&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = PartitioningSetType(part,type);CHKERRQ(ierr);
+    ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
   }
   if (part->setfromoptions) {
     ierr = (*part->setfromoptions)(part);CHKERRQ(ierr);
@@ -448,7 +448,7 @@ int PartitioningSetFromOptions(Partitioning part)
 
   ierr = OptionsHasName(PETSC_NULL,"-help",&flag); CHKERRQ(ierr);
   if (flag) {
-    ierr = PartitioningPrintHelp(part);CHKERRQ(ierr);
+    ierr = MatPartitioningPrintHelp(part);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

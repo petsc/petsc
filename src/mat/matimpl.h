@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.96 1999/03/09 21:29:55 balay Exp balay $ */
+/* $Id: matimpl.h,v 1.97 1999/03/10 23:33:31 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -155,17 +155,17 @@ extern int MatGetMaps_Petsc(Mat,Map *,Map *);
     Object for partitioning graphs
 */
 
-struct _p_Partitioning {
+struct _p_MatPartitioning {
   PETSCHEADER(int)
   Mat         adj;
-  int         (*apply)(Partitioning,IS*);
-  int         (*setfromoptions)(Partitioning);
-  int         (*printhelp)(Partitioning);
+  int         (*apply)(MatPartitioning,IS*);
+  int         (*setfromoptions)(MatPartitioning);
+  int         (*printhelp)(MatPartitioning);
   int         n;                                 /* number of partitions */
   void        *data;
   int         setupcalled;
-  int         (*destroy)(Partitioning);
-  int         (*view)(Partitioning,Viewer);
+  int         (*destroy)(MatPartitioning);
+  int         (*view)(MatPartitioning,Viewer);
 };
 
 /*

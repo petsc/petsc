@@ -1,9 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
-"Tests copying and reordering uniprocessor row-based sparse matrices.\n\n";
+"Tests copying and ordering uniprocessor row-based sparse matrices.\n\n";
 
 #include "mat.h"
 
@@ -34,7 +34,7 @@ int main(int argc,char **args)
 
   ierr = MatConvert(C,MATSAME,&A); CHKERRA(ierr);
 
-  ierr = MatGetReordering(A,ORDER_ND,&perm,&iperm); CHKERRA(ierr);
+  ierr = MatGetOrdering(A,ORDER_ND,&perm,&iperm); CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = ISView(iperm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_SELF); CHKERRA(ierr);

@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex22.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex22.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests matrix reordering routines.\n\n";
+static char help[] = "Tests matrix ordering routines.\n\n";
 
 #include "mat.h"
 
@@ -31,17 +31,17 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = MatGetReordering(C,ORDER_ND,&perm,&iperm); CHKERRA(ierr);
+  ierr = MatGetOrdering(C,ORDER_ND,&perm,&iperm); CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = ISDestroy(perm); CHKERRA(ierr);
   ierr = ISDestroy(iperm); CHKERRA(ierr);
 
-  ierr = MatGetReordering(C,ORDER_RCM,&perm,&iperm); CHKERRA(ierr);
+  ierr = MatGetOrdering(C,ORDER_RCM,&perm,&iperm); CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = ISDestroy(perm); CHKERRA(ierr);
   ierr = ISDestroy(iperm); CHKERRA(ierr);
 
-  ierr = MatGetReordering(C,ORDER_QMD,&perm,&iperm); CHKERRA(ierr);
+  ierr = MatGetOrdering(C,ORDER_QMD,&perm,&iperm); CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = ISDestroy(perm); CHKERRA(ierr);
   ierr = ISDestroy(iperm); CHKERRA(ierr);

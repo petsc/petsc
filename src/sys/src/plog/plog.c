@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.206 1999/02/25 16:30:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.207 1999/03/09 21:03:17 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -248,7 +248,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "MatMatFreeMult  ",
                          "MatAssemblyBegin",
                          "MatAssemblyEnd  ",
-                         "MatGetReordering",
+                         "MatGetOrdering  ",
                          "MatMultTrans    ",
                          "MatMultAdd      ",
                          "MatMultTransAdd ",
@@ -1755,7 +1755,7 @@ int PLogEventActivateClass(int cookie)
     PLogEventActivate(MAT_MatrixFreeMult);
     PLogEventActivate(MAT_AssemblyBegin);
     PLogEventActivate(MAT_AssemblyEnd);
-    PLogEventActivate(MAT_GetReordering);
+    PLogEventActivate(MAT_GetOrdering);
     PLogEventActivate(MAT_MultTrans);
     PLogEventActivate(MAT_MultAdd);
     PLogEventActivate(MAT_MultTransAdd);
@@ -1857,7 +1857,7 @@ int PLogEventDeactivateClass(int cookie)
     PLogEventDeactivate(MAT_MatrixFreeMult);
     PLogEventDeactivate(MAT_AssemblyBegin);
     PLogEventDeactivate(MAT_AssemblyEnd);
-    PLogEventDeactivate(MAT_GetReordering);
+    PLogEventDeactivate(MAT_GetOrdering);
     PLogEventDeactivate(MAT_MultTrans);
     PLogEventDeactivate(MAT_MultAdd);
     PLogEventDeactivate(MAT_MultTransAdd);

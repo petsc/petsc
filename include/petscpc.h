@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.87 1999/02/08 16:58:36 balay Exp bsmith $ */
+/* $Id: pc.h,v 1.88 1999/03/10 17:15:33 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -112,17 +112,17 @@ extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 extern int PCShellSetName(PC,char*);
 extern int PCShellGetName(PC,char**);
 
-extern int PCLUSetMatReordering(PC,MatReorderingType);
-extern int PCLUSetReuseReordering(PC,PetscTruth);
+extern int PCLUSetMatOrdering(PC,MatOrderingType);
+extern int PCLUSetReuseOrdering(PC,PetscTruth);
 extern int PCLUSetReuseFill(PC,PetscTruth);
 
-extern int PCILUSetMatReordering(PC,MatReorderingType);
+extern int PCILUSetMatOrdering(PC,MatOrderingType);
 extern int PCLUSetUseInPlace(PC);
 extern int PCLUSetFill(PC,double);
 extern int PCILUSetUseInPlace(PC);
 extern int PCILUSetFill(PC,double);
 extern int PCILUSetLevels(PC,int);
-extern int PCILUSetReuseReordering(PC,PetscTruth);
+extern int PCILUSetReuseOrdering(PC,PetscTruth);
 extern int PCILUSetUseDropTolerance(PC,double,int);
 extern int PCILUSetReuseFill(PC,PetscTruth);
 extern int PCILUSetAllowDiagonalFill(PC);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.18 1998/12/03 04:01:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.19 1998/12/17 22:10:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -324,7 +324,7 @@ static struct _MatOps MatOps_Values = {0,
 
    Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 
-.seealso: MatCreate(), MatCreateSeqAdj(), MatGetReordering()
+.seealso: MatCreate(), MatCreateSeqAdj(), MatGetOrdering()
 @*/
 int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.15 1998/09/19 04:01:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.16 1999/03/01 04:58:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -108,7 +108,7 @@ typedef struct {
    the renumbering and movement of data among processors. In an actual 
    production run, IO of this type would be deactivated.
 
-   To use the ParMETIS partitioner run with the option -partitioning_type parmetis
+   To use the ParMETIS partitioner run with the option -mat_partitioning_type parmetis
    otherwise it defaults to the initial element partitioning induced when the data 
    is read in.
 
@@ -407,7 +407,7 @@ int DataPartitionElements(GridData *gdata)
   Mat          Adj;                /* adjacency matrix */
   int          *ia,*ja;
   int          mlocal_ele,n_ele,ierr;
-  Partitioning part;
+  MatPartitioning part;
   IS           isnewproc; 
 
   PetscFunctionBegin;
@@ -425,11 +425,11 @@ int DataPartitionElements(GridData *gdata)
   /*
       Create the partioning object
   */
-  ierr = PartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
-  ierr = PartitioningSetAdjacency(part,Adj); CHKERRQ(ierr);
-  ierr = PartitioningSetFromOptions(part);CHKERRQ(ierr);
-  ierr = PartitioningApply(part,&isnewproc);CHKERRQ(ierr);
-  ierr = PartitioningDestroy(part); CHKERRQ(ierr);
+  ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
+  ierr = MatPartitioningSetAdjacency(part,Adj); CHKERRQ(ierr);
+  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
+  ierr = MatPartitioningApply(part,&isnewproc);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(part); CHKERRQ(ierr);
 
   /*
        isnewproc - indicates for each local element the new processor it is assigned to

@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.125 1998/11/20 15:31:26 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.126 1999/03/01 04:59:18 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -22,7 +22,7 @@
 #define MAT_MatrixFreeMult                      1
 #define MAT_AssemblyBegin                       2
 #define MAT_AssemblyEnd                         3
-#define MAT_GetReordering                       4
+#define MAT_GetOrdering                         4
 #define MAT_MultTrans                           5
 #define MAT_MultAdd                             6
 #define MAT_MultTransAdd                        7

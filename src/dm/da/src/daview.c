@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.28 1999/03/01 04:58:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.29 1999/03/07 17:30:00 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -119,7 +119,32 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,
   PetscFunctionReturn(0);
 }  
 
+#undef __FUNC__  
+#define __FUNC__ "DAView_Binary"
+int DAView_Binary(DA da,Viewer viewer)
+{
+  int            rank,ierr;
+  MPI_Comm       comm;
 
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
+    FILE *file;
+
+    ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+    if (file) {
+      int            dim,m,n,p,dof,swidth;
+      DAStencilType  stencil;
+      DAPeriodicType periodic;
+
+      ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+      fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
+    }
+  } 
+  PetscFunctionReturn(0);
+}
 
 
 

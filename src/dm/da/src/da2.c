@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.115 1999/03/05 03:57:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.116 1999/03/07 17:30:00 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -110,6 +110,8 @@ int DAView_2d(DA da,Viewer viewer)
     }        
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+    ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

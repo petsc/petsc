@@ -1,16 +1,16 @@
 !
-!  $Id: mat.h,v 1.49 1999/02/09 15:12:02 bsmith Exp balay $;
+!  $Id: mat.h,v 1.50 1999/02/15 21:55:03 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
 #define Mat                 PetscFortranAddr
 #define MatFDColoring       PetscFortranAddr
-#define Partitioning        PetscFortranAddr
+#define MatPartitioning     PetscFortranAddr
 #define MatAIJIndices       PetscFortranAddr
 #define MatType             integer
 #define MatOption           integer 
 #define MatAssemblyType     integer
-#define MatReorderingType   integer
+#define MatOrderingType     integer
 #define MatSORType          integer
 #define MatInfoType         integer
 #define MatReuse            integer
@@ -19,7 +19,7 @@
 #define MatInfo             double precision
 #define MatILUInfo          double precision
 #define MatStructure        integer
-#define PartitioningType    integer
+#define MatPartitioningType integer
 
 !
 !  Matrix types
@@ -170,11 +170,11 @@
 !     
 !     Partitioning
 !     
-      integer PARTITIONING_CURRENT,PARTITIONING_PARMETIS
-      integer PARTITIONING_NEW           
+      integer MATPARTITIONING_CURRENT,MATPARTITIONING_PARMETIS
+      integer MATPARTITIONING_NEW           
 
-      parameter (PARTITIONING_CURRENT=0, PARTITIONING_PARMETIS=1)
-      parameter (PARTITIONING_NEW=2)
+      parameter (MATPARTITIONING_CURRENT=0, MATPARTITIONING_PARMETIS=1)
+      parameter (MATPARTITIONING_NEW=2)
 !
 !  MatOperation
 !

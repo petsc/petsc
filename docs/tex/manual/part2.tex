@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.310 1999/03/07 17:30:45 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.311 1999/03/10 17:21:18 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1826,7 +1826,7 @@ For problems that require mesh refinement, PETSc uses the ``rebuild the data str
 approach, as opposed to the ``maintain dynamic data structures that support the 
 insertion/deletion of additional vector and matrix rows and columns entries'' approach.
 
-Partitioning in PETSc is organized around the {\tt Partitioning} object. \findex{Partitioning}
+Partitioning in PETSc is organized around the {\tt MatPartitioning} object. \findex{MatPartitioning}
 One first creates a parallel matrix that contains the connectivity information about the 
 grid (or other graph-type object) that is to be partitioned. This is done with the 
 command
@@ -1873,17 +1873,17 @@ and (2) partition by vertex.
 Once the connectivity matrix has been created the following code will generate the 
 renumbering required for the new partition
 \begin{verbatim}
-  ierr = PartitioningCreate(MPI_Comm comm,Partitioning *part);
-  ierr = PartitioningSetAdjacency(Partitioning part,Mat Adj);
-  ierr = PartitioningSetFromOptions(Partitioning part);
-  ierr = PartitioningApply(Partitioning part,IS *is);
-  ierr = PartitioningDestroy(Partitioning part); 
+  ierr = MatPartitioningCreate(MPI_Comm comm,MatPartitioning *part);
+  ierr = MatPartitioningSetAdjacency(MatPartitioning part,Mat Adj);
+  ierr = MatPartitioningSetFromOptions(MatPartitioning part);
+  ierr = MatPartitioningApply(MatPartitioning part,IS *is);
+  ierr = MatPartitioningDestroy(MatPartitioning part); 
   ierr = MatDestroy(Mat Adj);
   ierr = ISPartitioningToNumbering(IS is,IS *isg);
 \end{verbatim}
-The \findex{PartitioningCreate()} \findex{PartitioningSetAdjacency()} 
-\findex{PartitioningSetFromOptions()} \findex{PartitioningApply()} 
-\findex{PartitioningDestroy()}  resulting {\tt isg} contains for each local node the new global
+The \findex{MatPartitioningCreate()} \findex{MatPartitioningSetAdjacency()} 
+\findex{MatPartitioningSetFromOptions()} \findex{MatPartitioningApply()} 
+\findex{MatPartitioningDestroy()}  resulting {\tt isg} contains for each local node the new global
 number of that node. The resulting {\tt is} contains the new processor number
 that each local node has been assigned to.
 
@@ -2483,20 +2483,20 @@ just a few in the sections below.
 Some of the options for ILU preconditioner are 
 \begin{verbatim}
    ierr = PCILUSetLevels(PC pc,int levels);
-   ierr = PCILUSetReuseReordering(PC pc,PetscTruth flag);
+   ierr = PCILUSetReuseOrdering(PC pc,PetscTruth flag);
    ierr = PCILUSetUseDropTolerance(PC pc,double dt,int dtcount);
    ierr = PCILUSetReuseFill(PC pc,PetscTruth flag);
    ierr = PCILUSetUseInPlace(PC pc); 
    ierr = PCILUSetAllowDiagonalFill(PC pc);
 \end{verbatim}
-\findex{PCILUSetLevels()} \findex{PCILUSetReuseReordering}
+\findex{PCILUSetLevels()} \findex{PCILUSetReuseOrdering}
 \findex{PCILUSetUseDropTolerance()} \findex{PCILUSetReuseFill()}
 \findex{PCILUSetUseInPlace()} \findex{PCILUSetAllowDiagonalFill()}
 
 When repeatedly solving linear systems with the same SLES
 context, one can reuse some information  computed
 during the first linear solve.
-In particular, {\tt PCILUSetReuseReordering()} causes the reordering  (for example, set with 
+In particular, {\tt PCILUSetReuseOrdering()} causes the ordering  (for example, set with 
 {\tt -mat\_order order}) computed in the first factorization to be reused
 for later factorizations. \sindex{orderings} 
 The {\tt  PCILUSetReuseFill()} causes the 
@@ -2509,14 +2509,14 @@ any ordering besides natural and cannot be used with the drop tolerance
 factorization. These options may be set in the database with 
 \begin{verbatim}
    -pc_ilu_levels <levels>
-   -pc_ilu_reuse_reordering
+   -pc_ilu_reuse_ordering
    -pc_ilu_use_drop_tolerance <dt>,<dtcount>
    -pc_ilu_reuse_fill
    -pc_ilu_in_place
    -pc_ilu_nonzeros_along_diagonal
    -pc_ilu_diagonal_fill
 \end{verbatim}
-\findex{-pc_ilu_levels} \findex{-pc_ilu_reuse_reordering}
+\findex{-pc_ilu_levels} \findex{-pc_ilu_reuse_ordering}
 \findex{-pc_ilu_use_drop_tolerance} \findex{-pc_ilu_reuse_fill}
 \findex{-pc_ilu_in_place} \findex{-pc_ilu_nonzeros_along_diagonal}
 \findex{-pc_ilu_diagonal_fill}
@@ -2687,7 +2687,7 @@ These orderings can also be set through the options database by specifying
 one of the following:  {\tt -mat\_order natural, -mat\_order nd, 
 -mat\_order 1wd, -mat\_order rcm, -mat\_order qmd}.
 In addition, see 
-\break {\tt MatGetReordering()}, discussed in Section~\ref{sec:matfactor}.
+\break {\tt MatGetOrdering()}, discussed in Section~\ref{sec:matfactor}.
 
 The sparse LU factorization provided in PETSc does not perform pivoting for 
 numerical stability (since they are designed to preserve nonzero 
@@ -7051,9 +7051,9 @@ matrix factorizations are split into \sindex{LU}
 two or three stages depending on the user's needs. The first stage is 
 to calculate an ordering for the matrix.  The ordering generally is 
 done to reduce fill in a sparse factorization; it does not make much 
-sense for a dense matrix. \findex{MatGetReordering()} \sindex{reorder}
+sense for a dense matrix. \findex{MatGetOrdering()} \sindex{reorder}
 \begin{verbatim}
-   ierr = MatGetReordering(Mat matrix,MatReorderingType type,IS* rowperm,IS* colperm); 
+   ierr = MatGetOrdering(Mat matrix,MatOrderingType type,IS* rowperm,IS* colperm); 
 \end{verbatim}
 The currently available alternatives for the ordering {\tt type} are 
 \begin{itemize}
@@ -7073,24 +7073,24 @@ one of the following:  {\tt -mat\_order natural, -mat\_order nd,
 Certain matrix formats may support only a subset of these; more options may 
 be added. Check the manual pages for up-to-date information. All of these orderings are 
 symmetric at the moment; ordering routines that are 
-not symmetric may be added. Currently we support reorderings only for 
+not symmetric may be added. Currently we support orderings only for 
 sequential matrices.
 
-Users can add their own reordering routines 
+Users can add their own ordering routines 
 by providing a function with the calling sequence
 \begin{verbatim}
-   int reorder(Mat A,MatReorderingType type,IS* rowperm,IS* colperm);
+   int reorder(Mat A,MatOrderingType type,IS* rowperm,IS* colperm);
 \end{verbatim}
 Here {\tt A} is the matrix for which we wish to generate a new ordering, 
 {\tt type} may be ignored and {\tt rowperm} and {\tt colperm} are the row
-and column permutations generated by the reordering routine.
-The user registers the reordering routine
+and column permutations generated by the ordering routine.
+The user registers the ordering routine
 with the command
 \begin{verbatim}
-   ierr = MatReorderingRegister(MatReorderingType inname,MatReorderingType *name,char *sname,
-                                int (*reorder)(Mat,MatReorderingType,IS*,IS*)));
+   ierr = MatOrderingRegister(MatOrderingType inname,MatOrderingType *name,char *sname,
+                                int (*reorder)(Mat,MatOrderingType,IS*,IS*)));
 \end{verbatim}
-The \findex{MatReorderingRegister()} \sindex{reordering} \sindex{matrix reordering}
+The \findex{MatOrderingRegister()} \sindex{ordering} \sindex{matrix ordering}
 input argument {\tt *sname} is a string of the user's choice, {\tt iname} is either 
 an ordering defined in {\tt mat.h} or {ORDER\_NEW} \findex{ORDER_NEW},
 to indicate one is introducing a new ordering, while the output
@@ -7102,7 +7102,7 @@ Once the reordering routine has been registered,
 it can be selected for use at runtime with the
 command line option {\tt -mat\_order sname}.  If reordering directly,
 the user should provide the {\tt name} as the second input argument of
-{\tt MatGetReordering()}.
+{\tt MatGetOrdering()}.
 
 The following routines perform complete, in-place, symbolic, and numerical 
 factorizations for symmetric and nonsymmetric matrices, respectively:
@@ -7162,7 +7162,7 @@ We do not currently support sparse matrix factorization with pivoting
 for numerical stability. This is because trying to both reduce fill
 and do pivoting can become quite complicated. Instead, we provide a 
 poor stepchild substitute. After one has obtained a reordering, with
-{\tt MatGetRordering(Mat A,MatOrdering type,IS *row,IS *col)} one
+{\tt MatGetOrdering(Mat A,MatOrdering type,IS *row,IS *col)} one
 may call
 \begin{verbatim}
    ierr = MatReorderForNonzeroDiagonal(Mat A,double tol,IS row, IS col);

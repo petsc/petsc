@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ij.c,v 1.27 1997/07/09 20:53:48 balay Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.28 1997/10/19 03:25:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: ij.c,v 1.27 1997/07/09 20:53:48 balay Exp bsmith $";
     Input Parameters:
 .   Matrix - matrix to convert
 .   shiftin - the shift for the original matrix (0 or 1)
-.   shiftout - the shift required for the reordering routine (0 or 1)
+.   shiftout - the shift required for the ordering routine (0 or 1)
 
     Output Parameters:
 .   ia     - ia part of IJ representation (row information)
