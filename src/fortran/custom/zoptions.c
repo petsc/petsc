@@ -228,27 +228,27 @@ void   *PETSC_NULL_REAL_Fortran      = 0;
 EXTERN_C_BEGIN
 void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
-PetscInt PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
+size_t PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
 {
-  unsigned long tmp1 = (unsigned long) base,tmp2 = 0;
-  unsigned long tmp3 = (unsigned long) addr;
-  long          itmp2;
+  size_t tmp1 = (size_t) base,tmp2 = 0;
+  size_t tmp3 = (size_t) addr;
+  size_t itmp2;
 
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1)/sizeof(PetscInt);
-    itmp2 = (long) tmp2;
+    itmp2 = (size_t) tmp2;
   } else {
     tmp2  = (tmp1 - tmp3)/sizeof(PetscInt);
-    itmp2 = -((long) tmp2);
+    itmp2 = -((size_t) tmp2);
   }
 #else
   if (tmp3 > tmp1) {
     tmp2  = (tmp3 - tmp1);
-    itmp2 = (long) tmp2;
+    itmp2 = (size_t) tmp2;
   } else {
     tmp2  = (tmp1 - tmp3);
-    itmp2 = -((long) tmp2);
+    itmp2 = -((size_t) tmp2);
   }
 #endif
 
@@ -274,34 +274,31 @@ PetscInt *PetscIntAddressFromFortran(PetscInt *base,PetscInt addr)
        shift - number of bytes that prevent base and addr from being commonly aligned
        N - size of the array
 
-   To fix! If tmp2 is larger than a signed long can handle MUST genrate error,
- currently we just stick into the signed and don't check.
-
 */
-PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *addr,PetscInt N,PetscInt *res)
+PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *addr,PetscInt N,size_t *res)
 {
-  unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(PetscScalar);
-  unsigned long tmp3 = (unsigned long) addr;
-  long          itmp2;
-  PetscInt      shift;
+  size_t   tmp1 = (size_t) base,tmp2 = tmp1/sizeof(PetscScalar);
+  size_t   tmp3 = (size_t) addr;
+  size_t   itmp2;
+  PetscInt shift;
 
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1)/sizeof(PetscScalar);
-    itmp2 = (long) tmp2;
+    itmp2 = (size_t) tmp2;
     shift = (sizeof(PetscScalar) - (int)((tmp3 - tmp1) % sizeof(PetscScalar))) % sizeof(PetscScalar);
   } else {  
     tmp2  = (tmp1 - tmp3)/sizeof(PetscScalar);
-    itmp2 = -((long) tmp2);
+    itmp2 = -((size_t) tmp2);
     shift = (int)((tmp1 - tmp3) % sizeof(PetscScalar));
   }
 #else
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
     tmp2  = (tmp3 - tmp1);
-    itmp2 = (long) tmp2;
+    itmp2 = (size_t) tmp2;
   } else {  
     tmp2  = (tmp1 - tmp3);
-    itmp2 = -((long) tmp2);
+    itmp2 = -((size_t) tmp2);
   }
   shift = 0;
 #endif
@@ -328,14 +325,14 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
     ierr = PetscObjectContainerSetPointer(container,addr);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",(PetscObject)container);CHKERRQ(ierr);
 
-    tmp3 = (unsigned long) work;
+    tmp3 = (size_t) work;
     if (tmp3 > tmp1) {  /* C is bigger than Fortran */
       tmp2  = (tmp3 - tmp1)/sizeof(PetscScalar);
-      itmp2 = (long) tmp2;
+      itmp2 = (size_t) tmp2;
       shift = (sizeof(PetscScalar) - (int)((tmp3 - tmp1) % sizeof(PetscScalar))) % sizeof(PetscScalar);
     } else {  
       tmp2  = (tmp1 - tmp3)/sizeof(PetscScalar);
-      itmp2 = -((long) tmp2);
+      itmp2 = -((size_t) tmp2);
       shift = (int)((tmp1 - tmp3) % sizeof(PetscScalar));
     }
     if (shift) {
