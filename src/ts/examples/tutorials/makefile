@@ -37,6 +37,10 @@ ex2f: ex2f.o util2.o chkopts
 	-$(FLINKER) -o ex2f ex2f.o util2.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex2f.o util2.o
 
+sif: sif.o util2.o chkopts
+	-$(FLINKER) -o sif sif.o util2.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) sif.o util2.o
+
 runex1:
 	-@$(MPIRUN) -np 1 ex1  > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \

@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.8 1997/02/05 22:03:21 bsmith Exp balay $";
+C "$Id: ex1f.F,v 1.9 1997/07/10 15:50:06 balay Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -28,26 +28,26 @@ C23456789012345678901234567890123456789012345678901234567890123456789012
       parameter (linear_no_matrix = 0,linear_no_time = 1,linear = 2,
      &           nonlinear_no_jacobian = 3,nonlinear = 4)
 
-      integer         ierr,  time_steps, steps, flg, size, problem
-      Vec             local, global
-      Double          dt,ftime,zero,tmax
-      TS              ts
-      TSType          type
-      Mat             A
-      MatStructure    A_structure
-      TSProblemType   tsproblem
-      Draw            draw
-      Viewer          viewer
-      character*(60)  tsinfo
+      integer          ierr,  time_steps, steps, flg, size, problem
+      Vec              local, global
+      double precision dt,ftime,zero,tmax
+      TS               ts
+      TSType           type
+      Mat              A
+      MatStructure     A_structure
+      TSProblemType    tsproblem
+      Draw             draw
+      Viewer           viewer
+      character*(60)   tsinfo
 
 C
 C    Application context data, stored in common block
 C
-      Vec            localwork,csolution
-      DA             da
-      Viewer         viewer1,viewer2
-      integer        M
-      Double         h,nrm_2,nrm_max,nox
+      Vec              localwork,csolution
+      DA               da
+      Viewer           viewer1,viewer2
+      integer          M
+      double precision h,nrm_2,nrm_max,nox
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
@@ -261,15 +261,15 @@ C  -------------------------------------------------------------------
 C
 C    Application context data, stored in common block
 C
-      Vec            localwork,csolution
-      DA             da
-      Viewer         viewer1,viewer2
-      integer        M
-      Double         h,nrm_2,nrm_max,nox
+      Vec              localwork,csolution
+      DA               da
+      Viewer           viewer1,viewer2
+      integer          M
+      double precision h,nrm_2,nrm_max,nox
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
-      Double    PETSC_PI
+      double precision    PETSC_PI
       parameter (PETSC_PI = 3.14159265358979)
 
 C   determine starting point of each processor 
@@ -302,9 +302,9 @@ C
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
 #include "FINCLUDE/viewer.h"
-      Double  t
-      Vec     sol
-      integer ctx
+      double precision  t
+      Vec               sol
+      integer           ctx
 
       Scalar  localptr(1),ex1,ex2,sc1,sc2
       integer i,mybase,myend,ierr,idx
@@ -312,15 +312,15 @@ C
 C
 C    Application context data, stored in common block
 C
-      Vec            localwork,csolution
-      DA             da
-      Viewer         viewer1,viewer2
-      integer        M
-      Double         h,nrm_2,nrm_max,nox
+      Vec               localwork,csolution
+      DA                da
+      Viewer            viewer1,viewer2
+      integer           M
+      double precision  h,nrm_2,nrm_max,nox
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
-      Double    PETSC_PI
+      double precision    PETSC_PI
       parameter (PETSC_PI = 3.14159265358979)
 
 C   determine starting point of each processor 
@@ -354,20 +354,20 @@ C ------------------------------------------------------------------------------
 #include "FINCLUDE/ts.h"
 #include "FINCLUDE/draw.h"
 #include "FINCLUDE/viewer.h"
-      TS      ts
-      integer step,ctx,ierr
-      Double  time,lnrm_2,lnrm_max
-      Vec     global
-      Scalar  mone
+      TS                ts
+      integer           step,ctx,ierr
+      double precision  time,lnrm_2,lnrm_max
+      Vec               global
+      Scalar            mone
 
 C
 C    Application context data, stored in common block
 C
-      Vec            localwork,csolution
-      DA             da
-      Viewer         viewer1,viewer2
-      integer        M
-      Double         h,nrm_2,nrm_max,nox
+      Vec              localwork,csolution
+      DA               da
+      Viewer           viewer1,viewer2
+      integer          M
+      double precision h,nrm_2,nrm_max,nox
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
@@ -406,10 +406,10 @@ C  -----------------------------------------------------------------------
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
 #include "FINCLUDE/viewer.h"
-      Mat     mat
-      Vec     x,y
-      integer ierr
-      Double  zero
+      Mat              mat
+      Vec              x,y
+      integer          ierr
+      double precision zero
 
       zero = 0.0
 
@@ -430,23 +430,23 @@ C -------------------------------------------------------------------------
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
 #include "FINCLUDE/viewer.h"
-      TS      ts
-      Double  t
-      Vec     globalin, globalout
-      integer ctx
-      Vec     local
-      integer ierr,i,localsize,cdx,ldx 
-      Scalar  copyptr(1), localptr(1),sc
-      common  copyptr, localptr
+      TS               ts
+      double precision t
+      Vec              globalin, globalout
+      integer          ctx
+      Vec              local
+      integer          ierr,i,localsize,cdx,ldx 
+      Scalar           copyptr(1), localptr(1),sc
+      common           copyptr, localptr
 
 C
 C    Application context data, stored in common block
 C
-      Vec            localwork,csolution
-      DA             da
-      Viewer         viewer1,viewer2
-      integer        M
-      Double         h,nrm_2,nrm_max,nox
+      Vec              localwork,csolution
+      DA               da
+      Viewer           viewer1,viewer2
+      integer          M
+      double precision h,nrm_2,nrm_max,nox
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
@@ -494,24 +494,24 @@ C  ---------------------------------------------------------------------
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
 #include "FINCLUDE/viewer.h"
-      Mat          AA,BB
-      Double       t
-      TS           ts
-      MatStructure str
-      integer      ctx,ierr
+      Mat              AA,BB
+      double precision t
+      TS               ts
+      MatStructure     str
+      integer          ctx,ierr
 
-      Mat          A
-      integer      i,mstart,mend,rank,size, idx(3)
-      Scalar       v(3),stwo, sone
+      Mat              A
+      integer          i,mstart,mend,rank,size, idx(3)
+      Scalar           v(3),stwo, sone
 
 C
 C    Application context data, stored in common block
 C
-      Vec            localwork,csolution
-      DA             da
-      Viewer         viewer1,viewer2
-      integer        M
-      Double         h,nrm_2,nrm_max,nox
+      Vec              localwork,csolution
+      DA               da
+      Viewer           viewer1,viewer2
+      integer          M
+      double precision h,nrm_2,nrm_max,nox
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
 
@@ -566,12 +566,12 @@ C ------------------------------------------------------------------------------
 #include "FINCLUDE/snes.h"
 #include "FINCLUDE/ts.h"
 #include "FINCLUDE/viewer.h"
-      TS           ts
-      Double       t
-      Vec          x
-      Mat          AA,BB
-      MatStructure str
-      integer      ctx,ierr
+      TS               ts
+      double precision t
+      Vec              x
+      Mat              AA,BB
+      MatStructure     str
+      integer          ctx,ierr
 
       call RHSMatrixHeat(ts,t,AA,BB,str,ctx,ierr)
       return

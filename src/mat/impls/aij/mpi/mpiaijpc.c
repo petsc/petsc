@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.29 1997/04/10 00:02:50 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.30 1997/07/09 20:54:04 balay Exp bsmith $";
 #endif
 /*
-   Defines a block Jacobi preconditioner for the MPIAIJ format.
+   Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
    Handles special case of  single block per processor.
-   This file knows about storage formats for MPIAIJ matrices.
+   This file knows about storage formats for SeqMPI/MPIAIJ matrices.
    The general case is handled in aijpc.c
 */
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -138,15 +138,78 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
     sles = jac->sles[0];
     bjac = (PC_BJacobi_MPIAIJ *)jac->data;
   }
-  /* if (jac->l_true[0] == USE_TRUE_MATRIX) {
-    ierr = SLESSetOperators(sles,matin->A,matin->A,pc->flag);
-  }
-  else */ if (jac->use_true_local)
-    ierr = SLESSetOperators(sles,matin->A,pmatin->A,pc->flag);
-  else
-    ierr = SLESSetOperators(sles,pmatin->A,pmatin->A,pc->flag);
-  CHKERRQ(ierr);
+  if (jac->use_true_local) {
+    ierr = SLESSetOperators(sles,matin->A,pmatin->A,pc->flag); CHKERRQ(ierr);
+  }  else {
+    ierr = SLESSetOperators(sles,pmatin->A,pmatin->A,pc->flag); CHKERRQ(ierr);
+  }   
   return 0;
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PCSetUp_BJacobi_SeqAIJ"
+int PCSetUp_BJacobi_SeqAIJ(PC pc)
+{
+  PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
+  Mat               mat = pc->mat, pmat = pc->pmat;
+  int               ierr, m;
+  SLES              sles;
+  Vec               x,y;
+  PC_BJacobi_MPIAIJ *bjac;
+  KSP               subksp;
+  PC                subpc;
+  MatType           type;
+
+  if (jac->use_true_local) {
+    MatGetType(mat,&type,PETSC_NULL);
+    if (type != MATSEQAIJ) SETERRQ(1,0,"Incompatible matrix type.");
+  }
+
+  /* set default direct solver with no Krylov method */
+  if (!pc->setupcalled) {
+    char *prefix;
+    ierr = SLESCreate(PETSC_COMM_SELF,&sles); CHKERRQ(ierr);
+    PLogObjectParent(pc,sles);
+    ierr = SLESGetKSP(sles,&subksp); CHKERRQ(ierr);
+    ierr = KSPSetType(subksp,KSPPREONLY); CHKERRQ(ierr);
+    ierr = SLESGetPC(sles,&subpc); CHKERRQ(ierr);
+    ierr = PCSetType(subpc,PCILU); CHKERRQ(ierr);
+    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+    ierr = SLESSetOptionsPrefix(sles,prefix); CHKERRQ(ierr);
+    ierr = SLESAppendOptionsPrefix(sles,"sub_"); CHKERRQ(ierr);
+    ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
+/*
+   This is not so good. The only reason we need to generate this vector
+  is so KSP may generate seq vectors for the local solves
+*/
+    ierr = MatGetSize(pmat,&m,&m); CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x); CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y); CHKERRQ(ierr);
+    PLogObjectParent(pc,x);
+    PLogObjectParent(pc,y);
+
+    pc->destroy       = PCDestroy_BJacobi_MPIAIJ;
+    pc->apply         = PCApply_BJacobi_MPIAIJ;
+    pc->setuponblocks = PCSetUpOnBlocks_BJacobi_MPIAIJ;
+
+    bjac         = (PC_BJacobi_MPIAIJ *) PetscMalloc(sizeof(PC_BJacobi_MPIAIJ));CHKPTRQ(bjac);
+    PLogObjectMemory(pc,sizeof(PC_BJacobi_MPIAIJ));
+    bjac->x      = x;
+    bjac->y      = y;
+
+    jac->sles    = (SLES*) PetscMalloc( sizeof(SLES) ); CHKPTRQ(jac->sles);
+    jac->sles[0] = sles;
+    jac->data    = (void *) bjac;
+  }
+  else {
+    sles = jac->sles[0];
+    bjac = (PC_BJacobi_MPIAIJ *)jac->data;
+  }
+  if (jac->use_true_local) {
+    ierr = SLESSetOperators(sles,mat,pmat,pc->flag); CHKERRQ(ierr);
+  }  else {
+    ierr = SLESSetOperators(sles,pmat,pmat,pc->flag); CHKERRQ(ierr);
+  }   
+  return 0;
+}
 

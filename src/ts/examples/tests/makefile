@@ -34,7 +34,7 @@ ex2: ex2.o  chkopts
 	$(RM) ex2.o
 
 ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o -L$(LDIR) -lpetscts $(PETSC_LIB)
+	-$(CLINKER) -o ex3 ex3.o -L$(LDIR) -lpetscts $(GVEC_LIB)
 	$(RM) ex3.o
 
 ex4: ex4.o  chkopts

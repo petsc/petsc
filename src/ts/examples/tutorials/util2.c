@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.2 1997/06/09 03:36:38 curfman Exp balay $";
+static char vcid[] = "$Id: util2.c,v 1.3 1997/07/09 20:58:39 balay Exp bsmith $";
 #endif
 
 /*
@@ -60,21 +60,17 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
   double   amax, epsilon = 1.e-8; /* assumes double precision */
   double   dx_min = 1.e-16, dx_par = 1.e-1;
   MPI_Comm comm;
-  SNES     snes = ts->snes;
+
+  ierr = VecDuplicate(xx1,&jj1); CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&jj2); CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&xx2); CHKERRQ(ierr);
 
   PetscObjectGetComm((PetscObject)xx1,&comm);
   MatZeroEntries(*J);
-  if (!snes->nvwork) {
-    ierr = VecDuplicateVecs(xx1,3,&snes->vwork); CHKERRQ(ierr);
-    snes->nvwork = 3;
-    PLogObjectParents(snes,3,snes->vwork);
-  }
-  jj1 = snes->vwork[0]; jj2 = snes->vwork[1]; xx2 = snes->vwork[2];
 
   ierr = VecGetSize(xx1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end); CHKERRQ(ierr);
   VecGetArray(xx1,&xx);
-  /* ierr = eval_fct(snes,xx1,jj1); CHKERRQ(ierr); */
   ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1); CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time.
@@ -119,5 +115,10 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
+
+  ierr = VecDestroy(jj1); CHKERRQ(ierr);
+  ierr = VecDestroy(jj2); CHKERRQ(ierr);
+  ierr = VecDestroy(xx2); CHKERRQ(ierr);
+
   return 0;
 }

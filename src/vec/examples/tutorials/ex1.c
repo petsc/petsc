@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.38 1997/01/22 18:41:37 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.39 1997/07/09 20:50:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates various vector routines\n\n";
@@ -33,6 +33,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+
 
   /* 
      Create a vector, specifying only its global dimension.

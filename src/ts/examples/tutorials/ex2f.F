@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.9 1997/07/11 20:13:29 balay Exp balay $";
+C "$Id: ex2f.F,v 1.10 1997/07/25 00:45:41 balay Exp bsmith $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -80,12 +80,12 @@ C        double precision x(*).
 C  However, local vector data can be easily accessed via VecGetArray().
 C  See the Fortran section of the PETSc users manual for details.
 
-      TS       ts
-      Vec      local, global
-      Mat      A
-      integer  flg, ierr
-      integer  time_steps, steps
-      Double   dt, ftime, duration
+      TS               ts
+      Vec              local, global
+      Mat              A
+      integer          flg, ierr
+      integer          time_steps, steps
+      double precision dt, ftime, duration
 
 C  Note: Any user-defined Fortran routines (such as RHSFunction)
 C  MUST be declared as external.
@@ -237,8 +237,8 @@ C  Input/output parameters:
       Vec     global
 
 C  Local variables:
-      Double  localptr(1), x
-      integer i, mybase, myend, ierr, idx
+      double  precision localptr(1), x
+      integer           i, mybase, myend, ierr, idx
 
 C  Determine starting and ending point of each processor's range of
 C  grid values.  Note that we shift by 1 to convert from the 0-based
@@ -296,12 +296,12 @@ C
 #include "ex2f.h"
 
 C  Input/output parameters:
-      Double  t, x
-      integer ierr
+      double precision  t, x
+      integer           ierr
 
 C  Local variables:
-      Double  localptr(1)
-      integer i, mybase, myend, idx
+      double precision  localptr(1)
+      integer           i, mybase, myend, idx
 
 C  Determine starting and ending point of each processors range of
 C  grid values.  Note that we shift by 1 to convert from the 0-based
@@ -350,16 +350,16 @@ C   global - the solution at this timestep
 #include "ex2f.h"
 
 C  Input/output parameters:
-      TS      ts
-      integer step, dummy
-      Double  time
-      Vec     global
+      TS               ts
+      integer          step, dummy
+      double precision time
+      Vec              global
 
 C  Local variables:
-      integer  ierr
-      Double   en2, en2s, enmax
-      Double   mone
-      Draw     draw
+      integer          ierr
+      double precision en2, en2s, enmax
+      double precision mone
+      Draw             draw
 
       mone = -1.0d0
 
@@ -434,15 +434,15 @@ C
 #include "ex2f.h"
 
 C  Input/output parameters:
-      TS           ts
-      Double       t
-      Vec          globalin, globalout
-      integer      dummy
+      TS               ts
+      double precision t
+      Vec              globalin, globalout
+      integer          dummy
 
 C  Local variables:
-      Vec    local
-      Double  localptr(1), copyptr(1), sc
-      integer i, il, ierr, idx_c, idx_l, localsize
+      Vec              local
+      double precision localptr(1), copyptr(1), sc
+      integer          i, il, ierr, idx_c, idx_l, localsize
 
 C  The vector 'local' will be a workspace that contains the ghost region
 
@@ -536,18 +536,18 @@ C     in Fortran as well as in C.
 #include "ex2f.h"
 
 C  Input/output parameters:
-      TS           ts
-      Double       t
-      Vec          globalin
-      Mat          A, B
-      MatStructure str
-      integer      dummy
+      TS               ts
+      double precision t
+      Vec              globalin
+      Mat              A, B
+      MatStructure     str
+      integer          dummy
 
 C  Local variables:
-      Vec     local
-      Double  localptr(1), sc, v(3)
-      integer i, ierr, idx, col(3), is
-      integer mstart, mend, mstarts, mends
+      Vec              local
+      double precision localptr(1), sc, v(3)
+      integer          i, ierr, idx, col(3), is
+      integer          mstart, mend, mstarts, mends
 
 C  Extract local array
       call DAGetLocalVector(da,local,ierr)

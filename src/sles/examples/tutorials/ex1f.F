@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.13 1997/01/01 03:39:14 bsmith Exp balay $";
+C    "$Id: ex1f.F,v 1.14 1997/07/12 16:14:16 balay Exp bsmith $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -67,17 +67,14 @@ C     A        - matrix that defines linear system
 C     its      - iterations for convergence
 C     norm     - norm of error in solution
 C
-C  Note:  "Double" -> "double precision" except for machines such
-C          as the Cray T3d, where "Double" -> "real"
-
-      Vec      x, b, u
-      Mat      A 
-      KSP      ksp
-      PC       pc
-      SLES     sles
-      Double   norm,tol
-      integer  ierr, i, n, col(3), its, flg, size, rank
-      Scalar   none, one, value(3)
+      Vec              x, b, u
+      Mat              A 
+      KSP              ksp
+      PC               pc
+      SLES             sles
+      double precision norm,tol
+      integer          ierr, i, n, col(3), its, flg, size, rank
+      Scalar           none, one, value(3)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program

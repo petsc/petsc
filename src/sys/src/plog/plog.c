@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.162 1997/07/24 23:34:31 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.163 1997/08/07 02:50:47 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -196,7 +196,7 @@ int PLogEventFlags[] = {1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1,
                         1,1,1,1,1,
                         1,1,1,1,1,
-                        1,1,1,1,1, /* 100 - 124 */ 
+                        1,0,0,1,1, /* 100 - 124 */ 
                         1,1,1,1,1,
                         1,1,1,1,1,
                         1,1,1,1,1,
@@ -436,6 +436,9 @@ PLogDouble irecv_ct = 0.0,isend_ct = 0.0,wait_ct = 0.0,wait_any_ct = 0.0;
 PLogDouble irecv_len = 0.0,isend_len = 0.0,recv_len = 0.0, send_len = 0.0;
 PLogDouble send_ct = 0.0,recv_ct = 0.0;
 PLogDouble wait_all_ct = 0.0,allreduce_ct = 0.0,sum_of_waits_ct = 0.0;
+
+/* used in the MPI_Allreduce() macro */
+int PETSC_DUMMY;
 
 /*
     Log counters in this file only 
@@ -1280,6 +1283,10 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
   /* pop off any stages the user forgot to remove */
   while (EventsStagePushed) PLogStagePop();
+
+  /* turn off profiling of MPI reductions */
+  PLogEventDeactivate(MPI_ReduceSync);
+  PLogEventDeactivate(MPI_ReduceComp);
 
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
   MPI_Comm_size(comm,&size);

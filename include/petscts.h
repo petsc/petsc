@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.14 1997/05/23 18:33:48 balay Exp bsmith $ */
+/* $Id: ts.h,v 1.15 1997/07/29 14:13:39 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -65,6 +65,10 @@ extern int TSView(TS,Viewer);
 
 extern int TSSetApplicationContext(TS,void *);
 extern int TSGetApplicationContext(TS,void **);
+
+extern int TSLGMonitorCreate(char *,char *,int,int,int,int, DrawLG *);
+extern int TSLGMonitor(TS,int,double,Vec,void *);
+extern int TSLGMonitorDestroy(DrawLG);
 
 /*
        PETSc interface to PVode

@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.4 1997/01/01 03:35:47 bsmith Exp bsmith $"
+C    "$Id: ex1f.F,v 1.5 1997/01/22 18:41:37 bsmith Exp bsmith $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
@@ -38,14 +38,11 @@ C
 C  Variables:
 C     x, y, w - vectors
 C     z       - array of vectors
-C
-C  Note:  "Double" -> "double precision" except for machines such
-C          as the Cray T3d, where "Double" -> "real"
 
-      Vec     x, y, w, z(5)
-      Double  norm, v, v1, v2
-      integer n, ierr, flg, rank
-      Scalar  one, two, three, dots(3), dot
+      Vec              x, y, w, z(5)
+      double precision norm, v, v1, v2
+      integer          n, ierr, flg, rank
+      Scalar           one, two, three, dots(3), dot
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program

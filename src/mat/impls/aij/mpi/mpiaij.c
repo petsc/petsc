@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.210 1997/07/16 22:00:13 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.211 1997/07/29 14:09:26 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -28,32 +28,6 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 }
 
 extern int DisAssemble_MPIAIJ(Mat);
-
-#undef __FUNC__  
-#define __FUNC__ "MatGetRowIJ_MPIAIJ"
-int MatGetRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
-                           PetscTruth *done)
-{
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int        ierr;
-  if (aij->size == 1) {
-    ierr = MatGetRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
-  } else SETERRQ(1,0,"not supported in parallel");
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRowIJ_MPIAIJ" /* ADIC Ignore */
-int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
-                               PetscTruth *done)
-{
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  int        ierr;
-  if (aij->size == 1) {
-    ierr = MatRestoreRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
-  } else SETERRQ(1,0,"not supported in parallel");
-  return 0;
-}
 
 #define CHUNKSIZE   15
 #define MatSetValues_SeqAIJ_A_Private(row,col,value,addv) \
@@ -1076,15 +1050,6 @@ int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   return 0;
 }
 
-extern int MatLUFactorSymbolic_MPIAIJ(Mat,IS,IS,double,Mat*);
-extern int MatLUFactorNumeric_MPIAIJ(Mat,Mat*);
-extern int MatLUFactor_MPIAIJ(Mat,IS,IS,double);
-extern int MatILUFactorSymbolic_MPIAIJ(Mat,IS,IS,double,int,Mat *);
-extern int MatSolve_MPIAIJ(Mat,Vec,Vec);
-extern int MatSolveAdd_MPIAIJ(Mat,Vec,Vec,Vec);
-extern int MatSolveTrans_MPIAIJ(Mat,Vec,Vec);
-extern int MatSolveTransAdd_MPIAIJ(Mat,Vec,Vec,Vec);
-
 #undef __FUNC__  
 #define __FUNC__ "MatSetOption_MPIAIJ" /* ADIC Ignore */
 int MatSetOption_MPIAIJ(Mat A,MatOption op)
@@ -1575,25 +1540,20 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   Mat_MPIAIJ   *b;
   int          ierr, i,sum[2],work[2],size;
 
+  MPI_Comm_size(comm,&size);
+  if (size == 1) {
+    if (M == PETSC_DECIDE) M = m;
+    if (N == PETSC_DECIDE) N = n;
+    ierr = MatCreateSeqAIJ(comm,M,N,d_nz,d_nnz,A); CHKERRQ(ierr);
+    return 0;
+  }
+
   *A = 0;
   PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIAIJ,comm);
   PLogObjectCreate(B);
   B->data       = (void *) (b = PetscNew(Mat_MPIAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAIJ));
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
-  MPI_Comm_size(comm,&size);
-  if (size == 1) {
-    B->ops.getrowij          = MatGetRowIJ_MPIAIJ;
-    B->ops.restorerowij      = MatRestoreRowIJ_MPIAIJ;
-    B->ops.lufactorsymbolic  = MatLUFactorSymbolic_MPIAIJ;
-    B->ops.lufactornumeric   = MatLUFactorNumeric_MPIAIJ;
-    B->ops.lufactor          = MatLUFactor_MPIAIJ;
-    B->ops.solve             = MatSolve_MPIAIJ;
-    B->ops.solveadd          = MatSolveAdd_MPIAIJ;
-    B->ops.solvetrans        = MatSolveTrans_MPIAIJ;
-    B->ops.solvetransadd     = MatSolveTransAdd_MPIAIJ;
-    B->ops.ilufactorsymbolic = MatILUFactorSymbolic_MPIAIJ;
-  }
   B->destroy    = MatDestroy_MPIAIJ;
   B->view       = MatView_MPIAIJ;
   B->factor     = 0;
@@ -1602,7 +1562,6 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 
   B->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&b->rank);
-  MPI_Comm_size(comm,&b->size);
 
   if (m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) 
     SETERRQ(1,0,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");

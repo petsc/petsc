@@ -1,5 +1,5 @@
 
-C    "$Id: ex2f.F,v 1.40 1996/12/10 23:36:41 curfman Exp balay $";
+C    "$Id: ex2f.F,v 1.41 1997/07/10 15:47:17 balay Exp bsmith $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -87,7 +87,8 @@ C        double precision x(*).
 C  However, local vector data can be easily accessed via VecGetArray().
 C  See the Fortran section of the PETSc users manual for details.
 C  
-      Double   norm
+      double precision  norm
+
       integer  i, j, II, JJ, ierr, m, n
       integer  rank, size, its, Istart, Iend, flg
       Scalar   v, one, neg_one
@@ -98,8 +99,8 @@ C
       PetscRandom rctx
 
 C  These variables are not currently used.
-C      PC       pc
-C      Double   tol
+C      PC               pc
+C      double precision tol
 
 C  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
 C  MUST be declared as external.
@@ -328,10 +329,10 @@ C
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/ksp.h"
 
-      KSP       ksp
-      Vec       x
-      integer   ierr, n, dummy, rank
-      Double    rnorm
+      KSP              ksp
+      Vec              x
+      integer          ierr, n, dummy, rank
+      double precision rnorm
 
 C  Build the solution vector
 

@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.19 1997/07/10 15:48:26 balay Exp balay $";
+C "$Id: ex4f.F,v 1.20 1997/07/10 23:14:24 balay Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -87,7 +87,7 @@ C
       Mat      J
       integer  its, matrix_free, flg, N, ierr
       integer  mx, my, size, rank
-      Double   lambda_max, lambda_min, lambda
+      double precision   lambda_max, lambda_min, lambda
 
 C  Store parameters in common block
 
@@ -309,7 +309,7 @@ C  Input/output variables:
       integer ierr
 
 C  Common blocks:
-      Double   lambda
+      double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
 
@@ -378,7 +378,7 @@ C  Input/output variables:
       integer  dummy
 
 C  Common blocks:
-      Double   lambda
+      double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
 
@@ -439,7 +439,7 @@ C  Input/output variables:
       integer  ierr
 
 C  Common blocks:
-      Double   lambda
+      double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
 
@@ -517,7 +517,7 @@ C  Input/output variables:
       integer      dummy
 
 C  Common blocks:
-      Double   lambda
+      double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
 
@@ -598,7 +598,7 @@ C  Input/output variables:
       integer  ierr
 
 C  Common blocks:
-      Double   lambda
+      double precision   lambda
       integer  mx, my
       common /params/ lambda, mx, my
 

@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f90.F,v 1.2 1997/01/22 18:41:37 bsmith Exp curfman $"
+C    "$Id: ex1f90.F,v 1.3 1997/04/04 16:17:19 curfman Exp bsmith $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
@@ -46,11 +46,11 @@ C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
 
-      Vec     x, y, w
+      Vec              x, y, w
       Vec, pointer :: z(:)
-      Double  norm, v, v1, v2
-      integer n, ierr, flg, rank
-      Scalar  one, two, three, dots(3), dot
+      double precision norm, v, v1, v2
+      integer          n, ierr, flg, rank
+      Scalar           one, two, three, dots(3), dot
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program

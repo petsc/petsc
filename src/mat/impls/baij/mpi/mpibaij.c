@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.75 1997/07/29 14:10:02 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.76 1997/08/02 18:04:47 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -11,15 +12,6 @@ extern int MatSetUpMultiply_MPIBAIJ(Mat);
 extern int DisAssemble_MPIBAIJ(Mat);
 extern int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS *,int);
 extern int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
-extern int MatLUFactorSymbolic_MPIBAIJ(Mat,IS,IS,double,Mat *);
-extern int MatLUFactorNumeric_MPIBAIJ(Mat,Mat *);
-extern int MatLUFactor_MPIBAIJ(Mat,IS,IS,double);
-extern int MatSolve_MPIBAIJ(Mat,Vec,Vec);
-extern int MatSolveAdd_MPIBAIJ(Mat,Vec,Vec,Vec);
-extern int MatSolveTrans_MPIBAIJ(Mat,Vec,Vec);
-extern int MatSolveTransAdd_MPIBAIJ(Mat,Vec,Vec,Vec);
-extern int MatILUFactorSymbolic_MPIBAIJ(Mat,IS,IS,double,int,Mat *);
-
 
 /* 
      Local utility routine that creates a mapping from the global column 
@@ -42,31 +34,6 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
   return 0;
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRowIJ_MPIBAIJ("
-static int MatGetRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
-                            PetscTruth *done)
-{
-  Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *) mat->data;
-  int         ierr;
-  if (aij->size == 1) {
-    ierr = MatGetRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
-  } else SETERRQ(1,0,"not supported in parallel");
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRowIJ_MPIBAIJ"
-static int MatRestoreRowIJ_MPIBAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int **ja,
-                                PetscTruth *done)
-{
-  Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *) mat->data;
-  int        ierr;
-  if (aij->size == 1) {
-    ierr = MatRestoreRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
-  } else SETERRQ(1,0,"not supported in parallel");
-  return 0;
-}
 #define CHUNKSIZE  10
 
 #define  MatSetValues_SeqBAIJ_A_Private(row,col,value,addv) \
@@ -1589,26 +1556,22 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   Mat_MPIBAIJ  *b;
   int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE,size;
 
-  if (bs < 1) SETERRQ(1,0,"invalid block size specified");
+  if (bs < 1) SETERRQ(1,0,"Invalid block size specified, must be positive");
+
+  MPI_Comm_size(comm,&size);
+  if (size == 1) {
+    if (M == PETSC_DECIDE) M = m;
+    if (N == PETSC_DECIDE) N = n;
+    ierr = MatCreateSeqBAIJ(comm,bs,M,N,d_nz,d_nnz,A); CHKERRQ(ierr);
+    return 0;
+  }
+
   *A = 0;
   PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIBAIJ,comm);
   PLogObjectCreate(B);
   B->data       = (void *) (b = PetscNew(Mat_MPIBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIBAIJ));
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
-  MPI_Comm_size(comm,&size);
-  if (size == 1) {
-    B->ops.getrowij          = MatGetRowIJ_MPIBAIJ;
-    B->ops.restorerowij      = MatRestoreRowIJ_MPIBAIJ;
-    B->ops.lufactorsymbolic  = MatLUFactorSymbolic_MPIBAIJ;
-    B->ops.lufactornumeric   = MatLUFactorNumeric_MPIBAIJ;
-    B->ops.lufactor          = MatLUFactor_MPIBAIJ;
-    B->ops.solve             = MatSolve_MPIBAIJ;
-    B->ops.solveadd          = MatSolveAdd_MPIBAIJ;
-    B->ops.solvetrans        = MatSolveTrans_MPIBAIJ;
-    B->ops.solvetransadd     = MatSolveTransAdd_MPIBAIJ;
-    B->ops.ilufactorsymbolic = MatILUFactorSymbolic_MPIBAIJ;
-  }
 
   B->destroy    = MatDestroy_MPIBAIJ;
   B->view       = MatView_MPIBAIJ;

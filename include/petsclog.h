@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.108 1997/07/23 18:22:46 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.109 1997/08/06 22:32:13 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -308,11 +308,24 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
   MPI_Waitall(count, array_of_requests, array_of_statuses)       \
 )
 
+/*
+    If logging is turned on for MPI_ReduceSync then this logs
+  the time to synchronous and then the time to do the reduction.
+*/
+extern int PETSC_DUMMY;
 #define MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
-(                                                                    \
-  allreduce_ct++,                                                    \
-  MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm)       \
-)
+  (PETSC_DUMMY = 0); {                                               \
+    if (_PLogPLB && PLogEventFlags[MPI_ReduceSync]) {                \
+      PLogEventBegin(MPI_ReduceSync,0,0,0,0);                        \
+      MPI_Barrier(comm);                                             \
+      PLogEventEnd(MPI_ReduceSync,0,0,0,0);                          \
+    }                                                                \
+    PLogEventBegin(MPI_ReduceComp,0,0,0,0);                          \
+    allreduce_ct++;                                                  \
+    MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm);    \
+    PLogEventEnd(MPI_ReduceComp,0,0,0,0);                            \
+  }
+
 #else
 
 #define MPI_Startall_irecv( count,number,requests) \

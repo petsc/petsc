@@ -65,7 +65,7 @@ CMEX           = /usr/local/bin/cmex
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
 PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
-PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/libpvode.a
+PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/sun4/libpvode.a
 #
 # ---------------------------------------------------------------------------------------
 #

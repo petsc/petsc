@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.10 1997/02/10 21:41:09 curfman Exp balay $";
+C    "$Id: ex11f.F,v 1.11 1997/07/10 15:46:17 balay Exp bsmith $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -70,21 +70,16 @@ C     its      - iterations for convergence
 C     norm     - norm of error in solution
 C     rctx     - random number context
 C
-C  Notes:
-C   "Double" -> "double precision" except for machines such
-C                as the Cray T3d, where "Double" -> "real"
-C   "DoubleComplex" -> "double complex" except for machines such
-C                as the Cray T3d, where "DoubleComplex" -> "complex"
 
-      SLES          sles
-      Mat           A 
-      Vec           x, b, u
-      PetscRandom   rctx
-      Double        norm, h2, sigma1
-      Scalar        none, sigma2, v, pfive
-      integer       dim, flg, its, ierr, n, rank
-      integer       Istart, Iend, i, j, II, JJ
-      logical       use_random
+      SLES             sles
+      Mat              A 
+      Vec              x, b, u
+      PetscRandom      rctx
+      double precision norm, h2, sigma1
+      Scalar           none, sigma2, v, pfive
+      integer          dim, flg, its, ierr, n, rank
+      integer          Istart, Iend, i, j, II, JJ
+      logical          use_random
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program

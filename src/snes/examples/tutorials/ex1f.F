@@ -1,5 +1,5 @@
 
-C "$Id: ex1f.F,v 1.11 1997/04/10 00:06:49 bsmith Exp balay $";
+C "$Id: ex1f.F,v 1.12 1997/07/10 15:48:10 balay Exp bsmith $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -63,7 +63,7 @@ C
       Mat      J
       integer  ierr, its, size, rank
       Scalar   pfive
-      Double   tol
+      double precision   tol
 
 C  Note: Any user-defined Fortran routines (such as FormJacobian)
 C  MUST be declared as external.

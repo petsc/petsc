@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.10 1997/07/10 15:50:24 balay Exp balay $"
+C "$Id: ex1f.F,v 1.11 1997/07/10 23:13:59 balay Exp bsmith $"
 C
 C   Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -42,8 +42,8 @@ C  application-provided call-back routines, FormJacobian() and
 C  FormFunction(). We use a double precision array with three
 C  entries indexed by param, lmx, lmy.
 C
-      Double    user(3)
-      integer   param,lmx,lmy
+      double precision user(3)
+      integer          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 C
 C   User-defined routines
@@ -52,13 +52,13 @@ C
 C
 C   Data for problem
 C
-      TS       ts                
-      Vec      x, r              
-      Mat      J                 
-      integer  its               
-      integer  ierr, N, flg 
-      Double   param_max, param_min, dt,tmax, zero
-      Double   ftime
+      TS                ts                
+      Vec               x, r              
+      Mat               J                 
+      integer           its               
+      integer           ierr, N, flg 
+      double precision  param_max, param_min, dt,tmax, zero
+      double precision  ftime
 
       param_max = 6.81
       param_min = 0
@@ -199,15 +199,15 @@ C
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/pc.h"
 #include "FINCLUDE/ts.h"
-      Vec       X
-      Double    user(3)
-      integer   i, j, row, mx, my, ierr,xidx
-      Double    two, one, lambda
-      Double    temp1, temp, hx, hy, hxdhy, hydhx
-      Double    sc
-      Scalar    xx(1)
-      common    xx
-      integer   param,lmx,lmy
+      Vec              X
+      double precision user(3)
+      integer          i, j, row, mx, my, ierr,xidx
+      double precision two, one, lambda
+      double precision temp1, temp, hx, hy, hxdhy, hydhx
+      double precision sc
+      Scalar           xx(1)
+      common           xx
+      integer          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
       two = 2.0
@@ -252,17 +252,17 @@ C
 #include "FINCLUDE/pc.h"
 #include "FINCLUDE/ts.h"
       TS       ts
-      Double   t
-      Vec      X,F
-      Double   user(3)
-      integer  ierr, i, j, row, mx, my,xidx,fidx
-      Double   two, one, lambda
-      Double   hx, hy, hxdhy, hydhx
-      Scalar   ut, ub, ul, ur, u, uxx, uyy, sc
-      Scalar   xx(1),ff(1)
-      common   xx, ff
-      integer   param,lmx,lmy
+      double precision  t
+      Vec               X,F
+      double precision  user(3)
+      integer           ierr, i, j, row, mx, my,xidx,fidx
+      double precision  two, one, lambda
+      double precision  hx, hy, hxdhy, hydhx
+      Scalar            ut, ub, ul, ur, u, uxx, uyy, sc
+      Scalar            xx(1),ff(1)
+      integer           param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
+      common   xx, ff
 
       two = 2.0
       one = 1.0
@@ -313,15 +313,15 @@ C
 #include "FINCLUDE/mat.h"
 #include "FINCLUDE/pc.h"
 #include "FINCLUDE/ts.h"
-      TS           ts
-      Vec          X
-      Mat          JJ,B
-      MatStructure flag
-      Double       user(3),ctime
-      Mat          jac
-      integer      i, j, row, mx, my, col(5), ierr,xidx
-      Scalar       two, one, lambda, v(5), sc, xx(1)
-      Double       hx, hy, hxdhy, hydhx
+      TS               ts
+      Vec              X
+      Mat              JJ,B
+      MatStructure     flag
+      double precision user(3),ctime
+      Mat              jac
+      integer          i, j, row, mx, my, col(5), ierr,xidx
+      Scalar           two, one, lambda, v(5), sc, xx(1)
+      double precision hx, hy, hxdhy, hydhx
 
       integer   param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)

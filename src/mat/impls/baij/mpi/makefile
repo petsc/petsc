@@ -3,10 +3,10 @@
 ALL: lib
 
 CFLAGS	 = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
-SOURCEC	 = mpibaij.c mbaijfact.c mmbaij.c mpibaijpc.c baijpc.c baijov.c
+SOURCEC	 = mpibaij.c mmbaij.c mpibaijpc.c baijpc.c baijov.c
 SOURCEF	 =
 SOURCEH	 = mpibaij.h
-OBJSC	 = mpibaij.o  mbaijfact.o mmbaij.o mpibaijpc.o baijpc.o baijov.o
+OBJSC	 = mpibaij.o mmbaij.o mpibaijpc.o baijpc.o baijov.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 = 

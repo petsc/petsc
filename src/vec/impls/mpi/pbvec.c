@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.82 1997/07/09 20:49:48 balay Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.83 1997/07/25 00:46:28 balay Exp bsmith $";
 #endif
 
 /*
@@ -10,20 +11,21 @@ static char vcid[] = "$Id: pbvec.c,v 1.82 1997/07/09 20:49:48 balay Exp balay $"
 #include <math.h>
 #include "pvecimpl.h"   /*I  "vec.h"   I*/
 
-
 #undef __FUNC__  
 #define __FUNC__ "VecDot_MPI"
 int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 {
   Scalar    sum, work;
+  int       ierr;
+
   VecDot_Seq(  xin, yin, &work );
 /*
    This is a ugly hack. But to do it right is kind of silly.
 */
 #if defined(PETSC_COMPLEX)
-  MPI_Allreduce( &work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+  ierr = MPI_Allreduce( &work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm ); CHKERRQ(ierr);
 #else
-  MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+  ierr = MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm ); CHKERRQ(ierr);
 #endif
   *z = sum;
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.19 1997/05/23 16:31:18 balay Exp balay $ */
+/* $Id: drawimpl.h,v 1.20 1997/05/23 18:36:10 balay Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -33,6 +33,7 @@ struct _DrawOps {
   int (*createpopup)(Draw,Draw*);
   int (*settitle)(Draw,char *);
   int (*checkresizedwindow)(Draw);
+  int (*resizewindow)(Draw,int,int);
 };
 
 struct _p_Draw {

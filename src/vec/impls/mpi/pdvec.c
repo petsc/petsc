@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.74 1997/04/05 00:39:20 balay Exp bsmith $ */
+/* $Id: pdvec.c,v 1.75 1997/06/05 12:51:17 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -91,54 +91,87 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
   MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
   MPI_Comm_size(xin->comm,&size);
 
+
   if (!rank) {
     values = (Scalar *) PetscMalloc( (len+1)*sizeof(Scalar) ); CHKPTRQ(values);
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+    /*
+        Matlab format and ASCI format are very similar except 
+        Matlab uses %18.16e format while ASCII uses %g
+    */
     if (format == VIEWER_FORMAT_ASCII_MATLAB) {
       ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
       fprintf(fd,"%s = [\n",outputname);
-    } else {
-      if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d]\n",rank);
-    }
-    for ( i=0; i<x->n; i++ ) {
+      for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
-      if (imag(x->array[i]) > 0.0) {
-        fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
-      } else if (imag(x->array[i]) < 0.0) {
-        fprintf(fd,"%g - %g i\n",real(x->array[i]),-imag(x->array[i]));
-      } else {
-        fprintf(fd,"%g\n",real(x->array[i]));
-      }
-#else
-      fprintf(fd,"%g\n",x->array[i]);
-#endif
-
-    }
-    /* receive and print messages */
-    for ( j=1; j<size; j++ ) {
-      MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
-      MPI_Get_count(&status,MPIU_SCALAR,&n);          
-      if (format != VIEWER_FORMAT_ASCII_MATLAB && format != VIEWER_FORMAT_ASCII_COMMON) {
-        fprintf(fd,"Processor [%d]\n",j);
-      }
-      for ( i=0; i<n; i++ ) {
-#if defined(PETSC_COMPLEX)
-        if (imag(values[i]) > 0.0) {
-          fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
-        } else if (imag(values[i]) < 0.0) {
-          fprintf(fd,"%g - %g i\n",real(values[i]),-imag(values[i]));
+        if (imag(x->array[i]) > 0.0) {
+          fprintf(fd,"%18.16e + %18.16e i\n",real(x->array[i]),imag(x->array[i]));
+        } else if (imag(x->array[i]) < 0.0) {
+          fprintf(fd,"%18.16e - %18.16e i\n",real(x->array[i]),-imag(x->array[i]));
         } else {
-          fprintf(fd,"%g\n",real(values[i]));
+          fprintf(fd,"%18.16e\n",real(x->array[i]));
         }
 #else
-        fprintf(fd,"%g\n",values[i]);
+        fprintf(fd,"%18.16e\n",x->array[i]);
 #endif
+      }
+      /* receive and print messages */
+      for ( j=1; j<size; j++ ) {
+        MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
+        MPI_Get_count(&status,MPIU_SCALAR,&n);          
+        for ( i=0; i<n; i++ ) {
+#if defined(PETSC_COMPLEX)
+          if (imag(values[i]) > 0.0) {
+            fprintf(fd,"%18.16e + %18.16e i\n",real(values[i]),imag(values[i]));
+          } else if (imag(values[i]) < 0.0) {
+            fprintf(fd,"%18.16e - %18.16e i\n",real(values[i]),-imag(values[i]));
+          } else {
+            fprintf(fd,"%18.16e\n",real(values[i]));
+          }
+#else
+          fprintf(fd,"%18.16e\n",values[i]);
+#endif
+        }
       }          
+      fprintf(fd,"];\n");
+    } else {
+      if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d]\n",rank);
+      for ( i=0; i<x->n; i++ ) {
+#if defined(PETSC_COMPLEX)
+        if (imag(x->array[i]) > 0.0) {
+          fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+        } else if (imag(x->array[i]) < 0.0) {
+          fprintf(fd,"%g - %g i\n",real(x->array[i]),-imag(x->array[i]));
+        } else {
+          fprintf(fd,"%g\n",real(x->array[i]));
+        }
+#else
+        fprintf(fd,"%g\n",x->array[i]);
+#endif
+      }
+      /* receive and print messages */
+      for ( j=1; j<size; j++ ) {
+        MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
+        MPI_Get_count(&status,MPIU_SCALAR,&n);          
+        if (format != VIEWER_FORMAT_ASCII_COMMON) {
+          fprintf(fd,"Processor [%d]\n",j);
+        }
+        for ( i=0; i<n; i++ ) {
+#if defined(PETSC_COMPLEX)
+          if (imag(values[i]) > 0.0) {
+            fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
+          } else if (imag(values[i]) < 0.0) {
+            fprintf(fd,"%g - %g i\n",real(values[i]),-imag(values[i]));
+          } else {
+            fprintf(fd,"%g\n",real(values[i]));
+          }
+#else
+          fprintf(fd,"%g\n",values[i]);
+#endif
+        }          
+      }
     }
     PetscFree(values);
-    if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-      fprintf(fd,"];\n");
-    }
     fflush(fd);
   }
   else {

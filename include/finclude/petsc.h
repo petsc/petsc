@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.44 1997/07/11 20:31:51 balay Exp balay $;
+C  $Id: petsc.h,v 1.45 1997/07/12 16:14:08 balay Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -8,7 +8,6 @@ C
 #include "mpif.h"
 
 #define PetscTruth integer
-#define Double double precision
 
 C
 C     Flags

@@ -1,5 +1,5 @@
 C
-C  $Id: ts.h,v 1.3 1996/09/30 20:19:11 curfman Exp curfman $;
+C  $Id: ts.h,v 1.4 1996/09/30 20:19:24 curfman Exp bsmith $;
 C
 C  Include file for Fortran use of the TS (timestepping) package in PETSc
 C
@@ -7,9 +7,9 @@ C
 #define TSType        integer
 #define TSProblemType integer 
 
-      integer TS_EULER, TS_BEULER, TS_PSEUDO
+      integer TS_EULER, TS_BEULER, TS_PSEUDO, TS_PVODE
 
-      parameter (TS_EULER = 0, TS_BEULER = 1,TS_PSEUDO = 2)
+      parameter (TS_EULER = 0, TS_BEULER = 1,TS_PSEUDO = 2,TS_PVODE = 3)
 
       integer TS_LINEAR, TS_NONLINEAR
 
