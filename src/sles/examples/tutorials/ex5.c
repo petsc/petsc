@@ -83,7 +83,7 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
-  MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
+  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
   ierr = MatSetOption(C,NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
@@ -110,7 +110,7 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
-  MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
+  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
