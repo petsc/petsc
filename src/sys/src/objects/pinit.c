@@ -527,25 +527,25 @@ int PetscFinalize(void)
 
 #if defined(PETSC_USE_LOG)
   {
-    char mname[64];
+    char mname[PETSC_MAX_PATH_LEN];
 #if defined(PETSC_HAVE_MPE)
     mname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_mpe",mname,64,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-log_mpe",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
     if (flg1){
       if (mname[0]) {ierr = PetscLogMPEDump(mname);CHKERRQ(ierr);}
       else          {ierr = PetscLogMPEDump(0);CHKERRQ(ierr);}
     }
 #endif
     mname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,64,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
     if (flg1) { 
       if (mname[0])  {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
       else           {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
     }
 
     mname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,64,&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
     if (flg1 || flg2){
       if (mname[0]) PetscLogDump(mname); 
       else          PetscLogDump(0);

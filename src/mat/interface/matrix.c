@@ -2428,7 +2428,7 @@ PetscFList MatConvertList              = 0;
 int MatConvertRegister(char *sname,char *path,char *name,int (*function)(Mat,MatType,Mat*))
 {
   int  ierr;
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);

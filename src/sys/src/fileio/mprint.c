@@ -464,7 +464,7 @@ int PetscErrorPrintfDefault(const char format[],...)
   */
 
   if (!PetscErrorPrintfCalled) {
-    char       arch[10],hostname[64],username[16],pname[256],date[64];
+    char       arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
     PetscTruth use_stderr;
 
     PetscErrorPrintfCalled    = PETSC_TRUE;
@@ -497,7 +497,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscGetArchType(arch,10);
     PetscGetHostName(hostname,64);
     PetscGetUserName(username,16);
-    PetscGetProgramName(pname,256);
+    PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);
     PetscGetInitialDate(date,64);
     fprintf(fd,"--------------------------------------------\
 ------------------------------\n");

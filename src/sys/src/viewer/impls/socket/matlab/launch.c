@@ -19,7 +19,7 @@ extern int system(const char *);
 void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
   int  np,child;
-  char program[1024],executable[1024];
+  char program[PETSC_MAX_PATH_LEN],executable[PETSC_MAX_PATH_LEN];
 
   if (nlhs == 1) {
     plhs[0]  = mxCreateFull(1,1,0);

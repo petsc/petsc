@@ -144,8 +144,8 @@ int PetscOptionsEnd_Private(void)
 #if defined(PETSC_HAVE_AMS)
   if (!PetscOptionsPublishCount) {
     PetscOptionsAMS last;
-    char       option[256],value[1024],tmp[32];
-    int        j;
+    char            option[256],value[1024],tmp[32];
+    int             j;
 
     if (amspub.amem < 0) SETERRQ(1,"Called without a call to PetscOptionsBegin()");
     ierr = AMS_Memory_publish(amspub.amem);CHKERRQ(ierr);

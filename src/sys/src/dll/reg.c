@@ -41,7 +41,7 @@ PetscDLLibraryList DLLibrariesLoaded = 0;
 */ 
 int PetscInitialize_DynamicLibraries(void)
 {
-  char       *libname[32],libs[256],dlib[1024];
+  char       *libname[32],libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
   int        nmax,i,ierr;
   PetscTruth found;
 
@@ -635,7 +635,7 @@ int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char n
 int PetscFListDuplicate(PetscFList fl,PetscFList *nl)
 {
   int  ierr;
-  char path[1024];
+  char path[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   while (fl) {

@@ -66,14 +66,14 @@ int PetscLogMPEBegin(void)
 @*/
 int PetscLogMPEDump(const char sname[])
 {
-  char name[256];
+  char name[PETSC_MAX_PATH_LEN];
   int  ierr;
 
   PetscFunctionBegin;
   if (PetscBeganMPE) {
     PetscLogInfo(0,"PetscLogMPEDump: Finalizing MPE.\n");
     if (sname) { ierr = PetscStrcpy(name,sname);CHKERRQ(ierr);}
-    else { ierr = PetscGetProgramName(name,256);CHKERRQ(ierr);}
+    else { ierr = PetscGetProgramName(name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);}
     ierr = MPE_Finish_log(name);CHKERRQ(ierr);
   } else {
     PetscLogInfo(0,"PetscLogMPEDump: Not finalizing MPE.\n");

@@ -30,10 +30,6 @@
 #endif
 #include "petscfix.h"
 
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFileFromPath"
 /*@C
@@ -64,13 +60,13 @@
 int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
 {
 #if !defined(PARCH_win32)
-  char       *p,*cdir,trial[MAXPATHLEN],*senv,*env;
+  char       *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
   int        ln,ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
   /* Setup default */
-  ierr = PetscGetFullPath(defname,fname,MAXPATHLEN);CHKERRQ(ierr);
+  ierr = PetscGetFullPath(defname,fname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
 
   if (path) {
     /* Check to see if the path is a valid regular FILE */
@@ -103,7 +99,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mo
       ierr = PetscTestFile(path,mode,&flg);CHKERRQ(ierr);
       if (flg) {
         /* need PetscGetFullPath rather then copy in case path has . in it */
-	ierr = PetscGetFullPath(trial,fname,MAXPATHLEN);CHKERRQ(ierr);
+	ierr = PetscGetFullPath(trial,fname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
 	ierr = PetscFree(senv);CHKERRQ(ierr);
         PetscFunctionReturn(1);
       }

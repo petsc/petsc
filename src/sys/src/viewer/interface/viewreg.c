@@ -163,7 +163,7 @@ M*/
 int PetscViewerRegister(char *sname,char *path,char *name,int (*function)(PetscViewer))
 {
   int  ierr;
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);

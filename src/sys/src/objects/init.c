@@ -70,7 +70,7 @@ FILE *petsc_history = PETSC_NULL;
 int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   int  ierr,rank,size;
-  char pfile[256],pname[256],fname[256],date[64];
+  char pfile[PETSC_MAX_PATH_LEN],pname[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],date[64];
   char version[256];
 
   PetscFunctionBegin;
@@ -92,7 +92,7 @@ int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
     *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
     fprintf(*fd,"---------------------------------------------------------\n");
     fprintf(*fd,"%s %s\n",version,date);
-    ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
+    ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     fprintf(*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);
     PetscOptionsPrint(*fd);
     fprintf(*fd,"---------------------------------------------------------\n");
@@ -232,12 +232,12 @@ int PetscCompareScalar(PetscScalar d)
 int PetscCompareInitialize(double tol)
 {
   int        ierr,i,len,rank,*gflag,size,mysize;
-  char       pname[256],basename[256];
+  char       pname[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
   MPI_Group  group_all,group_sub;
   PetscTruth work;
 
   PetscFunctionBegin;
-  ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
+  ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   PetscCompareTolerance = tol;
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -375,7 +375,7 @@ int PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 int PetscOptionsCheckInitial_Private(void)
 {
-  char       string[64],mname[256],*f;
+  char       string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1,flg2,flg3,flag;
   int        ierr,*nodes,i,rank;
@@ -539,7 +539,7 @@ int PetscOptionsCheckInitial_Private(void)
   */
 #if defined(PETSC_USE_LOG)
   mname[0] = 0;
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_history",mname,256,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log_history",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   if (flg1) {
     if (mname[0]) {
       ierr = PetscLogOpenHistoryFile(mname,&petsc_history);CHKERRQ(ierr);
@@ -549,7 +549,7 @@ int PetscOptionsCheckInitial_Private(void)
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_info",&flg1);CHKERRQ(ierr);
   if (flg1) { 
-    char logname[256]; logname[0] = 0;
+    char logname[PETSC_MAX_PATH_LEN]; logname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-log_info",logname,250,&flg1);CHKERRQ(ierr);
     if (logname[0]) {
       PetscLogInfoAllow(PETSC_TRUE,logname); 
@@ -569,7 +569,7 @@ int PetscOptionsCheckInitial_Private(void)
     
   ierr = PetscOptionsGetString(PETSC_NULL,"-log_trace",mname,250,&flg1);CHKERRQ(ierr);
   if (flg1) { 
-    char name[256],fname[256];
+    char name[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN];
     FILE *file;
     if (mname[0]) {
       sprintf(name,"%s.%d",mname,rank);
@@ -669,7 +669,7 @@ int PetscOptionsCheckInitial_Private(void)
     ierr = PetscSleep(i);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256,&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-log_info_exclude",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
   ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
   if (f) {
     ierr = PetscLogInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);

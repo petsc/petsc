@@ -44,7 +44,7 @@ int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
   if (flg) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_options",&flg2);CHKERRQ(ierr);
     if (flg2) {
-      char cmd[1024];
+      char cmd[PETSC_MAX_PATH_LEN];
       ierr = PetscStrcpy(cmd,"cd ");CHKERRQ(ierr);
       ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
       ierr = PetscStrcat(cmd,pdir);CHKERRQ(ierr);
@@ -54,9 +54,9 @@ int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
 
     ierr = PetscOptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg2);CHKERRQ(ierr);
     if (flg2) {
-      char dir[256];
+      char dir[PETSC_MAX_PATH_LEN];
 #if defined(PETSC_HAVE_UCBPS)
-      char buf[1024],*found;
+      char buf[PETSC_MAX_PATH_LEN],*found;
       FILE *fp;
 
       /* check if jacc is not already running */
@@ -65,9 +65,9 @@ int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
       ierr  = PetscFClose(v->comm,fp);CHKERRQ(ierr);
       if (found) PetscFunctionReturn(0);
 #endif
-      ierr = PetscOptionsGetenv(v->comm,"AMS_HOME",dir,256,&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsGetenv(v->comm,"AMS_HOME",dir,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       if (!flg) {
-        ierr = PetscStrncpy(dir,AMS_HOME,256);CHKERRQ(ierr);
+        ierr = PetscStrncpy(dir,AMS_HOME,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
       }
       /* ierr = PetscStrcat(dir,"/java/client/jacc -display ${DISPLAY}");CHKERRQ(ierr); */
       ierr = PetscStrcat(dir,"/java/client/jacc");CHKERRQ(ierr);

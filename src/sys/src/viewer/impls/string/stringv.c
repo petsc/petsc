@@ -49,7 +49,7 @@ int PetscViewerStringSPrintf(PetscViewer viewer,char *format,...)
   va_list            Argp;
   int                shift,ierr;
   PetscTruth         isstring;
-  char               tmp[512];
+  char               tmp[4096];
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
@@ -68,7 +68,7 @@ int PetscViewerStringSPrintf(PetscViewer viewer,char *format,...)
   va_end(Argp);
 
   ierr = PetscStrlen(tmp,&shift);CHKERRQ(ierr);
-  if (shift > 512) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"String too long");
+  if (shift > 4096) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"String too long");
   
   if (shift >= vstr->maxlen - vstr->curlen - 1) shift = vstr->maxlen - vstr->curlen - 1;
   ierr = PetscStrncpy(vstr->head,tmp,shift);CHKERRQ(ierr);

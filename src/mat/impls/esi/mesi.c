@@ -141,7 +141,7 @@ int MatESISetType(Mat V,char *name)
 #define __FUNCT__ "MatESISetFromOptions"
 int MatESISetFromOptions(Mat V)
 {
-  char       string[1024];
+  char       string[PETSC_MAX_PATH_LEN];
   PetscTruth flg;
   int        ierr;
  

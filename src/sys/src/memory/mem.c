@@ -32,9 +32,6 @@
 #include <sys/systeminfo.h>
 #endif
 #include "petscfix.h"
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
 
 #if defined (PETSC_HAVE_SYS_RESOURCE_H)
 #include <sys/resource.h>
@@ -81,7 +78,7 @@ int PetscGetResidentSetSize(PetscLogDouble *foo)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   int             fd;
-  char            proc[1024];
+  char            proc[PETSC_MAX_PATH_LEN];
   prpsinfo_t      prusage;
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
   long            *ii = sbreak(0); 

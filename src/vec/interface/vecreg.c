@@ -218,7 +218,7 @@ M*/
 #define __FUNCT__ "VecRegister"
 int VecRegister(const char sname[], const char path[], const char name[], int (*function)(Vec))
 {
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
   int  ierr;
 
   PetscFunctionBegin;
@@ -276,7 +276,7 @@ M*/
 int VecSerializeRegister(const char sname[], const char path[], const char name[],
                           int (*function)(MPI_Comm, Vec *, PetscViewer, PetscTruth))
 {
-  char fullname[256];
+  char fullname[PETSC_MAX_PATH_LEN];
   int  ierr;
 
   PetscFunctionBegin;

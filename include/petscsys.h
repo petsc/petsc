@@ -119,4 +119,5 @@ typedef enum {SCATTER_FORWARD=0, SCATTER_REVERSE=1, SCATTER_FORWARD_LOCAL=2, SCA
 
 EXTERN int PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
 
+
 #endif /* __PETSCSYS_H */

@@ -596,7 +596,7 @@ int PetscGetPetscDir(char **dir)
 int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
 {
   int        ierr,i = 0,l,l1,l2,l3;
-  char       *work,*par,*epar,env[256];
+  char       *work,*par,*epar,env[1024];
   char       *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
   char       *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
   PetscTruth flag;
@@ -607,13 +607,13 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
-  ierr = PetscMalloc(256*sizeof(char),&r[4]);CHKERRQ(ierr);
-  ierr = PetscMalloc(256*sizeof(char),&r[5]);CHKERRQ(ierr);
-  ierr = PetscMalloc(256*sizeof(char),&r[6]);CHKERRQ(ierr);
+  ierr = PetscMalloc(64*sizeof(char),&r[4]);CHKERRQ(ierr);
+  ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[5]);CHKERRQ(ierr);
+  ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[6]);CHKERRQ(ierr);
   ierr = PetscMalloc(256*sizeof(char),&r[7]);CHKERRQ(ierr);
   ierr = PetscGetDisplay(r[4],256);CHKERRQ(ierr);
-  ierr = PetscGetHomeDirectory(r[5],256);CHKERRQ(ierr);
-  ierr = PetscGetWorkingDirectory(r[6],256);CHKERRQ(ierr);
+  ierr = PetscGetHomeDirectory(r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetWorkingDirectory(r[6],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetUserName(r[7],256);CHKERRQ(ierr);
 
   /* replace the requested strings */

@@ -38,9 +38,7 @@
 #endif
 #include "petscfix.h"
 
-#ifndef MAXPATHLEN
-#define MAXPATHLEN 1024
-#endif
+
 /*
    Contains the list of registered CCA components
 */
@@ -57,7 +55,7 @@ PetscFList CCAList = 0;
 struct _PetscDLLibraryList {
   PetscDLLibraryList next;
   void          *handle;
-  char          libname[1024];
+  char          libname[PETSC_MAX_PATH_LEN];
 };
 
 EXTERN_C_BEGIN
@@ -445,7 +443,7 @@ int PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char li
   void*              handle;
   int                ierr,len;
   PetscTruth         match,dir;
-  char               program[1024],buf[8*1024],*found,*libname1,suffix[16],*s;
+  char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
   PetscToken         *token;
 
   PetscFunctionBegin;
@@ -463,7 +461,7 @@ int PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char li
     }
     ierr  = PetscStrcat(program,PETSC_SLSUFFIX);CHKERRQ(ierr);
 
-    ierr = PetscLs(comm,program,buf,8*1024,&dir);CHKERRQ(ierr);
+    ierr = PetscLs(comm,program,buf,8*PETSC_MAX_PATH_LEN,&dir);CHKERRQ(ierr);
     if (!dir) PetscFunctionReturn(0);
     found = buf;
   } else {
@@ -540,7 +538,7 @@ int PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibraryList *outlist,const char l
   void*              handle;
   int                ierr,len;
   PetscTruth         match,dir;
-  char               program[1024],buf[8*1024],*found,*libname1,suffix[16],*s;
+  char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
   PetscToken         *token;
 
   PetscFunctionBegin;
@@ -558,7 +556,7 @@ int PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibraryList *outlist,const char l
     }
     ierr  = PetscStrcat(program,PETSC_SLSUFFIX);CHKERRQ(ierr);
 
-    ierr = PetscLs(comm,program,buf,8*1024,&dir);CHKERRQ(ierr);
+    ierr = PetscLs(comm,program,buf,8*PETSC_MAX_PATH_LEN,&dir);CHKERRQ(ierr);
     if (!dir) PetscFunctionReturn(0);
     found = buf;
   } else {
@@ -663,8 +661,8 @@ int PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char
 {
   int                ierr,l;
   PetscTruth         dir;
-  char               program[1024],buf[8*1024],*libname1,fbuf[1024],*found,suffix[16],*f2;
-  char               *func,*funcname,libname[1024],*lib;
+  char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*libname1,fbuf[PETSC_MAX_PATH_LEN],*found,suffix[16],*f2;
+  char               *func,*funcname,libname[PETSC_MAX_PATH_LEN],*lib;
   FILE               *fp;
   PetscToken         *token1,*token2;
 
@@ -678,7 +676,7 @@ int PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char
   ierr  = PetscStrcpy(program,dirname);CHKERRQ(ierr);
   ierr  = PetscStrcat(program,"/*.cca");CHKERRQ(ierr);
 
-  ierr = PetscLs(comm,program,buf,8*1024,&dir);CHKERRQ(ierr);
+  ierr = PetscLs(comm,program,buf,8*PETSC_MAX_PATH_LEN,&dir);CHKERRQ(ierr);
   if (!dir) PetscFunctionReturn(0);
 
   ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);

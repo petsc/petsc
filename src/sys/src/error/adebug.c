@@ -17,7 +17,7 @@
 /*
       These are the debugger and display used if the debugger is started up
 */
-static char       Debugger[256];
+static char       Debugger[PETSC_MAX_PATH_LEN];
 static PetscTruth Xterm = PETSC_TRUE;
 
 #undef __FUNCT__  
@@ -157,12 +157,12 @@ int PetscSetDebuggerFromString(char *string)
 int PetscAttachDebugger(void)
 {
   int   child=0,sleeptime=0,ierr=0;
-  char  program[256],display[256],hostname[64];
+  char  program[PETSC_MAX_PATH_LEN],display[256],hostname[64];
 
   PetscFunctionBegin;
 
   ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
-  ierr = PetscGetProgramName(program,256);CHKERRQ(ierr);
+  ierr = PetscGetProgramName(program,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   if (ierr) {
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
