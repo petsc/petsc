@@ -1,9 +1,9 @@
 
 PETSc Users,
 
-We have just released a new version of PETSc (2.0.15) with a
-variety of extensions and enhancements to the software.  You can find
-a list of new features and changes in PETSc in the "Changes" file at
+We have just released a new version of PETSc (2.0.15) with a variety
+of extensions and enhancements to the software.  A list of new
+features and changes in PETSc is provided in the "Changes" file at
 ftp://info.mcs.anl.gov/pub/petsc or
 http://www.mcs.anl.gov/petsc/petsc.html.
 
