@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.54 2001/08/07 03:04:00 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.55 2001/08/07 21:30:54 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\
@@ -26,6 +26,8 @@ T*/
 */
 #include "petscsles.h"
 
+#include "src/vec/is/impls/general/general.h"
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -35,7 +37,7 @@ int main(int argc,char **args)
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[2][128];     /* input file name */
-  PetscTruth     table,flg,trans;
+  PetscTruth     table,flg,trans,partition = PETSC_FALSE;
   int            ierr,its,ierrp;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
@@ -46,6 +48,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-partition",&partition);CHKERRQ(ierr);
 
   /* 
      Determine files from which we read the two linear systems
@@ -106,8 +109,8 @@ int main(int argc,char **args)
        to match the block size of the system), then create a new padded vector.
     */
     { 
-      int    m,n,j,mvec,start,end,index;
-      Vec    tmp;
+      int         m,n,j,mvec,start,end,index;
+      Vec         tmp;
       PetscScalar *bold;
 
       /* Create a new vector b by padding the old one */
@@ -139,6 +142,37 @@ int main(int argc,char **args)
     */
     PreLoadStage("SLESSetUp");
 
+    if (partition) {
+      MatPartitioning mpart;
+      IS              mis,nis,isn,is;
+      int             *count,size,rank;
+      Mat             B;
+      ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&count);CHKERRQ(ierr);
+      ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
+      ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
+      /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */
+      ierr = MatPartitioningSetFromOptions(mpart);CHKERRQ(ierr);
+      ierr = MatPartitioningApply(mpart, &mis);CHKERRQ(ierr);
+      ierr = MatPartitioningDestroy(mpart);CHKERRQ(ierr);
+      ierr = ISPartitioningToNumbering(mis,&nis);CHKERRQ(ierr);
+      ierr = ISPartitioningCount(mis,count);CHKERRQ(ierr);
+      ierr = ISDestroy(mis);CHKERRQ(ierr);
+      ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
+      ierr = PetscFree(count);CHKERRQ(ierr);
+      ierr = ISDestroy(nis);CHKERRQ(ierr);
+      ierr = ISSort(is);CHKERRQ(ierr);
+      ierr = ISAllGather(is,&isn);CHKERRQ(ierr);
+      ISView(is,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));
+      ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      ierr = ISDestroy(is);CHKERRQ(ierr);
+      ierr = ISDestroy(isn);CHKERRQ(ierr);
+      ierr = MatDestroy(A);CHKERRQ(ierr);
+      A    = B;
+      MatView(A,PETSC_VIEWER_DRAW_WORLD);
+    }
+ 
     /*
        We also explicitly time this stage via PetscGetTime()
     */
