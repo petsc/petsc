@@ -48,7 +48,9 @@ def SelectFromList(stdscr,list,my = 1,text = 'Select desired value'):
   stdscr.refresh()
   ch = -1
   while ch >= i or ch < 0:
-    ch = stdscr.getch() - ord('0')
+    ch = stdscr.getch()
+    if ch == 10: ch = 0
+    else:        ch = ch - ord('0')
   return ch
 
 
