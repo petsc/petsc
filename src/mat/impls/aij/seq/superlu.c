@@ -187,11 +187,7 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 
   ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
   /* use SuperLU mat ordeing */
-  ierr = PetscOptionsInt("-mat_superlu_ordering","SuperLU ordering type (one of 0, 1, 2, 3)
-     0: natural ordering;
-     1: MMD applied to A'*A;
-     2: MMD applied to A'+A;
-     3: COLAMD, approximate minimum degree column ordering","None",lu->ispec,&lu->ispec,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_superlu_ordering","SuperLU ordering type (one of 0, 1, 2, 3)\n   0: natural ordering;\n   1: MMD applied to A'*A;\n   2: MMD applied to A'+A;\n   3: COLAMD, approximate minimum degree column ordering","None",lu->ispec,&lu->ispec,&flag);CHKERRQ(ierr);
   if (flag) {
     get_perm_c(lu->ispec, &lu->A, lu->perm_c);
     lu->SuperluMatOdering = PETSC_TRUE; 

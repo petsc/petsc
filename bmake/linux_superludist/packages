@@ -46,5 +46,5 @@ PETSC_HAVE_DSCPACK = -DPETSC_HAVE_DSCPACK
 # UMFPACK
 #
 UMFPACK_INCLUDE    = -I/home/petsc/software/umfpack
-UMFPACK_LIB        = /home/petsc/software/umfpack/umfpack.a
+UMFPACK_LIB        = /home/petsc/software/umfpack/umfpack_linux.a
 PETSC_HAVE_UMFPACK = -DPETSC_HAVE_UMFPACK
