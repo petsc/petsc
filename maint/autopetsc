@@ -21,10 +21,14 @@ proc mud_biff {swho gety} {
 #
 #  Some global variables for tracking PETSc team
 #
-set active_petsc_team_member("Barry")  0
-set active_petsc_team_member("Satish") 0
-set active_petsc_team_member("BillG")  0
-set active_petsc_team_member("Lois")   0
+set active_petsc_team_member(Barry)  "Inactive"
+set active_petsc_team_member(Satish) "Inactive"
+set active_petsc_team_member(BillG)  "Inactive"
+set active_petsc_team_member(Lois)   "Inactive"
+set active_petsc_team_time(Barry)  "Unknown"
+set active_petsc_team_time(Satish) "Unknown"
+set active_petsc_team_time(BillG)  "Unknown"
+set active_petsc_team_time(Lois)   "Unknown"
  
 #
 #   Get the most recent petsc-maint added
@@ -66,7 +70,11 @@ set active_petsc_team_member("Lois")   0
                                    mud_biff $swho $gety
                  } "* whispers to you, *status*\r\n" { 
                                    scan $expect_out(buffer) "%s whispers to you, status\r\n" swho
-                                   send "mu $swho status\r"
+                                   send "mu $swho ===========================\r"
+                                   send "mu $swho Barry $active_petsc_team_member(Barry) since $active_petsc_team_time(Barry) \r"
+                                   send "mu $swho Lois $active_petsc_team_member(Lois) since $active_petsc_team_time(Lois) \r"
+                                   send "mu $swho Satish $active_petsc_team_member(Satish) since $active_petsc_team_time(Satish) \r"
+                                   send "mu $swho BillG $active_petsc_team_member(BillG) since $active_petsc_team_time(BillG) \r"
                  } "* whispers to you, *\r\n" {
                                    scan $expect_out(buffer) "%s whispers to you, %s\r\n" swho message
                                    send "mu $swho I have received your whisper\r" 
@@ -87,12 +95,13 @@ set active_petsc_team_member("Lois")   0
                                    send "\`$swho Welcome to PETSc Plaza\r"
                  } "* blinks\r\n" { 
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
-                                   send "say Welcome back,  $swho\r"
-                                   set active_petsc_time_member($swho) 1
+                                   send "say Welcome back, $swho\r"
+                                   set active_petsc_team_member($swho) "Active"
+                                   
                  } "* idles\r\n" { 
                                    scan $expect_out(buffer) "%s idles\r\n" swho
                                    send "say Later,  $swho\r"
-                                   set active_petsc_time_member($swho) 0
+                                   set active_petsc_team_member($swho) "Inactive"
 #
 #  antisocial to Petsc
 #
