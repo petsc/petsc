@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.191 1998/06/21 02:53:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.192 1998/07/22 21:24:22 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -441,11 +441,17 @@ static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 
 .seealso: PLogStagePush(), PLogStagePop()
 @*/
-int PLogStageRegister(int stage, char *sname)
+int PLogStageRegister(int stage, const char sname[])
 {
+  int n;
+  char *str;
+
   PetscFunctionBegin;
   if (stage < 0 || stage > 10) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stages must be >= 0 and < 10");
-  EventsStageName[stage] = sname;
+  n = PetscStrlen(sname);
+  str = (char *) PetscMalloc((n+1)*sizeof(char)); CHKPTRQ(str);
+  PetscStrcpy(str,sname);
+  EventsStageName[stage] = str;
   PetscFunctionReturn(0);
 }
 
@@ -555,6 +561,26 @@ int PLogStagePop(void)
     EventsStageMessageCounts[EventsStage]  -= irecv_ct + isend_ct + recv_ct + send_ct;
     EventsStageMessageLengths[EventsStage] -= irecv_len + isend_len + recv_len + send_len;
     EventsStageReductions[EventsStage]     -= allreduce_ct;
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ "PLogStageDestroy_Private"
+/*
+   PLogStageDestroy_Private - Destroy the memory allocated during calls to 
+        PLogStateRegister().
+
+*/
+
+int PLogStageDestroy_Private(void)
+{
+  int i;
+  PetscFunctionBegin;
+  for (i=0; i<10; i++) {
+    if (EventsStageName[i]) {
+      PetscFree(EventsStageName[i]); 
+      EventsStageName[i] =0;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -823,7 +849,7 @@ int PLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
 /* -------------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "PLogObjectState"
-int PLogObjectState(PetscObject obj,char *format,...)
+int PLogObjectState(PetscObject obj,const char format[],...)
 {
   va_list Argp;
 
@@ -1029,11 +1055,11 @@ $      Log.<rank>
 
 .seealso: PLogBegin(), PLogPrintSummary()
 @*/
-int PLogDump(char* sname)
+int PLogDump(const char sname[])
 {
   int        i,rank,ierr;
   FILE       *fd;
-  char       file[64];
+  char       file[64],fname[64];
   PLogDouble flops,_TotalTime;
   
   PetscFunctionBegin;
@@ -1043,8 +1069,8 @@ int PLogDump(char* sname)
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
-  ierr = PetscFixFilename(file);CHKERRQ(ierr);
-  fd   = fopen(file,"w"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"cannot open file");
+  ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
+  fd   = fopen(fname,"w"); if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"cannot open file");
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,ObjectsDestroyed);
   fprintf(fd,"Clock Resolution %g\n",0.0);
@@ -1129,7 +1155,7 @@ extern int  PLogEventColorMalloced[];
           PLogEventMPEActivate(), PLogEventMPEDeactivate(),
           PLogEventActivate(), PLogEventDeactivate()
 @*/
-int PLogEventRegister(int *e,char *string,char *color)
+int PLogEventRegister(int *e,const char string[],const char color[])
 {
   char *cstring;
 
@@ -1274,7 +1300,7 @@ int PLogEventActivate(int event)
 
 .seealso: PLogBegin(), PLogDump()
 @*/
-int PLogPrintSummary(MPI_Comm comm,char* filename)
+int PLogPrintSummary(MPI_Comm comm,const char filename[])
 {
   PLogDouble maxo,mino,aveo,mem,totmem,maxmem,minmem,mlensmcounts;
   PLogDouble maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott,ratio;
@@ -1284,7 +1310,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PLogDouble rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
   PLogDouble pstime,psflops1,psflops,flopr,mict,mact,rct;
   int        size,rank,i,j,ierr,lEventsStageMax;
-  char       arch[10],hostname[64],username[16],pname[256];
+  char       arch[10],hostname[64],username[16],pname[256],fname[256];
   FILE       *fd = stdout;
 
   PetscFunctionBegin;
@@ -1297,8 +1323,8 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
   /* Open the summary file */
   if (filename && !rank) {
-    ierr = PetscFixFilename(filename);CHKERRQ(ierr);
-    fd = fopen(filename,"w"); 
+    ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
+    fd = fopen(fname,"w"); 
     if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"cannot open file");
   }
 
