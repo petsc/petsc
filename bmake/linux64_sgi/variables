@@ -1,0 +1,74 @@
+# $Id: variables,v 1.29 2001/08/22 17:58:22 balay Exp $ 
+#
+#     See the file bmake/variables.defs for a complete explanation of all these fields
+#
+AR		   = ar
+AR_FLAGS	   = cr
+RM		   = rm -f
+OMAKE		   = make  --no-print-directory
+RANLIB		   = ranlib
+SHELL		   = /bin/sh
+SED		   = /bin/sed
+MKDIR              = mkdir -p
+LIB_SUFFIX         = a
+DIFF               = diff
+# ######################### C and Fortran compiler ########################
+#
+C_CC		   = sgicc
+C_FC		   = sgif90 -freeform -cpp
+C_CLINKER_SLFLAG   = -Wl,-rpath,
+C_FLINKER_SLFLAG   = -Wl,-rpath,
+C_CLINKER	   = sgicc
+C_FLINKER	   = sgif90
+C_CCV		   = ${C_CC} -version
+C_FCV              = ${C_FC} -version
+C_SYS_LIB	   = -lfortran -lffio -lmsgi -lmv -lm 
+# ---------------------------- BOPT - g options ----------------------------
+G_COPTFLAGS	   = -g 
+G_FOPTFLAGS	   = -g
+# ----------------------------- BOPT - O options -----------------------------
+O_COPTFLAGS	   = -O3 -OPT:Olimit=0
+O_FOPTFLAGS	   = -O3 -OPT:Olimit=0
+# ########################## C++ compiler ##################################
+#
+CXX_CC		   = sgiCC
+CXX_FC		   = sgif90 -freeform -cpp
+CXX_CLINKER_SLFLAG = -Wl,-rpath,
+CXX_FLINKER_SLFLAG = -Wl,-rpath,
+CXX_CLINKER	   = sgiCC
+CXX_FLINKER	   = sgif90
+CXX_CCV		   = ${CXX_CC} --version
+CXX_SYS_LIB	   = -lfortran -lffio -lmsgi -lmv -lm
+# ------------------------- BOPT - g_c++ options ------------------------------
+GCXX_COPTFLAGS	   = -g 
+GCXX_FOPTFLAGS	   = -g
+# ------------------------- BOPT - O_c++ options ------------------------------
+OCXX_COPTFLAGS	   = -O3 -OPT:Olimit=0
+OCXX_FOPTFLAGS	   = -O3 -OPT:Olimit=0
+# -------------------------- BOPT - g_complex options ------------------------
+GCOMP_COPTFLAGS	   = -g
+GCOMP_FOPTFLAGS	   = -g
+# --------------------------- BOPT - O_complex options -------------------------
+OCOMP_COPTFLAGS	   = -O3 -OPT:Olimit=0
+OCOMP_FOPTFLAGS	   = -O3 -OPT:Olimit=0
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK
+O_PETSCFLAGS	   = -DPETSC_USE_FOR_KERNELS -DPETSC_USE_LOG -DPETSC_USE_DEBUG  \
+	             -DPETSC_USE_BOPT_O
+GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK 
+OCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O
+GCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                     -DPETSC_USE_STACK -DPETSC_USE_COMPLEX
+OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
+		     -DPETSC_USE_COMPLEX
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+PARCH		   = linux
