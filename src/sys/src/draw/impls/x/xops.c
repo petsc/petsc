@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.58 1996/10/02 23:29:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.59 1996/10/28 21:10:44 curfman Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -488,8 +488,8 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 
 /*@C
    ViewerDrawOpenX - Opens an X window for use as a viewer. If you want to 
-        do graphics in this window, you must call ViewerDrawGetDraw() and
-        perform the graphics on the Draw object.
+   do graphics in this window, you must call ViewerDrawGetDraw() and
+   perform the graphics on the Draw object.
 
    Input Parameters:
 .  comm - communicator that will share window
@@ -506,8 +506,13 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 .   VIEWER_FORMAT_DRAW_LG     - displays using a line graph
 
    Options Database Keys:
+   ViewerDrawOpenX() calls DrawOpenX(), so see DrawOpenX() for
+   runtime options, including
 $  -nox : disable all x-windows output
 $  -display <name> : name of machine for the X display
+$  -draw_pause <pause> : sets time (in seconds) that the
+$     program pauses after DrawPause() has been called
+$     (0 is default, -1 implies until user input).
 
 .keywords: draw, open, x, viewer
 
