@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.116 1999/02/01 18:46:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.117 1999/02/01 18:48:02 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -207,6 +207,8 @@ int KSPSolve(KSP ksp, int *its)
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
+  /* reset the residual history list if requested */
+  if (ksp->res_hist_reset == PETSC_TRUE) ksp->res_hist_len = 0;
   ierr = (*ksp->ops->solve)(ksp,its); CHKERRQ(ierr);
 
   MPI_Comm_rank(ksp->comm,&rank);
@@ -1004,19 +1006,63 @@ int KSPGetMonitorContext(KSP ksp, void **ctx)
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 .  a   - array to hold history
--  na  - size of a
+.  na  - size of a
+-  reset - PETSC_TRUE indicates the history counter is reset to zero
+           for each new linear solve
 
    Level: advanced
 
 .keywords: KSP, set, residual, history, norm
+
+.seealso: KSPGetResidualHistory()
+
 @*/
-int KSPSetResidualHistory(KSP ksp, double *a, int na)
+int KSPSetResidualHistory(KSP ksp, double *a, int na,PetscTruth reset)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (na) PetscValidScalarPointer(a);
-  ksp->residual_history = a;
-  ksp->res_hist_size    = na;
+  ksp->res_hist        = a;
+  ksp->res_hist_len    = 0;
+  ksp->res_hist_max    = na;
+  ksp->res_hist_reset  = reset;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPGetResidualHistory"
+/*@C
+   KSPSetResidualHistory - Gets the array used to hold the residual history
+   and the number of residuals it contains.
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Output Parameters:
++  a   - pointer to array to hold history (or PETSC_NULL)
+-  na  - number of used entries in a (or PETSC_NULL)
+
+   Level: advanced
+
+   Notes:
+     Can only call after a KSPSetResidualHistory() otherwise returns 0.
+
+     The Fortran version of this routine has a calling sequence
+$   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
+
+.keywords: KSP, get, residual, history, norm
+
+.seealso: KSPGetResidualHistory()
+
+@*/
+int KSPGetResidualHistory(KSP ksp, double **a, int *na)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  if (a)  *a = ksp->res_hist;
+  if (na) *na = ksp->res_hist_len;
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.170 1999/02/16 22:28:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.171 1999/02/16 22:57:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -659,9 +659,11 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->xmonitor          = 0;
   snes->vwork             = 0;
   snes->nwork             = 0;
-  snes->conv_hist_size    = 0;
-  snes->conv_act_size     = 0;
-  snes->conv_hist         = 0;
+  snes->conv_hist_len     = 0;
+  snes->conv_hist_max     = 0;
+  snes->conv_hist         = PETSC_NULL;
+  snes->conv_hist_its     = PETSC_NULL;
+  snes->conv_hist_reset   = PETSC_TRUE;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   kctx = PetscNew(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
@@ -1715,7 +1717,11 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*
    Input Parameters:
 +  snes - iterative context obtained from SNESCreate()
 .  a   - array to hold history
--  na  - size of a
+.  its - integer array holds the number of linear iterations (or
+         negative if not converged) for each solve.
+.  na  - size of a and its
+-  reset - PETSC_TRUTH indicates each new nonlinear solve resets the history counter to zero,
+           else it continues storing new values for new nonlinear solves after the old ones
 
    Notes:
    If set, this array will contain the function norms (for
@@ -1730,14 +1736,60 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*
    Level: intermediate
 
 .keywords: SNES, set, convergence, history
+
+.seealso: SNESGetConvergencHistory()
+
 @*/
-int SNESSetConvergenceHistory(SNES snes, double *a, int na)
+int SNESSetConvergenceHistory(SNES snes, double *a, int *its,int na,PetscTruth reset)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (na) PetscValidScalarPointer(a);
-  snes->conv_hist      = a;
-  snes->conv_hist_size = na;
+  snes->conv_hist       = a;
+  snes->conv_hist_its   = its;
+  snes->conv_hist_max   = na;
+  snes->conv_hist_reset = reset;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESGetConvergenceHistory"
+/*@
+   SNESGetConvergenceHistory - Gets the array used to hold the convergence history.
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - iterative context obtained from SNESCreate()
+
+   Output Parameters:
+.  a   - array to hold history
+.  its - integer array holds the number of linear iterations (or
+         negative if not converged) for each solve.
+-  na  - size of a and its
+
+   Notes:
+    The calling sequence for this routine in Fortran is
+$   call SNESGetConvergenceHistory(SNES snes, integer na, integer ierr)
+
+   This routine is useful, e.g., when running a code for purposes
+   of accurate performance monitoring, when no I/O should be done
+   during the section of code that is being timed.
+
+   Level: intermediate
+
+.keywords: SNES, get, convergence, history
+
+.seealso: SNESSetConvergencHistory()
+
+@*/
+int SNESGetConvergenceHistory(SNES snes, double **a, int **its,int *na)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  if (a)   *a   = snes->conv_hist;
+  if (its) *its = snes->conv_hist_its;
+  if (na) *na   = snes->conv_hist_len;
   PetscFunctionReturn(0);
 }
 
@@ -1823,6 +1875,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   PetscValidIntPointer(its);
   if (!snes->setupcalled) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
+  if (snes->conv_hist_reset == PETSC_TRUE) snes->conv_hist_len = 0;
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   snes->nfuncs = 0; snes->linear_its = 0; snes->nfailures = 0;
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);

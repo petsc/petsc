@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.19 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.20 1998/11/20 15:26:17 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -27,6 +27,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.19 1998/10/19 22:15:08 bsmith Exp bsmith 
 #define snesappendoptionsprefix_     SNESAPPENDOPTIONSPREFIX 
 #define matcreatesnesfdmf_           MATCREATESNESFDMF
 #define snessettype_                 SNESSETTYPE
+#define snesgetconvergencehistory_   SNESGETCONVERGENCEHISTORY
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
@@ -49,9 +50,15 @@ static char vcid[] = "$Id: zsnes.c,v 1.19 1998/10/19 22:15:08 bsmith Exp bsmith 
 #define snesappendoptionsprefix_     snesappendoptionsprefix
 #define matcreatesnesfdmf_           matcreatesnesfdmf
 #define snessettype_                 snessettype
+#define snesgetconvergencehistory_   snesgetconvergencehistory
 #endif
 
 EXTERN_C_BEGIN
+
+void snesgetconvergencehistory_(SNES *snes,int *na,int *__ierr)
+{
+  *__ierr = SNESGetConvergenceHistory(*snes, PETSC_NULL,PETSC_NULL, na);
+}
 
 void snessettype_(SNES *snes,CHAR itmethod, int *__ierr,int len )
 {

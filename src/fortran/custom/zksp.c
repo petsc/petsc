@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.24 1998/10/05 20:42:54 balay Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.25 1998/10/19 22:15:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -25,7 +25,9 @@ static char vcid[] = "$Id: zksp.c,v 1.24 1998/10/05 20:42:54 balay Exp bsmith $"
 #define kspgetpreconditionerside_ KSPGETPRECONDITIONERSIDE
 #define kspbuildsolution_         KSPBUILDSOLUTION
 #define kspsettype_               KSPSETTYPE           
+#define kspgetresidualhistory_    KSPGETRESIDUALHISTORY
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define kspgetresidualhistory_    kspgetresidualhistory
 #define kspsettype_               kspsettype
 #define kspregisterdestroy_       kspregisterdestroy
 #define kspregisterall_           kspregisterall
@@ -46,6 +48,11 @@ static char vcid[] = "$Id: zksp.c,v 1.24 1998/10/05 20:42:54 balay Exp bsmith $"
 #endif
 
 EXTERN_C_BEGIN
+
+void kspgetresidualhistory_(KSP *ksp,int *na,int *__ierr)
+{
+  *__ierr = KSPGetResidualHistory(*ksp, PETSC_NULL, na);
+}
 
 void kspsettype_(KSP *ksp,CHAR itmethod, int *__ierr,int len )
 {
