@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.123 2001/01/15 21:43:39 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.124 2001/01/17 22:19:44 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -205,7 +205,11 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
   /* Compose the message evaluating the print format */
   if (mess) {
     va_start(Argp,mess);
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+    vsprintf(buf,mess,(char *)Argp);
+#else
     vsprintf(buf,mess,Argp);
+#endif
     va_end(Argp);
     lbuf = buf;
     if (p == 1) {

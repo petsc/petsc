@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.11 2000/09/28 21:09:35 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.12 2001/01/15 21:44:09 bsmith Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -110,7 +110,11 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
   PetscFunctionBegin;  
   ierr = PetscStrcpy(buffer,"flops(0);");
   va_start(Argp,string);
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(buffer+9,string,(char *)Argp);
+#else
+  vsprintf(buffer+9,string,Argp);
+#endif
   va_end(Argp);
   ierr = PetscStrcat(buffer,",flops");
 
