@@ -5,7 +5,7 @@ set MACH=user02.ncsa.uiuc.edu
 set USR=balay
 set LOC=/u/ac/balay/petsc-dev
 set CONF=linux64_intel
-set day=`date | cut -f1 -d" "`
+
 if ($day == Thu || $day == Fri) then
   set CONF=linux64
 endif

@@ -4,6 +4,7 @@
 
 
 set dir=`dirname $0`
+set day=`date | cut -f1 -d" "`
 
 foreach CONF ($*)
   set SSH=ssh
@@ -12,8 +13,6 @@ foreach CONF ($*)
   source $dir/confignightly/${CONF}
 
   echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
-#  $SSH $USR@$MACH $DASHN "$LOC/maint/buildtest $CONF" &
-# Needs bk pull for another day.
-  $SSH $USR@$MACH $DASHN "cd $LOC; bk pull; $LOC/maint/buildtest $CONF" &
+  $SSH $USR@$MACH $DASHN "$LOC/maint/buildtest $CONF" &
 end
 wait

@@ -5,11 +5,9 @@ set USR=balay
 set LOC=/home/balay/petsc-dev
 set CONF=cygwin
 
-set day=`date | cut -f1 -d" "`
-
 if ($day == Tue || $day == Thu) then
   set CONF=win32_borland
-elif ($day == Mon || $day == Sat) then
+else if ($day == Mon || $day == Sat) then
   set CONF=cygwin-ms
 endif
 

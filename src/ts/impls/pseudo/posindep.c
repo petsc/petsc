@@ -158,7 +158,7 @@ static int TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
       ts->ptime  += current_time_step;
       ierr = SNESSolve(ts->snes,pseudo->update);CHKERRQ(ierr);
       ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
-      ierr = SNESGetIterationNumber(ts->snes,&lits);CHKERRQ(ierr);
+      ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
       ts->nonlinear_its += its; ts->linear_its += lits;
       ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->time_step,&ok);CHKERRQ(ierr);
       if (ok) break;
