@@ -1,4 +1,4 @@
-# $Id: common,v 1.189 1997/08/19 16:06:19 balay Exp balay $ 
+# $Id: common,v 1.190 1997/08/19 16:09:35 balay Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -21,7 +21,7 @@ PDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 LIBNAME	      = $(PDIR)/$(LIBBASE).a
 SOURCE	      = $(SOURCEC) $(SOURCEF)
 OBJS	      = $(OBJSC) $(OBJSF)
-PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE)
+PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE) $(MPE_INCLUDE)
 CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(PETSC_PARCH)
 
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.27 1997/09/11 21:16:27 balay Exp balay $ 
+# $Id: base.site,v 1.28 1997/09/11 21:22:23 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -7,7 +7,7 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# FCLIB contains the libraries for a CLINKER to use for code containing
+# FC_LIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 # The extra -lm is needed to force the C version of libm.a to 
 # be searched before the Fortran 77 version.
