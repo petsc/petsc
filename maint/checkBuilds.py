@@ -11,6 +11,7 @@ class BuildChecker:
                'freebsd':         ['gcc'],
                'linux':           ['gcc'],
                'linux64':         ['gcc'],
+               'linux64_intel':   ['gcc'],
                'linux_absoft':    ['gcc', 'absoftF90'],
                'linux_alpha':     ['gcc'],
                'linux_alpha_dec': ['mipsUltrix'],
