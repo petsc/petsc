@@ -1,21 +1,23 @@
-# $Id: base,v 1.37 1998/10/17 16:47:56 bsmith Exp bsmith $ 
+# $Id: base,v 1.38 1998/10/19 22:14:14 bsmith Exp balay $ 
 
 PARCH    = linux
-CC       = gcc -fPIC
+CC       = /home/alice/software/egcs/linux/bin/gcc -fPIC
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then leave this blank.
 #
 CCV      = ${CC} --version
 #
-FC       = g77
+FC       = /home/alice/software/egcs/linux/bin/g77
 AR       = ar
 RM       = rm -f
 OMAKE    = make  --no-print-directory
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = gcc ${COPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
-FLINKER  = g77 ${FOPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CLINKER  = /home/alice/software/egcs/linux/bin/gcc \
+           ${COPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
+FLINKER  = /home/alice/software/egcs/linux/bin/g77 \
+           ${FOPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
 
 #
 #  -ldl is the dynamic link library that allows one to use dlopen() etc
