@@ -1,4 +1,4 @@
-/*$Id: pipeline.c,v 1.22 2000/05/05 22:14:53 balay Exp bsmith $*/
+/*$Id: pipeline.c,v 1.23 2000/05/10 16:40:00 bsmith Exp bsmith $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed
@@ -238,7 +238,7 @@ int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
     ctx->dnfn = &ProcColorDown;
     ctx->setup = &PipelineMulticolorSetup;
   } else {
-    SETERRQ(1,(int)type,"VecPipelineSetType: unknown or not implemented type\n");
+    SETERRQ1(1,"VecPipelineSetType: unknown or not implemented type %d",(int)type);
   }
 
   PetscFunctionReturn(0);

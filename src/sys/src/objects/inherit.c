@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.64 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: inherit.c,v 1.65 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -538,7 +538,7 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
   PetscObjectContainer contain;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(contain,_p_PetscObjectContainer,int,PETSC_COOKIE,"container",comm,PetscObjectContainerDestroy,0);
+  PetscHeaderCreate(contain,_p_PetscObjectContainer,int,PETSC_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);
   *container = contain;
   PetscFunctionReturn(0);
 }
