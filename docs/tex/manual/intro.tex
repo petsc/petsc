@@ -1,4 +1,4 @@
-% $Id: intro.tex,v 1.30 1997/11/12 04:10:31 bsmith Exp curfman $ 
+% $Id: intro.tex,v 1.31 1997/11/13 23:11:32 curfman Exp bsmith $ 
 %
 %  Introduction to PETSc 2.0
 %
@@ -59,44 +59,13 @@ Argonne, IL 60439-4844\\
 
 \vspace{1.0cm}
 
-\begin{center} {\bf Abstract} \end{center}
+\input{abstract.tex}
 
-This document provides an introduction to
-the use of PETSc 2.0 for the numerical solution
-of partial differential equations on high-performance computers.  The
-Portable, Extensible, Toolkit for Scientific computation (PETSc), is a
-suite of data structures and routines that provide the building
-blocks for the solution of large-scale application codes on parallel
-(and serial) computers.  PETSc 2.0 uses the MPI standard for all
-message passing communication.
-
-PETSc includes an expanding suite of parallel linear and nonlinear
-equation solvers that are easily used in application codes written in
-Fortran, C, and C++.  PETSc provides many of the mechanisms needed
-within parallel application codes, such as simple parallel matrix and
-vector assembly routines that allow the overlap of communication and
-computation.  In addition, PETSc includes simple support for
-distributed arrays.  The library is organized
-hierarchically, enabling users to employ the level of abstraction that
-is most appropriate for a particular problem. By using techniques 
-of object oriented programming, PETSc provides enormous flexibility 
-for users.
-
-PETSc is a sophisticated set of software tools; as such, for some
-users this may mean it initially has a steeper learning curve than a
-simple subroutine library. However, the power of the PETSc design and
-the algorithms it incorporates make the efficient implementation of
-many application codes much simpler than ``rolling them'' yourself.
-
-This document serves as the first section of the {\em PETSc 2.0 Users
+\noindent {\bf Note:} This document serves as the first section of the {\em PETSc 2.0 Users
 Manual}, which elaborates on the use and design of PETSc 2.0. The
 manual and is available in its entirety via the World Wide Web at
 the PETSc home page, {\tt http://www.mcs.anl.gov/petsc/petsc.html}.
-
-\vspace{1.2cm}
-
-\noindent {\bf Note:} This introduction is intended for use with
-PETSc 2.0.21. When referencing PETSc 2.0, please do 
+When referencing PETSc 2.0, please do 
 not refer to this document. Instead reference the following: Satish
 Balay, William Gropp, Lois Curfman McInnes, and Barry Smith.  {\em
 PETSc 2.0 Users Manual}, Technical Report ANL-95/11 - Revision 2.0.21,
