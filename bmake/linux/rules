@@ -25,7 +25,7 @@ shared: chkopts_basic
             if [ "$$flag" != "" ]; then \
 	      echo "building $$LIBNAME.${SLSUFFIX}"; \
 	      ${AR} x ../$$LIBNAME.a ;\
-	      ${CLINKER} -shared -Wl,-soname,$$LIBNAME.${SLSUFFIX} -o ../$$LIBNAME.${SLSUFFIX} *.o ; \
+	      ${CLINKER} -shared -Wl,-soname,$$LIBNAME.${SLSUFFIX} -o ../$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}; \
 	      ${RM} -f * ; \
 	    fi; \
 	  fi; \
