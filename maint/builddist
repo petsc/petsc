@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.76 2000/09/08 01:38:26 balay Exp balay $ 
+# $Id: builddist,v 1.77 2000/09/22 17:17:32 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -13,6 +13,7 @@ echo "(4) Set the version number and release date in petsc.h?"
 echo "(5) Rebuilt and checked all Fortran stubs?"
 echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
 echo "(7) Made sure Fortran include files match C ones?"
+echo "(8) Made sure the web documents are updated into the source tree - make updatewebdocs?"
 
 if ($#argv == 1) then
   set version=$1
