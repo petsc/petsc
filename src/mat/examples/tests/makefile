@@ -10,10 +10,10 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat
-EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
+EXAMPLES = ex1  ex3  ex5 ex6  ex8 ex9 ex10 ex11  ex14\
            ex15 ex16 ex19 ex20 ex21 ex22
-REXAMPLES= runex1 runex2 runex3 runex4 runex5 runex6 runex7 runex8 runex9\
-           runex10 runex11 runex12 runex13 runex14 runex15 runex16 runex19\
+REXAMPLES= runex1  runex3  runex5 runex6  runex8 runex9\
+           runex10 runex11 runex14 runex15 runex16 runex19\
            runex20 runex21 runex22
 CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
            ex15 ex16 ex17 ex18 ex19 ex20 ex21 ex22 ex23 ex24
