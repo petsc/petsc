@@ -12,10 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 EXAMPLES = ex1 ex2 ex3 ex4 ex5
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c
-SYSLIB   = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
-           -lpetscvec \
-           -lpetscsys -lpetscdraw $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
-           $(X11_LIB) $(MPI_LIB) $(SYS_LIB) -lm 
+SYSLIB   = $(SLES_LIB) -lm
 LINCLUDE = $(SOURCEH)
 
 runexamples: 
