@@ -22,7 +22,7 @@ class Configure(configure.Configure):
     self.lib             = os.path.splitext(self.lib)[0]
     if self.lib.startswith('lib'): self.lib = self.lib[3:]
     otherLibs            = self.compilers.flibs
-    if self.libraries.check(self.lib, 'dtrtrs', libDir = self.dir, otherLibs = otherLibs, fortranMangle = 1):
+    if self.libraries.check(self.lib, 'MPI_Init', libDir = self.dir, otherLibs = otherLibs):
       self.foundLib = 1
     self.framework.argDB['LIBS'] = oldLibs
     return self.foundLib
@@ -30,7 +30,7 @@ class Configure(configure.Configure):
   def checkInclude(self):
     if self.include in self.checkedInclude: return
     oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
+    if self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
     if self.checkPreprocess('#include <mpi.h>\n'):
       self.foundInclude = 1
     self.framework.argDB['CPPFLAGS'] = oldFlags
@@ -40,9 +40,10 @@ class Configure(configure.Configure):
   def checkMPILink(self, includes, body):
     success  = 0
     oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
+    if self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
     oldLibs  = self.framework.argDB['LIBS']
-    self.framework.argDB['LIBS']     += ' -L'+self.dir+' -l'+self.lib+' '+self.compilers.flibs
+    if self.dir: self.framework.argDB['LIBS'] += ' -L'+self.dir
+    self.framework.argDB['LIBS'] += ' -l'+self.lib+' '+self.compilers.flibs
     if self.checkLink(includes, body):
       success = 1
     self.framework.argDB['CPPFLAGS'] = oldFlags
@@ -87,7 +88,7 @@ class Configure(configure.Configure):
 
   def configureTypes(self):
     oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
+    if self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
     self.types.checkSizeof('MPI_Comm', 'mpi.h')
     self.types.checkSizeof('MPI_Fint', 'mpi.h')
     self.framework.argDB['CPPFLAGS'] = oldFlags
@@ -121,7 +122,10 @@ class Configure(configure.Configure):
   def setOutput(self):
     if self.foundLib and self.foundInclude:
       self.addDefine('HAVE_MPI', 1)
-      self.addSubstitution('MPI_INCLUDE', '-I'+self.include, 'The MPI include flags')
+      if self.include:
+        self.addSubstitution('MPI_INCLUDE', '-I'+self.include, 'The MPI include flags')
+      else:
+        self.addSubstitution('MPI_INCLUDE', '', 'The MPI include flags')
       self.addSubstitution('MPI_LIB_DIR', self.dir, 'The MPI library directory')
       libFlag = ''
       if self.dir: libFlag = '-L'+self.dir+' '
@@ -133,10 +137,11 @@ class Configure(configure.Configure):
     if not self.framework.argDB.has_key('-with-mpi') or not int(self.framework.argDB['-with-mpi']): return
     self.configureLibrary()
     self.configureInclude()
-    self.configureTypes()
-    self.checkWorkingLink()
-    self.configureConversion()
-    self.configureMPIRUN()
-    self.configureMPE()
+    if self.foundLib and self.foundInclude:
+      self.configureTypes()
+      self.checkWorkingLink()
+      self.configureConversion()
+      self.configureMPIRUN()
+      self.configureMPE()
     self.setOutput()
     return
