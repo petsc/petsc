@@ -51,10 +51,6 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES,Vec);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRhsBC(SNES, PetscErrorCode (*)(SNES, Vec, void *));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultRhsBC(SNES, Vec, void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetSolutionBC(SNES, PetscErrorCode (*)(SNES, Vec, void *));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultSolutionBC(SNES, Vec, void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultUpdate(SNES, PetscInt);
 
