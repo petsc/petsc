@@ -756,7 +756,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     }
   }
 
-  if (app->mmtype != MMFP) {
+  if (app->mmtype != MMFP && app->mmtype != MMHYBRID_F) {
     /* As long as we're not doing just the full potential model, we must
        compute the Euler components of the Jacobian */
 
@@ -798,6 +798,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 #endif
   }
   if (app->mmtype != MMEULER) {
+    /* DAVID */
     /* PetscPrintf(app->comm,"Dummy FP: Setting all full potential Jacobian diagonal components to 1\n"); */
   }
 
@@ -1007,7 +1008,7 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
     }
   }
 
-  if (app->mmtype != MMFP) {
+  if (app->mmtype != MMFP && app->mmtype != MMHYBRID_F) {
     /* As long as we're not doing just the full potential model, we must
        compute the Euler components */
 
@@ -1059,6 +1060,7 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
 #endif
 
   } else {
+    /* DAVID */
     fv_array[0] = 1.e-13;
   }
 
@@ -1117,7 +1119,7 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
     ierr = PackWork(app,app->da,X,app->localX,&app->xx); CHKERRQ(ierr);
   }
 
-  if (app->mmtype != MMFP) {
+  if (app->mmtype != MMFP && app->mmtype != MMHYBRID_F) {
     /* PetscPrintf(app->comm,"Dummy FP: Setting all full potential Jacobian diagonal components to 1\n"); */
 
     /* Apply boundary conditions */
