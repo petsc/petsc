@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.18 2000/04/09 04:38:07 bsmith Exp bsmith $*/
+/*$Id: bicg.c,v 1.19 2000/04/12 04:25:10 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -80,13 +80,17 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   for (i=0; i<maxit; i++) {
      VecDot(Zr,Rl,&beta);                         /*     beta <- r'z     */
      if (!i) {
-       if (beta == 0.0) break;
+       if (beta == 0.0) {
+         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
+         *its        = 0;
+         PetscFunctionReturn(0);
+       }
        ierr = VecCopy(Zr,Pr);CHKERRQ(ierr);       /*     p <- z          */
        ierr = VecCopy(Zl,Pl);CHKERRQ(ierr);
      } else {
-         b = beta/betaold;
-         ierr = VecAYPX(&b,Zr,Pr);CHKERRQ(ierr);  /*     p <- z + b* p   */
-         ierr = VecAYPX(&b,Zl,Pl);CHKERRQ(ierr);
+       b = beta/betaold;
+       ierr = VecAYPX(&b,Zr,Pr);CHKERRQ(ierr);  /*     p <- z + b* p   */
+       ierr = VecAYPX(&b,Zl,Pl);CHKERRQ(ierr);
      }
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,Pr,Zr);CHKERRQ(ierr);    /*     z <- Kp         */

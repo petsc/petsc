@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.134 2000/04/09 04:37:15 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.135 2000/04/12 04:24:30 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 
@@ -466,11 +466,11 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 -   -sles_diagonal_scale_fix - unscale the matrix and right hand side when done
 
    Notes:
-     On return, the parameter "its" contains
-+    <its> - the iteration number at which convergence
-       was successfully reached, or
--    <-its> - the negative of the iteration at which
-        divergence or breakdown was detected.
+     Call KSPGetConvergedReason() to determine if the solver converged or failed and 
+     why.
+
+     On return, the parameter "its" contains the iteration number at which convergence
+       was successfully reached or divergence/failure was detected
 
      If using a direct method (e.g., via the KSP solver
      KSPPREONLY and a preconditioner such as PCLU/PCILU),
