@@ -33,6 +33,7 @@
   PetscScalar      *saved_values;                                                                    \
                                                                                                      \
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */    \
+  Mat              sbaijMat;         /* mat in sbaij format */                                       \
                                                                                                      \
   PetscInt         setvalueslen;   /* only used for single precision */                              \
   MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied   \

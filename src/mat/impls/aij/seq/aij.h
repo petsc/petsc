@@ -52,7 +52,6 @@ typedef struct {
   PetscTruth       keepzeroedrows;   /* keeps matrix structure same in calls to MatZeroRows()*/
   PetscTruth       ignorezeroentries;
   ISColoring       coloring;         /* set with MatADSetColoring() used by MatADSetValues() */
-  Mat              sbaijMat;         /* mat in sbaij format */
 
   PetscInt         *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */
   Mat              XtoY;             /* used by MatAXPY() */
