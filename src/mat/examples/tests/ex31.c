@@ -27,7 +27,7 @@ int main(int argc,char **args)
 
   /* PART 1:  Generate matrix, then write it in binary format */
 
-  ierr = PetscLogEventRegister(&MATRIX_GENERATE,"Generate Matrix",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MATRIX_GENERATE,"Generate Matrix",PETSC_NULL,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MATRIX_GENERATE,0,0,0,0);CHKERRQ(ierr);
 
   /* Generate matrix */
@@ -58,7 +58,7 @@ int main(int argc,char **args)
   /* All processors wait until test matrix has been dumped */
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister(&MATRIX_READ,"Read Matrix",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MATRIX_READ,"Read Matrix",PETSC_NULL,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MATRIX_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",PETSC_BINARY_RDONLY,&viewer);CHKERRQ(ierr);

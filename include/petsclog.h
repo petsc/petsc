@@ -398,7 +398,7 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
 #define PetscLogSet(lb,le)                  0
 #define PetscLogAllBegin()                  0
 #define PetscLogDump(c)                     0
-#define PetscLogEventRegister(a,b,c)        0
+#define PetscLogEventRegister(a,b,c,d)      0
 EXTERN int PetscLogObjectState(PetscObject,const char[],...);
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
