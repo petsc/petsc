@@ -1,26 +1,45 @@
-/*$Id: ls.c,v 1.156 2000/07/23 16:42:19 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.157 2000/07/24 03:32:47 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the function,
     but not a zero. In the case when one cannot compute J^T F we use the fact that
-    0 = (J^T F)^T W = F^T J W iff W not in the null space of J
+    0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More 
+    for this trick.
 */ 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="SNESLSCheckLocalMin_Private"></a>*/"SNESLSCheckLocalMin_Private"
 int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *ismin)
 {
-  PetscReal a1;
-  int       ierr;
+  PetscReal  a1;
+  int        ierr;
+  PetscTruth hastranspose;
 
   PetscFunctionBegin;
   *ismin = PETSC_FALSE;
+  ierr = MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose);CHKERRQ(ierr);
+  if (hastranspose) {
     /* Compute || J^T F|| */
     ierr = MatMultTranspose(A,F,W);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
     PLogInfo(0,"SNESSolve_EQ_LS: || J^T F|| %g || F || %g ||J^T F||/|| F || %g\n",a1,fnorm,a1/fnorm);
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
+  } else {
+    Vec       work;
+    Scalar    result;
+    PetscReal wnorm;
+
+    ierr = VecSetRandom(PETSC_NULL,W);CHKERRQ(ierr);
+    ierr = VecNorm(W,NORM_2,&wnorm);CHKERRQ(ierr);
+    ierr = VecDuplicate(W,&work);CHKERRQ(ierr);
+    ierr = MatMult(A,W,work);CHKERRQ(ierr);
+    ierr = VecDot(F,work,&result);CHKERRQ(ierr);
+    ierr = VecDestroy(work);CHKERRQ(ierr);
+    a1   = PetscAbsScalar(result)/(fnorm*wnorm);
+    PLogInfo(0,"SNESSolve_EQ_LS: (F^T J random)/(|| F ||*||random|| %g\n",a1);
+    if (a1 < 1.e-4) *ismin = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
