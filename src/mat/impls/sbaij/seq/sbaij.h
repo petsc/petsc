@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.10 2000/09/14 15:06:28 hzhang Exp hzhang $ */
+/* $Id: sbaij.h,v 1.11 2000/09/14 15:26:58 hzhang Exp hzhang $ */
 
 #include "src/mat/matimpl.h"
 
@@ -22,11 +22,11 @@ typedef struct {
   int              s_nz,s_maxnz; /* total diagonal and superdiagonal nonzero blocks, 
                                     total allocated diagonal and superdiagonal nonzero blocks*/                            
   int              *diag;        /* pointers to diagonal elements */
-  int              *i;     /* pointer to beginning of each row */
+  int              *i,*inew;     /* pointer to beginning of each row */
   int              *imax;        /* maximum space allocated for each row */
   int              *ilen;        /* actual length of each row */
-  int              *j;     /* column values: j + i[k] is start of row k */
-  MatScalar        *a;     /* nonzero diagonal and subdiagonal elements */
+  int              *j,*jnew;     /* column values: j + i[k] is start of row k */
+  MatScalar        *a,*anew;     /* nonzero diagonal and subdiagonal elements */
   IS               row,icol;     /* index sets, used for reorderings */
   Scalar           *solve_work;  /* work space used in MatSolve */
   void             *spptr;       /* pointer for special library like SuperLU */
@@ -36,7 +36,7 @@ typedef struct {
   Scalar           *saved_values; 
 
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
-  /* IS               a2anew;*/         /* map used for symm permutation */
+  IS               a2anew;         /* map used for symm permutation */
 } Mat_SeqSBAIJ;
 
 extern int MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat *);
