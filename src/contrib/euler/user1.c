@@ -36,6 +36,7 @@ Runtime options include:\n\
   -Nx <nx> -Ny <ny> -Nz <nz> : Number of processors in the x-, y-, z-directions\n\
   -problem <1,2,3,4>         : 1(50x10x10 grid), 2(98x18x18 grid), 3(194x34x34 grid),\n\
                                4(data structure test)\n\
+  -mm_type <euler,fp,hybrid,hybrid_e,hybrid_f> : multi-model variant\n\
   -2d                        : use 2D problem only\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
@@ -124,8 +125,10 @@ int main(int argc,char **argv)
   if (flg) {PetscPrintf(comm,help2);PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
 
   /* Temporarily deactivate these events */
-  PLogEventDeactivate(VEC_SetValues);
-  PLogEventDeactivate(MAT_SetValues);
+  ierr = PLogEventDeactivate(VEC_SetValues); CHKERRA(ierr);
+  ierr = PLogEventMPEDeactivate(VEC_SetValues); CHKERRA(ierr);
+  ierr = PLogEventDeactivate(MAT_SetValues); CHKERRA(ierr);
+  ierr = PLogEventMPEDeactivate(MAT_SetValues); CHKERRA(ierr);
 
   /* -----------------------------------------------------------
                   Beginning of nonlinear solver loop
@@ -445,9 +448,10 @@ int UserSetJacobian(SNES snes,Euler *app)
   Mat        J;                      /* Jacobian matrix context */
   int        ldim = app->ldim;       /* local dimension of vectors and matrix */
   int        gdim = app->gdim;	     /* global dimension of vectors and matrix */
-  int        nc = app->nc;	     /* DoF per node */
-  int        nc_block;               /* size of matrix blocks (nc, except when
+  int        ndof = app->ndof;	     /* DoF per node */
+  int        ndof_block;             /* size of matrix blocks (ndof, except when
                                         experimenting with block size = 1) */
+  int        ndof_euler;             /* DoF per node for Euler model */
   int        istart, iend;           /* range of locally owned matrix rows */
   int        *nnz_d = 0, *nnz_o = 0; /* arrays for preallocating matrix memory */
   int        wkdim;                  /* dimension of nnz_d and nnz_o */
@@ -467,15 +471,15 @@ int UserSetJacobian(SNES snes,Euler *app)
     else                mtype = MATMPIBAIJ;
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_block_size_1",&flg); CHKERRQ(ierr);
-  if (flg) nc_block = 1;
-  else     nc_block = nc;
+  if (flg) ndof_block = 1;
+  else     ndof_block = ndof;
 
   /* Row-based matrix formats */
   if (mtype == MATSEQAIJ || mtype == MATMPIAIJ || mtype == MATMPIROWBS) {
     wkdim = app->ldim;
   } else if (mtype == MATSEQBAIJ || mtype == MATMPIBAIJ) { /* block row formats */
-    if (nc_block == nc) wkdim = app->lbkdim;
-    else                wkdim = app->ldim;
+    if (ndof_block == ndof) wkdim = app->lbkdim;
+    else                    wkdim = app->ldim;
   }
   else SETERRQ(1,1,"Matrix format not currently supported.");
 
@@ -490,8 +494,10 @@ int UserSetJacobian(SNES snes,Euler *app)
   /* We mimic the matrix assembly code to determine precise locations 
      of nonzero matrix entries */
 
-  ierr = nzmat_(&mtype,&nc,&nc_block,&istart,&iend,app->is1,app->ltog,&app->nloc,
-                &wkdim,nnz_d,nnz_o,&app->fort_ao); CHKERRQ(ierr);
+  ndof_euler = 5;
+  ierr = nzmat_(&mtype,&app->mmtype,&ndof_euler,&ndof_block,&istart,&iend,
+                app->is1,app->ltog,&app->nloc,&wkdim,nnz_d,nnz_o,
+                &app->fort_ao); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                   Form Jacobian matrix data structure
@@ -507,8 +513,8 @@ int UserSetJacobian(SNES snes,Euler *app)
   */
 
   if (mtype == MATSEQAIJ) {
-    /* Rough estimate of nonzeros per row is:  nd * nc = 7 * 5 = 35 */
-    /* ierr = MatCreateSeqAIJ(comm,gdim,gdim,nd*nc,PETSC_NULL,&J); CHKERRQ(ierr); */
+    /* Rough estimate of nonzeros per row is:  nd * ndof */
+    /* ierr = MatCreateSeqAIJ(comm,gdim,gdim,nd*ndof,PETSC_NULL,&J); CHKERRQ(ierr); */
        ierr = MatCreateSeqAIJ(comm,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
   } 
   else if (mtype == MATMPIAIJ) {
@@ -521,11 +527,11 @@ int UserSetJacobian(SNES snes,Euler *app)
   }
   else if (mtype == MATSEQBAIJ) {
     /* Rough estimate of block nonzeros per row is:  # of diagonals, nd */
-    /* ierr = MatCreateSeqBAIJ(comm,nc_block,gdim,gdim,nd,PETSC_NULL,&J); CHKERRQ(ierr); */
-    ierr = MatCreateSeqBAIJ(comm,nc_block,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
+    /* ierr = MatCreateSeqBAIJ(comm,ndof_block,gdim,gdim,nd,PETSC_NULL,&J); CHKERRQ(ierr); */
+    ierr = MatCreateSeqBAIJ(comm,ndof_block,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
   } 
   else if (mtype == MATMPIBAIJ) {
-    ierr = MatCreateMPIBAIJ(comm,nc_block,ldim,ldim,
+    ierr = MatCreateMPIBAIJ(comm,ndof_block,ldim,ldim,
            gdim,gdim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&J); CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Matrix format not currently supported.");
@@ -612,6 +618,9 @@ int UserDestroyEuler(Euler *app)
   PetscFree(app);
   return 0;
 }
+
+extern int MatView_Hybrid(Mat,Viewer);
+
 #undef __FUNC__
 #define __FUNC__ "ComputeJacobian"
 /***************************************************************************/
@@ -654,9 +663,13 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 {
   Euler  *app = (Euler *)ptr;
   int    iter;                   /* nonlinear solver iteration number */
-  int    fortmat, flg, ierr;
+  int    fortmat, flg, ierr, i, rstart, rend;
   Vec    fvec;
-  Scalar *fvec_array;
+  Scalar *fvec_array, one = 1.0;
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set some options; do some preliminary work
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (app->bctype != IMPLICIT) SETERRQ(1,0,"This version supports only implicit BCs!");
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
@@ -723,26 +736,49 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   ierr = SNESGetFunction(snes,&fvec); CHKERRQ(ierr);
   ierr = VecGetArray(fvec,&fvec_array); CHKERRQ(ierr);
 
-  /* Form Jacobian matrix */
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Form Jacobian matrix
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  /* First, initialize the diagonal to 1.   These values will be overwritten
+     everywhere EXCEPT for the edges of the 3D problem domain, where the
+     edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.)
+     We need to do this the first time the Jacobian is assembled.  We
+     could alternatively do this just for the edges and could use
+     MatZeroRows(). */
+
+  ierr = MatSetOption(*pjac,MAT_COLUMNS_SORTED); CHKERRQ(ierr);
+  ierr = MatSetOption(*pjac,MAT_ROWS_SORTED); CHKERRQ(ierr);
+  if (iter == 1) {
+    ierr = MatGetOwnershipRange(*pjac,&rstart,&rend); CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) {
+      ierr = MatSetValues(*pjac,1,&i,1,&i,&one,INSERT_VALUES); CHKERRQ(ierr);
+    }
+  }
+
+  if (app->mmtype != MMFP) {
+    /* As long as we're not doing just the full potential model, we must
+       compute the Euler components of the Jacobian */
+
 #if defined(ACTIVATE_OLD_ASSEMBLY)
-  if (app->mat_assemble_direct) {
+    if (app->mat_assemble_direct) {
 #endif
-    /* Either assemble the matrix directly (the more efficient route) ... */
-    /* We must zero the diagonal block here, since this is not done within jformdt2 */
-    PetscMemzero(app->diag,app->diag_len);
-    ierr = jformdt2_(&app->eps_jac,&app->eps_jac_inv,app->ltog,&app->nloc,&fortmat,app->is1,
+      /* Either assemble the matrix directly (the more efficient route) ... */
+      /* We must zero the diagonal block here, since this is not done within jformdt2 */
+      PetscMemzero(app->diag,app->diag_len);
+      ierr = jformdt2_(&app->eps_jac,&app->eps_jac_inv,app->ltog,&app->nloc,&fortmat,app->is1,
              app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,app->diag,
 	     app->dt,app->xx,app->p,app->xx_bc,app->p_bc,
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,fvec_array,&app->fort_ao); CHKERRQ(ierr);
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,fvec_array,&app->fort_ao); CHKERRQ(ierr);
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
-  /* Or store the matrix in the intermediate Eagle format for later conversion ... */
-  } else {
-    MatType type; /* matrix format */
-    ierr = jformdt_(&app->eps_jac,&app->eps_jac_inv,
+    /* Or store the matrix in the intermediate Eagle format for later conversion ... */
+    } else {
+      MatType type; /* matrix format */
+      ierr = jformdt_(&app->eps_jac,&app->eps_jac_inv,
 	     app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
 	     app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,
 	     app->diag,app->dt,app->xx,app->p,
@@ -751,15 +787,19 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
 	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,fvec_array, &app->fort_ao); CHKERRQ(ierr);
-    /* Convert Jacobian from Eagle format */
-    if (!app->no_output) PetscPrintf(app->comm,"Building PETSc matrix ...\n");
-    ierr = MatGetType(*pjac,&type,PETSC_NULL); CHKERRQ(ierr);
-    ierr = buildmat_(&fortmat,&app->sctype,app->is1,&iter,
-	 app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,
-	 app->dt,app->ltog,&app->nloc,
-	 app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,&app->fort_ao); CHKERRQ(ierr);
-  }
+      /* Convert Jacobian from Eagle format */
+      if (!app->no_output) PetscPrintf(app->comm,"Building PETSc matrix ...\n");
+      ierr = MatGetType(*pjac,&type,PETSC_NULL); CHKERRQ(ierr);
+      ierr = buildmat_(&fortmat,&app->sctype,app->is1,
+	     app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,
+             app->dt,app->ltog,&app->nloc,
+             app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,&app->fort_ao); CHKERRQ(ierr);
+    }
 #endif
+  }
+  if (app->mmtype != MMEULER) {
+    /* PetscPrintf(app->comm,"Dummy FP: Setting all full potential Jacobian diagonal components to 1\n"); */
+  }
 
   /* Finish the matrix assembly process.  For the Euler code, the matrix
      assembly is done completely locally, so no message-pasing is performed
@@ -770,6 +810,10 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   /* Indicate that the preconditioner matrix has the same nonzero
      structure each time it is formed */
   *flag = SAME_NONZERO_PATTERN;
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Output - primarily for debugging
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (!app->no_output) {
 
@@ -786,7 +830,14 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
       /*
       if (mtype == MATMPIAIJ)       {ierr = MatViewDFVec_MPIAIJ(*pjac,X,view); CHKERRQ(ierr);}
       else if (mtype == MATMPIBAIJ) {ierr = MatViewDFVec_MPIBAIJ(*pjac,X,view); CHKERRQ(ierr);}
-      else */                       {ierr = MatView(*pjac,view); CHKERRQ(ierr);}
+      else                          {ierr = MatView(*pjac,view); CHKERRQ(ierr);} */
+
+      if (app->mmtype == MMHYBRID_E || app->mmtype == MMHYBRID_F || app->mmtype == MMHYBRID_EF1
+        && mtype == MATSEQAIJ) {
+        ierr = MatView_Hybrid(*pjac,view); CHKERRQ(ierr);
+      } else {
+        ierr = MatView(*pjac,view); CHKERRQ(ierr);
+      }
       ierr = ViewerDestroy(view); CHKERRQ(ierr);
       /* PetscFinalize(); exit(0); */
     }
@@ -810,10 +861,10 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   
     /* Check matrix-vector products, run with -matrix_free and -debug option */
     if (app->matrix_free && app->print_debug) {
-      int    loc, i, m, j ,k, ijkx, jkx, ijkxl, jkxl, *ltog, dc[5];
+      int    loc, m, j ,k, ijkx, jkx, ijkxl, jkxl, *ltog, dc[6];
       Vec    yy1, yy2, xx1;
       Viewer view2;
-      Scalar *yy1a, *yy2a, one = 1.0, di, diff, md[5];
+      Scalar *yy1a, *yy2a, di, diff, md[5];
   
       ierr = DAGetGlobalIndices(app->da,&loc,&ltog); CHKERRQ(ierr);
       ierr = VecDuplicate(X,&yy1); CHKERRQ(ierr);
@@ -824,9 +875,9 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   	jkx  = j*app->mx + k*app->mx*app->my;
   	jkxl = (j-app->gys)*app->gxm + (k-app->gzs)*app->gxm*app->gym;
   	for (i=app->xs; i<app->xe; i++) {
-  	  ijkx  = (jkx + i)*app->nc;
-  	  ijkxl = (jkxl + i-app->gxs)*app->nc;
-  	  for (m=0;m<app->nc;m++) {
+  	  ijkx  = (jkx + i)*app->ndof;
+  	  ijkxl = (jkxl + i-app->gxs)*app->ndof;
+  	  for (m=0;m<app->ndof;m++) {
   	    di = one*ijkx;
   	    loc = ltog[ijkxl];
   	    ierr = VecSetValues(xx1,1,&loc,&di,INSERT_VALUES); CHKERRQ(ierr);
@@ -858,14 +909,14 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
       ierr = VecGetArray(yy1,&yy1a); CHKERRQ(ierr);
       ierr = VecGetArray(yy2,&yy2a); CHKERRQ(ierr);
   
-      for (m=0;m<app->nc;m++) {
+      for (m=0;m<app->ndof;m++) {
         dc[m] = 0;
         md[m] = 0;
         for (k=app->zs; k<app->ze; k++) {
   	for (j=app->ys; j<app->ye; j++) {
   	  jkx = (j-app->ys)*app->xm + (k-app->zs)*app->xm*app->ym;
   	  for (i=app->xs; i<app->xe; i++) {
-  	    ijkx = (jkx + i-app->xs)*app->nc + m;
+  	    ijkx = (jkx + i-app->xs)*app->ndof + m;
   	    diff = (PetscAbsScalar(yy1a[ijkx])-PetscAbsScalar(yy2a[ijkx])) /
   		  PetscAbsScalar(yy1a[ijkx]);
   	    if (diff > 0.1) {
@@ -951,55 +1002,65 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
     ierr = PackWork(app,app->da,X,app->localX,&app->xx); CHKERRQ(ierr);
 
     /* Do scatters for implict BCs */
-    ierr = BoundaryConditionsImplicit(app,X); CHKERRQ(ierr);
+    if (app->mmtype != MMFP) {
+      ierr = BoundaryConditionsImplicit(app,X); CHKERRQ(ierr);
+    }
   }
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        Local computation
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  if (app->mmtype != MMFP) {
+    /* As long as we're not doing just the full potential model, we must
+       compute the Euler components */
 
-  PLogEventBegin(app->event_localf,0,0,0,0);
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+          Local computation
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr =localfortfct_(&app->first_time_resid,fv_array,
-         app->xx,app->p,app->xx_bc,app->p_bc,
-         app->sadai,app->sadaj,app->sadak,
-         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,
-         app->dxx,app->br,app->bl,app->be,app->f1,app->g1,app->h1,
-         app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
+    PLogEventBegin(app->event_localf,0,0,0,0);
 
-  PLogEventEnd(app->event_localf,0,0,0,0);
+    ierr =localfortfct_(&app->first_time_resid,fv_array,
+           app->xx,app->p,app->xx_bc,app->p_bc,
+           app->sadai,app->sadaj,app->sadak,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz,
+           app->dxx,app->br,app->bl,app->be,app->f1,app->g1,app->h1,
+           app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
 
-  /* Compute pseudo-transient continuation array, dt.  Really need to
-     recalculate dt only when the iterates change.  DT is used to modify
-     the diagonal of the Jacobian matrix.  */
-  if (app->sctype == DT_MULT && !app->matrix_free_mult) {
-    eigenv_(app->dt,app->xx,app->p,
-         app->sadai,app->sadaj,app->sadak,
-         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,&app->ts_type);
-  }
+    PLogEventEnd(app->event_localf,0,0,0,0);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        Assemble vector Fvec(X)
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    /* Compute pseudo-transient continuation array, dt.  Really need to
+       recalculate dt only when the iterates change.  DT is used to modify
+       the diagonal of the Jacobian matrix.  */
+    if (app->sctype == DT_MULT && !app->matrix_free_mult) {
+      eigenv_(app->dt,app->xx,app->p,
+           app->sadai,app->sadaj,app->sadak,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz,&app->ts_type);
+    }
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+          Assemble vector Fvec(X)
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
-  if (app->use_vecsetvalues) {
+    if (app->use_vecsetvalues) {
 
-    /* Transform Fvec to a Fortran vector */
-    ierr = PetscCObjectToFortranObject(Fvec,&fortvec); CHKERRQ(ierr);
+      /* Transform Fvec to a Fortran vector */
+      ierr = PetscCObjectToFortranObject(Fvec,&fortvec); CHKERRQ(ierr);
 
-    /* Build Fvec(X) using VecSetValues() */
-    ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dxx, fv_array,
-         app->ltog, &app->nloc ); CHKERRQ(ierr);
+      /* Build Fvec(X) using VecSetValues() */
+      ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dxx, fv_array,
+           app->ltog, &app->nloc ); CHKERRQ(ierr);
+    } else {
+#endif
+      /* Build Fvec(X) directly, without using VecSetValues() */
+      ierr = rbuild_direct_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr);
+#if defined(ACTIVATE_OLD_ASSEMBLY)
+    }
+#endif
+
   } else {
-#endif
-    /* Build Fvec(X) directly, without using VecSetValues() */
-    ierr = rbuild_direct_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr);
-#if defined(ACTIVATE_OLD_ASSEMBLY)
+    fv_array[0] = 1.e-13;
   }
-#endif
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
           Optional output for debugging and visualizing solution 
@@ -1056,22 +1117,25 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
     ierr = PackWork(app,app->da,X,app->localX,&app->xx); CHKERRQ(ierr);
   }
 
-  /* Apply boundary conditions */
-  ierr = BoundaryConditionsExplicit(app,X); CHKERRQ(ierr);
+  if (app->mmtype != MMFP) {
+    /* PetscPrintf(app->comm,"Dummy FP: Setting all full potential Jacobian diagonal components to 1\n"); */
 
-  /* Destroy pressure scatters for boundary conditions, since we needed
-     them only to computate the initial guess */
-  if (app->bctype == IMPLICIT && !app->dump_vrml && !app->dump_general && !app->post_process) {
-    ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
-    ierr = DADestroy(app->da1); CHKERRQ(ierr);
-    ierr = VecDestroy(app->Pbc); CHKERRQ(ierr);
-    ierr = VecDestroy(app->P); CHKERRQ(ierr);
-    ierr = VecDestroy(app->localP); CHKERRQ(ierr);
+    /* Apply boundary conditions */
+    ierr = BoundaryConditionsExplicit(app,X); CHKERRQ(ierr);
+
+    /* Destroy pressure scatters for boundary conditions, since we needed
+       them only to computate the initial guess */
+    if (app->bctype == IMPLICIT && !app->dump_vrml && !app->dump_general && !app->post_process) {
+      ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
+      ierr = DADestroy(app->da1); CHKERRQ(ierr);
+      ierr = VecDestroy(app->Pbc); CHKERRQ(ierr);
+      ierr = VecDestroy(app->P); CHKERRQ(ierr);
+      ierr = VecDestroy(app->localP); CHKERRQ(ierr);
+    }
+
+    /* Exit if we're just testing scatters for boundary conditions */
+    if (app->bc_test) {UserDestroyEuler(app); PetscFinalize(); exit(0);}
   }
-
-  /* Exit if we're just testing scatters for boundary conditions */
-  if (app->bc_test) {UserDestroyEuler(app); PetscFinalize(); exit(0);}
-
   return 0;
 }
 
@@ -1099,7 +1163,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   int   nj1;	      /* y-direction grid dimension */
   int   nk1;	      /* z-direction grid dimension */
   int   Nx, Ny, Nz;   /* number of processors in each direction */
-  int   Nlocal, ierr, flg, llen, llenb, fort_comm, problem = 1, nc;
+  int   Nlocal, ierr, flg, llen, llenb, fort_comm, problem = 1, ndof, ndof_e;
+  char  *mmname;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                  Create user-defined application context
@@ -1247,6 +1312,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->nktot = nk1;
   if (app->dim2) {
     nk1 = 3;
+    PetscPrintf(app->comm,"Running 2-dimensional problem only\n");
   }
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
@@ -1261,6 +1327,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   if (app->mat_assemble_direct) PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix directly: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
   else PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix via translation of Eagle format: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
+  if (app->dump_vrml) dump_angle_vrml(app->angle);
 
   app->ni1              = ni1;
   app->nj1              = nj1;
@@ -1271,7 +1338,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->nim              = ni1 - 2;
   app->njm              = nj1 - 2;
   app->nkm              = nk1 - 2;
-  app->nc	        = 5;
   app->nd	        = 7;
   app->matrix_free      = 0;
   app->matrix_free_mult = 0;
@@ -1279,11 +1345,16 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->J                = 0;
   app->Jmf              = 0;
   app->Fvrml            = 0;
-  nc = app->nc;
 
-  if (app->dump_vrml) dump_angle_vrml(app->angle);
+  /* Create multi-model context */
+  ierr = MMCreate(app->comm,&app->multimodel); CHKERRQ(ierr);
+  ierr = MMSetFromOptions(app->multimodel); CHKERRQ(ierr);
+  ierr = MMGetNumberOfComponents(app->multimodel,&app->ndof); CHKERRQ(ierr);
+  ndof = app->ndof;
+  ierr = MMGetType(app->multimodel,&app->mmtype,&mmname); CHKERRQ(ierr);
+  PetscPrintf(app->comm,"Multi-model: %s, enum=%d, ndof=%d\n",mmname,app->mmtype,ndof); 
 
-  /* Set problem type of formulation */
+  /* Set type of formulation */
   ierr = OptionsHasName(PETSC_NULL,"-dt_mult",&flg); CHKERRQ(ierr);
   if (flg == 1) {
     app->sctype = DT_MULT;
@@ -1318,12 +1389,13 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   }
 
   /* Monitoring information */
-  app->label = (char **) PetscMalloc(nc*sizeof(char*)); CHKPTRQ(app->label);
+  app->label = (char **) PetscMalloc(6*sizeof(char*)); CHKPTRQ(app->label);
   app->label[0] = "Density";
   app->label[1] = "Velocity: x-component";
   app->label[2] = "Velocity: y-component";
   app->label[3] = "Velocity: z-component";
   app->label[4] = "Internal Energy";
+  app->label[5] = "Full potential";
 
   /* Set various debugging flags */
   ierr = OptionsHasName(PETSC_NULL,"-printv",&flg); CHKERRQ(ierr);
@@ -1377,7 +1449,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     SETERRQ(1,1,"Incompatible number of processors:  Nx * Ny * Nz != size");
   app->Nx = Nx; app->Ny = Ny; app->Nz = Nz;
   ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
-         app->Nx,app->Ny,app->Nz,nc,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da); CHKERRQ(ierr);
+         app->Nx,app->Ny,app->Nz,ndof,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da); CHKERRQ(ierr);
   ierr = DAGetAO(app->da,&ao); CHKERRQ(ierr);
   *(int*)(&(app->fort_ao)) = PetscFromPointer(ao); 
 
@@ -1407,11 +1479,11 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     ierr = DAView(app->da,VIEWER_STDOUT_SELF); CHKERRQ(ierr);
     ierr = DAGetCorners(app->da,&xs,&ys,&zs,&xm,&ym,&zm); CHKERRQ(ierr);
     PetscPrintf(comm,"global grid: %d X %d X %d with %d components per node ==> global vector dimension %d\n",
-      app->mx,app->my,app->mz,nc,nc*app->mx*app->my*app->mz); fflush(stdout);
+      app->mx,app->my,app->mz,ndof,ndof*app->mx*app->my*app->mz); fflush(stdout);
     ierr = VecGetLocalSize(app->X,&Nlocal); CHKERRQ(ierr);
     PetscSequentialPhaseBegin(comm,1);
     printf("[%d] local grid %d X %d X %d with %d components per node ==> local vector dimension %d\n",
-      app->rank,xm,ym,zm,nc,Nlocal);
+      app->rank,xm,ym,zm,ndof,Nlocal);
     fflush(stdout);
     PetscSequentialPhaseEnd(comm,1);
   }
@@ -1429,8 +1501,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->gxe    = app->gxs + app->gxm;
   app->gye    = app->gys + app->gym;
   app->gze    = app->gzs + app->gzm;
-  app->gdim   = app->mx * app->my * app->mz * nc;
-  app->ldim   = app->xm * app->ym * app->zm * nc;
+  app->gdim   = app->mx * app->my * app->mz * ndof;
+  app->ldim   = app->xm * app->ym * app->zm * ndof;
   app->lbkdim = app->xm * app->ym * app->zm;
 
   ierr = UserSetGridParameters(app); CHKERRQ(ierr);
@@ -1466,7 +1538,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             &app->gxm, &app->gym, &app->gzm,
             &app->xef01, &app->yef01, &app->zef01,
             &app->gxef01, &app->gyef01, &app->gzef01,
-            &nc, &app->global_grid, &app->bcswitch); CHKERRQ(ierr);
+            &ndof, &app->global_grid, &app->bcswitch); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Allocate local Fortran work space
@@ -1487,7 +1559,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   /* Fortran work arrays for matrix (diagonal) blocks */
   llen = (app->xefp1 - app->gxsf1 + 1) * (app->yefp1 - app->gysf1 + 1) 
-          * (app->zefp1 - app->gzsf1 + 1) * nc * nc;
+          * (app->zefp1 - app->gzsf1 + 1) * ndof * ndof;
   if (!app->mat_assemble_direct || solve_with_julianne) {
     llenb = 6*llen*sizeof(Scalar);
     app->b1 = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->b1);
@@ -1498,15 +1570,15 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     app->b5 = app->b4 + llen;
     app->b6 = app->b5 + llen;
     if (app->bctype == IMPLICIT) {
-      llen = app->xm * app->zm * nc * nc * 8
-              + app->xm * app->ym * nc * nc * 4
-              + app->zm * app->ym * nc * nc * 4;
+      llen = app->xm * app->zm * ndof * ndof * 8
+              + app->xm * app->ym * ndof * ndof * 4
+              + app->zm * app->ym * ndof * ndof * 4;
       llenb = llen*sizeof(Scalar);
       app->b1bc     = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->b1bc);
       PetscMemzero(app->b1bc,llenb);
-      app->b2bc     = app->b1bc + app->ym * app->zm * nc * nc * 4;
-      app->b2bc_tmp = app->b2bc + app->xm * app->zm * nc * nc * 4;
-      app->b3bc     = app->b2bc_tmp + app->xm * app->zm * nc * nc * 4;
+      app->b2bc     = app->b1bc + app->ym * app->zm * ndof * ndof * 4;
+      app->b2bc_tmp = app->b2bc + app->xm * app->zm * ndof * ndof * 4;
+      app->b3bc     = app->b2bc_tmp + app->xm * app->zm * ndof * ndof * 4;
     }
   }
 
@@ -1517,15 +1589,16 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   PetscMemzero(app->dt,llenb);
 
   /* Work space for building main diagonal block of Jacobian */
+  ndof_e = 5;
   llenb = (app->xef01 - app->xsf2 + 1) * (app->yef01 - app->ysf2 + 1) 
-          * (app->zef01 - app->zsf2 + 1) * nc * nc * sizeof(Scalar);
+          * (app->zef01 - app->zsf2 + 1) * ndof_e * ndof_e * sizeof(Scalar);
   app->diag = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->diag);
   PetscMemzero(app->diag,llenb);
   app->diag_len = llenb;
 
   /* Fortran work arrays for eigen info */
   llen = (app->gxefp1 - app->gxsf1 + 1) * (app->gyefp1 - app->gysf1 + 1) 
-            * (app->gzefp1 - app->gzsf1 + 1) * nc * nc;
+            * (app->gzefp1 - app->gzsf1 + 1) * ndof * ndof;
   llenb = 3*llen*sizeof(Scalar);
   app->bl = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->bl);
   PetscMemzero(app->bl,llenb);
@@ -1551,7 +1624,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->akz   = app->ajz   + llen;
 
   /* More Fortran work arrays */
-  llen = nc * (app->xef01 - app->gxsf1+1) * (app->yef01 - app->gysf1+1) 
+  llen = ndof * (app->xef01 - app->gxsf1+1) * (app->yef01 - app->gysf1+1) 
             * (app->zef01 - app->gzsf1+1);
   llenb = 3*llen*sizeof(Scalar);
   app->f1 = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->f1);
@@ -1559,7 +1632,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->g1 = app->f1 + llen;
   app->h1 = app->g1 + llen;
 
-  llen = nc * app->ni;
+  llen = ndof * app->ni;
   llenb = 6*llen*sizeof(Scalar);
   app->sp  = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->sp);
   PetscMemzero(app->sp,llenb);

@@ -2,7 +2,7 @@
 #define __MM_PACKAGE
 
 /* Type of model */
-typedef enum { MMEULER, MMFP, MMHYBRID_EF1, MMHYBRID_EF2, MMHYBRID_EF3, MMNEW } MMType;
+typedef enum { MMEULER, MMFP, MMHYBRID_EF1, MMHYBRID_E, MMHYBRID_F, MMNEW } MMType;
 
 typedef struct _p_MM* MM;
 

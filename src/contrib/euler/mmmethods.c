@@ -20,6 +20,7 @@ int MMCreate_Euler(MM mm)
   mm->setupcalled = 0;
   mm->printhelp   = 0;
   mm->setfrom     = 0;
+  mm->type        = MMEULER;
 
   return 0;
 }
@@ -40,11 +41,39 @@ int MMCreate_Hybrid_EF1(MM mm)
   MM_Hybrid_EF *hybrid = PetscNew(MM_Hybrid_EF); CHKPTRQ(hybrid);
   PLogObjectMemory(mm,sizeof(MM_Hybrid_EF));
 
-  hybrid->stuff   = 0;
-  mm->data        = (void *) hybrid;
-  mm->ncomponents = 6;
+  hybrid->stuff     = 0;
+  mm->data          = (void *) hybrid;
+  mm->ncomponents   = 6;
+  mm->setupcalled   = 0;
+  mm->printhelp     = 0;
+  mm->setfrom       = 0;
+
+  mm->type          = MMHYBRID_EF;
+  ierr = OptionsHasName(PETSC_NULL,"-mm_hybrid_euler",&flg); CHKERRQ(ierr);
+  if (flg) mm->type = MMHYBRID_E;
+  ierr = OptionsHasName(PETSC_NULL,"-mm_hybrid_fp",&flg); CHKERRQ(ierr);
+  if (flg) mm->type = MMHYBRID_F;
+  return 0;
+}
+
+typedef struct {
+  void *stuff;
+} MM_FullPotential;
+
+/* Full potential */
+#undef __FUNC__  
+#define __FUNC__ "MMCreate_Fp_EF"
+int MMCreate_FullPotential(MM mm)
+{
+  MM_FullPotential *fp = PetscNew(MM_FullPotential); CHKPTRQ(fp);
+  PLogObjectMemory(mm,sizeof(MM_FullPotential));
+
+  fp->stuff   = 0;
+  mm->data        = (void *) fp;
+  mm->ncomponents = 1;
   mm->setupcalled = 0;
   mm->printhelp   = 0;
   mm->setfrom     = 0;
+  mm->type        = MMFP;
   return 0;
 }
