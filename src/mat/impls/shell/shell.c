@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.29 1996/03/28 22:51:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.30 1996/03/31 16:50:54 bsmith Exp curfman $";
 #endif
 
 /*
@@ -89,7 +89,7 @@ static struct _MatOps MatOps = {0,0,
 .  comm - MPI communicator
 .  m - number of rows
 .  n - number of columns
-.  ctx - pointer to data needed by the matrix routines
+.  ctx - pointer to data needed by the shell matrix routines
 
    Output Parameter:
 .  mat - the matrix
@@ -152,10 +152,10 @@ $      ierr = MatShellSetOperation(A,MAT_MULT,usermult);
     user interface routine (e.g., MatMult() -> MAT_MULT).
 
     All user-provided functions should have the same calling
-    sequence as the usual matrix interface routines, e.g., 
+    sequence as the usual matrix interface routines, since they
+    are intended to be accessed via the usual matrix interface
+    routines, e.g., 
 $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
-    since they are intended to be accessed via the usual
-    matrix interface routines.
 
     Within each user-defined routine, the user should call
     MatShellGetContext() to obtain the user-defined context that was
