@@ -424,9 +424,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;
   B->ops->solve            = MatSolve_MPIAIJ_SuperLU_DIST;
-  B->ops->destroy          = MatDestroy_MPIAIJ_SuperLU_DIST;  
   B->factor                = FACTOR_LU;  
 
   lu = (Mat_MPIAIJ_SuperLU_DIST*)(B->spptr);
@@ -590,7 +588,7 @@ int MatCreate_MPIAIJ_SuperLU_DIST(Mat A) {
   } else {
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   }
-  ierr = MatUseSuperLU_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = MatUseSuperLU_DIST_MPIAIJ(A);CHKERRQ(ierr);
 
   ierr                   = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr);
   lu->MatView            = A->ops->view;

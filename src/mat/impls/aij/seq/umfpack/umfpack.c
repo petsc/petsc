@@ -146,6 +146,7 @@ int MatLUFactorNumeric_SeqAIJ_UMFPACK(Mat A,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_UMFPACK"
 int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
+  Mat                 B;
   Mat_SeqAIJ          *mat=(Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_UMFPACK  *lu;
   int                 ierr,m=A->m,n=A->n,*ai=mat->i,*aj=mat->j,status,*ca;
@@ -153,16 +154,16 @@ int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   
   PetscFunctionBegin;
   /* Create the factorization matrix F */  
-  ierr = MatCreateSeqAIJ(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,PETSC_DECIDE,PETSC_DECIDE,m,n,&B);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATUMFPACK);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   
-  (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_UMFPACK;
-  (*F)->ops->solve           = MatSolve_SeqAIJ_UMFPACK;
-  (*F)->ops->destroy         = MatDestroy_SeqAIJ_UMFPACK;
-  (*F)->factor               = FACTOR_LU;
-  (*F)->assembled            = PETSC_TRUE;  /* required by -sles_view */
+  B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_UMFPACK;
+  B->ops->solve           = MatSolve_SeqAIJ_UMFPACK;
+  B->factor               = FACTOR_LU;
+  B->assembled            = PETSC_TRUE;  /* required by -sles_view */
 
-  ierr        = PetscNew(Mat_SeqAIJ_UMFPACK,&lu);CHKERRQ(ierr);
-  (*F)->spptr = (void*)lu;
+  lu = (Mat_SeqAIJ_UMFPACK*)(B->spptr);
   
   /* initializations */
   /* ------------------------------------------------*/
@@ -223,6 +224,8 @@ int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   lu->ai  = ai; 
   lu->aj  = aj;
   lu->av  = av;
+  lu->CleanUpUMFPACK = PETSC_TRUE;
+  *F = B;
   PetscFunctionReturn(0);
 }
 
