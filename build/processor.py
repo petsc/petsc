@@ -451,7 +451,7 @@ class SharedLinker(Linker):
       if output.find('unrecognized option') >= 0:
         return Linker.getLinkerFlags(self, source)
       else:
-        flags = ['-dynamic']
+        flags = ['-dylib']
         flags.extend(Linker.getLinkerFlags(self, source))
         return flags
     else:
