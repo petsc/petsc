@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.42 1996/04/18 15:05:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.43 1996/04/19 13:46:52 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -105,7 +105,7 @@ int PetscSetDisplay(MPI_Comm comm,char *display,int n)
   MPI_Comm_rank(comm,&rank);  
   if (!rank) {
     str = getenv("DISPLAY");
-    if (!str || str[0] == ':') {
+    if (!str || (str[0] == ':' && size > 1)) {
       string = (char *) PetscMalloc( 256*sizeof(char) ); CHKPTRQ(string);
       MPI_Get_processor_name(string,&len);
       PetscStrncpy(display,string,n-4); PetscFree(string);
