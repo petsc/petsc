@@ -49,19 +49,7 @@ Additional Capabilities that PETSc Needs:
 
   - Create an INDEX for examples
 
-  * For MatLoad() add support for automatically checking for file 
-    filename.info that contains additional information on matrix in 
-    unformated ascii. For example blocksize 5 blockdiagonals -1,0,3
-    symmetric, symmetricstructure .....
-
-
   - find LAgesvd_ on Cray T3D.
-
-  * Fix BDiag factorization to use Barry's new Linpack-modified stuff.
-    Also change to actually invert diagonal blocks rather then keeping 
-    triangular factors and doing triangular solves on the blocks in 
-    each backsolve. As is done in SeqBAIJ.
-
 
   * Provide routine for initializeing Fortran side of PETSc when 
     main program is C. i.e. this sets common blocks and PETSC_NULL_Fortran
@@ -91,6 +79,15 @@ Additional Capabilities that PETSc Needs:
 
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David.
+
+  X Fix BDiag factorization to use Barry's new Linpack-modified stuff.
+    Also change to actually invert diagonal blocks rather then keeping 
+    triangular factors and doing triangular solves on the blocks in 
+    each backsolve. As is done in SeqBAIJ.
+
+  X For MatLoad() add support for automatically checking for file 
+    filename.info that contains additional information on matrix in 
+    unformated ascii. For example blocksize 5 and diagonals
 
   X Provide etags rule in makefile for public releases (no inclusion of
     *.tex files, etc.)
