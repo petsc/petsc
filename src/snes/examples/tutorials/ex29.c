@@ -67,14 +67,15 @@ int DAVecHDFOutput(DA da, Vec X, char *fname);
 */
 
 typedef struct {
-  PassiveScalar  fnorm_ini,dt_ini;
-  PassiveScalar  fnorm,dt,dt_out;
-  PassiveScalar  ptime;
-  PassiveScalar  max_time;
-  PassiveScalar  fnorm_ratio;
+  PetscReal      fnorm_ini,dt_ini;
+  PetscReal      dt,dt_out;
+  PetscReal      ptime;
+  PetscReal      max_time;
+  PetscReal      fnorm_ratio;
   int            ires,itstep;
   int            max_steps,print_freq;
-  PassiveScalar  t;
+  PetscReal      t;
+  PetscScalar    fnorm;
 
   PetscTruth     ts_monitor;           /* print information about each time step */
   PetscReal      dump_time;            /* time to dump solution to a file */
@@ -382,7 +383,8 @@ int Gnuplot(DA da, Vec X, double time)
       ierr = PetscFPrintf(PETSC_COMM_WORLD, f,
                           "%d %d %g %g %g %g %g %g\n",
                           i, j, 0.0, 0.0,
-                          x[j][i].U, x[j][i].F, x[j][i].phi, x[j][i].psi);
+                          PetscAbsScalar(x[j][i].U), PetscAbsScalar(x[j][i].F), 
+                          PetscAbsScalar(x[j][i].phi), PetscAbsScalar(x[j][i].psi));
       CHKERRQ(ierr);
     }
     ierr = PetscFPrintf(PETSC_COMM_WORLD,f, "\n");
@@ -472,13 +474,13 @@ int Initialize(DMMG *dmmg)
 	xx = i * hx;
 
 	if (xx < -M_PI/2) {
-	  localx[j][i].phi = pert * gam / k * erf((xx + M_PI) / (sqrt(2) * d_e)) * (-sin(k*yy));
+	  localx[j][i].phi = pert * gam / k * erf((xx + M_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	} else if (xx < M_PI/2) {
-	  localx[j][i].phi = - pert * gam / k * erf(xx / (sqrt(2) * d_e)) * (-sin(k*yy));
+	  localx[j][i].phi = - pert * gam / k * erf(xx / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	} else if (xx < 3*M_PI/2){
-	  localx[j][i].phi = pert * gam / k * erf((xx - M_PI) / (sqrt(2) * d_e)) * (-sin(k*yy));
+	  localx[j][i].phi = pert * gam / k * erf((xx - M_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	} else {
-	  localx[j][i].phi = - pert * gam / k * erf((xx - 2.*M_PI) / (sqrt(2) * d_e)) * (-sin(k*yy));
+	  localx[j][i].phi = - pert * gam / k * erf((xx - 2.*M_PI) / (sqrt(2.0) * d_e)) * (-sin(k*yy));
 	}
 #ifdef EQ
 	localx[j][i].psi = 0.;
@@ -535,10 +537,10 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
 
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
-      norm[0] = PetscMax(norm[0],x[j][i].U);
-      norm[1] = PetscMax(norm[1],x[j][i].F);
-      norm[2] = PetscMax(norm[2],x[j][i].phi);
-      norm[3] = PetscMax(norm[3],x[j][i].psi);
+      norm[0] = PetscMax(norm[0],PetscAbsScalar(x[j][i].U));
+      norm[1] = PetscMax(norm[1],PetscAbsScalar(x[j][i].F));
+      norm[2] = PetscMax(norm[2],PetscAbsScalar(x[j][i].phi));
+      norm[3] = PetscMax(norm[3],PetscAbsScalar(x[j][i].psi));
     }
   }
 
@@ -601,8 +603,8 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
     for (i=xints; i<xinte; i++) {
 #ifdef EQ
       xx = i * hx;
-      F_eq_x = - (1. + de2) * sin(xx);
-      By_eq = sin(xx);
+      F_eq_x = - (1. + de2) * sin(PetscAbsScalar(xx));
+      By_eq = sin(PetscAbsScalar(xx));
 #else
       F_eq_x = 0.;
       By_eq = 0.;
@@ -789,7 +791,7 @@ int Update(DMMG *dmmg)
       ierr = PetscPrintf(PETSC_COMM_WORLD,
                          "time step = %d, time = %g, number of nonlinear steps = %d, "
                          "number of linear steps = %d, norm of the function = %g\n",
-			 tsCtx->itstep + 1, tsCtx->t, its, lits, tsCtx->fnorm);
+			 tsCtx->itstep + 1, tsCtx->t, its, lits, PetscAbsScalar(tsCtx->fnorm));
       CHKERRQ(ierr);
 
       /* send solution over to Matlab, to be visualized (using ex29.m) */
@@ -835,7 +837,7 @@ int Update(DMMG *dmmg)
   if (!user->param->PreLoading){ 
     ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %d fnorm = %g\n",
-		       tsCtx->itstep, tsCtx->fnorm);
+		       tsCtx->itstep, PetscAbsScalar(tsCtx->fnorm));
     CHKERRQ(ierr);
   }
 
@@ -999,8 +1001,8 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
 
 #ifdef EQ
       xx = i * hx;
-      F_eq_x = - (1. + de2) * sin(xx);
-      By_eq = sin(xx);
+      F_eq_x = - (1. + de2) * sin(PetscAbsScalar(xx));
+      By_eq = sin(PetscAbsScalar(xx));
 #else
       F_eq_x = 0.;
       By_eq = 0.;

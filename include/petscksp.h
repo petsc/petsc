@@ -129,7 +129,6 @@ EXTERN int KSPGetInitialGuessKnoll(KSP,PetscTruth*);
 EXTERN int KSPSetComputeEigenvalues(KSP,PetscTruth);
 EXTERN int KSPSetComputeSingularValues(KSP,PetscTruth);
 EXTERN int KSPGetRhs(KSP,Vec *);
-EXTERN int KSPSetSolution(KSP,Vec);
 EXTERN int KSPGetSolution(KSP,Vec *);
 EXTERN int KSPGetResidualNorm(KSP,PetscReal*);
 EXTERN int KSPGetIterationNumber(KSP,int*);
