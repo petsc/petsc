@@ -1104,13 +1104,14 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
+  PetscErrorCode ierr,(*f)(Mat,Mat*);
 
   PetscFunctionBegin; 
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
   } 
-  ierr = MatCholeskyFactorNumeric(a->sbaijMat,fact);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject) *fact,"MatCholeskyFactorNumeric",(void*)&f);CHKERRQ(ierr);
+  ierr = (*f)(a->sbaijMat,fact);CHKERRQ(ierr);
   ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
   a->sbaijMat = PETSC_NULL; 
   PetscFunctionReturn(0); 
@@ -1134,6 +1135,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   }
 
   ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(void*)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr);
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
  
   PetscFunctionReturn(0); 
@@ -1156,6 +1158,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);   
+  ierr = PetscObjectComposeFunction((PetscObject) *fact,"MatCholeskyFactorNumeric","dummyname",(void*)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr);
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
   PetscFunctionReturn(0); 
 }

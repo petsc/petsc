@@ -116,13 +116,12 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newma
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqSBAIJ"
 PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) {
-  Mat          B;
-  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
-  Mat_SeqSBAIJ *b;
+  Mat            B;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
+  Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
-  int *ai=a->i,*aj,m=A->M,n=A->N,i,j,
-               *bi,*bj,*rowlengths;
-  PetscScalar  *av,*bv;
+  PetscInt       *ai=a->i,*aj,m=A->M,n=A->N,i,j,*bi,*bj,*rowlengths;
+  PetscScalar    *av,*bv;
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");

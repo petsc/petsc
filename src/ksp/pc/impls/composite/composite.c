@@ -23,7 +23,7 @@ typedef struct {
 #define __FUNCT__ "PCApply_Composite_Multiplicative"
 static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   PetscScalar      one = 1.0,mone = -1.0;
@@ -58,7 +58,7 @@ alpha I + R
 #define __FUNCT__ "PCApply_Composite_Special"
 static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
 
@@ -79,7 +79,7 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApply_Composite_Additive"
 static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   PetscScalar      one = 1.0;
@@ -101,7 +101,7 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCSetUp_Composite"
 static PetscErrorCode PCSetUp_Composite(PC pc)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
 
@@ -122,7 +122,7 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
 static PetscErrorCode PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
@@ -142,11 +142,11 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
 static PetscErrorCode PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  PetscErrorCode ierr;
-  int nmax = 8,i,indx;
+  PetscErrorCode   ierr;
+  PetscInt         nmax = 8,i,indx;
   PC_CompositeLink next;
   char             *pcs[8];
-  const char       *types[] = {"multiplicative","additive","special"};
+  const char       *types[] = {"additive","multiplicative","special"};
   PetscTruth       flg;
 
   PetscFunctionBegin;
@@ -180,7 +180,7 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
 static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PC_CompositeLink next = jac->head;
   PetscTruth       iascii;
 
@@ -246,8 +246,8 @@ PetscErrorCode PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
   PC_CompositeLink next,link;
-  PetscErrorCode ierr;
-  int cnt = 0;
+  PetscErrorCode   ierr;
+  PetscInt         cnt = 0;
   char             *prefix,newprefix[8];
 
   PetscFunctionBegin;
@@ -281,11 +281,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeGetPC_Composite"
-PetscErrorCode PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
+PetscErrorCode PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 {
   PC_Composite     *jac;
   PC_CompositeLink next;
-  int              i;
+  PetscInt         i;
 
   PetscFunctionBegin;
   jac  = (PC_Composite*)pc->data;
@@ -494,7 +494,7 @@ PetscErrorCode PCCompositeSetUseTrue(PC pc)
    Notes: To use a Krylov method inside the composite preconditioner, set the PCType of one or more
           inner PCs to be PCKSP. 
           Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
-          the incorrect answer) unless you use KSPFGMRES as the other Krylov method
+          the incorrect answer) unless you use KSPFGMRES as the outter Krylov method
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,

@@ -17,8 +17,8 @@
 PetscErrorCode MGACycle_Private(MG *mg)
 {
   PetscErrorCode ierr;
-  int    i,l = mg[0]->levels;
-  PetscScalar zero = 0.0;
+  PetscInt       i,l = mg[0]->levels;
+  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   /* compute RHS on each level */

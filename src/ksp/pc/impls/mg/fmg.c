@@ -23,8 +23,8 @@ EXTERN PetscErrorCode MGMCycle_Private(MG *,PetscTruth*);
 PetscErrorCode MGFCycle_Private(MG *mg)
 {
   PetscErrorCode ierr;
-  int    i,l = mg[0]->levels;
-  PetscScalar zero = 0.0;
+  PetscInt       i,l = mg[0]->levels;
+  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
@@ -56,8 +56,8 @@ PetscErrorCode MGFCycle_Private(MG *mg)
 PetscErrorCode MGKCycle_Private(MG *mg)
 {
   PetscErrorCode ierr;
-  int    i,l = mg[0]->levels;
-  PetscScalar zero = 0.0;
+  PetscInt       i,l = mg[0]->levels;
+  PetscScalar    zero = 0.0;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
