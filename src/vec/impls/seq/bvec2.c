@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.110 1998/03/12 23:15:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.111 1998/04/03 22:24:37 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -216,7 +216,7 @@ int VecView_Seq(Vec xin,Viewer viewer)
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
   }
   else if (vtype == MATLAB_VIEWER) {
-    ierr = ViewerMatlabPutArray_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
+    ierr = ViewerMatlabPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
   } 
   else if (vtype == BINARY_FILE_VIEWER) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
