@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.9 2000/02/02 21:21:08 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.10 2000/04/09 03:11:34 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -134,11 +134,18 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   AppAlgebra  *algebra = &appctx->algebra;
   AppGrid     *grid    = &appctx->grid;
   MPI_Comm    comm = appctx->comm;
-  int         ierr; 
+  int         ierr;
+  PetscTruth  flg;
+ 
   PetscFunctionBegin;
-
-  /* use very rough estimate for nonzeros on and off the diagonal */
-  ierr = MatCreateMPIAIJ(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,9,0,3,0,&algebra->A);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_type",&flg);CHKERRQ(ierr);
+  if (!flg) {
+    /* use very rough estimate for nonzeros on and off the diagonal */
+    ierr = MatCreateMPIAIJ(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,9,0,3,0,&algebra->A);CHKERRQ(ierr);
+  } else {
+    ierr = MATCreate(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
+    ierr = MatSetTypeFromOptions(algebra->A);CHKERRQ(ierr);
+  }
 
   /* Allows one to set values into the matrix using the LOCAL numbering, via MatSetValuesLocal() */
   ierr = MatSetLocalToGlobalMapping(algebra->A,grid->ltog);  CHKERRQ(ierr);
@@ -211,7 +218,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
 
   PetscFunctionBegin;
 
-  /* loop over cells */
+  /* loop over local cells */
   for(i=0;i<grid->cell_n;i++){
 
     /* coords_ptr points to the coordinates of the current cell */
@@ -229,6 +236,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
     vertex_ptr = grid->cell_vertex + vertexn*i;
 
     ierr = MatSetValuesLocal(algebra->A,vertexn,vertex_ptr,vertexn,vertex_ptr,(double*)phi->stiffnessresult,ADD_VALUES);CHKERRQ(ierr);
+    /* ierr = MatSetValues(algebra->localA,vertexn,vertex_ptr,vertexn,vertex_ptr,(double*)phi->stiffnessresult,ADD_VALUES);CHKERRQ(ierr);*/
   }
   ierr = MatAssemblyBegin(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

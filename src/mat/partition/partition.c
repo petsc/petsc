@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.47 2000/04/12 04:24:18 bsmith Exp balay $*/
+/*$Id: partition.c,v 1.48 2000/05/05 22:16:41 balay Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -522,7 +522,11 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
     Set the type if it was never set.
   */
   if (!part->type_name) {
+#if defined(PETSC_HAVE_PARMETIS)
+    ierr = MatPartitioningSetType(part,MATPARTITIONING_PARMETIS);CHKERRQ(ierr);
+#else
     ierr = MatPartitioningSetType(part,MATPARTITIONING_CURRENT);CHKERRQ(ierr);
+#endif
   }
 
   if (part->ops->setfromoptions) {

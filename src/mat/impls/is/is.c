@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.4 2000/06/01 20:10:27 bsmith Exp bsmith $*/
+/*$Id: nn.c,v 1.1 2000/06/03 20:40:01 bsmith Exp bsmith $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -130,8 +130,8 @@ int MatSetValuesLocal_NN(Mat A,int m,int *rows,int n,int *cols,Scalar *values,In
 int MatZeroRowsLocal_NN(Mat A,IS isrows,Scalar *diag)
 {
   Mat_NN *nn = (Mat_NN*)A->data;
-  int    ierr,i,rstart = nn->rstart,rend = nn->rend,*global,*nonlocal,n,cnt;
-  IS     islocal,isnonlocal,isglobal;
+  int    ierr,i,rstart = nn->rstart,rend = nn->rend,*global,*nonlocal,n,cnt,*rows;
+  IS     isglobal;
 
   PetscFunctionBegin;
 
@@ -150,15 +150,16 @@ int MatZeroRowsLocal_NN(Mat A,IS isrows,Scalar *diag)
   for (i=0; i<n; i++) {
     if (global[i] < rstart || global[i] >= rend) cnt++;
   }
+  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
   nn->nzeroedrows = cnt;
   nn->zeroedrows  = (int*)PetscMalloc((cnt+1)*sizeof(int));CHKPTRQ(nn->zeroedrows);
   cnt = 0;
   for (i=0; i<n; i++) {
-    if (global[i] < rstart || global[i] >= rend) nn->zeroedrows[cnt++] = i;
+    if (global[i] < rstart || global[i] >= rend) nn->zeroedrows[cnt++] = rows[i];
   }
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isglobal,&global);CHKERRQ(ierr);
   ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-
   ierr = MatZeroRows(nn->A,isrows,diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -212,7 +213,6 @@ int MatCreate_NN(Mat A)
   ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);
   ierr = MPI_Scan(&A->m,&b->rend,1,MPI_INT,MPI_SUM,A->comm);CHKERRQ(ierr);
   b->rstart = b->rend - A->m;
-
   b->A          = 0;
   b->ctx        = 0;
   b->x          = 0;  
