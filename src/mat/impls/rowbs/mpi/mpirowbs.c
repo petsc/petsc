@@ -43,11 +43,12 @@ static PetscErrorCode MatMallocRowbs_Private(Mat A,int n,int **i,PetscScalar **v
 #define __FUNCT__ "MatScale_MPIRowbs"
 PetscErrorCode MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
 {
-  Mat_MPIRowbs *a = (Mat_MPIRowbs*)inA->data;
-  BSspmat      *A = a->A;
-  BSsprow      *vs;
-  PetscScalar  *ap,alpha = *alphain;
-  int          i,m = inA->m,nrow,j;
+  Mat_MPIRowbs   *a = (Mat_MPIRowbs*)inA->data;
+  BSspmat        *A = a->A;
+  BSsprow        *vs;
+  PetscScalar    *ap,alpha = *alphain;
+  int            i,m = inA->m,nrow,j;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {

@@ -53,10 +53,11 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat
 #define __FUNCT__ "MatLUFactorNumeric_MPIRowbs"
 PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *factp) 
 {
-  Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
+  Mat_MPIRowbs   *mbs = (Mat_MPIRowbs*)mat->data;
 
 #if defined(PETSC_USE_LOG)
-  PetscReal flop1 = BSlocal_flops();
+  PetscErrorCode ierr;
+  PetscReal      flop1 = BSlocal_flops();
 #endif
 
   PetscFunctionBegin;
