@@ -5,17 +5,13 @@
 # Run "crontab crontab" to install the nightly build;
 # use "crontab -r" to remove it.
 #
-#  The timing between these runs IS important.
+#  The timing between these runs IS not important.
 #
-40 0 * * * /home/bsmith/petsc/maint/buildremotetest
-15 1 * * * /home/bsmith/petsc/maint/buildtest bsmith
-#15 1 * * * /home/bsmith/petsc/maint/buildtest curfman
-#15 1 * * * /home/bsmith/petsc/maint/buildtest petsc
-#15 1 * * * /home/bsmith/petsc/maint/buildtest balay
+1  0 * * * /home/bsmith/petsc/maint/buildremotetest
+15 0 * * * /home/bsmith/petsc/maint/buildtest 1
+15 0 * * * /home/bsmith/petsc/maint/buildtest 3
+15 0 * * * /home/bsmith/petsc/maint/buildtest 6
+15 0 * * * /home/bsmith/petsc/maint/buildtest 2 4 5
+15 0 * * * /home/bsmith/petsc/maint/buildtest 6
 #
-# Makes the shadow directories.  Must be done before the library builds.
-#
-05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/balay/petsc > /dev/null
-05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc > /dev/null
-05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/petsc/petsc > /dev/null
-05 0 * * * /home/bsmith/petsc/maint/buildlinks /tmp/petsc > /dev/null
+
