@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.31 2000/10/18 01:31:01 bsmith Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.32 2000/10/24 20:26:02 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -1540,11 +1540,6 @@ int MatCreate_MPISBAIJ(Mat B)
   PetscTruth   flg;
 
   PetscFunctionBegin;
-  ierr = PetscSplitOwnership(B->comm,&B->m,&B->M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(B->comm,&B->n,&B->N);CHKERRQ(ierr);
-  if (B->M != B->N || B->m != B->n){ /* N and n are not used after this */
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, set M=N and m=n");
-  }
 
   B->data = (void*)(b = PetscNew(Mat_MPISBAIJ));CHKPTRQ(b);
   ierr    = PetscMemzero(b,sizeof(Mat_MPISBAIJ));CHKERRQ(ierr);
@@ -1559,14 +1554,6 @@ int MatCreate_MPISBAIJ(Mat B)
   B->insertmode = NOT_SET_VALUES;
   ierr = MPI_Comm_rank(B->comm,&b->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(B->comm,&b->size);CHKERRQ(ierr);
-
-  ierr = PetscSplitOwnership(B->comm,&B->m,&B->M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(B->comm,&B->n,&B->N);CHKERRQ(ierr);
-
-  /* the information in the maps duplicates the information computed below, eventually 
-     we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   b->rowners = (int*)PetscMalloc(3*(b->size+2)*sizeof(int));CHKPTRQ(b->rowners);
@@ -1733,12 +1720,17 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
       if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than -1: local row %d value %d",i,o_nnz[i]);
     }
   }
+  B->preallocated = PETSC_TRUE;
+  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->n,&B->N);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
 
   b   = (Mat_MPISBAIJ*)B->data;
   mbs = B->m/bs;
   Mbs = B->M/bs;
   if (mbs*bs != B->m) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,"No of local rows/cols must be divisible by blocksize");
+    SETERRQ2(PETSC_ERR_ARG_SIZ,"No of local rows %d must be divisible by blocksize %d",B->m,bs);
   }
 
   b->bs  = bs;
