@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.39 2000/10/25 14:54:39 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.40 2000/10/26 15:48:52 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -967,7 +967,7 @@ int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,PetscReal fill,int level
   */
 
   outA          = inA; 
-  inA->factor   = FACTOR_LU;
+  inA->factor   = FACTOR_CHOLESKY;
 
   if (!a->diag) {
     ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
