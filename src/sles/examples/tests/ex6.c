@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.6 1995/08/31 20:55:07 curfman Exp $";
+static char vcid[] = "$Id: ex6.c,v 1.2 1995/09/21 20:11:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -26,6 +26,7 @@ int main(int argc,char **args)
   Viewer     fd;
 
   PetscInitialize(&argc,&args,0,0);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
 
 /*   Read in matrix and RHS   */
   OptionsGetString(0,"-f",file,127);
