@@ -66,7 +66,7 @@ extern int   MPIR_FromPointer(void*);
 #if defined(__cplusplus)
 }
 #endif
-#define PetscToPointerComm(a)    MPIR_ToPointer(a)
+#define PetscToPointerComm(a)    MPIR_ToPointer(*(int *)(&a))
 #define PetscFromPointerComm(a)  MPIR_FromPointer(a)
 
 #elif defined(HP_MPI)
