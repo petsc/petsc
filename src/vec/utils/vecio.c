@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.4 1995/08/23 17:07:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.5 1995/08/24 22:26:08 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -87,72 +87,5 @@ int VecLoad(MPI_Comm comm,Viewer bview,VecType outtype,IS ind,Vec *newvec)
   ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
   *newvec = vec;
-  return 0;
-}
-
-/*@ 
-  VecViewBinary - Writes a vector in binary format to the specified file.
-  VecLoadBinary() can be used to load the resulting file.
-
-  Input Parameters:
-. newvec - the vector
-. fd - file descriptor
-
-  Notes:
-  Currently, this routine writes the complete global vector to a single file.
-@*/  
-int VecViewBinary(Vec v,int fd)
-{
-  int    length, ierr;
-  Scalar *va;
-
-  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
-  ierr = VecGetSize(v,&length); CHKERRQ(ierr);
-  if (v->type == VECMPI) {
-    int     i, rstart, rend, mytid, numtids, *iglobal, ldim;
-    Vec     v2;
-    VecType ntype;
-    MPI_Comm_rank(v->comm,&mytid); 
-    MPI_Comm_size(v->comm,&numtids);
-    if (!mytid)
-      ierr = VecCreateMPI(MPI_COMM_WORLD,length,length,&v2);
-    else
-      ierr = VecCreateMPI(MPI_COMM_WORLD,0,length,&v2);
-    CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(v,&rstart,&rend); CHKERRQ(ierr); 
-    ierr = VecGetArray(v,&va); CHKERRQ(ierr);
-    ierr = VecGetLocalSize(v,&ldim); CHKERRQ(ierr);
-    iglobal = (int *) PETSCMALLOC(ldim*sizeof(int));
-    for (i=0; i<ldim; i++) iglobal[i] = i + rstart;
-    ierr = VecSetValues(v2,ldim,iglobal,va,INSERTVALUES); CHKERRQ(ierr);
-    PETSCFREE(iglobal);
-    ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(v2); CHKERRQ(ierr);
-
-    /* Write vector header */
-    ntype = VECSEQ;
-    ierr = SYWrite(fd,(char *)&ntype,sizeof(int),SYINT,0); CHKERRQ(ierr);
-    ierr = SYWrite(fd,(char *)&length,sizeof(int),SYINT,0); CHKERRQ(ierr);
-
-    /* Write vector contents */
-    ierr = VecAssemblyEnd(v2); CHKERRQ(ierr);
-    ierr = VecGetArray(v2,&va); CHKERRQ(ierr);
-    ierr = SYWrite(fd,(char *)va,length*sizeof(Scalar),SYSCALAR,0); CHKERRQ(ierr);
-    ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-    ierr = VecDestroy(v2); CHKERRQ(ierr);
-  }
-  else if (v->type == VECSEQ) {
-    /* Write vector header */
-    ierr = SYWrite(fd,(char *)&v->type,sizeof(int),SYINT,0); CHKERRQ(ierr);
-    ierr = VecGetSize(v,&length); CHKERRQ(ierr);
-    ierr = SYWrite(fd,(char *)&length,sizeof(int),SYINT,0); CHKERRQ(ierr);
-
-    /* Write vector contents */
-    ierr = VecGetArray(v,&va); CHKERRQ(ierr);
-    ierr = SYWrite(fd,(char *)va,length*sizeof(Scalar),SYINT,0); CHKERRQ(ierr);
-    ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-  }
-  else SETERRQ(1,"VecViewBinary: Only VECSEQ and VECMPI are currently supported");
-
   return 0;
 }
