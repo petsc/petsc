@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.94 2000/04/20 13:04:27 bsmith Exp balay $*/
+/*$Id: general.c,v 1.95 2000/05/05 22:14:40 balay Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -87,7 +87,18 @@ int ISGetSize_General(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISInvertPermutation_General" 
+#define __FUNC__ /*<a name="ISGetLocalSize_General"></a>*/"ISGetLocalSize_General" 
+int ISGetLocalSize_General(IS is,int *size)
+{
+  IS_General *sub = (IS_General *)is->data;
+
+  PetscFunctionBegin;
+  *size = sub->N; 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="ISInvertPermutation_General"></a>*/"ISInvertPermutation_General" 
 int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
@@ -122,7 +133,7 @@ int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISView_General" 
+#define __FUNC__ /*<a name="ISView_General"></a>*/"ISView_General" 
 int ISView_General(IS is,Viewer viewer)
 {
   IS_General  *sub = (IS_General *)is->data;
@@ -189,7 +200,7 @@ int ISSorted_General(IS is,PetscTruth *flg)
 }
 
 static struct _ISOps myops = { ISGetSize_General,
-                               ISGetSize_General,
+                               ISGetLocalSize_General,
                                ISGetIndices_General,
                                ISRestoreIndices_General,
                                ISInvertPermutation_General,
@@ -209,9 +220,9 @@ static struct _ISOps myops = { ISGetSize_General,
    Collective on MPI_Comm
 
    Input Parameters:
-+  n - the length of the index set
-.  idx - the list of integers
--  comm - the MPI communicator
++  comm - the MPI communicator
+.  n - the length of the index set
+-  idx - the list of integers
 
    Output Parameter:
 .  is - the new index set
@@ -219,7 +230,7 @@ static struct _ISOps myops = { ISGetSize_General,
    Notes:
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are then
-   distributed sets of indices. 
+   distributed sets of indices and thus certain operations on them are collective.
 
    Level: beginner
 
@@ -247,6 +258,8 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   PLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(int)+sizeof(struct _p_IS));
   sub->idx       = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;
+
+  ierr = MPI_Allreduce(&n,&sub->N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   for (i=1; i<n; i++) {
     if (idx[i] < idx[i-1]) {sorted = PETSC_FALSE; break;}
   }
@@ -267,7 +280,8 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   if (flg) {
     ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
   }
-  *is = Nindex; PetscFunctionReturn(0);
+  *is = Nindex;
+  PetscFunctionReturn(0);
 }
 
 
