@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.97 1997/02/04 21:23:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.98 1997/02/22 02:22:53 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -83,7 +83,7 @@ static NRList *__KSPList = 0;
 .  comm - MPI communicator
 
    Notes:
-   The default KSP type is GMRES with a restart of 10.
+   The default KSP type is GMRES with a restart of 30.
 
 .keywords: KSP, create, context
 
