@@ -78,7 +78,7 @@ int PetscMemcpy(void *a,const void *b,int n)
 #endif
       int one = 1;
       int len = n/sizeof(PetscScalar);
-      BLcopy_(&len,(PetscScalar *)a,&one,(PetscScalar *)b,&one);
+      BLcopy_(&len,(PetscScalar *)b,&one,(PetscScalar *)a,&one);
     } else {
       memcpy((char*)(a),(char*)(b),n);
     }
