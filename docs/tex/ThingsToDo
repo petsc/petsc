@@ -7,7 +7,7 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-
+  - Add man pages for SETERRA/SETERRQ, CHKERRA, CHKERRQ
 
   - Support saving SLES etc objects with a binary viewer to read in later
 
