@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.83 1996/04/25 23:58:42 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.84 1996/05/03 19:25:58 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -183,6 +183,8 @@ $      compiled with PETSC_LOG)
 $  -log_summary : Prints summary of flop and timing
 $      information to screen (for code compiled with 
 $      PETSC_LOG)
+$  -log_mpe : creates a logfile viewable by the 
+$      utility upshot/nupshot (in MPICH distribution)
 $  -fp_trap : Stops on floating point exceptions
 $      Note: On the IBM RS6000 this slows code by
 $            at least a factor of 10.
