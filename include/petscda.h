@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.22 1996/03/19 21:30:28 bsmith Exp curfman $ */
+/* $Id: da.h,v 1.23 1996/06/18 22:46:08 curfman Exp curfman $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -38,6 +38,8 @@ extern int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
 extern int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
 extern int   DAGetInfo(DA,int *,int *,int *,int *,int *,int *,int *,int *,int *);
 extern int   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
+extern int   DAGetGridSubset(DA,int,int,int,int,int,int,
+                             int*,int*,int*,int*,int*,int*);
 extern int   DARefine(DA,DA*);
 
 extern int   DAGetGlobalIndices(DA,int*,int**);
