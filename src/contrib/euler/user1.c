@@ -80,6 +80,8 @@ These shouldn't be needed anymore but were useful in writing the parallel code\n
 #include "user.h"
 #include "src/fortran/custom/zpetsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   MPI_Comm comm;                  /* communicator */
@@ -90,18 +92,19 @@ int main(int argc,char **argv)
   Viewer   view;                  /* viewer for printing vectors */
   char     stagename[2][16];      /* names of profiling stages */
   int      fort_app;              /* Fortran interface user context */
-  int      log;                   /* flag indicating use of logging */
+  int      logging;               /* flag indicating use of logging */
   int      solve_with_julianne;   /* flag indicating use of original Julianne solver */
   int      init1, init2, init3;   /* event numbers for application initialization */
-  int      its, ierr, flg, stage;
+  int      len, its, ierr, flg, stage;
 
   /* Set Defaults */
   int      maxksp = 25;           /* max number of KSP iterations */
   int      post_process = 0;      /* flag indicating post-processing */
   int      total_stages = 1;      /* number of times to run nonlinear solver */
   int      log_stage_0 = 0;       /* are we doing dummy solve for logging stage 0? */
+  int      maxsnes;               /* maximum number of SNES iterations */
   Scalar   ksprtol = 1.0e-2;      /* KSP relative convergence tolerance */
-  double   rtol = 1.e-12;         /* SNES relative convergence tolerance */
+  double   rtol = 1.e-10;         /* SNES relative convergence tolerance */
   double   time1, tsolve;         /* time for solution process */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,8 +117,8 @@ int main(int argc,char **argv)
   if (flg) {PetscPrintf(comm,help2);PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
 
   /* Temporarily deactivate these events */
-  /*  PLogEventDeactivate(VEC_SetValues);
-  PLogEventDeactivate(MAT_SetValues); */
+  PLogEventDeactivate(VEC_SetValues);
+  PLogEventDeactivate(MAT_SetValues);
 
   /* -----------------------------------------------------------
                   Beginning of nonlinear solver loop
@@ -134,12 +137,12 @@ int main(int argc,char **argv)
      If not using -log_summary, then we just do 1 nonlinear solve.
   */
 
-  ierr = OptionsHasName(PETSC_NULL,"-log_summary",&log); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-log_summary",&logging); CHKERRA(ierr);
 
   /* 
       temporarily deactivate user-defined events and multiple logging stages
   */
-  if (log) total_stages = 2;
+  if (logging) total_stages = 2;
   ierr = PLogEventRegister(&init1,"DA, Scatter Init","Red:"); CHKERRA(ierr);
   ierr = PLogEventRegister(&init2,"Mesh Setup      ","Red:"); CHKERRA(ierr);
   ierr = PLogEventRegister(&init3,"Julianne Init   ","Red:"); CHKERRA(ierr);
@@ -152,8 +155,8 @@ int main(int argc,char **argv)
   PLogStagePush(stage);
   sprintf(stagename[stage],"Solve %d",stage);
   PLogStageRegister(stage,stagename[stage]);
-  if (log && !stage) log_stage_0 = 1;
-  else               log_stage_0 = 0;
+  if (logging && !stage) log_stage_0 = 1;
+  else                   log_stage_0 = 0;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize distributed arrays and vector scatters; allocate work space
@@ -177,14 +180,14 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* for dummy logging stage 1, form the Jacobian every 2 iterations */
-  if (log && stage==0) app->jfreq = 2;
+  if (logging && stage==0) app->jfreq = 2;
 
   if (solve_with_julianne) {
     if (app->size != 1) SETERRA(1,1,"Original code runs on 1 processor only.");
     ierr = OptionsGetDouble(PETSC_NULL,"-julianne_rtol",&rtol,&flg); CHKERRA(ierr);
     PLogEventBegin(init3,0,0,0,0);
     time1 = PetscGetTime();
-    ierr = julianne_(&solve_with_julianne,0,&app->cfl,
+    ierr = julianne_(&time1,&solve_with_julianne,0,&app->cfl,
            &rtol,&app->eps_jac,app->b1,app->b2,
            app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
            app->r,app->ru,app->rv,app->rw,app->e,app->p,
@@ -210,7 +213,8 @@ int main(int argc,char **argv)
   /* Read entire grid and initialize data */
   PLogEventBegin(init2,0,0,0,0);
   fort_app = PetscFromPointer(app);
-  ierr = julianne_(&solve_with_julianne,&fort_app,&app->cfl,
+  time1 = PetscGetTime();
+  ierr = julianne_(&time1,&solve_with_julianne,&fort_app,&app->cfl,
          &rtol,&app->eps_jac,app->b1,
          app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,app->dt,
          app->r,app->ru,app->rv,app->rw,app->e,app->p,
@@ -237,7 +241,7 @@ int main(int argc,char **argv)
 
   ierr = UserSetJacobian(snes,app); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,app->F,ComputeFunction,app); CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,JulianneMonitor,app); CHKERRA(ierr);
+  ierr = SNESSetMonitor(snes,MonitorEuler,app); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
@@ -251,21 +255,39 @@ int main(int argc,char **argv)
   ierr = KSPSetType(ksp,KSPGMRES); CHKERRA(ierr);
   ierr = KSPSetTolerances(ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,maxksp); CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(ksp,maxksp+1); CHKERRA(ierr);
+  ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
+                                1.e-13,1000,100000); CHKERRA(ierr);
 
   /* Set runtime options (e.g. -snes_rtol <rtol> -ksp_type <type>) */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
-  /* We use just a few iterations if doing the "dummy" logging phase 0 */
-  if (log && stage==0) {ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,
+  /* We use just a few iterations if doing the "dummy" logging phase.  We
+     call this after SNESSetFromOptions() to override any runtime options */
+  if (logging && stage==0) {ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,
                                    PETSC_DEFAULT,3,PETSC_DEFAULT); CHKERRA(ierr);}
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Set an application-specific convergence test 
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&maxsnes,
+         PETSC_NULL); CHKERRA(ierr);
+  len = maxsnes + 1;
+  app->farray = (Scalar *)PetscMalloc(5*len*sizeof(Scalar)); CHKPTRQ(app->farray);
+  PetscMemzero(app->farray,5*len*sizeof(Scalar));
+  app->favg  = app->farray + len;
+  app->flog  = app->favg   + len;
+  app->ftime = app->flog   + len;
+  app->fcfl  = app->ftime  + len;
+  ierr = SNESSetConvergenceHistory(snes,app->farray,maxsnes); CHKERRA(ierr);
+  ierr = SNESSetConvergenceTest(snes,ConvergenceTestEuler,app); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = InitialGuess(snes,app,app->X); CHKERRA(ierr);
-
   /* Transfer application data to vector X and view if desired */
+  ierr = InitialGuess(snes,app,app->X); CHKERRA(ierr);
   if (app->print_vecs) {
     ierr = ViewerFileOpenASCII(comm,"init.out",&view); CHKERRA(ierr);
     ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRA(ierr);
@@ -277,8 +299,12 @@ int main(int argc,char **argv)
      Solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  app->time_init = PetscGetTime();
   ierr = SNESSolve(snes,app->X,&its); CHKERRA(ierr);
   PetscPrintf(comm,"number of Newton iterations = %d\n\n",its);
+
+  /* Print solver parameters */
+  ierr = SNESView(snes,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Do post-processing
@@ -294,10 +320,25 @@ int main(int argc,char **argv)
        */
   }
 
+  /* Dump field variables for viewing with TECPLOT */
   ierr = OptionsHasName(PETSC_NULL,"-tecplot",&flg); CHKERRA(ierr);
-  if (flg) {
-    ierr = TECPLOTMonitor(snes,app->X,app); CHKERRA(ierr);
-  }
+  if (flg) {ierr = TECPLOTMonitor(snes,app->X,app); CHKERRA(ierr);}
+
+  /* Print convergence stats.  Note that we save this data in arrays for
+     printing only after the completion of SNESSolve(), so that the timings
+     are not distorted by output during the solve. */
+  if (app->no_output) {
+    FILE *fp; int i;
+    fp = fopen("fnorm.m","w"); 
+    if (app->rank == 0) {
+      fprintf(fp,"zsnes = [\n");
+      for (i=0; i<=its; i++) {
+        fprintf(fp,"  %d    %8.4f   %12.1f   %10.2f\n",
+                i,app->flog[i],app->fcfl[i],app->ftime[i]);
+      }
+      fprintf(fp," ];\n");
+    }
+  } 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free data structures 
@@ -318,6 +359,8 @@ int main(int argc,char **argv)
   PetscFinalize();
   return 0;
 }
+#undef __FUNC__  
+#define __FUNC__ "UserSetJacobian"
 /***************************************************************************/
 /*
    UserSetJacobian - Forms Jacobian matrix context and sets Jacobian
@@ -429,23 +472,27 @@ int UserSetJacobian(SNES snes,Euler *app)
         Set data structures and routine for Jacobian evaluation 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&app->matrix_free); CHKERRQ(ierr);
+   ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&app->matrix_free); CHKERRQ(ierr);
   if (!app->matrix_free) {
     /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
     ierr = SNESSetJacobian(snes,J,J,ComputeJacobian,app); CHKERRQ(ierr);
-    PetscPrintf(comm,"Not using matrix-free KSP method\n"); 
+    PetscPrintf(comm,"Linear system matrix = preconditioner matrix (not matrix-free)\n"); 
   } else {
-    /* Use matrix-free Jacobian to define Newton system; use explicit (approx)
-       Jacobian for preconditioner */
-   double err_rel;
+    /* Use matrix-free Jacobian to define Newton system; use finite difference
+       approximation of Jacobian for preconditioner */
    if (app->bctype != IMPLICIT) SETERRQ(1,1,"UserSetJacobian: Matrix-free method requires implicit BCs!");
    ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr);
    ierr = SNESSetJacobian(snes,app->Jmf,J,ComputeJacobian,app); CHKERRQ(ierr);
-   ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&err_rel,&flg); CHKERRQ(ierr);
-   PetscPrintf(comm,"Using matrix-free KSP method (snes_mf_err = %g)\n",err_rel);
+   ierr = UserSetMatrixFreeParameters(snes,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
+   ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0); CHKERRQ(ierr);
+   PetscPrintf(comm,"Using matrix-free KSP method: linear system matrix:\n");
+   ierr = MatView(app->Jmf,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+   ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "UserDestroyEuler"
 /***************************************************************************/
 /* 
     UserDestroyEuler - Destroys the user-defined application context.
@@ -456,7 +503,7 @@ int UserSetJacobian(SNES snes,Euler *app)
  */
 int UserDestroyEuler(Euler *app)
 {
-  int ierr;
+  int  ierr;
   if (app->J) {ierr = MatDestroy(app->J); CHKERRQ(ierr);}
   if (app->matrix_free) {ierr = MatDestroy(app->Jmf); CHKERRQ(ierr);}
   if (app->Fvrml) {ierr = VecDestroy(app->Fvrml); CHKERRQ(ierr);}
@@ -483,6 +530,7 @@ int UserDestroyEuler(Euler *app)
   }
 
   /* Free misc work space for Fortran arrays */
+  if (app->farray)  PetscFree(app->farray);
   if (app->dr)      PetscFree(app->dr);
   if (app->dt)      PetscFree(app->dt);
   if (app->diag)    PetscFree(app->diag);
@@ -500,6 +548,8 @@ int UserDestroyEuler(Euler *app)
   PetscFree(app);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "ComputeJacobian"
 /***************************************************************************/
 /* 
    ComputeJacobian - Computes Jacobian matrix.  The user sets this routine
@@ -509,10 +559,10 @@ int UserDestroyEuler(Euler *app)
    X     - input vector
    jac   - Jacobian matrix
    pjac  - preconditioner matrix (same as Jacobian matrix except when
-           we use matrix-free Newton-Krylov methods)
+	   we use matrix-free Newton-Krylov methods)
    flag  - flag indicating information about the preconditioner matrix
-           structure.  See SLESSetOperators() for important information 
-           about setting this flag.
+	   structure.  See SLESSetOperators() for important information 
+	   about setting this flag.
    ptr   - optional user-defined context, as set by SNESSetJacobian()
 
    Output Parameters:
@@ -524,17 +574,17 @@ int UserDestroyEuler(Euler *app)
   -----------------------
    This routine supports two appropaches for matrix assembly:
      (1) Assembling the Jacobian directly into the PETSc matrix data 
-         structure (the default approach -- more efficient)
+	 structure (the default approach -- more efficient)
      (2) Forming the matrix in the original Eagle data structures and
-         converting these later to asssemble a PETSc matrix.  This approach
-         is expensive in terms of both memory and time and is retained only
-         as a demonstration of how to quickly revise an existing code that
-         uses the Eagle format.
+	 converting these later to asssemble a PETSc matrix.  This approach
+	 is expensive in terms of both memory and time and is retained only
+	 as a demonstration of how to quickly revise an existing code that
+	 uses the Eagle format.
 
    This routine supports two modes of handling boundary conditions:
      (1) explicitly - only interior grid points are part of Newton systems
      (2) implicitly - both interior and boundary grid points contribute to
-                      the Newton systems
+		      the Newton systems
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
  */
 int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *ptr)
@@ -575,37 +625,37 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
       /* We must zero the diagonal block here, since this is not done within jformdt2 */
       PetscMemzero(app->diag,app->diag_len);
       ierr = jformdt2_(&app->eps_jac,&app->eps_jac_inv,app->ltog,&app->nloc,&fortmat,app->is1,
-              app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,app->diag,
-              app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-              app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
-              app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-              app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-              app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-              app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,
+	      app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,app->diag,
+	      app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
+	      app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
+	      app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
+	      app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+	      app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
+	      app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,
 	   app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-           app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-           app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-           app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-           app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-           app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+	   app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
+	   app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
+	   app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
+	   app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
+	   app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
 
     /* Or store the matrix in the intermediate Eagle format for later conversion ... */
     } else {
       ierr = jformdt_(&app->eps_jac,&app->eps_jac_inv,
-             app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
-             app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,
-             app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-             app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
-             app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-             app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-             app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-             app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
-             app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-             app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-             app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-             app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-             app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-             app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+	     app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
+	     app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,
+	     app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
+	     app->r_bc,app->ru_bc,app->rv_bc,app->rw_bc,app->e_bc,app->p_bc,
+	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
+	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
+	     app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
+	     app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
+	     app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
+	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
+	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
+	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
     }
  } else {
     /* Either assemble the matrix directly (the more efficient route) ... */
@@ -613,22 +663,22 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
       /* We must zero the diagonal block here, since this is not done within jfor2 */
       PetscMemzero(app->diag,app->diag_len);
       ierr = jform2_(&app->eps_jac,&app->eps_jac_inv,
-              app->ltog,&app->nloc,&fortmat,app->diag,
-              app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-              app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-              app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-              app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-              app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
+	      app->ltog,&app->nloc,&fortmat,app->diag,
+	      app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
+	      app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
+	      app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+	      app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
+	      app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
 
     /* Or store the matrix in the intermediate Eagle format for later conversion ... */
     } else {
       ierr = jform_(&app->eps_jac,&app->eps_jac_inv,
-              app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
-              app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-              app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
-              app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-              app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-              app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
+	      app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
+	      app->diag,app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
+	      app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
+	      app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+	      app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
+	      app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
     }
   }
 
@@ -637,9 +687,9 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     if (!app->no_output) PetscPrintf(app->comm,"Building PETSc matrix ...\n");
     ierr = MatGetType(*pjac,&type,PETSC_NULL); CHKERRQ(ierr);
     ierr = buildmat_(&fortmat,&app->sctype,app->is1,&iter,
-         app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,
-         app->dt,app->ltog,&app->nloc,
-         app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp); CHKERRQ(ierr);
+	 app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,
+	 app->dt,app->ltog,&app->nloc,
+	 app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp); CHKERRQ(ierr);
   } 
 
   /* Finish the matrix assembly process.  For the Euler code, the matrix
@@ -663,9 +713,9 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 
     /*
       if (mtype == MATSEQAIJ) {
-        ierr = MatViewSeqAIJ_Long(*pjac,view); CHKERRQ(ierr);
+	ierr = MatViewSeqAIJ_Long(*pjac,view); CHKERRQ(ierr);
       } else if (mtype == MATSEQBAIJ) {
-        ierr = MatViewSeqBAIJ_Long(*pjac,view); CHKERRQ(ierr);
+	ierr = MatViewSeqBAIJ_Long(*pjac,view); CHKERRQ(ierr);
       }
       */
     /*
@@ -683,7 +733,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     Viewer viewer;
     PetscPrintf(app->comm,"writing matrix in binary to euler.dat ...\n"); 
     ierr = ViewerFileOpenBinary(app->comm,"euler.dat",BINARY_CREATE,&viewer); 
-           CHKERRQ(ierr);
+	   CHKERRQ(ierr);
     ierr = MatView(*pjac,viewer); CHKERRQ(ierr);
 
     ierr = ComputeFunction(snes,X,app->F,ptr); CHKERRQ(ierr);
@@ -696,80 +746,80 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   /* Check matrix-vector products, run with -matrix_free and -debug option */
   if (app->matrix_free && app->print_debug) {
     int    loc, i, m, j ,k, ijkx, jkx, ijkxl, jkxl, *ltog, dc[5];
-    Vec    y1, y2, x1;
+    Vec    yy1, yy2, xx1;
     Viewer view2;
-    Scalar *y1a, *y2a, one = 1.0, di, diff, md[5];
+    Scalar *yy1a, *yy2a, one = 1.0, di, diff, md[5];
 
     ierr = DAGetGlobalIndices(app->da,&loc,&ltog); CHKERRQ(ierr);
-    ierr = VecDuplicate(X,&y1); CHKERRQ(ierr);
-    ierr = VecDuplicate(X,&x1); CHKERRQ(ierr);
-    ierr = VecDuplicate(X,&y2); CHKERRQ(ierr);
+    ierr = VecDuplicate(X,&yy1); CHKERRQ(ierr);
+    ierr = VecDuplicate(X,&xx1); CHKERRQ(ierr);
+    ierr = VecDuplicate(X,&yy2); CHKERRQ(ierr);
     for (k=app->zs; k<app->ze; k++) {
       for (j=app->ys; j<app->ye; j++) {
-        jkx  = j*app->mx + k*app->mx*app->my;
-        jkxl = (j-app->gys)*app->gxm + (k-app->gzs)*app->gxm*app->gym;
-        for (i=app->xs; i<app->xe; i++) {
-          ijkx  = (jkx + i)*app->nc;
-          ijkxl = (jkxl + i-app->gxs)*app->nc;
-          for (m=0;m<app->nc;m++) {
-            di = one*ijkx;
-            loc = ltog[ijkxl];
-            ierr = VecSetValues(x1,1,&loc,&di,INSERT_VALUES); CHKERRQ(ierr);
-         printf("[%d] k=%d, j=%d, i=%d, ijkx=%d, ijkxl=%d\n",app->rank,k,j,i,ijkx,ijkxl);
-            ijkx++; ijkxl++;
-          }
-        }
+	jkx  = j*app->mx + k*app->mx*app->my;
+	jkxl = (j-app->gys)*app->gxm + (k-app->gzs)*app->gxm*app->gym;
+	for (i=app->xs; i<app->xe; i++) {
+	  ijkx  = (jkx + i)*app->nc;
+	  ijkxl = (jkxl + i-app->gxs)*app->nc;
+	  for (m=0;m<app->nc;m++) {
+	    di = one*ijkx;
+	    loc = ltog[ijkxl];
+	    ierr = VecSetValues(xx1,1,&loc,&di,INSERT_VALUES); CHKERRQ(ierr);
+	 printf("[%d] k=%d, j=%d, i=%d, ijkx=%d, ijkxl=%d\n",app->rank,k,j,i,ijkx,ijkxl);
+	    ijkx++; ijkxl++;
+	  }
+	}
       }
     }
-    ierr = VecAssemblyBegin(x1); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(x1); CHKERRQ(ierr);
-    ierr = ViewerFileOpenASCII(app->comm,"x1.out",&view2); CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(xx1); CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(xx1); CHKERRQ(ierr);
+    ierr = ViewerFileOpenASCII(app->comm,"xx1.out",&view2); CHKERRQ(ierr);
     ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-    ierr = DFVecView(x1,view2); CHKERRQ(ierr);
+    ierr = DFVecView(xx1,view2); CHKERRQ(ierr);
     ierr = ViewerDestroy(view2); CHKERRQ(ierr);
 
-    ierr = MatMult(*pjac,x1,y1); CHKERRQ(ierr);
+    ierr = MatMult(*pjac,xx1,yy1); CHKERRQ(ierr);
     ierr = ViewerFileOpenASCII(app->comm,"v1.out",&view2); CHKERRQ(ierr);
     ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-    ierr = DFVecView(y1,view2); CHKERRQ(ierr);
+    ierr = DFVecView(yy1,view2); CHKERRQ(ierr);
     ierr = ViewerDestroy(view2); CHKERRQ(ierr);
 
-    ierr = MatMult(*jac,x1,y2); CHKERRQ(ierr);
+    ierr = MatMult(*jac,xx1,yy2); CHKERRQ(ierr);
     ierr = ViewerFileOpenASCII(app->comm,"v2.out",&view2); CHKERRQ(ierr);
     ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-    ierr = DFVecView(y2,view2); CHKERRQ(ierr);
+    ierr = DFVecView(yy2,view2); CHKERRQ(ierr);
     ierr = ViewerDestroy(view2); CHKERRQ(ierr);
 
-    ierr = VecGetArray(y1,&y1a); CHKERRQ(ierr);
-    ierr = VecGetArray(y2,&y2a); CHKERRQ(ierr);
+    ierr = VecGetArray(yy1,&yy1a); CHKERRQ(ierr);
+    ierr = VecGetArray(yy2,&yy2a); CHKERRQ(ierr);
 
     for (m=0;m<app->nc;m++) {
       dc[m] = 0;
       md[m] = 0;
       for (k=app->zs; k<app->ze; k++) {
-        for (j=app->ys; j<app->ye; j++) {
-          jkx = (j-app->ys)*app->xm + (k-app->zs)*app->xm*app->ym;
-          for (i=app->xs; i<app->xe; i++) {
-            ijkx = (jkx + i-app->xs)*app->nc + m;
-            diff = (PetscAbsScalar(y1a[ijkx])-PetscAbsScalar(y2a[ijkx])) /
-                  PetscAbsScalar(y1a[ijkx]);
-            if (diff > 0.1) {
-              printf("k=%d, j=%d, i=%d, m=%d, ijkx=%d,     diff=%6.3e       y1=%6.3e,   y2=%6.3e\n",
-                      k,j,i,m,ijkx,diff,y1a[ijkx],y2a[ijkx]);
-              if (diff > md[m]) md[m] = diff;
-              dc[m]++;
-            }
+	for (j=app->ys; j<app->ye; j++) {
+	  jkx = (j-app->ys)*app->xm + (k-app->zs)*app->xm*app->ym;
+	  for (i=app->xs; i<app->xe; i++) {
+	    ijkx = (jkx + i-app->xs)*app->nc + m;
+	    diff = (PetscAbsScalar(yy1a[ijkx])-PetscAbsScalar(yy2a[ijkx])) /
+		  PetscAbsScalar(yy1a[ijkx]);
+	    if (diff > 0.1) {
+	      printf("k=%d, j=%d, i=%d, m=%d, ijkx=%d,     diff=%6.3e       yy1=%6.3e,   yy2=%6.3e\n",
+		      k,j,i,m,ijkx,diff,yy1a[ijkx],yy2a[ijkx]);
+	      if (diff > md[m]) md[m] = diff;
+	      dc[m]++;
+	    }
 	  }
-        }
+	}
       }
     }
     printf("[%d] maxdiff = %g, %g, %g, %g, %g\n\
     dcount = %d, %d, %d, %d, %d\n",
-           app->rank,md[0],md[1],md[2],md[3],md[4],dc[0],dc[1],dc[2],dc[3],dc[4]);
+	   app->rank,md[0],md[1],md[2],md[3],md[4],dc[0],dc[1],dc[2],dc[3],dc[4]);
 
-    ierr = VecDestroy(x1); CHKERRQ(ierr);
-    ierr = VecDestroy(y1); CHKERRQ(ierr);
-    ierr = VecDestroy(y2); CHKERRQ(ierr);
+    ierr = VecDestroy(xx1); CHKERRQ(ierr);
+    ierr = VecDestroy(yy1); CHKERRQ(ierr);
+    ierr = VecDestroy(yy2); CHKERRQ(ierr);
 
     PetscFinalize(); exit(0);
   }
@@ -777,6 +827,8 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   if (!app->no_output) PetscPrintf(app->comm,"Done building PETSc matrix.\n");
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "ComputeFunction"
 /***************************************************************************/
 /*
    ComputeFunction - Evaluates the nonlinear function, F(X).  
@@ -927,6 +979,8 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
 
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "InitialGuess"
 /***************************************************************************/
 /*
    InitialGuess - Copies initial guess to vector X from work arrays
@@ -971,6 +1025,8 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "UserCreateEuler"
 /***************************************************************************/
 /* 
    UserCreateEuler - Defines the application-specific data structure and
@@ -1021,19 +1077,22 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
        in C of Fortran points in input (shifted by -2 for explicit formulation) 
        from m6c: Fortran: itl=10, itu=40, ile=25, ktip=6 */
       app->ktip = 4; app->itl = 8; app->itu = 38; app->ile = 23;   
-      app->eps_jac = 1.0e-7;
+      app->eps_jac        = 1.0e-7;
+      app->eps_mf_default = 1.0e-6;
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
       ni1 = 98; nj1 = 18; nk1 = 18;
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
-      app->eps_jac = 1.0e-7;
+      app->eps_jac        = 1.0e-7;
+      app->eps_mf_default = 1.0e-6;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
       ni1 = 194; nj1 = 34; nk1 = 34;
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
-      app->eps_jac = 1.0e-7;
+      app->eps_jac        = 1.0e-7;
+      app->eps_mf_default = 1.0e-6;
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1057,7 +1116,11 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->mat_assemble_direct = 1;        /* by default, we assemble Jacobian directly */
   app->jfreq               = 10;       /* default frequency of computing Jacobian matrix */
   app->no_output           = 0;        /* flag - by default print some output as program runs */
-  app->fstagnate           = 0;        /* counter for stagnation detection */
+  app->fstagnate_ratio     = .01;      /* stagnation detection parameter */
+  app->farray              = 0;        /* work array */
+  app->favg                = 0;        /* work array */
+  app->flog                = 0;        /* work array */
+  app->ftime               = 0;        /* work array */
 
   /* Override default with runtime options */
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance",&app->cfl_advance); CHKERRQ(ierr);
@@ -1066,6 +1129,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsGetDouble(PETSC_NULL,"-f_red",&app->f_reduction,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-eps_jac",&app->eps_jac,&flg); CHKERRQ(ierr);
   app->eps_jac_inv = 1.0/app->eps_jac;
+  ierr = OptionsGetDouble(PETSC_NULL,"-stagnate_ratio",&app->fstagnate_ratio,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-angle",&app->angle,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-jfreq",&app->jfreq,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-no_output",&app->no_output); CHKERRQ(ierr);
@@ -1450,6 +1514,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   *newapp = app;
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "UserSetGridParameters"
 /***************************************************************************/
 /*
    UserSetGridParameters - Sets various grid parameters within the application
@@ -1687,6 +1753,8 @@ int UserSetGridParameters(Euler *u)
   }
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "UserSetGrid"
 /***************************************************************************/
 /* 
    UserSetGrid - Reads mesh and sets up local portion of grid.
