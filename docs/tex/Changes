@@ -120,6 +120,8 @@ to do what you need.
 
   SNES 
 
+    SNESSetConvergenceHistory() takes an additional argumement, see manual page
+
     Changed SNESDefaultMatrixFreeMatCreate() to MatSNESFDMFCreate()
     Added 
       MatSNESFDMFSetHHistory(Mat,Scalar *,int);
