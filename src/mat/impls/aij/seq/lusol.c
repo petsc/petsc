@@ -356,14 +356,14 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 
 	  case 1:
 	  case -1:		/* singular */
-	       SETERRQ(PETSC_ERR_ARG_SIZ,"singular matrix"); 
+	       SETERRQ(1,"Singular matrix"); 
 
 	  case 3:
 	  case 4:		/* error conditions */
-	       SETERRQ(PETSC_ERR_ARG_SIZ,"matrix error"); 
+	       SETERRQ(1,"matrix error"); 
 
 	  default:		/* unknown condition */
-	       SETERRQ(PETSC_ERR_ARG_SIZ,"matrix unknown return code"); 
+	       SETERRQ(1,"matrix unknown return code"); 
 	  }
 
 	  factorizations++;

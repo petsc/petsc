@@ -46,7 +46,7 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
   ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(A->comm),(PetscObject)A);CHKERRQ(ierr);
   _A   = A->name;
   ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(A->comm),"[l_%s,u_%s,p_%s] = lu(%s',%g);",_A,_A,_A,_A,f->lu_dtcol);CHKERRQ(ierr);
-
+  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(A->comm),"%s = 0;",_A);CHKERRQ(ierr);
   ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
   ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
   sprintf(name,"_%s",_A);
@@ -92,6 +92,7 @@ int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F
   _A   = A->name;
   ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(A->comm),"info_%s = struct('droptol',%g,'thresh',%g);",_A,info->dt,info->dtcol);CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(A->comm),"[l_%s,u_%s,p_%s] = luinc(%s',info_%s);",_A,_A,_A,_A,_A);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(A->comm),"%s = 0;",_A);CHKERRQ(ierr);
 
   ierr = PetscStrlen(_A,&len);CHKERRQ(ierr);
   ierr = PetscMalloc((len+2)*sizeof(char),&name);CHKERRQ(ierr);
