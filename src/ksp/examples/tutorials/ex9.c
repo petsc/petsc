@@ -170,7 +170,7 @@ int main(int argc,char **args)
        Initialize all matrix entries to zero.  MatZeroEntries() retains
        the nonzero structure of the matrix for sparse formats.
     */
-    ierr = MatZeroEntries(C1);CHKERRQ(ierr);
+    if (t > 0) {ierr = MatZeroEntries(C1);CHKERRQ(ierr);}
 
     /* 
        Set matrix entries in parallel.  Also, log the number of flops
@@ -275,7 +275,7 @@ int main(int argc,char **args)
     /*
        Initialize all matrix entries to zero
     */
-    ierr = MatZeroEntries(C2);CHKERRQ(ierr);
+    if (t > 0) {ierr = MatZeroEntries(C2);CHKERRQ(ierr);}
 
    /* 
       Assemble matrix in parallel. Also, log the number of flops

@@ -8,9 +8,6 @@
 #include "mathlink.h"
 #endif
 
-typedef enum {GRAPHICS_MOTIF, GRAPHICS_PS_FILE, GRAPHICS_PS_STDOUT} GraphicsType;
-typedef enum {MATHEMATICA_TRIANGULATION_PLOT, MATHEMATICA_VECTOR_TRIANGULATION_PLOT,
-              MATHEMATICA_SURFACE_PLOT,       MATHEMATICA_VECTOR_PLOT} PlotType;
 typedef enum {MATHEMATICA_LINK_CREATE, MATHEMATICA_LINK_CONNECT, MATHEMATICA_LINK_LAUNCH} LinkMode;
 
 typedef struct {
@@ -20,13 +17,10 @@ typedef struct {
   char        *linkname;     /* The name to link to Mathematica on (usually a port) */
   char        *linkhost;     /* The host to link to Mathematica on */
   LinkMode     linkmode;     /* The link mode */
-  GraphicsType graphicsType; /* The system to use for display */
-  PlotType     plotType;     /* The type of plot to make */
   const char  *objName;      /* The name for the next object passed to Mathematica */
 } PetscViewer_Mathematica;
 
 EXTERN PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer);
-
 EXTERN PetscErrorCode PetscViewerMathematicaSetLinkName(PetscViewer, const char *);
 EXTERN PetscErrorCode PetscViewerMathematicaSetLinkPort(PetscViewer, int);
 EXTERN PetscErrorCode PetscViewerMathematicaSetLinkHost(PetscViewer, const char *);

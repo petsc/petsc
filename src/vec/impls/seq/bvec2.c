@@ -299,7 +299,10 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscTruth  isdraw,iascii,issocket,isbinary,ismathematica;
+  PetscTruth  isdraw,iascii,issocket,isbinary;
+#if defined(PETSC_HAVE_MATHEMATICA)
+  PetscTruth  ismathematica;
+#endif
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth  isnetcdf;
 #endif
@@ -312,7 +315,9 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
@@ -328,8 +333,10 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = PetscViewerSocketPutScalar(viewer,xin->n,1,x->array);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATHEMATICA)
   } else if (ismathematica) {
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_PNETCDF)
   } else if (isnetcdf) {
     ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
