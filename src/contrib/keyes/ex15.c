@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.6 1999/10/06 21:10:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.7 1999/10/06 21:33:08 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -82,7 +82,7 @@ int main( int argc, char **argv )
   SNES          snes;                      
   AppCtx        user;                      
   int           ierr, its, lits, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
-  int           size, nlocal,Nlocal;
+  int           size, nlocal,Nlocal,i;
   double	atol, rtol, stol, litspit;
   int	        maxit, maxf;
   SLES          sles;
@@ -115,12 +115,14 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&user.nlevels,PETSC_NULL); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.grid[0].mx,PETSC_NULL); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.grid[0].my,PETSC_NULL); CHKERRA(ierr);
-
-
-  user.grid[1].mx = user.ratio*(user.grid[0].mx-1)+1; 
-  user.grid[1].my = user.ratio*(user.grid[0].my-1)+1;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.grid[0].mx,user.grid[0].my);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.grid[1].mx,user.grid[1].my);CHKERRA(ierr);
+
+  for (i=1; i<user.nlevels; i++) {
+    user.grid[i].mx = user.ratio*(user.grid[i-1].mx-1)+1; 
+    user.grid[i].my = user.ratio*(user.grid[i-1].my-1)+1;
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid %d size %d by %d\n",i,user.grid[i].mx,user.grid[i].my);CHKERRA(ierr);
+  }
+
   n = user.grid[1].mx*user.grid[1].my; 
   N = user.grid[0].mx*user.grid[0].my;
 
