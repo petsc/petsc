@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.83 2001/03/06 18:42:49 balay Exp balay $ 
+# $Id: builddist,v 1.84 2001/03/09 22:23:44 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -58,6 +58,10 @@ cd $tmpdir/petsc
 /bin/mv bmake/common bmake/common.bak
 /bin/grep -v 'chmod' bmake/common.bak > bmake/common
 /bin/rm -f  bmake/common.bak
+# Eliminate '-u' from sun4/base
+/bin/mv bmake/sun4/base bmake/sun4/base.bak
+/bin/sed 's/-u//' bmake/sun4/base.bak > bmake/sun4/base
+/bin/rm -f  bmake/sun4/base.bak
 # Eliminate buildtest scripts from bmake/arch
 /bin/rm -f  bmake/*/buildtest
 
