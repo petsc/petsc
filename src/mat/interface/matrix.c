@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.104 1995/10/24 14:36:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.105 1995/10/26 19:01:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -863,9 +863,65 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
       return 0;
     }
   }
-  if (!mat->ops.convert) SETERRQ(PETSC_ERR_SUP,"MatConvert");
   PLogEventBegin(MAT_Convert,mat,0,0,0); 
-  if (mat->ops.convert) {
+  if (!mat->ops.convert) {
+    Scalar *vwork;
+    int    i, nz, m, n, *cwork, rstart, rend;
+    ierr = MatGetSize(mat,&m,&n); CHKERRQ(ierr);
+    switch (newtype) {
+      case MATSEQROW:
+        ierr = MatCreateSeqRow(mat->comm,m,n,0,0,M); CHKERRQ(ierr); 
+        break;
+      case MATMPIROW:
+        ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+                               m,n,0,0,0,0,M); CHKERRQ(ierr);
+        break;
+      case MATMPIROWBS:
+        if (m != n) SETERRQ(1,"MatConvert:MATMPIROWBS matrix must be square");
+        ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,0,0,M);
+               CHKERRQ(ierr);
+        break;
+      case MATMPIAIJ:
+        ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+                               m,n,0,0,0,0,M); CHKERRQ(ierr);
+        break;
+      case MATSEQDENSE:
+        ierr = MatCreateSeqDense(mat->comm,m,n,M); CHKERRQ(ierr);
+        break;
+      case MATMPIDENSE:
+        ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+                                 m,n,M); CHKERRQ(ierr);
+        break;
+      case MATSEQBDIAG:
+        {
+        int nb = 1; /* Default block size = 1 */ 
+        OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
+        ierr = MatCreateSeqBDiag(mat->comm,m,n,0,nb,0,0,M); CHKERRQ(ierr); 
+        break;
+        }
+      case MATMPIBDIAG:
+        {
+        int nb = 1; /* Default block size = 1 */ 
+        OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
+        ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,0,0,M); 
+        CHKERRQ(ierr); 
+        break;
+        }
+      default:
+        SETERRQ(1,"MatConvert:Matrix type is not currently supported");
+    }
+    ierr = MatGetOwnershipRange(*M,&rstart,&rend); CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) {
+      ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+      ierr = MatSetValues(*M,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
+      ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(*M,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*M,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  }
+  else {
+    /* Format-specific implementations should determine memory
+       allocation info for increased efficiency. */
     ierr = (*mat->ops.convert)(mat,newtype,M); CHKERRQ(ierr);
   }
   PLogEventEnd(MAT_Convert,mat,0,0,0); 
