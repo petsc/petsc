@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.40 1997/09/10 18:52:40 balay Exp curfman $ 
 
 ALL: ex1
 
@@ -21,10 +21,8 @@ TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
 TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 		   runex2_3 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
 		   ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm clean
-TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
-		   runex12_2 runex12_3 ex12.rm clean
-TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
-		   runex12_3 ex12.rm clean
+TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm clean
+TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm clean
 TESTEXAMPLES_6   = 
 TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
 TESTEXAMPLES_8   = 
@@ -38,15 +36,15 @@ BUILDEXAMPLES_2  = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm clean
 BUILDEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex5.PETSc ex5.rm ex4.PETSc ex4.rm ex9.PETSc ex9.rm clean
-BUILDEXAMPLES_5  = ex11.PETSc ex11.rm ex12.PETSc ex12.rm clean
-BUILDEXAMPLES_11 = ex11.PETSc ex11.rm ex12.PETSc ex12.rm clean
+BUILDEXAMPLES_5  = ex11.PETSc ex11.rm clean
+BUILDEXAMPLES_11 = ex11.PETSc ex11.rm clean
 BUILDEXAMPLES_6  = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_7  = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_8  = 
 BUILDEXAMPLES_9  = ex1f.PETSc ex1f.rm clean
 BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                   ex13.c ex14.c ex15.c ex16.c
 EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F
 
@@ -276,26 +274,6 @@ runex11f:
 	   if (diff output/ex11f_1.out ex11f_1.tmp) then true; \
 	   else echo "Possible problem with ex11f_1, diffs above"; fi; \
 	   $(RM) -f ex11f_1.tmp
-
-runex12:
-	-@$(MPIRUN) -np 1 ex12 -mat_aij -mat_view_info_detailed -pc_type jacobi -ksp_smonitor > ex12_1.tmp 2>&1; \
-	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
-	   else echo "Possible problem with ex12_1, diffs above"; fi; \
-	   $(RM) -f ex12_1.tmp
-
-runex12_2:
-	-@$(MPIRUN) -np 4 ex12 -m_eta 10 -m_xi 11 -mat_aij -mat_view_info \
-	   -ksp_smonitor -pc_type bjacobi > ex12_2.tmp 2>&1;	  \
-	   if (diff output/ex12_2.out ex12_2.tmp) then true; \
-	   else echo "Possible problem with ex12_2, diffs above"; fi; \
-	   $(RM) -f ex12_2.tmp
-
-runex12_3:
-	-@$(MPIRUN) -np 1 ex12 -mat_aij -print_debug -modify_submat \
-	   -ksp_smonitor -pc_type bjacobi -pc_bjacobi_blocks 4 > ex12_3.tmp 2>&1;	  \
-	   if (diff output/ex12_3.out ex12_3.tmp) then true; \
-	   else echo "Possible problem with ex12_3, diffs above"; fi; \
-	   $(RM) -f ex12_3.tmp
 
 runex13:
 	-@$(MPIRUN) -np 1 ex13 -m 19 -n 20 > ex13_1.tmp 2>&1; \
