@@ -1424,7 +1424,7 @@ Description:
 static void
 sgl_iadd(int *vals, int level)
 {
-  int edge, type, dest, source, len, mask;
+  int edge, type, dest, source, len, mask = -1;
   int tmp, *work;
 
 
