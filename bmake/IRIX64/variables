@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.21 2000/04/20 16:06:46 balay Exp balay $ 
+# $Id: base_variables,v 1.22 2000/05/22 15:51:42 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -25,10 +25,10 @@ C_SYS_LIB	   = -lfpe -lfortran -lftn -lfastm -lmalloc  -lm
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g 
 # ----------------------------- BOPT - O options -----------------------------
-#O_COPTFLAGS	   = -Ofast=ip27
-O_COPTFLAGS	   = -O3
-#O_FOPTFLAGS	   = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
-O_FOPTFLAGS	   = -O3
+O_COPTFLAGS	   = -Ofast=ip27 -OPT:Olimit=0
+#O_COPTFLAGS	   = -O3
+O_FOPTFLAGS	   = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
+#O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC -64 -woff 1164
@@ -44,13 +44,13 @@ CXX_SYS_LIB	   = -lfpe -lcomplex -lfortran -lftn -lfastm -lmalloc  -lm
 GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
-OCXX_COPTFLAGS	   = -O3 -OPT:Olimit=6500
+OCXX_COPTFLAGS	   = -O3 -OPT:Olimit=0
 OCXX_FOPTFLAGS	   = -O3
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g 
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -O3 -OPT:Olimit=6500
+OCOMP_COPTFLAGS	   = -O3 -OPT:Olimit=0
 OCOMP_FOPTFLAGS	   = -O3
 # ########################### PETSc install options ###########################
 #
