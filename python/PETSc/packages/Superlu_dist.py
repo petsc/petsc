@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
-    #self.mpi          = self.framework.require('PETSc.packages.MPI',self)
+    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.found        = 0
     self.lib          = []
     self.include      = []
@@ -55,11 +55,10 @@ class Configure(config.base.Configure):
 
   def checkInclude(self,incl,hfile):
     if not isinstance(incl,list): incl = [incl]
+    incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
-      #if not self.mpi.include is None:
-      #  mpiincl = ' -I' + ' -I'.join(self.mpi.include)
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc #+mpiincl
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
@@ -82,12 +81,12 @@ class Configure(config.base.Configure):
       else:
         self.framework.log.write('Must specify either a library or installation root directory for '+PACKAGE+'\n')
         
-  def checkLib(self,lib,libfile):
+  def checkLib(self,lib,func):
+    '''We may need the MPI libraries here'''
     if not isinstance(lib,list): lib = [lib]
     oldLibs = self.framework.argDB['LIBS']  
-    #found = self.libraries.check(lib,libfile,otherLibs=' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
-    found = self.libraries.check(lib,libfile);
-    self.framework.argDB['LIBS']=oldLibs  
+    found   = self.libraries.check(lib,func)
+    self.framework.argDB['LIBS'] = oldLibs
     if found:
       self.framework.log.write('Found functional '+libfile+' in '+lib[0]+'\n')
     return found
@@ -134,7 +133,7 @@ class Configure(config.base.Configure):
 
   def configure(self):
     package = self.name.lower()
-    if not 'with-'+package in self.framework.argDB or self.framework.argDB['with-64-bit-int']:
+    if not 'with-'+package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-int']:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)
