@@ -130,7 +130,7 @@ runex1_2:
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   $(RM) -f ex1_2.tmp
 runex1_3:
-	-@$(MPIRUN)  -np 3 ex1 sort | > ex1_3.tmp 2>&1;\
+	-@$(MPIRUN)  -np 3 ex1 | sort  > ex1_3.tmp 2>&1;\
 	   if (diff output/ex1_3.out ex1_3.tmp) then true ;  \
 	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
 	   $(RM) -f ex1_3.tmp
