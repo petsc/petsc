@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.130 1999/03/15 03:23:30 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.131 1999/03/15 03:57:09 curfman Exp curfman $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -749,8 +749,10 @@ EXTERN_C_END
 
    Calling sequence of func:
 .vb
-   func (SNES snes, void *lsctx, Vec x, PetscTruth *flag)
+   int func (SNES snes, void *checkctx, Vec x, PetscTruth *flag)
 .ve
+   where func returns an error code of 0 on success and a nonzero
+   on failure.
 
    Input parameters for func:
 +  snes - nonlinear context
@@ -765,20 +767,20 @@ EXTERN_C_END
    Level: advanced
 
    Notes:
-   The user-defined line search checking routine is available for
-   use in conjunction with SNESNoLineSearch() and SNESNoLineSearchNoNorms(),
-   which (1) compute a candidate iterate u_{i+1}, (2) pass control to the
-   checking routine, and then (3) compute the corresponding nonlinear
+   SNESNoLineSearch() and SNESNoLineSearchNoNorms() accept the new
+   iterate computed by the line search checking routine.  In particular,
+   these routines (1) compute a candidate iterate u_{i+1}, (2) pass control 
+   to the checking routine, and then (3) compute the corresponding nonlinear
    function f(u_{i+1}) with the (possibly altered) iterate u_{i+1}.
 
-   The user-defined line search checking routine is also available for
-   use in conjunction with SNESQuadraticLineSearch() and SNESCubicLineSearch().
-   These routines (1) compute a candidate iterate u_{i+1} as well as a
+   SNESQuadraticLineSearch() and SNESCubicLineSearch() also accept the
+   new iterate computed by the line search checking routine.  In particular,
+   these routines (1) compute a candidate iterate u_{i+1} as well as a
    candidate nonlinear function f(u_{i+1}), (2) pass control to the checking 
    routine, and then (3) force a re-evaluation of f(u_{i+1}) if any changes 
    were made to the candidate iterate in the checking routine (as indicated 
    by flag=PETSC_TRUE).  The overhead of this function re-evaluation can be
-   very costly, so use this feature with caution.
+   very costly, so use this feature with caution!
 
 .keywords: SNES, nonlinear, set, line search check, step check, routine
 
