@@ -37,7 +37,7 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # which appears to be for C NOT c++.
 #
 #
-#  Note that you cannot use BlockSolve with C++ or complex
+#  Note that you cannot use BlockSolve with complex
 #
 BS_INCLUDE = -I/u/ddscf/bsmith/BlockSolve95/include
 BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/libO/$(PETSC_ARCH)/libBS95.a
