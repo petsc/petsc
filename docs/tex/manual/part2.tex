@@ -4219,12 +4219,15 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
 \chapter{High Level Support for Multigrid with DMMG}
 \label{chapter:dmmg}
 
-PETSc provides a easy to use high-level interface for multigrid on a single structured grid using
-the PETSc DA object (or the VecPack object) to decompose the grid across the processors.  This DMMG
-code \findex{DMMG} is built on top of the lower level PETSc multigrid interface provided in the \trl{PCType} of MG,
-see Section \ref{sec:mg}. Currently we only provide piecewise linear and piecewise constant interpolation,
-but can add more if needed. The current DMMG routines only provide linear multigrid but they can be used
-easily with either SLES (for linear problems) or SNES (for nonlinear problems). 
+PETSc provides an easy to use high-level interface for multigrid on a
+single structured grid using the PETSc DA object (or the VecPack
+object) to decompose the grid across the processors.  This DMMG code
+\findex{DMMG} is built on top of the lower level PETSc multigrid
+interface provided in the \trl{PCType} of MG, see Section
+\ref{sec:mg}. Currently we only provide piecewise linear and piecewise
+constant interpolation, but can add more if needed. The DMMG routines
+only provide linear multigrid but they can be used easily with either
+SLES (for linear problems) or SNES (for nonlinear problems).
 
 For linear problems the examples \trl{src/sles/examples/tutorials/ex22.c} and \trl{ex25.c} can be used
 to guide your development. We give a short summary here.
@@ -4233,7 +4236,8 @@ to guide your development. We give a short summary here.
   DA          da;\\
 
   /* Create the DA that stores information about the coarsest grid you wish to use */\\
-  ierr = DACreate3d(PETSC\_COMM\_WORLD,DA\_NONPERIODIC,DA\_STENCIL\_STAR,3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);  \\
+  ierr = DACreate3d(PETSC\_COMM\_WORLD,DA\_NONPERIODIC,DA\_STENCIL\_STAR,
+         3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);  \\
 
   /* Create the DMMG data structure \\
        - the second argument indicates the number of levels you wish to use and \\
@@ -4243,7 +4247,7 @@ to guide your development. We give a short summary here.
   /*  Tell the DMMG object to use the da to define the coarsest grid\\
   ierr = DMMGSetDM(dmmg,(DM)da);\\
 
-  /*  Tell the DMMG we are solving a linear problem (hence SLES) and provide the callback function to \\
+  /*  Tell the DMMG we are solving a linear problem (hence SLES) and provide the callback function to 
       compute the right hand side and matrices for each level\\
   ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);\\
 
@@ -4257,46 +4261,104 @@ to guide your development. We give a short summary here.
   ierr = DADestroy(da);CHKERRQ(ierr);\\
 \end{verse}
 \findex{DMMGCreate()} \findex{DMMGSolve()} \findex{DMMGGetx()} \findex{DMMGDestroy()} \findex{DMMGSetDM()} \findex{DMMGSetDA()}
-The option \trl{-dmmg\_ksp\_monitor} \findex{-dmmg_ksp_monitor} 
+The option \trl{-dmmg_ksp_monitor} \findex{-dmmg_ksp_monitor} 
  causes the DMMG code to print the residual norms for each level of the solver to the screen so that
-the coarse the grid the more indented the print out. The option \trl{-dmmg\_grid\_sequence} \findex{-dmmg_grid_sequence} causes the 
+the coarser the grid the more indented the print out. The option \trl{-dmmg_grid_sequence} \findex{-dmmg_grid_sequence} causes the 
 DMMG solve to use grid sequencing to generate the initial guess by solving the same problem on the previous coarser grid; this often
 results in a much faster time to solution.
 
-DMMG has many other options one can view by running the DMMG program with the option \trl{-help}.
+The solver (smoother) used on each level but the coarsest can be controled via the options
+database with any PC or KSP option prefixed as \trl{-mg_levels_[pc/ksp]_}. The 
+solver options on the finest grid can be set with  \trl{-mg_coarse_[pc/ksp]_}. The 
+DMMG has many other options that can view by running the DMMG program with the option \trl{-help}.
+You should generally run your code with the option \trl{-sles_view} to see exactly what 
+solvers are being used.
 
 For nonlinear problems one replaces the \trl{DMMGSetSLES()} with 
 \begin{verse}
-  DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+  DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),\\
+  int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 \end{verse}
 or the prefered approach
 \begin{verse}
-  DMMGSetSNESLocal(DMMG *dmmg,int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),
-     int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),ad\_function,ad\_mf\_function);
+  DMMGSetSNESLocal(DMMG *dmmg,\\
+   int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),\\
+  ad\_function,ad\_mf\_function);
 \end{verse}
-The \trl{ad\_function} and \trl{ad\_mf\_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
+The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
 See examples \trl{src/snes/examples/tutorials/ex18.c} and \trl{ex19.c} for complete details.
 
-The \trl{localfunction} \trl{x} and \trl{f} arguments are for scalar problems (problems with one degree of freedom per node)
-simply multi-dimensional arrays of double precision (or complex) numbers (according to the dimension of the grid) that should be 
-index using {\em global} i, j, k indices on the entire grid. For multi-component problems you must create a C struct with an
-entry for each component and the \trl{x} and \trl{f} arguments are appropriately dimensioned arrays of that struct.
+The \trl{localfunction} \trl{x} and \trl{f} arguments are, for scalar
+problems, (problems with one degree of freedom per node) simply
+multi-dimensional arrays of double precision (or complex) numbers
+(according to the dimension of the grid) that should be indexed using
+{\em global} i, j, k indices on the entire grid. For multi-component
+problems you must create a C struct with an entry for each component
+and the \trl{x} and \trl{f} arguments are appropriately dimensioned
+arrays of that struct. For example, for a 3d scalar problem the function
+would be 
+\begin{verse}
+int localfunction(DALocalInfo *info,double ***x, double ***f,void *ctx)
+\end{verse}
+For a 2d multicomponent problem with u, v, and p components one would write
+\begin{verse}
+typedef struct {
+  PetscScalar u,v,p;
+} Field;
+...
+int localfunction(DALocalInfo *info,Field **x,Field **f,void *ctx)
+\end{verse}
 
-For many nonlinear problems it is too difficult to compute the Jacobian analytically, thus by default the \trl{DMMG} will compute the sparse 
-Jacobian reasonably efficiently automatically using dinite differencing. See the next chapter on computing the Jacobian via 
-automatic differentiation. The option \trl{-dmmg\_jacobian\_mf\_fd} causes the code to not compute the Jacobian explicitly but rather
-to use differences to apply the matrix vector product of the Jacobian.
+For many nonlinear problems it is too difficult to compute the
+Jacobian analytically, thus if \trl{jacobian} or \trl{localjacobian} is not
+provided, (indicated by passing in a \trl{PETSC_NULL}) the \trl{DMMG} will compute the
+sparse Jacobian reasonably efficiently automatically using finite
+differencing. See the next chapter on computing the Jacobian via
+automatic differentiation. The option \trl{-dmmg_jacobian_mf_fd}
+causes the code to not compute the Jacobian explicitly but rather to
+use differences to apply the matrix vector product of the Jacobian.
 
-The option \trl{-dmmg\_snes\_monitor} \findex{-dmmg_snes_monitor} can be used to monitor the progress of the nonlinear solver.
+The option \trl{-dmmg_snes_monitor} \findex{-dmmg_snes_monitor} can
+be used to monitor the progress of the nonlinear solver. The usual \trl{-snes_} options
+may be used to control the nonlinearr solves. Again we recommend using the 
+option \trl{-dmmg_grid_sequence} and \trl{-snes_view} for most runs.
 
 
 \chapter{Using ADIC and ADIFOR with PETSc}
 
-Automatic differentiation is an incredible technique to generate code that computes Jacobians and other differentives directly from code
-that only evaluates the function. For structured grid problems, via the DMMG interface, \ref{chapter:ddmg}, PETSc provides a way
-to use ADIFOR and ADIC to compute the sparse Jacobians or perform matrix free vector products with them. See \trl{src/snes/examples/tutorials/ex18.c} 
-and \trl{ex5f.F} for example usage.
+Automatic differentiation is an incredible technique to generate code
+that computes Jacobians and other differentives directly from code
+that only evaluates the function. For structured grid problems, via
+the DMMG interface, \ref{chapter:dmmg}, PETSc provides a way to use
+ADIFOR and ADIC to compute the sparse Jacobians or perform matrix free
+vector products with them. See
+\trl{src/snes/examples/tutorials/ex18.c} and \trl{ex5f.F} for example
+usage. 
 
+First one indicates the functions for which one needs Jacobians by adding
+in the comments in the code 
+\begin{verse}
+       Process adiC: FormFunctionLocal FormFunctionLocali
+\end{verse}
+where one lists the functions. In Fortran use
+\begin{verse}
+!     Process adifor: FormFunctionLocal
+\end{verse}
+Next one uses the call
+\begin{verse}
+  DMMGSetSNESLocal(DMMG *dmmg,\\
+   int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),PETSC\_NULL,
+  ad\_localfunction,ad\_mf\_localfunction);
+\end{verse}
+where the names of the last two functions are obtained 
+by prepending a \trl{ad_} and \trl{ad_mf_} in front
+of the function name. In Fortran in preppends a \trl{g_} and \trl{m_}.
+
+Two useful options are \trl{-dmmg_jacobian_mf_ad} and \trl{-dmmg_jacobian_mf_ad_operator},
+with the former is uses the matrix-free automatic differentiation to apply the operator
+and to define the preconditioner operator. The latter form uses the matrix-free for the 
+matrix-vector product but still computes the Jacobian (by default with finite differences)
+used to construct the precondtioner.
 
 \section{Work arrays inside the local functions} In C you can call \trl{DAGetArray()} to get 
 work arrays (this is low overhead). In Fortran you can provide a \trl{FormFunctionLocal()}
@@ -4347,12 +4409,19 @@ is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer 
 over when and what vectors and matrices are dumped one can use the VecView() and 
 MatView() functions with a viewer type of ASCII (see \trl{PetscViewerASCIIOpen()}, 
 \trl{PETSC_VIEWER_STDOUT_WORLD}, \trl{PETSC_VIEWER_STDOUT_SELF}, or \trl{PETSC_VIEWER_STDOUT_(MPI_Comm)}). Before calling
-the viewer set the output type with 
+the viewer set the output type with, for example, 
 \begin{verse}
   PetscViewerSetFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
-  VecView(A,PETSC\_VIEWER\_STDOUT\_WORLD);\\
+  VecView(A,PETSC\_VIEWER\_STDOUT\_WORLD);
+\end{verse}
+or 
+\begin{verse}
   PetscViewerPushFormat(PETSC\_VIEWER\_STDOUT\_WORLD,PETSC\_VIEWER\_ASCII\_MATLAB);\\
   MatView(B,PETSC\_VIEWER\_STDOUT\_WORLD);
+\end{verse}
+The name of each PETSc variable printed for Matlab may be set with
+\begin{verse}
+PetscObjectSetName((PetscObject)A,''name'');
 \end{verse}
 
 \section{Sending Data to Interactive Running Matlab Session}
@@ -4361,7 +4430,9 @@ One creates a viewer to Matlab via
 \begin{verse}
 PetscViewerSocketOpen(MPI\_Comm,char *machine,int port,PetscViewer *v);
 \end{verse}
-(port is usally set to \trl{PETSC_DEFAULT}) and then sends matrices or vectors via
+(port is usally set to \trl{PETSC_DEFAULT}, use \trl{PETSC_NULL} for the machine if the 
+Matlab interactive session is running on the same machine as the PETSc program) 
+and then sends matrices or vectors via
 \begin{verse}
   VecView(Vec A,v);\\
   MatView(Mat B,v);
@@ -4378,7 +4449,8 @@ One may start the Matlab program manually or use the PETSc command
 To receive the objects in Matlab you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
 is in your Matlab path. Use \trl{p = openport;} (or \trl{p = openport(portnum)} if you provided a port number in
 your call to \trl{PetscViewerSocketOpen()}), then \trl{a = receive(p);} returns the object you have passed from PETSc.
-\trl{receive()} may be called any number of times. You many call \trl{closeport()} to close the connection from Matlab.
+\trl{receive()} may be called any number of times. Each call should correspond on the PETSc side with
+viewing a single vector or matrix. You many call \trl{closeport()} to close the connection from Matlab.
 It is also possible to start your PETSc program from Matlab via \trl{launch()}.
 
 \section{Using the Matlab Compute Engine}
@@ -4411,7 +4483,16 @@ interactively in this mode but you can send Matlab commands via
   PetscMatlabEngineEvaluate(PetscMatlabEngine,''format'',...);
 \end{verse}
 where \trl{format} has the usual \trl{printf()} format.
-Responses can be returned from Matlab via 
+For example,
+\begin{verse}
+  PetscMatlabEngineEvaluate(PetscMatlabEngine,''x = %g *y + z;'',avalue);
+\end{verse}
+The name of each PETSc variable passed to Matlab may be set with
+\begin{verse}
+PetscObjectSetName((PetscObject)A,''name'');
+\end{verse}
+
+Text responses can be returned from Matlab via 
 \begin{verse}
   PetscMatlabEngineGetOutput(PetscMatlabEngine,char **); 
 \end{verse}
@@ -4429,9 +4510,7 @@ with \trl{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
 \label{ch:fortran}
 
 Most of the functionality of PETSc can be obtained by people who
-program purely in Fortran 77 or Fortran 90.  Note, however, that we recommend the
-use of C and/or C++ because these languages contain several extremely powerful
-concepts that the Fortran77/90 family does not. 
+program purely in Fortran 77 or Fortran 90.  
 The PETSc Fortran interface works with both F77 and F90 compilers.
 
 Since Fortran77 does not provide type checking of routine input/output
@@ -4457,20 +4536,11 @@ for the Fortran version are in most cases identical to the C version,
 except for the error checking variable discussed in 
 Section \ref{sec:fortran_errors} and a few routines listed in 
 Section \ref{sec:fortran_exceptions}.
-Note that use of the PETSc Fortran interface requires first compiling
-the interface library, which is discussed in Section~\ref{sec:fortcompile}.
 
 \subsection{Include Files}
 \label{sec:fortran_includes}
 
-PETSc Fortran users have two choices for including the PETSc header 
-files. 
-
-\medskip
-
-\noindent {\bf Recommended Approach:}
-In the first  approach, 
-the Fortran include files for PETSc are located in the directory 
+The Fortran include files for PETSc are located in the directory 
 \trl{${PETSC_DIR}/include/finclude} and should be used via statements 
 such as the following:
 \begin{verse}
@@ -4484,7 +4554,7 @@ the user need only include the highest level file, for example, \trl{
 petscsnes.h}, which then automatically includes all of the required lower
 level files.  As shown in the examples of Section
 \ref{sec:fortran-examples}, in Fortran one must explicitly list {\em
-each} of the include files. If using this approach one must employ
+each} of the include files. One must employ
 the Fortran file suffix \trl{.F}
 rather than \trl{.f}.  This convention enables use of the CPP
 preprocessor, which allows the use of the {\em \#include} statements
@@ -4493,45 +4563,6 @@ preprocessor is not needed for writing PETSc Fortran code; one can simply
 begin by copying a PETSc Fortran example and its corresponding
 makefile.)  
 
-\medskip
-
-\noindent {\bf Alternative Approach:}
-If working with \trl{.f} files is absolutely essential (perhaps as
-part of a heritage code), the conventional Fortran style include
-statement can be employed.  The weakness of this approach is that either the
-complete path of the include file must be hardwired with a statement such as
-\begin{verse}
-   include '/home/username/petsc/include/foldinclude/includefile.h'
-\end{verse}
-or a link must be estabilished in the directory containing the Fortran source
-file to the file
-\begin{verse}
-   ln -s /home/username/petsc/include/foldinclude/includefile.h includefile.h
-\end{verse}
-Some Fortran compilers will accept a \trl{-I<directory>}, but depending on the
-Fortran compiler, they may use the \trl{-I} list only for the \trl{\#include}
-style of include.
-% This is due to a flaw in the design of the Fortran include statement.
-%% Note from Bill about above statement:  No.  Some compilers support -I.
-%% You can, of course use ln -s.  MPICH does.  It is much less portable.
-%% Bill responds: Hardly.  Using ln -s has worked on everything we've tried
-%% with MPICH.  I've rewritten the above to indicate the options.
-In addition, the user must declare all PETSc objects as \trl{integer} 
-rather than by their name. For example, declarations within Fortran
-\trl{.F} files have the form
-\begin{verbatim}
-   SLES    solver
-   Mat     A, B
-   Vec     x, y
-   integer i
-\end{verbatim}
-while the analogous statements within \trl{.f} files are
-\begin{verbatim}
-   integer solver
-   integer A, B
-   integer x, y
-   integer i
-\end{verbatim}
 
 \subsection{Error Checking}
 \label{sec:fortran_errors}
@@ -4547,8 +4578,8 @@ given, respectively, below, where \trl{ierr} denotes the error variable:
   SLESSolve(SLES sles,Vec b,Vec x,int *its);
 \end{verse}
 
-Fortran programmers using the \trl{.F} file suffix, as discussed in
-Section~\ref{sec:fortran_includes}, can check these error codes with
+Fortran programmers
+can check these error codes with
 \trl{CHKERRQ(ierr)}, which terminates all process when an error is
 encountered.  Likewise, one can set error codes within Fortran programs by
 using \trl{SETERRQ(ierr,p,' ')}, which again terminates all processes
@@ -4566,8 +4597,6 @@ use code such as the following:
        return\\
    endif
 \end{verse}
-Note that users of the Fortran \trl{.f} suffix {\em cannot} employ the
-macros \trl{SETERRQ()} and \trl{CHKERRQ()}.
 
 The most common reason for crashing PETSc Fortran code is forgetting the 
 final \trl{ierr} argument.
@@ -4638,39 +4667,6 @@ is done with the \trl{-C} compiler option, so never use the \trl{-C} option with
 
 \subsection{Calling Fortran Routines from C (and C Routines from Fortran)}
 
-Since the use of both Fortran and C routines is sometimes needed in
-application codes, we provide two PETSc commands to facilitate passing
-PETSc objects (such as \trl{Mat} and \trl{SLES}) between the two
-languages.  These routines {\em must} be called within any C/C++
-routines that pass/receive PETSc objects to/from Fortran routines to
-ensure that the objects are properly handled, since Fortran treats PETSc
-objects simply as integers.
-
-%To pass a PETSc object from a C routine to a Fortran routine, one must
-%first convert the C pointer to a Fortran integer with \trl{
-%PetscCObjectToFortranObject(PetscObject,PetscFortranAddr *)}, for example,
-%\begin{verse}
-%   PetscFortranAddr fmat;
-%   Mat              mat;
-%    ....
-%  PetscCObjectToFortranObject(mat,&fmat);
-%   fortranroutine(&fmat,...other arguments);
-%\end{verse}
-%\findex{PetscCObjectToFortranObject()} 
-%The Fortran routine can then directly use the received object.
-%When calling C from Fortran, the user should perform the 
-%pointer conversion within the C routine using
-%\trl{PetscFortranObjectToCObject(PetscFortranAddr,PetscObject *)}, for example,
-%\findex{PetscFortranObjectToCObject()}
-%\begin{verse}
-%   int cfunction(PetscFortranAddr *fmat,....)
-%   Mat mat;
-%  PetscFortranObjectToCObject(*fmat,&mat);
-%\end{verse}
-%See \trl{${PETSC_DIR}/src/vec/examples/tests/ex24.c} for a complete
-%example demonstrating this interface.  Note that the pointer
-%conversion is always done in the C/C++ routines, but not
-%in the Fortran routines.
 
 Different machines have
 different methods of naming Fortran routines called from C 
@@ -4697,16 +4693,6 @@ The macros are used, for example, as follows:
    dabsc\_(\&n,x,y); /* call the Fortran function */
 \end{verse}
 
-\findex{PetscInitializeFortran()} 
-Another useful routine for mixed language programming with PETSc is
-\trl{PetscInitializeFortran()}, which should be used if one is using a
-C main program that calls Fortran routines that in turn call PETSc
-routines.  In this case, \trl{PetscInitializeFortran()} should be
-called from C after the call to \trl{PetscInitialize()} to initialize
-some of the default viewers, communicators, etc.  for use in the
-Fortran.  \trl{PetscInitializeFortran()} is {\em not} needed if a
-user's main program is written in Fortran; in this case, just calling
-\trl{PetscInitialize()} in the main program is sufficient.
 
 \subsection{Passing Null Pointers}
 
@@ -4776,8 +4762,8 @@ program, that routine is assumed to be written in C.
 
 Figure \ref{fig:make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
-of the Fortran program \trl{ex3.F} with the actions \trl{make BOPT=g ex3} and
-\trl{make runex3}, respectively. The compilation command is restated below:
+of the Fortran program \trl{ex3.F} with the actions \trl{make} \trl{BOPT=g} \trl{ex3} and
+\trl{make} \trl{runex3}, respectively. The compilation command is restated below:
 \begin{verse}
    ex3: ex3.o \\
            -\${FLINKER} -o ex3 ex3.o  \${PETSC\_FORTRAN\_LIB} \${PETSC\_LIB}\\
@@ -4794,8 +4780,8 @@ on the link line.
 The following Fortran routines differ slightly from their C counterparts; see the 
 manual pages and previous discussion in this chapter for details:
 \begin{itemize}
-\item \trl{PetscInitialize(char *filename,int ierr)}
-\item \trl{PetscError(int err,char *message,int ierr)}
+\item \trl{PetscInitialize(char *filename,int} \trl{ierr)}
+\item \trl{PetscError(int err,char *message,int} \trl{ierr)}
 \item \trl{VecGetArray()}, \trl{MatGetArray()}
 \item \trl{ISGetIndices()}, \trl{DAGetGlobalIndices()}
 \item \trl{VecDuplicateVecs()}, \trl{VecDestroyVecs()}
@@ -4832,12 +4818,10 @@ use the Fortran90 vector include file,
     \#include "include/finclude/petscvec.h90"
 \end{verse}
 Analogous include files for other components are \trl{petscda.h90},
-\trl{petscmat.h90}, and \trl{petscis.h90}; the conventional Fortran style
-include files (as discussed in Section~\ref{sec:fortran_includes})
-are supported as well.
+\trl{petscmat.h90}, and \trl{petscis.h90}.
 
 Unfortunately, these routines currently work only on certain machines with 
-certain compilers. They currently work with the SGI, the Cray T3E, the
+certain compilers. They currently work with the SGI, Solaris, the Cray T3E, the
 IBM and the NAG Fortran 90 compiler.
 
 \section{Sample Fortran77 Programs}
