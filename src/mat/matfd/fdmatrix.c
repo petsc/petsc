@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.85 2001/04/10 19:35:59 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.86 2001/05/29 19:55:29 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -525,7 +525,13 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 
     ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
     ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
-    ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
+    
+    if (coloring->F) {
+      w1          = coloring->F; /* use already computed value of function */
+      coloring->F = 0; 
+    } else {
+      ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
+    }
 
     /* 
        Compute all the scale factors and share with other processors
