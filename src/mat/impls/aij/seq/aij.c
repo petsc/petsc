@@ -2034,7 +2034,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
 #define __FUNCT__ "MatAXPY_SeqAIJ"
 int MatAXPY_SeqAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int        ierr,one;
+  int        ierr,one=1;
   Mat_SeqAIJ *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
 
   PetscFunctionBegin;
