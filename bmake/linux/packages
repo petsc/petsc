@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.55 2000/09/28 21:06:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.56 2000/11/28 17:26:31 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -42,7 +42,7 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 #MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
 #MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
-MPE_INCLUDE   = -I${MPI_HOME}/mpe 
+MPE_INCLUDE   = -I${MPI_HOME}/mpe -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
