@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.10 1995/08/27 16:57:24 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.11 1995/08/27 16:59:11 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -74,10 +74,8 @@ int main( int argc, char **argv )
     UU[i] = xp*xp*xp;
     xp += ctx.h;
   }
-  VecAssemblyBegin(F);
-  VecAssemblyEnd(F);
-  VecAssemblyBegin(U);
-  VecAssemblyEnd(U);
+  ierr = VecRestoreArray(F,&FF); CHKERRQ(ierr);
+  ierr = VecRestoreArray(U,&UU); CHKERRQ(ierr);
 
   /* Create nonlinear solver */  
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
@@ -131,6 +129,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
      ff[i-s] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i-s];
    }
    if (mytid == numtid-1) ff[n-1-s] = -xx[n-1] + 1.0;
+   ierr = VecRestoreArray(xl,&xx); CHKERRQ(ierr);
+   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
+   ierr = VecRestoreArray(ctx->F,&FF); CHKERRQ(ierr);
    return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
@@ -181,6 +182,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   }
   ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  /* MatView(*jac,STDOUT_VIEWER_SELF); */
+  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   return 0;
 }
 
