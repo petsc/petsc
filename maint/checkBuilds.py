@@ -35,6 +35,7 @@ class BuildChecker(script.Script):
                'cygwin-borland':       ['win32fe', 'borland'],
                'cygwin-ms':            ['win32fe', 'ms'],
                'freebsd5.1':           ['gcc'],
+               'freebsd5.1-c89':       ['gcc'],
                'linux':                ['gcc'],
                'linux-gnu':            ['gcc'],
                'linux-gnu-amd64':      ['gcc'],
