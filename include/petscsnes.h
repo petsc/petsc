@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.70 1998/04/22 14:13:33 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.71 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -30,7 +30,7 @@ extern int SNESSetConvergenceHistory(SNES,double*,int);
 extern int SNESSetUp(SNES,Vec);
 extern int SNESSolve(SNES,Vec,int*);
 
-extern DLList SNESList;
+extern FList SNESList;
 extern int SNESRegisterDestroy(void);
 extern int SNESRegisterAll(char *);
 

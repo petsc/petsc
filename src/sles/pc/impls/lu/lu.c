@@ -1,5 +1,5 @@
  #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.95 1998/07/23 19:28:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.96 1998/07/23 21:39:21 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -153,6 +153,7 @@ static int PCSetUp_LU(PC pc)
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,dir->fill); CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
+    MatInfo info;
     if (!pc->setupcalled) {
       ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
       ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
@@ -164,6 +165,8 @@ static int PCSetUp_LU(PC pc)
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
+      ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reusereordering) {
@@ -180,6 +183,8 @@ static int PCSetUp_LU(PC pc)
       }
       ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
+      ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
@@ -443,6 +448,8 @@ int PCCreate_LU(PC pc)
   dir->col              = 0;
   dir->row              = 0;
   dir->ordering         = ORDER_ND;
+  dir->reusefill        = 0;
+  dir->reusereordering  = 0;
   pc->destroy           = PCDestroy_LU;
   pc->apply             = PCApply_LU;
   pc->setup             = PCSetUp_LU;

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.52 1998/05/11 18:06:11 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.53 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -16,7 +16,8 @@ typedef struct _p_Viewer*            Viewer;
 
 #define VIEWER_COOKIE              PETSC_COOKIE+1
 typedef enum { MATLAB_VIEWER,ASCII_FILE_VIEWER, ASCII_FILES_VIEWER, 
-               BINARY_FILE_VIEWER, STRING_VIEWER, DRAW_VIEWER} ViewerType;
+               BINARY_FILE_VIEWER, STRING_VIEWER, DRAW_VIEWER,
+               AMS_VIEWER} ViewerType;
 
 extern int ViewerFileOpenASCII(MPI_Comm,char*,Viewer *);
 typedef enum {BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
@@ -26,6 +27,8 @@ extern int ViewerStringOpen(MPI_Comm,char *,int, Viewer *);
 extern int ViewerDrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Viewer*);
 extern int ViewerDrawOpenVRML(MPI_Comm,char *,char *,Viewer*);
 extern int ViewerDrawClear(Viewer);
+
+extern int ViewerAMSOpen(MPI_Comm,char *,Viewer*);
 
 extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerDestroy(Viewer);
@@ -81,6 +84,8 @@ extern int    ViewerInitializeDrawXSelf_Private(void);
 extern int    ViewerInitializeMatlabWorld_Private(void);
 extern Viewer VIEWER_DRAWX_(MPI_Comm);
 extern int    VIEWER_DRAWX_Destroy(MPI_Comm);
+extern Viewer VIEWER_AMS_(MPI_Comm);
+extern int    VIEWER_AMS_Destroy(MPI_Comm);
 
 #define VIEWER_DRAWX_WORLD_0 \
               (ViewerInitializeDrawXWorld_Private_0(),VIEWER_DRAWX_WORLD_PRIVATE_0) 

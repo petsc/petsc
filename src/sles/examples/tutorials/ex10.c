@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.22 1998/05/20 23:03:44 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.23 1998/07/23 20:30:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -198,6 +198,10 @@ int main(int argc,char **args)
     ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
     ierr = PetscGetTime(&tsolve2); CHKERRA(ierr);
     tsolve = tsolve2 - tsolve1;
+
+
+ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
    /* 
        Conclude profiling this stage

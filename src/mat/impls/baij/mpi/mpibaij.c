@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.132 1998/07/14 02:36:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.133 1998/07/14 03:08:02 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -2045,8 +2045,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreate(comm,m,M,B->rmap);CHKERRQ(ierr);
-  ierr = MapCreate(comm,n,N,B->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,m,M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,n,N,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   b->rowners = (int *) PetscMalloc(2*(b->size+2)*sizeof(int)); CHKPTRQ(b->rowners);

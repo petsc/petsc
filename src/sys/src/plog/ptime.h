@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.53 1998/05/05 03:35:33 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.54 1998/06/11 19:59:25 bsmith Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -133,7 +133,7 @@ extern rs6000_time(struct my_timestruc_t *);
 /* ------------------------------------------------------------------
     Some machines have very fast MPI_Wtime()
 */
-#elif (defined(HAVE_FAST_MPI_WTIME) && !defined(PETSC_USING_MPIUNI))
+#elif (defined(HAVE_FAST_MPI_WTIME) && !defined(USING_MPIUNI))
 #define PetscTime(v)         (v)=MPI_Wtime();
 
 #define PetscTimeSubtract(v) (v)-=MPI_Wtime();

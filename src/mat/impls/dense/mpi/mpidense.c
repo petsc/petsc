@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.94 1998/07/14 02:34:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.95 1998/07/14 03:10:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1041,8 +1041,8 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreate(comm,m,M,mat->rmap);CHKERRQ(ierr);
-  ierr = MapCreate(comm,n,N,mat->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,m,M,&mat->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,n,N,&mat->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.17 1998/03/30 22:26:17 balay Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.18 1998/06/11 19:55:03 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
@@ -61,9 +61,8 @@ int main(int argc,char **args)
 extern "C" {
 #endif
 
-int ex7c_(PetscFortranAddr *fvec, int *fcomm)
+int ex7c_(Vec *fvec, int *fcomm)
 {
-  Vec vec;
   MPI_Comm comm;
   int ierr,size;
 
@@ -71,13 +70,12 @@ int ex7c_(PetscFortranAddr *fvec, int *fcomm)
     Translate Fortran integer pointer back to C and
     Fortran Communicator back to C communicator
   */
-  ierr = PetscFortranObjectToCObject(*fvec,&vec);
   ierr = MPIFortranCommToCComm(*fcomm,&comm);
   
   /*
     Some PETSc/MPI operations on Vec/Communicator objects 
   */
-  ierr = VecGetSize(vec,&size); CHKERRA(ierr);
+  ierr = VecGetSize(*fvec,&size); CHKERRA(ierr);
   MPI_Barrier(comm);
   
   return 0;

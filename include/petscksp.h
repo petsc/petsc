@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.68 1998/05/13 16:41:25 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.69 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -33,7 +33,7 @@ extern int KSPSetUp(KSP);
 extern int KSPSolve(KSP,int *);
 extern int KSPDestroy(KSP);
 
-extern DLList KSPList;
+extern FList KSPList;
 extern int KSPRegisterAll(char *);
 extern int KSPRegisterDestroy(void);
 

@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.10 1998/06/01 23:51:47 balay Exp balay $ */
+/* $Id: petscmath.h,v 1.11 1998/06/01 23:52:20 balay Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -9,8 +9,8 @@
 
 */
 
-#if !defined(__PETSCMATH_PACKAGE)
-#define __PETSCMATH_PACKAGE
+#if !defined(__PETSCMATH_H)
+#define __PETSCMATH_H
 #include <math.h>
 
 /*
@@ -110,7 +110,7 @@ typedef double PLogDouble;
 #if defined(AD_DERIV_H)
 /* extern  MPI_Datatype  MPIU_PLOGDOUBLE; */
 #else
-#if !defined(PETSC_USING_MPIUNI)
+#if !defined(USING_MPIUNI)
 #define MPIU_PLOGDOUBLE MPI_DOUBLE
 #endif
 #endif

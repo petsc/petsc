@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.104 1998/05/21 20:13:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.105 1998/07/15 16:20:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -270,9 +270,9 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGhostGetLocalRepresentation"
+#define __FUNC__ "VecGhostGetLocalForm"
 /*@C
-     VecGhostGetLocalRepresentation - Obtain the local ghosted representation of 
+     VecGhostGetLocalForm - Obtain the local ghosted representation of 
          a parallel vector created with VecCreateGhost().
 
     Not Collective
@@ -290,15 +290,15 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
      current values. The returned vector and the original vector passed in share
      the same array that contains the actual vector data.
 
-       One should call VecGhostRestoreLocalRepresentation() or VecDestroy() once one is
+       One should call VecGhostRestoreLocalForm() or VecDestroy() once one is
      finished using the object.
 
 .keywords:  ghost points, local representation
 
-.seealso: VecCreateGhost(), VecGhostRestoreLocalRepresentation(), VecCreateGhostWithArray()
+.seealso: VecCreateGhost(), VecGhostRestoreLocalForm(), VecCreateGhostWithArray()
 
 @*/
-int VecGhostGetLocalRepresentation(Vec g,Vec *l)
+int VecGhostGetLocalForm(Vec g,Vec *l)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE);
@@ -317,10 +317,10 @@ int VecGhostGetLocalRepresentation(Vec g,Vec *l)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGhostRestoreLocalRepresentation"
+#define __FUNC__ "VecGhostRestoreLocalForm"
 /*@C
-     VecGhostRestoreLocalRepresentation - Restore the local ghosted representation of 
-         a parallel vector obtained with VecGhostGetLocalRepresentation().
+     VecGhostRestoreLocalForm - Restore the local ghosted representation of 
+         a parallel vector obtained with VecGhostGetLocalForm().
 
     Not Collective
 
@@ -335,10 +335,10 @@ int VecGhostGetLocalRepresentation(Vec g,Vec *l)
 
 .keywords:  ghost points, local representation
 
-.seealso: VecCreateGhost(), VecGhostGetLocalRepresentation(), VecCreateGhostWithArray()
+.seealso: VecCreateGhost(), VecGhostGetLocalForm(), VecCreateGhostWithArray()
 
 @*/
-int VecGhostRestoreLocalRepresentation(Vec g,Vec *l)
+int VecGhostRestoreLocalForm(Vec g,Vec *l)
 {
   PetscFunctionBegin;
   PetscObjectDereference((PetscObject)*l);
@@ -368,8 +368,8 @@ $       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
    Use the following to accumulate the values onto the owning processors 
    and then set the ghost values correctly call the later followed by the former.
 
-.seealso: VecCreateGhost(), VecGhostUpdateEnd(), VecGhostGetLocalRepresentation(),
-          VecGhostRestoreLocalRepresentation(),VecCreateGhostWithArray()
+.seealso: VecCreateGhost(), VecGhostUpdateEnd(), VecGhostGetLocalForm(),
+          VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
 @*/ 
 int VecGhostUpdateBegin(Vec g, InsertMode insertmode,ScatterMode scattermode)
@@ -414,8 +414,8 @@ $       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
    Use the following to accumulate the values onto the owning processors 
    and then set the ghost values correctly call the later followed by the former.
 
-.seealso: VecCreateGhost(), VecGhostUpdateBegin(), VecGhostGetLocalRepresentation(),
-          VecGhostRestoreLocalRepresentation(),VecCreateGhostWithArray()
+.seealso: VecCreateGhost(), VecGhostUpdateBegin(), VecGhostGetLocalForm(),
+          VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
 
 @*/ 
 int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
@@ -455,13 +455,13 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
 .  vv - the global vector representation (without ghost points as part of vector)
  
    Notes:
-    Use VecGhostGetLocalRepresentation() to access the local, ghosted representation 
+    Use VecGhostGetLocalForm() to access the local, ghosted representation 
     of the vector.
 
 .keywords: vector, create, MPI, ghost points, ghost padding
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
-          VecGhostGetLocalRepresentation(), VecGhostRestoreLocalRepresentation(),
+          VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhost(), VecCreateMPIWithArray()
 
 @*/ 
@@ -525,13 +525,13 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
 .  vv - the global vector representation (without ghost points as part of vector)
  
    Notes:
-   Use VecGhostGetLocalRepresentation() to access the local, ghosted representation 
+   Use VecGhostGetLocalForm() to access the local, ghosted representation 
    of the vector.
 
 .keywords: vector, create, MPI, ghost points, ghost padding
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
-          VecGhostGetLocalRepresentation(), VecGhostRestoreLocalRepresentation(),
+          VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
           VecCreateGhostWithArray(), VecCreateMPIWithArray()
 
 @*/ 

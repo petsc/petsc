@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpitr.c,v 1.14 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: mpitr.c,v 1.13 1998/04/13 17:30:26 bsmith Exp curfman
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
-#if defined(USE_PETSC_LOG) && !defined(PETSC_USING_MPIUNI)
+#if defined(USE_PETSC_LOG) && !defined(USING_MPIUNI)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscMPIDump"

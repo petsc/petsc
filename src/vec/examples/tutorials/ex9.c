@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.9 1997/09/10 14:47:36 balay Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.10 1997/09/22 15:16:05 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
@@ -8,8 +8,8 @@ static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
    Concepts: Vectors^Assembling vectors; Ghost padding
    Routines: VecCreateGhost(); VecGetSize(); VecSet(); VecSetValues();
    Routines: VecView(); VecDestroy(); PetscSynchronizedPrintf();
-   Routines: VecGhostGetLocalRepresentation(); VecGhostUpdateEnd();
-   Routines: VecGhostRestoreLocalRepresentation(); VecGhostUpdateBegin();
+   Routines: VecGhostGetLocalForm(); VecGhostUpdateEnd();
+   Routines: VecGhostRestoreLocalForm(); VecGhostUpdateBegin();
    Routines: PetscSynchronizedFlush();
    Processors: n
 
@@ -89,7 +89,7 @@ int main(int argc,char **argv)
   /*
      Access the local representation
   */
-  ierr = VecGhostGetLocalRepresentation(gx,&lx); CHKERRA(ierr);
+  ierr = VecGhostGetLocalForm(gx,&lx); CHKERRA(ierr);
 
   /*
      Set the values from 0 to 12 into the "global" vector 
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(lx,&array);CHKERRA(ierr);
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
 
-  ierr = VecGhostRestoreLocalRepresentation(gx,&lx);CHKERRA(ierr); 
+  ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRA(ierr); 
   ierr = VecDestroy(gx);CHKERRA(ierr);
   if (flag) {PetscFree(tarray); }
   PetscFinalize();

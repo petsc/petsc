@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.35 1998/04/13 17:50:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: tsreg.c,v 1.36 1998/04/25 11:54:57 curfman Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: tsreg.c,v 1.35 1998/04/13 17:50:17 bsmith Exp curfman
 #include "pinclude/pviewer.h"
 #include <math.h>
 
-DLList TSList = 0;
+FList TSList = 0;
 int TSRegisterAllCalled = 0;
 
 #undef __FUNC__  
@@ -56,7 +56,7 @@ int TSSetType(TS ts,TSType method)
 
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
-  ierr =  DLRegisterFind(ts->comm, TSList, method, (int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(ts->comm, TSList, method, (int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles); CHKERRQ(ierr);}
@@ -78,7 +78,7 @@ int TSSetType(TS ts,TSType method)
 #define __FUNC__ "TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of timesteppers that were
-   registered by DLRegister().
+   registered by FListAdd().
 
    Not Collective
 
@@ -92,7 +92,7 @@ int TSRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (TSList) {
-    ierr = DLRegisterDestroy( TSList );CHKERRQ(ierr);
+    ierr = FListDestroy( TSList );CHKERRQ(ierr);
     TSList = 0;
   }
   TSRegisterAllCalled = 0;
@@ -151,7 +151,7 @@ int TSPrintHelp(TS ts)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->prefix) prefix = ts->prefix;
   (*PetscHelpPrintf)(ts->comm,"TS options --------------------------------------------------\n");
-  ierr = DLRegisterPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",TSList);CHKERRQ(ierr);
+  ierr = FListPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",TSList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(ts->comm," %sts_monitor: use default TS monitor\n",prefix);
   (*PetscHelpPrintf)(ts->comm," %sts_view: view TS info after each solve\n",prefix);
 

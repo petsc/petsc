@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.277 1998/07/14 03:04:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.278 1998/07/14 21:27:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -944,6 +944,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     for ( i=0; i<m; i++ ) {
         d    = fshift + a->a[diag[i] + shift];
         n    = a->i[i+1] - diag[i] - 1;
+	PLogFlops(2*n-1);
         idx  = a->j + diag[i] + (!shift);
         v    = a->a + diag[i] + (!shift);
         sum  = b[i]*d/omega;
@@ -971,6 +972,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     for ( i=m-1; i>=0; i-- ) {
       d    = fshift + a->a[diag[i] + shift];
       n    = a->i[i+1] - diag[i] - 1;
+      PLogFlops(2*n-1);
       idx  = a->j + diag[i] + (!shift);
       v    = a->a + diag[i] + (!shift);
       sum  = b[i];
@@ -981,6 +983,8 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     /*  t = b - (2*E - D)x */
     v = a->a;
     for ( i=0; i<m; i++ ) { t[i] = b[i] - scale*(v[*diag++ + shift])*x[i]; }
+    PLogFlops(2*m);
+
 
     /*  t = (E + L)^{-1}t */
     ts = t + shift; /* shifted by one for index start of a or a->j*/
@@ -988,6 +992,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     for ( i=0; i<m; i++ ) {
       d    = fshift + a->a[diag[i]+shift];
       n    = diag[i] - a->i[i];
+      PLogFlops(2*n-1);
       idx  = a->j + a->i[i] + shift;
       v    = a->a + a->i[i] + shift;
       sum  = t[i];
@@ -1005,6 +1010,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
       for ( i=0; i<m; i++ ) {
         d    = fshift + a->a[diag[i]+shift];
         n    = diag[i] - a->i[i];
+	PLogFlops(2*n-1);
         idx  = a->j + a->i[i] + shift;
         v    = a->a + a->i[i] + shift;
         sum  = b[i];
@@ -1018,11 +1024,13 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
       for ( i=0; i<m; i++ ) {
         x[i] *= a->a[diag[i]+shift];
       }
+      PLogFlops(m);
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
       for ( i=m-1; i>=0; i-- ) {
         d    = fshift + a->a[diag[i] + shift];
         n    = a->i[i+1] - diag[i] - 1;
+	PLogFlops(2*n-1);
         idx  = a->j + diag[i] + (!shift);
         v    = a->a + diag[i] + (!shift);
         sum  = xb[i];
@@ -1037,6 +1045,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
       for ( i=0; i<m; i++ ) {
         d    = fshift + a->a[diag[i]+shift];
         n    = a->i[i+1] - a->i[i]; 
+	PLogFlops(2*n-1);
         idx  = a->j + a->i[i] + shift;
         v    = a->a + a->i[i] + shift;
         sum  = b[i];
@@ -1048,6 +1057,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
       for ( i=m-1; i>=0; i-- ) {
         d    = fshift + a->a[diag[i] + shift];
         n    = a->i[i+1] - a->i[i]; 
+	PLogFlops(2*n-1);
         idx  = a->j + a->i[i] + shift;
         v    = a->a + a->i[i] + shift;
         sum  = b[i];
@@ -1074,8 +1084,6 @@ int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_allocated   = (double)a->maxnz;
   info->nz_used        = (double)a->nz;
   info->nz_unneeded    = (double)(a->maxnz - a->nz);
-  /*  if (info->nz_unneeded != A->info.nz_unneeded) 
-    printf("space descrepancy: maxnz-nz = %d, nz_unneeded = %d\n",(int)info->nz_unneeded,(int)A->info.nz_unneeded); */
   info->assemblies     = (double)A->num_ass;
   info->mallocs        = (double)a->reallocs;
   info->memory         = A->mem;
@@ -1286,6 +1294,10 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
     if (a->inode.size) PetscFree(a->inode.size);
     PetscFree(a);
  
+
+    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
+    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
+
     /*
       This is horrible, horrible code. We need to keep the 
       the bops and ops Structures, copy everything from C

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.70 1998/05/13 17:00:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.71 1998/05/16 17:41:57 curfman Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -15,7 +15,7 @@ int  PCRegisterAllCalled = 0;
 /*
    Contains the list of registered KSP routines
 */
-DLList PCList = 0;
+FList PCList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "PCSetType"
@@ -68,7 +68,7 @@ int PCSetType(PC ctx,PCType type)
   }
   /* Get the function pointers for the method requested */
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
-  ierr =  DLRegisterFind(ctx->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(ctx->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) SETERRQ(1,1,"Unable to find requested PC type");
   if (ctx->data) PetscFree(ctx->data);
 
@@ -115,7 +115,7 @@ int PCRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (PCList) {
-    ierr = DLRegisterDestroy( PCList );CHKERRQ(ierr);
+    ierr = FListDestroy( PCList );CHKERRQ(ierr);
     PCList = 0;
   }
   PCRegisterAllCalled = 0;
@@ -150,7 +150,7 @@ int PCPrintHelp(PC pc)
   PetscStrcpy(p,"-");
   if (pc->prefix) PetscStrcat(p,pc->prefix);
   (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");
-  ierr = DLRegisterPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
+  ierr = FListPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <method> for help on ",p);
   (*PetscHelpPrintf)(pc->comm,"a particular method\n");
   if (pc->printhelp) {

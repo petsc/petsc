@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.107 1998/05/29 20:36:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.108 1998/07/23 20:14:08 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -54,7 +54,7 @@ int PCILUSetFill_ILU(PC pc,double fill)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetSetMatReordering_ILU"
+#define __FUNC__ "PCILUSetMatReordering_ILU"
 int PCILUSetMatReordering_ILU(PC pc, MatReorderingType ordering)
 {
   PC_ILU *dir = (PC_ILU *) pc->data;
@@ -234,7 +234,7 @@ int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 
-.seealso: PCILUSetReuseFill()
+.seealso: PCILUSetReuseFill(), PCLUSetReuseReordering(), PCLUSetReuseFill()
 @*/
 int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 {
@@ -266,7 +266,7 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 
-.seealso: PCILUSetReuseReordering()
+.seealso: PCILUSetReuseReordering(), PCLUSetReuseReordering(), PCLUSetReuseFill()
 @*/
 int PCILUSetReuseFill(PC pc,PetscTruth flag)
 {
@@ -424,13 +424,16 @@ static int PCView_ILU(PC pc,Viewer viewer)
   ViewerGetType(viewer,&vtype);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (ilu->levels == 1)
+    if (ilu->levels == 1) {
       PetscFPrintf(pc->comm,fd,"    ILU: %d level of fill\n",ilu->levels);
-    else
+    } else {
       PetscFPrintf(pc->comm,fd,"    ILU: %d levels of fill\n",ilu->levels);
+    }
     if (ilu->inplace) PetscFPrintf(pc->comm,fd,"         in-place factorization\n");
     else PetscFPrintf(pc->comm,fd,"         out-of-place factorization\n");
     PetscFPrintf(pc->comm,fd,"         matrix ordering: %s\n",order);
+    if (ilu->reusefill) PetscFPrintf(pc->comm,fd,"         Reusing fill from past factorization\n");
+    if (ilu->reusereordering) PetscFPrintf(pc->comm,fd,"         Reusing reordering from past factorization\n");
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,order);
   } else {

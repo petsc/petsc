@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.87 1998/05/19 02:20:39 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.88 1998/05/19 02:21:13 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -13,6 +13,7 @@
     If you add entries here also add them to the MATOP enum
     in include/mat.h and include/finclude/mat.h
 */
+typedef struct _MatOps *MatOps;
 struct _MatOps {
   int       (*setvalues)(Mat,int,int *,int,int *,Scalar *,InsertMode),
             (*getrow)(Mat,int,int *,int **,Scalar **),
@@ -130,6 +131,7 @@ extern int StashInfo_Private(Stash*);
 extern int MatConvert_Basic(Mat,MatType,Mat*);
 extern int MatCopy_Basic(Mat,Mat);
 extern int MatView_Private(Mat);
+extern int MatGetMaps_Petsc(Mat,Map *,Map *);
 
 /*
     Object for partitioning graphs

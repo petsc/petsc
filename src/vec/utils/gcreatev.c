@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.49 1998/06/14 15:34:59 balay Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.50 1998/06/19 15:56:33 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -34,7 +34,7 @@ int VecGetType(Vec vec,char **type)
 /*
    Contains the list of registered Vec routines
 */
-DLList VecList = 0;
+FList VecList = 0;
 int    VecRegisterAllCalled = 0;
  
 #undef __FUNC__  
@@ -55,7 +55,7 @@ int VecRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (VecList) {
-    ierr = DLRegisterDestroy( VecList );CHKERRQ(ierr);
+    ierr = FListDestroy( VecList );CHKERRQ(ierr);
     VecList = 0;
   }
   VecRegisterAllCalled = 0;
@@ -108,7 +108,7 @@ int VecRegister_Private(char *sname,char *path,char *name,int (*function)(MPI_Co
 
   PetscFunctionBegin;
   PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
-  ierr = DLRegister_Private(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListAdd_Private(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -156,14 +156,14 @@ int VecCreateWithType(MPI_Comm comm,char *type_name,int n,int N,Vec *v)
 
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = DLRegisterPrintTypes(comm,stdout,PETSC_NULL,"vec_type",VecList);CHKERRQ(ierr);
+    ierr = FListPrintTypes(comm,stdout,PETSC_NULL,"vec_type",VecList);CHKERRQ(ierr);
   }
   ierr = OptionsGetString(PETSC_NULL,"-vec_type",vectype,128,&flg); CHKERRQ(ierr);
   if (!flg) {
     PetscStrncpy(vectype,type_name,256);
   }
 
-  ierr =  DLRegisterFind(comm, VecList, vectype,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(comm, VecList, vectype,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (!r) SETERRQ(1,1,"Unknown vector type given");
 

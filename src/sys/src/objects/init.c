@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.10 1998/05/22 20:00:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.11 1998/06/17 16:26:27 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -800,6 +800,9 @@ int AliceFinalize(void)
   ViewerDestroy_Private();
   ViewerDestroyDrawX_Private();
   ViewerDestroyMatlab_Private();
+#if defined(HAVE_AMS)
+  ViewerDestroyAMS_Private();
+#endif
 
   ierr = OptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
   if (flg1) {

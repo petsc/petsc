@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.59 1998/07/14 02:34:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.60 1998/07/14 03:02:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -275,8 +275,8 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   b->m = m; B->m = m;
   b->n = n; B->n = n;
 
-  ierr = MapCreate(comm,m,M,B->rmap);CHKERRQ(ierr);
-  ierr = MapCreate(comm,n,N,B->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,m,M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,n,N,&B->cmap);CHKERRQ(ierr);
 
   b->ctx = ctx;
   *A     = B;

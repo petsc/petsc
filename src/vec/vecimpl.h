@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.49 1998/05/19 02:21:28 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.50 1998/05/29 20:35:23 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -27,6 +27,7 @@ struct _p_Map {
 
 /* ----------------------------------------------------------------------------*/
 
+typedef struct _VecOps *VecOps;
 struct _VecOps {
   int  (*duplicate)(Vec,Vec*),           /* get single vector */
        (*duplicatevecs)(Vec,int,Vec**),  /* get array of vectors */
@@ -146,13 +147,16 @@ typedef struct {
   Scalar                 *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus;
-  int                    use_readyreceiver,bs;
+  int                    use_readyreceiver,bs,sendfirst;
 } VecScatter_MPI_General;
 
 struct _p_VecScatter {
   PETSCHEADER(int)
   int     to_n,from_n;
   int     inuse;   /* prevents corruption from mixing two scatters */
+  int     beginandendtogether;         /* indicates that the scatter begin and end
+                                          function are called together, VecScatterEnd()
+                                          is then treated as a nop */
   int     (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   int     (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
   int     (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);

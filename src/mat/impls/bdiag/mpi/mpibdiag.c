@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.146 1998/07/14 02:40:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.147 1998/07/14 03:13:53 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -1030,8 +1030,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreate(comm,m,M,B->rmap);CHKERRQ(ierr);
-  ierr = MapCreate(comm,m,M,B->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,m,M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,m,M,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row ownerships */
   b->rowners    = (int *) PetscMalloc((b->size+2)*sizeof(int)); CHKPTRQ(b->rowners);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.132 1998/05/16 17:41:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.133 1998/06/03 20:21:14 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -70,7 +70,7 @@ int KSPView(KSP ksp,Viewer viewer)
 /*
    Contains the list of registered KSP routines
 */
-DLList KSPList = 0;
+FList KSPList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetAvoidNorms"
@@ -233,7 +233,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
   /* Get the function pointers for the iterative method requested */
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
 
-  ierr =  DLRegisterFind(ksp->comm, KSPList, itmethod,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(ksp->comm, KSPList, itmethod,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (!r) SETERRQ(1,1,"Unknown KSP type given");
 
@@ -266,7 +266,7 @@ int KSPRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (KSPList) {
-    ierr = DLRegisterDestroy( KSPList );CHKERRQ(ierr);
+    ierr = FListDestroy( KSPList );CHKERRQ(ierr);
     KSPList = 0;
   }
   KSPRegisterAllCalled = 0;
@@ -324,7 +324,7 @@ int KSPPrintHelp(KSP ksp)
   if (ksp->prefix)  PetscStrcat(p,ksp->prefix);
 
   (*PetscHelpPrintf)(ksp->comm,"KSP options -------------------------------------------------\n");
-  ierr = DLRegisterPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",KSPList);CHKERRQ(ierr);
+  ierr = FListPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",KSPList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
                    p,ksp->rtol);
   (*PetscHelpPrintf)(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
@@ -586,6 +586,6 @@ int KSPRegister_Private(char *sname,char *path,char *name,int (*function)(KSP))
 
   PetscFunctionBegin;
   PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
-  ierr = DLRegister_Private(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListAdd_Private(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.133 1998/06/24 13:24:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.134 1998/06/27 15:04:59 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -10,6 +10,10 @@ static char vcid[] = "$Id: bvec2.c,v 1.133 1998/06/24 13:24:53 bsmith Exp bsmith
 #include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/blaslapack.h"
 #include "pinclude/pviewer.h"
+#if defined(HAVE_AMS)
+#include "ams.h"
+extern int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
+#endif
 
 #undef __FUNC__  
 #define __FUNC__ "VecNorm_Seq"
@@ -324,15 +328,19 @@ int VecDestroy_Seq(Vec v)
     ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
   }
   ierr = MapDestroy(v->map);CHKERRQ(ierr);
+
+  /* if memory was published with AMS then destroy it */
+#if defined(HAVE_AMS)
+  if (v->amem >= 0) {
+    ierr = AMS_Memory_destroy(v->amem);CHKERRQ(ierr);
+  }
+#endif
+
   PLogObjectDestroy(v);
   PetscHeaderDestroy(v); 
   PetscFunctionReturn(0);
 }
 
-#if defined(HAVE_AMS)
-#include "alicemem.h"
-extern int ViewerAMSGetAliceComm(Viewer,ALICE_Comm *);
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "VecPublish_Seq"
@@ -340,32 +348,41 @@ static int VecPublish_Seq(PetscObject object)
 {
 #if defined(HAVE_AMS)
 
-  Vec      v = (Vec) object;
-  Vec_Seq *s = (Vec_Seq *) v->data;
-
+  Vec          v = (Vec) object;
+  Vec_Seq      *s = (Vec_Seq *) v->data;
+  static int   counter = 0;
+  int          ierr,rank;
+  char         name[16];
+  AMS_Memory   amem;
+  AMS_Comm     acomm;
+  MPI_Comm     comm;
+  
   PetscFunctionBegin;
 
-  {
-    static int   counter = 0;
-    int          ierr;
-    char         name[16];
-    ALICE_Memory amem;
-    ALICE_Comm   acomm;
+  /* for now publisher must be ONLY 1st processor */
+  PetscObjectGetComm(object,&comm);
+  comm = PETSC_COMM_WORLD;
 
-    ierr = ViewerAMSGetAliceComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
-    if (v->name) {
-      PetscStrcpy(name,v->name);
-    } else {
-      sprintf(name,"SeqVector_%d",counter++);
-    }
-    ierr = ALICE_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
-    ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr); 
-    ierr = ALICE_Memory_add_field(amem,"values",s->array,v->n,ALICE_DOUBLE,ALICE_READ,
-                                  ALICE_COMMON,ALICE_REDUCT_UNDEF);CHKERRQ(ierr);
-    ierr = ALICE_Memory_publish(amem);CHKERRQ(ierr);
-    ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
-    v->amem = (int) amem;
+  MPI_Comm_rank(comm,&rank);
+  if (rank) PetscFunctionReturn(0);
+
+  /* if it is already published then return */
+  if (v->amem >=0 ) PetscFunctionReturn(0);
+
+  ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
+  if (v->name) {
+    PetscStrcpy(name,v->name);
+  } else {
+    sprintf(name,"SeqVector_%d",counter++);
   }
+  ierr = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
+  ierr = AMS_Memory_add_field(amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
+  ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
+  v->amem = (int) amem;
+
 #else
   PetscFunctionBegin;
 #endif

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.156 1998/05/13 16:59:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.157 1998/05/16 17:42:32 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: snes.c,v 1.156 1998/05/13 16:59:57 bsmith Exp curfman
 #include <math.h>
 
 int SNESRegisterAllCalled = 0;
-DLList SNESList = 0;
+FList SNESList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "SNESView"
@@ -1720,7 +1720,7 @@ int SNESSetType(SNES snes,SNESType method)
   /* Get the function pointers for the iterative method requested */
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
 
-  ierr =  DLRegisterFind(snes->comm, SNESList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(snes->comm, SNESList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (!r) SETERRQ(1,1,"Unable to find requested SNES type");
 
@@ -1756,7 +1756,7 @@ int SNESRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (SNESList) {
-    ierr = DLRegisterDestroy( SNESList );CHKERRQ(ierr);
+    ierr = FListDestroy( SNESList );CHKERRQ(ierr);
     SNESList = 0;
   }
   SNESRegisterAllCalled = 0;
@@ -2062,7 +2062,7 @@ int SNESPrintHelp(SNES snes)
   kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
 
   (*PetscHelpPrintf)(snes->comm,"SNES options ------------------------------------------------\n");
-  ierr = DLRegisterPrintTypes(snes->comm,stdout,snes->prefix,"snes_type",SNESList);CHKERRQ(ierr);
+  ierr = FListPrintTypes(snes->comm,stdout,snes->prefix,"snes_type",SNESList);CHKERRQ(ierr);
   (*PetscHelpPrintf)(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
   (*PetscHelpPrintf)(snes->comm," %ssnes_max_it <its>: max iterations (default %d)\n",p,snes->max_its);
   (*PetscHelpPrintf)(snes->comm," %ssnes_max_funcs <maxf>: max function evals (default %d)\n",p,snes->max_funcs);
@@ -2160,6 +2160,6 @@ int SNESRegister_Private(char *sname,char *path,char *name,int (*function)(SNES)
 
   PetscFunctionBegin;
   PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
-  ierr = DLRegister_Private(&SNESList,sname,fullname, (int (*)(void*))function);CHKERRQ(ierr);
+  ierr = FListAdd_Private(&SNESList,sname,fullname, (int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

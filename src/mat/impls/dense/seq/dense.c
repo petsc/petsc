@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.152 1998/07/14 02:49:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.153 1998/07/14 02:49:23 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1308,8 +1308,8 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   b->m = m;  B->m = m; B->M = m;
   b->n = n;  B->n = n; B->N = n;
 
-  ierr = MapCreate(comm,m,m,B->rmap);CHKERRQ(ierr);
-  ierr = MapCreate(comm,n,n,B->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,m,m,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,n,n,&B->cmap);CHKERRQ(ierr);
 
   b->pivots       = 0;
   b->roworiented  = 1;

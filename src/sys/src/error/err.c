@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.82 1998/07/02 02:30:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.83 1998/07/02 02:35:13 bsmith Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -10,14 +10,15 @@ static char vcid[] = "$Id: err.c,v 1.82 1998/07/02 02:30:55 bsmith Exp bsmith $"
 #endif
 #include "pinclude/pviewer.h"
 
-struct EH {
+typedef struct _EH *EH;
+struct _EH {
   int    cookie;
   int    (*handler)(int, char*,char*,char *,int,int,char*,void *);
   void   *ctx;
-  struct EH* previous;
+  EH     previous;
 };
 
-static struct EH* eh = 0;
+static EH eh = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "PetscPushErrorHandler"
@@ -50,14 +51,14 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 @*/
 int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx )
 {
-  struct  EH *neweh = (struct EH*) PetscMalloc(sizeof(struct EH)); CHKPTRQ(neweh);
+  EH neweh = (EH) PetscMalloc(sizeof(struct _EH)); CHKPTRQ(neweh);
 
   PetscFunctionBegin;
   if (eh) {neweh->previous = eh;} 
   else    {neweh->previous = 0;}
   neweh->handler = handler;
   neweh->ctx     = ctx;
-  eh = neweh;
+  eh             = neweh;
   PetscFunctionReturn(0);
 }
 
@@ -78,7 +79,7 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
 @*/
 int PetscPopErrorHandler(void)
 {
-  struct EH *tmp;
+  EH tmp;
 
   PetscFunctionBegin;
   if (!eh) PetscFunctionReturn(0);
