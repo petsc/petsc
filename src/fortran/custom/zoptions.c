@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.30 1997/07/07 15:59:57 balay Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.31 1997/07/09 20:55:52 balay Exp balay $";
 #endif
 
 /*
@@ -24,6 +24,7 @@ extern int          PetscBeganMPI;
 #define optionsgetdouble_             OPTIONSGETDOUBLE
 #define optionsgetdoublearray_        OPTIONSGETDOUBLEARRAY
 #define optionsgetstring_             OPTIONSGETSTRING
+#define petscgetprogramname_          PETSCGETPROGRAMNAME
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscgetarchtype_             petscgetarchtype
 #define optionssetvalue_              optionssetvalue
@@ -33,6 +34,7 @@ extern int          PetscBeganMPI;
 #define optionsgetdoublearray_        optionsgetdoublearray
 #define optionsgetstring_             optionsgetstring
 #define optionsgetintarray_           optionsgetintarray
+#define petscgetprogramname_       petscgetprogramname
 #endif
 
 #if defined(__cplusplus)
@@ -153,6 +155,20 @@ void petscgetarchtype_(CHAR str,int *__ierr,int len)
 #else
   *__ierr = PetscGetArchType(str,len);
 #endif
+}
+
+void petscgetprogramname_(CHAR name, int *__ierr,int len_in )
+{
+  char *tmp;
+  int len;
+#if defined(USES_CPTOFCD)
+  tmp = _fcdtocp(name);
+  len = _fcdlen(name) - 1;
+#else
+  tmp = name;
+  len = len_in - 1;
+#endif
+  *__ierr = PetscGetProgramName(tmp,len);
 }
 
 #if defined(__cplusplus)
