@@ -127,6 +127,12 @@ General WWW info:
 
 
 ------------Accounts (around the world and around the block) -----
+alias cvs-dccafe   "cvs -d bsmith@z.ca.sandia.gov:/home/ccaffeine/repository"
+alias cvs-cca-spec "cvs -d bsmith@z.ca.sandia.gov:/home/ccastd/repository"
+alias cvs-esi      "cvs -d bsmith@z.ca.sandia.gov:/u1/isis++/esiRepository"
+alias isis         "cvs -d bsmith@z.ca.sandia.gov:/u1/isis++/Repository"
+petsc-password
+
 HPUX-11 - hpux64
         machine: hp.giref.ulaval.ca
         userid: petsc
@@ -229,7 +235,7 @@ machine: mcurie.nersc.gov
 login:   bsmith,balay
 passwd:  petsc-password
 module add petsc.2.1.0
-totalview mpirun -a -np 1 ./base
+totalview -X <np> executable -a options
 
 scheduler : qsub, which is actually a link to cqsub (mpirun also works)
 help : consult@nersc.gov
