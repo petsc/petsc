@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.124 1998/07/22 18:01:13 bsmith Exp $";
+static char vcid[] = "$Id: pipeline.c,v 1.2 1998/08/19 02:56:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,12 +9,12 @@ static char vcid[] = "$Id: vscat.c,v 1.124 1998/07/22 18:01:13 bsmith Exp $";
 
 #include "src/vec/vecimpl.h" /*I "vec.h" I*/
 #include "sys.h"
+#include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "pinclude/pviewer.h"
 
-typedef struct _PCParallel_PipeInfo *PCParallel_PipeInfo;
 typedef int (*PipelineFunction)(int,PetscObject);
 
-struct _VecPipeline {
+struct _p_VecPipeline {
   PETSCHEADER(int)
   VecScatter             scatter;
   PipelineType           pipe_type; /* duplicated in the subdomain structure */
@@ -67,7 +67,7 @@ int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *new
   VecPipeline ctx;
   int ierr;
 
-  ctx       = (VecPipeline) PetscMalloc(sizeof(struct _VecPipeline));CHKPTRQ(ctx);
+  ctx       = (VecPipeline) PetscMalloc(sizeof(struct _p_VecPipeline));CHKPTRQ(ctx);
   ctx->comm = comm;
   ierr = VecScatterCreate(xin,ix,yin,iy,&(ctx->scatter)); CHKERRQ(ierr);
   ierr = VecPipelineSetType(ctx,PIPELINE_SEQUENTIAL,PETSC_NULL); CHKERRQ(ierr);
@@ -509,31 +509,6 @@ static int PipelineMulticolourSetup(VecPipeline vs,PetscObject x,PetscObject *ob
 }
 
 #undef __FUNC__
-#define __FUNC__ "PCCustomPipelineSetFromOptions"
-int PCCustomPipelineSetFromOptions(PC pc)
-{
-  char *prefix,value[20];
-  int  flag,ierr;
-
-  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
-  if (prefix) printf("Found prefix %s\n",prefix);
-  ierr = OptionsGetString(prefix,"-pc_pipeline",value,20,&flag); CHKERRQ(ierr);
-  if (flag) {
-    value[4]='\0';
-    if (strcmp(value,"none")==0) {
-      ierr = PCParallelSubdomainPipelineSetType(pc,PIPELINE_NONE);CHKERRQ(ierr);
-    } else if (strcmp(value,"sequ")==0) {
-      ierr = PCParallelSubdomainPipelineSetType(pc,PIPELINE_SEQUENTIAL);CHKERRQ(ierr);
-    } else if (strcmp(value,"redb")==0) {
-      ierr = PCParallelSubdomainPipelineSetType(pc,PIPELINE_REDBLACK);CHKERRQ(ierr);
-    } else if (strcmp(value,"mult")==0) {
-      ierr = PCParallelSubdomainPipelineSetType(pc,PIPELINE_MULTICOLOUR);CHKERRQ(ierr);
-    } else SETERRQ(1,0,"unknown custom pipeline option");
-  }
-  return 0;
-}
-
-#undef __FUNC__
 #define __FUNC__ "VecPipelineView"
 int VecPipelineView(VecPipeline pipe,Viewer viewer)
 {
@@ -549,32 +524,8 @@ int VecPipelineView(VecPipeline pipe,Viewer viewer)
 
   return 0;
 }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% parpre_pipeline.h
-#ifndef __PARPRE_PIPELINE_PACKAGE 
-#define __PARPRE_PIPELINE_PACKAGE
-#include "is.h"
-#include "pc.h"
 
-typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1
-	    } PipelineDirection;
-typedef enum {PIPELINE_NONE=1, PIPELINE_SEQUENTIAL=2,
-		PIPELINE_REDBLACK=3, PIPELINE_MULTICOLOUR=4
-	    } PipelineType;
 
-typedef struct _VecPipeline*  VecPipeline;
-typedef struct _PCP_CommStruct* PCP_CommStruct;
-typedef struct _PipelineObject* PipelineObject;
-
-extern int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx);
-extern int VecPipelineSetup(VecPipeline ctx);
-extern int VecPipelineDestroy(VecPipeline ctx);
-extern int VecPipelineSetType(VecPipeline ctx,PipelineType typ,PetscObject x);
-extern int VecPipelineBegin(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline);
-extern int VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline); 
-
-extern int VecPipelineView(VecPipeline pipe,Viewer viewer);
-
-#endif
 
 
 
