@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.154 1999/01/27 19:47:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.155 1999/02/03 03:17:45 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -1024,15 +1024,9 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   MPI_Comm_rank(comm,&b->rank);
   MPI_Comm_size(comm,&b->size);
 
-  if (M == PETSC_DECIDE) {
-    if ((m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad local row number");
-    ierr = MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  }
-  if (m == PETSC_DECIDE) {
-    if ((M%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad global row number");
-    m = M/b->size + ((M % b->size) > b->rank);
-    if ((m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad local row number");
-  }
+  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
+  if ((m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad local row number");
+  if ((M%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad global row number");
   b->M = M;    B->M = M;
   b->N = N;    B->N = N;
   b->m = m;    B->m = m;

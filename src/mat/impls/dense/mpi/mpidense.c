@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.102 1999/01/27 19:47:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.103 1999/02/03 03:18:03 curfman Exp bsmith $";
 #endif
 
 /*
@@ -547,8 +547,7 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
     PetscSequentialPhaseEnd(mat->comm,1);
     ierr = VecScatterView(mdn->Mvctx,viewer); CHKERRQ(ierr);
     PetscFunctionReturn(0); 
-  }
-  else if (format == VIEWER_FORMAT_ASCII_INFO) {
+  } else if (format == VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
   }
 
@@ -1010,8 +1009,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   MPI_Comm_rank(comm,&a->rank);
   MPI_Comm_size(comm,&a->size);
 
-  if (M == PETSC_DECIDE) {ierr = MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);}
-  if (m == PETSC_DECIDE) {m = M/a->size + ((M % a->size) > a->rank);}
+  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
 
   /*
      The computation of n is wrong below, n should represent the number of local 
@@ -1030,7 +1028,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
   ierr = MapCreateMPI(comm,m,M,&mat->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(comm,n,N,&mat->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,PETSC_DECIDE,N,&mat->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
