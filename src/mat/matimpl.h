@@ -28,7 +28,7 @@ struct _MatOps {
 /*10*/      (*solvetransposeadd)(Mat,Vec,Vec,Vec),
             (*lufactor)(Mat,IS,IS,MatLUInfo*),
             (*choleskyfactor)(Mat,IS,PetscReal),
-            (*relax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec),
+            (*relax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec),
             (*transpose)(Mat,Mat *),
 /*15*/      (*getinfo)(Mat,MatInfoType,MatInfo*),
             (*equal)(Mat,Mat,PetscTruth *),

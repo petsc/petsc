@@ -135,7 +135,7 @@ EXTERN int PCDiagonalScaleSet(PC,Vec);
 EXTERN int PCJacobiSetUseRowMax(PC);
 EXTERN int PCSORSetSymmetric(PC,MatSORType);
 EXTERN int PCSORSetOmega(PC,PetscReal);
-EXTERN int PCSORSetIterations(PC,int);
+EXTERN int PCSORSetIterations(PC,int,int);
 
 EXTERN int PCEisenstatSetOmega(PC,PetscReal);
 EXTERN int PCEisenstatNoDiagonalScaling(PC);

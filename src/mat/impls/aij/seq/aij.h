@@ -66,7 +66,7 @@ EXTERN int MatMult_SeqAIJ(Mat A,Vec,Vec);
 EXTERN int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
 EXTERN int MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
 EXTERN int MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-EXTERN int MatRelax_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
+EXTERN int MatRelax_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
 
 EXTERN int MatSetColoring_SeqAIJ(Mat,ISColoring);
 EXTERN int MatSetValuesAdic_SeqAIJ(Mat,void*);

@@ -828,160 +828,79 @@ int MatView_MPIAIJ(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*
-    This has to provide several versions.
 
-     2) a) use only local smoothing updating outer values only once.
-        b) local smoothing updating outer values each inner iteration
-     3) color updating out values betwen colors.
-*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_MPIAIJ"
-int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
+int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_MPIAIJ   *mat = (Mat_MPIAIJ*)matin->data;
-  Mat          AA = mat->A,BB = mat->B;
-  Mat_SeqAIJ   *A = (Mat_SeqAIJ*)AA->data,*B = (Mat_SeqAIJ *)BB->data;
-  PetscScalar  *b,*x,*xs,*ls,d,*v,sum;
-  int          ierr,*idx,*diag;
-  int          n = matin->n,m = matin->m,i,shift = A->indexshift;
+  int          ierr; 
+  Vec          bb1;
+  PetscReal    mone=-1.0;
 
   PetscFunctionBegin;
-  if (!A->diag) {ierr = MatMarkDiagonal_SeqAIJ(AA);CHKERRQ(ierr);}
-  diag = A->diag;
+
+  ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,1,xx);CHKERRQ(ierr);
+      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr);
       its--; 
     }
     
+    /* ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr); */
     while (its--) { 
       ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-  
-      ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-      if (xx != bb) {
-        ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-      } else {
-        b = x;
-      }  
-      ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
-     
-      xs = x + shift;
-      ls = ls + shift; /* shift by one for index start of 1 */
 
-      /* go down through the rows */
-      for (i=0; i<m; i++) {
-        n    = A->i[i+1] - A->i[i]; 
-	PetscLogFlops(4*n+3);
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
-      }
-      /* come up through the rows */
-      for (i=m-1; i>-1; i--) {
-        n    = A->i[i+1] - A->i[i]; 
-	PetscLogFlops(4*n+3);
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
-      }
-    
-      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-      if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
-      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
+      /* update rhs: bb1 = bb - B*x */ 
+      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,(MatSORType)SOR_SYMMETRIC_SWEEP,fshift,lits,PETSC_NULL,xx);
+      CHKERRQ(ierr);
     }
   } else if (flag & SOR_LOCAL_FORWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
+      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr);
       its--;
     }
     while (its--) {
       ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-      ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-      if (xx != bb) {
-        ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-      } else {
-        b = x;
-      }
-      ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
-      xs = x + shift; /* shift by one for index start of 1 */
-      ls = ls + shift;
-    
-      for (i=0; i<m; i++) {
-        n    = A->i[i+1] - A->i[i]; 
-	PetscLogFlops(4*n+3);
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
-      }    
-      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-      if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
-      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
+
+      /* update rhs: bb1 = bb - B*x */ 
+      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,(MatSORType)SOR_FORWARD_SWEEP,fshift,lits,PETSC_NULL,xx);
+      CHKERRQ(ierr);
     }
   } else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
+      ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr);
       its--;
     }
     while (its--) {
       ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
       ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
-      ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-      if (xx != bb) {
-        ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-      } else {
-        b = x;
-      }
-      ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
-      xs = x + shift; /* shift by one for index start of 1 */
-      ls = ls + shift;
 
-      for (i=m-1; i>-1; i--) {
-        n    = A->i[i+1] - A->i[i]; 
-	PetscLogFlops(4*n+3);
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
-      }
-    
-    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
-    ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
+      /* update rhs: bb1 = bb - B*x */ 
+      ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+      ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
+
+      /* local sweep */
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,(MatSORType)SOR_BACKWARD_SWEEP,fshift,lits,PETSC_NULL,xx);
+      CHKERRQ(ierr);
     }
   } else {
     SETERRQ(PETSC_ERR_SUP,"Parallel SOR not supported");
   }
+
+  ierr = VecDestroy(bb1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
