@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.19 1999/02/19 23:23:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.20 1999/03/01 04:58:26 bsmith Exp balay $";
 #endif
  
 /*
@@ -159,7 +159,7 @@ int DAGetFieldName(DA da,int no,char **name)
    grid point has (potentially) several degrees of freedom.
    Any of y, z, n, and p can be passed in as PETSC_NULL if not needed.
 
-  Level: elementary
+  Level: beginner
 
 .keywords: distributed array, get, corners, nodes, local indices
 
