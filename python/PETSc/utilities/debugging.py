@@ -21,6 +21,13 @@ class Configure(config.base.Configure):
   def configureDebugging(self):
     # should do error checking
     self.debugging = self.framework.argDB['with-debugging']
+    if not self.debugging:
+      self.framework.logClear()
+      print '=================================================================================\r'
+      print '          WARNING! Compiling PETSc with no error checking, this should \r'
+      print '        only be done for timing and production runs. All development should \r'
+      print '        be done when configured with --with-debugging=1 \r'          
+      print '=================================================================================\r'  
     
   def configure(self):
     self.executeTest(self.configureDebugging)

@@ -33,7 +33,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error copying lgrind executable: '+str(e))
     self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+installDir)
     self.lgrind = lgrindexe
-    self.addMakeMacro('LGRIND',self.lgrind)
+    self.addMakeMacro('LGRIND',os.path.join(self.lgrind,lgrindexe))
     self.addMakeMacro('LGRIND_DIR',installDir)
     return
 
