@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.9 1998/06/01 21:38:07 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.10 1998/07/02 03:09:24 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -57,6 +57,10 @@ http://www.mcs.anl.gov/petsc
 \medskip \medskip
 The Advanced Large-Scale Integrated Computational Environment (ALICE) is 
 a component-based set of extensible software libraries for scientific computation.
+ALICE is designed using a component-based object-oriented
+architecture. This means that libraries consist of {\em objects} that
+have a certain, defined functionality. This document defines how these
+objects are implemented.
 
 This manual discusses the ALICE component library design and describes
 how to develop new library codes that are compatible with other ALICE components 
@@ -71,10 +75,6 @@ that you are familar with PETSc, have a copy of the PETSc users
 manual, and have access to all PETSc source code and documentation
 (available via {\tt http://www.mcs.anl.gov/petsc}).
 
-ALICE is designed using a component-based object-oriented
-architecture. This means that libraries consist of {\em objects} that
-have a certain, defined functionality. This document defines how these
-objects are implemented.
 
 \vspace{1cm}
 
@@ -129,7 +129,7 @@ Each of these is discussed in a section below.
 % -------------------------------------------------------------------------------
 \section{Implementation of Error Handling}
 
-PETSc error handling uses a ``call error handler; then (depending on result) return
+PETSc  uses a ``call error handler; then (depending on result) return
 error code'' model when problems are detected in the running code. 
 
 The public include file for error handling is {\tt include/petscerror.h} the 
@@ -149,8 +149,9 @@ The macro {\tt SETERRQ()} is given by
 \begin{verbatim}
   {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,generic,specific,''Error message'');}
 \end{verbatim}
-it simply calls the error handler with the current function name and location: line number,
-file and directory.
+It calls the error handler with the current function name and location: line number,
+file and directory, plus two integer error codes and an error message.
+
 {\tt CHKERRQ()} is defined by
 \begin{verbatim}
   {if (ierr) SETERRQ(ierr,0,(char *)0);}
@@ -224,7 +225,7 @@ PETSc provides several default error handlers
 The PETSc error handlers take two error codes: a generic and a specific.
 The generic error codes are defined in {\tt include/petscerror.h}, the same generic
 error code would be used many times in the libraries. For example the 
-generic error code {\tt PETSC_ERR_MEM} is used whenever requested memory allocation
+generic error code {\tt PETSC\_ERR\_MEM} is used whenever requested memory allocation
 is not available. Specific error codes are not yet used, it is intended that 
 these be unique integers, one for each error condition in the entire library.
 
@@ -479,7 +480,6 @@ struct _VecOps {
 /* Data structure header common to all PETSc vector components */
 
 struct _p_Vec {
-typedef struct {
   int                    cookie;                                  
   MPI_Comm               comm;                                    
   PetscOps               *bops;                                   
@@ -554,11 +554,12 @@ We now discuss the specific functions in the common function table.
       it may include the path name or URL of the dynamic library where the function is located.
       The argument {\tt name} is a ``short'' name of the function to be used with the 
       {\tt queryfunction()} call. On systems that support dynamic libraries the {\tt func}
-      argument is ignored.
+      argument is ignored; otherwise {\tt func} is the actual function pointer.
 
 \item {\tt queryfunction(PetscObject,char *name,void **func)} retreives a function pointer that
       was associated with the object. If dynamic libraries are used the function is loaded
-      into memory at this time, not when the {\tt composefunction()} routine was called.
+      into memory at this time (if it has not been previously loaded), not when the
+      {\tt composefunction()} routine was called.
 
 \end{itemize}
 
@@ -567,7 +568,7 @@ with PETSc objects rather than any arbitrary pointer, PETsc provides
 the convenience object {\tt PetscObjectContainer}, created with the
 routine {\tt PetscObjectContainerCreate(MPI\_Comm,PetscObjectContainer)}
 to allow one to wrap any kind of data into a PETSc object that can then be
-composed with any PETSc object.
+composed with a PETSc object.
 
 % --------------------------------------------------------------------------------------
 \section{PETSc Implementation of the  Object Functions}
@@ -597,6 +598,9 @@ to manipulate these elementary objects are
   int OListFind(OList fl, char *name, PetscObject *obj)
   int OListDuplicate(OList fl, OList *nl);
 \end{verbatim}
+{\tt OListAdd()} will create the initial {\tt OList} if the argument {\tt fl} points
+to a null.
+
 The PETSc object {\tt compose()} and {\tt query()} functions are then simply
 (defined in {\tt src/sys/src/objects/inherit.c})
 \begin{verbatim}
@@ -623,26 +627,20 @@ The PETSc object {\tt compose()} and {\tt query()} functions are then simply
 
 PETSc allows one to compose functions by string name (to be loaded later from 
 a dynamic library) or by function pointer. In {\tt src/sys/src/dll/reg.c}
-PETSc defines the C structs
-\begin{verbatim}
-typedef struct _FuncList FuncList;
-struct FuncList_struct {
-  int              (*routine)(void *);
-  char             *path;
-  char             *name;               
-  char             *rname;            /* name of create function in link library */
-  struct _FuncList *next;
-};
+PETSc defines the C structure
 
-typedef struct DLList* DLList;
-struct _DLList {
-    FuncList *head, *tail;
-    char     *regname;        /* registration type name */
-    DLList   next;
+\begin{verbatim}
+typedef struct _DLList* DLList;
+struct DLList_struct {
+  int    (*routine)(void *);
+  char   *path;
+  char   *name;               
+  char   *rname;            /* name of create function in link library */
+  DLList *next;
 };
 \end{verbatim}
 
-The {\tt DLList} object consists of a linked list of {\tt FuncList} objects; each 
+The {\tt DLList} object is a linked list of function data; each 
 of which contains
 \begin{itemize}
 \item a function pointer (if it has already been loaded into memory from the dynamic library)
@@ -683,7 +681,7 @@ function calls that take the actual
 function pointer argument must eliminate this argument in the preprocessor step before 
 the code is compiled. Otherwise, since the compiler sees the function pointer, it will 
 compile it in and link in all those functions; thus one could not take advantage of the
-dynamic libraries. This is down with macros like the following
+dynamic libraries. This is done with macros like the following
 \begin{verbatim}
 #if defined(USE_DYNAMIC_LIBRARIES)
 #define       DLRegister(a,b,p,c) DLRegister_Private(a,b,p,0)
@@ -1136,6 +1134,10 @@ rows, {\tt n} global columns, and a block size of {\tt nb} is
 \end{verbatim}
 Either the {\tt m} or {\tt M} can be set to {\tt PETSC\_DECIDE} for PETSc
 to determine the corresponding quantity.
+
+\chapter{Mimimal Component Standards}
+This chapter discusses the miminal functionality and format required of any 
+component that is compatible with ALICE. 
 
 \bibliographystyle{plain}
 \bibliography{petsc}
