@@ -1,4 +1,4 @@
-/* $Id: petscversion.h,v 1.15 1999/06/14 20:24:03 balay Exp curfman $ */
+/* $Id: petscversion.h,v 1.16 1999/10/05 19:46:53 curfman Exp balay $ */
 #if !defined(__PETSCVERSION_H)
 #define __PETSCVERSION_H
 
@@ -9,11 +9,11 @@
     docs/tex/manual/manual.tex and
     docs/tex/manual/manual_tex.tex.
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.26, Released October 6, 1999"
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.27, Released ??? ?, ????"
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    0
-#define PETSC_VERSION_SUBMINOR 26
+#define PETSC_VERSION_SUBMINOR 27
 #define PETSC_PATCH_LEVEL      0
 #define PETSC_VERSION_DATE     "October 6, 1999"
 #define PETSC_AUTHOR_INFO      "The PETSc Team:\

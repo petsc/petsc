@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.218 1999/06/30 23:49:50 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.219 1999/10/01 21:20:44 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1442,6 +1442,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n",
                  pname,arch,hostname,size,username,date);CHKERRQ(ierr);
   }
+  ierr = PetscFPrintf(comm,fd,"Using %s\n",PETSC_VERSION_NUMBER);CHKERRQ(ierr);
 
   wdou = _TotalFlops; 
   ierr = MPI_Allreduce(&wdou,&minf,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
