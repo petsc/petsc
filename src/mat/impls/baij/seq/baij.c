@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.202 2000/04/09 04:36:19 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.203 2000/04/12 04:23:32 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1512,14 +1512,18 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
 {
   Mat         B;
   Mat_SeqBAIJ *b;
-  int         i,len,ierr,mbs,nbs,bs2,size;
+  int         i,len,ierr,mbs,nbs,bs2,size,newbs = bs;
   PetscTruth  flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
 
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&newbs,PETSC_NULL);CHKERRQ(ierr);
+  if (nnz && newbs != bs) {
+    SETERRQ(1,1,"Cannot change blocksize from command line if setting nnz");
+  }
+
   mbs  = m/bs;
   nbs  = n/bs;
   bs2  = bs*bs;
