@@ -116,11 +116,16 @@ PetscErrorCode TSSetFromOptions(TS ts)
     /* Should check for implicit/explicit */
   case TS_LINEAR:
     if (ts->ksp != PETSC_NULL) {
+      ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
     }
     break;
   case TS_NONLINEAR:
     if (ts->snes != PETSC_NULL) {
+      /* this is a bit of a hack, but it gets the matrix information into SNES earlier
+         so that SNES and KSP have more information to pick reasonable defaults
+         before they allow users to set options */
+      ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,0,ts);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
     }
     break;

@@ -61,7 +61,32 @@ runex1f:
 runex2f:
 	-@${MPIRUN} -np 1 ex2f 
 
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex6.PETSc ex6.rm
+runex6:
+	-@${MPIRUN} -np 1 ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
+	   else echo "Possible problem with ex6_1, diffs above"; fi; \
+	   ${RM} -f ex6_1.tmp
+
+runex7:
+	-@${MPIRUN} -np 1 ex7 -snes_smonitor -max_steps 5   > ex7_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
+	   else echo "Possible problem with ex7_1, diffs above"; fi; \
+	   ${RM} -f ex7_1.tmp
+
+runex7_2:
+	-@${MPIRUN} -np 1 ex7 -snes_smonitor -max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
+	   else echo "Possible problem with ex7_2, diffs above"; fi; \
+	   ${RM} -f ex7_2.tmp
+
+runex7_3:
+	-@${MPIRUN} -np 1 ex7 -snes_smonitor -max_steps 5  -snes_mf > ex7_3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex7_3.out ex7_3.tmp) then true; \
+	   else echo "Possible problem with ex7_3, diffs above"; fi; \
+	   ${RM} -f ex7_3.tmp
+
+
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
 TESTEXAMPLES_4  =  

@@ -50,13 +50,14 @@ PetscErrorCode TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat
     if ((freq > 1) && ((it % freq) != 1)) {
       PetscLogInfo(color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %D, freq %D\n",it,freq);
       *flag = SAME_PRECONDITIONER;
-      PetscFunctionReturn(0);
+      goto end;
     } else {
       PetscLogInfo(color,"TSDefaultComputeJacobianColor:Computing Jacobian, it %D, freq %D\n",it,freq);
       *flag = SAME_NONZERO_PATTERN;
     }
   }
   ierr = MatFDColoringApplyTS(*B,color,t,x1,flag,ts);CHKERRQ(ierr);
+  end:
   if (*J != *B) {
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
