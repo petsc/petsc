@@ -25,8 +25,9 @@ class PetscMake(bs.BS):
     self.filesets['sidl'] = fileset.ExtensionFileSet(self.directories['sidl'], '.sidl')
 
   def defineTargets(self):
-    babelDefaults = BSTemplates.sidl.CompileDefaults(self.filesets['sidl'])
+    babelDefaults = BSTemplates.sidl.CompileDefaults('bs', self.filesets['sidl'])
     babelDefaults.serverLanguages.append('C++')
+    babelDefaults.clientLanguages.append('C++')
     babelDefaults.clientLanguages.append('Python')
 
     self.targets['sidl']    = babelDefaults.getSIDLTarget()
