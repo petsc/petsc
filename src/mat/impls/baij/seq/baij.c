@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.232 2001/07/11 19:12:27 buschelm Exp buschelm $*/
+/*$Id: baij.c,v 1.233 2001/07/11 19:38:40 buschelm Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -215,7 +215,7 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 #if defined(PETSC_USE_MAT_SINGLE)
     if (a->bs==4) {
       PetscTruth sse_enabled;
-      int ierr;
+      int        ierr;
       ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
       if (sse_enabled) {
         a->singleprecisionsolves = PETSC_TRUE;
