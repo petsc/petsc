@@ -1,12 +1,17 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex21.c,v 1.1 1996/05/07 03:46:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex21.c,v 1.2 1996/07/23 20:12:23 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
-This version preloads a small matrix and solves with that, then loads \n\
-another matrix and solves with that.\n";
+This version first preloads and solves a small system, then loads \n\
+another (larger) system and solves it as well.  This example illustrates\n\
+preloading of instructions with the smaller system so that more accurate\n\
+performance monitoring can be done with the larger one (that actually\n\
+is the system of interest). Input parameters include\n\
+  -f0 <input_file> : first file to load (small system)\n\
+  -f1 <input_file> : second file to load (larger system)\n\n";
 
 #include "draw.h"
 #include "mat.h"
@@ -26,6 +31,7 @@ int main(int argc,char **args)
   char       file[2][128];
   Viewer     fd;
   PetscTruth table = PETSC_FALSE;
+  char       stagename[6][18];
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -45,6 +51,8 @@ int main(int argc,char **args)
   for ( i=0; i<2; i++ ) {
 
     PLogStagePush(3*i);
+    sprintf(stagename[3*i],"Load System %d",i);
+    PLogStageRegister(3*i,stagename[3*i]);
     ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
          CHKERRA(ierr);
     ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
@@ -86,6 +94,8 @@ int main(int argc,char **args)
     PetscBarrier(A);
 
     PLogStagePush(3*i+1);
+    sprintf(stagename[3*i+1],"SLESSetUp %d",i);
+    PLogStageRegister(3*i+1,stagename[3*i+1]);
     tsetup = PetscGetTime();  
     ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
     ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
@@ -98,6 +108,8 @@ int main(int argc,char **args)
 
 
     PLogStagePush(3*i+2);
+    sprintf(stagename[3*i+2],"SLESSolve %d",i);
+    PLogStageRegister(3*i+2,stagename[3*i+2]);
     tsolve = PetscGetTime();
     ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
     tsolve = PetscGetTime() - tsolve;
