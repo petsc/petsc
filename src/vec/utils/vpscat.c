@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.84 1997/07/09 20:26:34 balay Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.85 1997/07/10 03:43:02 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -289,14 +289,16 @@ int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatte
   from_start = from_slots[0];
 
   for ( i=1; i<n; i++ ) {
-    if (to_slots[i]   != ++to_start)   return 0;
-    if (from_slots[i] != ++from_start) return 0;
+    to_start   += bs;
+    from_start += bs;
+    if (to_slots[i]   != to_start)   return 0;
+    if (from_slots[i] != from_start) return 0;
   }
   gen_to->is_copy       = 1; 
-  gen_to->copy_start    = bs*to_slots[0]; 
+  gen_to->copy_start    = to_slots[0]; 
   gen_to->copy_length   = bs*sizeof(Scalar)*n;
   gen_from->is_copy     = 1;
-  gen_from->copy_start  = bs*from_slots[0];
+  gen_from->copy_start  = from_slots[0];
   gen_from->copy_length = bs*sizeof(Scalar)*n;
 
   PLogInfo(0,"VecScatterLocalOptimizeCopy_Private:Local scatter is a copy, optimizing for it\n");
@@ -1395,7 +1397,7 @@ int VecScatterDestroy_PtoP_X(PetscObject obj)
 #if !defined(PARCH_rs6000)
   for (i=0; i<gen_to->n; i++) {
     MPI_Request_free(gen_to->requests + i);
-    MPI_Request_free(gen_from->rev_requests + i);
+    MPI_Request_free(gen_to->rev_requests + i);
   }
 
   /*
@@ -1405,7 +1407,7 @@ int VecScatterDestroy_PtoP_X(PetscObject obj)
   if (!gen_to->use_readyreceiver) {  
     for (i=0; i<gen_from->n; i++) {
       MPI_Request_free(gen_from->requests + i);
-      MPI_Request_free(gen_to->rev_requests + i);
+      MPI_Request_free(gen_from->rev_requests + i);
     }
   }  
 #endif
