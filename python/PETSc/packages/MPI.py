@@ -27,6 +27,14 @@ class Configure(config.base.Configure):
     help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     return
 
+  def executeShellCommand(self, command):
+    '''Execute a shell command returning the output, and optionally provide a custom error checker'''
+    import commands
+
+    (status, output) = commands.getstatusoutput(command)
+    if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output)
+    return output
+
   def checkLib(self, libraries):
     '''Check for MPI_Init in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
@@ -261,22 +269,20 @@ int checkInit(void) {
       PETSC_ARCH = os.getenv('PETSC_ARCH')
 
     if PETSC_ARCH and PETSC_DIR:
-        import base
-        ss      = base.Base()
-        try:
-          libArgs = ss.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs')
-          incArgs = ss.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs')
-          runArgs = ss.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun')
+      try:
+        libArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs')
+        incArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs')
+        runArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun')
 
-          libArgs = self.splitLibs(libArgs)
-          incArgs = self.splitIncludes(incArgs)
-          if runArgs and not 'with-mpirun' in self.framework.argDB:
-            self.framework.argDB['with-mpirun'] = runArgs
-          if libArgs and incArgs:
-            yield ('PETSc location', [libArgs], [incArgs])
-        except RuntimeError:
-          # This happens with older Petsc versions which are missing those targets
-          pass
+        libArgs = self.splitLibs(libArgs)
+        incArgs = self.splitIncludes(incArgs)
+        if runArgs and not 'with-mpirun' in self.framework.argDB:
+          self.framework.argDB['with-mpirun'] = runArgs
+        if libArgs and incArgs:
+          yield ('PETSc location', [libArgs], [incArgs])
+      except RuntimeError:
+        # This happens with older Petsc versions which are missing those targets
+        pass
     return
 
   def configureLibrary(self):
