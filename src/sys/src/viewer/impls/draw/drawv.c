@@ -426,15 +426,15 @@ int PetscViewerDrawClear(PetscViewer viewer)
 static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
 /*MC
-    
-     PETSC_VIEWER_DRAW_WORLD  - same as PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD)
+  PETSC_VIEWER_DRAW_WORLD  - same as PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD)
 
+  Level: intermediate
 M*/
 
 /*MC
-    
-     PETSC_VIEWER_DRAW_SELF  - same as PETSC_VIEWER_DRAW_(PETSC_COMM_SELF)
+  PETSC_VIEWER_DRAW_SELF  - same as PETSC_VIEWER_DRAW_(PETSC_COMM_SELF)
 
+  Level: intermediate
 M*/
 
 #undef __FUNCT__  

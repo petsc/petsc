@@ -278,11 +278,15 @@ int PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
 static int Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
 /*MC
-     PETSC_MATLAB_ENGINE_WORLD - same as PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD)
+  PETSC_MATLAB_ENGINE_WORLD - same as PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD)
+
+  Level: developer
 M*/
 
 /*MC
-     PETSC_MATLAB_ENGINE_SELF - same as PETSC_MATLAB_ENGINE_(PETSC_COMM_SELF)
+  PETSC_MATLAB_ENGINE_SELF - same as PETSC_MATLAB_ENGINE_(PETSC_COMM_SELF)
+
+  Level: developer
 M*/
 
 #undef __FUNCT__  

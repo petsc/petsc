@@ -227,7 +227,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 #undef __FUNCT__  
 #define __FUNCT__ "SDADestroy"
 /*@C
-    SDADestroy - Destroys simple distributed array.
+  SDADestroy - Destroys simple distributed array.
 
   Input parameters:
     sda - distributed array
@@ -369,6 +369,7 @@ $    n and p are optional (used for 2D and 3D problems)
 
    Note:
    Any of y, z, n, and p should be set to PETSC_NULL if not needed.
+
 
   Level: beginner
 

@@ -218,8 +218,9 @@ M*/
 #undef __FUNCT__  
 #define __FUNCT__ "VecRegister"
 /*@C
-      VecRegister - See VecRegisterDynamic()
+  VecRegister - See VecRegisterDynamic()
 
+  Level: advanced
 @*/
 int VecRegister(const char sname[], const char path[], const char name[], int (*function)(Vec))
 {
