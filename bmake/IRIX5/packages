@@ -33,7 +33,7 @@ X11_LIB        = -lX11
 # below if it is there.
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = -L/home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH) -lBS95
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Location of MPI (Message Passing Interface) software
 #
