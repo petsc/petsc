@@ -1,6 +1,7 @@
 import install.base
 import install.retrieval
 
+import os
 import sys
 
 class Builder(install.base.Base):
@@ -21,12 +22,31 @@ class Builder(install.base.Base):
       for url in maker.executeTarget('getDependencies'):
         self.debugPrint('  Building dependency '+url, 2, 'install')
         self.build(self.retriever.retrieve(url), target, setupTarget)
+    # Load any existing local RDict
+    dictFilename = os.path.join(root, 'RDict.db')
+    if os.path.exists(dictFilename):
+      try:
+        import cPickle
+        dbFile = file(dictFilename)
+        data   = cPickle.load(dbFile)
+        keys   = self.argDB.keys()
+        for k in filter(lambda k: not k in keys, data.keys()):
+          if data[k].isValueSet():
+            self.argDB.setType(k, data[k])
+        dbFile.close()
+        self.debugPrint('Loaded dictionary from '+dictFilename, 2, 'install')
+      except Exception, e:
+        self.debugPrint('Problem loading dictionary from '+dictFilename+'\n--> '+str(e), 2, 'install')
+        raise e
     self.debugPrint('Compiling in '+root, 2, 'install')
     if setupTarget is None:                 setupTarget = []
     elif not isinstance(setupTarget, list): setupTarget = [setupTarget]
     for t in setupTarget:
       maker.executeTarget(t)
     ret = maker.main(target)
+    for k in filter(lambda k: not k in keys, data.keys()):
+      if data[k].isValueSet():
+        del self.argDB[k]
     # Save source database (since atexit() functions might not be called before another build)
     maker.saveSourceDB()
     return ret

@@ -18,6 +18,14 @@ class Base(logging.Logger):
     self.getRoot()
     return
 
+  def __setstate__(self, d):
+    '''Assume that we do not want to unpickle custom RDict objects'''
+    # Should put in some swtich like self.saveArgDB
+    if 'argDB' in d: del d['argDB']
+    self.argDB = self.createArgDB(None)
+    self.__dict__.update(d)
+    return
+
   def createArgDB(self, initDB):
     '''Create an argument database unless initDB is provided, and insert the command line arguments'''
     if not initDB is None:

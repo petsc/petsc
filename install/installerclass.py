@@ -52,9 +52,6 @@ class Installer(install.base.Base):
     # This is for purging the sidl after the build
     self.argDB['fileset'] = 'sidl'
     self.builder.build(root, target = ['activate', 'default', 'purge'])
-    # Fixup install arguments
-    argDB['installedprojects']  = self.argDB['installedprojects']
-    argDB['installedLanguages'] = self.argDB['installedLanguages']
     return
 
   def backup(self, url):

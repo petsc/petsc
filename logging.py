@@ -38,6 +38,9 @@ class Logger(object):
       s = ''
       if set.tag:
         s += '('+set.tag+')'
+      if isinstance(set, build.fileset.RootedFileSet):
+        s += '('+set.projectUrl+')'
+        s += '('+set.projectRoot+')'
       s += self.debugListStr(set)
       for child in set.children:
         s += ', '+self.debugFileSetStr(child)
