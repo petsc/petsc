@@ -155,6 +155,38 @@ testfortran: chkopts
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "========================================="
     
+#
+# Builds PETSc Fortran90 interface libary
+# Note:	 libfast cannot run on .F files on certain machines, so we
+# use lib and check for errors here.
+# Note: F90 interface currently only supported in NAG F90 compiler
+fortran90: chkpetsc_dir
+	-$(RM) -f $(PDIR)/libpetscfortran.*
+	-@echo "Beginning to compile Fortran90 interface library"
+	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
+	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
+	-@echo "------------------------------------------"
+	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "------------------------------------------"
+	-@echo "Using configuration flags: $(CONF)"
+	-@echo "------------------------------------------"
+	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "------------------------------------------"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "========================================="
+	-@cd src/fortran/f90; \
+	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
+	  grep -v clog trashz | grep -v "information sections" | \
+	  egrep -i '(Error|warning|Can)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz
+	$(RANLIB) $(PDIR)/libpetscfortran.a
+	-@chmod g+w  $(PDIR)/*.a
+	-@echo "Completed compiling Fortran90 interface library"
+	-@echo "========================================="
+
+
 ranlib:
 	$(RANLIB) $(PDIR)/*.a
 
