@@ -125,6 +125,8 @@ class SharedLinker(config.compile.processor.Processor):
 
   def getTarget(self, source, shared):
     base, ext = os.path.splitext(source)
+    if not (len(base)>3 and base[:3]=='lib'):
+      base = 'lib'+base
     if hasattr(self, 'configCompilers'):
       base += '.'+self.configCompilers.setCompilers.sharedLibraryExt
     else:
@@ -153,6 +155,8 @@ class StaticLinker(SharedLinker):
 
   def getTarget(self, source, shared):
     base, ext = os.path.splitext(source)
+    if not (len(base)>3 and base[:3]=='lib'):
+      base = 'lib'+base
     if hasattr(self,'configCompilers'):
       base += '.'+self.configCompilers.AR_LIB_SUFFIX
     else:
