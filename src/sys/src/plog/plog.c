@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.189 1998/06/03 00:31:45 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.190 1998/06/05 20:30:03 balay Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1258,8 +1258,8 @@ int PLogEventActivate(int event)
    Collective over MPI_Comm
 
    Input Parameter:
-+  file - an optional file name
--  comm - MPI communicator (one processor prints)
++  comm - MPI communicator (only one processor prints output)
+-  file - an optional file name
 
    Options Database Keys:
 .  -log_summary - Prints summary of log information (for code
@@ -1292,7 +1292,6 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   /* pop off any stages the user forgot to remove */
   while (EventsStagePushed) PLogStagePop();
 
-
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
@@ -1313,12 +1312,12 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscGetHostName(hostname,64);
   PetscGetUserName(username,16);
   PetscGetProgramName(pname,256);
-  if (size == 1){
+  if (size == 1) {
     PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s",
                  pname,arch,hostname,size,username,PetscGetDate());
-  } else{
+  } else {
     PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s",
-                 pname,arch,hostname,size,username, PetscGetDate());
+                 pname,arch,hostname,size,username,PetscGetDate());
   }
 
   wdou = _TotalFlops; 
