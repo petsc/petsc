@@ -1,7 +1,6 @@
 
 /*
-      Interfaces the ESI_VEctor class to the PETSc
-    Map object class.
+   Makes a PETSc vector look like a ESI
 */
 
 #include "esi/petsc/vector.h"
@@ -38,14 +37,11 @@ esi::petsc::Vector<double,int>::Vector( Vec pvec)
   this->map = (esi::MapPartition<int> *)(new esi::petsc::Map<int>(this->comm,n,N));
 }
 
-
-
 esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
   this->map->deleteReference();
 }
-
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
 
@@ -58,6 +54,10 @@ esi::ErrorCode esi::petsc::Vector<double,int>::getInterface(const char* name, vo
     iface = (void *) (esi::Vector<double,int> *) this;
   } else if (PetscStrcmp(name,"esi::petsc::Vector",&flg),flg){
     iface = (void *) (esi::petsc::Vector<double,int> *) this;
+  } else if (PetscStrcmp(name,"esi::VectorReplaceAccess",&flg),flg){
+    iface = (void *) (esi::VectorReplaceAccess<double,int> *) this;
+  } else if (PetscStrcmp(name,"Vec",&flg),flg){
+    iface = (void *) this->vec;
   } else {
     iface = 0;
   }
@@ -69,7 +69,9 @@ esi::ErrorCode esi::petsc::Vector<double,int>::getInterfacesSupported(esi::Argv 
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::Vector");
+  list->appendArg("esi::VectorReplaceAccess");
   list->appendArg("esi::petsc::Vector");
+  list->appendArg("Vec");
   return 0;
 }
 
@@ -239,14 +241,31 @@ esi::ErrorCode esi::petsc::Vector<double,int>::setArrayPointer(double *pointer,i
   return VecPlaceArray(this->vec,pointer);
 }
 
-/*
-      Private operation
-*/
-esi::ErrorCode esi::petsc::Vector<double,int>::getPETScVec(Vec *outvec)
+esi::petsc::VectorFactory<double,int>::VectorFactory(){;}
+
+esi::petsc::VectorFactory<double,int>::~VectorFactory(){;}
+
+esi::ErrorCode esi::petsc::VectorFactory<double,int>::getVector(esi::MapPartition<int>&map,esi::Vector<double,int>*&v)
 {
-  *outvec = this->vec;
+  v = new esi::petsc::Vector<double,int>(&map);
   return 0;
+};
+
+EXTERN_C_BEGIN
+void *create_esi_petsc_vectorfactory(void)
+{
+  return (void *)(new esi::petsc::VectorFactory<double,int>);
 }
+
+// CCAFFEINE expects each .so file to have a getComponentList function.
+// See dccafe/cxx/dc/framework/ComponentFactory.h for details.
+char **getComponentList() {
+  static char *list[2];
+  list[0] = "create_esi_petsc_vectorfactory esi::VectorFactory";
+  list[1] = 0;
+  return list;
+}
+EXTERN_C_END
 
 
 
