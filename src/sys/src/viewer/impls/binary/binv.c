@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.27 1997/01/01 03:40:37 bsmith Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.28 1997/01/06 20:29:32 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -111,13 +111,31 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
 
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
+#if defined(PARCH_nt_gnu)
     if (type == BINARY_CREATE) {
-      if ((v->fdes = creat(name,0666)) == -1)
+      if ((v->fdes = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
         SETERRQ(1,0,"Cannot create file for writing");
+      }
+    } 
+    else if (type == BINARY_RDONLY) {
+      if ((v->fdes = open(name,O_RDONLY|O_BINARY,0)) == -1) {
+      SETERRQ(1,0,"Cannot open file for reading");
+      }
+    }
+    else if (type == BINARY_WRONLY) {
+      if ((v->fdes = open(name,O_WRONLY|O_BINARY,0)) == -1) {
+        SETERRQ(1,0,"Cannot open file for writing");
+      }
+    } else SETERRQ(1,0,"Unknown file type");
+#else
+    if (type == BINARY_CREATE) {
+      if ((v->fdes = creat(name,0666)) == -1) {
+        SETERRQ(1,0,"Cannot create file for writing");
+      }
     } 
     else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
-        SETERRQ(1,0,"Cannot open file for reading");
+      SETERRQ(1,0,"Cannot open file for reading");
       }
     }
     else if (type == BINARY_WRONLY) {
@@ -125,6 +143,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
         SETERRQ(1,0,"Cannot open file for writing");
       }
     } else SETERRQ(1,0,"Unknown file type");
+#endif
   }
   else v->fdes = -1;
   v->format    = 0;
