@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.15 1996/02/08 18:28:54 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.16 1996/02/19 03:52:15 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -202,6 +202,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ ZGETRS
 #define LAtrmv_  ZTRMV
 #define LAtrsl_  ZTRSL
+#define BLgemm_  ZGEMM
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define LAtrtrs_ ztrtrs
 #define LApotrf_ zpotrf
@@ -210,6 +211,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ zgetrs
 #define LAtrmv_  ztrmv
 #define LAtrsl_  ztrsl
+#define BLgemm_  zgemm
 #else
 #define LAtrtrs_ ztrtrs_
 #define LApotrf_ zpotrf_
@@ -218,6 +220,7 @@ Cray T3D.  Yet another reason to hate ...
 #define LAgetrs_ zgetrs_
 #define LAtrmv_  ztrmv_
 #define LAtrsl_  ztrsl_
+#define BLgemm_  zgemm_
 #endif
 
 #endif
@@ -278,3 +281,6 @@ extern void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
 #endif
 
 #endif
+
+
+
