@@ -256,11 +256,11 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
 
      It does not work correctly from HP-UX because it processes the 
    macros in a way that sometimes it double counts, hence 
-   PETSC_HAVE_BROKEN_RECURSIVE_MACRO
+   HAVE_BROKEN_RECURSIVE_MACRO
 
      It does not work with Windows NT because winmpich lacks MPI_Type_size()
 */
-#if !defined(PETSC_HAVE_MPI_UNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(PETSC_HAVE_MPI_UNI) && !defined(HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*
    Logging of MPI activities
 */
@@ -352,7 +352,7 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
   MPI_Start(requests)                   \
 )
 
-#endif /* !PETSC_HAVE_MPI_UNI && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
+#endif /* !PETSC_HAVE_MPI_UNI && ! HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 

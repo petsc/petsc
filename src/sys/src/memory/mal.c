@@ -35,7 +35,7 @@
 #define __FUNCT__ "PetscMallocAlign"
 int PetscMallocAlign(int mem,int line,char *func,char *file,char *dir,void** result)
 {
-#if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
+#if defined(HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
   *result = malloc(mem);
 #elif defined(HAVE_MEMALIGN)
   *result = memalign(PETSC_MEMALIGN,mem);
@@ -67,7 +67,7 @@ int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
 {
   int ierr = 0;
 
-#if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(HAVE_MEMALIGN))
+#if (!(defined(HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(HAVE_MEMALIGN))
   int shift;
   /*
        Previous int tells us how many ints the pointer has been shifted from
@@ -78,7 +78,7 @@ int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
   ptr   = (void*)(((int*)ptr) - shift);
 #endif
 
-#if defined(PETSC_HAVE_FREE_RETURN_INT)
+#if defined(HAVE_FREE_RETURN_INT)
   ierr = free(ptr); 
   if (ierr) {
     return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",ierr);
@@ -97,7 +97,7 @@ int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
 #define __FUNCT__ "PetscFreeDefault"
 int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
 {
-#if defined(PETSC_HAVE_FREE_RETURN_INT)
+#if defined(HAVE_FREE_RETURN_INT)
   int ierr = free(ptr); 
   if (ierr) {
     return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",ierr);

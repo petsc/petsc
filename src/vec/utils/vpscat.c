@@ -1857,7 +1857,7 @@ int VecScatterDestroy_PtoP_X(VecScatter ctx)
      IBM's PE version of MPI has a bug where freeing these guys will screw up later
      message passing.
   */
-#if !defined(PETSC_HAVE_BROKEN_REQUEST_FREE)
+#if !defined(HAVE_BROKEN_REQUEST_FREE)
   for (i=0; i<gen_to->n; i++) {
     ierr = MPI_Request_free(gen_to->requests + i);CHKERRQ(ierr);
     ierr = MPI_Request_free(gen_to->rev_requests + i);CHKERRQ(ierr);

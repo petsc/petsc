@@ -35,8 +35,8 @@
 
 #define HAVE_MEMMOVE
 
-#define PETSC_HAVE_DOUBLE_ALIGN
-#define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
+#define HAVE_DOUBLES_ALIGNED
+#define HAVE_DOUBLE_ALIGN_MALLOC
 
 #define HAVE_MEMALIGN
 
@@ -58,7 +58,7 @@
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_IRIX.c"
 
 #if defined(__cplusplus)
-#define PETSC_SIGNAL_CAST (void (*)(int))
+#define SIGNAL_CAST (void (*)(int))
 #endif
 #define PETSC_HAVE_IRIX_STYLE_FPTRAP
 

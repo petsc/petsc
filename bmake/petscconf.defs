@@ -4,39 +4,39 @@ in bmake/${PETSC_ARCH}/petscconf.h
 
 PETSC_HAVE_????_STYLE_FPTRAP handled in configure.in
 
-PETSC_MISSING_FORTRANSTAR Fortran cannot handle integer*4, real*4, Nag F90 compiler
+MISSING_FORTRANSTAR Fortran cannot handle integer*4, real*4, Nag F90 compiler
 
-PETSC_MISSING_DREAL Fortran missing dreal(); IRIX F90 compiler and Nag F90 compiler
+MISSING_DREAL Fortran missing dreal(); IRIX F90 compiler and Nag F90 compiler
 
-PETSC_MISSING_GETPWUID the function
+MISSING_GETPWUID the function
 
-PETSC_MISSING_SOCKETS (only ASCIIred)
-
-
-PETSC_HAVE_UCBPS  /usr/ucb/ps exists
-
-PETSC_MISSING_SIGSYS
-PETSC_MISSING_SIGBUS
-PETSC_MISSING_SIGQUIT
+MISSING_SOCKETS (only ASCIIred)
 
 
-PETSC_SIGNAL_CAST needed only for C++
+HAVE_UCBPS  /usr/ucb/ps exists
+
+MISSING_SIGSYS
+MISSING_SIGBUS
+MISSING_SIGQUIT
+
+
+SIGNAL_CAST needed only for C++
   (void (*)(int)) on IRIX and IRIX64
   (void (*)(...)) on IRIX5
 
 ---------------------------------------------------------
 
-PETSC_HAVE_BROKEN_RECURSIVE_MACRO
+HAVE_BROKEN_RECURSIVE_MACRO
 CPP processes recursive use of macros incorrectly
 
-PETSC_HAVE_BROKEN_REQUEST_FREE
+HAVE_BROKEN_REQUEST_FREE
 MPI_Request_free() either generates an error or messes up later MPI
 calls. Known to be a problem with IBM MPI and at least earlier MPICH
 
-PETSC_HAVE_DOUBLE_ALIGN
+HAVE_DOUBLES_ALIGNED
 double variables ARE always double aligned on this system
 
-PETSC_HAVE_DOUBLE_ALIGN_MALLOC
+HAVE_DOUBLE_ALIGN_MALLOC
 malloc always returns memory that is double aligned
 
 PETSC_HAVE_FAST_MPI_WTIME
@@ -55,11 +55,11 @@ PETSC_MISSING_LAPACK_GEEV
 the Lapack routine GEEV is missing from the vendor provided math
 libraries. This is true for Intel Math Kernel Library (MKL) for PCs
 
-PETSC_HAVE_SLOW_NRM2
+HAVE_SLOW_NRM2
 BLAS nrm2() routine is so slow it is better to replace with code.
 True if using the Netlib version of the BLAS.
 
-PETSC_HAVE_VPRINTF_CHAR
+HAVE_VPRINTF_CHAR
 final argument to vprintf() is a char *, rather than the usual void *
 true under freebsd #if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
 
@@ -91,7 +91,7 @@ indicates that the C++ compiler implements complex as a Standard
 template library, with <complex> as the include file, and using
 std::complex name space
 
-PETSC_HAVE_FREE_RETURN_INT
+HAVE_FREE_RETURN_INT
 indicated that the function free() has the prototype
 extern int free(void *);
 The default prototype is:

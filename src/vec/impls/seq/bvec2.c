@@ -23,7 +23,7 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     /*
       This is because the Fortran BLAS 1 Norm is very slow! 
     */
-#if defined(PETSC_HAVE_SLOW_NRM2)
+#if defined(HAVE_SLOW_NRM2)
     {
       int         i;
       PetscScalar sum=0.0;

@@ -86,7 +86,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
   if (fullpath[0] == '~') {
     char tmppath[MAXPATHLEN];
     if (fullpath[1] == '/') {
-#if !defined(PETSC_MISSING_GETPWUID)
+#if !defined(MISSING_GETPWUID)
 	pwde = getpwuid(geteuid());
 	if (!pwde) PetscFunctionReturn(0);
 	ierr = PetscStrcpy(tmppath,pwde->pw_dir);CHKERRQ(ierr);

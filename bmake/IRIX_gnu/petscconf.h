@@ -28,8 +28,8 @@
 #define PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 
 #define HAVE_MEMMOVE
-#define PETSC_HAVE_DOUBLE_ALIGN
-#define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
+#define HAVE_DOUBLES_ALIGNED
+#define HAVE_DOUBLE_ALIGN_MALLOC
 
 #define SIZEOF_VOID_P 4
 #define SIZEOF_INT 4
@@ -52,7 +52,7 @@
 #define PETSC_USE_P_FOR_DEBUGGER
 
 #if defined(__cplusplus)
-#define PETSC_SIGNAL_CAST (void (*)(int))
+#define SIGNAL_CAST (void (*)(int))
 #endif
 
 #define PETSC_HAVE_IRIX_STYLE_FPTRAP

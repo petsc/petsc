@@ -167,7 +167,7 @@ valid
     SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Int");       \
   }}
 
-#if !defined(PETSC_HAVE_DOUBLE_ALIGN) || defined (PETSC_HAVE_DOUBLE_ALIGN)
+#if !defined(HAVE_DOUBLES_ALIGNED) || defined (HAVE_DOUBLES_ALIGNED)
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
   if ((unsigned long)h & (unsigned long)3) {                        \
@@ -216,7 +216,7 @@ valid
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
   }
 
-#if !defined(PETSC_HAVE_DOUBLE_ALIGN)
+#if !defined(HAVE_DOUBLES_ALIGNED)
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
   }

@@ -65,7 +65,7 @@ int PetscGetHomeDirectory(char dir[],int maxlen)
 #if defined(PARCH_win32) || defined(PARCH_win32_gnu)
   if (!d1) d1 ="c:";
   ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
-#elif !defined(PETSC_MISSING_GETPWUID)
+#elif !defined(MISSING_GETPWUID)
   pw = getpwuid(getuid());
   if (!pw)  {dir[0] = 0; PetscFunctionReturn(0);}
   ierr = PetscStrncpy(dir,pw->pw_dir,maxlen);CHKERRQ(ierr);
