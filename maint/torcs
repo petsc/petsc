@@ -1,11 +1,11 @@
 #! /bin/sh
-# $Id: torcs,v 1.4 1997/09/10 19:46:20 balay Exp balay $ 
+# $Id: torcs,v 1.5 1999/03/19 21:42:39 balay Exp balay $ 
 
 # 
 # torcs full-file-name [ full-file-name .... ]
 #
 for file in $* ; do 
- echo "Initial Version" | rcs -i -agropp,bsmith,curfman,balay,kaushik,ibrahba -L $file 
+ echo "Initial Version" | rcs -i -agropp,bsmith,curfman,balay,kaushik,ibrahba,hzhang -L $file 
  /usr/local/bin/ci  -u $file 
 done
 
