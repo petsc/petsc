@@ -32,11 +32,13 @@ petsc.ps: petsc.tex
 	latex petsc
 	dvips petsc
 	rm -r petsc.dvi petsc.aux petsc.log
+	-@chmod g+w petsc.ps
 
 petsc.html: petsc.tex
 	tohtml petsc.tex -notopnames -nocontents -nonavnames 
 	tohtml petsc.tex -notopnames -nocontents -nonavnames 
 	rm -f *.gif *.xbm latex.err
+	-@chmod g+w petsc.html
 
 clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
