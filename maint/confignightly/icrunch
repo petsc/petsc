@@ -8,5 +8,5 @@ set CONF=macosx-gnu
 if ($day == Sun || $day == Wed || $day == Sat) then
   set CONF=macox-gnu
 else if ($day == Thu || $day == Mon || $day == Fri) then
-  set CONF=macos-ibm
+  set CONF=macosx-ibm
 endif
