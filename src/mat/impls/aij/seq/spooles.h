@@ -39,6 +39,7 @@ typedef struct {
   DenseMtx        *mtxY, *mtxX;
   double          *entX;
   int             *rowindX,rstart,firsttag,nmycol;
+  IS              iden;
 } Mat_Spooles;
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
