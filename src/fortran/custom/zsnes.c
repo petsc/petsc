@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.56 2001/03/29 15:39:06 bsmith Exp balay $*/
+/*$Id: zsnes.c,v 1.57 2001/03/29 16:37:13 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -11,6 +11,8 @@
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define snesdacomputejacobianwithadifor_ SNESDACOMPUTEJACOBIANWITHADIFOR
+#define snesdaformfunction_          SNESDAFORMFUNCTION          
 #define matsnesmfsetbase_            MATSNESMFSETBASE
 #define snesconverged_eq_tr_         SNESCONVERGED_EQ_TR
 #define snesconverged_eq_ls_         SNESCONVERGED_EQ_LS
@@ -60,6 +62,8 @@
 #define snesnolinesearchnonorms_         SNESNOLINESEARCHNONORMS
 #define snesview_                        SNESVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define snesdacomputejacobianwithadifor_ snesdacomputejacobianwithadifor
+#define snesdaformfunction_          snesdaformfunction
 #define matsnesmfsetbase_            matsnesmfsetbase
 #define snescubiclinesearch_         snescubiclinesearch     
 #define snesquadraticlinesearch_     snesquadraticlinesearch    
@@ -237,6 +241,7 @@ static int ourmondestroy(void* ctx)
 void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,int*,double*,void*,int*),
                     void *mctx,void (PETSC_STDCALL *mondestroy)(void *,int *),int *ierr)
 {
+  if (FORTRANNULLOBJECT(mctx)) mctx = PETSC_NULL;
   if ((void(*)())func == (void(*)())snesdefaultmonitor_) {
     *ierr = SNESSetMonitor(*snes,SNESDefaultMonitor,0,0);
   } else if ((void(*)())func == (void(*)())snesvecviewmonitor_) {
@@ -341,6 +346,7 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
        void (PETSC_STDCALL *func)(SNES*,double*,double*,double*,SNESConvergedReason*,void*,int*),
        void *cctx,int *ierr)
 {
+  if (FORTRANNULLOBJECT(cctx)) cctx = PETSC_NULL;
   if ((void(*)())func == (void(*)())snesconverged_eq_ls_){
     *ierr = SNESSetConvergenceTest(*snes,SNESConverged_EQ_LS,0);
   } else if ((void(*)())func == (void(*)())snesconverged_eq_tr_){
@@ -414,6 +420,7 @@ void PETSC_STDCALL snessethessian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL 
                      void *ctx,int *ierr)
 {
   f6 = func;
+  if (FORTRANNULLOBJECT(ctx)) ctx = PETSC_NULL;
   *ierr = SNESSetHessian(*snes,*A,*B,oursneshessianfunction,ctx);
 }
 
@@ -425,7 +432,9 @@ static int oursnesgradientfunction(SNES snes,Vec x,Vec d,void *ctx)
   return 0;
 }
 
-void PETSC_STDCALL snessetgradient_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)(SNES*,Vec*,Vec*,void*,int*),void *ctx,int *ierr){
+void PETSC_STDCALL snessetgradient_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)(SNES*,Vec*,Vec*,void*,int*),void *ctx,int *ierr)
+{
+  if (FORTRANNULLOBJECT(ctx)) ctx = PETSC_NULL;
   f5 = func;
   *ierr = SNESSetGradient(*snes,*r,oursnesgradientfunction,ctx);
 }
@@ -453,10 +462,29 @@ static int oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
   (*f2)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
+
+/*
+        These are not usually called from Fortran but allow Fortran users 
+   to transparently set these monitors from .F code
+   
+   functions, hence no STDCALL
+*/
+void  snesdaformfunction_(SNES *snes,Vec *X, Vec *F,void *ptr,int *ierr)
+{
+  *ierr = SNESDAFormFunction(*snes,*X,*F,ptr);
+}
+
+
 void PETSC_STDCALL snessetfunction_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)(SNES*,Vec*,Vec*,void*,int*),
-                      void *ctx,int *ierr){
+                      void *ctx,int *ierr)
+{
+  if (FORTRANNULLOBJECT(ctx)) ctx = PETSC_NULL;
    f2 = func;
-   *ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
+   if ((void(*)())func == (void(*)())snesdaformfunction_) {
+     *ierr = SNESSetFunction(*snes,*r,SNESDAFormFunction,ctx);
+   } else {
+     *ierr = SNESSetFunction(*snes,*r,oursnesfunction,ctx);
+   }
 }
 
 /* ---------------------------------------------------------*/
@@ -471,6 +499,7 @@ static int ourmatsnesmffunction(SNES snes,Vec x,Vec f,void *ctx)
 void PETSC_STDCALL matsnesmfsetfunction_(Mat *mat,Vec *r,void (PETSC_STDCALL *func)(SNES*,Vec*,Vec*,void*,int*),
                       void *ctx,int *ierr){
    f11 = func;
+   if (FORTRANNULLOBJECT(ctx)) ctx = PETSC_NULL;
    *ierr = MatSNESMFSetFunction(*mat,*r,ourmatsnesmffunction,ctx);
 }
 /* ---------------------------------------------------------*/
@@ -497,6 +526,12 @@ void  snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStruct
   *ierr = SNESDefaultComputeJacobianColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
 }
 
+void  snesdacomputejacobianwithadifor_(SNES *snes,Vec *X,Mat *m,Mat *p,MatStructure* type,void *ctx,int *ierr) 
+{
+  (*PetscErrorPrintf)("Cannot call this function from Fortran");
+  *ierr = 1;
+}
+
 static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
 static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
@@ -508,10 +543,13 @@ static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,void
 void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,
             MatStructure*,void*,int*),void *ctx,int *ierr)
 {
+  if (FORTRANNULLOBJECT(ctx)) ctx = PETSC_NULL;
   if ((void(*)())func == (void(*)())snesdefaultcomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobian,ctx);
   } else if ((void(*)())func == (void(*)())snesdefaultcomputejacobiancolor_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianColor,*(MatFDColoring*)ctx);
+  } else if ((void(*)())func == (void(*)())snesdacomputejacobianwithadifor_) {
+    *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobianWithAdifor,ctx);
   } else {
     f3 = func;
     *ierr = SNESSetJacobian(*snes,*A,*B,oursnesjacobian,ctx);
