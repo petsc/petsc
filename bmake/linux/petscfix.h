@@ -185,6 +185,8 @@ extern int gettimeofday(struct timeval *,...);
 #if defined(__cplusplus)
 extern "C" {
 extern int    getdomainname(char *,int);
+extern unsigned int sleep (unsigned int );
+
 }
 #else
 #endif
