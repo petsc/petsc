@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.12 1995/11/22 23:53:31 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.13 1995/11/27 18:06:55 balay Exp balay $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -766,7 +766,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   
   node_max = a->inode.node_count; /*has to be same for both a,b */
   ns       = b->inode.size ;
-  if (!ns){                     /* If mat_order other than natural is used*/
+  if (!ns){                     /* If mat_order!=natural, create inode info*/
     nsa           = a->inode.size;
     ns            = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(ns);
     tmp_vec       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
@@ -783,6 +783,18 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     }
     PetscFree(tmp_vec);
   }
+  /* If max inode size >3, split ti into two inodes.*/
+  tmp_vec       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
+  for(i=0, j=0; i< node_max; ++i, ++j){
+    if(ns[i]>3) {
+      tmp_vec[j] = ns[i]/2;++j; /* Assuming ns[i] < =5  */
+      tmp_vec[j] = ns[i] -tmp_vec[j-1];
+    } else tmp_vec[j] = ns[i];
+  }
+
+  /* Noe use the new inode info created*/
+  ns       = tmp_vec;
+  node_max = j;
 
   for ( i=0,row=0; i<node_max; i++ ) { 
     nsz   = ns[i];
@@ -1007,6 +1019,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
     row += nsz;                 /* Update the row */
   } 
   PetscFree(rtmp1);
+  PetscFree(tmp_vec);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
