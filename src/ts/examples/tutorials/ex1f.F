@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.18 1998/04/15 18:00:45 balay Exp balay $"
+! "$Id: ex1f.F,v 1.19 1998/04/21 18:31:57 balay Exp balay $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -177,7 +177,7 @@
       call TSStep(ts,its,ftime,ierr) 
    
       write(6,100) its,ftime
- 100  format('Number of pseudo time-steps ',i5,' final time ',e8.2)
+ 100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2)
 
 !
 !     Free the data structures constructed above

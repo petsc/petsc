@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.8 1998/04/27 18:54:39 balay Exp balay $";
+!    "$Id: ex15f.F,v 1.9 1998/04/27 20:01:41 balay Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -233,7 +233,7 @@
            write(6,110) its
         endif
       endif
-  100 format('Norm of error ',e10.4,' iterations ',i5)
+  100 format('Norm of error ',1pe10.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12, iterations ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they

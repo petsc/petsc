@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f90.F,v 1.14 1998/07/01 22:34:14 balay Exp curfman $";
+!    "$Id: ex13f90.F,v 1.15 1998/07/02 03:29:20 curfman Exp balay $";
 !
 !
 !/*T
@@ -156,7 +156,7 @@
  90      continue
          enorm = enorm * PetscReal(hx*hy)
          write(6,115) m,n,enorm
- 115     format ('m = ',I2,' n = ',I2,' error norm = ',E10.4)
+ 115     format ('m = ',I2,' n = ',I2,' error norm = ',1PE10.4)
  100  continue
 
 !  We are finished solving linear systems, so we clean up the
