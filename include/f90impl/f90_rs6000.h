@@ -1,4 +1,4 @@
-/* $Id: f90_rs6000.h,v 1.2 1998/03/23 21:06:02 balay Exp balay $ */
+/* $Id: f90_rs6000.h,v 1.3 1998/04/25 20:28:50 balay Exp bsmith $ */
 
 typedef struct {
   long lower;   /* starting index of the fortran array */
@@ -19,7 +19,7 @@ typedef struct {
 #define F90_COOKIE     20481
 
 #if !defined (PETSC_COMPLEX)
-#define F90_SCALAR_ID F90_DOULBE_ID
+#define F90_SCALAR_ID F90_DOUBLE_ID
 #else
 #define F90_SCALAR_ID F90_COMPLEX_ID
 #endif
