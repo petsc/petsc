@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.26 1995/12/06 16:12:52 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.27 1995/12/12 17:35:10 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -180,7 +180,7 @@ int MPIU_Seq_begin(MPI_Comm comm,int ng )
   if (MPIU_Seq_keyval == MPI_KEYVAL_INVALID) {
     MPI_Keyval_create(MPI_NULL_COPY_FN, MPI_NULL_DELETE_FN,&MPIU_Seq_keyval,(void*)0);
   }
-  MPI_Attr_get( comm, MPIU_Seq_keyval, (void *)&local_comm, &flag );
+  MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) {
     /* This expects a communicator to be a pointer */
     MPI_Comm_dup( comm, &local_comm );
@@ -220,7 +220,7 @@ int MPIU_Seq_end(MPI_Comm comm,int ng )
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
   if (np == 1) return 0;
-  MPI_Attr_get( comm, MPIU_Seq_keyval, (void *)&local_comm, &flag );
+  MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) MPI_Abort( comm, MPI_ERR_UNKNOWN );
   /* Send to the first process in the next group OR to the first process
      in the processor set */
@@ -282,13 +282,13 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void *)0);
   }
 
-  ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void*)&tagvalp,&flag); CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag); CHKERRQ(ierr);
 
   if (!flag) {
     /* This communicator is not yet known to this system, so we
        dup it and set the first value */
     MPI_Comm_dup( comm_in, comm_out );
-    MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void*)&maxval, &flag );
+    MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
     tagvalp = (int *)PetscMalloc( 2*sizeof(int) );
     if (!tagvalp) return MPI_ERR_EXHAUSTED;
     tagvalp[0] = *maxval;
@@ -311,7 +311,7 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 int MPIU_Comm_free(MPI_Comm *comm)
 {
   int ierr,*tagvalp,flag;
-  ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void*)&tagvalp,&flag); CHKERRQ(ierr);
+  ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag); CHKERRQ(ierr);
   tagvalp[1]--;
   if (!tagvalp[1]) {MPI_Comm_free(comm);}
   return 0;
