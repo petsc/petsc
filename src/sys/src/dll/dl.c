@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.32 1998/10/29 23:28:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.33 1998/10/30 04:31:05 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -116,8 +116,8 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
     *par3  =  0;
     par3  += 11;
     ierr   = PetscGetArchType(arch,10);
-    PetscStrcat(par2,arch);
-    PetscStrcat(par2,par3);
+    ierr = PetscStrcat(par2,arch);CHKERRQ(ierr);
+    ierr = PetscStrcat(par2,par3);CHKERRQ(ierr);
     par3 = PetscStrstr(par2,"$PETSC_ARCH");
   }
 
@@ -125,8 +125,8 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   while (par3) {
     *par3  =  0;
     par3  += 5;
-    PetscStrcat(par2,PETSC_BOPT);
-    PetscStrcat(par2,par3);
+    ierr = PetscStrcat(par2,PETSC_BOPT);CHKERRQ(ierr);
+    ierr = PetscStrcat(par2,par3);CHKERRQ(ierr);
     par3 = PetscStrstr(par2,"$BOPT");
   }
 
@@ -135,7 +135,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   */
   flg = !PetscStrncmp(par2,"file:",5);
   if (flg) {
-    PetscStrcpy(par2,par2+5);
+    ierr = PetscStrcpy(par2,par2+5);CHKERRQ(ierr);
   }
 
   /* strip out .a from it if user put it in by mistake */
@@ -147,13 +147,13 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   ierr = PetscStrcat(buff,PETSC_SLSUFFIX);CHKERRQ(ierr);
   if (!(en = PetscStrstr(par2,buff)) || (PetscStrlen(en) != 1+PetscStrlen(PETSC_SLSUFFIX))) {
     /* check for .gz and move it to after suffix */
-    PetscStrcat(par2,".");
-    PetscStrcat(par2,PETSC_SLSUFFIX);
+    ierr = PetscStrcat(par2,".");CHKERRQ(ierr);
+    ierr = PetscStrcat(par2,PETSC_SLSUFFIX);CHKERRQ(ierr);
   }
 
   par3 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par3);
   ierr = PetscFileRetrieve(comm,par2,par3,1024);CHKERRQ(ierr);
-  PetscStrcpy(par2,par3);
+  ierr = PetscStrcpy(par2,par3);CHKERRQ(ierr);
   PetscFree(par3);
 
   /* first check original given name */
@@ -291,7 +291,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
     nlist = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
     nlist->next   = 0;
     nlist->handle = handle;
-    PetscStrcpy(nlist->libname,path);
+    ierr = PetscStrcpy(nlist->libname,path);CHKERRQ(ierr);
 
     if (prev) {
       prev->next = nlist;
@@ -367,7 +367,7 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   list = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
   list->next   = 0;
   list->handle = handle;
-  PetscStrcpy(list->libname,libname);
+  ierr = PetscStrcpy(list->libname,libname);CHKERRQ(ierr);
 
   if (!*outlist) {
     *outlist   = list;
@@ -426,7 +426,7 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   list         = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
   list->handle = handle;
   list->next   = *outlist;
-  PetscStrcpy(list->libname,libname);
+  ierr = PetscStrcpy(list->libname,libname);CHKERRQ(ierr);
   *outlist     = list;
 
   PetscFunctionReturn(0);
