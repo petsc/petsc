@@ -1,4 +1,4 @@
-# $Id: variables,v 1.17 2001/03/29 16:33:52 balay Exp balay $ 
+# $Id: variables,v 1.18 2001/08/22 17:58:22 balay Exp bsmith $ 
 #
 #     See the file bmake/variables.defs for a complete explanation of all these fields
 #
@@ -50,8 +50,8 @@ OCXX_FOPTFLAGS	   = -O3
 GCOMP_COPTFLAGS	   = -g  -qfullpath
 GCOMP_FOPTFLAGS	   = -g  -qfullpath
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -O3  -qmaxmem=-1 -qspill=32704
-OCOMP_FOPTFLAGS	   = -O3
+OCOMP_COPTFLAGS	   = -O  -qmaxmem=-1 -qspill=32704
+OCOMP_FOPTFLAGS	   = -O
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
                      -DPETSC_USE_STACK 
