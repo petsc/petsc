@@ -46,39 +46,26 @@ int MatMarkDiagonal_SeqSBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-/* extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**); */
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqSBAIJ"
 static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  int         ierr,n = a->mbs,i;
 
   PetscFunctionBegin;
-  
-  if (ia) {
-    SETERRQ(1,"Function not yet written for SBAIJ format, only supports natural ordering");
-  } 
-  
-#ifdef NEW
-  int         ierr;
- 
   if (!ia) PetscFunctionReturn(0);
-  
-/*
-  if (symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,oshift,ia,ja);CHKERRQ(ierr);
-  } else if (oshift == 1) {
-    int nz = a->i[n]; 
-    for (i=0; i<nz; i++) a->j[i]++;
+
+  *nn = n;
+  if (oshift == 1) {
+    /* temporarily add 1 to i and j indices */
+    int s_nz = a->i[n]; 
+    for (i=0; i<s_nz; i++) a->j[i]++;
     for (i=0; i<n+1; i++) a->i[i]++;
     *ia = a->i; *ja = a->j;
   } else {
-*/
     *ia = a->i; *ja = a->j;
-    /* } */
-#endif
-  *nn = a->mbs;
+  }
   PetscFunctionReturn(0); 
 }
 
@@ -86,10 +73,18 @@ static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,in
 #define __FUNCT__ "MatRestoreRowIJ_SeqSBAIJ" 
 static int MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  int         i,n = a->mbs,ierr;
+
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
-  SETERRQ(1,"Function not yet written for SBAIJ format, only supports natural ordering");
-  /* PetscFunctionReturn(0); */
+
+  if (oshift == 1) {
+    int s_nz = a->i[n]-1; 
+    for (i=0; i<s_nz; i++) a->j[i]--;
+    for (i=0; i<n+1; i++) a->i[i]--;
+  }
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  
@@ -1245,6 +1240,24 @@ int MatSetUpPreallocation_SeqSBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetArray_SeqSBAIJ"
+int MatGetArray_SeqSBAIJ(Mat A,PetscScalar **array)
+{
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
+  PetscFunctionBegin;
+  *array = a->a;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreArray_SeqSBAIJ"
+int MatRestoreArray_SeqSBAIJ(Mat A,PetscScalar **array)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqSBAIJ"
@@ -1296,8 +1309,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatSetUpPreallocation_SeqSBAIJ,
        0,
        MatICCFactorSymbolic_SeqSBAIJ,
-       0,
-       0,
+       MatGetArray_SeqSBAIJ,
+       MatRestoreArray_SeqSBAIJ,
        MatDuplicate_SeqSBAIJ,
        0,
        0,
