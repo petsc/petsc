@@ -286,27 +286,32 @@ class Configure(config.base.Configure):
     '''Determine whether the Fortran stubs exist or not'''
     stubDir = os.path.join(self.framework.argDB['PETSC_DIR'], 'src', 'fortran', 'auto')
     if not os.path.exists(os.path.join(stubDir, 'makefile.src')):
-      print '  WARNING: Fortran stubs have not been generated in '+stubDir
+      self.framework.log.write('WARNING: Fortran stubs have not been generated in '+stubDir+'\n')
       self.framework.getExecutable('bfort', getFullPath = 1)
       if hasattr(self.framework, 'bfort'):
-        print '           Running '+self.framework.bfort+' to generate Fortran stubs'
+        self.framework.log.write('           Running '+self.framework.bfort+' to generate Fortran stubs\n')
         (status,output) = commands.getstatusoutput('make allfortranstubs')
         # filter out the normal messages, user has to cope with error messages
         cnt = 0
         for i in output.split('\n'):
           if not (i.startswith('fortranstubs in:') or i.startswith('Fixing pointers') or i.find('ACTION=') >= 0):
             if not cnt:
-              print '*******Error generating Fortran stubs****'
+              self.framework.log.write('*******Error generating Fortran stubs****\n')
             cnt = cnt + 1
-            print i+'\n'
+            self.framework.log.write(i+'\n')
         if not cnt:
-          print '           Completed generating Fortran stubs'
+          self.framework.log.write('           Completed generating Fortran stubs\n')
         else:
-          print '*******End of error messages from generating Fortran stubs****'
+          self.framework.log.write('*******End of error messages from generating Fortran stubs****\n')
       else:
-        print '           See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how'
-        print '           to obtain bfort to generate the Fortran stubs or make sure'
-        print '           bfort is in your path'
+        self.framework.log.write('           See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\n')
+        self.framework.log.write('           to obtain bfort to generate the Fortran stubs or make sure\n')
+        self.framework.log.write('           bfort is in your path\n')
+        self.framework.log.write('WARNING: Turning off Fortran interfaces for PETSc')
+        del self.framework.argDB['FC']
+        self.addSubstitution('FC', '')
+    else:
+      self.framework.log.write('Fortran stubs do exist in '+stubDir+'\n')
     return
 
   def configureDynamicLibraries(self):
@@ -750,26 +755,52 @@ acfindx:
   def configureETags(self):
     '''Determine if etags files exist and try to create otherwise'''
     if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'TAGS')):
-      print '  WARNING: ETags files have not been created'
+      self.framework.log.write('WARNING: ETags files have not been created\n')
       self.framework.getExecutable('etags', getFullPath = 1)
       if hasattr(self.framework, 'etags'):
-        print '           Running '+self.framework.etags+' to generate TAGS files'
-        print '           This may tak several minutes'
+        self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         (status,output) = commands.getstatusoutput('make PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags')
-        # filter out the normal messages, user has to cope with error messages
+        # filter out the normal messages
         cnt = 0
         for i in output.split('\n'):
           if not (i.startswith('etags_') or i.find('TAGS') >= 0):
             if not cnt:
-              print '*******Error generating etags files****'
+              self.framework.log.write('*******Error generating etags files****\n')
             cnt = cnt + 1
-            print i+'\n'
+            self.framework.log.write(i+'\n')
         if not cnt:
-          print '           Completed generating etags files'
+          self.framework.log.write('           Completed generating etags files\n')
         else:
-          print '*******End of error messages from generating etags files****'
+          self.framework.log.write('*******End of error messages from generating etags files****\n')
       else:
-        print '           The etags command is not in your path, cannot build etags files'
+        self.framework.log.write('           The etags command is not in your path, cannot build etags files\n')
+    else:
+      self.framework.log.write('Found etags file \n')
+    return
+
+  def configureDocs(self):
+    '''Determine if the docs are built, if not, warn the user'''
+    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'include','petscvec.h.html')):
+      self.framework.log.write('WARNING: document files have not been created\n')
+      self.framework.getExecutable('doctext', getFullPath = 1)
+      self.framework.getExecutable('mapnames', getFullPath = 1)
+      self.framework.getExecutable('c2html', getFullPath = 1)
+      self.framework.getExecutable('pdflatex', getFullPath = 1)
+      if hasattr(self.framework, 'doctext') and hasattr(self.framework, 'mapnames') and hasattr(self.framework, 'c2html') and hasattr(self.framework, 'pdflatex'):
+        self.framework.log.write('           You can run "make alldoc LOC=${PETSC_DIR}" to generate all the documentation\n')
+        self.framework.log.write('           WARNING!!! This will take several HOURS to run\n')
+      else:
+        self.framework.log.write('           You are missing')
+        if not hasattr(self.framework, 'doctext'): self.framework.log.write(' doctext')
+        if not hasattr(self.framework, 'mapnames'):self.framework.log.write(' mapnames')
+        if not hasattr(self.framework, 'c2html'):  self.framework.log.write(' c2html')
+        if not hasattr(self.framework, 'pdflatex'):self.framework.log.write(' pdflatex')
+        self.framework.log.write('\n')
+        self.framework.log.write('           from your PATH. See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\n')
+        self.framework.log.write('           install them and compile the documentation\n')
+        self.framework.log.write('      Or view the docs on line at http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs\n')
+    else:
+      self.framework.log.write('Document files found\n')
     return
 
   def configure(self):
@@ -784,9 +815,10 @@ acfindx:
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureCompilerFlags)
     if 'FC' in self.framework.argDB:
+      self.executeTest(self.configureFortranStubs)
+    if 'FC' in self.framework.argDB:
       self.executeTest(self.configureFortranPIC)
       self.executeTest(self.configureFortranCPP)
-      self.executeTest(self.configureFortranStubs)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
@@ -809,4 +841,5 @@ acfindx:
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
     self.executeTest(self.configureETags)
+    self.executeTest(self.configureDocs)
     return

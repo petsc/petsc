@@ -7,6 +7,10 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
+  def configureLibrary(self):
+    '''Find an ADIC installation and check if it can work with PETSc'''
+    return
+
   def setOutput(self):
     #self.addDefine('HAVE_ADIC', 0)
     #self.addDefine('HAVE_ADIFOR', 0)
@@ -15,5 +19,6 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.configureLibrary)
     self.setOutput()
     return

@@ -7,6 +7,10 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
+  def configureLibrary(self):
+    '''Find a ParMetis installation and check if it can work with PETSc'''
+    return
+
   def setOutput(self):
     #self.addDefine('HAVE_PARMETIS', 0)
     self.addSubstitution('PARMETIS_INCLUDE', '')
@@ -14,5 +18,6 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.configureLibrary)
     self.setOutput()
     return
