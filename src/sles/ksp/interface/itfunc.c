@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.137 1999/11/29 20:54:41 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.138 1999/12/03 22:03:30 balay Exp balay $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -139,6 +139,9 @@ int KSPSetUp(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+
+  /* reset the convergence flag from the previous solves */
+  ksp->reason = KSP_CONVERGED_ITERATING;
 
   if (!ksp->type_name){
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.108 1999/12/01 16:03:41 balay Exp balay $*/
+/*$Id: tr.c,v 1.109 1999/12/01 16:15:29 balay Exp balay $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -24,7 +24,7 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, KSPConvergedRea
     if (!n) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
     kctx->lresid_last = rnorm;
   }
-  ierr = KSPDefaultConverged(ksp,n,rnorm,&convinfo,ctx);
+  ierr = KSPDefaultConverged(ksp,n,rnorm,&convinfo,ctx);CHKERRQ(ierr);
   if (convinfo) {
     PLogInfo(snes,"SNES_EQ_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
     PetscFunctionReturn(convinfo);
