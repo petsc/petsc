@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.13 1996/07/08 22:20:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.14 1996/08/26 23:06:29 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -107,7 +107,7 @@ int main(int argc,char **args)
      Set the default preconditioner for this program to be ASM
   */
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetType(pc,PCASM); CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCASM); CHKERRA(ierr);
 
   /* -------------------------------------------------------------------
             Phase 2:  Define the problem decomposition
@@ -142,8 +142,8 @@ int main(int argc,char **args)
   } else { /* advanced version */
     if (size != 1) SETERRA(1,
       "PCASMCreateSubdomains() is currently a uniprocessor routine only!");
-    ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is); CHKERRQ(ierr);
-    ierr = PCASMSetLocalSubdomains(pc,Nsub,is); CHKERRQ(ierr);
+    ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is); CHKERRA(ierr);
+    ierr = PCASMSetLocalSubdomains(pc,Nsub,is); CHKERRA(ierr);
   }
 
   /* -------------------------------------------------------------------
