@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: sles.h,v 1.11 1995/06/07 16:31:09 bsmith Exp curfman $ */
 
 #if !defined(__SLES_PACKAGE)
 #define __SLES_PACKAGE
@@ -17,6 +17,7 @@ extern int SLESSolve(SLES,Vec,Vec,int*);
 extern int SLESSetFromOptions(SLES);
 extern int SLESDestroy(SLES);
 extern int SLESPrintHelp(SLES);
+extern int SLESView(SLES,Viewer);
 extern int SLESSetOptionsPrefix(SLES,char*);
 
 #endif

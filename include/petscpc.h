@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.24 1995/06/07 16:31:48 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.25 1995/07/03 21:45:40 bsmith Exp curfman $ */
 
 /*
       Preconditioner module.
@@ -40,6 +40,7 @@ extern int PCSetOperators(PC,Mat,Mat,MatStructure);
 extern int PCBJacobiSetUseTrueLocal(PC);
 extern int PCSetVector(PC,Vec);
 extern int PCPrintHelp(PC);
+extern int PCView(PC,Viewer);
 extern int PCSetOptionsPrefix(PC,char*);
 
 extern int PCSORSetSymmetric(PC, MatSORType);
