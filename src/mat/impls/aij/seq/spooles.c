@@ -105,12 +105,19 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     (*F)->ops->destroy = MatDestroy_SeqAIJ_Spooles;  
 
     /* set default input parameters */
-    lu->tau           = 100.;
-    lu->seed          = 10101;  
-    lu->ordering      = 0;
-    lu->maxdomainsize = 500;
-    lu->maxzeros      = 1000;
-    lu->maxsize       = 96;
+    lu->tau            = 100.;
+    lu->seed           = 10101;  
+    lu->ordering       = 0;
+    lu->maxdomainsize  = 500;
+    lu->maxzeros       = 1000;
+    lu->maxsize        = 96;
+    if ( lu->symflag == SPOOLES_SYMMETRIC ) {
+      lu->patchAndGoFlag = 1;
+      lu->storeids       = 1; 
+      lu->storevalues    = 1;
+      lu->toosmall       = 1.e-9;
+      lu->fudge          = 1.e-9;
+    }
 
     /* get runtime input parameters */
     ierr = PetscOptionsBegin(A->comm,A->prefix,"Spooles Options","Mat");CHKERRQ(ierr); 
@@ -157,12 +164,24 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
       SETERRQ1(1,"Unknown Spooles's ordering %s",buff);
     }
    
-    ierr = PetscOptionsInt("-mat_aij_spooles_maxdomainsize","maxdomainsize","None",lu->maxdomainsize,&lu->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);
-
-    ierr = PetscOptionsInt("-mat_aij_spooles_maxzeros ","maxzeros","None",lu->maxzeros,&lu->maxzeros,PETSC_NULL);CHKERRQ(ierr);
-
-    ierr = PetscOptionsInt("-mat_aij_spooles_maxsize","maxsize","None",lu->maxsize,&lu->maxsize,PETSC_NULL);CHKERRQ(ierr);
-
+    ierr = PetscOptionsInt("-mat_aij_spooles_maxdomainsize","maxdomainsize","None",\
+                           lu->maxdomainsize,&lu->maxdomainsize,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_aij_spooles_maxzeros ","maxzeros","None",\
+                           lu->maxzeros,&lu->maxzeros,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_aij_spooles_maxsize","maxsize","None",\
+                           lu->maxsize,&lu->maxsize,PETSC_NULL);CHKERRQ(ierr);
+    if ( lu->symflag == SPOOLES_SYMMETRIC ) {
+      ierr = PetscOptionsInt("-mat_aij_spooles_patchAndGoFlag","patchAndGoFlag","None", \
+                           lu->patchAndGoFlag,&lu->patchAndGoFlag,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-mat_aij_spooles_fudge","fudge","None", \
+                           lu->fudge,&lu->fudge,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-mat_aij_spooles_toosmall","toosmall","None", \
+                           lu->toosmall,&lu->toosmall,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-mat_aij_spooles_storeids","storeids","None", \
+                           lu->storeids,&lu->storeids,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-mat_aij_spooles_storevalues","storevalues","None", \
+                           lu->storevalues,&lu->storevalues,PETSC_NULL);CHKERRQ(ierr);
+    }
     PetscOptionsEnd();
   
     /* copy A to Spooles' InpMtx object */
@@ -307,6 +326,19 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->symflag, 
                 FRONTMTX_DENSE_FRONTS, lu->pivotingflag, NO_LOCK, 0, NULL, 
                 lu->mtxmanager, lu->msglvl, lu->msgFile) ;   
+  
+
+  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
+    if ( lu->patchAndGoFlag == 1 ) {
+      lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
+      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 1, lu->toosmall, lu->fudge,
+                       lu->storeids, lu->storevalues) ;
+    } else if ( lu->patchAndGoFlag == 2 ) {
+      lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
+      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 2, lu->toosmall, lu->fudge,
+                       lu->storeids, lu->storevalues) ;
+    }   
+  }
 
   /* numerical factorization */
   chvmanager = ChvManager_new() ;
@@ -321,6 +353,31 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->msgFile) ;
     fflush(lu->msgFile) ;
   }
+
+  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
+    if ( lu->patchAndGoFlag == 1 ) {
+      if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
+        if (lu->msglvl > 0 ){
+          fprintf(lu->msgFile, "\n small pivots found at these locations") ;
+          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->msgFile) ;
+        }
+      }
+      PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
+    } else if ( lu->patchAndGoFlag == 2 ) {
+      if (lu->msglvl > 0 ){
+        if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
+          fprintf(lu->msgFile, "\n small pivots found at these locations") ;
+          IV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeIV, lu->msgFile) ;
+        }
+        if ( lu->frontmtx->patchinfo->fudgeDV != NULL ) {
+          fprintf(lu->msgFile, "\n perturbations") ;
+          DV_writeForHumanEye(lu->frontmtx->patchinfo->fudgeDV, lu->msgFile) ;
+        }
+      }
+      PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
+    }
+  }
+
   if ( rootchv != NULL ) SETERRQ(1,"\n matrix found to be singular");    
   if ( ierr >= 0 ) SETERRQ1(1,"\n error encountered at front %d", ierr);
 
@@ -355,16 +412,16 @@ int MatSeqAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
   switch (lu->symflag) {
   case 0: s = "SPOOLES_SYMMETRIC"; break;
   case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:  %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:   %s \n",s);CHKERRQ(ierr);
 
   switch (lu->pivotingflag) {
   case 0: s = "SPOOLES_NO_PIVOTING"; break;
   case 1: s = "SPOOLES_PIVOTING"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:  %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   %s \n",s);CHKERRQ(ierr);
 
-  ierr = PetscViewerASCIIPrintf(viewer,"  tau:           %g \n",lu->tau);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  seed:          %d \n",lu->seed);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:        %d \n",lu->msglvl);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  tau:            %g \n",lu->tau);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  seed:           %d \n",lu->seed);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:         %d \n",lu->msglvl);CHKERRQ(ierr);
 
   switch (lu->ordering) {
   case 0: s = "BestOfNDandMS"; break;  
@@ -372,10 +429,18 @@ int MatSeqAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
   case 2: s = "MS"; break;
   case 3: s = "ND"; break;
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:      %s \n",s);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize: %d \n",lu->maxdomainsize);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:      %d \n",lu->maxzeros);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:       %d \n",lu->maxsize);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %d \n",lu->maxdomainsize);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %d \n",lu->maxzeros);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %d \n",lu->maxsize);CHKERRQ(ierr);
+
+  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  patchAndGoFlag: %d \n",lu->patchAndGoFlag);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  fudge:          %g \n",lu->fudge);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  toosmall:       %g \n",lu->toosmall);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  storeids:       %d \n",lu->storeids);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  storevalues:    %d \n",lu->storevalues);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
