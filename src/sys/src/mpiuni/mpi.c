@@ -1,4 +1,4 @@
-/*$Id: mpi.c,v 1.56 2000/01/11 20:59:45 bsmith Exp bsmith $*/
+/*$Id: mpi.c,v 1.57 2000/02/02 20:08:27 bsmith Exp bsmith $*/
 
 /*
       This provides a few of the MPI-uni functions that cannot be implemented
@@ -11,7 +11,6 @@
 #else
 #define MPIUNI_STDCALL
 #endif
-
 
 /*
      The system call exit() is not properly prototyped on all systems
@@ -29,8 +28,7 @@ extern "C" {
 
 #define MPI_SUCCESS 0
 void    *MPIUNI_TMP        = 0;
-int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
-                               2*sizeof(double),sizeof(char)};
+int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),2*sizeof(double),sizeof(char)};
 /*
        With MPI Uni there is only one communicator, which is called 1.
 */
@@ -283,26 +281,22 @@ void MPIUNI_STDCALL MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr)
   *ierr = MPI_SUCCESS;
 }
 /*******mpi_allreduce******/
-void MPIUNI_STDCALL mpi_allreduce(void *sendbuf,void *recvbuf,int *count,int *datatype,
-                   int *op,int *comm,int *ierr) 
+void MPIUNI_STDCALL mpi_allreduce(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
-void MPIUNI_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,
-                   int *op,int *comm,int *ierr) 
+void MPIUNI_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
-void MPIUNI_STDCALL mpi_allreduce__(void *sendbuf,void *recvbuf,int *count,int *datatype,
-                   int *op,int *comm,int *ierr) 
+void MPIUNI_STDCALL mpi_allreduce__(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
-void MPIUNI_STDCALL MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *datatype,
-                   int *op,int *comm,int *ierr) 
+void MPIUNI_STDCALL MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
