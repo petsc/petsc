@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.49 2001/04/13 15:09:31 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.50 2001/04/25 15:18:48 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -200,6 +200,41 @@ void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 EXTERN_C_END
 #endif
 
+static int  PetscGlobalArgc   = 0;
+static char **PetscGlobalArgs = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetArgs"
+/*@C
+   PetscGetArgs - Allows you to access the raw command line arguments anywhere
+     after PetscInitialize() is called but before PetscFinalize().
+
+   Not Collective
+
+   Output Parameters:
++  argc - count of number of command line arguments
+-  args - the command line arguments
+
+   Level: intermediate
+
+   Concepts: command line arguments
+   
+.seealso: PetscFinalize(), PetscInitializeFortran()
+
+@*/
+int PetscGetArgs(int *argc,char ***args)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  if (!PetscGlobalArgs) {
+    SETERRQ(1,"You must call after PetscInitialize() but before PetscFinalize()");
+  }
+  *argc = PetscGlobalArgc;
+  *args = PetscGlobalArgs;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitialize"
 /*@C
@@ -274,7 +309,8 @@ $       call PetscInitialize(file,ierr)
 
    Concepts: initializing PETSc
    
-.seealso: PetscFinalize(), PetscInitializeFortran()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetescGetArgs()
+
 @*/
 int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 {
@@ -284,6 +320,8 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
+  PetscGlobalArgc = *argc;
+  PetscGlobalArgs = *args;
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 
@@ -610,6 +648,9 @@ int PetscFinalize(void)
   }
   /* Can be destroyed only after all the options are used */
   ierr = PetscOptionsDestroy();CHKERRQ(ierr);
+
+  PetscGlobalArgc = 0;
+  PetscGlobalArgs = 0;
 
   PetscLogInfo(0,"PetscFinalize:PETSc successfully ended!\n");
   if (PetscBeganMPI) {
