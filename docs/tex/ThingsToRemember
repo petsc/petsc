@@ -147,15 +147,7 @@ Run module use petsc.2.0.22 to setup to us PETSc
 PETSc is located in  /usr/local/pkg/acts/PETSc.
 Use the group/accout 'mpccc1' while installing/modifying PETSc
 
----------------
-GONE!
-LLNL Cray T3D
-Machine : h4p.llnl.gov
-login:   bsmith
-passwd:  petsc-password
-
-
-Debugging on the Cray t3d:  use totalview:
+Debugging on the Cray t3e:  use totalview:
   With totalview you don't use mpirun; you just run totalview
   programname. Also when linking to use totalview you must 
   hardwire the number of processors, so add -Xnumberprocessors 
@@ -453,14 +445,6 @@ info : Useful command showq, llsubmit
 
 ----------------------------------------------------------------------
 
-Remote Nightly builds:
-  On Cray t3d it is at h4p.nersc.gov       username bsmith
-     For the t3d we are not allowed to use cron so buildtest 
-     uses at to start itself up again 24 hours later.
-  h4p.nersc.gov name changed to h4p.llnl.gov
-  password : petsc-passwd
-
----------------------------------------------------------------------
 
 To kill the running crontab remove bmake/common and bmake/RCS/common,v
 
