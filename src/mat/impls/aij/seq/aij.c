@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.164 1996/03/26 21:55:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.165 1996/03/31 16:50:47 bsmith Exp curfman $";
 #endif
 
 /*
@@ -503,8 +503,8 @@ int MatDestroy_SeqAIJ(PetscObject obj)
   if (a->solve_work) PetscFree(a->solve_work);
   if (a->inode.size) PetscFree(a->inode.size);
   PetscFree(a); 
-  PLogObjectDestroy(mat);
-  PetscHeaderDestroy(mat);
+  PLogObjectDestroy(A);
+  PetscHeaderDestroy(A);
   return 0;
 }
 
