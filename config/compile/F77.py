@@ -4,6 +4,8 @@ import config.compile.C
 import config.framework
 import config.libraries
 
+import sets
+
 class Preprocessor(config.compile.C.Preprocessor):
   '''The Fortran preprocessor, which now is just the C preprocessor'''
   def __init__(self, argDB):
@@ -33,7 +35,7 @@ class Linker(config.compile.processor.Processor):
     self.configLibrary = config.libraries.Configure(config.framework.Framework(argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['FC_LD', 'LD', compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
-    self.libraries  = []
+    self.libraries  = sets.Set()
     if self.name == compiler.name:
       self.flagsName.extend(compiler.flagsName)
     return

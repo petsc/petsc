@@ -3,6 +3,8 @@ import config.compile.processor
 import config.framework
 import config.libraries
 
+import sets
+
 class Preprocessor(config.compile.processor.Processor):
   '''The C++ preprocessor'''
   def __init__(self, argDB):
@@ -15,7 +17,7 @@ class Compiler(config.compile.processor.Processor):
     config.compile.processor.Processor.__init__(self, argDB, 'CXX', ['CXXFLAGS', 'CXX_CXXFLAGS'], '.cc', '.o')
     self.requiredFlags[-1]  = '-c'
     self.outputFlag         = '-o'
-    self.includeDirectories = []
+    self.includeDirectories = sets.Set()
     self.flagsName.extend(Preprocessor(argDB).flagsName)
     return
 
@@ -41,7 +43,7 @@ class Linker(config.compile.processor.Processor):
     self.configLibrary = config.libraries.Configure(config.framework.Framework(argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['CXX_LD', 'LD', compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
-    self.libraries  = []
+    self.libraries  = sets.Set()
     if self.name == compiler.name:
       self.flagsName.extend(compiler.flagsName[:-1])
     return

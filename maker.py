@@ -237,10 +237,10 @@ class SIDLMake(Make):
     builder.loadConfiguration(language+' IOR '+baseName)
     builder.pushConfiguration(language+' IOR '+baseName)
     compiler = builder.getCompilerObject()
-    compiler.includeDirectories.append(self.getSIDLServerDirectory(builder, sidlFile, language))
+    compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
     for depMake, depSidlFiles in self.dependencies.values():
       for depSidlFile in depSidlFiles:
-        compiler.includeDirectories.append(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
+        compiler.includeDirectories.add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
     builder.popConfiguration()
     return
 
@@ -250,13 +250,13 @@ class SIDLMake(Make):
     builder.pushConfiguration(language+' Stub '+baseName)
     compiler = builder.getCompilerObject()
     linker   = builder.getLinkerObject()
-    compiler.includeDirectories.extend(self.python.include)
-    compiler.includeDirectories.append(self.getSIDLClientDirectory(builder, sidlFile, language))
+    compiler.includeDirectories.update(self.python.include)
+    compiler.includeDirectories.add(self.getSIDLClientDirectory(builder, sidlFile, language))
     for depMake, depSidlFiles in self.dependencies.values():
       for depSidlFile in depSidlFiles:
-        compiler.includeDirectories.append(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
-    linker.libraries.extend(self.ase.lib)
-    linker.libraries.extend(self.python.lib)
+        compiler.includeDirectories.add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
+    linker.libraries.update(self.ase.lib)
+    linker.libraries.update(self.python.lib)
     builder.popConfiguration()
     return
 
@@ -265,11 +265,11 @@ class SIDLMake(Make):
     builder.loadConfiguration(language+' Skeleton '+baseName)
     builder.pushConfiguration(language+' Skeleton '+baseName)
     compiler = builder.getCompilerObject()
-    compiler.includeDirectories.extend(self.python.include)
-    compiler.includeDirectories.append(self.getSIDLServerDirectory(builder, sidlFile, language))
+    compiler.includeDirectories.update(self.python.include)
+    compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
     for depMake, depSidlFiles in self.dependencies.values():
       for depSidlFile in depSidlFiles:
-        compiler.includeDirectories.append(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
+        compiler.includeDirectories.add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
     builder.popConfiguration()
     return
 
@@ -281,8 +281,8 @@ class SIDLMake(Make):
     builder.pushConfiguration(language+' Server '+baseName)
     linker   = builder.getLinkerObject()
     if not baseName == self.ase.baseName:
-      linker.libraries.extend(self.ase.lib)
-    linker.libraries.extend(self.python.lib)
+      linker.libraries.update(self.ase.lib)
+    linker.libraries.update(self.python.lib)
     builder.popConfiguration()
     return
 
@@ -292,11 +292,11 @@ class SIDLMake(Make):
     builder.pushConfiguration(language+' Stub '+baseName)
     compiler = builder.getCompilerObject()
     linker   = builder.getLinkerObject()
-    compiler.includeDirectories.append(self.getSIDLClientDirectory(builder, sidlFile, language))
+    compiler.includeDirectories.add(self.getSIDLClientDirectory(builder, sidlFile, language))
     for depMake, depSidlFiles in self.dependencies.values():
       for depSidlFile in depSidlFiles:
-        compiler.includeDirectories.append(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
-    linker.libraries.extend(self.ase.lib)
+        compiler.includeDirectories.add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
+    linker.libraries.update(self.ase.lib)
     builder.popConfiguration()
     return
 
@@ -305,10 +305,10 @@ class SIDLMake(Make):
     builder.loadConfiguration(language+' Skeleton '+baseName)
     builder.pushConfiguration(language+' Skeleton '+baseName)
     compiler = builder.getCompilerObject()
-    compiler.includeDirectories.append(self.getSIDLServerDirectory(builder, sidlFile, language))
+    compiler.includeDirectories.add(self.getSIDLServerDirectory(builder, sidlFile, language))
     for depMake, depSidlFiles in self.dependencies.values():
       for depSidlFile in depSidlFiles:
-        compiler.includeDirectories.append(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
+        compiler.includeDirectories.add(os.path.join(depMake.getRoot(), self.getSIDLClientDirectory(depMake.builder, depSidlFile, language)))
     builder.popConfiguration()
     return
 
@@ -320,7 +320,7 @@ class SIDLMake(Make):
     builder.pushConfiguration(language+' Server '+baseName)
     linker   = builder.getLinkerObject()
     if not baseName == self.ase.baseName:
-      linker.libraries.extend(self.ase.lib)
+      linker.libraries.update(self.ase.lib)
     builder.popConfiguration()
     return
 
