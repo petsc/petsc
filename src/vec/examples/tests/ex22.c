@@ -8,12 +8,13 @@ static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n"
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5,ierr;
-  int           size,rank,N;
-  PetscScalar   value,zero = 0.0;
-  Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx = 0;
+  PetscErrorCode ierr;
+  PetscInt       n = 5,N;
+  PetscMPIInt    size,rank;
+  PetscScalar    value,zero = 0.0;
+  Vec            x,y;
+  IS             is1,is2;
+  VecScatter     ctx = 0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

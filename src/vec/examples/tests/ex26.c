@@ -23,12 +23,14 @@ If this is not clear, I'll try to elaborate.
 #define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
-  Vec         src_v,tar_v,loc_v;
-  IS          src_idx,tar_idx;
-  VecPipeline pipe;
-  MPI_Comm    comm;
-  int         size,rank,src_loc,tar_loc,ierr,zero_loc=0;
-  PetscScalar zero=0,my_value,*vec_values,*loc_ar;
+  Vec            src_v,tar_v,loc_v;
+  IS             src_idx,tar_idx;
+  VecPipeline    pipe;
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscInt       src_loc,tar_loc,zero_loc=0;
+  PetscScalar    zero=0,my_value,*vec_values,*loc_ar;
 
   PetscInitialize(&Argc,&Args,PETSC_NULL,PETSC_NULL);
 

@@ -344,13 +344,13 @@ PetscErrorCode MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 #define __FUNCT__ "MatAssemblyEnd_MPIAIJ"
 PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ  *a=(Mat_SeqAIJ *)aij->A->data,*b= (Mat_SeqAIJ *)aij->B->data;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)aij->A->data,*b= (Mat_SeqAIJ *)aij->B->data;
   PetscErrorCode ierr;
-  int         i,j,rstart,ncols,n,flg;
-  int         *row,*col,other_disassembled;
-  PetscScalar *val;
-  InsertMode  addv = mat->insertmode;
+  int            i,j,rstart,ncols,n,flg;
+  int            *row,*col,other_disassembled;
+  PetscScalar    *val;
+  InsertMode     addv = mat->insertmode;
 
   PetscFunctionBegin;
   if (!aij->donotstash) {
@@ -384,6 +384,8 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
       ierr = DisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
+      /* reaccess the b because aij->B was changed */
+      b    = (Mat_SeqAIJ *)aij->B->data;
     }
   }
 

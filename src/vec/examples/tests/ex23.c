@@ -15,12 +15,13 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,i;
-  int           size,rank,blocks[2],nlocal;
-  PetscScalar   value;
-  Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx = 0;
+  PetscErrorCode ierr;
+  PetscInt       i,blocks[2],nlocal;
+  PetscMPIInt    size,rank;
+  PetscScalar    value;
+  Vec            x,y;
+  IS             is1,is2;
+  VecScatter     ctx = 0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

@@ -8,11 +8,12 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           ierr,n = 25,i,row0 = 0;
-  PetscScalar   one = 1.0,two = 2.0,result1,result2,results[40],value,ten = 10.0;
-  PetscScalar   result1a,result2a;
-  PetscReal     result3,result4,result[2],result3a,result4a,resulta[2];
-  Vec           x,y,vecs[40];
+  PetscErrorCode ierr;
+  PetscInt       n = 25,i,row0 = 0;
+  PetscScalar    one = 1.0,two = 2.0,result1,result2,results[40],value,ten = 10.0;
+  PetscScalar    result1a,result2a;
+  PetscReal      result3,result4,result[2],result3a,result4a,resulta[2];
+  Vec            x,y,vecs[40];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

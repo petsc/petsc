@@ -9,9 +9,11 @@ Where atleast a couple of mallocs will occur in the stash code.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int          i,j,n = 50,ierr,bs,size;
-  PetscScalar  val,*vals,zero=0.0;
-  Vec          x;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  PetscInt       i,j,n = 50,bs;
+  PetscScalar    val,*vals,zero=0.0;
+  Vec            x;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

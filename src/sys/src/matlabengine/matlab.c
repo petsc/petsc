@@ -279,7 +279,7 @@ PetscErrorCode PetscMatlabEngineGet(PetscMatlabEngine mengine,PetscObject obj)
     The variable Petsc_Matlab_Engine_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscMatlabEngine
 */
-static int Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
+static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
 
 #undef __FUNCT__  

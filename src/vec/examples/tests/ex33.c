@@ -8,11 +8,12 @@ static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCrea
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           start,end;
-  int           n = 3,ierr,size,rank,i,len;
-  PetscScalar   value,*yy;
-  Vec           x,y,z,y_t;
-  VecScatter    toall,tozero;
+  PetscInt       n = 5,i,len,start,end;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscScalar    value,*yy;
+  Vec            x,y,z,y_t;
+  VecScatter     toall,tozero;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

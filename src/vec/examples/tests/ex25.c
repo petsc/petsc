@@ -9,12 +9,13 @@ this case processor zero is as long as the entire parallel vector; rest are zero
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5,ierr;
-  int           size,rank,N,low,high,iglobal,i;
-  PetscScalar   value,zero = 0.0;
-  Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx;
+  PetscErrorCode ierr;
+  PetscInt       n = 5,N,low,high,iglobal,i;
+  PetscMPIInt    size,rank;
+  PetscScalar    value,zero = 0.0;
+  Vec            x,y;
+  IS             is1,is2;
+  VecScatter     ctx;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

@@ -9,12 +9,14 @@ Tests where the local part of the scatter is a copy.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 5,ierr,size,rank,i,*blks,bs = 1,m = 2;
-  PetscScalar   value;
-  Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx = 0;
-  PetscViewer   sviewer;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscInt       n = 5,i,*blks,bs = 1,m = 2;
+  PetscScalar    value;
+  Vec            x,y;
+  IS             is1,is2;
+  VecScatter     ctx = 0;
+  PetscViewer    sviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
@@ -35,7 +37,7 @@ int main(int argc,char **argv)
   } else {
     m = n;
   }
-  ierr = PetscMalloc((m)*sizeof(int),&blks);CHKERRQ(ierr);
+  ierr = PetscMalloc((m)*sizeof(PetscInt),&blks);CHKERRQ(ierr);
   blks[0] = n*rank*bs;
   for (i=1; i<m; i++) {
     blks[i] = blks[i-1] + bs;   
