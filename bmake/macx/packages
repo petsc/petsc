@@ -15,37 +15,16 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
-MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
+MPI_HOME       = /Users/petsc/software/mpich-1.2.3/macx
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun
 
 
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
-# Location of X-windows software
-#
-# Location of MPE
-# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
-#
-#
-# Location of BlockSolve (MPI version)
-#
-#
-# Matlab location
-#
-#
-# Location where adiC is installed
-#
-#
-# Location of PVODE; Alan Hindmarsh's parallel ODE solver
-# 
-#
-# Location of ParMetis
-#
-#
-# ------------------------------------------------------------------------------
-# If you are using shared version of any external libraries you must make this
-# point to the directories where all your shared libraries are stored.
-#
+MPE_INCLUDE   = -I${MPI_HOME}/mpe
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
