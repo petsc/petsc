@@ -8,12 +8,18 @@
 cd /home/bsmith/petsc/maint/nightlylogs
 set tmpfileid [ open tmpfile w ]
 set files [ glob examples_*]
-set machines {snake cyan elvis ptera maverick}
+set machines {snake cyan elvis ptera maverick quad }
 foreach machine $machines {
     if { [ string first $machine $files ] < 0 } { #file dos'nt exist
         set mesg "No build on: $machine"
         puts $tmpfileid $mesg
     }
+}
+# Either doc or clyde should exist
+if { [ string first doc $files ] < 0  && [ string first clyde $files ] < 0  } {
+    set mesg "doc/clyde: File does not exist"
+    puts $tmpfileid  $mesg
+    continue
 }
 
 
