@@ -17,9 +17,9 @@ for l=1:nargin-1
       end
     end
 
-    nz   = nnz(A);
-    header = fwrite(fd,[1211216,m,n,nz],'int32');
     n_nz = full(sum(A' ~= 0));
+    nz   = sum(n_nz);
+    header = fwrite(fd,[1211216,m,n,nz],'int32');
 
     sum_nz = sum(n_nz);
     if(sum_nz ~=nz)
@@ -28,7 +28,7 @@ for l=1:nargin-1
     end
 
     fwrite(fd,n_nz,'int32');  %nonzeros per row
-    [i,j,s] = find(A');
+    [i,j,s] = find((A' ~= 0).*(A'));
     fwrite(fd,i-1,'int32');
     for i=1:nz
       if s(i) == majic
