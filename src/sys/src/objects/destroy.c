@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.48 2000/02/02 20:08:20 bsmith Exp curfman $*/
+/*$Id: destroy.c,v 1.49 2000/03/06 19:10:56 curfman Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -58,7 +58,7 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeader(obj);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(obj->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
   if (obj->bops->view) {

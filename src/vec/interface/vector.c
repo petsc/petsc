@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.195 2000/02/24 15:38:01 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.196 2000/03/14 02:23:41 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1896,7 +1896,7 @@ int VecView(Vec vec,Viewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PetscValidType(vec);
-  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  if (!viewer) viewer = VIEWER_STDOUT_(vec->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(vec,viewer);
   if (vec->stash.n || vec->bstash.n) SETERRQ(1,1,"Must call VecAssemblyBegin/End() before viewing this vector");
