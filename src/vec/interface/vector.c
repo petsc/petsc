@@ -2030,6 +2030,9 @@ int VecRestoreArray(Vec x,PetscScalar *a[])
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (a) PetscValidPointer(a);
   PetscValidType(x);
+#if defined(PETSC_USE_BOPT_g)
+  CHKMEMQ;
+#endif
   if (x->ops->restorearray) {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }

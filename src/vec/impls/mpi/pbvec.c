@@ -165,7 +165,8 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
     s->array           = (PetscScalar *)array;
     s->array_allocated = 0;
   } else {
-    ierr               = PetscMalloc((v->n+nghost+1)*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
+    int n              = ((v->n+nghost) > 0) ? v->n+nghost : 1;
+    ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
     s->array_allocated = s->array;
     ierr               = PetscMemzero(s->array,v->n*sizeof(PetscScalar));CHKERRQ(ierr);
   }

@@ -6,6 +6,7 @@
 #include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dasetblockfills_             DASETBLOCKFILLS
 #define dasetlocalfunction_          DASETLOCALFUNCTION
 #define dasetLocaladiforfunction_    DASETLOCALADIFORFUNCTION
 #define dasetlocaladiformffunction_  DASETLOCALADIFORMFFUNCTION
@@ -36,6 +37,7 @@
 #define darefine_                    DAREFINE
 #define dagetao_                     DAGETAO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dasetblockfills_             dasetblockfills
 #define dagetlocalinfo_              dagetlocalinfo
 #define dagetlocalvector_            dagetlocalvector
 #define dagetglobalvector_           dagetglobalvector
@@ -71,6 +73,10 @@
 
 EXTERN_C_BEGIN
 
+void PETSC_STDCALL dasetblockfills_(DA *da,int *dfill,int *ofill,int *ierr)
+{
+  *ierr = DASetBlockFills(*da,dfill,ofill);
+}
 
 static void (PETSC_STDCALL *j1d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlj1d(DALocalInfo *info,PetscScalar *in,Mat m,void *ptr)

@@ -56,7 +56,6 @@
 	VertVelocity 
 	Pressure  
 	CalcJunk
-	PetscMin
         PetscExpScalarPassive
 
 [INACTIVE_VARIABLES]
