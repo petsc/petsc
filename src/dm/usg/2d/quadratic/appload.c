@@ -1,7 +1,7 @@
 
 
 /*
-       Demonstrates how to load a database from a file and set up the local 
+       Demonstrates how to load a grid database from a file and set up the local 
      data structures. See appctx.h for information on how this is to be used.
 */
 
@@ -26,7 +26,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
      Load in the grid database
     ---------------------------------------------------------------------------*/
   ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRQ(ierr);
-  if (!flag) PetscStrcpy(filename,"gridfile");
+  if (!flag) SETERRQ(1,1,"Must provide filename with: main -f gridfilename");
   ierr = ViewerFileOpenBinary((*appctx)->comm,filename,BINARY_RDONLY,&binary);CHKERRQ(ierr);
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata); CHKERRQ(ierr);
   ierr = ViewerDestroy(binary); CHKERRQ(ierr);
@@ -45,6 +45,9 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
       ----------------------------------------------------------------------------*/
   /*
       Partition the grid cells
+
+      This renumbers all the cells. The the numbering of objects is now no longer
+      the same as in the original database
   */
   ierr = AODataKeyPartition((*appctx)->aodata,"cell"); CHKERRA(ierr);  
 
@@ -89,11 +92,9 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
     hy = maxs[1] - mins[1]; ymin = mins[1] - .1*hy; ymax = maxs[1] + .1*hy;
     ierr = DrawSetCoordinates((*appctx)->view.drawglobal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
     ierr = DrawSetCoordinates((*appctx)->view.drawlocal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
-    /*
-       Visualize the grid 
-    */
-    ierr = DrawZoom((*appctx)->view.drawglobal,AppCtxView,*appctx); CHKERRA(ierr);
   }
+
+  ierr = OptionsHasName(PETSC_NULL,"-matlab_graphics",&(*appctx)->view.matlabgraphics);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -184,7 +185,6 @@ int AppCtxSetLocal(AppCtx *appctx)
   grid->vertex_n_ghosted     = vertex_n_ghosted;
 
   ierr = AODataKeyGetInfo(ao,"vertex",PETSC_NULL,&grid->vertex_n,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = AODataSegmentGetInfo(ao,"cell","vertex",&grid->ncell,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 
@@ -199,6 +199,9 @@ int AppCtxDestroy(AppCtx *appctx)
   AppGrid    *grid = &appctx->grid;
   AppAlgebra *algebra = &appctx->algebra;
 
+  /*
+       Releases access to the grid data base information and frees the database
+  */
   ierr = AODataSegmentRestoreIS(ao,"vertex","values",PETSC_NULL,(void **)&grid->vertex_value);CHKERRQ(ierr);
   ierr = AODataSegmentRestoreLocalIS(ao,"cell","vertex",PETSC_NULL,(void **)&grid->cell_vertex);CHKERRQ(ierr);
   ierr = AODataSegmentRestoreIS(ao,"cell","cell",PETSC_NULL,(void **)&grid->cell_cell);CHKERRQ(ierr);

@@ -7,7 +7,7 @@ static char help[] ="Solves a simple linear PDE in 2D on an unstructured grid\n\
        Demonstrates how one may write a unstructured grid PDE solver using the 
    PETSc AOData-base infra-structure. 
 
-       To solve a different (but similar problem) ne should copy the files 
+       To solve a different (but similar problem) one should copy the files 
        appctx.h appload.c appview.c and main.c and add and delete data-structures 
    and code as needed for your particular application.
 
@@ -19,6 +19,7 @@ extern int AppCtxSetRhs(AppCtx*);
 extern int AppCtxCreateRhs(AppCtx*);
 extern int AppCtxSetMatrix(AppCtx*);
 extern int AppCtxCreateMatrix(AppCtx*);
+extern int AppCtxViewMatlab(AppCtx*);
 
 int main( int argc, char **argv )
 {
@@ -40,6 +41,13 @@ int main( int argc, char **argv )
   algebra = &appctx->algebra;
   grid    = &appctx->grid;
 
+  if (appctx->view.showsomething) {
+    /*
+       Visualize the grid 
+    */
+    ierr = DrawZoom(appctx->view.drawglobal,AppCtxViewGrid,appctx); CHKERRA(ierr);
+  }
+
   /*
       Setup the linear system and solve it
   */
@@ -54,6 +62,10 @@ int main( int argc, char **argv )
     ierr = DrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx); CHKERRA(ierr);
   }
 
+  if (appctx->view.matlabgraphics) {
+    AppCtxViewMatlab(appctx);
+  }
+
   /*
       Destroy all datastructures
   */
@@ -64,6 +76,9 @@ int main( int argc, char **argv )
   PetscFunctionReturn(0);
 }
 
+/*
+         Sets up the linear system associated with the PDE and solves it
+*/
 
 #undef __FUNC__
 #define __FUNC__ "AppCxtSolve"
@@ -85,14 +100,14 @@ int AppCtxSolve(AppCtx* appctx)
   ierr = AppCtxCreateRhs(appctx); CHKERRQ(ierr);
 
   /*
-      Set the right hand side values into the vectors 
-  */
-  ierr = AppCtxSetRhs(appctx); CHKERRQ(ierr);
-
-  /*
       Create the sparse matrix, with correct nonzero pattern
   */
   ierr = AppCtxCreateMatrix(appctx); CHKERRQ(ierr);
+
+  /*
+      Set the right hand side values into the vectors 
+  */
+  ierr = AppCtxSetRhs(appctx); CHKERRQ(ierr);
 
   /*
       Set the matrix entries 
@@ -112,9 +127,10 @@ int AppCtxSolve(AppCtx* appctx)
 }
 
 /*
-           Generates the "global" parallel vector to contain the right hand side 
-    and solution. Generates "ghosted" local vectors for local computations etc.
-    Generates scatter context for updating ghost points etc.
+         -  Generates the "global" parallel vector to contain the right hand side 
+               and solution.
+         -  Generates "ghosted" local vectors for local computations etc.
+         -  Generates scatter context for updating ghost points etc.
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtCreateRhs"
@@ -163,7 +179,7 @@ int AppCtxSetRhs(AppCtx* appctx)
   AppGrid    *grid = &appctx->grid;
   AppAlgebra *algebra = &appctx->algebra;
   Scalar     *values;
-  int        ierr, i, cell_n = grid->cell_n, ncell = grid->ncell;
+  int        ierr, i, cell_n = grid->cell_n, ncell = 6;
   int        *cell_vertex = grid->cell_vertex,*vertices,j;
   Vec        b = algebra->b;
   double     *coors;
@@ -212,21 +228,22 @@ int AppCtxSetRhs(AppCtx* appctx)
 #define __FUNC__ "AppCxtSetMatrix"
 int AppCtxCreateMatrix(AppCtx* appctx)
 {
-  AppAlgebra *algebra = &appctx->algebra;
-  AppGrid    *grid    = &appctx->grid;
-  Vec        w_local = algebra->w_local, x = algebra->x, x_local = algebra->x_local, z_local = algebra->z_local;
-  Vec        z = algebra->z;
-  VecScatter gtol = algebra->gtol;
-  MPI_Comm   comm = appctx->comm;
-  Scalar     srank,*procs,*sdnz,zero = 0.0,*values,wght,*sonz;
-  int        ierr, rank,*vertices,cproc,i,j,*dnz,vertex_n = grid->vertex_n;
-  int        cell_n = grid->cell_n, *cell_vertex = grid->cell_vertex, ncell = grid->ncell;
-  int        *cell_cell = grid->cell_cell,*cells,*onz;
-  Mat        A;
-  double     *coors;
+  AppAlgebra             *algebra = &appctx->algebra;
+  AppGrid                *grid    = &appctx->grid;
+  Vec                    w_local = algebra->w_local, x = algebra->x, x_local = algebra->x_local;
+  Vec                    z_local = algebra->z_local;
+  Vec                    z = algebra->z;
+  VecScatter             gtol = algebra->gtol;
+  MPI_Comm               comm = appctx->comm;
+  Scalar                 srank,*procs,*sdnz,zero = 0.0,*values,wght,*sonz;
+  int                    ierr, rank,*vertices,cproc,i,j,*dnz,vertex_n = grid->vertex_n;
+  int                    cell_n = grid->cell_n, *cell_vertex = grid->cell_vertex, ncell = 6;
+  int                    *cell_cell = grid->cell_cell,*cells,*onz;
+  Mat                    A;
+  double                 *coors;
   ISLocalToGlobalMapping ltog = grid->ltog;
-  IS         vertex_boundary = grid->vertex_boundary;
-  Scalar     one = 1.0;
+  IS                     vertex_boundary = grid->vertex_boundary;
+  Scalar                 one = 1.0;
 
   PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank); 
@@ -259,7 +276,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
       /*----
          First we take care of the corner vertex relations with other nodes
       */
-      cproc = procs[vertices[j]];
+      cproc = PetscReal(procs[vertices[j]]);
       /* 1st neighbor (on middle of edge) */
       if (cells[j/2] >= 0) wght = .5; else wght = 1.0;
       if (cproc == procs[vertices[j+1]]) { /* on diagonal part */
@@ -295,7 +312,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
       /*----
          Now we take care of the edge node relations with other nodes
       */
-      cproc = procs[vertices[j+1]];
+      cproc = PetscReal(procs[vertices[j+1]]);
       /* 1st neighbor (before it on vertex) */
       if (cells[j/2] >= 0) wght = .5; else wght = 1.0;
       if (cproc == procs[vertices[j]]) { /* on diagonal part */
@@ -344,8 +361,8 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   dnz  = (int *) PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(dnz);
   onz  = (int *) PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(onz);
   for ( i=0; i<vertex_n; i++ ) {
-    dnz[i] = 1 + (int) sdnz[i];
-    onz[i] = (int) sonz[i];
+    dnz[i] = 1 + (int) PetscReal(sdnz[i]);
+    onz[i] = (int) PetscReal(sonz[i]);
   }  
   ierr = VecRestoreArray(x,&sdnz);CHKERRQ(ierr);
   ierr = VecRestoreArray(z,&sonz);CHKERRQ(ierr);
@@ -370,7 +387,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   MPI_Comm   comm = appctx->comm;
   Scalar     srank,*procs,*sdnz,zero = 0.0,*values,wght,*sonz;
   int        ierr, rank,*vertices,cproc,i,j,*dnz,vertex_n = grid->vertex_n;
-  int        cell_n = grid->cell_n, *cell_vertex = grid->cell_vertex, ncell = grid->ncell;
+  int        cell_n = grid->cell_n, *cell_vertex = grid->cell_vertex, ncell = 6;
   int        *cell_cell = grid->cell_cell,*cells,*onz;
   Mat        A = algebra->A;
   double     *coors;
@@ -384,6 +401,9 @@ int AppCtxSetMatrix(AppCtx* appctx)
   /*  ---------------------------------------------------------------
         loop over local elements, putting values into matrix 
         ---------------------------------------------------------------*/
+  /*
+        Room for coordinates and element stiffness for one element
+  */
   coors  = (double *) PetscMalloc(2*ncell*sizeof(double));CHKPTRQ(coors);
   values = (Scalar *) PetscMalloc(ncell*ncell*sizeof(Scalar));CHKPTRQ(values);
 
@@ -411,7 +431,39 @@ int AppCtxSetMatrix(AppCtx* appctx)
       -----------------------------------------------------------*/
   ierr = MatZeroRowsLocal(A,vertex_boundary,&one);CHKERRQ(ierr);
 
-  algebra->A = A;
+  PetscFunctionReturn(0);
+}
 
+
+#undef __FUNC__
+#define __FUNC__ "AppCxtViewMatlab"
+int AppCtxViewMatlab(AppCtx* appctx)
+{
+  int    ierr,*cell_vertex,rstart,rend;
+  Viewer viewer = VIEWER_MATLAB_WORLD;
+  double *vertex_values;
+  IS     isvertex;
+
+  PetscFunctionBegin;
+
+  /* send solution vector first */
+  ierr = VecView(appctx->algebra.x,viewer);CHKERRQ(ierr);
+
+  /* send vertices */
+  ierr = AODataKeyGetOwnershipRange(appctx->aodata,"vertex",&rstart,&rend);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isvertex);CHKERRQ(ierr);
+  ierr = AODataSegmentGetIS(appctx->aodata,"vertex","values",isvertex,(void **)&vertex_values);CHKERRQ(ierr);
+  ierr = PetscDoubleView(2*(rend-rstart),vertex_values,viewer);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(appctx->aodata,"vertex","values",PETSC_NULL,(void **)&vertex_values);CHKERRQ(ierr);
+  ierr = ISDestroy(isvertex);CHKERRQ(ierr);
+
+  /* 
+     send list of vertices for each cell MUST be in global numbering (not local) this 
+     cannot use appctx->grid->cell_vertex 
+  */
+  ierr = AODataSegmentGetIS(appctx->aodata,"cell","vertex",appctx->grid.cell_global,(void **)&cell_vertex);CHKERRQ(ierr);
+  ierr = PetscIntView(6*appctx->grid.cell_n,cell_vertex,viewer);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(appctx->aodata,"cell","vertex",PETSC_NULL,(void **)&cell_vertex);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }

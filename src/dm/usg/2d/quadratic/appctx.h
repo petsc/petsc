@@ -20,13 +20,15 @@
 
         vertex_n             - number of unique vertices on this processor 
         vertex_n_ghosted     - number of vertices including ghost ones
-        vertex_global        - global number of each vertex on this processor
-        vertex_value         - x,y coordinates of vertices on this processor
+        vertex_global        - global number of each vertex on this processor (including ghosts)
+        vertex_value         - x,y coordinates of vertices on this processor (including ghosts)
         vertex_boundary      - list of on processor vertices (including ghosts) that are on the boundary
         vertex_boundary_flag - bit array indicating for all on processor vertices (including ghosts) 
                                if the are on the boundary
         ltog                 - mapping from local numbering of vertices (including ghosts)
                                to global
+
+        cell_cell            - neighbors of each cell
 */
         
 typedef struct {
@@ -40,8 +42,6 @@ typedef struct {
   BT                     vertex_boundary_flag;
   IS                     vertex_boundary;
   ISLocalToGlobalMapping ltog;
-
-  int                    ncell;
 } AppGrid;
 
 /*
@@ -50,7 +50,9 @@ typedef struct {
     A                - parallel sparse stiffness matrix
     b                - parallel vector contains right hand side
     x                - parallel vector contains solution
-    w_local, x_local - (work) sequential vectors contains local plus ghosted elements
+    z                - parallel work vector
+    w_local, x_local
+    z_local          - (work) sequential vectors contains local plus ghosted elements
 */
 typedef struct {
   Vec                    b,x,z;
@@ -69,7 +71,7 @@ typedef struct {
     showboundary - draw boundary of domain
     showboundaryvertices - draw points on boundary of domain
 
-    showsomething - flag indicating that some graphic is being used
+    showsomething - flag indicating that at least one of the flags above is true
 */
 
 typedef struct {
@@ -83,6 +85,7 @@ typedef struct {
   int        showboundaryvertices;
  
   int        showsomething;            
+  int        matlabgraphics;
 } AppView;
 
 /*
@@ -98,7 +101,7 @@ typedef struct {
   AppView    view;
 } AppCtx;
 
-extern int AppCtxView(Draw,void*);
+extern int AppCtxViewGrid(Draw,void*);
 extern int AppCtxViewSolution(Draw,void*);
 extern int AppCtxCreate(MPI_Comm,AppCtx **);
 extern int AppCtxDestroy(AppCtx *);
