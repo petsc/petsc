@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.59 1996/10/28 21:10:44 curfman Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.60 1996/10/28 21:24:15 curfman Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -506,8 +506,8 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 .   VIEWER_FORMAT_DRAW_LG     - displays using a line graph
 
    Options Database Keys:
-   ViewerDrawOpenX() calls DrawOpenX(), so see DrawOpenX() for
-   runtime options, including
+   ViewerDrawOpenX() calls DrawOpenX(), so see the man page for
+   DrawOpenX() for runtime options, including
 $  -nox : disable all x-windows output
 $  -display <name> : name of machine for the X display
 $  -draw_pause <pause> : sets time (in seconds) that the
