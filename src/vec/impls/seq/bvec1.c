@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.12 1996/03/15 03:20:48 bsmith Exp bsmith $ */
+/* $Id: bvec1.c,v 1.13 1996/03/19 21:23:01 bsmith Exp curfman $ */
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -19,9 +19,9 @@ static int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   int    i;
-  Scalar sum = 0.0,*xa = x->array, *ya = y->array;
+  Scalar sum = 0.0, *xa = x->array, *ya = y->array;
   for ( i=0; i<x->n; i++ ) {
-    sum += conj(xa[i])*ya[i];
+    sum += xa[i]*conj(ya[i]);
   }
   *z = sum;
 #else
