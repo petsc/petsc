@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.14 1995/07/09 23:16:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.15 1995/07/11 15:10:32 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: plog.c,v 1.14 1995/07/09 23:16:15 bsmith Exp bsmith $
 #include "ptime.h"
 
 /*@ 
-   PetscObjectSetName - Sets a string name associated with a Petsc object.
+   PetscObjectSetName - Sets a string name associated with a PETSc object.
 
    Input Parameters:
 .  obj - the Petsc variable
@@ -30,7 +30,7 @@ int PetscObjectSetName(PetscObject obj,char *name)
 }
 
 /*@ 
-   PetscObjectGetName - Gets a string name associated with a Petsc object.
+   PetscObjectGetName - Gets a string name associated with a PETSc object.
 
    Input Parameters:
 .  obj - the Petsc variable
@@ -51,9 +51,9 @@ int PetscObjectGetName(PetscObject obj,char **name)
 static int PrintInfo = 0;
 
 /*@
-     PLogAllowInfo - Causes PLogInfo messages to be printed  to stdout.
+    PLogAllowInfo - Causes PLogInfo messages to be printed to standard output.
 
-  Input Parameter:
+    Input Parameter:
 .   flag - PETSC_TRUE or PETSC_FALSE
 @*/
 int PLogAllowInfo(PetscTruth flag)
@@ -263,11 +263,11 @@ int PLogObjectState(PetscObject obj,char *format,...)
 }
 
 /*@
-    PLogAllBegin - Turns on logging of objects and events. Logs all 
-      events. This creates large log files and slows the program down.
+   PLogAllBegin - Turns on logging of objects and events. Logs all 
+   events. This creates large log files and slows the program down.
 
    Options Database Keys:
-$  -log_all : Prints log information (for code compiled
+$  -log_all : Prints extensive log information (for code compiled
 $      with PETSC_LOG)
 
 .keywords: log, begin
@@ -290,15 +290,14 @@ int PLogAllBegin()
 
 /*@
     PLogBegin - Turns on logging of objects and events. This logs flop
-      rates and object creation. It should not slow programs down too much.
-      This may be called more then once 
+    rates and object creation. It should not slow programs down too much.
+    This may be called more than once.
 
    Options Database Keys:
-$  -log_all : Prints log information (for code compiled
+$  -log : Prints basic log information (for code compiled 
 $      with PETSC_LOG)
-$  -log : Prints log information (for code compiled 
-$      with PETSC_LOG)
-$  -log_summary :
+$  -log_summary : Prints summary of flop and timing information 
+$      to screen (for code compiled with PETSC_LOG)
 
 .keywords: log, begin
 
@@ -320,7 +319,7 @@ int PLogBegin()
 
 /*@
    PLogDump - Dumps logs of objects to a file. This file is intended to 
-              be read by petsc/bin/tkreview, it is not user friendly.
+   be read by petsc/bin/tkreview; it is not user friendly.
 
    Input Parameter:
 .  name - an optional file name
@@ -330,6 +329,12 @@ int PLogBegin()
 $      Log.<mytid>
    where <mytid> is the processor number. If no name is specified, 
    this file will be used.
+
+   Options Database Keys:
+$  -log : Prints basic log information (for code compiled 
+$      with PETSC_LOG)
+$  -log_all : Prints extensive log information (for code compiled
+$      with PETSC_LOG)
    
 .keywords: log, dump
 
