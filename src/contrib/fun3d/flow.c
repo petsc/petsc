@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.5 2000/01/18 16:39:29 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.6 2000/01/18 16:51:57 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -906,8 +906,8 @@ int GetLocalOrdering(GRID *grid)
 
   /* Read the integer grid parameters */ 
   icalloc(grid_param, &tmp);
-  if (rank == 0) {
-   ierr = PetscBinaryOpen("uns3d.msh",BINARY_RDONLY, &fdes);CHKERRQ(ierr);
+  if (!rank) {
+   ierr = PetscBinaryOpen("testgrid/uns3d.msh",BINARY_RDONLY,&fdes);CHKERRQ(ierr);
    ierr = PetscBinaryRead(fdes, tmp, grid_param, PETSC_INT);CHKERRQ(ierr);
   }
   ierr = MPI_Bcast(tmp, grid_param, MPI_INT, 0, MPI_COMM_WORLD);
@@ -969,8 +969,8 @@ int GetLocalOrdering(GRID *grid)
     a2l[i] = -1;
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
 
-  if (rank == 0) {
-   sprintf(part_name,"part_vec.part.%d",CommSize);
+  if (!rank) {
+   sprintf(part_name,"testgrid/part_vec.part.%d",CommSize);
    fptr = fopen(part_name,"r");
    assert(fptr != 0);
    for (inode = 0; inode < nnodes; inode++) {
