@@ -7,6 +7,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  add MatPermute_MPIAIJ() and use it to have DAGetColoring() overload the 
+  MatView() to view it in its sequential ordering much like the VecView_MPI_DA
+  does vectors.
+
   add PetscSynchronizedBinaryRead() and Seek() and replace the horrible
   if (rnk) {} broadcast nonsense in flow.;c
 
