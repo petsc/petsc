@@ -37,7 +37,8 @@ int main(int argc,char **args)
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCSOR); CHKERRA(ierr);
   PCSetFromOptions(pc);
-  ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
+  CHKERRA(ierr);
   ierr = PCSetVector(pc,u);   CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 

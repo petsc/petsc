@@ -48,7 +48,8 @@ int main(int argc,char **args)
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
+  CHKERRA(ierr);
   ierr = PCSetVector(pc,u);   CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
@@ -57,7 +58,8 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
-  ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
+  CHKERRA(ierr);
   ierr = KSPSetBinv(ksp,pc); CHKERRA(ierr);
 
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
