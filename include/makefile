@@ -1,11 +1,11 @@
 #PETSC_DIR = ../
 
-CFLAGS   = 
+CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
-           vec.h sles.h mg.h viewer.h snes.h \
-           da.h petsclog.h petschead.h petscerror.h ts.h
+           vec.h sles.h mg.h viewer.h snes.h dfvec.h  ec.h ao.h\
+           da.h petsclog.h petschead.h petscerror.h ts.h gvec.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
