@@ -9,7 +9,3 @@ libf: ${OBJSF}
 shared:
 
 oshared:
-
-INFO_H_UNIX=info_h_unix
-info_h_unix:
-	-@dos2unix ${PETSC_DIR}/bmake/win32_borland/petscmachineinfo.h

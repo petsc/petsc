@@ -90,7 +90,7 @@ configure_clean:
 all: $(CONFIGURE_LOG_FILE)
 	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
 # This is necessary if configure jsut created files to have them reread
-all_build: chk_petsc_dir info info_h ${INFO_H_UNIX} chklib_dir deletelibs build shared
+all_build: chk_petsc_dir info info_h chklib_dir deletelibs build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -169,7 +169,7 @@ info_h:
 	-@echo  "Using C linker: ${CLINKER}" >> MINFO
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
-	-@cat MINFO | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}
+	-@cat MINFO | ${SED} -e 's/\^M//' | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}
 	-@$(RM) MINFO
 
 #
