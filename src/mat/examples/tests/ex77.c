@@ -1,4 +1,4 @@
-/*$Id: ex77.c,v 1.2 2000/10/31 15:02:31 hzhang Exp hzhang $*/
+/*$Id: ex77.c,v 1.3 2000/11/01 15:11:18 hzhang Exp bsmith $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format. Same as ex74.c except diagonal entries of the matrices are zeros.\n";
 
@@ -28,8 +28,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
-  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
 
   n = mbs*bs;
   ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A);CHKERRA(ierr);
@@ -44,7 +44,7 @@ int main(int argc,char **args)
 
   /* Assemble matrix */
   if (bs == 1){
-    ierr = OptionsGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRA(ierr);
+    ierr = PetscGetInt(PETSC_NULL,"-test_problem",&prob,PETSC_NULL);CHKERRA(ierr);
     if (prob == 1){ /* tridiagonal matrix */
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
@@ -183,9 +183,9 @@ int main(int argc,char **args)
   /* Test MatGetRow() */
   if (getrow){
     row = n/2; 
-    vr1 =  (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(vr1); 
+    ierr = PetscMalloc(n*sizeof(Scalar),&vr1);CHKERRQ(ierr);
     vr1_wk = vr1;  
-    vr2 =  (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(vr2); 
+    ierr = PetscMalloc(n*sizeof(Scalar),&vr2);CHKERRQ(ierr);
     vr2_wk = vr2;
     ierr = MatGetRow(A,row,&J,&cols1,&vr1);CHKERRA(ierr); 
     vr1_wk += J-1;
@@ -210,8 +210,8 @@ int main(int argc,char **args)
     /* Test GetSubMatrix() */
     /* get a submatrix consisting of every next block row and column of the original matrix */
     /* for symm. matrix, iscol=isrow. */
-    isrow  =   (IS)PetscMalloc(n*sizeof(IS));CHKPTRA(isrow);
-    ip_ptr = (int*)PetscMalloc(n*sizeof(int));CHKERRA(ierr);
+    ierr = PetscMalloc(n*sizeof(IS),&isrow);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&ip_ptr);CHKERRQ(ierr);
     j = 0;
     for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
       for (i=0; i<bs; i++) ip_ptr[j++] = n1*bs + i;  
@@ -223,9 +223,9 @@ int main(int argc,char **args)
     ierr = ISDestroy(isrow);CHKERRA(ierr);
     ierr = PetscFree(ip_ptr);CHKERRA(ierr);
     printf("sA =\n");
-    ierr = MatView(sA,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
     printf("submatrix of sA =\n");
-    ierr = MatView(sC,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = MatView(sC,PETSC_VIEWER_STDOUT_WORLD);CHKERRA(ierr);
     ierr = MatDestroy(sC);CHKERRA(ierr);
   }  
 

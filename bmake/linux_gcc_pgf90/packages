@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.8 2000/11/28 17:26:31 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.9 2001/01/15 21:41:58 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -19,7 +19,8 @@ LAPACK_LIB     = -L${PGI}/linux86/lib -llapack
 MPI_HOME       = /soft/apps/packages/mpich-gnucc-pgf-1.2.0
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         = /home/bsmith/petsc/bin/mpirun.chiba -showtimesoff -shared
+MPIRUN         = mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+#MPIRUN         = /home/bsmith/petsc/bin/mpirun.chiba -showtimesoff -shared
 
 
 #

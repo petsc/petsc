@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.38 2000/10/24 20:28:01 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.39 2001/01/15 21:49:49 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -18,6 +18,7 @@
 #define dagetinfo_                   DAGETINFO
 #define dagetcoloring_               DAGETCOLORING
 #define dagetislocaltoglobalmapping_ DAGETISLOCALTOGLOBALMAPPING
+#define dagetislocaltoglobalmappingblck_ DAGETISLOCALTOGLOBALMAPPINGBLCK
 #define daload_                      DALOAD
 #define dasetfieldname_              DASETFIELDNAME
 #define dagetfieldname_              DAGETFIELDNAME
@@ -36,6 +37,7 @@
 #define dagetinfo_                   dagetinfo
 #define dagetcoloring_               dagetcoloring
 #define dagetislocaltoglobalmapping_ dagetislocaltoglobalmapping
+#define dagetislocaltoglobalmappingblck_ dagetislocaltoglobalmappingblck
 #define dasetfieldname_              dasetfieldname
 #define dagetfieldname_              dagetfieldname
 #endif
@@ -82,6 +84,11 @@ void PETSC_STDCALL daload_(PetscViewer *viewer,int *M,int *N,int *P,DA *da,int *
 void PETSC_STDCALL dagetislocaltoglobalmapping_(DA *da,ISLocalToGlobalMapping *map,int *ierr)
 {
   *ierr = DAGetISLocalToGlobalMapping(*da,map);
+}
+
+void PETSC_STDCALL dagetislocaltoglobalmappingblck_(DA *da,ISLocalToGlobalMapping *map,int *ierr)
+{
+  *ierr = DAGetISLocalToGlobalMappingBlck(*da,map);
 }
 
 void PETSC_STDCALL dagetcoloring_(DA *da,ISColoring *coloring,Mat *J,int *ierr)

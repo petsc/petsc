@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.58 2000/12/06 04:37:08 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.59 2001/01/15 21:48:50 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -60,6 +60,7 @@ EXTERN int   DANaturalAllToGlobalCreate(DA,VecScatter*);
 
 EXTERN int   DAGetGlobalIndices(DA,int*,int**);
 EXTERN int   DAGetISLocalToGlobalMapping(DA,ISLocalToGlobalMapping*);
+EXTERN int   DAGetISLocalToGlobalMappingBlck(DA,ISLocalToGlobalMapping*);
 
 EXTERN int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
 

@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.5 2000/11/14 15:57:58 hzhang Exp hzhang $*/
+/*$Id: ex78.c,v 1.6 2000/11/28 18:53:43 hzhang Exp bsmith $*/
 
 static char help[] =
 "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
@@ -15,20 +15,20 @@ Run this program: ex33h -Ain Ain -bin bin -uin uin\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat    A;
-  Vec    b,u,u_tmp;
-  char   Ain[128],bin[128],uin[128]; 
-  int    i,m,n,nz,ierr,*ib=0,col_i,row_i;
-  Scalar val_i,*work=0,mone=-1.0;
-  double *col=0,*row=0,res_norm,*val=0,*bval=0,*uval=0;
-  FILE   *Afile,*bfile,*ufile;
-  Viewer view;
-  PetscTruth flg_A,flg_b,flg_u;
+  Mat         A;
+  Vec         b,u,u_tmp;
+  char        Ain[128],bin[128],uin[128]; 
+  int         i,m,n,nz,ierr,*ib=0,col_i,row_i;
+  Scalar      val_i,*work=0,mone=-1.0;
+  double      *col=0,*row=0,res_norm,*val=0,*bval=0,*uval=0;
+  FILE        *Afile,*bfile,*ufile;
+  PetscViewer view;
+  PetscTruth  flg_A,flg_b,flg_u;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix, rhs and exact solution from an ascii file */
-  ierr = OptionsGetString(PETSC_NULL,"-Ain",Ain,127,&flg_A);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,127,&flg_A);CHKERRA(ierr);
   if (flg_A){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRA(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRA(ierr); 
@@ -40,9 +40,9 @@ int main(int argc,char **args)
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRA(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRA(ierr);
 
-    val = (double*)PetscMalloc(nz*sizeof(double));CHKPTRA(val);
-    row = (double*)PetscMalloc(nz*sizeof(double));CHKPTRA(row);
-    col = (double*)PetscMalloc(nz*sizeof(double));CHKPTRA(col);
+    ierr = PetscMalloc(nz*sizeof(double),&val);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(double),&row);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(double),&col);CHKERRQ(ierr);
     for (i=0; i<nz; i++) {
       fscanf(Afile,"%le %le %le\n",row+i,col+i,val+i); /* modify according to data file! */
       row[i]--; col[i]--;  /* set index set starts at 0 */
@@ -52,13 +52,13 @@ int main(int argc,char **args)
     fclose(Afile);
   }
 
-  ierr = OptionsGetString(PETSC_NULL,"-bin",bin,127,&flg_b);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-bin",bin,127,&flg_b);CHKERRA(ierr);
   if (flg_b){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRA(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,bin,"r",&bfile);CHKERRA(ierr); 
-    bval = (double*)PetscMalloc(n*sizeof(double));CHKPTRA(bval);
-    work = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRA(work);
-    ib   = (int*)PetscMalloc(n*sizeof(int));CHKPTRA(ib);
+    ierr = PetscMalloc(n*sizeof(double),&bval);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(Scalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(int),&ib);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       /* fscanf(bfile,"%d %le\n",ib+i,bval+i); ib[i]--;  */  /* modify according to data file! */
       fscanf(bfile,"%le\n",bval+i); ib[i] = i;         /* modify according to data file! */
@@ -67,11 +67,11 @@ int main(int argc,char **args)
     fclose(bfile);
   }
 
-  ierr = OptionsGetString(PETSC_NULL,"-uin",uin,127,&flg_u);CHKERRA(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-uin",uin,127,&flg_u);CHKERRA(ierr);
   if (flg_u){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read exact solution in ascii format ...\n");CHKERRA(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,uin,"r",&ufile);CHKERRA(ierr); 
-    uval = (double*)PetscMalloc(n*sizeof(double));CHKPTRA(bval);
+    ierr = PetscMalloc(n*sizeof(double),&uval);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       fscanf(ufile,"  %le\n",uval+i);  /* modify according to data file! */
     }
@@ -100,7 +100,7 @@ int main(int argc,char **args)
     ierr = VecSetValues(b,n,ib,work,INSERT_VALUES);CHKERRA(ierr);
     ierr = VecAssemblyBegin(b);CHKERRA(ierr);
     ierr = VecAssemblyEnd(b);CHKERRA(ierr);
-    /* printf("b: \n"); ierr = VecView(b,VIEWER_STDOUT_SELF); */
+    /* printf("b: \n"); ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF); */
     ierr = PetscFree(bval);CHKERRA(ierr);
   }
 
@@ -109,7 +109,7 @@ int main(int argc,char **args)
     ierr = VecSetValues(u,n,ib,work,INSERT_VALUES);CHKERRA(ierr);
     ierr = VecAssemblyBegin(u);CHKERRA(ierr);
     ierr = VecAssemblyEnd(u);CHKERRA(ierr);
-    /* printf("u: \n"); ierr = VecView(u,VIEWER_STDOUT_SELF); */
+    /* printf("u: \n"); ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF); */
     ierr = PetscFree(uval);CHKERRA(ierr);                        
   }
   
@@ -127,11 +127,11 @@ int main(int argc,char **args)
 
   /* Write the matrix, rhs and exact solution in Petsc binary file */
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Write matrix and rhs in binary to 'matrix.dat' ...\n");CHKERRA(ierr);
-    ierr = ViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",BINARY_CREATE,&view);CHKERRA(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",PETSC_BINARY_CREATE,&view);CHKERRA(ierr);
     ierr = MatView(A,view);CHKERRA(ierr);
     ierr = VecView(b,view);CHKERRA(ierr);
     ierr = VecView(u,view);CHKERRA(ierr);
-    ierr = ViewerDestroy(view);CHKERRA(ierr);
+    ierr = PetscViewerDestroy(view);CHKERRA(ierr);
 
     ierr = VecDestroy(b);CHKERRA(ierr);
     ierr = VecDestroy(u);CHKERRA(ierr);

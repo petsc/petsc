@@ -1,4 +1,4 @@
-/*$Id: dadestroy.c,v 1.40 2000/09/13 03:13:00 bsmith Exp bsmith $*/
+/*$Id: dadestroy.c,v 1.41 2001/01/15 21:48:51 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -71,6 +71,7 @@ int DADestroy(DA da)
     ierr = AODestroy(da->ao);CHKERRQ(ierr);
   }
   ierr = ISLocalToGlobalMappingDestroy(da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(da->ltogmapb);CHKERRQ(ierr);
 
   if (da->lx) {ierr = PetscFree(da->lx);CHKERRQ(ierr);}
   if (da->ly) {ierr = PetscFree(da->ly);CHKERRQ(ierr);}
@@ -112,7 +113,7 @@ int DADestroy(DA da)
 .keywords: distributed array, destroy
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
-          MatSetLocalToGlobalMapping(), DAGetGlobalIndices()
+          MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMappingBlck()
 @*/
 int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {
@@ -121,3 +122,40 @@ int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
   *map = da->ltogmap;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetISLocalToGlobalMappingBlck"
+/*@C
+   DAGetISLocalToGlobalMappingBlck - Accesses the local-to-global mapping in a DA.
+
+   Not Collective
+
+   Input Parameter:
+.  da - the distributed array that provides the mapping 
+
+   Output Parameter:
+.  ltog - the mapping
+
+   Level: intermediate
+
+   Notes:
+   This mapping can them be used by VecSetLocalToGlobalMappingBlock() or 
+   MatSetLocalToGlobalMappingBlock().
+
+   Essentially the same data is returned in the form of an integer array
+   with the routine DAGetGlobalIndices().
+
+.keywords: distributed array, destroy
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
+          MatSetLocalToGlobalMapping(), DAGetGlobalIndices(), DAGetISLocalToGlobalMapping()
+@*/
+int DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  *map = da->ltogmapb;
+  PetscFunctionReturn(0);
+}
+
+

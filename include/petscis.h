@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.57 2000/09/28 21:16:35 bsmith Exp bsmith $ */
+/* $Id: petscis.h,v 1.58 2001/01/15 21:44:24 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -90,6 +90,7 @@ EXTERN int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMap
 EXTERN int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,int*);
 EXTERN int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,int*,int**,int**,int***);
 EXTERN int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,int*,int**,int**,int***);
+EXTERN int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,int,ISLocalToGlobalMapping*);
 
 #define ISLocalToGlobalMappingApply(mapping,N,in,out) 0;\
 {\

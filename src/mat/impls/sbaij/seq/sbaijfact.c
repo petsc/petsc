@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.52 2001/01/15 21:46:03 bsmith Exp balay $*/
+/*$Id: sbaijfact.c,v 1.53 2001/01/16 18:18:03 balay Exp bsmith $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -37,7 +37,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   if (perm_identity){ /* without permutation */
     ai = a->i; aj = a->j;
   } else {            /* non-trivial permutation */    
-    ierr = MatReorderingSeqSBAIJ(A, perm);CHKERRA(ierr);   
+    ierr = MatReorderingSeqSBAIJ(A, perm);CHKERRQ(ierr);   
     ai = a->inew; aj = a->jnew;
   }
   
@@ -294,7 +294,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
         }
       }
     }
-    ierr = PetscFree(a2anew);CHKERRA(ierr); 
+    ierr = PetscFree(a2anew);CHKERRQ(ierr); 
   }
   
   /* for each row k */
@@ -575,7 +575,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat A,Mat *B)
         }
       }
     }
-    ierr = PetscFree(a2anew);CHKERRA(ierr); 
+    ierr = PetscFree(a2anew);CHKERRQ(ierr); 
   }
   
   /* for each row k */
@@ -1177,7 +1177,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat A,Mat *B)
         }
       }
     }
-    ierr = PetscFree(a2anew);CHKERRA(ierr); 
+    ierr = PetscFree(a2anew);CHKERRQ(ierr); 
   }
   
   /* for each row k */
@@ -1693,7 +1693,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat A,Mat *B)
         }
       }
     }
-    ierr = PetscFree(a2anew);CHKERRA(ierr); 
+    ierr = PetscFree(a2anew);CHKERRQ(ierr); 
   }
   
   /* for each row k */
@@ -2313,7 +2313,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat A,Mat *B)
         }
       }
     }
-    ierr = PetscFree(a2anew);CHKERRA(ierr); 
+    ierr = PetscFree(a2anew);CHKERRQ(ierr); 
   }
   
   /* for each row k */

@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.46 2000/10/24 20:25:16 bsmith Exp bsmith $*/
+/*$Id: shvec.c,v 1.47 2001/01/15 21:45:11 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -11,7 +11,7 @@
 */
 #if defined(PETSC_USE_SHARED_MEMORY) && !defined(__cplusplus)
 
-EXTERN void *PetscSharedMalloc(int,int,MPI_Comm);
+EXTERN int PetscSharedMalloc(MPI_Comm,int,int,void**);
 
 #undef __FUNC__  
 #define __FUNC__ "VecDuplicate_Shared"
@@ -24,7 +24,7 @@ int VecDuplicate_Shared(Vec win,Vec *v)
   PetscFunctionBegin;
 
   /* first processor allocates entire array and sends it's address to the others */
-  array = (Scalar*)PetscSharedMalloc(win->n*sizeof(Scalar),win->N*sizeof(Scalar),win->comm);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(win->comm,win->n*sizeof(Scalar),win->N*sizeof(Scalar),(void**)&array);CHKERRQ(ierr);
 
   ierr = VecCreate(win->comm,win->n,win->N,v);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,array,win->map);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int VecCreate_Shared(Vec vv)
 
   PetscFunctionBegin;
   ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
-  array = (Scalar*)PetscSharedMalloc(vv->n*sizeof(Scalar),vv->N*sizeof(Scalar),vv->comm);CHKERRQ(ierr); 
+  ierr = PetscSharedMalloc(vv->comm,vv->n*sizeof(Scalar),vv->N*sizeof(Scalar),(void**)&array);CHKERRQ(ierr); 
 
   ierr = VecCreate_MPI_Private(vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
@@ -185,44 +185,41 @@ int PetscSharedInitialize(MPI_Comm comm)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSharedMalloc"
-void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
+int PetscSharedMalloc(MPI_Comm comm,int llen,int len,MPI_Comm comm,void **result)
 {
   char    *value;
   int     ierr,shift,rank,flag;
   usptr_t **arena;
 
   PetscFunctionBegin;
+  *result = 0;
   if (Petsc_Shared_keyval == MPI_KEYVAL_INVALID) {
-    ierr = PetscSharedInitialize(comm); 
-    if (ierr) PetscFunctionReturn(0);
+    ierr = PetscSharedInitialize(comm);CHKERRQ(ierr);
   }
-  ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);
-  if (ierr) PetscFunctionReturn(0);
+  ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);CHKERRQ(ierr);
   if (!flag) { 
-    ierr = PetscSharedInitialize(comm);
-    if (ierr) {PetscFunctionReturn(0);}
-    ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);
-    if (ierr || !flag) PetscFunctionReturn(0);
+    ierr = PetscSharedInitialize(comm);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);CHKERRQ(ierr);
+    if (!flag) SETERRQ(1,"Unable to initialize shared memory");
   } 
 
-  ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm); if (ierr) PetscFunctionReturn(0);
+  ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   shift -= llen;
 
-  ierr = MPI_Comm_rank(comm,&rank); if (ierr) PetscFunctionReturn(0);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     value = (char*)usmalloc((size_t) len,*arena);
     if (!value) {
       (*PetscErrorPrintf)("PETSC ERROR: Unable to allocate shared memory location\n");
       (*PetscErrorPrintf)("PETSC ERROR: Run with option -shared_size <size> \n");
       (*PetscErrorPrintf)("PETSC_ERROR: with size > %d \n",(int)(1.2*(Petsc_Shared_size+len)));
-      PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,1,1,"Unable to malloc shared memory");
-      PetscFunctionReturn(0);
+      SETERRQ(1,"Unable to malloc shared memory");
     }
   }
-  ierr = MPI_Bcast(&value,8,MPI_BYTE,0,comm); if (ierr) PetscFunctionReturn(0);
+  ierr = MPI_Bcast(&value,8,MPI_BYTE,0,comm);CHKERRQ(ierr);
   value += shift; 
 
-  PetscFunctionReturn((void *)value);
+  PetscFunctionReturn(0);
 }
 
 #else

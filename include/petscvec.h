@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.112 2000/09/02 02:50:55 bsmith Exp bsmith $ */
+/* $Id: petscvec.h,v 1.113 2001/01/15 21:44:23 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -160,7 +160,7 @@ EXTERN int VecGetOwnershipRange(Vec,int*,int*);
 
 EXTERN int VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
 EXTERN int VecSetValuesLocal(Vec,int,const int[],const Scalar[],InsertMode);
-EXTERN int VecSetLocalToGlobalMappingBlocked(Vec,ISLocalToGlobalMapping);
+EXTERN int VecSetLocalToGlobalMappingBlock(Vec,ISLocalToGlobalMapping);
 EXTERN int VecSetValuesBlockedLocal(Vec,int,const int[],const Scalar[],InsertMode);
 
 EXTERN int VecDotBegin(Vec,Vec,Scalar *);

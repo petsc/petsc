@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.219 2000/10/24 20:25:11 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.220 2001/01/15 21:44:52 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1159,9 +1159,9 @@ int VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetLocalToGlobalMappingBlocked"
+#define __FUNC__ "VecSetLocalToGlobalMappingBlock"
 /*@
-   VecSetLocalToGlobalMappingBlocked - Sets a local numbering to global numbering used
+   VecSetLocalToGlobalMappingBlock - Sets a local numbering to global numbering used
    by the routine VecSetValuesBlockedLocal() to allow users to insert vector entries
    using a local (per-processor) numbering.
 
@@ -1181,7 +1181,7 @@ int VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
 @*/
-int VecSetLocalToGlobalMappingBlocked(Vec x,ISLocalToGlobalMapping mapping)
+int VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
 {
   int ierr;
   PetscFunctionBegin;

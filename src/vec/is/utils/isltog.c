@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.59 2000/10/24 20:24:56 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.60 2001/01/15 21:44:35 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -153,6 +153,49 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
      ISGlobalToLocalMapping() is called 
   */
   (*mapping)->globals = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ISLocalToGlobalMappingBlock"
+/*@C
+    ISLocalToGlobalMappingBlock - Creates a blocked index version of an 
+       ISLocalToGlobalMapping that is appropriate for MatSetLocalToGlobalMappingBlock()
+       and VecSetLocalToGlobalMappingBlock().
+
+    Not Collective, but communicator may have more than one process
+
+    Input Parameters:
++    inmap - original point-wise mapping
+-    bs - block size
+
+    Output Parameter:
+.   outmap - block based mapping
+
+    Level: advanced
+
+    Concepts: mapping^local to global
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS()
+@*/
+int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,int bs,ISLocalToGlobalMapping *outmap)
+{
+  int ierr,*ii,i,n;
+
+  PetscFunctionBegin;
+
+  if (bs > 1) {
+    n    = inmap->n/bs;
+    ierr = PetscMalloc(n*sizeof(int),&ii);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      ii[i] = inmap->indices[bs*i];
+    }
+    ierr = ISLocalToGlobalMappingCreate(inmap->comm,n,ii,outmap);CHKERRQ(ierr);
+    ierr = PetscFree(ii);CHKERRQ(ierr);
+  } else {
+    *outmap = inmap;
+    ierr    = PetscObjectReference((PetscObject)inmap);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
   

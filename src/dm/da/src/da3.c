@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.123 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: da3.c,v 1.124 2001/01/16 18:21:11 balay Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -1255,15 +1255,11 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  {
-    ISLocalToGlobalMapping isltog;
-    ierr        = ISLocalToGlobalMappingCreate(comm,nn,idx,&isltog);CHKERRQ(ierr);
-    ierr        = VecSetLocalToGlobalMapping(da->global,isltog);CHKERRQ(ierr);
-    da->ltogmap = isltog; 
-    ierr        = PetscObjectReference((PetscObject)isltog);CHKERRQ(ierr);
-    PetscLogObjectParent(da,isltog);
-    ierr = ISLocalToGlobalMappingDestroy(isltog);CHKERRQ(ierr);
-  }
+  ierr  = ISLocalToGlobalMappingCreate(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
+  ierr  = VecSetLocalToGlobalMapping(da->global,da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);
+  PetscLogObjectParent(da,da->ltogmap);
 
   /* redo idx to include "missing" ghost points */
   /* Solve for X,Y, and Z Periodic Case First, Then Modify Solution */

@@ -1,4 +1,4 @@
-/*$Id: zis.c,v 1.37 2000/10/24 20:28:01 bsmith Exp bsmith $*/
+/*$Id: zis.c,v 1.38 2001/01/15 21:49:49 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscis.h"
@@ -22,6 +22,7 @@
 #define isview_                ISVIEW
 #define iscoloringcreate_      ISCOLORINGCREATE
 #define islocaltoglobalmappingcreate_ ISLOCALTOGLOBALMAPPINGCREATE
+#define islocaltoglobalmappingblock_ ISLOCALTOGLOBALMAPPINGBLOCK
 #define isallgather_                  ISALLGATHER
 #define iscoloringdestroy_            ISCOLORINGDESTROY
 #define iscoloringview_               ISCOLORINGVIEW
@@ -49,6 +50,7 @@
 #define isequal_               isequal
 #define iscoloringcreate_      iscoloringcreate
 #define islocaltoglobalmappingcreate_ islocaltoglobalmappingcreate
+#define islocaltoglobalmappingblock_ islocaltoglobalmappingblock
 #define isallgather_                  isallgather
 #define ispartitioningcount_          ispartitioningcount
 #define ispartitioningtonumbering_    ispartitioningtonumbering
@@ -192,10 +194,14 @@ void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,int *n,int *colors,ISColorin
   *ierr = ISColoringCreate((MPI_Comm)PetscToPointerComm(*comm),*n,colors,iscoloring);
 }
 
-void PETSC_STDCALL islocaltoglobalmappingcreate_(MPI_Comm *comm,int *n,int *indices,ISLocalToGlobalMapping 
-                                   *mapping,int *ierr)
+void PETSC_STDCALL islocaltoglobalmappingcreate_(MPI_Comm *comm,int *n,int *indices,ISLocalToGlobalMapping *mapping,int *ierr)
 {
   *ierr = ISLocalToGlobalMappingCreate((MPI_Comm)PetscToPointerComm(*comm),*n,indices,mapping);
+}
+
+void PETSC_STDCALL islocaltoglobalmappingblock_(ISLocalToGlobalMapping *inmap,int bs,ISLocalToGlobalMapping *outmap,int *ierr)
+{
+  *ierr = ISLocalToGlobalMappingBlock(*inmap,bs,outmap);
 }
 
 void PETSC_STDCALL isallgather_(IS *is,IS *isout,int *ierr)
