@@ -80,7 +80,7 @@ runex3:
 	   $(RM) -f ex3_1.tmp ex3_1.tmpz
 
 runex8:
-	-@$(MPIRUN) -np 1 ex8 -tr_malloc_nan -fp_trap > ex8_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 1 ex8 -trmalloc_nan -fp_trap > ex8_1.tmp 2>&1;\
 	   grep -v p0 ex8_1.tmp > ex8_1.tmpz ;	 \
 	   if (diff output/ex8_1.out ex8_1.tmpz) then true; \
 	   else echo "Possible problem with ex8_1, diffs above. This is a contrived error to test for uninitialized memory."; fi; \
