@@ -21,19 +21,6 @@ libf: $(OBJSF)
 	ar crl $(LIBNAME) $(OBJSF)
 
 #############
-.PRECIOUS: $(LIBNAME)
-.c.a:
-	$(CC) -pipe -c $(CFLAGS) $(COPTFLAGS) $*.c
-	$(AR) clr $(LIBNAME) $*.o
-	$(RM) $*.o
-.c.o:
-	$(CC) -pipe -c $(CFLAGS) $(COPTFLAGS) $*.c
-.f.o: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-.f.a: 
-	$(FC)  -c $(FFLAGS) $(FOPTFLAGS) $*.f
-	$(AR) clr $(LIBNAME) $*.o
-	$(RM) $*.o
 
 #
 #  We ignore error messages from FC since they seem to be bogus

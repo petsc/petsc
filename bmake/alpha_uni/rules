@@ -20,20 +20,7 @@ libc: $(OBJSC)
 libf: $(OBJSF)
 	ar crl $(LIBNAME) $(OBJSF)
 
-.c.a: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) -f $*.o
-.c.o: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $*.c
-.f.o: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-
-.f.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) -f $*.o
-
+#######
 .F.o:
 	$(RM) $*.f
 	cpp $(CFLAGS) $(COPTFLAGS) -E $< | grep -v '^ *#' > $*.f

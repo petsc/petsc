@@ -37,28 +37,7 @@ libf:
 
 libmember:    $(LIBNAME)($(LIBMEMBER))
 
-.c.a: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
-.c.o: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
-.cpp.a .cc.a .C.a: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
-.cpp.o .cc.o .C.o: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
-.f.o: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $<
-
-.f.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $<
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
-
-.SUFFIXES: $(SUFFIXES) .F
-
+############
 .F.o:
 	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
 

@@ -24,19 +24,6 @@ libc: $(LIBNAME)($(OBJSC))
 libf: $(LIBNAME)($(OBJSF))
 
 #############
-.PRECIOUS: $(LIBNAME)
-.c.a:
-	$(CC) -pipe -c $(CFLAGS) $(COPTFLAGS) $*.c
-	$(AR) clr $(LIBNAME) $*.o
-	$(RM) $*.o
-.c.o:
-	$(CC) -pipe -c $(CFLAGS) $(COPTFLAGS) $*.c
-.f.o: 
-	$(FC) -pipe -c $(FFLAGS) $(FOPTFLAGS) $*.f
-.f.a: 
-	$(FC) -pipe -c $(FFLAGS) $(FOPTFLAGS) $*.f
-	$(AR) clr $(LIBNAME) $*.o
-	$(RM) $*.o
 .F.o:
 	$(RM) $*.f
 	-cpp $(CFLAGS)  $*.F > $*.f 
