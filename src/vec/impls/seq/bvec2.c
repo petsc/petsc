@@ -5,6 +5,7 @@
 
 #include "src/vec/vecimpl.h"          /*I "petscvec.h" I*/
 #include "src/vec/impls/dvecimpl.h" 
+#include "src/inline/dot.h"
 #include "petscblaslapack.h"
 #if defined(PETSC_HAVE_AMS)
 EXTERN int PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
@@ -15,7 +16,7 @@ EXTERN int PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
 int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
   PetscScalar *xx;
-  int         ierr,one = 1;
+  int         n=xin->n,ierr,one = 1;
 
   PetscFunctionBegin;
   if (type == NORM_2) {
@@ -26,8 +27,9 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 #if defined(PETSC_HAVE_SLOW_NRM2)
 #if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
     fortrannormsqr_(xx,&n,z);
-    z = sqrt(z);
+    *z = sqrt(*z);
 #elif defined(PETSC_USE_UNROLLED_NORM)
+    {
     PetscReal work = 0.0;
     switch (n & 0x3) {
       case 3: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
@@ -39,12 +41,12 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
                         xx[2]*PetscConj(xx[2])+xx[3]*PetscConj(xx[3]));
       xx += 4; n -= 4;
     } 
-    *z = sqrt(work);
+    *z = sqrt(work);}
 #else
     {
       int         i;
       PetscScalar sum=0.0;
-      for (i=0; i<xin->n; i++) {
+      for (i=0; i<n; i++) {
         sum += (xx[i])*(PetscConj(xx[i]));
       }
       *z = sqrt(PetscRealPart(sum));
