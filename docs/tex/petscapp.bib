@@ -4,6 +4,12 @@
 
 %  <a name="packages"></a><H3><center>Software Packages that use or interface to PETSc</center></H3>
 %
+@Unpublished{dks2,
+  title = 	"FENA - A Finite Element Model for the North Atlantic",
+  author = "Jens Schroeter",
+  institution = "Alfred-Wegener-Institute for Polar and Marine Research",
+  url = "http://www.awi-bremerhaven.de/Modelling/INVERSE/FENAdesc/FENAdesc.html"
+}
 @Unpublished{magpar,
    author     = "W. Scholz",
   title = 	"Magpar: Parallel Micromagnetics Code",
@@ -164,6 +170,14 @@
 %
 %  <a name="nano"><H3><center>Nano-simulations</center></H3>
 %
+@article{saut,
+   author = { Olivier Saut},
+   title  = "Bidimensional Study of the Maxwell-Bloch Model in a Nonlinear Crystal",
+   journal = "SIAM Journal on Scientific Computing",
+   year    = 2004,
+   note    = "submitted",
+   url     = {http://mip.ups-tlse.fr/~saut/data/sisc04.pdf}
+}
 @article{scholz1,
    author = { W. Scholz and J. Fidler and T. Schrefl and D. Suess and R. Dittrich and H. Forster and V. Tsiantos},
    title  = "Scalable Parallel Micromagnetic Solvers for Magnetic Nanostructures",
@@ -212,6 +226,12 @@
 %
 %  <a name="biology"><H3><center>Biology</center></H3>
 %
+@InProceedings{Adams-03b,
+   author =   {Adams, M.~F. and Bayraktar, H.H. and Keaveny, T.M. and  Papadopoulos, P.},
+   title =   {Applications of Algebraic Multigrid to Large-Scale Finite Element Analysis of Whole Bone Micro-Mechanics on the IBM SP},
+   booktitle = {ACM/IEEE Proceedings of SC2003: High Performance Networking and Computing},
+   year = {2003}
+}
 @InProceedings{dbl2,
   author =       "Enzo A. Dari and Mariano I. Cantero and Raúl A. Feijóo",
   title =        "Computational arterial flow modeling using a parallel Navier-Stokes solver",
@@ -219,7 +239,6 @@
   year =         "2000",
   url = "http://146.134.8.133/Feijoo/CModComplexos/Conferencias/ECCOMAS2000/Darie/eccomas.html"
 }
-
 @inproceedings{oghattas2002,
    author = "Volkan Akcelik and George Biros and Omar Ghattas",
    title  = "Parallel Multiscale Gauss-Newton-Krylov Methods For Inverse Wave Propagation",
@@ -681,6 +700,47 @@
 %
 %  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
 %
+@article{Pfeiffer-Kidder-etal:2003,
+  author =       {Pfeiffer, Harald P. and Kidder, Lawrence E. and Scheel, Mark A. and Teukolsky, Saul A.},
+  title =        {A multidomain spectral method for solving elliptic equations},
+  journal =      CPC,
+  year =         2003,
+  volume = {152},
+  pages = {253--273},
+  note = {Solves nonlinear coupled 3-D elliptic equations that arise in general relativity. For a related online version, see arXiv:gr-qc/0202096}
+}
+@Article{Pfeiffer-Cook-Teukolsky:2002,
+  author =       {Pfeiffer, Harald P. and Cook, Gregory B. and Teukolsky, Saul A.},
+  title =        {Comparing initial-data sets for binary black hole},
+  journal =      PRD,
+  year =         {2002},
+  volume =       {66},
+  pages =        {024047}, 
+  note =         {for a related online version, seearXiv:gr-qc/0203085}
+}
+@PhdThesis{Pfeiffer:2003,
+  author =       {Pfeiffer, Harald P.},
+  title =        {Initial Data for Black Hole Evolutions},
+  school =       {Cornell University},
+  year =         2003
+}
+@Article{Adams-03a,
+   author =   {Adams, M.~F.},
+   title =   {Algebraic multrigrid methods for constrained linear systems with applications to contact problems in solid mechanics},
+   journal =   {Numerical Linear Algebra with Applications},
+   year =   {2004},
+   note =   {To appear}
+}
+@Article{dks2004,
+  author =        "Sergey Danilov, Gennady Kivman and Jens Schroeter",
+  journal =      "Ocean Modelling",
+  year = "2004",
+  volume = "6(2)",
+  pages = "125-150",
+  title  =  A finite-element Ocean Model: Principles and Evaluation",
+  url = "http://www.sciencedirect.com/science?_ob=IssueURL&_tockey=%23TOC%236214%232004%23999939997%231%23FLA%23Volume_6,_Issue_2,_Pages_101-190_(200
+4)&_auth=y&view=c&_acct=C000007278&_version=1&_urlVersion=0&_userid=97338&md5=c3a50a31c599d8d38c8ce1f29117f267"
+}
 @InProceedings{earthquake2003,
   author = "Volkan Akcelik and Jacobo Bielak and George Biros and Ioannis Epanomeritakis and Antonio Fernandez
             Omar Ghattas and Eui Joong Kim and David O'Hallaron and Tiankai Tu",
