@@ -4,10 +4,6 @@ Before release
 
    configure for all packages, with install option for as many as possible
 
-   Manual pages for KSPConvergedReason
-
-   Manual pages for SNESConvergedReason
-
   keywords in maual pages should get listed in help topic list
 
 PETSc configure
