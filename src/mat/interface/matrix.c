@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.327 1999/03/18 15:42:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.328 1999/03/18 15:44:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -3784,9 +3784,16 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
 
    Options Database Keys:
 +   -matstash_initial_size <size> or <size0,size1,...sizep-1>
--   -matstash_block_initial_size <size>  or <size0,size1,...sizep-1>
+-   -matstash_block_initial_size <bsize>  or <bsize0,bsize1,...bsizep-1>
 
    Level: intermediate
+
+   Notes: 
+     Run with the option -log_info and look for output of the form
+     MatAssemblyBegin_MPIXXX:Stash has MM entries, uses nn mallocs.
+     to determine the appropriate value, MM, to use for size and 
+     MatAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
+     to determine the value, BMM to use for bsize
 
 .keywords: matrix, stash, assembly
 @*/
