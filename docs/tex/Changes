@@ -53,6 +53,8 @@ of communicators to use on the SLES on each level
 
   General
 
+FListDestroy now takes FList * instead of FList
+
    Added support for PETSc programs to use Matlab functions and scripts on each processor
    for sequential calculations; for example for the local evaluation of the parallel nonlinear
    function required for SNES; see src/snes/examples/tutorials/ex5m.c. This functionality
