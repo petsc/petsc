@@ -272,9 +272,9 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int 
     ip = allpetsc[i];
     ia = allapp[i];
     /* check there are no duplicates */
-    if (aobasic->app[ip]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering");
+    if (aobasic->app[ip]) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %d. Already mapped to %d, not %d.", i, aobasic->app[ip]-1, ia);
     aobasic->app[ip] = ia + 1;
-    if (aobasic->petsc[ia]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering");
+    if (aobasic->petsc[ia]) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %d. Already mapped to %d, not %d.", i, aobasic->petsc[ia]-1, ip);
     aobasic->petsc[ia] = ip + 1;
   }
   if (!mypetsc) {
