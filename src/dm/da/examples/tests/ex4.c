@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.22 1996/06/27 17:49:12 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.23 1996/06/27 20:52:32 curfman Exp curfman $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
     ierr = DAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRA(ierr);
     ierr = DAGetGlobalIndices(da,&nloc,&ltog); CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao); CHKERRA(ierr);
-    ierr = AOView(ao,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+    /* ierr = AOView(ao,STDOUT_VIEWER_WORLD); CHKERRA(ierr); */
     iglobal = (int *) PetscMalloc( nloc*sizeof(int) ); CHKPTRA(iglobal);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
