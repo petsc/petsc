@@ -18,7 +18,7 @@ BUILDEXAMPLES_1 =
 BUILDEXAMPLES_3 =
 
 EXAMPLESC       = ex1.c ex2.c
-EXAMPLESF       = ex1f.F
+EXAMPLESF       = ex1f.F ex2f.F ex2f.h
 #
 
 ex1: ex1.o  chkopts

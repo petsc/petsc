@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.5 1997/04/19 17:03:35 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.6 1997/04/19 17:56:10 curfman Exp curfman $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
 
@@ -229,7 +229,7 @@ int InitialConditions(Vec global, void *ctx)
 }
 /* -------------------------------------------------------------------*/
 /*
-   ExactSolution - Compute the exact solution at any time.
+   ExactSolution - Computes the exact solution at any time.
 
    Input Parameters:
    t - time
@@ -378,7 +378,7 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   Scalar *copyptr, *localptr,sc;
 
   /*
-        Local will be a workspace for us that contains the ghost region
+       The vector 'local' will be a workspace that contains the ghost region
   */
   ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
   
@@ -445,7 +445,33 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 }
 /* -------------------------------------------------------------------*/
 /*
-        User provided routine to compute the Jacobian of the RHS function
+   RHSJacobian - User provided routine to compute the Jacobian of
+   the right-hand-side function.
+
+   Input Parameters:
+     ts - the TS context
+     t - current time
+     globalin - global input vector
+     dummy - optional user-defined context, as set by TSetRHSJacobian()
+
+   Output Parameters:
+     AA - Jacobian matrix
+     BB - optionally different preconditioning matrix
+     str - flag indicating matrix structure
+
+  Notes:
+  RHSJacobian computes entries for the locally owned part of the Jacobian.
+   - Currently, all PETSc parallel matrix formats are partitioned by
+     contiguous chunks of rows across the processors. The "grow"
+     parameter computed below specifies the global row number 
+     corresponding to each local grid point.
+   - Each processor needs to insert only elements that it owns
+    locally (but any non-local elements will be sent to the
+     appropriate processor during matrix assembly). 
+   - Always specify global row and columns of matrix entries.
+   - Here, we set all entries for a particular row at once.
+   - Note that MatSetValues() uses 0-based row and column numbers
+     in Fortran as well as in C.
 */
 int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
@@ -461,12 +487,18 @@ int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,v
   ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
+
+  /* Get a pointer to vector data */
   ierr = VecGetArray(local,&localptr); CHKERRQ(ierr);
 
+  /* Set matrix sparsity info */
   *str = SAME_NONZERO_PATTERN;
 
+  /* Get starting and ending locally owned rows of the matrix */
   ierr = MatGetOwnershipRange(A,&mstarts,&mends); CHKERRQ(ierr);
   mstart = mstarts; mend = mends;
+
+  /* Set matrix rows corresponding to boundary data */
   if (mstart == 0) {
     v[0] = 0.0;
     ierr = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES); CHKERRQ(ierr);
@@ -479,7 +511,8 @@ int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,v
   }
 
   /*
-     Construct matrix one row at a time
+     Set matrix rows corresponding to interior data.
+     We construct matrix one row at a time
   */
   sc = 1.0/(appctx->h*appctx->h*2.0*(1.0+t)*(1.0+t));
   for ( i=mstart; i<mend; i++ ) {
@@ -490,8 +523,17 @@ int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,v
     v[2]   = sc*localptr[is];
     ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
   }
+  /* 
+     Restore vector
+  */
   ierr = VecRestoreArray(local,&localptr); CHKERRQ(ierr);
 
+  /*
+     Assemble matrix, using the 2-step process:
+       MatAssemblyBegin(), MatAssemblyEnd()
+     Computations can be done while messages are in transition
+     by placing code between these two statements.
+  */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;

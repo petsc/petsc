@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.4 1997/04/19 16:51:28 curfman Exp curfman $";
+C "$Id: ex2f.F,v 1.5 1997/04/19 16:55:26 curfman Exp curfman $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -440,7 +440,7 @@ C  Local variables:
       Double  localptr(1), copyptr(1), sc
       integer i, il, ierr, idx_c, idx_l, localsize
 
-C  Local will be a workspace for us that contains the ghost region
+C  The vector 'local' will be a workspace that contains the ghost region
 
       call DAGetLocalVector(da,local,ierr)
   
@@ -540,30 +540,32 @@ C  Input/output parameters:
       integer      dummy
 
 C  Local variables:
-      Double  localptr(1), sc
-      integer i, ierr, idx
-
-      integer mstart, mend, mstarts, mends
-      integer col(3), is
-      Double  v(3)
       Vec     local
+      Double  localptr(1), sc, v(3)
+      integer i, ierr, idx, col(3), is
+      integer mstart, mend, mstarts, mends
 
 C  Extract local array
       call DAGetLocalVector(da,local,ierr)
       call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr)
       call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr)
 
-C  Get a pointer to vector data.
+C  Get a pointer to vector data
+
       call VecGetArray(local,localptr,idx,ierr) 
 
 C  Set matrix sparsity info
+
       str = SAME_NONZERO_PATTERN
+
+C  Get starting and ending locally owned rows of the matrix
 
       call MatGetOwnershipRange(A,mstarts,mends,ierr)
       mstart = mstarts
       mend   = mends
 
 C  Set matrix rows corresponding to boundary data
+
       if (mstart .eq. 0) then
         v(1) = zero_d0
         call MatSetValues(A,1,mstart,1,mstart,v,INSERT_VALUES,ierr)
@@ -576,7 +578,8 @@ C  Set matrix rows corresponding to boundary data
       endif
 
 C  Set matrix rows corresponding to interior data.
-C  We construct the matrix one row at a time
+C  We construct the matrix one row at a time.
+
       sc = one_d0/(h*h*two_d0*(one_d0+t)*(one_d0+t))
       do 10, i=mstart, mend-1
          col(1) = i-1
@@ -590,8 +593,14 @@ C  We construct the matrix one row at a time
         call MatSetValues(A,1,i,3,col,v,INSERT_VALUES,ierr)
  10   continue
 
-C  Restore array
+C  Restore vector
+
       call VecGetArray(local,localptr,idx,ierr) 
+
+C  Assemble matrix, using the 2-step process:
+C       MatAssemblyBegin(), MatAssemblyEnd()
+C  Computations can be done while messages are in transition,
+C  by placing code between these two statements.
 
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)

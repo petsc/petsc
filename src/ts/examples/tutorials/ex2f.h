@@ -47,6 +47,7 @@ C             solution  - solution vector
 C             comm      - communicator
 C             rank      - processor rank within communicator
 C             size      - number of processors
+C             debug     - flag (1 indicates debugging printouts)
 C
 C  Store other misc problem parameters in common block /params/
 C             h         - mesh width h = 1/(M-1)
@@ -55,11 +56,12 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Common block data:
       DA       da
       Vec      localwork, solution
-      integer  M, rank, size
-      Double   h
+      integer  M, rank, size, debug
+      Double   h, zero_d0, one_d0, two_d0, four_d0
       MPI_Comm comm
 
-      common /params/ h
-      common /appctx/ M, da, localwork, solution, comm, rank, size
+      common /params/ h, zero_d0, one_d0, two_d0, four_d0
+      common /appctx/ M, debug, da, localwork, solution
+      common /appctx/ comm, rank, size
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
