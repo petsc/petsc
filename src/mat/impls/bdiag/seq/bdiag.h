@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.7 1995/06/07 17:32:52 bsmith Exp curfman $ */
+/* $Id: bdiag.h,v 1.8 1995/07/29 04:33:21 curfman Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -18,7 +18,7 @@ typedef struct {
   int    m, n;             /* rows, columns */
   int    mblock, nblock;   /* block rows and columns */
   int    assembled, nonew;
-  int    nz,maxnz,mem;     /* nonzeros, allocated nonzeros, memory */
+  int    nz,maxnz;         /* nonzeros, allocated nonzeros */
   int    nd;               /* number of block diagonals */
   int    mainbd;           /* the number of the main block diagonal */
   int    nb;               /* Each diagonal element is an nb x nb matrix */

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.9 1995/06/13 16:16:21 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.10 1995/06/21 22:31:42 bsmith Exp curfman $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -14,6 +14,7 @@ typedef struct _Viewer*      Viewer;
 #define FILE_FORMAT_DEFAULT  0
 #define FILE_FORMAT_MATLAB   1
 #define FILE_FORMAT_IMPL     2
+#define FILE_FORMAT_INFO     3
 
 extern int ViewerFileOpen(char*,Viewer *);
 extern int ViewerFileOpenSync(char*,MPI_Comm,Viewer *);

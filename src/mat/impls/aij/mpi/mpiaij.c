@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.62 1995/07/23 21:36:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.63 1995/08/15 20:28:20 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -595,7 +595,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-extern int MatMarkDiag_AIJ(Mat_AIJ  *);
+extern int MatMarkDiag_AIJ(Mat);
 /*
     This has to provide several versions.
 
@@ -620,7 +620,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x -1; /* shift by one for index start of 1 */
   ls--;
-  if (!A->diag) {if ((ierr = MatMarkDiag_AIJ(A))) return ierr;}
+  if (!A->diag) {if ((ierr = MatMarkDiag_AIJ(AA))) return ierr;}
   diag = A->diag;
   if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
     SETERRQ(1,"MatRelax_MPIAIJ:Option not yet supported");

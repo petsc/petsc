@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.16 1995/08/04 17:40:03 curfman Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.17 1995/08/04 18:50:21 curfman Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -20,7 +20,6 @@ typedef struct {
   int           numtids,mytid;      /* number of procs, my proc ID */
   int           singlemalloc, sorted, roworiented, nonew;
   int           nz, maxnz;          /* total nonzeros stored, allocated */
-  int           mem;                /* total memory */
   int           *imax;              /* allocated matrix space per row */
 
   /*  Used in Matrix assembly */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.46 1995/07/21 22:14:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.47 1995/08/15 20:28:32 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -13,11 +13,13 @@ static char vcid[] = "$Id: mpirowbs.c,v 1.46 1995/07/21 22:14:16 curfman Exp bsm
 /* Same as MatRow format ... should share these! */
 static int MatFreeRowbs_Private(Mat matin,int n,int *i,Scalar *v)
 {
-  if (v) PETSCFREE(v);
+  if (v) {
+    PETSCFREE(v);
+    PLogObjectMemory(matin,-n*(sizeof(int)+sizeof(Scalar)));
+  }
   return 0;
 }
 
-/* Note:  Call MatMallocRowbs_Private only for n>0 */
 static int MatMallocRowbs_Private(Mat matin,int n,int **i,Scalar **v)
 {
   int len;
@@ -25,7 +27,8 @@ static int MatMallocRowbs_Private(Mat matin,int n,int **i,Scalar **v)
     *i = 0; *v = 0;
   } else {
     len = n*(sizeof(int) + sizeof(Scalar));
-    *v = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(*v);
+    *v = (Scalar *) PETSCMALLOC(len); CHKPTRQ(*v);
+    PLogObjectMemory(matin,len);
     *i = (int *)(*v + n);
   }
   return 0;
@@ -72,7 +75,7 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
     }
     vs++;
   }
-  bsif->mem = sizeof(BSspmat) + len + nz*(sizeof(int) + sizeof(Scalar));
+  PLogObjectMemory(mat,sizeof(BSspmat) + len + nz*(sizeof(int) + sizeof(Scalar)));
   bsif->nz	     = 0;
   bsif->maxnz	     = nz;
   bsif->sorted       = 0;
@@ -153,7 +156,7 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
         rmax = imax[row];
         mat->singlemalloc = 0;
         mat->maxnz += CHUNCKSIZE_LOCAL;
-        mat->mem   += CHUNCKSIZE_LOCAL*(sizeof(int) + sizeof(Scalar));
+        PLogObjectMemory(matin,CHUNCKSIZE_LOCAL*(sizeof(int)+sizeof(Scalar)));
       }
       else {
       /* this has too many shifts here; but alternative was slower*/
@@ -874,7 +877,7 @@ static int MatGetInfo_MPIRowbs(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
   Mat_MPIRowbs *mat = (Mat_MPIRowbs *) matin->data;
   int          isend[3], irecv[3];
 
-  isend[0] = mat->nz; isend[1] = mat->maxnz; isend[2] = mat->mem;
+  isend[0] = mat->nz; isend[1] = mat->maxnz; isend[2] = matin->mem;
   if (flag == MAT_LOCAL) {
     *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
   } else if (flag == MAT_GLOBAL_MAX) {

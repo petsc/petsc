@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.23 1995/08/02 04:19:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.24 1995/08/14 23:16:35 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -324,6 +324,7 @@ int SNESCreate_TR(SNES snes )
   snes->view            = SNESView_TR;
 
   neP			= PETSCNEW(SNES_TR); CHKPTRQ(neP);
+  PLogObjectMemory(snes,sizeof(SNES_TR));
   snes->data	        = (void *) neP;
   neP->mu		= 0.25;
   neP->eta		= 0.75;

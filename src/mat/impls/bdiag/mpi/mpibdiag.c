@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.20 1995/08/07 18:53:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.21 1995/08/15 20:28:38 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -659,6 +659,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   ldiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(ldiag); 
   mbd->gdiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(mbd->gdiag);
   k = 0;
+  PLogObjectMemory(mat,(nd+1)*sizeof(int) + (mbd->numtids+2)*sizeof(int)
+                        + sizeof(struct _Mat) + sizeof(Mat_MPIBDiag));
   if (diagv) {
     ldiagv = (Scalar **)PETSCMALLOC((nd+1)*sizeof(Scalar*)); CHKPTRQ(ldiagv); 
   }

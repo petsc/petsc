@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.10 1995/07/20 04:29:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: snestest.c,v 1.11 1995/08/14 23:16:04 curfman Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -104,6 +104,7 @@ int SNESCreate_Test(SNES  snes )
   snes->setfromoptions  = SNESSetFromOptions_Test;
 
   neP			= PETSCNEW(SNES_Test);   CHKPTRQ(neP);
+  PLogObjectMemory(snes,sizeof(SNES_Test));
   snes->data    	= (void *) neP;
   neP->complete_print   = 0;
   return 0;
