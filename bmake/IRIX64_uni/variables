@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.8 1999/08/04 20:14:59 balay Exp balay $ 
+# $Id: base_variables,v 1.9 1999/08/19 18:10:16 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -16,7 +16,8 @@ C_CLINKER_SLFLAG   = -rpath
 C_FLINKER_SLFLAG   = -rpath
 C_CLINKER	   = cc  -64 -Wl,-woff,84,-woff,85,-woff,134
 C_FLINKER	   = f90 -cpp -64 -Wl,-woff,84,-woff,85,-woff,134
-C_CCV		   = unknown
+C_CCV		   = cc -version
+C_FCV              = f90 -version
 C_SYS_LIB	   = -lfpe -lpthread -lfortran -lftn -lfastm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g
@@ -32,7 +33,7 @@ CXX_CLINKER_SLFLAG = -rpath
 CXX_FLINKER_SLFLAG = -rpath
 CXX_CLINKER	   = CC -64 -Wl,-woff,84,-woff,85,-woff,134
 CXX_FLINKER	   = CC -64 -Wl,-woff,84,-woff,85,-woff,134
-CXX_C_CCV	   = unknown
+CXX_C_CCV	   = CC -version
 CXX_C_SYS_LIB	   = -lfpe -lcomplex -lpthread -lfortran -lftn -lfastm
 
 # ------------------------- BOPT - g_c++ options ------------------------------
