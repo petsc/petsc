@@ -1,5 +1,7 @@
 
-static char help[] = "Solves tridiagonal linear system with SLES";
+static char help[] = 
+"This example solves tridiagonal linear system with SLES.\n";
+
 #include "sles.h"
 #include "stdio.h"
 #include "options.h"
