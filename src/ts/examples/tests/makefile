@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.32 1999/02/01 20:22:55 balay Exp balay $ 
+# $Id: makefile,v 1.33 1999/04/01 17:11:36 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -61,7 +61,7 @@ ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o ${PETSC_TS_LIB}
 	${RM} ex9.o
 
- ex10: ex10.o  chkopts
+ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o ${PETSC_TS_LIB}
 	${RM} ex10.o
 
@@ -78,12 +78,12 @@ runex1:
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler -nonlinear_no_jacobian 
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler -linear_constant_matrix  
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler -nonlinear_jacobian 
-	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -linear_no_matrix 
-	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -nonlinear_no_jacobian 
-	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -linear_constant_matrix  -pc_type lu 
-	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -nonlinear_jacobian 
+	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler  -nonlinear_jacobian 
+	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_no_matrix 
+	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_no_jacobian 
+	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_constant_matrix  -pc_type lu 
+	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_variable_matrix 
+	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_jacobian 
 
 runex1f:
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type euler  -linear_no_matrix
@@ -91,9 +91,9 @@ runex1f:
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type euler -linear_constant_matrix  
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type euler -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type euler -nonlinear_jacobian 
-	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -linear_no_matrix 
-	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -nonlinear_no_jacobian 
-	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -linear_constant_matrix  -pc_type lu 
-	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -nonlinear_jacobian 
+	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_no_matrix 
+	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_no_jacobian 
+	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_constant_matrix  -pc_type lu 
+	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_variable_matrix 
+	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_jacobian 
 

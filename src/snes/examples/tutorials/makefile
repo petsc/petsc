@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.70 2000/03/04 15:48:31 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.71 2000/03/13 17:13:04 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -241,7 +241,7 @@ runex5_9:
 	   else echo "Possible problem with ex5_9, diffs above"; fi; \
 	   ${RM} -f ex5_9.tmp
 runex5_10:
-	-@${MPIRUN} -np 2 ex5 -sles_diagonal_scale -ksp_smonitor -snes_smonitor -mx 12 -my 11-ksp_gmres_irorthog > ex5_10.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ex5 -sles_diagonal_scale -ksp_smonitor -snes_smonitor -mx 12 -my 11 -ksp_gmres_irorthog > ex5_10.tmp 2>&1;\
 	   if (diff output/ex5_10.out ex5_10.tmp) then true; \
 	   else echo "Possible problem with ex5_10, diffs above"; fi; \
 	   ${RM} -f ex5_10.tmp
@@ -338,12 +338,12 @@ runex14_2:
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
 runex16:
-	-@${MPIRUN} -np 1 ex16 -options_file ex16options -snes_smonitor -ksp_smonitor -ksp_gmres_irorthog > ex16_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex16 -options_file ex16options -snes_smonitor -ksp_smonitor > ex16_1.tmp 2>&1; \
 	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   ${RM} -f ex16_1.tmp
 runex16_2:
-	-@${MPIRUN} -np 4 ex16 -options_file ex16options_2 -snes_smonitor -ksp_smonitor -ksp_gmres_irorthog > ex16_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ex16 -options_file ex16options_2 -snes_smonitor -ksp_smonitor > ex16_2.tmp 2>&1; \
 	   if (diff output/ex16_2.out ex16_2.tmp) then true; \
 	   else echo "Possible problem with ex16_2, diffs above"; fi; \
 	   ${RM} -f ex16_2.tmp
