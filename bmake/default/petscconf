@@ -1,0 +1,13 @@
+MV       = mv
+CP       = cp
+BFORT    = bfort
+DOCTEXT  = doctext
+MAPNAMES = mapnames
+C2HTML   = c2html
+BIB2HTML = bib2html
+RM       = rm -f
+SHELL    = /bin/sh
+SED      = /bin/sed
+OMAKE    = gmake --no-print-directory
+MKDIR    = mkdir -p
+
