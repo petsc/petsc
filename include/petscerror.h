@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.27 1998/10/09 19:27:39 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.28 1998/12/04 23:31:39 bsmith Exp balay $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -72,8 +72,13 @@
 #define PETSC_ERR_MAT_CH_ZRPVT    71   /* detected a zero pivot during Cholesky factorization */
 
 #if defined(USE_PETSC_DEBUG)
-#define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
 #define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
+#define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
+#define SETERRQ1(n,p,s,a1) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1);}
+#define SETERRQ2(n,p,s,a1,a2) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2);}
+#define SETERRQ3(n,p,s,a1,a2,a3) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2,a3);}
+#define SETERRQ4(n,p,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2,a3,a4);}
+
                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)     {if (n) SETERRQ(n,0,(char *)0);}
 #define CHKERRA(n)     {if (n) SETERRA(n,0,(char *)0);}
@@ -92,7 +97,7 @@ extern int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*)
 extern int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
 extern int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void* );
 extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 
-extern int PetscError(int,char*,char*,char*,int,int,char*);
+extern int PetscError(int,char*,char*,char*,int,int,char*,...);
 extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
 extern int PetscPopErrorHandler(void);
 
