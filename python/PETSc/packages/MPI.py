@@ -7,16 +7,18 @@ import re
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.foundMPI       = 0
-    self.headerPrefix   = ''
-    self.substPrefix    = ''
-    self.argDB          = framework.argDB
-    self.foundLib       = 0
-    self.foundInclude   = 0
-    self.isPOE          = 0
-    self.compilers      = self.framework.require('config.compilers', self)
-    self.types          = self.framework.require('config.types',     self)
-    self.libraries      = self.framework.require('config.libraries', self)
+    self.foundMPI     = 0
+    self.headerPrefix = ''
+    self.substPrefix  = ''
+    self.argDB        = framework.argDB
+    self.foundLib     = 0
+    self.foundInclude = 0
+    self.isPOE        = 0
+    self.compilers    = self.framework.require('config.compilers', self)
+    self.types        = self.framework.require('config.types',     self)
+    self.libraries    = self.framework.require('config.libraries', self)
+    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+      self.libraries.libraries.extend([(['rt','nsl','aio'], 'exit')])
     return
 
   def __str__(self):
@@ -40,7 +42,6 @@ class Configure(config.base.Configure):
     help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Install MPICH to provide MPI'))
-    
     return
 
   def checkLib(self, libraries):
@@ -127,7 +128,6 @@ class Configure(config.base.Configure):
       self.popLanguage()
       self.framework.log.write('MPI can link with Fortran\n')
     return 1
-
 
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
@@ -367,8 +367,6 @@ class Configure(config.base.Configure):
 
   def configureLibrary(self):
     '''Find all working MPI libraries and then choose one'''
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-      self.libraries.libraries.extend([(['rt','nsl','aio'],'exit')])
     functionalMPI = []
     nonsharedMPI  = []
 
@@ -390,7 +388,7 @@ class Configure(config.base.Configure):
           if found:
             break
       if not found: continue
-      
+
       version = self.executeTest(self.configureVersion)
       if self.framework.argDB['with-mpi-shared']:
         if not self.executeTest(self.checkSharedLibrary):
