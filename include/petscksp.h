@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.84 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.85 1999/11/28 17:28:17 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -76,8 +76,6 @@ extern int KSPGetMonitorContext(KSP,void **);
 extern int KSPGetResidualHistory(KSP, double **, int *);
 extern int KSPSetResidualHistory(KSP, double *,int,PetscTruth);
 
-extern int KSPSetConvergenceTest(KSP,int (*)(KSP,int,double, void*), void *);
-extern int KSPGetConvergenceContext(KSP,void **);
 
 extern int KSPBuildSolution(KSP, Vec,Vec *);
 extern int KSPBuildResidual(KSP, Vec, Vec,Vec *);
@@ -121,8 +119,6 @@ extern int KSPDefaultSMonitor(KSP,int,double, void *);
 extern int KSPVecViewMonitor(KSP,int,double,void *);
 extern int KSPGMRESKrylovMonitor(KSP,int,double,void *);
 
-extern int KSPDefaultConverged(KSP,int,double, void *);
-extern int KSPSkipConverged(KSP,int,double, void *);
 
 extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
 extern int KSPUnwindPreconditioner(KSP,Vec,Vec);
@@ -146,6 +142,11 @@ typedef enum {/* converged */
               KSP_DIVERGED_BREAKDOWN     = -5,
  
               KSP_CONVERGED_ITERATING    =  0} KSPConvergedReason;
+
+extern int KSPSetConvergenceTest(KSP,int (*)(KSP,int,double, KSPConvergedReason*,void*), void *);
+extern int KSPGetConvergenceContext(KSP,void **);
+extern int KSPDefaultConverged(KSP,int,double, KSPConvergedReason*,void *);
+extern int KSPSkipConverged(KSP,int,double, KSPConvergedReason*,void *);
 
 extern int KSPComputeExplicitOperator(KSP,Mat *);
 
