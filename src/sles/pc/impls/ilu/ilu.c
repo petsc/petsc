@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.116 1999/01/12 23:14:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.117 1999/01/13 23:49:16 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -104,6 +104,20 @@ int PCILUSetUseInPlace_ILU(PC pc)
   PetscFunctionBegin;
   dir          = (PC_ILU *) pc->data;
   dir->inplace = 1;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "PCILUSetAllowDiagonalFill"
+int PCILUSetAllowDiagonalFill_ILU(PC pc)
+{
+  PC_ILU *dir;
+
+  PetscFunctionBegin;
+  dir                 = (PC_ILU *) pc->data;
+  dir->diagonal_fill = 1;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -320,6 +334,40 @@ int PCILUSetLevels(PC pc,int levels)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PCILUSetAllowDiagonalFill"
+/*@
+   PCILUSetAllowDiagonalFill - Causes all diagonal matrix entries to be 
+       treated as level 0 fill even if there is no non-zero location.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+
+   Level: intermediate
+
+   Options Database Key:
+.  -pc_ilu_diagonal_fill
+
+   Notes:
+     Does not apply with 0 fill
+
+.keywords: PC, levels, fill, factorization, incomplete, ILU
+@*/
+int PCILUSetAllowDiagonalFill(PC pc)
+{
+  int ierr, (*f)(PC);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetAllowDiagonalFill_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PCILUSetUseInPlace"
 /*@
    PCILUSetUseInPlace - Tells the system to do an in-place incomplete factorization.
@@ -374,6 +422,10 @@ static int PCSetFromOptions_ILU(PC pc)
   ierr = OptionsHasName(pc->prefix,"-pc_ilu_in_place",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PCILUSetUseInPlace(pc); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(pc->prefix,"-pc_ilu_diagonal_fill",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCILUSetAllowDiagonalFill(pc); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_ilu_reuse_fill",&flg); CHKERRQ(ierr);
   if (flg) {
@@ -456,6 +508,7 @@ static int PCSetUp_ILU(PC pc)
 {
   int         ierr,flg, (*setup)(PC);
   PC_ILU      *ilu = (PC_ILU *) pc->data;
+  MatILUInfo  info;
 
   PetscFunctionBegin;
   if (ilu->inplace) {
@@ -475,7 +528,10 @@ static int PCSetUp_ILU(PC pc)
 
     /* In place ILU only makes sense with fill factor of 1.0 because 
        cannot have levels of fill */
-    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,1.0,ilu->levels); CHKERRQ(ierr);
+    info.levels        = ilu->levels;
+    info.fill          = 1.0;
+    info.diagonal_fill = 0;
+    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&info); CHKERRQ(ierr);
     ilu->fact = pc->pmat;
   } else if (ilu->usedt) {
     if (!pc->setupcalled) {
@@ -523,7 +579,10 @@ static int PCSetUp_ILU(PC pc)
       if (setup) {
         ierr = (*setup)(pc);CHKERRQ(ierr);
       }
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,ilu->fill,ilu->levels,&ilu->fact); CHKERRQ(ierr);
+      info.levels        = ilu->levels;
+      info.fill          = ilu->fill;
+      info.diagonal_fill = ilu->diagonal_fill;
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&info,&ilu->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       if (!ilu->reusereordering) {
@@ -542,8 +601,10 @@ static int PCSetUp_ILU(PC pc)
         }
       }
       ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,ilu->fill,ilu->levels,
-                                  &ilu->fact); CHKERRQ(ierr);
+      info.levels        = ilu->levels;
+      info.fill          = ilu->fill;
+      info.diagonal_fill = ilu->diagonal_fill;
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&info,&ilu->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact); CHKERRQ(ierr);
@@ -596,6 +657,7 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   PC_ILU *ilu = (PC_ILU *) pc->data;
 
   PetscFunctionBegin;
+  if (!ilu->fact) SETERRQ(1,1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }
@@ -623,6 +685,7 @@ int PCCreate_ILU(PC pc)
   ilu->dt               = 0.0;
   ilu->dtcount          = 0;
   ilu->reusefill        = 0;
+  ilu->diagonal_fill    = 0;
   pc->destroy           = PCDestroy_ILU;
   pc->apply             = PCApply_ILU;
   pc->applytrans        = PCApplyTrans_ILU;
@@ -648,6 +711,8 @@ int PCCreate_ILU(PC pc)
                     (void*)PCILUSetLevels_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetUseInPlace_C","PCILUSetUseInPlace_ILU",
                     (void*)PCILUSetUseInPlace_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCILUSetAllowDiagonalFill_C","PCILUSetAllowDiagonalFill_ILU",
+                    (void*)PCILUSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
