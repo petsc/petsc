@@ -18,4 +18,6 @@ e_arg      </B>
 location   <P><B>Location:</B>%1<P>
 # Only do the actual title
 mantitle   <TITLE>%1</TITLE>%n<BODY BGCOLOR="FFFFFF">%n<A NAME="%1"><H1>%1</H1></A>%n
+s_doctext_verbatim %n<pre>%n
+e_doctext_verbatim  %n</pre>%n
 
