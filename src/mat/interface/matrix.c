@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.200 1996/10/11 21:41:37 balay Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.201 1996/10/16 20:40:43 balay Exp bsmith $";
 #endif
 
 /*
@@ -1296,6 +1296,11 @@ int MatNorm(Mat mat,NormType type,double *norm)
   SETERRQ(PETSC_ERR_SUP,"MatNorm:Not for this matrix type");
 }
 
+/* 
+     This variable is used to prevent counting of MatAssemblyBegin() that
+   are called from within a MatAssemblyEnd().
+*/
+static int MatAssemblyEnd_InUse = 0;
 /*@
    MatAssemblyBegin - Begins assembling the matrix.  This routine should
    be called after completing all calls to MatSetValues().
@@ -1324,9 +1329,13 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
   }
-  PLogEventBegin(MAT_AssemblyBegin,mat,0,0,0);
-  if (mat->ops.assemblybegin){ierr = (*mat->ops.assemblybegin)(mat,type);CHKERRQ(ierr);}
-  PLogEventEnd(MAT_AssemblyBegin,mat,0,0,0);
+  if (!MatAssemblyEnd_InUse) {
+    PLogEventBegin(MAT_AssemblyBegin,mat,0,0,0);
+    if (mat->ops.assemblybegin){ierr = (*mat->ops.assemblybegin)(mat,type);CHKERRQ(ierr);}
+    PLogEventEnd(MAT_AssemblyBegin,mat,0,0,0);
+  } else {
+    if (mat->ops.assemblybegin){ierr = (*mat->ops.assemblybegin)(mat,type);CHKERRQ(ierr);}
+  }
   return 0;
 }
 
@@ -1367,12 +1376,14 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   inassm++;
+  MatAssemblyEnd_InUse++;
   PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
   if (mat->ops.assemblyend) {
     ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);
   }
   mat->assembled = PETSC_TRUE; mat->num_ass++;
   PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
+  MatAssemblyEnd_InUse--;
 
   if (inassm == 1) {
     ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg); CHKERRQ(ierr);
