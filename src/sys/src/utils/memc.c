@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.32 1997/09/03 17:36:18 gropp Exp gropp $";
+static char vcid[] = "$Id: memc.c,v 1.33 1997/09/05 19:34:40 gropp Exp gropp $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -66,7 +66,7 @@ void PetscMemcpy(void *a,void *b,int n)
 @*/
 void PetscMemzero(void *a,int n)
 {
-#if defined(PARCH_rs6000)
+#if defined(PREFER_BZERO)
   bzero((char *)a,n);
 #else
   memset((char*)a,0,n);
