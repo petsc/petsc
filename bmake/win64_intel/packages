@@ -1,0 +1,24 @@
+# $Id: base.site,v 1.5 2001/03/29 17:16:13 buschelm Exp $ 
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK
+#
+BLASLAPACK_LIB = -L'"C:/Program Files/Intel/plsuite/lib32/dll"' mkl_c.lib
+PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL64_ONLY
+
+#
+# Location of MPI (Message Passing Interface) software  
+#
+# To use the single processor MPI interface provided in PETSc
+#
+
+MPI_INCLUDE    = -I$(PETSC_DIR)/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
+MPI_LIB        = -lmpiuni
+MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
+
+# ----------------------------------------------------------------------------------------  
