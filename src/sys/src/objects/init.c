@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.4 1998/05/04 03:57:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.5 1998/05/05 14:02:54 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -720,6 +720,8 @@ int OptionsCheckInitial_Private(void)
 
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
 #if defined(USE_PETSC_BOPT_g)
+  /* always does trmalloc with BOPT=g, just check so does not reported never checked */
+  ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1); CHKERRQ(ierr);
   if (!flg1) { ierr = PetscSetUseTrMalloc_Private(); CHKERRQ(ierr); }
 #else
