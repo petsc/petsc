@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.55 1998/07/23 22:51:05 bsmith Exp balay $ */
+/* $Id: ptime.h,v 1.56 1998/12/17 21:55:53 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -83,11 +83,20 @@
 */
 
 /* ------------------------------------------------------------------
+    Some machines have very fast MPI_Wtime()
+*/
+#if (defined(HAVE_FAST_MPI_WTIME) && !defined(USING_MPIUNI))
+#define PetscTime(v)         (v)=MPI_Wtime();
+
+#define PetscTimeSubtract(v) (v)-=MPI_Wtime();
+
+#define PetscTimeAdd(v)      (v)+=MPI_Wtime();
+/* ------------------------------------------------------------------
 
     Defines the interface to the IBM rs6000 high accuracy clock. The 
   routine used is defined in petsc/src/sys/src/time/rs6000_time.s
 */ 
-#if defined(PARCH_rs6000)
+#elif defined(PARCH_rs6000)
 #include <sys/time.h>
 struct my_timestruc_t {
   unsigned long tv_sec;/* seconds*/
@@ -129,16 +138,6 @@ extern rs6000_time(struct my_timestruc_t *);
 #define PetscTimeAdd(v)      {static struct timespec  _tp; \
                              getclock(TIMEOFDAY,&_tp); \
                              (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
-
-/* ------------------------------------------------------------------
-    Some machines have very fast MPI_Wtime()
-*/
-#elif (defined(HAVE_FAST_MPI_WTIME) && !defined(USING_MPIUNI))
-#define PetscTime(v)         (v)=MPI_Wtime();
-
-#define PetscTimeSubtract(v) (v)-=MPI_Wtime();
-
-#define PetscTimeAdd(v)      (v)+=MPI_Wtime();
 
 /* ------------------------------------------------------------------
    NT uses a special time code
