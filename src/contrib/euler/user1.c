@@ -731,13 +731,13 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,app->fff,
 	     app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
              app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
 	     app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, &app->fort_ao); CHKERRQ(ierr);
+	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2, &app->fort_ao); CHKERRQ(ierr);
+		     /*	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
+	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, */
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   /* Or store the matrix in the intermediate Eagle format for later conversion ... */
   } else {
@@ -750,13 +750,13 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,app->fff,
 	     app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
 	     app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
 	     app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, &app->fort_ao); CHKERRQ(ierr);
+	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2, &app->fort_ao); CHKERRQ(ierr);
+	     /*	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
+	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, */
     /* Convert Jacobian from Eagle format */
     if (!app->no_output) PetscPrintf(app->comm,"Building PETSc matrix ...\n");
     ierr = MatGetType(*pjac,&type,PETSC_NULL); CHKERRQ(ierr);
@@ -794,7 +794,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
       else if (mtype == MATMPIBAIJ) {ierr = MatViewDFVec_MPIBAIJ(*pjac,X,view); CHKERRQ(ierr);}
       else */                       {ierr = MatView(*pjac,view); CHKERRQ(ierr);}
       ierr = ViewerDestroy(view); CHKERRQ(ierr);
-      PetscFinalize(); exit(0);
+      /* PetscFinalize(); exit(0); */
     }
   
     /* Dump Jacobian and residual in binary format to file euler.dat 
@@ -936,10 +936,14 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
 {
   Euler  *app = (Euler *)ptr;
   int    ierr, base_unit, iter;
-  Scalar zero = 0.0, *farray;
+  Scalar zero = 0.0;
 
   if (app->bctype != IMPLICIT) SETERRQ(1,0,"This version supports only implicit BCs!");
   app->fct_tot++;
+
+  /* Initialize vector to zero.  These values will be overwritten everywhere but
+     the edges of the 3D domain */
+  ierr = VecSet(&zero,Fvec); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Do setup (not required for the first function evaluation)
@@ -961,7 +965,7 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
 
   PLogEventBegin(app->event_localf,0,0,0,0);
 
-  ierr =localfortfct_(&app->first_time_resid,
+  ierr =localfortfct_(&app->first_time_resid,app->fff,
          app->xx,app->p,app->xx_bc,app->p_bc,
          app->sadai,app->sadaj,app->sadak,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
@@ -970,10 +974,11 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
          app->fbcri2,app->fbcrui2,app->fbcrvi2,app->fbcrwi2,app->fbcei2,
          app->fbcrj1,app->fbcruj1,app->fbcrvj1,app->fbcrwj1,app->fbcej1,
          app->fbcrj2,app->fbcruj2,app->fbcrvj2,app->fbcrwj2,app->fbcej2,
-         app->fbcrk1,app->fbcruk1,app->fbcrvk1,app->fbcrwk1,app->fbcek1,
-         app->fbcrk2,app->fbcruk2,app->fbcrvk2,app->fbcrwk2,app->fbcek2,
          app->dxx,app->br,app->bl,app->be,app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
+
+	 /*         app->fbcrk1,app->fbcruk1,app->fbcrvk1,app->fbcrwk1,app->fbcek1,
+         app->fbcrk2,app->fbcruk2,app->fbcrvk2,app->fbcrwk2,app->fbcek2, */
 
   PLogEventEnd(app->event_localf,0,0,0,0);
 
@@ -991,10 +996,6 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
         Assemble vector Fvec(X)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* Initialize vector to zero.  These values will be overwritten everywhere but
-     the edges of the 3D domain */
-  ierr = VecSet(&zero,Fvec); CHKERRQ(ierr);
-
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   if (app->use_vecsetvalues) {
 
@@ -1002,25 +1003,24 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
     ierr = PetscCObjectToFortranObject(Fvec,&fortvec); CHKERRQ(ierr);
 
     /* Build Fvec(X) using VecSetValues() */
-    ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dxx,
+    ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dxx, app->fff,
          app->ltog, &app->nloc,
          app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
          app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
          app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-         app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-         app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-         app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+         app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2 ); CHKERRQ(ierr);
+	 /*       app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
+         app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); */
   } else {
 #endif
     /* Build Fvec(X) directly, without using VecSetValues() */
-    ierr = VecGetArray(Fvec,&farray); CHKERRQ(ierr);
-    ierr = rbuild_direct_(farray, &app->sctype, app->dt, app->dxx,
+    ierr = rbuild_direct_(app->fff, &app->sctype, app->dt, app->dxx,
          app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
          app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
          app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-         app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
-         app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-         app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+         app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2 );  CHKERRQ(ierr);
+	 /*         app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
+         app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); */
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   }
 #endif
@@ -1402,6 +1402,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->Xbc); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->F); CHKERRQ(ierr);
+  ierr = VecGetArray(app->F,&app->fff);
   ierr = DAGetLocalVector(app->da,&app->localX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localDX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localXBC); CHKERRQ(ierr);
