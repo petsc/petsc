@@ -305,7 +305,7 @@ rcslabel: chkpetsc_path
 # Builds Fortran-77 wrappers 
 # Source of bfort is in ~gropp/sowing/src/bfort
 fortranstubs:
-	@-/home/petsc/bin/linux/bfort -dir /home/bsmith/petsc/src/fortran/auto \
+	@-/home/petsc/bin/linux/bfort -dir ${PETSC_DIR}/src/fortran/auto \
 	  -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix Petsc\
 	  -ptr64 PETSC_USE_POINTER_CONVERSION  -fcaps PETSC_HAVE_FORTRAN_CAPS \
           -fuscore PETSC_HAVE_FORTRAN_UNDERSCORE ${SOURCEC}

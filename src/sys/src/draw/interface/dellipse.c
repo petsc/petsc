@@ -4,7 +4,7 @@ static char vcid[] = "$Id: dellipse.c,v 1.3 2000/01/10 03:26:52 knepley Exp $";
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
-#include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
+#include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "PetscDrawEllipse" 
