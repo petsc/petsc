@@ -11,8 +11,6 @@ import types
 
 debugLevel = 1
 
-sourceDB = {}
-
 class Maker:
   def __init__(self):
     self.setupTmpDir()
@@ -256,6 +254,38 @@ class NewerThanLibraryObject (FileCompare):
       return 1
     else:
       return 0
+
+class FileChanged (Transform):
+  "This class maps sources into the set of files which have checksum changes compared to values in the source database"
+  def __init__(self, sources = FileGroup(), fileFilter = lambda file: 1, returnAll = 0):
+    Transform.__init__(self, sources, fileFilter)
+    self.returnAll = returnAll
+
+  def compare(self, source, sourceEntry):
+    self.debugPrint('Checking for '+source+' in the source database', 3)
+    if sourceEntry[0] == self.getChecksum(source):
+      return 0
+    else:
+      self.debugPrint(source+' has changed relative to the source database', 3)
+      return 1
+
+  def execute(self):
+    self.debugPrint('Checking for changes to sources '+str(self.sources.getFiles()), 2)
+    self.products = FileGroup()
+    files = self.sources.getFiles()
+    for source in files:
+      try:
+        if not os.path.exists(source):
+          self.debugPrint(source+' does not exist')
+          self.products.append(source)
+        if self.compare(source, sourceDB[source]):
+          self.products.append(source)
+      except KeyError:
+        self.debugPrint(source+' does not exist in source database')
+        self.products.append(source)
+    if (self.returnAll and len(self.products)):
+      self.products = self.sources
+    return self.products
 
 class Action (Transform):
   def __init__(self, program, sources = FileGroup(), flags = '', fileFilter = lambda file: 1, allAtOnce = 0, errorHandler = None):
@@ -542,15 +572,26 @@ class Target (Transform):
   def execute(self):
     return self.executeTransform(self.sources, self.transforms)
 
-sourceDBFilename = 'bsSource.db'
+class OutputSourceDB (Target):
+
+  def execute(self):
+    print str(sourceDB)
+
+sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
 def saveSourceDB():
+  print 'Saving source database in '+sourceDBFilename
   dbFile = open(sourceDBFilename, 'w')
   cPickle.dump(sourceDB, dbFile)
   dbFile.close()
 
 def main():
+  print 'Reading source database from '+sourceDBFilename
+  global sourceDB
+
   if os.path.exists(sourceDBFilename):
     dbFile   = open(sourceDBFilename, 'r')
     sourceDB = cPickle.load(dbFile)
     dbFile.close()
+  else:
+    sourceDB = {}
   atexit.register(saveSourceDB)
