@@ -166,17 +166,16 @@ int  KSPSolve_CG(KSP ksp,int *its)
      if (beta == 0.0) {
        ksp->reason = KSP_CONVERGED_ATOL;
        break;
+#if !defined(PETSC_USE_COMPLEX)
+     } else if (beta < 0.0) {
+       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+       break;
+#endif
      }
      if (!i) {
        ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
      } else {
          b = beta/betaold;
-#if !defined(PETSC_USE_COMPLEX)
-         if (b < 0.0) {
-           ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-	   break;
-         }
-#endif
          if (eigs) {
            e[i] = sqrt(PetscAbsScalar(b))/a;  
          }
