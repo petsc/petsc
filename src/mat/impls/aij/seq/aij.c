@@ -1,5 +1,5 @@
 
-/*$Id: aij.c,v 1.380 2001/08/10 15:27:36 balay Exp bsmith $*/
+/*$Id: aij.c,v 1.381 2001/08/21 21:02:19 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -720,71 +720,71 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
 
   PetscFunctionBegin;  
   switch (op) {
-  case MAT_ROW_ORIENTED:
-    a->roworiented       = PETSC_TRUE;
-    break;
+    case MAT_ROW_ORIENTED:
+      a->roworiented       = PETSC_TRUE;
+      break;
     case MAT_KEEP_ZEROED_ROWS:
       a->keepzeroedrows    = PETSC_TRUE;
       break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented       = PETSC_FALSE;
-    break;
-  case MAT_COLUMNS_SORTED:
-    a->sorted            = PETSC_TRUE;
-    break;
-  case MAT_COLUMNS_UNSORTED:
-    a->sorted            = PETSC_FALSE;
-    break;
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew             = 1;
-    break;
-  case MAT_NEW_NONZERO_LOCATION_ERR:     
-    a->nonew             = -1;
-    break;
-  case MAT_NEW_NONZERO_ALLOCATION_ERR:
-    a->nonew             = -2;
-    break;
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-    a->nonew             = 0;
-    break;
-  case MAT_IGNORE_ZERO_ENTRIES:
-    a->ignorezeroentries = PETSC_TRUE;
-    break;
-  case MAT_USE_INODES:
-    a->inode.use         = PETSC_TRUE;
-    break;
-  case MAT_DO_NOT_USE_INODES:
-    a->inode.use         = PETSC_FALSE;
-    break;
-  case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
-  case MAT_YES_NEW_DIAGONALS:
-  case MAT_IGNORE_OFF_PROC_ENTRIES:
-  case MAT_USE_HASH_TABLE:
-  case MAT_USE_SINGLE_PRECISION_SOLVES:
-    PetscLogInfo(A,"MatSetOption_SeqAIJ:Option ignored\n");
-    break;
-  case MAT_NO_NEW_DIAGONALS:
-    SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-    break;
-  case MAT_INODE_LIMIT_1:
-    a->inode.limit  = 1;
-    break;
-  case MAT_INODE_LIMIT_2:
-    a->inode.limit  = 2;
-    break;
-  case MAT_INODE_LIMIT_3:
-    a->inode.limit  = 3;
-    break;
-  case MAT_INODE_LIMIT_4:
-    a->inode.limit  = 4;
-    break;
-  case MAT_INODE_LIMIT_5:
-    a->inode.limit  = 5;
-    break;
-  default:
-    SETERRQ(PETSC_ERR_SUP,"unknown option");
-    break;
+    case MAT_COLUMN_ORIENTED:
+      a->roworiented       = PETSC_FALSE;
+      break;
+    case MAT_COLUMNS_SORTED:
+      a->sorted            = PETSC_TRUE;
+      break;
+    case MAT_COLUMNS_UNSORTED:
+      a->sorted            = PETSC_FALSE;
+      break;
+    case MAT_NO_NEW_NONZERO_LOCATIONS:
+      a->nonew             = 1;
+      break;
+    case MAT_NEW_NONZERO_LOCATION_ERR:     
+      a->nonew             = -1;
+      break;
+    case MAT_NEW_NONZERO_ALLOCATION_ERR:
+      a->nonew             = -2;
+      break;
+    case MAT_YES_NEW_NONZERO_LOCATIONS:
+      a->nonew             = 0;
+      break;
+    case MAT_IGNORE_ZERO_ENTRIES:
+      a->ignorezeroentries = PETSC_TRUE;
+      break;
+    case MAT_USE_INODES:
+      a->inode.use         = PETSC_TRUE;
+      break;
+    case MAT_DO_NOT_USE_INODES:
+      a->inode.use         = PETSC_FALSE;
+      break;
+    case MAT_ROWS_SORTED:
+    case MAT_ROWS_UNSORTED:
+    case MAT_YES_NEW_DIAGONALS:
+    case MAT_IGNORE_OFF_PROC_ENTRIES:
+    case MAT_USE_HASH_TABLE:
+    case MAT_USE_SINGLE_PRECISION_SOLVES:
+      PetscLogInfo(A,"MatSetOption_SeqAIJ:Option ignored\n");
+      break;
+    case MAT_NO_NEW_DIAGONALS:
+      SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
+      break;
+    case MAT_INODE_LIMIT_1:
+      a->inode.limit  = 1;
+      break;
+    case MAT_INODE_LIMIT_2:
+      a->inode.limit  = 2;
+      break;
+    case MAT_INODE_LIMIT_3:
+      a->inode.limit  = 3;
+      break;
+    case MAT_INODE_LIMIT_4:
+      a->inode.limit  = 4;
+      break;
+    case MAT_INODE_LIMIT_5:
+      a->inode.limit  = 5;
+      break;
+    default:
+      SETERRQ(PETSC_ERR_SUP,"unknown option");
+      break;
   }
   PetscFunctionReturn(0);
 }
