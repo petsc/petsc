@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: builddist,v 1.41 1997/10/07 20:07:24 balay Exp $ 
+# $Id: buildntdist,v 1.2 1997/11/13 17:05:28 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -17,7 +17,7 @@ cd /home/bsmith
 tar cFFXf /home/bsmith/petsc/maint/xclude ~/petscnt.tar petsc
 
 cd /home/bsmith/petsc/src
-tar cFFXf /home/bsmith/petsc/maint/xcludeblas ~/cblas.tar adic
+tar cFFXf /home/bsmith/petsc/maint/xcludecblas ~/cblas.tar adic
 
 
 mkdir /mcs/tmp/petscnt
@@ -46,3 +46,5 @@ tar cf ~/petscnt$version.tar petsc$version
 /bin/rm -r -f /mcs/tmp/petscnt
 
 gzip ~/petscnt$version.tar
+
+

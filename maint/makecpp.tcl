@@ -1,6 +1,6 @@
 #! /usr/local/tcl/bin/tclsh
 #!/gnuwin32/b18/tcl/bin/tclsh76.exe
-# $Id: makecpp.tcl,v 1.2 1997/11/13 17:05:35 balay Exp balay $ 
+# $Id: makecpp.tcl,v 1.3 1997/11/13 17:44:37 balay Exp balay $ 
 
 
 proc movefilesin { dir } {
@@ -97,4 +97,4 @@ if { $argc == 1 } {
 puts "**** make cpp in $PETSC_HOME ************"
 movefilesin $PETSC_HOME
 #movefilesin c:/work/petsc/xyz
-#copy $PETSC_HOME/bmake/nt/makefile.dos $PETSC_HOME/makefile
+copy $PETSC_HOME/bmake/nt/makefile.dos $PETSC_HOME/makefile
