@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.120 1997/02/04 16:46:19 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.121 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -1068,7 +1068,7 @@ int OptionsSetValue(char *name,char *value)
 }
 
 #undef __FUNC__  
-#define __FUNC__m "OptionsSetAlias_Private" /* ADIC Ignore */
+#define __FUNC__ "OptionsSetAlias_Private" /* ADIC Ignore */
 int OptionsSetAlias_Private(char *newname,char *oldname)
 {
   int len,n = options->Naliases;
