@@ -2007,7 +2007,7 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   }
 
   if (!rank) {
-    ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc((maxnz+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* read in my part of the matrix numerical values  */
     nz   = procsnz[0];
@@ -2773,7 +2773,7 @@ PetscErrorCode MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *o
   for (i=0;i<m;i++) {
     ierr = MatGetRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
     I    = i + rstart;
-    ierr = MatSetValues_MPIAIJ(*outmat,1,&I,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*outmat,1,&I,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
   }
   ierr = MatDestroy(inmat);CHKERRQ(ierr);
