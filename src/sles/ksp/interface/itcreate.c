@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.189 2000/08/17 04:52:21 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.190 2000/08/17 22:17:46 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -471,25 +471,24 @@ int KSPOptionsPublish(KSP ksp)
   char **types;
 
   PetscFunctionBegin;
-  ierr = OptionsSelectBegin(ksp->comm,ksp->prefix,"KSP Options");CHKERRQ(ierr);
-
+  ierr = OptionsBegin(ksp->comm,ksp->prefix,"Krylov Method (KSP) Options");CHKERRQ(ierr);
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = FListGet(KSPList,&types,&ntypes);CHKERRQ(ierr);
-  ierr = OptionsSelectList(ksp->comm,"-ksp_type","Krylov method",types,ntypes,ksp->type_name ? ksp->type_name : KSPGMRES);CHKERRQ(ierr);
-  ierr = PetscFree(types);CHKERRQ(ierr);  
+  ierr = OptionsList("-ksp_type","Krylov method",types,ntypes,ksp->type_name ? ksp->type_name : KSPGMRES,0,0,0);CHKERRQ(ierr);
+  ierr = PetscFree(types);CHKERRQ(ierr);   
 
-  ierr = OptionsSelectInt(ksp->comm,"-ksp_max_it","Maximum number of iterations",ksp->max_it);CHKERRQ(ierr);
-  ierr = OptionsSelectDouble(ksp->comm,"-ksp_rtol","Relative decrease in residual norm",ksp->rtol);CHKERRQ(ierr);
-  ierr = OptionsSelectDouble(ksp->comm,"-ksp_atol","Absolute value of residual norm",ksp->atol);CHKERRQ(ierr);
-  ierr = OptionsSelectDouble(ksp->comm,"-ksp_divtol","Residual norm increase cause divergence",ksp->divtol);CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_monitor","Monitor preconditioned residual norm");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_vecmonitor","Monitor solution graphically");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_truemonitor","Monitor true residual norm");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_singmonitor","Monitor singular values");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_xmonitor","Monitor graphically preconditioned residual norm");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_xtruemonitor","Monitor graphically true residual norm");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues");CHKERRQ(ierr);
-  ierr = OptionsSelectEnd(ksp->comm);CHKERRQ(ierr);
+  ierr = OptionsInt("-ksp_max_it","Maximum number of iterations",ksp->max_it,0,0);CHKERRQ(ierr);
+  ierr = OptionsDouble("-ksp_rtol","Relative decrease in residual norm",ksp->rtol,0,0);CHKERRQ(ierr);
+  ierr = OptionsDouble("-ksp_atol","Absolute value of residual norm",ksp->atol,0,0);CHKERRQ(ierr);
+  ierr = OptionsDouble("-ksp_divtol","Residual norm increase cause divergence",ksp->divtol,0,0);CHKERRQ(ierr);
+  ierr = OptionsName("-ksp_monitor","Monitor preconditioned residual norm",0);CHKERRQ(ierr);
+  ierr = OptionsName("-ksp_vecmonitor","Monitor solution graphically",0);CHKERRQ(ierr);
+  ierr = OptionsName("-ksp_truemonitor","Monitor true residual norm",0);CHKERRQ(ierr);
+  ierr = OptionsName("-ksp_singmonitor","Monitor singular values",0);CHKERRQ(ierr);
+  ierr = OptionsName("-ksp_xmonitor","Monitor graphically preconditioned residual norm",0);CHKERRQ(ierr);
+  ierr = OptionsName("-ksp_xtruemonitor","Monitor graphically true residual norm",0);CHKERRQ(ierr);
+  ierr = OptionsName("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues",0);CHKERRQ(ierr);
+  ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

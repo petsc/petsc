@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.149 2000/06/23 14:07:48 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.150 2000/07/25 20:57:53 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -612,14 +612,14 @@ int KSPOptionsPublish_GMRES(KSP ksp)
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  ierr = OptionsSelectBegin(ksp->comm,ksp->prefix,"KSP GMRES Options");CHKERRQ(ierr);
-  ierr = OptionsSelectInt(ksp->comm,"-ksp_gmres_restart","Number of Krylov search directions",gmres->max_k);CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_preallocate","Preallocate all Krylov vectors");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement");CHKERRQ(ierr);
-  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions");CHKERRQ(ierr);
-  ierr = OptionsSelectEnd(ksp->comm);CHKERRQ(ierr);
+  ierr = OptionsBegin(ksp->comm,ksp->prefix,"KSP GMRES Options");CHKERRQ(ierr);
+    ierr = OptionsInt("-ksp_gmres_restart","Number of Krylov search directions",gmres->max_k,0,0);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_gmres_preallocate","Preallocate all Krylov vectors",0);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)",0);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)",0);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement",0);CHKERRQ(ierr);
+    ierr = OptionsName("-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions",0);CHKERRQ(ierr);
+    ierr = OptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
