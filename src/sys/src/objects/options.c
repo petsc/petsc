@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.252 2001/08/07 21:28:54 bsmith Exp $*/
+/*$Id: options.c,v 1.255 2001/09/25 13:55:05 balay Exp $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -178,9 +178,10 @@ int PetscSetProgramName(const char name[])
 @*/
 int PetscOptionsInsertFile(const char file[])
 {
-  char  string[128],fname[256],*first,*second,*third,*final;
-  int   len,ierr,i;
-  FILE  *fd;
+  char       string[128],fname[256],*first,*second,*third,*final;
+  int        len,ierr,i;
+  FILE       *fd;
+  PetscToken *token;
 
   PetscFunctionBegin;
   ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
@@ -198,8 +199,9 @@ int PetscOptionsInsertFile(const char file[])
           string[i] = ' ';
         }
       }
-      ierr = PetscStrtok(string," ",&first);CHKERRQ(ierr);
-      ierr = PetscStrtok(0," ",&second);CHKERRQ(ierr);
+      ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
       if (first && first[0] == '-') {
         if (second) {final = second;} else {final = first;}
         ierr = PetscStrlen(final,&len);CHKERRQ(ierr);
@@ -212,13 +214,14 @@ int PetscOptionsInsertFile(const char file[])
 
         ierr = PetscStrcmp(first,"alias",&match);CHKERRQ(ierr);
         if (match) {
-          ierr = PetscStrtok(0," ",&third);CHKERRQ(ierr);
+          ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
           if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
           ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
           if (third[len-1] == '\n') third[len-1] = 0;
           ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);
         }
       }
+      ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
     }
     fclose(fd);
   }
@@ -249,8 +252,9 @@ int PetscOptionsInsertFile(const char file[])
 @*/
 int PetscOptionsInsert(int *argc,char ***args,const char file[])
 {
-  int  ierr,rank;
-  char pfile[256];
+  int        ierr,rank;
+  char       pfile[256];
+  PetscToken *token;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -283,18 +287,20 @@ int PetscOptionsInsert(int *argc,char ***args,const char file[])
     if (len) {
       ierr          = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
       eoptions[len] = 0;
-      ierr          =  PetscStrtok(eoptions," ",&first);CHKERRQ(ierr);
+      ierr          =  PetscTokenCreate(eoptions,' ',&token);CHKERRQ(ierr);
+      ierr          =  PetscTokenFind(token,&first);CHKERRQ(ierr);
       while (first) {
-        if (first[0] != '-') {ierr = PetscStrtok(0," ",&first);CHKERRQ(ierr); continue;}
-        ierr = PetscStrtok(0," ",&second);CHKERRQ(ierr);
+        if (first[0] != '-') {ierr = PetscTokenFind(token,&first);CHKERRQ(ierr); continue;}
+        ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
         if ((!second) || ((second[0] == '-') && (second[1] > '9'))) {
           ierr = PetscOptionsSetValue(first,(char *)0);CHKERRQ(ierr);
           first = second;
         } else {
           ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
-          ierr = PetscStrtok(0," ",&first);CHKERRQ(ierr);
+          ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
         }
       }
+      ierr =  PetscTokenDestroy(token);CHKERRQ(ierr);
       if (rank) {ierr = PetscFree(eoptions);CHKERRQ(ierr);}
     }
   }
@@ -987,7 +993,7 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
   char       *value;
   PetscTruth flag;
   int        ierr;
-  
+
   PetscFunctionBegin;
   PetscValidScalarPointer(dvalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
@@ -998,19 +1004,22 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);
 #else
-      PetscReal re=0.0,im=0.0;
-      char   *tvalue = 0;
+      PetscReal  re=0.0,im=0.0;
+      PetscToken *token;
+      char       *tvalue = 0;
 
-      ierr = PetscStrtok(value,",",&tvalue);CHKERRQ(ierr);
+      ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+      ierr = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) { SETERRQ(1,"unknown string specified\n"); }
       ierr    = PetscOptionsAtod(tvalue,&re);CHKERRQ(ierr);
-      ierr    = PetscStrtok(0,",",&tvalue);CHKERRQ(ierr);
+      ierr    = PetscTokenFind(token,&tvalue);CHKERRQ(ierr);
       if (!tvalue) { /* Unknown separator used. using only real value */
         *dvalue = re;
       } else {
         ierr    = PetscOptionsAtod(tvalue,&im);CHKERRQ(ierr);
         *dvalue = re + PETSC_i*im;
       } 
+      ierr    = PetscTokenDestroy(token);CHKERRQ(ierr);
 #endif
       if (flg) *flg    = PETSC_TRUE;
     } 
@@ -1055,6 +1064,7 @@ int PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue
   char       *value;
   int        n = 0,ierr;
   PetscTruth flag;
+  PetscToken *token;
 
   PetscFunctionBegin;
   PetscValidDoublePointer(dvalue);
@@ -1064,13 +1074,15 @@ int PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue
 
   if (flg) *flg = PETSC_TRUE;
 
-  ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
+  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
     ierr = PetscOptionsAtod(value,dvalue++);CHKERRQ(ierr);
-    ierr = PetscStrtok(0,",",&value);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
+  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 } 
@@ -1110,6 +1122,7 @@ int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int 
   char       *value;
   int        n = 0,ierr;
   PetscTruth flag;
+  PetscToken *token;
 
   PetscFunctionBegin;
   PetscValidIntPointer(dvalue);
@@ -1119,14 +1132,16 @@ int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int 
 
   if (flg) *flg = PETSC_TRUE;
 
-  ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
+  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
     ierr      = PetscOptionsAtoi(value,dvalue);CHKERRQ(ierr);
     dvalue++;
-    ierr      = PetscStrtok(0,",",&value);CHKERRQ(ierr);
+    ierr      = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
+  ierr      = PetscTokenDestroy(token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 } 
@@ -1233,7 +1248,8 @@ int PetscOptionsGetStringArray(const char pre[],const char name[],char **strings
   char       *value;
   int        len,n,ierr;
   PetscTruth flag;
-
+  PetscToken *token;
+ 
   PetscFunctionBegin;
   PetscValidPointer(strings);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
@@ -1242,16 +1258,18 @@ int PetscOptionsGetStringArray(const char pre[],const char name[],char **strings
   if (!*nmax) {if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
   if (flg) *flg = PETSC_TRUE;
 
-  ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
+  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   n = 0;
   while (n < *nmax) {
     if (!value) break;
     ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
     ierr = PetscMalloc((len+1)*sizeof(char),&strings[n]);CHKERRQ(ierr);
     ierr = PetscStrcpy(strings[n],value);CHKERRQ(ierr);
-    ierr = PetscStrtok(0,",",&value);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
+  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 }

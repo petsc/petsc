@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.39 2001/04/04 21:18:39 bsmith Exp $*/
+/*$Id: ftest.c,v 1.41 2001/09/19 16:07:02 bsmith Exp $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -129,6 +129,83 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
   } else if (mode == 'x') {
     if ((stmode & ebit))   *flg = PETSC_TRUE;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTestDirectory"
+int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
+{
+  struct stat statbuf;
+  int         err,stmode,rbit,wbit,ebit;
+  uid_t       uid;
+  gid_t       gid;
+
+  PetscFunctionBegin;
+  *flg = PETSC_FALSE;
+  if (!fname) PetscFunctionReturn(0);
+
+  /* Get the (effective) user and group of the caller */
+  uid = geteuid();
+  gid = getegid();
+
+#if defined(PETSC_HAVE_STAT_NO_CONST)
+  err = stat((char*)fname,&statbuf);
+#else
+  err = stat(fname,&statbuf);
+#endif
+  if (err != 0) PetscFunctionReturn(0);
+
+  /* At least the file exists ... */
+  stmode = statbuf.st_mode;
+  /*
+     Except for systems that have this broken stat macros (rare), this
+     is the correct way to check for a (not) regular file */
+  if (!S_ISDIR(stmode)) PetscFunctionReturn(0);
+
+  /* Test for accessible. */
+  if (statbuf.st_uid == uid) {
+    rbit = S_IRUSR;
+    wbit = S_IWUSR;
+    ebit = S_IXUSR;
+  } else if (statbuf.st_gid == gid) {
+    rbit = S_IRGRP;
+    wbit = S_IWGRP;
+    ebit = S_IXGRP;
+  } else {
+    rbit = S_IROTH;
+    wbit = S_IWOTH;
+    ebit = S_IXOTH;
+  }
+  if (mode == 'r') {
+    if ((stmode & rbit))   *flg = PETSC_TRUE;
+  } else if (mode == 'w') {
+    if ((stmode & wbit))   *flg = PETSC_TRUE;
+  } else if (mode == 'x') {
+    if ((stmode & ebit))   *flg = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLs"
+int PetscLs(MPI_Comm comm,const char libname[],char *found,int tlen,PetscTruth *flg)
+{
+  int   ierr,len;
+  char  *f,program[1024];
+  FILE  *fp;
+
+  PetscFunctionBegin;
+  ierr   = PetscStrcpy(program,"ls ");CHKERRQ(ierr);
+  ierr   = PetscStrcat(program,libname);CHKERRQ(ierr); 
+  ierr   = PetscPOpen(comm,PETSC_NULL,program,"r",&fp);CHKERRQ(ierr);
+  f      = fgets(found,tlen,fp);
+  if (f) *flg = PETSC_TRUE; else *flg = PETSC_FALSE;
+  while (f) {
+    ierr  = PetscStrlen(found,&len);CHKERRQ(ierr);
+    f     = fgets(found+len,tlen-len,fp);
+  }
+  if (*flg) PetscLogInfo(0,"ls on %s gives \n%s\n",libname,found);
   PetscFunctionReturn(0);
 }
 

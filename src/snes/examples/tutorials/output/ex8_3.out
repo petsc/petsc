@@ -1,0 +1,140 @@
+global size = 64, lid velocity = 0.0625, prandtl # = 1, grashof # = 1
+[0] Number of colors 36
+[1] Number of colors 36
+[0] Number of indices in set 2
+[0] 0 0
+[0] 1 12
+[1] Number of indices in set 2
+[1] 0 48
+[1] 1 60
+[0] Number of indices in set 2
+[0] 0 1
+[0] 1 13
+[1] Number of indices in set 2
+[1] 0 49
+[1] 1 61
+[0] Number of indices in set 2
+[0] 0 2
+[0] 1 14
+[1] Number of indices in set 2
+[1] 0 50
+[1] 1 62
+[0] Number of indices in set 2
+[0] 0 3
+[0] 1 15
+[1] Number of indices in set 2
+[1] 0 51
+[1] 1 63
+[0] Number of indices in set 1
+[0] 0 4
+[1] Number of indices in set 1
+[1] 0 52
+[0] Number of indices in set 1
+[0] 0 5
+[1] Number of indices in set 1
+[1] 0 53
+[0] Number of indices in set 1
+[0] 0 6
+[1] Number of indices in set 1
+[1] 0 54
+[0] Number of indices in set 1
+[0] 0 7
+[1] Number of indices in set 1
+[1] 0 55
+[0] Number of indices in set 1
+[0] 0 8
+[1] Number of indices in set 1
+[1] 0 56
+[0] Number of indices in set 1
+[0] 0 9
+[1] Number of indices in set 1
+[1] 0 57
+[0] Number of indices in set 1
+[0] 0 10
+[1] Number of indices in set 1
+[1] 0 58
+[0] Number of indices in set 1
+[0] 0 11
+[1] Number of indices in set 1
+[1] 0 59
+[0] Number of indices in set 2
+[0] 0 16
+[0] 1 28
+[1] Number of indices in set 0
+[0] Number of indices in set 2
+[0] 0 17
+[0] 1 29
+[1] Number of indices in set 0
+[0] Number of indices in set 2
+[0] 0 18
+[0] 1 30
+[1] Number of indices in set 0
+[0] Number of indices in set 2
+[0] 0 19
+[0] 1 31
+[1] Number of indices in set 0
+[0] Number of indices in set 1
+[0] 0 20
+[1] Number of indices in set 0
+[0] Number of indices in set 1
+[0] 0 21
+[1] Number of indices in set 0
+[0] Number of indices in set 1
+[0] 0 22
+[1] Number of indices in set 0
+[0] Number of indices in set 1
+[0] 0 23
+[1] Number of indices in set 0
+[0] Number of indices in set 1
+[0] 0 24
+[1] Number of indices in set 0
+[0] Number of indices in set 1
+[0] 0 25
+[1] Number of indices in set 0
+[0] Number of indices in set 1
+[0] 0 26
+[1] Number of indices in set 0
+[0] Number of indices in set 1
+[0] 0 27
+[1] Number of indices in set 0
+[0] Number of indices in set 0
+[1] Number of indices in set 2
+[1] 0 32
+[1] 1 44
+[0] Number of indices in set 0
+[1] Number of indices in set 2
+[1] 0 33
+[1] 1 45
+[0] Number of indices in set 0
+[1] Number of indices in set 2
+[1] 0 34
+[1] 1 46
+[0] Number of indices in set 0
+[1] Number of indices in set 2
+[1] 0 35
+[1] 1 47
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 36
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 37
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 38
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 39
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 40
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 41
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 42
+[0] Number of indices in set 0
+[1] Number of indices in set 1
+[1] 0 43
+Number of Newton iterations = 2

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.40 2001/08/22 17:59:45 balay Exp $ 
+# $Id: makefile,v 1.41 2001/09/19 16:07:43 bsmith Exp $ 
 
 
 
@@ -7,7 +7,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex7.c ex9.c ex10.c ex11.c ex12.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
 		  ex13.c ex14.c ex15.c ex16.c
 EXAMPLESF       = ex5.F ex6.F ex7f.F ex13f.F ex17f.F
 
@@ -97,12 +97,6 @@ runex3:
 	   if (${DIFF} output/ex3_1.out ex3_1.tmpz) then true; \
 	   else echo "This is a contrived error to test floating point traps."; fi; \
 	   ${RM} -f ex3_1.tmp ex3_1.tmpz
-runex4:
-	-@${MPIRUN} -np 1 ex4 > ex4_1.tmp 2>&1;\
-	   grep -v p0 ex4_1.tmp > ex4_1.tmpz ;	 \
-	   if (${DIFF} output/ex4_1.out ex4_1.tmpz) then true; \
-	   else echo "Error in ex4. Problem with PetscStrtok()"; fi; \
-	   ${RM} -f ex4_1.tmp ex4_1.tmpz
 runex7:
 	-@${MPIRUN} -np 2 ex7
 runex10:
@@ -124,7 +118,7 @@ runex13f:
 
 TESTEXAMPLES_1  = ex7.PETSc runex7 ex7.rm ex13.PETSc runex13 ex13.rm 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-		  ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm 
+		  ex3.PETSc runex3 ex3.rm 
 TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc runex13f ex13f.rm ex17f.F ex17f.rm
 TESTEXAMPLES_9  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm

@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.245 2001/08/07 03:02:55 balay Exp $*/
+/*$Id: baij.c,v 1.245 2001/08/07 03:02:55 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -887,10 +887,8 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     PetscLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  PetscLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Matrix size: %d X %d, block size %d; storage space: %d unneeded, %d used\n",
-           m,A->n,a->bs,fshift*bs2,a->nz*bs2);
-  PetscLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues is %d\n",
-           a->reallocs);
+  PetscLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Matrix size: %d X %d, block size %d; storage space: %d unneeded, %d used\n",m,A->n,a->bs,fshift*bs2,a->nz*bs2);
+  PetscLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues is %d\n",a->reallocs);
   PetscLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Most nonzeros blocks in any row is %d\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;

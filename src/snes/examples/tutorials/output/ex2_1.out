@@ -1,0 +1,30 @@
+atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
+  0 SNES Function norm 5.41468 
+  1 SNES Function norm 0.295258 
+  2 SNES Function norm 0.000450229 
+  3 SNES Function norm 1.38967e-09 
+SNES Object:
+  type: ls
+    line search variant: SNESCubicLineSearch
+    alpha=0.0001, maxstep=1e+08, steptol=1e-12
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-10, solution=1e-08
+  total number of linear solver iterations=10
+  total number of function evaluations=4
+  KSP Object:
+    type: gmres
+      GMRES: restart=30, using Unmodified Gram-Schmidt + 1 step Iterative Refinement Orthogonalization
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    left preconditioning
+  PC Object:
+    type: jacobi
+    linear system matrix = precond matrix:
+    Matrix Object:
+      type=seqaij, rows=5, cols=5
+      total: nonzeros=11, allocated nonzeros=25
+        not using I-node routines
+number of Newton iterations = 3
+
+Norm of error 1.49752e-10, Iterations 3

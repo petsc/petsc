@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.86 2001/09/07 20:13:16 bsmith Exp $ */
+/* $Id: petschead.h,v 1.87 2001/10/04 00:36:17 balay Exp $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -165,7 +165,7 @@ valid
     SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Int");       \
   }}
 
-#if !defined(PETSC_HAVE_DOUBLE_ALIGN)
+#if !defined(PETSC_HAVE_DOUBLE_ALIGN) || defined (PETSC_HAVE_DOUBLE_ALIGN)
 #define PetscValidScalarPointer(h)                                  \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
   if ((unsigned long)h & (unsigned long)3) {                        \

@@ -1,0 +1,11 @@
+Running gmres with sor preconditioning
+  0 KSP Residual norm 0.968764 
+  1 KSP Residual norm 0.361001 
+  2 KSP Residual norm 0.247329 
+  3 KSP Residual norm 0.0808915 
+  4 KSP Residual norm 0.01289 
+  5 KSP Residual norm 0.00375064 
+  6 KSP Residual norm 0.000294092 
+  7 KSP Residual norm 1.40861e-05 
+  8 KSP Residual norm 3.48863e-07 
+Number of iterations 8

@@ -1,0 +1,13 @@
+Vector length 20
+Vector length 20 40 60
+All other values should be near zero
+VecScale 0
+VecCopy  0
+VecAXPY 0
+VecAYPX 0
+VecSwap  0
+VecSwap  0
+VecWAXPY 0
+VecPointwiseMult 0
+VecPointwiseDivide 0
+VecMAXPY 0 0 0 

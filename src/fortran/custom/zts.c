@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.38 2001/08/07 21:32:16 bsmith Exp $*/
+/*$Id: zts.c,v 1.39 2001/09/25 14:32:39 balay Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscts.h"
@@ -216,8 +216,8 @@ void PETSC_STDCALL tsdefaultmonitor_(TS *ts,int *step,PetscReal *dt,Vec *x,void 
 static int ourtsmonitor(TS ts,int i,PetscReal d,Vec v,void*ctx)
 {
   int        ierr = 0;
-  void       (*mctx)() = ((PetscObject)ts)->fortran_func_pointers[6];
-  (*(void (PETSC_STDCALL *)(TS*,int*,PetscReal*,Vec*,void(*)(),int*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,mctx,&ierr);
+  void       (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
+  (*(void (PETSC_STDCALL *)(TS*,int*,PetscReal*,Vec*,void(*)(void),int*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,mctx,&ierr);
   return 0;
 }
 
@@ -225,8 +225,8 @@ static int ourtsdestroy(void *ctx)
 {
   int         ierr = 0;
   TS          ts = (TS)ctx;
-  void        (*mctx)() = ((PetscObject)ts)->fortran_func_pointers[6];
-  (*(void (PETSC_STDCALL *)(void(*)(),int*))(((PetscObject)ts)->fortran_func_pointers[5]))(mctx,&ierr);
+  void        (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
+  (*(void (PETSC_STDCALL *)(void(*)(void),int*))(((PetscObject)ts)->fortran_func_pointers[5]))(mctx,&ierr);
   return 0;
 }
 

@@ -1,5 +1,4 @@
-
-/*$Id: ebvec1.c,v 1.6 2001/09/12 03:25:43 bsmith Exp $*/
+/*$Id: ebvec1.c,v 1.9 2001/09/26 17:10:29 balay Exp $*/
 
 
 #include "src/vec/vecimpl.h" 
@@ -50,13 +49,13 @@ int VecESISetVector(Vec xin,esi::Vector<double,int> *v)
   ierr = PetscTypeCompare((PetscObject)xin,VEC_ESI,&tesi);CHKERRQ(ierr);
   if (tesi) {
     int                    n,N;
-    esi::MapPartition<int> *map;
+    esi::IndexSpace<int>   *map;
 
     ierr = v->getGlobalSize(N);CHKERRQ(ierr);
     if (xin->N == -1) xin->N = N;
     else if (xin->N != N) SETERRQ2(1,"Global size of Vec %d not equal size of esi::Vector %d",xin->N,N);
 
-    ierr = v->getMapPartition(map);CHKERRQ(ierr); 
+    ierr = v->getIndexSpace(map);CHKERRQ(ierr); 
     ierr = map->getLocalSize(n);CHKERRQ(ierr);
     if (xin->n == -1) xin->n = n;
     else if (xin->n != n) SETERRQ2(1,"Local size of Vec %d not equal size of esi::Vector %d",xin->n,n);
@@ -312,10 +311,10 @@ int VecGetLocalSize_ESI(Vec vin,int *size)
 {
   Vec_ESI                *x = (Vec_ESI*)vin->data;
   int                    ierr;
-  esi::MapPartition<int> *map;
+  esi::IndexSpace<int>   *map;
 
   PetscFunctionBegin;
-  ierr = x->evec->getMapPartition(map);CHKERRQ(ierr); 
+  ierr = x->evec->getIndexSpace(map);CHKERRQ(ierr); 
   ierr = map->getLocalSize(*size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -467,6 +466,27 @@ static struct _VecOps EvOps = {VecDuplicate_ESI,
                                0,
                                VecReciprocal_Default};
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecESISetFromOptions"
+int VecESISetFromOptions(Vec V)
+{
+  Vec_ESI      *s;
+  int          ierr;
+  char         string[1024];
+  PetscTruth   flg;
+ 
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)V,VEC_ESI,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscOptionsGetString(V->prefix,"-vec_esi_type",string,1024,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecESISetType(V,string);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_ESI"
@@ -474,14 +494,48 @@ int VecCreate_ESI(Vec V)
 {
   Vec_ESI      *s;
   int          ierr;
-
+ 
   PetscFunctionBegin;
   ierr    = PetscNew(Vec_ESI,&s);CHKERRQ(ierr);
   ierr    = PetscMemzero(s,sizeof(Vec_ESI));CHKERRQ(ierr);
 
-  s->evec = 0;
-  V->data = (void*)s;
-  ierr    = PetscMemcpy(V->ops,&EvOps,sizeof(EvOps));CHKERRQ(ierr);
+  s->evec        = 0;
+  V->data        = (void*)s;
+  V->petscnative = PETSC_FALSE;
+  V->esivec      = 0;
+  ierr           = PetscMemcpy(V->ops,&EvOps,sizeof(EvOps));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+extern PetscFList CCAList;
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecESISetType"
+int VecESISetType(Vec V,char *name)
+{
+  int                                   ierr;
+  esi::Vector<double,int>               *ve;
+  esi::petsc::VectorFactory<double,int> *f;
+  void                                  *(*r)(void);
+  esi::IndexSpace<int>                  *map;
+
+  PetscFunctionBegin;
+  ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(1,"Unable to load esi::VectorFactory constructor %s",name);
+#if defined(PETSC_HAVE_CCA)
+  gov::cca::Component *component = (gov::cca::Component *)(*r)();
+  gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
+  f    = dynamic_cast<esi::petsc::VectorFactory<double,int>*>(port);
+#else
+  f    = (esi::petsc::VectorFactory<double,int> *)(*r)();
+#endif
+  map  = new esi::petsc::IndexSpace<int>(V->comm,V->n,V->N);
+  ierr = f->getVector(*map,ve);CHKERRQ(ierr);
+  ierr = map->deleteReference();CHKERRQ(ierr);
+  delete f;
+  ierr = VecESISetVector(V,ve);CHKERRQ(ierr);
+  ierr = ve->deleteReference();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

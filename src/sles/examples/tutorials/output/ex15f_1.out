@@ -1,0 +1,15 @@
+KSP Object:
+  type: gmres
+    GMRES: restart=30, using Unmodified Gram-Schmidt + 1 step Iterative Refinement Orthogonalization
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-07, absolute=1e-50, divergence=10000
+  left preconditioning
+PC Object:
+  type: shell
+    Shell: no name
+  linear system matrix = precond matrix:
+  Matrix Object:
+    type=mpiaij, rows=56, cols=56
+    total: nonzeros=250, allocated nonzeros=392
+Norm of error 5.9071E-08 iterations    15

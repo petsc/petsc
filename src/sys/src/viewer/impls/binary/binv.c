@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.99 2001/04/10 19:34:06 bsmith Exp $*/
+/*$Id: binv.c,v 1.101 2001/09/19 14:47:04 bsmith Exp $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -16,6 +16,7 @@ typedef struct  {
   FILE                  *fdes_info;      /* optional file containing info on binary file*/
   PetscTruth            storecompressed; /* gzip the write binary file when closing it*/
   char                  *filename;
+  PetscTruth            skipinfo;        /* Don't create info file for writing */
 } PetscViewer_Binary;
 
 #undef __FUNCT__  
@@ -86,6 +87,36 @@ int PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
   PetscFunctionBegin;
   *fdes = vbinary->fdes;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinarySkipInfo" 
+/*@
+    PetscViewerBinarySkipInfo - Binary file will not have .info file created with it
+
+    Not Collective
+
+    Input Paramter:
+.   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+
+    Options Database:
+.   -viewer_binary_skip_info
+
+    Level: advanced
+
+    Notes: This must be called after PetscViewerSetType() but before PetscViewerBinarySetFilename()
+
+   Concepts: PetscViewerBinary^accessing info file
+
+.seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
+@*/
+int PetscViewerBinarySkipInfo(PetscViewer viewer)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  vbinary->skipinfo = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -198,7 +229,7 @@ $    PETSC_BINARY_WRONLY - open existing file for binary output
 @*/
 int PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerBinaryType type,PetscViewer *binv)
 {
-  int ierr;
+  int        ierr;
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
@@ -266,6 +297,7 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
   char       string[128],*first,*second,*final;
   int        len,ierr;
   PetscTruth flg;
+  PetscToken *token;  
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,"-load_ignore_info",&flg);CHKERRQ(ierr);
@@ -280,8 +312,9 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
     if (string[0] == '#') continue;
     if (string[0] == '!') continue;
     if (string[0] == '%') continue;
-    ierr = PetscStrtok(string," ",&first);CHKERRQ(ierr);
-    ierr = PetscStrtok(0," ",&second);CHKERRQ(ierr);
+    ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
     if (first && first[0] == '-') {
       PetscTruth wrongtype;
       /*
@@ -306,6 +339,7 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
       }
       ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
     }
+    ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 
@@ -330,6 +364,8 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
   if (type == (PetscViewerBinaryType) -1) {
     SETERRQ(1,"Must call PetscViewerBinarySetType() before PetscViewerSetFilename()");
   }
+  ierr = PetscOptionsHasName(viewer->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo);CHKERRQ(ierr);
+
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
 
   /* copy name so we can edit it */
@@ -430,9 +466,9 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
         }
         vbinary->fdes_info = fopen(infoname,"r");
       }
-    } else {
+    } else if (!vbinary->skipinfo) {
       vbinary->fdes_info = fopen(infoname,"w");
-      if (! vbinary->fdes_info) {
+      if (!vbinary->fdes_info) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
       }
     }
@@ -461,9 +497,10 @@ int PetscViewerCreate_Binary(PetscViewer v)
   v->iformat         = 0;
   vbinary->fdes_info = 0;
   vbinary->fdes      = 0;
+  vbinary->skipinfo  = PETSC_FALSE;
   v->ops->getsingleton     = PetscViewerGetSingleton_Binary;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_Binary;
-  vbinary->btype     = (PetscViewerBinaryType) -1; 
+  vbinary->btype           = (PetscViewerBinaryType) -1; 
   vbinary->storecompressed = PETSC_FALSE;
   vbinary->filename        = 0;
 

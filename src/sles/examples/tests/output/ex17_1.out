@@ -1,0 +1,32 @@
+  0 KSP Residual norm 120.862 
+  1 KSP Residual norm 16.0275 
+  2 KSP Residual norm 6.96212 
+  3 KSP Residual norm 6.9504 
+  4 KSP Residual norm 5.63447 
+  5 KSP Residual norm 5.48747 
+  6 KSP Residual norm 5.00235 
+  7 KSP Residual norm 4.93778 
+  8 KSP Residual norm 4.43474 
+  9 KSP Residual norm 4.09563 
+ 10 KSP Residual norm 3.28558 
+ 11 KSP Residual norm 2.24094 
+ 12 KSP Residual norm 1.60162 
+ 13 KSP Residual norm 1.2866 
+ 14 KSP Residual norm 1.17894 
+ 15 KSP Residual norm 0.941023 
+ 16 KSP Residual norm 4.19038e-08 
+KSP Object:
+  type: gmres
+    GMRES: restart=30, using Unmodified Gram-Schmidt + 1 step Iterative Refinement Orthogonalization
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  left preconditioning
+PC Object:
+  type: jacobi
+  linear system matrix = precond matrix:
+  Matrix Object:
+    type=seqaij, rows=36, cols=36
+    total: nonzeros=156, allocated nonzeros=180
+      not using I-node routines
+Norm of error 9.90874e-10, Iterations 16

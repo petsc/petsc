@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.63 2001/08/07 21:32:24 bsmith Exp $ */
+/* $Id: petscsys.h,v 1.65 2001/09/19 16:12:06 bsmith Exp $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -43,6 +43,7 @@ EXTERN int PetscGetWorkingDirectory(char[],int);
 EXTERN int PetscGetRealPath(char[],char[]);
 EXTERN int PetscGetHomeDirectory(char[],int);
 EXTERN int PetscTestFile(const char[],char,PetscTruth*);
+EXTERN int PetscTestDirectory(const char[],char,PetscTruth*);
 EXTERN int PetscBinaryRead(int,void*,int,PetscDataType);
 EXTERN int PetscSynchronizedBinaryRead(MPI_Comm,int,void*,int,PetscDataType);
 EXTERN int PetscBinaryWrite(int,void*,int,PetscDataType,int);
@@ -52,6 +53,8 @@ EXTERN int PetscSharedTmp(MPI_Comm,PetscTruth *);
 EXTERN int PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
 EXTERN int PetscGetTmp(MPI_Comm,char *,int);
 EXTERN int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
+EXTERN int PetscLs(MPI_Comm,const char[],char*,int,PetscTruth*);
+EXTERN int PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList*,const char[]);
 
 /*
    In binary files variables are stored using the following lengths,

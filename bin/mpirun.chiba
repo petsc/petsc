@@ -199,10 +199,10 @@ fi
 
 if [ $usemyrinet = "yes" ] ; then
   pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
-  /soft/apps/packages/mpich-gmpg-1.2..4pre3.1/bin/mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
+  /soft/apps/packages/mpich-gmpg-1.2.1..6/bin/mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
   cat \${pbsfile} | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 else
-  /soft/apps/packages/mpich-1.2.1/bin/mpirun -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
+  /soft/apps/packages/mpich-pg-1.2.2.1/bin/mpirun -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
   cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 fi
 

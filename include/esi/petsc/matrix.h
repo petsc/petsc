@@ -6,7 +6,7 @@
 
 #include "esi/petsc/vector.h"
 
-// The PETSc_Vector supports the 
+// The esi::petsc::Matrix supports the 
 #include "esi/Operator.h"
 #include "esi/MatrixData.h"
 #include "esi/MatrixRowReadAccess.h"
@@ -27,8 +27,8 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     // Default destructor.
     ~Matrix();
 
-    // Construct a matrix from two Maps.
-    Matrix(esi::MapPartition<Ordinal> *rsource,esi::MapPartition<Ordinal> *csource);
+    // Construct a matrix from two IndexSpaces.
+    Matrix(esi::IndexSpace<Ordinal> *rsource,esi::IndexSpace<Ordinal> *csource);
 
     //  Interface for esi::Object  ---------------
 
@@ -47,7 +47,7 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
 
     //  Interface for esi::MatrixRowAccess  --------
 
-    virtual esi::ErrorCode getMaps(esi::Map<Ordinal>*& rowMap, esi::Map<Ordinal>*& colMap);
+    virtual esi::ErrorCode getIndexSpaces(esi::IndexSpace<Ordinal>*& rowIndexSpace, esi::IndexSpace<Ordinal>*& colIndexSpace);
     virtual esi::ErrorCode isLoaded(bool &state);
     virtual esi::ErrorCode isAllocated(bool &state);
     virtual esi::ErrorCode loadComplete();
@@ -76,7 +76,7 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
 
   private:
     Mat                        mat;
-    esi::MapPartition<Ordinal> *rmap,*cmap;
+    esi::IndexSpace<Ordinal> *rmap,*cmap;
 };
 }}
 

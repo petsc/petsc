@@ -1,4 +1,4 @@
-/* $Id: xops.c,v 1.156 2001/09/07 20:08:05 bsmith Exp $*/
+/* $Id: xops.c,v 1.157 2001/09/19 16:06:45 bsmith Exp $*/
 
 /*
     Defines the operations for the X PetscDraw implementation.
@@ -105,21 +105,24 @@ static int PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,int c,char 
   int          xx,yy,ierr,len;
   PetscDraw_X  *XiWin = (PetscDraw_X*)draw->data;
   char         *substr;
+  PetscToken   *token;
 
   PetscFunctionBegin;
   xx = XTRANS(draw,XiWin,x);  yy = YTRANS(draw,XiWin,y);
   XiSetColor(XiWin,c);
   
-  ierr = PetscStrtok(chrs,"\n",&substr);CHKERRQ(ierr);
+  ierr = PetscTokenCreate(chrs,'\n',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
   ierr = PetscStrlen(substr,&len);CHKERRQ(ierr);
   XDrawString(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,xx,yy - XiWin->font->font_descent,substr,len);
-  ierr = PetscStrtok(0,"\n",&substr);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
   while (substr) {
     yy  += 4*XiWin->font->font_descent;
     ierr = PetscStrlen(substr,&len);CHKERRQ(ierr);
     XDrawString(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,xx,yy - XiWin->font->font_descent,substr,len);
-    ierr = PetscStrtok(0,"\n",&substr);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
   }
+  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

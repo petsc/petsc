@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.127 2001/09/11 16:31:30 bsmith Exp $ */
+/* $Id: petscvec.h,v 1.131 2001/10/03 21:15:48 balay Exp $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -270,6 +270,13 @@ EXTERN int VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
 EXTERN int VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
 
 EXTERN int VecConjugate(Vec);
+
+EXTERN int VecConvertMPIToSeqAll(Vec vin,Vec *vout);
+EXTERN int VecConvertMPIToMPIZero(Vec vin,Vec *vout);
+
+
+EXTERN int VecESISetType(Vec,char*);
+EXTERN int VecESISetFromOptions(Vec);
 
 #endif
 

@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.413 2001/09/07 20:09:09 bsmith Exp $*/
+/*$Id: matrix.c,v 1.414 2001/09/28 18:57:28 balay Exp $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -565,7 +565,7 @@ $    idxm(MatStencil_c,1) = c
    in the matrix.
 
    Inspired by the structured grid interface to the HYPRE package
-   (www.llnl.gov/CASC/hyper)
+   (http://www.llnl.gov/CASC/hypre)
 
    Efficiency Alert:
    The routine MatSetValuesBlockedStencil() may offer much better efficiency

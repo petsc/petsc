@@ -1,0 +1,4 @@
+level=0, PCShell name is user_precond
+level=1, PCShell name is user_precond
+l_2 error 0.730291 max error 2.65625 resi 0.0302577
+its 3 l_2 error 1.93066e-07 max error 5.99343e-07 resi 6.36193e-07

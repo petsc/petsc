@@ -1,11 +1,11 @@
 
 /*
-      Interfaces the ESI_VEctor class to the PETSc Vec class
+   Makes a PETSc vector look like a ESI
 */
 
 #include "esi/petsc/vector.h"
 
-esi::petsc::Vector<double,int>::Vector( esi::MapPartition<int> *inmap)
+esi::petsc::Vector<double,int>::Vector( esi::IndexSpace<int> *inmap)
 {
   esi::ErrorCode  ierr;
   int             n,N;
@@ -17,7 +17,7 @@ esi::petsc::Vector<double,int>::Vector( esi::MapPartition<int> *inmap)
   ierr = inmap->getGlobalSize(N);
   ierr = VecCreateMPI(*comm,n,N,&this->vec);
   this->pobject = (PetscObject)this->vec;
-  this->map = (esi::MapPartition<int> *)inmap;
+  this->map = (esi::IndexSpace<int> *)inmap;
   this->map->addReference();
   PetscObjectGetComm((PetscObject)this->vec,&this->comm);
 }
@@ -34,13 +34,14 @@ esi::petsc::Vector<double,int>::Vector( Vec pvec)
 
   ierr = VecGetSize(pvec,&N);
   ierr = VecGetLocalSize(pvec,&n);
-  this->map = (esi::MapPartition<int> *)(new esi::petsc::Map<int>(this->comm,n,N));
+  this->map = new esi::petsc::IndexSpace<int>(this->comm,n,N);
 }
 
 esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
   this->map->deleteReference();
+  ierr = VecDestroy(this->vec);
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
@@ -56,6 +57,8 @@ esi::ErrorCode esi::petsc::Vector<double,int>::getInterface(const char* name, vo
     iface = (void *) (esi::petsc::Vector<double,int> *) this;
   } else if (PetscStrcmp(name,"esi::VectorReplaceAccess",&flg),flg){
     iface = (void *) (esi::VectorReplaceAccess<double,int> *) this;
+  } else if (PetscStrcmp(name,"Vec",&flg),flg){
+    iface = (void *) this->vec;
   } else {
     iface = 0;
   }
@@ -69,6 +72,7 @@ esi::ErrorCode esi::petsc::Vector<double,int>::getInterfacesSupported(esi::Argv 
   list->appendArg("esi::Vector");
   list->appendArg("esi::VectorReplaceAccess");
   list->appendArg("esi::petsc::Vector");
+  list->appendArg("Vec");
   return 0;
 }
 
@@ -76,7 +80,7 @@ esi::ErrorCode esi::petsc::Vector<double,int>::getInterfacesSupported(esi::Argv 
     Note: this returns the map used in creating the vector;
   it is not the same as the PETSc map contained inside the PETSc vector
 */
-esi::ErrorCode esi::petsc::Vector<double,int>::getMapPartition( esi::MapPartition<int>*& outmap)
+esi::ErrorCode esi::petsc::Vector<double,int>::getIndexSpace( esi::IndexSpace<int>*& outmap)
 {
   outmap = this->map;
   return 0;
@@ -95,11 +99,11 @@ esi::ErrorCode esi::petsc::Vector<double,int>::getLocalSize( int & dim)
 esi::ErrorCode esi::petsc::Vector<double,int>::clone( esi::Vector<double,int>*& outvector)  
 {
   int ierr;
-  esi::MapPartition<int> *lmap; 
-  esi::MapPartition<int> *amap; 
+  esi::IndexSpace<int> *lmap; 
+  esi::IndexSpace<int> *amap; 
 
-  ierr = this->getMapPartition(lmap);CHKERRQ(ierr);
-  ierr = lmap->getInterface("esi::MapPartition",static_cast<void *>(amap));CHKERRQ(ierr);
+  ierr = this->getIndexSpace(lmap);CHKERRQ(ierr);
+  ierr = lmap->getInterface("esi::IndexSpace",static_cast<void *>(amap));CHKERRQ(ierr);
   outvector = (esi::Vector<double,int> *) new esi::petsc::Vector<double,int>(amap);
   return 0;
 }
@@ -238,14 +242,46 @@ esi::ErrorCode esi::petsc::Vector<double,int>::setArrayPointer(double *pointer,i
   return VecPlaceArray(this->vec,pointer);
 }
 
-/*
-      Private operation
-*/
-esi::ErrorCode esi::petsc::Vector<double,int>::getPETScVec(Vec *outvec)
+// --------------------------------------------------------------------------------------------------------
+esi::petsc::VectorFactory<double,int>::VectorFactory(){;}
+
+esi::petsc::VectorFactory<double,int>::~VectorFactory(){;}
+
+esi::ErrorCode esi::petsc::VectorFactory<double,int>::getVector(esi::IndexSpace<int>&map,esi::Vector<double,int>*&v)
 {
-  *outvec = this->vec;
+  v = new esi::petsc::Vector<double,int>(&map);
   return 0;
+};
+
+#if defined(PETSC_HAVE_CCA)
+void esi::petsc::VectorFactory<double,int>::setServices(gov::cca::Services *svc)
+{
+  svc->addProvidesPort(this,svc->createPortInfo("getVector", "esi::VectorFactory", 0));
 }
+#endif
+
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_CCA)
+gov::cca::Component *create_esi_petsc_vectorfactory(void)
+{
+  return dynamic_cast<gov::cca::Component *>(new esi::petsc::VectorFactory<double,int>);
+}
+#else
+void *create_esi_petsc_vectorfactory(void)
+{
+  return (void *)(new esi::petsc::VectorFactory<double,int>);
+}
+#endif
+
+// CCAFFEINE expects each .so file to have a getComponentList function.
+// See dccafe/cxx/dc/framework/ComponentFactory.h for details.
+char **getComponentList() {
+  static char *list[2];
+  list[0] = "create_esi_petsc_vectorfactory esi::VectorFactory";
+  list[1] = 0;
+  return list;
+}
+EXTERN_C_END
 
 
 

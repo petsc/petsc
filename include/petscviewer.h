@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.85 2001/08/06 21:13:28 bsmith Exp $ */
+/* $Id: petscviewer.h,v 1.86 2001/09/19 14:44:56 bsmith Exp $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
@@ -119,6 +119,7 @@ EXTERN int PetscViewerStringSetString(PetscViewer,char[],int);
 EXTERN int PetscViewerDrawClear(PetscViewer);
 EXTERN int PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
 EXTERN int PetscViewerSocketSetConnection(PetscViewer,const char[],int);
+EXTERN int PetscViewerBinarySkipInfo(PetscViewer);
 
 EXTERN int PetscViewerSetFilename(PetscViewer,const char[]);
 EXTERN int PetscViewerGetFilename(PetscViewer,char**);
