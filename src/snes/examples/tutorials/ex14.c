@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.1 1999/07/02 13:57:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.2 1999/07/02 13:58:56 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -17,6 +17,10 @@ The command line options include:\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\
   -Nz <npy>, where <npz> = number of processors in the z-direction\n\
   -debug : Activate debugging printouts\n\n";
+
+/*
+     This example is the 3-dimensional analog of ex5.c.
+*/
 
 /*T
    Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
@@ -274,7 +278,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 {
   Scalar *x;
   Vec    localX = user->localX;
-  int    ierr, i;
+  int    ierr;
 
   /*
      Get a pointer to vector data.
@@ -320,8 +324,7 @@ int ApplicationInitialGuess(AppCtx *user,Scalar *x)
 {
   int     i, j, k, row, mx, my, mz, ierr;
   int     xs, ys, zs, xm, ym, zm, gxm, gym, gzm, gxs, gys, gzs;
-  double  one = 1.0, lambda, temp1, temp, hx, hy, hz, temp_k, temp_jk;
-  int ghosts, junk;
+  double  one = 1.0, lambda, temp1, hx, hy, hz, temp_k, temp_jk;
 
   mx     = user->mx;
   my     = user->my;
