@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.26 1998/05/03 22:08:26 curfman Exp balay $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.27 1998/05/29 22:49:42 balay Exp bsmith $";
 #endif
 
 /*
@@ -265,14 +265,14 @@ int AODataKeyRemove_Basic(AOData aodata,char *name)
   ikey = aodata->keys;
   if (key == ikey) {
     aodata->keys = key->next;
-    goto finishup;
+    goto finishup1;
   }
   while (ikey->next != key) {
     ikey = ikey->next;
   }
   ikey->next = key->next;
 
-  finishup:
+  finishup1:
 
   PetscFree(key->name);
   PetscFree(key->rowners);
@@ -297,7 +297,7 @@ int AODataSegmentRemove_Basic(AOData aodata,char *name,char *segname)
   segment = key->segments;
   if (segment == iseg) {
     key->segments = segment->next;
-    goto finishup;
+    goto finishup2;
   }
   while (segment->next != iseg) {
     segment = segment->next;
@@ -305,7 +305,7 @@ int AODataSegmentRemove_Basic(AOData aodata,char *name,char *segname)
   segment->next = iseg->next;
   segment       = iseg;
   
-  finishup:
+  finishup2:
 
   PetscFree(segment->name); 
   PetscFree(segment->data);
@@ -347,11 +347,11 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
      If keys not given, assume each processor provides entire data 
   */
   if (!keys && n == key->N) {
-    char *fdata;
+    char *fdata1;
     if (dtype == PETSC_LOGICAL) Nb = BTLength(key->N); else Nb = key->N;
-    fdata = (char *) PetscMalloc((Nb*bs+1)*datasize); CHKPTRQ(fdata);
-    PetscBitMemcpy(fdata,0,data,0,key->N*bs,dtype);
-    segment->data = (void *) fdata;
+    fdata1 = (char *) PetscMalloc((Nb*bs+1)*datasize); CHKPTRQ(fdata1);
+    PetscBitMemcpy(fdata1,0,data,0,key->N*bs,dtype);
+    segment->data = (void *) fdata1;
   } else if (!keys) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Keys not given, but not all data given on each processor");
   } else {
@@ -383,7 +383,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
     }
    
     if (dtype != PETSC_LOGICAL) {
-      char *fdata;
+      char *fdata2;
 
       ierr = PetscDataTypeToMPIDataType(dtype,&mtype);CHKERRQ(ierr);
       ierr = MPI_Allgatherv(data,n*bs,mtype,adata,lens,disp,mtype,comm);CHKERRQ(ierr);
@@ -394,7 +394,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
       */
       fkeys = (int *) PetscMalloc((key->N+1)*sizeof(int)); CHKPTRQ(fkeys);
       PetscMemzero(fkeys, (key->N+1)*sizeof(int));
-      fdata = (char *) PetscMalloc((key->N*bs+1)*datasize); CHKPTRQ(fdata);
+      fdata2 = (char *) PetscMalloc((key->N*bs+1)*datasize); CHKPTRQ(fdata2);
 
       for ( i=0; i<N; i++ ) {
         if (fkeys[akeys[i]] != 0) {
@@ -404,20 +404,20 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Key out of range");
         }
         fkeys[akeys[i]] = 1;
-        PetscBitMemcpy(fdata,akeys[i]*bs,adata,i*bs,bs,dtype);
+        PetscBitMemcpy(fdata2,akeys[i]*bs,adata,i*bs,bs,dtype);
       }
       for ( i=0; i<N; i++ ) {
         if (!fkeys[i]) {
           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Missing key");
         }
       }
-      segment->data = (void *) fdata;
+      segment->data = (void *) fdata2;
     } else {
       /*
             For logical input the length is given by the user in bits; we need to 
             convert to bytes to send with MPI
       */
-      BT fdata,mvalues = (BT) data;
+      BT fdata3,mvalues = (BT) data;
       char *values = (char *) PetscMalloc((n+1)*bs*sizeof(char));CHKPTRQ(values);
       for ( i=0; i<n; i++ ) {
         for ( j=0; j<bs; j++ ) {
@@ -433,7 +433,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
       */
       fkeys = (int *) PetscMalloc((key->N+1)*sizeof(int)); CHKPTRQ(fkeys);
       PetscMemzero(fkeys, (key->N+1)*sizeof(int));
-      BTCreate(N*bs,fdata);
+      BTCreate(N*bs,fdata3);
 
       for ( i=0; i<N; i++ ) {
         if (fkeys[akeys[i]] != 0) {
@@ -444,7 +444,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
         }
         fkeys[akeys[i]] = 1;
         for ( j=0; j<bs; j++ ) {
-          if (adata[i*bs+j]) BTSet(fdata,i*bs+j); 
+          if (adata[i*bs+j]) BTSet(fdata3,i*bs+j); 
         }
       }
       for ( i=0; i<N; i++ ) {
@@ -452,7 +452,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Missing key");
         }
       }
-      segment->data = (void *) fdata;
+      segment->data = (void *) fdata3;
     }
     PetscFree(akeys);
     PetscFree(adata);
