@@ -34,6 +34,40 @@ int MatDestroy_Normal(Mat N)
   PetscFunctionReturn(0);
 }
   
+/*
+      Slow, nonscalable version
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetDiagonal_Normal"
+int MatGetDiagonal_Normal(Mat N,Vec v)
+{
+  Mat_Normal  *Na = (Mat_Normal*)N->data;
+  Mat         A = Na->A;
+  int         ierr,i,j,rstart,rend,nnz,*cols;
+  PetscScalar *diag,*work,*values;
+  PetscMap    cmap;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(2*A->N*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
+  work = diag + A->N;
+  ierr = PetscMemzero(work,A->N*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) {
+    ierr = MatGetRow(A,i,&nnz,&cols,&values);CHKERRQ(ierr);
+    for (j=0; j<nnz; j++) {
+      work[cols[j]] += values[j]*values[j];
+    }
+    ierr = MatRestoreRow(A,i,&nnz,&cols,&values);CHKERRQ(ierr);
+  }
+  ierr = MPI_Allreduce(work,diag,A->N,MPIU_SCALAR,MPI_SUM,N->comm);CHKERRQ(ierr);
+  ierr = MatGetPetscMaps(A,PETSC_NULL,&cmap);CHKERRQ(ierr);
+  ierr = PetscMapGetLocalRange(cmap,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&values);CHKERRQ(ierr);
+  ierr = PetscMemcpy(values,diag+rstart,(rend-rstart)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
+  ierr = PetscFree(diag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateNormal"
@@ -68,13 +102,14 @@ int MatCreateNormal(Mat A,Mat *N)
   (*N)->data = (void*) Na;
 
   ierr    = VecCreateMPI(A->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
-  (*N)->ops->destroy = MatDestroy_Normal;
-  (*N)->ops->mult    = MatMult_Normal;
-  (*N)->assembled    = PETSC_TRUE;
-  (*N)->N            = A->N;
-  (*N)->M            = A->N;
-  (*N)->n            = A->n;
-  (*N)->m            = A->n;
+  (*N)->ops->destroy     = MatDestroy_Normal;
+  (*N)->ops->mult        = MatMult_Normal;
+  (*N)->ops->getdiagonal = MatGetDiagonal_Normal;
+  (*N)->assembled        = PETSC_TRUE;
+  (*N)->N                = A->N;
+  (*N)->M                = A->N;
+  (*N)->n                = A->n;
+  (*N)->m                = A->n;
   PetscFunctionReturn(0);
 }
 

@@ -81,9 +81,9 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
 
   if (!rank) {
     /* Read vector header. */
-    ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);CHKERRQ(ierr);
-    if (type != VEC_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
-    ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);if (ierr) goto handleerror;
+    if (type != VEC_FILE_COOKIE) {ierr = PETSC_ERR_ARG_WRONG; goto handleerror;}
+    ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);if (ierr) goto handleerror;
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
@@ -118,6 +118,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
     }
   } else {
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
+    if (rows == -1)  SETERRQ(1,"Error loading vector");
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
     ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
@@ -132,6 +133,11 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+  /* tell the other processors we've had an error */
+  handleerror:
+    rows = -1;
+    MPI_Bcast(&rows,1,MPI_INT,0,comm);
+    SETERRQ(ierr,"Error loading vector");
 }
 
 #undef __FUNCT__  
