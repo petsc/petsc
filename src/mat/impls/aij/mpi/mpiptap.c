@@ -14,14 +14,19 @@
 PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode       ierr;
-  Mat_MatMatMultMPI    *mult;
+  Mat_MatMatMultMPI    *mult=PETSC_NULL;
   PetscObjectContainer container;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX){ 
     ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr);
     /* destroy the container 'Mat_MatMatMultMPI' in case that P is attached to it */
-    ierr = PetscObjectContainerDestroy_Mat_MatMatMultMPI((PetscObject)P);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
+    if (container) { 
+      ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
+      ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
+    }
+
     /* create the container 'Mat_MatMatMultMPI' and attach it to P */
     ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
     ierr = PetscMemzero(mult,sizeof(Mat_MatMatMultMPI));CHKERRQ(ierr);
@@ -40,6 +45,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscObjectContainerSetPointer(container,mult);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
+    ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
   
     /* now, compute symbolic local P^T*A*P */
     ierr = MatPtAPSymbolic_MPIAIJ_MPIAIJ(A,P,fill,C);CHKERRQ(ierr);/* numeric product is computed as well */
