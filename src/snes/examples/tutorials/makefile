@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.33 1998/04/03 23:18:11 bsmith Exp balay $ 
+# $Id: makefile,v 1.34 1998/04/06 22:50:45 balay Exp curfman $ 
 
 ALL: ex1
 
@@ -70,9 +70,9 @@ ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 	${RM} ex5f.o
 #
-#  The SGI parallizing compiler generates incorrect code by treating 
-#  the math functions, like sqrt and exp as local variables. The sed
-#  below patches for this
+#  The SGI parallelizing compiler generates incorrect code by treating 
+#  the math functions (such as sqrt and exp) as local variables. The 
+#  sed below patches this.
 #
 ex5s: chkopts
 	-${CC} -pca keep  -WK,-lo=l ${FCONF} ${CFLAGS} -c ex5s.c
@@ -81,7 +81,6 @@ ex5s: chkopts
 	-${FC} -pfa keep -mp -64 ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} -c ex5fs.F
 	-${CLINKER} -mp -o ex5s ex5s_tmp.o ex5fs.o ${PETSC_LIB}
 	${RM} ex5s.o
-
 
 ex5f90: ex5f90.o  chkopts
 	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
