@@ -12,6 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
 LOCDIR   = src/inline/
+MANSEC   = Vec
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -68,8 +68,7 @@ extern int DAEvents[DA_MAX_EVENTS];
 
 EXTERN int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
 EXTERN int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
-EXTERN int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,
-                        int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
+EXTERN int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
 EXTERN int   DADestroy(DA);
 EXTERN int   DAView(DA,PetscViewer);
 

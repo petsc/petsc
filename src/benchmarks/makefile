@@ -14,6 +14,7 @@ EXAMPLESF     =
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm \
 		PetscGetCPUTime sizeof
+MANSEC        = Sys
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -9,6 +9,16 @@
 
 #define MATLABENGINE_COOKIE PETSC_COOKIE+12
 
+/*S
+     PetscMatlabEngine - Object used to communicate with Matlab
+
+   Level: intermediate
+
+.seealso:  PetscMatlabEngineCreate(), PetscMatlabEngineDestroy(), PetscMatlabEngineEvaluate(),
+           PetscMatlabEngineGetOutput(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
+           PetscMatlabEnginePrintOutput(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(),
+           PETSC_MATLAB_ENGINE_(), PETSC_MATLAB_ENGINE_SELF, PETSC_MATLAB_ENGINE_WORLD
+S*/
 typedef struct _p_PetscMatlabEngine* PetscMatlabEngine;
 
 EXTERN int PetscMatlabEngineCreate(MPI_Comm,char*,PetscMatlabEngine*);
@@ -22,8 +32,8 @@ EXTERN int PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,PetscScalar*,char
 EXTERN int PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,char*);
 
 EXTERN PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm);
-#define MATLAB_ENGINE_SELF  PETSC_MATLAB_ENGINE_(PETSC_COMM_SELF)
-#define MATLAB_ENGINE_WORLD PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD)
+#define PETSC_MATLAB_ENGINE_SELF  PETSC_MATLAB_ENGINE_(PETSC_COMM_SELF)
+#define PETSC_MATLAB_ENGINE_WORLD PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD)
 
 #endif
 
