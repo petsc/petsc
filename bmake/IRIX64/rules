@@ -1,4 +1,4 @@
-# $Id: base,v 1.46 1998/10/30 16:18:03 balay Exp balay $ 
+# $Id: base,v 1.47 1998/11/10 17:10:39 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -woff 1164 -woff 1048
@@ -17,7 +17,6 @@ OMAKE    = make
 SHELL    = /bin/sh
 CLINKER  = cc  -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 -rpath ${LDIR}:${DYLIBPATH}
 FLINKER  = f90 -cpp -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85,-woff,134 -rpath ${LDIR}:${DYLIBPATH}
-LD       = ld -64
 SHELL    = /bin/sh
 # -lpthread is required by AMS package. It should follow -lmpi, hence, is specified
 # in the variable SYS_LIB. If libpthread.so is not avilable on this machine, you can
