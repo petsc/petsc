@@ -1,4 +1,4 @@
-# $Id: base,v 1.45 1998/12/10 16:21:41 balay Exp bsmith $ 
+# $Id: base,v 1.46 1998/12/17 22:07:19 bsmith Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -33,16 +33,16 @@ CXX_CCV          = g++   --version
 CXX_SYS_LIB      = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4/libm.a
 # ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   = -g -Wshadow -fomit-frame-pointer
+GCXX_COPTFLAGS   = -g -fomit-frame-pointer
 GCXX_FOPTFLAGS   = -g 
 # ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O -Wshadow -fomit-frame-pointer
+OCXX_COPTFLAGS   = -O -fomit-frame-pointer
 OCXX_FOPTFLAGS   = -O 
 # -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  = -g -Wshadow -fomit-frame-pointer
+GCOMP_COPTFLAGS  = -g -fomit-frame-pointer
 GCOMP_FOPTFLAGS  = -g
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O -Wshadow -fomit-frame-pointer
+OCOMP_COPTFLAGS  = -O -fomit-frame-pointer
 OCOMP_FOPTFLAGS  = -O
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS     =   -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
