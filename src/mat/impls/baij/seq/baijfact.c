@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.13 1996/04/11 23:30:15 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.14 1996/04/12 23:31:32 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -1167,7 +1167,7 @@ static int MatSolveTransAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
   IS          iscol=a->col,isrow=a->row;
   int         *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
-  int         nz,bs=a->bs,bs2=a->bs2,idx,idt,idc,_One=1,m=a->m,N=a->n;
+  int         nz,bs=a->bs,bs2=a->bs2,idx,idt,idc,_One=1,N=a->n;
   Scalar      *xa,*ba,*aa=a->a,*sum,_DOne=1.0,_DMOne=-1.0;
   Scalar      _DZero=0.0,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*y;
   register Scalar *x,*b,*lsum,*tmp,*v;

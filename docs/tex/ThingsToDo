@@ -176,6 +176,10 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
+  - Make jacobi and SOR be seperate for each matrix type. So then 
+    have default use natural block size and support option 
+    -pc_jacobi_pointwise etc.
+
   - Add diagnotics for memory allocation using PLogInfo (like already done 
     for AIJ format) for Rowbs and BDiag formats.
 
