@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.51 1997/10/19 03:32:05 bsmith Exp balay $;
+C  $Id: petsc.h,v 1.52 1997/11/13 18:38:17 balay Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -13,12 +13,12 @@ C
 C     Flags
 C
       integer   PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE
-      integer   PETSC_DEFAULT_INTEGER
+      integer   PETSC_DEFAULT_INTEGER,PETSC_DETERMINE
       integer   PETSC_FP_TRAP_OFF, PETSC_FP_TRAP_ON
       double precision    PETSC_DEFAULT_DOUBLE_PRECISION
 
       parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1,
-     *           PETSC_DEFAULT_INTEGER = -2,
+     *           PETSC_DEFAULT_INTEGER = -2,PETSC_DETERMINE = -1,
      *           PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
       parameter (PETSC_FP_TRAP_OFF = 0, PETSC_FP_TRAP_ON = 1) 
 
