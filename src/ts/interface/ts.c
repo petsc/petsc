@@ -1,6 +1,8 @@
 /* $Id: ts.c,v 1.43 2001/09/07 20:12:01 bsmith Exp $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
+int TSEvents[TS_MAX_EVENTS];
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSComputeRHSJacobian"
 /*@
@@ -1353,17 +1355,25 @@ int TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
 @*/
 int TSStep(TS ts,int *steps,PetscReal *ptime)
 {
+  PetscTruth opt;
   int        ierr;
-  PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (!ts->setupcalled) {ierr = TSSetUp(ts);CHKERRQ(ierr);}
-  ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
-  ierr = (*ts->ops->step)(ts,steps,ptime);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(ts->prefix,"-ts_view",&flg);CHKERRQ(ierr);
-  if (flg  && !PetscPreLoadingOn) {ierr = TSView(ts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  if (!ts->setupcalled) {
+    ierr = TSSetUp(ts);                                                                                   CHKERRQ(ierr);
+  }
+
+  TSLogEventBegin(TS_Step, ts, 0, 0, 0);
+  ierr = (*ts->ops->prestep)(ts);                                                                         CHKERRQ(ierr);
+  ierr = (*ts->ops->step)(ts, steps, ptime);                                                              CHKERRQ(ierr);
+  ierr = (*ts->ops->poststep)(ts);                                                                        CHKERRQ(ierr);
+  TSLogEventEnd(TS_Step, ts, 0, 0, 0);
+
+  ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);                                               CHKERRQ(ierr);
+  if ((opt == PETSC_TRUE) && !PetscPreLoadingOn) {
+    ierr = TSView(ts, PETSC_VIEWER_STDOUT_WORLD);                                                         CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
