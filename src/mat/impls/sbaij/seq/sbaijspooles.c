@@ -16,19 +16,21 @@
    F -- numeric factor of A
    nneg, nzero, npos: inertia of A
 */
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInertia_SeqSBAIJ_Spooles"
-int MatGetInertia_SeqSBAIJ_Spooles(Mat A,Mat F,int *nneg,int *nzero,int *npos)
+int MatGetInertia_SeqSBAIJ_Spooles(Mat A,Mat *F,int *nneg,int *nzero,int *npos)
 { 
-  Mat_Spooles          *lu= (Mat_Spooles*)F->spptr;
+  Mat_Spooles          *lu= (Mat_Spooles*)(*F)->spptr;
   int                  ierr;
 
   PetscFunctionBegin;
   lu->options.inertiaflag  = PETSC_TRUE;
-  ierr = MatCholeskyFactorNumeric(A,&F); /* symbolic factor of A */
+  ierr   = MatCholeskyFactorNumeric(A,F);
   *nneg  = lu->inertia.nneg;
   *nzero = lu->inertia.nzero;
   *npos  = lu->inertia.npos;
+  
   PetscFunctionReturn(0);
 }
 

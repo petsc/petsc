@@ -35,7 +35,7 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
     options->storevalues    = 1;
     options->toosmall       = 1.e-9;
     options->fudge          = 1.e-9;
-    options->inertiaflag    = PETSC_FALSE;
+    if(!options->inertiaflag) options->inertiaflag = PETSC_FALSE;
   } 
 
   /* get runtime input parameters */
