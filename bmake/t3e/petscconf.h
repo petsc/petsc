@@ -20,7 +20,7 @@
 #define HAVE_SYS_TIME_H 
 #define HAVE_UNAME
 #define HAVE_GETCWD
-#define HAVE_PARAM_H
+#define HAVE_SYS_PARAM_H
 #define HAVE_SYS_STAT_H
 
 #define PETSC_HAVE_FORTRAN_CAPS 

@@ -22,7 +22,7 @@
 #define HAVE_STDLIB_H
 #define HAVE_GETCWD
 #define BITS_PER_BYTE 8
-#define HAVE_PARAM_H
+#define HAVE_SYS_PARAM_H
 #define HAVE_SYS_STAT_H
 
 #define PETSC_HAVE_FORTRAN_UNDERSCORE 
