@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zviewer.c,v 1.16 1999/01/12 23:12:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zviewer.c,v 1.17 1999/02/03 04:33:05 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -35,7 +35,7 @@ EXTERN_C_BEGIN
 
 #undef __FUNC__ 
 #define __FUNC__ ""
-void viewersetfilename_(Viewer *viewer, char name[], int *__ierr,int len1)
+void viewersetfilename_(Viewer *viewer, CHAR name, int *__ierr,int len1)
 {
   char   *c1;
   FIXCHAR(name,len1,c1);

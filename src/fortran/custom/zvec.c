@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.49 1999/01/31 16:12:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.50 1999/03/07 17:30:21 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -107,7 +107,7 @@ void vecsetfromoptions_(Vec *x,int *__ierr)
   *__ierr = VecSetFromOptions(*x);
 }
 
-void vecsettype_(Vec *x,char *type_name,int *__ierr,int len)
+void vecsettype_(Vec *x,CHAR type_name,int *__ierr,int len)
 {
   char *t;
 
