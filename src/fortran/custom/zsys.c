@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.69 1999/10/04 22:51:03 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.70 1999/10/05 14:21:00 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -255,14 +255,12 @@ static char FIXCHARSTRING[1024];
 
 #endif
 
-void PETSC_STDCALL chkmemfortran_(int *line, CHAR file,int len)
+void PETSC_STDCALL chkmemfortran_(int *line, CHAR file,int *__ierr,int len)
 {
-  int  ierr;
   char *c1;
 
   FIXCHARNOMALLOC(file,len,c1);
-  ierr = PetscTrValid(*line,"Userfunction",c1," ");
-  if (ierr) MPI_Abort(PETSC_COMM_WORLD,ierr);
+  *__ierr = PetscTrValid(*line,"Userfunction",c1," ");
 }
 
 void PETSC_STDCALL petsctrvalid_(int *__ierr)
