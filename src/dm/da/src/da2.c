@@ -1601,7 +1601,7 @@ int DAGetDiagonal_MFFD(DA da,Vec U,Vec a)
 
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
-#include "adic_utils.h"
+#include "adic/ad_utils.h"
 EXTERN_C_END
 
 #undef __FUNCT__
@@ -1638,15 +1638,15 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = DAGetAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
   ierr = DAGetAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
   ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
-  my_AD_SetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
+  PetscADSetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
   ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
 
-  my_AD_ResetIndep();
+  PetscADResetIndep();
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
-  my_AD_SetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors);
-  my_AD_IncrementTotalGradSize(iscoloring->n);
+  PetscADSetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors);
+  PetscADIncrementTotalGradSize(iscoloring->n);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-  my_AD_SetIndepDone();
+  PetscADSetIndepDone();
 
   ierr = (*da->adic_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
 
@@ -1704,9 +1704,9 @@ int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
   ierr = VecRestoreArray(vu,&avu);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&av);CHKERRQ(ierr);
 
-  my_AD_ResetIndep();
-  my_AD_IncrementTotalGradSize(1);
-  my_AD_SetIndepDone();
+  PetscADResetIndep();
+  PetscADIncrementTotalGradSize(1);
+  PetscADSetIndepDone();
 
   ierr = (*da->adicmf_lf)(&info,ad_vu,ad_f,w);CHKERRQ(ierr);
 

@@ -2940,7 +2940,7 @@ int MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
 
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
-#include "adic_utils.h"
+#include "adic/ad_utils.h"
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -2954,13 +2954,13 @@ int MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 
   PetscFunctionBegin;
   if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
-  nlen  = my_AD_GetDerivTypeSize();
+  nlen  = PetscADGetDerivTypeSize();
   color = a->coloring->colors;
   /* loop over rows */
   for (i=0; i<m; i++) {
     nz = ii[i+1] - ii[i];
     /* loop over columns putting computed value into matrix */
-    values = my_AD_GetGradArray(cadvalues);
+    values = PetscADGetGradArray(cadvalues);
     for (j=0; j<nz; j++) {
       *v++ = values[color[*jj++]];
     }

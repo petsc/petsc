@@ -97,8 +97,6 @@ for i in bmake/*/packages ; do
     sed "s/^MATLAB_LIB/#MATLAB_LIB/g" | \
     sed "s/^PETSC_HAVE_MATLAB/#PETSC_HAVE_MATLAB/g" | \
     sed "s/^CMEX/#CMEX/g" | \
-    sed "s/^ADIC_INCLUDE/#ADIC_INCLUDE/g" | \
-    sed "s/^ADIC_LIB/#ADIC_LIB/g" | \
     sed "s/^PETSC_HAVE_ADIC/#PETSC_HAVE_ADIC/g" | sed "s/^ADIC_CC/#ADIC_CC/g" | \
     sed "s/^PVODE_INCLUDE/#PVODE_INCLUDE/g" | sed "s/^PVODE_LIB/#PVODE_LIB/g" | \
     sed "s/^PETSC_HAVE_PVODE/#PETSC_HAVE_PVODE/g" | \

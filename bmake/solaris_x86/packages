@@ -58,8 +58,7 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # Location where adiC is installed
 #
-#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
-#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_DEFINES =  -Dad_GRAD_MAX=1
 #ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
 #PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #

@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = ${ADIC_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = damgsnes.c
 SOURCEF  =

@@ -8,7 +8,7 @@
 #include "petscsnes.h"
 #include "petscsys.h"
 EXTERN_C_BEGIN
-#include "adic_utils.h"
+#include "adic/ad_utils.h"
 EXTERN_C_END
 
 typedef struct {
@@ -81,9 +81,9 @@ int MatGetDiagonal_DAAD(Mat A,Vec dd)
   }
   ierr = VecRestoreArray(a->localu,&avu);CHKERRQ(ierr);
 
-  my_AD_ResetIndep();
-  my_AD_IncrementTotalGradSize(1);
-  my_AD_SetIndepDone();
+  PetscADResetIndep();
+  PetscADIncrementTotalGradSize(1);
+  PetscADSetIndepDone();
 
   ierr = VecGetArray(dd,&d);CHKERRQ(ierr);
 
@@ -155,9 +155,9 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
   ierr = VecRestoreArray(a->localu,&avu);CHKERRQ(ierr);
   ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
 
-  my_AD_ResetIndep();
-  my_AD_IncrementTotalGradSize(1);
-  my_AD_SetIndepDone();
+  PetscADResetIndep();
+  PetscADIncrementTotalGradSize(1);
+  PetscADSetIndepDone();
 
   ierr = VecGetArray(dd,&d);CHKERRQ(ierr);
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);

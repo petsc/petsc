@@ -652,21 +652,21 @@ CHKMEMQ;
 
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
-#include "adic_utils.h"
+#include "adic/ad_utils.h"
 EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscADView"
 int PetscADView(int N,int nc,double *ptr,PetscViewer viewer)
 {
-  int        i,j,nlen  = my_AD_GetDerivTypeSize();
+  int        i,j,nlen  = PetscADGetDerivTypeSize();
   char       *cptr = (char*)ptr;
   double     *values;
 
   PetscFunctionBegin;
   for (i=0; i<N; i++) {
     printf("Element %d value %g derivatives: ",i,*(double*)cptr);
-    values = my_AD_GetGradArray(cptr);
+    values = PetscADGetGradArray(cptr);
     for (j=0; j<nc; j++) {
       printf("%g ",*values++);
     }

@@ -237,7 +237,7 @@ int DARestoreGlobalVector(DA da,Vec* g)
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
 
 EXTERN_C_BEGIN
-#include "adic_utils.h"
+#include "adic/ad_utils.h"
 EXTERN_C_END
 
 #undef __FUNCT__
@@ -306,7 +306,7 @@ int DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *
     ym = da->ye-da->ys;
     zm = da->ze-da->zs;
   }
-  deriv_type_size = my_AD_GetDerivTypeSize();
+  deriv_type_size = PetscADGetDerivTypeSize();
 
   switch (da->dim) {
     case 1: {

@@ -1170,6 +1170,7 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
 
   if (!mat->ops->multtranspose) SETERRQ(PETSC_ERR_SUP, "Operation not supported");
   ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
+  if (!mat->ops->multtranspose) SETERRQ(PETSC_ERR_SUP,"This matrix type does not have a multiply tranpose defined");
   ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
