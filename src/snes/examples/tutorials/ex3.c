@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.76 2001/03/13 04:40:11 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.77 2001/03/13 04:46:11 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -392,18 +392,18 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   Scalar         *xx,d,A[3];
-  int            i,j[3],ierr,start,end,M,N,istart,iend;
+  int            i,j[3],ierr,M,N,xs,xm;
   DA             da = user->da;
 
   /*
      Get pointer to vector data
   */
   ierr = DAVecGetArray(da,x,(void**)&xx);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /*
     Get range of locally owned matrix
   */
-  ierr = MatGetOwnershipRange(*jac,&start,&end);CHKERRQ(ierr);
   ierr = MatGetSize(*jac,&M,&N);CHKERRQ(ierr);
 
   /*
@@ -411,19 +411,15 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
      Set Jacobian entries for boundary points.
   */
 
-  if (start == 0) {  /* left boundary */
+  if (xs == 0) {  /* left boundary */
     i = 0; A[0] = 1.0; 
     ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
-    istart = 1;
-  } else {
-    istart = start;
+    xs++;xm--;
   }
-  if (end == M) { /* right boundary */
-    i = N-1; A[0] = 1.0; 
+  if (xs+xm == M) { /* right boundary */
+    i = M-1; A[0] = 1.0; 
     ierr = MatSetValues(*jac,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
-    iend = N-1;
-  } else {
-    iend = end;
+    xm--;
   }
 
   /*
@@ -432,7 +428,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
         row at once.
   */
   d = 1.0/(user->h*user->h);
-  for (i=istart; i<iend; i++) {
+  for (i=xs; i<xs+xm; i++) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1; 
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
     ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
