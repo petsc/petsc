@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.57 1995/11/27 20:04:02 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.58 1995/11/28 23:12:35 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -592,7 +592,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 .  a - location to put pointer to the array
 
    Fortran Note:
-   The Fortran interface is slightly different from that listed below.
+   The Fortran interface is slightly different from that given below.
    See the users manual and petsc/src/vec/examples for details.
 
 .keywords: vector, get, array
@@ -617,6 +617,9 @@ int VecGetArray(Vec x,Scalar **a)
    Output Parameter:
 .  a - location to put pointer to the array
 
+   Fortran Note:
+   There is no Fortran version of VecGetArrays().
+
 .keywords: vector, get, arrays
 
 .seealso: VecGetArray(), VecRestoreArrays()
@@ -627,7 +630,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
   Scalar **q;
   PETSCVALIDHEADERSPECIFIC(*x,VEC_COOKIE);
   q = (Scalar **)PetscMalloc(n*sizeof(Scalar*)); CHKPTRQ(q);
-  for(i=0;i<n;++i) {
+  for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]); CHKERRQ(ierr);
   }
   *a = q;
@@ -642,6 +645,9 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 .  x - the vector
 .  n - the number of vectors
 .  a - location of pointer to arrays obtained from VecGetArrays()
+
+   Fortran Note:
+   There is no Fortran version of VecRestoreArrays().
 
 .keywords: vector, restore, arrays
 
@@ -665,6 +671,10 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
    Input Parameters:
 .  x - the vector
 .  a - location of pointer to array obtained from VecGetArray()
+
+   Fortran Note:
+   The Fortran interface is slightly different from that given below.
+   See the users manual and petsc/src/vec/examples for details.
 
 .keywords: vector, restore, array
 
