@@ -194,19 +194,19 @@ etags_complete:
 	$(RM) TAGS_COMPLETE
 	etags -f TAGS_COMPLETE	  src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS_COMPLETE src/*/examples/*/*.c src/*/examples/*/*/*.c
-	etags -a -f TAGS_COMPLETE src/*/examples/*/*.F src/*/examples/*/*/*.F
+	etags -a -f TAGS_COMPLETE src/*/examples/*/*.F 
 	etags -a -f TAGS_COMPLETE src/*/examples/*/*.f
 	etags -a -f TAGS_COMPLETE src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS_COMPLETE src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS_COMPLETE src/*/impls/*/*/*.c  src/benchmarks/*.c
 	etags -a -f TAGS_COMPLETE src/contrib/*/*.c src/contrib/*/src/*.c 
 	etags -a -f TAGS_COMPLETE src/contrib/*/src/*.h 
-	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*/*.c src/contrib/*/examples/*/*.F
+	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*/*.c
+	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*/*.F
 	etags -a -f TAGS_COMPLETE include/*.h include/pinclude/*.h bmake/common
 	etags -a -f TAGS_COMPLETE include/FINCLUDE/*.h 
 	etags -a -f TAGS_COMPLETE src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS_COMPLETE src/gvec/impls/*/*/*/*/*.c
-	etags -a -f TAGS_COMPLETE src/gvec/impls/*/*/*/*.c
 	etags -a -f TAGS_COMPLETE src/gvec/impls/*/*/*/makefile src/gvec/impls/*/*/*/*/makefile
 	etags -a -f TAGS_COMPLETE makefile src/*/src/makefile
 	etags -a -f TAGS_COMPLETE src/*/interface/makefile src/makefile 
@@ -249,8 +249,8 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES bmake/common
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/*/*.c
-	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/*.c 
-	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/makefile src/gvec/impls/*/*/*/*/makefile
+	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/gvec/impls/*/*/*/*/makefile
 	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/*/interface/makefile src/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
