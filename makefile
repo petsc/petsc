@@ -66,6 +66,10 @@ testexamples_uni: chkpetsc_dir
 	-@echo "Using linker: $(CLINKER)"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
 	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "------------------------------------------"
+	-@echo "Using linker: $(CLINKER)"
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
 	-@echo "Due to different numerical round-off on certain"
@@ -82,7 +86,11 @@ testfortran: chkpetsc_dir
 	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using linker: $(FLINKER)"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "Using libraries: $(PETSC_FORTRAN_LIB)  $(PETSC_LIB)"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "------------------------------------------"
+	-@echo "Using linker: $(FLINKER)"
+	-@echo "Using libraries: $(PETSC_FORTRAN_LIB) $(PETSC_LIB)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=testexamples_3  tree 
@@ -101,6 +109,8 @@ fortran: chkpetsc_dir
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
 	-@echo "Using configuration flags: $(CONF)"
 	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
 	-@echo "------------------------------------------"
 	-@cd src/fortran/custom; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
