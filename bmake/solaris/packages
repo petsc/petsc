@@ -60,7 +60,8 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
 # Matlab location
 #
-CMEX              = /software/solaris-2/com/packages/matlab-r11.1/bin/mex
+MATLAB_ROOT       = /software/solaris-2/com/packages/matlab-6.1
+CMEX              = ${MATLAB_ROOT}/bin/mex
 #CMEX             = mex
 MCC               = cc
 MATLABCOMMAND     = matlab
@@ -72,9 +73,9 @@ PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 # and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
 # in matrix.h (sigh)
 #
-#MATLAB_INCLUDE    = -I/software/solaris-2/com/packages/matlab-r11.1/extern/include
+#MATLAB_INCLUDE    = -I${MATLAB_ROOT}/extern/include
 MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-MATLAB_LIB        = ${CLINKER_SLFLAG}/software/solaris-2/com/packages/matlab-r11.1/extern/lib/sol2 -L/software/solaris-2/com/packages/matlab-r11.1/extern/lib/sol2 -leng -lmx -lmat -lmi -lut
+MATLAB_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lmi -lut
 PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed
