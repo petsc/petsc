@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.152 1998/07/16 14:36:37 balay Exp balay $ 
+# $Id: buildtest,v 1.153 1998/08/26 14:15:48 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -27,7 +27,7 @@ set SB_S=/sandbox/balay/petsc
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set M =(snake  fire       violet     gaea          tri32       ptera        lava        ico08       maverick    yukon       homer        )
-  set B =(O      O_complex  g          g_c++         O_c++       Opg          O           O_c++       g           g_complex   g            )
+  set B =(O      O_complex  g          g_c++         O_c++       O            O           O_c++       g           g_complex   g            )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha        solaris_uni rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(1      1          1          1             1           1            4           4           2           1           1            )
   set J2=(0      2          2          2             2           2            9           9           3           2           2            )
@@ -39,7 +39,7 @@ if ($day == Sun) then
 endif
 if ($day == Mon) then
   set M =(snake  fire       violet     gaea          tri32       ptera       lava         ico08       maverick    yukon       homer        )
-  set B =(g      Opg_c++    O_c++      g             O           g           O_complex    O           Opg_complex O_complex   O_c++        )
+  set B =(g      O_c++      O_c++      g             O           g           O_complex    O           O_complex   O_complex   O_c++        )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_nolog solaris_gnu  rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
   set J2=(1      2          2          2             2           2           2            2           2           2           2            )
@@ -63,7 +63,7 @@ if ($day == Tue) then
 endif
 if ($day == Wed) then
   set M =(snake  fire       violet     gaea          tri32       ptera       lava         ico08       maverick    yukon       homer        )
-  set B =(g      g_c++      O          g_complex     Opg_complex Opg         Opg_c++      Opg_complex O           g           O            )
+  set B =(g      g_c++      O          g_complex     O_complex   O           O_c++        O_complex   O           g           O            )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_uni   solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(3      1          1          1             1           4           4            1           1           1           1            )
   set J2=(0      2          2          2             2           9           9            2           2           2           2            )
@@ -75,7 +75,7 @@ if ($day == Wed) then
 endif
 if ($day == Thu) then
   set M =(snake  fire       violet     gaea          tri32       ptera       lava         ico08       maverick    yukon       homer        )
-  set B =(O      g_complex  g_c++      O_c++         O           g           Opg_complex  g_c++       g           O           g_c++        )
+  set B =(O      g_complex  g_c++      O_c++         O           g           O_complex    g_c++       g           O           g_c++        )
   set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha       solaris      rs6000      sun4_f90    IRIX64      freebsd_egcs )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
   set J2=(0      2          2          2             2           2           2            2           2           2           2            )
@@ -87,7 +87,7 @@ if ($day == Thu) then
 endif  
 if ($day == Fri) then
   set M =(snake  fire       violet     gaea          tri32       ptera       lava         ico08       maverick    yukon       homer        )
-  set B =(g      O_c++      g_complex  O_complex     g           O           Opg          g_complex   g_c++       O           g            )
+  set B =(g      O_c++      g_complex  O_complex     g           O           O            g_complex   g_c++       O           g            )
   set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha_uni   solaris      rs6000      sun4_f90    IRIX64      freebsd_egcs )
   set J1=(0      1          1          1             1           4           1            1           1           1           1            )
   set J2=(2      2          2          2             2           9           2            2           2           2           2            )
@@ -99,7 +99,7 @@ if ($day == Fri) then
 endif
 if ($day == Sat) then
   set M =(snake  fire       alaska     gaea          tri32       ptera       lava         ico08       maverick    yukon       homer        )
-  set B =(O      O          g          Opg_complex   O           Opg         g_complex    Opg         O_complex   O_c++       Opg          )
+  set B =(O      O          g          O_complex     O           O           g_complex    O           O_complex   O_c++       O            )
   set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha_nolog solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(1      1          1          1             1           1           4            1           1           1           1            )
   set J2=(0      2          2          2             2           2           9            2           2           2           2            )
