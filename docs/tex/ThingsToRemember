@@ -57,6 +57,7 @@ help : consult@nersc.gov
 ---------------
 
 afs directory at NCSA /afs/ncsa.uiuc.edu/user/barrys
+To use afs on powerchallenge/convex exemplar, log into afs using klog
 
 NCSA Convex Exemplar account
 Machine: lena.ncsa.uiuc.edu
