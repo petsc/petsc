@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.10 1998/09/14 17:26:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.11 1999/02/03 04:32:11 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -75,9 +75,6 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-extern int VecDot_Seq(Vec,Vec,Scalar *);
-extern int VecNorm_Seq(Vec,NormType,double *);
-
 #undef __FUNC__  
 #define __FUNC__ "SNESMatrixFreeMult2_Private"
 /*
@@ -92,7 +89,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 {
   MFCtx_Private *ctx;
   SNES          snes;
-  double        h, norm, sum, umin, noise, ovalues[3],values[3];
+  double        h, norm, sum, umin, noise;
   Scalar        hs, dot, mone = -1.0;
   Vec           w,U,F;
   int           ierr, iter, (*eval_fct)(SNES,Vec,Vec);
@@ -146,45 +143,13 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
         ctx->need_err = 0;
       }
 
-      /*
-      ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
-      ierr = VecNorm(a,NORM_1,&sum); CHKERRQ(ierr);
-      ierr = VecNorm(a,NORM_2,&norm); CHKERRQ(ierr);
-      */
+      ierr = VecDotBegin(U,a,&dot); CHKERRQ(ierr);
+      ierr = VecNormBegin(a,NORM_1,&sum); CHKERRQ(ierr);
+      ierr = VecNormBegin(a,NORM_2,&norm); CHKERRQ(ierr);
+      ierr = VecDotEnd(U,a,&dot); CHKERRQ(ierr);
+      ierr = VecNormEnd(a,NORM_1,&sum); CHKERRQ(ierr);
+      ierr = VecNormEnd(a,NORM_2,&norm); CHKERRQ(ierr);
 
-     /*
-        Call the Seq Vector routines and then do a single reduction 
-        to reduce the number of communications required
-     */
-   
-#if !defined(USE_PETSC_COMPLEX)
-     PLogEventBegin(VEC_Dot,U,a,0,0);
-     ierr = VecDot_Seq(U,a,ovalues); CHKERRQ(ierr);
-     PLogEventEnd(VEC_Dot,U,a,0,0);
-     PLogEventBegin(VEC_Norm,a,0,0,0);
-     ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
-     ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
-     ovalues[2] = ovalues[2]*ovalues[2];
-     MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm );
-     dot = values[0]; sum = values[1]; norm = sqrt(values[2]);
-     PLogEventEnd(VEC_Norm,a,0,0,0);
-#else
-     {
-       Scalar cvalues[3],covalues[3];
-   
-       PLogEventBegin(VEC_Dot,U,a,0,0);
-       ierr = VecDot_Seq(U,a,covalues); CHKERRQ(ierr);
-       PLogEventEnd(VEC_Dot,U,a,0,0);
-       PLogEventBegin(VEC_Norm,a,0,0,0);
-       ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
-       ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
-       covalues[1] = ovalues[1];
-       covalues[2] = ovalues[2]*ovalues[2];
-       MPI_Allreduce(covalues,cvalues,6,MPI_DOUBLE,MPI_SUM,comm );
-       dot = cvalues[0]; sum = PetscReal(cvalues[1]); norm = sqrt(PetscReal(cvalues[2]));
-       PLogEventEnd(VEC_Norm,a,0,0,0);
-     }
-#endif
 
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}

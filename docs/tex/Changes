@@ -21,6 +21,8 @@ add to it).
      vectors and matrices for unstructured grid problems; just indicate those node numbers with 
      negative numbers.
 
+     Added VecDotBegin(), VecDotEnd(), VecNormBegin(), VecNormEnd()
+
   MAT
 
     Fixed bugs in MatReorderForNonzeroDiagonal() and made it more
