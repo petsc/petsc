@@ -17,6 +17,7 @@ chmod ug+w ~/petsc.tar.Z
 autoftp joshua.math.ucla.edu bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
 autoftp h4p.llnl.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
 autoftp crabcake.larc.nasa.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
+autoftp  brazos.pe.utexas.edu bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
 #
 #  Wait four hours then retrieve the results
 #
@@ -24,6 +25,7 @@ sleep 13600
 autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/petsc/petsc/maint/solaris.log >>& ftp.log
 autoftp h4p.llnl.gov bsmith get buildtest.log /home/petsc/petsc/maint/t3d.log >>& ftp.log
 autoftp crabcake.larc.nasa.gov bsmith get buildtest.log /home/petsc/petsc/maint/paragon.log >>& ftp.log
+autoftp brazos.pe.utexas.edu bsmith get buildtest.log /home/petsc/petsc/maint/alpha.log >>& ftp.log
 echo "ftp logging complete: `date` " >> ftp.log
 
 
