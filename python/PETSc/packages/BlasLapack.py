@@ -174,6 +174,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('You set a value for --with-blas-lapack-dir=<dir>, but '+self.framework.argDB['with-blas-lapack-dir']+' cannot be used\n')
     # IRIX locations
     yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a')
+    yield ('Another IRIX Mathematics library', None, 'libscs.a')    
     # IBM ESSL locations
     yield ('IBM ESSL Mathematics library', None, 'libessl.a')
     # Portland group compiler blas and lapack

@@ -124,6 +124,19 @@ class Configure(config.base.Configure):
           self.framework.log.write('MPI cannot link Fortran using MPI_Init((), but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
           self.popLanguage()
           return 0
+      if not self.checkMPILink('', '          include \'mpif.h\'\n          call MPI_Init(ierr)\n'):
+        self.framework.log.write('MPI cannot locate Fortran includes, but can find the MPI libraries\n')
+        if not self.include:
+          # get around bug in g77 on SGI IA64 systems
+          savetmp = self.framework.argDB['CPPFLAGS']
+          self.framework.argDB['CPPFLAGS'] += ' -I/usr/include'
+          if self.checkMPILink('', '          include \'mpif.h\'\n          call MPI_Init(ierr)\n'):
+            self.popLanguage()
+            self.framework.log.write('Added /usr/include to search path to find MPI includes from Fortran. Succeeded\n')
+            return 1
+          self.popLanguage()
+          self.framework.argDB['CPPFLAGS'] = savetmp
+        return 0  
       # Also do Satish check for broken mpif90 (MPICH)
       # 1) bug.F
       #       program main
