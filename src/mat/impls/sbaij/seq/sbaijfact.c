@@ -444,42 +444,42 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
       case 1:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
+        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
         break;
       case 2:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_2_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
         break;
       case 3:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_3_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
+        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:sing special in-place natural ordering factor and solve BS=3\n");
         break; 
       case 4:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_4_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
+        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
         break;
       case 5:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_5_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
         break;
       case 6: 
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_6_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
         break; 
       case 7:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
         B->ops->solve           = MatSolve_SeqSBAIJ_7_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
       break; 
       default:
         B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering; 
         B->ops->solve           = MatSolve_SeqSBAIJ_N_NaturalOrdering;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n");
+        PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS>7\n");
       break; 
     }
   } 
@@ -1135,11 +1135,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
     for (k = 0; k<mbs; k++){
       /*initialize k-th row by the perm[k]-th row of A */
       jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
-      PetscScalar *baval = ba + bi[k];
+      bval = ba + bi[k];
       for (j = jmin; j < jmax; j++){
         col = rip[aj[j]];
         rtmp[col] = aa[j];
-        *baval++  = 0.0; /* for in-place factorization */
+        *bval++  = 0.0; /* for in-place factorization */
       } 
       /* damp the diagonal of the matrix */
       if (ndamp||nshift) rtmp[k] += damping+shift_amount; 
