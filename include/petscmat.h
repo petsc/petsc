@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.205 2000/09/02 02:50:55 bsmith Exp balay $ */
+/* $Id: petscmat.h,v 1.206 2000/09/05 19:39:39 balay Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -279,11 +279,17 @@ typedef struct {
 } MatILUInfo;
 
 typedef struct {
-  double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
   double     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
   double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
   double     damp;    /* if factorization fails, damp until successful */
 } MatLUInfo;
+
+typedef struct {
+  double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
+  double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
+  double     damp;    /* if factorization fails, damp until successful */
+} MatCholeskyInfo;
 
 EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
 EXTERN int MatILUFactor(Mat,IS,IS,MatILUInfo*);
