@@ -72,17 +72,18 @@ class Configure:
         setattr(self, name, value)
     return
 
-  def getExecutable(self, name, path = '', getFullPath = 0, comment = ''):
+  def getExecutable(self, name, path = '', getFullPath = 0, comment = '', resultName = ''):
     if not path: path = os.environ['PATH']
+    if not resultName: resultName = name
     for dir in path.split(':'):
       prog = os.path.join(dir, name)
 
       if os.path.isfile(prog) and os.access(prog, os.X_OK):
         if getFullPath:
-          setattr(self, name, os.path.abspath(prog))
+          setattr(self, resultName, os.path.abspath(prog))
         else:
-          setattr(self, name, name)
-        self.addSubstitution(name.upper(), getattr(self, name), comment = comment)
+          setattr(self, resultName, name)
+        self.addSubstitution(resultName.upper(), getattr(self, resultName), comment = comment)
         break
     return
 
@@ -171,7 +172,9 @@ class Configure:
         codeStr += '\nint main() {\n'+body+';\n  return 0;\n}\n'
     elif language == 'F77':
       if not body is None:
-        codeStr = '      program main\n'+body+'\n      end'
+        codeStr = '      program main\n'+body+'\n      end\n'
+      else:
+        codeStr = includes
     else:
       raise RuntimeError('Invalid language: '+language)
     return codeStr
@@ -238,7 +241,9 @@ class Configure:
     if len(ready[0]):
       # Log failure of linker
       out = ready[0][0].read()
-      if out: self.framework.log.write('ERR (linker): '+out)
+      if out:
+        self.framework.log.write('ERR (linker): '+out)
+        self.framework.log.write(' in '+self.linkerCmd)
     err.close()
     output.close()
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
@@ -421,11 +426,15 @@ class Framework(Configure):
       return self.subst[name]
     else:
       for child in self.children:
-        if not hasattr(child, 'subst') or not isinstance(child.defines, dict): continue
-        if prefix is None: prefix = self.getSubstitutionPrefix(child)
-        if prefix:         prefix = prefix+'_'
-        if prefix and name.startswith(prefix):
-          childName = name.replace(prefix, '', 1)
+        if not hasattr(child, 'subst') or not isinstance(child.defines, dict):
+          continue
+        if prefix is None:
+          substPrefix = self.getSubstitutionPrefix(child)
+        else:
+          substPrefix = prefix
+        if substPrefix: substPrefix = substPrefix+'_'
+        if substPrefix and name.startswith(substPrefix):
+          childName = name.replace(substPrefix, '', 1)
         else:
           childName = name
         if child.subst.has_key(childName):
@@ -435,6 +444,8 @@ class Framework(Configure):
   def substituteFile(self, inName, outName):
     '''Carry out substitution on the file "inName", creating "outName"'''
     inFile  = file(inName)
+    if not os.path.exists(os.path.dirname(outName)):
+      os.makedirs(os.path.dirname(outName))
     outFile = file(outName, 'w')
     for line in inFile.xreadlines():
       outFile.write(self.substRE.sub(self.substituteName, line))
@@ -487,10 +498,21 @@ class Framework(Configure):
   def outputHeader(self, name):
     '''Write the configuration header'''
     f = file(name, 'w')
+    guard = 'INCLUDED_'+os.path.basename(name).upper().replace('.', '_')
+    f.write('#if !defined('+guard+')\n')
+    f.write('#define '+guard+'\n\n')
     self.outputDefines(f, self)
     for child in self.children:
       self.outputDefines(f, child)
+    f.write('#endif /* '+guard+' */\n')
     f.close()
+    return
+
+  def checkCompilers(self):
+    import config.compilers
+    self.compilers = config.compilers.Configure(self)
+    # It is important to check the compilers first
+    self.children.insert(0, self.compilers)
     return
 
   def checkTypes(self):
@@ -511,11 +533,10 @@ class Framework(Configure):
     self.children.append(self.functions)
     return
 
-  def checkCompilers(self):
-    import config.compilers
-    self.compilers = config.compilers.Configure(self)
-    # It is important to check the compilers first
-    self.children.insert(0, self.compilers)
+  def checkLibraries(self, libraries = []):
+    import config.libraries
+    self.libraries = config.libraries.Configure(self, libraries)
+    self.children.append(self.libraries)
     return
 
   def configure(self):
@@ -528,9 +549,9 @@ class Framework(Configure):
 
 if __name__ == '__main__':
   framework = Framework(sys.argv[1:])
+  framework.argDB['LIBS'] = ''
   conf      = PETSc.Configure.Configure(framework)
   framework.children.append(conf)
-  framework.addSubstitutionFile('matt')
   framework.configure()
   #framework.compilers.configure()
   #conf.configure()
