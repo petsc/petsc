@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.38 1997/10/09 17:22:18 balay Exp balay $ 
+# $Id: makefile,v 1.39 1997/10/09 17:54:04 balay Exp balay $ 
 
 ALL: lib
 
@@ -19,7 +19,7 @@ SOURCEC	 = aodataf.c aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c 
         petscpvodef.c plogf.c plogmpef.c posindepf.c preconf.c psleepf.c \
         richscalef.c shellf.c signalf.c slesf.c snesf.c snesmfjf.c \
         snesutf.c sorf.c sortdf.c sortif.c sortipf.c stridef.c \
-        trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c \
+        trf.c tsf.c tsfdf.c tsregf.c umlsf.c umtrf.c vectorf.c \
         viewf.c vinvf.c vrmlmeshf.c vscatf.c zerodiagf.c
 
 
@@ -40,7 +40,7 @@ OBJSC	 = aodataf.o aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgtypef.o \
         petscpvodef.o plogf.o plogmpef.o posindepf.o preconf.o psleepf.o \
         richscalef.o shellf.o signalf.o slesf.o snesf.o snesmfjf.o \
         snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o \
-        trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o \
+        trf.o tsf.o tsfdf.o tsregf.o umlsf.o umtrf.o vectorf.o \
         viewf.o vinvf.o vrmlmeshf.o vscatf.o zerodiagf.o
 
 
