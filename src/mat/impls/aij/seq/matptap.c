@@ -193,7 +193,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   Mat_MPIAIJ     *a=(Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ     *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat            C_seq;
-  Mat_SeqAIJ     *c,*p_loc,*p_oth; 
+  Mat_SeqAIJ     *p_loc,*p_oth; 
   PetscInt       *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,*apj,*apjdense,cstart=a->cstart,cend=a->cend,col;
   PetscInt       *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pjj;
   PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
