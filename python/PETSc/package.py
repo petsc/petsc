@@ -147,6 +147,8 @@ class Package(config.base.Configure):
       self.framework.log.write('Did not located already downloaded '+self.name+'\n')
       self.downLoad()
       return self.getDir()
+    if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
+      os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
 
   def configureLibrary(self):

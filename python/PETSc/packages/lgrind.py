@@ -15,8 +15,6 @@ class Configure(PETSc.package.Package):
     lgrindDir = self.getDir()
     # Get the LGRIND directories
     installDir = os.path.join(lgrindDir, self.arch.arch)
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
     if os.path.isfile(os.path.join(installDir,'lgrind')) or os.path.isfile(os.path.join(installDir,'lgrind.exe')):
       self.framework.log.write('Found Lgrind executable; skipping compile\n')
       lgrindexe = os.path.join(installDir,'source','lgrind')
