@@ -11,7 +11,7 @@ def getMatlabPath():
     MATLABPATH = os.environ['MATLABPATH'].split(':')
   else:  
     MATLABPATH = []
-  argsDB = RDict.RDict(parentDirectory = os.path.dirname(sys.modules['RDict'].__file__))
+  argsDB = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))
   projects = argsDB['installedprojects']
   for p in projects:
     try:

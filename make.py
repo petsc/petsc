@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import user
 import bs
 import project
 
