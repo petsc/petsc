@@ -538,8 +538,8 @@ M*/
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
 #define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
 #define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
-#define DMMGGetUser(ctx,level)     ((ctx)[levels]->user)
-#define DMMGSetUser(ctx,level,usr) 0,(ctx)[levels]->user = usr
+#define DMMGGetUser(ctx,level)     ((ctx)[level]->user)
+#define DMMGSetUser(ctx,level,usr) 0,(ctx)[level]->user = usr
 #define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
 
 PETSC_EXTERN_CXX_END

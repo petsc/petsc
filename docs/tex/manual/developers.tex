@@ -29,13 +29,13 @@
 
 \begin{document}
 
-\ANLTitle{ALICE Component Developers Manual}{\em Satish Balay\\
+\ANLTitle{PETSc Developers Manual}{\em Satish Balay\\
 William Gropp\\ Lois Curfman McInnes\\ Barry Smith\\
 \hspace{0.3in}\\
 Mathematics and Computer Science Division \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 2.0.29}}
+{\rm This document is intended for use with PETSc 2.2.0}}
 {\Large This is not yet an official ANL document}{1998}
 
 \newpage
@@ -60,16 +60,16 @@ http://www.mcs.anl.gov/petsc
 \noindent {\bf Abstract:} 
 
 \medskip \medskip
-The Advanced Large-Scale Integrated Computational Environment (ALICE) is 
+PETSc is 
 a set of extensible software libraries for scientific computation.
-ALICE is designed using a component-based object-oriented
+PETSc is designed using a component-based object-oriented
 architecture. This means that libraries consist of {\em objects} that
 have a certain, defined functionality. This document defines how these
 objects are implemented.
 
-This manual discusses the ALICE component library design and describes
-how to develop new library codes that are compatible with other ALICE components 
-including PETSc 2.0.
+This manual discusses the PETSc component library design and describes
+how to develop new library codes that are compatible with other PETSc components 
+including PETSc 2.2.
 The idea is not to develop one massive library that everyone shoves code 
 into; rather, to develop an architecture that allows many people
 to (as painlessly as possible) contribute (and maintain) their own libraries,
@@ -83,7 +83,7 @@ manual, and have access to PETSc source code and documentation
 
 \vspace{1cm}
 
-This is the first draft of the ALICE developers manual;
+This is the first draft of the PETSc developers manual;
 therefore, it is very sketchy and incomplete. Please
 direct all comments and questions regarding PETSc design and
 development to {\tt petsc-developers@mcs.anl.gov}.  Note that all {\em
@@ -94,8 +94,7 @@ The PETSc team is part of a larger group (mostly at the DOE labs)
 funded by the DOE2000 initiative to develop a Common Component
 Architecture (CCA), http://www.... In addition, we are involved in a
 related DOE lab initiative to develop a standard object interface for
-scalable linear solvers, the Equation Solver Interface, ESI
-http://www..  Already as a result of these efforts we have modified
+scalable linear solvers. Already as a result of these efforts we have modified
 the PETSc software design and will continue to evolve PETSc as these
 initiatives progress. 
 
@@ -115,10 +114,10 @@ initiatives progress.
 \newpage
 
 % -----------------------------------------------------------------------------------
-\chapter{The ALICE Kernel}
+\chapter{The PETSc Kernel}
 \label{chapter:kernel}
 PETSc provides a variety of basic services for writing scalable, component 
-based libraries; these are referred to as the ALICE kernel. The source
+based libraries; these are referred to as the PETSc kernel. The source
 code for the kernel is in {\tt src/sys/src}. It contains systematic support for
 \begin{itemize}
   \item error handling
@@ -133,7 +132,7 @@ Each of these is discussed in a section below.
 % -------------------------------------------------------------------------------
 \section{Implementation of Error Handling}
 
-ALICE  uses a ``call error handler; then (depending on result) return
+PETSc  uses a ``call error handler; then (depending on result) return
 error code'' model when problems are detected in the running code. 
 
 The public include file for error handling is {\tt include/petscerror.h}, the 
@@ -254,12 +253,11 @@ PETSc provides several default error handlers
 
 \subsection{Error Codes}
 
-The PETSc error handler take two error codes: a generic and a specific.
+The PETSc error handler take a generic error code.
 The generic error codes are defined in {\tt include/petscerror.h}, the same generic
 error code would be used many times in the libraries. For example the 
 generic error code {\tt PETSC\_ERR\_MEM} is used whenever requested memory allocation
-is not available. Specific error codes are not yet used, it is intended that 
-these be unique integers, one for each error condition in the entire library.
+is not available. 
 
 \subsection{Detailed Error Messages}
 In a modern parallel component oriented application code it does not make sense
@@ -281,7 +279,7 @@ be printed with printf() or fprintf() rather than should be printed with
 \label{sec:profimpl}
 
 This section provides details about the implementation of event
-logging and profiling within the ALICE kernel.
+logging and profiling within the PETSc kernel.
 The interface for profiling in PETSc is contained in the file 
 {\tt \$\{PETSC\_DIR\}/include/petsclog.h}. The source code for the profile logging
 is in {\tt src/sys/src/plog/}.
@@ -348,7 +346,7 @@ It is possible to set new profile handlers using the commands:
 \chapter{Basic Object Design}
 \label{chapter:design}
 
-ALICE is designed using strong data encapsulation.  Hence,
+PETSc is designed using strong data encapsulation.  Hence,
 any collection of data (for instance, a sparse matrix) is stored in 
 a way that is completely private from the application code. The application 
 code can manipulate the data only through a well-defined interface, as it 
@@ -362,7 +360,7 @@ implemented using C {\tt struct}s, that contain the data and function pointers
 for operations on the data (much like virtual functions in classes in C++). 
 Each components consists of three parts: 
 \begin{itemize}
-\item a (small) common part shared by all ALICE compatible libraries.
+\item a (small) common part shared by all PETSc compatible libraries.
 \item another common part shared by all PETSc implementations of the component and
 \item a private part used by only one particular implementation written in PETSc.
 \end{itemize}
@@ -372,7 +370,7 @@ data fields,including matrix size; while a particular matrix implementation in P
 (say compressed sparse row) has its own data fields for storing the actual
 matrix values and sparsity pattern. This will be explained in more detail
 in the following sections. People providing new component implementations {\bf must}
-use the (small) ALICE common
+use the (small) PETSc common
 part, but need not use the PETSc common part.
 
 We will use {\tt <component>\_<implementation>} to denote the actual source code and 
@@ -430,11 +428,11 @@ conventions are used to simplify code maintenance.
 
 \section{Common Object Header}
 
-All ALICE/PETSc objects have the following common header structures.
+All PETSc/PETSc objects have the following common header structures.
 
 \begin{verbatim}
 
-/* Function table common to all ALICE compatible components */
+/* Function table common to all PETSc compatible components */
 
 typedef struct {
    int (*getcomm)(PetscObject,MPI_Comm *);
@@ -449,7 +447,7 @@ typedef struct {
    int (*querylanguage(PetscObject,PetscLanguage,void **);
 } PetscOps;
 
-/* Data structure header common to all ALICE compatible components */
+/* Data structure header common to all PETSc compatible components */
 
 struct _p_<component> {
   int              cookie;                                  
@@ -458,7 +456,7 @@ struct _p_<component> {
   OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
 };
 
-/* Data structure header common to all PETSc components; but not all ALICE components */
+/* Data structure header common to all PETSc components; but not all PETSc components */
 
 struct _p_<component> {
   int              cookie;                                  
@@ -488,7 +486,7 @@ For example, the PETSc vector component object looks like
 
 \begin{verbatim}
 
-/* Function table common to all ALICE compatible vector objects */
+/* Function table common to all PETSc compatible vector objects */
 
 typedef struct _VecOps* VecOps;
 struct _VecOps {
@@ -565,7 +563,7 @@ specified object.
 
 \section{Common Object Functions}
 
-We now discuss the specific functions in the ALICE common function table.
+We now discuss the specific functions in the PETSc common function table.
 
 \begin{itemize}
 \item {\tt getcomm(PetscObject,MPI\_Comm *)} obtains the MPI communicator associated
@@ -623,8 +621,8 @@ We now discuss the specific functions in the ALICE common function table.
 
 \end{itemize}
 
-Since the object composition allows one to {\bf only} compose ALICE objects
-with ALICE objects rather than any arbitrary pointer, PETsc provides
+Since the object composition allows one to {\bf only} compose PETSc objects
+with PETSc objects rather than any arbitrary pointer, PETsc provides
 the convenience object {\tt PetscObjectContainer}, created with the
 routine {\tt PetscObjectContainerCreate(MPI\_Comm,PetscObjectContainer)}
 to allow one to wrap any kind of data into a PETSc object that can then be
@@ -635,7 +633,7 @@ composed with a PETSc object.
 
 This sections discusses how PETSc implements the {\tt compose()}, {\tt query()}, {\tt
 composefunction()}, and {\tt queryfunction()} functions for its object implementations. 
-Other ALICE compatible component implementations are free to manage these functions in any 
+Other PETSc compatible component implementations are free to manage these functions in any 
 manner; but generally they would use the PETSc defaults so that the library writer does
 not have to ``reinvent the wheel.''
 
@@ -803,7 +801,7 @@ composed into our C objects, but we hope to provide them someday.
 
 \chapter{Mimimal Component Standards}
 This chapter discusses the miminal functionality and format required of any 
-component that is compatible with ALICE. 
+component that is compatible with PETSc. 
 
 % -----------------------------------------------------------------------------------
 \chapter{PetscObjects}
@@ -832,7 +830,7 @@ The base PETSc PC object is defined in the {\tt src/ksp/pc/pcimpl.h} include fil
 A carefully commented implementation of a PC object can be found in 
 {\tt src/ksp/pc/impls/jacobi/jacobi.c}. 
 
-\subsection{Krylov Solvers}
+\subsection{Krylov Solvers: KSP}
 The base PETSc KSP object is defined in the {\tt src/ksp/ksp/kspimpl.h} include file. 
 A carefully commented implementation of a KSP object can be found in 
 {\tt src/ksp/ksp/impls/cg/cg.c}. 
@@ -848,7 +846,7 @@ preconditioning (PC) method.
 \chapter{Style Guide}
 
 The PETSc team uses certain conventions to make our source code consistent. Groups
-developing components compatible with ALICE are, of course, free to organize their
+developing components compatible with PETSc are, of course, free to organize their
 own source code anyway they like.
 
 \section{Names}
@@ -860,8 +858,7 @@ We use several conventions:
       which is capitalized, for example {\tt KSPSolve()} and 
       {\tt MatGetOrdering()}.
 \item All enum elements and macro variables are capitalized. When
-      they consist of several
-      complete words, there is an underscore between each word.
+      they consist of several complete words, there is an underscore between each word.
 \item Functions that are private to PETSc (not callable by the 
       application code) either
       \begin{itemize}
@@ -987,6 +984,8 @@ instead write
     ierr = func(a,22.0);CHKERRQ(ierr);
 \end{verbatim}
 \item Do not use the {\em register} directive.
+\item Do not use {\em if (rank == 0)} or {\em if (v == PETSC\_NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)} 
+instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg)}.
 \end{itemize}
 
 \section{Option Names}

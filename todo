@@ -48,6 +48,10 @@ PC/Mat
 
   MatGetRow/ColumnIJ should have const for arrays that are returned
 
+DMMG
+
+   Add manual pages for DMMGGet....
+
 General
 
   replace 1 in calls to SETERRQ**() with appropriate error code
