@@ -61,6 +61,7 @@ SGI Power Challenge (IRIX64):
 ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
    See the file ~mcinnes/README on crabcake for up-to-date info on
    the paragon's quirks: 
+      - must do "unsetenv TERM" so that make does'nt crash
       - unalias doesn't work
       - must use make -e PETSC_DIR=<whatever>
       - for BlockSolve95 muse use 
