@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.43 2000/06/06 22:48:47 balay Exp balay $ 
+# $Id: buildntdist,v 1.44 2000/06/07 17:51:37 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -64,7 +64,7 @@ find $tmpdir/petscnt -type d -name output -exec /bin/rm -rf {} \;
 /bin/cp -f bmake/win32/req.mak src/sys/src/viewer/impls/socket/matlab/makefile
 /bin/cp -f bmake/win32/req.mak src/sys/src/viewer/impls/ams/makefile
 /bin/cp -f bmake/win32/req.mak src/sys/src/draw/impls/x/makefile
-/bin/cp -f bmake/win32/req.mak src/contrib/pc/spai/makefile
+/bin/cp -f bmake/win32/req.mak src/sles/pc/impls/spai/makefile
 /bin/cp -f bmake/win32/req.mak src/ts/impls/implicit/pvode/makefile
 /bin/cp -f bmake/win32/req.mak src/sys/src/matlabengine/makefile
 #
