@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.19 1996/04/15 20:50:51 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.20 1996/04/19 20:42:52 bsmith Exp bsmith $";
 #endif
 
-#include "zpetsc.h"
+#include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
 #include "vec.h"
 #include "pinclude/petscfix.h"
@@ -20,6 +20,9 @@ static char vcid[] = "$Id: zsys.c,v 1.19 1996/04/15 20:50:51 balay Exp bsmith $"
 #define petscrandomdestroy_   PETSCRANDOMDESTROY
 #define petscrandomgetvalue_  PETSCRANDOMGETVALUE
 #define vecsetrandom_         VECSETRANDOM
+#define petsctrvalid_         PETSCTRVALID
+#define petscdoubleview_      PETSCDOUBLEVIEW
+#define petscintview_         PETSCINTVIEW
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscattachdebugger_  petscattachdebugger
 #define petscobjectsetname_   petscobjectsetname
@@ -33,11 +36,19 @@ static char vcid[] = "$Id: zsys.c,v 1.19 1996/04/15 20:50:51 balay Exp bsmith $"
 #define petscrandomdestroy_   petscrandomdestroy
 #define petscrandomgetvalue_  petscrandomgetvalue
 #define vecsetrandom_         vecsetrandom
+#define petsctrvalid_         petsctrvalid
+#define petscdoubleview_      petscdoubleview
+#define petscintview_         petscintview
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void petsctrvalid_(int *__ierr)
+{
+  *__ierr = PetscTrValid(0,"Unknown Fortran");
+}
 
 void petscrandomgetvalue_(PetscRandom r,Scalar *val, int *__ierr )
 {
@@ -105,7 +116,11 @@ double petscgettime_()
 
 double  petscgetflops_()
 {
+#if defined(PETSC_LOG)
   return PetscGetFlops();
+#else
+  return 0.0;
+#endif
 }
 
 void petscrandomcreate_(MPI_Comm comm,PetscRandomType *type,PetscRandom *r,
@@ -122,21 +137,30 @@ void petscrandomdestroy_(PetscRandom r, int *__ierr ){
    MPIR_RmPointer(*(int*)(r)); 
 }
 
+void petscdoubleview_(int *n,double *d,int *viwer,int *__ierr)
+{
+  *__ierr = PetscDoubleView(*n,d,0);
+}
+
+void petscintview_(int *n,int *d,int *viwer,int *__ierr)
+{
+  *__ierr = PetscIntView(*n,d,0);
+}
+
 #if defined(__cplusplus)
 }
 #endif
 
 /*
-    This is for when one is compiling with the Edenburgh version of
-   of MPI which uses integers for the MPI objects, hence the PETSc 
-   objects require routines provided here to do the conversion between
-   C pointers and Fortran integers.
+    This is for when one is compiling with versions of MPI that use
+   integers for the MPI objects, hence the PETSc objects require routines 
+   provided here to do the conversion between C pointers and Fortran integers.
 */
-#if defined(_T3DMPI_RELEASE_ID)
+#if defined(USES_INT_MPI_COMM) && defined(HAVE_64BITS)
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: zsys.c,v 1.19 1996/04/15 20:50:51 balay Exp bsmith $
+ *  $Id: zsys.c,v 1.20 1996/04/19 20:42:52 bsmith Exp bsmith $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.24 1996/04/18 18:15:58 balay Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.25 1996/06/12 14:03:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: zoptions.c,v 1.24 1996/04/18 18:15:58 balay Exp bsmit
   between Fortran and C.
 */
 
-#include "zpetsc.h" 
+#include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
 #include <stdio.h>
 #include "pinclude/pviewer.h"
@@ -41,7 +41,7 @@ extern "C" {
 
 /* ---------------------------------------------------------------------*/
 
-void optionssetvalue_(CHAR name,CHAR value,int *err, int len1,int len2)
+void optionssetvalue_(CHAR name,CHAR value,int *__ierr, int len1,int len2)
 {
   char *c1,*c2;
   int  ierr;
@@ -50,10 +50,10 @@ void optionssetvalue_(CHAR name,CHAR value,int *err, int len1,int len2)
   ierr = OptionsSetValue(c1,c2);
   FREECHAR(name,c1);
   FREECHAR(value,c2);
-  *err = ierr;
+  *__ierr = ierr;
 }
 
-void optionshasname_(CHAR pre,CHAR name,int *flg,int *err,int len1,int len2){
+void optionshasname_(CHAR pre,CHAR name,int *flg,int *__ierr,int len1,int len2){
   char *c1,*c2;
   int  ierr;
 
@@ -62,10 +62,10 @@ void optionshasname_(CHAR pre,CHAR name,int *flg,int *err,int len1,int len2){
   ierr = OptionsHasName(c1,c2,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-  *err = ierr;
+  *__ierr = ierr;
 }
 
-void optionsgetint_(CHAR pre,CHAR name,int *ivalue,int *flg,int *err,int len1,int len2){
+void optionsgetint_(CHAR pre,CHAR name,int *ivalue,int *flg,int *__ierr,int len1,int len2){
   char *c1,*c2;
   int  ierr;
 
@@ -74,10 +74,10 @@ void optionsgetint_(CHAR pre,CHAR name,int *ivalue,int *flg,int *err,int len1,in
   ierr = OptionsGetInt(c1,c2,ivalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-  *err = ierr;
+  *__ierr = ierr;
 }
 
-void optionsgetdouble_(CHAR pre,CHAR name,double *dvalue,int *flg,int *err,
+void optionsgetdouble_(CHAR pre,CHAR name,double *dvalue,int *flg,int *__ierr,
                        int len1,int len2){
   char *c1,*c2;
   int  ierr;
@@ -87,11 +87,11 @@ void optionsgetdouble_(CHAR pre,CHAR name,double *dvalue,int *flg,int *err,
   ierr = OptionsGetDouble(c1,c2,dvalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-  *err = ierr;
+  *__ierr = ierr;
 }
 
 void optionsgetdoublearray_(CHAR pre,CHAR name,
-              double *dvalue,int *nmax,int *flg,int *err,int len1,int len2)
+              double *dvalue,int *nmax,int *flg,int *__ierr,int len1,int len2)
 {
   char *c1,*c2;
   int  ierr;
@@ -102,11 +102,11 @@ void optionsgetdoublearray_(CHAR pre,CHAR name,
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 
-  *err = ierr;
+  *__ierr = ierr;
 }
 
 void optionsgetintarray_(CHAR pre,CHAR name,int *dvalue,int *nmax,int *flg,
-                         int *err,int len1,int len2)
+                         int *__ierr,int len1,int len2)
 {
   char *c1,*c2;
   int  ierr;
@@ -117,11 +117,11 @@ void optionsgetintarray_(CHAR pre,CHAR name,int *dvalue,int *nmax,int *flg,
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 
-  *err = ierr;
+  *__ierr = ierr;
 }
 
 void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,
-                       int *err, int len1, int len2,int len){
+                       int *__ierr, int len1, int len2,int len){
   char *c1,*c2,*c3;
   int  ierr,len3;
 
@@ -139,7 +139,7 @@ void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 
-  *err = ierr;
+  *__ierr = ierr;
 }
 
 void petscgetarchtype_(CHAR str,int *__ierr,int len)
@@ -162,7 +162,7 @@ void petscgetarchtype_(CHAR str,int *__ierr,int len)
     for Fortran.
 */
 void   *PETSC_NULL_Fortran;
-char   *PETSC_NULL_CHAR_Fortran;
+char   *PETSC_NULL_CHARACTER_Fortran;
 
 int PetscIntAddressToFortran(int *base,int *addr)
 {
