@@ -1,4 +1,4 @@
-/*$Id: signal.c,v 1.72 2000/10/24 20:24:29 bsmith Exp bsmith $*/
+/*$Id: signal.c,v 1.73 2000/11/02 19:32:03 bsmith Exp bsmith $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -159,7 +159,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGSYS,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
-    signal(SIGBUS,  PetscSignalHandler_Private);
+    signal(SIGBUS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGQUIT)
     signal(SIGQUIT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
