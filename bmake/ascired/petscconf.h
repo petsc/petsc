@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.8 2000/11/02 22:17:32 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.9 2000/11/02 22:25:57 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -47,5 +47,7 @@
 
 #define PETSC_CANNOT_START_DEBUGGER
 #define PETSC_MISSING_GETPWUID
+
+#define PETSC_MISSING_SOCKETS
 
 #endif
