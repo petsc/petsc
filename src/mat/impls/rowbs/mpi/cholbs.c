@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.13 1995/07/15 20:02:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.14 1995/07/17 20:41:24 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -77,7 +77,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   } else {
     ierr = VecCopy( x, y ); CHKERRQ(ierr);
   }
-  VecGetArray(y,&ya);  
+  ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
 
 #if defined(PETSC_DEBUG)
   MLOG_ELM(mbs->procinfo->procset);
@@ -106,7 +106,10 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   if (!mbs->vecs_permscale) {
     ierr = VecPMult( y, mbs->diag, mbs->xwork );  CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
+    ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -122,10 +125,12 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
     ierr = VecPMult( mbs->diag, mbs->xwork, y ); CHKERRQ(ierr);
+    ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
   } else {
     ierr = VecCopy( x, y ); CHKERRQ(ierr);
   }
-  VecGetArray(y,&ya);  
+  ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
 
 #if defined(PETSC_DEBUG)
   MLOG_ELM(mbs->procinfo->procset);
@@ -140,6 +145,7 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   MLOG_ACC(MS_FORWARD);
   MLOG_ELM(mbs->procinfo->procset);
 #endif
+  ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
 
   return 0;
 }
@@ -171,6 +177,8 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecPMult( y, mbs->diag, mbs->xwork );  CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
   }
+  ierr = VecRestoreArray( y, &ya );   CHKERRQ(ierr);
+  ierr = VecRestoreArray( mbs->xwork, &xworka ); CHKERRQ(ierr);
   return 0;
 }
 
