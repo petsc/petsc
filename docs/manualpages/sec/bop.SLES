@@ -5,15 +5,14 @@
 <BODY BGCOLOR="FFFFFF">
 
 <H2> SLES Manual Pages
-[<A HREF="../../manual.html#Node46"> Chapter 4 of Users Manual</A>]
 </H2>
 
-Scalable Linear Equations Solvers (SLES)
-component, provides an easy-to-use interface to the combination of
+The Scalable Linear Equations Solvers (SLES)
+component provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the
 <A HREF="../KSP/index.html">KSP</A> and 
 <A HREF="../PC/index.html">PC</A> 
-components, respectively) and sequential direct solvers. 
+components, respectively) or a sequential direct solver. 
 SLES users can set various Krylov
 and preconditioning options at runtime via the options database (e.g., 
 <font face ="Courier">

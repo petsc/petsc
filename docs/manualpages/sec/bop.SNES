@@ -5,13 +5,26 @@
 <BODY BGCOLOR="FFFFFF">
 
 <H2> SNES Manual Pages
-[<A HREF="../../manual.html#Node46"> Chapter 5 of Users Manual</A>]
 </H2>
 
-Scalable Non-Linear Equations Solvers (SNES)
-component, provides an easy-to-use interface to Newton's method.
-SNES uses <A HREF="../SLES/index.html">SLES</A> for the solution of 
+The Scalable Nonlinear Equations Solvers (SNES) component provides an
+easy-to-use interface to Newton-based methods for solving systems of
+nonlinear equations.  SNES users can set various algorithmic options
+at runtime via the options database (e.g., specifying a trust region
+method via
+<font face ="Courier">
+-snes_type tr
+</font face>
+).  
+
+SNES internally employs <A HREF="../SLES/index.html">SLES</A> for the solution of 
 its linear systems.
+SNES users can also set SLES options directly in application
+codes by first extracting the SLES context from the SNES context via
+<A HREF="SNESGetSLES.html">SNESGetSLES()</A>
+and then directly calling various SLES (and KSP and PC) routines (e.g., 
+<A HREF="../PC/PCSetType.html">PCSetType()</A>
+).
 
 <P>
 

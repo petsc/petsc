@@ -7,5 +7,7 @@
 <H2> Vec Manual Pages 
 </H2>
 
-  PETSc vectors (Vec objects) are used to store all the field variables 
-in a PDE (or other) simulation. See <A HREF="../../../src/vec/examples/tutorials/ex1.c">src/vec/examples/tutorials/ex1.c</A> for sample usage.
+  PETSc vectors (Vec objects) are used to store the field variables 
+in PDE-based (or other) simulations. See <A HREF="../../../src/vec/examples/tutorials/ex1.c">src/vec/examples/tutorials/ex1.c</A> for sample usage.
+
+<P>

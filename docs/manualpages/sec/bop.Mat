@@ -5,8 +5,9 @@
 <BODY BGCOLOR="FFFFFF">
 
 <H2> Mat Manual Pages 
-[<A HREF="../../manual.html#Node15"> Chapter 3 of Users Manual</A>]
 </H2>
 
-  PETSc matrices (Mat objects) are used to store Jacobians and other sparse matrices
-in a PDE (or other) simulation. See <A HREF="../../../src/sles/examples/tutorials/ex1.c">src/mat/examples/tutorials/ex1.c</A> for sample usage.
+PETSc matrices (Mat objects) are used to store Jacobians and other sparse matrices
+in PDE-based (or other) simulations. 
+
+<P>

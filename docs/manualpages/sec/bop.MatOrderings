@@ -1,14 +1,14 @@
 <HTML>
 <HEAD>
-<TITLE>Orders, Colorings, and Partitionings Manual Pages</TITLE>
+<TITLE>Manual Pages for Matrix Orders, Colorings, and Partitionings</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
 <H2> Orders, Colorings, and Partitionings Manual Pages 
-[<A HREF="../../manual.html#Node15"> Chapter 3 of Users Manual</A>]
 </H2>
 
-  Tools for computing reorderings (for sparse matrix factorizations), colorings
+These tools compute reorderings (for sparse matrix factorizations), colorings
 (for computing Jacobians via finite differences) and partitionings (for parallel 
 decomposition of data).
 
+<P>

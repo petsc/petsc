@@ -5,7 +5,8 @@
 <BODY BGCOLOR="FFFFFF">
 
 <H2> Profiling Manual Pages 
-[<A HREF="../../manual.html#Node15"> Chapter 2 of Users Manual</A>]
 </H2>
 
-  PETSc provides a variety of methods of profiling applications that use the PETSc libraries.
+PETSc provides a variety of methods for profiling applications that use the PETSc libraries.
+
+<P>

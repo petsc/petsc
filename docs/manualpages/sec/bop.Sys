@@ -1,11 +1,12 @@
 <HTML>
 <HEAD>
-<TITLE>System routines Manual Pages</TITLE>
+<TITLE>Manual Pages for System Routines</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
 <H2> System Manual Pages 
-[<A HREF="../../manual.html#Node15"> Chapter ? of Users Manual</A>]
 </H2>
 
-  PETSc provides a variety of "system" level routines.
+PETSc provides a variety of "system" level routines.
+
+<P>

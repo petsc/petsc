@@ -5,7 +5,8 @@
 <BODY BGCOLOR="FFFFFF">
 
 <H2> Draw Manual Pages 
-[<A HREF="../../manual.html#Node15"> Chapter ?? of Users Manual</A>]
 </H2>
 
-  PETSc Draw routines are used to produce simple on-screen graphics.
+The Draw routines are used to produce simple on-screen graphics.
+
+<P>

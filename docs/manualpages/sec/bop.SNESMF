@@ -5,14 +5,11 @@
 <BODY BGCOLOR="FFFFFF">
 
 <H2> SNESMF Manual Pages
-[<A HREF="../../manual.html#Node46"> Chapter 5 of Users Manual</A>]
 </H2>
 
 The MatSNESMF routines provide a mechanism for solving nonlinear equations
 using <A HREF="../SNES/index.html">SNES</A> and "matrix-free" methods.
       
-
-
 <P>
 
 

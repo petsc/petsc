@@ -5,7 +5,6 @@
 <BODY BGCOLOR="FFFFFF">
 
 <H2> IS Manual Pages 
-[<A HREF="../../manual.html#Node15"> Chapter 2 of Users Manual</A>]
 </H2>
 
-  PETSc IS objects are used to index into vectors and matrices and to setup vector scatters.
+IS objects are used to index into vectors and matrices and to setup vector scatters.

@@ -5,11 +5,11 @@
 <BODY BGCOLOR="FFFFFF">
 
 <H2> PC Manual Pages 
-[<A HREF="../../manual.html#Node55"> Section 4.4 of Users Manual</A>]
 </H2>
 
+The
 <A HREF="../SLES/index.html">Scalable Linear Equations Solvers (SLES)</A>
-component, provides an easy-to-use interface to the combination of
+component provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the
 <A HREF="../KSP/index.html">KSP</A> and PC
 components, respectively) or a sequential direct solver.  
