@@ -127,6 +127,22 @@ dnl AC_SUBST(LAPACK_LIB)
 BLASLAPACK_LIB=$LAPACK_LIB $BLAS_LIB
 AC_SUBST(BLASLAPACK_LIB)
 dnl
+dnl Special features for the libraries
+AC_ARG_WITH(lapacktype,[ --with-lapacktype=kind - Specify the kind of the
+LAPACK library:
+       C (C linkage names)
+       ESSL (IBM ESSL)
+       MKL (Intel MKL_C)],lapacktype=$withval)
+dnl
+dnl Set the flags variables
+case "$lapacktype" ; 
+    C) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_C" ; break;;
+    ESSL) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_ESSL_ONLY" ; break;;
+    MKL) PETSC_BLASLAPACK_FLAGS="-DPETSC_BLASLAPACK_MKL_ONLY" ; break;;
+    *) break;;
+esac
+AC_SUBST(PETSC_BLASLAPACK_FLAGS)
+dnl
 AC_ARG_WITH(blocksolve,[ --with-blocksolve=library - Use BlockSolve95],BLOCKSOLVE_LIB=$withval)
 AC_ARG_WITH(blocksolve-inc,[ --with-blocksolve-inc=dir - Use BlockSolve95 (include path)],BLOCKSOLVE_INCLUDE=$withval)
 dnl
