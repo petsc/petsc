@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.36 1996/04/04 19:19:59 curfman Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.37 1996/11/07 15:11:26 bsmith Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -13,48 +13,50 @@
 struct _SNES {
   PETSCHEADER
 
-  /*  ----------------- User provided stuff ------------------------*/
-  void  *user;		            /* user context */
+  /*  ------------------------ User-provided stuff -------------------------------*/
+  void  *user;		                        /* user-defined context */
 
-  Vec   vec_sol,vec_sol_always;     /* pointer to solution */
-  Vec   vec_sol_update_always;      /* pointer to solution update */
+  Vec   vec_sol, vec_sol_always;                /* pointer to solution */
+  Vec   vec_sol_update_always;                  /* pointer to solution update */
 
-  int   (*computefunction)(SNES,Vec,Vec,void*);  /* function routine */
-  Vec   vec_func,vec_func_always;   /* Pointer to function or gradient */
-  void  *funP;                      /* user function context */
+  int   (*computefunction)(SNES,Vec,Vec,void*); /* function routine */
+  Vec   vec_func, vec_func_always;              /* pointer to function (or gradient) */
+  void  *funP;                                  /* user-defined function context */
 
   int   (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-  Mat   jacobian;                   /* Jacobian (or Hessian) matrix */
-  Mat   jacobian_pre;               /* preconditioner matrix */
-  void  *jacP;                      /* user Jacobian context */
-  SLES  sles;                       /* linear solver context */
+  Mat   jacobian;                               /* Jacobian (or Hessian) matrix */
+  Mat   jacobian_pre;                           /* preconditioner matrix */
+  void  *jacP;                                  /* user-defined Jacobian context */
+  SLES  sles;                                   /* linear solver context */
 
-  int   (*computescaling)(Vec,Vec,void*);  /* scaling routine */
-  Vec   scaling;                           /* scaling vector */
-  void  *scaP;                             /* scaling context */
+  int   (*computescaling)(Vec,Vec,void*);       /* scaling routine */
+  Vec   scaling;                                /* scaling vector */
+  void  *scaP;                                  /* scaling context */
 
-  /* ---------------- Petsc (or user) Provided stuff ---------------------*/
+  /* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/
+
   int   (*monitor[MAXSNESMONITORS])(SNES,int,double,void*); /* monitor routine */
-  void  *monitorcontext[MAXSNESMONITORS];		   /* monitor routine context */
-  int   numbermonitors;
-  int   (*converged)(SNES,double,double,double,void*); /* converg. routine */
-  void  *cnvP;		                   /* convergence context */
+  void  *monitorcontext[MAXSNESMONITORS];                   /* monitor context */
+  int   numbermonitors;                                     /* number of monitors */
+  int   (*converged)(SNES,double,double,double,void*);      /* convergence routine */
+  void  *cnvP;	                                            /* convergence context */
 
   /* --- Routines and data that are unique to each particular solver --- */
 
-  int   (*setup)(SNES);             /* sets up the nonlinear solver */
+  int   (*setup)(SNES);             /* routine to set up the nonlinear solver */
   int   setup_called;               /* true if setup has been called */
   int   (*solve)(SNES,int*);        /* actual nonlinear solver */
   int   (*setfromoptions)(SNES);    /* sets options from database */
   int   (*printhelp)(SNES,char*);   /* prints help info */
-  void  *data;                      /* implementationspecific data */
+  void  *data;                      /* implementation-specific data */
 
-  /* ------------------  Parameters -------------------------------------- */
+  /* --------------------------  Parameters -------------------------------------- */
 
   int      max_its;            /* max number of iterations */
-  int      max_funcs;          /* max number of function evals (NLM only) */
+  int      max_funcs;          /* max number of function evals */
   int      nfuncs;             /* number of function evaluations */
   int      iter;               /* global iteration number */
+  int      linear_its;         /* total number of linear solver iterations */
   double   norm;               /* residual norm of current iterate
 				  (or gradient norm of current iterate) */
   double   rtol;               /* relative tolerance */
@@ -62,18 +64,19 @@ struct _SNES {
   double   xtol;               /* relative tolerance in solution */
   double   trunctol;           /* truncation tolerance */
 
-  /* ------------------- Default work-area management ------------------ */
+  /* ------------------------ Default work-area management ---------------------- */
 
   int      nwork;              
   Vec      *work;
 
-  /* -------------------- Miscellaneous Information --------------------- */
+  /* ------------------------- Miscellaneous Information ------------------------ */
+
   double   *conv_hist;         /* If !0, stores residual norm (or
 				  gradient norm) at each iteration */
   int      conv_hist_len;      /* amount of convergence history space */
   int      nfailures;          /* number of unsuccessful step attempts */
 
-  /* ---------------------------- SUMS Data ---------------------------- */
+  /* ------------------  Data for unconstrained minimization  ------------------ */
   /* unconstrained minimization info ... For now we share everything else
      with the nonlinear equations code.  We should find a better way to deal 
      with this; the naming conventions are confusing.  Perhaps use unions? */
@@ -81,18 +84,19 @@ struct _SNES {
   int             (*computeumfunction)(SNES,Vec,double*,void*);
   double          fc;                /* function value */
   void            *umfunP;           /* function pointer */
-  SNESProblemType method_class;
+  SNESProblemType method_class;      /* type of solver */
   double          deltatol;          /* trust region convergence tolerance */
   double          fmin;              /* minimum tolerance for function value */
   int             set_method_called; /* flag indicating set_method has been called */
-/*
+
+ /*
    These are REALLY ugly and don't belong here, but since they must 
   be destroyed at the conclusion we have to put them somewhere.
  */
-  int      ksp_ewconv;        /* flag indicating Eisenstat-Walker KSP 
-                                 convergence criteria */
+  int      ksp_ewconv;        /* flag indicating use of Eisenstat-Walker
+                                 KSP convergence criteria */
   void     *kspconvctx;       /* KSP convergence context */
-  Mat      mfshell;           /* MatShell for matrix-free from command line */
+  Mat      mfshell;           /* MatShell for runtime matrix-free option */
 
   double   ttol;              /* used by default convergence test routine */
 
