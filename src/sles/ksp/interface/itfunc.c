@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.43 1996/01/09 15:40:27 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.44 1996/01/09 15:46:21 curfman Exp balay $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -53,11 +53,9 @@ int KSPSolve(KSP itP, int *its)
   int    ierr;
   Scalar zero = 0.0;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  PLogEventBegin(KSP_Solve,itP,itP->vec_rhs,itP->vec_sol,0);
   if (!itP->setupcalled){ ierr = KSPSetUp(itP); CHKERRQ(ierr);}
   if (itP->guess_zero) { VecSet(&zero,itP->vec_sol);}
   ierr = (*(itP)->solver)(itP,its); CHKERRQ(ierr);
-  PLogEventEnd(KSP_Solve,itP,itP->vec_rhs,itP->vec_sol,0);
   return 0;
 }
 
