@@ -1,12 +1,10 @@
-/*$Id: baijfact12.c,v 1.11 2001/04/07 19:09:57 bsmith Exp bsmith $*/
+/*$Id: baijfact12.c,v 1.12 2001/04/07 19:14:47 bsmith Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
-
-#if !defined(PETSC_HAVE_ICL_SSE)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
@@ -144,10 +142,11 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#else
+
+#if defined(PETSC_HAVE_ICL_SSE)
 
 #include "xmmintrin.h"
-EXTERN int Kernel_A_gets_inverse_A_4SSE(float*);
+EXTERN int Kernel_A_gets_inverse_A_4_ICL_SSE(float*);
 
 
 /*
@@ -155,8 +154,8 @@ EXTERN int Kernel_A_gets_inverse_A_4SSE(float*);
     Uses Intel Compiler Intrinsics to perform SSE operations
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
-int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_ICL_SSE"
+int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_ICL_SSE(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
@@ -323,7 +322,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_4SSE(w);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_4_ICL_SSE(w);CHKERRQ(ierr);
     /* Note: Using Kramer's rule, flop count below might be high */ 
   }
 

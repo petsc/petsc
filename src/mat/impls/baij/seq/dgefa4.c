@@ -1,4 +1,4 @@
-/*$Id: dgefa4.c,v 1.17 2001/04/07 15:40:47 bsmith Exp bsmith $*/
+/*$Id: dgefa4.c,v 1.18 2001/04/07 15:42:33 bsmith Exp buschelm $*/
 /*
        Inverts 4 by 4 matrix using partial pivoting.
 
@@ -150,12 +150,12 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
     PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_ICL_SSE
+#if defined(PETSC_HAVE_ICL_SSE)
 #include "xmmintrin.h"
 
 #undef __FUNCT__
-#define __FUNCT__ "Kernel_A_gets_inverse_A_4SSE"
-int Kernel_A_gets_inverse_A_4SSE(float *a)
+#define __FUNCT__ "Kernel_A_gets_inverse_A_4_ICL_SSE"
+int Kernel_A_gets_inverse_A_4_ICL_SSE(float *a)
 {
   /* 
      This routine is taken from Intel's Small Matrix Library.
