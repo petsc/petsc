@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.84 1998/04/13 17:36:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.85 1998/04/15 19:42:20 curfman Exp curfman $";
 #endif
 
 /*
@@ -924,8 +924,6 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
 
    Output Parameter:
 .  A - the matrix
-
-   Collective on MPI_Comm
 
    Notes:
    This routine is collective over all processes in the communicator, comm.  
