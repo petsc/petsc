@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.56 1998/04/30 16:37:50 balay Exp balay $ 
+# $Id: builddist,v 1.57 1998/06/03 23:37:04 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -54,8 +54,12 @@ cd /mcs/tmp/petsc
 # Create EMACS-TAGS and VI-TAGS
 make etags etags_examples ctags
 
+# Set the correct file permissions.
 cd /mcs/tmp
 chmod -R u+w petsc
+chmod -R a+r petsc
+find petsc -type d -name "*" -exec chmod a+x {} \;
+
 /bin/rm -f /mcs/tmp/petsc.tar
 if ($#argv == 1) then
   mv petsc petsc$version
