@@ -13,22 +13,11 @@ class Configure(PETSc.package.Package):
     self.includes     = ['party_lib.h']
     self.libdir       = ''
     self.includedir   = ''
+    self.liblist      = ['libparty.a']    
+    self.license      = 'http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html'
     return
 
-  def generateLibList(self,dir):         
-    alllibs = []
-    alllibs.append(os.path.join(dir,'libparty.a'))
-    return alllibs
-          
   def Install(self):
-    if not os.path.isfile(os.path.expanduser(os.path.join('~','.party_license'))):
-      print "**************************************************************************************************"
-      print "You must register to use party at http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html"
-      print "    Once you have registered, configure will continue and download and install party for you      "
-      print "**************************************************************************************************"
-      fd = open(os.path.expanduser(os.path.join('~','.party_license')),'w')
-      fd.close()
-
     # Get the PARTY directories
     partyDir = self.getDir()
     installDir = os.path.join(partyDir, self.arch.arch)

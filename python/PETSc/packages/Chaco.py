@@ -12,22 +12,11 @@ class Configure(PETSc.package.Package):
     self.functions    = ['interface']
     self.includes     = [] #Chaco does not have an include file
     self.includedir   = ''
+    self.liblist      = ['libchaco.a']
+    self.license      = 'http://www.cs.sandia.gov/~web9200/9200_download.html'
     return
 
-  def generateLibList(self,dir):
-    alllibs = []
-    alllibs.append(os.path.join(dir,'libchaco.a'))  
-    return alllibs
-          
   def Install(self):
-    if not os.path.isfile(os.path.expanduser(os.path.join('~','.chaco_license'))):
-      print "**************************************************************************************************"
-      print "You must register to use chaco at http://www.cs.sandia.gov/~web9200/9200_download.html"
-      print "    Once you have registered, configure will continue and download and install Chaco for you      "
-      print "**************************************************************************************************"
-      fd = open(os.path.expanduser(os.path.join('~','.chaco_license')),'w')
-      fd.close()
-    
     # Get the Chaco directories
     chacoDir = self.getDir()
     installDir = os.path.join(chacoDir, self.arch.arch)
@@ -46,7 +35,10 @@ class Configure(PETSc.package.Package):
     if not os.path.isfile(os.path.join(installDir,'make.inc')) or not (self.getChecksum(os.path.join(installDir,'make.inc')) == self.getChecksum(os.path.join(chacoDir,'make.inc'))):
       self.framework.log.write('Have to rebuild Chaco, make.inc != '+installDir+'/make.inc\n')
       try:
-        self.logPrint("Compiling chaco; this may take several minutes\n", debugSection='screen')
+        self.framework.logClear()
+        self.logPrint('=================================================================================', debugSection='screen')
+        self.logPrint("           Compiling chaco; this may take several minutes\n", debugSection='screen')
+        self.logPrint('=================================================================================', debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+chacoDir+';CHACO_INSTALL_DIR='+installDir+';export CHACO_INSTALL_DIR; cd code; make clean; make; cd '+installDir+'; mkdir '+self.libdir+'; ar cr '+self.libdir+'/libchaco.a `find ../code -name "*.o"`; cd '+self.libdir+'; ar d libchaco.a main.o', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on CHACO: '+str(e))

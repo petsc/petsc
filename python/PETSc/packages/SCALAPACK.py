@@ -16,13 +16,9 @@ class Configure(PETSc.package.Package):
     self.functions     = ['ssytrd']
     self.includes      = []
     self.libdir        = ''
+    self.lib           = ['libscalapack.a']
     return
 
-  def generateLibList(self,dir):
-    alllibs = []
-    alllibs.append(os.path.join(dir,'libscalapack.a'))
-    return alllibs
-          
   def Install(self):
     # Get the SCALAPACK directories
     scalapackDir = self.getDir()
