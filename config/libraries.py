@@ -272,7 +272,7 @@ int checkInit(void) {
       self.suffix = 'lib'
     else:
       self.suffix = 'a'
-    self.addSubstitution('LIB_SUFFIX', self.suffix)
+    self.addMakeMacro('AR_LIB_SUFFIX', self.suffix)
     self.framework.argDB['LIBS'] = oldLibs
     return
 
