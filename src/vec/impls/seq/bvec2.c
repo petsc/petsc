@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.123 1998/05/19 02:04:49 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.124 1998/05/19 15:32:56 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -313,6 +313,8 @@ int VecDestroy_Seq(Vec v)
   int     ierr;
 
   PetscFunctionBegin;
+  if (--v->refct > 0) PetscFunctionReturn(0);
+
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
@@ -321,12 +323,11 @@ int VecDestroy_Seq(Vec v)
   if (v->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
   }
+  ierr = MapDestroy(v->map);CHKERRQ(ierr);
   PLogObjectDestroy(v);
   PetscHeaderDestroy(v); 
   PetscFunctionReturn(0);
 }
-
-int VecDuplicate_Seq(Vec,Vec*);
 
 static struct _VecOps DvOps = {VecDuplicate_Seq, 
             VecDuplicateVecs_Default,
@@ -358,7 +359,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecSetValuesBlocked_Seq,
             VecDestroy_Seq,
             VecView_Seq,
-            VecPlaceArray_Seq};
+            VecPlaceArray_Seq,
+            VecGetMap_Seq};
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreateSeqWithArray"
@@ -379,6 +381,9 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
+
+   PETSc DOES NOT free the array when the vector is destroyed. The user should 
+   not free the array until the vector is destroyed.
 
 .keywords: vector, sequential, create, BLAS
 
@@ -409,6 +414,8 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   v->bs              = 0;
   s->array           = array;
   s->array_allocated = 0;
+
+  ierr = MapCreateMPI(comm,n,n,&v->map);CHKERRQ(ierr);
   *V = v; 
   PetscFunctionReturn(0);
 }
@@ -447,6 +454,15 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   ierr               = VecCreateSeqWithArray(comm,n,array,V);CHKERRQ(ierr);
   s                  = (Vec_Seq *) (*V)->data;
   s->array_allocated = array;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecGetMap_Seq"
+int VecGetMap_Seq(Vec win,Map *m)
+{
+  PetscFunctionBegin;
+  *m = win->map;
   PetscFunctionReturn(0);
 }
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.102 1998/05/08 16:12:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.103 1998/05/19 02:07:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -104,7 +104,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecSetValuesBlocked_MPI,
             VecDestroy_MPI,
             VecView_MPI,
-            VecPlaceArray_Seq};
+            VecPlaceArray_Seq,
+            VecGetMap_Seq};
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreateMPI_Private"
@@ -112,20 +113,19 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
     VecCreateMPI_Private - Basic create routine called by VecCreateMPI(), VecCreateGhost()
   and VecDuplicate_MPI() to reduce code duplication.
 */
-int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,int *owners,Scalar *array,Vec *vv)
+int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,Scalar *array,Map map,Vec *vv)
 {
   Vec     v;
   Vec_MPI *s;
-  int     ierr,mem,i;
+  int     ierr;
 
   PetscFunctionBegin;
   *vv = 0;
 
-  mem           = sizeof(Vec_MPI)+(size+1)*sizeof(int);
   PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,VECMPI,comm,VecDestroy,VecView);
   PLogObjectCreate(v);
-  PLogObjectMemory(v,mem + sizeof(struct _p_Vec) + (n+nghost+1)*sizeof(Scalar));
-  s              = (Vec_MPI *) PetscMalloc(mem); CHKPTRQ(s);
+  PLogObjectMemory(v, sizeof(Vec_MPI) + sizeof(struct _p_Vec) + (n+nghost+1)*sizeof(Scalar));
+  s              = (Vec_MPI *) PetscMalloc(sizeof(Vec_MPI)); CHKPTRQ(s);
   PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
   s->n           = n;
@@ -151,17 +151,7 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   s->localrep    = 0;
   s->localupdate = 0;
 
-  s->ownership   = (int *) (s + 1);
   s->insertmode  = NOT_SET_VALUES;
-  if (owners) {
-    PetscMemcpy(s->ownership,owners,(size+1)*sizeof(int));
-  } else {
-    ierr = MPI_Allgather(&n,1,MPI_INT,s->ownership+1,1,MPI_INT,comm);CHKERRQ(ierr);
-    s->ownership[0] = 0;
-    for (i=2; i<=size; i++ ) {
-      s->ownership[i] += s->ownership[i-1];
-    }
-  }
 
   /* initialize the stash */
   s->stash.donotstash = 0;
@@ -170,6 +160,13 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   s->stash.array      = (Scalar *) PetscMalloc(10*(sizeof(Scalar)+sizeof(int)));CHKPTRQ(s->stash.array);
   s->stash.idx        = (int *) (s->stash.array + 10);
   PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
+
+  if (!map) {
+    ierr = MapCreateMPI(comm,n,N,&v->map); CHKERRQ(ierr);
+  } else {
+    v->map = map;
+    ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);
+  }
 
   *vv = v;
   PetscFunctionReturn(0);
@@ -183,9 +180,9 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
    Collective on MPI_Comm
  
    Input Parameters:
-.  comm - the MPI communicator to use 
++  comm - the MPI communicator to use 
 .  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
-.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+-  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 
    Output Parameter:
 .  vv - the vector
@@ -216,7 +213,7 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
   if (n == PETSC_DECIDE) { 
     n = N/size + ((N % size) > rank);
   }
-  ierr = VecCreateMPI_Private(comm,n,N,0,size,rank,0,0,vv);CHKERRQ(ierr);
+  ierr = VecCreateMPI_Private(comm,n,N,0,size,rank,0,PETSC_NULL,vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -239,8 +236,12 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
+
    If use provided array is PETSC_NULL, then VecPlaceArray() can be used
    at a later atage to SET the array for storing the vector values.
+
+   PETSc DOES NOT free the array when the vector is destroyed. The user should 
+   not free the array until the vector is destroyed.
 
 .keywords: vector, create, MPI
 
@@ -264,7 +265,7 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
   if (n == PETSC_DECIDE) { 
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local size of vector");
   }
-  ierr =  VecCreateMPI_Private(comm,n,N,0,size,rank,0,array,vv);CHKERRQ(ierr);
+  ierr =  VecCreateMPI_Private(comm,n,N,0,size,rank,array,PETSC_NULL,vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -483,7 +484,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
     N = sum;
   }
   /* Create global representation */
-  ierr = VecCreateMPI_Private(comm,n,N,nghost,size,rank,0,array,vv); CHKERRQ(ierr);
+  ierr = VecCreateMPI_Private(comm,n,N,nghost,size,rank,array,PETSC_NULL,vv); CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
   ierr = VecGetArray(*vv,&array); CHKERRQ(ierr);
@@ -552,7 +553,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   Scalar  *array;
 
   PetscFunctionBegin;
-  ierr = VecCreateMPI_Private(win->comm,w->n,w->N,w->nghost,w->size,w->rank,w->ownership,0,v);CHKERRQ(ierr);
+  ierr = VecCreateMPI_Private(win->comm,w->n,w->N,w->nghost,w->size,w->rank,0,win->map,v);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
 
   /* save local representation of the parallel vector (and scatter) if it exists */
