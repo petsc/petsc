@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.101 2000/01/11 20:59:24 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.102 2000/04/09 04:34:23 bsmith Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -21,7 +21,7 @@ static char  Debugger[256];
 static int   Xterm     = 1;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSetDebugger" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSetDebugger" 
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
@@ -60,7 +60,7 @@ int PetscSetDebugger(const char debugger[],int xterm)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscAttachDebugger" 
+#define __FUNC__ /*<a name=""></a>*/"PetscAttachDebugger" 
 /*@C
    PetscAttachDebugger - Attaches the debugger to the running process.
 
@@ -287,7 +287,7 @@ int PetscAttachDebugger(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscAttachDebuggerErrorHandler" 
+#define __FUNC__ /*<a name=""></a>*/"PetscAttachDebuggerErrorHandler" 
 /*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches
    a debugger to a running process when an error is detected.
@@ -354,7 +354,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscStopForDebugger" 
+#define __FUNC__ /*<a name=""></a>*/"PetscStopForDebugger" 
 /*@C
    PetscStopForDebugger - Prints a message to the screen indicating how to
          attach to the process with the debugger and then waits for the 

@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.107 2000/02/02 20:07:56 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.108 2000/04/09 04:33:46 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "sys.h"
@@ -60,7 +60,7 @@ EXTERN_C_END
 
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerDestroy_Socket"></a>*/"ViewerDestroy_Socket" 
+#define __FUNC__ /*<a name="ViewerDestroy_Socket"></a>*/"ViewerDestroy_Socket" 
 static int ViewerDestroy_Socket(Viewer viewer)
 {
   Viewer_Socket *vmatlab = (Viewer_Socket*)viewer->data;
@@ -79,7 +79,7 @@ static int ViewerDestroy_Socket(Viewer viewer)
 
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="SOCKCall_Private"></a>*/"SOCKCall_Private" 
+#define __FUNC__ /*<a name="SOCKCall_Private"></a>*/"SOCKCall_Private" 
 int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
   struct sockaddr_in sa;
@@ -129,7 +129,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerSocketOpen"></a>*/"ViewerSocketOpen" 
+#define __FUNC__ /*<a name="ViewerSocketOpen"></a>*/"ViewerSocketOpen" 
 /*@C
    ViewerSocketOpen - Opens a connection to a Matlab or other socket
         based server.
@@ -189,7 +189,7 @@ int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerCreate_Socket"></a>*/"ViewerCreate_Socket" 
+#define __FUNC__ /*<a name="ViewerCreate_Socket"></a>*/"ViewerCreate_Socket" 
 int ViewerCreate_Socket(Viewer v)
 {
   Viewer_Socket *vmatlab;
@@ -207,7 +207,7 @@ int ViewerCreate_Socket(Viewer v)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerSocketSetConnection"></a>*/"ViewerSocketSetConnection" 
+#define __FUNC__ /*<a name="ViewerSocketSetConnection"></a>*/"ViewerSocketSetConnection" 
 int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
 {
   int           ierr,rank;
@@ -245,7 +245,7 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
 Viewer VIEWER_SOCKET_WORLD_PRIVATE = 0;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerInitializeSocketWorld_Private"></a>*/"ViewerInitializeSocketWorld_Private" 
+#define __FUNC__ /*<a name="ViewerInitializeSocketWorld_Private"></a>*/"ViewerInitializeSocketWorld_Private" 
 int ViewerInitializeSocketWorld_Private(void)
 {
   int  ierr;
@@ -257,7 +257,7 @@ int ViewerInitializeSocketWorld_Private(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerDestroySocket_Private"></a>*/"ViewerDestroySocket_Private" 
+#define __FUNC__ /*<a name="ViewerDestroySocket_Private"></a>*/"ViewerDestroySocket_Private" 
 int ViewerDestroySocket_Private(void)
 {
   int ierr;
@@ -283,7 +283,7 @@ int ViewerDestroySocket_Private(void)
 static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="VIEWER_SOCKET_"></a>*/"VIEWER_SOCKET_"  
+#define __FUNC__ /*<a name="VIEWER_SOCKET_"></a>*/"VIEWER_SOCKET_"  
 /*@C
      VIEWER_SOCKET_ - Creates a socket viewer shared by all processors 
                      in a communicator.
@@ -344,7 +344,7 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
        If there is a Viewer associated with this communicator it is destroyed.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="VIEWER_SOCKET_Destroy""></a>*/"VIEWER_SOCKET_Destroy" 
+#define __FUNC__ /*<a name="VIEWER_SOCKET_Destroy""></a>*/"VIEWER_SOCKET_Destroy" 
 int VIEWER_SOCKET_Destroy(MPI_Comm comm)
 {
   int        ierr;
@@ -369,28 +369,28 @@ int VIEWER_SOCKET_Destroy(MPI_Comm comm)
 Viewer VIEWER_SOCKET_WORLD_PRIVATE = 0;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerInitializeSocketWorld_Private"></a>*/"ViewerInitializeSocketWorld_Private" 
+#define __FUNC__ /*<a name="ViewerInitializeSocketWorld_Private"></a>*/"ViewerInitializeSocketWorld_Private" 
 int ViewerInitializeSocketWorld_Private(void)
 { 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerSocketOpen"></a>*/"ViewerSocketOpen" 
+#define __FUNC__ /*<a name="ViewerSocketOpen"></a>*/"ViewerSocketOpen" 
 int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerDestroySocket_Private"></a>*/"ViewerDestroySocket_Private" 
+#define __FUNC__ /*<a name="ViewerDestroySocket_Private"></a>*/"ViewerDestroySocket_Private" 
 int ViewerDestroySocket_Private(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="VIEWER_SOCKET_"></a>*/"VIEWER_SOCKET_" 
+#define __FUNC__ /*<a name="VIEWER_SOCKET_"></a>*/"VIEWER_SOCKET_" 
 Viewer VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscFunctionBegin;
@@ -398,7 +398,7 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
 }
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerCreate_Socket"></a>*/"ViewerCreate_Socket" 
+#define __FUNC__ /*<a name="ViewerCreate_Socket"></a>*/"ViewerCreate_Socket" 
 int ViewerCreate_Socket(Viewer v)
 {
   PetscFunctionBegin;

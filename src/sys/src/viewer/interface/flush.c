@@ -1,9 +1,9 @@
-/*$Id: flush.c,v 1.23 2000/01/16 15:55:33 bsmith Exp bsmith $*/
+/*$Id: flush.c,v 1.24 2000/04/09 04:34:00 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerFlush" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerFlush" 
 /*@
    ViewerFlush - Flushes a viewer (i.e. tries to dump all the 
    data that has been printed through a viewer).

@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.17 2000/01/11 21:02:13 bsmith Exp bsmith $*/
+/*$Id: bicg.c,v 1.18 2000/04/09 04:38:07 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -9,7 +9,7 @@
 #include "src/sles/ksp/kspimpl.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPSetUp_BiCG"
+#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_BiCG"
 int KSPSetUp_BiCG(KSP ksp)
 {
   int ierr;
@@ -29,7 +29,7 @@ int KSPSetUp_BiCG(KSP ksp)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPSolve_BiCG"
+#define __FUNC__ /*<a name=""></a>*/"KSPSolve_BiCG"
 int  KSPSolve_BiCG(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
@@ -122,7 +122,7 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPDestroy_BiCG" 
+#define __FUNC__ /*<a name=""></a>*/"KSPDestroy_BiCG" 
 int KSPDestroy_BiCG(KSP ksp)
 {
   int ierr;
@@ -134,7 +134,7 @@ int KSPDestroy_BiCG(KSP ksp)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPCreate_BiCG"
+#define __FUNC__ /*<a name=""></a>*/"KSPCreate_BiCG"
 int KSPCreate_BiCG(KSP ksp)
 {
   PetscFunctionBegin;

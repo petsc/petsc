@@ -1,9 +1,9 @@
-/* $Id: senddense.c,v 1.38 2000/01/11 20:58:53 bsmith Exp bsmith $ */
+/* $Id: senddense.c,v 1.39 2000/04/09 04:33:46 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerSocketPutScalar_Private"></a>*/"ViewerSocketPutScalar_Private" 
+#define __FUNC__ /*<a name="ViewerSocketPutScalar_Private"></a>*/"ViewerSocketPutScalar_Private" 
 /*
    ViewerSocketPutScalar_Private - Passes an Scalar array to a Socket viewer.
 
@@ -45,7 +45,7 @@ int ViewerSocketPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerSocketPutReal_Private"></a>*/"ViewerSocketPutReal_Private" 
+#define __FUNC__ /*<a name="ViewerSocketPutReal_Private"></a>*/"ViewerSocketPutReal_Private" 
 /*
    ViewerSocketPutReal_Private - Passes a double (or single) precision array to 
    a Matlab viewer.
@@ -85,7 +85,7 @@ int ViewerSocketPutReal_Private(Viewer viewer,int m,int n,PetscReal *array)
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerSocketPutInt_Private"></a>*/"ViewerSocketPutInt_Private" 
+#define __FUNC__ /*<a name="ViewerSocketPutInt_Private"></a>*/"ViewerSocketPutInt_Private" 
 /*
    ViewerSocketPutInt_Private - Passes an integer array to a Socket viewer.
 

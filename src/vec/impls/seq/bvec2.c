@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.174 2000/01/26 21:18:10 balay Exp bsmith $*/
+/*$Id: bvec2.c,v 1.175 2000/04/09 04:35:28 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -11,7 +11,7 @@ extern int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
 #endif
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecNorm_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecNorm_Seq"
 int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
   Vec_Seq * x = (Vec_Seq*)xin->data;
@@ -58,7 +58,7 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecGetOwnershipRange_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecGetOwnershipRange_Seq"
 int VecGetOwnershipRange_Seq(Vec xin,int *low,int *high)
 {
   PetscFunctionBegin;
@@ -69,7 +69,7 @@ int VecGetOwnershipRange_Seq(Vec xin,int *low,int *high)
 #include "sys.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecView_Seq_File"
+#define __FUNC__ /*<a name=""></a>*/"VecView_Seq_File"
 int VecView_Seq_File(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -126,7 +126,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecView_Seq_Draw_LG"
+#define __FUNC__ /*<a name=""></a>*/"VecView_Seq_Draw_LG"
 static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -164,7 +164,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecView_Seq_Draw"
+#define __FUNC__ /*<a name=""></a>*/"VecView_Seq_Draw"
 static int VecView_Seq_Draw(Vec xin,Viewer v)
 {
   int        ierr;
@@ -191,7 +191,7 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecView_Seq_Binary"
+#define __FUNC__ /*<a name=""></a>*/"VecView_Seq_Binary"
 static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -216,7 +216,7 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecView_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecView_Seq"
 int VecView_Seq(Vec xin,Viewer viewer)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
@@ -243,7 +243,7 @@ int VecView_Seq(Vec xin,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecSetValues_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecSetValues_Seq"
 int VecSetValues_Seq(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -272,7 +272,7 @@ int VecSetValues_Seq(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode m
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecSetValuesBlocked_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecSetValuesBlocked_Seq"
 int VecSetValuesBlocked_Seq(Vec xin,int ni,const int ix[],const Scalar yin[],InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -313,7 +313,7 @@ int VecSetValuesBlocked_Seq(Vec xin,int ni,const int ix[],const Scalar yin[],Ins
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecDestroy_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecDestroy_Seq"
 int VecDestroy_Seq(Vec v)
 {
   Vec_Seq *vs = (Vec_Seq*)v->data;
@@ -334,7 +334,7 @@ int VecDestroy_Seq(Vec v)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecPublish_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecPublish_Seq"
 static int VecPublish_Seq(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -412,7 +412,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
       This is called by VecCreate_Seq() (i.e. VecCreateSeq()) and VecCreateSeqWithArray()
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecCreate_Seq_Private"
+#define __FUNC__ /*<a name=""></a>*/"VecCreate_Seq_Private"
 static int VecCreate_Seq_Private(Vec v,const Scalar array[])
 {
   Vec_Seq *s;
@@ -437,7 +437,7 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecCreateSeqWithArray"
+#define __FUNC__ /*<a name=""></a>*/"VecCreateSeqWithArray"
 /*@C
    VecCreateSeqWithArray - Creates a standard,sequential array-style vector,
    where the user provides the array space to store the vector values.
@@ -481,7 +481,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,const Scalar array[],Vec *V)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecCreate_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecCreate_Seq"
 int VecCreate_Seq(Vec V)
 {
   Vec_Seq *s;
@@ -500,7 +500,7 @@ EXTERN_C_END
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecGetMap_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecGetMap_Seq"
 int VecGetMap_Seq(Vec win,Map *m)
 {
   PetscFunctionBegin;
@@ -509,7 +509,7 @@ int VecGetMap_Seq(Vec win,Map *m)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecDuplicate_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecDuplicate_Seq"
 int VecDuplicate_Seq(Vec win,Vec *V)
 {
   int     ierr;

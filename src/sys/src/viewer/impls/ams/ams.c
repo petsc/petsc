@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.31 2000/03/04 15:32:14 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.32 2000/04/09 04:33:56 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -14,7 +14,7 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerAMSSetCommName_AMS" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerAMSSetCommName_AMS" 
 int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
 {
   Viewer_AMS *vams = (Viewer_AMS*)v->data;
@@ -72,7 +72,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerAMSGetAMSComm_AMS" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerAMSGetAMSComm_AMS" 
 int ViewerAMSGetAMSComm_AMS(Viewer lab,AMS_Comm *ams_comm)
 {
   Viewer_AMS *vams = (Viewer_AMS *)lab->data;
@@ -85,7 +85,7 @@ int ViewerAMSGetAMSComm_AMS(Viewer lab,AMS_Comm *ams_comm)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerAMSSetCommName" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerAMSSetCommName" 
 int ViewerAMSSetCommName(Viewer v,const char name[])
 {
   int ierr,(*f)(Viewer,const char[]);
@@ -100,7 +100,7 @@ int ViewerAMSSetCommName(Viewer v,const char name[])
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerAMSGetAMSComm" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerAMSGetAMSComm" 
 /*@C
     ViewerAMSGetAMSComm - Gets the AMS communicator associated with the viewer.
 
@@ -139,7 +139,7 @@ int ViewerAMSGetAMSComm(Viewer v,AMS_Comm *ams_comm)
 Viewer VIEWER_AMS_WORLD_PRIVATE = 0;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerInitializeAMSWorld_Private" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeAMSWorld_Private" 
 int ViewerInitializeAMSWorld_Private(void)
 {
   int  ierr;
@@ -157,7 +157,7 @@ int ViewerInitializeAMSWorld_Private(void)
 static int Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VIEWER_AMS_" 
+#define __FUNC__ /*<a name=""></a>*/"VIEWER_AMS_" 
 /*@C
      VIEWER_AMS_ - Creates an AMS memory snooper viewer shared by all processors 
                    in a communicator.
@@ -224,7 +224,7 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
        If there is a Viewer associated with this communicator, it is destroyed.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VIEWER_AMS_Destroy" 
+#define __FUNC__ /*<a name=""></a>*/"VIEWER_AMS_Destroy" 
 int VIEWER_AMS_Destroy(MPI_Comm comm)
 {
   int    ierr,flag;
@@ -243,7 +243,7 @@ int VIEWER_AMS_Destroy(MPI_Comm comm)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDestroyAMS_Private" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDestroyAMS_Private" 
 int ViewerDestroyAMS_Private(void)
 {
   int ierr;
@@ -258,7 +258,7 @@ int ViewerDestroyAMS_Private(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDestroy_AMS" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDestroy_AMS" 
 static int ViewerDestroy_AMS(Viewer viewer)
 {
   Viewer_AMS *vams = (Viewer_AMS*)viewer->data;
@@ -278,7 +278,7 @@ static int ViewerDestroy_AMS(Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerCreate_AMS" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerCreate_AMS" 
 int ViewerCreate_AMS(Viewer v)
 {
   Viewer_AMS *vams;

@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.32 2000/01/11 21:01:50 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.33 2000/04/09 04:37:37 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -20,7 +20,7 @@ typedef struct {
 } PC_Composite;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApply_Composite_Multiplicative"
+#define __FUNC__ /*<a name=""></a>*/"PCApply_Composite_Multiplicative"
 static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
   int              ierr;
@@ -50,7 +50,7 @@ static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApply_Composite_Additive"
+#define __FUNC__ /*<a name=""></a>*/"PCApply_Composite_Additive"
 static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
   int              ierr;
@@ -72,7 +72,7 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCSetUp_Composite"
 static int PCSetUp_Composite(PC pc)
 {
   int              ierr;
@@ -93,7 +93,7 @@ static int PCSetUp_Composite(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCDestroy_Composite"
 static int PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -113,7 +113,7 @@ static int PCDestroy_Composite(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Composite"
 static int PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -158,7 +158,7 @@ static int PCSetFromOptions_Composite(PC pc)
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCPrintHelp_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_Composite"
 static int PCPrintHelp_Composite(PC pc,char *p)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -182,7 +182,7 @@ static int PCPrintHelp_Composite(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCView_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCView_Composite"
 static int PCView_Composite(PC pc,Viewer viewer)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -216,7 +216,7 @@ static int PCView_Composite(PC pc,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCompositeSetType_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeSetType_Composite"
 int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PetscFunctionBegin;
@@ -233,7 +233,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCompositeAddPC_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeAddPC_Composite"
 int PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
@@ -271,7 +271,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCompositeGetPC_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeGetPC_Composite"
 int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
 {
   PC_Composite     *jac;
@@ -294,7 +294,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCompositeSetUseTrue_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeSetUseTrue_Composite"
 int PCCompositeSetUseTrue_Composite(PC pc)
 {
   PC_Composite   *jac;
@@ -308,7 +308,7 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------------- */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCompositeSetType"
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeSetType"
 /*@C
    PCCompositeSetType - Sets the type of composite preconditioner.
    
@@ -339,7 +339,7 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCompositeAddPC"
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeAddPC"
 /*@C
    PCCompositeAddPC - Adds another PC to the composite PC.
    
@@ -367,7 +367,7 @@ int PCCompositeAddPC(PC pc,PCType type)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCompositeGetPC"
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeGetPC"
 /*@C
    PCCompositeGetPC - Gets one of the PC objects in the composite PC.
    
@@ -402,7 +402,7 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCompositeSetUseTrue"
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeSetUseTrue"
 /*@
    PCCompositeSetUseTrue - Sets a flag to indicate that the true matrix (rather than
                       the matrix used to define the preconditioner) is used to compute
@@ -443,7 +443,7 @@ int PCCompositeSetUseTrue(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCreate_Composite"
+#define __FUNC__ /*<a name=""></a>*/"PCCreate_Composite"
 int PCCreate_Composite(PC pc)
 {
   int            ierr;

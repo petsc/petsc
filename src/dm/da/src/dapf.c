@@ -1,10 +1,10 @@
-/*$Id: dapf.c,v 1.2 2000/02/02 20:10:29 bsmith Exp bsmith $*/
+/*$Id: dapf.c,v 1.3 2000/04/09 04:39:49 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DACreatePF"
+#define __FUNC__ /*<a name=""></a>*/"DACreatePF"
 /*@
    DACreatePF - Creates an appropriately dimensioned PF mathematical function object
       from a DA.

@@ -1,9 +1,9 @@
-/*$Id: axpy.c,v 1.42 2000/01/11 21:01:18 bsmith Exp bsmith $*/
+/*$Id: axpy.c,v 1.43 2000/04/09 04:36:57 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatAXPY"
+#define __FUNC__ /*<a name=""></a>*/"MatAXPY"
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
@@ -67,7 +67,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatShift"
+#define __FUNC__ /*<a name=""></a>*/"MatShift"
 /*@
    MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity matrix.
 
@@ -104,7 +104,7 @@ int MatShift(Scalar *a,Mat Y)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatDiagonalShift"
+#define __FUNC__ /*<a name=""></a>*/"MatDiagonalShift"
 /*@
    MatDiagonalShift - Computes Y = Y + D, where D is a diagonal matrix
    that is represented as a vector.
@@ -154,7 +154,7 @@ int MatDiagonalShift(Mat Y,Vec D)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatAYPX"
+#define __FUNC__ /*<a name=""></a>*/"MatAYPX"
 /*@
    MatAYPX - Computes Y = X + a*Y.
 

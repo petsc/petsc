@@ -1,4 +1,4 @@
-/*$Id: spqmd.c,v 1.33 2000/01/11 21:01:25 bsmith Exp bsmith $*/
+/*$Id: spqmd.c,v 1.34 2000/04/09 04:37:05 bsmith Exp bsmith $*/
 
 #include "mat.h"
 #include "src/mat/order/order.h"
@@ -8,7 +8,7 @@ EXTERN_C_BEGIN
     MatOrdering_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatOrdering_QMD"
+#define __FUNC__ /*<a name=""></a>*/"MatOrdering_QMD"
 int MatOrdering_QMD(Mat mat,MatOrderingType type,IS *row,IS *col) 
 {
   int        i,  *deg,*marker,*rchset,*nbrhd,*qsize,*qlink,nofsub,*iperm,nrow;

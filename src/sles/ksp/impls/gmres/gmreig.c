@@ -1,10 +1,10 @@
-/*$Id: gmreig.c,v 1.17 2000/01/11 21:02:05 bsmith Exp bsmith $*/
+/*$Id: gmreig.c,v 1.18 2000/04/09 04:37:55 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
 #include "pinclude/blaslapack.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPComputeExtremeSingularValues_GMRES"
+#define __FUNC__ /*<a name=""></a>*/"KSPComputeExtremeSingularValues_GMRES"
 int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -49,7 +49,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
 /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
 #if defined(PETSC_HAVE_ESSL)
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
+#define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -109,7 +109,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 }
 #elif !defined(PETSC_USE_COMPLEX)
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
+#define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
@@ -143,7 +143,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
 }
 #else
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
+#define __FUNC__ /*<a name=""></a>*/"KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;

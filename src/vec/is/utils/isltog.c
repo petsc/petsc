@@ -1,10 +1,10 @@
-/*$Id: isltog.c,v 1.37 2000/04/09 03:09:30 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.38 2000/04/09 04:35:18 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "is.h"  I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingView"
+#define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingView"
 /*@C
     ISLocalToGlobalMappingView - View a local to global mapping
 
@@ -46,7 +46,7 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingCreateIS"
+#define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingCreateIS"
 /*@C
     ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
@@ -83,7 +83,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingCreate"
+#define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingCreate"
 /*@C
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
@@ -130,7 +130,7 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
 }
   
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingDestroy"
+#define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingDestroy"
 /*@
    ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
    ordering and a global parallel ordering.
@@ -164,7 +164,7 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 }
   
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingApplyIS"
+#define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingApplyIS"
 /*@
     ISLocalToGlobalMappingApplyIS - Creates from an IS in the local numbering
     a new index set using the global numbering defined in an ISLocalToGlobalMapping
@@ -209,7 +209,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingApply"
+#define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingApply"
 /*@
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
@@ -252,7 +252,7 @@ int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,const int i
 /* -----------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISGlobalToLocalMappingSetUp_Private"
+#define __FUNC__ /*<a name=""></a>*/"ISGlobalToLocalMappingSetUp_Private"
 /*
     Creates the global fields in the ISLocalToGlobalMapping structure
 */
@@ -287,7 +287,7 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISGlobalToLocalMappingApply"
+#define __FUNC__ /*<a name=""></a>*/"ISGlobalToLocalMappingApply"
 /*@
     ISGlobalToLocalMappingApply - Provides the local numbering for a list of integers
     specified with a global numbering.

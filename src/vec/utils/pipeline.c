@@ -1,4 +1,4 @@
-/*$Id: pipeline.c,v 1.18 2000/01/11 21:00:05 bsmith Exp bsmith $*/
+/*$Id: pipeline.c,v 1.19 2000/04/09 04:35:20 bsmith Exp bsmith $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed
@@ -31,7 +31,7 @@ struct _p_VecPipeline {
 };
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineCreateUpDown"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineCreateUpDown"
 static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **to,VecScatter_MPI_General **from)
 {
   VecScatter_MPI_General *gen_to,*gen_from,*pipe_to,*pipe_from;
@@ -65,7 +65,7 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
    VecPipelineCreate - Creates a vector pipeline context.
 */
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineCreate"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineCreate"
 int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx)
 {
   VecPipeline ctx;
@@ -97,7 +97,7 @@ int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *new
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineSetupSelect"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineSetupSelect"
 static int VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_General *pipe,
                                   int (*test)(int,PetscObject),PetscObject pipe_data)
 {
@@ -148,7 +148,7 @@ static int VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_Gen
    when timing.
 */
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineSetup"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineSetup"
 int VecPipelineSetup(VecPipeline ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
@@ -190,7 +190,7 @@ extern int PipelineMulticolorSetup(VecPipeline,PetscObject,PetscObject*);
 int ProcNo(int proc,PetscObject pipe_info);
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineSetType"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineSetType"
 /*C
    VecPipelineSetType - Sets the type of a vector pipeline. Vector
    pipelines are to be used as
@@ -245,7 +245,7 @@ int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineBegin"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineBegin"
 /*
    VecPipelineBegin - Receive data from processor earlier in
    a processor pipeline from one vector to another. 
@@ -291,7 +291,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineEnd"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineEnd"
 /*
    VecPipelineEnd - Send data to processors later in
    a processor pipeline from one vector to another.
@@ -334,7 +334,7 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirecti
 */
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineDestroy_MPI_General"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineDestroy_MPI_General"
 static int VecPipelineDestroy_MPI_General(VecScatter_MPI_General *gen)
 {
   int ierr;
@@ -346,7 +346,7 @@ static int VecPipelineDestroy_MPI_General(VecScatter_MPI_General *gen)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineDestroy"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineDestroy"
 /*C
    VecPipelineDestroy - Destroys a pipeline context created by 
    VecPipelineCreate().
@@ -405,14 +405,14 @@ int VecPipelineDestroy(VecPipeline ctx)
 typedef struct {int rank;} Pipeline_sequential_info;
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"ProcYes"
+#define __FUNC__ /*<a name=""></a>*/"ProcYes"
 int ProcYes(int proc,PetscObject pipe_info)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(1);
 }
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"IsProcYes"
+#define __FUNC__ /*<a name=""></a>*/"IsProcYes"
 int IsProcYes(long fun)
 {
   PetscFunctionBegin;
@@ -423,7 +423,7 @@ int IsProcYes(long fun)
   PetscFunctionReturn(fun==(long)&ProcYes);
 }
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"ProcNo"
+#define __FUNC__ /*<a name=""></a>*/"ProcNo"
 int ProcNo(int proc,PetscObject pipe_info)
 {
   PetscFunctionBegin;
@@ -431,7 +431,7 @@ int ProcNo(int proc,PetscObject pipe_info)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"ProcUp"
+#define __FUNC__ /*<a name=""></a>*/"ProcUp"
 int ProcUp(int proc,PetscObject pipe_info)
 {
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
@@ -445,7 +445,7 @@ int ProcUp(int proc,PetscObject pipe_info)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"ProcDown"
+#define __FUNC__ /*<a name=""></a>*/"ProcDown"
 int ProcDown(int proc,PetscObject pipe_info)
 { 
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
@@ -459,7 +459,7 @@ int ProcDown(int proc,PetscObject pipe_info)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"PipelineSequentialSetup"
+#define __FUNC__ /*<a name=""></a>*/"PipelineSequentialSetup"
 int PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_sequential_info *info;
@@ -480,7 +480,7 @@ typedef struct {
 } Pipeline_colored_info;
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"ProcColorUp"
+#define __FUNC__ /*<a name=""></a>*/"ProcColorUp"
 int ProcColorUp(int proc,PetscObject pipe_info)
 {
   Pipeline_colored_info* comm_info = (Pipeline_colored_info*)pipe_info;
@@ -494,7 +494,7 @@ int ProcColorUp(int proc,PetscObject pipe_info)
   }
 }
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"ProcColorDown"
+#define __FUNC__ /*<a name=""></a>*/"ProcColorDown"
 int ProcColorDown(int proc,PetscObject pipe_info)
 { 
   Pipeline_colored_info* comm_info = (Pipeline_colored_info*)pipe_info;
@@ -509,7 +509,7 @@ int ProcColorDown(int proc,PetscObject pipe_info)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"PipelineRedblackSetup"
+#define __FUNC__ /*<a name=""></a>*/"PipelineRedblackSetup"
 int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_colored_info *info;
@@ -527,7 +527,7 @@ int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"PipelineMulticolorSetup"
+#define __FUNC__ /*<a name=""></a>*/"PipelineMulticolorSetup"
 int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_colored_info *info;
@@ -609,7 +609,7 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"VecPipelineView"
+#define __FUNC__ /*<a name=""></a>*/"VecPipelineView"
 int VecPipelineView(VecPipeline pipe,Viewer viewer)
 {
   MPI_Comm comm = pipe->comm;

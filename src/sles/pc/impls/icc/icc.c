@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.65 2000/01/11 21:01:48 bsmith Exp bsmith $*/
+/*$Id: icc.c,v 1.66 2000/04/09 04:37:33 bsmith Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -7,7 +7,7 @@
 #include "src/sles/pc/impls/icc/icc.h"   /*I "pc.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetup_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCSetup_ICC"
 static int PCSetup_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -30,7 +30,7 @@ static int PCSetup_ICC(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCDestroy_ICC"
 static int PCDestroy_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -43,7 +43,7 @@ static int PCDestroy_ICC(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApply_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCApply_ICC"
 static int PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -55,7 +55,7 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApplySymmetricLeft_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCApplySymmetricLeft_ICC"
 static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   int    ierr;
@@ -67,7 +67,7 @@ static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApplySymmetricRight_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCApplySymmetricRight_ICC"
 static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
   int    ierr;
@@ -79,7 +79,7 @@ static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCPrintHelp_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_ICC"
 static int PCPrintHelp_ICC(PC pc,char *p)
 {
   int ierr;
@@ -93,7 +93,7 @@ static int PCPrintHelp_ICC(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCGetFactoredMatrix_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCGetFactoredMatrix_ICC"
 static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -104,7 +104,7 @@ static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_ICC"
 static int PCSetFromOptions_ICC(PC pc)
 {
   PetscFunctionBegin;
@@ -113,7 +113,7 @@ static int PCSetFromOptions_ICC(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCreate_ICC"
+#define __FUNC__ /*<a name=""></a>*/"PCCreate_ICC"
 int PCCreate_ICC(PC pc)
 {
   PC_ICC      *icc = PetscNew(PC_ICC);CHKPTRQ(icc);

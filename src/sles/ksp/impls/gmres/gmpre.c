@@ -1,9 +1,9 @@
-/*$Id: gmpre.c,v 1.23 2000/01/11 21:02:05 bsmith Exp bsmith $*/
+/*$Id: gmpre.c,v 1.24 2000/04/09 04:37:55 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPGMRESSetPreAllocateVectors" 
+#define __FUNC__ /*<a name=""></a>*/"KSPGMRESSetPreAllocateVectors" 
 /*@
     KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
     needed work vectors at initial setup rather than the default, which 

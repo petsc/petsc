@@ -1,10 +1,10 @@
-/*$Id: drawv.c,v 1.46 2000/01/11 20:59:01 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.47 2000/04/09 04:33:57 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDestroy_Draw" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDestroy_Draw" 
 int ViewerDestroy_Draw(Viewer v)
 {
   int         ierr,i;
@@ -24,7 +24,7 @@ int ViewerDestroy_Draw(Viewer v)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerFlush_Draw" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerFlush_Draw" 
 int ViewerFlush_Draw(Viewer v)
 {
   int         ierr,i;
@@ -38,7 +38,7 @@ int ViewerFlush_Draw(Viewer v)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDraw" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDraw" 
 /*@C
     ViewerDrawGetDraw - Returns Draw object from Viewer object.
     This Draw object may then be used to perform graphics using 
@@ -87,7 +87,7 @@ int ViewerDrawGetDraw(Viewer viewer,int windownumber,Draw *draw)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDrawLG" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDrawLG" 
 /*@C
     ViewerDrawGetDrawLG - Returns DrawLG object from Viewer object.
     This DrawLG object may then be used to perform graphics using 
@@ -138,7 +138,7 @@ int ViewerDrawGetDrawLG(Viewer viewer,int windownumber,DrawLG *drawlg)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDrawAxis" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDrawGetDrawAxis" 
 /*@C
     ViewerDrawGetDrawAxis - Returns DrawAxis object from Viewer object.
     This DrawAxis object may then be used to perform graphics using 
@@ -189,7 +189,7 @@ int ViewerDrawGetDrawAxis(Viewer viewer,int windownumber,DrawAxis *drawaxis)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDrawSetInfo" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDrawSetInfo" 
 int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
   int         ierr;
@@ -206,7 +206,7 @@ int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDrawOpen" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDrawOpen" 
 /*@C
    ViewerDrawOpen - Opens an X window for use as a viewer. If you want to 
    do graphics in this window, you must call ViewerDrawGetDraw() and
@@ -264,7 +264,7 @@ int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,i
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerGetSingleton_Draw" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerGetSingleton_Draw" 
 int ViewerGetSingleton_Draw(Viewer viewer,Viewer *sviewer)
 {
   int         ierr,rank,i;
@@ -291,7 +291,7 @@ int ViewerGetSingleton_Draw(Viewer viewer,Viewer *sviewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerRestoreSingleton_Draw" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerRestoreSingleton_Draw" 
 int ViewerRestoreSingleton_Draw(Viewer viewer,Viewer *sviewer)
 {
   int         ierr,rank,i;
@@ -318,7 +318,7 @@ int ViewerRestoreSingleton_Draw(Viewer viewer,Viewer *sviewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerCreate_Draw" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerCreate_Draw" 
 int ViewerCreate_Draw(Viewer viewer)
 {
   int         i;
@@ -346,7 +346,7 @@ int ViewerCreate_Draw(Viewer viewer)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDrawClear" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDrawClear" 
 /*@
     ViewerDrawClear - Clears a Draw graphic associated with a viewer.
 
@@ -387,7 +387,7 @@ Viewer VIEWER_DRAW_SELF_PRIVATE = 0,VIEWER_DRAW_WORLD_PRIVATE_0 = 0,
        VIEWER_DRAW_WORLD_PRIVATE_1 = 0,VIEWER_DRAW_WORLD_PRIVATE_2 = 0;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawSelf_Private" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawSelf_Private" 
 int ViewerInitializeDrawSelf_Private(void)
 {
   int ierr,xywh[4],size = 4;
@@ -402,7 +402,7 @@ int ViewerInitializeDrawSelf_Private(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_0" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_0" 
 int ViewerInitializeDrawWorld_Private_0(void)
 {
   int ierr,xywh[4],size = 4;
@@ -417,7 +417,7 @@ int ViewerInitializeDrawWorld_Private_0(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_1" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_1" 
 int ViewerInitializeDrawWorld_Private_1(void)
 {
   int ierr,xywh[4],size = 4;
@@ -432,7 +432,7 @@ int ViewerInitializeDrawWorld_Private_1(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_2" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerInitializeDrawWorld_Private_2" 
 int ViewerInitializeDrawWorld_Private_2(void)
 {
   int ierr,xywh[4],size = 4;
@@ -447,7 +447,7 @@ int ViewerInitializeDrawWorld_Private_2(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerDestroyDraw_Private" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerDestroyDraw_Private" 
 int ViewerDestroyDraw_Private(void)
 {
   int ierr;
@@ -483,7 +483,7 @@ int ViewerDestroyDraw_Private(void)
 static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VIEWER_DRAW_" 
+#define __FUNC__ /*<a name=""></a>*/"VIEWER_DRAW_" 
 /*@C
      VIEWER_DRAW_ - Creates a window viewer shared by all processors 
                      in a communicator.
@@ -527,7 +527,7 @@ Viewer VIEWER_DRAW_(MPI_Comm comm)
        If there is a Viewer associated with this communicator it is destroyed.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VIEWER_DRAW_Destroy" 
+#define __FUNC__ /*<a name=""></a>*/"VIEWER_DRAW_Destroy" 
 int VIEWER_DRAW_Destroy(MPI_Comm comm)
 {
   int    ierr,flag;

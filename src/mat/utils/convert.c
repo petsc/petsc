@@ -1,9 +1,9 @@
-/*$Id: convert.c,v 1.65 2000/01/11 21:01:18 bsmith Exp bsmith $*/
+/*$Id: convert.c,v 1.66 2000/04/09 04:36:57 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatConvert_Basic"
+#define __FUNC__ /*<a name=""></a>*/"MatConvert_Basic"
 /* 
   MatConvert_Basic - Converts from any input format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.

@@ -1,10 +1,10 @@
-/*$Id: errtrace.c,v 1.12 2000/02/02 20:08:13 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.13 2000/04/09 04:34:23 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscTraceBackErrorHandler" 
+#define __FUNC__ /*<a name=""></a>*/"PetscTraceBackErrorHandler" 
 /*@C
    PetscTraceBackErrorHandler - Default error handler routine that generates
    a traceback on error detection.

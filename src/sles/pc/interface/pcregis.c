@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.53 2000/02/02 20:09:33 bsmith Exp bsmith $*/
+/*$Id: pcregis.c,v 1.54 2000/04/09 04:37:19 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "pc.h"   I*/
 
@@ -20,7 +20,7 @@ extern int PCCreate_Redundant(PC);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCRegisterAll"
+#define __FUNC__ /*<a name=""></a>*/"PCRegisterAll"
 /*@C
    PCRegisterAll - Registers all of the preconditioners in the PC package.
 

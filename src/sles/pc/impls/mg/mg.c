@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.103 2000/01/11 21:01:44 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.104 2000/04/09 04:37:28 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -14,7 +14,7 @@
 .   mg - structure created with  MGCreate().
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGMCycle_Private"
+#define __FUNC__ /*<a name=""></a>*/"MGMCycle_Private"
 int MGMCycle_Private(MG *mglevels)
 {
   MG     mg = *mglevels,mgc = *(mglevels - 1);
@@ -45,7 +45,7 @@ int MGMCycle_Private(MG *mglevels)
 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGCreate_Private"
+#define __FUNC__ /*<a name=""></a>*/"MGCreate_Private"
 static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 {
   MG   *mg;
@@ -81,7 +81,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_MG"
+#define __FUNC__ /*<a name=""></a>*/"PCDestroy_MG"
 static int PCDestroy_MG(PC pc)
 {
   MG  *mg = (MG*)pc->data;
@@ -113,7 +113,7 @@ extern int MGKCycle_Private(MG*);
   A simple wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
 */ 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGCycle"
+#define __FUNC__ /*<a name=""></a>*/"MGCycle"
 static int MGCycle(PC pc,Vec b,Vec x)
 {
   MG     *mg = (MG*)pc->data;
@@ -140,7 +140,7 @@ static int MGCycle(PC pc,Vec b,Vec x)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGCycleRichardson"
+#define __FUNC__ /*<a name=""></a>*/"MGCycleRichardson"
 static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
 {
   MG  *mg = (MG*)pc->data;
@@ -156,7 +156,7 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_MG"
+#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
   int        ierr,m,levels = 1;
@@ -203,7 +203,7 @@ static int PCSetFromOptions_MG(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCPrintHelp_MG"
+#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_MG"
 static int PCPrintHelp_MG(PC pc,char *p)
 {
   int ierr;
@@ -219,7 +219,7 @@ static int PCPrintHelp_MG(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCView_MG"
+#define __FUNC__ /*<a name=""></a>*/"PCView_MG"
 static int PCView_MG(PC pc,Viewer viewer)
 {
   MG         *mg = (MG*)pc->data;
@@ -266,7 +266,7 @@ static int PCView_MG(PC pc,Viewer viewer)
     Calls setup for the SLES on each level
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_MG"
+#define __FUNC__ /*<a name=""></a>*/"PCSetUp_MG"
 static int PCSetUp_MG(PC pc)
 {
   MG         *mg = (MG*)pc->data;
@@ -305,7 +305,7 @@ static int PCSetUp_MG(PC pc)
 /* -------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGSetLevels"
+#define __FUNC__ /*<a name=""></a>*/"MGSetLevels"
 /*@
    MGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
@@ -346,7 +346,7 @@ int MGSetLevels(PC pc,int levels)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGGetLevels"
+#define __FUNC__ /*<a name=""></a>*/"MGGetLevels"
 /*@
    MGGetLevels - Gets the number of levels to use with MG.
 
@@ -377,7 +377,7 @@ int MGGetLevels(PC pc,int *levels)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGSetType"
+#define __FUNC__ /*<a name=""></a>*/"MGSetType"
 /*@
    MGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
@@ -414,7 +414,7 @@ int MGSetType(PC pc,MGType form)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGSetCycles"
+#define __FUNC__ /*<a name=""></a>*/"MGSetCycles"
 /*@
    MGSetCycles - Sets the number of cycles to use. 1 denotes a
    V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
@@ -452,7 +452,7 @@ int MGSetCycles(PC pc,int n)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGCheck"
+#define __FUNC__ /*<a name=""></a>*/"MGCheck"
 /*@
    MGCheck - Checks that all components of the MG structure have 
    been set.
@@ -510,7 +510,7 @@ int MGCheck(PC pc)
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGSetNumberSmoothDown"
+#define __FUNC__ /*<a name=""></a>*/"MGSetNumberSmoothDown"
 /*@
    MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels. Use MGGetSmootherDown() to set different 
@@ -551,7 +551,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MGSetNumberSmoothUp"
+#define __FUNC__ /*<a name=""></a>*/"MGSetNumberSmoothUp"
 /*@
    MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
    on all levels. Use MGGetSmootherUp() to set different numbers of 
@@ -595,7 +595,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCreate_MG"
+#define __FUNC__ /*<a name=""></a>*/"PCCreate_MG"
 int PCCreate_MG(PC pc)
 {
   PetscFunctionBegin;

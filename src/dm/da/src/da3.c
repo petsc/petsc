@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.110 2000/01/11 21:03:19 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.111 2000/04/09 04:39:49 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -14,7 +14,7 @@ EXTERN_C_END
 #endif
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAView_3d"
+#define __FUNC__ /*<a name=""></a>*/"DAView_3d"
 int DAView_3d(DA da,Viewer viewer)
 {
   int        rank,ierr;
@@ -143,7 +143,7 @@ int DAView_3d(DA da,Viewer viewer)
 extern int DAPublish_Petsc(PetscObject);
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DACreate3d"
+#define __FUNC__ /*<a name=""></a>*/"DACreate3d"
 /*@C
    DACreate3d - Creates an object that will manage the communication of three-dimensional 
    regular array data that is distributed across some processors.

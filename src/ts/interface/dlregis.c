@@ -1,10 +1,10 @@
-/*$Id: dlregis.c,v 1.14 1999/10/24 14:03:48 bsmith Exp bsmith $*/
+/*$Id: dlregis.c,v 1.15 2000/04/09 04:39:08 bsmith Exp bsmith $*/
 
 #include "ts.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DLLibraryRegister"
+#define __FUNC__ /*<a name=""></a>*/"DLLibraryRegister"
 /*
   DLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

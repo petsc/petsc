@@ -1,4 +1,4 @@
-/*$Id: fdate.c,v 1.33 2000/01/11 20:59:38 bsmith Exp bsmith $*/
+/*$Id: fdate.c,v 1.34 2000/04/09 04:34:46 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -43,7 +43,7 @@ static char starttime[64];
 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscGetDate"
+#define __FUNC__ /*<a name=""></a>*/"PetscGetDate"
 /*@C
     PetscGetDate - Gets the current date.
 
@@ -92,7 +92,7 @@ int PetscGetDate(char date[],int len)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSetInitialDate"
+#define __FUNC__ /*<a name=""></a>*/"PetscSetInitialDate"
 int PetscSetInitialDate(void)
 {
   int ierr;
@@ -102,7 +102,7 @@ int PetscSetInitialDate(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscGetInitialDate"
+#define __FUNC__ /*<a name=""></a>*/"PetscGetInitialDate"
 /*@C
     PetscGetInitialDate - Gets the date the program was started 
       on.

@@ -1,9 +1,9 @@
-/*$Id: pname.c,v 1.33 2000/01/11 20:59:32 bsmith Exp bsmith $*/
+/*$Id: pname.c,v 1.34 2000/04/09 04:34:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscObjectSetName"
+#define __FUNC__ /*<a name=""></a>*/"PetscObjectSetName"
 /*@C 
    PetscObjectSetName - Sets a string name associated with a PETSc object.
 
@@ -33,7 +33,7 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscObjectPublish"
+#define __FUNC__ /*<a name=""></a>*/"PetscObjectPublish"
 /*@C 
    PetscObjectPublish - Publishs an object for the ALICE Memory Snooper
 
@@ -64,7 +64,7 @@ int PetscObjectPublish(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscObjectChangeTypeName"
+#define __FUNC__ /*<a name=""></a>*/"PetscObjectChangeTypeName"
 int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
 {
   int ierr;

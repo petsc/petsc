@@ -1,10 +1,10 @@
-/*$Id: dlregis.c,v 1.13 1999/10/24 14:03:31 bsmith Exp bsmith $*/
+/*$Id: dlregis.c,v 1.14 2000/04/09 04:38:32 bsmith Exp bsmith $*/
 
 #include "snes.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DLLibraryRegister"
+#define __FUNC__ /*<a name=""></a>*/"DLLibraryRegister"
 /*
   DLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.87 2000/01/11 21:02:08 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.88 2000/04/09 04:38:01 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -6,7 +6,7 @@
 #include "src/sles/ksp/impls/rich/richctx.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPSetUp_Richardson"
+#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_Richardson"
 int KSPSetUp_Richardson(KSP ksp)
 {
   int ierr;
@@ -19,7 +19,7 @@ int KSPSetUp_Richardson(KSP ksp)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPSolve_Richardson"
+#define __FUNC__ /*<a name=""></a>*/"KSPSolve_Richardson"
 int  KSPSolve_Richardson(KSP ksp,int *its)
 {
   int                i,maxit,ierr;
@@ -114,7 +114,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPView_Richardson" 
+#define __FUNC__ /*<a name=""></a>*/"KSPView_Richardson" 
 extern int KSPView_Richardson(KSP ksp,Viewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
@@ -132,7 +132,7 @@ extern int KSPView_Richardson(KSP ksp,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPPrintHelp_Richardson"
+#define __FUNC__ /*<a name=""></a>*/"KSPPrintHelp_Richardson"
 static int KSPPrintHelp_Richardson(KSP ksp,char *p)
 {
   int ierr;
@@ -144,7 +144,7 @@ static int KSPPrintHelp_Richardson(KSP ksp,char *p)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_Richardson"
+#define __FUNC__ /*<a name=""></a>*/"KSPSetFromOptions_Richardson"
 int KSPSetFromOptions_Richardson(KSP ksp)
 {
   int        ierr;
@@ -161,7 +161,7 @@ int KSPSetFromOptions_Richardson(KSP ksp)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPRichardsonSetScale_Richardson"
+#define __FUNC__ /*<a name=""></a>*/"KSPRichardsonSetScale_Richardson"
 int KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
@@ -175,7 +175,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPCreate_Richardson"
+#define __FUNC__ /*<a name=""></a>*/"KSPCreate_Richardson"
 int KSPCreate_Richardson(KSP ksp)
 {
   int            ierr;

@@ -1,4 +1,4 @@
-/*$Id: ghome.c,v 1.31 2000/01/11 20:59:28 bsmith Exp bsmith $*/
+/*$Id: ghome.c,v 1.32 2000/04/09 04:34:31 bsmith Exp bsmith $*/
 /*
       Code for manipulating files.
 */
@@ -33,7 +33,7 @@
 #include "petscfix.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscGetHomeDirectory"
+#define __FUNC__ /*<a name=""></a>*/"PetscGetHomeDirectory"
 /*@C
    PetscGetHomeDirectory - Returns home directory name.
 
@@ -75,7 +75,7 @@ int PetscGetHomeDirectory(char dir[],int maxlen)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscFixFilename"
+#define __FUNC__ /*<a name=""></a>*/"PetscFixFilename"
 /*@C
     PetscFixFilename - Fixes a file name so that it is correct for both Unix and 
     Windows by using the correct / or \ to seperate directories.

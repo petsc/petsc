@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.93 2000/03/27 04:37:20 balay Exp bsmith $*/
+/*$Id: umtr.c,v 1.94 2000/04/09 04:38:44 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -29,7 +29,7 @@
            previously specified.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SNESSolve_UM_TR"
+#define __FUNC__ /*<a name=""></a>*/"SNESSolve_UM_TR"
 static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
   SNES_UM_TR          *neP = (SNES_UM_TR*)snes->data;
@@ -194,7 +194,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SNESSetUp_UM_TR"
+#define __FUNC__ /*<a name=""></a>*/"SNESSetUp_UM_TR"
 static int SNESSetUp_UM_TR(SNES snes)
 {
   int ierr;
@@ -208,7 +208,7 @@ static int SNESSetUp_UM_TR(SNES snes)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SNESDestroy_UM_TR"
+#define __FUNC__ /*<a name=""></a>*/"SNESDestroy_UM_TR"
 static int SNESDestroy_UM_TR(SNES snes)
 {
   int  ierr;
@@ -222,7 +222,7 @@ static int SNESDestroy_UM_TR(SNES snes)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SNESConverged_UM_TR"
+#define __FUNC__ /*<a name=""></a>*/"SNESConverged_UM_TR"
 /*@C
    SNESConverged_UM_TR - Monitors the convergence of the SNESSolve_UM_TR()
    routine (default). 
@@ -303,7 +303,7 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConverg
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions_UM_TR"
+#define __FUNC__ /*<a name=""></a>*/"SNESSetFromOptions_UM_TR"
 static int SNESSetFromOptions_UM_TR(SNES snes)
 {
   SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
@@ -329,7 +329,7 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_UM_TR"
+#define __FUNC__ /*<a name=""></a>*/"SNESPrintHelp_UM_TR"
 static int SNESPrintHelp_UM_TR(SNES snes,char *p)
 {
   SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
@@ -351,7 +351,7 @@ static int SNESPrintHelp_UM_TR(SNES snes,char *p)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SNESView_UM_TR"
+#define __FUNC__ /*<a name=""></a>*/"SNESView_UM_TR"
 static int SNESView_UM_TR(SNES snes,Viewer viewer)
 {
   SNES_UM_TR *tr = (SNES_UM_TR *)snes->data;
@@ -371,7 +371,7 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
 /*------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SNESCreate_UM_TR"
+#define __FUNC__ /*<a name=""></a>*/"SNESCreate_UM_TR"
 int SNESCreate_UM_TR(SNES snes)
 {
   SNES_UM_TR *neP;

@@ -1,4 +1,4 @@
-/*$Id: dgedi.c,v 1.14 2000/01/11 21:00:52 bsmith Exp bsmith $*/
+/*$Id: dgedi.c,v 1.15 2000/04/09 04:36:19 bsmith Exp bsmith $*/
 
 /*  
               This file creating by running f2c 
@@ -18,7 +18,7 @@
 #include "petsc.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"LINPACKdgedi"
+#define __FUNC__ /*<a name=""></a>*/"LINPACKdgedi"
 int LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
 {
     int        i__2,kb,kp1,nm1,i,j,k,l,ll,kn,knp1,jn1;

@@ -1,4 +1,4 @@
-/*$Id: vcreatea.c,v 1.13 2000/01/11 20:58:57 bsmith Exp bsmith $*/
+/*$Id: vcreatea.c,v 1.14 2000/04/09 04:33:53 bsmith Exp bsmith $*/
 
 #include "petsc.h"  /*I     "petsc.h"   I*/
 
@@ -9,7 +9,7 @@ Viewer VIEWER_STDOUT_SELF,VIEWER_STDERR_SELF,VIEWER_STDOUT_WORLD,VIEWER_STDERR_W
    default PETSc viewers.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerInitializeASCII_Private"></a>*/"ViewerInitializeASCII_Private" 
+#define __FUNC__ /*<a name="ViewerInitializeASCII_Private"></a>*/"ViewerInitializeASCII_Private" 
 int ViewerInitializeASCII_Private(void)
 {
   int ierr;
@@ -26,7 +26,7 @@ int ViewerInitializeASCII_Private(void)
    traces of the default viewers.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerDestroyASCII_Private"></a>*/"ViewerDestroyASCII_Private" 
+#define __FUNC__ /*<a name="ViewerDestroyASCII_Private"></a>*/"ViewerDestroyASCII_Private" 
 int ViewerDestroyASCII_Private(void)
 {
   int ierr;
@@ -51,7 +51,7 @@ int ViewerDestroyASCII_Private(void)
 static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="VIEWER_STDOUT_"></a>*/"VIEWER_STDOUT_"  
+#define __FUNC__ /*<a name="VIEWER_STDOUT_"></a>*/"VIEWER_STDOUT_"  
 /*@C
    VIEWER_STDOUT_ - Creates a ASCII viewer shared by all processors 
                     in a communicator.
@@ -98,7 +98,7 @@ Viewer VIEWER_STDOUT_(MPI_Comm comm)
        If there is a Viewer associated with this communicator it is destroyed.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="VIEWER_STDOUT_Destroy"></a>*/"VIEWER_STDOUT_Destroy" 
+#define __FUNC__ /*<a name="VIEWER_STDOUT_Destroy"></a>*/"VIEWER_STDOUT_Destroy" 
 int VIEWER_STDOUT_Destroy(MPI_Comm comm)
 {
   int        ierr;
@@ -125,7 +125,7 @@ int VIEWER_STDOUT_Destroy(MPI_Comm comm)
 static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="VIEWER_STDERR_"></a>*/"VIEWER_STDERR_" 
+#define __FUNC__ /*<a name="VIEWER_STDERR_"></a>*/"VIEWER_STDERR_" 
 /*@C
    VIEWER_STDERR_ - Creates a ASCII viewer shared by all processors 
                     in a communicator.
@@ -171,7 +171,7 @@ Viewer VIEWER_STDERR_(MPI_Comm comm)
        If there is a Viewer associated with this communicator it is destroyed.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="VIEWER_STDERR_Destroy"></a>*/"VIEWER_STDERR_Destroy" 
+#define __FUNC__ /*<a name="VIEWER_STDERR_Destroy"></a>*/"VIEWER_STDERR_Destroy" 
 int VIEWER_STDERR_Destroy(MPI_Comm comm)
 {
   int        ierr;
@@ -191,7 +191,7 @@ int VIEWER_STDERR_Destroy(MPI_Comm comm)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerASCIIOpen"></a>*/"ViewerASCIIOpen" 
+#define __FUNC__ /*<a name="ViewerASCIIOpen"></a>*/"ViewerASCIIOpen" 
 /*@C
    ViewerASCIIOpen - Opens an ASCII file as a viewer.
 

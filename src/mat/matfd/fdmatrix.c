@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.58 2000/04/09 03:10:12 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.59 2000/04/09 04:37:00 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -10,7 +10,7 @@
 #include "src/vec/vecimpl.h"  
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringView_Draw"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringView_Draw"
 static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 {
   int         ierr,i,j,pause;
@@ -67,7 +67,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringView"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringView"
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
@@ -135,7 +135,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringSetParameters"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetParameters"
 /*@
    MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
    a Jacobian matrix using finite differences.
@@ -172,7 +172,7 @@ int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umi
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFrequency"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFrequency"
 /*@
    MatFDColoringSetFrequency - Sets the frequency for computing new Jacobian
    matrices. 
@@ -208,7 +208,7 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringGetFrequency"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringGetFrequency"
 /*@
    MatFDColoringGetFrequency - Gets the frequency for computing new Jacobian
    matrices. 
@@ -246,7 +246,7 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFunction"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFunction"
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
@@ -278,7 +278,7 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFromOptions"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringSetFromOptions"
 /*@
    MatFDColoringSetFromOptions - Sets coloring finite difference parameters from 
    the options database.
@@ -331,7 +331,7 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringPrintHelp"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringPrintHelp"
 /*@
     MatFDColoringPrintHelp - Prints help message for matrix finite difference calculations 
     using coloring.
@@ -362,7 +362,7 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringView_Private"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringView_Private"
 int MatFDColoringView_Private(MatFDColoring fd)
 {
   int        ierr;
@@ -388,7 +388,7 @@ int MatFDColoringView_Private(MatFDColoring fd)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringCreate" 
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringCreate" 
 /*@C
    MatFDColoringCreate - Creates a matrix coloring context for finite difference 
    computation of Jacobians.
@@ -445,7 +445,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringDestroy"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringDestroy"
 /*@C
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
     via MatFDColoringCreate().
@@ -490,7 +490,7 @@ int MatFDColoringDestroy(MatFDColoring c)
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringApply"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringApply"
 /*@
     MatFDColoringApply - Given a matrix for which a MatFDColoring context 
     has been created, computes the Jacobian for a function via finite differences.
@@ -606,7 +606,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatFDColoringApplyTS"
+#define __FUNC__ /*<a name=""></a>*/"MatFDColoringApplyTS"
 /*@
     MatFDColoringApplyTS - Given a matrix for which a MatFDColoring context 
     has been created, computes the Jacobian for a function via finite differences.

@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.127 2000/01/11 21:01:41 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.128 2000/04/09 04:37:25 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -19,7 +19,7 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetReuseOrdering_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetReuseOrdering_LU"
 int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
@@ -33,7 +33,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetReuseFill_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetReuseFill_LU"
 int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
@@ -46,7 +46,7 @@ int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_LU"
 static int PCSetFromOptions_LU(PC pc)
 {
   int        ierr;
@@ -80,7 +80,7 @@ static int PCSetFromOptions_LU(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCPrintHelp_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_LU"
 static int PCPrintHelp_LU(PC pc,char *p)
 {
   int ierr;
@@ -100,7 +100,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCView_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCView_LU"
 static int PCView_LU(PC pc,Viewer viewer)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
@@ -131,7 +131,7 @@ static int PCView_LU(PC pc,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCGetFactoredMatrix_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCGetFactoredMatrix_LU"
 static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -143,7 +143,7 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCSetUp_LU"
 static int PCSetUp_LU(PC pc)
 {
   int        ierr;
@@ -200,7 +200,7 @@ static int PCSetUp_LU(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCDestroy_LU"
 static int PCDestroy_LU(PC pc)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -216,7 +216,7 @@ static int PCDestroy_LU(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApply_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCApply_LU"
 static int PCApply_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -229,7 +229,7 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApplyTranspose_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCApplyTranspose_LU"
 static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -245,7 +245,7 @@ static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetFill_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetFill_LU"
 int PCLUSetFill_LU(PC pc,PetscReal fill)
 {
   PC_LU *dir;
@@ -259,7 +259,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetUseInPlace_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetUseInPlace_LU"
 int PCLUSetUseInPlace_LU(PC pc)
 {
   PC_LU *dir;
@@ -273,7 +273,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetMatOrdering_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetMatOrdering_LU"
 int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -289,7 +289,7 @@ EXTERN_C_END
 /* -----------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetReuseOrdering"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetReuseOrdering"
 /*@
    PCLUSetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -324,7 +324,7 @@ int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetReuseFill"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetReuseFill"
 /*@
    PCLUSetReuseFill - When matrices with same nonzero structure are LU factored,
    this causes later ones to use the fill computed in the initial factorization.
@@ -358,7 +358,7 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetFill"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetFill"
 /*@
    PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
@@ -399,7 +399,7 @@ int PCLUSetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetUseInPlace"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetUseInPlace"
 /*@
    PCLUSetUseInPlace - Tells the system to do an in-place factorization.
    For dense matrices, this enables the solution of much larger problems. 
@@ -444,7 +444,7 @@ int PCLUSetUseInPlace(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCLUSetMatOrdering"
+#define __FUNC__ /*<a name=""></a>*/"PCLUSetMatOrdering"
 /*@
     PCLUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used it the LU factorization.
@@ -478,7 +478,7 @@ int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCreate_LU"
+#define __FUNC__ /*<a name=""></a>*/"PCCreate_LU"
 int PCCreate_LU(PC pc)
 {
   int   ierr;

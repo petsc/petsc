@@ -1,4 +1,4 @@
-/*$Id: borthog2.c,v 1.14 2000/01/11 21:02:05 bsmith Exp bsmith $*/
+/*$Id: borthog2.c,v 1.15 2000/04/09 04:37:55 bsmith Exp bsmith $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -14,7 +14,7 @@
   when running in a parallel environment.
  */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPGMRESUnmodifiedGramSchmidtOrthogonalization"
+#define __FUNC__ /*<a name=""></a>*/"KSPGMRESUnmodifiedGramSchmidtOrthogonalization"
 int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);

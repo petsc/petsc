@@ -1,4 +1,4 @@
-/*$Id: iguess.c,v 1.30 2000/01/11 21:01:56 bsmith Exp bsmith $*/
+/*$Id: iguess.c,v 1.31 2000/04/09 04:37:45 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "ksp.h" I*/
 /* 
@@ -15,7 +15,7 @@ typedef struct {
 } KSPIGUESS;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPGuessCreate" 
+#define __FUNC__ /*<a name=""></a>*/"KSPGuessCreate" 
 int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 {
   KSPIGUESS *itg;
@@ -38,7 +38,7 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPGuessDestroy" 
+#define __FUNC__ /*<a name=""></a>*/"KSPGuessDestroy" 
 int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 {
   int ierr;
@@ -53,7 +53,7 @@ int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPGuessFormB"
+#define __FUNC__ /*<a name=""></a>*/"KSPGuessFormB"
 int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
   int    i,ierr;
@@ -70,7 +70,7 @@ int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPGuessFormX"
+#define __FUNC__ /*<a name=""></a>*/"KSPGuessFormX"
 int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 {
   int i,ierr;
@@ -85,7 +85,7 @@ int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPGuessUpdate"
+#define __FUNC__ /*<a name=""></a>*/"KSPGuessUpdate"
 int  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
 {
   PetscReal    normax,norm;

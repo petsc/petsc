@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.23 2000/01/11 21:00:57 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.24 2000/04/09 03:09:57 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -37,7 +37,7 @@ typedef struct {
   int           *garray;                /* work array */
 
   /* The following variable is used by blocked matrix assembly */
-  Scalar        *barray;                /* Block array of size bs2 */
+  MatScalar     *barray;                /* Block array of size bs2 */
 
   /* The following variables are used for matrix-vector products */
 

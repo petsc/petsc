@@ -1,11 +1,11 @@
-/*$Id: viewreg.c,v 1.20 2000/01/11 20:59:04 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.21 2000/04/09 04:34:00 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 FList ViewerList              = 0;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerCreate" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerCreate" 
 /*@C
    ViewerCreate - Creates a viewing context
 
@@ -39,7 +39,7 @@ int ViewerCreate(MPI_Comm comm,Viewer *inviewer)
 }
  
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerSetType" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerSetType" 
 /*@C
    ViewerSetType - Builds viewer for a particular implementation.
 
@@ -97,7 +97,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerRegisterDestroy" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerRegisterDestroy" 
 /*@C
    ViewerRegisterDestroy - Frees the list of Viewer methods that were
    registered by ViewerRegisterDynamic().
@@ -161,7 +161,7 @@ $     -viewer_type my_viewer_type
 M*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerRegister" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerRegister" 
 int ViewerRegister(char *sname,char *path,char *name,int (*function)(Viewer))
 {
   int ierr;
@@ -174,7 +174,7 @@ int ViewerRegister(char *sname,char *path,char *name,int (*function)(Viewer))
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ViewerSetFromOptions" 
+#define __FUNC__ /*<a name=""></a>*/"ViewerSetFromOptions" 
 /*@C
    ViewerSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X windows graphics.

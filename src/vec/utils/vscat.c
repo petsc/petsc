@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.154 2000/04/09 03:09:31 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.155 2000/04/09 04:35:20 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -13,7 +13,7 @@
      Checks if any indices are less than zero and generates an error
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterCheckIndicates_Private"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterCheckIndicates_Private"
 static int VecScatterCheckIndices_Private(int nmax,int n,int *idx)
 {
   int i;
@@ -34,7 +34,7 @@ static int VecScatterCheckIndices_Private(int nmax,int n,int *idx)
    will working at ANL as a SERS student.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_MPI_ToAll"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin_MPI_ToAll"
 int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
   int    ierr,yy_n,xx_n,*range;
@@ -149,7 +149,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_MPI_ToOne"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin_MPI_ToOne"
 int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
   int      rank,ierr,yy_n,xx_n,*range;
@@ -238,7 +238,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
        The follow to are used for both VecScatterBegin_MPI_ToAll() and VecScatterBegin_MPI_ToOne()
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterDestroy_MPI_ToAll"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterDestroy_MPI_ToAll"
 int VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 {
   VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
@@ -255,7 +255,7 @@ int VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterCopy_MPI_ToAll"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterCopy_MPI_ToAll"
 int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll*)in->todata,*sto;
@@ -290,7 +290,7 @@ int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
         Scatter: sequential general to sequential general 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SGtoSG"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SGtoSG"
 int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_General *gen_to = (VecScatter_Seq_General*)ctx->todata;
@@ -326,7 +326,7 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     Scatter: sequential general to sequential stride 1 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SGtoSS_Stride1"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SGtoSS_Stride1"
 int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
@@ -370,7 +370,7 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
    Scatter: sequential general to sequential stride 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SGtoSS"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SGtoSS"
 int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
@@ -413,7 +413,7 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     Scatter: sequential stride 1 to sequential general 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SStoSG_Stride1"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SStoSG_Stride1"
 int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
@@ -455,7 +455,7 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SStoSG"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SStoSG"
 /* 
    Scatter: sequential stride to sequential general 
 */
@@ -501,7 +501,7 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
      Scatter: sequential stride to sequential stride 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SStoSS"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin_SStoSS"
 int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
@@ -563,7 +563,7 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterCopy_SGToSG"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterCopy_SGToSG"
 int VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
 {
   int                    ierr;
@@ -603,7 +603,7 @@ int VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterDestroy_SGtoSG"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterDestroy_SGtoSG"
 int VecScatterDestroy_SGtoSG(VecScatter ctx)
 {
   int ierr;
@@ -617,7 +617,7 @@ int VecScatterDestroy_SGtoSG(VecScatter ctx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterCopy_SGToStride"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterCopy_SGToStride"
 int VecScatterCopy_SGToStride(VecScatter in,VecScatter out)
 {
   int ierr;
@@ -659,7 +659,7 @@ int VecScatterCopy_SGToStride(VecScatter in,VecScatter out)
     Scatter: parallel to sequential vector, sequential strides for both. 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterCopy_PStoSS"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterCopy_PStoSS"
 int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
 {
   VecScatter_Seq_Stride *in_to   = (VecScatter_Seq_Stride*)in->todata,*out_to;
@@ -700,7 +700,7 @@ extern int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 #define VECMPI 1
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterCreate"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterCreate"
 /*@C
    VecScatterCreate - Creates a vector scatter context.
 
@@ -1305,7 +1305,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
 /* ------------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterPostRecvs"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterPostRecvs"
 /*@
    VecScatterPostRecvs - Posts the receives required for the ready-receiver
    version of the VecScatter routines.
@@ -1357,7 +1357,7 @@ int VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter 
 
 /* ------------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterBegin"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterBegin"
 /*@
    VecScatterBegin - Begins a generalized scatter from one vector to
    another. Complete the scattering phase with VecScatterEnd().
@@ -1445,7 +1445,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
 
 /* --------------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterEnd"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterEnd"
 /*@
    VecScatterEnd - Ends a generalized scatter from one vector to another.  Call
    after first calling VecScatterBegin().
@@ -1492,7 +1492,7 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterDestroy"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterDestroy"
 /*@C
    VecScatterDestroy - Destroys a scatter context created by 
    VecScatterCreate().
@@ -1524,7 +1524,7 @@ int VecScatterDestroy(VecScatter ctx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterCopy"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterCopy"
 /*@C
    VecScatterCopy - Makes a copy of a scatter context.
 
@@ -1562,7 +1562,7 @@ int VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 
 /* ------------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterView"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterView"
 /*@
    VecScatterView - Views a vector scatter context.
 
@@ -1591,7 +1591,7 @@ int VecScatterView(VecScatter ctx,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScatterRemap"
+#define __FUNC__ /*<a name=""></a>*/"VecScatterRemap"
 /*@
    VecScatterRemap - Remaps the "from" and "to" indices in a 
    vector scatter context. FOR EXPERTS ONLY!

@@ -1,4 +1,4 @@
-/*$Id: sprcm.c,v 1.33 2000/01/11 21:01:25 bsmith Exp bsmith $*/
+/*$Id: sprcm.c,v 1.34 2000/04/09 04:37:05 bsmith Exp bsmith $*/
 
 #include "mat.h"
 #include "src/mat/order/order.h"
@@ -8,7 +8,7 @@ EXTERN_C_BEGIN
     MatOrdering_RCM - Find the Reverse Cuthill-McKee ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatOrdering_RCM"
+#define __FUNC__ /*<a name=""></a>*/"MatOrdering_RCM"
 int MatOrdering_RCM(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   int        ierr,i,  *mask,*xls,nrow,*ia,*ja,*perm;

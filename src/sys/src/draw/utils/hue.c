@@ -1,4 +1,4 @@
-/*$Id: hue.c,v 1.3 2000/01/11 20:59:21 bsmith Exp bsmith $*/
+/*$Id: hue.c,v 1.4 2000/04/09 04:34:21 bsmith Exp bsmith $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -15,7 +15,7 @@
 static PetscReal Gamma = 2.0;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawUtilitySetGamma"  
+#define __FUNC__ /*<a name=""></a>*/"DrawUtilitySetGamma"  
 int DrawUtilitySetGamma(PetscReal g)
 {
   PetscFunctionBegin;
@@ -34,7 +34,7 @@ int DrawUtilitySetGamma(PetscReal g)
  *      r       g      b
  */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawUtilityHlsHelper" 
+#define __FUNC__ /*<a name=""></a>*/"DrawUtilityHlsHelper" 
 static int DrawUtilityHlsHelper(int h,int n1,int n2)
 {
   PetscFunctionBegin;
@@ -47,7 +47,7 @@ static int DrawUtilityHlsHelper(int h,int n1,int n2)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawUtilityHlsToRgb" 
+#define __FUNC__ /*<a name=""></a>*/"DrawUtilityHlsToRgb" 
 static int DrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
 {
   int m1,m2;         /* in 0 to 100 */
@@ -71,7 +71,7 @@ static int DrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char 
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawUtilitySetCmapHue" 
+#define __FUNC__ /*<a name=""></a>*/"DrawUtilitySetCmapHue" 
 int DrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
 {
   int        i,hue,lightness,saturation;
@@ -85,7 +85,7 @@ int DrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char 
   lightness   = 50;       /* in 0:100 */
   saturation  = 100;      /* in 0:100 */
   for (i = 0; i < mapsize; i++) {
-    DrawUtilityHlsToRgb(hue,lightness,saturation,red + i,green + i,blue + i);
+    ierr     = DrawUtilityHlsToRgb(hue,lightness,saturation,red + i,green + i,blue + i);CHKERRQ(ierr);
     red[i]   = (int)floor(255.999 * pow(((double) red[i])/255.0,igamma));
     blue[i]  = (int)floor(255.999 * pow(((double)blue[i])/255.0,igamma));
     green[i] = (int)floor(255.999 * pow(((double)green[i])/255.0,igamma));

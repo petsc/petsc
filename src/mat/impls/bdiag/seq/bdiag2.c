@@ -1,4 +1,4 @@
-/*$Id: bdiag2.c,v 1.11 2000/01/11 21:00:48 bsmith Exp bsmith $*/
+/*$Id: bdiag2.c,v 1.12 2000/04/09 04:36:13 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -8,7 +8,7 @@
 #include "src/inline/ilu.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSetValues_SeqBDiag_1"
+#define __FUNC__ /*<a name=""></a>*/"MatSetValues_SeqBDiag_1"
 int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -96,7 +96,7 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSetValues_SeqBDiag_N"
+#define __FUNC__ /*<a name=""></a>*/"MatSetValues_SeqBDiag_N"
 int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -181,7 +181,7 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatGetValues_SeqBDiag_1"
+#define __FUNC__ /*<a name=""></a>*/"MatGetValues_SeqBDiag_1"
 int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -212,7 +212,7 @@ int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatGetValues_SeqBDiag_N"
+#define __FUNC__ /*<a name=""></a>*/"MatGetValues_SeqBDiag_N"
 int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -245,7 +245,7 @@ int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
     MatMults for blocksize 1 to 5 and N -------------------------------
  */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_1"
+#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_1"
 int MatMult_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -279,7 +279,7 @@ int MatMult_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_2"
+#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_2"
 int MatMult_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -320,7 +320,7 @@ int MatMult_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_3"
+#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_3"
 int MatMult_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -362,7 +362,7 @@ int MatMult_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_4"
+#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_4"
 int MatMult_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -405,7 +405,7 @@ int MatMult_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_5"
+#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_5"
 int MatMult_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -449,7 +449,7 @@ int MatMult_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_N"
+#define __FUNC__ /*<a name=""></a>*/"MatMult_SeqBDiag_N"
 int MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -489,7 +489,7 @@ int MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
     MatMultAdds for blocksize 1 to 5 and N -------------------------------
  */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_1"
+#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_1"
 int MatMultAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -522,7 +522,7 @@ int MatMultAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_2"
+#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_2"
 int MatMultAdd_SeqBDiag_2(Mat A,Vec xx,Vec zz,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -563,7 +563,7 @@ int MatMultAdd_SeqBDiag_2(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_3"
+#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_3"
 int MatMultAdd_SeqBDiag_3(Mat A,Vec xx,Vec zz,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -605,7 +605,7 @@ int MatMultAdd_SeqBDiag_3(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_4"
+#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_4"
 int MatMultAdd_SeqBDiag_4(Mat A,Vec xx,Vec zz,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -648,7 +648,7 @@ int MatMultAdd_SeqBDiag_4(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_5"
+#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_5"
 int MatMultAdd_SeqBDiag_5(Mat A,Vec xx,Vec zz,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -692,7 +692,7 @@ int MatMultAdd_SeqBDiag_5(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_N"
+#define __FUNC__ /*<a name=""></a>*/"MatMultAdd_SeqBDiag_N"
 int MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -732,7 +732,7 @@ int MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
      MatMultTranspose ----------------------------------------------
  */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultTranspose_SeqBDiag_1"
+#define __FUNC__ /*<a name=""></a>*/"MatMultTranspose_SeqBDiag_1"
 int MatMultTranspose_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -766,7 +766,7 @@ int MatMultTranspose_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultTranspose_SeqBDiag_N"
+#define __FUNC__ /*<a name=""></a>*/"MatMultTranspose_SeqBDiag_N"
 int MatMultTranspose_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -810,7 +810,7 @@ int MatMultTranspose_SeqBDiag_N(Mat A,Vec xx,Vec yy)
      MatMultTransposeAdd ----------------------------------------------
  */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd_SeqBDiag_1"
+#define __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd_SeqBDiag_1"
 int MatMultTransposeAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -844,7 +844,7 @@ int MatMultTransposeAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd_SeqBDiag_N"
+#define __FUNC__ /*<a name=""></a>*/"MatMultTransposeAdd_SeqBDiag_N"
 int MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
@@ -884,7 +884,7 @@ int MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatRelax_SeqBDiag_N"
+#define __FUNC__ /*<a name=""></a>*/"MatRelax_SeqBDiag_N"
 int MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,
                              PetscReal shift,int its,Vec xx)
 {
@@ -1052,7 +1052,7 @@ int MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 } 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatRelax_SeqBDiag_1"
+#define __FUNC__ /*<a name=""></a>*/"MatRelax_SeqBDiag_1"
 int MatRelax_SeqBDiag_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,
                                PetscReal shift,int its,Vec xx)
 {

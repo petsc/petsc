@@ -1,11 +1,11 @@
-/*$Id: dtexts.c,v 1.27 2000/01/11 20:59:07 bsmith Exp bsmith $*/
+/*$Id: dtexts.c,v 1.28 2000/04/09 04:34:05 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawStringSetSize" 
+#define __FUNC__ /*<a name=""></a>*/"DrawStringSetSize" 
 /*@
    DrawStringSetSize - Sets the size for charactor text.
 

@@ -1,4 +1,4 @@
-/*$Id: dgefa5.c,v 1.9 2000/01/11 21:00:52 bsmith Exp bsmith $*/
+/*$Id: dgefa5.c,v 1.10 2000/04/09 04:36:19 bsmith Exp bsmith $*/
 /*
       Inverts 5 by 5 matrix using partial pivoting.
 
@@ -14,7 +14,7 @@
 #include "petsc.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"Kernel_A_gets_inverse_A_5"
+#define __FUNC__ /*<a name=""></a>*/"Kernel_A_gets_inverse_A_5"
 int Kernel_A_gets_inverse_A_5(MatScalar *a)
 {
     int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[5],*ipvt = ipvt_l-1,kb,k3;

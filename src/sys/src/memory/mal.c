@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.47 2000/01/11 20:59:31 bsmith Exp bsmith $*/
+/*$Id: mal.c,v 1.48 2000/04/09 04:34:35 bsmith Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -102,7 +102,7 @@ int  (*PetscTrFree)(void *,int,char*,char *,char*) = PetscFreeDefault;
 PetscTruth petscsetmallocvisited = PETSC_FALSE;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSetMalloc"
+#define __FUNC__ /*<a name=""></a>*/"PetscSetMalloc"
 /*@C
    PetscSetMalloc - Sets the routines used to do mallocs and frees.
    This routine MUST be called before PetscInitialize() and may be
@@ -130,7 +130,7 @@ int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscClearMalloc"
+#define __FUNC__ /*<a name=""></a>*/"PetscClearMalloc"
 /*@C
    PetscClearMalloc - Resets the routines used to do mallocs and frees to the 
         defaults.

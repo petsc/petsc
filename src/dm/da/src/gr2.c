@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.36 2000/02/02 20:10:29 bsmith Exp bsmith $*/
+/*$Id: gr2.c,v 1.37 2000/04/09 04:39:49 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -22,7 +22,7 @@ typedef struct {
     called from DrawZoom()
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecView_MPI_Draw_DA2d_Zoom"
+#define __FUNC__ /*<a name=""></a>*/"VecView_MPI_Draw_DA2d_Zoom"
 int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
 {
   ZoomCtx *zctx = (ZoomCtx*)ctx;
@@ -68,7 +68,7 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecView_MPI_Draw_DA2d"
+#define __FUNC__ /*<a name=""></a>*/"VecView_MPI_Draw_DA2d"
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 {
   DA             da,dac,dag;
@@ -246,7 +246,7 @@ extern int VecView_MPI_Draw_DA1d(Vec,Viewer);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecView_MPI_DA"
+#define __FUNC__ /*<a name=""></a>*/"VecView_MPI_DA"
 int VecView_MPI_DA(Vec xin,Viewer viewer)
 {
   DA         da;
@@ -281,7 +281,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecLoadIntoVector_Binary_DA"
+#define __FUNC__ /*<a name=""></a>*/"VecLoadIntoVector_Binary_DA"
 int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
 {
   DA             da;

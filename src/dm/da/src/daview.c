@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.41 2000/04/09 03:11:20 bsmith Exp bsmith $*/
+/*$Id: daview.c,v 1.42 2000/04/09 04:39:49 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAView"
+#define __FUNC__ /*<a name=""></a>*/"DAView"
 /*@C
    DAView - Visualizes a distributed array object.
 
@@ -76,7 +76,7 @@ int DAView(DA da,Viewer viewer)
 }  
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAGetInfo"
+#define __FUNC__ /*<a name=""></a>*/"DAGetInfo"
 /*@C
    DAGetInfo - Gets information about a given distributed array.
 
@@ -123,7 +123,7 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,
 }  
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAView_Binary"
+#define __FUNC__ /*<a name=""></a>*/"DAView_Binary"
 int DAView_Binary(DA da,Viewer viewer)
 {
   int            rank,ierr;

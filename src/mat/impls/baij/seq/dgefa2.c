@@ -1,4 +1,4 @@
-/*$Id: dgefa2.c,v 1.4 2000/01/11 21:00:52 bsmith Exp bsmith $*/
+/*$Id: dgefa2.c,v 1.5 2000/04/09 04:36:19 bsmith Exp bsmith $*/
 /*
      Inverts 2 by 2 matrix using partial pivoting.
 
@@ -14,7 +14,7 @@
 #include "petsc.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"Kernel_A_gets_inverse_A_2"
+#define __FUNC__ /*<a name=""></a>*/"Kernel_A_gets_inverse_A_2"
 int Kernel_A_gets_inverse_A_2(MatScalar *a)
 {
     int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[2],*ipvt = ipvt_l-1,k3;

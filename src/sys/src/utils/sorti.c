@@ -1,4 +1,4 @@
-/*$Id: sorti.c,v 1.22 2000/01/11 20:59:39 bsmith Exp bsmith $*/
+/*$Id: sorti.c,v 1.23 2000/04/09 04:34:47 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers. Values are sorted in place.
 
@@ -28,7 +28,7 @@
 #define MTHRESH     6        /* Threshold for median */
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"TeXqsort_Private" 
+#define __FUNC__ /*<a name=""></a>*/"TeXqsort_Private" 
 static int TeXqsort_Private(int *base,int *max)
 {
   int *i;
@@ -118,7 +118,7 @@ static int TeXqsort_Private(int *base,int *max)
 }
 
 #undef __FUNC__
-#define  __FUNC__ /*<a name=""></a>*/"PetsciIqsort" 
+#define __FUNC__ /*<a name=""></a>*/"PetsciIqsort" 
 static int PetsciIqsort(int *base,int right)
 {
   int *i;
@@ -174,7 +174,7 @@ static int PetsciIqsort(int *base,int right)
 /* -----------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetsciIqsort"
+#define __FUNC__ /*<a name=""></a>*/"PetsciIqsort"
 /* 
    A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
@@ -211,7 +211,7 @@ static int PetsciIqsort(int *v,int right)
 #endif
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSortInt" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSortInt" 
 /*@
    PetscSortInt - Sorts an array of integers in place in increasing order.
 

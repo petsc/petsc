@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.5 2000/04/09 03:09:16 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.6 2000/04/09 04:34:45 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -40,7 +40,7 @@ typedef struct {
 static PetscOptionsPublish amspub;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"OptionsSelectBegin"
+#define __FUNC__ /*<a name=""></a>*/"OptionsSelectBegin"
 int OptionsSelectBegin(MPI_Comm comm,char *prefix,char *title)
 {
   AMS_Comm   acomm;
@@ -63,7 +63,7 @@ int OptionsSelectBegin(MPI_Comm comm,char *prefix,char *title)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"OptionsSelectEnd"
+#define __FUNC__ /*<a name=""></a>*/"OptionsSelectEnd"
 int OptionsSelectEnd(MPI_Comm comm)
 {
   int             ierr;
@@ -126,7 +126,7 @@ int OptionsSelectEnd(MPI_Comm comm)
    option name. This is the first item that is always published for an option
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"OptionsSelectCreate"
+#define __FUNC__ /*<a name=""></a>*/"OptionsSelectCreate"
 static int OptionsSelectCreate(char *opt,char *text,PetscOptionsAMS *amsopt)
 {
   int             ierr;
@@ -157,7 +157,7 @@ static int OptionsSelectCreate(char *opt,char *text,PetscOptionsAMS *amsopt)
    given by the text string
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"OptionsSelectInt"
+#define __FUNC__ /*<a name=""></a>*/"OptionsSelectInt"
 int OptionsSelectInt(MPI_Comm comm,char *opt,char *text,int defaultv)
 {
   int             ierr;
@@ -179,7 +179,7 @@ int OptionsSelectInt(MPI_Comm comm,char *opt,char *text,int defaultv)
    given by the text string
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"OptionsSelectDouble"
+#define __FUNC__ /*<a name=""></a>*/"OptionsSelectDouble"
 int OptionsSelectDouble(MPI_Comm comm,char *opt,char *text,double defaultv)
 {
   int             ierr;
@@ -201,7 +201,7 @@ int OptionsSelectDouble(MPI_Comm comm,char *opt,char *text,double defaultv)
    given by the text string
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"OptionsSelectName"
+#define __FUNC__ /*<a name=""></a>*/"OptionsSelectName"
 int OptionsSelectName(MPI_Comm comm,char *opt,char *text)
 {
   int             ierr;
@@ -224,7 +224,7 @@ int OptionsSelectName(MPI_Comm comm,char *opt,char *text)
 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"OptionsSelectList"
+#define __FUNC__ /*<a name=""></a>*/"OptionsSelectList"
 int OptionsSelectList(MPI_Comm comm,char *opt,char *ltext,char **text,int ntext,char *defaultv)
 {
   int             ierr;

@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.37 2000/04/09 03:09:54 bsmith Exp bsmith $*/
+/*$Id: baijfact2.c,v 1.38 2000/04/09 04:36:19 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -9,7 +9,7 @@
 #include "src/inline/dot.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_1_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_1_NaturalOrdering"
 int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -52,7 +52,7 @@ int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_2_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_2_NaturalOrdering"
 int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -109,7 +109,7 @@ int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_3_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_3_NaturalOrdering"
 int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -169,7 +169,7 @@ int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_4_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_4_NaturalOrdering"
 int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -232,7 +232,7 @@ int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_5_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_5_NaturalOrdering"
 int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -298,7 +298,7 @@ int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_6_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_6_NaturalOrdering"
 int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -370,7 +370,7 @@ int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_7_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_7_NaturalOrdering"
 int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -446,7 +446,7 @@ int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 /*---------------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_1"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_1"
 int MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -507,7 +507,7 @@ int MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_2"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_2"
 int MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -590,7 +590,7 @@ int MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_3"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_3"
 int MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -678,7 +678,7 @@ int MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_4"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_4"
 int MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -771,7 +771,7 @@ int MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_5"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_5"
 int MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -869,7 +869,7 @@ int MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_6"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_6"
 int MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -975,7 +975,7 @@ int MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_7"
+#define __FUNC__ /*<a name=""></a>*/"MatSolveTranspose_SeqBAIJ_7"
 int MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1087,7 +1087,7 @@ int MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_N"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_N"
 int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1142,7 +1142,7 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_7"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_7"
 int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1243,7 +1243,7 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_7_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_7_NaturalOrdering"
 int MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
@@ -1338,7 +1338,7 @@ int MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_6"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_6"
 int MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1432,7 +1432,7 @@ int MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_6_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_6_NaturalOrdering"
 int MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
@@ -1511,7 +1511,7 @@ int MatSolve_SeqBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_5"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_5"
 int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1597,7 +1597,7 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_5_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_5_NaturalOrdering"
 int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
@@ -1667,7 +1667,7 @@ int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_4"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_4"
 int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
@@ -1748,7 +1748,7 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
    ordering. This eliminates the need for the column and row permutation.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_4_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_4_NaturalOrdering"
 int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
@@ -1837,7 +1837,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_3"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_3"
 int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1909,7 +1909,7 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
    ordering. This eliminates the need for the column and row permutation.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_3_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_3_NaturalOrdering"
 int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
@@ -1974,7 +1974,7 @@ int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_2"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_2"
 int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -2043,7 +2043,7 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
    ordering. This eliminates the need for the column and row permutation.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_2_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_2_NaturalOrdering"
 int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
@@ -2102,7 +2102,7 @@ int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_1"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_1"
 int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -2158,7 +2158,7 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
    ordering. This eliminates the need for the column and row permutation.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_1_NaturalOrdering"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqBAIJ_1_NaturalOrdering"
 int MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
@@ -2222,7 +2222,7 @@ int MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 extern int MatMissingDiagonal_SeqBAIJ(Mat);
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatILUFactorSymbolic_SeqBAIJ"
+#define __FUNC__ /*<a name=""></a>*/"MatILUFactorSymbolic_SeqBAIJ"
 int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fact)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;

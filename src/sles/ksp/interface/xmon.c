@@ -1,9 +1,9 @@
-/*$Id: xmon.c,v 1.44 2000/01/11 21:01:56 bsmith Exp bsmith $*/
+/*$Id: xmon.c,v 1.45 2000/04/09 04:37:45 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"              /*I  "ksp.h"   I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPLGMonitorCreate"
+#define __FUNC__ /*<a name=""></a>*/"KSPLGMonitorCreate"
 /*@C
    KSPLGMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of preconditioned residual norms.
@@ -46,7 +46,7 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,DrawLG *dr
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPLGMonitor"
+#define __FUNC__ /*<a name=""></a>*/"KSPLGMonitor"
 int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
   DrawLG    lg = (DrawLG) monctx;
@@ -74,7 +74,7 @@ int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 } 
  
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPLGMonitorDestroy"
+#define __FUNC__ /*<a name=""></a>*/"KSPLGMonitorDestroy"
 /*@C
    KSPLGMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGMonitorCreate().
@@ -103,7 +103,7 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitorCreate"
+#define __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitorCreate"
 /*@C
    KSPLGTrueMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of true residual norms (as opposed to
@@ -151,7 +151,7 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitor"
+#define __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitor"
 int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
   DrawLG    lg = (DrawLG) monctx;
@@ -192,7 +192,7 @@ int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 } 
  
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitorDestroy"
+#define __FUNC__ /*<a name=""></a>*/"KSPLGTrueMonitorDestroy"
 /*@C
    KSPLGTrueMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGTrueMonitorCreate().

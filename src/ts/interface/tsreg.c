@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.58 2000/02/02 20:10:14 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.59 2000/04/09 04:39:08 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
 
@@ -6,7 +6,7 @@ FList      TSList              = 0;
 PetscTruth TSRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSSetType"
+#define __FUNC__ /*<a name=""></a>*/"TSSetType"
 /*@C
    TSSetType - Sets the method for the timestepping solver.  
 
@@ -74,7 +74,7 @@ int TSSetType(TS ts,TSType type)
 
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSRegisterDestroy"
+#define __FUNC__ /*<a name=""></a>*/"TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of timesteppers that were
    registered by FListAddDynamic().
@@ -101,7 +101,7 @@ int TSRegisterDestroy(void)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSGetType"
+#define __FUNC__ /*<a name=""></a>*/"TSGetType"
 /*@C
    TSGetType - Gets the TS method type (as a string).
 
@@ -128,7 +128,7 @@ int TSGetType(TS ts,TSType *type)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSPrintHelp"
+#define __FUNC__ /*<a name=""></a>*/"TSPrintHelp"
 /*@
    TSPrintHelp - Prints all options for the TS (timestepping) component.
 
@@ -168,7 +168,7 @@ int TSPrintHelp(TS ts)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSSetTypeFromOptions"
+#define __FUNC__ /*<a name=""></a>*/"TSSetTypeFromOptions"
 /*@
    TSSetTypeFromOptions - Sets the TS type from the options database; sets 
      a default if none is given.
@@ -207,7 +207,7 @@ int TSSetTypeFromOptions(TS ts)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSSetFromOptions"
+#define __FUNC__ /*<a name=""></a>*/"TSSetFromOptions"
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
 

@@ -1,9 +1,9 @@
-/*$Id: pgname.c,v 1.19 2000/01/11 20:59:32 bsmith Exp bsmith $*/
+/*$Id: pgname.c,v 1.20 2000/04/09 04:34:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscObjectGetName"
+#define __FUNC__ /*<a name=""></a>*/"PetscObjectGetName"
 /*@C
    PetscObjectGetName - Gets a string name associated with a PETSc object.
 

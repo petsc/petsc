@@ -1,11 +1,11 @@
-/*$Id: dgpause.c,v 1.19 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dgpause.c,v 1.20 2000/04/09 04:34:05 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawGetPause" 
+#define __FUNC__ /*<a name=""></a>*/"DrawGetPause" 
 /*@
    DrawGetPause - Gets the amount of time that program pauses after 
    a DrawPause() is called. 

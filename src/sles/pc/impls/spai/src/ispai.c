@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.10 2000/03/01 03:55:18 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.11 2000/04/09 04:40:17 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -56,7 +56,7 @@ typedef struct {
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSetUp_SPAI"
 static int PCSetUp_SPAI(PC pc)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -120,7 +120,7 @@ static int PCSetUp_SPAI(PC pc)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApply_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCApply_SPAI"
 static int PCApply_SPAI(PC pc,Vec x,Vec y)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -135,7 +135,7 @@ static int PCApply_SPAI(PC pc,Vec x,Vec y)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCDestroy_SPAI"
 static int PCDestroy_SPAI(PC pc)
 {
   int     ierr;
@@ -150,7 +150,7 @@ static int PCDestroy_SPAI(PC pc)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCView_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCView_SPAI"
 static int PCView_SPAI(PC pc,Viewer viewer)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -176,7 +176,7 @@ static int PCView_SPAI(PC pc,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetEpsilon_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetEpsilon_SPAI"
 int PCSPAISetEpsilon_SPAI(PC pc,double epsilon)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -190,7 +190,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetNBSteps_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetNBSteps_SPAI"
 int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -205,7 +205,7 @@ EXTERN_C_END
 /* added 1/7/99 g.h. */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetMax_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetMax_SPAI"
 int PCSPAISetMax_SPAI(PC pc,int max)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -219,7 +219,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetMaxNew_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetMaxNew_SPAI"
 int PCSPAISetMaxNew_SPAI(PC pc,int maxnew)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -233,7 +233,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetBlockSize_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetBlockSize_SPAI"
 int PCSPAISetBlockSize_SPAI(PC pc,int block_size)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -247,7 +247,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetCacheSize_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetCacheSize_SPAI"
 int PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -261,7 +261,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetVerbose_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetVerbose_SPAI"
 int PCSPAISetVerbose_SPAI(PC pc,int verbose)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -275,7 +275,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetSp_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetSp_SPAI"
 int PCSPAISetSp_SPAI(PC pc,int sp)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -288,7 +288,7 @@ EXTERN_C_END
 /* -------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetEpsilon"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetEpsilon"
 int PCSPAISetEpsilon(PC pc,double epsilon)
 {
   int ierr,(*f)(PC,double);
@@ -303,7 +303,7 @@ int PCSPAISetEpsilon(PC pc,double epsilon)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetNBSteps"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetNBSteps"
 int PCSPAISetNBSteps(PC pc,int nbsteps)
 {
   int ierr,(*f)(PC,int);
@@ -319,7 +319,7 @@ int PCSPAISetNBSteps(PC pc,int nbsteps)
 
 /* added 1/7/99 g.h. */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetMax"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetMax"
 int PCSPAISetMax(PC pc,int max)
 {
   int ierr,(*f)(PC,int);
@@ -334,7 +334,7 @@ int PCSPAISetMax(PC pc,int max)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetMaxNew"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetMaxNew"
 int PCSPAISetMaxNew(PC pc,int maxnew)
 {
   int ierr,(*f)(PC,int);
@@ -349,7 +349,7 @@ int PCSPAISetMaxNew(PC pc,int maxnew)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetBlockSize"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetBlockSize"
 int PCSPAISetBlockSize(PC pc,int block_size)
 {
   int ierr,(*f)(PC,int);
@@ -364,7 +364,7 @@ int PCSPAISetBlockSize(PC pc,int block_size)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetCacheSize"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetCacheSize"
 int PCSPAISetCacheSize(PC pc,int cache_size)
 {
   int ierr,(*f)(PC,int);
@@ -379,7 +379,7 @@ int PCSPAISetCacheSize(PC pc,int cache_size)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetVerbose"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetVerbose"
 int PCSPAISetVerbose(PC pc,int verbose)
 {
   int ierr,(*f)(PC,int);
@@ -394,7 +394,7 @@ int PCSPAISetVerbose(PC pc,int verbose)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSPAISetSp"
+#define __FUNC__ /*<a name=""></a>*/"PCSPAISetSp"
 int PCSPAISetSp(PC pc,int sp)
 {
   int ierr,(*f)(PC,int);
@@ -411,7 +411,7 @@ int PCSPAISetSp(PC pc,int sp)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_SPAI"
 static int PCSetFromOptions_SPAI(PC pc)
 {
   int        ierr,nbsteps,max,maxnew,block_size,cache_size,verbose,sp;
@@ -458,7 +458,7 @@ static int PCSetFromOptions_SPAI(PC pc)
 /**********************************************************************/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCPrintHelp_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_SPAI"
 static int PCPrintHelp_SPAI(PC pc,char *p)
 {
   PetscFunctionBegin;
@@ -483,7 +483,7 @@ EXTERN_C_BEGIN
 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCreate_SPAI"
+#define __FUNC__ /*<a name=""></a>*/"PCCreate_SPAI"
 int PCCreate_SPAI(PC pc)
 {
   PC_SPAI *ispai;
@@ -547,7 +547,7 @@ EXTERN_C_END
    Converts from a PETSc matrix to an SPAI matrix 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ConvertMatToMatrix"
+#define __FUNC__ /*<a name=""></a>*/"ConvertMatToMatrix"
 int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 {
   matrix   *M;
@@ -723,7 +723,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
    COMPRESSED-ROW format.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ConvertMatrixToMat"
+#define __FUNC__ /*<a name=""></a>*/"ConvertMatrixToMat"
 int ConvertMatrixToMat(matrix *B,Mat *PB)
 {
   int size,rank;
@@ -785,7 +785,7 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
    Converts from an SPAI vector v  to a PETSc vec Pv.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ConvertVectorToVec"
+#define __FUNC__ /*<a name=""></a>*/"ConvertVectorToVec"
 int ConvertVectorToVec(vector *v,Vec *Pv)
 {
   int size,rank;
@@ -845,7 +845,7 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MM_to_PETSC"
+#define __FUNC__ /*<a name=""></a>*/"MM_to_PETSC"
 int MM_to_PETSC(char *f0,char *f1,char *f2)
 {
   Mat        A_PETSC;          /* matrix */

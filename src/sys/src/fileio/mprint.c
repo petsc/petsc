@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.43 2000/01/11 20:59:28 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.44 2000/04/09 04:34:31 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -27,7 +27,7 @@ int         queuelength = 0;
 FILE        *queuefile  = PETSC_NULL;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSynchronizedPrintf" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedPrintf" 
 /*@C
     PetscSynchronizedPrintf - Prints synchronized output from several processors.
     Output of the first processor is followed by that of the second, etc.
@@ -96,7 +96,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 }
  
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSynchronizedFPrintf" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedFPrintf" 
 /*@C
     PetscSynchronizedFPrintf - Prints synchronized output to the specified file from
     several processors.  Output of the first processor is followed by that of the 
@@ -171,7 +171,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSynchronizedFlush" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSynchronizedFlush" 
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors 
     involved in previous PetscSynchronizedPrintf() calls.
@@ -242,7 +242,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 /* ---------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscFPrintf" 
+#define __FUNC__ /*<a name=""></a>*/"PetscFPrintf" 
 /*@C
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
@@ -293,7 +293,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscPrintf" 
+#define __FUNC__ /*<a name=""></a>*/"PetscPrintf" 
 /*@C
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator.
@@ -372,7 +372,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
 
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscHelpPrintfDefault" 
+#define __FUNC__ /*<a name=""></a>*/"PetscHelpPrintfDefault" 
 /*@C
     PetscHelpPrintfDefault - Prints to standard out, only from the first
     processor in the communicator.
@@ -423,7 +423,7 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscErrorPrintfDefault" 
+#define __FUNC__ /*<a name=""></a>*/"PetscErrorPrintfDefault" 
 /*@C
     PetscErrorPrintfDefault - Prints error messages.
 

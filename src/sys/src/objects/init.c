@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.56 2000/01/21 19:14:51 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.57 2000/04/09 04:34:38 bsmith Exp bsmith $*/
 /*
 
    This file defines the initialization of PETSc, including PetscInitialize()
@@ -68,7 +68,7 @@ extern int FListDestroyAll(void);
 FILE *petsc_history = 0;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PLogOpenHistoryFile"
+#define __FUNC__ /*<a name=""></a>*/"PLogOpenHistoryFile"
 int PLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   int  ierr,rank,size;
@@ -102,7 +102,7 @@ int PLogOpenHistoryFile(const char filename[],FILE **fd)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PLogCloseHistoryFile"
+#define __FUNC__ /*<a name=""></a>*/"PLogCloseHistoryFile"
 int PLogCloseHistoryFile(FILE **fd)
 {
   int  rank,ierr;
@@ -126,7 +126,7 @@ int    PetscCompare          = 0;
 PetscReal PetscCompareTolerance = 1.e-10;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscCompareInt"
+#define __FUNC__ /*<a name=""></a>*/"PetscCompareInt"
 /*@C
    PetscCompareInt - Compares integers while running with PETScs incremental
    debugger.
@@ -156,7 +156,7 @@ int PetscCompareInt(int d)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscCompareDouble"
+#define __FUNC__ /*<a name=""></a>*/"PetscCompareDouble"
 /*@C
    PetscCompareDouble - Compares doubles while running with PETScs incremental
    debugger.
@@ -189,7 +189,7 @@ int PetscCompareDouble(double d)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscCompareScalar"
+#define __FUNC__ /*<a name=""></a>*/"PetscCompareScalar"
 /*@C
    PetscCompareScalar - Compares scalars while running with PETScs incremental
    debugger.
@@ -222,7 +222,7 @@ int PetscCompareScalar(Scalar d)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscCompareInitialize"
+#define __FUNC__ /*<a name=""></a>*/"PetscCompareInitialize"
 /*
     PetscCompareInitialize - If there is a command line option -compare then
     this routine calls MPI_Init() and sets up two PETSC_COMM_WORLD, one for 
@@ -292,7 +292,7 @@ int PetscCompareInitialize(double tol)
 */
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"Petsc_MPI_AbortOnError"
+#define __FUNC__ /*<a name=""></a>*/"Petsc_MPI_AbortOnError"
 void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag) 
 {
   PetscFunctionBegin;
@@ -301,7 +301,7 @@ void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"Petsc_MPI_DebuggerOnError"
+#define __FUNC__ /*<a name=""></a>*/"Petsc_MPI_DebuggerOnError"
 void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag) 
 {
   int ierr;
@@ -328,7 +328,7 @@ extern PetscTruth petscsetmallocvisited;
 static char       emacsmachinename[128];
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"OptionsCheckInitial"
+#define __FUNC__ /*<a name=""></a>*/"OptionsCheckInitial"
 int OptionsCheckInitial(void)
 {
   char       string[64],mname[256],*f;

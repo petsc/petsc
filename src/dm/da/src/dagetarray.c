@@ -1,9 +1,9 @@
-/*$Id: dagetarray.c,v 1.3 2000/04/09 03:11:20 bsmith Exp bsmith $*/
+/*$Id: dagetarray.c,v 1.4 2000/04/09 04:39:49 bsmith Exp bsmith $*/
  
 #include "da.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAVecGetArray"
+#define __FUNC__ /*<a name=""></a>*/"DAVecGetArray"
 /*@
    DAVecGetArray - Returns an multiple dimension array that shares data with 
       the underlying vector and is indexed using the global dimensions.
@@ -47,18 +47,18 @@ int DAVecGetArray(DA da,Vec vec,void **array)
     gys = ys;
     gzs = zs;
   } else if (N != gxm*gym*gzm*dof) {
-    SETERRQ2(1,1,"Vector local size %d is not compatible with DA local sizes %d %d\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
+    SETERRQ3(1,1,"Vector local size %d is not compatible with DA local sizes %d %d\n",N,xm*ym*zm*dof,gxm*gym*gzm*dof);
   }
 
   if (dim == 1) {
     if (dof == 1) {
-      ierr = VecGetArray1d(vec,gxm,gxs,(double **)array);CHKERRQ(ierr);
+      ierr = VecGetArray1d(vec,gxm,gxs,(Scalar **)array);CHKERRQ(ierr);
     } else {
-      ierr = VecGetArray2d(vec,gxm,dof,gxs,0,(double***)array);CHKERRQ(ierr);
+      ierr = VecGetArray2d(vec,gxm,dof,gxs,0,(Scalar***)array);CHKERRQ(ierr);
     }
   } else if (dim == 2) {
     if (dof == 1) {
-      ierr = VecGetArray2d(vec,gym,gxm,gys,gxs,(double***)array);CHKERRQ(ierr);
+      ierr = VecGetArray2d(vec,gym,gxm,gys,gxs,(Scalar***)array);CHKERRQ(ierr);
     } else {
       SETERRQ(1,1,"Not yet done");
     }
@@ -76,7 +76,7 @@ int DAVecGetArray(DA da,Vec vec,void **array)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAVecRestoreArray"
+#define __FUNC__ /*<a name=""></a>*/"DAVecRestoreArray"
 /*@
    DAVecRestoreArray - Restores a multiple dimension array obtained with DAVecGetArray()
 
@@ -117,13 +117,13 @@ int DAVecRestoreArray(DA da,Vec vec,void **array)
 
   if (dim == 1) {
     if (dof == 1) {
-      ierr = VecRestoreArray1d(vec,gxm,gxs,(double **)array);CHKERRQ(ierr);
+      ierr = VecRestoreArray1d(vec,gxm,gxs,(Scalar **)array);CHKERRQ(ierr);
     } else {
-      ierr = VecRestoreArray2d(vec,gxm,dof,gxs,0,(double***)array);CHKERRQ(ierr);
+      ierr = VecRestoreArray2d(vec,gxm,dof,gxs,0,(Scalar***)array);CHKERRQ(ierr);
     }
   } else if (dim == 2) {
     if (dof == 1) {
-      ierr = VecRestoreArray2d(vec,gym,gxm,gys,gxs,(double***)array);CHKERRQ(ierr);
+      ierr = VecRestoreArray2d(vec,gym,gxm,gys,gxs,(Scalar***)array);CHKERRQ(ierr);
     } else {
       ;
     }

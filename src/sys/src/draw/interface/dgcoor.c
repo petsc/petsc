@@ -1,11 +1,11 @@
-/*$Id: dgcoor.c,v 1.21 2000/01/11 20:59:07 bsmith Exp bsmith $*/
+/*$Id: dgcoor.c,v 1.22 2000/04/09 04:34:05 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawGetCoordinates" 
+#define __FUNC__ /*<a name=""></a>*/"DrawGetCoordinates" 
 /*@
    DrawGetCoordinates - Gets the application coordinates of the corners of
    the window (or page).

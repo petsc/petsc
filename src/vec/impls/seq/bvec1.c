@@ -1,4 +1,4 @@
-/*$Id: bvec1.c,v 1.34 2000/01/11 21:00:12 bsmith Exp bsmith $*/
+/*$Id: bvec1.c,v 1.35 2000/04/09 04:35:28 bsmith Exp bsmith $*/
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -10,7 +10,7 @@
 #include "pinclude/blaslapack.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecDot_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecDot_Seq"
 int VecDot_Seq(Vec xin,Vec yin,Scalar *z)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -38,7 +38,7 @@ int VecDot_Seq(Vec xin,Vec yin,Scalar *z)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecTDot_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecTDot_Seq"
 int VecTDot_Seq(Vec xin,Vec yin,Scalar *z)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -64,7 +64,7 @@ int VecTDot_Seq(Vec xin,Vec yin,Scalar *z)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecScale_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecScale_Seq"
 int VecScale_Seq(const Scalar *alpha,Vec xin)
 {
   Vec_Seq *x = (Vec_Seq*)xin->data;
@@ -77,7 +77,7 @@ int VecScale_Seq(const Scalar *alpha,Vec xin)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecCopy_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecCopy_Seq"
 int VecCopy_Seq(Vec xin,Vec yin)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -91,7 +91,7 @@ int VecCopy_Seq(Vec xin,Vec yin)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecSwap_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecSwap_Seq"
 int VecSwap_Seq(Vec xin,Vec yin)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
@@ -103,7 +103,7 @@ int VecSwap_Seq(Vec xin,Vec yin)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecAXPY_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecAXPY_Seq"
 int VecAXPY_Seq(const Scalar *alpha,Vec xin,Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -119,7 +119,7 @@ int VecAXPY_Seq(const Scalar *alpha,Vec xin,Vec yin)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecAXPBY_Seq"
+#define __FUNC__ /*<a name=""></a>*/"VecAXPBY_Seq"
 int VecAXPBY_Seq(const Scalar *alpha,const Scalar *beta,Vec xin,Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;

@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.43 2000/03/06 03:26:18 bsmith Exp bsmith $*/
+/*$Id: beuler.c,v 1.44 2000/04/09 04:39:12 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -17,7 +17,7 @@ typedef struct {
   single matrix that is to be used for all timesteps.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSStep_BEuler_Linear_Constant_Matrix"
+#define __FUNC__ /*<a name=""></a>*/"TSStep_BEuler_Linear_Constant_Matrix"
 static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
@@ -56,7 +56,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
       Version where matrix depends on time 
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSStep_BEuler_Linear_Variable_Matrix"
+#define __FUNC__ /*<a name=""></a>*/"TSStep_BEuler_Linear_Variable_Matrix"
 static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 {
   TS_BEuler    *beuler = (TS_BEuler*)ts->data;
@@ -108,7 +108,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
     Version for nonlinear PDE.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSStep_BEuler_Nonlinear"
+#define __FUNC__ /*<a name=""></a>*/"TSStep_BEuler_Nonlinear"
 static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
 {
   Vec       sol = ts->vec_sol;
@@ -138,7 +138,7 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
 
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSDestroy_BEuler"
+#define __FUNC__ /*<a name=""></a>*/"TSDestroy_BEuler"
 static int TSDestroy_BEuler(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
@@ -160,7 +160,7 @@ static int TSDestroy_BEuler(TS ts)
 */
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSBEulerMatMult"
+#define __FUNC__ /*<a name=""></a>*/"TSBEulerMatMult"
 int TSBEulerMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
@@ -184,7 +184,7 @@ int TSBEulerMatMult(Mat mat,Vec x,Vec y)
               U^{n+1} - dt*F(U^{n+1}) - U^{n}
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSBEulerFunction"
+#define __FUNC__ /*<a name=""></a>*/"TSBEulerFunction"
 int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS     ts = (TS) ctx;
@@ -215,7 +215,7 @@ int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
              J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSBEulerJacobian"
+#define __FUNC__ /*<a name=""></a>*/"TSBEulerJacobian"
 int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   TS      ts = (TS) ctx;
@@ -244,7 +244,7 @@ int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
 
 /* ------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSSetUp_BEuler_Linear_Constant_Matrix"
+#define __FUNC__ /*<a name=""></a>*/"TSSetUp_BEuler_Linear_Constant_Matrix"
 static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
@@ -275,7 +275,7 @@ static int TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSSetUp_BEuler_Linear_Variable_Matrix"
+#define __FUNC__ /*<a name=""></a>*/"TSSetUp_BEuler_Linear_Variable_Matrix"
 static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
@@ -294,7 +294,7 @@ static int TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSSetUp_BEuler_Nonlinear"
+#define __FUNC__ /*<a name=""></a>*/"TSSetUp_BEuler_Nonlinear"
 static int TSSetUp_BEuler_Nonlinear(TS ts)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
@@ -316,7 +316,7 @@ static int TSSetUp_BEuler_Nonlinear(TS ts)
 /*------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSSetFromOptions_BEuler_Linear"
+#define __FUNC__ /*<a name=""></a>*/"TSSetFromOptions_BEuler_Linear"
 static int TSSetFromOptions_BEuler_Linear(TS ts)
 {
   int ierr;
@@ -328,7 +328,7 @@ static int TSSetFromOptions_BEuler_Linear(TS ts)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSSetFromOptions_BEuler_Nonlinear"
+#define __FUNC__ /*<a name=""></a>*/"TSSetFromOptions_BEuler_Nonlinear"
 static int TSSetFromOptions_BEuler_Nonlinear(TS ts)
 {
   int ierr;
@@ -340,7 +340,7 @@ static int TSSetFromOptions_BEuler_Nonlinear(TS ts)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSPrintHelp_BEuler"
+#define __FUNC__ /*<a name=""></a>*/"TSPrintHelp_BEuler"
 static int TSPrintHelp_BEuler(TS ts,char *p)
 {
   PetscFunctionBegin;
@@ -348,7 +348,7 @@ static int TSPrintHelp_BEuler(TS ts,char *p)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSView_BEuler"
+#define __FUNC__ /*<a name=""></a>*/"TSView_BEuler"
 static int TSView_BEuler(TS ts,Viewer viewer)
 {
   PetscFunctionBegin;
@@ -358,7 +358,7 @@ static int TSView_BEuler(TS ts,Viewer viewer)
 /* ------------------------------------------------------------ */
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"TSCreate_BEuler"
+#define __FUNC__ /*<a name=""></a>*/"TSCreate_BEuler"
 int TSCreate_BEuler(TS ts)
 {
   TS_BEuler *beuler;

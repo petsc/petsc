@@ -1,11 +1,11 @@
-/*$Id: dlinew.c,v 1.24 2000/01/11 20:59:07 bsmith Exp bsmith $*/
+/*$Id: dlinew.c,v 1.25 2000/04/09 04:34:05 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawLineSetWidth" 
+#define __FUNC__ /*<a name=""></a>*/"DrawLineSetWidth" 
 /*@
    DrawLineSetWidth - Sets the line width for future draws.  The width is
    relative to the user coordinates of the window; 0.0 denotes the natural

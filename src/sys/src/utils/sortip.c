@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.27 2000/01/11 20:59:39 bsmith Exp bsmith $*/
+/*$Id: sortip.c,v 1.28 2000/04/09 04:34:47 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -12,7 +12,7 @@
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetsciIqsortPerm"
+#define __FUNC__ /*<a name=""></a>*/"PetsciIqsortPerm"
 static int PetsciIqsortPerm(const int v[],int vdx[],int right)
 {
   int tmp,i,vl,last;
@@ -37,7 +37,7 @@ static int PetsciIqsortPerm(const int v[],int vdx[],int right)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSortIntWithPermutation"
+#define __FUNC__ /*<a name=""></a>*/"PetscSortIntWithPermutation"
 /*@
    PetscSortIntWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.
@@ -82,7 +82,7 @@ int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 /* ---------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetsciDqsortPerm"
+#define __FUNC__ /*<a name=""></a>*/"PetsciDqsortPerm"
 static int PetsciDqsortPerm(const double v[],int vdx[],int right)
 {
   double vl;
@@ -108,7 +108,7 @@ static int PetsciDqsortPerm(const double v[],int vdx[],int right)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSortDoubleWithPermutation"
+#define __FUNC__ /*<a name=""></a>*/"PetscSortDoubleWithPermutation"
 /*@
    PetscSortDoubleWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.

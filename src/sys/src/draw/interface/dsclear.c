@@ -1,11 +1,11 @@
-/*$Id: dsclear.c,v 1.20 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dsclear.c,v 1.21 2000/04/09 04:34:05 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawSynchronizedClear" 
+#define __FUNC__ /*<a name=""></a>*/"DrawSynchronizedClear" 
 /*@
    DrawSynchronizedClear - Clears graphical output. All processors must call this routine.
    Does not return until the draw in context is clear.

@@ -1,4 +1,4 @@
-/*$Id: daghost.c,v 1.19 2000/01/11 21:03:19 bsmith Exp bsmith $*/
+/*$Id: daghost.c,v 1.20 2000/04/09 04:39:49 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAGetGhostCorners"
+#define __FUNC__ /*<a name=""></a>*/"DAGetGhostCorners"
 /*@
    DAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
    corner of the local region, including ghost points.

@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.110 2000/04/07 15:03:06 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.111 2000/04/09 04:39:49 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -14,7 +14,7 @@ EXTERN_C_END
 #endif
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAView_1d"
+#define __FUNC__ /*<a name=""></a>*/"DAView_1d"
 int DAView_1d(DA da,Viewer viewer)
 {
   int        rank,ierr;
@@ -89,7 +89,7 @@ int DAView_1d(DA da,Viewer viewer)
 extern int DAPublish_Petsc(PetscObject);
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DACreate1d"
+#define __FUNC__ /*<a name=""></a>*/"DACreate1d"
 /*@C
    DACreate1d - Creates an object that will manage the communication of  one-dimensional 
    regular array data that is distributed across some processors.

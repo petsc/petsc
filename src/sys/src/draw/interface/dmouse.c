@@ -1,11 +1,11 @@
-/*$Id: dmouse.c,v 1.28 2000/01/11 20:59:07 bsmith Exp bsmith $*/
+/*$Id: dmouse.c,v 1.29 2000/04/09 04:34:05 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawGetMouseButton" 
+#define __FUNC__ /*<a name=""></a>*/"DrawGetMouseButton" 
 /*@
     DrawGetMouseButton - Returns location of mouse and which button was
     pressed. Waits for button to be pressed.
@@ -43,7 +43,7 @@ int DrawGetMouseButton(Draw draw,DrawButton *button,PetscReal* x_user,PetscReal 
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawSynchronizedGetMouseButton" 
+#define __FUNC__ /*<a name=""></a>*/"DrawSynchronizedGetMouseButton" 
 /*@
     DrawSynchronizedGetMouseButton - Returns location of mouse and which button was
     pressed. Waits for button to be pressed.

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.105 2000/01/30 15:26:31 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.106 2000/04/09 03:09:43 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -86,6 +86,14 @@ struct _MatOps {
             (*unscalesystem)(Mat,Vec,Vec);
 };
 
+/*
+   Utility private matrix routines
+*/
+extern int MatConvert_Basic(Mat,MatType,Mat*);
+extern int MatCopy_Basic(Mat,Mat,MatStructure);
+extern int MatView_Private(Mat);
+extern int MatGetMaps_Petsc(Mat,Map *,Map *);
+
 /* 
   The stash is used to temporarily store inserted matrix values that 
   belong to another processor. During the assembly phase the stashed 
@@ -115,6 +123,32 @@ typedef struct {
   int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
   int           nprocessed;             /* number of messages already processed */
 } MatStash;
+
+extern int MatStashCreate_Private(MPI_Comm,int,MatStash*);
+extern int MatStashDestroy_Private(MatStash*);
+extern int MatStashScatterEnd_Private(MatStash*);
+extern int MatStashSetInitialSize_Private(MatStash*,int);
+extern int MatStashGetInfo_Private(MatStash*,int*,int*);
+extern int MatStashValuesRow_Private(MatStash*,int,int,int*,Scalar*);
+extern int MatStashValuesCol_Private(MatStash*,int,int,int*,Scalar*,int);
+extern int MatStashValuesRowBlocked_Private(MatStash*,int,int,int*,Scalar*,int,int,int);
+extern int MatStashValuesColBlocked_Private(MatStash*,int,int,int*,Scalar*,int,int,int);
+extern int MatStashScatterBegin_Private(MatStash*,int*);
+extern int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
+/*
+   When MatScalar == float one can either stash in single precision or the usual double
+*/
+#if defined(PETSC_USE_MAT_SINGLE)
+extern int MatStashValuesRow_Private_MatScalar(MatStash*,int,int,int*,MatScalar*);
+extern int MatStashValuesCol_Private_MatScalar(MatStash*,int,int,int*,MatScalar*,int);
+extern int MatStashValuesRowBlocked_Private_MatScalar(MatStash*,int,int,int*,MatScalar*,int,int,int);
+extern int MatStashValuesColBlocked_Private_MatScalar(MatStash*,int,int,int*,MatScalar*,int,int,int);
+#else
+#define MatStashValuesRow_Private_MatScalar        MatStashValuesRow_Private
+#define MatStashValuesCol_Private_MatScalar        MatStashValuesCol_Private
+#define MatStashValuesRowBlocked_Private_MatScalar MatStashValuesRowBlocked_Private
+#define MatStashValuesColBlocked_Private_MatScalar MatStashValuesColBlocked_Private
+#endif
 
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2
@@ -215,22 +249,7 @@ struct  _p_MatFDColoring{
   void   *fctx;            /* optional user-defined context for use by the function f */
 };
 
-extern int MatStashCreate_Private(MPI_Comm,int,MatStash*);
-extern int MatStashDestroy_Private(MatStash*);
-extern int MatStashScatterEnd_Private(MatStash*);
-extern int MatStashSetInitialSize_Private(MatStash*,int);
-extern int MatStashGetInfo_Private(MatStash*,int*,int*);
-extern int MatStashValuesRow_Private(MatStash*,int,int,int*,Scalar*);
-extern int MatStashValuesCol_Private(MatStash*,int,int,int*,Scalar*,int);
-extern int MatStashValuesRowBlocked_Private(MatStash*,int,int,int*,Scalar*,int,int,int);
-extern int MatStashValuesColBlocked_Private(MatStash*,int,int,int*,Scalar*,int,int,int);
-extern int MatStashScatterBegin_Private(MatStash*,int*);
-extern int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,MatScalar**,int*);
 
-extern int MatConvert_Basic(Mat,MatType,Mat*);
-extern int MatCopy_Basic(Mat,Mat,MatStructure);
-extern int MatView_Private(Mat);
-extern int MatGetMaps_Petsc(Mat,Map *,Map *);
 
 #endif
 

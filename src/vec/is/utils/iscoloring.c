@@ -1,10 +1,10 @@
-/*$Id: iscoloring.c,v 1.54 2000/03/31 21:12:31 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.55 2000/04/09 04:35:18 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISColoringDestroy"
+#define __FUNC__ /*<a name=""></a>*/"ISColoringDestroy"
 /*@C
    ISColoringDestroy - Destroys a coloring context.
 
@@ -77,7 +77,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISColoringGetIS"
+#define __FUNC__ /*<a name=""></a>*/"ISColoringGetIS"
 /*@C
    ISColoringGetIS - Extracts index sets from the coloring context
 
@@ -106,7 +106,7 @@ int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISColoringCreate"
+#define __FUNC__ /*<a name=""></a>*/"ISColoringCreate"
 /*@C
     ISColoringCreate - Generates an ISColoring context from lists (provided 
     by each processor) of colors for each node.
@@ -203,7 +203,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISPartitioningToNumbering"
+#define __FUNC__ /*<a name=""></a>*/"ISPartitioningToNumbering"
 /*@C
     ISPartitioningToNumbering - Takes an ISPartitioning and on each processor
     generates an IS that contains a new global node number for each index based
@@ -284,7 +284,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISPartitioningCount"
+#define __FUNC__ /*<a name=""></a>*/"ISPartitioningCount"
 /*@C
     ISPartitioningCount - Takes a ISPartitioning and determines the number of 
     resulting elements on each processor
@@ -341,7 +341,7 @@ int ISPartitioningCount(IS part,int count[])
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISAllGather"
+#define __FUNC__ /*<a name=""></a>*/"ISAllGather"
 /*@C
     ISAllGather - Given an index set (IS) on each processor, generates a large 
     index set (same on each processor) by concatenating together each

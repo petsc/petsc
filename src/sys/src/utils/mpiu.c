@@ -1,9 +1,9 @@
-/*$Id: mpiu.c,v 1.94 2000/02/02 20:08:24 bsmith Exp bsmith $*/
+/*$Id: mpiu.c,v 1.95 2000/04/09 04:34:47 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseBegin_Private" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseBegin_Private" 
 int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
   int        lidx,np,tag = 0,ierr;
@@ -24,7 +24,7 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseEnd_Private" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseEnd_Private" 
 int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
   int        lidx,np,tag = 0,ierr;
@@ -53,7 +53,7 @@ int PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseBegin" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseBegin" 
 /*@C
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
@@ -110,7 +110,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseEnd" 
+#define __FUNC__ /*<a name=""></a>*/"PetscSequentialPhaseEnd" 
 /*@C
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 

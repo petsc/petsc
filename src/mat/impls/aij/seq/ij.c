@@ -1,9 +1,9 @@
-/*$Id: ij.c,v 1.34 2000/01/11 21:00:37 bsmith Exp bsmith $*/
+/*$Id: ij.c,v 1.35 2000/04/09 04:36:00 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatToSymmetricIJ_SeqAIJ"
+#define __FUNC__ /*<a name=""></a>*/"MatToSymmetricIJ_SeqAIJ"
 /*
   MatToSymmetricIJ_SeqAIJ - Convert a (generally nonsymmetric) sparse AIJ matrix
            to IJ format (ignore the "A" part) Allocates the space needed. Uses only 

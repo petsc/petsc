@@ -1,4 +1,4 @@
-/*$Id: rcm.c,v 1.11 2000/01/11 21:01:25 bsmith Exp bsmith $*/
+/*$Id: rcm.c,v 1.12 2000/04/09 04:37:05 bsmith Exp bsmith $*/
 /* rcm.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -38,7 +38,7 @@
 /*                                                              */
 /****************************************************************/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SPARSEPACKrcm"
+#define __FUNC__ /*<a name=""></a>*/"SPARSEPACKrcm"
 int SPARSEPACKrcm(int *root, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *ccsize, int *deg)
 {

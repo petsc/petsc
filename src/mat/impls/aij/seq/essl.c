@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.37 2000/01/11 21:00:37 bsmith Exp bsmith $*/
+/*$Id: essl.c,v 1.38 2000/04/09 04:36:00 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -27,7 +27,7 @@ typedef struct {
 extern int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatDestroy_SeqAIJ_Essl"
+#define __FUNC__ /*<a name=""></a>*/"MatDestroy_SeqAIJ_Essl"
 extern int MatDestroy_SeqAIJ_Essl(Mat A)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -42,7 +42,7 @@ extern int MatDestroy_SeqAIJ_Essl(Mat A)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSolve_SeqAIJ_Essl"
+#define __FUNC__ /*<a name=""></a>*/"MatSolve_SeqAIJ_Essl"
 extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -60,7 +60,7 @@ extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic_SeqAIJ_Essl"
+#define __FUNC__ /*<a name=""></a>*/"MatLUFactorSymbolic_SeqAIJ_Essl"
 extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,PetscReal f,Mat *F)
 {
   Mat             B;
@@ -96,7 +96,7 @@ extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,PetscReal f,Mat *F)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqAIJ_Essl"
+#define __FUNC__ /*<a name=""></a>*/"MatLUFactorNumeric_SeqAIJ_Essl"
 extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(*F)->data;
@@ -130,7 +130,7 @@ extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatUseEssl_SeqAIJ"
+#define __FUNC__ /*<a name=""></a>*/"MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
@@ -146,7 +146,7 @@ int MatUseEssl_SeqAIJ(Mat A)
 #else
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatUseEssl_SeqAIJ"
+#define __FUNC__ /*<a name=""></a>*/"MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.59 2000/01/11 20:59:39 bsmith Exp bsmith $*/
+/*$Id: memc.c,v 1.60 2000/04/09 04:34:47 bsmith Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just do not use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -24,7 +24,7 @@
 #include "bitarray.h"
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscMemcpy"
+#define __FUNC__ /*<a name=""></a>*/"PetscMemcpy"
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
@@ -83,7 +83,7 @@ int PetscMemcpy(void *a,const void *b,int n)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscBitMemcpy"
+#define __FUNC__ /*<a name=""></a>*/"PetscBitMemcpy"
 /*@C
    PetscBitMemcpy - Copies an amount of data. This can include bit data.
 
@@ -131,7 +131,7 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscMemzero"
+#define __FUNC__ /*<a name=""></a>*/"PetscMemzero"
 /*@C
    PetscMemzero - Zeros the specified memory.
 
@@ -166,7 +166,7 @@ int PetscMemzero(void *a,int n)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscMemcmp"
+#define __FUNC__ /*<a name=""></a>*/"PetscMemcmp"
 /*@C
    PetscMemcmp - Compares two byte streams in memory.
 
@@ -198,7 +198,7 @@ int PetscMemcmp(const void *str1,const void *str2,int len,PetscTruth *e)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscMemmove"
+#define __FUNC__ /*<a name=""></a>*/"PetscMemmove"
 /*@C
    PetscMemmove - Copies n bytes, beginning at location b, to the space
    beginning at location a. Copying  between regions that overlap will

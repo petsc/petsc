@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.16 2000/01/11 21:01:51 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.17 2000/04/09 04:37:38 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -15,7 +15,7 @@ typedef struct {
 } PC_Redundant;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCView_Redundant"
+#define __FUNC__ /*<a name=""></a>*/"PCView_Redundant"
 static int PCView_Redundant(PC pc,Viewer viewer)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -48,7 +48,7 @@ static int PCView_Redundant(PC pc,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetUp_Redundant"
+#define __FUNC__ /*<a name=""></a>*/"PCSetUp_Redundant"
 static int PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red  = (PC_Redundant*)pc->data;
@@ -123,7 +123,7 @@ static int PCSetUp_Redundant(PC pc)
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCApply_Redundant"
+#define __FUNC__ /*<a name=""></a>*/"PCApply_Redundant"
 static int PCApply_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant      *red = (PC_Redundant*)pc->data;
@@ -145,7 +145,7 @@ static int PCApply_Redundant(PC pc,Vec x,Vec y)
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCDestroy_Redundant"
+#define __FUNC__ /*<a name=""></a>*/"PCDestroy_Redundant"
 static int PCDestroy_Redundant(PC pc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -168,7 +168,7 @@ static int PCDestroy_Redundant(PC pc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCPrintHelp_Redundant"
+#define __FUNC__ /*<a name=""></a>*/"PCPrintHelp_Redundant"
 static int PCPrintHelp_Redundant(PC pc,char *p)
 {
   int ierr;
@@ -182,7 +182,7 @@ static int PCPrintHelp_Redundant(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Redundant"
+#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Redundant"
 static int PCSetFromOptions_Redundant(PC pc)
 {
   int          ierr;
@@ -195,7 +195,7 @@ static int PCSetFromOptions_Redundant(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCRedundantSetScatter_Redundant"
+#define __FUNC__ /*<a name=""></a>*/"PCRedundantSetScatter_Redundant"
 int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -211,7 +211,7 @@ int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCRedundantSetScatter"
+#define __FUNC__ /*<a name=""></a>*/"PCRedundantSetScatter"
 /*@
    PCRedundantSetScatter - Sets the scatter used to copy values into the
      redundant local solve and the scatter to move them back into the global
@@ -244,7 +244,7 @@ int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 /* -------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PCCreate_Redundant"
+#define __FUNC__ /*<a name=""></a>*/"PCCreate_Redundant"
 int PCCreate_Redundant(PC pc)
 {
   int          ierr;

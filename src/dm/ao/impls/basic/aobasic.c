@@ -1,4 +1,4 @@
-/*$Id: aobasic.c,v 1.52 2000/01/11 21:03:11 bsmith Exp bsmith $*/
+/*$Id: aobasic.c,v 1.53 2000/04/09 04:39:35 bsmith Exp bsmith $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -15,7 +15,7 @@ typedef struct {
 } AO_Basic;
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"AOBasicGetIndices_Private" 
+#define __FUNC__ /*<a name=""></a>*/"AOBasicGetIndices_Private" 
 int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 {
   AO_Basic *basic = (AO_Basic*)ao->data;
@@ -27,7 +27,7 @@ int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"AODestroy_Basic" 
+#define __FUNC__ /*<a name=""></a>*/"AODestroy_Basic" 
 int AODestroy_Basic(AO ao)
 {
   AO_Basic *aodebug = (AO_Basic*)ao->data;
@@ -45,7 +45,7 @@ int AODestroy_Basic(AO ao)
        All processors have the same data so processor 1 prints it
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"AOView_Basic" 
+#define __FUNC__ /*<a name=""></a>*/"AOView_Basic" 
 int AOView_Basic(AO ao,Viewer viewer)
 {
   int        rank,ierr,i;
@@ -71,7 +71,7 @@ int AOView_Basic(AO ao,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"AOPetscToApplication_Basic"  
+#define __FUNC__ /*<a name=""></a>*/"AOPetscToApplication_Basic"  
 int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 {
   int      i;
@@ -85,7 +85,7 @@ int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"AOApplicationToPetsc_Basic" 
+#define __FUNC__ /*<a name=""></a>*/"AOApplicationToPetsc_Basic" 
 int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
 {
   int      i;
@@ -102,7 +102,7 @@ static struct _AOOps myops = {AOPetscToApplication_Basic,
                               AOApplicationToPetsc_Basic};
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"AOCreateBasic" 
+#define __FUNC__ /*<a name=""></a>*/"AOCreateBasic" 
 /*@C
    AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
@@ -208,7 +208,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"AOCreateBasicIS" 
+#define __FUNC__ /*<a name=""></a>*/"AOCreateBasicIS" 
 /*@C
    AOCreateBasicIS - Creates a basic application ordering using two index sets.
 

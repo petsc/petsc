@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.70 2000/01/11 21:02:12 bsmith Exp bsmith $*/
+/*$Id: qcg.c,v 1.71 2000/04/09 04:38:06 bsmith Exp bsmith $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -10,7 +10,7 @@
 static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPSolve_QCG"
+#define __FUNC__ /*<a name=""></a>*/"KSPSolve_QCG"
 /* 
   KSPSolve_QCG - Use preconditioned conjugate gradient to compute 
   an approximate minimizer of the quadratic function 
@@ -273,7 +273,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPSetUp_QCG"
+#define __FUNC__ /*<a name=""></a>*/"KSPSetUp_QCG"
 int KSPSetUp_QCG(KSP ksp)
 {
   int ierr;
@@ -292,7 +292,7 @@ int KSPSetUp_QCG(KSP ksp)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPDestroy_QCG" 
+#define __FUNC__ /*<a name=""></a>*/"KSPDestroy_QCG" 
 int KSPDestroy_QCG(KSP ksp)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
@@ -308,7 +308,7 @@ int KSPDestroy_QCG(KSP ksp)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"KSPCreate_QCG"
+#define __FUNC__ /*<a name=""></a>*/"KSPCreate_QCG"
 int KSPCreate_QCG(KSP ksp)
 {
   int     ierr;
@@ -334,7 +334,7 @@ EXTERN_C_END
 
 /* ---------------------------------------------------------- */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"QuadraticRoots_Private"
+#define __FUNC__ /*<a name=""></a>*/"QuadraticRoots_Private"
 /* 
   QuadraticRoots_Private - Computes the roots of the quadratic,
          ||s + step*p|| - delta = 0 

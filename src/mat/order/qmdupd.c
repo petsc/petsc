@@ -1,4 +1,4 @@
-/*$Id: qmdupd.c,v 1.14 2000/01/11 21:01:25 bsmith Exp bsmith $*/
+/*$Id: qmdupd.c,v 1.15 2000/04/09 04:37:05 bsmith Exp bsmith $*/
 /* qmdupd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -30,7 +30,7 @@
 /*       QMDMRG.*/
 /******************************************************************/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SPARSEPACKqmdupd"
+#define __FUNC__ /*<a name=""></a>*/"SPARSEPACKqmdupd"
 int SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist, 
 	int *list, int *deg, int *qsize, int *qlink, int *
 	marker, int *rchset, int *nbrhd)

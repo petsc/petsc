@@ -1,10 +1,10 @@
-/*$Id: cmesh.c,v 1.67 2000/01/11 21:00:05 bsmith Exp bsmith $*/
+/*$Id: cmesh.c,v 1.68 2000/04/09 04:35:20 bsmith Exp bsmith $*/
 
 #include "vec.h"        /*I "vec.h" I*/
 
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"VecContourScale"
+#define __FUNC__ /*<a name=""></a>*/"VecContourScale"
 /*@
     VecContourScale - Prepares a vector of values to be plotted using 
     the DrawTriangle() contour plotter.

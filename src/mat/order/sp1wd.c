@@ -1,4 +1,4 @@
-/*$Id: sp1wd.c,v 1.32 2000/01/11 21:01:25 bsmith Exp bsmith $*/
+/*$Id: sp1wd.c,v 1.33 2000/04/09 04:37:05 bsmith Exp bsmith $*/
 
 #include "mat.h"
 #include "src/mat/order/order.h"
@@ -8,7 +8,7 @@ EXTERN_C_BEGIN
     MatOrdering_1WD - Find the 1-way dissection ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatOrdering_1WD"
+#define __FUNC__ /*<a name=""></a>*/"MatOrdering_1WD"
 int MatOrdering_1WD(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   int        i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm,ierr,*ia,*ja;

@@ -1,9 +1,9 @@
-/*$Id: errstop.c,v 1.8 2000/01/11 20:59:24 bsmith Exp bsmith $*/
+/*$Id: errstop.c,v 1.9 2000/04/09 04:34:23 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"PetscStopErrorHandler" 
+#define __FUNC__ /*<a name=""></a>*/"PetscStopErrorHandler" 
 /*@C
    PetscStopErrorHandler - Calls MPI_abort() and exists.
 

@@ -1,4 +1,4 @@
-/*$Id: hists.c,v 1.18 2000/01/11 20:59:21 bsmith Exp bsmith $*/
+/*$Id: hists.c,v 1.19 2000/04/09 04:34:21 bsmith Exp bsmith $*/
 
 /*
   Contains the data structure for plotting a histogram in a window with an axis.
@@ -25,7 +25,7 @@ struct _p_DrawHG {
 #define CHUNKSIZE 100
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGCreate" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGCreate" 
 /*@C
    DrawHGCreate - Creates a histogram data structure.
 
@@ -84,7 +84,7 @@ int DrawHGCreate(Draw draw,int bins,DrawHG *hist)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGSetNumberBins" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGSetNumberBins" 
 /*@
    DrawHGSetNumberBins - Change the number of bins that are to be drawn.
 
@@ -119,7 +119,7 @@ int DrawHGSetNumberBins(DrawHG hist,int bins)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGReset" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGReset" 
 /*@
   DrawHGReset - Clears histogram to allow for reuse with new data.
 
@@ -148,7 +148,7 @@ int DrawHGReset(DrawHG hist)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGDestroy" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGDestroy" 
 /*@C
   DrawHGDestroy - Frees all space taken up by histogram data structure.
 
@@ -187,7 +187,7 @@ int DrawHGDestroy(DrawHG hist)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGAddValue" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGAddValue" 
 /*@
   DrawHGAddValue - Adds another value to the histogram.
 
@@ -250,7 +250,7 @@ int DrawHGAddValue(DrawHG hist,PetscReal value)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGDraw" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGDraw" 
 /*@
   DrawHGDraw - Redraws a histogram.
 
@@ -324,7 +324,7 @@ int DrawHGDraw(DrawHG hist)
 } 
  
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGSetColor" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGSetColor" 
 /*@
   DrawHGSetColor - Sets the color the bars will be drawn with.
 
@@ -350,7 +350,7 @@ int DrawHGSetColor(DrawHG hist,int color)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGSetLimits" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGSetLimits" 
 /*@
   DrawHGSetLimits - Sets the axis limits for a histogram. If more
   points are added after this call, the limits will be adjusted to
@@ -382,7 +382,7 @@ int DrawHGSetLimits(DrawHG hist,PetscReal x_min,PetscReal x_max,int y_min,int y_
 }
  
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGGetAxis" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGGetAxis" 
 /*@C
   DrawHGGetAxis - Gets the axis context associated with a histogram.
   This is useful if one wants to change some axis property, such as
@@ -417,7 +417,7 @@ int DrawHGGetAxis(DrawHG hist,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawHGGetDraw" 
+#define __FUNC__ /*<a name=""></a>*/"DrawHGGetDraw" 
 /*@C
   DrawHGGetDraw - Gets the draw context associated with a histogram.
 

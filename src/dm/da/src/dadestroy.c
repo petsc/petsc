@@ -1,4 +1,4 @@
-/*$Id: dadestroy.c,v 1.33 2000/01/11 21:03:19 bsmith Exp bsmith $*/
+/*$Id: dadestroy.c,v 1.34 2000/04/09 04:39:49 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DADestroy"
+#define __FUNC__ /*<a name=""></a>*/"DADestroy"
 /*@C
    DADestroy - Destroys a distributed array.
 
@@ -76,7 +76,7 @@ int DADestroy(DA da)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAGetISLocalToGlobalMapping"
+#define __FUNC__ /*<a name=""></a>*/"DAGetISLocalToGlobalMapping"
 /*@C
    DAGetISLocalToGlobalMapping - Accesses the local-to-global mapping in a DA.
 

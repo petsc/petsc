@@ -1,4 +1,4 @@
-/*$Id: dagtol.c,v 1.22 2000/01/11 21:03:19 bsmith Exp bsmith $*/
+/*$Id: dagtol.c,v 1.23 2000/04/09 04:39:49 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -7,7 +7,7 @@
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAGlobalToLocalBegin"
+#define __FUNC__ /*<a name=""></a>*/"DAGlobalToLocalBegin"
 /*@
    DAGlobalToLocalBegin - Maps values from the global vector to the local
    patch; the ghost points are included. Must be followed by 
@@ -48,7 +48,7 @@ int DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAGlobalToLocalEnd"
+#define __FUNC__ /*<a name=""></a>*/"DAGlobalToLocalEnd"
 /*@
    DAGlobalToLocalEnd - Maps values from the global vector to the local
    patch; the ghost points are included. Must be preceeded by 
@@ -89,7 +89,7 @@ int DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAGlobalToNatural_Create"
+#define __FUNC__ /*<a name=""></a>*/"DAGlobalToNatural_Create"
 /*
    DAGlobalToNatural_Create - Create the global to natural scatter object
 
@@ -132,7 +132,7 @@ int DAGlobalToNatural_Create(DA da)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAGlobalToNaturalBegin"
+#define __FUNC__ /*<a name=""></a>*/"DAGlobalToNaturalBegin"
 /*@
    DAGlobalToNaturalBegin - Maps values from the global vector to a global vector
    in the "natural" grid ordering. Must be followed by 
@@ -178,7 +178,7 @@ int DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DAGlobalToNaturalEnd"
+#define __FUNC__ /*<a name=""></a>*/"DAGlobalToNaturalEnd"
 /*@
    DAGlobalToNaturalEnd - Maps values from the global vector to a global vector
    in the natural ordering. Must be preceeded by DAGlobalToNaturalBegin().
@@ -219,7 +219,7 @@ int DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DANaturalToGlobalBegin"
+#define __FUNC__ /*<a name=""></a>*/"DANaturalToGlobalBegin"
 /*@
    DANaturalToGlobalBegin - Maps values from a global vector in the "natural" ordering 
    to a global vector in the PETSc DA grid ordering. Must be followed by 
@@ -265,7 +265,7 @@ int DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DANaturalToGlobalEnd"
+#define __FUNC__ /*<a name=""></a>*/"DANaturalToGlobalEnd"
 /*@
    DANaturalToGlobalEnd - Maps values from the natural ordering global vector 
    to a global vector in the PETSc DA ordering. Must be preceeded by DANaturalToGlobalBegin().

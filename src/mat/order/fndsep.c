@@ -1,4 +1,4 @@
-/*$Id: fndsep.c,v 1.17 2000/01/11 21:01:25 bsmith Exp bsmith $*/
+/*$Id: fndsep.c,v 1.18 2000/04/09 04:37:05 bsmith Exp bsmith $*/
 /* fndsep.f -- translated by f2c (version 19931217).
 */
 
@@ -34,7 +34,7 @@
 /*                                                               */
 /*****************************************************************/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"SPARSEPACKfndsep" 
+#define __FUNC__ /*<a name=""></a>*/"SPARSEPACKfndsep" 
 int SPARSEPACKfndsep(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *xls, int *ls)
 {

@@ -1,10 +1,10 @@
-/*$Id: sendsparse.c,v 1.28 2000/01/11 20:58:53 bsmith Exp bsmith $*/
+/*$Id: sendsparse.c,v 1.29 2000/04/09 04:33:46 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
-#define  __FUNC__ /*<a name="ViewerSocketPutSparse_Private"></a>*/"ViewerSocketPutSparse_Private" 
+#define __FUNC__ /*<a name="ViewerSocketPutSparse_Private"></a>*/"ViewerSocketPutSparse_Private" 
 /*
    ViewerSocketPutSparse_Private - Passes a sparse matrix in AIJ format
              to a Socket viewer. 

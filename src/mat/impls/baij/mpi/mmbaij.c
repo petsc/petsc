@@ -1,13 +1,14 @@
-/*$Id: mmbaij.c,v 1.30 2000/04/09 03:09:57 bsmith Exp bsmith $*/
+/*$Id: mmbaij.c,v 1.31 2000/04/09 04:36:25 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
 */
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/vec/vecimpl.h"
+extern int MatSetValues_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"MatSetUpMultiply_MPIBAIJ"
+#define __FUNC__ /*<a name=""></a>*/"MatSetUpMultiply_MPIBAIJ"
 int MatSetUpMultiply_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ        *baij = (Mat_MPIBAIJ*)mat->data;
@@ -166,7 +167,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
    they are sloppy.
 */
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DisAssemble_MPIBAIJ"
+#define __FUNC__ /*<a name=""></a>*/"DisAssemble_MPIBAIJ"
 int DisAssemble_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)A->data;
@@ -178,6 +179,8 @@ int DisAssemble_MPIBAIJ(Mat A)
 #if defined(PETSC_USE_MAT_SINGLE)
   Scalar      *atmp = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar));
   int         l;
+#else     
+  Scalar      *atmp;
 #endif
 
   PetscFunctionBegin;
@@ -219,7 +222,7 @@ int DisAssemble_MPIBAIJ(Mat A)
 #else
         atmp = a+j*bs2;
 #endif
-        ierr = MatSetValues(Bnew,bs,rvals,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
+        ierr = MatSetValues_SeqBAIJ(Bnew,bs,rvals,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
         col++;
       }
     }
