@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.48 1995/10/23 23:14:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.49 1995/10/24 00:41:40 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -143,7 +143,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   Mat_SeqBDiag *mlocal;
   MPI_Status   *send_status, recv_status;
   int          imdex, nrecvs = mbd->nrecvs, count = nrecvs, i, n, row, col;
-  int          *tmp, *tmp2, ierr, len = mbd->m * mbd->n, ict;
+  int          *tmp, *tmp2, ierr, len, ict, Mblock, Nblock;
   Scalar       *values, val;
   InsertMode   addv = mbd->insertmode;
 
@@ -180,22 +180,24 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(mbd->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mbd->A,mode); CHKERRQ(ierr);
 
-  /* Fix main diagonal location and determine global number of diagonals */
-  tmp = (int *) PETSCMALLOC( 2*len*sizeof(int) ); CHKPTRQ(tmp);
+  /* Fix main diagonal location and determine global diagonals */
+  mlocal = (Mat_SeqBDiag *) mbd->A->data;
+  Mblock = mbd->M/mlocal->nb; Nblock = mbd->N/mlocal->nb;
+  len = Mblock + Nblock + 1; /* add 1 to prevent 0 malloc */
+  tmp = (int *) PETSCMALLOC( (2*len)*sizeof(int) ); CHKPTRQ(tmp);
   tmp2 = tmp + len;
   PetscZero(tmp,2*len*sizeof(int));
-  mlocal = (Mat_SeqBDiag *) mbd->A->data;
   mlocal->mainbd = -1; 
   for (i=0; i<mlocal->nd; i++) {
     if (mlocal->diag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
-    tmp[mlocal->diag[i]+mbd->m] = i+1;
+    tmp[mlocal->diag[i] + mbd->brstart + Mblock] = 1;
   }
   PETSCFREE(tmp);
   MPI_Allreduce((void*)tmp,(void*)tmp2,len,MPI_INT,MPI_SUM,mat->comm);
   ict = 0;
   for (i=0; i<len; i++) {
     if (tmp2[i]) {
-      mbd->gdiag[ict] = i - mbd->m;
+      mbd->gdiag[ict] = i - Mblock;
       ict++;
     }
   }
@@ -371,11 +373,42 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   int          ierr;
   if (!mbd->assembled) 
     SETERRQ(1,"MatMultAdd_MPIBDiag:Must assemble matrix first");
-  ierr = VecScatterBegin(xx,mbd->lvec,ADD_VALUES,SCATTER_ALL,mbd->Mvctx);
+  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,ADD_VALUES,SCATTER_ALL,mbd->Mvctx);
+  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = MatMultAdd(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
+  return 0;
+}
+
+static int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
+{
+  Mat_MPIBDiag *a = (Mat_MPIBDiag *) A->data;
+  int          ierr;
+  Scalar       zero = 0.0;
+
+  if (!a->assembled) SETERRQ(1,"MatMulTrans_MPIBDiag:must assemble matrix");
+  ierr = VecSet(&zero,yy); CHKERRQ(ierr);
+  ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
+         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,
+         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  return 0;
+}
+
+static int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_MPIBDiag *a = (Mat_MPIBDiag *) A->data;
+  int          ierr;
+
+  if (!a->assembled) SETERRQ(1,"MatMulTransAdd_MPIBDiag:must assemble matrix");
+  ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+  ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
+         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,
+         (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
   return 0;
 }
 
@@ -445,13 +478,26 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
-  int          ierr, format;
+  int          ierr, format, i;
   PetscObject  vobj = (PetscObject) viewer;
   FILE         *fd;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
+    if (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) {
+      int nline = PETSCMIN(10,mbd->gnd), k, nk, np;
+      MPIU_fprintf(mat->comm,fd,"  block size=%d, total number of diagonals=%d\n",
+                   dmat->nb,mbd->gnd);
+      nk = (mbd->gnd-1)/nline + 1;
+      for (k=0; k<nk; k++) {
+        MPIU_fprintf(mat->comm,fd,"  global diag numbers:");
+        np = PETSCMIN(nline,mbd->gnd - nline*k);
+        for (i=0; i<np; i++) 
+          MPIU_fprintf(mat->comm,fd,"  %d",mbd->gdiag[i+nline*k]);
+        MPIU_fprintf(mat->comm,fd,"\n");        
+      }
+    }
     if (format == FILE_FORMAT_INFO_DETAILED) {
       int nz, nzalloc, mem, rank;
       MPI_Comm_rank(mat->comm,&rank);
@@ -462,13 +508,6 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
       fflush(fd);
       MPIU_Seq_end(mat->comm,1);
       ierr = VecScatterView(mbd->Mvctx,viewer); CHKERRQ(ierr);
-      MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
-                   dmat->nb,mbd->gnd);
-    }
-    else if (format == FILE_FORMAT_INFO) {
-      MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
-                   dmat->nb,mbd->gnd);
-      return 0;
     }
   }
 
@@ -655,7 +694,7 @@ static int MatNorm_MPIBDiag(Mat A,MatNormType type,double *norm)
 static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
        MatGetRow_MPIBDiag,MatRestoreRow_MPIBDiag,
        MatMult_MPIBDiag,MatMultAdd_MPIBDiag, 
-       0,0,
+       MatMultTrans_MPIBDiag,MatMultTransAdd_MPIBDiag, 
        0,0,0,0,
        0,0,
        0,
@@ -718,7 +757,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 {
   Mat          mat;
   Mat_MPIBDiag *mbd;
-  int          ierr, i, k, *ldiag;
+  int          ierr, i, k, *ldiag, len;
   Scalar       **ldiagv = 0;
 
   *newmat       = 0;
@@ -768,11 +807,11 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mbd->brstart = (mbd->rstart)/nb;
   mbd->brend   = (mbd->rend)/nb;
 
-
   /* Determine local diagonals; for now, assume global rows = global cols */
   /* These are sorted in MatCreateSeqBDiag */
   ldiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(ldiag); 
-  mbd->gdiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(mbd->gdiag);
+  len = M/nb + N/nb + 1; /* add 1 to prevent 0 malloc */
+  mbd->gdiag = (int *) PETSCMALLOC(len*sizeof(int)); CHKPTRQ(mbd->gdiag);
   k = 0;
   PLogObjectMemory(mat,(nd+1)*sizeof(int) + (mbd->size+2)*sizeof(int)
                         + sizeof(struct _Mat) + sizeof(Mat_MPIBDiag));

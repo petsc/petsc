@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.63 1995/10/19 22:24:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.64 1995/10/24 17:44:27 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -959,7 +959,16 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
   if (format == FILE_FORMAT_INFO) {
+    int nline = PETSCMIN(10,a->nd), k, nk, np;
     fprintf(fd,"  block size=%d, number of diagonals=%d\n",nb,a->nd);
+    nk = (a->nd-1)/nline + 1;
+    for (k=0; k<nk; k++) {
+      fprintf(fd,"  diag numbers:");
+      np = PETSCMIN(nline,a->nd - nline*k);
+      for (i=0; i<np; i++) 
+        fprintf(fd,"  %d",a->diag[i+nline*k]);
+      fprintf(fd,"\n");        
+    }
   }
   else if (format == FILE_FORMAT_MATLAB) {
     MatGetInfo(A,MAT_LOCAL,&nz,&nzalloc,&mem);
