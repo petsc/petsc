@@ -1,4 +1,4 @@
-/*$Id: superlu.c,v 1.1 2001/06/21 19:15:09 bsmith Exp bsmith $*/
+/*$Id: superlu.c,v 1.2 2001/06/21 19:39:38 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver
@@ -152,7 +152,7 @@ extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *infof,M
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   Mat                 B;
   Mat_SeqAIJ_SuperLU *lu;
-  int                 ierr;
+  int                 ierr,*ca;
 
   PetscFunctionBegin;
   ierr            = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
@@ -169,6 +169,9 @@ extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *infof,M
   /* Allocate the work arrays required by SuperLU (notice sizes are for the transpose) */
   ierr = PetscMalloc(A->n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
   ierr = PetscMalloc(A->m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);
+  ierr = ISGetIndices(c,&ca);CHKERRQ(ierr);
+  ierr = PetscMemcpy(lu->perm_c,ca,A->m*sizeof(int));CHKERRQ(ierr);
+  ierr = ISRestoreIndices(c,&ca);CHKERRQ(ierr);
 
   PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
   PetscFunctionReturn(0);
@@ -218,8 +221,6 @@ extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   /* We have to initialize global data or SuperLU crashes (sucky design) */
   StatInit(lu->panel_size,lu->relax);
 
-  /* Create the column permutation */
-  get_perm_c(lu->perm_spec,&lu->A,lu->perm_c);
   /* Create the elimination tree */
   sp_preorder("N",&lu->A,lu->perm_c,etree,&lu->AC);
   /* Factor the matrix */
