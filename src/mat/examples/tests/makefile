@@ -342,9 +342,10 @@ runex39:
 	   $(RM) -f ex39_1.tmp
 runex40:
 	-@$(MPIRUN)  -np 3 ex40 -f matrices/arco1 -nd 7	 -ov 2 > ex40_1.tmp 2>&1; \
-	   if (diff output/ex40_1.out ex40_1.tmp) then true; \
+	   sort -n ex40_1.tmp > ex40_1.tmp2 ; \
+	   if (diff output/ex40_1.out ex40_1.tmp2) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
-	   $(RM) -f ex40_1.tmp
+	   $(RM) -f ex40_1.tmp ex40_1.tmp2
 runex41:
 	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3	-ov 1 > ex41_1.tmp  2>&1; \
 	   if (diff output/ex41_1.out ex41_1.tmp) then true; \
