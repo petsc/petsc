@@ -2,7 +2,7 @@
 
 # Currently works on linux
 
-PDFELATEX = unset TEXINPUTS; pdfelatex 
+PDFELATEX = unsetenv TEXINPUTS; pdfelatex 
 NOADIC    = true
 SHELL     = csh
 
