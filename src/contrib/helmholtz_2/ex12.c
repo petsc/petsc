@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.2 1996/07/25 16:51:27 curfman Exp balay $";
+static char vcid[] = "$Id: ex22.c,v 1.3 1996/07/25 23:24:29 balay Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -167,7 +167,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-N_eta",&N_eta,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N_xi",&N_xi,&flg); CHKERRA(ierr);
   if (N_eta*N_xi != user.size && (N_eta != PETSC_DECIDE || N_xi != PETSC_DECIDE))
-    SETERRQ(1,"Incompatible number of processors:  N_eta * N_xi != size");
+    SETERRA(1,"Incompatible number of processors:  N_eta * N_xi != size");
   /* Note: Although the ghost width overlap is 0 for this problem, we need to
      create a DA with width 1, so that each processor generates the local-to-global
      mapping for its neighbors in the north/south/east/west (needed for
