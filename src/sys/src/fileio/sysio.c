@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.34 1997/12/04 19:33:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.35 1998/01/17 17:36:33 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -215,7 +215,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
    Input Parameters:
 .  fd   - the file
 .  p    - the buffer
-.  n    - the number of items to read 
+.  n    - the number of items to write
 .  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
    Notes: 
