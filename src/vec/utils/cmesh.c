@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.52 1998/04/27 14:31:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.53 1998/05/13 18:06:44 bsmith Exp balay $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -211,7 +211,7 @@ int VecContourScale(Vec v,double vmin,double vmax)
   ierr = VecGetArray(v,&values);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
-    values[i] = DRAW_BASIC_COLORS + scale*(values[i] - vmin);
+    values[i] = (double)DRAW_BASIC_COLORS + scale*(values[i] - vmin);
   }
   ierr = VecRestoreArray(v,&values);CHKERRQ(ierr);
 
