@@ -49,10 +49,10 @@ GCXX_FOPTFLAGS	   = -g
 OCXX_COPTFLAGS	   = -O2
 OCXX_FOPTFLAGS	   = -O2
 # -------------------------- BOPT - g_complex options ------------------------
-GCOMP_COPTFLAGS	   = -g
+GCOMP_COPTFLAGS	   = -g -tlocal
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -O2
+OCOMP_COPTFLAGS	   = -O2 -tlocal
 OCOMP_FOPTFLAGS	   = -O2
 # ########################### PETSc install options ###########################
 #
