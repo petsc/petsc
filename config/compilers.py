@@ -233,7 +233,7 @@ class Configure(config.base.Configure):
     # replace \CR that ifc puts in each line of output
     output = output.replace('\\\n', '')
 
-    if output.find('absoft') >= 0:
+    if output.lower().find('absoft') >= 0:
       loc = output.find(' -lf90math')
       if loc == -1: loc = output.find(' -lf77math')
       if loc >= -1:
