@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: examplesindex.tcl,v 1.28 1998/04/09 16:19:43 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.29 1998/04/24 21:18:53 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -521,6 +521,7 @@ proc main { }  {
         }
         set routines_file {}
         set temp [ catch { glob docs/manualpages/man*/$routine_name.html} routines_file ]
+        puts "processing docs/manualpages/man*/$routine_name.html"
         if { $temp != 0 } {
             set mesg "Skipping update of docs/manualpages/man*/$routine_name.html. File doesn't exist"
             puts stderr $mesg
@@ -540,16 +541,16 @@ proc main { }  {
         }
         set buf [format "%s%s" $buf "<P><B>Location:</B>" ]
         #puts $buf
-        set temp [regsub  "<B>Location: </B>" $routine_file_buff $buf routine_file_buff]
+        set temp [regsub  "<B>Location[ ]*:[ ]*</B>" $routine_file_buff $buf routine_file_buff]
         if { $temp == 0 } { 
-            puts "******* Could'nt add to $routines_file"
+            puts "******* Unable to modify $routines_file"
         }
-        #exec /bin/rm -f $routines_file
-        set routines_fileid [ open $routines_file.html w ]
+        exec /bin/rm -f $routines_file
+        set routines_fileid [ open $routines_file w ]
         #puts "Writing to $routines_file"
         puts  $routines_fileid $routine_file_buff
         close $routines_fileid 
-        exec /bin/chmod ug+w $routines_file.html
+        exec /bin/chmod ug+w $routines_file
     }
     return 0
 }

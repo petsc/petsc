@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.14 1998/03/20 22:53:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.15 1998/04/13 17:58:52 bsmith Exp balay $";
 #endif
  
 /*
@@ -21,7 +21,8 @@ static char vcid[] = "$Id: dadestroy.c,v 1.14 1998/03/20 22:53:07 bsmith Exp bsm
 .keywords: distributed array, destroy
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
-@*/int DADestroy(DA da)
+@*/
+int DADestroy(DA da)
 {
   int ierr;
 
