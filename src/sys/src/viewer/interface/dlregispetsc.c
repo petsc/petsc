@@ -60,6 +60,9 @@ int PetscInitializePackage(char *path)
       ierr = PetscLogEventDeactivateClass(0);                                                             CHKERRQ(ierr);
     }
   }
+  /* Setup auxiliary packages */
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);                                             CHKERRQ(ierr);
+  ierr = PetscPLAPACKInitializePackage(PETSC_NULL);                                                       CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -111,17 +111,17 @@ PETSC_LIB_COMPLEX         = -L${PETSC_LIB_COMPLEX_DIR} ${PETSC_LIB_COMPLEX_BASIC
 #         them from the appropriate bmake/${PETSC_ARCH}/packages
 #
 #
-PCONF         = ${PETSC_HAVE_MPE}     ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} ${PETSC_HAVE_PARMETIS} \
+PCONF         = ${PETSC_HAVE_MPE}     ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} \
                 ${PETSC_HAVE_AMS}     ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB_ENGINE} \
                 ${PETSC_HAVE_ADIC}    ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL} ${PETSC_HAVE_DSCPACK} \
                 ${PETSC_HAVE_RAMG}    ${PETSC_HAVE_MATLAB}     ${PETSC_HAVE_ESSL}  ${PETSC_HAVE_ADIFOR} \
-                ${PETSC_HAVE_SUPERLU} ${PETSC_HAVE_TRIANGLE} \
+                ${PETSC_HAVE_SUPERLU} \
                 ${PETSC_HAVE_ESI}     ${PETSC_HAVE_CCA}
 EXTERNAL_LIB  = ${MPE_LIB}            ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
                 ${AMS_LIB}            ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
                 ${ADIC_LIB}                                    ${LUSOL_LIB}        ${DSCPACK_LIB} \
                 ${RAMG_LIB}                                                        ${ADIFOR_LIB} \
-                ${SUPERLU_LIB}        ${TRIANGLE_LIB}
+                ${SUPERLU_LIB}        ${TRIANGLE_LIB}          ${PLAPACK_LIB}
 #
 # ----------------------------------------------------------------------------------------
 #

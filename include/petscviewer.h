@@ -140,6 +140,11 @@ EXTERN int PetscViewerBinarySkipInfo(PetscViewer);
 EXTERN int PetscViewerSetFilename(PetscViewer,const char[]);
 EXTERN int PetscViewerGetFilename(PetscViewer,char**);
 
+EXTERN int PetscPLAPACKInitializePackage(char *);
+EXTERN int PetscPLAPACKFinalizePackage();
+
+EXTERN int PetscViewerMathematicaInitializePackage(char *);
+EXTERN int PetscViewerMathematicaFinalizePackage();
 EXTERN int PetscViewerMathematicaGetName(PetscViewer, const char **);
 EXTERN int PetscViewerMathematicaSetName(PetscViewer, const char []);
 EXTERN int PetscViewerMathematicaClearName(PetscViewer);

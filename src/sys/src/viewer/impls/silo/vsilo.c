@@ -8,11 +8,7 @@ static char vcid[] = "$Id: vsilo.c,v 1.4 2000/01/10 03:27:03 knepley Exp $";
         Updated by Matt Knepley, knepley@cs.purdue.edu 11/16/99
 */
 #include "vsilo.h"
-#ifdef GVEC_IS_WORKING
 #include "gvec.h"
-#else
-#include "mesh.h"
-#endif
 
 #ifdef PETSC_HAVE_SILO
 
@@ -39,13 +35,11 @@ int PetscViewerFlush_Silo(PetscViewer viewer)
   int rank;
   PetscFunctionBegin;
   MPI_Comm_rank(viewer->comm, &rank);
-  if (rank)
-    PetscFunctionReturn(0);
+  if (rank) PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }
 
 /*-----------------------------------------Public Functions-----------------------------------------------------------*/
-#ifdef HAVE_SILO
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSiloGetFilePointer"
 /*@C
@@ -71,7 +65,6 @@ int PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
   *fd = silo->file_pointer;
   PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSiloOpen"

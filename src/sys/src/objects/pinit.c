@@ -425,6 +425,10 @@ int PetscFinalize(void)
     (*PetscErrorPrintf)("PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
+  /* Destroy auxiliary packages */
+  ierr = PetscViewerMathematicaFinalizePackage();CHKERRQ(ierr);
+  ierr = PetscPLAPACKFinalizePackage();CHKERRQ(ierr);
+
   /*
      Destroy all the function registration lists created
   */

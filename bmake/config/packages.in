@@ -27,7 +27,6 @@ MPIRUN             = @MPIRUN@
 X11_INCLUDE        = @X_CFLAGS@
 X11_LIB            = @X_PRE_LIBS@ @X_LIBS@ @X_EXTRA_LIBS@
 #
-#
 # Location of MPE
 #
 MPE_LIB            = @MPE_LIB@
@@ -65,6 +64,11 @@ TRIANGLE_LIB       = @TRIANGLE_LIB@
 PARMETIS_INCLUDE   = @PARMETIS_INCLUDE@
 PARMETIS_LIB       = @PARMETIS_LIB@
 #
+# Optional location of PLAPACK; Robert A. van de Geijn's parallel dense linear algebra
+#
+PLAPACK_INCLUDE    = @PLAPACK_INCLUDE@
+PLAPACK_LIB        = @PLAPACK_LIB@
+#
 #  Location for ALICE Memory Snooper
 #
 AMS_DIR            = 
@@ -75,16 +79,17 @@ AMS_LIB            =
 #
 SPAI_INCLUDE       = 
 SPAI_LIB           = 
+#
 # Location of JAVA
 # 
 JAVAC              = @JAVAC@
 JAVA               = @JAVA@
 #
-# Location/name of Perl
+# Location of Perl
 #
 PERL               = @PERL@
 #
-# Location/name of Python
+# Location of Python
 #
 PYTHON             = @PYTHON@
 #
