@@ -396,7 +396,7 @@ int PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3);CHKERRQ(ierr);
 #if defined(PETSC_USE_BOPT_g)
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-trmalloc",&flg1,&flg2);CHKERRQ(ierr);
-  if ((flg1 || !flg2) && !petscsetmallocvisited) {
+  if ((!flg2 || flg1) && !petscsetmallocvisited) {
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
   }
 #else

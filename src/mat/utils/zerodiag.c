@@ -31,6 +31,8 @@
     after a call to MatGetOrdering(), this routine changes the column 
     ordering defined in cis.
 
+    Only works for SeqAIJ matrices
+
     Options Database Keys (When using SLES):
 +      -pc_ilu_nonzeros_along_diagonal
 -      -pc_lu_nonzeros_along_diagonal
@@ -52,16 +54,20 @@
 @*/
 int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
 {
-  int      ierr,prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
-  PetscScalar   *v,*vv;
+  int         ierr,prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
+  PetscScalar *v,*vv;
   PetscReal   repla;
-  IS       icis;
+  IS          icis;
+  PetscTruth  flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(ris,IS_COOKIE);
   PetscValidHeaderSpecific(cis,IS_COOKIE);
   
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,"Matrix must be of type SeqAIJ");
+
   ierr = ISGetIndices(ris,&row);CHKERRQ(ierr);
   ierr = ISGetIndices(cis,&col);CHKERRQ(ierr);
   ierr = ISInvertPermutation(cis,PETSC_DECIDE,&icis);CHKERRQ(ierr);

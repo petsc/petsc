@@ -35,6 +35,7 @@
 #define __FUNCT__ "PetscMallocAlign"
 int PetscMallocAlign(size_t mem,int line,char *func,char *file,char *dir,void** result)
 {
+  if (mem == 0) SETERRQ(PETSC_ERR_MEM_MALLOC_0,"Cannot malloc size zero");
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
   *result = malloc(mem);
 #elif defined(PETSC_HAVE_MEMALIGN)
