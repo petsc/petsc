@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.118 1998/03/24 20:38:54 balay Exp balay $ */
+/* $Id: petsclog.h,v 1.119 1998/03/31 23:43:11 balay Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -16,7 +16,7 @@
   petsc/bin/petscview,
   petsc/src/plog/src/plog.c,  
   petsc/src/plog/src/plogmpe.c, and
-  petsc/include/FINCLUDE/petsclog.h!!!
+  petsc/include/finclude/petsclog.h!!!
 */
 #define MAT_Mult                                0
 #define MAT_MatrixFreeMult                      1

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f.F,v 1.6 1998/03/24 16:57:05 balay Exp balay $";
+!    "$Id: ex13f.F,v 1.7 1998/03/30 22:03:29 balay Exp balay $";
 !
 !
 !/*T
@@ -29,12 +29,12 @@
 !     pc.h     - preconditioners
 !     sles.h   - SLES interface
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
 
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
@@ -179,12 +179,12 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
 
       common /param/ hx2, hy2
       double precision hxy, hy2

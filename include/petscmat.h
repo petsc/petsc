@@ -1,8 +1,8 @@
-/* $Id: mat.h,v 1.155 1998/02/18 20:28:00 balay Exp bsmith $ */
+/* $Id: mat.h,v 1.156 1998/03/23 21:27:32 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 
-     Any change to this file must also be made to FINCLUDE/mat.h
+     Any change to this file must also be made to finclude/mat.h
 */
 #ifndef __MAT_PACKAGE
 #define __MAT_PACKAGE
@@ -110,7 +110,7 @@ extern int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth 
 /* 
    Context of matrix information, used with MatGetInfo()
    Note: If any entries are added to this context, be sure
-         to adjust MAT_INFO_SIZE in FINCLUDE/mat.h
+         to adjust MAT_INFO_SIZE in finclude/mat.h
  */
 typedef struct {
   PLogDouble rows_global, columns_global;         /* number of global rows and columns */
@@ -274,7 +274,7 @@ extern int PartitioningGetType(Partitioning,PartitioningType*,char**);
 extern int PartitioningParmetisSetCoarseSequential(Partitioning);
 
 /*
-    If you add entries here you must also add them to FINCLUDE/mat.h
+    If you add entries here you must also add them to finclude/mat.h
 */
 typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW=1,

@@ -1,8 +1,8 @@
 !
-!    "$Id: ex5.F,v 1.19 1998/03/24 16:47:42 balay Exp balay $";
+!    "$Id: ex5.F,v 1.20 1998/03/30 22:03:47 balay Exp balay $";
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/draw.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/draw.h"
 !
 !  This example demonstrates basic use of the Fortran interface for
 !  Draw routines.

@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.16 1998/03/24 16:42:05 balay Exp balay $";
+! "$Id: ex2f.F,v 1.17 1998/03/30 22:02:37 balay Exp balay $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -40,13 +40,13 @@
 !  problem-specific data in several common blocks.
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/FINCLUDE.  This
+!  PETSc include files in the directory petsc/include/finclude.  This
 !  convention enables use of the CPP preprocessor, which allows the use
 !  of the #include statements that define PETSc objects and variables.
 !
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
-!  petsc/include/finclude.
+!  petsc/include/foldinclude.
 !         
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must exlicitly list

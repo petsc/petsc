@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.28 1998/03/24 16:42:52 balay Exp balay $";
+! "$Id: ex4f.F,v 1.29 1998/03/30 22:03:08 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -58,14 +58,14 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/draw.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/draw.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/snes.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -249,10 +249,10 @@
       subroutine FormInitialGuess(X,ierr)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/snes.h"
 
 !  Input/output variables:
       Vec      X
@@ -368,9 +368,9 @@
       subroutine FormFunction(snes,X,F,dummy)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/snes.h"
 
 !  Input/output variables:
       SNES     snes
@@ -502,11 +502,11 @@
       subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/snes.h"
 
 !  Input/output variables:
       SNES         snes
@@ -584,11 +584,11 @@
       subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/snes.h"
 
 !  Common blocks:
       double precision   lambda

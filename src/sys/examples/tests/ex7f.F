@@ -1,11 +1,11 @@
 !
-! "$Id: ex7f.F,v 1.4 1997/07/10 15:49:44 balay Exp balay $";
+! "$Id: ex7f.F,v 1.5 1998/03/24 16:42:22 balay Exp balay $";
 !
 !
 !     Formatted test for PetscSetCommWorld()
 !
 
-#include "FINCLUDE/petsc.h"
+#include "finclude/petsc.h"
 
       integer size,ierr
 

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.19 1998/03/24 16:43:02 balay Exp balay $";
+! "$Id: ex1f.F,v 1.20 1998/03/30 22:03:11 balay Exp balay $";
 !
 !/*T
 !  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -34,13 +34,13 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/snes.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -191,9 +191,9 @@
       subroutine FormFunction(snes,x,f,dummy)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/snes.h"
 
       SNES     snes
       Vec      x, f
@@ -247,11 +247,11 @@
       subroutine FormJacobian(snes,X,jac,B,flag,dummy)
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/snes.h"
 
       SNES         snes
       Vec          X

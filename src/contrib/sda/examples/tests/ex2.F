@@ -1,10 +1,10 @@
 !
-!    "$Id: ex2.F,v 1.9 1998/03/24 16:50:37 balay Exp balay $"
+!    "$Id: ex2.F,v 1.10 1998/03/30 22:02:21 balay Exp balay $"
 !
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/da.h"
 
 !         For testing purposes this example also creates a 
 !   DA context. Actually codes using SDA routines will probably 

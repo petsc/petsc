@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.16 1998/03/24 16:42:09 balay Exp balay $"
+! "$Id: ex1f.F,v 1.17 1998/03/30 22:02:39 balay Exp balay $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -31,11 +31,11 @@
 !23456789012345678901234567890123456789012345678901234567890123456789012
       program main
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/ts.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/pc.h"
+#include "finclude/ts.h"
 !
 !  Create an application context to contain data needed by the 
 !  application-provided call-back routines, FormJacobian() and
@@ -194,11 +194,11 @@
 !
       subroutine FormInitialGuess(X,user,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/ts.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/pc.h"
+#include "finclude/ts.h"
       Vec              X
       double precision user(3)
       integer          i, j, row, mx, my, ierr
@@ -246,11 +246,11 @@
 !
       subroutine FormFunction(ts,t,X,F,user,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/ts.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/pc.h"
+#include "finclude/ts.h"
       TS       ts
       double precision  t
       Vec               X,F
@@ -308,11 +308,11 @@
 !
       subroutine FormJacobian(ts,ctime,X,JJ,B,flag,user,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/ts.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/pc.h"
+#include "finclude/ts.h"
       TS               ts
       Vec              X
       Mat              JJ,B

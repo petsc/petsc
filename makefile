@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.227 1998/04/14 02:45:59 bsmith Exp balay $ 
+# $Id: makefile,v 1.228 1998/04/14 12:25:07 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -12,7 +12,7 @@ SOURCEF	 =
 DOCS	 = maint/addlinks maint/builddist \
 	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
 	   bmake/common bmake/*/base* maint/autoftp docs/manualpages/sec/* \
-           include/finclude/generateincludes bin/petscviewinfo.text \
+           include/foldinclude/generateincludes bin/petscviewinfo.text \
            bin/petscoptsinfo.text bmake/*/petscconf.h
 OBJSC	 =
 OBJSF	 =
@@ -226,7 +226,7 @@ deletelibs: chkopts_basic
 #     use M-x tags-search and the string.
 #     To locate later occurrences, use M-,
 
-TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h include/FINCLUDE/*.h 
+TAGS_INCLUDE_FILES  = include/*.h include/pinclude/*.h include/finclude/*.h 
 TAGS_BMAKE_FILES    = bmake/common bmake/*/base*
 TAGS_EXAMPLE_FILES  = src/*/examples/*/*.[c,h,F,f] src/*/examples/*/*/*.[c,h,F,f] \
                       src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]\
@@ -360,7 +360,7 @@ alllatexpages: deletelatexpages
 
 # Builds Fortran stub files
 allfortranstubs:
-	-@include/finclude/generateincludes
+	-@include/foldinclude/generateincludes
 	-@${RM} -f src/fortran/auto/*.c
 	-make ACTION=fortranstubs tree
 	-@cd src/fortran/auto; ${OMAKE} -f makefile fixfortran

@@ -1,5 +1,5 @@
 !
-!      "$Id: ex4f90.F,v 1.5 1997/04/10 00:00:39 bsmith Exp balay $";
+!      "$Id: ex4f90.F,v 1.6 1998/03/24 16:41:19 balay Exp balay $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArrayF90().
@@ -27,9 +27,9 @@
 !     vec.h    - vectors
 !     vec.h90  - to allow access to Fortran90 features of vectors
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/vec.h90"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/vec.h90"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

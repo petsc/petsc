@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.18 1998/03/24 16:45:33 balay Exp balay $";
+!    "$Id: ex11f.F,v 1.19 1998/03/30 22:03:31 balay Exp balay $";
 !
 !/*T
 !  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -50,13 +50,13 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/sys.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/sys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

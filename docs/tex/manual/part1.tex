@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.112 1998/03/18 16:17:37 curfman Exp bsmith $ 
+% $Id: part1.tex,v 1.113 1998/04/13 21:08:42 bsmith Exp balay $ 
 
 % --------------------------------------------------------------------
 %
@@ -697,11 +697,12 @@ Note that {\tt petscview}, {\tt petscopts}, and {\tt petscdemo} use Tcl/Tk.
 \item {\tt bmake} - Base PETSc makefile directory.  Includes subdirectories
                     for various architectures.
 \item {\tt include} - All include files for PETSc that are visible to the user.
-\item {\tt include/FINCLUDE} - PETSc include files for Fortran programmers using 
-                               the .F suffix (recommended).
-\item {\tt include/finclude} - PETSc include files for Fortran programmers using 
-                               the .f suffix.
-\item {\tt include/pinclude} - Private PETSc include files that should {\em not} be used by application programmers.
+\item {\tt include/finclude}    - PETSc include files for Fortran programmers using 
+                                  the .F suffix (recommended).
+\item {\tt include/foldinclude} - PETSc include files for Fortran programmers using 
+                                  the .f suffix.
+\item {\tt include/pinclude}    - Private PETSc include files that should {\em not} 
+                                  be used by application programmers.
 \item {\tt src} - The source code for all PETSc components, which
                   currently includes
  \begin{itemize}

@@ -1,5 +1,5 @@
 !
-! "$Id: ex5fs.F,v 1.4 1998/03/24 16:50:40 balay Exp balay $";
+! "$Id: ex5fs.F,v 1.5 1998/03/30 22:02:57 balay Exp balay $";
 !
 
 ! ---------------------------------------------------------------------
@@ -23,7 +23,7 @@
 
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
+#include "include/finclude/petsc.h"
       integer  ierr,mx,my
 
 !  Input/output variables:

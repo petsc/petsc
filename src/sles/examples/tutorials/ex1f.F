@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.18 1998/03/24 16:45:08 balay Exp balay $";
+!    "$Id: ex1f.F,v 1.19 1998/03/30 22:03:22 balay Exp balay $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -20,13 +20,13 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/FINCLUDE.  This
+!  PETSc include files in the directory petsc/include/finclude.  This
 !  convention enables use of the CPP preprocessor, which allows the use
 !  of the #include statements that define PETSc objects and variables.
 !
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
-!  petsc/include/finclude.
+!  petsc/include/foldinclude.
 !         
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must exlicitly list
@@ -47,12 +47,12 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.6 1998/03/24 16:46:02 balay Exp balay $";
+!    "$Id: ex1f.F,v 1.7 1998/03/30 22:03:40 balay Exp balay $";
 !
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                nserting their own event logging.
@@ -24,8 +24,8 @@
 !
 !  The following include statements are required for using PLog Routines
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/petsclog.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/petsclog.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

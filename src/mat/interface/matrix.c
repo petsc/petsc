@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.284 1998/04/03 23:14:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.285 1998/04/13 17:35:25 bsmith Exp balay $";
 #endif
 
 /*
@@ -899,7 +899,7 @@ $
    Example for Fortran Users:
    Fortran users should declare info as a double precision
    array of dimension MAT_INFO_SIZE, and then extract the parameters
-   of interest.  See the file ${PETSC_DIR}/include/FINCLUDE/mat.h
+   of interest.  See the file ${PETSC_DIR}/include/finclude/mat.h
    a complete list of parameter names.
 $
 $      double  precision info(MAT_INFO_SIZE)

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.9 1998/03/30 22:02:30 balay Exp curfman $"
+!    "$Id: ex1f90.F,v 1.10 1998/04/15 04:20:51 curfman Exp balay $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
@@ -31,9 +31,9 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/vec.h90"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/vec.h90"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

@@ -1,10 +1,10 @@
 !
-!      "$Id: ex36.F,v 1.22 1998/03/12 23:19:48 bsmith Exp balay $";
+!      "$Id: ex36.F,v 1.23 1998/03/24 16:46:13 balay Exp balay $";
 !
 !   This program demonstrates use of PETSc dense matrices.
 !
 
-#include "include/FINCLUDE/petsc.h"
+#include "include/finclude/petsc.h"
 
       integer err
 
@@ -33,9 +33,9 @@
 !
       subroutine Demo1()
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/viewer.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/viewer.h"
 
       Mat         A
       integer     n, m, err
@@ -76,9 +76,9 @@
 !
       subroutine Demo2()
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/viewer.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/viewer.h"
 
       integer   n, m, err
       parameter (m=5, n=4)

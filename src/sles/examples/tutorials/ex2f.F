@@ -1,5 +1,5 @@
 
-!    "$Id: ex2f.F,v 1.45 1998/03/23 23:45:27 balay Exp balay $";
+!    "$Id: ex2f.F,v 1.46 1998/03/30 22:03:20 balay Exp balay $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -26,13 +26,13 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
-!  PETSc include files in the directory petsc/include/FINCLUDE.  This
+!  PETSc include files in the directory petsc/include/finclude.  This
 !  convention enables use of the CPP preprocessor, which allows the use
 !  of the #include statements that define PETSc objects and variables.
 !
 !  Use of the conventional Fortran include statements is also supported
 !  In this case, the PETsc include files are located in the directory
-!  petsc/include/finclude.
+!  petsc/include/foldinclude.
 !         
 !  Since one must be very careful to include each file no more than once
 !  in a Fortran routine, application programmers must exlicitly list
@@ -55,13 +55,13 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/sys.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/sys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -321,9 +321,9 @@
 
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/ksp.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/ksp.h"
 
       KSP              ksp
       Vec              x

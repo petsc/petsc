@@ -1,14 +1,14 @@
 !
-!      "$Id: ex5f.F,v 1.4 1998/03/24 16:40:53 bsmith Exp balay $";
+!      "$Id: ex5f.F,v 1.5 1998/03/25 17:13:00 balay Exp balay $";
 !
        implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/viewer.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/viewer.h"
 !
 !      Solves a linear system matrix free
 !

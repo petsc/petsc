@@ -1,5 +1,5 @@
 !
-!    "$Id: ex12.F,v 1.49 1998/03/28 00:46:28 balay Exp balay $";
+!    "$Id: ex12.F,v 1.50 1998/03/30 22:03:13 balay Exp balay $";
 !
 !  This example demonstrates basic use of the SNES Fortran interface.
 !  
@@ -20,11 +20,11 @@
 
        implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/da.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/snes.h"
 
       PetscFortranAddr ctx(6)
       integer          rank,size,ierr,N,start,end,nn,i,ii,its,flg
@@ -125,11 +125,11 @@
       integer          rank, size, i, s, n, ierr
       PetscOffset      ixx, iff, iF2
       Scalar           h, d, vf2(1), vxx(1), vff(1)
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/da.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/snes.h"
 
 
       rank  = ctx(4)
@@ -205,9 +205,9 @@
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/snes.h"
       integer          ierr
       Vec              x
       SNES             snes
@@ -222,11 +222,11 @@
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
       implicit none
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/snes.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/da.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/snes.h"
       SNES             snes
       Vec              x
       Mat              jac,B

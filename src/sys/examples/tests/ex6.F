@@ -1,9 +1,9 @@
-!    "$Id: ex6.F,v 1.6 1997/09/22 15:18:58 balay Exp balay $";
+!    "$Id: ex6.F,v 1.7 1998/03/24 16:42:26 balay Exp balay $";
 !
 !  Progran to test random number generation routines from fortran.
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/sys.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/sys.h"
       integer         ierr
       PetscRandom     r
       Scalar          rand

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.5 1998/03/30 22:03:24 balay Exp balay $";
+!    "$Id: ex15f.F,v 1.6 1998/04/14 15:06:29 balay Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -30,12 +30,12 @@
 !     ksp.h    - Krylov subspace methods  pc.h  - preconditioners
 !     sles.h   - SLES interface
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/sles.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/ksp.h"
+#include "include/finclude/sles.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -277,9 +277,9 @@
 
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
 
       Vec     x
       Mat     pmat
@@ -317,8 +317,8 @@
 
       implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
 
       Vec     x, y
       integer dummy, ierr

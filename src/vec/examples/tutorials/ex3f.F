@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f.F,v 1.5 1998/03/24 16:41:27 balay Exp balay $";
+!      "$Id: ex3f.F,v 1.6 1998/03/30 22:02:29 balay Exp balay $";
 !
 !  Description: Displays a vector visually.
 !
@@ -25,9 +25,9 @@
 !     vec.h    - vectors
 !  Include viewer.h so that we can use the PETSc viewers.
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/viewer.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/viewer.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

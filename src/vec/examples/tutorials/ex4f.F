@@ -1,5 +1,5 @@
 !
-!      "$Id: ex4f.F,v 1.19 1998/03/12 23:15:47 bsmith Exp balay $";
+!      "$Id: ex4f.F,v 1.20 1998/03/24 16:41:22 balay Exp balay $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArray().
@@ -25,8 +25,8 @@
 !     petsc.h  - base PETSc routines
 !     vec.h    - vectors
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Macro definitions

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.22 1998/03/30 22:02:42 balay Exp balay $";
+! "$Id: ex1f.F,v 1.23 1998/04/08 22:29:47 balay Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -11,17 +11,17 @@
 
       program main
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/da.h"
-#include "FINCLUDE/sys.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/sles.h"
-#include "FINCLUDE/snes.h"
-#include "FINCLUDE/ts.h"
-#include "FINCLUDE/draw.h"
-#include "FINCLUDE/viewer.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/da.h"
+#include "finclude/sys.h"
+#include "finclude/pc.h"
+#include "finclude/sles.h"
+#include "finclude/snes.h"
+#include "finclude/ts.h"
+#include "finclude/draw.h"
+#include "finclude/viewer.h"
 
       integer   linear_no_matrix,linear_no_time,linear
       integer   nonlinear_no_jacobian,nonlinear
@@ -249,16 +249,16 @@
  
       subroutine Initial(global,ctx,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/da.h"
-#include "FINCLUDE/sys.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/sles.h"
-#include "FINCLUDE/snes.h"
-#include "FINCLUDE/ts.h"
-#include "FINCLUDE/viewer.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/da.h"
+#include "finclude/sys.h"
+#include "finclude/pc.h"
+#include "finclude/sles.h"
+#include "finclude/snes.h"
+#include "finclude/ts.h"
+#include "finclude/viewer.h"
       Vec         global
       integer     ctx
 
@@ -298,16 +298,16 @@
 !  
       subroutine Solution(t,sol,ctx)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/da.h"
-#include "FINCLUDE/sys.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/sles.h"
-#include "FINCLUDE/snes.h"
-#include "FINCLUDE/ts.h"
-#include "FINCLUDE/viewer.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/da.h"
+#include "finclude/sys.h"
+#include "finclude/pc.h"
+#include "finclude/sles.h"
+#include "finclude/snes.h"
+#include "finclude/ts.h"
+#include "finclude/viewer.h"
       double precision  t
       Vec               sol
       integer           ctx
@@ -348,17 +348,17 @@
 
       subroutine Monitor(ts,step,time,global,ctx,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/da.h"
-#include "FINCLUDE/sys.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/sles.h"
-#include "FINCLUDE/snes.h"
-#include "FINCLUDE/ts.h"
-#include "FINCLUDE/draw.h"
-#include "FINCLUDE/viewer.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/da.h"
+#include "finclude/sys.h"
+#include "finclude/pc.h"
+#include "finclude/sles.h"
+#include "finclude/snes.h"
+#include "finclude/ts.h"
+#include "finclude/draw.h"
+#include "finclude/viewer.h"
       TS                ts
       integer           step,ctx,ierr
       double precision  time,lnrm_2,lnrm_max
@@ -402,16 +402,16 @@
 
       subroutine RHSMatrixFree(mat,x,y,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/da.h"
-#include "FINCLUDE/sys.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/sles.h"
-#include "FINCLUDE/snes.h"
-#include "FINCLUDE/ts.h"
-#include "FINCLUDE/viewer.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/da.h"
+#include "finclude/sys.h"
+#include "finclude/pc.h"
+#include "finclude/sles.h"
+#include "finclude/snes.h"
+#include "finclude/ts.h"
+#include "finclude/viewer.h"
       Mat              mat
       Vec              x,y
       integer          ierr
@@ -427,16 +427,16 @@
 
       subroutine RHSFunctionHeat(ts,t,globalin,globalout,ctx,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/da.h"
-#include "FINCLUDE/sys.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/sles.h"
-#include "FINCLUDE/snes.h"
-#include "FINCLUDE/ts.h"
-#include "FINCLUDE/viewer.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/da.h"
+#include "finclude/sys.h"
+#include "finclude/pc.h"
+#include "finclude/sles.h"
+#include "finclude/snes.h"
+#include "finclude/ts.h"
+#include "finclude/viewer.h"
       TS               ts
       double precision t
       Vec              globalin, globalout
@@ -493,16 +493,16 @@
 
       subroutine RHSMatrixHeat(ts,t,AA,BB,str,ctx,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/da.h"
-#include "FINCLUDE/sys.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/sles.h"
-#include "FINCLUDE/snes.h"
-#include "FINCLUDE/ts.h"
-#include "FINCLUDE/viewer.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/da.h"
+#include "finclude/sys.h"
+#include "finclude/pc.h"
+#include "finclude/sles.h"
+#include "finclude/snes.h"
+#include "finclude/ts.h"
+#include "finclude/viewer.h"
       Mat              AA,BB
       double precision t
       TS               ts
@@ -566,16 +566,16 @@
 
       subroutine RHSJacobianHeat(ts,t,x,AA,BB,str,ctx,ierr)
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/vec.h"
-#include "FINCLUDE/mat.h"
-#include "FINCLUDE/da.h"
-#include "FINCLUDE/sys.h"
-#include "FINCLUDE/pc.h"
-#include "FINCLUDE/sles.h"
-#include "FINCLUDE/snes.h"
-#include "FINCLUDE/ts.h"
-#include "FINCLUDE/viewer.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
+#include "finclude/mat.h"
+#include "finclude/da.h"
+#include "finclude/sys.h"
+#include "finclude/pc.h"
+#include "finclude/sles.h"
+#include "finclude/snes.h"
+#include "finclude/ts.h"
+#include "finclude/viewer.h"
       TS               ts
       double precision t
       Vec              x

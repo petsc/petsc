@@ -1,14 +1,14 @@
 !
-! "$Id: ex17f.F,v 1.2 1997/10/10 04:02:15 bsmith Exp balay $";
+! "$Id: ex17f.F,v 1.3 1998/03/24 16:41:51 balay Exp balay $";
 !
 !
 !   "Scatters from a parallel vector to a sequential vector.  In
 !  this case each local vector is as long as the entire parallel vector.
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/is.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/sys.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/is.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/sys.h"
 
       implicit none
       integer    n,ierr

@@ -1,5 +1,5 @@
 !
-!  $Id: param.h,v 1.22 1998/03/25 21:44:59 balay Exp balay $;
+!  $Id: param.h,v 1.23 1998/03/30 22:13:00 balay Exp balay $;
 !
 ! PETSc include files needed by Fortran routines
 !   petsc.h - basic PETSc interface
@@ -9,10 +9,10 @@
 !
         implicit none
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/ao.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/ao.h"
 #include "mmfort.h"
 
 !   Parameters

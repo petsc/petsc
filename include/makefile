@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.35 1997/09/08 17:54:06 balay Exp balay $ 
+# $Id: makefile,v 1.36 1998/03/19 02:16:51 balay Exp balay $ 
 
 CFLAGS   =  ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  =
@@ -9,7 +9,7 @@ SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = pinclude FINCLUDE 
+DIRS     = pinclude finclude
 LOCDIR   = include/
 MANSEC   = p
 

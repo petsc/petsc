@@ -1,5 +1,5 @@
 !
-!      "$Id: ex3f90.F,v 1.5 1997/07/10 15:44:26 balay Exp balay $"; */
+!      "$Id: ex3f90.F,v 1.6 1998/03/24 16:46:23 balay Exp balay $"; */
 !
 !
 !/*T
@@ -22,9 +22,9 @@
 !
       implicit none
 
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/is.h"
-#include "FINCLUDE/is.h90"
+#include "finclude/petsc.h"
+#include "finclude/is.h"
+#include "finclude/is.h90"
 
       integer n, ierr,bs,issize,inputindices(4)
       integer, pointer :: indices(:)

@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.5 1998/03/24 16:46:19 balay Exp balay $";
+!  "$Id: ex16f90.F,v 1.6 1998/03/30 22:03:45 balay Exp balay $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -20,10 +20,10 @@
 !     mat.h    - matrices
 !     mat.h90  - to allow access to Fortran 90 features of matrices
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/mat.h90"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/mat.h90"
 
       Mat A
       integer i,j,m,n,ierr

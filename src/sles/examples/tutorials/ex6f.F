@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.23 1997/11/28 16:20:38 bsmith Exp balay $";
+!    "$Id: ex6f.F,v 1.24 1998/03/24 16:44:59 balay Exp balay $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -27,12 +27,12 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/ksp.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/ksp.h"
 
 !  Variables:
 !
@@ -145,12 +145,12 @@
 !
       subroutine solve1(sles,A,x,b,u,count,nsteps,ierr)
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/ksp.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/ksp.h"
 
 !
 !   solve1 - This routine is used for repeated linear system solves.

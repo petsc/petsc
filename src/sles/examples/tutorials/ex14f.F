@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.8 1998/03/25 17:30:20 balay Exp balay $";
+!    "$Id: ex14f.F,v 1.9 1998/03/30 22:03:26 balay Exp balay $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -61,13 +61,13 @@
 !     is.h     - index sets            ksp.h - Krylov subspace methods
 !     viewer.h - viewers               pc.h  - preconditioners
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/is.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/da.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/is.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/da.h"
 
       MPI_Comm comm
       SLES     sles
@@ -260,13 +260,13 @@
 !     is.h     - index sets            ksp.h - Krylov subspace methods
 !     viewer.h - viewers               pc.h  - preconditioners
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/is.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/da.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/is.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/da.h"
       integer          user(6),ierr
       PetscOffset      idx
       Vec              X,localX
@@ -350,13 +350,13 @@
 !     is.h     - index sets            ksp.h - Krylov subspace methods
 !     viewer.h - viewers               pc.h  - preconditioners
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/is.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/da.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/is.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/da.h"
 
       Vec              X,F,localX, localF
       integer          user(6), gys, gxm, gym
@@ -458,13 +458,13 @@
 !     is.h     - index sets            ksp.h - Krylov subspace methods
 !     viewer.h - viewers               pc.h  - preconditioners
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/is.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/da.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/is.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/pc.h"
+#include "include/finclude/sles.h"
+#include "include/finclude/da.h"
 
       integer     user(6)
       Vec         X

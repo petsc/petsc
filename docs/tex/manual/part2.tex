@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.262 1998/04/14 22:15:48 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.263 1998/04/15 02:49:15 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4327,10 +4327,10 @@ files.
 \noindent {\bf Recommended Approach:}
 In the first  approach, 
 the Fortran include files for PETSc are located in the directory 
-{\tt \$\{PETSC\_DIR\}/include/FINCLUDE} and should be used via statements 
+{\tt \$\{PETSC\_DIR\}/include/finclude} and should be used via statements 
 such as the following:
 \begin{verbatim}
-    #include "include/FINCLUDE/includefile.h"
+    #include "include/finclude/includefile.h"
 \end{verbatim}
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
@@ -4357,12 +4357,12 @@ part of a heritage code), the conventional Fortran style include
 statement can be employed.  The weakness of this approach is that either the
 complete path of the include file must be hardwired with a statement such as
 \begin{verbatim}
-   include '/home/username/petsc/include/finclude/includefile.h'
+   include '/home/username/petsc/include/foldinclude/includefile.h'
 \end{verbatim}
 or a link must be estabilished in the directory containing the Fortran source
 file to the file
 \begin{verbatim}
-   ln -s /home/username/petsc/include/finclude/includefile.h includefile.h
+   ln -s /home/username/petsc/include/foldinclude/includefile.h includefile.h
 \end{verbatim}
 Some Fortran compilers will accept a {\tt -I<directory>}, but depending on the
 Fortran compiler, they may use the {\tt -I} list only for the {\tt \#include}
@@ -4683,7 +4683,7 @@ use the routines {\tt VecGetArrayF90()}, {\tt VecRestoreArrayF90()}
 {\tt VecDuplicateVecsF90()}, and {\tt VecDestroyVecsF90()}, one must
 use the Fortran90 vector include file,
 \begin{verbatim}
-    #include "include/FINCLUDE/vec.h90"
+    #include "include/finclude/vec.h90"
 \end{verbatim}
 Analogous include files for other components are {\tt da.h90},
 {\tt mat.h90}, and {\tt is.h90}; the conventional Fortran style

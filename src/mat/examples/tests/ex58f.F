@@ -1,12 +1,12 @@
 !
-!      "$Id: ex58f.F,v 1.3 1998/03/24 16:50:48 balay Exp balay $";
+!      "$Id: ex58f.F,v 1.4 1998/03/30 22:03:42 balay Exp balay $";
 !
 !   This program demonstrates use of MatGetRow() from Fortran
 !
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/viewer.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/viewer.h"
 
       Mat      A
       integer  err,i

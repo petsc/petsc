@@ -1,10 +1,10 @@
 !
-!    "$Id: ex7f.F,v 1.11 1997/07/07 17:01:23 balay Exp balay $";
+!    "$Id: ex7f.F,v 1.12 1998/03/24 16:41:15 balay Exp balay $";
 !
        subroutine ex7f(vec,comm)
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
 !
 !  This routine demonstates how a computational module may be written
 !  in Fortran and called from a C routine, passing down PETSc objects.

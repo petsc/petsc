@@ -1,12 +1,12 @@
 !
-!  "$Id: fmultadd.F,v 1.6 1997/12/07 16:10:43 bsmith Exp balay $";
+!  "$Id: fmultadd.F,v 1.7 1998/03/25 17:13:09 balay Exp balay $";
 !
 !    Fortran kernel for sparse matrix-vector product in the AIJ format
 !
 !
       subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
       implicit none
-#include "include/FINCLUDE/petsc.h"
+#include "include/finclude/petsc.h"
 
       Scalar           x(0:*),a(0:*),y(*),z(*)
       integer          n, ii(*), jj(0:*)

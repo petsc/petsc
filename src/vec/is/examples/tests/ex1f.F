@@ -1,11 +1,11 @@
 !
-!  "$Id: ex1f.F,v 1.10 1998/03/24 16:47:25 balay Exp bsmith $"
+!  "$Id: ex1f.F,v 1.11 1998/04/13 17:25:33 bsmith Exp balay $"
 !
 !  Formatted test for IS general routines
 !
       implicit none
-#include "FINCLUDE/petsc.h"
-#include "FINCLUDE/is.h"
+#include "finclude/petsc.h"
+#include "finclude/is.h"
 
 
        integer     i, n, ierr,indices(1000),rank,size,ii(1)

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.6 1997/09/22 15:16:44 balay Exp balay $"
+!    "$Id: ex2f.F,v 1.7 1998/03/24 16:41:30 balay Exp balay $"
 !
 !  Description: Builds a parallel vector with 1 component on the first
 !               processor, 2 on the second, etc.  Then each processor adds
@@ -29,8 +29,8 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/vec.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
