@@ -1,4 +1,4 @@
-/*$Id: psplit.c,v 1.13 2000/11/28 17:27:56 bsmith Exp bsmith $*/
+/*$Id: psplit.c,v 1.14 2001/01/15 21:44:00 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I    "petsc.h" I*/
 
@@ -85,7 +85,14 @@ int PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
     *n = *N/size + ((*N % size) > rank);
+#if defined(PETSC_USE_BOPT_g)
+  } else {
+    int tmp;
+    ierr = MPI_Allreduce(n,&tmp,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    if (tmp != *N) SETERRQ3(1,"Sum of local lengths %d does not equal global length %d, my local length %d",tmp,*N,*n);
+#endif
   }
+
   PetscFunctionReturn(0);
 }
 
