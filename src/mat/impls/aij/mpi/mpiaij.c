@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.22 1995/03/29 23:43:15 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.24 1995/04/02 16:35:07 curfman Exp $";
 #endif
 
 #include "mpiaij.h"
@@ -68,7 +68,7 @@ static int CreateColmap(Mat mat)
   return 0;
 }
 
-static int MatInsertValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
+static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -285,12 +285,11 @@ static int MatEndAssemble_MPIAIJ(Mat mat)
   }
   ierr = MatBeginAssembly(aij->B); CHKERR(ierr);
   ierr = MatEndAssembly(aij->B); CHKERR(ierr);
-
   aij->assembled = 1;
   return 0;
 }
 
-static int MatZero_MPIAIJ(Mat A)
+static int MatZeroEntries_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *l = (Mat_MPIAIJ *) A->data;
 
@@ -543,7 +542,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
   PetscObject vobj = (PetscObject) viewer;
-
+ 
   if (!viewer) { /* so that viewers may be used from debuggers */
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
@@ -568,9 +567,10 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
       else {
         /* assemble the entire matrix onto first processor. */
         Mat     A;
-        Mat_AIJ *Aaij;
+        Mat_AIJ *Aloc;
         int     M = aij->M, N = aij->N,m,*ai,*aj,row,*cols,i,*ct;
         Scalar  *a;
+
         if (!mytid) {
           ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,0,0,0,&A);
         }
@@ -580,8 +580,8 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
         CHKERR(ierr);
 
         /* copy over the A part */
-        Aaij = (Mat_AIJ*) aij->A->data;
-        m = Aaij->m; ai = Aaij->i; aj = Aaij->j; a = Aaij->a;
+        Aloc = (Mat_AIJ*) aij->A->data;
+        m = Aloc->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
         row = aij->rstart;
         for ( i=0; i<ai[m]; i++ ) {aj[i] += aij->cstart - 1;}
         for ( i=0; i<m; i++ ) {
@@ -589,12 +589,12 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
           CHKERR(ierr);
           row++; a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
         } 
-        aj = Aaij->j;
+        aj = Aloc->j;
         for ( i=0; i<ai[m]; i++ ) {aj[i] -= aij->cstart - 1;}
 
         /* copy over the B part */
-        Aaij = (Mat_AIJ*) aij->B->data;
-        m = Aaij->m;  ai = Aaij->i; aj = Aaij->j; a = Aaij->a;
+        Aloc = (Mat_AIJ*) aij->B->data;
+        m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
         row = aij->rstart;
         ct = cols = (int *) MALLOC( (ai[m]+1)*sizeof(int) ); CHKPTR(cols);
         for ( i=0; i<ai[m]; i++ ) {cols[i] = aij->garray[aj[i]-1];}
@@ -604,7 +604,6 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
           row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
         } 
         FREE(ct);
-
         ierr = MatBeginAssembly(A); CHKERR(ierr);
         ierr = MatEndAssembly(A); CHKERR(ierr);
         if (!mytid) {
@@ -1069,7 +1068,7 @@ static int MatCopy_MPIAIJ(Mat,Mat *);
 extern int MatConvert_MPIAIJ(Mat,MATTYPE,Mat *);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatInsertValues_MPIAIJ,
+static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,MatRestoreRow_MPIAIJ,
        MatMult_MPIAIJ,MatMultAdd_MPIAIJ,
        MatMultTrans_MPIAIJ,MatMultTransAdd_MPIAIJ,
@@ -1082,7 +1081,7 @@ static struct _MatOps MatOps = {MatInsertValues_MPIAIJ,
        MatGetDiagonal_MPIAIJ,0,0,
        MatBeginAssemble_MPIAIJ,MatEndAssemble_MPIAIJ,
        0,
-       MatSetOption_MPIAIJ,MatZero_MPIAIJ,MatZeroRows_MPIAIJ,0,
+       MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,0,
        0,0,0,0,
        MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
        0,0,
@@ -1183,6 +1182,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   aij->lvec      = 0;
   aij->Mvctx     = 0;
   aij->assembled = 0;
+  aij->bsinterf  = 0;
 
   *newmat = mat;
   return 0;
@@ -1192,7 +1192,7 @@ static int MatCopy_MPIAIJ(Mat matin,Mat *newmat)
 {
   Mat        mat;
   Mat_MPIAIJ *aij,*oldmat = (Mat_MPIAIJ *) matin->data;
-  int        ierr;
+  int        ierr, len;
   *newmat      = 0;
 
   if (!oldmat->assembled) SETERR(1,"Cannot copy unassembled matrix");
@@ -1220,15 +1220,23 @@ static int MatCopy_MPIAIJ(Mat matin,Mat *newmat)
   aij->mytid      = oldmat->mytid;
   aij->insertmode = NotSetValues;
 
-  aij->rowners    = (int *) MALLOC( (aij->numtids+1)*sizeof(int) );
+  aij->rowners        = (int *) MALLOC( (aij->numtids+1)*sizeof(int) );
   CHKPTR(aij->rowners);
   MEMCPY(aij->rowners,oldmat->rowners,(aij->numtids+1)*sizeof(int));
-  aij->stash.nmax = 0;
-  aij->stash.n    = 0;
-  aij->stash.array= 0;
-  aij->colmap     = 0;
-  aij->garray     = 0;
-  mat->comm       = matin->comm;
+  aij->stash.nmax     = 0;
+  aij->stash.n        = 0;
+  aij->stash.array    = 0;
+  if (oldmat->colmap) {
+    aij->colmap      = (int *) MALLOC( (aij->N)*sizeof(int) );
+    CHKPTR(aij->colmap);
+    MEMCPY(aij->colmap,oldmat->colmap,(aij->N)*sizeof(int));
+  } else aij->colmap = 0;
+    if (oldmat->garray && (len = ((Mat_AIJ *) (oldmat->B->data))->n)) {
+    aij->garray      = (int *) MALLOC(len*sizeof(int) ); CHKPTR(aij->garray);
+    MEMCPY(aij->garray,oldmat->garray,len*sizeof(int));
+  } else aij->garray = 0;
+  mat->comm           = matin->comm;
+  aij->bsinterf       = 0;
   
   ierr =  VecCreate(oldmat->lvec,&aij->lvec); CHKERR(ierr);
   PLogObjectParent(mat,aij->lvec);
