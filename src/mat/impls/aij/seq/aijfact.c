@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.150 2000/05/10 16:40:36 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.151 2000/05/16 22:04:11 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -406,6 +406,13 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
+  if (info) {
+    b->lu_damp    = info->damp;
+    b->lu_damping = info->damping;
+  } else {
+    b->lu_damp    = PETSC_FALSE;
+    b->lu_damping = 0.0;
+  }
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
@@ -439,10 +446,11 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   IS         isrow = b->row,isicol = b->icol;
   int        *r,*ic,ierr,i,j,n = a->m,*ai = b->i,*aj = b->j;
   int        *ajtmpold,*ajtmp,nz,row,*ics,shift = a->indexshift;
-  int        *diag_offset = b->diag,diag,k;
-  int        preserve_row_sums = (int)a->ilu_preserve_row_sums,*pj;
-  Scalar     *rtmp,*v,*pc,multiplier,sum,inner_sum,*rowsums = 0,*pv,*rtmps,*u_values;
-  PetscReal  ssum; 
+  int        *diag_offset = b->diag,diag;
+  int        *pj,ndamp = 0;
+  Scalar     *rtmp,*v,*pc,multiplier,*pv,*rtmps;
+  PetscReal  damping = b->lu_damping;
+  PetscTruth damp;
 
   PetscFunctionBegin;
 
@@ -452,86 +460,63 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(Scalar));CHKERRQ(ierr);
   rtmps = rtmp + shift; ics = ic + shift;
 
-  /* precalculate row sums */
-  if (preserve_row_sums) {
-    rowsums = (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(rowsums);
+  do {
+    damp = PETSC_FALSE;
     for (i=0; i<n; i++) {
-      nz  = a->i[r[i]+1] - a->i[r[i]];
-      v   = a->a + a->i[r[i]] + shift;
-      sum = 0.0;
-      for (j=0; j<nz; j++) sum += v[j];
-      rowsums[i] = sum;
-    }
-  }
+      nz    = ai[i+1] - ai[i];
+      ajtmp = aj + ai[i] + shift;
+      for  (j=0; j<nz; j++) rtmps[ajtmp[j]] = 0.0;
 
-  for (i=0; i<n; i++) {
-    nz    = ai[i+1] - ai[i];
-    ajtmp = aj + ai[i] + shift;
-    for  (j=0; j<nz; j++) rtmps[ajtmp[j]] = 0.0;
-
-    /* load in initial (unfactored row) */
-    nz       = a->i[r[i]+1] - a->i[r[i]];
-    ajtmpold = a->j + a->i[r[i]] + shift;
-    v        = a->a + a->i[r[i]] + shift;
-    for (j=0; j<nz; j++) rtmp[ics[ajtmpold[j]]] =  v[j];
-
-    row = *ajtmp++ + shift;
-    while  (row < i) {
-      pc = rtmp + row;
-      if (*pc != 0.0) {
-        pv         = b->a + diag_offset[row] + shift;
-        pj         = b->j + diag_offset[row] + (!shift);
-        multiplier = *pc / *pv++;
-        *pc        = multiplier;
-        nz         = ai[row+1] - diag_offset[row] - 1;
-        for (j=0; j<nz; j++) rtmps[pj[j]] -= multiplier * pv[j];
-        PLogFlops(2*nz);
-      }
-      row = *ajtmp++ + shift;
-    }
-    /* finished row so stick it into b->a */
-    pv = b->a + ai[i] + shift;
-    pj = b->j + ai[i] + shift;
-    nz = ai[i+1] - ai[i];
-    for (j=0; j<nz; j++) {pv[j] = rtmps[pj[j]];}
-    diag = diag_offset[i] - ai[i];
-    /*
-          Possibly adjust diagonal entry on current row to force
-        LU matrix to have same row sum as initial matrix. 
-    */
-    if (pv[diag] == 0.0) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot row %d",i);
-    }
-    if (preserve_row_sums) {
-      pj  = b->j + ai[i] + shift;
-      sum = rowsums[i];
-      for (j=0; j<diag; j++) {
-        u_values  = b->a + diag_offset[pj[j]] + shift;
-        nz        = ai[pj[j]+1] - diag_offset[pj[j]];
-        inner_sum = 0.0;
-        for (k=0; k<nz; k++) {
-          inner_sum += u_values[k];
+      /* load in initial (unfactored row) */
+      nz       = a->i[r[i]+1] - a->i[r[i]];
+      ajtmpold = a->j + a->i[r[i]] + shift;
+      v        = a->a + a->i[r[i]] + shift;
+      for (j=0; j<nz; j++) {
+        rtmp[ics[ajtmpold[j]]] = v[j];
+        if (ajtmpold[j] == r[i]) { /* damp the diagonal of the matrix */
+          rtmp[ics[ajtmpold[j]]] += damping;
         }
-        sum -= pv[j]*inner_sum;
+      }
 
+      row = *ajtmp++ + shift;
+      while  (row < i) {
+        pc = rtmp + row;
+        if (*pc != 0.0) {
+          pv         = b->a + diag_offset[row] + shift;
+          pj         = b->j + diag_offset[row] + (!shift);
+          multiplier = *pc / *pv++;
+          *pc        = multiplier;
+          nz         = ai[row+1] - diag_offset[row] - 1;
+          for (j=0; j<nz; j++) rtmps[pj[j]] -= multiplier * pv[j];
+          PLogFlops(2*nz);
+        }
+        row = *ajtmp++ + shift;
       }
-      nz       = ai[i+1] - diag_offset[i] - 1;
-      u_values = b->a + diag_offset[i] + 1 + shift;
-      for (k=0; k<nz; k++) {
-        sum -= u_values[k];
+      /* finished row so stick it into b->a */
+      pv = b->a + ai[i] + shift;
+      pj = b->j + ai[i] + shift;
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) {pv[j] = rtmps[pj[j]];}
+      diag = diag_offset[i] - ai[i];
+      if (PetscAbsScalar(pv[diag]) < 1.e-12) {
+        if (b->lu_damp) {
+          damp = PETSC_TRUE;
+          if (damping) damping *= 2.0;
+          else damping = 1.e-12;
+          ndamp++;
+          break;
+        } else {
+          SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot row %d",i);
+        }
       }
-      ssum = PetscAbsScalar(sum/pv[diag]);
-      if (ssum < 1000. && ssum > .001) pv[diag] = sum; 
     }
-    /* check pivot entry for current row */
-  }
+  } while (damp);
 
   /* invert diagonal entries for simplier triangular solves */
   for (i=0; i<n; i++) {
     b->a[diag_offset[i]+shift] = 1.0/b->a[diag_offset[i]+shift];
   }
 
-  if (preserve_row_sums) {ierr = PetscFree(rowsums);CHKERRQ(ierr);}
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
@@ -540,6 +525,9 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
   PLogFlops(b->n);
+  if (ndamp) {
+    PLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of damping tries %d damping value %g\n",ndamp,damping);
+  }
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
