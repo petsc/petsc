@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.43 1998/04/20 19:26:19 bsmith Exp balay $";
+static char vcid[] = "$Id: zoptions.c,v 1.44 1998/04/21 18:23:47 balay Exp curfman $";
 #endif
 
 /*
@@ -330,6 +330,8 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
     PetscCObjectToFortranObject - Converts a PETSc object represented
     in C to one appropriate to pass to a Fortran routine.
 
+    Not collective
+
     Input Parameter:
 .   cobj - the PETSc C object
 
@@ -355,6 +357,8 @@ int PetscCObjectToFortranObject(void *cobj,PetscFortranAddr *fobj)
     PetscFortranObjectToCObject - Converts a PETSc object represented
     in Fortran to one appropriate for C.
 
+    Not collective
+
     Input Parameter:
 .   fobj - the PETSc Fortran object
 
@@ -378,6 +382,8 @@ int PetscFortranObjectToCObject(PetscFortranAddr fobj,void *cobj)
 /*@
     MPICCommToFortranComm - Converts a MPI_Comm represented
     in C to one appropriate to pass to a Fortran routine.
+
+    Not collective
 
     Input Parameter:
 .   cobj - the C MPI_Comm
@@ -405,6 +411,8 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
     MPIFortranCommToCComm - Converts a MPI_Comm represented
     int Fortran (as an integer) to a MPI_Comm in C.
 
+    Not collective
+
     Input Parameter:
 .   fcomm - the Fortran MPI_Comm (an integer)
 
@@ -412,10 +420,10 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 .   comm - the C MPI_Comm
 
     Notes:
-     MPIFortranCommToCComm() must be called in a C/C++ routine.
-     MPI 1 does not provide a standard for mapping between
-     Fortran and C MPI communicators; this routine handles the
-     mapping correctly on all machines.
+    MPIFortranCommToCComm() must be called in a C/C++ routine.
+    MPI 1 does not provide a standard for mapping between
+    Fortran and C MPI communicators; this routine handles the
+    mapping correctly on all machines.
 
 .keywords: Fortran, C, MPI_Comm, convert, interlanguage
 

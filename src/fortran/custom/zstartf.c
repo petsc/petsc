@@ -28,10 +28,16 @@ extern void petscsetcommonblock_(PetscFortranAddr*,PetscFortranAddr*,PetscFortra
 #endif
 
 /*@
+   PetscInitializeFortran - Routine that should be called from C after
+   the call to PetscInitialize() if one is using a C main program
+   that calls Fortran routines that in turn call PETSc routines.
 
-    PetscInitializeFortran - Routine that should be called from C after
-        the call to PetscInitialize() if one is using a C main program
-        that calls Fortran routines that call PETSc routines.
+   Notes:
+   PetscInitializeFortran() initializes some of the default viewers,
+   communicators, etc. for use in the Fortran if a user's main program is
+   written in C.  PetscInitializeFortran() is NOT needed if a user's main
+   program is written in Fortran; in this case, just calling
+   PetscInitialize() in the main program is sufficient.
 
 .seealso:  PetscFortranObjectToCObject(), PetscCObjectToFortranObject(),
            PetscInitialize()
