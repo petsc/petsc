@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.74 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: err.c,v 1.75 1998/04/24 22:11:45 curfman Exp curfman $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -247,9 +247,7 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
 .  func - error handler routine
 
    Calling sequence of func:
-.vb
-   int func (int line,char *func,char *file,char *dir,int n,int p,char *mess);
-.ve
+$    int func (int line,char *func,char *file,char *dir,int n,int p,char *mess);
 
 +  func - the function where the error occured (indicated by __FUNC__)
 .  line - the line number of the error (indicated by __LINE__)
