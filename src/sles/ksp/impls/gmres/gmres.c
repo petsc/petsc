@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.147 2000/06/19 03:03:03 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.148 2000/06/20 04:01:56 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -750,7 +750,7 @@ int KSPCreate_GMRES(KSP ksp)
                                     "KSPGMRESSetHapTol_GMRES",
                                      KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
 
-  gmres->haptol              = 1.0e-16;
+  gmres->haptol              = 1.0e-30;
   gmres->q_preallocate       = 0;
   gmres->delta_allocate      = GMRES_DELTA_DIRECTIONS;
   gmres->orthog              = KSPGMRESUnmodifiedGramSchmidtOrthogonalization;
