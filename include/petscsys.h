@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.55 2001/02/08 20:59:42 balay Exp balay $ */
+/* $Id: petscsys.h,v 1.56 2001/02/22 22:40:13 balay Exp balay $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -78,6 +78,8 @@ EXTERN int PetscStopForDebugger(void);
 
 EXTERN int PetscGatherNoOfMessages(MPI_Comm,int,int*,int*,int*);
 EXTERN int PetscGatherMessageLengths(MPI_Comm,int,int,int*,int**,int**);
+EXTERN int PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
+EXTERN int PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,Scalar***,MPI_Request**);
 
 #endif      
 
