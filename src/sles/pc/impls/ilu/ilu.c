@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.90 1997/07/09 20:53:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.91 1997/08/22 15:12:51 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -255,7 +255,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   PetscPrintf(pc->comm," %spc_ilu_reuse_reordering:                          \n",p);
   PetscPrintf(pc->comm," %spc_ilu_reuse_fill:                             \n",p);
   PetscPrintf(pc->comm," %spc_ilu_nonzeros_along_diagonal: changes column ordering to \n",p);
-  PetscPrintf(pc->comm,"    reduce the change of obtaining zero pivot during ILU.\n");
+  PetscPrintf(pc->comm,"    reduce the chance of obtaining zero pivot during ILU.\n");
   return 0;
 }
 
@@ -297,7 +297,7 @@ static int PCSetUp_ILU(PC pc)
 
   if (ilu->inplace) {
     if (!pc->setupcalled) {
-      /* Inplace factorization only makes sense with Natural ordering
+      /* In-place factorization only makes sense with the natural ordering,
          so we only need to get the ordering once, even if nonzero structure changes */
       ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
       ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
