@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.132 1996/01/04 15:53:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.133 1996/01/08 17:41:34 bsmith Exp balay $";
 #endif
 
 /*
@@ -1256,7 +1256,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
 {
   Mat        B;
   Mat_SeqAIJ *b;
-  int        i,len,ierr;
+  int        i,len,ierr, flg;
 
   *A      = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQAIJ,comm);
@@ -1267,12 +1267,14 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   B->view             = MatView_SeqAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
-  OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold);
+  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold, \
+                          &flg); CHKERRQ(ierr);
   b->row              = 0;
   b->col              = 0;
   b->indexshift       = 0;
-  if (OptionsHasName(PETSC_NULL,"-mat_aij_oneindex")) b->indexshift = -1;
-
+  ierr = OptionsHasName(PETSC_NULL,"-mat_aij_oneindex", &flg); CHKERRQ(ierr);
+  if (flg) b->indexshift = -1;
+  
   b->m       = m;
   b->n       = n;
   b->imax    = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(b->imax);
@@ -1320,19 +1322,17 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->inode.max_limit  = 5;
 
   *A = B;
-  if (OptionsHasName(PETSC_NULL,"-mat_aij_superlu")) {
-    ierr = MatUseSuperLU_SeqAIJ(B); CHKERRQ(ierr);
-  }
-  if (OptionsHasName(PETSC_NULL,"-mat_aij_essl")) {
-    ierr = MatUseEssl_SeqAIJ(B); CHKERRQ(ierr);
-  }
-  if (OptionsHasName(PETSC_NULL,"-mat_aij_dxml")) {
+  ierr = OptionsHasName(PETSC_NULL,"-mat_aij_superlu", &flg); CHKERRQ(ierr);
+  if (flg) { ierr = MatUseSuperLU_SeqAIJ(B); CHKERRQ(ierr); }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_aij_essl", &flg); CHKERRQ(ierr);
+  if (flg) { ierr = MatUseEssl_SeqAIJ(B); CHKERRQ(ierr); }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_aij_dxml", &flg); CHKERRQ(ierr);
+  if (flg) {
     if (!b->indexshift) SETERRQ(1,"MatCreateSeqAIJ:need -mat_aij_oneindex with -mat_aij_dxml");
     ierr = MatUseDXML_SeqAIJ(B); CHKERRQ(ierr);
   }
-  if (OptionsHasName(PETSC_NULL,"-help")) {
-    ierr = MatPrintHelp(B); CHKERRQ(ierr);
-  }
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
+  if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
   return 0;
 }
 
