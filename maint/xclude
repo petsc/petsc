@@ -1,3 +1,4 @@
+petsc/bin/petscrun
 petsc/src/gvec/RCS
 petsc/src/gvec/interface/RCS
 petsc/src/gvec/impls/RCS
