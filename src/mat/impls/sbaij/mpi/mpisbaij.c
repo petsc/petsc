@@ -18,6 +18,7 @@ extern int MatPrintHelp_SeqSBAIJ(Mat);
 extern int MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*);
 extern int MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
 extern int MatGetRowMax_MPISBAIJ(Mat,Vec);
+extern int MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
 
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
@@ -1455,7 +1456,7 @@ static struct _MatOps MatOps_Values = {
   0,
   0,
   0,
-  0,
+  MatRelax_MPISBAIJ,
   MatTranspose_MPISBAIJ,
   MatGetInfo_MPISBAIJ,
   MatEqual_MPISBAIJ,
@@ -2332,3 +2333,52 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   ierr = PetscFree(work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatRelax_MPISBAIJ"
+int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
+{
+  Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
+  int            ierr;
+  PetscReal      mone=-1.0;
+  Vec            lvec1,bb1;
+  MatSORType     lflg=SOR_LOCAL_SYMMETRIC_SWEEP;
+ 
+  PetscFunctionBegin;
+  
+  if (mat->bs > 1)
+    SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
+
+  if ( flag & SOR_ZERO_INITIAL_GUESS ) {
+    ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,1,xx);CHKERRQ(ierr);
+    its--; 
+  }
+
+  ierr = VecDuplicate(mat->lvec,&lvec1);CHKERRQ(ierr);
+  ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
+  while (its--){
+    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
+   
+    /* lower diagonal part: bb1 = bb - B^T*xx */
+    ierr = (*mat->B->ops->multtranspose)(mat->B,xx,lvec1);CHKERRQ(ierr);
+    ierr = VecScale(&mone,lvec1);CHKERRQ(ierr); 
+
+    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr); 
+    ierr = VecCopy(bb,bb1);CHKERRQ(ierr);
+    ierr = VecScatterBegin(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr);
+
+    /* upper diagonal part: bb1 = bb1 - B*x */ 
+    ierr = VecScale(&mone,mat->lvec);CHKERRQ(ierr);
+    ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb1,bb1);CHKERRQ(ierr);
+
+    ierr = VecScatterEnd(lvec1,bb1,ADD_VALUES,SCATTER_REVERSE,mat->Mvctx);CHKERRQ(ierr); 
+  
+    /* diagonal part */
+    ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,lflg,fshift,1,xx);CHKERRQ(ierr);
+ 
+  }
+  ierr = VecDestroy(lvec1);CHKERRQ(ierr);
+  ierr = VecDestroy(bb1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

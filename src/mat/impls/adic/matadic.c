@@ -8,7 +8,7 @@
 #include "petscda.h"
 #include "petscsnes.h"
 EXTERN_C_BEGIN
-#include "adic_utils.h"
+.#include "adic_utils.h"
 EXTERN_C_END
 
 typedef struct {
@@ -111,7 +111,7 @@ int MatGetDiagonal_DAAD(Mat A,Vec dd)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatRelax_DAD"
+#define __FUNCT__ "MatRelax_DAAD"
 int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
 {
   Mat_DAAD      *a = (Mat_DAAD*)A->data;
@@ -250,6 +250,8 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        MatAssemblyEnd_DAAD,
+       0,
+       0,
        0,
        0,
        0,
