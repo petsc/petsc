@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 1999/04/18 17:13:44 bsmith Exp balay $ 
+# $Id: makefile,v 1.7 1999/07/16 14:22:04 balay Exp bsmith $ 
 
 ALL: ex10
 
@@ -21,7 +21,7 @@ ex10: ex10.o  chkopts
 	$(RM) ex10.o
 
 runex10:
-	-@$(MPIRUN) -np 2 ex10 -snes_monitor > ex10_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 2 ex10 -snes_smonitor > ex10_1.tmp 2>&1;   \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
