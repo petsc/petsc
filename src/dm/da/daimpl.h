@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.12 1996/04/14 00:49:20 curfman Exp curfman $ */
+/* $Id: daimpl.h,v 1.13 1996/05/01 22:33:11 curfman Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -7,6 +7,7 @@
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
 #include "da.h"
+#include "ao.h"
 #include "dfvec.h"
 
 struct _DA {
@@ -28,6 +29,7 @@ struct _DA {
                                        ordering that would be used for 1
                                        proc; intended for internal use only */
   DF             dfshell;           /* discrete function shell */
+  AO             ao;                /* application ordering context */
 };
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.23 1996/06/18 22:46:08 curfman Exp curfman $ */
+/* $Id: da.h,v 1.24 1996/06/26 01:48:57 curfman Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -8,6 +8,7 @@
 #define __DA_PACKAGE
 #include "petsc.h"
 #include "vec.h"
+#include "ao.h"
 
 #define DA_COOKIE PETSC_COOKIE+14
 
@@ -45,4 +46,5 @@ extern int   DARefine(DA,DA*);
 extern int   DAGetGlobalIndices(DA,int*,int**);
 extern int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
 
+extern int   DAGetAO(DA,AO*);
 #endif

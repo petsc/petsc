@@ -12,37 +12,19 @@ SOURCEH	        =
 OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscvec
-LOCDIR          = src/vec/examples/
-TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm\
-		  ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc\
-		  ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm\
-		  ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc\
-		  runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex12.PETSc runex12\
-		  ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 ex14.rm\
-		  ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 ex17.rm ex20.PETSc\
-		  runex20 runex20_2 ex20.rm ex23.PETSc runex23 ex23.rm clean
-TESTEXAMPLES_2  = ex15.PETSc runex15 ex15.rm ex22.PETSc ex22.rm clean
-TESTEXAMPLES_3  = ex19.PETSc runex19 ex19.rm ex21.PETSc runex21 ex21.rm ex24.PETSc\
-		  runex24 ex24.rm clean
-TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
-		  ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm ex8.PETSc\
-		  runex8 ex8.rm ex14.PETSc ex14.rm ex20.PETSc runex20 ex20.rm clean
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc \
-		  ex4.rm ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex7.PETSc ex7.rm\
-		  ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc\
-		  ex11.rm ex12.PETSc ex12.rm ex13.PETSc ex13.rm ex14.PETSc ex14.rm\
-		  ex16.PETSc ex16.rm ex17.PETSc ex17.rm ex20.PETSc\
-		  ex20.rm ex23.PETSc ex23.rm clean
-BUILDEXAMPLES_2 = ex15.PETSc ex15.rm ex22.PETSc ex22.rm clean
-BUILDEXAMPLES_3 = ex19.PETSc ex19.rm ex21.PETSc ex21.rm ex24.PETSc ex24.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex6.PETSc \
-		  ex6.rm ex7.PETSc ex7.rm ex8.PETSc ex8.rm ex14.PETSc ex14.rm \
-		  ex20.PETSc ex20.rm clean
+LOCDIR          = src/ao/examples/
+TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm \
+                  ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm clean
+TESTEXAMPLES_2  = 
+TESTEXAMPLES_3  = 
+TESTEXAMPLES_4  = 
+BUILDEXAMPLES_1 = ex1.PETSc ex1.rm  ex2.PETSc ex2.rm
+BUILDEXAMPLES_2 = 
+BUILDEXAMPLES_3 = 
+BUILDEXAMPLES_4 = 
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
-                  ex20.c ex22.c ex23.c ex24.c
-EXAMPLESF       = ex19.F ex21.F ex24f.F
+EXAMPLESC       = ex1.c ex2.c
+EXAMPLESF       = 
 
 ex1: ex1.o  chkopts 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
@@ -150,11 +132,26 @@ runex1_2:
 	   if (diff output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   $(RM) -f ex1_2.tmp
+runex1_3:
+	-@$(MPIRUN)  -np 3 ex1 > ex1_3.tmp 2>&1;\
+	   if (diff output/ex1_3.out ex1_3.tmp) then true ;  \
+	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
+	   $(RM) -f ex1_3.tmp
 runex2:
 	-@$(MPIRUN)  ex2 > ex2_1.tmp 2>&1;\
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
 	   $(RM) -f ex2_1.tmp
+runex2_2:
+	-@$(MPIRUN)  -np 2 ex2 > ex2_2.tmp 2>&1;\
+	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
+	   else echo "Possible problem with ex2_2, diffs above"; fi;\
+	   $(RM) -f ex2_2.tmp
+runex2_3:
+	-@$(MPIRUN) -np 3 ex2 > ex2_3.tmp 2>&1;\
+	   if (diff output/ex2_3.out ex2_3.tmp) then true; \
+	   else echo "Possible problem with ex2_3, diffs above"; fi;\
+	   $(RM) -f ex2_3.tmp
 runex3:
 	-@$(MPIRUN) -np 2 ex3 > ex3_1.tmp 2>&1;\
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
