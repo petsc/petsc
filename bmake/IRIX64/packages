@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1997/11/03 04:39:47 bsmith Exp bsmith $ 
+ $Id: base.site,v 1.20 1997/11/12 15:50:49 bsmith Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -38,7 +38,7 @@ X11_LIB        = -lX11
 #
 MPI_LIB        = -lmpi
 MPI_INCLUDE    = -DUSES_INT_MPI_COMM
-MPIRUN         =  /bin/mpirun
+MPIRUN         = /usr/bin/nice -20 /bin/mpirun
 #
 # The following lines can be used with MPICH
 #
