@@ -18,7 +18,7 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
   PetscFunctionBegin;
   ierr = MPI_Comm_size(part->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
-    SETERRQ(PETSC_ERR_SUP,"Currently only supports one domain per processor");
+    SETERRQ(PETSC_ERR_SUP,"This is the DEFAULT NO-OP partitioner, it currently only supports one domain per processor\nuse -matpartitioning_type parmetis or chaco or scotch for more than one subdomain per processor");
   }
   ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
 

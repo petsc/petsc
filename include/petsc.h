@@ -441,6 +441,7 @@ typedef struct _PetscFList *PetscFList;
 #include "petscviewer.h"
 #include "petscoptions.h"
 
+EXTERN PetscErrorCode PetscLogInfoAllow(PetscTruth,const char []);
 EXTERN PetscErrorCode PetscShowMemoryUsage(PetscViewer,const char[]);
 EXTERN PetscErrorCode PetscGetTime(PetscLogDouble*);
 EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);

@@ -3770,7 +3770,9 @@ PetscErrorCode MatZeroEntries(Mat mat)
    those in the communicator used for matrix creation) MUST call this
    routine, regardless of whether any rows being zeroed are owned by
    them.
-  
+
+   Each processor should list the rows that IT wants zeroed
+
    Level: intermediate
 
    Concepts: matrices^zeroing rows

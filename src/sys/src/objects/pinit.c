@@ -637,6 +637,7 @@ PetscErrorCode PetscFinalize(void)
        Destroy PETSC_COMM_SELF/WORLD as a MPI_Comm with the PETSc 
      attribute.
   */
+  ierr = PetscLogInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&PETSC_COMM_SELF);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&PETSC_COMM_WORLD);CHKERRQ(ierr);
 

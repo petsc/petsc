@@ -13,7 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
-                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c
+                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F
 
 include ${PETSC_DIR}/bmake/common/base
@@ -359,6 +359,10 @@ ex95: ex95.o chkopts
 ex96: ex96.o chkopts
 	-${CLINKER} -o ex96 ex96.o ${PETSC_KSP_LIB}
 	${RM} ex96.o
+
+ex98: ex98.o chkopts
+	-${CLINKER} -o ex98 ex98.o ${PETSC_KSP_LIB}
+	${RM} ex98.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -859,6 +863,12 @@ runex96:
 	   else echo "Possible problem with ex96, diffs above"; fi; \
 	   ${RM} -f ex96.tmp
 
+runex98:
+	-@${MPIRUN} -np 4 ex98  > ex98.tmp 2>&1; \
+	   if (${DIFF} output/ex98.out ex98.tmp) then true; \
+	   else echo "Possible problem with ex98, diffs above"; fi; \
+	   ${RM} -f ex98.tmp
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
 		   runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm \
@@ -868,7 +878,7 @@ TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
                    ex16.PETSc runex16 ex16.rm ex59.PETSc runex59 runex59_2 runex59_3 \
                    ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm \
-                   ex65.PETSc ex65.rm ex66.PETSc ex66.rm
+                   ex65.PETSc ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm
 TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc \
 		   runex7 ex7.rm ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm \
 		   ex13.PETSc runex13 \
