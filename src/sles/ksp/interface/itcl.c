@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.52 1996/01/12 18:53:57 balay Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.53 1996/01/12 22:05:22 bsmith Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -169,7 +169,7 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 
 .keywords: KSP, append, options, prefix, database
 @*/
-int KSPSeAppendOptionsPrefix(KSP ksp,char *prefix)
+int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 {
   PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
   return PetscObjectAppendPrefix((PetscObject)ksp, prefix);
