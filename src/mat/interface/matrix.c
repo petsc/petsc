@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.193 1996/08/29 17:36:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.194 1996/09/12 16:26:11 bsmith Exp curfman $";
 #endif
 
 /*
@@ -408,7 +408,7 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 /* ------------------------------------------------------------*/
 /*@C
    MatGetInfo - Returns information about matrix storage (number of
-   nonzeros, memory).
+   nonzeros, memory, etc.).
 
    Input Parameters:
 .  mat - the matrix
@@ -418,9 +418,47 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 $    flag = MAT_LOCAL: local matrix
 $    flag = MAT_GLOBAL_MAX: maximum over all processors
 $    flag = MAT_GLOBAL_SUM: sum over all processors
-.  info - information context
+.  info - matrix information context
 
-.keywords: matrix, get, info, storage, nonzeros, memory
+   Notes:
+   The MatInfo context contains a variety of matrix data, including
+   number of nonzeros allocated and used, number of mallocs during
+   matrix assembly, etc.  Additional information for factored matrices
+   is provided (such as the fill ratio, number of mallocs during
+   factorization, etc.).  Much of this info is printed to STDOUT
+   when using the runtime options 
+$       -log_info -mat_view_info
+
+   Example for C/C++ Users:
+   See the file $(PETSC_DIR)/include/mat.h for a complete list of
+   data within the MatInfo context.  For example, 
+$
+$      MatInfo *info;
+$      Mat     A;
+$      double  mal, nz_a, nz_u;
+$
+$      MatGetInfo(A,MAT_LOCAL,&info);
+$      mal  = info->mallocs;
+$      nz_a = info->nz_allocated;
+$
+
+   Example for Fortran Users:
+   Fortran users should declare info as a double precision
+   array of dimension MAT_INFO_SIZE, and then extract the parameters
+   of interest.  See the file $(PETSC_DIR)/include/FINCLUDE/mat.h
+   a complete list of parameter names.
+$
+$      double  precision info(MAT_INFO_SIZE)
+$      double  precision mal, nz_a
+$      Mat     A
+$      integer ierr
+$
+$      call MatGetInfo(A,MAT_LOCAL,info,ierr)
+$      mal = info(MAT_INFO_MALLOCS)
+$      nz_a = info(MAT_INFO_NZ_ALLOCATED)
+$
+
+.keywords: matrix, get, info, storage, nonzeros, memory, fill
 @*/
 int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 {
