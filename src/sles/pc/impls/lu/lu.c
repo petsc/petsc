@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.43 1995/09/06 03:05:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.44 1995/09/30 19:28:15 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -94,22 +94,22 @@ static int PCSetUp_LU(PC pc)
     ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
 
-    /* this uses an arbritrary 5.0 as the fill factor! We should
-       allow the user to set this!*/
+    /* this uses an arbritrary 5.0 as the fill factor! User may set
+       with the option -mat_lu_fill */
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,5.0); CHKERRQ(ierr);
   }
   else {
     if (!pc->setupcalled) {
       ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
       if (dir->row) {PLogObjectParent(pc,dir->row);PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
       ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
       ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
       if (dir->row) {PLogObjectParent(pc,dir->row);PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
@@ -138,7 +138,7 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 
 int PCCreate_LU(PC pc)
 {
-  PC_LU *dir = PETSCNEW(PC_LU); CHKPTRQ(dir);
+  PC_LU *dir     = PETSCNEW(PC_LU); CHKPTRQ(dir);
   dir->fact      = 0;
   dir->inplace   = 0;
   dir->col       = 0;

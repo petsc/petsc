@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.31 1995/08/24 22:27:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.32 1995/09/06 03:05:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: eisen.c,v 1.31 1995/08/24 22:27:51 bsmith Exp bsmith 
  %50 of the usual amount of floating point ops used for SSOR + Krylov 
  method. But it requires actually solving the preconditioned problem 
  with both left and right preconditioning. 
-
 */
 #include "pcimpl.h"
 #include "pinclude/pviewer.h"
@@ -62,12 +61,10 @@ static int PCApply_Eisenstat(PC ptr,Vec x,Vec y)
 static int PCPre_Eisenstat(PC pc,KSP ksp)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
-  Vec     b,x;
-  int     ierr;
+  Vec          b,x;
+  int          ierr;
 
-  if (pc->mat != pc->pmat) {
-    SETERRQ(1,"PCPre_Eisenstat: cannot have different mat from pmat"); 
-  }
+  if (pc->mat != pc->pmat) SETERRQ(1,"PCPre_Eisenstat:cannot have different mat+pmat"); 
  
   /* swap shell matrix and true matrix */
   eis->A    = pc->mat;
@@ -90,16 +87,15 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
 
   /* modify b by (L + D)^{-1} */
   ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                        SOR_FORWARD_SWEEP),0.0,1,b); 
-  CHKERRQ(ierr);  
+                                        SOR_FORWARD_SWEEP),0.0,1,b); CHKERRQ(ierr);  
   return 0;
 }
 
 static int PCPost_Eisenstat(PC pc,KSP ksp)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
-  Vec     x,b;
-  int     ierr;
+  Vec          x,b;
+  int          ierr;
   KSPGetSolution(ksp,&x);
   ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
                                  SOR_BACKWARD_SWEEP),0.0,1,x); CHKERRQ(ierr);
@@ -112,8 +108,8 @@ static int PCPost_Eisenstat(PC pc,KSP ksp)
 
 static int PCDestroy_Eisenstat(PetscObject obj)
 {
-  PC       pc = (PC) obj;
-  PC_Eisenstat  *eis = ( PC_Eisenstat  *) pc->data; 
+  PC           pc = (PC) obj;
+  PC_Eisenstat *eis = ( PC_Eisenstat  *) pc->data; 
   if (eis->b) VecDestroy(eis->b);
   if (eis->shell) MatDestroy(eis->shell);
   if (eis->diag) VecDestroy(eis->diag);
@@ -139,7 +135,7 @@ static int PCPrintHelp_Eisenstat(PC pc)
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCEisenstat preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0 < omega < 2)\n",p);
+  MPIU_printf(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
   MPIU_printf(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);
   return 0;
 }
@@ -161,6 +157,7 @@ static int PCSetUp_Eisenstat(PC pc)
   int          ierr;
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
   Vec          diag;
+
   if (!eis->usediag) return 0;
   if (pc->setupcalled == 0) {
     ierr = VecDuplicate(pc->vec,&diag); CHKERRQ(ierr);
@@ -177,24 +174,23 @@ static int PCSetUp_Eisenstat(PC pc)
 
 int PCCreate_Eisenstat(PC pc)
 {
-  int      ierr;
-  PC_Eisenstat  *eis;
-  eis           = PETSCNEW(PC_Eisenstat); CHKPTRQ(eis);
-  pc->apply     = PCApply_Eisenstat;
-  pc->presolve  = PCPre_Eisenstat;
-  pc->postsolve = PCPost_Eisenstat;
-  pc->applyrich = 0;
-  pc->setfrom   = PCSetFrom_Eisenstat;
-  pc->printhelp = PCPrintHelp_Eisenstat ;
-  pc->destroy   = PCDestroy_Eisenstat;
-  pc->view      = PCView_Eisenstat;
-  pc->type      = PCEISENSTAT;
-  pc->data      = (void *) eis;
-  pc->setup     = PCSetUp_Eisenstat;
-  eis->omega    = 1.0;
-  eis->b        = 0;
-  eis->diag     = 0;
-  eis->usediag  = 0;
+  int          ierr;
+  PC_Eisenstat *eis = PETSCNEW(PC_Eisenstat); CHKPTRQ(eis);
+  pc->apply         = PCApply_Eisenstat;
+  pc->presolve      = PCPre_Eisenstat;
+  pc->postsolve     = PCPost_Eisenstat;
+  pc->applyrich     = 0;
+  pc->setfrom       = PCSetFrom_Eisenstat;
+  pc->printhelp     = PCPrintHelp_Eisenstat ;
+  pc->destroy       = PCDestroy_Eisenstat;
+  pc->view          = PCView_Eisenstat;
+  pc->type          = PCEISENSTAT;
+  pc->data          = (void *) eis;
+  pc->setup         = PCSetUp_Eisenstat;
+  eis->omega        = 1.0;
+  eis->b            = 0;
+  eis->diag         = 0;
+  eis->usediag      = 0;
   ierr = MatShellCreate(pc->comm,0,0,(void*) pc,&eis->shell); CHKERRQ(ierr);
   PLogObjectParent(pc,eis->shell);
   ierr = MatShellSetMult(eis->shell, PCMult_Eisenstat); CHKERRQ(ierr);

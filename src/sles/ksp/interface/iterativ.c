@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.29 1995/08/21 18:11:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.30 1995/09/04 17:23:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,13 +40,13 @@ int KSPCheckDef( KSP itP )
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (!itP->vec_sol) {
-    SETERRQ(1,"KSPCheckDef: Solution vector not specified"); 
+    SETERRQ(1,"KSPCheckDef:Solution vector not specified"); 
   }
   if (!itP->vec_rhs) {
-    SETERRQ(2,"KSPCheckDef: SRHS vector not specified"); 
+    SETERRQ(2,"KSPCheckDef:RHS vector not specified"); 
   }
   if (!itP->B)   {
-    SETERRQ(4,"KSPCheckDef: SPreconditioner routine not specified"); 
+    SETERRQ(4,"KSPCheckDef:Preconditioner routine not specified"); 
   }
   return 0;
 }
@@ -150,7 +150,7 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
   if (itP->right_pre) {
     if (itP->B) {
       if (v) { ierr = PCApply(itP->B, itP->vec_sol, v ); CHKERRQ(ierr); *V = v;}
-      else {SETERRQ(1,"KSPDefaultBuildSolution: Not working with right pre");}
+      else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with right pre");}
     }
     else        {
       if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERRQ(ierr); *V = v;}

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.39 1995/08/24 22:26:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.40 1995/09/06 03:04:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -320,7 +320,7 @@ static int KSPAdjustWork_GMRES(KSP itP )
    for (i=0; i<gmresP->vv_allocated; i++) 
      if ( (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],
 					     gmresP->mwork_alloc[i])) 
-       SETERRQ(1,"KSPAdjustWork_GMRES: Could not allocate work vectors");
+       SETERRQ(1,"KSPAdjustWork_GMRES:Could not allocate work vectors");
  }
   return 0;
 }
@@ -440,7 +440,7 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
   */
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
   if (tt == 0.0) {
-    SETERRQ(1,"KSPSolve_GMRES: bad A or B operator, are you sure it is !0?");
+    SETERRQ(1,"KSPSolve_GMRES:bad A or B operator, are you sure it is !0?");
   }
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.60 1995/09/21 20:08:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.61 1995/09/29 14:25:15 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -152,11 +152,9 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
   }
   /* Get the function pointers for the iterative method requested */
   if (!__ITList) {KSPRegisterAll();}
-  if (!__ITList) {
-    SETERRQ(1,"KSPSetMethod: Could not acquire list of KSP methods"); 
-  }
+  if (!__ITList) SETERRQ(1,"KSPSetMethod:Could not get list of KSP methods"); 
   r =  (int (*)(KSP))NRFindRoutine( __ITList, (int)itmethod, (char *)0 );
-  if (!r) {SETERRQ(1,"KSPSetMethod: Unknown KSP method");}
+  if (!r) {SETERRQ(1,"KSPSetMethod:Unknown method");}
   if (ctx->MethodPrivate) PETSCFREE(ctx->MethodPrivate);
   ctx->MethodPrivate = 0;
   return (*r)(ctx);

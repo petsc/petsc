@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.33 1995/08/07 18:51:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.34 1995/09/04 17:23:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -21,7 +21,7 @@ int KSPSetUp(KSP itP)
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->setupcalled) return 0;
   if (itP->type == -1) {
-    SETERRQ(1,"KSPSetUp: Method must be set first");
+    SETERRQ(1,"KSPSetUp:Method must be set first");
   }
   itP->setupcalled = 1;
   return (*(itP)->setup)(itP);

@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.9 1995/07/08 20:40:36 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.10 1995/07/17 03:53:35 bsmith Exp bsmith $ */
 
 #include <math.h>
 #include "pvecimpl.h" 
@@ -11,9 +11,9 @@ static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   work = (Scalar *)PETSCMALLOC( nv * sizeof(Scalar) );  CHKPTRQ(work);
   VecMDot_Seq(  nv, xin, y, work );
 #if defined(PETSC_COMPLEX)
-  MPI_Allreduce((void *) work,(void *)z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce( work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
-  MPI_Allreduce((void *) work,(void *)z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce( work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #endif
   PETSCFREE(work);
   return 0;
@@ -33,7 +33,7 @@ static int VecNorm_MPI(  Vec xin, double *z )
 #else
   SQR(work,xx,n);
 #endif
-  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+  MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
   *z = sqrt( sum );
   PLogFlops(2*x->n);
   return 0;
@@ -48,11 +48,11 @@ static int VecAMax_MPI( Vec xin, int *idx, double *z )
 
   /* Find the global max */
   if (!idx) {
-    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
+    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
   }
   else {
     /* Need to use special linked max */
-    SETERRQ( 1, "VecAMax_MPI: Parallel max with index not yet supported" );
+    SETERRQ( 1, "VecAMax_MPI:Parallel max with index not supported" );
   }
   return 0;
 }
@@ -65,11 +65,11 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
 
   /* Find the global max */
   if (!idx) {
-    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
+    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
   }
   else {
     /* Need to use special linked max */
-    SETERRQ( 1, "VecMax_MPI: Parallel max with index not yet supported" );
+    SETERRQ( 1, "VecMax_MPI:Parallel max with index not supported" );
   }
   return 0;
 }
@@ -82,11 +82,11 @@ static int VecMin_MPI( Vec xin, int *idx, double *z )
 
   /* Find the global Min */
   if (!idx) {
-    MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_MIN,xin->comm );
+    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_MIN,xin->comm );
   }
   else {
     /* Need to use special linked Min */
-    SETERRQ( 1, "VecMin_MPI: Parallel Min with index not yet supported" );
+    SETERRQ( 1, "VecMin_MPI:Parallel Min with index not supported" );
   }
   return 0;
 }

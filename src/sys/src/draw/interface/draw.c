@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.15 1995/09/04 17:25:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.16 1995/09/30 19:30:26 bsmith Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -155,7 +155,7 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl)
-    SETERRQ(1,"DrawSetViewPort: Bad viewport values"); 
+    SETERRQ(1,"DrawSetViewPort: Bad values"); 
   ctx->port_xl = xl; ctx->port_yl = yl;
   ctx->port_xr = xr; ctx->port_yr = yr;
   if (ctx->ops.viewport) return (*ctx->ops.viewport)(ctx,xl,yl,xr,yr);

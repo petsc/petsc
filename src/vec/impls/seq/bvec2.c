@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.49 1995/09/21 20:08:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.50 1995/09/30 19:26:39 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -159,13 +159,13 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 
   if (m == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
-      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq: Out of range");
+      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq:Out of range");
       xx[ix[i]] = y[i];
     }
   }
   else {
     for ( i=0; i<ni; i++ ) {
-      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq: Out of range");
+      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq:Out of range");
       xx[ix[i]] += y[i];
     }  
   }  
@@ -222,7 +222,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   Vec_Seq *s;
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
-  if (flag == MPI_UNEQUAL) SETERRQ(1,"VecCreateSeq: Must call with MPI_COMM_SELF");
+  if (flag == MPI_UNEQUAL) SETERRQ(1,"VecCreateSeq:Must call with MPI_COMM_SELF");
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _Vec)+size);

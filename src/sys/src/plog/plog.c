@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.36 1995/09/21 20:09:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.37 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: plog.c,v 1.36 1995/09/21 20:09:13 bsmith Exp bsmith $
 @*/
 int PetscObjectSetName(PetscObject obj,char *name)
 {
-  if (!obj) SETERRQ(1,"PetscObjectSetName: Null object");
+  if (!obj) SETERRQ(1,"PetscObjectSetName:Null object");
   obj->name = name;
   return 0;
 }
@@ -41,8 +41,8 @@ int PetscObjectSetName(PetscObject obj,char *name)
 @*/
 int PetscObjectGetName(PetscObject obj,char **name)
 {
-  if (!obj) SETERRQ(1,"PetscObjectGetName: Null object");
-  if (!name) SETERRQ(1,"PetscObjectGetName: Void location for name");
+  if (!obj) SETERRQ(1,"PetscObjectGetName:Null object");
+  if (!name) SETERRQ(1,"PetscObjectGetName:Void location for name");
   *name = obj->name;
   return 0;
 }
@@ -427,7 +427,7 @@ int PLogDump(char* name)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   if (name) sprintf(file,"%s.%d",name,mytid);
   else  sprintf(file,"Log.%d",mytid);
-  fd = fopen(file,"w"); if (!fd) SETERRQ(1,"PlogDump: cannot open file");
+  fd = fopen(file,"w"); if (!fd) SETERRQ(1,"PlogDump:cannot open file");
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
                                                  ObjectsDestroyed);
@@ -576,8 +576,8 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 @*/
 int PLogEventRegister(int e,char *string)
 {
-  if (e < 70) SETERRQ(1,"PLogEventRegister: user events must be > 69");
-  if (e > 89) SETERRQ(1,"PLogEventRegister: user events must be < 89");
+  if (e < 70) SETERRQ(1,"PLogEventRegister:user events must be > 69");
+  if (e > 89) SETERRQ(1,"PLogEventRegister:user events must be < 89");
   name[e] = string;
   return 0;
 }

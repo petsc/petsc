@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.26 1995/09/04 17:24:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.27 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -77,7 +77,7 @@ int PetscAttachDebugger()
     kill(child,SIGSTOP);
 #endif
     sprintf(pid,"%d",child); 
-    if (!strcmp(Debugger,"xxgdb")) {
+    if (!PetscStrcmp(Debugger,"xxgdb")) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = Display; args[5] = 0;
       fprintf(stderr,"PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
@@ -90,27 +90,27 @@ int PetscAttachDebugger()
       args[1] = program; args[2] = pid; args[3] = 0;
       args[0] = Debugger;
 #if defined(PARCH_IRIX)
-      if (!strcmp(Debugger,"dbx")) {
+      if (!PetscStrcmp(Debugger,"dbx")) {
         args[1] = "-p";
         args[2] = pid;
         args[3] = program;
         args[4] = 0;
       }
 #elif defined(PARCH_hpux)
-      if (!strcmp(Debugger,"xdb")) {
+      if (!PetscStrcmp(Debugger,"xdb")) {
         args[3] = program;
         args[1] = "-P";
         args[2] = pid;
         args[4] = 0;
       }
 #elif defined(PARCH_rs6000)
-      if (!strcmp(Debugger,"dbx")) {
+      if (!PetscStrcmp(Debugger,"dbx")) {
         args[1] = "-a";
         args[2] = pid;
         args[3] = 0;
       }
 #elif defined(PARCH_alpha)
-      if (!strcmp(Debugger,"dbx")) {
+      if (!PetscStrcmp(Debugger,"dbx")) {
         args[1] = "-pid";
         args[2] = pid;
         args[3] = program;
@@ -130,27 +130,27 @@ int PetscAttachDebugger()
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
 #if defined(PARCH_IRIX)
-        if (!strcmp(Debugger,"dbx")) {
+        if (!PetscStrcmp(Debugger,"dbx")) {
           args[3] = "-p";
           args[4] = pid;
           args[5] = program;
           args[6] = 0;
         }
 #elif defined(PARCH_hpux)
-        if (!strcmp(Debugger,"xdb")) {
+        if (!PetscStrcmp(Debugger,"xdb")) {
           args[5] = program;
           args[3] = "-P";
           args[4] = pid;
           args[6] = 0;
         }
 #elif defined(PARCH_rs6000)
-        if (!strcmp(Debugger,"dbx")) {
+        if (!PetscStrcmp(Debugger,"dbx")) {
           args[3] = "-a";
           args[4] = pid;
           args[5] = 0;
         }
 #elif defined(PARCH_alpha)
-      if (!strcmp(Debugger,"dbx")) {
+      if (!PetscStrcmp(Debugger,"dbx")) {
         args[3] = "-pid";
         args[4] = pid;
         args[5] = program;
@@ -166,27 +166,27 @@ int PetscAttachDebugger()
         args[4] = Debugger; args[5] = program;
         args[6] = pid;      args[7] = 0;
 #if defined(PARCH_IRIX)
-        if (!strcmp(Debugger,"dbx")) {
+        if (!PetscStrcmp(Debugger,"dbx")) {
           args[5] = "-p";
           args[6] = pid;
           args[7] = program;
           args[8] = 0;
         }
 #elif defined(PARCH_hpux)
-        if (!strcmp(Debugger,"xdb")) {
+        if (!PetscStrcmp(Debugger,"xdb")) {
           args[7] = program;
           args[5] = "-P";
           args[6] = pid;
           args[8] = 0;
         }
 #elif defined(PARCH_rs6000)
-        if (!strcmp(Debugger,"dbx")) {
+        if (!PetscStrcmp(Debugger,"dbx")) {
           args[5] = "-a";
           args[6] = pid;
           args[7] = 0;
         }
 #elif defined(PARCH_alpha)
-      if (!strcmp(Debugger,"dbx")) {
+      if (!PetscStrcmp(Debugger,"dbx")) {
         args[5] = "-pid";
         args[6] = pid;
         args[7] = program;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.43 1995/09/04 17:24:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.44 1995/09/06 03:05:07 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -33,13 +33,13 @@ static int PCSetUp_BJacobi(PC pc)
     if (!jac->use_true_local || mat->type == MATMPIBDIAG)
       return PCSetUp_BJacobiMPIBDiag(pc);
   } 
-  SETERRQ(1,"PCSetUp_BJacobi: Cannot use block Jacobi on this matrix type\n");
+  SETERRQ(1,"PCSetUp_BJacobi:Cannot use block Jacobi on this matrix type\n");
 }
 
 /* Default destroy, if it has never been setup */
 static int PCDestroy_BJacobi(PetscObject obj)
 {
-  PC pc = (PC) obj;
+  PC         pc = (PC) obj;
   PC_BJacobi *jac = (PC_BJacobi *) pc->data;
   PETSCFREE(jac);
   return 0;
@@ -112,8 +112,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   PC_BJacobi   *jac;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
-  if (!pc->setupcalled) SETERRQ(1,
-    "PCBJacobiGetSubSLES: SLESSetUp must be called before this routine");
+  if (!pc->setupcalled) SETERRQ(1,"PCBJacobiGetSubSLES:Must call SLESSetUp first");
   jac = (PC_BJacobi *) pc->data;
   *n_local = jac->n_local;
   *first_local = jac->first_local;
@@ -177,21 +176,22 @@ int PCCreate_BJacobi(PC pc)
 {
   int          mytid,numtid;
   PC_BJacobi   *jac = PETSCNEW(PC_BJacobi); CHKPTRQ(jac);
+
   MPI_Comm_rank(pc->comm,&mytid);
   MPI_Comm_size(pc->comm,&numtid);
-  pc->apply         = 0;
-  pc->setup         = PCSetUp_BJacobi;
-  pc->destroy       = PCDestroy_BJacobi;
-  pc->setfrom       = PCSetFromOptions_BJacobi;
-  pc->printhelp     = PCPrintHelp_BJacobi;
-  pc->view          = PCView_BJacobi;
-  pc->type          = PCBJACOBI;
-  pc->data          = (void *) jac;
-  jac->n            = numtid;
-  jac->n_local      = 1;
-  jac->first_local  = mytid;
-  jac->sles         = 0;
-  jac->use_true_local = 0;
+  pc->apply              = 0;
+  pc->setup              = PCSetUp_BJacobi;
+  pc->destroy            = PCDestroy_BJacobi;
+  pc->setfrom            = PCSetFromOptions_BJacobi;
+  pc->printhelp          = PCPrintHelp_BJacobi;
+  pc->view               = PCView_BJacobi;
+  pc->type               = PCBJACOBI;
+  pc->data               = (void *) jac;
+  jac->n                 = numtid;
+  jac->n_local           = 1;
+  jac->first_local       = mytid;
+  jac->sles              = 0;
+  jac->use_true_local    = 0;
   jac->same_local_solves = 1;
   return 0;
 }
@@ -222,3 +222,8 @@ int PCBJacobiSetBlocks(PC pc, int blocks)
   jac->n = blocks;
   return 0;
 }
+
+
+
+
+

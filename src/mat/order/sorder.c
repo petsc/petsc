@@ -17,11 +17,11 @@ int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,
   /* Get the function pointers for the method requested */
   if (!__MatReorderingList) {MatReorderingRegisterAll();}
   if (!__MatReorderingList) {
-    SETERRQ(1,"MatGetReordering_IJ: Could not acquire list of methods"); 
+    SETERRQ(1,"MatGetReordering_IJ:Could not get list of methods"); 
   }
   r =  (int (*)(int*,int*,int*,int*,int*))NRFindRoutine( 
                               __MatReorderingList,(int)type,(char *)0 );
-  if (!r) {SETERRQ(1,"MatGetReordering_IJ: Unknown method");}
+  if (!r) {SETERRQ(1,"MatGetReordering_IJ:Unknown method");}
 
   ierr = (*r)(&n,ia,ja,permr,permc); CHKERRQ(ierr);
 

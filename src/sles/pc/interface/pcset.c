@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.24 1995/08/23 14:50:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.25 1995/09/30 19:28:08 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -42,11 +42,9 @@ int PCSetMethod(PC ctx,PCMethod method)
   }
   /* Get the function pointers for the method requested */
   if (!__PCList) {PCRegisterAll();}
-  if (!__PCList) {
-    SETERRQ(1,"PCSetMethod: Could not acquire list of PC methods"); 
-  }
+  if (!__PCList) {SETERRQ(1,"PCSetMethod:Could not get list of methods");}
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(1,"PCSetMethod: Unknown preconditioner method");}
+  if (!r) {SETERRQ(1,"PCSetMethod:Unknown method");}
   if (ctx->data) PETSCFREE(ctx->data);
   ctx->setfrom     = ( int (*)(PC) ) 0;
   ctx->printhelp   = ( int (*)(PC) ) 0;
@@ -110,9 +108,10 @@ $ -pc_method  method
 */
 int PCGetMethodFromOptions_Private(PC pc,PCMethod *method )
 {
+  int  ierr;
   char sbuf[50];
   if (OptionsGetString( pc->prefix,"-pc_method", sbuf, 50 )) {
-    if (!__PCList) PCRegisterAll();
+    if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
     *method = (PCMethod)NRFindID( __PCList, sbuf );
     return 1;
   }
@@ -133,12 +132,12 @@ int PCGetMethodFromOptions_Private(PC pc,PCMethod *method )
 @*/
 int PCGetMethodName(PCMethod meth,char **name)
 {
-  if (!__PCList) PCRegisterAll();
+  int ierr;
+  if (!__PCList) {PCRegisterAll(); CHKERRQ(ierr);}
   *name = NRFindName( __PCList, (int)meth );
   return 0;
 }
 
-#include <stdio.h>
 /*
    PCPrintMethods_Private - Prints the PC methods available from the options 
    database.
@@ -150,7 +149,8 @@ int PCGetMethodName(PCMethod meth,char **name)
 int PCPrintMethods_Private(char *prefix,char *name)
 {
   FuncList *entry;
-  if (!__PCList) {PCRegisterAll();}
+  int      ierr;
+  if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
   entry = __PCList->head;
   MPIU_printf(MPI_COMM_WORLD," %s%s (one of)",prefix,name);
   while (entry) {

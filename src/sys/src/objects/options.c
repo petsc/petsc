@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.41 1995/09/30 19:27:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.42 1995/10/01 02:26:08 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -80,7 +80,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
   int        ierr,flag;
   static int PetscInitializedCalled = 0;
 
-  if (PetscInitializedCalled) SETERRQ(1," PetscInitialize: CANNOT call twice");
+  if (PetscInitializedCalled) SETERRQ(1," PetscInitialize:CANNOT call twice");
   PetscInitializedCalled = 1;
 
   MPI_Initialized(&flag);
@@ -184,6 +184,9 @@ int PetscFinalize()
     NRDestroyAll(); 
   }
   if (PetscBeganMPI) {
+    int mytid;
+    MPI_Comm_size(MPI_COMM_WORLD,&numtid);
+    PLogInfo(0,"[%d] PETSc successfully end!\n",mytid);
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
   return 0;
@@ -425,7 +428,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
           }
           OptionsSetValue(first,second);
         }
-        else if (first && !strcmp(first,"alias")) {
+        else if (first && !PetscStrcmp(first,"alias")) {
           third = PetscStrtok(0," ");
           if (!third) SETERRQ(1,"OptionsCreate_Private:Error in options file: alias");
           len = PetscStrlen(third); third[len-1] = 0;
@@ -550,12 +553,12 @@ int OptionsSetValue(char *name,char *value)
   if (!options) OptionsCreate_Private(0,0,0,0);
 
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
-  if (!strcmp(name,"-h")) name = "-help";
+  if (!PetscStrcmp(name,"-h")) name = "-help";
 
   /* first check against aliases */
   N = options->Naliases; 
   for ( i=0; i<N; i++ ) {
-    if (!strcmp(options->aliases1[i],name)) {
+    if (!PetscStrcmp(options->aliases1[i],name)) {
       name = options->aliases2[i];
       break;
     }
@@ -636,7 +639,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
 
   /* slow search */
   for ( i=0; i<N; i++ ) {
-    if (!strcmp(names[i],tmp)) {
+    if (!PetscStrcmp(names[i],tmp)) {
        *value = options->values[i];
        options->used[i]++;
        return 1;
@@ -689,7 +692,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (!value) SETERRQ(1,"OptionsGetInt: Missing value for option");
+  if (!value) SETERRQ(1,"OptionsGetInt:Missing value for option");
   *ivalue = atoi(value);
   return 1; 
 } 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.10 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.11 1995/09/04 17:24:00 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"             /*I   "petsc.h"   I*/
@@ -30,7 +30,7 @@ int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*),
                    int (*ifree)(void*,int,char*))
 {
   static int visited = 0;
-  if (visited) SETERRQ(1,"PetscSetMalloc: cannot call multiple times");
+  if (visited) SETERRQ(1,"PetscSetMalloc:cannot call multiple times");
   PetscMalloc = imalloc;
   PetscFree   = ifree;
   visited     = 1;

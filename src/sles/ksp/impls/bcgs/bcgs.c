@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.19 1995/08/14 17:26:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: bcgs.c,v 1.20 1995/08/14 18:43:49 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -75,7 +75,7 @@ static int  KSPSolve_BCGS(KSP itP,int *its)
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1); CHKERRQ(ierr);
-      if (d1 != 0.0) {SETERRQ(1,"KSPSolve_BCGS: Breakdown");}
+      if (d1 != 0.0) {SETERRQ(1,"KSPSolve_BCGS:Breakdown");}
       ierr = VecAXPY(&alpha,P,X); CHKERRQ(ierr);   /*   x <- x + a p       */
       if (history && hist_len > i+1) history[i+1] = 0.0;
       MONITOR(itP,0.0,i+1);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.17 1995/09/07 04:28:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.18 1995/09/11 19:20:01 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -129,8 +129,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   m = numtid;
 
-  if (M < m)     SETERRQ(1,"DACreate1d: More processors than data points!");
-  if ((M-1) < s) SETERRQ(1,"DACreate1d: Array is too small for stencil!");
+  if (M < m)     SETERRQ(1,"DACreate1d:More processors than data points!");
+  if ((M-1) < s) SETERRQ(1,"DACreate1d:Array is too small for stencil!");
 
   /* determine local owned region */
   x = M/m + ((M % m) > (mytid));

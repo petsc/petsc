@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.26 1995/09/21 20:08:12 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.27 1995/09/30 19:26:41 bsmith Exp bsmith $ */
 
 #include "pinclude/pviewer.h"
 #include "sysio.h"
@@ -304,10 +304,10 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
   Scalar     *xx = x->array;
 
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { SETERRQ(1,
-   "VecSetValues_MPI: You have already inserted values; you cannot now add");
+   "VecSetValues_MPI:You have already inserted values; you cannot now add");
   }
   else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { SETERRQ(1,
-   "VecSetValues_MPI: You have already added values; you cannot now insert");
+   "VecSetValues_MPI:You have already added values; you cannot now insert");
   }
   x->insertmode = addv;
 
@@ -368,7 +368,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
-    "VecAssemblyBegin_MPI: Some processors inserted values while others added");
+    "VecAssemblyBegin_MPI:Some processors inserted values while others added");
   }
   x->insertmode = addv; /* in case this processor had no cache */
 
@@ -477,7 +477,7 @@ static int VecAssemblyEnd_MPI(Vec vec)
       }
     }
     else { SETERRQ(1,
-      "VecAssemblyEnd_MPI: Insert mode is not set correctly; corrupted vector");
+      "VecAssemblyEnd_MPI:Insert mode is not set correctly; corrupted vector");
     }
     count--;
   }

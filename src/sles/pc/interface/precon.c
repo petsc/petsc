@@ -1,11 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.49 1995/09/07 04:25:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.50 1995/09/21 20:09:28 bsmith Exp bsmith $";
 #endif
 
-/*  
-   Defines the abstract operations on index sets 
-*/
-#include "pcimpl.h"      /*I "pc.h" I*/
+#include "pcimpl.h"            /*I "pc.h" I*/
 #include "pinclude/pviewer.h"
 
 extern int PCPrintMethods_Private(char*,char*);
@@ -133,7 +130,7 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->applytrans) return (*pc->applytrans)(pc,x,y);
-  SETERRQ(1,"PCApplyTrans: No transpose for this precondition");
+  SETERRQ(PETSC_ERR_SUP,"PCApplyTrans");
 }
 
 /*@
@@ -235,6 +232,7 @@ int PCApplyRichardsonExists(PC pc)
 int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  if (!pc->applyrich) SETERRQ(PETSC_ERR_SUP,"PCApplyRichardson");
   return (*pc->applyrich)(pc,x,y,w,its);
 }
 
@@ -258,8 +256,8 @@ int PCSetUp(PC pc)
   int ierr;
   if (pc->setupcalled > 1) return 0;
   PLogEventBegin(PC_SetUp,pc,0,0,0);
-  if (!pc->vec) {SETERRQ(1,"PCSetUp: Vector must be set first");}
-  if (!pc->mat) {SETERRQ(1,"PCSetUp: Matrix must be set be set first");}
+  if (!pc->vec) {SETERRQ(1,"PCSetUp:Vector must be set first");}
+  if (!pc->mat) {SETERRQ(1,"PCSetUp:Matrix must be set be set first");}
   if (pc->setup) { ierr = (*pc->setup)(pc); CHKERRQ(ierr);}
   pc->setupcalled = 2;
   PLogEventEnd(PC_SetUp,pc,0,0,0);
@@ -312,8 +310,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   else if (pc->setupcalled == 0) {
     pc->pmat = Pmat;
   }
-  if (Pmat == Amat && 
-    (flag == MAT_SAME_NONZERO_PATTERN || flag == PMAT_SAME_NONZERO_PATTERN))
+  if (Pmat==Amat && (flag==MAT_SAME_NONZERO_PATTERN || flag==PMAT_SAME_NONZERO_PATTERN))
     pc->flag = ALLMAT_SAME_NONZERO_PATTERN;
   else pc->flag = flag;
 
@@ -339,6 +336,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  if (!mat || !pmat || !flag) SETERRQ(PETSC_ERR_ARG,"PCGetOperators");
   *mat  = pc->mat;
   *pmat = pc->pmat;
   *flag = pc->flag;

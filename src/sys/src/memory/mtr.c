@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.35 1995/09/30 19:27:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.36 1995/10/01 02:26:08 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -245,7 +245,7 @@ int TrFree( void *aa, int line, char *file )
   /* Don't try to handle empty blocks */
   if (!a) {
     fprintf(stderr,"TrFree called from line %d in %s\n",line,file);
-    SETERRQ(1,"TrFree: trying to free null block");
+    SETERRQ(1,"TrFree:Trying to free null block");
   }
 
   if (TRdebugLevel > 0) {
@@ -259,7 +259,7 @@ int TrFree( void *aa, int line, char *file )
     /* Damaged header */
     fprintf( stderr, "Block at address %p is corrupted; cannot free;\n\
 may be block not allocated with TrMalloc or MALLOC\n", a );
-    SETERRQ(1,"TrFree: bad location or corrupted memory");
+    SETERRQ(1,"TrFree:Bad location or corrupted memory");
   }
   nend = (unsigned long *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
@@ -272,7 +272,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 	  fprintf( stderr, "Block freed in %s[%d]\n", head->fname, head->lineno );
 	else
 	  fprintf( stderr, "Block allocated at %s[%d]\n",head->fname,-head->lineno);
-	  SETERRQ(1,"TrFree: memory already freed");
+	  SETERRQ(1,"TrFree:Memory already freed");
     }
     else {
 	/* Damaged tail */
@@ -281,7 +281,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 		head->id, head->size, a );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	fprintf( stderr, "Block allocated in %s[%d]\n", head->fname, head->lineno );
-	SETERRQ(1,"TrFree: corrupted memory");
+	SETERRQ(1,"TrFree:Corrupted memory");
     }
   }
   /* Mark the location freed */
@@ -571,7 +571,7 @@ int TrDumpGrouped(FILE *fp )
     cur     = head->next;
     nblocks = 1;
     nbytes  = head->size;
-    while (cur && !PETSCStrcmp(cur->fname,head->fname) && cur->lineno == head->lineno){
+    while (cur && !PetscStrcmp(cur->fname,head->fname) && cur->lineno == head->lineno){
 	nblocks++;
 	nbytes += cur->size;
 	cur    = cur->next;

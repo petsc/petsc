@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.14 1995/09/06 14:07:29 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.15 1995/09/06 14:31:53 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -94,7 +94,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
         } else {
           CHKERRQ(ierr);
           if (PETSCABS(max_val) < 1.e-14) 
-            SETERRQ(1,"SNESSolve_UMTR: Hessian norm is too small");
+            SETERRQ(1,"SNESSolve_UMTR:Hessian norm is too small");
           delta = PETSCMAX(delta,*gnorm/max_val);
         }
       } else { 
@@ -105,7 +105,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       /* Minimize the quadratic to compute the step s */
       qcgP->delta = delta;
       ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
-      if (qits < 0) SETERRQ(1,"SNESSolve_UMTR: Failure in SLESSolve");
+      if (qits < 0) SETERRQ(1,"SNESSolve_UMTR:Failure in SLESSolve");
       if (qcgP->info == 3) newton=1;	            /* truncated Newton step */
       PLogInfo((PetscObject)snes,"%d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
         i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
@@ -245,7 +245,7 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-   "SNESConverged_UMTR: Use with SNES_UNCONSTRAINED_MINIMIZATION routines only");
+   "SNESConverged_UMTR:For SNES_UNCONSTRAINED_MINIMIZATION only");
 
   /* Test for successful convergence */
   if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
@@ -338,7 +338,7 @@ int SNESCreate_UMTR(SNES snes)
   SNES_UMTR *neP;
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-   "SNESCreate_UMTR: Valid for SNES_UNCONSTRAINED_MINIMIZATION problems only");
+   "SNESCreate_UMTR:For SNES_UNCONSTRAINED_MINIMIZATION only");
   snes->type 		= SNES_UM_NTR;
   snes->setup		= SNESSetUp_UMTR;
   snes->solve		= SNESSolve_UMTR;

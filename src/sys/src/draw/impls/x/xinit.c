@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.11 1995/07/17 20:42:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.12 1995/09/30 19:30:30 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_X11)
@@ -200,59 +200,55 @@ int XiDisplayWindow( DrawCtx_X* XiWin, char *label, int x, int y,
   return 0;
 }
 
-int XiQuickWindow(DrawCtx_X* mywindow,char* host,char* name,int x,int y,
+int XiQuickWindow(DrawCtx_X* w,char* host,char* name,int x,int y,
                    int nx,int ny,int nc )
 {
   int ierr;
-  if (XiOpenDisplay( mywindow, host )) {
+  if (XiOpenDisplay( w, host )) {
     SETERRQ(1,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n" );
   }
-  if (XiSetVisual( mywindow, 1, (Colormap)0, nc )) {
-    fprintf( stderr, "Could not set visual to default\n" );
+  if (XiSetVisual( w, 1, (Colormap)0, nc )) {
     return 1;
   }
-  if (XiDisplayWindow( mywindow, name, x, y, nx, ny, (PixVal)0 )) {
-    fprintf( stderr, "Could not display window\n" );
+  if (XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 )) {
     return 1;
   }
-  XiSetGC( mywindow, mywindow->cmapping[1] );
-  XiSetPixVal(mywindow, mywindow->background );
-  XFillRectangle(mywindow->disp,mywindow->win,mywindow->gc.set, 0, 0, 
-                                             mywindow->w,mywindow->h);
-  ierr = XiUniformHues(mywindow,nc-36); CHKERRQ(ierr);
-  ierr = XiFontFixed( mywindow,6, 10,&mywindow->font ); CHKERRQ(ierr);
+  XiSetGC( w, w->cmapping[1] );
+  XiSetPixVal(w, w->background );
+  XFillRectangle(w->disp,w->win,w->gc.set,0,0,w->w,w->h);
+  ierr = XiUniformHues(w,nc-36); CHKERRQ(ierr);
+  ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   return 0;
 }
 
 /* 
    A version from an already defined window 
 */
-int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
+int XiQuickWindowFromWindow(DrawCtx_X* w,char *host,Window win,int nc)
 {
   Window       root;
   int          d,ierr;
   unsigned int ud;
-  if (XiOpenDisplay( mywindow, host )) {
+  if (XiOpenDisplay( w, host )) {
     SETERRQ(1,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the [-display name] option and xhost + has been\n\
     run on your displaying machine.\n" );
   }
-  if (XiSetVisual( mywindow, 1, (Colormap)0, 0 )) {
+  if (XiSetVisual( w, 1, (Colormap)0, 0 )) {
     SETERRQ(1,"DrawFromDrawable_X: Cannot set visual in display");
   }
 
-  mywindow->win = win;
-  XGetGeometry( mywindow->disp, mywindow->win, &root, &d, &d, 
-	      (unsigned int *)&mywindow->w, (unsigned int *)&mywindow->h,
-              &ud, &ud );
-  mywindow->x = mywindow->y = 0;
+  w->win = win;
+  XGetGeometry( w->disp, w->win, &root, &d, &d, 
+	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );
+  w->x = w->y = 0;
 
-  XiSetGC( mywindow, mywindow->cmapping[1] );
-  XiSetPixVal(mywindow, mywindow->background );
-  ierr = XiUniformHues(mywindow,nc-36); CHKERRQ(ierr);
-  ierr = XiFontFixed( mywindow,6, 10,&mywindow->font ); CHKERRQ(ierr);
+  XiSetGC( w, w->cmapping[1] );
+  XiSetPixVal(w, w->background );
+  ierr = XiUniformHues(w,nc-36); CHKERRQ(ierr);
+  ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   return 0;
 }
 

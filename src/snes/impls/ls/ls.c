@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.43 1995/09/06 14:31:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.44 1995/09/30 19:31:14 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -544,16 +544,16 @@ static int SNESSetFromOptions_LS(SNES snes)
     ls->steptol = tmp;
   }
   if (OptionsGetString(snes->prefix,"-snes_line_search",ver,16)) {
-    if (!strcmp(ver,"basic")) {
+    if (!PetscStrcmp(ver,"basic")) {
       SNESSetLineSearchRoutine(snes,SNESNoLineSearch);
     }
-    else if (!strcmp(ver,"quadratic")) {
+    else if (!PetscStrcmp(ver,"quadratic")) {
       SNESSetLineSearchRoutine(snes,SNESQuadraticLineSearch);
     }
-    else if (!strcmp(ver,"cubic")) {
+    else if (!PetscStrcmp(ver,"cubic")) {
       SNESSetLineSearchRoutine(snes,SNESCubicLineSearch);
     }
-    else {SETERRQ(1,"SNESSetFromOptions_LS: Unknown line search");}
+    else {SETERRQ(1,"SNESSetFromOptions_LS:Unknown line search");}
   }
   return 0;
 }
@@ -563,7 +563,7 @@ int SNESCreate_LS(SNES  snes )
   SNES_LS *neP;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
-    "SNESCreate_LS: Valid for SNES_NONLINEAR_EQUATIONS problems only");
+    "SNESCreate_LS:For SNES_NONLINEAR_EQUATIONS only");
   snes->type		= SNES_EQ_NLS;
   snes->setup		= SNESSetUp_LS;
   snes->solve		= SNESSolve_LS;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.16 1995/09/04 17:23:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.17 1995/09/30 19:27:14 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -45,9 +45,9 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
   double *d, *e, *dd, *ee;
   int    ii,j;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->type != KSPCG) {SETERRQ(3,"KSPCGGetEigenvalues: Method not CG");}
+  if (itP->type != KSPCG) {SETERRQ(3,"KSPCGGetEigenvalues:Method not CG");}
   if (!itP->calc_eigs) {
-    SETERRQ(4,"KSPCGGetEigenvalues: Eigenvalues not requested in CG Setup");}
+    SETERRQ(4,"KSPCGGetEigenvalues:Eigenvalues not requested in before KSPSetUp");}
 
   if (n == 0) {
     *emax = *emin = 1.0;
@@ -62,7 +62,7 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
   for ( j=0; j<ii ; j++) { dd[j] = d[j]; ee[j] = e[j]; }
 
   ccgtql1_private(&ii,dd,ee,&j);
-  if (j != 0) SETERRQ(1,"KSPCGGetEigenvalues: Error from tql1.");  
+  if (j != 0) SETERRQ(1,"KSPCGGetEigenvalues:Error from tql1.");  
   *emin = dd[0]; *emax = dd[ii-1];
   return 0;
 }

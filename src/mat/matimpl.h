@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.26 1995/08/15 20:27:54 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.27 1995/09/21 20:10:03 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -41,15 +41,28 @@ struct _MatOps {
             (*incompletecholeskyfactor)(Mat,IS,double);
 };
 
+/*   
+     Each matrix has to know how to set up its own (matrix specific) preconditioners
+     Note that this introduces a loop in the "inheritence" tree. 
+*/
+#include "pc.h"
+
+struct _PCSetUps  {
+  int (*icc)(PC);
+  int (*ilu)(PC);
+  int (*bjacobi)(PC);
+};
+
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2
 
 struct _Mat {
   PETSCHEADER
-  struct _MatOps ops;
-  void           *data;
-  int            factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
-  double         lupivotthreshold;
+  struct _MatOps   ops;
+  void             *data;
+  int              factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
+  double           lupivotthreshold;
+  struct _PCSetUps pcsetups;
 };
 
 /* Since most (all?) of the parallel matrix assemblies use this stashing,
@@ -70,28 +83,6 @@ extern int StashDestroy_Private(Stash*);
   SparsePak routines.
 */
 extern int MatGetReordering_IJ(int,int*,int*,MatOrdering,IS *,IS*);
-
-typedef struct { 
-  int               n;  /* number of processors */
-  int               *starts,*rows,*procs;
-  MPI_Request       *requests;
-  Scalar            *values;
-} MatScatterCtx_MPISendRows;
-
-typedef struct { 
-  int               n;  /* number of processors */
-  int               *procs;
-  MPI_Request       *requests;
-  Scalar            *values;
-} MatScatterCtx_MPIRecvRows;
-
-struct _MatScatterCtx {
-  PETSCHEADER
-  int              inuse;
-  int              (*begin)(Mat,Mat,InsertMode,MatScatterCtx);
-  int              (*end)(Mat,Mat,InsertMode,MatScatterCtx);
-  void             *send,*receive;
-};
 
 #endif
 

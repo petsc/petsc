@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.5 1995/08/14 17:15:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.6 1995/08/15 20:27:04 bsmith Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -76,7 +76,7 @@ int KSPSolve_QCG(KSP itP,int *its)
 
   *its = 0;
   pcgP->info = 0;
-  if (pcgP->delta <= dzero) SETERRQ(1,"KSPSolve_QCG: Input error: delta <= 0");
+  if (pcgP->delta <= dzero) SETERRQ(1,"KSPSolve_QCG:Input error: delta <= 0");
 
   /* Initialize variables */
   ierr = VecSet(&zero,W); CHKERRQ(ierr);	/* W = 0 */
@@ -264,7 +264,7 @@ static int KSPSetUp_QCG(KSP itP)
 
   /* Check user parameters and functions */
   if ( itP->right_pre ) {
-    SETERRQ(2,"KSPSetUp_QCG: no right-inverse preconditioning for QCG");}
+    SETERRQ(2,"KSPSetUp_QCG:no right preconditioning for QCG");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
 
   /* Get work vectors from user code */
@@ -328,7 +328,7 @@ static int QuadraticRoots_Private(Vec s,Vec p,double *delta,
                                   double *step1,double *step2)
 { 
 #if defined(PETSC_COMPLEX)
-  SETERRQ(1,"QuadraticRoots_Private:  not done for complex numbers");
+  SETERRQ(1,"QuadraticRoots_Private:not done for complex numbers");
 #else
   double zero = 0.0, dsq, ptp, pts, rad, sts;
   int    ierr;

@@ -73,9 +73,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
 
   /* Check the input parameters for errors */
   neP->infoc = 0;
-  if (neP->bracket && (*stp <= PETSCMIN(*stx,*sty) || 
-    (*stp >= PETSCMAX(*stx,*sty))))
-    SETERRQ(1,"SNESDefaultUMLineSearch: bad stp in bracket");
+  if (neP->bracket && (*stp <= PETSCMIN(*stx,*sty) || (*stp >= PETSCMAX(*stx,*sty))))
+    SETERRQ(1,"SNESDefaultUMLineSearch:bad stp in bracket");
   if (*dx * (*stp-*stx) >= zero) 
     SETERRQ(1,"SNESDefaultUMLineSearch: dx * (stp-stx) >= 0");
   if (neP->stepmax < neP->stepmin)

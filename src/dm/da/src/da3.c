@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.15 1995/09/07 04:28:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.16 1995/09/11 19:20:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -212,7 +212,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
       if (m*n*p == numtid) break;
       m--;
     }
-    if (m == 0) SETERRQ(1,"DACreate3d: bad p value");
+    if (m == 0) SETERRQ(1,"DACreate3d:bad p value");
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
   }  
   else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
@@ -224,7 +224,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
       if (m*n*p == numtid) break;
       m--;
     }
-    if (m == 0) SETERRQ(1,"DACreate3d: bad n value");
+    if (m == 0) SETERRQ(1,"DACreate3d:bad n value");
     if (M > P && m < p) {int _m = m; m = p; p = _m;}
   } 
   else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
@@ -236,7 +236,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
       if (m*n*p == numtid) break;
       n--;
     }
-    if (n == 0) SETERRQ(1,"DACreate3d: bad m value");
+    if (n == 0) SETERRQ(1,"DACreate3d:bad m value");
     if (N > P && n < p) {int _n = n; n = p; p = _n;}
   } 
   else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
@@ -258,21 +258,21 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
     }
     if (M > P && m < p) {int _m = m; m = p; p = _m;}
   } 
-  else if (m*n*p != numtid) SETERRQ(1,"DACreate3d: Given Bad partition"); 
+  else if (m*n*p != numtid) SETERRQ(1,"DACreate3d:Given Bad partition"); 
 
-  if (m*n*p != numtid) SETERRQ(1,"DACreate3d: Could not find good partition");  
-  if (M < m) SETERRQ(1,"DACreate3d: Partition in x direction is too fine!");
-  if (N < n) SETERRQ(1,"DACreate3d: Partition in y direction is too fine!");
-  if (P < p) SETERRQ(1,"DACreate3d: Partition in z direction is too fine!");
+  if (m*n*p != numtid) SETERRQ(1,"DACreate3d:Could not find good partition");  
+  if (M < m) SETERRQ(1,"DACreate3d:Partition in x direction is too fine!");
+  if (N < n) SETERRQ(1,"DACreate3d:Partition in y direction is too fine!");
+  if (P < p) SETERRQ(1,"DACreate3d:Partition in z direction is too fine!");
 
   /* determine local owned region */
   x = M/m + ((M % m) > (mytid % m));
   y = N/n + ((N % n) > ((mytid % (m*n)) /m)); 
   z = P/p + ((P % p) > (mytid / (m*n)));
 
-  if (x < s) SETERRQ(1,"DACreate3d: Column width is too thin for stencil!");
-  if (y < s) SETERRQ(1,"DACreate3d: Row width is too thin for stencil!");
-  if (z < s) SETERRQ(1,"DACreate3d: Plane width is too thin for stencil!");
+  if (x < s) SETERRQ(1,"DACreate3d:Column width is too thin for stencil!");
+  if (y < s) SETERRQ(1,"DACreate3d:Row width is too thin for stencil!");
+  if (z < s) SETERRQ(1,"DACreate3d:Plane width is too thin for stencil!");
 
   if ((M % m) > (mytid % m)) { xs = (mytid % m)*x; }
   else { xs = (M % m)*(x+1) + ((mytid % m)-(M % m))*x; }

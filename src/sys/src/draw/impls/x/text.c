@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.11 1995/07/28 04:23:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.12 1995/09/30 19:30:30 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -101,7 +101,7 @@ int XiInitFonts( DrawCtx_X *XBWin )
     names   = XListFontsWithInfo( XBWin->disp, "?x", NFONTS, &cnt, &info );
     j       = 0;
     for (i=0; i < cnt; i++) {
-        if (strlen(names[i]) != 2) continue;
+        if (PetscStrlen(names[i]) != 2) continue;
         names[i][1]         = '\0';
 	nfonts[j].w         = info[i].max_bounds.width ;
         /* nfonts[j].w         = info[i].max_bounds.lbearing +

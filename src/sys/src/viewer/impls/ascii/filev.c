@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.24 1995/09/21 20:12:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.25 1995/09/30 19:30:54 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -102,11 +102,11 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_File;
 
-  if (!strcmp(name,"stderr")) v->fd = stderr;
-  else if (!strcmp(name,"stdout")) v->fd = stdout;
+  if (!PetscStrcmp(name,"stderr")) v->fd = stderr;
+  else if (!PetscStrcmp(name,"stdout")) v->fd = stdout;
   else {
     v->fd        = fopen(name,"w"); 
-    if (!v->fd) SETERRQ(1,"ViewerFileOpen: cannot open file");
+    if (!v->fd) SETERRQ(1,"ViewerFileOpen:cannot open file");
   }
   v->format        = FILE_FORMAT_DEFAULT;
   v->outputname    = 0;

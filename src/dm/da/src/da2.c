@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.21 1995/09/11 19:20:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.22 1995/09/21 20:13:05 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -168,17 +168,17 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
     if (m*n != numtid)SETERRQ(1,"DaCreate2d:Internally Created Bad Partition");
   }
-  else if (m*n != numtid) SETERRQ(1,"DACreate2d: Given Bad partition"); 
+  else if (m*n != numtid) SETERRQ(1,"DACreate2d:Given Bad partition"); 
 
-  if (M < m) SETERRQ(1,"DACreate2d: Partition in x direction is too fine!");
-  if (N < n) SETERRQ(1,"DACreate2d: Partition in y direction is too fine!");
+  if (M < m) SETERRQ(1,"DACreate2d:Partition in x direction is too fine!");
+  if (N < n) SETERRQ(1,"DACreate2d:Partition in y direction is too fine!");
 
   /* determine local owned region */
   x = M/m + ((M % m) > (mytid % m));
   y = N/n + ((N % n) > (mytid/m));
 
-  if (x < s) SETERRQ(1,"DACreate2d: Column width is too thin for stencil!");
-  if (y < s) SETERRQ(1,"DACreate2d: Row width is too thin for stencil!");
+  if (x < s) SETERRQ(1,"DACreate2d:Column width is too thin for stencil!");
+  if (y < s) SETERRQ(1,"DACreate2d:Row width is too thin for stencil!");
   if ((M % m) > (mytid % m)) { xs = (mytid % m)*x; }
   else { xs = (M % m)*(x+1) + ((mytid % m)-(M % m))*x; }
   xe = xs + x;

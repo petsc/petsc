@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.33 1995/09/21 21:06:46 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.34 1995/09/30 19:29:13 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -13,7 +13,7 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
   int        ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
   if (mbd->insertmode != NOTSETVALUES && mbd->insertmode != addv) {
-    SETERRQ(1,"MatSetValues_MPIBDiag:You cannot mix inserts and adds");
+    SETERRQ(1,"MatSetValues_MPIBDiag:Cannot mix inserts and adds");
   }
   mbd->insertmode = addv;
   for ( i=0; i<m; i++ ) {
@@ -383,8 +383,7 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
 static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
-  if (!A->assembled) 
-    SETERRQ(1,"MatGetDiag_MPIBDiag:Must assemble matrix first");
+  if (!A->assembled) SETERRQ(1,"MatGetDiag_MPIBDiag:Must assemble matrix first");
   return MatGetDiagonal(A->A,v);
 }
 
@@ -418,8 +417,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   int          ierr, format;
   PetscObject  vobj = (PetscObject) viewer;
 
-  if (!mbd->assembled)
-    SETERRQ(1,"MatView_MPIBDiag:Must assemble matrix first");
+  if (!mbd->assembled) SETERRQ(1,"MatView_MPIBDiag:Must assemble matrix first");
   if (!viewer) { /* so that viewers may be used from debuggers */
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
@@ -522,10 +520,9 @@ static int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   int          lrow;
-  if (!mat->assembled) 
-    SETERRQ(1,"MatGetRow_MPIBDiag:Must assemble matrix first");
+  if (!mat->assembled) SETERRQ(1,"MatGetRow_MPIBDiag:Must assemble matrix first");
   if (row < mat->rstart || row >= mat->rend) 
-    SETERRQ(1,"MatGetRow_MPIBDiag:you can get only local rows")
+    SETERRQ(1,"MatGetRow_MPIBDiag:only for local rows")
   lrow = row - mat->rstart;
   return MatGetRow(mat->A,lrow,nz,idx,v);
 }
@@ -759,7 +756,7 @@ int MatSeqBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
     pdmat = (Mat_MPIBDiag *) mat->data;
     dmat = (Mat_SeqBDiag *) pdmat->A->data;
   } else SETERRQ(1,
-    "MatSeqBDiagGetData: Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
+    "MatSeqBDiagGetData:Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
   *nd    = dmat->nd;
   *nb    = dmat->nb;
   *diag  = dmat->diag;

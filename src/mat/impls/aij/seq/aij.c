@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.91 1995/09/22 03:13:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.92 1995/09/30 19:28:44 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -433,7 +433,7 @@ static int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Scalar     *x, *y, *z, *v, sum;
   int        m = a->m, n, i, *idx, shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatMultAdd_SeqAIJ:Cannot multiply unassembled matrix");
+  if (!a->assembled) SETERRQ(1,"MatMultAdd_SeqAIJ:Not for unassembled matrix");
   VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z); 
   x = x + shift; /* shift for Fortran start by 1 indexing */
   for ( i=0; i<m; i++ ) {
@@ -753,7 +753,7 @@ static int MatNorm_SeqAIJ(Mat A,MatNormType type,double *norm)
     }
   }
   else {
-    SETERRQ(1,"MatNorm_SeqAIJ:No support for the two norm yet");
+    SETERRQ(1,"MatNorm_SeqAIJ:No support for two norm yet");
   }
   return 0;
 }
@@ -811,7 +811,7 @@ static int MatScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   int        i,j,m = a->m, n = a->n, M, nz = a->nz, *jj;
   int        shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatScale_SeqAIJ:Cannot scale unassembled matrix");
+  if (!a->assembled) SETERRQ(1,"MatScale_SeqAIJ:Not for unassembled matrix");
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
     if (m != a->m) SETERRQ(1,"MatScale_SeqAIJ:Left scaling vector wrong length");
@@ -1084,10 +1084,10 @@ int MatLoad_SeqAIJ(Viewer bview,MatType type,Mat *A)
   MPI_Comm     comm = vobj->comm;
 
   MPI_Comm_size(comm,&numtid);
-  if (numtid > 1) SETERRQ(1,"MatLoad_SeqAIJ: view must have one processor");
+  if (numtid > 1) SETERRQ(1,"MatLoad_SeqAIJ:view must have one processor");
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqAIJ: not matrix object");
+  if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqAIJ:not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
   /* read in row lengths */

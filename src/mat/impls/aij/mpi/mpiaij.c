@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.81 1995/09/30 19:28:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.82 1995/10/01 02:26:41 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -32,7 +32,7 @@ static int MatGetReordering_MPIAIJ(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
   int ierr;
   if (aij->numtids == 1) {
     ierr = MatGetReordering(aij->A,type,rperm,cperm); CHKERRQ(ierr);
-  } else SETERRQ(1,"MatGetReordering_MPIAIJ:not yet supported in parallel");
+  } else SETERRQ(1,"MatGetReordering_MPIAIJ:not supported in parallel");
   return 0;
 }
 
@@ -46,7 +46,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
   int        shift = C->indexshift;
 
   if (aij->insertmode != NOTSETVALUES && aij->insertmode != addv) {
-    SETERRQ(1,"MatSetValues_MPIAIJ:You cannot mix inserts and adds");
+    SETERRQ(1,"MatSetValues_MPIAIJ:Cannot mix inserts and adds");
   }
   aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
@@ -280,7 +280,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
-  if (!l->assembled) SETERRQ(1,"MatZeroRows_MPIAIJ:Must assemble matrix first");
+  if (!l->assembled) SETERRQ(1,"MatZeroRows_MPIAIJ:Must assemble matrix");
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -396,7 +396,7 @@ static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
 
-  if (!a->assembled) SETERRQ(1,"MatMult_MPIAIJ:must assemble matrix first");
+  if (!a->assembled) SETERRQ(1,"MatMult_MPIAIJ:must assemble matrix");
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTERALL,a->Mvctx);CHKERRQ(ierr);
   ierr = MatMult(a->A,xx,yy); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTERALL,a->Mvctx);CHKERRQ(ierr);
@@ -408,7 +408,7 @@ static int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
-  if (!a->assembled) SETERRQ(1,"MatMult_MPIAIJ:must assemble matrix first");
+  if (!a->assembled) SETERRQ(1,"MatMult_MPIAIJ:must assemble matrix");
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTERALL,a->Mvctx);CHKERRQ(ierr);
   ierr = MatMultAdd(a->A,xx,yy,zz); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTERALL,a->Mvctx);CHKERRQ(ierr);
@@ -421,7 +421,7 @@ static int MatMultTrans_MPIAIJ(Mat A,Vec xx,Vec yy)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
 
-  if (!a->assembled) SETERRQ(1,"MatMulTrans_MPIAIJ:must assemble matrix first");
+  if (!a->assembled) SETERRQ(1,"MatMulTrans_MPIAIJ:must assemble matrix");
   /* do nondiagonal part */
   ierr = MatMultTrans(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
@@ -442,7 +442,7 @@ static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
 
-  if (!a->assembled) SETERRQ(1,"MatMulTransAdd_MPIAIJ:must assemble matrix first");
+  if (!a->assembled) SETERRQ(1,"MatMulTransAdd_MPIAIJ:must assemble matrix");
   /* do nondiagonal part */
   ierr = MatMultTrans(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
@@ -465,7 +465,7 @@ static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 static int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
-  if (!a->assembled) SETERRQ(1,"MatGetDiag_MPIAIJ:must assemble matrix first");
+  if (!a->assembled) SETERRQ(1,"MatGetDiag_MPIAIJ:must assemble matrix");
   return MatGetDiagonal(a->A,v);
 }
 
@@ -591,7 +591,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   int         ierr;
   PetscObject vobj = (PetscObject) viewer;
  
-  if (!aij->assembled) SETERRQ(1,"MatView_MPIAIJ:must assemble matrix first");
+  if (!aij->assembled) SETERRQ(1,"MatView_MPIAIJ:must assemble matrix");
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
@@ -631,7 +631,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   int        n = mat->n, m = mat->m, i,shift = A->indexshift;
   Vec        tt;
 
-  if (!mat->assembled) SETERRQ(1,"MatRelax_MPIAIJ:must assemble matrix first");
+  if (!mat->assembled) SETERRQ(1,"MatRelax_MPIAIJ:must assemble matrix");
 
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x + shift; /* shift by one for index start of 1 */
@@ -639,7 +639,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   if (!A->diag) {if ((ierr = MatMarkDiag_SeqAIJ(AA))) return ierr;}
   diag = A->diag;
   if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
-    SETERRQ(1,"MatRelax_MPIAIJ:Option not yet supported");
+    SETERRQ(1,"MatRelax_MPIAIJ:Option not supported");
   }
   if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
@@ -1158,7 +1158,7 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
       }
     }
     else {
-      SETERRQ(1,"MatNorm_MPIRow:No support for the two norm");
+      SETERRQ(1,"MatNorm_MPIRow:No support for two norm");
     }
   }
   return 0; 
@@ -1441,7 +1441,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
   if (!mytid) {
     ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
-    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJ: not matrix object");
+    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJ:not matrix object");
   }
 
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
@@ -1513,7 +1513,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
     /* receive message of column indices*/
     MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);
     MPI_Get_count(&status,MPI_INT,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIRowbs: something is way wrong");
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIRowbs:something is wrong with file");
   }
 
   /* loop over local rows, determining number of off diagonal entries */
@@ -1575,7 +1575,7 @@ int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
     /* receive message of values*/
     MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);
     MPI_Get_count(&status,MPIU_SCALAR,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIRowbs: something is way wrong");
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIRowbs:something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

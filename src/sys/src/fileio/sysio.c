@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.3 1995/09/21 20:09:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.4 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -100,14 +100,14 @@ int SYRead(int fd,void *p,int n,SYIOType type)
   if (type == SYINT)         n *= sizeof(int);
   else if (type == SYSCALAR) n *= sizeof(Scalar);
   else if (type == SYSHORT)  n *= sizeof(short);
-  else SETERRQ(1,"SYRead: Unknown type");
+  else SETERRQ(1,"SYRead:Unknown type");
   
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
     err = read( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
     if (err == 0 && wsize > 0) return 1;
-    if (err < 0) SETERRQ(1,"Error in reading from file");
+    if (err < 0) SETERRQ(1,"SYRead:Error reading from file");
     n  -= err;
     pp += err;
   }
@@ -152,13 +152,13 @@ int SYWrite(int fd,void *p,int n,SYIOType type,int istemp)
   if (type == SYINT)         n *= sizeof(int);
   else if (type == SYSCALAR) n *= sizeof(Scalar);
   else if (type == SYSHORT)  n *= sizeof(short);
-  else SETERRQ(1,"SYWrite: Unknown type");
+  else SETERRQ(1,"SYWrite:Unknown type");
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
     err = write( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
-    if (err != wsize) SETERRQ(n,"Error in writing to file.");
+    if (err != wsize) SETERRQ(n,"SYWrite:Error writing to file.");
     n  -= wsize;
     pp += wsize;
   }

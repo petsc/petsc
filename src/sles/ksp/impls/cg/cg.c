@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.27 1995/08/14 17:06:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.28 1995/08/15 20:26:49 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -19,7 +19,7 @@ int KSPSetUp_CG(KSP itP)
 
   /* check user parameters and functions */
   if ( itP->right_pre ) {
-    SETERRQ(2,"KSPSetUp_CG: no right-inverse preconditioning for CG");}
+    SETERRQ(2,"KSPSetUp_CG:no right preconditioning");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
 
   /* get work vectors from user code */

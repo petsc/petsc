@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.38 1995/09/12 18:04:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.39 1995/09/30 19:28:25 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -27,7 +27,7 @@ int PCILUSetLevels(PC pc,int levels)
   PC_ILU *ilu;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCILU) return 0;
-  if (levels < 0) SETERRQ(1,"PCILUSetLevels: levels cannot be negative");
+  if (levels < 0) SETERRQ(1,"PCILUSetLevels:negative levels");
   ilu = (PC_ILU *) pc->data;
   if (pc->type != PCILU) return 0;
   ilu->levels = levels;
