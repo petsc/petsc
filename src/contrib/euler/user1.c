@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   int      solve_with_julianne;   /* flag indicating use of original Julianne solver */
   int      init1, init2, init3;   /* event numbers for application initialization */
   int      len, its, ierr, flg, stage, pprint, wing;
-  char     filename[64], outstring[64];
+  /* char     filename[64], outstring[64]; */
 
   /* Set Defaults */
   int      total_stages = 1;      /* number of times to run nonlinear solver */
@@ -670,7 +670,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
      this case the current preconditioner should be retained. */
   if (iter > 1) {
     if (app->use_jratio) {
-      if (iter != app->bcswitch) {  /* force Jacobian eval at iteration bcswitch, since BCs change there */
+      if (iter != (app->bcswitch)) {  /* force Jacobian eval at iteration bcswitch, since BCs change there */
         if (app->fnorm_last_jac/app->fnorm_last < app->jratio) {
           if (iter - app->iter_last_jac < app->jfreq) {
             *flag = SAME_PRECONDITIONER;
@@ -680,7 +680,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
       }
     } else {
       /* Form Jacobian every few nonlinear iterations (as set by -jfreq option) */
-      if ((iter-app->bcswitch)%app->jfreq) {
+      if ((iter-(app->bcswitch))%app->jfreq) {
         *flag = SAME_PRECONDITIONER;
         return 0;
       }
@@ -1230,7 +1230,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->eps_jac_inv = 1.0/app->eps_jac;
   app->bcswitch = 10;
   ierr = OptionsGetInt(PETSC_NULL,"-bc_imperm",&app->bcswitch,&flg); CHKERRQ(ierr);
-  if (app->bcswitch > 10) app->bcswitch = 10;
+  /* if (app->bcswitch > 10) app->bcswitch = 10; */
   ierr = OptionsGetDouble(PETSC_NULL,"-stagnate_ratio",&app->fstagnate_ratio,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-angle",&app->angle,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-jfreq",&app->jfreq,&flg); CHKERRQ(ierr);
