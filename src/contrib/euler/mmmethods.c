@@ -38,6 +38,7 @@ typedef struct {
 #define __FUNC__ "MMCreate_Hybrid_EF"
 int MMCreate_Hybrid_EF1(MM mm)
 {
+  int flg, ierr;
   MM_Hybrid_EF *hybrid = PetscNew(MM_Hybrid_EF); CHKPTRQ(hybrid);
   PLogObjectMemory(mm,sizeof(MM_Hybrid_EF));
 
@@ -48,7 +49,7 @@ int MMCreate_Hybrid_EF1(MM mm)
   mm->printhelp     = 0;
   mm->setfrom       = 0;
 
-  mm->type          = MMHYBRID_EF;
+  mm->type          = MMHYBRID_EF1;
   ierr = OptionsHasName(PETSC_NULL,"-mm_hybrid_euler",&flg); CHKERRQ(ierr);
   if (flg) mm->type = MMHYBRID_E;
   ierr = OptionsHasName(PETSC_NULL,"-mm_hybrid_fp",&flg); CHKERRQ(ierr);

@@ -155,7 +155,7 @@ cc          D(m,m,I,J,K)=D(m,m,I,J,K) + dti
 cc          call MatSetValues(mat,ndof,rc,1,rc(m),d(1,m,i,j,k),
 cc     &                      INSERT_VALUES,ierr)
        if (set_block .eq. 1) then
-          rcblock = rc(1)/ndof
+          rcblock = rc(1)/ndof_euler
           call MatSetValuesBlocked(mat,1,rcblock,1,rcblock,
      &                             d(1,1,i,j,k),INSERT_VALUES,ierr)
        else

@@ -3,6 +3,10 @@
 c
 c Assemble matrix in block diagonal PETSc format
 c
+c Notes:
+c   This routine has not been used in ages; it's inevitably broken.
+c   Fixes needed:  use generao ndof instead of hardwired value.
+c 
 #include "param.h"
 #include "matrixb.h"
 #include "dt.h"
@@ -15,7 +19,7 @@ c     &                b3bc(5,5,ni,nj,4), b2bc_tmp(5,5,ni,4,nk)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 
       integer          ltog(nloc), nloc
-      integer          bctype,mat,row,nc,i,j,k,m,l,sctype
+      integer          bctype,mat,row,ndof,i,j,k,m,l,sctype
       integer          nim,njm,nkm,km,jm,im,jdiag,ijid,ij,id,ifoo
       double precision val,scale
       logical totimpl
@@ -42,7 +46,7 @@ c
       ifoo = 0
       row = -1
 c Use row/columns with 0 beginning indices (as in C)
-      nc = 5
+      ndof = 5
 
       if (bctype .eq. EXPLICIT) then
          nim = ni - 1
@@ -59,8 +63,8 @@ c *** Set diagonal terms first (to avoid scaling and zeroing problems)
 c         scale = dt(i,j,k)
          scale = one
          im = i-1
-         do 390 l=1,nc
-         do 390 m=1,nc
+         do 390 l=1,ndof
+         do 390 m=1,ndof
             val = (b1(l,m,i,j,k) +
      &                          b2(l,m,i,j,k) +
      &                          b3(l,m,i,j,k) -
@@ -79,8 +83,8 @@ c            if (l .eq. m) val = one + val
             jm = j-1
          do 100 i=1,ni1
             im = i-1
-            do 102 l=1,nc
-            do 102 m=1,nc
+            do 102 l=1,ndof
+            do 102 m=1,ndof
                if (m .eq. l) then
                   d(l,m,i,j,k) = one
                else 
@@ -92,7 +96,7 @@ c            if (l .eq. m) val = one + val
                b5(l,m,i,j,k) = zero
 c              call SpSetValue( mat, b3bc(l,m,i,j,k), row, ij+m )
 c              call SpSetValue( mat, b3bc(l,m,i,j,k+1), row,
-c    &              ij + nc*ni1*nj1 + m )
+c    &              ij + ndof*ni1*nj1 + m )
                if (i .ne. 1 .and. j .ne. 1 .and.
      &                       i .ne. ni1 .and. j .ne. nj1) then
                   d(l,m,i,j,k) = b3bc(l,m,i,j,k)
@@ -108,12 +112,12 @@ c    &              ij + nc*ni1*nj1 + m )
             km = k-1
          do 200 i=1,ni1
             im = i-1
-            ij = nc * ( i-1 + (j-1)*ni1 + (k-1)*ni1*nj1 ) - 1
+            ij = ndof * ( i-1 + (j-1)*ni1 + (k-1)*ni1*nj1 ) - 1
             IF (K.GT.KTIP) GO TO 123
             IF (I.LE.ITL.OR.I.GT.ITU) GO TO 123
-            do 202 l=1,nc
+            do 202 l=1,ndof
                row = ij + l
-            do 202 m=1,nc
+            do 202 m=1,ndof
                if (m .eq. l) then
                   d(l,m,i,j,k) = one
                else 
@@ -125,7 +129,7 @@ c    &              ij + nc*ni1*nj1 + m )
                b6(l,m,i,j,k) = zero
 c              call SpSetValue( mat, b2bc(l,m,i,1,k), row, ij+m )
 c              call SpSetValue( mat, b2bc(l,m,i,2,k), row,
-c    &              ij + nc*ni1 + m )
+c    &              ij + ndof*ni1 + m )
                if (i .ne. 1 .and. k .ne. 1 .and.
      &                       i .ne. ni1 .and. k .ne. nk1) then
                   d(l,m,i,j,k) = b2bc(l,m,i,1,k)
@@ -137,10 +141,10 @@ c    &              ij + nc*ni1 + m )
          goto 200
  123        continue
             id = ni+2-i
-            ijid = nc * ( id-1 + (j-1)*ni1 + (k-1)*ni1*nj1 ) - 1
-            do 124 l=1,nc
+            ijid = ndof * ( id-1 + (j-1)*ni1 + (k-1)*ni1*nj1 ) - 1
+            do 124 l=1,ndof
             row = ij + l
-            do 124 m=1,nc
+            do 124 m=1,ndof
                if (m .eq. l) then
                   d(l,m,i,j,k) = one
                else 
@@ -163,7 +167,7 @@ c
                   if (i .ne. 1 .and. k .ne. 1 .and.
      &                          i .ne. ni1 .and. k .ne. nk1) then
                      d(l,m,i,j,k) = b2bc(l,m,i,1,k)
-                     jdiag = row/nc - (ijid+m)/nc
+                     jdiag = row/ndof - (ijid+m)/ndof
                      if (jdiag .eq. ni1*nj1) then
                          b3(l,m,i,j,k) = b2bc(l,m,id,2,k)
                      else if (jdiag .eq. ni1) then
@@ -192,8 +196,8 @@ c
             km = k-1
          do 300 j=1,nj1
             jm = j-1
-            do 302 l=1,nc
-            do 302 m=1,nc
+            do 302 l=1,ndof
+            do 302 m=1,ndof
                if (m .eq. l) then
                   d(l,m,i,j,k) = one
                else 
@@ -204,7 +208,7 @@ c
                if (j .ne. 1) b2(l,m,i,jm,k) = zero
                if (k .ne. 1) b3(l,m,i,j,km) = zero
 c              call SpSetValue( mat, b1bc(l,m,1,j,k), row, ij+m )
-c              call SpSetValue( mat, b1bc(l,m,2,j,k), row, ij+nc+m )
+c              call SpSetValue( mat, b1bc(l,m,2,j,k), row, ij+ndof+m )
                if (k .ne. 1 .and. j .ne. 1 .and.
      &                       k .ne. nk1 .and. j .ne. nj1) then
                   d(l,m,i,j,k) = b1bc(l,m,1,j,k)
@@ -229,8 +233,8 @@ c
 c         scale = dt(i,j,k)
          scale = one
          im = i-1
-         do 402 l=1,nc
-         do 402 m=1,nc
+         do 402 l=1,ndof
+         do 402 m=1,ndof
             if (k .gt. 2) then
                b3(l,m,i,j,km) = -b3(l,m,i,j,km)*scale
             else
@@ -273,8 +277,8 @@ c         scale = dt(i,j,k)
             km = k-1
          do 500 j=1,nj1
             jm = j-1
-            do 502 l=1,nc
-            do 502 m=1,nc
+            do 502 l=1,ndof
+            do 502 m=1,ndof
                if (m .eq. l) then
                   d(l,m,i,j,k) = one
                else 
@@ -286,7 +290,7 @@ c         scale = dt(i,j,k)
                b5(l,m,i,j,k) = zero
                b6(l,m,i,j,k) = zero
 c              call SpSetValue( mat, b1bc(l,m,4,j,k), row, ij+m )
-c              call SpSetValue( mat, b1bc(l,m,3,j,k), row, ij-nc+m )
+c              call SpSetValue( mat, b1bc(l,m,3,j,k), row, ij-ndof+m )
                if (k .ne. 1 .and. j .ne. 1 .and.
      &                       k .ne. nk1 .and. j .ne. nj1) then
                   d(l,m,i,j,k) = b1bc(l,m,4,j,k)
@@ -303,8 +307,8 @@ c              call SpSetValue( mat, b1bc(l,m,3,j,k), row, ij-nc+m )
             km = k-1
          do 600 i=1,ni1
             im = i-1
-            do 602 l=1,nc
-            do 602 m=1,nc
+            do 602 l=1,ndof
+            do 602 m=1,ndof
                if (m .eq. l) then
                   d(l,m,i,j,k) = one
                else 
@@ -317,7 +321,7 @@ c              call SpSetValue( mat, b1bc(l,m,3,j,k), row, ij-nc+m )
                b6(l,m,i,j,k) = zero
 c              call SpSetValue( mat, b2bc(l,m,i,4,k), row, ij+m )
 c              call SpSetValue( mat, b2bc(l,m,i,3,k), row, 
-c    &              ij - nc*ni1 + m )
+c    &              ij - ndof*ni1 + m )
                if (i .ne. 1 .and. k .ne. 1 .and.
      &                       i .ne. ni1 .and. k .ne. nk1) then
                   d(l,m,i,j,k) = b2bc(l,m,i,4,k)
@@ -334,8 +338,8 @@ c    &              ij - nc*ni1 + m )
             jm = j-1
          do 700 i=1,ni1
             im = i-1
-            do 702 l=1,nc
-            do 702 m=1,nc
+            do 702 l=1,ndof
+            do 702 m=1,ndof
                if (m .eq. l) then
                   d(l,m,i,j,k) = one
                else 
@@ -349,7 +353,7 @@ c    &              ij - nc*ni1 + m )
                b6(l,m,i,j,k) = zero
 c              call SpSetValue( mat, b3bc(l,m,i,j,4), row, ij+m )
 c              call SpSetValue( mat, b3bc(l,m,i,j,3), row,
-c    &              ij - nc*ni1*nj1 + m )
+c    &              ij - ndof*ni1*nj1 + m )
                if (i .ne. 1 .and. j .ne. 1 .and.
      &                       i .ne. ni1 .and. j .ne. nj1) then
                   d(l,m,i,j,k) = b3bc(l,m,i,j,4)

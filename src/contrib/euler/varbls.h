@@ -34,5 +34,6 @@ c /*   double precision  e(gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1) */
 #define rw(i,j,k) xx(4,i,j,k)
 #define e(i,j,k) xx(5,i,j,k)
 
-        double precision xx(5,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+        double precision 
+     &    xx(ndof,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 

@@ -72,7 +72,7 @@ int BCScatterSetUp(Euler *app)
   int    jkx_da, jkx_ao, ijkx, idjkx, size, *is0, *is1;
   int    ict, m, k, i, ierr, *ltog, nloc, gxm = app->gxm, gym = app->gym;
   int    zsi = app->zsi, xsi = app->xsi, xei = app->xei, zei = app->zei;
-  int    gxs = app->gxs, gys = app->gys, gzs = app->gzs, nc = app->nc;
+  int    gxs = app->gxs, gys = app->gys, gzs = app->gzs, ndof = app->ndof;
   int    mx = app->mx, my = app->my, ni = app->ni, j_int, shift;
   int    ktip = app->ktip, itl = app->itl, itu = app->itu;
   char   filename[64];
@@ -100,7 +100,7 @@ int BCScatterSetUp(Euler *app)
      is1 for use in setting some Jacobian terms.  But is0 is used only in this
      routine.
   */
-  size = nc * (zei-zsi+1) * (xei-xsi+1);
+  size = ndof * (zei-zsi+1) * (xei-xsi+1);
   is0 = (int *)PetscMalloc(size * sizeof(int)); CHKPTRQ(is0);
   is1 = (int *)PetscMalloc(size * sizeof(int)); CHKPTRQ(is1);
   app->is1 = is1;
@@ -177,13 +177,13 @@ int BCScatterSetUp(Euler *app)
       jkx_ao = j_int*mx + k*mx*my;                /* jkx_ao = j*mx + k*mx*my, j=j_int */
       for (i=xsi; i<xei; i++) {
         if ((k > ktip) || (i <= itl) || (i > itu)) {
-          ijkx  = nc * (jkx_da + i-gxs);
-	  idjkx = nc * (jkx_ao + ni-shift-i); /* id = ni-shift-i; */
-          for (m=0; m<nc; m++) {
+          ijkx  = ndof * (jkx_da + i-gxs);
+	  idjkx = ndof * (jkx_ao + ni-shift-i); /* id = ni-shift-i; */
+          for (m=0; m<ndof; m++) {
             is0[ict+m] = ltog[ijkx+m];
             is1[ict+m] = idjkx + m;
           }
-          ict += nc;
+          ict += ndof;
         }
       }
     }

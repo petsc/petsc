@@ -7,7 +7,7 @@ c
 c ***************************************************************
 c routines taken from mat.F
 
-      integer function buildmat( mat, sctype, is1, iter,
+      integer function buildmat( mat, sctype, is1, 
      &                     b1, b2, b3, b4, b5, b6, d, dt, ltog, nloc,
      &                     b1bc, b2bc, b3bc, b2bc_tmp, ao )
 c
@@ -17,7 +17,6 @@ c  Input Parameters:
 c    mat      - matrix data structure
 c    bctype   - type of boundary condition formulation
 c    sctype   - type of scaling
-c    iter     - iteration number
 c    b*, d    - matrix elements corresponding to stencil points
 c               for the standard 3D, 7-point stencil
 c      b1, b4 - west, east
@@ -53,10 +52,10 @@ c
 #include "bcimpl.h"
 
       double precision  val,scale,negone
-      integer row,km,jm,im,is1(0:*),id,ijkid,iter
+      integer row,km,jm,im,is1(0:*),id,ijkid
       integer b1c,b2c,b3c,b4c,b5c,b6c,IV,i,j,k,l,m
       integer col,ierr,sctype,ijkn,ik,ict,ictmark
-      integer nloc,ltog(0:nloc-1),rstart,rend,jk,ijk
+      integer nloc,ltog(0:nloc-1),jk,ijk
       Mat     mat
       AO      ao
 
@@ -97,24 +96,24 @@ c
          jm = j-1
       do 310 i=xsf2,xef01
          im = i-1
-         ijk = nc * ((i-gxsf) + (j-gysf)*gxm + 
+         ijk = ndof * ((i-gxsf) + (j-gysf)*gxm + 
      &              (k-gzsf)*gxm*gym) - 1
-         b2c = ijk - nc*gxm
-         b3c = ijk - nc*gxm*gym
-         b1c = ijk - nc
-         b4c = ijk + nc
-         b5c = ijk + nc*gxm
-         b6c = ijk + nc*gxm*gym
+         b2c = ijk - ndof*gxm
+         b3c = ijk - ndof*gxm*gym
+         b1c = ijk - ndof
+         b4c = ijk + ndof
+         b5c = ijk + ndof*gxm
+         b6c = ijk + ndof*gxm*gym
 
          if (sctype .eq. DT_MULT) then
             scale = dt(i,j,k)
          else
             scale = one
          endif
-         do 301 l=1,nc
+         do 301 l=1,ndof
             row = ltog(ijk + l)
 c           uniprocessor: row = ijk + l
-         do 301 m=1,nc
+         do 301 m=1,ndof
 c     Use this assembly order for sorted columns.  Would be better to
 c     to insert by blocks, but need to implement column-oriented
 c     input for all PETSc matrix formats.
@@ -177,14 +176,6 @@ c ----------------------------------------------------------------------
 
       else if (bctype .eq. IMPLICIT) then
 
-c Temporarily initialize diagonal to one
-      if (iter .eq. 1) then
-         call MatGetOwnershipRange(mat,rstart,rend,ierr)
-         do 10 i=rstart,rend-1
-            call MatSetValues( mat, 1, i, 1, i, one, IV, ierr )
- 10       continue
-      endif
-
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Code for implicit boundary conditions for i=1, j=1, k=1
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -194,12 +185,12 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          do 100 j=ysf2,yef01
             jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 100 i=xsf2,xef01
-            ijk  = nc * (i-gxsf + jk) - 1
-            ijkn = ijk + nc*gxm*gym
+            ijk  = ndof * (i-gxsf + jk) - 1
+            ijkn = ijk + ndof*gxm*gym
 c           ijkn = upper neighbor (z=2)
-            do 102 l=1,nc
+            do 102 l=1,ndof
                row = ltog(ijk + l)
-            do 102 m=1,nc
+            do 102 m=1,ndof
                col = ltog(ijk + m)
                call MatSetValues( mat, 1, row, 1, col, 
      &              b3bc(l,m,i,j,k), IV, ierr )
@@ -221,7 +212,7 @@ c           ijkn = upper neighbor (z=2)
                endif
 
 c              call MatSetValues( mat, b3bc(l,m,i,j,k+1), row, 
-c    &              ijk + nc*ni1*nj1 + m, ierr )
+c    &              ijk + ndof*ni1*nj1 + m, ierr )
  102        continue
  100     continue
       endif
@@ -232,14 +223,14 @@ c    &              ijk + nc*ni1*nj1 + m, ierr )
          do 200 k=zsf2,zef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 200 i=xsf2,xef01
-            ijk = nc * (i-gxsf + jk) - 1
-            ijkn = ijk + nc*gxm
+            ijk = ndof * (i-gxsf + jk) - 1
+            ijkn = ijk + ndof*gxm
 c           ijkn = northern neighbor (j=2)
             IF (K.GT.KTIP) GO TO 123
             IF (I.LE.ITL.OR.I.GT.ITU) GO TO 123
-            do 202 l=1,nc
+            do 202 l=1,ndof
                row = ltog(ijk + l)
-            do 202 m=1,nc
+            do 202 m=1,ndof
                col = ltog(ijk + m)
                call MatSetValues( mat, 1, row, 1, col,
      &              b2bc(l,m,i,1,k), IV, ierr )
@@ -266,11 +257,11 @@ c
             ID=NI+1-I
 c            ID=NI+2-I
 c Note: This j value corresponds to j=2 in Fortran storage!!
-            ijkid = nc * ( id-1 + j*ni1 + (k-1)*ni1*nj1 ) - 1
-            do 125 l=1,nc
+            ijkid = ndof * ( id-1 + j*ni1 + (k-1)*ni1*nj1 ) - 1
+            do 125 l=1,ndof
                row = ltog(ijk + l)
                ict = ictmark
-            do 124 m=1,nc
+            do 124 m=1,ndof
                col = ltog(ijk + m)
                call MatSetValues( mat, 1, row, 1, col,
      &              b2bc(l,m,i,1,k), IV, ierr )
@@ -305,7 +296,7 @@ c     &              b2bc_tmp(l,m,i,2,k), IV, ierr )
                ict = ict + 1
  124        continue
  125        continue
-            ictmark = ictmark + nc
+            ictmark = ictmark + ndof
  200     continue
       endif
 
@@ -314,12 +305,12 @@ c     &              b2bc_tmp(l,m,i,2,k), IV, ierr )
          do 300 k=zsf2,zef01
             ik = i-gxsf + (k-gzsf)*gxm*gym
          do 300 j=ysf2,yef01
-            ijk  = nc * (ik + (j-gysf)*gxm) - 1
-            ijkn = ijk + nc
+            ijk  = ndof * (ik + (j-gysf)*gxm) - 1
+            ijkn = ijk + ndof
 c           ijkn = eastern neighbor (i=2)
-            do 302 l=1,nc
+            do 302 l=1,ndof
                row = ltog(ijk + l)
-            do 302 m=1,nc
+            do 302 m=1,ndof
                col = ltog(ijk + m)
                call MatSetValues( mat, 1, row, 1, col,
      &              b1bc(l,m,1,j,k), IV, ierr )
@@ -354,23 +345,23 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          jm = j-1
       do 410 i=xsf2,xef01
          im = i-1
-         ijk = nc * ((i-gxsf) + (j-gysf)*gxm + 
+         ijk = ndof * ((i-gxsf) + (j-gysf)*gxm + 
      &              (k-gzsf)*gxm*gym) - 1
-         b3c = ijk - nc*gxm*gym
-         b2c = ijk - nc*gxm
-         b1c = ijk - nc
-         b4c = ijk + nc
-         b5c = ijk + nc*gxm
-         b6c = ijk + nc*gxm*gym
+         b3c = ijk - ndof*gxm*gym
+         b2c = ijk - ndof*gxm
+         b1c = ijk - ndof
+         b4c = ijk + ndof
+         b5c = ijk + ndof*gxm
+         b6c = ijk + ndof*gxm*gym
 
          if (sctype .eq. DT_MULT) then
             scale = dt(i,j,k)
          else
             scale = one
          endif
-         do 402 l=1,nc
+         do 402 l=1,ndof
             row = ltog(ijk + l)
-         do 402 m=1,nc
+         do 402 m=1,ndof
 c     Use this assembly order for sorted columns.  Would be better to
 c     to insert by blocks, but need to implement column-oriented
 c     input for all PETSc matrix formats.
@@ -472,12 +463,12 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          do 500 k=zsf2,zef01
             ik = i-gxsf + (k-gzsf)*gxm*gym
          do 500 j=ysf2,yef01
-            ijk  = nc * (ik + (j-gysf)*gxm) - 1
-            ijkn = ijk - nc
+            ijk  = ndof * (ik + (j-gysf)*gxm) - 1
+            ijkn = ijk - ndof
 c           ijkn = western neighbor (i=ni)
-            do 502 l=1,nc
+            do 502 l=1,ndof
                row = ltog(ijk + l)
-            do 502 m=1,nc
+            do 502 m=1,ndof
                col = ltog(ijk + m)
                call MatSetValues( mat, 1, row, 1, col,
      &              b1bc(l,m,4,j,k), IV, ierr )
@@ -506,12 +497,12 @@ c           ijkn = western neighbor (i=ni)
          do 600 k=zsf2,zef01
             jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 600 i=xsf2,xef01
-            ijk  = nc * (i-gxsf + jk) - 1
-            ijkn = ijk - nc*gxm
+            ijk  = ndof * (i-gxsf + jk) - 1
+            ijkn = ijk - ndof*gxm
 c           ijkn = southern neighbor (k=nj)
-            do 602 l=1,nc
+            do 602 l=1,ndof
                row = ltog(ijk + l)
-            do 602 m=1,nc
+            do 602 m=1,ndof
                col = ltog(ijk + m)
                call MatSetValues( mat, 1, row, 1, col,
      &              b2bc(l,m,i,4,k), IV, ierr )
@@ -540,12 +531,12 @@ c           ijkn = southern neighbor (k=nj)
          do 700 j=ysf2,yef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 700 i=xsf2,xef01
-            ijk = nc * (i-gxsf + jk) - 1
-            ijkn = ijk - nc*gxm*gym
+            ijk = ndof * (i-gxsf + jk) - 1
+            ijkn = ijk - ndof*gxm*gym
 c           ijkn = lower neighbor (k=nk)
-            do 702 l=1,nc
+            do 702 l=1,ndof
                row = ltog(ijk + l)
-            do 702 m=1,nc
+            do 702 m=1,ndof
                col = ltog(ijk + m)
                call MatSetValues( mat, 1, row, 1, col,
      &              b3bc(l,m,i,j,4), IV, ierr )
@@ -640,7 +631,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         do 100 j=ysf2,yef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 100 i=xsf2,xef01
-           ijkx = nc * (i-gxsf + jk)
+           ijkx = ndof * (i-gxsf + jk)
            pos(1) = ltog(ijkx)
            pos(2) = ltog(ijkx+1)
            pos(3) = ltog(ijkx+2)
@@ -665,7 +656,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          do 200 k=zsf2,zef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 200 i=xsf2,xef01
-           ijkx = nc * (i-gxsf + jk)
+           ijkx = ndof * (i-gxsf + jk)
            pos(1) = ltog(ijkx)
            pos(2) = ltog(ijkx+1)
            pos(3) = ltog(ijkx+2)
@@ -690,7 +681,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         do 300 k=zsf2,zef01
            ik = i-gxsf + (k-gzsf)*gxm*gym
         do 300 j=ysf2,yef01
-           ijkx = nc * (ik + (j-gysf)*gxm)
+           ijkx = ndof * (ik + (j-gysf)*gxm)
            pos(1) = ltog(ijkx)
            pos(2) = ltog(ijkx+1)
            pos(3) = ltog(ijkx+2)
@@ -721,7 +712,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          do 400 j=ysf2,yef01
              jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 400 i=xsf2,xef01
-             ijkx   = nc * (i-gxsf + jk)
+             ijkx   = ndof * (i-gxsf + jk)
              pos(1) = ltog(ijkx)
              pos(2) = ltog(ijkx+1)
              pos(3) = ltog(ijkx+2)
@@ -739,7 +730,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          do 450 j=ysf2,yef01
              jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
          do 450 i=xsf2,xef01
-             ijkx   = nc * (i-gxsf + jk)
+             ijkx   = ndof * (i-gxsf + jk)
              pos(1) = ltog(ijkx)
              pos(2) = ltog(ijkx+1)
              pos(3) = ltog(ijkx+2)
@@ -769,7 +760,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         do 500 k=zsf2,zef01
            ik = i-gxsf + (k-gzsf)*gxm*gym
         do 500 j=ysf2,yef01
-           ijkx = nc * (ik + (j-gysf)*gxm)
+           ijkx = ndof * (ik + (j-gysf)*gxm)
            pos(1) = ltog(ijkx)
            pos(2) = ltog(ijkx+1)
            pos(3) = ltog(ijkx+2)
@@ -794,7 +785,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         do 600 k=zsf2,zef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 600 i=xsf2,xef01
-           ijkx = nc * (i-gxsf + jk)
+           ijkx = ndof * (i-gxsf + jk)
            pos(1) = ltog(ijkx)
            pos(2) = ltog(ijkx+1)
            pos(3) = ltog(ijkx+2)
@@ -819,7 +810,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         do 700 j=ysf2,yef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 700 i=xsf2,xef01
-           ijkx = nc * (i-gxsf + jk)
+           ijkx = ndof * (i-gxsf + jk)
            pos(1) = ltog(ijkx)
            pos(2) = ltog(ijkx+1)
            pos(3) = ltog(ijkx+2)
@@ -1035,7 +1026,7 @@ c      dql=B1(L,M,I,J,K)+B2(L,M,I,J,K)+B3(L,M,I,J,K)
 c      dqr=B4(L,M,I-1,J,K)+B5(L,M,I,J-1,K)+B6(L,M,I,J,K-1)
 c      D(L,M,I,J,K)=dql-dqr
 c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
-       ijk = ltog(nc * (i-gxsf + jk))
+       ijk = ltog(ndof * (i-gxsf + jk))
        rc(1) = ijk
        rc(2) = ijk + 1
        rc(3) = ijk + 2
@@ -1047,7 +1038,7 @@ c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
        D(3,3,I,J,K)=D(3,3,I,J,K) + dti
        D(4,4,I,J,K)=D(4,4,I,J,K) + dti
        D(5,5,I,J,K)=D(5,5,I,J,K) + dti
-       call MatSetValues(mat,nc,rc,nc,rc,d(1,1,i,j,k),
+       call MatSetValues(mat,ndof,rc,ndof,rc,d(1,1,i,j,k),
      &                   INSERT_VALUES,ierr)
    21 CONTINUE
 
@@ -1268,9 +1259,10 @@ c      double precision b1(5,5,ni1,nj1,nk1),b2(5,5,ni1,nj1,nk1)
 c      double precision b3(5,5,ni1,nj1,nk1)
 c
 c Note: These dimensions MUST agree with those in matrixb.h !!
-      double precision  B1(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      double precision  B2(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
-      double precision  B3(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
+      double precision 
+     &  B1(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),
+     &  B2(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1),
+     &  B3(ndof,ndof,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
       double precision  dq(5,d_ni),f(5,d_ni)
       double precision  ql(5,d_ni),qer(5),qel(5)
       double precision  epsi,tl,pl

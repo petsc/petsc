@@ -262,7 +262,7 @@ int GridTest(Euler *app)
  */
 int CheckSolution(Euler *app,Vec X)
 {
-  int    ierr, i, j, k, jkx, ijkx, nc = app->nc;
+  int    ierr, i, j, k, jkx, ijkx, ndof = app->ndof;
   int    xm = app->xm, ym = app->ym, interior;
   int    xs = app->xs, ys = app->ys, zs = app->zs;
   int    xsi = app->xsi, ysi = app->ysi, zsi = app->zsi;
@@ -276,13 +276,13 @@ int CheckSolution(Euler *app,Vec X)
   if (app->bctype != IMPLICIT) SETERRQ(1,1,"Only implicit bctype supported");
 
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  interior = nc * ((ysi-ys)*xm + (zsi-zs)*xm*ym + xsi-xs);
+  interior = ndof * ((ysi-ys)*xm + (zsi-zs)*xm*ym + xsi-xs);
   xmin[0] = xmax[0] = x[interior];
   xmin[1] = xmax[1] = x[interior + 1];
   xmin[2] = xmax[2] = x[interior + 2];
   xmin[3] = xmax[3] = x[interior + 3];
   xmin[4] = xmax[4] = x[interior + 4];
-  for (i=0; i<nc; i++) {
+  for (i=0; i<ndof; i++) {
     imin[i] = imax[i] = xsi;
     jmin[i] = jmax[i] = ysi;
     kmin[i] = kmax[i] = zsi;
@@ -291,7 +291,7 @@ int CheckSolution(Euler *app,Vec X)
     for (j=ysi; j<yei; j++) {
       jkx = (j-ys)*xm + (k-zs)*xm*ym;
       for (i=xsi; i<xei; i++) {
-        ijkx  = nc * (jkx + i-xs);
+        ijkx  = ndof * (jkx + i-xs);
         if (PetscAbsScalar(x[ijkx])   > PetscAbsScalar(xmax[0])) 
            {xmax[0] = x[ijkx];  imax[0] = i; jmax[0] = j; kmax[0] = k;}
         if (PetscAbsScalar(x[ijkx+1]) > PetscAbsScalar(xmax[1]))
@@ -320,7 +320,7 @@ int CheckSolution(Euler *app,Vec X)
   /* Need to do communication to get global min and max */
   tmin = PetscAbsScalar(xmin[0]);
   tmax = PetscAbsScalar(xmax[0]);
-  for (i=1; i<nc; i++) {
+  for (i=1; i<ndof; i++) {
     if (PetscAbsScalar(xmax[i]) > PetscAbsScalar(tmax)) tmax = xmax[i];
     if (PetscAbsScalar(xmin[i]) < PetscAbsScalar(tmin)) tmin = xmin[i];
   }

@@ -83,13 +83,13 @@ c   Mesh boundaries (used in coord.h)
        integer cx1, cxn, cy1, cyn, cz1, czn
 
 c   Problem number (1, 2, or 3), number of components per node
-       integer problem, nc
+       integer problem, ndof, ndof_e
 
 c   Communicator, rank, size
        integer comm, rank, size
 
 c   Common block for local data
-       common /pgrid/ rank, size, comm, problem, nc
+       common /pgrid/ rank, size, comm, problem, ndof, ndof_e
        common /pgrid/ printg, no_output, bctype, bcswitch
        common /pgrid/ xsf, ysf, zsf, xef, yef, zef
        common /pgrid/ xsf2, ysf2, zsf2, xsf1, ysf1, zsf1

@@ -25,5 +25,6 @@ c      COMMON /DVRBLS/ DRW(NI1,NJ1,NK1),DE(NI1,NJ1,NK1)
 #define drw(i,j,k) dxx(4,i,j,k)
 #define de(i,j,k) dxx(5,i,j,k)
 
-        double precision dxx(5,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+        double precision
+     &   dxx(ndof,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
 

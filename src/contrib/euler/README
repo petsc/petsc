@@ -7,21 +7,24 @@ Notes about the Euler code:
 
   - Multi-model code: version 1:
       - Supports Euler, full-potential, and mixed modes via the options
-            -mm_type <euler,fp,hybridX>
-        where we use the distributed array with N degrees of freedom per node,
+            -mm_type <euler,fp,hybrid>
+        where 
+           euler   - Euler everywhere, no full potential (5 DoF per node)
+           fp      - FP everywhere, no Euler (1 DoF per node)
+           hybrid - mixed Euler and FP (6 DoF per node)
+        We use the distributed array with N degrees of freedom per node,
         and N is 5, 1, and 6, respectively, for the three cases.  I.e., for
         the hybrid variants, we currently allocate space for 6 degrees of
         freedom throughout the entire problem domain, even though we will 
         not use all of these.  Any unused DoF are handled by setting the 
         diagonal of the Jacobian to 1 and the corresponding right-hand-side
         vector component to 0.
-             euler   - Euler everywhere, no full potential (5 DoF per node)
-             fp      - FP everywhere, no Euler (1 DoF per node)
-             hybrid1 - Euler everywhere with dummy FP (6 DoF per node)
-             hybrid2 - FP everywhere with dummy Euler (6 DoF per node)
-                - works with dummy system
-             hybrid3 - mixed Euler and FP (6 DoF per node)
-                - not finished yet
+
+        Other options:
+            -mm_hybrid_euler
+               - Euler everywhere with dummy FP (6 DoF per node)
+            -mm_hybrid_fp
+               - FP everywhere with dummy Euler (6 DoF per node)
 
       - Simplifying assumption:
         Each processor's locally owned part of the global problem supports

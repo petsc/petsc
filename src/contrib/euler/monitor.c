@@ -588,7 +588,7 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
  */
 int ComputeNodalResiduals(Euler *app,Vec X,Vec Xsum)
 {
-  int    i, j, k, jkx, ijkx, ierr, ijkxt, nc = app->nc;
+  int    i, j, k, jkx, ijkx, ierr, ijkxt, ndof = app->ndof;
   int    xs = app->xs, ys = app->ys, zs = app->zs;
   int    xe = app->xe, ye = app->ye, ze = app->ze;
   int    xm = app->xm, ym = app->ym;
@@ -601,7 +601,7 @@ int ComputeNodalResiduals(Euler *app,Vec X,Vec Xsum)
       jkx = (j-ys)*xm + (k-zs)*xm*ym;
       for (i=xs; i<xe; i++) {
         ijkx   = jkx + i-xs;
-        ijkxt  = nc * ijkx;
+        ijkxt  = ndof * ijkx;
         xasum[ijkx] = PetscAbsScalar(xa[ijkxt]) + PetscAbsScalar(xa[ijkxt+1])
                       + PetscAbsScalar(xa[ijkxt+2]) + PetscAbsScalar(xa[ijkxt+3])
                       + PetscAbsScalar(xa[ijkxt+4]);

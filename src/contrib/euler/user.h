@@ -4,11 +4,15 @@
 #if !defined(__APPCTX)
 #define __APPCTX
 
+/* PETSc and standard include files */
 #include "snes.h"
 #include "da.h"
 #include "dfvec.h"
 #include "draw.h"
 #include <math.h>
+
+/* Other application include files */
+#include "mm.h"
 
 /*
    IMPLICIT ==> fully implicit treatment of boundary conditions
@@ -127,7 +131,7 @@ typedef struct {
     int       ni1, nj1, nk1;	   /* ni-1, nj-1, nk-1 */
     int       nim, njm, nkm;	   /* ni+1, nj+1, nk+1 */
     int       itl, itu, ile, ktip; /* wing parameters (i:lower, upper, leading edge, k:tip) */
-    int       nc;		   /* DOF per node */
+    int       ndof;		   /* DOF per node */
     int       nd;		   /* number of diagonals for interior of grid
                                       (are more for C-grid j=0 boundary condition) */
     char      **label;             /* labels for components */
@@ -193,8 +197,10 @@ typedef struct {
     Scalar *work_p;                          /* misc work space for Fortran */
     Scalar *f1, *g1, *h1;
     Scalar *sp, *sm, *sp1, *sm1, *sp2, *sm2;
-    int refine;
-    int dim2, nktot;                         /* 2-dimensional problem variant */
+    int    refine;
+    int    dim2, nktot;                      /* 2-dimensional problem variant */
+    MM     multimodel;
+    MMType mmtype;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -327,7 +333,7 @@ extern int jformdt2_(Scalar*,Scalar*,int*,int*,int*,int*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,int*,Scalar*,int*);
+                      Scalar*,Scalar*,int*);
 extern int jformdt_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -359,10 +365,10 @@ extern int parsetup_(int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
-extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
+extern int buildmat_(int*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
-extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+extern int nzmat_(MatType*,MMType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
                       Scalar*,Scalar*,int*,int*);

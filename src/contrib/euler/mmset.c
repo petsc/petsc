@@ -147,8 +147,8 @@ int MMGetTypeFromOptions_Private(MM mm,MMType *method)
 .  mm - the preconditioner context
 
    Output Parameter:
-.  name - name of preconditioner (or use PETSC_NULL)
-.  meth - preconditioner method (or use PETSC_NULL)
+.  name - name of multi-model (or use PETSC_NULL)
+.  meth - multi-model (or use PETSC_NULL)
 
 @*/
 int MMGetType(MM mm,MMType *meth,char **name)

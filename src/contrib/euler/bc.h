@@ -27,4 +27,5 @@ c
 #define RW_bc(i,j,k) xx_bc(4,i,j,k)
 #define E_bc(i,j,k) xx_bc(5,i,j,k)
 
-       double precision xx_bc(5,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+       double precision
+     &   xx_bc(ndof,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
