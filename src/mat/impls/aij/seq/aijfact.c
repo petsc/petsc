@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.13 1995/04/05 20:31:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.14 1995/04/15 03:28:04 bsmith Exp bsmith $";
 #endif
 
 
@@ -109,8 +109,8 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   aijnew->diag      = idnew;
   aijnew->ilen      = 0;
   aijnew->imax      = 0;
-  (*fact)->row      = isrow;
-  (*fact)->col      = iscol;
+  aijnew->row       = isrow;
+  aijnew->col       = iscol;
   (*fact)->factor   = FACTOR_LU;
   /* Cannot do this here because child is destroyed before parent created
      PLogObjectParent(*fact,isicol); */
@@ -121,7 +121,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
 {
   Mat     fact = *infact;
   Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew = (Mat_AIJ *)fact->data;
-  IS      iscol = fact->col, isrow = fact->row, isicol;
+  IS      iscol = aijnew->col, isrow = aijnew->row, isicol;
   int     *r,*ic, ierr, i, j, n = aij->m, *ai = aijnew->i, *aj = aijnew->j;
   int     *ajtmpold, *ajtmp, nz, row,*pj;
   Scalar  *rtmp,*v, *pv, *pc, multiplier; 
@@ -186,10 +186,10 @@ int MatLUFactor_AIJ(Mat matin,IS row,IS col)
   if (mat->diag) FREE(mat->diag);
   if (mat->ilen) FREE(mat->ilen);
   if (mat->imax) FREE(mat->imax);
-  if (matin->row && matin->col && matin->row != matin->col) {
-    ISDestroy(matin->row);
+  if (mat->row && mat->col && mat->row != mat->col) {
+    ISDestroy(mat->row);
   }
-  if (matin->col) ISDestroy(matin->col);
+  if (mat->col) ISDestroy(mat->col);
   FREE(mat);
 
   MEMCPY(matin,fact,sizeof(struct _Mat));
@@ -200,7 +200,7 @@ int MatLUFactor_AIJ(Mat matin,IS row,IS col)
 int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data;
-  IS      iscol = mat->col, isrow = mat->row;
+  IS      iscol = aij->col, isrow = aij->row;
   int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
@@ -241,7 +241,7 @@ int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
 int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data;
-  IS      iscol = mat->col, isrow = mat->row;
+  IS      iscol = aij->col, isrow = aij->row;
   int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
@@ -285,7 +285,7 @@ int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
 int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data;
-  IS      iscol = mat->col, isrow = mat->row, invisrow,inviscol;
+  IS      iscol = aij->col, isrow = aij->row, invisrow,inviscol;
   int     *r,*c, ierr, i, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
@@ -339,7 +339,7 @@ int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
 int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data;
-  IS      iscol = mat->col, isrow = mat->row, invisrow,inviscol;
+  IS      iscol = aij->col, isrow = aij->row, invisrow,inviscol;
   int     *r,*c, ierr, i, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
@@ -510,8 +510,8 @@ int MatILU_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
   aijnew->diag      = idnew;
   aijnew->ilen      = 0;
   aijnew->imax      = 0;
-  (*fact)->row      = isrow;
-  (*fact)->col      = iscol;
+  aijnew->row       = isrow;
+  aijnew->col       = iscol;
   (*fact)->factor   = FACTOR_LU;
   return 0; 
 }
