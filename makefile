@@ -6,7 +6,7 @@ SOURCEF  =
 SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
            maint/builddist FAQ Installation Performance\
            maint/buildlinks maint/wwwman maint/xclude maint/crontab\
-           bmake/common
+           bmake/common bmake/*/*.*
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
