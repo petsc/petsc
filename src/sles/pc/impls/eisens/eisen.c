@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.87 1999/03/08 22:30:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.88 1999/03/10 17:23:36 bsmith Exp curfman $";
 #endif
 
 /*
@@ -268,8 +268,8 @@ int PCEisenstatSetOmega(PC pc,double omega)
 #define __FUNC__ "PCEisenstatNoDiagonalScaling"
 /*@
    PCEisenstatNoDiagonalScaling - Causes the Eisenstat preconditioner
-   to not do additional diagonal preconditioning. For matrices with a constant 
-   along the diagonal, this may save a small amount of work
+   not to do additional diagonal preconditioning. For matrices with a constant 
+   along the diagonal, this may save a small amount of work.
 
    Collective on PC
 

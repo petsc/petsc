@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.131 1999/03/15 03:57:09 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.132 1999/03/31 22:20:23 curfman Exp curfman $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -737,7 +737,7 @@ EXTERN_C_END
 #undef __FUNC__  
 #define __FUNC__ "SNESSetLineSearchCheck"
 /*@C
-   SNESSetLineSearchCheck - Sets a routine to check the new iterate computed
+   SNESSetLineSearchCheck - Sets a routine to check the validity of new iterate computed
    by the line search routine in the Newton-based method SNES_EQ_LS.
 
    Input Parameters:
