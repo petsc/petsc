@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesregi.c,v 1.24 1998/04/20 19:38:06 curfman Exp curfman $";
+static char vcid[] = "$Id: snesregi.c,v 1.25 1998/04/20 19:48:53 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -33,7 +33,7 @@ extern int SNESCreate_Test(SNES);
 
    Then, your solver can be chosen with the procedural interface via
 $     SNESSetType(snes,"my_solver")
-$   or at runtime via the option
+   or at runtime via the option
 $     -snes_type my_solver
 
 .keywords: SNES, nonlinear, register

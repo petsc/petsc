@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.41 1998/04/20 19:37:41 curfman Exp curfman $";
+static char vcid[] = "$Id: pcregis.c,v 1.42 1998/04/20 19:49:14 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -44,7 +44,7 @@ extern int PCCreate_Composite(PC);
 
    Then, your solver can be chosen with the procedural interface via
 $     PCSetType(pc,"my_solver")
-$   or at runtime via the option
+   or at runtime via the option
 $     -pc_type my_solver
 
 .keywords: PC, register

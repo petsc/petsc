@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.143 1998/04/09 04:18:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.144 1998/04/13 17:55:33 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -24,15 +24,15 @@ DLList SNESList = 0;
    Collective on SNES, unless Viewer is VIEWER_STDOUT_SELF
   
    Options Database Key:
-$  -snes_view : calls SNESView() at end of SNESSolve()
+.  -snes_view - Calls SNESView() at end of SNESSolve()
 
    Notes:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
-$       output where only the first processor opens
-$       the file.  All other processors send their 
-$       data to the first processor to print. 
+.     VIEWER_STDOUT_SELF - standard output (default)
+.     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpenASCII() - output to a specified file

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.30 1998/04/20 19:49:17 curfman Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.31 1998/04/20 20:02:29 curfman Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -41,7 +41,7 @@ extern int KSPCreate_QCG(KSP);
 
    Then, your solver can be chosen with the procedural interface via
 $     KSPSetType(ksp,"my_solver")
-$  or at runtime via the option
+   or at runtime via the option
 $     -ksp_type my_solver
 
 .keywords: KSP, register

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsregall.c,v 1.15 1998/04/13 17:50:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: tsregall.c,v 1.16 1998/04/20 19:37:28 curfman Exp curfman $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
@@ -32,7 +32,7 @@ extern int TSCreate_PVode(TS);
 
    Then, your solver can be chosen with the procedural interface via
 $     TSSetType(ts,"my_solver")
-$   or at runtime via the option
+   or at runtime via the option
 $     -ts_type my_solver
 
 .keywords: TS, register
