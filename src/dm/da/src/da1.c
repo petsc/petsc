@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.45 1996/08/08 14:47:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.46 1996/08/15 12:51:08 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -98,7 +98,7 @@ static int DAView_1d(PetscObject pobj,Viewer viewer)
 .  wrap - Do you want ghost points to wrap around? Use one of
 $         DA_NONPERIODIC, DA_XPERIODIC
 .  M - global dimension of the array
-.  w - number of degress of freedom per node
+.  w - number of degrees of freedom per node
 .  s - stencil width  
 
    Output Parameter:

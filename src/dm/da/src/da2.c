@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.56 1996/08/08 14:47:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.57 1996/08/15 12:51:08 bsmith Exp curfman $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -114,7 +114,7 @@ $         DA_YPERIODIC, DA_XYPERIODIC
 .  M,N - global dimension in each direction of the array
 .  m,n - corresponding number of processors in each dimension 
          (or PETSC_DECIDE to have calculated)
-.  w - number of degress of freedom per node
+.  w - number of degrees of freedom per node
 .  s - stencil width
 
    Output Parameter:
