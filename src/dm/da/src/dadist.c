@@ -1,4 +1,4 @@
-/*$Id: dadist.c,v 1.21 1999/03/17 23:25:10 bsmith Exp bsmith $*/
+/*$Id: dadist.c,v 1.22 1999/10/24 14:04:04 bsmith Exp curfman $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -67,8 +67,8 @@ int DACreateGlobalVector(DA da,Vec* g)
 #define __FUNC__ "DACreateNaturalVector"
 /*@C
    DACreateNaturalVector - Creates a parallel PETSc vector that
-       will hold vector values in the natural numbering, rather than in 
-       the PETSc parallel numbering associated with the DA.
+   will hold vector values in the natural numbering, rather than in 
+   the PETSc parallel numbering associated with the DA.
 
    Collective on DA
 
