@@ -10,7 +10,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgf.c \
 	dflushf.c dgcoorf.c dgpausef.c dlinef.c dlinegwf.c  \
 	dlinewf.c dmousef.c dpausef.c dpointf.c dpointsf.c drawf.c  \
 	drectf.c dscatterf.c dsclearf.c dsetpausef.c dsflushf.c  \
-	dtextgsf.c dtextsf.c dtrif.c dviewpf.c eisenf.c errf.c flushf.c  \
+	dtextgsf.c dtextsf.c dtrif.c dviewpf.c eisenf.c flushf.c  \
 	fpf.c gcookief.c gmresf.c iluf.c indexf.c itclf.c itcreatef.c  \
 	itfuncf.c itresf.c lgf.c luf.c matrixf.c mgf.c mgfuncf.c mhasf.c  \
 	mpiuf.c mtrf.c pcnullf.c pcsetf.c plogf.c posindepf.c  \
@@ -27,7 +27,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgf.o \
 	dflushf.o dgcoorf.o dgpausef.o dlinef.o dlinegwf.o  \
 	dlinewf.o dmousef.o dpausef.o dpointf.o dpointsf.o drawf.o  \
 	drectf.o dscatterf.o dsclearf.o dsetpausef.o dsflushf.o  \
-	dtextgsf.o dtextsf.o dtrif.o dviewpf.o eisenf.o errf.o flushf.o  \
+	dtextgsf.o dtextsf.o dtrif.o dviewpf.o eisenf.o flushf.o  \
 	fpf.o gcookief.o gmresf.o iluf.o indexf.o itclf.o itcreatef.o  \
 	itfuncf.o itresf.o lgf.o luf.o matrixf.o mgf.o mgfuncf.o mhasf.o  \
 	mpiuf.o mtrf.o pcnullf.o pcsetf.o plogf.o posindepf.o  \
