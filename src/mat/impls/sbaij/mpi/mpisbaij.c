@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.34 2000/10/30 16:14:29 balay Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.35 2000/10/30 16:41:41 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2263,9 +2263,9 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   /* find ownerships */
   rowners_bs = a->rowners_bs;
   /*
-  for (i=0; i<size+1; i++) {
-    PetscPrintf(PETSC_COMM_SELF,"rowners_bs: %d\n",i,rowners_bs[i]); 
-  } 
+  if (!rank){
+    for (i=0; i<size+1; i++) PetscPrintf(PETSC_COMM_SELF," rowners_bs[%d]: %d\n",i,rowners_bs[i]); 
+  }
   */
 
   /* each proc creates an array to be distributed */
@@ -2280,7 +2280,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
       bcol = bs*(*bj); 
       for (kcol=0; kcol<bs; kcol++){
         col = bcol + kcol;                 /* local col index */
-        col += rowners_bs[rank] + bs;      /* global col index */
+        col += rowners_bs[rank+1];      /* global col index */
         /* PetscPrintf(PETSC_COMM_SELF,"[%d], col: %d\n",rank,col); */
         for (krow=0; krow<bs; krow++){         
           atmp = PetscAbsScalar(*ba); ba++;         
@@ -2293,7 +2293,12 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
       bj++;
     }   
   }
-  
+  /*
+  PetscPrintf(PETSC_COMM_SELF,"[%d], work: ",rank);
+  for (i=0; i<bs*Mbs; i++) PetscPrintf(PETSC_COMM_SELF,"%g ",work[i]);
+  PetscPrintf(PETSC_COMM_SELF,"[%d]: \n");
+  */
+
   /* send values to its owners */
   if (rank != size-1){
     for (dest=rank+1; dest<size; dest++){
@@ -2301,7 +2306,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
       count = rowners_bs[dest+1]-rowners_bs[dest];
       ierr = MPI_Send(svalues,count,MPI_DOUBLE,dest,rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
       /*
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] sends %d values to [%d]\n",rank,count,dest); 
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] sends %d values to [%d]: %g, %g, %g, %g\n",rank,count,dest,svalues[0],svalues[1],svalues[2],svalues[3]); 
       PetscSynchronizedFlush(PETSC_COMM_WORLD);
       */
     }
@@ -2318,7 +2323,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
         if (PetscRealPart(va[i]) < rvalues[i]) va[i] = rvalues[i];
       }   
       /*
-      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] received from [%d] \n",rank,stat.MPI_SOURCE);  
+      PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] received %d values from [%d]: %g, %g, %g, %g \n",rank,count,stat.MPI_SOURCE,rvalues[0],rvalues[1],rvalues[2],rvalues[3]);  
       PetscSynchronizedFlush(PETSC_COMM_WORLD);
       */
     } 

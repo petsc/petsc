@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.20 2000/10/18 15:07:28 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.21 2000/10/18 15:08:43 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -243,6 +243,10 @@ int main(int argc,char **args)
 
   ierr = VecNorm(s1,NORM_1,&r1);CHKERRA(ierr);
   ierr = VecNorm(s2,NORM_1,&r2);CHKERRA(ierr);
+  /* MatView(A,VIEWER_STDOUT_WORLD);
+  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], r1: %g, r2: %g\n",rank,r1,r2);
+      PetscSynchronizedFlush(PETSC_COMM_WORLD);
+      */
   r1 -= r2;
   if (r1<-tol || r1>tol) { 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRowMax() \n");CHKERRA(ierr);
