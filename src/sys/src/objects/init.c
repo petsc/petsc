@@ -1,7 +1,7 @@
-/*$Id: init.c,v 1.57 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.58 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
 
-   This file defines the initialization of PETSc, including PetscInitialize()
+   This file defines part of the initialization of PETSc
 
   This file uses regular malloc and free because it cannot know 
   what malloc is being used until it has already processed the input.
@@ -48,7 +48,6 @@ int  _BT_idx;
 PetscTruth PetscAMSPublishAll = PETSC_FALSE;
 #endif
 
-
 /*
        Function that is called to display all error messages
 */
@@ -57,18 +56,14 @@ extern int  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 int (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
 int (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 
-extern int PetscInitialize_DynamicLibraries(void);
-extern int PetscFinalize_DynamicLibraries(void);
-extern int FListDestroyAll(void);
-
 /* ------------------------------------------------------------------------------*/
 /* 
    Optional file where all PETSc output from various prints is saved
 */
-FILE *petsc_history = 0;
+FILE *petsc_history = PETSC_NULL;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PLogOpenHistoryFile"
+#define __FUNC__ /*<a name="PLogOpenHistoryFile"></a>*/"PLogOpenHistoryFile"
 int PLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   int  ierr,rank,size;
@@ -102,7 +97,7 @@ int PLogOpenHistoryFile(const char filename[],FILE **fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PLogCloseHistoryFile"
+#define __FUNC__ /*<a name="PLogCloseHistoryFile"></a>*/"PLogCloseHistoryFile"
 int PLogCloseHistoryFile(FILE **fd)
 {
   int  rank,ierr;
@@ -122,8 +117,8 @@ int PLogCloseHistoryFile(FILE **fd)
 
 /* ------------------------------------------------------------------------------*/
 
-int    PetscCompare          = 0;
-PetscReal PetscCompareTolerance = 1.e-10;
+PetscTruth PetscCompare          = PETSC_FALSE;
+PetscReal  PetscCompareTolerance = 1.e-10;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscCompareInt"
@@ -181,8 +176,7 @@ int PetscCompareDouble(double d)
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!d && !work) PetscFunctionReturn(0);
-  if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) 
-      > PetscCompareTolerance) {
+  if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) > PetscCompareTolerance) {
     SETERRQ(PETSC_ERR_PLIB,0,"Inconsistent double");
   }
   PetscFunctionReturn(0);
@@ -214,8 +208,7 @@ int PetscCompareScalar(Scalar d)
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,2,MPI_DOUBLE,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) PetscFunctionReturn(0);
-  if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) 
-      >= PetscCompareTolerance) {
+  if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) >= PetscCompareTolerance) {
     SETERRQ(PETSC_ERR_PLIB,0,"Inconsistent scalar");
   }
   PetscFunctionReturn(0);
@@ -276,7 +269,7 @@ int PetscCompareInitialize(double tol)
   ierr = MPI_Group_free(&group_sub);CHKERRQ(ierr);
   free(gflag);
 
-  PetscCompare = 1;
+  PetscCompare = PETSC_TRUE;
   PLogInfo(0,"PetscCompareInitialize:Configured to compare two programs\n",rank);
   PetscFunctionReturn(0);
 }
@@ -292,7 +285,7 @@ int PetscCompareInitialize(double tol)
 */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"Petsc_MPI_AbortOnError"
+#define __FUNC__ /*<a name="Petsc_MPI_AbortOnError"></a>*/"Petsc_MPI_AbortOnError"
 void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag) 
 {
   PetscFunctionBegin;
@@ -301,7 +294,7 @@ void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"Petsc_MPI_DebuggerOnError"
+#define __FUNC__ /*<a name="Petsc_MPI_DebuggerOnError"></a>*/"Petsc_MPI_DebuggerOnError"
 void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag) 
 {
   int ierr;
@@ -326,6 +319,33 @@ extern int        PLogInfoAllow(PetscTruth,char *);
 extern int        PetscSetUseTrMalloc_Private(void);
 extern PetscTruth petscsetmallocvisited;
 static char       emacsmachinename[128];
+
+int (*PetscExternalVersionFunction)(MPI_Comm) = 0;
+int (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscSetHelpVersionFunctions"></a>*/"PetscSetHelpVersionFunctions"
+/*@C 
+   PetscSetHelpVersionFunctions - Sets functions that print help and version information
+     before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
+     This is so a "higher-level" package that uses PETSc can print its messages first.
+
+   Input Parameter:
++  help - the help function (may be PETSC_NULL)
+-  version - the version function (may be PETSc null)
+
+   Level: developer
+
+.keywords: version information, help information
+@*/
+int PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
+{
+  PetscFunctionBegin;
+  if (PetscInitializeCalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call before PetscInitialize()");
+  PetscExternalHelpFunction    = help;
+  PetscExternalVersionFunction = version;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"OptionsCheckInitial"
@@ -383,19 +403,36 @@ int OptionsCheckInitial(void)
   ierr = OptionsHasName(PETSC_NULL,"-version",&flg2);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg3);CHKERRQ(ierr);
   if (flg1 || flg2 || flg3){
+
+    /*
+       Print "higher-level" package version message 
+    */
+    if (PetscExternalVersionFunction) {
+      ierr = (*PetscExternalVersionFunction)(comm);CHKERRQ(ierr);
+    }
+
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"\t   %s\n",PETSC_VERSION_NUMBER);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/copyright.html for copyright information\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"See docs/changes.html for recent updates.\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html hints for problems.\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html for problems.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");CHKERRQ(ierr);
 #if !defined(PARCH_win32)
     ierr = (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LDIR);CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");CHKERRQ(ierr);
+  }
+
+  /*
+       Print "higher-level" package help message 
+  */
+  if (flg3){
+    if (PetscExternalHelpFunction) {
+      ierr = (*PetscExternalHelpFunction)(comm);CHKERRQ(ierr);
+    }
   }
 
   /*
@@ -418,20 +455,20 @@ int OptionsCheckInitial(void)
       Setup debugger information
   */
 #if defined(PETSC_USE_DBX_DEBUGGER)
-  ierr = PetscSetDebugger("dbx",1);CHKERRQ(ierr);
+  ierr = PetscSetDebugger("dbx",PETSC_TRUE);CHKERRQ(ierr);
 #elif defined(PETSC_USE_XDB_DEBUGGER) 
-  ierr = PetscSetDebugger("xdb",1);CHKERRQ(ierr);
+  ierr = PetscSetDebugger("xdb",PETSC_TRUE);CHKERRQ(ierr);
 #else  /* Default is gdb */
-  ierr = PetscSetDebugger("gdb",1);CHKERRQ(ierr);
+  ierr = PetscSetDebugger("gdb",PETSC_TRUE);CHKERRQ(ierr);
 #endif
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
     char           *debugger = 0;
-    int            xterm     = 1;
+    PetscTruth     xterm     = PETSC_TRUE;
     MPI_Errhandler err_handler;
 
     ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
-    if (f) xterm = 0;
+    if (f) xterm = PETSC_FALSE;
     ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
     if (f)     debugger = "xdb";
     ierr = PetscStrstr(string,"dbx",&f);CHKERRQ(ierr);
@@ -454,7 +491,8 @@ int OptionsCheckInitial(void)
   ierr = OptionsGetString(PETSC_NULL,"-stop_for_debugger",string,64,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
     char           *debugger = 0;
-    int            xterm     = 1,size;
+    PetscTruth     xterm     = PETSC_TRUE;
+    int            size;
     MPI_Errhandler err_handler;
     /*
        we have to make sure that all processors have opened 
@@ -483,7 +521,7 @@ int OptionsCheckInitial(void)
     }
     if (!flag) {        
       ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
-      if (f) xterm = 0;
+      if (f) xterm = PETSC_FALSE;
       ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
       if (f)     debugger = "xdb";
       ierr = PetscStrstr(string,"dbx",&f);CHKERRQ(ierr);
