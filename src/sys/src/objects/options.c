@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.185 1998/04/21 18:05:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.186 1998/04/22 14:24:05 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -699,11 +699,11 @@ void Petsc_MPI_Abort_Function(MPI_Comm *comm,int *flag)
   abort();
 }
 
-#if defined(PARCH_sun4) && defined(__cplusplus)
+#if defined(HAVE_MALLOC_VERIFY) && defined(__cplusplus)
 extern "C" {
   extern int malloc_debug(int);
 }
-#elif defined(PARCH_sun4)
+#elif defined(HAVE_MALLOC_VERIFY)
   extern int malloc_debug(int);
 #endif
 
@@ -739,7 +739,7 @@ int OptionsCheckInitial_Private(void)
   ierr = OptionsHasName(PETSC_NULL,"-trdebug",&flg1); CHKERRQ(ierr);
   if (flg1) { 
     ierr = PetscTrDebugLevel(1);CHKERRQ(ierr);
-#if defined(PARCH_sun4) && defined(USE_PETSC_BOPT_g)
+#if defined(HAVE_MALLOC_VERIFY) && defined(USE_PETSC_BOPT_g)
     malloc_debug(2);
 #endif
   }
@@ -772,9 +772,9 @@ int OptionsCheckInitial_Private(void)
      Set default debugger on solaris and rs6000 to dbx and hpux to xdb
      because gdb doesn't work with the native compilers.
   */
-#if defined(PARCH_solaris) || defined(PARCH_rs6000) || defined(PARCH_IRIX64) || defined(PARCH_IRIX)
+#if defined(USE_DBX_DEBUGGER)
   ierr = PetscSetDebugger("dbx",1,0); CHKERRQ(ierr);
-#elif defined(PARCH_hpux) 
+#elif defined(USE_XDB_DEBUGGER) 
   ierr = PetscSetDebugger("xdb",1,0); CHKERRQ(ierr);
 #endif
 
@@ -783,14 +783,10 @@ int OptionsCheckInitial_Private(void)
     char *debugger = 0, *display = 0;
     int  xterm     = 1;
     if (PetscStrstr(string,"noxterm")) xterm = 0;
-#if defined(PARCH_hpux)
+
     if (PetscStrstr(string,"xdb"))     debugger = "xdb";
-#else
     if (PetscStrstr(string,"dbx"))     debugger = "dbx";
-#endif
-#if defined(PARCH_rs6000)
     if (PetscStrstr(string,"xldb"))    debugger = "xldb";
-#endif
     if (PetscStrstr(string,"gdb"))     debugger = "gdb";
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (PetscStrstr(string,"ups"))     debugger = "ups";
@@ -831,14 +827,10 @@ int OptionsCheckInitial_Private(void)
     }
     if (!flag) {        
       if (PetscStrstr(string,"noxterm")) xterm = 0;
-#if defined(PARCH_hpux)
+
       if (PetscStrstr(string,"xdb"))     debugger = "xdb";
-#else
       if (PetscStrstr(string,"dbx"))     debugger = "dbx";
-#endif
-#if defined(PARCH_rs6000)
       if (PetscStrstr(string,"xldb"))    debugger = "xldb";
-#endif
       if (PetscStrstr(string,"gdb"))     debugger = "gdb";
       if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
       if (PetscStrstr(string,"ups"))     debugger = "ups";

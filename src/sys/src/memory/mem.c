@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.26 1998/04/20 15:43:31 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.27 1998/04/20 16:34:50 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -40,19 +40,7 @@ static char vcid[] = "$Id: mem.c,v 1.26 1998/04/20 15:43:31 balay Exp balay $";
 @*/
 int PetscGetResidentSetSize(PLogDouble *foo)
 {
-#if !defined(PARCH_solaris) && !defined(PARCH_hpux) && !defined(PARCH_t3d) \
-  && !defined (PARCH_nt) && !defined (PARCH_nt_gnu)
-  static struct rusage temp;
-
-  PetscFunctionBegin;
-  getrusage(RUSAGE_SELF,&temp);
-#if defined(PARCH_rs6000) || defined(PARCH_IRIX) || defined(PARCH_IRIX64) || \
-    defined(PARCH_IRIX5)
-  *foo = 1024.0 * ((double) temp.ru_maxrss);
-#else
-  *foo = ( (double) getpagesize())*( (double) temp.ru_maxrss );
-#endif
-#elif defined(PARCH_solaris)
+#if defined(PARCH_solaris)
   int             fd;
   char            proc[1024];
   prpsinfo_t      prusage;
@@ -67,9 +55,19 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   }
   *foo = (double) prusage.pr_byrssize;
   close(fd);
-#else
+#elif defined(PARCH_hpux) || defined(PARCH_t3d) || defined(PARCH_nt) || defined(PARCH_nt_gnu)
   PetscFunctionBegin;
   *foo = 0.0;
+#else
+  static struct rusage temp;
+
+  PetscFunctionBegin;
+  getrusage(RUSAGE_SELF,&temp);
+#if defined(PARCH_rs6000) || defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
+  *foo = 1024.0 * ((double) temp.ru_maxrss);
+#else
+  *foo = ( (double) getpagesize())*( (double) temp.ru_maxrss );
+#endif
 #endif
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.7 1998/04/25 23:26:51 balay Exp $"
+"$Id: petscconf.h,v 1.9 1998/04/25 23:27:55 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -38,5 +38,6 @@
 
 #define HAVE_PRAGMA_DISJOINT
 
+#define USE_DBX_DEBUGGER
 
 #endif
