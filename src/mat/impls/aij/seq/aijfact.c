@@ -1045,16 +1045,11 @@ int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   } 
-  
-  if (ptr->levels > 0){ /* out-place factorization */
-    ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(a->sbaijMat,fact);CHKERRQ(ierr);   
-    ierr                = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
-    a->sbaijMat         = PETSC_NULL;
-
-  } else { /* inplace icc(0) */
-    a->sbaijMat = PETSC_NULL; /* sbaijMat has been assigned to fact, so free pointer sbaijMat */    
-    ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(*fact,fact);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(a->sbaijMat,fact);CHKERRQ(ierr);
+  if (ptr->levels > 0){ 
+    ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
   }
+  a->sbaijMat = PETSC_NULL; 
   ierr = PetscFree(ptr);CHKERRQ(ierr);
   
   PetscFunctionReturn(0); 
@@ -1081,7 +1076,6 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,PetscReal fill,int levels,Mat *fac
 
   if (levels > 0){
     ierr = MatICCFactorSymbolic(a->sbaijMat,perm,fill,levels,fact);CHKERRQ(ierr);
-    (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering;
 
   } else { /* in-place icc(0) */
     (*fact)             = a->sbaijMat;
@@ -1090,12 +1084,12 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,PetscReal fill,int levels,Mat *fac
     b->row              = perm;
     b->icol             = perm;   
     ierr                = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-    (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
     ierr                = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr                = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
   }
 
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+  (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
 
   ierr           = PetscNew(Mat_SeqAIJ_SeqSBAIJ,&ptr);CHKERRQ(ierr);
   (*fact)->spptr = (void*)ptr;
