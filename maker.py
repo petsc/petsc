@@ -70,9 +70,6 @@ class Make(script.Script):
     script.Script.setup(self)
     self.builder.setup()
     self.setupDependencies(self.builder.sourceDB)
-    import graph
-    self.dependencyGraph = graph.DirectedGraph()
-    self.updateDependencyGraph(self.dependencyGraph, (self, tuple(self.sidl)))
     return
 
   def shouldConfigure(self, builder, framework):
@@ -236,9 +233,17 @@ class SIDLMake(Make):
 
     help = Make.setupHelp(self, help)
     help.addArgument('SIDLMake', 'bootstrap', nargs.ArgBool(None, 0, 'Generate the boostrap client', isTemporary = 1))
+    help.addArgument('SIDLMake', 'outputSIDLFiles', nargs.ArgBool(None, 1, 'Write generated files to disk', isTemporary = 1))
     help.addArgument('SIDLMake', 'excludeLanguages=<languages>', nargs.Arg(None, [], 'Do not load configurations from RDict for the given languages', isTemporary = 1))
     help.addArgument('SIDLMake', 'excludeBasenames=<names>', nargs.Arg(None, [], 'Do not load configurations from RDict for these SIDL base names', isTemporary = 1))
     return help
+
+  def setup(self):
+    Make.setup(self)
+    import graph
+    self.dependencyGraph = graph.DirectedGraph()
+    self.updateDependencyGraph(self.dependencyGraph, (self, tuple(self.sidl)))
+    return
 
   def setupConfigure(self, framework):
     framework.require('config.libraries', None)
@@ -367,6 +372,7 @@ class SIDLMake(Make):
         compiler.includeDirectories[language] = sets.Set()
       self.addDependencyIncludes(compiler, language)
       compiler.includeDirectories[language].add(os.path.join(self.getRoot(), self.getSIDLClientDirectory(builder, sidlFile, language)))
+    compiler.disableOutput = not self.argDB['outputSIDLFiles']
     builder.popLanguage()
     builder.popConfiguration()
     return

@@ -18,6 +18,7 @@ class Compiler(script.Script):
     self.systemIncludeDirectories = {}
     self.versionControl  = None
     self.useShell        = 1
+    self.disableOutput   = 0
     return
 
   def __getstate__(self):
@@ -32,6 +33,7 @@ class Compiler(script.Script):
     self.scandal.clientDirs = self.clientDirs
     self.scandal.servers    = []
     self.scandal.serverDirs = {}
+    self.scandal.outputSIDLFiles = not self.disableOutput
     self.scandal.run()
     for lang in self.scandal.outputFiles:
       outputFiles['Client '+lang] = self.scandal.outputFiles[lang]
@@ -56,6 +58,7 @@ class Compiler(script.Script):
       cmd.append('--clientDirs={'+client+':'+self.clientDirs[client]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
       cmd.append('--ior=0')
+      cmd.append('--outputSIDLFiles='+str(not self.disableOutput))
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
       cmd.extend(source)
@@ -67,6 +70,7 @@ class Compiler(script.Script):
       cmd.append('--ior=client')
       cmd.append('--clientDirs={'+client+':'+self.clientDirs[client]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
+      cmd.append('--outputSIDLFiles='+str(not self.disableOutput))
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
       cmd.extend(source)
@@ -119,6 +123,7 @@ class Compiler(script.Script):
     self.scandal.serverDirs = self.serverDirs
     self.scandal.includeDirectories = self.includeDirectories
     self.scandal.systemIncludeDirectories = self.systemIncludeDirectories
+    self.scandal.outputSIDLFiles = not self.disableOutput
     self.editServer(self.serverDirs)
     self.scandal.run()
     for lang in self.scandal.outputFiles:
@@ -141,6 +146,7 @@ class Compiler(script.Script):
       if server in self.systemIncludeDirectories:
         cmd.append('--systemIncludeDirs="{'+server+':['+','.join(self.systemIncludeDirectories[server])+']}"')
       cmd.append('--ior=0')
+      cmd.append('--outputSIDLFiles='+str(not self.disableOutput))
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
       cmd.extend(source)
@@ -152,6 +158,7 @@ class Compiler(script.Script):
       cmd.append('--ior=server')
       cmd.append('--serverDirs={'+server+':'+self.serverDirs[server]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
+      cmd.append('--outputSIDLFiles='+str(not self.disableOutput))
       cmd.append('--outputFiles')
       cmd.append('--logAppend')
       cmd.extend(source)
@@ -166,13 +173,13 @@ class Compiler(script.Script):
     '''This will compile the SIDL source'''
     outputFiles           = {}
     if self.useShell:
-      self.createServerShell(source, outputFiles)
       self.createClientShell(source, outputFiles)
+      self.createServerShell(source, outputFiles)
     else:
       self.scandal.includes = self.includes
       self.scandal.targets  = source
-      self.createServer(source, outputFiles)
       self.createClient(source, outputFiles)
+      self.createServer(source, outputFiles)
     return ('', '', 0, outputFiles)
 
   def checkSetup(self):
