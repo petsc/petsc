@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.93 2000/04/09 04:37:45 bsmith Exp bsmith $*/
+/*$Id: iterativ.c,v 1.94 2000/04/12 04:24:52 bsmith Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -528,8 +528,21 @@ int KSPDefaultDestroy(KSP ksp)
 .  ksp - the KSP context
 
    Output Parameter:
-.  reason - negative value indicates diverged, positive value converged, see ksp.h or the 
-            manual pages for the individual convergence tests for complete lists
+.  reason - negative value indicates diverged, positive value converged, see ksp.h
+
+   Possible values for reason:
++  KSP_CONVERGED_RTOL (residual norm decreased by a factor of rtol)
+.  KSP_CONVERGED_ATOL (residual norm less than atol)
+.  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration) 
+.  KSP_CONVERGED_QCG_NEGATIVE_CURVE
+.  KSP_CONVERGED_QCG_CONSTRAINED
+.  KSP_CONVERGED_STEP_LENGTH
+.  KSP_DIVERGED_ITS  (required more than its to reach convergence)
+.  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
+.  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
+-  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial
+                                residual. Try a different preconditioner, or a different initial guess.
+ 
 
    Level: intermediate
 
@@ -537,7 +550,7 @@ int KSPDefaultDestroy(KSP ksp)
 
 .keywords: KSP, nonlinear, set, convergence, test
 
-.seealso: KSPSetConvergenceTest(), KSPDefaultConverged()
+.seealso: KSPSetConvergenceTest(), KSPDefaultConverged(), KSPSetTolerances()
 @*/
 int KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {
