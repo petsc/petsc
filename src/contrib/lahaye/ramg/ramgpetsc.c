@@ -56,8 +56,9 @@ int RamgShellPCCreate(RamgShellPC **shell)
    int         ierr;
 
    PetscFunctionBegin;
-   ierr = PetscNew(RamgShellPC,&newctx); CHKERRQ(ierr);
-   *shell = newctx; 
+   ierr              = PetscNew(RamgShellPC,&newctx); CHKERRQ(ierr);
+   newctx->arraysset = PETSC_FALSE;
+   *shell            = newctx; 
    PetscFunctionReturn(0); 
 }
 
@@ -127,6 +128,16 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ndu    = 5*nnu; 
    ndf    = ndu; 
    ndig   = 8*nnu; 
+
+  if (shell->arraysset) {
+    ierr = PetscFree(shell->A);CHKERRQ(ierr);
+    ierr = PetscFree(shell->IA);CHKERRQ(ierr);
+    ierr = PetscFree(shell->JA);CHKERRQ(ierr);
+    ierr = PetscFree(shell->U_APPROX);CHKERRQ(ierr);
+    ierr = PetscFree(shell->RHS);CHKERRQ(ierr);
+    ierr = PetscFree(shell->IG);CHKERRQ(ierr);   
+    ierr = PetscFree(shell->PARAM);CHKERRQ(ierr);
+  }
 
    /*..Allocate memory for RAMG variables..*/ 
    ierr = PetscMalloc(nda *sizeof(double),&Asky);CHKERRQ(ierr);
@@ -235,13 +246,14 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ierr = PetscLogInfo((PetscObject)pmat,"\n\n");CHKERRQ(ierr); 
  
    /*..Store RAMG output in PETSc context..*/ 
-   shell->A        = Asky; 
-   shell->IA       = ia; 
-   shell->JA       = ja; 
-   shell->U_APPROX = u_approx; 
-   shell->RHS      = rhs; 
-   shell->IG       = ig; 
-   shell->PARAM    = ramg_param; 
+   shell->A         = Asky; 
+   shell->IA        = ia; 
+   shell->JA        = ja; 
+   shell->U_APPROX  = u_approx; 
+   shell->RHS       = rhs; 
+   shell->IG        = ig; 
+   shell->PARAM     = ramg_param; 
+   shell->arraysset = PETSC_TRUE;
 
    /*..Save Class 1 parameters..*/ 
    (*ramg_param).NDA    = nda;
@@ -405,17 +417,18 @@ int RamgShellPCDestroy(RamgShellPC *shell)
 {
   int ierr;
 
-   PetscFunctionBegin;
+  PetscFunctionBegin;
   /*..Free PCShell context..*/
-  ierr = PetscFree(shell->A);CHKERRQ(ierr);
-  ierr = PetscFree(shell->IA);CHKERRQ(ierr);
-  ierr = PetscFree(shell->JA);CHKERRQ(ierr);
-  ierr = PetscFree(shell->U_APPROX);CHKERRQ(ierr);
-  ierr = PetscFree(shell->RHS);CHKERRQ(ierr);
-  ierr = PetscFree(shell->IG);CHKERRQ(ierr);   
-  ierr = PetscFree(shell->PARAM);CHKERRQ(ierr);
-  ierr = PetscFree(shell);CHKERRQ(ierr);
-
+  if (shell->arraysset) {
+    ierr = PetscFree(shell->A);CHKERRQ(ierr);
+    ierr = PetscFree(shell->IA);CHKERRQ(ierr);
+    ierr = PetscFree(shell->JA);CHKERRQ(ierr);
+    ierr = PetscFree(shell->U_APPROX);CHKERRQ(ierr);
+    ierr = PetscFree(shell->RHS);CHKERRQ(ierr);
+    ierr = PetscFree(shell->IG);CHKERRQ(ierr);   
+    ierr = PetscFree(shell->PARAM);CHKERRQ(ierr);
+    ierr = PetscFree(shell);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
