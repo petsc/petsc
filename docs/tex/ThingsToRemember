@@ -133,6 +133,8 @@ ICASE/NASA paragon: Back in action at Va-Tech :(
 
 ICASE/NASA SP2: poseidon.larc.nasa.gov, account: mcinnes
    - info: http://parallel.nas.nasa.gov/Parallel/Metacenter/howto.html
+   - report of the year-to-date usage for every group you are a member
+     of using the command: acct_ytd 
    - Now jobs submitted to poseidon may actually run on babbage, the
          NASA Ames machine, so that staging input/output files is crucial!
    - Example of script file using staging:  Note that sometimes the stagein
