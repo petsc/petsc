@@ -86,7 +86,7 @@ class Configure(config.base.Configure):
   def configureFortranStubs(self):
     '''Determine whether the Fortran stubs exist or not'''
     if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
-      self.framework.log.write('BitKeeper clone of PETSc, checking for bfort')
+      self.framework.log.write('BitKeeper clone of PETSc, checking for bfort\n')
       self.framework.getExecutable('bfort', getFullPath = 1)
 
       # try to download bfort if not found
@@ -99,7 +99,7 @@ class Configure(config.base.Configure):
           if hasattr(self.framework,'sowingDir'):
             bfort = os.path.join(self.framework.sowingDir,'bfort')
             if os.path.isfile(bfort):
-              self.framework.log.write('Found downloaded Sowing installed, will use this')
+              self.framework.log.write('Found downloaded Sowing installed, will use this\n')
               self.framework.bfort = bfort
         
       if hasattr(self.framework, 'bfort'):
@@ -109,7 +109,7 @@ class Configure(config.base.Configure):
         self.framework.log.write(message)
         raise RuntimeError('You have a Fortran compiler but the PETSc Fortran stubs are not built and cannot be built.\n'+message+'or run with with --with-fc=0 to turn off the Fortran compiler')
     else:
-      self.framework.log.write('Not BitKeeper clone of PETSc, assuming Fortran stubs already built')
+      self.framework.log.write('Not BitKeeper clone of PETSc, assuming Fortran stubs already built\n')
     return
 
   def configure(self):

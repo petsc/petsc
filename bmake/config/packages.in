@@ -10,7 +10,7 @@
 #
 BLAS_LIB           = @BLAS_LIB@
 LAPACK_LIB         = @LAPACK_LIB@
-BLASLAPACK_LIB     = @BLASLAPACK_LIB@
+BLASLAPACK_LIB     = ${LAPACK_LIB} ${BLAS_LIB}
 #
 # Location of MPI (Message Passing Interface) software  
 #

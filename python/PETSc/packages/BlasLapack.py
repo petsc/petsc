@@ -116,7 +116,8 @@ class Configure(config.base.Configure):
     if 'with-blas-lapack-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-blas-lapack-dir']
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'))
-      yield ('User specified installation root', os.path.join(dir, 'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
+      yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'))      
+      yield ('User specified installation root (F2C)', os.path.join(dir, 'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'))
       yield ('User specified MKL Linux installation root', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_def.a'), 'guide', 'pthread'])
       if self.framework.argDB['with-64-bit']:
@@ -141,6 +142,7 @@ class Configure(config.base.Configure):
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
     # Try compiler defaults
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a')
+    yield ('HPUX', 'libveclib.a', 'liblapack.a')
     # /usr/local/lib
     dir = os.path.join('/usr','local','lib')
     yield ('Default compiler locations /usr/local/lib', os.path.join(dir,'libblas.a'), os.path.join(dir,'liblapack.a'))    
@@ -290,6 +292,8 @@ class Configure(config.base.Configure):
       self.addSubstitution('LAPACK_DIR', dir)
       libFlag = map(self.libraries.getLibArgument, self.lapackLibrary)
       self.addSubstitution('LAPACK_LIB', ' '.join(libFlag))
+    # the code below does NOT work correctly. I am removing the blocks from
+    # package.in so that the values set below are never used!
     if self.foundBlas and self.foundLapack:
       dirs    = []
       libFlag = []
