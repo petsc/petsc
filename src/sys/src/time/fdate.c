@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.18 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.19 1998/03/23 21:18:59 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/files.h"
@@ -7,7 +7,11 @@ static char vcid[] = "$Id: fdate.c,v 1.18 1997/10/19 03:23:45 bsmith Exp bsmith 
 #include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
+#if (defined (PARCH_IRIX64) ||  defined (PARCH_IRIX) || defined PARCH_IRIX5)
+extern int gettimeofday(struct timeval *,...);
+#else
 extern int gettimeofday(struct timeval *, struct timezone *);
+#endif
 }
 #endif
 #endif
