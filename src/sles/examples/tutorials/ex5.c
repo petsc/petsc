@@ -60,7 +60,7 @@ int main(int argc,char **args)
   
   /* Compute right-hand-side */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
-  
+
   /* Solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
