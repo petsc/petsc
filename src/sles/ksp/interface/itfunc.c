@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.101 1998/06/03 20:09:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.102 1998/06/03 20:13:36 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -150,8 +150,8 @@ int KSPSetUp(KSP ksp)
 #undef __FUNC__  
 #define __FUNC__ "KSPSolve"
 /*@
-   KSPSolve - Solves linear system; call it after calling 
-   KSPCreate(), KSPSetup(), and KSPSet*().
+   KSPSolve - Solves linear system; usually not called directly, rather 
+    it is called by a call to SLESSolve().
 
    Collective on KSP
 
@@ -160,6 +160,13 @@ int KSPSetUp(KSP ksp)
 
    Output Parameter:
 .  its - number of iterations required
+
+   Options Database:
++  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
+.  -ksp_plot_eigenvalues - plot the computed eigenvalues in an X-window
+.  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the 
+      dense operator and useing LAPACK
+-  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
 
    Notes:
    On return, the parameter "its" contains either the iteration
@@ -178,7 +185,8 @@ int KSPSetUp(KSP ksp)
 
 .keywords: KSP, solve, linear system
 
-.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged()
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
+          SLESSolve(), KSPSolveTrans(), SLESGetKSP()
 @*/
 int KSPSolve(KSP ksp, int *its) 
 {
@@ -191,7 +199,7 @@ int KSPSolve(KSP ksp, int *its)
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
   if (ksp->guess_zero) { VecSet(&zero,ksp->vec_sol);}
-  ierr = (*ksp->solver)(ksp,its); CHKERRQ(ierr);
+  ierr = (*ksp->solve)(ksp,its); CHKERRQ(ierr);
 
   MPI_Comm_rank(ksp->comm,&rank);
 
@@ -263,6 +271,49 @@ int KSPSolve(KSP ksp, int *its)
     }
     PetscFree(r);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPSolveTrans"
+/*@
+   KSPSolveTrans - Solves the transpose of a linear system. Usually
+     accessed through SLESSolveTrans().
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Output Parameter:
+.  its - number of iterations required
+
+   Notes:
+   On return, the parameter "its" contains either the iteration
+   number at which convergence was successfully reached, or the
+   negative of the iteration at which divergence or breakdown was detected.
+
+   Currently only supported by KSPType of KSPPREONLY. This routine is usally 
+   only used internally by the BiCG solver on the subblocks in BJacobi and ASM.
+
+.keywords: KSP, solve, linear system
+
+.seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
+          SLESSolve(), SLESGetKSP()
+@*/
+int KSPSolveTrans(KSP ksp, int *its) 
+{
+  int        ierr,flag1,flag2,rank;
+  Scalar     zero = 0.0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidIntPointer(its);
+
+  if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
+  if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol); CHKERRQ(ierr);}
+  if (!ksp->solvetrans) SETERRQ(1,1,"No transpose solver for this Krylov method");
+  ierr = (*ksp->solvetrans)(ksp,its); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
