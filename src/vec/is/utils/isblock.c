@@ -110,7 +110,6 @@ PetscErrorCode ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,cons
 #if defined (PETSC_USE_CTABLE)
   /* Now check max size */
   for (i=0,maxsz=0; i<imax; i++) {
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
     if (len%bs !=0) SETERRQ(PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
     len = len/bs; /* The reduced index size */
