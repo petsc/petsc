@@ -22,14 +22,24 @@ class Compiler(script.Script):
 
   def __call__(self, source, target = None):
     '''This will compile the SIDL source'''
-    self.scandal.clients    = self.clients
-    self.scandal.clientDirs = self.clientDirs
-    self.scandal.servers    = self.servers
-    self.scandal.serverDirs = self.serverDirs
+    outputFiles             = {}
     self.scandal.includes   = self.includes
     self.scandal.targets    = source
+    self.scandal.clients    = self.clients
+    self.scandal.clientDirs = self.clientDirs
+    self.scandal.servers    = []
+    self.scandal.serverDirs = {}
     self.scandal.run()
-    return ('', '', 0, self.scandal.outputFiles)
+    for lang in self.scandal.outputFiles:
+      outputFiles['Client '+lang] = self.scandal.outputFiles[lang]
+    self.scandal.clients    = []
+    self.scandal.clientDirs = {}
+    self.scandal.servers    = self.servers
+    self.scandal.serverDirs = self.serverDirs
+    self.scandal.run()
+    for lang in self.scandal.outputFiles:
+      outputFiles['Server '+lang] = self.scandal.outputFiles[lang]
+    return ('', '', 0, outputFiles)
 
   def checkSetup(self):
     '''Check that this module has been specified. We assume that configure has checked its viability.'''

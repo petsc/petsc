@@ -249,7 +249,10 @@ class Builder(logging.Logger):
         check(None, status, output, error)
       else:
         output, error, status = script.Script.executeShellCommand(self.getCompilerCommand(source, target), checkCommand = check, log = self.log)
-        outputFiles = {'ELF': [target]}
+        if not target is None:
+          outputFiles = {'ELF': [target]}
+        else:
+          outputFiles = {}
       config.outputFiles.update(outputFiles)
     else:
       output      = ''

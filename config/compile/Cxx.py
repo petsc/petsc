@@ -16,10 +16,19 @@ class Compiler(config.compile.processor.Processor):
     return
 
   def getTarget(self, source):
+    '''Return None for header files'''
     import os
 
     base, ext = os.path.splitext(source)
+    if ext in ['.h', '.hh']:
+      return None
     return base+'.o'
+
+  def getCommand(self, sourceFiles, outputFile = None):
+    '''If no outputFile is given, do not execute anything'''
+    if outputFile is None:
+      return 'true'
+    return config.compile.processor.Processor.getCommand(self, sourceFiles, outputFile)
 
 class Linker(config.compile.processor.Processor):
   '''The C++ linker'''
