@@ -5,12 +5,12 @@ import commands
 
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
-  print '********* You must have Python version 2.2 or higher to run configure ***********'
-  print '* Python is easy to install for end users or sys-admin. We urge you to upgrade  *'
+  print '**** You must have Python version 2.2 or higher to run config/configure.py ******'
+  print '*           Python is easy to install for end users or sys-admin.               *'
   print '*                   http://www.python.org/download/                             *'
   print '*                                                                               *'
-  print '*                  You CANNOT configure PETSc manually                          *'
-  print '* http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html#Manual   *'
+  print '*            You CANNOT configure PETSc without Python                          *'
+  print '*    http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html      *'
   print '*********************************************************************************'
   sys.exit(4)
   
