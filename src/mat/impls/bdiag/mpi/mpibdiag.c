@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.38 1995/10/06 22:24:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.39 1995/10/11 17:55:49 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -742,7 +742,7 @@ $     diag = i/nb - j/nb  (integer division)
 
 .seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-int MatSeqBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,Scalar ***diagv)
+int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,Scalar ***diagv)
 {
   Mat_MPIBDiag *pdmat;
   Mat_SeqBDiag *dmat;
