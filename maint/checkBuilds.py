@@ -7,6 +7,7 @@ class BuildChecker:
   compilers = {'IRIX':            ['sgiMipsPro'],
                'IRIX64':          ['sgiMipsPro'],
                'alpha':           ['mipsUltrix'],
+               'alpha_uni':       ['mipsUltrix'],
                'freebsd':         ['gcc'],
                'linux':           ['gcc'],
                'linux64':         ['gcc'],
