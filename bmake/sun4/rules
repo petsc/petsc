@@ -1,4 +1,4 @@
-# $Id: base,v 1.47 1998/12/22 17:29:48 balay Exp bsmith $ 
+# $Id: base,v 1.48 1999/01/25 22:00:22 bsmith Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -120,3 +120,14 @@ shared: chkopts_basic
 	cd ../ ; \
 	${RM} -rf tmp; \
 	fi
+
+oshared: chkopts_basic
+	-${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+        echo "building ${LIBNAME}.${SLSUFFIX}"; \
+	${AR} x ${LIBNAME}.a ;\
+	gcc ${COPTFLAGS} -fPIC -shared *.o  -o ${LIBNAME}.${SLSUFFIX}; \
+	cd ../ ; \
+	${RM} -rf tmp
+
