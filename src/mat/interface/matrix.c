@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.137 1996/02/07 19:42:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.138 1996/02/09 15:58:29 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1177,7 +1177,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   PLogEventBegin(MAT_AssemblyBegin,mat,0,0,0);
-  if (mat->ops.assemblybegin) {ierr = (*mat->ops.assemblybegin)(mat,type); CHKERRQ(ierr);}
+  if (mat->ops.assemblybegin){ierr = (*mat->ops.assemblybegin)(mat,type);CHKERRQ(ierr);}
   PLogEventEnd(MAT_AssemblyBegin,mat,0,0,0);
   return 0;
 }
@@ -1235,6 +1235,13 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
       ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
+      ierr = MatView(mat,viewer); CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    }
+    ierr = OptionsHasName(PETSC_NULL,"-mat_view",&flg); CHKERRQ(ierr);
+    if (flg) {
+      Viewer viewer;
+      ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
