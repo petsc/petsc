@@ -371,7 +371,6 @@ $     NORM_INFINITY denotes max_i |x_i|
           VecNormBegin(), VecNormEnd()
 
 @*/
-
 int VecNorm(Vec x,NormType type,PetscReal *val)  
 {
   PetscTruth flg;
@@ -692,7 +691,10 @@ int VecScale (const PetscScalar *alpha,Vec x)
   scale = sqrt(PetscAbsScalar(*alpha));
   /* 2 */
   ierr = VecNormComposedDataID(NORM_2,&type_id); CHKERRQ(ierr);
-  PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  if (flg) {
+    PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+  }
   /* 1 */
   ierr = VecNormComposedDataID(NORM_1,&type_id); CHKERRQ(ierr);
   PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
