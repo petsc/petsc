@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.10 1996/01/15 22:35:12 balay Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.11 1996/01/30 00:40:19 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -45,12 +45,19 @@ static char vcid[] = "$Id: zksp.c,v 1.10 1996/01/15 22:35:12 balay Exp bsmith $"
 extern "C" {
 #endif
 
-void kspgettype_(KSP ksp,KSPType *type,char *name,int *__ierr,int len)
+void kspgettype_(KSP ksp,KSPType *type,CHAR name,int *__ierr,int len)
 {
   char *tname;
   if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
   *__ierr = KSPGetType((KSP)MPIR_ToPointer(*(int*)ksp),type,&tname);
-  if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
+#if defined(PARCH_t3d)
+  {
+  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+  if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
+  }
+#else
+  if (name != PETSC_NULL_CHAR_Fortran) PetscStrncpy(name,tname,len);
+#endif
 }
 
 void kspgetpreconditionerside_(KSP itP,PCSide *side, int *__ierr ){
@@ -58,33 +65,25 @@ void kspgetpreconditionerside_(KSP itP,PCSide *side, int *__ierr ){
 	(KSP)MPIR_ToPointer( *(int*)(itP) ),side );
 }
 
-void kspsetoptionsprefix_(KSP ksp,char *prefix, int *__ierr,int len ){
-  char *t=0;
-  if (prefix[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,prefix,len);
-    t[len] = 0;
-  }
-  else t = prefix;
+void kspsetoptionsprefix_(KSP ksp,CHAR prefix, int *__ierr,int len ){
+  char *t;
+
+  FIXCHAR(prefix,len,t);
   *__ierr = KSPSetOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t);
-  if( t != prefix) PetscFree(t);
+  FREECHAR(prefix,t);
 }
 
-void kspappendoptionsprefix_(KSP ksp,char *prefix, int *__ierr,int len ){
-  char *t=0;
-  if (prefix[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,prefix,len);
-    t[len] = 0;
-  }
-  else t = prefix;
+void kspappendoptionsprefix_(KSP ksp,CHAR prefix, int *__ierr,int len ){
+  char *t;
+
+  FIXCHAR(prefix,len,t);
   *__ierr = KSPAppendOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t);
-  if( t != prefix) PetscFree(t);
+  FREECHAR(prefix,t);
 }
 
 void kspcreate_(MPI_Comm comm,KSP *ksp, int *__ierr ){
   KSP tmp;
-  *__ierr = KSPCreate((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),&tmp);
+  *__ierr = KSPCreate((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),&tmp);
   *(int*)ksp =  MPIR_FromPointer(tmp);
 }
 
@@ -139,25 +138,17 @@ void kspgetrhs_(KSP itP,Vec *r, int *__ierr ){
 /*
    Possible bleeds memory but cannot be helped.
 */
-void ksplgmonitorcreate_(char *host,char *label,int *x,int *y,int *m,
+void ksplgmonitorcreate_(CHAR host,CHAR label,int *x,int *y,int *m,
                        int *n,DrawLG *ctx, int *__ierr,int len1,int len2){
-  char *t1,*t2;
+  char   *t1,*t2;
   DrawLG lg;
-  if (host[len1] != 0) {
-    t1 = (char *) PetscMalloc( (len1+1)*sizeof(char) ); 
-    PetscStrncpy(t1,host,len1);
-    t1[len1] = 0;
-  }
-  else t1 = host;
-  if (label[len2] != 0) {
-    t2 = (char *) PetscMalloc( (len2+1)*sizeof(char) ); 
-    PetscStrncpy(t2,label,len2);
-    t2[len2] = 0;
-  }
-  else t2 = label;
+
+  FIXCHAR(host,len1,t1);
+  FIXCHAR(label,len2,t2);
   *__ierr = KSPLGMonitorCreate(t1,t2,*x,*y,*m,*n,&lg);
   *(int*) ctx = MPIR_FromPointer(lg);
 }
+
 void ksplgmonitordestroy_(DrawLG ctx, int *__ierr ){
   *__ierr = KSPLGMonitorDestroy((DrawLG)MPIR_ToPointer( *(int*)(ctx) ));
   MPIR_RmPointer(*(int*)(ctx) );

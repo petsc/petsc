@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsles.c,v 1.6 1996/01/15 22:37:53 balay Exp bsmith $";
+static char vcid[] = "$Id: zsles.c,v 1.7 1996/01/30 00:40:19 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -27,33 +27,28 @@ static char vcid[] = "$Id: zsles.c,v 1.6 1996/01/15 22:37:53 balay Exp bsmith $"
 extern "C" {
 #endif
 
-void slessetoptionsprefix_(SLES sles,char *prefix, int *__ierr,int len ){
-  char *t=0;
-  if (prefix[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,prefix,len);
-    t[len] = 0;
-  }
-  else t = prefix;
+void slessetoptionsprefix_(SLES sles,CHAR prefix, int *__ierr,int len ){
+  char *t;
+
+  FIXCHAR(prefix,len,t);
   *__ierr = SLESSetOptionsPrefix((SLES)MPIR_ToPointer( *(int*)(sles) ),t);
-  if( t != prefix) PetscFree(t);
+  FREECHAR(prefix,t);
 }
-void slesappendoptionsprefix_(SLES sles,char *prefix, int *__ierr,int len ){
-  char *t=0;
-  if (prefix[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,prefix,len);
-    t[len] = 0;
-  }
-  else t = prefix;
+
+void slesappendoptionsprefix_(SLES sles,CHAR prefix, int *__ierr,int len ){
+  char *t;
+
+  FIXCHAR(prefix,len,t);
   *__ierr = SLESAppendOptionsPrefix((SLES)MPIR_ToPointer( *(int*)(sles) ),t);
-  if( t != prefix) PetscFree(t);
+  FREECHAR(prefix,t);
 }
+
 void slesgetksp_(SLES sles,KSP *ksp, int *__ierr ){
   KSP joe;
   *__ierr = SLESGetKSP((SLES)MPIR_ToPointer( *(int*)(sles) ),&joe);
   *(int*) ksp = MPIR_FromPointer(joe);
 }
+
 void slesgetpc_(SLES sles,PC *pc, int *__ierr ){
   PC joe;
   *__ierr = SLESGetPC((SLES)MPIR_ToPointer( *(int*)(sles) ),&joe);

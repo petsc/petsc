@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.8 1996/01/30 00:40:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: zvec.c,v 1.9 1996/01/30 12:21:52 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -9,10 +9,10 @@ static char vcid[] = "$Id: zvec.c,v 1.8 1996/01/30 00:40:19 bsmith Exp curfman $
 #define veccreate_            VECCREATE
 #define vecduplicate_         VECDUPLICATE
 #define veccreatempi_         VECCREATEMPI
-#define VecScattercreate_  VecScatterCREATE
-#define VecScattercopy_    VecScatterCOPY
+#define vecscattercreate_     VECSCATTERCREATE
+#define vecscattercopy_       VECSCATTERCOPY
 #define vecdestroy_           VECDESTROY
-#define VecScatterdestroy_ VecScatterDESTROY
+#define vecscatterdestroy_    VECSCATTERDESTROY
 #define vecrestorearray_      VECRESTOREARRAY
 #define vecgetarray_          VECGETARRAY
 #define vecload_              VECLOAD
@@ -22,10 +22,10 @@ static char vcid[] = "$Id: zvec.c,v 1.8 1996/01/30 00:40:19 bsmith Exp curfman $
 #define veccreate_            veccreate
 #define vecduplicate_         vecduplicate
 #define veccreatempi_         veccreatempi
-#define VecScattercreate_  VecScattercreate
-#define VecScattercopy_    VecScattercopy
+#define vecscattercreate_     vecscattercreate
+#define vecscattercopy_       vecscattercopy
 #define vecdestroy_           vecdestroy
-#define VecScatterdestroy_ VecScatterdestroy
+#define vecscatterdestroy_    vecscatterdestroy
 #define vecrestorearray_      vecrestorearray
 #define vecgetarray_          vecgetarray
 #define vecload_              vecload
@@ -69,7 +69,7 @@ void vecgetarray_(Vec x,Scalar *fa,int *ia,int *__ierr)
   *ia      = PetscScalarAddressToFortran(fa,lx);
 }
 
-void VecScatterdestroy_(VecScatter ctx, int *__ierr )
+void vecscatterdestroy_(VecScatter ctx, int *__ierr )
 {
   *__ierr = VecScatterDestroy((VecScatter)MPIR_ToPointer( *(int*)(ctx) ));
    MPIR_RmPointer(*(int*)(ctx)); 
@@ -81,7 +81,7 @@ void vecdestroy_(Vec v, int *__ierr )
    MPIR_RmPointer(*(int*)(v)); 
 }
 
-void VecScattercreate_(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx, int *__ierr )
+void vecscattercreate_(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx, int *__ierr )
 {
   VecScatter lV;
   *__ierr = VecScatterCreate(
@@ -91,7 +91,7 @@ void VecScattercreate_(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx, int *__ie
 	(IS)MPIR_ToPointer( *(int*)(iy) ),&lV);
   *(int*) newctx = MPIR_FromPointer(lV);
 }
-void VecScattercopy_(VecScatter sctx,VecScatter *ctx, int *__ierr )
+void vecscattercopy_(VecScatter sctx,VecScatter *ctx, int *__ierr )
 {
   VecScatter lV;
   *__ierr = VecScatterCopy((VecScatter)MPIR_ToPointer( *(int*)(sctx) ),&lV);
@@ -102,20 +102,20 @@ void VecScattercopy_(VecScatter sctx,VecScatter *ctx, int *__ierr )
 void veccreatempi_(MPI_Comm comm,int *n,int *N,Vec *vv, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecCreateMPI((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,*N,&lV);
+  *__ierr = VecCreateMPI((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*n,*N,&lV);
   *(int*)vv = MPIR_FromPointer(lV);
 }
 
 void veccreateseq_(MPI_Comm comm,int *n,Vec *V, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecCreateSeq((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,&lV);
+  *__ierr = VecCreateSeq((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm)),*n,&lV);
   *(int*)V = MPIR_FromPointer(lV);
 }
 
 void veccreate_(MPI_Comm comm,int *n,Vec *V, int *__ierr ){
   Vec lV;
-  *__ierr = VecCreate((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,&lV);
+  *__ierr = VecCreate((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*n,&lV);
   *(int*)V = MPIR_FromPointer(lV);
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsnes.c,v 1.7 1996/01/15 22:36:53 balay Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.8 1996/01/29 21:51:54 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -56,28 +56,22 @@ static char vcid[] = "$Id: zsnes.c,v 1.7 1996/01/15 22:36:53 balay Exp bsmith $"
 extern "C" {
 #endif
 
-void snessetoptionsprefix_(SNES snes,char *prefix, int *__ierr,int len ){
-  char *t=0;
-  if (prefix[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,prefix,len);
-    t[len] = 0;
-  }
-  else t = prefix;
+void snessetoptionsprefix_(SNES snes,CHAR prefix, int *__ierr,int len ){
+  char *t;
+
+  FIXCHAR(prefix,len,t);
   *__ierr = SNESSetOptionsPrefix((SNES)MPIR_ToPointer( *(int*)(snes) ),t);
-  if( t != prefix) PetscFree(t);
+  FREECHAR(prefix,t);
 }
-void snesappendoptionsprefix_(SNES snes,char *prefix, int *__ierr,int len ){
-  char *t=0;
-  if (prefix[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,prefix,len);
-    t[len] = 0;
-  }
-  else t = prefix;
+
+void snesappendoptionsprefix_(SNES snes,CHAR prefix, int *__ierr,int len ){
+  char *t;
+
+  FIXCHAR(prefix,len,t);
   *__ierr = SNESAppendOptionsPrefix((SNES)MPIR_ToPointer( *(int*)(snes) ),t);
-  if( t != prefix) PetscFree(t);
+  FREECHAR(prefix,t);
 }
+
 void snesdefaultmatrixfreematcreate_(SNES snes,Vec x,Mat *J, int *__ierr ){
   Mat mm;
   *__ierr = SNESDefaultMatrixFreeMatCreate(
@@ -237,7 +231,7 @@ void snessetfunction_(SNES snes,Vec r,int (*func)(int*,int*,int*,void*,int*),
 void snescreate_(MPI_Comm comm,SNESProblemType *type,SNES *outsnes, int *__ierr ){
   SNES snes;
 *__ierr = SNESCreate(
-	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*type,&snes);
+	(MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*type,&snes);
   *(int*)outsnes = MPIR_FromPointer(snes);
 }
 /* ---------------------------------------------------------*/
@@ -282,12 +276,20 @@ void snesregisterall_(int *__ierr)
   *__ierr = SNESRegisterAll();
 }
 
-void snesgettype_(SNES snes,SNESType *type,char *name,int *__ierr,int len)
+void snesgettype_(SNES snes,SNESType *type,CHAR name,int *__ierr,int len)
 {
   char *tname;
+
   if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
   *__ierr = SNESGetType((SNES)MPIR_ToPointer(*(int*)snes),type,&tname);
-  if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
+#if defined(PARCH_t3d)
+  {
+  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+  if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
+  }
+#else
+  if (name != PETSC_NULL_CHAR_Fortran) PetscStrncpy(name,tname,len);
+#endif
 }
 
 #if defined(__cplusplus)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zis.c,v 1.5 1995/11/30 15:40:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.6 1996/01/30 00:40:19 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -43,7 +43,7 @@ void isrestoreindices_(IS x,int *fa,int *ia,int *__ierr)
 void iscreateseq_(MPI_Comm comm,int *n,int *idx,IS *is, int *__ierr ){
   IS ii;
   *__ierr = ISCreateSeq(
-	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,idx,&ii);
+	(MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*n,idx,&ii);
   *(int*) is = MPIR_FromPointer(ii);
 }
 
@@ -51,7 +51,7 @@ void iscreatestrideseq_(MPI_Comm comm,int *n,int *first,int *step,
                                IS *is, int *__ierr ){
   IS ii;
   *__ierr = ISCreateStrideSeq(
-	(MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,*first,*step,&ii);
+	(MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*n,*first,*step,&ii);
   *(int*) is = MPIR_FromPointer(ii);
 }
 

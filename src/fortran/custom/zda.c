@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zda.c,v 1.3 1995/10/26 22:01:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.4 1996/01/30 00:40:19 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -69,7 +69,7 @@ void dacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
 {
   DA da;
   *__ierr = DACreate2d(
-	    (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*wrap,
+	    (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*wrap,
             *stencil_type,*M,*N,*m,*n,*w,*s,&da);
   *(int*) inra = MPIR_FromPointer(da);
 }
@@ -79,7 +79,7 @@ void dacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
 {
   DA da;
   *__ierr = DACreate1d(
-	   (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*wrap,*M,*w,*s,&da);
+	   (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*wrap,*M,*w,*s,&da);
   *(int*) inra = MPIR_FromPointer(da);
 }
 
@@ -89,7 +89,7 @@ void dacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
 {
   DA da;
   *__ierr = DACreate3d(
-	   (MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*wrap,*stencil_type,
+	   (MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,&da);
   *(int*) inra = MPIR_FromPointer(da);
 }

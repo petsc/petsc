@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.9 1996/01/15 22:36:05 balay Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.10 1996/01/30 00:40:19 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -132,28 +132,20 @@ void pcgetfactoredmatrix_(PC pc,Mat *mat, int *__ierr ){
   *(int*) mat = MPIR_FromPointer(m);
 }
  
-void pcsetoptionsprefix_(PC pc,char *prefix, int *__ierr,int len ){
-  char *t=0;
-  if (prefix[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,prefix,len);
-    t[len] = 0;
-  }
-  else t = prefix;
+void pcsetoptionsprefix_(PC pc,CHAR prefix, int *__ierr,int len ){
+  char *t;
+
+  FIXCHAR(prefix,len,t);
   *__ierr = PCSetOptionsPrefix((PC)MPIR_ToPointer( *(int*)(pc) ),t);
-  if( t != prefix) PetscFree(t);
+  FREECHAR(prefix,t);
 }
 
-void pcappendoptionsprefix_(PC pc,char *prefix, int *__ierr,int len ){
-  char *t=0;
-  if (prefix[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,prefix,len);
-    t[len] = 0;
-  }
-  else t = prefix;
+void pcappendoptionsprefix_(PC pc,CHAR prefix, int *__ierr,int len ){
+  char *t;
+
+  FIXCHAR(prefix,len,t);
   *__ierr = PCAppendOptionsPrefix((PC)MPIR_ToPointer( *(int*)(pc) ),t);
-  if( t != prefix) PetscFree(t);
+  FREECHAR(prefix,t);
 }
 
 void pcdestroy_(PC pc, int *__ierr ){
@@ -163,7 +155,7 @@ void pcdestroy_(PC pc, int *__ierr ){
 
 void pccreate_(MPI_Comm comm,PC *newpc, int *__ierr ){
   PC p;
-  *__ierr = PCCreate((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),&p);
+  *__ierr = PCCreate((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),&p);
   *(int*) newpc = MPIR_FromPointer(p);
 }
 
@@ -175,12 +167,20 @@ void pcregisterall_(int *__ierr){
   *__ierr = PCRegisterAll();
 }
 
-void pcgettype_(PC pc,PCType *type,char *name,int *__ierr,int len)
+void pcgettype_(PC pc,PCType *type,CHAR name,int *__ierr,int len)
 {
   char *tname;
+
   if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
   *__ierr = PCGetType((PC)MPIR_ToPointer(*(int*)pc),type,&tname);
-  if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
+#if defined(PARCH_t3d)
+  {
+  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+  if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
+  }
+#else
+  if (name != PETSC_NULL_CHAR_Fortran) PetscStrncpy(name,tname,len);
+#endif
 }
 
 #if defined(__cplusplus)
