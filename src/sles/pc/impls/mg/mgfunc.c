@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.4 1995/03/06 04:15:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.5 1995/04/13 14:41:08 bsmith Exp bsmith $";
 #endif
 
 #include "mgimpl.h"
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: mgfunc.c,v 1.4 1995/03/06 04:15:59 bsmith Exp bsmith 
 
   Output Parameters:
 .   sles - the coarse grid solver context 
+
+   Keywords:  multigrid, coarse grid
 
 @*/ 
 int MGGetCoarseSolve(PC pc,SLES *sles)  
@@ -33,6 +35,8 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
  
   Output Parameters:
 .  r - location to store the residual
+
+   Keywords:  multigrid, residual
 @*/
 int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
@@ -52,6 +56,8 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 .  l - the level to supply
 .  mat - matrix associated with residual
 .  residual - function used to form residual (usually MGDefaultResidual)
+
+   Keywords:  multigrid, residual
 @*/
 int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
@@ -70,6 +76,7 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 .   mat - the interpolation operator
 .  l - the level to supply
 
+   Keywords:  multigrid, interpolation
 @*/
 int MGSetInterpolate(PC pc,int l,Mat mat)
 { 
@@ -88,6 +95,7 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 .   mat - the restriction matrix
 .  l - the level to supply
 
+   Keywords:  multigrid, restriction
 @*/
 int MGSetRestriction(PC pc,int l,Mat mat)  
 {
@@ -108,6 +116,8 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 
   Ouput Parameters:
 .   sles - the smoother
+
+   Keywords:  multigrid, smoother
 @*/
 int MGGetSmoother(PC pc,int l,SLES *sles)
 {
@@ -126,6 +136,8 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 
   Ouput Parameters:
 .   sles - the smoother
+
+   Keywords:  multigrid, smoother
 @*/
 int MGGetSmootherUp(PC pc,int l,SLES *sles)
 {
@@ -144,6 +156,8 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 
   Ouput Parameters:
 .   sles - the smoother
+
+   Keywords:  multigrid, smoother
 @*/
 int MGGetSmootherDown(PC pc,int l,SLES *sles)
 {
@@ -169,6 +183,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 .   l - the level this is to be used for
 .   n - the number of cycles
 
+   Keywords:  multigrid, cycle, V-cycle, W-cycle
 @*/
 int MGSetCyclesOnLevel(PC pc,int l,int c) 
 {
@@ -187,6 +202,7 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 .   l - the level this is to be used for
 .   c - the space
 
+   Keywords:  multigrid, right hand side, rhs
 @*/
 int MGSetRhs(PC pc,int l,Vec c)  
 { 
@@ -205,6 +221,7 @@ int MGSetRhs(PC pc,int l,Vec c)
 .   l - the level this is to be used for
 .   c - the space
 
+   Keywords:  multigrid, solution
 @*/
 int MGSetX(PC pc,int l,Vec c)  
 { 
@@ -223,6 +240,7 @@ int MGSetX(PC pc,int l,Vec c)
 .   l - the level this is to be used for
 .   c - the space
 
+   Keywords:  multigrid, residual
 @*/
 int MGSetR(PC pc,int l,Vec c)
 { 
