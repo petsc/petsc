@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.34 1997/09/05 19:35:58 gropp Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.35 1997/09/11 20:38:50 bsmith Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -51,7 +51,7 @@ int PetscMemcpy(void *a,void *b,int n)
   unsigned long al = (unsigned long) a, bl = (unsigned long) b;
   unsigned long nl = (unsigned long) n;
 
-  if ((a > b && (a - b) < nl) || (b - a) < nl) {
+  if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
     SETERRQ(1,1,"Memory regions overlap: use PetscMemmov instead");
   }
   memcpy((char*)(a),(char*)(b),n);
