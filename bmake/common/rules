@@ -130,8 +130,8 @@ runexamples_3:
 
 # Compiles examples_3: mpiuni examples
 examples_4: chkopts
-	@-if [ "$(EXAMPLES_3)" != "" ] ; then \
-	  (for ex in $(EXAMPLES_3) foo ; do \
+	@-if [ "$(EXAMPLES_4)" != "" ] ; then \
+	  (for ex in $(EXAMPLES_4) foo ; do \
 	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
 	  > trashz 2>&1; \
 	  grep -v EXTERNAL trashz | \
@@ -142,8 +142,8 @@ examples_4: chkopts
 
 # Runs examples that have already been compiled
 runexamples_4:
-	@-if [ "$(RUNEXAMPLES_3)" != "" ] ; then \
-	  (for ex in $(RUNEXAMPLES_3) foo ; do \
+	@-if [ "$(RUNEXAMPLES_4)" != "" ] ; then \
+	  (for ex in $(RUNEXAMPLES_4) foo ; do \
 	  $(OMAKE) -f makefile $$ex; \
 	  done;) fi
 
