@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.23 1995/07/07 17:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.24 1995/07/17 03:53:45 bsmith Exp curfman $";
 #endif
 
 /*
@@ -93,17 +93,30 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
    Input Parameters:
 .  itP   - iterative context
 .  n     - iteration number
-.  rnorm - 2-norm residual value (may be estimated).  
-.  dummy - unused converged context 
+.  rnorm - 2-norm residual value (may be estimated)
+.  dummy - unused convergence context 
 
    Returns:
    1 if the iteration has converged
   -1 if residual norm exceeds divergence threshold;
    0 otherwise.
 
+   Notes:
+   KSPDefaultConverged() reaches convergence when
+$        rnorm < MAX ( rtol * rnorm_0, atol );
+$  Divergence is detected if
+$        rnorm > dtol * rnorm_0,
+$  where rtol = relative tolerance,
+$        atol = absolute tolerance.
+$        dtol = divergence tolerance,
+$        rnorm_0 = initial residual norm
+
+   Use KSPSetTolerances() to alter the defaults for 
+   rtol, atol, dtol.
+
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances()
 @*/
 int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 {
