@@ -276,3 +276,7 @@ message to a program.  Some can do it, and others are like "mail".
 Tools for image manipulation (e.g., transparent gifs, animation, interlacing):
  - http://www.vrl.com
  - also, see SGI tool: imgworks  (different capabilities on cyan and violet)
+
+---------------------------------------------------------------------
+In HTML, to pop up the page linked to in a different frame, use:
+<A HREF="http://www.boeing.com/747.html" TARGET="NEW">Boeing Corporation 747 Fact Sheet</A>
