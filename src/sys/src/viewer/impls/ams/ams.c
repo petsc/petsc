@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.29 2000/02/07 16:05:43 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.30 2000/02/07 16:06:32 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -19,7 +19,7 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
 {
   Viewer_AMS *vams = (Viewer_AMS*)v->data;
   int        ierr,port = -1;
-  PetscTruth flg;
+  PetscTruth flg,flg2;
   char       m[16];
 
   PetscFunctionBegin;
@@ -39,27 +39,33 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
 
   ierr = OptionsGetString(PETSC_NULL,"-ams_java",m,16,&flg);CHKERRQ(ierr);
   if (flg) {
-    char dir[256];
-#if defined(PARCH_solaris)
-    char buf[1024],*found;
-    FILE *fp;
-
-    /* check if jacc is not already running */
-    ierr  = PetscPOpen(v->comm,m,"/usr/ucb/ps -ugxww | grep jacc | grep -v grep","r",&fp);CHKERRQ(ierr);
-    found = fgets(buf,1024,fp);
-    ierr  = PetscFClose(v->comm,fp);CHKERRQ(ierr);
-    if (found) PetscFunctionReturn(0);
-#endif
-
-    ierr = OptionsGetenv(v->comm,"AMS_HOME",dir,256,&flg);CHKERRQ(ierr);
-    if (!flg) {
-      ierr = PetscStrncpy(dir,AMS_DIR,256);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-ams_publish_options",&flg2);CHKERRQ(ierr);
+    if (flg2) {
+      ierr = PetscPOpen(v->comm,m,"cd ${PETSC_DIR}/src/sys/src/objects/ams/java;make runamsoptions","r",PETSC_NULL);CHKERRQ(ierr);
     }
-    /* ierr = PetscStrcat(dir,"/java/client/jacc -display ${DISPLAY}");CHKERRQ(ierr); */
-    ierr = PetscStrcat(dir,"/java/client/jacc");CHKERRQ(ierr);
-    ierr = PetscPOpen(v->comm,m,dir,"r",PETSC_NULL);CHKERRQ(ierr);
-  }
 
+    ierr = OptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg2);CHKERRQ(ierr);
+    if (flg2) {
+      char dir[256];
+#if defined(PARCH_solaris)
+      char buf[1024],*found;
+      FILE *fp;
+
+      /* check if jacc is not already running */
+      ierr  = PetscPOpen(v->comm,m,"/usr/ucb/ps -ugxww | grep jacc | grep -v grep","r",&fp);CHKERRQ(ierr);
+      found = fgets(buf,1024,fp);
+      ierr  = PetscFClose(v->comm,fp);CHKERRQ(ierr);
+      if (found) PetscFunctionReturn(0);
+#endif
+      ierr = OptionsGetenv(v->comm,"AMS_HOME",dir,256,&flg);CHKERRQ(ierr);
+      if (!flg) {
+        ierr = PetscStrncpy(dir,AMS_HOME,256);CHKERRQ(ierr);
+      }
+      /* ierr = PetscStrcat(dir,"/java/client/jacc -display ${DISPLAY}");CHKERRQ(ierr); */
+      ierr = PetscStrcat(dir,"/java/client/jacc");CHKERRQ(ierr);
+      ierr = PetscPOpen(v->comm,m,dir,"r",PETSC_NULL);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
