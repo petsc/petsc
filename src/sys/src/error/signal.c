@@ -108,7 +108,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 #if !defined(PETSC_MISSING_SIGPIPE)
   SIGNAME[SIGPIPE] = "Pipe";
 #endif
-#if !defined(PETSC_MISSING_SIGALARM)
+#if !defined(PETSC_MISSING_SIGALRM)
   SIGNAME[SIGALRM] = "Alarm";
 #endif
   SIGNAME[SIGTERM] = "Term";
@@ -244,7 +244,9 @@ int PetscPopSignalHandler(void)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
+#if !defined(PETSC_MISSING_SIGUSR1)
     signal(SIGUSR1, 0);
+#endif
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
 #endif
