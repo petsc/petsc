@@ -40,7 +40,7 @@ def petsc_configure(configure_options):
 
   # Disable threads on RHL9
   if rhl9():
-    configure_options.append('--useThreads=0')
+    sys.argv.append('--useThreads=0')
     print ' *** RHL9 detected. Disabling threads in configure *****'
   
   # Should be run from the toplevel
