@@ -35,10 +35,10 @@ manual.ps:
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	-@rm -f www.cit
 	-@cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
-	/home/gropp/bin/solaris/tohtml -headeroffset 1 -cvtmath -quietlatex  -basedef ../doctext/url.def \
+	/home/gropp/bin/linux/tohtml -headeroffset 1 -cvtmath -quietlatex  -basedef ../doctext/url.def \
                -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
-	/home/gropp/bin/solaris/tohtml -headeroffset 1 -cvtmath -quietlatex  -basedef ../doctext/url.def \
+	/home/gropp/bin/linux/tohtml -headeroffset 1 -cvtmath -quietlatex  -basedef ../doctext/url.def \
                -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -nonavnames -nobottomnav -useimg -mapref ../../manualpages/manualpages.cit
 	-@chmod g+w manual.hux latex.err manual.html *.xbm *.gif
@@ -60,9 +60,9 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 splitmanual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	-@rm -f www.cit latex.err
 	-@cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
-	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
+	/home/gropp/bin/linux/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/manualpages.cit -quietlatex   -basedef ../doctext/url.def 
-	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
+	/home/gropp/bin/linux/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -useimg -mapref ../../manualpages/manualpages.cit -quietlatex   -basedef ../doctext/url.def 
 	-@chmod g+w manual.hux latex.err 
 	-@/bin/rm -fr ../../splitmanual
