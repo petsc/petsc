@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.160 1999/02/15 17:04:14 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.161 1999/02/15 17:07:34 bsmith Exp balay $";
 #endif
 
 /*
@@ -867,7 +867,7 @@ static int MatZeroRows_SeqBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], 
     if (row%bs!=0) { /* Not the begining of a block */
       sizes[j] = 1;
       i++; 
-    } else if (i+bs >= n) { /* complete block doesn't exist (at idx end) */
+    } else if (i+bs > n) { /* complete block doesn't exist (at idx end) */
       sizes[j] = 1;         /* Also makes sure atleast 'bs' values exist for next else */
       i++; 
     } else { /* Begining of the block, so check if the complete block exists */
