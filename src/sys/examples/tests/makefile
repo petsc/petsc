@@ -1,30 +1,26 @@
-# $Id: makefile,v 1.23 1998/05/12 16:10:48 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.24 1998/05/19 15:42:27 bsmith Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        = 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        =
-LIBBASE	        = libpetscsys
 LOCDIR          = src/sys/examples/tests/
+TESTEXAMPLES_1  = ex13.PETSc runex13 ex13.rm 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                   ex4.PETSc runex4 ex4.rm ex3.PETSc\
 		  runex3 ex3.rm ex8.PETSc runex8 ex8.rm clean
-TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
+TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc runex13f ex13f.rm clean
 TESTEXAMPLES_9  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
+BUILDEXAMPLES_1 = ex13.PETSc ex13.rm 
 BUILDEXAMPLES_2 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
 		  ex3.rm clean
-BUILDEXAMPLES_3 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
+BUILDEXAMPLES_3 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex13f.PETSc ex13f.rm clean
 BUILDEXAMPLES_9 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex7.c ex8.c ex9.c ex13.c
-EXAMPLESF       = ex5.F ex6.F ex7f.F
+EXAMPLESF       = ex5.F ex6.F ex7f.F ex13f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -84,6 +80,10 @@ ex13: ex13.o chkopts
 	-${CLINKER} -o ex13 ex13.o  ${PETSC_LIB}
 	${RM} -f ex13.o
 
+ex13f: ex13f.o chkopts
+	-${CLINKER} -o ex13f ex13f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} -f ex13f.o
+
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
 	   if (diff output/ex1_1.out ex1_1.tmpz) then true; \
@@ -123,5 +123,14 @@ runex10:
 	   else echo "Error in PetscMemmove."; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp
 
+runex13:
+	-@${MPIRUN} -np 2 ex13 > ex13_1.tmp 2>&1;\
+	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
+	   else echo "Error in PetscSetCommWorld."; fi; \
+	   ${RM} -f ex13_1.tmp ex13_1.tmp
 
-
+runex13f:
+	-@${MPIRUN} -np 2 ex13f > ex13_1.tmp 2>&1;\
+	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
+	   else echo "Error in PetscSetCommWorld"; fi; \
+	   ${RM} -f ex13_1.tmp ex13_1.tmp
