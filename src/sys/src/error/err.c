@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.36 1996/01/12 22:06:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.37 1996/01/23 00:18:09 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -122,6 +122,10 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,int number,
     fprintf(stderr,"[%d]PETSC ERROR: %s: No support for this operation\n",tid,message);
     fprintf(stderr,"[%d]PETSC ERROR: for this object type!\n",tid);
     number = 1;
+  }
+  else if (number == PETSC_ERR_SIG) {
+    fprintf(stderr,"[%d]PETSC ERROR: ",tid);
+    fprintf(stderr,"%s %s\n",file,message);
   }
   else {
     fprintf(stderr,"[%d]PETSC ERROR: ",tid);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.83 1996/01/12 22:07:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.84 1996/01/12 22:31:38 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -756,8 +756,6 @@ static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
   int          d, i, j, k, nd = a->nd, nb = a->nb, diag, kshift, kloc, len;
   Scalar       *dv;
 
-  if (!a->assembled) SETERRQ(1,"MatNorm_SeqBDiag:Must assemble mat");
-
   if (type == NORM_FROBENIUS) {
     for (d=0; d<nd; d++) {
       dv   = a->diagv[d];
@@ -1175,10 +1173,8 @@ static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 static int MatView_SeqBDiag(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
-  Mat_SeqBDiag  *a = (Mat_SeqBDiag*) A->data;
   PetscObject vobj = (PetscObject) viewer;
 
-  if (!a->assembled) SETERRQ(1,"MatView_SeqBDiag:Not for unassembled matrix");
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
@@ -1251,7 +1247,6 @@ static int MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
   for (i=0; i<a->nd; i++) {
     if (a->diag[i] == 0) {a->mainbd = i; break;}
   }
-  a->assembled = 1;
   return 0;
 }
 
@@ -1364,7 +1359,6 @@ static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   Scalar       *vwork, *val;
   Mat          newmat;
 
-  if (!a->assembled) SETERRQ(1,"MatGetSubMatrix_SeqBDiag:Not for unassembled matrix");
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&newr); CHKERRQ(ierr);
@@ -1561,7 +1555,6 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   }
 
   a->nz          = a->maxnz; /* Currently not keeping track of exact count */
-  a->assembled   = 0;
   a->roworiented = 1;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {
@@ -1577,8 +1570,6 @@ static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
   Mat_SeqBDiag *newmat, *a = (Mat_SeqBDiag *) A->data;
   int          i, ierr, len;
   Mat          mat;
-
-  if (!a->assembled) SETERRQ(1,"MatConvertSameType_SeqBDiag:Assemble matrix");
 
   ierr = MatCreateSeqBDiag(A->comm,a->m,a->n,a->nd,a->nb,a->diag,PETSC_NULL,matout);
   CHKERRQ(ierr);

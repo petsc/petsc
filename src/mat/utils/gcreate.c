@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.66 1996/01/12 03:54:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.67 1996/01/12 22:08:29 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -27,7 +27,7 @@ static char vcid[] = "$Id: gcreate.c,v 1.66 1996/01/12 03:54:11 bsmith Exp bsmit
 
 int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
-  int  size,flg1,flg2,flg3,flg4,flg5,flg6,flg7,flg8,flg9,flg10,flg11,flg12,flg13,ierr;
+  int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr;
   char p[64];
 
   PetscStrcpy(p,"-");
@@ -38,7 +38,6 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   if (flg1) {
     MPIU_printf(comm,"Matrix format options:\n");
     MPIU_printf(comm,"  %smat_aij, %smat_seqaij, %smat_mpiaij\n",p,p,p);
-    MPIU_printf(comm,"  %smat_row, %smat_seqrow, %smat_mpirow\n",p,p,p);
     MPIU_printf(comm,"  %smat_dense, %smat_seqdense, %smat_mpidense\n",p,p,p);
     MPIU_printf(comm,"  %smat_mpirowbs, %smat_bdiag, %smat_seqbdiag, %smat_mpibdiag\n",p,p,p,p); 
   }
@@ -47,12 +46,9 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   ierr = OptionsHasName(pre,"-mat_seqbdiag",&flg3); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpibdiag",&flg4); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpirowbs",&flg5); CHKERRQ(ierr);
-  ierr = OptionsHasName(pre,"-mat_mpirow",&flg6); CHKERRQ(ierr);
-  ierr = OptionsHasName(pre,"-mat_seqrow",&flg7); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpiaij",&flg8); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_seqaij",&flg9); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_aij",&flg10); CHKERRQ(ierr);
-  ierr = OptionsHasName(pre,"-mat_row",&flg11); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_bdiag",&flg12); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_dense",&flg13); CHKERRQ(ierr);
   if (flg1) {
@@ -75,14 +71,6 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
     *type = MATMPIROWBS;
     *set = 1;
   }
-  else if (flg6) {
-    *type = MATMPIROW;
-    *set = 1;
-  }
-  else if (flg7){
-    *type = MATSEQROW;
-    *set = 1;
-  }
   else if (flg8) {
     *type = MATMPIAIJ;
     *set = 1;
@@ -94,11 +82,6 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   else if (flg10){
     if (size == 1) *type = MATSEQAIJ;
     else *type = MATMPIAIJ;
-    *set = 1;
-  }  
-  else if (flg11){
-    if (size == 1) *type = MATSEQROW;
-    else *type = MATMPIROW;
     *set = 1;
   }  
   else if (flg12){
@@ -136,9 +119,6 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 $  -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ
 $  -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ
 $  -mat_aij      : AIJ type, (Seq or MPI depending on comm) 
-$  -mat_seqrow   : row type, uses MatCreateSeqRow()
-$  -mat_mpirow   : MatCreateMPIRow()
-$  -mat_row      : row type, (Seq or MPI depending on comm)  
 $  -mat_seqbdiag : block diagonal type, uses 
 $                  MatCreateSeqBDiag()
 $  -mat_mpibdiag : block diagonal type, uses 
@@ -157,7 +137,6 @@ $  -mat_mpidense : dense type, uses MatCreateMPIDense()
 .keywords: matrix, create, initial
 
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
-          MatCreateSeqRow(), MatCreateMPIRow(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatConvert()
@@ -179,11 +158,6 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
            PETSC_NULL,V);
   if (type == MATMPIROWBS)
     return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,V);
-  if (type == MATMPIROW)
-    return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_DEFAULT,
-           PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,V);
-  if (type == MATSEQROW)
-    return MatCreateSeqRow(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V);
   if (type == MATMPIDENSE)
     return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,V);
   if (type == MATMPIAIJ)
@@ -217,13 +191,11 @@ int MatGetType(Mat mat,MatType *type,char **name)
     matname[1] = "MATSEQAIJ";
     matname[2] = "MATMPIAIJ";
     matname[3] = "MATSHELL";
-    matname[4] = "MATSEQROW";
-    matname[5] = "MATMPIROW";
-    matname[6] = "MATMPIROWBS";
-    matname[7] = "MATSEQBDIAG";
-    matname[8] = "MATMPIBDIAG";
-    matname[9] = "MATMPIDENSE";
-    if (itype < 0 || itype > 9) *name = "Unknown matrix type";
+    matname[4] = "MATMPIROWBS";
+    matname[5] = "MATSEQBDIAG";
+    matname[6] = "MATMPIBDIAG";
+    matname[7] = "MATMPIDENSE";
+    if (itype < 0 || itype > 7) *name = "Unknown matrix type";
     else                        *name = matname[itype];
   }
   return 0;

@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.32 1996/01/03 15:41:22 gropp Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.33 1996/01/03 17:00:29 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -282,6 +283,11 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   int ierr = MPI_SUCCESS, *tagvalp, *maxval, flag;
 
   if (MPIU_Tag_keyval == MPI_KEYVAL_INVALID) {
+    /* the calling sequence of the 2nd argument to this function changed
+       between MPI Standard 1.0 and the revisions 1.1 Here we match the 
+       new standard, if you are using an MPI implementation that uses 
+       the older version you will get a warning message about the next line,
+       it is only a warning message and should do no harm */
     MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void *)0);
   }
 

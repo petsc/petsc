@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.137 1996/01/19 14:56:18 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.138 1996/01/20 04:27:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,8 +18,6 @@ static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr, *ia, *ja,n,*idx,i;
   /*Viewer     V1, V2;*/
-
-  if (!a->assembled) SETERRQ(1,"MatGetReordering_SeqAIJ:Not for unassembled matrix");
 
   /* 
      this is tacky: In the future when we have written special factorization
@@ -145,7 +143,6 @@ static int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   int        *ai = a->i, *ailen = a->ilen, shift = a->indexshift;
   Scalar     *ap, *aa = a->a, zero = 0.0;
 
-  if (!a->assembled) SETERRQ(1,"MatGetValues_SeqAIJ:Not for unassembled matrix");
   for ( k=0; k<m; k++ ) { /* loop over rows */
     row  = im[k];   
     if (row < 0) SETERRQ(1,"MatGetValues_SeqAIJ:Negative row");
@@ -377,7 +374,6 @@ static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*) A->data;
   PetscObject vobj = (PetscObject) viewer;
 
-  if (!a->assembled) SETERRQ(1,"MatView_SeqAIJ:Not for unassembled matrix");
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
@@ -398,7 +394,7 @@ static int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
   }
   return 0;
 }
-int Mat_AIJ_CheckInode(Mat);
+extern int Mat_AIJ_CheckInode(Mat);
 static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -439,7 +435,6 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   } 
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A); CHKERRQ(ierr);
-  a->assembled = 1;
   return 0;
 }
 
@@ -507,7 +502,6 @@ static int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   int        i,j, n,shift = a->indexshift;
   Scalar     *x, zero = 0.0;
 
-  if (!a->assembled) SETERRQ(1,"MatGetDiagonal_SeqAIJ:Not for unassembled matrix");
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != a->m) SETERRQ(1,"MatGetDiagonal_SeqAIJ:Nonconforming matrix and vector");
@@ -531,7 +525,6 @@ static int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
   Scalar     *x, *y, *v, alpha;
   int        m = a->m, n, i, *idx, shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatMultTrans_SeqAIJ:Not for unassembled matrix");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   PetscMemzero(y,a->n*sizeof(Scalar));
   y = y + shift; /* shift for Fortran start by 1 indexing */
@@ -552,7 +545,6 @@ static int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   Scalar     *x, *y, *v, alpha;
   int        m = a->m, n, i, *idx,shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatMultTransAdd_SeqAIJ:Not for unassembled matrix");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (zz != yy) VecCopy(zz,yy);
   y = y + shift; /* shift for Fortran start by 1 indexing */
@@ -572,7 +564,6 @@ static int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   Scalar     *x, *y, *v, sum;
   int        m = a->m, n, i, *idx, shift = a->indexshift,*ii;
 
-  if (!a->assembled) SETERRQ(1,"MatMult_SeqAIJ:Not for unassembled matrix");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
@@ -596,7 +587,6 @@ static int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Scalar     *x, *y, *z, *v, sum;
   int        m = a->m, n, i, *idx, shift = a->indexshift,*ii;
 
-  if (!a->assembled) SETERRQ(1,"MatMultAdd_SeqAIJ:Not for unassembled matrix");
   VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z); 
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
@@ -622,7 +612,6 @@ int MatMarkDiag_SeqAIJ(Mat A)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   int        i,j, *diag, m = a->m,shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatMarkDiag_SeqAIJ:Not for unassembled matrix");
   diag = (int *) PetscMalloc( (m+1)*sizeof(int)); CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
   for ( i=0; i<a->m; i++ ) {
@@ -837,14 +826,10 @@ static int MatGetOwnershipRange_SeqAIJ(Mat A,int *m,int *n)
 static int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        *itmp,i,ierr,shift = a->indexshift;
+  int        *itmp,i,shift = a->indexshift;
 
   if (row < 0 || row >= a->m) SETERRQ(1,"MatGetRow_SeqAIJ:Row out of range");
 
-  if (!a->assembled) {
-    ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  }
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = a->a + a->i[row] + shift;
   if (idx) {
@@ -871,7 +856,6 @@ static int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
   double     sum = 0.0;
   int        i, j,shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatNorm_SeqAIJ:Not for unassembled matrix");
   if (type == NORM_FROBENIUS) {
     for (i=0; i<a->nz; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -965,7 +949,6 @@ static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   Scalar     *l,*r,x,*v;
   int        i,j,m = a->m, n = a->n, M, nz = a->nz, *jj,shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Not for unassembled matrix");
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
     if (m != a->m) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Left scaling vector wrong length");
@@ -997,7 +980,6 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
   Scalar       *vwork,*a_new;
   Mat          C;
 
-  if (!a->assembled) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:Not for unassembled matrix");  
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
@@ -1140,7 +1122,6 @@ static int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
   int        one = 1;
-  if (!a->assembled) SETERRQ(1,"MatScale_SeqAIJ:Not for unassembled matrix");
   BLscal_( &a->nz, alpha, a->a, &one );
   PLogFlops(a->nz);
   return 0;
@@ -1356,7 +1337,6 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->roworiented      = 1;
   b->nonew            = 0;
   b->diag             = 0;
-  b->assembled        = 0;
   b->solve_work       = 0;
   b->spptr            = 0;
   b->inode.node_count = 0;
@@ -1386,7 +1366,6 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   int        i,len, m = a->m,shift = a->indexshift;
 
   *B = 0;
-  if (!a->assembled) SETERRQ(1,"MatConvertSameType_SeqAIJ:Not for unassembled matrix");
   PetscHeaderCreate(C,_Mat,MAT_COOKIE,MATSEQAIJ,A->comm);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
@@ -1397,6 +1376,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->row        = 0;
   c->col        = 0;
   c->indexshift = shift;
+  C->assembled  = PETSC_TRUE;
 
   c->m          = a->m;
   c->n          = a->n;
@@ -1445,7 +1425,6 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
     c->inode.size       = 0;
     c->inode.node_count = 0;
   }
-  c->assembled          = 1;
   c->nz                 = a->nz;
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;

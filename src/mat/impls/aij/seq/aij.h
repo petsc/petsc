@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.21 1995/12/23 04:53:58 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.22 1995/12/23 21:57:35 bsmith Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -27,7 +27,6 @@ typedef struct {
   int              nonew;            /* if true, don't allow new elements to be added */
   int              singlemalloc;     /* if true a, i, and j have been obtained with
                                         one big malloc */
-  int              assembled;        /* if true, matrix is fully assembled */
   int              m, n;             /* rows, columns */
   int              nz, maxnz;        /* nonzeros, allocated nonzeros */
   int              *diag;            /* pointers to diagonal elements */

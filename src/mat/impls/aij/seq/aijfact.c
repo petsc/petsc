@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.53 1995/12/23 04:53:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.54 1995/12/29 17:28:13 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -209,7 +209,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   ierr = Mat_AIJ_CheckInode(C); CHKERRQ(ierr);
-  b->assembled = 1;
+  C->assembled = PETSC_TRUE;
   PLogFlops(b->n);
   return 0;
 }

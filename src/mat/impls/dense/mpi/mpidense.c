@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.24 1996/01/09 01:13:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.25 1996/01/12 22:07:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -58,7 +58,6 @@ static int MatGetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar 
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr, i, j, rstart = mdn->rstart, rend = mdn->rend, row;
 
-  if (!mdn->assembled) SETERRQ(1,"MatGetValues_MPIDense:Not for unassembled matrix"); 
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,"MatGetValues_MPIDense:Negative row");
     if (idxm[i] >= mdn->M) SETERRQ(1,"MatGetValues_MPIDense:Row too large");
@@ -219,10 +218,9 @@ static int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(mdn->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mdn->A,mode); CHKERRQ(ierr);
 
-  if (!mdn->assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIDense(mat); CHKERRQ(ierr);
   }
-  mdn->assembled = 1;
   return 0;
 }
 
@@ -251,7 +249,6 @@ static int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
-  if (!l->assembled) SETERRQ(1,"MatZeroRows_MPIDense:Must assemble matrix");
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -365,8 +362,7 @@ static int MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr;
-  if (!mdn->assembled) 
-    SETERRQ(1,"MatMult_MPIDense:Must assemble matrix first");
+
   ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);
@@ -379,12 +375,9 @@ static int MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr;
-  if (!mdn->assembled) 
-    SETERRQ(1,"MatMultAdd_MPIDense:Must assemble matrix first");
-  ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);
-  CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);
-  CHKERRQ(ierr);
+
+  ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
   ierr = MatMultAdd(mdn->A,mdn->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
 }
@@ -395,7 +388,6 @@ static int MatMultTrans_MPIDense(Mat A,Vec xx,Vec yy)
   int          ierr;
   Scalar       zero = 0.0;
 
-  if (!a->assembled) SETERRQ(1,"MatMulTrans_MPIDense:must assemble matrix");
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
   ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
@@ -410,7 +402,6 @@ static int MatMultTransAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_MPIDense *a = (Mat_MPIDense *) A->data;
   int          ierr;
 
-  if (!a->assembled) SETERRQ(1,"MatMulTransAdd_MPIDense:must assemble matrix");
   ierr = VecCopy(yy,zz); CHKERRQ(ierr);
   ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
@@ -427,7 +418,6 @@ static int MatGetDiagonal_MPIDense(Mat A,Vec v)
   int          ierr, i, n, m = a->m, radd;
   Scalar       *x;
   
-  if (!a->assembled) SETERRQ(1,"MatGetDiag_MPIDense:must assemble matrix");
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   ierr = VecGetSize(v,&n); CHKERRQ(ierr);
   if (n != a->M) SETERRQ(1,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
@@ -554,11 +544,9 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
 static int MatView_MPIDense(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
-  Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   PetscObject  vobj = (PetscObject) viewer;
   int          ierr;
  
-  if (!mdn->assembled) SETERRQ(1,"MatView_MPIDense:must assemble matrix");
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
@@ -672,7 +660,6 @@ static int MatNorm_MPIDense(Mat A,NormType type,double *norm)
   double       sum = 0.0;
   Scalar       *v = mat->v;
 
-  if (!mdn->assembled) SETERRQ(1,"MatNorm_MPIDense:Must assemble matrix");
   if (mdn->size == 1) {
     ierr =  MatNorm(mdn->A,type,norm); CHKERRQ(ierr);
   } else {
@@ -883,7 +870,6 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   /* stuff used for matrix vector multiply */
   a->lvec        = 0;
   a->Mvctx       = 0;
-  a->assembled   = 0;
   a->roworiented = 1;
 
   *newmat = mat;
@@ -901,7 +887,6 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   int          ierr;
   FactorCtx    *factor;
 
-  if (!oldmat->assembled) SETERRQ(1,"MatConvertSameType_MPIDense:Must assemble matrix");
   *newmat       = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIDENSE,A->comm);
   PLogObjectCreate(mat);
@@ -910,6 +895,7 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   mat->destroy  = MatDestroy_MPIDense;
   mat->view     = MatView_MPIDense;
   mat->factor   = A->factor;
+  mat->assembled  = PETSC_TRUE;
 
   a->m          = oldmat->m;
   a->n          = oldmat->n;
@@ -920,7 +906,6 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
     /* copy factor contents ... add this code! */
   } else a->factor = 0;
 
-  a->assembled  = 1;
   a->rstart     = oldmat->rstart;
   a->rend       = oldmat->rend;
   a->size       = oldmat->size;

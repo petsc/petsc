@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.113 1996/01/23 00:44:13 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.114 1996/01/23 20:13:11 balay Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -63,7 +63,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
           ierr = MatSetValues(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
         else {
-          if (aij->assembled) {
+          if (mat->assembled) {
             if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
             col = aij->colmap[in[j]] + shift;
             if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
@@ -100,7 +100,6 @@ static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v
   int        cstart = aij->cstart, cend = aij->cend,row,col;
   int        shift = C->indexshift;
 
-  if (!aij->assembled) SETERRQ(1,"MatGetValues_MPIAIJ:Not for unassembled matrix"); 
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,"MatGetValues_MPIAIJ:Negative row");
     if (idxm[i] >= aij->M) SETERRQ(1,"MatGetValues_MPIAIJ:Row too large");
@@ -251,7 +250,7 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
         MatSetValues(aij->A,1,&row,1,&col,&val,addv);
       } 
       else {
-        if (aij->assembled) {
+        if (mat->assembled) {
           if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
           col = aij->colmap[col] + shift;
           if (col < 0  && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
@@ -281,14 +280,13 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   /* determine if any processor has disassembled, if so we must 
      also disassemble ourselfs, in order that we may reassemble. */
-  MPI_Allreduce(&aij->assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);
-  if (aij->assembled && !other_disassembled) {
+  MPI_Allreduce(&mat->assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);
+  if (mat->assembled && !other_disassembled) {
     ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
   }
 
-  if (!aij->assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERRQ(ierr);
-    aij->assembled = 1;
   }
   ierr = MatAssemblyBegin(aij->B,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode); CHKERRQ(ierr);
@@ -324,7 +322,6 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
-  if (!l->assembled) SETERRQ(1,"MatZeroRows_MPIAIJ:Must assemble matrix");
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -440,7 +437,6 @@ static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
 
-  if (!a->assembled) SETERRQ(1,"MatMult_MPIAIJ:must assemble matrix");
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
   ierr = MatMult(a->A,xx,yy); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
@@ -452,7 +448,6 @@ static int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
-  if (!a->assembled) SETERRQ(1,"MatMult_MPIAIJ:must assemble matrix");
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
   ierr = MatMultAdd(a->A,xx,yy,zz); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
@@ -465,7 +460,6 @@ static int MatMultTrans_MPIAIJ(Mat A,Vec xx,Vec yy)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
 
-  if (!a->assembled) SETERRQ(1,"MatMulTrans_MPIAIJ:must assemble matrix");
   /* do nondiagonal part */
   ierr = MatMultTrans(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
@@ -486,7 +480,6 @@ static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
 
-  if (!a->assembled) SETERRQ(1,"MatMulTransAdd_MPIAIJ:must assemble matrix");
   /* do nondiagonal part */
   ierr = MatMultTrans(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
@@ -509,7 +502,6 @@ static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 static int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
-  if (!a->assembled) SETERRQ(1,"MatGetDiag_MPIAIJ:must assemble matrix");
   return MatGetDiagonal(a->A,v);
 }
 
@@ -517,7 +509,6 @@ static int MatScale_MPIAIJ(Scalar *aa,Mat A)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
-  if (!a->assembled) SETERRQ(1,"MatScale_MPIAIJ:must assemble matrix");
   ierr = MatScale(aa,a->A); CHKERRQ(ierr);
   ierr = MatScale(aa,a->B); CHKERRQ(ierr);
   return 0;
@@ -661,11 +652,9 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         mat = (Mat) obj;
-  Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   int         ierr;
   PetscObject vobj = (PetscObject) viewer;
  
-  if (!aij->assembled) SETERRQ(1,"MatView_MPIAIJ:must assemble matrix");
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
@@ -707,8 +696,6 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   int        ierr,*idx, *diag;
   int        n = mat->n, m = mat->m, i,shift = A->indexshift;
   Vec        tt;
-
-  if (!mat->assembled) SETERRQ(1,"MatRelax_MPIAIJ:must assemble matrix");
 
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x + shift; /* shift by one for index start of 1 */
@@ -1102,7 +1089,6 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   int        i, ierr, *cworkA, *cworkB, **pcA, **pcB, cstart = mat->cstart;
   int        nztot, nzA, nzB, lrow, rstart = mat->rstart, rend = mat->rend;
 
-  if (!mat->assembled) SETERRQ(1,"MatGetRow_MPIAIJ:Must assemble matrix");
   if (row < rstart || row >= rend) SETERRQ(1,"MatGetRow_MPIAIJ:Only local rows")
   lrow = row - rstart;
 
@@ -1117,7 +1103,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
     if (nztot) {
       /* Sort by increasing column numbers, assuming A and B already sorted */
       int imark;
-      if (mat->assembled) {
+      if (matin->assembled) {
         for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
       }
       if (v) {
@@ -1165,7 +1151,6 @@ static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
   double     sum = 0.0;
   Scalar     *v;
 
-  if (!aij->assembled) SETERRQ(1,"MatNorm_MPIAIJ:Must assemble matrix");
   if (aij->size == 1) {
     ierr =  MatNorm(aij->A,type,norm); CHKERRQ(ierr);
   } else {
@@ -1399,6 +1384,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   mat->destroy    = MatDestroy_MPIAIJ;
   mat->view       = MatView_MPIAIJ;
   mat->factor     = 0;
+  mat->assembled  = PETSC_FALSE;
 
   a->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&a->rank);
@@ -1455,7 +1441,6 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   /* stuff used for matrix vector multiply */
   a->lvec      = 0;
   a->Mvctx     = 0;
-  a->assembled = 0;
 
   *newmat = mat;
   return 0;
@@ -1467,22 +1452,21 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ *) matin->data;
   int        ierr, len,flg;
 
-  if (!oldmat->assembled) SETERRQ(1,"MatConvertSameType_MPIAIJ:Must assemble matrix");
   *newmat       = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm);
   PLogObjectCreate(mat);
-  mat->data     = (void *) (a = PetscNew(Mat_MPIAIJ)); CHKPTRQ(a);
+  mat->data       = (void *) (a = PetscNew(Mat_MPIAIJ)); CHKPTRQ(a);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
-  mat->destroy  = MatDestroy_MPIAIJ;
-  mat->view     = MatView_MPIAIJ;
-  mat->factor   = matin->factor;
+  mat->destroy    = MatDestroy_MPIAIJ;
+  mat->view       = MatView_MPIAIJ;
+  mat->factor     = matin->factor;
+  mat->assembled  = PETSC_TRUE;
 
   a->m          = oldmat->m;
   a->n          = oldmat->n;
   a->M          = oldmat->M;
   a->N          = oldmat->N;
 
-  a->assembled  = 1;
   a->rstart     = oldmat->rstart;
   a->rend       = oldmat->rend;
   a->cstart     = oldmat->cstart;
@@ -1524,7 +1508,7 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
 
 #include "sysio.h"
 
-int MatLoad_MPIAIJorMPIRow(Viewer bview,MatType type,Mat *newmat)
+int MatLoad_MPIAIJ(Viewer bview,MatType type,Mat *newmat)
 {
   Mat          A;
   int          i, nz, ierr, j,rstart, rend, fd;
@@ -1540,7 +1524,7 @@ int MatLoad_MPIAIJorMPIRow(Viewer bview,MatType type,Mat *newmat)
   if (!rank) {
     ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
-    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:not matrix object");
+    if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJ:not matrix object");
   }
 
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
@@ -1613,7 +1597,7 @@ int MatLoad_MPIAIJorMPIRow(Viewer bview,MatType type,Mat *newmat)
     /* receive message of column indices*/
     MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);
     MPI_Get_count(&status,MPI_INT,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:something is wrong with file");
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJ:something is wrong with file");
   }
 
   /* loop over local rows, determining number of off diagonal entries */
@@ -1630,12 +1614,7 @@ int MatLoad_MPIAIJorMPIRow(Viewer bview,MatType type,Mat *newmat)
   for ( i=0; i<m; i++ ) {
     ourlens[i] -= offlens[i];
   }
-  if (type == MATMPIAIJ) {
-    ierr = MatCreateMPIAIJ(comm,m,PETSC_DECIDE,M,N,0,ourlens,0,offlens,newmat);CHKERRQ(ierr);
-  }
-  else if (type == MATMPIROW) {
-    ierr = MatCreateMPIRow(comm,m,PETSC_DECIDE,M,N,0,ourlens,0,offlens,newmat);CHKERRQ(ierr);
-  }
+  ierr = MatCreateMPIAIJ(comm,m,PETSC_DECIDE,M,N,0,ourlens,0,offlens,newmat);CHKERRQ(ierr);
   A = *newmat;
   MatSetOption(A,COLUMNS_SORTED); 
   for ( i=0; i<m; i++ ) {
@@ -1675,7 +1654,7 @@ int MatLoad_MPIAIJorMPIRow(Viewer bview,MatType type,Mat *newmat)
     /* receive message of values*/
     MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);
     MPI_Get_count(&status,MPIU_SCALAR,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJorMPIRow:something is wrong with file");
+    if (maxnz != nz) SETERRQ(1,"MatLoad_MPIAIJ:something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.41 1996/01/12 22:08:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.42 1996/01/12 22:31:53 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -22,13 +22,6 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
   switch (newtype) {
     case MATSEQAIJ:
       ierr = MatCreateSeqAIJ(mat->comm,m,n,0,PETSC_NULL,M); CHKERRQ(ierr); 
-      break;
-    case MATSEQROW:
-      ierr = MatCreateSeqRow(mat->comm,m,n,0,PETSC_NULL,M); CHKERRQ(ierr); 
-      break;
-    case MATMPIROW:
-      ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-             m,n,0,PETSC_NULL,0,PETSC_NULL,M); CHKERRQ(ierr);
       break;
     case MATMPIROWBS:
       if (m != n) SETERRQ(1,"MatConvert:MATMPIROWBS matrix must be square");
@@ -86,13 +79,6 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
   int        i, ierr, nz, m = a->m, n = a->n, *cwork, rstart, rend,flg;
 
   switch (newtype) {
-    case MATSEQROW:
-      ierr = MatCreateSeqRow(A->comm,m,n,0,a->ilen,B); CHKERRQ(ierr); 
-      break;
-    case MATMPIROW:
-      ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-             m,n,0,PETSC_NULL,0,PETSC_NULL,B); CHKERRQ(ierr);
-      break;
     case MATMPIROWBS:
       if (m != n) SETERRQ(1,"MatConvert_SeqAIJ:MATMPIROWBS matrix must be square");
       ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,PETSC_NULL,PETSC_NULL,B);
@@ -145,18 +131,11 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
 int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
-  Mat_SeqAIJ *Ad = (Mat_SeqAIJ *)(a->A->data), *Bd = (Mat_SeqAIJ *)(a->B->data);
   int        ierr, nz, i, ig, rstart = a->rstart, m = a->m, *cwork;
   Scalar     *vwork;
 
-  switch (newtype) {
-    case MATMPIROW:
-      ierr = MatCreateMPIRow(A->comm,m,a->n,a->M,a->N,0,Ad->ilen,
-             0,Bd->ilen,B); CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ(1,"MatConvert_MPIAIJ:Only MATMPIROW is currently suported");
-  }
+  SETERRQ(1,"MatConvert_MPIAIJ:Not currently suported");
+
   /* Each processor converts its local rows */
   for (i=0; i<m; i++) {
     ig   = i + rstart;
@@ -185,13 +164,6 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
   switch (newtype) {
     case MATSEQAIJ:
       ierr = MatCreateSeqAIJ(A->comm,m,n,nz,PETSC_NULL,B); CHKERRQ(ierr); 
-      break;
-    case MATSEQROW:
-      ierr = MatCreateSeqRow(A->comm,m,n,nz,PETSC_NULL,B); CHKERRQ(ierr); 
-      break;
-    case MATMPIROW:
-      ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                             m,n,0,PETSC_NULL,0,PETSC_NULL,B); CHKERRQ(ierr);
       break;
     case MATMPIROWBS:
       if (m != n) SETERRQ(1,"MatConvert_SeqBDiag:MATMPIROWBS matrix must be square");

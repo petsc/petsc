@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.24 1996/01/01 01:03:39 bsmith Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.25 1996/01/07 22:50:33 curfman Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -28,7 +28,6 @@ typedef struct {
 
   /*  The following variables are used in matrix assembly */
 
-  int         assembled;          /* MatAssemble has been called */
   InsertMode  insertmode;         /* mode for MatSetValues */
   Stash       stash;              /* stash for non-local elements */
   MPI_Request *send_waits;        /* array of send requests */

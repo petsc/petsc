@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.8 1995/12/29 23:19:24 curfman Exp curfman $ */
+/* $Id: mpidense.h,v 1.9 1996/01/01 22:33:07 curfman Exp bsmith $ */
 
 #include "dense.h"
 
@@ -41,7 +41,6 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  int           assembled;              /* MatAssemble has been called */
   InsertMode    insertmode;             /* mode for MatSetValues */
   Stash         stash;                  /* stash for non-local elements */
   MPI_Request   *send_waits;            /* array of send requests */

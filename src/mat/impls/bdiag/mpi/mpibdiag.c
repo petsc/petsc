@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.67 1996/01/12 22:07:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.68 1996/01/12 22:31:42 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -56,7 +56,6 @@ static int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
-  if (!mbd->assembled) SETERRQ(1,"MatGetValues_MPIBDiag:Not for unassembled matrix"); 
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,"MatGetValues_MPIBDiag:Negative row");
     if (idxm[i] >= mbd->M) SETERRQ(1,"MatGetValues_MPIBDiag:Row too large");
@@ -240,10 +239,9 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   }
   mbd->gnd = ict;
 
-  if (!mbd->assembled && mode == FINAL_ASSEMBLY) {
+  if (!mat->assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERRQ(ierr);
   }
-  mbd->assembled = 1;
   return 0;
 }
 
@@ -277,7 +275,6 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
-  if (!l->assembled) SETERRQ(1,"MatZeroRows_MPIRowBDiag:Must assemble matrix");
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -393,7 +390,6 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
-  if (!mbd->assembled) SETERRQ(1,"MatMult_MPIBDiag:Must assemble matrix first");
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
@@ -407,7 +403,6 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 
-  if (!mbd->assembled) SETERRQ(1,"MatMultAdd_MPIBDiag:Must assemble matrix first");
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
@@ -422,7 +417,6 @@ static int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
   int          ierr;
   Scalar       zero = 0.0;
 
-  if (!a->assembled) SETERRQ(1,"MatMulTrans_MPIBDiag:must assemble matrix");
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
   ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
@@ -437,7 +431,6 @@ static int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_MPIBDiag *a = (Mat_MPIBDiag *) A->data;
   int          ierr;
 
-  if (!a->assembled) SETERRQ(1,"MatMulTransAdd_MPIBDiag:must assemble matrix");
   ierr = VecCopy(yy,zz); CHKERRQ(ierr);
   ierr = MatMultTrans(a->A,xx,a->lvec); CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
@@ -470,7 +463,6 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
 static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
-  if (!A->assembled) SETERRQ(1,"MatGetDiag_MPIBDiag:Must assemble matrix first");
   return MatGetDiagonal(A->A,v);
 }
 
@@ -602,11 +594,9 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
-  Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   PetscObject  vobj = (PetscObject) viewer;
   int          ierr;
  
-  if (!mbd->assembled) SETERRQ(1,"MatView_MPIBDiag:must assemble matrix");
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
@@ -675,7 +665,6 @@ static int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   int          lrow;
 
-  if (!mat->assembled) SETERRQ(1,"MatGetRow_MPIBDiag:Must assemble matrix first");
   if (row < mat->rstart || row >= mat->rend)SETERRQ(1,"MatGetRow_MPIBDiag:only for local rows")
   lrow = row - mat->rstart;
   return MatGetRow(mat->A,lrow,nz,idx,v);
@@ -698,8 +687,6 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
   double       sum = 0.0;
   int          ierr, d, i, nd = a->nd, nb = a->nb, len;
   Scalar       *dv;
-
-  if (!a->assembled) SETERRQ(1,"MatNorm_MPIBDiag:Must assemble mat");
 
   if (type == NORM_FROBENIUS) {
     for (d=0; d<nd; d++) {
@@ -917,7 +904,6 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   /* stuff used for matrix-vector multiply */
   mbd->lvec        = 0;
   mbd->Mvctx       = 0;
-  mbd->assembled   = 0;
 
   /* used for MatSetValues() input */
   mbd->roworiented = 1;

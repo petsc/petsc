@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.28 1996/01/15 19:56:11 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.29 1996/01/18 22:49:36 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -93,7 +93,6 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   int        row,*permr, *permc,m ,*ns, *tns, start_val, end_val, indx;
   IS         ris= 0, cis = 0;
 
-  if (!a->assembled) SETERRQ(1,"MatGetReordering_SeqAIJ_Inode:Not for unassembled matrix");
   if (type  == ORDER_NATURAL) {
     idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
     for ( i=0; i<n; i++ ) idx[i] = i;
@@ -163,7 +162,6 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   int        *idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
   int        m = a->m, shift = a->indexshift;
   
-  if (!a->assembled) SETERRQ(1,"MatMult_SeqAIJ_Inode: Not for unassembled matrix");
   if (!a->inode.size)SETERRQ(1,"MatMult_SeqAIJ_Inode: Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
@@ -1045,7 +1043,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISDestroy(isicol); CHKERRQ(ierr);
   C->factor      = FACTOR_LU;
-  b->assembled = 1;
+  C->assembled   = PETSC_TRUE;
   PLogFlops(b->n);
   return 0;
 }

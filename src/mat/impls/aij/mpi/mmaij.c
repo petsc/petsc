@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.22 1995/11/01 19:10:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.23 1995/11/01 23:18:18 bsmith Exp bsmith $";
 #endif
 
 
@@ -129,7 +129,7 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = MatDestroy(B); CHKERRQ(ierr);
   PLogObjectParent(A,Bnew);
   aij->B = Bnew;
-  aij->assembled = 0;
+  A->assembled = PETSC_FALSE;
   return 0;
 }
 

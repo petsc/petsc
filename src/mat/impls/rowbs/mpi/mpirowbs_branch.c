@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.87 1996/01/08 23:45:31 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.88 1996/01/12 22:07:32 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -255,7 +255,6 @@ static int MatNorm_MPIRowbs_local(Mat A,NormType type,double *norm)
   double       sum = 0.0;
   int          *xi, nz, i, j;
 
-  if (!mat->assembled) SETERRQ(1,"MatNorm_MPIRowbs_local:Not for unassembled");
   rs = mat->A->rows;
   if (type == NORM_FROBENIUS) {
     for (i=0; i<mat->m; i++ ) {
@@ -673,10 +672,8 @@ static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
 static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
-  Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
   PetscObject  vobj = (PetscObject) viewer;
 
-  if (!a->assembled) SETERRQ(1,"MatView_MPIRow:Must assemble matrix first");
   if (!viewer) { 
     viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
   }
@@ -738,11 +735,11 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyEnd_MPIRowbs_local(mat,mode); CHKERRQ(ierr);
 
   if (mode == FINAL_ASSEMBLY) {   /* BlockSolve stuff */
-    if ((a->assembled) && (!a->nonew)) {  /* Free the old info */
+    if ((mat->assembled) && (!a->nonew)) {  /* Free the old info */
       if (a->pA)       {BSfree_par_mat(a->pA);   CHKERRBS(0);}
       if (a->comm_pA)  {BSfree_comm(a->comm_pA); CHKERRBS(0);} 
     }
-    if ((!a->nonew) || (!a->assembled)) {
+    if ((!a->nonew) || (!mat->assembled)) {
       /* Form permuted matrix for efficient parallel execution */
       a->pA = BSmain_perm(a->procinfo,a->A); CHKERRBS(0);
       /* Set up the communication */
@@ -767,7 +764,6 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
         diag[i] = 1.0;
       }   
     }
-    a->assembled = 1;
   }
   return 0;
 }
@@ -804,7 +800,6 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
-  if (!l->assembled) SETERRQ(1,"MatZeroRows_MPIRowbs:Must assemble matrix first");
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -928,7 +923,6 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   Scalar       *xxa, *xworka, *yya;
   int          ierr;
 
-  if (!bsif->assembled) SETERRQ(1,"MatMult_MPIRowbs:Must assemble matrix first");
   ierr = VecGetArray(yy,&yya); CHKERRQ(ierr);
   ierr = VecGetArray(xx,&xxa); CHKERRQ(ierr);
 
@@ -1020,7 +1014,6 @@ static int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   int          i, n;
   Scalar       *x, zero = 0.0, *scale = a->pA->scale_diag;
 
-  if (!a->assembled) SETERRQ(1,"MatGetDiag_MPIRowbs:Must assemble matrix first");
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != a->m) SETERRQ(1,"MatGetDiag_MPIRowbs:Nonconforming mat and vec");
@@ -1140,7 +1133,6 @@ static int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,Scalar **v)
   BSspmat      *A = mat->A;
   BSsprow      *rs;
    
-  if (!mat->assembled) SETERRQ(1,"MatGetRow_MPIRowbs:Must assemble matrix first");
   if (row < mat->rstart || row >= mat->rend) SETERRQ(1,"MatGetRow_MPIRowbs:Only local rows");
 
   rs  = A->rows[row - mat->rstart];
@@ -1164,18 +1156,9 @@ int MatConvert_MPIRowbs(Mat A, MatType newtype, Mat *newmat)
   Scalar       *vwork;
 
   switch (newtype) {
-    case MATMPIROW:
-      ierr = MatCreateMPIRow(A->comm,m,row->n,row->M,row->N,0,PETSC_NULL,0,
-             PETSC_NULL,newmat); CHKERRQ(ierr);
-      break;
     case MATMPIAIJ:
       ierr = MatCreateMPIAIJ(A->comm,m,row->n,row->M,row->N,0,PETSC_NULL,0,
              PETSC_NULL,newmat); CHKERRQ(ierr);
-      break;
-    case MATSEQROW:
-      MPI_Comm_size(A->comm,&size);
-      if (size != 1) SETERRQ(1,"MatConvert_MPIRowbs: SEQROW requires 1 proc");
-      ierr = MatCreateSeqRow(A->comm,row->M,row->N,0,PETSC_NULL,newmat); CHKERRQ(ierr);
       break;
     case MATSEQAIJ:
       MPI_Comm_size(A->comm,&size);
@@ -1296,7 +1279,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   A->destroy	      = MatDestroy_MPIRowbs;
   A->view	      = MatView_MPIRowbs;
   A->factor	      = 0;
-  a->assembled        = 0;
   a->fact_clone       = 0;
   a->vecs_permscale   = 0;
   a->insertmode       = NOT_SET_VALUES;
@@ -1304,8 +1286,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   MPI_Comm_size(comm,&a->size);
 
   if (M != PETSC_DECIDE && m != PETSC_DECIDE) {
-    /* Perhaps this should be removed for better efficiency -- but could be
-       risky. */
+    /* Perhaps should be removed for better efficiency -- but could be risky. */
     MPI_Allreduce(&m,&Mtemp,1,MPI_INT,MPI_SUM,comm);
     if (Mtemp != M)
       SETERRQ(1,"MatCreateMPIRowbs:Sum of local dimensions!=global dimension");
