@@ -95,7 +95,12 @@ Matrix options:  See man page for {\tt MatSetOptions()} for details.
 \item MAT\_SYMMETRIC\_MATRIX - matrix is symmetric
 \item MAT\_STRUCTURALLY\_SYMMETRIC\_MATRIX - matrix is symmetric in nonzero structure
 \item MAT\_IGNORE\_OFF\_PROC\_ENTRIES - drop off-processor entries
-\item MAT\_NEW\_NONZERO\_LOCATION\_ERROR - generate error for new matrix entry
+\item MAT\_NEW\_NONZERO\_ALLOCATION\_ERROR - any insertion 
+   that would generate a new entry that has not been preallocated will instead
+   generate an error
+\item MAT\_NEW\_NONZERO\_LOCATION\_ERROR - any insertion 
+   that would generate a new entry in the nonzero structure will instead generate
+   an error
 \end{itemize}
 Orderings:
 \begin{itemize}
