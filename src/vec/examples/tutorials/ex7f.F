@@ -1,13 +1,13 @@
 
-C    "$Id: ex7f.F,v 1.6 1996/10/23 22:14:12 bsmith Exp curfman $";
+C    "$Id: ex7f.F,v 1.7 1996/11/12 16:55:45 curfman Exp curfman $";
 
        subroutine ex7f(vec)
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 C
-C  This routine demonstates how a compute module may be written in 
-C  Fortran and called from a C routine, passing down PETSc objects.
+C  This routine demonstates how a computational module may be written
+C  in Fortran and called from a C routine, passing down PETSc objects.
 C
 
        Scalar           two
