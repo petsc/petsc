@@ -11,8 +11,8 @@ WOBJS     =
 OBJSF     =
 LIBBASE   = libpetscsnes
 EXAMPLES  = ex1
-REXAMPLES = runex1
-CEXAMPLES = ex1 
+REXAMPLES = runex1 runex1_2
+CEXAMPLES = $(EX1)
 EXAMPLESC = ex1.c
 LINCLUDE  = $(SOURCEH)
 
@@ -24,12 +24,17 @@ EX1= ex1.o $(FOBJ)
 
 ex1: $(EX1) chkopts
 	-$(CLINKER) -o ex1 $(EX1) $(PETSC_LIB)
-#	$(RM) ex1.o
+	$(RM) ex1.o
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            $(RM) -f ex1_1.tmp
+runex1_2:
+	-@$(MPIRUN) ex1 -nox -snes_smonitor -snes_method umls >ex1_2.tmp 2>&1;\
+           if (diff output/ex1_2.out ex1_2.tmp) then true; \
+           else echo "Possible problem with ex1_2, diffs above"; fi; \
+           $(RM) -f ex1_2.tmp
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
