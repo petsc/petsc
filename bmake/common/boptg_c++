@@ -1,9 +1,9 @@
-# $Id: base.g_c++,v 1.11 1998/12/04 19:30:54 bsmith Exp bsmith $ 
+# $Id: common.g_c++,v 1.1 1998/12/04 20:42:00 balay Exp balay $ 
 
 CC         = ${CXX_CC}
 FC         = ${CXX_FC}
-CLINKER    = ${CXX_CLINKER}  ${COPTFLAGS}
-FLINKER    = ${CXX_FLINKER}  ${FOPTFLAGS}
+CLINKER    = ${CXX_CLINKER}
+FLINKER    = ${CXX_FLINKER}
 SYS_LIB    = ${CXX_SYS_LIB}
 
 PETSCFLAGS = ${GCXX_PETSCFLAGS}

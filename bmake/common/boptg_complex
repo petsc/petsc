@@ -1,9 +1,9 @@
-# $Id: base.g_complex,v 1.19 1998/12/04 20:24:06 balay Exp $ 
+# $Id: common.g_complex,v 1.1 1998/12/04 20:42:01 balay Exp balay $ 
 
 CC         = ${CXX_CC}
 FC         = ${CXX_FC}
-CLINKER    = ${CXX_CLINKER}  ${COPTFLAGS}
-FLINKER    = ${CXX_FLINKER}  ${FOPTFLAGS}
+CLINKER    = ${CXX_CLINKER}
+FLINKER    = ${CXX_FLINKER}
 SYS_LIB    = ${CXX_SYS_LIB}
 
 PETSCFLAGS = ${GCOMP_PETSCFLAGS}

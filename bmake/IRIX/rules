@@ -1,4 +1,4 @@
-# $Id: base,v 1.18 1998/06/13 23:05:59 balay Exp balay $ 
+# $Id: base,v 1.19 1998/12/04 23:16:06 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -14,8 +14,10 @@ SHELL            = /bin/sh
 #
 C_CC             = cc -n32 -woff 1048
 C_FC             = f77 -n32 
-C_CLINKER        = cc  -n32 -Wl,-woff,84,-woff,85,-woff,113 -rpath ${LDIR}:${DYLIBPATH}
-C_FLINKER        = f77 -n32 -Wl,-woff,84,-woff,85,-woff,113 -rpath ${LDIR}:${DYLIBPATH}
+C_CLINKER        = cc  -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
+	           -rpath ${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77 -n32 ${FOPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
+		   -rpath ${LDIR}:${DYLIBPATH}
 C_CCV            = unknown
 C_SYS_LIB        = -lfpe -lsun -lftn
 
@@ -29,8 +31,10 @@ O_FOPTFLAGS      = -O2
 #
 CXX_CC           = CC -n32 -woff 3262
 CXX_FC           = f77 -n32 
-CXX_CLINKER      = CC -n32 -Wl,-woff,84,-woff,85,-woff,113 -rpath ${LDIR}:${DYLIBPATH}  
-CXX_FLINKER      = CC -n32 -Wl,-woff,84,-woff,85,-woff,113 -rpath ${LDIR}:${DYLIBPATH}
+CXX_CLINKER      = CC -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
+		   -rpath ${LDIR}:${DYLIBPATH}  
+CXX_FLINKER      = CC -n32 ${COPTFLAGS} -Wl,-woff,84,-woff,85,-woff,113 \
+		   -rpath ${LDIR}:${DYLIBPATH}
 CXX_CCV          = unknown
 CXX_SYS_LIB      = -lcomplex -lfpe -lsun -lftn
 # ------------------------- BOPT=g_c++ options ------------------------------

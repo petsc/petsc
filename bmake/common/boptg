@@ -1,9 +1,9 @@
-# $Id: base.g,v 1.18 1998/12/04 20:22:14 balay Exp $ 
+# $Id: common.g,v 1.1 1998/12/04 20:42:00 balay Exp balay $ 
 
 CC         = ${C_CC}
 FC         = ${C_FC}
-CLINKER    = ${C_CLINKER}  ${COPTFLAGS}
-FLINKER    = ${C_FLINKER}  ${FOPTFLAGS}
+CLINKER    = ${C_CLINKER}
+FLINKER    = ${C_FLINKER}
 SYS_LIB    = ${C_SYS_LIB}
 
 PETSCFLAGS = ${G_PETSCFLAGS}
