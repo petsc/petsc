@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.18 1995/04/27 20:15:53 curfman Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.19 1995/05/02 19:02:14 curfman Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -55,6 +55,9 @@ static int ISView_General(PetscObject obj, Viewer viewer)
   FILE        *fd;
   PetscObject vobj = (PetscObject) viewer;
 
+  if (!viewer) {
+    viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
+  }
   if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
                                        (vobj->type == FILES_VIEWER))) {
     fd = ViewerFileGetPointer_Private(viewer);
@@ -121,3 +124,65 @@ int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
   *is = Nindex; return 0;
 }
 
+/*@
+   ISAddStrideSequential - Adds additional entries to a sequential 
+                           index set by a stride.
+
+   Input Parameters:
+.  n - the length of the new piece of the index set
+.  first - the first additional entry
+.  step - the step between entries
+.  is - the index set
+
+.keywords: IS, sequential, index set, create, adding to
+
+.seealso: ISCreateStrideSequential(), ISCreate()
+@*/
+int ISAddStrideSequential(IS *is,int n,int first,int step)
+{
+  int        N, *old,size,min,max,*idx,i;
+  IS         Newis;
+  IS_General *sub;
+  if (*is) VALIDHEADER(*is,IS_COOKIE);
+
+  if (*is) {
+    ISGetSize(*is,&N);
+    ISGetIndices(*is,&old);
+  }
+  else {
+    N = 0;
+  }
+
+
+  PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
+  PLogObjectCreate(Newis);
+  size = sizeof(IS_General) + n*sizeof(int) + N*sizeof(int);
+  sub            = (IS_General *) MALLOC(size); CHKPTR(sub);
+  sub->idx = idx = (int *) (sub+1);
+  sub->sorted    = 1;
+
+  MEMCPY(sub->idx,old,N*sizeof(int));
+  if (*is) {ISRestoreIndices(*is,&old); ISDestroy(*is);}
+  for ( i=0; i<n; i++ ) {idx[N+i] = first + i*step;}
+
+  sub->n         = n + N;
+  for ( i=1; i<N+n; i++ ) {
+    if (idx[i] < idx[i-1]) {sub->sorted = 0; break;}
+  }
+  if (n+N) {min = max = idx[0];} else {min = max = 0;}
+  for ( i=1; i<n+N; i++ ) {
+    if (idx[i] < min) min = idx[i];
+    if (idx[i] > max) max = idx[i];
+  }
+
+  Newis->min     = min;
+  Newis->max     = max;
+  Newis->data    = (void *) sub;
+  Newis->ops     = &myops;
+  Newis->destroy = ISDestroy_General;
+  Newis->view    = ISView_General;
+  Newis->isperm  = 0;
+
+  *is = Newis; 
+  return 0;
+}

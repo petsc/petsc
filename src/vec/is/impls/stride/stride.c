@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.15 1995/04/27 20:15:43 curfman Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.16 1995/05/02 19:02:10 curfman Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -76,6 +76,9 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
   PetscObject   vobj = (PetscObject) viewer;
   FILE          *fd;
 
+  if (!viewer) {
+    viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
+  }
   if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
                                        (vobj->type == FILES_VIEWER))){
     fd = ViewerFileGetPointer_Private(viewer);
