@@ -8,7 +8,7 @@
 #include "vec.h"
 
 struct _VeOps {
-  int  (*create)(Vec,Vec*),       /*  Get single vector */
+  int  (*duplicate)(Vec,Vec*),       /*  Get single vector */
        (*getvecs)(Vec,int,Vec**), /*  Get array of vectors */
        (*freevecs)(Vec*,int),     /* Free array of vectors */
        (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
@@ -71,6 +71,7 @@ typedef struct {
 
 struct _VecScatterCtx {
   PETSCHEADER
+  int     inuse;
   int     (*begin)(Vec,Vec,VecScatterCtx,InsertMode,int);
   int     (*end)(Vec,Vec,VecScatterCtx,InsertMode,int);
   int     (*beginpipe)(Vec,Vec,VecScatterCtx,InsertMode,PipelineMode);

@@ -18,8 +18,8 @@ int main(int argc,char **argv)
   int          idx;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  OptionsGetInt(0,0,"-n",&n); if (n < 5) n = 5;
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,"-n",&n); if (n < 5) n = 5;
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid); 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.15 1995/05/16 00:38:26 curfman Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.16 1995/05/16 00:47:16 curfman Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -257,7 +257,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   int      ierr,numtid,mytid;
   char     string[128];
 
-  if (OptionsHasName(0,0,"-nox")) {
+  if (OptionsHasName(0,"-nox")) {
     return DrawOpenNull(comm,inctx);
   }
 
@@ -267,14 +267,13 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   ctx->ops     = &DvOps;
   ctx->destroy = DrawDestroy_X;
   ctx->view    = 0;
-  ctx->comm    = comm;
   ctx->pause   = 0;
   ctx->coor_xl = 0.0;  ctx->coor_xr = 1.0;
   ctx->coor_yl = 0.0;  ctx->coor_yr = 1.0;
   ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
 
-  OptionsGetInt(0,0,"-pause",&ctx->pause);
+  OptionsGetInt(0,"-pause",&ctx->pause);
 
   /* actually create and open the window */
   Xwin         = (DrawCtx_X *) MALLOC( sizeof(DrawCtx_X) ); CHKPTR(Xwin);
@@ -282,7 +281,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   MPI_Comm_size(comm,&numtid);
   MPI_Comm_rank(comm,&mytid);
   if (mytid == 0) {
-    if (!display && OptionsGetString(0,0,"-display",string,128)) {
+    if (!display && OptionsGetString(0,"-display",string,128)) {
       display = string;
     }
     if (!display) {MPE_Set_display(comm,&display);}
@@ -292,7 +291,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   }
   else {
     unsigned long win;
-    if (!display && OptionsGetString(0,0,"-display",string,128)) {
+    if (!display && OptionsGetString(0,"-display",string,128)) {
       display = string;
     }
     if (!display) {MPE_Set_display(comm,&display);}

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.22 1995/05/12 21:30:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.23 1995/05/14 16:32:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -334,6 +334,7 @@ static int KSPDestroy_GMRES(PetscObject obj)
   FREE( gmresP->user_work );
   FREE( gmresP->mwork_alloc );
   if (gmresP->nrs) FREE( gmresP->nrs );
+  if (gmresP->sol_temp) VecDestroy(gmresP->sol_temp);
   FREE( gmresP ); 
   PLogObjectDestroy(itP);
   PETSCHEADERDESTROY( itP );
@@ -353,8 +354,8 @@ static int KSPDestroy_GMRES(PetscObject obj)
  */
 static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
 {
-  Scalar  tt, zero = 0.0, one = 1.0;
-  int     ii, k, j;
+  Scalar    tt, zero = 0.0, one = 1.0;
+  int       ii, k, j;
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
 
   /* Solve for solution vector that minimizes the residual */
@@ -383,22 +384,22 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
      the unpreconditioned problem */
   if (itP->right_pre) {
     if (vdest != vs) {
-	  PCApply(itP->B, VEC_TEMP, vdest );
-	  VecAXPY( &one, vs, vdest );
+      PCApply(itP->B, VEC_TEMP, vdest );
+      VecAXPY( &one, vs, vdest );
     }
     else {
-	  PCApply(itP->B, VEC_TEMP, VEC_TEMP_MATOP );
-	  VecAXPY( &one, VEC_TEMP_MATOP, vdest );
+      PCApply(itP->B, VEC_TEMP, VEC_TEMP_MATOP );
+      VecAXPY( &one, VEC_TEMP_MATOP, vdest );
     }
   }
   else {
     if (vdest != vs) {
-	VecCopy( VEC_TEMP, vdest );
-	VecAXPY( &one, vs, vdest );
+      VecCopy( VEC_TEMP, vdest );
+      VecAXPY( &one, vs, vdest );
     }
     else 
-	VecAXPY( &one, VEC_TEMP, vdest );
- }
+      VecAXPY( &one, VEC_TEMP, vdest );
+  }
   return 0;
 }
 /*
@@ -502,28 +503,25 @@ int KSPDefaultConverged_GMRES(KSP itP,int n,double rnorm,void *dummy)
   else return(0);
 }
 
-
-/*
-  GMRESBuildSolution -Build the solution for GMRES 
- */
-static int GMRESBuildSolution(KSP itP,Vec  ptr,Vec *result )
+static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)itP->MethodPrivate; 
+  int       ierr;
 
   if (ptr == 0) {
-    /* if (!gmresP->sol_temp)  need to allocate */
+    if (!gmresP->sol_temp) {
+      ierr = VecDuplicate(itP->vec_sol,&gmresP->sol_temp); CHKERR(ierr);
+    }
     ptr = gmresP->sol_temp;
   }
   if (!gmresP->nrs) {
     /* allocate the work area */
-    gmresP->nrs = (Scalar *)
-	               MALLOC( (unsigned)(gmresP->max_k * sizeof(Scalar) ) );
+    gmresP->nrs = (Scalar *)MALLOC((unsigned)(gmresP->max_k*sizeof(Scalar)));
   }
 
   BuildGmresSoln(  gmresP->nrs, VEC_SOLN, ptr, itP, gmresP->it );
   *result = ptr; return 0;
 }
-
 
 /*
   KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by 
@@ -583,7 +581,7 @@ int KSPCreate_GMRES(KSP itP)
   itP->MethodPrivate = (void *) gmresP;
   itP->type        = KSPGMRES;
   itP->converged     = KSPDefaultConverged_GMRES;
-  itP->BuildSolution = GMRESBuildSolution;
+  itP->buildsolution = KSPBuildSolution_GMRES;
 
   itP->setup         = KSPSetUp_GMRES;
   itP->solver        = KSPSolve_GMRES;

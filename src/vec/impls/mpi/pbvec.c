@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.23 1995/05/05 20:02:29 curfman Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.24 1995/05/05 20:05:09 curfman Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -73,7 +73,6 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
   v->view        = VecView_MPI;
   s->n           = n;
   s->N           = N;
-  s->comm        = comm;
   s->numtids     = numtids;
   s->mytid       = mytid;
   s->array       = (Scalar *)(s + 1);

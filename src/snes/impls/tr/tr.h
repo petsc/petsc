@@ -1,4 +1,4 @@
-/* $Id: tr.h,v 1.1 1995/04/12 20:36:43 bsmith Exp bsmith $ */
+/* $Id: tr.h,v 1.2 1995/05/05 03:51:35 bsmith Exp bsmith $ */
 
 /*
    Context for a Newton trust region method (SNES_NTR) 
@@ -20,6 +20,7 @@ typedef struct {
   double delta3;	/* used to compute trust region parameter */
   double sigma;		/* used to detemine termination */
   int    itflag;	/* flag for convergence testing */
+  double rnorm0,ttol;   /* used for KSP convergence test */
 } SNES_TR;
 
 #endif

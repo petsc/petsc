@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.15 1995/05/14 16:33:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.16 1995/05/16 00:42:32 curfman Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -118,7 +118,7 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
       cr = rr + m;
       for (i=0; i<m; i++) rr[i] = i;
       for (i=0; i<n; i++) cr[i] = i;
-      OptionsGetInt(0,0,"-mat_bdiag_bsize",&nb);     
+      OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
       ierr = MatDetermineDiagonals_Private(mat,nb,m,n,rr,cr,&ndiag,&diag);
       ierr = MatCreateSequentialBDiag(mat->comm,m,n,ndiag,nb,diag,0,newmat);
       FREE(rr), FREE(diag);

@@ -39,10 +39,10 @@ struct _KSP {
                                       residual calculation, allows user to, for 
                                       instance, print residual norm, etc. */
   int (*converged)(KSP,int,double,void*);
-  int (*BuildSolution)(KSP,Vec,Vec*);  /* Returns a pointer to the solution, or
+  int (*buildsolution)(KSP,Vec,Vec*);  /* Returns a pointer to the solution, or
 				      calculates the solution in a 
 				      user-provided area. */
-  int (*BuildResidual)(KSP,Vec,Vec,Vec*); /* Returns a pointer to the residual, or
+  int (*buildresidual)(KSP,Vec,Vec,Vec*); /* Returns a pointer to the residual, or
 				      calculates the residual in a 
 				      user-provided area.  */
   int (*adjust_work_vectors)(KSP,Vec*,int); /* should pre-allocate the vectors*/

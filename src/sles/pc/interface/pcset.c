@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.12 1995/05/03 16:23:08 curfman Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.13 1995/05/16 00:33:39 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -97,7 +97,7 @@ $ -pc_method  method
 int PCGetMethodFromOptions_Private(PC pc,PCMethod *method )
 {
   char sbuf[50];
-  if (OptionsGetString(  0, pc->prefix,"-pc_method", sbuf, 50 )) {
+  if (OptionsGetString( pc->prefix,"-pc_method", sbuf, 50 )) {
     if (!__PCList) PCRegisterAll();
     *method = (PCMethod)NRFindID( __PCList, sbuf );
     return 1;
@@ -167,7 +167,7 @@ int PCSetFromOptions(PC pc)
   if (PCGetMethodFromOptions_Private(pc,&method)) {
     PCSetMethod(pc,method);
   }
-  if (OptionsHasName(0,0,"-help")){
+  if (OptionsHasName(0,"-help")){
     PCPrintHelp(pc);
   }
   if (pc->setfrom) return (*pc->setfrom)(pc);

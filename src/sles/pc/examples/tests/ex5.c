@@ -47,14 +47,14 @@ int main(int Argc, char **Args)
 
   PetscInitialize(&Argc,&Args,0,0);
 
-  OptionsGetInt(1,0,"-x",&x_mesh);  
-  OptionsGetInt(1,0,"-l",&levels);  
-  OptionsGetInt(1,0,"-c",&cycles);  
-  OptionsGetInt(1,0,"-smooths",&smooths);  
-  if (OptionsHasName(1,0,"-help")) {fprintf(stderr,"%s",help); exit(0);}
-  if (OptionsHasName(1,0,"-a")) {am = MGADDITIVE;}
-  if (OptionsHasName(1,0,"-f")) {am = MGFULL;}
-  if (OptionsHasName(1,0,"-j")) {use_jacobi = 1;}
+  OptionsGetInt(0,"-x",&x_mesh);  
+  OptionsGetInt(0,"-l",&levels);  
+  OptionsGetInt(0,"-c",&cycles);  
+  OptionsGetInt(0,"-smooths",&smooths);  
+  if (OptionsHasName(0,"-help")) {fprintf(stderr,"%s",help); exit(0);}
+  if (OptionsHasName(0,"-a")) {am = MGADDITIVE;}
+  if (OptionsHasName(0,"-f")) {am = MGFULL;}
+  if (OptionsHasName(0,"-j")) {use_jacobi = 1;}
          
   N = (int *) MALLOC(levels*sizeof(int)); CHKPTR(N);
   N[0] = x_mesh;

@@ -20,7 +20,7 @@ int main(int argc,char **args)
   char      *kspname, *pcname;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
 
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&ustar); CHKERRA(ierr);

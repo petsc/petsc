@@ -27,8 +27,8 @@ int main(int argc,char **args)
   KSP     ksp;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,help);
-  OptionsGetInt(0,0,"-m",&m);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,help);
+  OptionsGetInt(0,"-m",&m);
 
   /* Form matrix */
   ierr = GetElasticityMatrix(m,&mat); CHKERRA(ierr);
@@ -150,7 +150,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 
   /* Convert storage formats -- just to demonstrate block diagonal format */
   { MatType type = MATBDIAG;
-  if (OptionsHasName(0,0,"-mat_row")) type = MATROW; 
+  if (OptionsHasName(0,"-mat_row")) type = MATROW; 
   ierr = MatConvert(submat,type,newmat1); CHKERR(ierr);
   ierr = MatDestroy(submat); CHKERR(ierr);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.18 1995/05/11 00:30:48 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.19 1995/05/16 00:40:11 curfman Exp bsmith $";
 #endif
 
 /*
@@ -38,25 +38,25 @@ static int PCSetFromOptions_SOR(PC pc)
   int    its;
   double omega;
 
-  if (OptionsGetDouble(0,pc->prefix,"-pc_sor_omega",&omega)) {
+  if (OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega)) {
     PCSORSetOmega(pc,omega);
   } 
-  if (OptionsGetInt(0,pc->prefix,"-pc_sor_its",&its)) {
+  if (OptionsGetInt(pc->prefix,"-pc_sor_its",&its)) {
     PCSORSetIterations(pc,its);
   }
-  if (OptionsHasName(0,pc->prefix,"-pc_sor_symmetric")) {
+  if (OptionsHasName(pc->prefix,"-pc_sor_symmetric")) {
     PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
   }
-  if (OptionsHasName(0,pc->prefix,"-pc_sor_backward")) {
+  if (OptionsHasName(pc->prefix,"-pc_sor_backward")) {
     PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);
   }
-  if (OptionsHasName(0,pc->prefix,"-pc_sor_local_symmetric")) {
+  if (OptionsHasName(pc->prefix,"-pc_sor_local_symmetric")) {
     PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);
   }
-  if (OptionsHasName(0,pc->prefix,"-pc_sor_local_backward")) {
+  if (OptionsHasName(pc->prefix,"-pc_sor_local_backward")) {
     PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);
   }
-  if (OptionsHasName(0,pc->prefix,"-pc_sor_local_forward")) {
+  if (OptionsHasName(pc->prefix,"-pc_sor_local_forward")) {
     PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);
   }
   return 0;

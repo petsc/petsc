@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.15 1995/05/03 04:03:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.16 1995/05/08 16:10:57 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -499,7 +499,6 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   MPI_Status     recv_status,*send_status;
   int            *indx;
 
-  ctx->comm = comm;
   /*  first count number of contributors to each processor */
   nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
   MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
@@ -681,7 +680,6 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
 
-  ctx->comm = comm;
   /*  first count number of contributors to each processor */
   nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
   MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;

@@ -19,7 +19,7 @@ int main( int argc, char **argv )
   int          ierr, its;
 
   PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
 
   /* Set up data structures */
   ierr = VecCreateSequential(MPI_COMM_SELF,2,&x); CHKERRA(ierr);

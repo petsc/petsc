@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.20 1995/05/12 04:14:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.21 1995/05/16 00:58:57 curfman Exp bsmith $";
 #endif
 
 /*
@@ -120,8 +120,8 @@ int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
 /* --------------------------------------------------------------*/
 /*@
    VecScatterCtxCreate - Creates a vector scatter context. This routine
-   should be called when you need to create a vector scatter context, but
-   not actually use it at creation. 
+   should be called when you need to create a vector scatter context. 
+   You cannot use a VecScatterCtx in two or more simultaneous scatters. 
 
    Input Parameters:
 .  xin - the vector to scatter from
@@ -139,10 +139,15 @@ int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
 int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 {
   VecScatterCtx ctx;
-  int           len; 
+  int           len,numtid; 
+  MPI_Comm      comm = xin->comm;
+
+  /* next 2 lines insure that we use parallel comm if it exists */
+  MPI_Comm_size(yin->comm,&numtid);
+  if (numtid > 1) comm = yin->comm; 
 
   /* generate the Scatter context */
-  PETSCHEADERCREATE(ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,xin->comm);
+  PETSCHEADERCREATE(ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,comm);
 
   if (xin->type == SEQVECTOR && yin->type == SEQVECTOR) {
 
@@ -346,6 +351,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
+  if (inctx->inuse) SETERR(1,"VecScatterBegin: Scatter ctx already in use");
   return (*(inctx)->begin)(x,y,inctx,addv,mode);
 }
 
@@ -379,6 +385,7 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,
 {
   VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
   VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
+  ctx->inuse = 0;
   if ((ctx)->end) return (*(ctx)->end)(x,y,ctx,addv,mode);
   else return 0;
 }

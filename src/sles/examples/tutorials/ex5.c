@@ -23,8 +23,8 @@ int main(int argc,char **args)
   double norm;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  OptionsGetInt(0,0,"-m",&m);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   n = 2*numtids;
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-  if (OptionsHasName(0,0,"-rowbs_mat")) {
+  if (OptionsHasName(0,"-rowbs_mat")) {
     PC pc; KSP ksp; PCMethod pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);

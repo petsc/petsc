@@ -30,8 +30,8 @@ int main( int argc, char **argv )
   double       h,xp = 0.0,v;
 
   PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  OptionsGetInt(0,0,"-n",&n);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,"-n",&n);
   h = 1.0/(n-1);
 
   /* Set up data structures */
@@ -58,10 +58,10 @@ int main( int argc, char **argv )
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
 
   /* Set preconditioner for matrix-free method */
-  if (OptionsHasName(0,0,"-snes_mf")) {
+  if (OptionsHasName(0,"-snes_mf")) {
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    if (OptionsHasName(0,0,"-user_precond")) { /* user-defined precond */
+    if (OptionsHasName(0,"-user_precond")) { /* user-defined precond */
       ierr = PCSetMethod(pc,PCSHELL); CHKERRA(ierr);
       ierr = PCShellSetApply(pc,MatrixFreePreconditioner,(void*)0); 
              CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.11 1995/05/06 17:54:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.12 1995/05/12 21:29:11 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -117,7 +117,7 @@ int KSPCreate_CR(KSP itP)
   itP->adjustwork           = KSPiDefaultAdjustWork;
   itP->destroy              = KSPiDefaultDestroy;
   itP->converged            = KSPDefaultConverged;
-  itP->BuildSolution        = KSPDefaultBuildSolution;
-  itP->BuildResidual        = KSPDefaultBuildResidual;
+  itP->buildsolution        = KSPDefaultBuildSolution;
+  itP->buildresidual        = KSPDefaultBuildResidual;
   return 0;
 }

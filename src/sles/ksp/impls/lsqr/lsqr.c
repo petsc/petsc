@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.10 1995/04/12 23:50:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.11 1995/05/12 21:32:23 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -121,7 +121,7 @@ itP->solver               = KSPSolve_LSQR;
 itP->adjustwork           = KSPiDefaultAdjustWork;
 itP->destroy              = KSPiDefaultDestroy;
 itP->converged            = KSPDefaultConverged;
-itP->BuildSolution        = KSPDefaultBuildSolution;
-itP->BuildResidual        = KSPDefaultBuildResidual;
+itP->buildsolution        = KSPDefaultBuildSolution;
+itP->buildresidual        = KSPDefaultBuildResidual;
 return 0;
 }

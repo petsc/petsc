@@ -3,12 +3,12 @@
 
 */
 
-#if !defined(_RAIMPL_H)
-#define _RAIMPL_H
+#if !defined(_DAIMPL_H)
+#define _DAIMPL_H
 #include "ptscimpl.h"
-#include "ra.h"
+#include "da.h"
 
-struct _RA {
+struct _DA {
   PETSCHEADER
   int           M,N,P;             /* array dimensions */
   int           m,n,p;             /* processor layout */

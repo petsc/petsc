@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.18 1995/05/05 03:49:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.19 1995/05/16 00:39:59 curfman Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -293,16 +293,16 @@ static int PCSetFromOptions_MG(PC pc)
   if (!pc->data) {
     SETERR(1,"For multigrid PCSetFromOptions() must be after MGSetLevels");
   }
-  if (OptionsGetInt(0,pc->prefix,"-pc_mg_cycles",&m)) {
+  if (OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m)) {
     MGSetCycles(pc,m);
   } 
-  if (OptionsGetInt(0,pc->prefix,"-pc_mg_smoothup",&m)) {
+  if (OptionsGetInt(pc->prefix,"-pc_mg_smoothup",&m)) {
     MGSetNumberSmoothUp(pc,m);
   }
-  if (OptionsGetInt(0,pc->prefix,"-pc_mg_smoothdown",&m)) {
+  if (OptionsGetInt(pc->prefix,"-pc_mg_smoothdown",&m)) {
     MGSetNumberSmoothDown(pc,m);
   }
-  if (OptionsGetString(0,pc->prefix,"-pc_mg_method",buff,15)) {
+  if (OptionsGetString(pc->prefix,"-pc_mg_method",buff,15)) {
     MGMethod mg;
     if (!strcmp(buff,"additive")) mg = MGADDITIVE;
     else if (!strcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;

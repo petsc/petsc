@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.5 1995/05/15 21:41:46 curfman Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.6 1995/05/16 00:32:22 curfman Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -95,15 +95,15 @@ int PetscFinalize()
   int  ierr,i,mytid = 0,MPI_Used;
 
   MPI_Initialized(&MPI_Used);
-  if (!OptionsHasName(0,0,"-no_signal_handler")) {
+  if (!OptionsHasName(0,"-no_signal_handler")) {
     PetscPopSignalHandler();
   }
-  OptionsHasName(0,0,"-trdump");
+  OptionsHasName(0,"-trdump");
   if (MPI_Used) {MPI_Comm_rank(MPI_COMM_WORLD,&mytid);}
-  if (OptionsHasName(0,0,"-optionstable")) {
+  if (OptionsHasName(0,"-optionstable")) {
     if (!mytid) OptionsPrint(stderr);
   }
-  if (OptionsHasName(0,0,"-optionsused")) {
+  if (OptionsHasName(0,"-optionsused")) {
     if (!mytid) {
       int nopt = OptionsAllUsed();
       if (nopt == 1) 
@@ -112,7 +112,7 @@ int PetscFinalize()
         fprintf(stderr,"There are %d unused database options.\n",nopt);
     }
   }
-  if (OptionsHasName(0,0,"-optionsleft")) {
+  if (OptionsHasName(0,"-optionsleft")) {
     if (!mytid) {
       for ( i=0; i<options->N; i++ ) {
         if (!options->used[i]) {
@@ -125,15 +125,15 @@ int PetscFinalize()
 #if defined(PETSC_LOG)
   {
     char monitorname[64];
-    if (OptionsGetString(0,0,"-logall",monitorname,64) || 
-        OptionsGetString(0,0,"-log",monitorname,64)) {
+    if (OptionsGetString("-logall",monitorname,64) || 
+        OptionsGetString("-log",monitorname,64)) {
       if (monitorname[0]) PLogDump(monitorname); 
       else PLogDump(0);
     }
   }
 #endif
 #if defined(PETSC_MALLOC)
-  if (OptionsHasName(0,0,"-trdump")) {
+  if (OptionsHasName(0,"-trdump")) {
     OptionsDestroy_Private();
     NRDestroyAll();
     if (MPI_Used) {MPE_Seq_begin(MPI_COMM_WORLD,1);}
@@ -188,12 +188,12 @@ int OptionsCheckInitial()
   MPI_Comm comm = MPI_COMM_WORLD;
 
 #if defined(PARCH_sun4) && defined(PETSC_DEBUG) && defined(PETSC_MALLOC)
-  if (OptionsHasName(0,0,"-malloc_debug")) {
+  if (OptionsHasName(0,"-malloc_debug")) {
     malloc_debug(2);
   }
 #endif
-  if (OptionsHasName(0,0,"-v") || OptionsHasName(0,0,"-version") ||
-      OptionsHasName(0,0,"-help")) {
+  if (OptionsHasName(0,"-v") || OptionsHasName(0,"-version") ||
+      OptionsHasName(0,"-help")) {
     MPE_printf(comm,"--------------------------------------------\
 ------------------------------\n");
     MPE_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
@@ -204,19 +204,19 @@ int OptionsCheckInitial()
     MPE_printf(comm,"--------------------------------------------\
 ---------------------------\n");
   }
-  if (OptionsHasName(0,0,"-fp_trap")) {
+  if (OptionsHasName(0,"-fp_trap")) {
     PetscSetFPTrap(1);
   }
-  if (OptionsHasName(0,0,"-on_error_abort")) {
+  if (OptionsHasName(0,"-on_error_abort")) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
   }
-  if (OptionsGetString(0,0,"-on_error_attach_debugger",string,64)) {
+  if (OptionsGetString("-on_error_attach_debugger",string,64)) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0;
     if (strstr(string,"noxterm")) xterm = 0;
     if (strstr(string,"dbx"))     debugger = "dbx";
     if (strstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString(0,0,"-display",string,64)){
+    if (OptionsGetString("-display",string,64)){
       display = string;
     }
     if (!display) {MPE_Set_display(comm,&display); sfree = 1;}; 
@@ -224,7 +224,7 @@ int OptionsCheckInitial()
     if (sfree) FREE(display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
-  if (OptionsGetString(0,0,"-start_in_debugger",string,64)) {
+  if (OptionsGetString("-start_in_debugger",string,64)) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0,numtid = 1;
     MPI_Errhandler abort_handler;
@@ -248,7 +248,7 @@ int OptionsCheckInitial()
     if (strstr(string,"noxterm")) xterm = 0;
     if (strstr(string,"dbx"))     debugger = "dbx";
     if (strstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString(0,0,"-display",string,64)){
+    if (OptionsGetString("-display",string,64)){
       display = string;
     }
     if (!display) {MPE_Set_display(comm,&display);sfree = 1;} 
@@ -260,21 +260,21 @@ int OptionsCheckInitial()
                                                        &abort_handler);
     MPI_Errhandler_set(comm,abort_handler);
   }
-  if (!OptionsHasName(0,0,"-no_signal_handler")) {
+  if (!OptionsHasName(0,"-no_signal_handler")) {
     PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
   }
 #if defined(PETSC_LOG)
-  if (OptionsHasName(0,0,"-log")) {
+  if (OptionsHasName(0,"-log")) {
     PLogBegin();
   }
-  if (OptionsHasName(0,0,"-logall")) {
+  if (OptionsHasName(0,"-logall")) {
     PLogAllBegin();
   }
-  if (OptionsHasName(0,0,"-info")) {
+  if (OptionsHasName(0,"-info")) {
     PLogAllowInfo(PETSC_TRUE);
   }
 #endif
-  if (OptionsHasName(0,0,"-help")) {
+  if (OptionsHasName(0,"-help")) {
     fprintf(stderr,"Options for all PETSc programs:\n");
     fprintf(stderr," -on_error_abort: cause an abort when an error is");
     fprintf(stderr," detected. Useful \n       only when run in the debugger\n");
@@ -518,7 +518,7 @@ int OptionsSetValue(char *name,char *value)
   return 0;
 }
 
-static int OptionsFindPair(int keep, char *pre,char *name,char **value)
+static int OptionsFindPair( char *pre,char *name,char **value)
 {
   int  i, N;
   char **names,tmp[128];
@@ -545,7 +545,6 @@ static int OptionsFindPair(int keep, char *pre,char *name,char **value)
    OptionsHasName - Determines if a certain option is given in the database.
 
    Input Parameters:
-.  keep - flag to detemine if option is kept in database
 .  name - the option one is seeking 
 .  pre - string to prepend to the name
 
@@ -554,20 +553,15 @@ $   1 if the option is found;
 $   0 if the option is not found;
 $  -1 if an error is detected.
 
-   Notes:
-   If keep=0, the entry is removed from the database, and a further request
-   for it will return a 0.  If keep is nonzero, then the argument will
-   remain in the database.  Keep is not yet implemented.
-
 .keywords: options, database, has, name
 
 .seealso: OptionsGetInt(), OptionsGetDouble(), OptionsGetScalar(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsHasName(int keep,char* pre,char *name)
+int OptionsHasName(char* pre,char *name)
 {
   char *value;
-  if (!OptionsFindPair(keep,pre,name,&value)) {return 0;}
+  if (!OptionsFindPair(pre,name,&value)) {return 0;}
   return 1;
 }
 
@@ -576,25 +570,21 @@ int OptionsHasName(int keep,char* pre,char *name)
                     database.
 
    Input Parameters:
-.  keep - flag to detemine if option is kept in database
 .  name - the option one is seeking
 .  pre - the string to preappend to the name
 
    Output Parameter:
 .  ivalue - the integer value to return
 
-   Note:
-   Keep is not yet implemented.
-
 .keywords: options, database, get, int
 
 .seealso: OptionsGetDouble(), OptionsHasName(), OptionsGetString(),
            OptionsGetScalar(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetInt(int keep,char*pre,char *name,int *ivalue)
+int OptionsGetInt(char*pre,char *name,int *ivalue)
 {
   char *value;
-  if (!OptionsFindPair(keep,pre,name,&value)) {return 0;}
+  if (!OptionsFindPair(pre,name,&value)) {return 0;}
   if (!value) SETERR(1,"Missing value for option");
   *ivalue = atoi(value);
   return 1; 
@@ -605,25 +595,21 @@ int OptionsGetInt(int keep,char*pre,char *name,int *ivalue)
    option in the database.
 
    Input Parameters:
-.  keep - flag to detemine if option is kept in database
 .  name - the option one is seeking
 .  pre - string to prepend to each name
 
    Output Parameter:
 .  dvalue - the double value to return
 
-   Note:
-   The keep flag is not yet implemented.
-
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsGetScalar(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetDouble(int keep,char* pre,char *name,double *dvalue)
+int OptionsGetDouble(char* pre,char *name,double *dvalue)
 {
   char *value;
-  if (!OptionsFindPair(keep,pre,name,&value)) {return 0;}
+  if (!OptionsFindPair(pre,name,&value)) {return 0;}
   *dvalue = atof(value);
   return 1; 
 } 
@@ -633,7 +619,6 @@ int OptionsGetDouble(int keep,char* pre,char *name,double *dvalue)
    commas with no intervening spaces.
 
    Input Parameters:
-.  keep - flag to detemine if option is kept in database
 .  name - the option one is seeking
 .  pre - string to prepend to each name
 .  nmax - maximum number of values to retrieve
@@ -642,20 +627,18 @@ int OptionsGetDouble(int keep,char* pre,char *name,double *dvalue)
 .  dvalue - the double value to return
 .  nmax - actual number of values retreived
 
-   Note:
-   The keep flag is not yet implemented.
 
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsGetScalar(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray()
 @*/
-int OptionsGetDoubleArray(int keep,char* pre,char *name,
+int OptionsGetDoubleArray(char* pre,char *name,
                           double *dvalue, int *nmax)
 {
   char *value;
   int  n = 0;
-  if (!OptionsFindPair(keep,pre,name,&value)) {*nmax = 0; return 0;}
+  if (!OptionsFindPair(pre,name,&value)) {*nmax = 0; return 0;}
   value = strtok(value,",");
   while (n < *nmax) {
     if (!value) break;
@@ -673,7 +656,6 @@ int OptionsGetDoubleArray(int keep,char* pre,char *name,
    no intervening spaces. 
 
    Input Parameters:
-.  keep - flag to detemine if option is kept in database
 .  name - the option one is seeking
 .  pre - string to prepend to each name
 .  nmax - maximum number of values to retrieve
@@ -682,19 +664,17 @@ int OptionsGetDoubleArray(int keep,char* pre,char *name,
 .  dvalue - the integer values to return
 .  nmax - actual number of values retreived
 
-   Note:
-   The keep flag is not yet implemented.
 
 .keywords: options, database, get, double
 
 .seealso: OptionsGetInt(), OptionsGetScalar(), OptionsHasName(), 
            OptionsGetString(), OptionsGetDoubleArray()
 @*/
-int OptionsGetIntArray(int keep,char* pre,char *name,int *dvalue,int *nmax)
+int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
 {
   char *value;
   int  n = 0;
-  if (!OptionsFindPair(keep,pre,name,&value)) {*nmax = 0; return 0;}
+  if (!OptionsFindPair(pre,name,&value)) {*nmax = 0; return 0;}
   value = strtok(value,",");
   while (n < *nmax) {
     if (!value) break;
@@ -711,25 +691,21 @@ int OptionsGetIntArray(int keep,char* pre,char *name,int *dvalue,int *nmax)
    particular option in the database.
 
    Input Parameters:
-.  keep - flag to detemine if option is kept in database
 .  name - the option one is seeking
 .  pre - string to prepend to the name (usually 0)
 
    Output Parameter:
 .  dvalue - the value to return
 
-   Note:
-   The keep flag is not yet implemented.
-
 .keywords: options, database, get, scalar
 
 .seealso: OptionsGetInt(), OptionsGetDouble(), OptionsGetString(), 
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetScalar(int keep,char* pre,char *name,Scalar *dvalue)
+int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 {
   char *value;
-  if (!OptionsFindPair(keep,pre,name,&value)) {return 0;}
+  if (!OptionsFindPair(pre,name,&value)) {return 0;}
   if (!value) SETERR(1,"Missing value for option");
   *dvalue = atof(value);
   return 1; 
@@ -740,7 +716,6 @@ int OptionsGetScalar(int keep,char* pre,char *name,Scalar *dvalue)
    the database.
 
    Input Parameters:
-.  keep - flag to detemine if option is kept in database
 .  name - the option one is seeking
 .  len - maximum string length
 .  pre - string to prepend to name
@@ -748,18 +723,16 @@ int OptionsGetScalar(int keep,char* pre,char *name,Scalar *dvalue)
    Output Parameter:
 .  string - location to copy string
 
-   Note:
-   The keep flag is not yet implemented.
 
 .keywords: options, database, get, string
 
 .seealso: OptionsGetInt(), OptionsGetDouble(), OptionsGetScalar(), 
            OptionsHasName(), OptionsGetIntArray(), OptionsGetDoubleArray()
 @*/
-int OptionsGetString(int keep,char *pre,char *name,char *string,int len)
+int OptionsGetString(char *pre,char *name,char *string,int len)
 {
   char *value;
-  if (!OptionsFindPair(keep,pre,name,&value)) {return 0;}
+  if (!OptionsFindPair(pre,name,&value)) {return 0;}
   if (value) strncpy(string,value,len);
   else MEMSET(string,0,len);
   return 1; 

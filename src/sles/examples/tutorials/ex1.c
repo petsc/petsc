@@ -18,8 +18,8 @@ int main(int argc,char **args)
   double norm;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  OptionsGetInt(0,0,"-n",&n);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,"-n",&n);
 
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);

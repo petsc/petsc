@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.23 1995/05/03 16:16:56 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.24 1995/05/16 00:33:04 curfman Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -30,17 +30,17 @@ int KSPSetFromOptions(KSP ctx)
   int       restart;
   VALIDHEADER(ctx,KSP_COOKIE);
 
-  if (OptionsHasName(0,0,"-help")) {
+  if (OptionsHasName(0,"-help")) {
     KSPPrintHelp(ctx);
   }
   if (KSPGetMethodFromOptions_Private(ctx,&method)) {
     KSPSetMethod(ctx,method);
   }
-  OptionsGetInt(0,ctx->prefix,"-ksp_max_it",&ctx->max_it);
-  OptionsGetDouble(0,ctx->prefix,"-ksp_rtol",&ctx->rtol);  
-  OptionsGetDouble(0,ctx->prefix,"-ksp_atol",&ctx->atol);
-  OptionsGetDouble(0,ctx->prefix,"-ksp_divtol",&ctx->divtol);
-  if (OptionsHasName(0,ctx->prefix,"-ksp_monitor")){
+  OptionsGetInt(ctx->prefix,"-ksp_max_it",&ctx->max_it);
+  OptionsGetDouble(ctx->prefix,"-ksp_rtol",&ctx->rtol);  
+  OptionsGetDouble(ctx->prefix,"-ksp_atol",&ctx->atol);
+  OptionsGetDouble(ctx->prefix,"-ksp_divtol",&ctx->divtol);
+  if (OptionsHasName(ctx->prefix,"-ksp_monitor")){
     int mytid = 0;
     MPI_Initialized(&mytid);
     if (mytid) MPI_Comm_rank(ctx->comm,&mytid);
@@ -53,7 +53,7 @@ int KSPSetFromOptions(KSP ctx)
   */
   {
   int loc[4] = {0,0,300,300},nmax = 4;
-  if (OptionsGetIntArray(0,ctx->prefix,"-ksp_xmonitor",loc,&nmax)){
+  if (OptionsGetIntArray(ctx->prefix,"-ksp_xmonitor",loc,&nmax)){
     int       ierr,mytid = 0;
     DrawLGCtx lg;
     MPI_Initialized(&mytid);
@@ -65,16 +65,16 @@ int KSPSetFromOptions(KSP ctx)
     }
   }
   }
-  if (OptionsHasName(0,ctx->prefix,"-ksp_preres")) {
+  if (OptionsHasName(ctx->prefix,"-ksp_preres")) {
     KSPSetUsePreconditionedResidual(ctx);
   }
-  if (OptionsGetInt(0,ctx->prefix,"-ksp_gmres_restart",&restart)) {
+  if (OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart)) {
     KSPGMRESSetRestart(ctx,restart);
   }
-  if (OptionsHasName(0,0,"-ksp_gmres_unmodifiedgrammschmidt")) {
+  if (OptionsHasName("-ksp_gmres_unmodifiedgrammschmidt")) {
     KSPGMRESSetUseUnmodifiedGrammSchmidt(ctx);
   }
-  if (OptionsHasName(0,0,"-ksp_eigen")) {
+  if (OptionsHasName("-ksp_eigen")) {
     KSPSetCalculateEigenvalues(ctx);
   }
   return 0;

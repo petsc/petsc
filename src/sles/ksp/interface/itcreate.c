@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.33 1995/05/06 17:55:15 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.34 1995/05/16 00:33:22 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -78,8 +78,8 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->usr_monitor= 0;
   ctx->adjust_work_vectors = 0;
   ctx->converged     = KSPDefaultConverged;
-  ctx->BuildSolution = KSPDefaultBuildSolution;
-  ctx->BuildResidual = KSPDefaultBuildResidual;
+  ctx->buildsolution = KSPDefaultBuildSolution;
+  ctx->buildresidual = KSPDefaultBuildResidual;
 
   ctx->vec_sol   = 0;
   ctx->vec_rhs   = 0;
@@ -189,7 +189,7 @@ int KSPRegisterDestroy()
 int KSPGetMethodFromOptions_Private(KSP ctx,KSPMethod *itmethod)
 {
   char sbuf[50];
-  if (OptionsGetString(0,ctx->prefix,"-ksp_method", sbuf, 50 )) {
+  if (OptionsGetString(ctx->prefix,"-ksp_method", sbuf, 50 )) {
     if (!__ITList) KSPRegisterAll();
     *itmethod = (KSPMethod)NRFindID( __ITList, sbuf );
     return 1;

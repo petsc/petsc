@@ -16,8 +16,8 @@ int main(int argc,char **argv)
   Vec      x,y,w,*z;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  OptionsGetInt(0,0,"-n",&n);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,"-n",&n);
 
   /* create a vector */
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);

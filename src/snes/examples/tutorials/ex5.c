@@ -30,7 +30,7 @@ is solved.  The command line options are:\n\
 #include "draw.h"
 #include "snes.h"
 #include "petsc.h"
-#include "ra.h"
+#include "da.h"
 #include <math.h>
 #include <stdio.h>
 #define MIN(a,b) ( ((a)<(b)) ? a : b )
@@ -40,7 +40,7 @@ typedef struct {
       int         mx;            /* Discretization in x-direction */
       int         my;            /* Discretization in y-direction */
       Vec         localX,localF; /* ghosted local vector */
-      RA          ra;            /* regular array datastructure */
+      DA          da;            /* regular array datastructure */
 } AppCtx;
 
 int  FormFunction1(SNES,Vec,Vec,void*),
@@ -58,25 +58,25 @@ int main( int argc, char **argv )
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
 
   user.mx    = 4;
   user.my    = 4;
   user.param = 6.0;
-  OptionsGetInt(0,0,"-mx",&user.mx);
-  OptionsGetInt(0,0,"-my",&user.my);
-  OptionsGetDouble(0,0,"-param",&user.param);
+  OptionsGetInt(0,"-mx",&user.mx);
+  OptionsGetInt(0,"-my",&user.my);
+  OptionsGetDouble(0,"-param",&user.param);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERR(1,"Lambda is out of range");
   }
   N          = user.mx*user.my;
   
   /* Set up distributed array */
-  ierr = RACreate2d(MPI_COMM_WORLD,user.mx,user.my,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,&user.ra); CHKERRA(ierr);
-  ierr = RAGetDistributedVector(user.ra,&x); CHKERR(ierr);
+  ierr = DACreate2d(MPI_COMM_WORLD,user.mx,user.my,PETSC_DECIDE,PETSC_DECIDE,
+                    1,1,&user.da); CHKERRA(ierr);
+  ierr = DAGetDistributedVector(user.da,&x); CHKERR(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = RAGetLocalVector(user.ra,&user.localX); CHKERR(ierr);
+  ierr = DAGetLocalVector(user.da,&user.localX); CHKERR(ierr);
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
   /* Create nonlinear solver */
@@ -108,7 +108,7 @@ int main( int argc, char **argv )
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = RADestroy(user.ra); CHKERR(ierr);
+  ierr = DADestroy(user.da); CHKERR(ierr);
   PetscFinalize();
 
   return 0;
@@ -141,8 +141,8 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 
   ierr = VecGetArray(localX,&x); CHKERR(ierr);
   temp1 = lambda/(lambda + one);
-  RAGetCorners(user->ra,&xs,&ys,0,&xm,&ym,0);
-  RAGetGhostCorners(user->ra,&Xs,&Ys,0,&Xm,&Ym,0);
+  DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);
+  DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);
 
   for (j=ys; j<ys+ym; j++) {
     temp = (double)(MIN(j,my-j-1))*hy;
@@ -157,7 +157,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   }
   ierr = VecRestoreArray(localX,&x); CHKERR(ierr);
   /* stick values into global vector */
-  ierr = RALocalToGlobal(user->ra,localX,INSERTVALUES,X);
+  ierr = DALocalToGlobal(user->da,localX,INSERTVALUES,X);
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -181,11 +181,12 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = RAGlobalToLocal(user->ra,X,INSERTVALUES,localX);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX);
   ierr = VecGetArray(localX,&x); CHKERR(ierr);
   ierr = VecGetArray(localF,&f); CHKERR(ierr);
-  RAGetCorners(user->ra,&xs,&ys,0,&xm,&ym,0);
-  RAGetGhostCorners(user->ra,&Xs,&Ys,0,&Xm,&Ym,0);
+  DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);
+  DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0);
 
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
@@ -207,7 +208,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localX,&x); CHKERR(ierr);
   ierr = VecRestoreArray(localF,&f); CHKERR(ierr);
   /* stick values into global vector */
-  ierr = RALocalToGlobal(user->ra,localF,INSERTVALUES,F);
+  ierr = DALocalToGlobal(user->da,localF,INSERTVALUES,F);
   return 0; 
 }
 

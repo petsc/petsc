@@ -33,6 +33,7 @@
   char*       name;                        \
   /*  ... */                               \
 
+#define  FREEDHEADER -1
 
 #define PETSCHEADERCREATE(h,tp,cook,t,com)                         \
       {h = (struct tp *) NEW(struct tp);                           \
@@ -40,10 +41,11 @@
        MEMSET(h,0,sizeof(struct tp));                              \
        (h)->cookie = cook;                                         \
        (h)->type = t;                                              \
-       (h)->comm = com;}
+       MPI_Comm_dup(com,&(h)->comm);}
 #define PETSCHEADERDESTROY(h)                                      \
-       {FREE(h);}
-#define FREEDHEADER -1
+       {MPI_Comm_free(&(h)->comm);                                 \
+        (h)->cookie = FREEDHEADER;                                 \
+        FREE(h);          }
 
 extern void *PetscLow,*PetscHigh;
 

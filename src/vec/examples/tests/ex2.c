@@ -19,8 +19,8 @@ int main(int argc,char **argv)
   VecScatterCtx ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  OptionsGetInt(0,0,"-n",&n);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,"-n",&n);
 
   /* create two vector */
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.17 1995/05/12 21:27:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.18 1995/05/14 16:32:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -120,11 +120,20 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 {
   int ierr;
   if (itP->right_pre) {
-    if (itP->B) {ierr = PCApply(itP->B, itP->vec_sol, v ); CHKERR(ierr);}
-    else        {ierr = VecCopy(itP->vec_sol, v ); CHKERR(ierr);}
+    if (itP->B) {
+      if (v) { ierr = PCApply(itP->B, itP->vec_sol, v ); CHKERR(ierr); *V = v;}
+      else {SETERR(1,"KSPDefaultBuildSolution: Not working with right pre");}
+    }
+    else        {
+      if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERR(ierr); *V = v;}
+      else { *V = itP->vec_sol;}
+    }
   }
-  else {ierr = VecCopy(itP->vec_sol, v ); CHKERR(ierr);}
-  *V = v; return 0;
+  else {
+    if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERR(ierr); *V = v;}
+    else { *V = itP->vec_sol; }
+  }
+  return 0;
 }
 
 /*@

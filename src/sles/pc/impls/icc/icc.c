@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.8 1995/05/12 20:13:23 curfman Exp curfman $ ";
+static char vcid[] = "$Id: icc.c,v 1.9 1995/05/16 00:39:14 curfman Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -72,7 +72,7 @@ static int PCPrintHelp_ICC(PC pc)
 
 static int PCSetFromOptions_ICC(PC pc)
 {
-  if (OptionsHasName(0,pc->prefix,"-pc_icc_bsiter")) {
+  if (OptionsHasName(pc->prefix,"-pc_icc_bsiter")) {
     PCBSIterSetBlockSolve(pc);
   }
   return 0;

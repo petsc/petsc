@@ -6,7 +6,7 @@ SOURCEF  =
 WSOURCEC = 
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
            sysio.h vec.h sles.h grid.h mg.h stencil.h viewer.h snes.h \
-           ra.h
+           da.h
 OBJSC    =
 WOBJS    = 
 OBJSF    =

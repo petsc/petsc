@@ -15,7 +15,7 @@ int CreateError(double x)
 int main(int argc,char **argv)
 {
   PetscInitialize(&argc,&argv,0,0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,help);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,help);
   fprintf(stderr,"This is a contrived example to test floating pointing\n");
   fprintf(stderr,"It is not a true error.\n");
   fflush(stderr);

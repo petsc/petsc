@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.17 1995/05/05 03:49:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.18 1995/05/16 00:39:04 curfman Exp bsmith $";
 #endif
 
 /*
@@ -99,7 +99,7 @@ static int PCSetFrom_Eisenstat(PC pc)
 {
   double  omega;
 
-  if (OptionsGetDouble(0,pc->prefix,"-pc_sor_omega",&omega)) {
+  if (OptionsGetDouble(pc->prefix,"-pc_sor_omega",&omega)) {
     PCEisenstatSetOmega(pc,omega);
   }
   return 0;

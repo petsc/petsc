@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.21 1995/05/02 18:58:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.22 1995/05/03 13:15:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -235,6 +235,30 @@ int KSPSetAbsoluteTolerance(KSP itP, double tol)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->atol       = tol;
+  return 0;
+}
+
+/*@
+    KSPGetTolerances - Gets the relative, absolute and divergence 
+        tolerances used by the default KSP convergence testers.
+
+  Input Parameter:
+.  ksp - the Krylov subspace context
+  
+  Output Parameters:
+.  rtol - the relative convergence tolerance
+.  atol - the absolute convergence tolerance
+.  dtol - the divergence tolerance
+
+.keywords: convergenc tolerance
+.seealso: KSPSetRelativeTolerance(), KSPSetAbsoluteTolerance()
+@*/
+int KSPGetTolerances(KSP ksp, double *rtol, double *atol, double *dtol)
+{
+  VALIDHEADER(ksp,KSP_COOKIE);
+  *atol = ksp->atol;
+  *rtol = ksp->rtol;
+  *dtol = ksp->divtol;
   return 0;
 }
 
@@ -595,7 +619,8 @@ int KSPGetConvergenceContext(KSP itP, void **ctx)
 
    Output Parameter:
 .  v - optional location to stash solution.  If v is not provided,
-       then a location is generated.
+       then a default location is used. This vector should NOT be 
+       destroyed by the user.
 .  V - the solution
 
    Notes:
@@ -608,14 +633,8 @@ int KSPGetConvergenceContext(KSP itP, void **ctx)
 @*/
 int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 {
-  Vec w = v;
-  int ierr;
   VALIDHEADER(ctx,KSP_COOKIE);
-  if (!w) {
-    ierr = VecDuplicate(ctx->vec_rhs,&w); CHKERR(ierr);
-    PLogObjectParent((PetscObject)ctx,w);
-  }
-  return (*ctx->BuildSolution)(ctx,w,V);
+  return (*ctx->buildsolution)(ctx,v,V);
 }
 
 /*@
@@ -651,7 +670,7 @@ int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
     ierr = VecDuplicate(ctx->vec_rhs,&tt); CHKERR(ierr); flag = 1;
     PLogObjectParent((PetscObject)ctx,tt);
   }
-  ierr = (*ctx->BuildResidual)(ctx,tt,w,V); CHKERR(ierr);
+  ierr = (*ctx->buildresidual)(ctx,tt,w,V); CHKERR(ierr);
   if (flag) ierr = VecDestroy(tt); CHKERR(ierr);
   return ierr;
 }

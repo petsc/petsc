@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.22 1995/05/05 20:05:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.23 1995/05/14 16:31:57 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -16,7 +16,6 @@ static char vcid[] = "$Id: bvec2.c,v 1.22 1995/05/05 20:05:15 curfman Exp bsmith
 
 #include "../bvec1.c"
 #include "../dvec2.c"
-
 
 static int VecNorm_Blas(Vec xin,double* z )
 {
@@ -126,9 +125,9 @@ static int VecDestroy_Seq(PetscObject obj )
   return 0;
 }
 
-static int VecCreate_Blas(Vec,Vec*);
+static int VecDuplicate_Blas(Vec,Vec*);
 
-static struct _VeOps DvOps = {VecCreate_Blas, 
+static struct _VeOps DvOps = {VecDuplicate_Blas, 
             Veiobtain_vectors, Veirelease_vectors, VecDot_Blas, VecMDot_Seq,
             VecNorm_Blas, VecAMax_Seq, VecAsum_Blas, VecDot_Blas, VecMDot_Seq,
             VecScale_Blas, VecCopy_Blas,
@@ -177,7 +176,7 @@ int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
   *V = v; return 0;
 }
 
-static int VecCreate_Blas(Vec win,Vec *V)
+static int VecDuplicate_Blas(Vec win,Vec *V)
 {
   Vec_Seq *w = (Vec_Seq *)win->data;
   return VecCreateSequential(win->comm,w->n,V);

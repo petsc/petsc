@@ -63,17 +63,17 @@ int main( int argc, char **argv )
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&win);
   CHKERRA(ierr);
 
   user.mx    = 4;
   user.my    = 4;
   user.param = 6.0;
-  OptionsGetInt(0,0,"-mx",&user.mx);
-  OptionsGetInt(0,0,"-my",&user.my);
-  OptionsGetDouble(0,0,"-param",&user.param);
-  if (!OptionsHasName(0,0,"-cavity") && 
+  OptionsGetInt(0,"-mx",&user.mx);
+  OptionsGetInt(0,"-my",&user.my);
+  OptionsGetDouble(0,"-param",&user.param);
+  if (!OptionsHasName(0,"-cavity") && 
       (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERR(1,"Lambda is out of range");
   }
@@ -89,7 +89,7 @@ int main( int argc, char **argv )
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  if (OptionsHasName(0,0,"-cavity")){
+  if (OptionsHasName(0,"-cavity")){
     ierr = SNESSetSolution(snes,x,FormInitialGuess2,(void *)&user); 
            CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user,0); 
@@ -120,6 +120,7 @@ int main( int argc, char **argv )
   ierr = VecDestroy(r); CHKERRA(ierr);
   ierr = MatDestroy(J); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = DrawDestroy(win); CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
@@ -252,6 +253,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = VecRestoreArray(X,&x); CHKERR(ierr);
   ierr = MatAssemblyEnd(jac,FINAL_ASSEMBLY); CHKERR(ierr);
+  *flag = ALLMAT_SAME_NONZERO_PATTERN;
   return 0;
 }
 /* ------------------------------------------------------------------ */
@@ -622,6 +624,7 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
   ierr = MatAssemblyBegin(*J,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = VecRestoreArray(X,&x); CHKERR(ierr);
   ierr = MatAssemblyEnd(*J,FINAL_ASSEMBLY); CHKERR(ierr);
+  *flag = ALLMAT_SAME_NONZERO_PATTERN;
   return 0;
 }
 

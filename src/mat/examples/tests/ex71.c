@@ -17,9 +17,9 @@ int main(int argc,char **args)
   Viewer  viewer;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  OptionsGetInt(0,0,"-m",&m);
-  OptionsGetInt(0,0,"-n",&n);
+  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,"-m",&m);
+  OptionsGetInt(0,"-n",&n);
 
   ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERR(ierr);
 

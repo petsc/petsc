@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.32 1995/05/03 13:15:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.33 1995/05/05 20:01:06 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -409,7 +409,7 @@ int VecPDiv(Vec x,Vec y,Vec w)
 int VecDuplicate(Vec v,Vec *newv) 
 {
   VALIDHEADER(v,VEC_COOKIE);
-  return   (*v->ops->create)(v,newv);
+  return   (*v->ops->duplicate)(v,newv);
 }
 /*@
    VecDestroy - Destroys a vector created with VecDuplicate().

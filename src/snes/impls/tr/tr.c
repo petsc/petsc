@@ -1,10 +1,40 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.8 1995/05/14 16:35:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.9 1995/05/16 00:41:37 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "tr.h"
 
+/*
+      This convergence test determines if the two norm of the 
+   solution lies outside the trust region, if so it halts.
+*/
+int TRConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
+{
+  SNES    snes = (SNES) ctx;
+  SNES_TR *neP = (SNES_TR*)snes->data;
+  double  rtol,atol,dtol,norm;
+  Vec     x;
+  int     ierr;
+
+  KSPGetTolerances(ksp,&rtol,&atol,&dtol);
+
+  if ( n == 0 ) {
+    neP->ttol   = MAX(rtol*rnorm,atol);
+    neP->rnorm0 = rnorm;
+  }
+  if ( rnorm <= neP->ttol )      return 1;
+  if ( rnorm >= dtol*neP->rnorm0 || rnorm != rnorm) return -1;
+
+  /* determine norm of solution */
+  ierr = KSPBuildSolution(ksp,0,&x); CHKERR(ierr);
+  ierr = VecNorm(x,&norm); CHKERR(ierr);
+  if (norm >= neP->delta) {
+    PLogInfo((PetscObject)snes,"Ending linear iteration early, delta %g length %g\n",neP->delta,norm);
+    return 1; 
+  }
+  return(0);
+}
 /*
       Implements Newton's Method with a very simple trust region 
     approach for solving systems of nonlinear equations. 
@@ -28,11 +58,13 @@ static int SNESSolve_TR(SNES snes, int *its )
   SNES_TR      *neP = (SNES_TR *) snes->data;
   Vec          X, F, Y, G, TMP, Ytmp;
   int          maxits, i, history_len, nlconv,ierr,lits;
-  MatStructure flg;
+  MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
   double       *history, ynorm;
   Scalar       one = 1.0,cnorm;
   double       epsmch = 1.0e-14;   /* This must be fixed */
+  KSP          ksp;
+  SLES         sles;
 
   nlconv	= 0;			/* convergence monitor */
   history	= snes->conv_hist;	/* convergence history */
@@ -54,12 +86,18 @@ static int SNESSolve_TR(SNES snes, int *its )
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
   if (snes->Monitor)(*snes->Monitor)(snes,0,fnorm,snes->monP);
+
+  /* et the stopping criteria to use the More' trick. */
+  ierr = SNESGetSLES(snes,&sles); CHKERR(ierr);
+  ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
+  ierr = KSPSetConvergenceTest(ksp,TRConverged_Private,(void *) snes);
+  CHKERR(ierr);
  
-   for ( i=0; i<maxits; i++ ) {
+  for ( i=0; i<maxits; i++ ) {
      snes->iter = i+1;
 
-     (*snes->ComputeJacobian)(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                                             &flg,snes->jacP);
+     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
+                                             &flg,snes->jacP); CHKERR(ierr);
      ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
      ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERR(ierr);
      VecNorm( Ytmp, &norm );
@@ -71,9 +109,9 @@ static int SNESSolve_TR(SNES snes, int *its )
          norm = delta/norm;
          gpnorm = (1.0 - norm)*fnorm;
          cnorm = norm;
+         PLogInfo((PetscObject)snes, "Scaling direction by %g \n",norm );
          VecScale( &cnorm, Y );
          norm = gpnorm;
-         PLogInfo((PetscObject)snes, "Scaling direction by %g \n",norm );
          ynorm = delta;
        } else {
          gpnorm = 0.0;
@@ -139,6 +177,7 @@ static int SNESDestroy_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
   VecFreeVecs(snes->work, snes->nwork );
+  FREE(snes->data);
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -148,13 +187,13 @@ static int SNESSetFromOptions_TR(SNES snes)
   SNES_TR *ctx = (SNES_TR *)snes->data;
   double  tmp;
 
-  if (OptionsGetDouble(0,snes->prefix,"-mu",&tmp)) {ctx->mu = tmp;}
-  if (OptionsGetDouble(0,snes->prefix,"-eta",&tmp)) {ctx->eta = tmp;}
-  if (OptionsGetDouble(0,snes->prefix,"-sigma",&tmp)) {ctx->sigma = tmp;}
-  if (OptionsGetDouble(0,snes->prefix,"-delta0",&tmp)) {ctx->delta0 = tmp;}
-  if (OptionsGetDouble(0,snes->prefix,"-delta1",&tmp)) {ctx->delta1 = tmp;}
-  if (OptionsGetDouble(0,snes->prefix,"-delta2",&tmp)) {ctx->delta2 = tmp;}
-  if (OptionsGetDouble(0,snes->prefix,"-delta3",&tmp)) {ctx->delta3 = tmp;}
+  if (OptionsGetDouble(snes->prefix,"-mu",&tmp)) {ctx->mu = tmp;}
+  if (OptionsGetDouble(snes->prefix,"-eta",&tmp)) {ctx->eta = tmp;}
+  if (OptionsGetDouble(snes->prefix,"-sigma",&tmp)) {ctx->sigma = tmp;}
+  if (OptionsGetDouble(snes->prefix,"-delta0",&tmp)) {ctx->delta0 = tmp;}
+  if (OptionsGetDouble(snes->prefix,"-delta1",&tmp)) {ctx->delta1 = tmp;}
+  if (OptionsGetDouble(snes->prefix,"-delta2",&tmp)) {ctx->delta2 = tmp;}
+  if (OptionsGetDouble(snes->prefix,"-delta3",&tmp)) {ctx->delta3 = tmp;}
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.16 1995/05/15 16:54:39 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.17 1995/05/16 00:40:57 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -30,7 +30,7 @@ int SNESSolve_LS( SNES snes, int *outits )
 {
   SNES_LS      *neP = (SNES_LS *) snes->data;
   int          maxits, i, history_len,ierr,lits;
-  MatStructure flg;
+  MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   double       fnorm, gnorm, xnorm, ynorm, *history;
   Vec          Y, X, F, G, W, TMP;
 
@@ -55,8 +55,8 @@ int SNESSolve_LS( SNES snes, int *outits )
        snes->iter = i+1;
 
        /* Solve J Y = -F, where J is Jacobian matrix */
-       (*snes->ComputeJacobian)(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                &flg,snes->jacP);
+       ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
+                                &flg,snes->jacP); CHKERR(ierr);
        ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
        ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERR(ierr);
        ierr = (*neP->LineSearch)(snes, X, F, G, Y, W, fnorm, &ynorm, &gnorm );
@@ -86,7 +86,6 @@ int SNESSolve_LS( SNES snes, int *outits )
   return 0;
 }
 /* ------------------------------------------------------------ */
-/*ARGSUSED*/
 int SNESSetUp_LS(SNES snes )
 {
   int ierr;
@@ -96,14 +95,11 @@ int SNESSetUp_LS(SNES snes )
   return 0;
 }
 /* ------------------------------------------------------------ */
-/*ARGSUSED*/
 int SNESDestroy_LS(PetscObject obj)
 {
   SNES snes = (SNES) obj;
-  SLESDestroy(snes->sles);
   VecFreeVecs(snes->work, snes->nwork );
-  PLogObjectDestroy(obj);
-  PETSCHEADERDESTROY(obj);
+  FREE(snes->data);
   return 0;
 }
 /*@ 
@@ -567,16 +563,16 @@ static int SNESSetFromOptions_LS(SNES snes)
   char    ver[16];
   double  tmp;
 
-  if (OptionsGetDouble(0,snes->prefix,"-snes_line_search_alpa",&tmp)) {
+  if (OptionsGetDouble(snes->prefix,"-snes_line_search_alpa",&tmp)) {
     ls->alpha = tmp;
   }
-  if (OptionsGetDouble(0,snes->prefix,"-snes_line_search_maxstep",&tmp)) {
+  if (OptionsGetDouble(snes->prefix,"-snes_line_search_maxstep",&tmp)) {
     ls->maxstep = tmp;
   }
-  if (OptionsGetDouble(0,snes->prefix,"-snes_line_search_steptol",&tmp)) {
+  if (OptionsGetDouble(snes->prefix,"-snes_line_search_steptol",&tmp)) {
     ls->steptol = tmp;
   }
-  if (OptionsGetString(0,snes->prefix,"-snes_line_search",ver,16)) {
+  if (OptionsGetString(snes->prefix,"-snes_line_search",ver,16)) {
     if (!strcmp(ver,"basic")) {
       SNESSetLineSearchRoutine(snes,SNESNoLineSearch);
     }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.7 1995/05/03 04:04:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.8 1995/05/14 16:32:37 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -17,9 +17,15 @@ static char vcid[] = "$Id: fp.c,v 1.7 1995/05/03 04:04:44 bsmith Exp bsmith $";
 /*----------------IEEE error handler for Sun SparcStations.--------------*/
 #if defined(PARCH_sun4) 
 #include <floatingpoint.h>
+#if defined(__cplusplus)
+extern "C" {
+#endif
 int ieee_flags(char*,char*,char*,char**);
 int ieee_handler(char *,char *,
                  sigfpe_handler_type(int,int,struct sigcontext*,char *));
+#if defined(__cplusplus)
+};
+#endif
 struct { int code_no; char *name; } error_codes[] = {
        { FPE_INTDIV_TRAP	, "integer divide" } ,
 	   { FPE_FLTOPERR_TRAP	, "IEEE operand error" } ,
