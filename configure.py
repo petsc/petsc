@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+import args
 import PETSc
 import PETSc.Configure
 
+import cPickle
 import os
 import re
+import sys
 
 ## SECTION: Initialization
 # Set default language to C
@@ -11,10 +14,11 @@ import re
 ## SECTION: Installation
 
 class Configure:
-  def __init__(self):
-    self.defines = {}
-    self.subst   = {}
-    self.help    = {}
+  def __init__(self, framework):
+    self.framework = framework
+    self.defines   = {}
+    self.subst     = {}
+    self.help      = {}
     # Interaction with Autoconf
     self.m4         = '/usr/bin/m4'
     self.acMacroDir = '/usr/share/autoconf'
@@ -41,6 +45,24 @@ class Configure:
   def addHelp(self, name, comment):
     '''Associate a help string with the variable "name"'''
     self.help[name] = comment
+    return
+
+  def getArgument(self, name, defaultValue = None, prefix = '', conversion = None):
+    '''Define "self.name" to be the argument "name" if it was given, otherwise use "defaultValue"
+    - "prefix" is just a string prefix for "name"
+    - "conversion" is an optional conversion function for the string value
+    '''
+    argName = prefix+name
+    value   = None
+    if self.framework.argDB.has_key(argName):
+      value = self.framework.argDB[argName]
+    else:
+      value = defaultValue
+    if not value is None:
+      if not conversion is None:
+        setattr(self, name, conversion(value))
+      else:
+        setattr(self, name, value)
     return
 
   def getDefaultMacros(self):
@@ -127,13 +149,27 @@ class Configure:
     pass
 
 class Framework(Configure):
-  def __init__(self):
-    Configure.__init__(self)
+  def __init__(self, clArgs = None):
+    Configure.__init__(self, self)
     self.children   = []
     self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles = {}
     self.header     = 'matt_config.h'
+    self.argDB      = self.setupArgDB(clArgs)
     return
+
+  def setupArgDB(self, clArgs):
+    filename = 'configureArg.db'
+    parent   = 'bs'
+
+    if os.path.exists(filename):
+      f     = file(filename)
+      argDB = cPickle.load(f)
+      f.close()
+    else:
+      argDB = args.ArgDict(os.path.join(os.getcwd(), filename), parent)
+    argDB.input(clArgs)
+    return argDB
 
   def addSubstitutionFile(self, inName, outName = ''):
     '''Designate that file should experience substitution
@@ -221,7 +257,7 @@ class Framework(Configure):
       f.write('#define '+name+' '+value+'\n')
     else:
       f.write('/* #undef '+name+' */\n')
-    f.write('#endif\n')
+    f.write('#endif\n\n')
 
   def outputDefines(self, f, child, prefix = None):
     '''If the child contains a dictionary named "defines", the entries are output as defines in the config header.
@@ -265,7 +301,7 @@ class Framework(Configure):
 
 if __name__ == '__main__':
   print 'Matt kicks ass'
-  framework = Framework()
+  framework = Framework(sys.argv[1:])
   framework.children.append(PETSc.Configure.Configure(framework))
   framework.addSubstitutionFile('matt')
   framework.configure()
