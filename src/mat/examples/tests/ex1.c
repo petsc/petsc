@@ -15,6 +15,7 @@ int main(int argc,char **argv)
   Vec          x,y,b;
   PetscReal    norm;
   IS           perm;
+  MatLUInfo    luinfo;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 
@@ -72,6 +73,11 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %A\n",norm);CHKERRQ(ierr);
   ierr = MatDestroy(fact);CHKERRQ(ierr);
 
+  luinfo.fill = 2.0;
+  luinfo.dtcol = 0.0; 
+  luinfo.damping = 0.0; 
+  luinfo.zeropivot = 1.e-14; 
+  luinfo.pivotinblocks = 1.0; 
   ierr = MatLUFactorSymbolic(mat,perm,perm,PETSC_NULL,&fact);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(mat,&fact);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
