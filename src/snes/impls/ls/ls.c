@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.83 1997/01/21 21:50:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.84 1997/01/27 18:18:32 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -228,7 +228,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = VecNorm(y,NORM_2,ynorm); CHKERRQ(ierr);
   if (*ynorm == 0.0) {
     PLogInfo(snes,"SNESCubicLineSearch: Search direction and size is 0\n");
-    goto theend;
+    goto theend1;
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
@@ -258,7 +258,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
     PLogInfo(snes,"SNESCubicLineSearch: Using full step\n");
-    goto theend;
+    goto theend1;
   }
 
   /* Fit points with quadratic */
@@ -280,7 +280,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
     PLogInfo(snes,"SNESCubicLineSearch: Quadratically determined step, lambda=%g\n",lambda);
-    goto theend;
+    goto theend1;
   }
 
   /* Fit points with cubic */
@@ -333,7 +333,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
     }
     count++;
   }
-  theend:
+  theend1:
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }
@@ -389,7 +389,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   VecNorm(y, NORM_2,ynorm );
   if (*ynorm == 0.0) {
     PLogInfo(snes,"SNESQuadraticLineSearch: Search direction and size is 0\n");
-    goto theend;
+    goto theend2;
   }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
@@ -414,7 +414,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
     ierr = VecCopy(w,y); CHKERRQ(ierr);
     PLogInfo(snes,"SNESQuadraticLineSearch: Using full step\n");
-    goto theend;
+    goto theend2;
   }
 
   /* Fit points with quadratic */
@@ -453,7 +453,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     }
     count++;
   }
-  theend:
+  theend2:
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }

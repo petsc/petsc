@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.69 1997/02/05 21:56:45 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.70 1997/02/15 21:34:19 curfman Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -121,10 +121,11 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
       }
       for ( i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
-        if (imag(values[i]) != 0.0) {
+        if (imag(values[i]) > 0.0) {
           fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
-        }
-        else {
+        } else if (imag(values[i]) < 0.0) {
+          fprintf(fd,"%g - %g i\n",real(values[i]),-imag(values[i]));
+        } else {
           fprintf(fd,"%g\n",real(values[i]));
         }
 #else

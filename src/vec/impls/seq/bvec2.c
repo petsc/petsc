@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.86 1997/01/12 04:32:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.87 1997/02/05 21:56:44 bsmith Exp curfman $";
 #endif
 /*
    Implements the sequential vectors.
@@ -79,10 +79,11 @@ static int VecView_Seq_File(Vec xin,Viewer viewer)
     fprintf(fd,"%s = [\n",outputname);
     for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
-      if (imag(x->array[i]) != 0.0) {
-        fprintf(fd,"%18.16e + %18.16e\n",real(x->array[i]),imag(x->array[i]));
-      }
-      else {
+      if (imag(x->array[i]) > 0.0) {
+        fprintf(fd,"%18.16e + %18.16e i\n",real(x->array[i]),imag(x->array[i]));
+      } else if (imag(x->array[i]) < 0.0) {
+        fprintf(fd,"%18.16e - %18.16e i\n",real(x->array[i]),-imag(x->array[i]));
+      } else {
         fprintf(fd,"%18.16e\n",real(x->array[i]));
       }
 #else
