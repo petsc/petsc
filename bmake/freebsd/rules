@@ -1,33 +1,68 @@
-# $Id: base,v 1.50 1998/11/06 22:14:53 balay Exp balay $ 
+# $Id: base,v 1.51 1998/11/06 22:31:49 balay Exp balay $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = ranlib
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = gcc -fPIC
+C_FC             = f77 -Nn1000
+C_CLINKER        = gcc -Wl,-R,${LDIR}:${DYLIBPATH}
+C_FLINKER        = f77 -Wl,-R,${LDIR}:${DYLIBPATH}
+C_CCV            = gcc --version
+C_SYS_LIB        = -lf2c -lm
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g -Wall -Wshadow  -fomit-frame-pointer  
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O -Wall -Wshadow  -fomit-frame-pointer  
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CC               = g++ -fPIC
+C_FC             = f77 -Nn1000
+CLINKER          = g++ -Wl,-R,${LDIR}:${DYLIBPATH}
+FLINKER          = g++ -Wl,-R,${LDIR}:${DYLIBPATH}
+C_CCV            = g++ --version
+C_SYS_LIB        = -lf2c -lm
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g 
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g 
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O 
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_g -DUSE_PETSC_STACK \
+	           -DUSE_PETSC_LOG
+O_PETSCFLAGS     = -DUSE_FOR_KERNELS -DUSE_PETSC_DEBUG  -DUSE_PETSC_BOPT_O \
+	           -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+OCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O 
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_g -DUSE_PETSC_LOG  \
+                   -DUSE_PETSC_COMPLEX -DUSE_PETSC_STACK \
+                   -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG \
+                   -DUSE_PETSC_COMPLEX -DUSES_TEMPLATED_COMPLEX
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
 
 PARCH    = freebsd
-CC       = gcc -fPIC
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then leave this blank.
-#
-CCV      = ${CC} --version
-#
-#
-# We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
-# large Fortran files, you can increase the 1000 if need be.
-# 
-FC       = f77 -Nn1000
-AR       = ar
-RM       = rm -f
-#
-# Older versions of freebsd may require the use of gnumake
-# If you encounter problems with freebsd-make please send
-# the output of make to petsc-maint@mcs.anl.gov
-# 
-#OMAKE    = gmake  --no-print-directory
-OMAKE    = make
-RANLIB   = ranlib
-SHELL    = /bin/sh
-CLINKER  = gcc ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
-FLINKER  = f77 ${FOPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
-
-SYS_LIB  = 
 
 include ${PETSC_DIR}/bmake/common
 
@@ -75,4 +110,17 @@ shared: chkopts_basic
 	  fi; \
 	done
 
-shared:
+#
+# Notes:
+#
+# We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
+# large Fortran files, you can increase the 1000 if need be.
+#
+# Older versions of freebsd may require the use of gnumake
+# If you encounter problems with freebsd-make please send
+# the output of make to petsc-maint@mcs.anl.gov
+# 
+#OMAKE    = gmake  --no-print-directory
+
+
+

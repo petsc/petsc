@@ -1,4 +1,4 @@
-# $Id: base,v 1.19 1998/09/25 21:39:14 balay Exp balay $ 
+# $Id: base,v 1.20 1998/11/20 18:47:36 balay Exp balay $ 
 
 PARCH    = solaris
 CC       = /home/alice/software/egcs/solaris/bin/gcc -fPIC
@@ -19,7 +19,7 @@ FLINKER  = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} -Wl,-R,${LDIR}
 
 
 
-SYS_LIB  = -lnsl -lsocket -lc
+SYS_LIB  = -lnsl -lsocket -lc -ldl
 
 include ${PETSC_DIR}/bmake/common
 
