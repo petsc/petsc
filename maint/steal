@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: steal,v 1.8 1999/02/09 00:24:41 balay Exp balay $ 
+# $Id: steal,v 1.9 1999/02/09 00:26:45 balay Exp balay $ 
 
 # 
 # steals a lock from one person to another.
@@ -10,8 +10,8 @@ set basename = `basename $dirname`
 set newname  = /home/bsmith/petsc/maint/stolen/${basename}_$1
 /bin/mv $1 $newname
 rcs -u $1 
-/usr/local/bin/co -l $1
+co -l $1
 /bin/cp $newname $1
-/usr/local/bin/ci -u $1
-/usr/local/bin/co -l $1
+ci -u $1
+co -l $1
 chmod g+w $newname

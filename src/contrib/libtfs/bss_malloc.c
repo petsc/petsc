@@ -1,4 +1,4 @@
-/*$Id: bss_malloc.c,v 1.2 2001/04/10 19:37:38 bsmith Exp bsmith $*/
+/*$Id: bss_malloc.c,v 1.3 2001/04/12 20:59:29 balay Exp balay $*/
 /********************************bss_malloc.c**********************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -69,9 +69,13 @@ static int my_id=0;
 #endif
 
 
-EXTERN_C_BEGIN
+#if defined(__cplusplus)
+extern "C" {
+#endif
 extern void *malloc(size_t);
-EXTERN_C_END
+#if defined(__cplusplus)
+}
+#endif
 
 /* malloc stats and space for bss and perm flavors */
 static int    perm_req       = 0;
