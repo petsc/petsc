@@ -166,6 +166,8 @@ class Configure(config.base.Configure):
       libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf90mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]      
       libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
       yield libs
+      # IBM 
+      yield [os.path.join(root, 'lib', 'libmpi_r.a')]
       #  SGI 
       yield [os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'libmpi++.a')]
       yield [os.path.join(root, 'lib', 'libmpi.a')]      
@@ -226,6 +228,9 @@ class Configure(config.base.Configure):
     # Try SUSE location
     dir = os.path.abspath(os.path.join('/opt', 'mpich'))
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+    # Try IBM
+    dir = os.path.abspath(os.path.join('/usr', 'lpp', 'ppe.poe'))
+    yield ('IBM location (/usr/lpp/ppe.poe)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
     yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])

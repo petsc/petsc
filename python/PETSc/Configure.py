@@ -485,12 +485,24 @@ class Configure(config.base.Configure):
         jobs.append('2')
       if 'FC' in self.framework.argDB:
         jobs.append('3')
+    if os.path.isfile(os.path.join(self.bmakeDir, 'jobs')):
+      try:
+        os.unlink(os.path.join(self.bmakeDir, 'jobs'))
+      except:
+        raise RuntimeError('Unable to remove file '+os.path.join(self.bmakeDir, 'jobs')+'. Did a different user create it?')
     jobsFile  = file(os.path.abspath(os.path.join(self.bmakeDir, 'jobs')), 'w')
     jobsFile.write(' '.join(jobs)+'\n')
     jobsFile.close()
+    self.framework.actions.addArgument('PETSc', 'File creation', 'Generated list of jobs for testing in '+os.path.join(self.bmakeDir,'jobs'))
+    if os.path.isfile(os.path.join(self.bmakeDir, 'ejobs')):
+      try:
+        os.unlink(os.path.join(self.bmakeDir, 'ejobs'))
+      except:
+        raise RuntimeError('Unable to remove file '+os.path.join(self.bmakeDir, 'ejobs')+'. Did a different user create it?')
     ejobsFile = file(os.path.abspath(os.path.join(self.bmakeDir, 'ejobs')), 'w')
     ejobsFile.write(' ')
     ejobsFile.close()
+    self.framework.actions.addArgument('PETSc', 'File creation', 'Generated list of jobs for testing in '+os.path.join(self.bmakeDir,'ejobs'))
     return
 
   def configureScript(self):
