@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.18 1995/03/30 21:17:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.19 1995/04/12 18:39:13 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -160,22 +160,22 @@ int KSPRegisterDestroy()
 }
 
 /*@C
-  KSPGetMethodFromOptions - Sets the selected method from the options
+  KSPGetMethodFromOptions - Sets the selected KSP method from the options
                             database.
 
-  Input parameters:
+  Input Parameter:
 . ctx - the KSP context
 
-  Output parameter:
-. itmethod - iterative method type
+  Output Parameter:
+. itmethod - iterative method
 
   Returns:
-  Returns 1 if the method is found; returns 0 otherwise.
+  Returns 1 if the method is found; 0 otherwise.
 
   Options Database Key:
 $ -kspmethod  itmethod
 @*/
-int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod )
+int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod)
 {
   char sbuf[50];
   if (OptionsGetString(0,ctx->prefix,"-kspmethod", sbuf, 50 )) {
@@ -188,10 +188,13 @@ int KSPGetMethodFromOptions(KSP ctx,KSPMETHOD *itmethod )
 
 /*@C
    KSPGetMethodName - Gets the KSP method name (as a string) from 
-             the method type.
+                      the method type.
 
    Input Parameter:
-.  itctx - Iterative context
+.  itmeth - KSP method
+
+   Output Parameter:
+.  name - name of KSP method
 @*/
 int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 {
@@ -202,14 +205,15 @@ int KSPGetMethodName(KSPMETHOD  itmeth,char **name )
 
 #include <stdio.h>
 /*@C
-    KSPPrintMethods - Prints the Krylov space methods available 
-              from the options database.
+   KSPPrintMethods - Prints the Krylov space methods available 
+                     from the options database.
 
-  Input Parameters:
-.   name - the  options name (usually -kspmethod) 
+   Input Parameters:
+.  prefix - prefix (usually "-")
+.  name - the options database name (by default "kspmethod") 
 
-  Note:
-  See also KSPPrintHelp().
+   Note:
+   This routine is called from KSPPrintHelp().
 @*/
 int KSPPrintMethods(char* prefix,char *name)
 {

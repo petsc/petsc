@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.5 1995/03/04 16:54:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.6 1995/03/06 03:49:52 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -71,15 +71,20 @@ int PCRegisterDestroy()
 }
 
 /*@C
-  PCGetMethodFromOptions - Sets the selected method from the options database.
+  PCGetMethodFromOptions - Sets the selected PC method from the options 
+                           database.
 
-  Input parameters:
-. flag - 1 if argument should be removed from list if found 
-. sname - name used to indicate solver.  If null, -itmethod is used
+  Input Parameter:
+. pc - the preconditioner context
 
-  Output parameter:
-. pcmethod -  Iterative method type
-. returns 1 if method found else 0.
+  Output Parameter:
+. method - PC method
+
+  Returns:
+  1 if method is found; otherwise 0.
+
+  Options Database Key:
+$ -pcmethod  method
 @*/
 int PCGetMethodFromOptions(PC pc,PCMETHOD *method )
 {
@@ -93,12 +98,16 @@ int PCGetMethodFromOptions(PC pc,PCMETHOD *method )
 }
 
 /*@C
-   PCGetMethodName - Get the name (as a string) from the method type
+   PCGetMethodName - Gets the PC method name (as a string) from the 
+                     method type.
 
    Input Parameter:
-.  itctx - Preconditioner context
+.  meth - preconditioner method
+
+   Output Parameter:
+.  name - name of preconditioner
 @*/
-int PCGetMethodName(PCMETHOD meth,char **name )
+int PCGetMethodName(PCMETHOD meth,char **name)
 {
   if (!__PCList) PCRegisterAll();
   *name = NRFindName( __PCList, (int)meth );
@@ -107,11 +116,15 @@ int PCGetMethodName(PCMETHOD meth,char **name )
 
 #include <stdio.h>
 /*@C
-    PCPrintMethods - prints the preconditioner methods available 
-              from the command line.
+    PCPrintMethods - Prints the preconditioner methods available 
+                     from the options database.
 
-  Input Parameters:
-.   name - the command line option (usually -pcmethod) 
+   Input Parameters:
+.  prefix - prefix (usually "-")
+.  name - the options database name (by default "pcmethod") 
+
+   Notes:
+   This routine is called from PCPrintHelp().
 @*/
 int PCPrintMethods(char *prefix,char *name)
 {
@@ -127,14 +140,16 @@ int PCPrintMethods(char *prefix,char *name)
   return 0;
 }
 /*@
-    PCSetFromOptions - sets PC options from the command line.
-                            This must be called before PCPSetUp()
-                            if the user is to be allowed to set the 
-                            preconditioner method. 
+   PCSetFromOptions - Sets PC options from the command line.
+                      This must be called before PCSetUp()
+                      if the user is to be allowed to set the 
+                      preconditioner method. 
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
-   
+
+   Note:
+   See PCPrintHelp() for a list of available PC options.   
 @*/
 int PCSetFromOptions(PC pc)
 {
