@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.5 1997/09/26 14:55:35 balay Exp balay $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.6 1997/09/26 14:56:37 balay Exp balay $";
 #endif
 
 /*
@@ -106,11 +106,11 @@ int AODataView_Basic_ASCII(PetscObject obj,Viewer viewer)
 #else
           Scalar x = mdata[k*item->bs + j];
           if (imag(x) > 0.0) {
-            fprintf(fd," %18.16e + %18.16e i \n",real(x,imag(x);
+            fprintf(fd," %18.16e + %18.16e i \n",real(x),imag(x));
           } else if (imag(x) < 0.0) {
             fprintf(fd," %18.16e - %18.16e i \n",real(x),-imag(x));
           } else {
-            fprintf(fd," %18.16e \n",real(x);
+            fprintf(fd," %18.16e \n",real(x));
           }
 #endif
         }
