@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.13 1995/07/06 17:19:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.14 1995/07/07 17:16:11 bsmith Exp bsmith $";
 #endif
 
 
@@ -92,10 +92,6 @@ int DisAssemble_MPIAIJ(Mat A)
   int        ierr,i,j,m=Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
   int        *nz;
   Scalar     v;
-
-/*
-fprintf(stderr,"Warning: you are adding tricky new nonzeros\n");
-*/
 
   /* free stuff related to matrix-vec multiply */
   ierr = VecDestroy(aij->lvec); CHKERRQ(ierr); aij->lvec = 0;

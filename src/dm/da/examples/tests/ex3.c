@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   double    tempx, tempy;
  
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
 
   OptionsGetInt(0,"-M",&M);
     

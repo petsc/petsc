@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.21 1995/06/18 16:24:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.22 1995/07/07 16:16:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -107,7 +107,7 @@ static int PCPrintHelp_Eisenstat(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
+  MPIU_print(pc->comm," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
   return 0;
 }
 int PCCreate_Eisenstat(PC pc)

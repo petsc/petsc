@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.26 1995/07/17 03:54:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.27 1995/07/17 20:40:20 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -142,20 +142,20 @@ int PetscFinalize()
   OptionsHasName(0,"-trdump");
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   if (OptionsHasName(0,"-optionstable")) {
-    if (!mytid) OptionsPrint(stderr);
+    if (!mytid) OptionsPrint(stdout);
   }
   if (OptionsHasName(0,"-optionsleft")) {
     if (!mytid) {
       int nopt = OptionsAllUsed();
       if (nopt == 0) 
-        fprintf(stderr,"There are no unused options.\n");
+        fprintf(stdout,"There are no unused options.\n");
       else if (nopt == 1) 
-        fprintf(stderr,"There is one unused database option. It is:\n");
+        fprintf(stdout,"There is one unused database option. It is:\n");
       else
-        fprintf(stderr,"There are %d unused database options. They are:\n",nopt);
+        fprintf(stdout,"There are %d unused database options. They are:\n",nopt);
       for ( i=0; i<options->N; i++ ) {
         if (!options->used[i]) {
-          fprintf(stderr,"Option left: name:%s value: %s\n",options->names[i],
+          fprintf(stdout,"Option left: name:%s value: %s\n",options->names[i],
                                                            options->values[i]);
         }
       }

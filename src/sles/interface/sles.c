@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.28 1995/07/09 23:17:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.29 1995/07/11 13:29:37 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -52,7 +52,7 @@ int SLESView(SLES sles,Viewer viewer)
 int SLESPrintHelp(SLES sles)
 {
   VALIDHEADER(sles,SLES_COOKIE);
-  fprintf(stderr,"SLES options:\n");
+  MPIU_printf(sles->comm,"SLES options:\n");
   KSPPrintHelp(sles->ksp);
   PCPrintHelp(sles->pc);
   return 0;

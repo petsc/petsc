@@ -16,7 +16,7 @@ int main(int argc,char **args)
   SLES          sles;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,help);
   OptionsGetInt(0,"-m",&m);
   OptionsGetInt(0,"-n",&n);
 

@@ -35,7 +35,7 @@ int main(int argc,char **args)
   IS          is;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
   OptionsGetInt(0,"-m",&m);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */

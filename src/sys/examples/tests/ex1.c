@@ -17,8 +17,8 @@ int main(int argc,char **argv)
 {
   int ierr;
   PetscInitialize(&argc,&argv,0,0);
-  fprintf(stderr,"Demonstrates Petsc Error Handlers\n");
-  fprintf(stderr,"The error below is a contrived error to test the code\n");
+  fprintf(stdout,"Demonstrates Petsc Error Handlers\n");
+  fprintf(stdout,"The error below is a contrived error to test the code\n");
   ierr = CreateError(5); CHKERRA(ierr);
   PetscFinalize();
   return 0;

@@ -51,7 +51,7 @@ int main(int Argc, char **Args)
   OptionsGetInt(0,"-l",&levels);  
   OptionsGetInt(0,"-c",&cycles);  
   OptionsGetInt(0,"-smooths",&smooths);  
-  if (OptionsHasName(0,"-help")) {fprintf(stderr,"%s",help); exit(0);}
+  if (OptionsHasName(0,"-help")) {fprintf(stdout,"%s",help); exit(0);}
   if (OptionsHasName(0,"-a")) {am = MGADDITIVE;}
   if (OptionsHasName(0,"-f")) {am = MGFULL;}
   if (OptionsHasName(0,"-j")) {use_jacobi = 1;}

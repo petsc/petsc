@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.44 1995/07/13 23:04:46 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.45 1995/07/18 13:39:59 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -244,11 +244,11 @@ int KSPPrintMethods_Private(char* prefix,char *name)
   FuncList *entry;
   if (!__ITList) {KSPRegisterAll();}
   entry = __ITList->head;
-  fprintf(stderr," %s%s (one of)",prefix,name);
+  fprintf(stdout," %s%s (one of)",prefix,name);
   while (entry) {
-    fprintf(stderr," %s",entry->name);
+    fprintf(stdout," %s",entry->name);
     entry = entry->next;
   }
-  fprintf(stderr,"\n");
+  fprintf(stdout,"\n");
   return 1;
 }

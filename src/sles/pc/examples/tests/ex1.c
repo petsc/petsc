@@ -13,7 +13,7 @@ int main(int argc,char **args)
   Mat mat;
 
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
   ierr = PCCreate(MPI_COMM_WORLD,&pc);		CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCNONE);		CHKERRA(ierr);
 

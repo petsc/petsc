@@ -63,7 +63,7 @@ int main( int argc, char **argv )
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&win);
   CHKERRA(ierr);
 

@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,help);
   OptionsGetInt(0,"-width",&width); OptionsGetInt(0,"-height",&height);
   OptionsGetInt(0,"-n",&n);
   if (OptionsHasName(0,"-nolabels")) {

@@ -53,7 +53,7 @@ int main( int argc, char **argv )
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
 
   user.mx    = 4; user.my    = 4; user.param = 6.0;
   OptionsGetInt(0,"-mx",&user.mx); OptionsGetInt(0,"-my",&user.my);

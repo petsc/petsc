@@ -18,7 +18,7 @@ int main(int argc,char **argv)
 {
   int i, imax=10000, icount, ierr;
   PetscInitialize(&argc,&argv,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,help);
 
   PLogEventRegister(USER_EVENT,"User event      ");
   PLogEventBegin(USER_EVENT,0,0,0,0);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.27 1995/07/20 02:34:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.28 1995/07/20 03:58:50 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -82,10 +82,10 @@ static int PCPrintHelp_BJacobi(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr," %spc_bjacobi_blocks blks: blocks in preconditioner\n",p);
-  fprintf(stderr, " %spc_bjacobi_truelocal: use blocks from the local linear\
+  MPIU_printf(pc->comm," %spc_bjacobi_blocks blks: blocks in preconditioner\n",p);
+  MPIU_printf(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
-  fprintf(stderr," %ssub : prefix to control options for individual blocks.\
+  MPIU_printf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (i.e., -sub_ksp_method\
  <meth>)\n",p);
   return 0;

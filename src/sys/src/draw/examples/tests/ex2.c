@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   int     ierr, x = 0, y = 0, width = 256, height = 256,i; 
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,help);
 
   ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
   CHKERRA(ierr);

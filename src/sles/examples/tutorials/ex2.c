@@ -13,7 +13,7 @@ int main(int argc,char **args)
   Vec       x, u, b;                       Mat       A; 
   SLES      sles;                          double    norm;
   PetscInitialize(&argc,&args,0,0);
-  if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
   OptionsGetInt(0,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);  n = 2*numtids;
