@@ -10,10 +10,12 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Check the routine MatSetOption_MPIBDiag() - may not be
+    passing all options to local matrix.
+
   - Write preprocessor that zips through all of PETSc finding SETERRQ()
     setting unique error code number and save to big file: error code,
     file, line number and error message.
-
 
   - Support y = alpha *y + beta *A *x
 
@@ -24,7 +26,7 @@ Additional Capabilities that PETSc Needs:
 
   - Have two types of error tests, one assert type and one real error type
 
- - allow more then one TS monitor. Model on KSP.
+ - allow more than one TS monitor. Model on KSP.
 
  - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
 

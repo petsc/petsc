@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.173 1996/11/01 23:39:29 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.174 1996/11/19 16:31:04 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -893,6 +893,7 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
       op == MAT_COLUMNS_SORTED ||
       op == MAT_ROW_ORIENTED) {
+        a->roworiented = 1;
         MatSetOption(a->A,op);
         MatSetOption(a->B,op);
   }

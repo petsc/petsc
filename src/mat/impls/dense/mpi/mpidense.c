@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.51 1996/11/07 15:09:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.52 1996/11/19 16:30:50 bsmith Exp curfman $";
 #endif
 
 /*
@@ -626,6 +626,7 @@ static int MatSetOption_MPIDense(Mat A,MatOption op)
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
       op == MAT_COLUMNS_SORTED ||
       op == MAT_ROW_ORIENTED) {
+        a->roworiented = 1;
         MatSetOption(a->A,op);
   }
   else if (op == MAT_ROWS_SORTED || 
