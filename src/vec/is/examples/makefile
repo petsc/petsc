@@ -1,25 +1,22 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
-FFLAGS	      = 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscvec
-LOCDIR        = src/is/examples
-RUNEXAMPLES_1 = runex2
-EXAMPLES_1    = ex2
-RUNEXAMPLES_2 = runex1
-EXAMPLES_2    = ex1
-EXAMPLESC     = ex1.c ex2.c
-EXAMPLESF     = ex3.F
-EXAMPLES_3    = ex3
-RUNEXAMPLES_3 = runex3
-EXAMPLES_4    = ex1 ex2 
-RUNEXAMPLES_4 = runex1 runex2
+CFLAGS	       =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
+FFLAGS	       = 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscvec
+LOCDIR         = src/is/examples
+TESTEXAMPLES_1 = ex2 runex2 clean
+TESTEXAMPLES_2 = ex1 runex1 clean
+TESTEXAMPLES_3 = ex3 runex3 clean
+TESTEXAMPLES_4 = ex1 runex1 clean ex2 runex2 clean
+EXAMPLESC      = ex1.c ex2.c
+EXAMPLESF      = ex3.F
+EXAMPLES       = ex1 ex2 ex3
 
 ex1: ex1.o chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(SLES_LIB)
