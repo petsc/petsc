@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.407 2001/07/17 20:47:18 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.408 2001/07/20 21:19:21 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -551,6 +551,7 @@ $     MatStencil idxm(4,m),idxn(4,n)
 $    idxm(MatStencil_i,1) = i
 $    idxm(MatStencil_j,1) = j
 $    idxm(MatStencil_k,1) = k
+$    idxm(MatStencil_c,1) = c
    etc
 
    Negative indices may be passed in idxm and idxn, these rows and columns are 
