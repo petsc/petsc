@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.71 2001/05/17 15:11:48 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.72 2001/06/21 21:19:07 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -143,6 +143,7 @@ typedef struct {
 EXTERN int DAGetLocalInfo(DA,DALocalInfo*);
 typedef int (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
 EXTERN int DAFormFunction1(DA,Vec,Vec,void*);
+EXTERN int DAFormFunctioni1(DA,int,Vec,Scalar*,void*);
 EXTERN int DAComputeJacobian1WithAdic(DA,Vec,Mat,void*);
 EXTERN int DAComputeJacobian1WithAdifor(DA,Vec,Mat,void*);
 EXTERN int DAMultiplyByJacobian1WithAdic(DA,Vec,Vec,Vec,void*);
@@ -151,6 +152,7 @@ EXTERN int DAMultiplyByJacobian1WithAD(DA,Vec,Vec,Vec,void*);
 EXTERN int DAComputeJacobian1(DA,Vec,Mat,void*);
 EXTERN int DAGetLocalFunction(DA,DALocalFunction1*);
 EXTERN int DASetLocalFunction(DA,DALocalFunction1);
+EXTERN int DASetLocalFunctioni(DA,int (*)(DALocalInfo*,MatStencil*,Vec,Scalar*,void*));
 EXTERN int DASetLocalJacobian(DA,DALocalFunction1);
 EXTERN int DASetLocalAdicFunction_Private(DA,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
@@ -263,6 +265,7 @@ struct _p_DMMG {
   /* SLES only */
   SLES       sles;             
   int        (*rhs)(DMMG,Vec);
+  PetscTruth matricesset;              /* User had called DMMGSetSLES() and the matrices have been computed */
 
   /* SNES only */
   Mat           B;
@@ -273,7 +276,8 @@ struct _p_DMMG {
   MatFDColoring    fdcoloring;            /* only used with FD coloring for Jacobian */  
   SNES             snes;                  
   int              (*initialguess)(SNES,Vec,void*);
-  Vec              w,work1,work2;
+  Vec              w,work1,work2;         /* global vectors */
+  Vec              lwork1;
 };
 
 EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
