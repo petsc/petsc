@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.37 1996/01/12 22:09:49 bsmith Exp balay $";
+static char vcid[] = "$Id: tr.c,v 1.38 1996/01/12 23:03:03 balay Exp balay $";
 #endif
 
 #include <math.h>
@@ -243,7 +243,7 @@ static int SNESView_TR(PetscObject obj,Viewer viewer)
 }
 
 /* ---------------------------------------------------------------- */
-/*@ 
+/*@
    SNESTrustRegionDefaultConverged - Default test for monitoring the 
    convergence of the trust region method SNES_EQ_TR for solving systems 
    of nonlinear equations.
