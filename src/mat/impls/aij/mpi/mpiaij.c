@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.186 1997/01/14 17:18:18 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.187 1997/01/14 20:34:14 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -57,11 +57,6 @@ static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
 #define CHUNKSIZE   15
 #define MatSetValues_SeqAIJ_A_Private(A,row,col,value,addv) \
 { \
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *) (A)->data; \
-  int        *rp,ii,nrow,_i,rmax, N, col1; \
-  int        *imax = a->imax, *ai = a->i, *ailen = a->ilen; \
-  int        *aj = a->j, nonew = a->nonew,shift = a->indexshift; \
-  Scalar     *ap, *aa = a->a; \
  \
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
     rmax = imax[row]; nrow = ailen[row];  \
@@ -134,13 +129,13 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
   int        roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
-  /*  Mat        A = aij->A;
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *) (A)->data; 
-  int        *rp,ii,nrow,_i,rmax,N,col2; 
-  int        *imax=a->imax,*ai=a->i,*ailen=a->ilen; 
-  int        *aj=a->j,shift=a->indexshift;
-  Scalar     *ap,*aa=a->a;
-  */
+  Mat        A = aij->A;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
+  int        *rp,ii,nrow,_i,rmax, N, col1; 
+  int        *imax = a->imax, *ai = a->i, *ailen = a->ilen; 
+  int        *aj = a->j, nonew = a->nonew,shift = a->indexshift; 
+  Scalar     *ap, *aa = a->a;
+
 #if defined(PETSC_BOPT_g)
   if (aij->insertmode != NOT_SET_VALUES && aij->insertmode != addv) {
     SETERRQ(1,0,"Cannot mix inserts and adds");
