@@ -31,8 +31,8 @@ int PETSC_DUMMY,PETSC_DUMMY_SIZE;
 /* Action and object logging variables */
 Action    *actions    = PETSC_NULL;
 Object    *objects    = PETSC_NULL;
-PetscTruth logActions = PETSC_TRUE;
-PetscTruth logObjects = PETSC_TRUE;
+PetscTruth logActions = PETSC_FALSE;
+PetscTruth logObjects = PETSC_FALSE;
 int        numActions = 0, maxActions = 100;
 int        numObjects = 0, maxObjects = 100;
 int        numObjectsDestroyed = 0;
@@ -146,16 +146,18 @@ int PetscLogBegin_Private(void) {
   if (initialized) PetscFunctionReturn(0);
   initialized = 1;
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_actions", &opt);                                   CHKERRQ(ierr);
-  if (opt == PETSC_FALSE) {
-    ierr = PetscMalloc(maxActions * sizeof(Action), &actions);                                            CHKERRQ(ierr);
-  } else {
+  if (opt == PETSC_TRUE) {
     logActions = PETSC_FALSE;
   }
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_exclude_objects", &opt);                                   CHKERRQ(ierr);
-  if (opt == PETSC_FALSE) {
-    ierr = PetscMalloc(maxObjects * sizeof(Object), &objects);                                            CHKERRQ(ierr);
-  } else {
+  if (opt == PETSC_TRUE) {
     logObjects = PETSC_FALSE;
+  }
+  if (logActions == PETSC_TRUE) {
+    ierr = PetscMalloc(maxActions * sizeof(Action), &actions);                                            CHKERRQ(ierr);
+  }
+  if (logObjects == PETSC_TRUE) {
+    ierr = PetscMalloc(maxObjects * sizeof(Object), &objects);                                            CHKERRQ(ierr);
   }
   _PetscLogPHC = PetscLogObjCreateDefault;
   _PetscLogPHD = PetscLogObjDestroyDefault;
