@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.18 1999/03/19 21:24:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.19 1999/04/12 01:53:16 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -205,7 +205,9 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
       char *title;
 
       ierr = DAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
-      ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
+      if (title) {
+        ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
+      }
     }
     ierr = DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
     PLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",zctx.min,zctx.max);
