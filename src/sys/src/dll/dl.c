@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.15 1998/04/20 17:57:36 curfman Exp curfman $";
+static char vcid[] = "$Id: dl.c,v 1.16 1998/04/22 19:11:12 curfman Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -249,15 +249,16 @@ int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
     PetscStrcat(par2,PETSC_SLSUFFIX);
     ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
     if (!foundlibrary) {
-      PetscErrorPrintf("Library name %s\n",par2);
+      PetscErrorPrintf("Library name %s\n  %s",libname,par2);
       SETERRQ(1,1,"Unable to locate dynamic library");
     }
   }
 
   *handle = dlopen(par2,1);    
   if (!*handle) {
-    PetscErrorPrintf("Library name %s\n",libname);
-    SETERRQ(1,1,"Unable to locate dynamic library");
+    PetscErrorPrintf("Error message from dlopen() %s\n",dlerror());    
+    PetscErrorPrintf("Library name %s\n  %s\n",libname,par2);
+    SETERRQ(1,1,"Unable to open dynamic library");
   }
 
   /* run the function DLRegister() if it is in the library */
