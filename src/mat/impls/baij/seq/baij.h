@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.31 2001/07/12 00:37:47 buschelm Exp buschelm $ */
+/* $Id: baij.h,v 1.32 2001/07/12 23:47:53 buschelm Exp buschelm $ */
 
 #include "src/mat/matimpl.h"
 
@@ -77,9 +77,6 @@ EXTERN int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 #if defined(PETSC_HAVE_SSE)
 EXTERN int MatSolve_SeqBAIJ_4_SSE_Demotion(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat,Vec,Vec);
-#else
-#define MatSolve_SeqBAIJ_4_SSE_Demotion(a,b,c) MatSolve_SeqBAIJ_4(a,b,c)
-#define MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(a,b,c)  MatSolve_SeqBAIJ_4_NaturalOrdering(a,b,c)
 #endif
 EXTERN int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
 EXTERN int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
@@ -115,7 +112,6 @@ EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
 #if defined(PETSC_HAVE_SSE)
 EXTERN int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat,Mat*);
 #else
-#define MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(a,b) MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(a,b)
 #endif
 EXTERN int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
 EXTERN int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat,Mat*);
