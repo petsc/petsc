@@ -1,5 +1,5 @@
 !
-!  $Id: viewer.h,v 1.21 1999/02/04 23:08:39 bsmith Exp balay $;
+!  $Id: viewer.h,v 1.22 1999/03/24 18:12:30 balay Exp balay $;
 !
 !  Include file for Fortran use of the Viewer package in PETSc
 !
@@ -10,12 +10,12 @@
 #define ViewerBinaryType integer
 #define ViewerType       character*(80)
 
-#define SOCKET_VIEWER       "socket"
-#define ASCII_VIEWER        "ascii"
-#define BINARY_VIEWER       "binary"
-#define STRING_VIEWER       "string"
-#define DRAW_VIEWER         "draw"
-#define AMS_VIEWER          "ams"
+#define SOCKET_VIEWER       'socket'
+#define ASCII_VIEWER        'ascii'
+#define BINARY_VIEWER       'binary'
+#define STRING_VIEWER       'string'
+#define DRAW_VIEWER         'draw'
+#define AMS_VIEWER          'ams'
 
 #endif
 
@@ -36,6 +36,8 @@
       integer  VIEWER_FORMAT_ASCII_INFO_LONG
       integer  VIEWER_FORMAT_ASCII_COMMON
       integer  VIEWER_FORMAT_ASCII_SYMMODU
+      integer  VIEWER_FORMAT_ASCII_INDEX
+      integer  VIEWER_FORMAT_ASCII_DENSE
 
       parameter (VIEWER_FORMAT_ASCII_DEFAULT = 0)
       parameter (VIEWER_FORMAT_ASCII_MATLAB = 1)
@@ -44,20 +46,25 @@
       parameter (VIEWER_FORMAT_ASCII_INFO_LONG = 4)
       parameter (VIEWER_FORMAT_ASCII_COMMON = 5)
       parameter (VIEWER_FORMAT_ASCII_SYMMODU = 6)
+      parameter (VIEWER_FORMAT_ASCII_INDEX = 7)
+      parameter (VIEWER_FORMAT_ASCII_DENSE = 8)
 
       integer  VIEWER_FORMAT_BINARY_DEFAULT
       integer  VIEWER_FORMAT_BINARY_NATIVE
 
-      parameter (VIEWER_FORMAT_BINARY_DEFAULT = 0) 
-      parameter (VIEWER_FORMAT_BINARY_NATIVE = 1)
+      parameter (VIEWER_FORMAT_BINARY_DEFAULT = 9) 
+      parameter (VIEWER_FORMAT_BINARY_NATIVE = 10)
 
-      integer VIEWER_FORMAT_DRAW_BASIC, VIEWER_FORMAT_DRAW_LG
+      integer VIEWER_FORMAT_DRAW_BASIC
+      integer VIEWER_FORMAT_DRAW_LG
       integer VIEWER_FORMAT_DRAW_CONTOUR
 
-      parameter (VIEWER_FORMAT_DRAW_BASIC=0, VIEWER_FORMAT_DRAW_LG=1)
-      parameter (VIEWER_FORMAT_DRAW_CONTOUR=2)
+      parameter (VIEWER_FORMAT_DRAW_BASIC = 11)
+      parameter (VIEWER_FORMAT_DRAW_LG = 12)
+      parameter (VIEWER_FORMAT_DRAW_CONTOUR = 13)
 
-
+      integer VIEWER_FORMAT_NATIVE
+      parameter (VIEWER_FORMAT_NATIVE = 14)
 !
 !  End of Fortran include file for the Viewer package in PETSc
 

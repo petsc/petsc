@@ -1,5 +1,5 @@
 !
-!  $Id: draw.h,v 1.20 1999/02/04 23:08:59 bsmith Exp balay $;
+!  $Id: draw.h,v 1.21 1999/03/24 18:05:58 balay Exp balay $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
@@ -23,6 +23,11 @@
 #define DRAW_NULL 'null'
 
 #endif
+!
+!  Flags for draw
+!
+      integer DRAW_BASIC_COLORS,DRAW_ROTATE
+      parameter (DRAW_BASIC_COLORS=32,DRAW_ROTATE=-1)
 !
 !  Colors for drawing
 !
