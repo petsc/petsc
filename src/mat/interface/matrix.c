@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.135 1996/02/01 18:53:50 curfman Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.136 1996/02/05 21:12:40 balay Exp bsmith $";
 #endif
 
 /*
@@ -144,6 +144,7 @@ $         matrix types support the Matlab viewer.
    format of ASCII printed objects (when using STDOUT_VIEWER_SELF,
    STDOUT_VIEWER_WORLD and ViewerFileOpenASCII).  Available formats include
 $    FILE_FORMAT_DEFAULT - default, prints matrix contents
+$    FILE_FORMAT_MATLAB - Matlab format
 $    FILE_FORMAT_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
 $    FILE_FORMAT_INFO - basic information about the matrix
