@@ -186,7 +186,7 @@ export PATH
 DISPLAY=$DISPLAY
 export DISPLAY
 cd $rundir
-mpirun.ch_p4 -np $num $nolocal -machinefile \$PBS_NODEFILE $programbase $newprogargs
+mpirun.ch_p4 -np $num $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
 #
 exit 0;
 EOF
