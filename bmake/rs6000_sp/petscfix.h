@@ -40,11 +40,9 @@ extern int    getrusage(int,s_rusage);
 /*
     IBMS old MPI does not have MPI_Comm_f2c(). Treat MPI_Comm as integer
 */
-#if MPI_SUBVERSION == 1
 #define MPI_Fint int
 #define MPI_Comm_f2c(a)  (a)
 #define MPI_Comm_c2f(a)  (a)
-#endif
 
 #endif
 
