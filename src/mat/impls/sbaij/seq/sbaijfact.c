@@ -1238,7 +1238,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
 
       if (PetscRealPart(dk) < zeropivot && b->factor_shift){
 	/* calculate a shift that would make this row diagonally dominant */
-	PetscReal rs = PetscAbsScalar(PetscRealPart(dk));
+	PetscReal rs = PetscAbs(PetscRealPart(dk));
 	jmin      = bi[k]+1; 
 	nz        = bi[k+1] - jmin; 
 	if (nz){

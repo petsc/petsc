@@ -28,14 +28,13 @@ static int KSPSetUp_BCGS(KSP ksp)
 #define __FUNCT__ "KSPSolve_BCGS"
 static int  KSPSolve_BCGS(KSP ksp,int *its)
 {
-  int         i,maxit,ierr;
+  int         i,ierr;
   PetscScalar rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
   Vec         X,B,V,P,R,RP,T,S;
   PetscReal   dp = 0.0;
 
   PetscFunctionBegin;
 
-  maxit   = ksp->max_it;
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
   R       = ksp->work[0];
@@ -70,8 +69,8 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   ierr = VecSet(&zero,P);CHKERRQ(ierr);
   ierr = VecSet(&zero,V);CHKERRQ(ierr);
 
-  for (i=0; i<maxit; i++) {
-
+  i=0;
+  do {
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
     if (rho == 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Breakdown, rho = r . rp = 0");
     beta = (rho/rhoold) * (alpha/omegaold);
@@ -119,8 +118,10 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     KSPMonitor(ksp,i+1,dp);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;    
-  }
-  if (i == maxit) {
+    i++;
+  } while (i<ksp->max_it);
+
+  if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;
