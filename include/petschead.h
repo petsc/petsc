@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.19 1995/11/01 19:12:32 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.20 1995/11/01 23:22:08 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -46,6 +46,10 @@
         (h)->cookie = PETSCFREEDHEADER;                            \
         PetscFree(h);          }
 
+/* 
+  PetscLow and PetscHigh are a poor person's way of checking if 
+  an address if out of range. They are set in src/sys/src/tr.c
+*/
 extern void *PetscLow,*PetscHigh;
 
 #if defined(PETSC_BOPT_g) && !defined(PETSC_INSIGHT)
