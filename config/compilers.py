@@ -24,6 +24,36 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface, e.g. src/sys/src/f90/f90_intel.c'))
     return
 
+  # checkCStaticInline & checkCxxStaticInline are pretty much the same code right now.
+  # but they could be different (later) - and they also check/set different flags - hence
+  # code duplication.
+  def checkCStaticInline(self):
+    '''Check for C keyword: static inline'''
+    self.cStaticInlineKeyword = 'static'
+    self.pushLanguage('C')
+    for kw in ['static inline', 'static __inline']:
+      if self.checkCompile(kw+' int foo(int a) {return a;}','int i = foo(1);'):
+        self.cStaticInlineKeyword = kw
+        self.logPrint('Set C StaticInline keyword to '+self.cStaticInlineKeyword , 4, 'compilers')
+        break
+    self.popLanguage()
+    if self.cStaticInlineKeyword == 'static':
+      self.logPrint('No C StaticInline keyword. using static function', 4, 'compilers')
+    return
+  def checkCxxStaticInline(self):
+    '''Check for C++ keyword: static inline'''
+    self.cxxStaticInlineKeyword = 'static'
+    self.pushLanguage('C++')
+    for kw in ['static inline', 'static __inline']:
+      if self.checkCompile(kw+' int foo(int a) {return a;}','int i = foo(1);'):
+        self.cxxStaticInlineKeyword = kw
+        self.logPrint('Set Cxx StaticInline keyword to '+self.cxxStaticInlineKeyword , 4, 'compilers')
+        break
+    self.popLanguage()
+    if self.cxxStaticInlineKeyword == 'static':
+      self.logPrint('No Cxx StaticInline keyword. using static function', 4, 'compilers')
+    return
+
   def checkCRestrict(self):
     '''Check for the C restrict keyword'''
     self.restrictKeyword = ' '
@@ -528,6 +558,7 @@ class Configure(config.base.Configure):
         self.addDefine('RESTRICT', self.restrictKeyword)
       if self.gccFormatChecking:
         self.addDefine(self.gccFormatChecking[0], self.gccFormatChecking[1])
+      self.addDefine('C_STATIC_INLINE', self.cStaticInlineKeyword)
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
       setattr(self, 'CXX', self.argDB['CXX'])
@@ -539,6 +570,7 @@ class Configure(config.base.Configure):
       self.popLanguage()
       if self.cxxNamespace:
         self.addDefine('HAVE_CXX_NAMESPACE', 1)
+      self.addDefine('CXX_STATIC_INLINE', self.cxxStaticInlineKeyword)
     if 'FC' in self.framework.argDB:
       self.pushLanguage('FC')
       setattr(self, 'FC', self.argDB['FC'])
@@ -576,12 +608,14 @@ class Configure(config.base.Configure):
       self.isGCC  = config.setCompilers.Configure.isGNU(self.framework.argDB['CC'])
       self.executeTest(self.checkCRestrict)
       self.executeTest(self.checkCFormatting)
+      self.executeTest(self.checkCStaticInline)
     else:
       self.isGCC  = 0
     if 'CXX' in self.framework.argDB:
       self.isGCXX = config.setCompilers.Configure.isGNU(self.framework.argDB['CXX'])
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
+      self.executeTest(self.checkCxxStaticInline)
     else:
       self.isGCXX = 0
     if 'FC' in self.framework.argDB:
