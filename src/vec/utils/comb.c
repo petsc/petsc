@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.7 1999/02/19 19:45:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.8 1999/02/21 03:09:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -428,7 +428,6 @@ seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecM
 int VecTDotEnd(Vec x, Vec y,Scalar *result) 
 {
   int               ierr;
-  VecSplitReduction *sr;
 
   PetscFunctionBegin;
   /*
