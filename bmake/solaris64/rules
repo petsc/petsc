@@ -1,4 +1,4 @@
-# $Id: base,v 1.48 1998/12/04 23:48:33 balay Exp balay $ 
+# $Id: base,v 1.49 1998/12/04 23:58:19 balay Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -52,7 +52,13 @@ GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
                    -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
 OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
                    -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
-
+# ############################ Notes ############################################
+#
+#  1) use the Solaris command fpversion to get detailed compiler optimization
+#     flags regarding the cache, e.g.
+#fire>fpversion
+#Use "-xtarget=ultra2 -xcache=16/32/1:2048/64/1" code-generation option.
+#
 ##################################################################################
 #
 #   PETSc installers should very rarely ever need to edit anything below this 
