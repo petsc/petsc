@@ -359,7 +359,7 @@ runex10_12:
 	   else echo "Possible problem with ex10_12, diffs above"; fi; \
 	   ${RM} -f ex10_12.tmp
 runex10_13:
-	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_lusol -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_13.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex10 -options_left no -mat_type lusol -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_13.tmp 2>&1;\
 	   if (${DIFF} output/ex10_13.out ex10_13.tmp) then true; \
 	   else echo "Possible problem with ex10_13, diffs above"; fi; \
 	   ${RM} -f ex10_13.tmp
@@ -513,7 +513,7 @@ TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
                    runex10_5 runex10_6 runex10_7 runex10_8 runex10_9 \
                    runex10_10 runex10_19 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
-# even though ex10.c is a C example to run with -mat_aij_lusol requires a Fortran compiler, hence
+# even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_8             = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_10            = ex11f.PETSc runex11f ex11f.rm
