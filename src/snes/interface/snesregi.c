@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesregi.c,v 1.22 1998/03/06 00:18:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesregi.c,v 1.23 1998/04/13 17:55:33 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -8,6 +8,38 @@ extern int SNESCreate_EQ_TR(SNES);
 extern int SNESCreate_UM_TR(SNES);
 extern int SNESCreate_UM_LS(SNES);
 extern int SNESCreate_Test(SNES);
+
+/*M
+   SNESRegister - Adds the method to the nonlinear solver package.
+
+   Synopsis:
+   SNESRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
+
+   Input Parameters:
+.  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+.  routine_create - routine to create method context
+
+   Notes:
+   SNESRegister() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+   SNESRegister("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
+                "MySolverCreate",MySolverCreate);
+
+   Then, your solver can be chosen with the procedural interface via
+$     SNESSetType(snes,"my_solver")
+$   or at runtime via the option
+$     -snes_type my_solver
+
+.keywords: SNES, nonlinear, register
+
+.seealso: SNESRegisterAll(), SNESRegisterDestroy()
+M*/
 
 #if defined(USE_DYNAMIC_LIBRARIES)
 #define SNESRegister(a,b,c,d) SNESRegister_Private(a,b,c,0)
