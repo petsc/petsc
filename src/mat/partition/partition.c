@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.21 1999/03/17 23:23:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.22 1999/04/01 21:35:12 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -315,9 +315,9 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 @*/
 int MatPartitioningView(MatPartitioning  part,Viewer viewer)
 {
-  ViewerType  vtype;
-  int         ierr;
-  char        *name;
+  ViewerType           vtype;
+  int                  ierr;
+  MatPartitioningType  name;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
@@ -326,7 +326,7 @@ int MatPartitioningView(MatPartitioning  part,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = MatPartitioningGetType(part,PETSC_NULL,&name); CHKERRQ(ierr);
+    ierr = MatPartitioningGetType(part,&name); CHKERRQ(ierr);
     ViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

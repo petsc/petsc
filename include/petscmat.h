@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.173 1999/04/01 21:24:29 balay Exp bsmith $ */
+/* $Id: mat.h,v 1.174 1999/04/01 21:30:11 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -307,7 +307,7 @@ extern int MatPartitioningRegisterDestroy(void);
 extern int MatPartitioningView(MatPartitioning,Viewer);
 extern int MatPartitioningSetFromOptions(MatPartitioning);
 extern int MatPartitioningPrintHelp(MatPartitioning);
-extern int MatPartitioningGetType(MatPartitioning,MatPartitioningType*,char**);
+extern int MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
 extern int MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 
