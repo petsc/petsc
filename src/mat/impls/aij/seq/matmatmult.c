@@ -564,7 +564,7 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
-  int            am=A->m,anzi,*ai=b->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
+  int            am=A->m,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
   int            cm=C->m,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k,flops=0;
   MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
  
@@ -585,7 +585,6 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
       caj   = ca + ci[crow];
       /* perform sparse axpy operation.  Note cjj includes bj. */
       for (k=0; nextb<bnzi; k++) {
-        /* bcol = *(bj+nextb); */
         if (cjj[k] == *(bj+nextb)) { /* ccol == bcol */
           caj[k] += (*aa)*(*(ba+nextb));
           nextb++;

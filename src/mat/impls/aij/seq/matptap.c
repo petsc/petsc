@@ -73,6 +73,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
 #define __FUNCT__ "MatPtAP_MPIAIJ_MPIAIJ"
 PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) 
 {
+#ifdef TMP  
   PetscErrorCode    ierr;
   Mat               C_mpi,AP_seq,P_seq,P_subseq,*psubseq;
   Mat_MPIAIJ        *p = (Mat_MPIAIJ*)P->data;
@@ -84,7 +85,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
-  
+
   ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,P,fill,&C_mpi);CHKERRQ(ierr);
   mult = (Mat_MatMatMultMPI*)C_mpi->spptr;
   P_seq   = mult->bseq[0];
@@ -109,6 +110,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
   }
 
   *C = C_mpi; /* to be removed! */
+#endif /* TMP */
   PetscFunctionReturn(0);
 }
 
@@ -407,8 +409,8 @@ EXTERN_C_END
    C must have been created by calling MatPtAPSymbolic and must be destroyed by
    the user using MatDeatroy().
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
-   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+   This routine is currently only implemented for pairs of AIJ matrices and classes
+   which inherit from AIJ.  C will be of type MATAIJ.
 
    Level: intermediate
 
@@ -464,73 +466,14 @@ PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C) {
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) 
 {
   PetscErrorCode ierr;
-  int        flops=0;
-  Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
-  Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
-  int        *ai=a->i,*aj=a->j,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
-  int        *ci=c->i,*cj=c->j,*cjj;
-  int        am=A->M,cn=C->N,cm=C->M;
-  int        i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
-  MatScalar  *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
   Mat_PtAPstruct *ptap=(Mat_PtAPstruct*)C->spptr; 
-  Mat_SeqAIJ     *ap = (Mat_SeqAIJ *)(ptap->symAP)->data;
-  int            *api=ap->i,*apj=ap->j,apj_nextap;
+  Mat            AP=ptap->symAP;
 
   PetscFunctionBegin;
-  /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc(cn*sizeof(MatScalar),&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,cn*sizeof(MatScalar));CHKERRQ(ierr);
+  /* compute numeric AP = A*P */
+  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(A,P,AP);CHKERRQ(ierr); 
 
-  /* Clear old values in C */
-  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
-
-  for (i=0;i<am;i++) {
-    /* Get sparse values of A*P[i,:] */
-    anzi  = ai[i+1] - ai[i];
-    apnzj = 0;
-    for (j=0;j<anzi;j++) {
-      prow = *aj++;
-      pnzj = pi[prow+1] - pi[prow];
-      pjj  = pj + pi[prow];
-      paj  = pa + pi[prow];
-      for (k=0;k<pnzj;k++) {
-        apa[pjj[k]] += (*aa)*paj[k];
-      }
-      flops += 2*pnzj;
-      aa++;
-    }
-
-    /* Compute P^T*A*P using outer product (P^T)[:,j]*(A*P)[j,:]. */
-    apj   = ap->j + api[i];
-    apnzj = api[i+1] - api[i];
-    pnzi  = pi[i+1] - pi[i];
-    for (j=0;j<pnzi;j++) {
-      nextap = 0;
-      crow   = *pJ++;
-      cjj    = cj + ci[crow];
-      caj    = ca + ci[crow];
-      /* Perform sparse axpy operation.  Note cjj includes apj. */
-      for (k=0; nextap<apnzj; k++) {
-        apj_nextap = *(apj+nextap);
-        if (cjj[k]==apj_nextap) { 
-          caj[k] += (*pA)*apa[apj_nextap];
-          nextap++;
-        }
-      }
-      flops += 2*apnzj;
-      pA++;
-    }
-
-    /* Zero the current row values for A*P */
-    for (j=0;j<apnzj;j++) apa[apj[j]] = 0.0;
-  }
-
-  /* Assemble the final matrix and clean up */
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(apa);CHKERRQ(ierr);
-  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-
+  /* compute numeric P^T*AP */
+  ierr = MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(P,AP,C);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
