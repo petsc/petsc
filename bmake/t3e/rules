@@ -1,4 +1,4 @@
-# $Id: base,v 1.26 1998/12/04 23:57:55 balay Exp balay $ 
+# $Id: base,v 1.27 1999/02/09 00:02:48 balay Exp balay $ 
 
 include ${PETSC_DIR}/bmake/common
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
@@ -14,3 +14,11 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 
 #########
 shared:
+
+#  For Cray C90 etc add the additional flag
+#define HAVE_CRAY90_POINTER 1 
+#  to petscconf.h in this directory and change
+#define SIZEOF_SHORT 4
+#  to
+#define SIZEOF_SHORT 8
+
