@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.71 1998/03/20 13:43:23 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.72 1998/03/20 19:25:14 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -629,7 +629,8 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
 
 
 
-    ierr =localfortfct_euler_(&jacform,&app->limiter,&app->order,&app->psi,
+    ierr =localfortfct_euler_(&jacform,&app->limiter,&app->order,
+           &app->order_transition_theta,&app->psi,
            fv_array,app->xx,app->p,app->xx_bc,app->p_bc,
            app->sadai,app->sadaj,app->sadak,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
@@ -964,7 +965,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance",&flg); CHKERRQ(ierr);
   if (flg) {
     app->cfl_advance = ADVANCE;
-    PetscPrintf(comm,"Begin CFL advancement at iteration 12, Cfl_snes_it=%d, CFL_max_incr=%g, CFL_max_decr=%g, ksp_rtol_max=%g\n",
+    PetscPrintf(comm,"Begin CFL advancement after imperm BC switch, Cfl_snes_it=%d, CFL_max_incr=%g, CFL_max_decr=%g, ksp_rtol_max=%g\n",
     app->cfl_snes_it,app->cfl_max_incr,app->cfl_max_decr,app->ksp_rtol_max);
   }
   else PetscPrintf(comm,"CFL remains constant\n");
@@ -994,32 +995,41 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   if (app->global_grid) PetscPrintf(app->comm,"Using global grid (needed for post processing only)\n");
 
   /* Set discretization order and limiters */
-  ierr = OptionsGetString(PETSC_NULL,"-limiter",lim,64,&flg); CHKERRQ(ierr);
   app->limiter = LIM_VAN_ALBADA; PetscStrcpy(lim,"van_albada");
+  ierr = OptionsGetString(PETSC_NULL,"-limiter",lim,64,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!PetscStrcmp(lim,"none"))            app->limiter = LIM_NONE;
     else if (!PetscStrcmp(lim,"minmod"))     app->limiter = LIM_MINMOD;
     else if (!PetscStrcmp(lim,"superbee"))   app->limiter = LIM_SUPERBEE;
     else if (!PetscStrcmp(lim,"van_leer"))   app->limiter = LIM_VAN_LEER;
     else if (!PetscStrcmp(lim,"van_albada")) app->limiter = LIM_VAN_ALBADA;
-  }
+    else SETERRQ(1,1,"Unknown limiter");
+  } 
   app->psi = 0.0;
   if (app->limiter == LIM_MINMOD) app->psi = -1.0;
 
   /* Default is 2nd order discretization with no transition */
-  app->order_transition = 0;
-  order1 = 2;
+  app->order_transition       = TRANS_NONE;
+  app->order_transition_rtol  = 1.e-5;
+  app->order_transition_it    = -2;
+  app->order_transition_theta = 1.0;
+  order1                      = 2;
   ierr = OptionsGetDouble(PETSC_NULL,"-order",&order1,&flg); CHKERRQ(ierr);
   if (order1 == 1) {
-    app->limiter = LIM_NONE;
-    app->order   = 1;
+    app->limiter                = LIM_NONE;
+    app->order                  = 1;
+    app->order_transition_theta = 0.0;
   } else if (order1 == 1.5) {
-    app->order_transition = 1;
-    app->order            = 1;
-    PetscPrintf(comm,"Discretization transition (1-2): ");
+    app->order_transition       = TRANS_WAIT;
+    app->order                  = 1;
+    app->order_transition_theta = 0.0;
+    ierr = OptionsGetDouble(PETSC_NULL,"-order_rtol",&app->order_transition_rtol,&flg); CHKERRQ(ierr);
+    if (app->order_transition_rtol <= 0 || app->order_transition_rtol >= 1) 
+      SETERRQ(1,1,"transition tolerance range: 0<rtol<1");
+    PetscPrintf(comm,"Discretization transition (1-2): rtol = %g, ",app->order_transition_rtol);
   } else if (order1 == 2) {
     app->order = 2;
-  } else  SETERRQ(1,1,"Invalid discretization order");
+  } else  SETERRQ(1,1,"Invalid discretization order: options are 1, 1.5, 2 only");
   PetscPrintf(comm,"Discretization order is %d, Limiter is %s\n",app->order,lim);
 
   /* Are we using matrix-free approximation?  If so, then by default don't include

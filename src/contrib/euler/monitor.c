@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.51 1997/11/02 20:54:00 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.52 1998/03/20 23:01:08 curfman Exp curfman $";
 #endif
 
 /*
@@ -64,7 +64,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->nsup[0]       = 0;
     app->c_lift[0]     = 0;
     app->c_drag[0]     = 0;
-    if (!app->no_output) {
+    /*    if (!app->no_output) { */
       if (app->cfl_advance == ADVANCE)
         PetscPrintf(comm,"iter=%d, fnorm=%g, fnorm reduction ratio=%g, CFL_init=%g\n",
            its,fnorm,app->f_reduction,app->cfl);
@@ -101,7 +101,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
                 app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
         }
-    }
+      /*    } */
     app->sles_tot += app->lin_its[its];
   } else {
     /* For the first iteration and onward we do the following */
@@ -112,14 +112,15 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         /* simple transition for now */
         app->order_transition_theta = 1.0;
         app->order_transition       = TRANS_START;
-        app->cfl      = app->cfl_init*2.0;
-        app->cfl_init = app->cfl;
-        if (!app->no_output)
+        app->order_transition_it    = its;
+        app->cfl                    = app->cfl_init*2.0;
+        app->cfl_init               = app->cfl;
+        app->order                  = 2;
+	/*        if (!app->no_output) */
           PetscPrintf(comm,"Discr. transition: 1-2; fnorm/fnorm_init = %g, f_transition tol = %g, cfl = %g\n",
           fnorm/app->fnorm_init,app->order_transition_rtol,app->cfl);
-      }
+       } 
     } else if (app->order_transition == TRANS_START) {
-      app->order_transition_it = its;
       app->order_transition = TRANS_DONE;
     }
 
@@ -148,7 +149,10 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
           /* We've already begun CFL advancement */
           if (!(its%app->cfl_snes_it)) {
             if (app->cfl_advance == ADVANCE) {
-               if (fnorm != fnorm) SETERRQ(1,0,"NaN detection for fnorm - probably increasing CFL too quickly!");
+               if (fnorm != fnorm) {
+                 PetscPrintf(comm,"Problem at nonlinear iteration %d!\n",its);
+                 SETERRQ(1,0,"NaN detection for fnorm - probably increasing CFL too quickly!");
+               }
                ratio1 = app->fnorm_last / fnorm;
                if (ratio1 >= 1.0) ratio = PetscMin(ratio1,app->cfl_max_incr);
                else               ratio = PetscMax(ratio1,app->cfl_max_decr);
@@ -204,15 +208,15 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         fflush(app->fp);
       }
     */
-    if (!app->no_output) {
+    /*    if (!app->no_output) { 
       PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d\n",
-                  its,fnorm,app->lin_its[its]);
+                  its,fnorm,app->lin_its[its]); */
       if (app->rank == 0) {
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
                 app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
         fflush(app->fp);
-      }
+	/*      } */
     }
 
     app->sles_tot += app->lin_its[its];
