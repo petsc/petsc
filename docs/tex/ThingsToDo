@@ -47,6 +47,8 @@ Additional Capabilities that PETSc Needs:
             tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
   * Make configure fully functional in PETSc 2.0
+      - make configure handle complex numbers
+      - document usage somewhere
 
   * Make sure all Fortran examples run for complex on all machines, note
     this means the bmake files must insure that -DPETSC_COMPLEX is 
