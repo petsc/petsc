@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.23 1996/01/02 20:16:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.24 1996/01/08 23:48:37 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -15,7 +15,6 @@ static char vcid[] = "$Id: cholbs.c,v 1.23 1996/01/02 20:16:19 bsmith Exp curfma
 #include "mpirowbs.h"
 #include "BSprivate.h"
 
-extern int MatCreateShellMPIRowbs(MPI_Comm,int,int,int,int*,Mat*);
 int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
                                       double f,int fill,Mat *newfact)
 {
