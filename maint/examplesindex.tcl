@@ -507,7 +507,7 @@ proc main { }  {
     foreach routine $routines {
         set n [ llength $RoutinesFile($routine)  ]
         set i 0
-        set buf {<H2>Examples</H2>}
+        set buf {<P><H2>Examples</H2>}
         set temp [ string first "(" $routine ]
         if { $temp  != -1 } {
             set routine_name [string range  $routine 0 [expr $temp -1 ] ]
