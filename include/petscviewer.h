@@ -40,6 +40,7 @@ typedef char* PetscViewerType;
 #define PETSC_VIEWER_STRING       "string"
 #define PETSC_VIEWER_DRAW         "draw"
 #define PETSC_VIEWER_AMS          "ams"
+#define PETSC_VIEWER_VU           "vu"
 #define PETSC_VIEWER_MATHEMATICA  "mathematica"
 #define PETSC_VIEWER_SILO         "silo"
 
@@ -149,7 +150,7 @@ EXTERN int PetscViewerMathematicaGetName(PetscViewer, const char **);
 EXTERN int PetscViewerMathematicaSetName(PetscViewer, const char []);
 EXTERN int PetscViewerMathematicaClearName(PetscViewer);
 EXTERN int PetscViewerMathematicaSkipPackets(PetscViewer, int);
-#ifdef PETSC_HAVE_MATHEMATICA
+#if defined(PETSC_HAVE_MATHEMATICA)
 EXTERN int PetscViewerMathematicaGetLink(PetscViewer, MLINK *);
 #endif
 
