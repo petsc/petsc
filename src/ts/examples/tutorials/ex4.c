@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.2 1998/06/19 21:29:36 ahanson Exp ahanson $";
+static char vcid[] = "$Id: ex3.c,v 1.1 1998/06/20 22:18:50 curfman Exp curfman $";
 #endif
 
-static char help[] ="Solves a simple time-dependent linear PDE (1D heat equation) using implicit\n\
+static char help[] ="Solves a simple time-dependent linear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
   -debug : Activate debugging printouts\n\
@@ -18,12 +18,24 @@ timestepping.  Runtime options include:\n\
 
 /* ------------------------------------------------------------------------
 
-   This program solves the one-dimensional heat equation:
-                       
-          Solves U_t = U_xx 
-          F(t,u) = (u_{i+1} - 2u_{i} + u_{i-1})/h^2
+   This program solves the one-dimensional heat or diffusion equation:
+       u_t = u_xx 
+   on the domain 0 <= x <= 1, with the boundary conditions
+       u(t,0) = 
+       u(t,1) =
+   and the initial condition
+       u(0,x) = sin(6*pi*x) + 3*sin(2*pi*x)
+   This is a linear, second-order, parabolic equation.
 
-   using several different schemes. 
+   We discretize the right-hand side using finite differences with
+   uniform grid spacing h:
+       u_xx = (u_{i+1} - 2u_{i} + u_{i-1})/(h^2)
+
+   We compare the approximate solution with the exact solution, given by
+       u_exact(x,t) = exp(-36*pi*pi*t) * sin(6*pi*x) +
+                      3*exp(-4*pi*pi*t) * sin(2*pi*x)
+
+   By default we use Euler's method.
 
   ------------------------------------------------------------------------- */
 
@@ -94,7 +106,7 @@ int main(int argc,char **argv)
   appctx.h      = 1.0/(appctx.M-1.0);
   appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  PetscPrintf(PETSC_COMM_WORLD,"Solving a linear TS problem on %d processors\n",size);
+  PetscPrintf(PETSC_COMM_WORLD,"Solving a linear TS problem, number of processors = %d\n",size);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -153,7 +165,6 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
-  /*  ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr); */
   ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -274,7 +285,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"initial guess vector");
+     PetscPrintf(appctx->comm,"initial guess vector\n");
      ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
@@ -365,9 +376,9 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"Computed solution vector");
+     PetscPrintf(appctx->comm,"Computed solution vector\n");
      ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-     PetscPrintf(appctx->comm,"Exact solution vector");
+     PetscPrintf(appctx->comm,"Exact solution vector\n");
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
@@ -398,7 +409,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"Error vector");
+     PetscPrintf(appctx->comm,"Error vector\n");
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
