@@ -240,6 +240,7 @@ Linux accounts:
   machine: ursula.cs.msstate.edu
   user:    curfman
   passwd:  petsc-passwd
+  contact:  Gerhard Lehnerer <gerhard@CS.MsState.Edu> (via Tony Skjellum)
 
   See petsc-maint mail from Igor Markov (UCLA) for another account 
      on his home PC running Linux.
