@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.39 1995/06/28 15:23:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.40 1995/06/28 18:28:01 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -815,7 +815,6 @@ static int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   if (mrow->vecs_permscale) {
     for ( i=0; i<mrow->m; i++ ) {
       x[i] = rs[i]->nz[rs[i]->diag_ind];
-      printf("x[%d] = %g\n",i,x[i]);
     }
   } else {
     for ( i=0; i<mrow->m; i++ ) {
@@ -1008,6 +1007,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mat->factor	= 0;
   mrow->assembled        = 0;
   mrow->fact_clone       = 0;
+  mrow->vecs_permscale   = 0;
   mrow->reassemble_begun = 0;
   mrow->insertmode       = NOTSETVALUES;
   MPI_Comm_rank(comm,&mrow->mytid);
@@ -1101,9 +1101,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   bsmap->free_g2p	= 0;
 
   ierr = MatCreateMPIRowbs_local(mat,nz,nnz); CHKERRQ(ierr);
-  /* the next line is deadly. It scribbles where it is not 
-     suppose to, because mrow->A is not a PETSc object */
-  /* PLogObjectParent(mat,mrow->A);*/ 
   *newmat = mat;
   return 0;
 }

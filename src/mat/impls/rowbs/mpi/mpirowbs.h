@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.13 1995/06/08 21:20:01 curfman Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.14 1995/06/28 18:28:01 curfman Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -53,14 +53,6 @@ typedef struct {
   int        ierr;              /* BS factorization error */
   int        failures;          /* number of BS factorization failures */
 } Mat_MPIRowbs;
-
-/* Add routine declarations that for some strange reason are absent
-  in the BS include files */
-/*  void BSforward1();
-  void BSbackward1();
-  void BSiperm_dvec();
-  void BSfor_solve1();
-  void BSback_solve1(); */
 
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {fprintf(stderr, \
         "BlockSolve Error Code %d\n",__BSERROR_STATUS); CHKERRQ(a);}}
