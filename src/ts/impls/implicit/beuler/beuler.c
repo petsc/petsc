@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.31 1998/03/06 00:17:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.32 1998/04/03 23:16:55 bsmith Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -40,15 +40,18 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   ierr = VecCopy(sol,update); CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
-    ts->ptime += ts->time_step;
-    if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
     ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
+    /* apply user-provided boundary conditions (only needed if they are time dependent) */
+    ierr = TSComputeBCFunction(ts,ts->ptime,rhs); CHKERRQ(ierr);
+
+    ts->ptime += ts->time_step;
+    if (ts->ptime > ts->max_time) break;
     ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol); CHKERRQ(ierr);
     ts->steps++;
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
   }
 
   *steps += ts->steps;
@@ -76,6 +79,11 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
   ierr = VecCopy(sol,update); CHKERRQ(ierr);
 
   for ( i=0; i<max_steps; i++ ) {
+    ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
+    ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
+    /* apply user-provided boundary conditions (only needed if they are time dependent) */
+    ierr = TSComputeBCFunction(ts,ts->ptime,rhs); CHKERRQ(ierr);
+
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     /*
@@ -90,8 +98,6 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
       ierr = MatScale(&mone,ts->B); CHKERRQ(ierr);
       ierr = MatShift(&mdt,ts->B); CHKERRQ(ierr);
     }
-    ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
-    ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
     ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str); CHKERRQ(ierr);
     ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
@@ -192,7 +198,7 @@ int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
   int    ierr,i,n;
 
   PetscFunctionBegin;
-  /* apply user provided function */
+  /* apply user-provided function */
   ierr = TSComputeRHSFunction(ts,ts->ptime,x,y); CHKERRQ(ierr);
   /* (u^{n+1} - U^{n})/dt - F(u^{n+1}) */
   ierr = VecGetArray(ts->vec_sol,&un); CHKERRQ(ierr);
