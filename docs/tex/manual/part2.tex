@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.260 1998/04/01 00:20:28 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.261 1998/04/13 21:08:48 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1038,6 +1038,9 @@ update the ``local'' portions of the vector from all the other
 processors' ghost values.  This would be appropriate, for example,
 when performing a finite element assembly of a load vector.
 
+Section \ref{sec:partitioning} discusses the important topic of partitioning 
+an unstructured grid.
+
 
 %-------------------------------------------------------------
 %-------------------------------------------------------------
@@ -1761,7 +1764,40 @@ Once the user has finished using a row, he or she {\em must} call
    ierr = MatRestoreRow(Mat A,int row,int *ncols,int **cols,Scalar **vals);
 \end{verbatim}
 to free any space that was allocated during the call to {\tt MatGetRow()}.
+
+% ------------------------------------------------------------------
+\section{Partitioning}
+\label{sec:partitioning} \sindex{partitioning} \sindex{grid partitioning}
+
+For almost all unstructured grid computation, the distribution of portions of 
+the grid across the processor's work load and memory can have a very large
+impact on performance. In most PDE calculations the grid partitioning and 
+distribution across the processors can (and should) be done in a ``pre-processing'' step
+before the numerical computations. However, this does not mean it need be done
+in a separate, sequential program, rather it should be done before one sets up the 
+parallel grid data structures in the actual program. PETSc provides an interface to
+the ParMETIS (developed by George Karypis), to allow the partitioning to be done in
+parallel. PETSc does not currently provide directly support for dynamic
+repartitioning, load balancing by migrating matrix entries between processors etc.
+For problems that require mesh refinement, PETSc uses the ``rebuild the data structure''
+approach, as opposed to the ``maintain dynamic data structures that support the 
+insertion/deletion of additional vector and matrix rows and columns entries'' approach.
+
+Partitioning in PETSc is organized around the {\tt Partitioning} object. \findex{Partitioning}
+One first creates a parallel matrix that contains the connectivity information about the 
+grid (or other graph-type object) that is to be partitioned. This is done with the 
+command
+\begin{verbatim}
+  ierr = MatCreateMPIAdj(MPI_Comm comm,int mlocal,int n,int *ia,int *ja, Mat *A);
+\end{verbatim}
+The argument {\tt mlocal} indicates the number of rows of the graph being provided
+by the given processor, {\tt n} is the total number of columns; equal to the 
+sum of all the {\tt mlocal}. The arguments {\tt ia} and {\tt ja} are the row pointers
+and column pointers for the given rows, these are the usual format for parallel 
+compressed sparse row storage, using indices starting at 0, {\bf not} 1.
+For example, 
  
+
 
 % ------------------------------------------------------------------
 \chapter{SLES: Linear Equations Solvers} \sindex{linear system solvers}
