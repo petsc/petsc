@@ -7,7 +7,7 @@ From: Lois Curfman McInnes <curfman@mcs.anl.gov>
 
 PETSc Users,
 
-We have just released a new version of PETSc (2.0.15) with a variety
+We have just released a new version of PETSc (2.0.17) with a variety
 of extensions and enhancements to the software.  A list of new
 features and changes in PETSc is provided in the "Changes" file
 available at
@@ -20,29 +20,23 @@ of patches at
 to determine if any are required for your machine(s) of interest.
 
 Highlights of new features added since the last public release of
-PETSc (version 2.0.13) include:
- - Added support for shared version of PETSc libraries for several
-   machines to enable faster linking and smaller executables
- - Added new parallel block row matrix format, improved efficiency for
-   block diagonal formats
- - Added a suite of routines to help manage the mappings between an
-   application-defined ordering of variables and the ordering used by
-   PETSc for matrices and vectors
- - Expanded users manual information for performance tuning and profiling
- - The option -log_summary now summarize of message-passing activity
-   as well as flop rates.
- - Running the test suite now requires much less disk space.
- - Example programs are in the process of being reorganized into tutorials
-   and tests (see, e.g., petsc/src/sles/examples/tutorials for
-   tutorial-style examples for the linear solvers).  
- - The HTML version of the PETSc man pages now provides indices 
-   (organized by both concepts and routine names) to tutorial examples.
+PETSc (version 2.0.15) include:
+ - Support for Windows NT (using the Microsoft Developers Studio Visual C++)
+ - Support for the Cray T3E and SGI Origin
+ - Tools for sparse finite difference approximation of Jacobian matrices
+ - More tools to help diagnose memory leaks and uninitialized memory
+ - Limited support for Fortran90 pointers
 
+The new release is available for UNIX machines via:
+    ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.gz
+    ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.Z
+Users of Windows NT (only!) should instead retrieve the zip file:
+    ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.zip
+All of these are also available via the PETSc home page:
+     http://www.mcs.anl.gov/petsc/petsc.html
+ 
 As always, please send bug reports, questions, and requests for new 
 features to petsc-maint@mcs.anl.gov.
-
-A reminder of our upcoming "Bring Your Own Code" Workshops:
-Information is available via: http://www.mcs.anl.gov/petsc/petsc-byoc.html.
 
 Thanks for your support.
 
