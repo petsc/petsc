@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.201 1998/06/22 18:08:06 balay Exp bsmith $ 
+# $Id: makefile,v 1.202 1998/07/28 15:52:55 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -16,7 +16,7 @@ TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
                    ex16.PETSc runex16 ex16.rm ex59.PETSc runex59 runex59_2 runex59_3 \
                    ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm clean
-TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
+TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc \
 		   runex7 ex7.rm ex12.PETSc runex12 runex12_2 ex12.rm  ex13.PETSc runex13 \
 		   ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
 		   ex24.rm ex25.PETSc ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm \
@@ -370,6 +370,11 @@ runex4:
 	    else echo "Possible problem with ex4_1 for" $$mattype", diffs above"; fi; \
 	    ${RM} -f ex4_1.tmp; \
 	done;
+runex4_2:
+	-@${MPIRUN} -np 3 ex4 -mat_dense |sort > ex4_2.tmp 2>&1; \
+	  if (diff output/ex4_2.out ex4_2.tmp) then true; \
+	  else echo "Possible problem with ex4_2, diffs above"; fi; \
+	  ${RM} -f ex4_1.tmp; 
 runex5:
 	-@for mattype in ${MATTYPES}; do \
 	  for shape in ${MATSHAPES}; do \
