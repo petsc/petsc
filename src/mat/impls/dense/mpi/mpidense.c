@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.116 1999/06/09 23:19:38 balay Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.117 1999/06/30 23:50:57 balay Exp bsmith $";
 #endif
 
 /*
@@ -396,7 +396,6 @@ int MatDestroy_MPIDense(Mat mat)
   int          ierr;
 
   PetscFunctionBegin;
-  if (--mat->refct > 0) PetscFunctionReturn(0);
 
   if (mat->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);
