@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: isltog.c,v 1.1 1996/11/17 23:48:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.2 1996/11/19 16:29:21 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -88,5 +88,27 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
   return 0;
 }
 
+/*MC
+       ISLocalToGlobalMappingApply - Takes a list of integers in local numbering
+              and converts them to global numbering.
 
+   Synopsis:
+   void ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int *in,int *out);
+
+   Input Parameters:
+.  mapping - the local to global mapping context
+.  N - number of integers
+.  in - input indices in local numbering
+
+   Output Parameter:
+.  out - indices in global numbering
+
+
+
+.seealso: ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(), 
+          ISLocalToGlobalMappingApplyIS(),AOCreateDebug(),AOApplicationToPetsc(),
+          AOPetscToApplication()
+
+.keywords: local to global, mapping
+M*/
 
