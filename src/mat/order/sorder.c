@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.77 2000/09/13 03:11:36 bsmith Exp balay $*/
+/*$Id: sorder.c,v 1.78 2000/09/13 15:20:10 balay Exp balay $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -297,10 +297,11 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   PetscFunctionReturn(0);
 }
 
-
-
-
-
-
-
-
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatGetOrderingList"
+int MatGetOrderingList(FList *list)
+{
+  PetscFunctionBegin;
+  *list = MatOrderingList;
+  PetscFunctionReturn(0);
+}

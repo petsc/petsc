@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.137 2000/08/31 15:28:39 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.138 2000/09/22 20:44:58 bsmith Exp balay $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -54,6 +54,7 @@ static int PCSetFromOptions_LU(PC pc)
   int        ierr;
   PetscTruth flg;
   char       tname[256];
+  FList      ordlist;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
@@ -79,7 +80,8 @@ static int PCSetFromOptions_LU(PC pc)
       ierr = PCLUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
 
-    ierr = OptionsList("-pc_lu_mat_ordering_type","Reordering to reduce nonzeros in LU","PCLUSetMatOrdering",MatOrderingList,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
+    ierr = OptionsList("-pc_lu_mat_ordering_type","Reordering to reduce nonzeros in LU","PCLUSetMatOrdering",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }

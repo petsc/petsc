@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.155 2000/09/12 21:00:59 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.156 2000/09/22 20:45:05 bsmith Exp balay $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -475,6 +475,7 @@ static int PCSetFromOptions_ILU(PC pc)
   PetscReal  dt[3];
   char       tname[256];
   PC_ILU     *ilu = (PC_ILU*)pc->data;
+  FList      ordlist;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
@@ -499,7 +500,8 @@ static int PCSetFromOptions_ILU(PC pc)
     ierr = OptionsDouble("-pc_ilu_fill","Expected fill in factorization","PCILUSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
     ierr = OptionsDouble("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
 
-    ierr = OptionsList("-pc_ilu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",MatOrderingList,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
+    ierr = OptionsList("-pc_ilu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",orderlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCILUSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }

@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.72 2000/09/20 14:40:08 bsmith Exp bsmith $*/
+/*$Id: icc.c,v 1.73 2000/09/22 20:45:06 bsmith Exp balay $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -250,13 +250,15 @@ static int PCSetFromOptions_ICC(PC pc)
   char       tname[256];
   PetscTruth flg;
   int        ierr;
+  FList      ordlist;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsHead("ICC Options");CHKERRQ(ierr);
     ierr = OptionsInt("-pc_icc_levels","levels of fill","PCICCSetLevels",icc->levels,&icc->levels,&flg);CHKERRQ(ierr);
     ierr = OptionsDouble("-pc_icc_fill","Expected fill in factorization","PCICCSetFill",icc->fill,&icc->fill,&flg);CHKERRQ(ierr);
-    ierr = OptionsList("-pc_icc_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCICCSetMatOrdering",MatOrderingList,icc->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
+    ierr = OptionsList("-pc_icc_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCICCSetMatOrdering",orderlist,icc->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCICCSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
@@ -271,6 +273,7 @@ int PCCreate_ICC(PC pc)
 {
   int    ierr;
   PC_ICC *icc;
+  FList  ordlist;
 
   PetscFunctionBegin;
   icc = PetscNew(PC_ICC);CHKPTRQ(icc);

@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.108 2000/09/02 02:50:55 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.109 2000/09/21 16:07:43 bsmith Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -153,7 +153,7 @@ EXTERN int PCCompositeGetPC(PC pc,int n,PC *);
 EXTERN int PCRedundantSetScatter(PC,VecScatter,VecScatter);
 EXTERN int PCRedundantGetOperators(PC,Mat*,Mat*);
 EXTERN int PCRedundantGetPC(PC,PC*);
-
+EXTERN int MatGetOrderingList(FList *list);
 #endif
 
 
