@@ -26,7 +26,7 @@ struct _AOOps {
 struct _p_AO {
   PETSCHEADER(struct _AOOps)
   void          *data;                   /* implementation-specific data */
-  PetscInt           N,n;                    /* global, local vector size */
+  PetscInt      N,n;                    /* global, local vector size */
 };
 
 /*

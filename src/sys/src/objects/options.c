@@ -338,8 +338,12 @@ PetscErrorCode PetscOptionsInsert(int *argc,char ***args,const char file[])
   } else {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
     if (pfile[0]) {
+      PetscTruth flag;
       ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
-      ierr = PetscOptionsInsertFile(pfile);CHKERRQ(ierr);
+      ierr = PetscTestFile(pfile,'r',&flag);CHKERRQ(ierr);
+      if (flag) {
+	ierr = PetscOptionsInsertFile(pfile);CHKERRQ(ierr);
+      }
     } else {
       PetscLogInfo(0,"Unable to determine home directory; skipping loading ~/.petscrc\n");
     }

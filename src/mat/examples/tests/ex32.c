@@ -50,7 +50,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc(nnz*sizeof(int),&row);CHKERRQ(ierr);
   fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
   for (i=0; i<nnz; i++) {
-    fscanf(file,"    %d%d%le\n",&j,&row[i],&val[i]);
+    fscanf(file,"    %d%d%le\n",&j,&row[i],(double*)&val[i]);
     row[i]--;
   }
   fscanf(file,"  EOD IA\n");
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc(n*sizeof(int),&brow);CHKERRQ(ierr);
   fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
   for (i=0; i<n; i++) {
-    fscanf(file,"      %d%le%d\n",&j,bval+i,&j);
+    fscanf(file,"      %d%le%d\n",&j,(double*)(bval+i),&j);
     brow[i] = i;
   }
   fscanf(file,"  EOD RESIDUAL");

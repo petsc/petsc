@@ -48,7 +48,7 @@
 PetscErrorCode PetscGetHomeDirectory(char dir[],size_t maxlen)
 {
   PetscErrorCode ierr;
-  char *d1 = 0;
+  char           *d1 = 0;
 #if defined(PETSC_HAVE_GETPWUID)
   struct passwd *pw = 0;
 #endif
