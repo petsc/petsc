@@ -36,7 +36,6 @@ typedef struct {
   MPI_Comm       comm_mumps;
 
   PetscTruth     isAIJ,CleanUpMUMPS;
-  MatType        basetype;
   int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
@@ -709,7 +708,6 @@ int MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscNew(Mat_MUMPS,&mumps);CHKERRQ(ierr);
 
-  mumps->basetype                  = MATAIJ;
   mumps->MatDuplicate              = A->ops->duplicate;
   mumps->MatView                   = A->ops->view;
   mumps->MatAssemblyEnd            = A->ops->assemblyend;
@@ -869,7 +867,6 @@ int MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscNew(Mat_MUMPS,&mumps);CHKERRQ(ierr);
 
-  mumps->basetype                  = MATSBAIJ;
   mumps->MatDuplicate              = A->ops->duplicate;
   mumps->MatView                   = A->ops->view;
   mumps->MatAssemblyEnd            = A->ops->assemblyend;
@@ -919,22 +916,11 @@ EXTERN_C_END
 #define __FUNCT__ "MatDuplicate_MUMPS"
 int MatDuplicate_MUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   int         ierr;
-  Mat_MUMPS   *lu=(Mat_MUMPS *)A->spptr,*mumps;
+  Mat_MUMPS   *lu=(Mat_MUMPS *)A->spptr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,lu->basetype);CHKERRQ(ierr);
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr); 
-  if (lu->isAIJ){
-    ierr = PetscObjectChangeTypeName((PetscObject)A,MATAIJMUMPS);CHKERRQ(ierr);
-    ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATAIJMUMPS);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectChangeTypeName((PetscObject)A,MATSBAIJMUMPS);CHKERRQ(ierr);
-    ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATSBAIJMUMPS);CHKERRQ(ierr);
-  }
-
-  ierr = PetscMalloc(sizeof(Mat_MUMPS),&mumps);CHKERRQ(ierr); 
-  ierr = PetscMemcpy(mumps,lu,sizeof(Mat_MUMPS));CHKERRQ(ierr); 
-  (*M)->spptr = mumps;
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_MUMPS));CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
