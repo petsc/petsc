@@ -1148,7 +1148,7 @@ c=====================================================================72
       integer f2ntv(nvfacet,4)
       integer c2n(ncell,4)
       integer sface_bit(nnfacet), vface_bit(nvfacet)
-      integer icount
+      integer icount,ierr
 
       real x(1),y(1),z(1)
       real amut(1)
@@ -1185,7 +1185,7 @@ c
       cmx_loc = 0.0
       cmy_loc = 0.0
       cmz_loc = 0.0
-      call PetscMemzero(coef_glo,8*8)
+      call PetscMemzero(coef_glo,8*8,ierr)
  
 c
 c     if(ntt.eq.ncyc) then
@@ -3016,6 +3016,7 @@ c=====================================================================72
      2                 irank,nvertices)
 
       real x(nvertices),y(nvertices),z(nvertices)
+      integer ierr
 c      real rxy(7,nnodes)
 c
 #if defined(INTERLACING)
@@ -3054,7 +3055,7 @@ c        r23(i) = 0.0
 c        r33(i) = 0.0
 c        r44(i) = 0.0
 c1000 continue '*/
-      call PetscMemzero(rxy,8*7*nnodes)
+      call PetscMemzero(rxy,8*7*nnodes,ierr)
 c
 c Now loop over the edges and accumulate the r's 
 c
@@ -3349,7 +3350,7 @@ c       grady(4,i) = 0.0
 c       gradz(4,i) = 0.0
 c
 c1000  continue
-      call PetscMemzero(grad,15*8*nnodes)
+      call PetscMemzero(grad,15*8*nnodes,ierr)
 c
 c Convert the energy to total enthalpy or pressure
 c

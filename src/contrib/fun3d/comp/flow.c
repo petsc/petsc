@@ -458,15 +458,11 @@ int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,
    int          ierr;
    int          nnodes; 
  
-   ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);
-   CHKERRQ(ierr);
- 
+   /*ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+   ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+   */
    ierr = MatSetUnfactored(jac); CHKERRQ(ierr);
    nnodes = grid->nnodes;
- 
-   ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);
-   CHKERRQ(ierr);
- 
    ierr = VecGetArray(localX,&qnode); CHKERRQ(ierr);
    /*ierr = MatZeroEntries(jac); CHKERRQ(ierr);*/
 
@@ -480,6 +476,8 @@ int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,
    /*ierr = PetscFortranObjectToCObject(ijac, &jac); CHKERRQ(ierr);*/
    /*ierr = MatView(jac,VIEWER_STDOUT_SELF); CHKERRQ(ierr);*/
    ierr = VecRestoreArray(localX,&qnode); CHKERRQ(ierr);
+   ierr = MatAssemblyBegin(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+   ierr = MatAssemblyEnd(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
    *flag = SAME_NONZERO_PATTERN;
    return 0;
 }
@@ -1356,24 +1354,13 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(nvnode, &grid->vyn);
   FCALLOC(nvnode, &grid->vzn);
   FCALLOC(nvnode, &grid->va);
-  if (rank == 0) {
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nvtet, nvbound, PETSC_INT);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nvpts, nvbound, PETSC_INT);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->f2ntv, 4*nvfacet, PETSC_INT);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->ivnode, nvnode, PETSC_INT);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vxn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vyn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vzn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
-  }
-  ierr = MPI_Bcast(grid->nvtet, nvbound, MPI_INT, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->nvpts, nvbound, MPI_INT, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->f2ntv, 4*nvfacet, MPI_INT, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->ivnode, nvnode, MPI_INT, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->vxn, nvnode, MPI_DOUBLE, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->vyn, nvnode, MPI_DOUBLE, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->vzn, nvnode, MPI_DOUBLE, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-
-
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nvtet, nvbound, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nvpts, nvbound, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->f2ntv, 4*nvfacet, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->ivnode, nvnode, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vxn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vyn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vzn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
   isurf = 0;
   nvnodeLoc = 0;
   nvfacetLoc = 0;
@@ -1483,24 +1470,14 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(nfnode, &grid->fyn);
   FCALLOC(nfnode, &grid->fzn);
   FCALLOC(nfnode, &grid->fa);
-  if (rank == 0) {
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nftet, nfbound, PETSC_INT);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nfpts, nfbound, PETSC_INT);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->f2ntf, 4*nffacet, PETSC_INT);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->ifnode, nfnode, PETSC_INT);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fxn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fyn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
-   ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fzn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nftet, nfbound, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nfpts, nfbound, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->f2ntf, 4*nffacet, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->ifnode, nfnode, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fxn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fyn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fzn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
   ierr = PetscBinaryClose(fdes); CHKERRQ(ierr);
-  }
-  ierr = MPI_Bcast(grid->nftet, nfbound, MPI_INT, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->nfpts, nfbound, MPI_INT, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->f2ntf, 4*nffacet, MPI_INT, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->ifnode, nfnode, MPI_INT, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->fxn, nfnode, MPI_DOUBLE, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->fyn, nfnode, MPI_DOUBLE, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-  ierr = MPI_Bcast(grid->fzn, nfnode, MPI_DOUBLE, 0, MPI_COMM_WORLD); CHKERRQ(ierr);
-
   isurf = 0;
   nfnodeLoc = 0;
   nffacetLoc = 0;
