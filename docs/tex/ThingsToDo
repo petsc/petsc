@@ -137,11 +137,13 @@ Additional Capabilities that PETSc Needs:
 
    - Add matrix viewers to show element magnitude by coloring (requested by Andreas).
 
-   - Add nonsymmetric matrix reorderings for use in LU (requested by Andreas)
+   X Add nonsymmetric matrix reorderings for use in LU (requested by Andreas)
 
-   * Add viewer for matrix graph - possibly interface to external software?
-     (requested by Andreas) Allow one to view a reordered matrix, perhaps 
-    by providing a MatReOrder(Mat,IS,IS,Mat*)?
+   - Add viewer for matrix graph - possibly interface to external software?
+     (requested by Andreas) 
+
+   - Allow one to view a reordered matrix, perhaps 
+       by providing a MatReOrder(Mat,IS,IS,Mat*)?
 
    - Reorganize multigrid code. (requested by Andreas).
 
