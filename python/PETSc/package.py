@@ -228,7 +228,7 @@ class Package(config.base.Configure):
         Dir = dir
         break
     if Dir is None:
-      self.framework.log.write('Did not located already downloaded '+self.downloadname+'\n')
+      self.framework.log.write('Could not locate an existing copy of '+self.downloadname+'\n')
       if retry <= 0:
         raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
