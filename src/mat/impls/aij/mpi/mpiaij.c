@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.119 1996/02/01 17:29:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.120 1996/02/01 18:52:56 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1241,7 +1241,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     row++; array += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
   } 
   aj = Aloc->j;
-  for ( i=0; i<ai[m]|+shift; i++ ) {aj[i] -= a->cstart + shift;}
+  for ( i=0; i<ai[m]+shift; i++ ) {aj[i] -= a->cstart + shift;}
 
   /* copy over the B part */
   Aloc = (Mat_SeqAIJ*) a->B->data;

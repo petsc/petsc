@@ -201,7 +201,8 @@ extern char   *getenv( char *);
 extern double atof(char *);
 extern int    atoi(char*);
 extern char   *mktemp(char *);
-
+extern unsigned int sleep(unsigned int);
+extern int    close(int);
 
 #else
 extern char   *getenv( char *);
