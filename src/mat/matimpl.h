@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.91 1998/10/09 19:21:45 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.92 1999/01/12 23:14:58 bsmith Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -174,7 +174,7 @@ struct _p_Partitioning {
     ncolumns      = {1,0,1,1}
     columns       = {{6},{},{4},{5}}
     nrows         = {3,0,2,2}
-    rows          = {{4,5,6},{},{4,6},{4,5}}
+    rows          = {{0,1,2},{},{1,2},{1,2}}
     columnsforrow = {{6,0,6},{},{4,4},{5,5}}
 
     See the routine MatFDColoringApply() for how this data is used
@@ -184,19 +184,19 @@ struct _p_Partitioning {
 
 struct  _p_MatFDColoring{
   PETSCHEADER(int)
-  int    M,N,m;            /* total rows, columns; local rows */
+  int    M, N, m;          /* total rows, columns; local rows */
   int    rstart;           /* first row owned by local processor */
   int    ncolors;          /* number of colors */
   int    *ncolumns;        /* number of local columns for a color */ 
-  int    **columns;        /* lists the local columns of each color */
+  int    **columns;        /* lists the local columns of each color (using global column numbering) */
   int    *nrows;           /* number of local rows for each color */
-  int    **rows;           /* lists the rows for each color */
-  int    **columnsforrow;  /* lists the corresponding columns for those rows */ 
-  Scalar *scale,*wscale;   /* workspace used to hold FD scalings */
+  int    **rows;           /* lists the local rows for each color (using the local row numbering) */
+  int    **columnsforrow;  /* lists the corresponding columns for those rows (using the global column numbering) */ 
+  Scalar *scale, *wscale;  /* workspace used to hold FD scalings */
   double error_rel;        /* square root of relative error in computing function */
   double umin;             /* minimum allowable u'dx value */
   int    freq;             /* frequency at which new Jacobian is computed */
-  Vec    w1,w2,w3;         /* work vectors used in computing Jacobian */
+  Vec    w1, w2, w3;       /* work vectors used in computing Jacobian */
   int    (*f)(void);       /* function that defines Jacobian */
   void   *fctx;            /* optional user-defined context for use by the function f */
 };
