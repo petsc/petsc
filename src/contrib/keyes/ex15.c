@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.7 1999/10/06 21:33:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.8 1999/10/06 21:35:29 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -80,11 +80,12 @@ extern int FormInterpolation(AppCtx *,GridCtx*,GridCtx*);
 int main( int argc, char **argv )
 {
   SNES          snes;                      
-  AppCtx        user;                      
-  int           ierr, its, lits, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
-  int           size, nlocal,Nlocal,i;
-  double	atol, rtol, stol, litspit;
+  AppCtx        user;
+  GridCtx       *finegrid;                      
+  int           ierr, its, lits, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
+  int           nlocal,i;
   int	        maxit, maxf;
+  double	atol, rtol, stol, litspit;
   SLES          sles;
   PC            pc;
   PLogDouble    v1, v2, elapsed;
@@ -107,6 +108,7 @@ int main( int argc, char **argv )
   ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL); CHKERRA(ierr);
 
+  /* set number of levels and grid size on coarsest level */
   user.ratio      = 2;
   user.nlevels    = 2;
   user.grid[0].mx = 5; 
@@ -117,46 +119,38 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.grid[0].my,PETSC_NULL); CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.grid[0].mx,user.grid[0].my);CHKERRA(ierr);
 
+  /* Set grid size for all finer levels */
   for (i=1; i<user.nlevels; i++) {
     user.grid[i].mx = user.ratio*(user.grid[i-1].mx-1)+1; 
     user.grid[i].my = user.ratio*(user.grid[i-1].my-1)+1;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid %d size %d by %d\n",i,user.grid[i].mx,user.grid[i].my);CHKERRA(ierr);
   }
 
-  n = user.grid[1].mx*user.grid[1].my; 
-  N = user.grid[0].mx*user.grid[0].my;
-
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  /* set partitioning of domains accross processors */
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL); CHKERRA(ierr);
 
-  /* Set up distributed array for fine grid */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.grid[1].mx,
-                    user.grid[1].my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.grid[1].da); CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.grid[1].da,&user.grid[1].x); CHKERRA(ierr);
-  ierr = VecDuplicate(user.grid[1].x,&user.grid[1].r); CHKERRA(ierr);
-  ierr = VecDuplicate(user.grid[1].x,&user.grid[1].b); CHKERRA(ierr);
-  ierr = VecGetLocalSize(user.grid[1].x,&nlocal);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.grid[1].da,&user.grid[1].localX); CHKERRA(ierr);
-  ierr = VecDuplicate(user.grid[1].localX,&user.grid[1].localF); CHKERRA(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.grid[1].J); CHKERRA(ierr);
-
-  /* Set up distributed array for coarse grid */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.grid[0].mx,
-                    user.grid[0].my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.grid[0].da); CHKERRA(ierr);
-  ierr = DACreateGlobalVector(user.grid[0].da,&user.grid[0].x); CHKERRA(ierr);
-  ierr = VecDuplicate(user.grid[0].x,&user.grid[0].b); CHKERRA(ierr);
-  ierr = VecGetLocalSize(user.grid[0].x,&Nlocal);CHKERRA(ierr);
-  ierr = DACreateLocalVector(user.grid[0].da,&user.grid[0].localX); CHKERRA(ierr);
-  ierr = VecDuplicate(user.grid[0].localX,&user.grid[0].localF); CHKERRA(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.grid[0].J); CHKERRA(ierr);
+  /* Set up distributed array for  each level */
+  for (i=0; i<user.nlevels; i++) {
+    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.grid[i].mx,
+                      user.grid[i].my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.grid[i].da); CHKERRA(ierr);
+    ierr = DACreateGlobalVector(user.grid[i].da,&user.grid[i].x); CHKERRA(ierr);
+    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r); CHKERRA(ierr);
+    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].b); CHKERRA(ierr);
+    ierr = DACreateLocalVector(user.grid[i].da,&user.grid[i].localX); CHKERRA(ierr);
+    ierr = VecDuplicate(user.grid[i].localX,&user.grid[i].localF); CHKERRA(ierr);
+    ierr = VecGetLocalSize(user.grid[i].x,&nlocal);CHKERRA(ierr);
+    ierr = VecGetSize(user.grid[i].x,&n);CHKERRA(ierr);
+    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.grid[i].J); CHKERRA(ierr);
+  }
 
   /* Create nonlinear solver */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
 
   /* provide user function and Jacobian */
-  ierr = SNESSetFunction(snes,user.grid[1].b,FormFunction,&user); CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,user.grid[1].J,user.grid[1].J,FormJacobian,&user);CHKERRA(ierr);
+  finegrid = &user.grid[user.nlevels-1];
+  ierr = SNESSetFunction(snes,finegrid->b,FormFunction,&user); CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,finegrid->J,finegrid->J,FormJacobian,&user);CHKERRA(ierr);
 
   /* set two level additive Schwarz preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
@@ -182,9 +176,11 @@ int main( int argc, char **argv )
   ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.grid[1].J); CHKERRA(ierr);
 
   /* Create interpolation between the levels */
-  ierr = FormInterpolation(&user,&user.grid[1],&user.grid[0]);CHKERRA(ierr);
-  ierr = MGSetInterpolate(pc,FINE_LEVEL,user.grid[1].R);CHKERRA(ierr);
-  ierr = MGSetRestriction(pc,FINE_LEVEL,user.grid[1].R);CHKERRA(ierr);
+  for (i=1; i<user.nlevels; i++) {
+    ierr = FormInterpolation(&user,&user.grid[i],&user.grid[i-1]);CHKERRA(ierr);
+    ierr = MGSetInterpolate(pc,i,user.grid[i].R);CHKERRA(ierr);
+    ierr = MGSetRestriction(pc,i,user.grid[i].R);CHKERRA(ierr);
+  }
 
   /* Solve 1 Newton iteration of nonlinear system (to load all arrays) */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
@@ -210,26 +206,27 @@ int main( int argc, char **argv )
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n", lits );CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n", litspit );CHKERRA(ierr);
 
-  /* Free data structures */
-  ierr = MatDestroy(user.grid[1].J); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[1].x); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[1].r); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[1].b); CHKERRA(ierr);
-  ierr = DADestroy(user.grid[1].da); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[1].localX); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[1].localF); CHKERRA(ierr);
+  /* Free data structures on the levels */
+  for (i=0; i<user.nlevels; i++) {
+    ierr = MatDestroy(user.grid[i].J); CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].x); CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].r); CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].b); CHKERRA(ierr);
+    ierr = DADestroy(user.grid[i].da); CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].localX); CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].localF); CHKERRA(ierr);
+  }
 
-  ierr = MatDestroy(user.grid[0].J); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[0].x); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[0].b); CHKERRA(ierr);
-  ierr = DADestroy(user.grid[0].da); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[0].localX); CHKERRA(ierr);
-  ierr = VecDestroy(user.grid[0].localF); CHKERRA(ierr);
+  /* Free interpolations between levels */
+  for (i=1; i<user.nlevels; i++) {
+    ierr = MatDestroy(user.grid[i].R);CHKERRA(ierr); 
+    ierr = VecDestroy(user.grid[i].Rscale);CHKERRA(ierr); 
+  }
 
+  /* free nonlinear solver object */
   ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = MatDestroy(user.grid[1].R);CHKERRA(ierr); 
-  ierr = VecDestroy(user.grid[1].Rscale);CHKERRA(ierr); 
   PetscFinalize();
+
 
   return 0;
 }
