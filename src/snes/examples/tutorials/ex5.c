@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.19 1995/08/03 02:24:49 curfman Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.2 1995/08/25 05:27:24 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -10,7 +10,9 @@ ignition) test problem.  The command line options are:\n\
    -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
    -mx <xg>, where <xg> = number of grid points in the x-direction\n\
-   -my <yg>, where <yg> = number of grid points in the y-direction\n\n";
+   -my <yg>, where <yg> = number of grid points in the y-direction\n\
+   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
+   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*  
     1) Solid Fuel Ignition (SFI) problem.  This problem is modeled by
@@ -40,7 +42,7 @@ typedef struct {
       DA          da;            /* regular array datastructure */
 } AppCtx;
 
-int  FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(SNES,Vec,void*);
+int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(SNES,Vec,void*);
 
 int main( int argc, char **argv )
 {
@@ -49,7 +51,7 @@ int main( int argc, char **argv )
   SNES         snes;
   SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r;
-  int          ierr, its, N; 
+  int          ierr, its, N, Nx, Ny, numtids; 
   AppCtx       user;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   Mat          J;
@@ -64,10 +66,17 @@ int main( int argc, char **argv )
     SETERRA(1,"Lambda is out of range");
   }
   N = user.mx*user.my;
+
+  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
+  Ny = numtids; Nx = 1;
+  OptionsGetInt(0,"-Nx",&Nx);
+  OptionsGetInt(0,"-Ny",&Ny);
+  if (numtids != Nx*Ny) 
+    SETERRQ(1,"Incompatible number of processors: Nx * Ny != numtids");
   
   /* Set up distributed array */
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
-         user.my,PETSC_DECIDE,PETSC_DECIDE,1,1,&user.da); CHKERRA(ierr);
+         user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
@@ -83,8 +92,16 @@ int main( int argc, char **argv )
          CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,0); 
          CHKERRA(ierr);
-  ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
+
+  if (OptionsHasName(0,"-defaultJ")) {
+    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,0,0,
+                       0,0,&J); CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,
+                       (void *)&user); CHKERRA(ierr);
+  } else {
+    ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
+  }
 
   /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
@@ -192,4 +209,3 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   PLogFlops(11*ym*xm);
   return 0; 
 }
-
