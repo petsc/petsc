@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.55 2000/08/13 15:15:48 bsmith Exp kaushik $";*/
+/* "$Id: flow.c,v 1.56 2000/08/14 07:04:15 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -20,12 +20,13 @@ typedef struct {
  double  fnorm_ratio;
  int     ires,iramp,itstep;
  int     max_steps,print_freq;
+ int     LocalTimeStepping;                         
 } TstepCtx;
  
 typedef struct {                               /*============================*/
  GRID        *grid;                               /* Pointer to Grid info       */
- TstepCtx    *tsCtx;
- PetscTruth  PreLoading;                          /* Pointer to Time Stepping Context */
+ TstepCtx    *tsCtx;                              /* Pointer to Time Stepping Context */
+ PetscTruth  PreLoading;                          
 } AppCtx;                                      /*============================*/
 
 extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
@@ -107,6 +108,7 @@ int main(int argc,char **args)
   tsCtx.fnorm_ini = 0.0;  tsCtx.cfl_ini     = 50.0;    tsCtx.cfl_max = 1.0e+05;
   tsCtx.max_steps = 50;   tsCtx.max_time    = 1.0e+12; tsCtx.iramp   = -50;
   tsCtx.dt        = -5.0; tsCtx.fnorm_ratio = 1.0e+10;
+  tsCtx.LocalTimeStepping = 1;
   ierr = OptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
@@ -117,6 +119,13 @@ int main(int argc,char **args)
   c_info->alpha  = 3.0;
   c_info->beta   = 15.0;
   c_info->ivisc  = 0;
+
+  c_gmcom->ilu0  = 1;
+  c_gmcom->nsrch = 10;
+   
+  c_runge->nitfo = 0;
+
+  f_pntr.jvisc   = c_info->ivisc;
   f_pntr.ileast  = 4;
   ierr = OptionsGetDouble(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-beta",&c_info->beta,PETSC_NULL);CHKERRQ(ierr);
@@ -130,13 +139,6 @@ int main(int argc,char **args)
   ierr = PetscPrintf(comm,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
 #endif
  
-  f_pntr.jvisc   = c_info->ivisc;
-  /*  f_pntr.ileast  = 4; */
-  c_gmcom->ilu0  = 1;
-  c_gmcom->nsrch = 10;   
- 
-  c_runge->nitfo = 0;
-
   /* Get the grid information into local ordering */
   ierr = GetLocalOrdering(&f_pntr);CHKERRQ(ierr);
 
@@ -483,7 +485,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
               grid->c2e,
               grid->us,     grid->vs,      grid->as,
               grid->phi,
-              grid->amut,   &ires,&rank,&grid->nvertices);
+              grid->amut,   &ires,
+              &tsCtx->LocalTimeStepping,&rank,&grid->nvertices);
 
 /* Add the contribution due to time stepping */
   if (ires == 1) {
@@ -525,7 +528,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
   AppCtx       *user = (AppCtx *) dummy;
   GRID         *grid = user->grid;
   TstepCtx     *tsCtx = user->tsCtx;
-  Mat          jac = *B;
+  Mat          pc_mat = *B;
   VecScatter   scatter = grid->scatter;
   Vec          localX = grid->qnodeLoc;
   Scalar       *qnode;
@@ -534,7 +537,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
   PetscFunctionBegin;
   ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-  ierr = MatSetUnfactored(jac);CHKERRQ(ierr); 
+  ierr = MatSetUnfactored(pc_mat);CHKERRQ(ierr); 
  
   ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
   f77FILLA(&grid->nnodesLoc,&grid->nedgeLoc,grid->eptr,
@@ -542,7 +545,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
              grid->isface,grid->fxn,grid->fyn,grid->fzn,
              grid->sxn,grid->syn,grid->szn,
             &grid->nsnodeLoc,&grid->nvnodeLoc,&grid->nfnodeLoc,grid->isnode,
-             grid->ivnode,grid->ifnode,qnode,&jac,grid->cdt,
+             grid->ivnode,grid->ifnode,qnode,&pc_mat,grid->cdt,
              grid->area,grid->xyzn,&tsCtx->cfl,
             &rank,&grid->nvertices);
   ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
@@ -555,7 +558,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
     char mat_file[256];
     sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
     ierr = ViewerBinaryOpen(MPI_COMM_WORLD,mat_file,BINARY_CREATE,&viewer);
-    ierr = MatView(jac,viewer);CHKERRQ(ierr);
+    ierr = MatView(pc_mat,viewer);CHKERRQ(ierr);
     ierr = ViewerDestroy(viewer);
     /*ierr = MPI_Abort(MPI_COMM_WORLD,1);*/
   }

@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.22 2000/05/04 03:23:01 bsmith Exp bsmith $
+c  $Id: user.F,v 1.23 2000/08/02 19:03:32 bsmith Exp kaushik $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -708,7 +708,7 @@ c=====================================================================72
      &                  xyz,vol,xyzn,evec,
      &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
      &                  nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-     &                  irank,nvertices)
+     &                  LocalTS,irank,nvertices)
 c
       implicit none      
 #include "include/finclude/petscdef.h"
@@ -720,7 +720,7 @@ c
       common/fluid/gamma,gm1,gp1,gm1g,gp1g,ggm1
       integer nnodes,nedge,
      &        nsnode,nvnode,nfnode,
-     &        irank,nvertices
+     &        LocalTS,irank,nvertices
       Scalar  vol(1)
       Scalar  sxn(1),syn(1),szn(1)
       Scalar  vxn(1),vyn(1),vzn(1)
@@ -769,7 +769,7 @@ c
 c First loop over nodes and zero out cdt
 c
       flops = 0
-      if (dt.lt.0.0) then
+      if (LocalTS .gt. 0) then
          do 1000 i = 1,nvertices
             cdt(i) = 0.0d0
  1000    continue
@@ -2188,7 +2188,7 @@ c=====================================================================72
      6                  turbre,slen,c2n,c2e,
      7                  us,vs,as,phi,
      &                  amut,ires,
-     &                  irank, nvertices)
+     &                  LocalTS,irank, nvertices)
 c
       implicit none      
 #include "include/finclude/petscdef.h"
@@ -2199,7 +2199,7 @@ c
      &        nsnode, nvnode, nfnode,
      &        nnfacet,nvfacet,nffacet,
      &        nnbound,nvbound,nfbound,
-     &        irank,nvertices
+     &        LocalTS,irank,nvertices
       integer evec(nedge,2)
       integer isface(1),ivface(1),ifface(1)
       integer isnode(1),ivnode(1),ifnode(1)
@@ -2270,7 +2270,7 @@ c     call PLogEventBegin(delta2_event,0,0,0,0,ierr)
      &             xyz,area,xyzn,evec,
      &             sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,
      &             nsnode,nvnode,nfnode,isnode,ivnode,ifnode,
-     &             irank,nvertices)
+     &             LocalTS,irank,nvertices)
 c     call PLogEventEnd(delta2_event,0,0,0,0,ierr)
   888 continue
 c /*'
