@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.15 1999/05/12 03:28:40 bsmith Exp bsmith $"
+!    "$Id: ex1f90.F,v 1.16 2000/01/11 21:00:24 bsmith Exp bsmith $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
@@ -107,8 +107,8 @@
       if (rank .eq. 0) then
 #if defined(PETSC_USE_COMPLEX)
          write(6,100) int(PetscRealPart(dot))
-         write(6,110) int(PetscRealPart(dots(1))),                      &
-     &                int(PetscRealPart(dots(2))),                      &
+         write(6,110) int(PetscRealPart(dots(1))),                             &
+     &                int(PetscRealPart(dots(2))),                             &
      &                int(PetscRealPart(dots(3)))
 #else
          write(6,100) int(dot)

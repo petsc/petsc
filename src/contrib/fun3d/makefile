@@ -1,21 +1,23 @@
-# $Id: makefile,v 1.17 2000/01/11 19:55:13 bsmith Exp $ 
+# $Id: makefile,v 1.3 2000/01/12 14:15:22 bsmith Exp bsmith $ 
 
 ALL: flow
 
-USERCPPFLAGS  =  -DCFL3D_AXIS -DINTERLACING -DBLOCKING 
-# 
-CFLAGS	      =
-FFLAGS	      =	 
+USERCPPFLAGS     =  -DCFL3D_AXIS -DINTERLACING -DBLOCKING 
+CFLAGS	         =
+FFLAGS	         =	 
 #/real_size:64 /integer_size:32
-CPPFLAGS      = $(USERCPPFLAGS) $(FCONF)
-FPPFLAGS      = $(USERCPPFLAGS)
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      = 
-OBJSF	      = user.o userJac.o
-LIBBASE	      = libpetscsnes
-CLEANFILES    = flow.exe
+CPPFLAGS         = $(USERCPPFLAGS) $(FCONF)
+FPPFLAGS         = $(USERCPPFLAGS)
+SOURCEC	         = 
+SOURCEF	         =
+SOURCEH	         =
+OBJSC	         = 
+OBJSF	         = user.o userJac.o
+CLEANFILES       = flow.exe flow.o flow
+LOCDIR           = src/contrib/fun3d
+TESTEXAMPLES_3	 = flow.PETSc flow.rm
+EXAMPLESC        = flow.c flow.h
+EXAMPLESF        = user.c userJac.c
 #
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
