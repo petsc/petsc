@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.8 2000/08/08 16:09:17 bsmith Exp balay $ 
+# $Id: base_variables,v 1.9 2000/08/08 16:10:49 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -20,7 +20,7 @@ C_CLINKER	   = gcc
 C_FLINKER	   = gcc
 C_CCV		   = ${C_CC} --version
 C_FCV              = unknown
-C_SYS_LIB	   = -ldl -lc -L/soft/com/packages/absoft-1.0/lib -lfio -lf90math -lf77math -lU77 -lV77 -lm
+C_SYS_LIB	   = -ldl -lc -L/soft/com/packages/absoft-1.0/lib -lfio -lU77 -lV77  -lf90math -lf77math -lm
 
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
@@ -37,7 +37,7 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB	   = -ldl -lc -L/soft/com/packages/absoft-1.0/lib -lfio -lf90math -lf77math -lU77 -lV77 -lm
+CXX_SYS_LIB	   = -ldl -lc -L/soft/com/packages/absoft-1.0/lib -lfio -lU77 -lV77 -lf90math -lf77math -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
