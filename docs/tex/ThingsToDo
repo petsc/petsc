@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Add feature in nightly builds to remove old libraries (maybe?)
+
   - Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
     A prototype is on poseidon:~mcinnes/mpibaij.bak
 
