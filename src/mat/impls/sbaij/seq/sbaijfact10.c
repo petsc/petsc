@@ -1,4 +1,4 @@
-/*$Id: sbaijfact10.c,v 1.2 2001/02/14 16:02:11 bsmith Exp bsmith $*/
+/*$Id: sbaijfact10.c,v 1.3 2001/02/14 16:08:09 bsmith Exp bsmith $*/
 #include "sbaij.h"
 #include "src/inline/ilu.h"
 
@@ -164,12 +164,12 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
           wp = w + bj[j]*36;
           u = ba + j*36;
 
-	  u0 = u0; u1 = u1; u2 = u2; u3 = u3; u4 = u4; u5 = u5; u6 = u6;
-	  u7 = u7; u8 = u8; u9 = u9; u10 = u10; u11 = u11; u12 = u12; u13 = u13;
-	  u14 = u14; u15 = u15; u16 = u16; u17 = u17; u18 = u18; u19 = u19; u20 = u20;
-	  u21 = u21; u22 = u22; u23 = u23; u24 = u24; u25 = u25; u26 = u26; u27 = u27;
-	  u28 = u28; u29 = u29; u30 = u30; u31 = u31; u32 = u32; u33 = u33; u34 = u34;
-	  u35 = u35;
+	  u0 = u[0]; u1 = u[1]; u2 = u[2]; u3 = u[3]; u4 = u[4]; u5 = u[5]; u6 = u[6];
+	  u7 = u[7]; u8 = u[8]; u9 = u[9]; u10 = u[10]; u11 = u[11]; u12 = u[12]; u13 = u[13];
+	  u14 = u[14]; u15 = u[15]; u16 = u[16]; u17 = u[17]; u18 = u[18]; u19 = u[19]; u20 = u[20];
+	  u21 = u[21]; u22 = u[22]; u23 = u[23]; u24 = u[24]; u25 = u[25]; u26 = u[26]; u27 = u[27];
+	  u28 = u[28]; u29 = u[29]; u30 = u[30]; u31 = u[31]; u32 = u[32]; u33 = u[33]; u34 = u[34];
+	  u35 = u[35];
 
           wp[0] +=  uik[0]*u0 + uik[1]*u1 + uik[2]*u2 + uik[3]*u3 + uik[4]*u4 + uik[5]*u5;
           wp[1] +=  uik[6]*u0 + uik[7]*u1 + uik[8]*u2 + uik[9]*u3+ uik[10]*u4+ uik[11]*u5;
