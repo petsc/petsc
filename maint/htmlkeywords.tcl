@@ -154,9 +154,9 @@ proc write_keywords_file { } {
 # change dir to PETSC_HOME
 proc main { }  {
     global Keywords Keywordsfunction keywords keyword html
-    global sub argc argv
+    global sub argc argv env
 
-    set PETSC_HOME /home/bsmith/petsc
+    set PETSC_HOME $env(PETSC_DIR)
     cd $PETSC_HOME
 
     set PETSC_DIR ../..
