@@ -1,4 +1,4 @@
-/*$Id: sbaijov.c,v 1.6 2001/01/17 22:23:04 bsmith Exp balay $*/
+/*$Id: sbaijov.c,v 1.7 2001/03/06 20:15:14 balay Exp balay $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -241,7 +241,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
   
   
   /* Determine the number of messages to expect, their lengths, from from-ids */
-  ierr = PetscGatherNumberOfMessages(comm,nrqs,w2,w1,&nrqr);CHKERRQ(ierr);
+  ierr = PetscGatherNumberOfMessages(comm,w2,w1,&nrqr);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths(comm,nrqs,nrqr,w1,&onodes1,&olengths1);CHKERRQ(ierr);
 
   /* Now post the Irecvs corresponding to these messages */

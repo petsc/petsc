@@ -1,4 +1,4 @@
-/*$Id: mpimesg.c,v 1.8 2001/03/05 16:14:08 bsmith Exp balay $*/
+/*$Id: mpimesg.c,v 1.9 2001/03/06 18:56:34 balay Exp balay $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -10,7 +10,6 @@
 
   Input Parameters:
 + comm     - Communicator
-. nsends   - number of messages that are to be sent. Optionally PETSC_DETERMINE
 . iflags   - an array of integers of length sizeof(comm). A '1' in ilengths[i] represent a 
              message from current node to ith node. Optionally PETSC_NULL
 - ilengths - Non zero ilengths[i] represent a message to i of length ilengths[i].
@@ -29,16 +28,15 @@
 
   Either iflags or ilengths should be provided.  If iflags is not
   provided (PETSC_NULL) it can be computed from ilengths. If iflags is
-  provided, ilengths is not required. if nsends is not provided, it
-  will be computed from iflags.
+  provided, ilengths is not required.
 
 .seealso: PetscGatherMessageLengths()
 @*/
 #undef __FUNC__  
 #define __FUNC__ "PetscGatherNumberOfMessages"
-int PetscGatherNumberOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengths,int *nrecvs)
+int PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nrecvs)
 {
-  int *recv_buf,size,rank,i,ierr,nsends_local,*iflags_local;
+  int *recv_buf,size,rank,i,ierr,*iflags_local;
 
   PetscFunctionBegin;
 
@@ -58,12 +56,6 @@ int PetscGatherNumberOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengt
     iflags_local = iflags;
   }
 
-  /* If nsends is not provided, compute it from iflags */
-  if (nsends == PETSC_DETERMINE) {
-    for (nsends_local=0,i=0; i<size; i++) nsends_local += iflags_local[i];
-  } else {
-    nsends_local = nsends;
-  }
   ierr = PetscMalloc(size*sizeof(int),&recv_buf);CHKERRQ(ierr);
 
   /* Now post an allreduce to determine the numer of messages the current node will receive */
