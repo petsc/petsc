@@ -102,9 +102,9 @@ int main(int Argc,char **Args)
         a user provided application. This is non-standard and this practice
         should be avoided.
     */
-    ierr = PCShellSetApplyRichardson(pc,gauss_seidel,(void*)0);CHKERRQ(ierr);
+    ierr = PCShellSetApplyRichardson(pc,gauss_seidel);CHKERRQ(ierr);
     if (use_jacobi) {
-      ierr = PCShellSetApplyRichardson(pc,jacobi,(void*)0);CHKERRQ(ierr);
+      ierr = PCShellSetApplyRichardson(pc,jacobi);CHKERRQ(ierr);
     }
     ierr = KSPSetType(ksp[i],KSPRICHARDSON);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp[i],PETSC_TRUE);CHKERRQ(ierr);

@@ -165,7 +165,8 @@ int main(int argc,char **args)
     ierr = SampleShellPCCreate(&shell);CHKERRQ(ierr);
 
     /* (Required) Set the user-defined routine for applying the preconditioner */
-    ierr = PCShellSetApply(pc,SampleShellPCApply,(void*)shell);CHKERRQ(ierr);
+    ierr = PCShellSetApply(pc,SampleShellPCApply);CHKERRQ(ierr);
+    ierr = PCShellSetContext(pc,shell);CHKERRQ(ierr);
 
     /* (Optional) Set a name for the preconditioner, used for PCView() */
     ierr = PCShellSetName(pc,"MyPreconditioner");CHKERRQ(ierr);
@@ -285,7 +286,7 @@ PetscErrorCode SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
    user-provided preconditioner.
 
    Input Parameters:
-.  ctx - optional user-defined context, as set by PCShellSetApply()
+.  ctx - optional user-defined context, as set by PCShellSetContext()
 .  x - input vector
 
    Output Parameter:

@@ -374,9 +374,9 @@ void sneslinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,V
 
 void PETSC_STDCALL sneslinesearchset_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  if ((FCNVOID)f == (FCNVOID)snescubiclinesearch_) {
+  if ((FCNVOID)f == (FCNVOID)sneslinesearchcubic_) {
     *ierr = SNESLineSearchSet(*snes,SNESLineSearchCubic,ctx);
-  } else if ((FCNVOID)f == (FCNVOID)snesquadraticlinesearch_) {
+  } else if ((FCNVOID)f == (FCNVOID)sneslinesearchquadratic_) {
     *ierr = SNESLineSearchSet(*snes,SNESLineSearchQuadratic,ctx);
   } else if ((FCNVOID)f == (FCNVOID)sneslinesearchno_) {
     *ierr = SNESLineSearchSet(*snes,SNESLineSearchNo,ctx);

@@ -191,8 +191,7 @@
          call PCSetType(pc,PCSHELL,ierr)
 
 !  (Required) Set the user-defined routine for applying the preconditioner
-         call PCShellSetApply(pc,SampleShellPCApply,PETSC_NULL_OBJECT,   &
-     &        ierr)
+         call PCShellSetApply(pc,SampleShellPCApply,ierr)
 
 !  (Optional) Do any setup required for the preconditioner
          call SampleShellPCSetUp(A,x,ierr)

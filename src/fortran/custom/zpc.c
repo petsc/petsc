@@ -176,11 +176,11 @@ void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),PetscErrorCo
 }
 
 
-void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,PetscErrorCode*),void *ptr,
+void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,PetscErrorCode*),
                                     PetscErrorCode *ierr)
 {
   f1 = apply;
-  *ierr = PCShellSetApply(*pc,ourshellapply,ptr);
+  *ierr = PCShellSetApply(*pc,ourshellapply);
 }
 
 void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,PetscErrorCode*),
@@ -201,10 +201,10 @@ void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,Pet
 
 void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
          void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*),
-         void *ptr,PetscErrorCode *ierr)
+         PetscErrorCode *ierr)
 {
   f2 = apply;
-  *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson,ptr);
+  *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson);
 }
 
 void PETSC_STDCALL pcmggetcoarsesolve_(PC *pc,KSP *ksp,PetscErrorCode *ierr)
