@@ -43,6 +43,7 @@ extern int    getrusage(int,s_rusage);
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern void   exit(int);
 extern int    strcasecmp(const char *,const char *);
+extern int    getpagesize();
 /* In g++ 2.7.2 abort went from not existing to being a built in function */
 /* Gotta love Gnu! Older versions of g++ may need the following line*/
 /* extern int    abort(); */
@@ -61,6 +62,7 @@ extern void   perror(const char *);
 extern int    vfprintf (FILE *, const char *, char * );
 extern int    getrusage(int,s_rusage);
 extern int    strcasecmp(const char *,const char *);
+extern int    getpagesize();
 /*
    On some machines the following prototype might be
    extern int vsprintf(char *, const char *, char * );
@@ -100,9 +102,9 @@ extern int    getrusage(int,s_rusage);
 }
 
 #else
-extern char *mktemp(char *);
+extern char   *mktemp(char *);
 /* strcasecmp() is not in AIX 3.X but is in 4.2 */
-extern int  strcasecmp(const char *, const char *);
+extern int    strcasecmp(const char *, const char *);
 extern int    getrusage(int,s_rusage);
 #endif
 #endif
@@ -118,6 +120,7 @@ extern int    getdomainname(char *,int);
 extern void   perror(const char *);
 extern double atof(const char *);
 extern int    getrusage(int,s_rusage);
+extern int    getpagesize();
 /*
     These where added to freeBSD recently, thus no longer are needed.
     If you have an old installation of freeBSD you may need the 
@@ -136,6 +139,7 @@ extern int    abort();
 #else
 extern int    getdomainname(char *,int);
 extern int    getrusage(int,s_rusage);
+extern int    getpagesize();
 /* 
     These were added to the latest freeBSD release, thus no longer needed.
     If you have an old installation of freeBSD you may need the 
@@ -196,6 +200,7 @@ extern int    readlink(const char *,char *,int);
 extern void   usleep(unsigned int);
 extern unsigned int sleep(unsigned int);
 extern int    getrusage(int,s_rusage);
+extern int    getpagesize();
 }
 
 #else
@@ -206,6 +211,7 @@ extern void   perror(char *);
 extern double atof(char *);
 extern int    atoi(char*);
 extern int    getrusage(int,s_rusage);
+extern int    getpagesize();
 #endif
 #endif
 
@@ -214,13 +220,13 @@ extern int    getrusage(int,s_rusage);
 
 #if defined(__cplusplus)
 extern "C" {
-extern int  getdomainname(char *,int);
-extern void exit(int);
-extern void abort();
-extern int readlink(const char *, char *, size_t);
+extern int    getdomainname(char *,int);
+extern void   exit(int);
+extern void   abort();
+extern int    readlink(const char *, char *, size_t);
 }
 #else
-extern char *mktemp(char*);
+extern char   *mktemp(char*);
 #define SIGBUS _SIGBUS
 #define SIGSYS _SIGSYS
 #endif
@@ -264,6 +270,7 @@ extern void   *malloc(long unsigned int );
 */
 extern void   free(void *);
 extern double atof(char *);
+extern int    getpagesize();
 #endif
 #endif
 
@@ -281,6 +288,7 @@ extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
 extern void   *memalign (size_t, size_t);
+extern int    getpagesize();
 }
 
 #else
@@ -303,7 +311,7 @@ extern char   *getenv( char *);
 extern double atof(char *);
 extern int    atoi(char*);
 extern unsigned sleep(unsigned);
-extern int close(int);
+extern int    close(int);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
 extern int    getdomainname(char *,int);
@@ -318,7 +326,7 @@ extern char   *getenv( char *);
 extern double atof(char *);
 extern int    atoi(char*);
 extern unsigned sleep(unsigned);
-extern int close(int);
+extern int    close(int);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
 extern int    getdomainname(char *,int);
