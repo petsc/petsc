@@ -60,8 +60,15 @@ class Retriever(install.base.Base):
       (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
       if not location:
         url = urlparse.urlunparse(('','', path, parameters, query, fragment))
-      elif location.find('@') < 0:
-        login  = location.split('.')[0]
+      else:
+        # Always try an authorized login first
+        index = location.find('@')
+        if index >= 0:
+          login = location[0:index]
+          # Strip off login from original URL
+          url   = urlparse.urlunparse((scheme, location[index+1:], path, parameters, query, fragment))
+        else:
+          login = location.split('.')[0]
         newUrl = urlparse.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
         try:
           output = self.executeShellCommand('bk clone '+newUrl+' '+root)
