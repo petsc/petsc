@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.41 2000/11/02 19:35:20 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.42 2000/11/02 20:48:29 hzhang Exp hzhang $*/
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -207,8 +207,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
   int                *pivots;
 
   PetscFunctionBegin;
+
   /* initialization */
-  printf("called MatCholeskyFactorNumeric_SeqSBAIJ_N \n");
   rtmp  = (MatScalar*)PetscMalloc(bs2*mbs*sizeof(MatScalar));CHKPTRQ(rtmp);
   ierr  = PetscMemzero(rtmp,bs2*mbs*sizeof(MatScalar));CHKERRQ(ierr); 
   il    = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(il);
