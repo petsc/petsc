@@ -58,7 +58,7 @@ endif
 
 cd $PETSC_DIR;make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$PETSC_DIR BOPT=$BOPT all >>& build.log
 echo '****************************************************' >>& build.log
-echo 'Finished Build on $MACH $PETSC_ARCH $BOPT `date`' >>& build.log
+echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& build.log
 cd $PETSC_DIR; tar rf buildoutput.tar build.log
 #
 #
