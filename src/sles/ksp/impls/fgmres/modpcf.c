@@ -1,4 +1,4 @@
-/* $Id: modpcf.c,v 1.4 1999/12/12 04:10:39 bsmith Exp bsmith $*/
+/* $Id: modpcf.c,v 1.5 1999/12/13 03:21:09 bsmith Exp bsmith $*/
 
 #include "sles.h" 
 #undef __FUNC__  
@@ -26,6 +26,8 @@
    Options Database Keys:
    -ksp_fgmres_modifypcnochange
    -ksp_fgmres_modifypcsles
+
+   Level: intermediate
 
    Contributed by Allison Baker
 
@@ -68,6 +70,8 @@ int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)( KSP,int,int,double,void*),void* ctx
 .    res_norm      - the current residual norm.
 -    dummy         - context variable, unused in this routine
 
+   Level: intermediate
+
    Contributed by Allison Baker
 
 You can use this as a template!
@@ -96,6 +100,8 @@ int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,double res_norm,
 .    loc_its       - the number of FGMRES iterations since last restart.
 .    res_norm      - the current residual norm.
 -    dummy         - context, not used here
+
+   Level: intermediate
 
    Contributed by Allison Baker
 
