@@ -625,9 +625,11 @@ acfindx:
 
   def configureWin32NonCygwin(self):
     '''Win32 non-cygwin specific stuff'''
-    #if (compiler starts with win32fe):
-    #self.addDefine('PARCH_win32',1)
-    #self.addDefine('CANNOT_START_DEBUGGER',1)
+    wfe = self.framework.argDB['CC'].split()[0]
+    import os
+    if os.path.splitext(os.path.basename(wfe))[0] == 'win32fe':
+      self.framework.addSubstitution('PARCH_win32',1)
+      self.addDefine('CANNOT_START_DEBUGGER',1)
     return
     
   def configureMPIUNI(self):
