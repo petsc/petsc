@@ -10,7 +10,7 @@
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
-#include "src/mat/impls/aij/seq/spooles.h"
+#include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 extern int SetSpoolesOptions(Mat, Spooles_options *);
 extern int MatDestroy_MPIAIJ(Mat); 

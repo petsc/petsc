@@ -7,7 +7,7 @@
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
-#include "src/mat/impls/aij/seq/spooles.h"
+#include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  

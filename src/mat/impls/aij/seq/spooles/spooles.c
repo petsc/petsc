@@ -466,10 +466,12 @@ int MatCreate_SeqAIJ_Spooles(Mat A) {
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr);
 
-  ierr               = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  lu->MatView        = A->ops->view;
-  lu->MatAssemblyEnd = A->ops->assemblyend;
-  A->spptr           = (void*)lu;
+  ierr                = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
+  lu->MatView         = A->ops->view;
+  lu->MatAssemblyEnd  = A->ops->assemblyend;
+  A->spptr            = (void*)lu;
+  A->ops->view        = MatView_SeqAIJ_Spooles;
+  A->ops->assemblyend = MatAssemblyEnd_SeqAIJ_Spooles;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -57,6 +57,8 @@ EXTERN int MatFactorInfo_Spooles(Mat,PetscViewer);
 EXTERN int MatDestroy_SeqAIJ_Spooles(Mat);
 EXTERN int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
 EXTERN int MatFactorNumeric_SeqAIJ_Spooles(Mat,Mat*); 
+EXTERN int MatView_SeqAIJ_Spooles(Mat,PetscViewer);
+EXTERN int MatAssemblyEnd_SeqAIJ_Spooles(Mat,MatAssemblyType);
 
 EXTERN int MatDestroy_MPIAIJ_Spooles(Mat);
 EXTERN int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
