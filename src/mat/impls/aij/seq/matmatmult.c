@@ -6,6 +6,14 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
+static int logkey_matmatmult            = 0;
+static int logkey_matmatmult_symbolic   = 0;
+static int logkey_matmatmult_numeric    = 0;
+
+static int logkey_matapplyptap          = 0;
+static int logkey_matapplyptap_symbolic = 0;
+static int logkey_matapplyptap_numeric  = 0;
+
 typedef struct _Space *FreeSpaceList;
 typedef struct _Space {
   FreeSpaceList more_space;
@@ -18,7 +26,7 @@ typedef struct _Space {
 
 #undef __FUNCT__
 #define __FUNCT__ "GetMoreSpace"
-int GetMoreSpace(long size,FreeSpaceList *list) {
+int GetMoreSpace(int size,FreeSpaceList *list) {
   FreeSpaceList a;
   int ierr;
 
@@ -58,9 +66,6 @@ int MakeSpaceContiguous(int *space,FreeSpaceList *head) {
   }
   PetscFunctionReturn(0);
 }
-
-static int logkey_matmatmult_symbolic = 0;
-static int logkey_matmatmult_numeric  = 0;
 
 /*
      MatMatMult_SeqAIJ_SeqAIJ_Symbolic - Forms the symbolic product of two SeqAIJ matrices
@@ -245,13 +250,16 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C) {
   int ierr;
 
   PetscFunctionBegin;
+  if (!logkey_matmatmult) {
+    ierr = PetscLogEventRegister(&logkey_matmatmult,"MatMatMult",MAT_COOKIE);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
+
   ierr = MatMatMult_SeqAIJ_SeqAIJ_Symbolic(A,B,C);CHKERRQ(ierr);
   ierr = MatMatMult_SeqAIJ_SeqAIJ_Numeric(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-static int logkey_matapplyptap_symbolic = 0;
-static int logkey_matapplyptap_numeric  = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatApplyPtAP_SeqAIJ_Symbolic"
@@ -497,14 +505,17 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
       apjdense[apj[j]] = 0;
     }
   }
+
+  /* Assemble the final matrix and clean up */
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(apa);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(logkey_matapplyptap_numeric,A,P,C,0);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
-extern PetscTruth MemoryIntensive;
-static int logkey_matapplyptap  = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatApplyPtAP_SeqAIJ"
 int MatApplyPtAP_SeqAIJ(Mat A,Mat P,Mat *C) {
@@ -514,11 +525,9 @@ int MatApplyPtAP_SeqAIJ(Mat A,Mat P,Mat *C) {
   if (!logkey_matapplyptap) {
     ierr = PetscLogEventRegister(&logkey_matapplyptap,"MatApplyPtAP",MAT_COOKIE);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventBegin(logkey_matapplyptap,A,P,C,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(logkey_matapplyptap,A,P,0,0);CHKERRQ(ierr);
   ierr = MatApplyPtAP_SeqAIJ_Symbolic(A,P,C);CHKERRQ(ierr);
   ierr = MatApplyPtAP_SeqAIJ_Numeric(A,P,*C);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matapplyptap,A,P,C,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(logkey_matapplyptap,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
