@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.31 1998/10/09 19:27:39 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.32 1998/11/20 15:31:26 bsmith Exp bsmith $ */
 /*
    Routines to determine options set in the options database.
 */
@@ -20,7 +20,7 @@ extern int  OptionsSetAlias(const char[],const char[]);
 extern int  OptionsSetValue(const char[],const char[]);
 extern int  OptionsClearValue(const char[]);
 
-extern int  OptionsAllUsed(void);
+extern int  OptionsAllUsed(int *);
 extern int  OptionsLeft(void);
 extern int  OptionsPrint(FILE *);
 
@@ -33,6 +33,6 @@ extern int  OptionsReject(const char[],const char[]);
 extern int  OptionsGetAll(char*[]);
 
 extern int  OptionsGetenv(MPI_Comm,const char *,char[],int,PetscTruth *);
-extern int  OptionsAtoi(char[]);
+extern int  OptionsAtoi(const char[],int*);
 
 #endif

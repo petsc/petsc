@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.129 1999/07/01 01:55:37 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.130 1999/09/27 21:28:30 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -525,6 +525,7 @@ int PetscTrLog(void)
 int PetscTrLogDump(FILE *fp)
 {
   int        i,rank,j,n,*shortlength,ierr,dummy,size, tag = 1212 /* very bad programming */;
+  int        match;
   char       **shortfunction;
   PLogDouble rss;
   MPI_Status status;
@@ -560,7 +561,8 @@ int PetscTrLogDump(FILE *fp)
   n = 1;
   for ( i=1; i<PetscLogMalloc; i++ ) {
     for ( j=0; j<n; j++ ) {
-      if (!PetscStrcmp(shortfunction[j],PetscLogMallocFunction[i])) {
+      match = !PetscStrcmp(shortfunction[j],PetscLogMallocFunction[i]);
+      if (match) {
         shortlength[j] += PetscLogMallocLength[i];
         goto foundit;
       }

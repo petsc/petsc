@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.100 1999/06/30 23:55:09 balay Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.101 1999/10/01 21:23:00 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -33,12 +33,12 @@ int DAView_1d(DA da,Viewer viewer)
   if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-    PetscSequentialPhaseBegin(da->comm,1);
+    ierr = PetscSequentialPhaseBegin(da->comm,1);CHKERRQ(ierr);
     fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
                  da->m,da->w,da->s);
     fprintf(fd,"X range: %d %d\n",da->xs,da->xe);
     fflush(fd);
-    PetscSequentialPhaseEnd(da->comm,1);
+    ierr = PetscSequentialPhaseEnd(da->comm,1);CHKERRQ(ierr);
   } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;

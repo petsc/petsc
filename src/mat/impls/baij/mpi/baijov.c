@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.35 1999/06/30 23:51:57 balay Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.36 1999/09/27 21:30:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -691,7 +691,7 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
   /* The compression and expansion should be avoided. Does'nt point
      out errors might change the indices hence buggey */
 
-  isrow_new = (IS *)PetscMalloc(2*ismax*sizeof(IS));CHKPTRQ(isrow_new);
+  isrow_new = (IS *)PetscMalloc(2*(ismax+1)*sizeof(IS));CHKPTRQ(isrow_new);
   iscol_new = isrow_new + ismax;
   ierr = MatCompressIndicesSorted_MPIBAIJ(C, ismax, isrow,isrow_new);CHKERRQ(ierr);
   ierr = MatCompressIndicesSorted_MPIBAIJ(C, ismax, iscol,iscol_new);CHKERRQ(ierr);
@@ -1207,7 +1207,6 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
       submats[i]->factor = C->factor;
     }
   } else {
-    /* *submat = submats = (Mat *)PetscMalloc(ismax*sizeof(Mat));CHKPTRQ(submats); */
     for (i=0; i<ismax; i++) {
       ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,a->bs,nrow[i]*bs,ncol[i]*bs,0,lens[i],submats+i);CHKERRQ(ierr);
     }

@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.49 1999/09/20 19:26:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.50 1999/10/01 21:20:33 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -133,7 +133,8 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
 int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
   char       *par2,*par3,arch[10],buff[10],*en,*gz,*tpar2;
-  int        flg,ierr,flag,len1,len2,len;
+  int        ierr,flag,len1,len2,len;
+  PetscTruth tflg;
 
   PetscFunctionBegin;
 
@@ -194,8 +195,8 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
   /* 
      Remove any file: header
   */
-  flg = !PetscStrncmp(par2,"file:",5);
-  if (flg) {
+  ierr = PetscStrncmp(par2,"file:",5,&tflg);CHKERRQ(ierr);
+  if (tflg) {
     ierr = PetscStrcpy(par2,par2+5);CHKERRQ(ierr);
   }
 
@@ -396,7 +397,10 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
     nlist = list;
     prev  = 0;
     while (nlist) {
-      if (!PetscStrcmp(nlist->libname,path)) {
+      int match;
+
+      match = !PetscStrcmp(nlist->libname,path);
+      if (match) {
         handle = nlist->handle;
         goto done;
       }
@@ -473,7 +477,10 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   /* see if library was already open then we are done */
   list = prev = *outlist;
   while (list) {
-    if (!PetscStrcmp(list->libname,libname)) {
+    int match;
+
+    match = !PetscStrcmp(list->libname,libname);
+    if (match) {
       PetscFunctionReturn(0);
     }
     prev = list;
@@ -528,7 +535,10 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   list = *outlist;
   prev = 0;
   while (list) {
-    if (!PetscStrcmp(list->libname,libname)) {
+    int match;
+
+    match = !PetscStrcmp(list->libname,libname);
+    if (match) {
       if (prev) prev->next = list->next;
       list->next = *outlist;
       *outlist   = list;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.216 1999/09/21 14:46:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.217 1999/10/01 21:20:38 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -36,9 +36,13 @@ typedef struct {
 
 static OptionsTable *options = 0;
 
-int OptionsAtoi(char name[])
+#undef __FUNC__  
+#define __FUNC__ "OptionsAtoi"
+int OptionsAtoi(const char name[],int *a)
 {
-  return atoi(name);
+  PetscFunctionBegin;
+  *a = atoi(name);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -405,20 +409,22 @@ int OptionsDestroy(void)
 @*/
 int OptionsSetValue(const char iname[],const char value[])
 {
-  int  len, N, n, i,ierr;
+  int  len, N, n, i,ierr,match;
   char **names, *name = (char*) iname;
 
   PetscFunctionBegin;
   if (!options) OptionsInsert(0,0,0);
 
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
-  if (!PetscStrcmp(name,"-h")) name = "-help";
+  match = !PetscStrcmp(name,"-h");
+  if (match) name = "-help";
 
   name++;
   /* first check against aliases */
   N = options->Naliases; 
   for ( i=0; i<N; i++ ) {
-    if (!PetscStrcmp(options->aliases1[i],name)) {
+    match = !PetscStrcmp(options->aliases1[i],name);
+    if (match) {
       name = options->aliases2[i];
       break;
     }
@@ -428,7 +434,8 @@ int OptionsSetValue(const char iname[],const char value[])
   names = options->names; 
  
   for ( i=0; i<N; i++ ) {
-    if (PetscStrcmp(names[i],name) == 0) {
+    match = !PetscStrcmp(names[i],name);
+    if (match) {
       if (options->values[i]) free(options->values[i]);
       ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
       if (len) {
@@ -484,7 +491,7 @@ int OptionsSetValue(const char iname[],const char value[])
 @*/
 int OptionsClearValue(const char iname[])
 {
-  int  N, n, i,ierr;
+  int  N, n, i,ierr,match;
   char **names,*name=(char*)iname;
 
   PetscFunctionBegin;
@@ -496,7 +503,8 @@ int OptionsClearValue(const char iname[])
   names = options->names; 
  
   for ( i=0; i<N; i++ ) {
-    if (PetscStrcmp(names[i],name) == 0) {
+    match = !PetscStrcmp(names[i],name);
+    if (match) {
       if (options->values[i]) free(options->values[i]);
       break;
     } else if (PetscStrcmp(names[i],name) > 0) {
@@ -543,7 +551,7 @@ int OptionsSetAlias(const char inewname[],const char ioldname[])
 #define __FUNC__ "OptionsFindPair_Private"
 static int OptionsFindPair_Private(const char pre[],const char name[],char *value[],int *flg)
 {
-  int  i, N,ierr,len;
+  int  i, N,ierr,len,match;
   char **names,tmp[256];
 
   PetscFunctionBegin;
@@ -563,7 +571,8 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
   /* slow search */
   *flg = 0;
   for ( i=0; i<N; i++ ) {
-    if (!PetscStrcmp(names[i],tmp)) {
+    match = !PetscStrcmp(names[i],tmp);
+    if (match) {
        *value = options->values[i];
        options->used[i]++;
        *flg = 1;
@@ -1053,6 +1062,9 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
 
    Not Collective
 
+   Output Parameter:
+.   N - count of options not used
+
    Options Database Key:
 .  -optionsleft - Activates OptionsAllUsed() within PetscFinalize()
 
@@ -1062,7 +1074,7 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
 
 .seealso: OptionsPrint()
 @*/
-int OptionsAllUsed(void)
+int OptionsAllUsed(int *N)
 {
   int  i,n = 0;
 
@@ -1070,7 +1082,8 @@ int OptionsAllUsed(void)
   for ( i=0; i<options->N; i++ ) {
     if (!options->used[i]) { n++; }
   }
-  PetscFunctionReturn(n);
+  *N = n;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.71 1999/09/20 19:52:20 bsmith Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.72 1999/09/23 16:22:19 bsmith Exp bsmith $"
 #endif
 
 /* 
@@ -89,7 +89,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar * restrict z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
-  register int n = xv->n,i,j,nv_rem,j_rem;
+  register int n = xin->n,i,j,nv_rem,j_rem;
   Scalar   sum0,sum1,sum2,sum3,x0,x1,x2,x3,* restrict x;
   Scalar   * restrict yy0, * restrict yy1, * restrict yy2, *restrict yy3; 
   Vec      *yy;
@@ -277,7 +277,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar * restrict z )
     z   += 4;
     i   -= 4;
   }
-  PLogFlops(nv*(2*xv->n-1));
+  PLogFlops(nv*(2*xin->n-1));
   PetscFunctionReturn(0);
 }
 #endif
@@ -288,7 +288,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[], Scalar * restrict z )
 int VecMTDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
-  register int n = xv->n,i,j,nv_rem,j_rem;
+  register int n = xin->n,i,j,nv_rem,j_rem;
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
   
@@ -475,7 +475,7 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
     z   += 4;
     i   -= 4;
   }
-  PLogFlops(nv*(2*xv->n-1));
+  PLogFlops(nv*(2*xin->n-1));
   PetscFunctionReturn(0);
 }
     
@@ -485,7 +485,7 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[], Scalar *z )
 int VecMax_Seq(Vec xin,int* idx,double * z )
 { 
   Vec_Seq         *x = (Vec_Seq *) xin->data;
-  register int    i, j=0, n = x->n;
+  register int    i, j=0, n = xin->n;
   register double max, tmp;
   Scalar          *xx = x->array;
 
@@ -517,7 +517,7 @@ int VecMax_Seq(Vec xin,int* idx,double * z )
 int VecMin_Seq(Vec xin,int* idx,double * z )
 {
   Vec_Seq         *x = (Vec_Seq *) xin->data;
-  register int    i, j=0, n = x->n;
+  register int    i, j=0, n = xin->n;
   register double min, tmp;
   Scalar          *xx = x->array;
 
@@ -549,7 +549,7 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
 int VecSet_Seq(const Scalar* alpha,Vec xin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  register int n = x->n;
+  register int n = xin->n;
   Scalar       *xx = x->array, oalpha = *alpha;
   int          ierr;
 
@@ -568,7 +568,7 @@ int VecSet_Seq(const Scalar* alpha,Vec xin)
 int VecSetRandom_Seq(PetscRandom r,Vec xin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  register int n = x->n;
+  register int n = xin->n;
   int          i, ierr;
   Scalar       *xx = x->array;
 
@@ -582,7 +582,7 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
 int VecMAXPY_Seq(int nv,const Scalar *alpha, Vec xin, Vec *y)
 {
   Vec_Seq      *xdata = (Vec_Seq *) xin->data;
-  int          n = xdata->n;
+  int          n = xin->n;
   int          j,j_rem;
   Scalar       *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
 
@@ -642,7 +642,7 @@ int VecMAXPY_Seq(int nv,const Scalar *alpha, Vec xin, Vec *y)
 int VecAYPX_Seq(const Scalar *alpha, Vec xin, Vec yin )
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
-  register int i,n = x->n;
+  register int i,n = xin->n;
   Scalar       *xx = x->array, *yy = y->array, oalpha = *alpha;
 
   PetscFunctionBegin;
@@ -665,7 +665,7 @@ int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
   Vec_Seq      *y = (Vec_Seq *)yin->data;
-  register int i, n = x->n;
+  register int i, n = xin->n;
   Scalar       *xx = x->array, *yy = y->array, *ww = w->array, oalpha = *alpha;
   int          ierr;
 
@@ -692,7 +692,7 @@ int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
 {
   Vec_Seq         *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
   Vec_Seq         *y = (Vec_Seq *)yin->data;
-  int             n = x->n, i;
+  int             n = xin->n, i;
   register Scalar *xx = x->array, *yy = y->array, *ww = w->array;
 
   PetscFunctionBegin;
@@ -723,7 +723,7 @@ int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
   Vec_Seq      *y = (Vec_Seq *)yin->data;
-  register int n = x->n, i;
+  register int n = xin->n, i;
   Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
 
   PetscFunctionBegin;
@@ -798,10 +798,8 @@ int VecReplaceArray_Seq(Vec vin,const Scalar *a)
 #define __FUNC__ "VecGetSize_Seq"
 int VecGetSize_Seq(Vec vin,int *size)
 {
-  Vec_Seq *v = (Vec_Seq *)vin->data;
-
   PetscFunctionBegin;
-  *size = v->n;
+  *size = vin->n;
   PetscFunctionReturn(0);
 }
 

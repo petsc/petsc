@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.26 1999/05/12 03:27:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.27 1999/10/01 21:20:34 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -63,11 +63,13 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
 {
   struct passwd *pwde;
   int           ierr,ln;
+  PetscTruth    flag;
 
   PetscFunctionBegin;
   if (path[0] == '/') {
-    if (PetscStrncmp("/tmp_mnt/",path,9) == 0) {ierr = PetscStrncpy(fullpath, path + 8, flen);CHKERRQ(ierr);}
-    else {ierr = PetscStrncpy( fullpath, path, flen);CHKERRQ(ierr);}
+    ierr = PetscStrncmp("/tmp_mnt/",path,9,&flag);CHKERRQ(ierr);
+    if (flag) {ierr = PetscStrncpy(fullpath, path + 8, flen);CHKERRQ(ierr);}
+    else      {ierr = PetscStrncpy( fullpath, path, flen);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   ierr = PetscGetWorkingDirectory( fullpath, flen );CHKERRQ(ierr);
@@ -111,7 +113,8 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
     }
   }
   /* Remove the automounter part of the path */
-  if (PetscStrncmp( fullpath, "/tmp_mnt/", 9 ) == 0) {
+  ierr = PetscStrncmp( fullpath, "/tmp_mnt/", 9,&flag );CHKERRQ(ierr);
+  if (flag) {
     char tmppath[MAXPATHLEN];
     ierr = PetscStrcpy( tmppath, fullpath + 8 );CHKERRQ(ierr);
     ierr = PetscStrcpy( fullpath, tmppath );CHKERRQ(ierr);

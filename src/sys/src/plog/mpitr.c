@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.17 1999/04/19 22:10:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpitr.c,v 1.18 1999/05/12 03:27:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -41,14 +41,14 @@ int PetscMPIDump(FILE *fd)
   if (fd == 0) fd = stderr;
    
   /* Did we wait on all the non-blocking sends and receives? */
-  PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1 );
+  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1 );CHKERRQ(ierr);
   if (irecv_ct + isend_ct != sum_of_waits_ct) {
     fprintf(fd,"[%d]You have not waited on all non-blocking sends and receives",rank);
     fprintf(fd,"[%d]Number non-blocking sends %g receives %g number of waits %g\n",rank,isend_ct,
             irecv_ct,sum_of_waits_ct);
     fflush(fd);
   }
-  PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1 );
+  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1 );CHKERRQ(ierr);
   /* Did we receive all the messages that we sent? */
   work = irecv_ct + recv_ct;
   ierr = MPI_Reduce(&work,&trecvs,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.166 1999/10/01 21:21:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.167 1999/10/04 14:40:12 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -513,7 +513,6 @@ int VecGetMap_Seq(Vec win,Map *m)
 int VecDuplicate_Seq(Vec win,Vec *V)
 {
   int     ierr;
-  Vec_Seq *w = (Vec_Seq *)win->data;
 
   PetscFunctionBegin;
   ierr = VecCreateSeq(win->comm,win->n,V);CHKERRQ(ierr);

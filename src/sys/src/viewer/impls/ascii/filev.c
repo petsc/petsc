@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.93 1999/09/02 14:52:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.94 1999/10/01 21:20:11 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -233,12 +233,15 @@ int ViewerSetFilename_ASCII(Viewer viewer,const char name[])
   int          ierr;
   char         fname[256];
   Viewer_ASCII *vascii = (Viewer_ASCII *) viewer->data;
+  int          isstderr,isstdout;
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
 
-  if (!PetscStrcmp(name,"stderr"))      vascii->fd = stderr;
-  else if (!PetscStrcmp(name,"stdout")) vascii->fd = stdout;
+  isstderr = !PetscStrcmp(name,"stderr");
+  isstdout = !PetscStrcmp(name,"stdout");
+  if (isstderr)      vascii->fd = stderr;
+  else if (isstdout) vascii->fd = stdout;
   else {
     ierr         = PetscFixFilename(name,fname);CHKERRQ(ierr);
     vascii->fd   = fopen(fname,"w"); 

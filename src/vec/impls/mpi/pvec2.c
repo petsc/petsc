@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.42 1999/09/20 19:49:50 bsmith Exp bsmith $"
+static char vcid[] = "$Id: pvec2.c,v 1.43 1999/10/01 21:21:01 bsmith Exp bsmith $"
 #endif
 
 /*
@@ -96,7 +96,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
   Vec_MPI      *x = (Vec_MPI *) xin->data;
   double       sum, work = 0.0;
   Scalar       *xx = x->array;
-  int          n = x->n,ierr;
+  int          n = xin->n,ierr;
 
   PetscFunctionBegin;
   if (type == NORM_2) {
@@ -142,7 +142,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     ierr = MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
     *z = sqrt( sum );
-    PLogFlops(2*x->n);
+    PLogFlops(2*xin->n);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_Seq( xin, NORM_1, &work );CHKERRQ(ierr);

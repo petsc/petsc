@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.41 1999/07/13 15:52:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.42 1999/10/01 21:20:33 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -228,7 +228,10 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
     /* search list to see if it is already there */
     ne = *fl;
     while (ne) {
-      if (!PetscStrcmp(ne->name,name)) { /* found duplicate */
+      int founddup;
+
+      founddup = !PetscStrcmp(ne->name,name);
+      if (founddup) { /* found duplicate */
         ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
         if (ne->path) {ierr = PetscFree(ne->path);CHKERRQ(ierr);}
         if (ne->rname) {ierr = PetscFree(ne->rname);CHKERRQ(ierr);}

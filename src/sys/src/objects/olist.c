@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.11 1999/06/30 23:49:38 balay Exp balay $";
+static char vcid[] = "$Id: olist.c,v 1.12 1999/07/16 14:03:44 balay Exp bsmith $";
 #endif
 
 /*
@@ -28,14 +28,15 @@ struct _OList {
 int OListAdd(OList *fl,const char name[],PetscObject obj )
 {
   OList olist,nlist,prev;
-  int   ierr;
+  int   ierr,match;
 
   PetscFunctionBegin;
 
   if (!obj) { /* this means remove from list if it is there */
     nlist = *fl; prev = 0;
     while (nlist) {
-      if (!PetscStrcmp(name,nlist->name)) {  /* found it already in the list */
+      match = !PetscStrcmp(name,nlist->name);
+      if (match) {  /* found it already in the list */
         ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
         if (prev) prev->next = nlist->next;
         else if (nlist->next) {
@@ -54,7 +55,8 @@ int OListAdd(OList *fl,const char name[],PetscObject obj )
   /* look for it already in list */
   nlist = *fl;
   while (nlist) {
-    if (!PetscStrcmp(name,nlist->name)) {  /* found it in the list */
+    match = !PetscStrcmp(name,nlist->name);
+    if (match) {  /* found it in the list */
       ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
       ierr = PetscObjectReference(obj);CHKERRQ(ierr);
       nlist->obj = obj;
@@ -128,11 +130,14 @@ int OListDestroy(OList *fl )
 */
 int OListFind(OList fl, const char name[], PetscObject *obj)
 {
+  int match;
+
   PetscFunctionBegin;
 
   *obj = 0;
   while (fl) {
-    if (!PetscStrcmp(name,fl->name)) {
+    match = !PetscStrcmp(name,fl->name);
+    if (match) {
       *obj = fl->obj;
       break;
     }

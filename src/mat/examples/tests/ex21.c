@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex21.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex21.c,v 1.9 1999/05/12 03:30:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRA(ierr);
-  PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
+  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
   for ( i=rstart; i<rend; i++ ) {
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRA(ierr);
     fprintf(stdout,"[%d] get row %d: ", rank, i);
@@ -57,7 +57,7 @@ int main(int argc,char **args)
     ierr = MatRestoreRow(C,i,&nz,&idx,&values);CHKERRA(ierr);
   }
   fflush(stdout);
-  PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
+  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
 
   ierr = MatConvert(C,MATMPIAIJ,&A);CHKERRA(ierr);
   ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.36 1999/09/21 15:13:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.37 1999/10/01 21:20:41 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -52,8 +52,9 @@ static char vcid[] = "$Id: fhost.c,v 1.36 1999/09/21 15:13:21 bsmith Exp bsmith 
 @*/
 int PetscGetHostName( char name[], int nlen )
 {
-  char   *domain;
-  int    ierr;
+  char           *domain;
+  int            ierr;
+  PetscTruth     flag;
 #if defined(PETSC_HAVE_UNAME)
   struct utsname utname;
 #endif
@@ -91,7 +92,8 @@ int PetscGetHostName( char name[], int nlen )
        Some machines (Linx) default to (none) if not
        configured with a particular domain name.
     */
-    if (!PetscStrncmp(name+l,"(none)",6)) {
+    ierr = PetscStrncmp(name+l,"(none)",6,&flag);CHKERRQ(ierr);
+    if (flag) {
       name[l-1] = 0;
     }
   }

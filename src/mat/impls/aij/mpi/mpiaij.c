@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.301 1999/09/27 21:29:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.302 1999/10/01 21:21:16 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -753,7 +753,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
       ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
-      PetscSequentialPhaseBegin(mat->comm,1);
+      ierr = PetscSequentialPhaseBegin(mat->comm,1);CHKERRQ(ierr);
       if (flg) fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d, not using I-node routines\n",
          rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);
       else fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d, using I-node routines\n",
@@ -763,7 +763,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
       ierr = MatGetInfo(aij->B,MAT_LOCAL,&info);CHKERRQ(ierr);
       fprintf(fd,"[%d] off-diagonal part: nz %d \n",rank,(int)info.nz_used); 
       fflush(fd);
-      PetscSequentialPhaseEnd(mat->comm,1);
+      ierr = PetscSequentialPhaseEnd(mat->comm,1);CHKERRQ(ierr);
       ierr = VecScatterView(aij->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0); 
     } else if (format == VIEWER_FORMAT_ASCII_INFO) {

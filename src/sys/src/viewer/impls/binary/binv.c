@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.71 1999/09/27 21:27:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.72 1999/10/01 21:20:12 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -213,16 +213,18 @@ int ViewerBinaryLoadInfo(Viewer viewer)
     ierr = PetscStrtok(string," ",&first);CHKERRQ(ierr);
     ierr = PetscStrtok(0," ",&second);CHKERRQ(ierr);
     if (first && first[0] == '-') {
-
+      PetscTruth wrongtype;
       /*
          Check for -mat_complex or -mat_double
       */
 #if defined(PETSC_USE_COMPLEX)
-      if (!PetscStrncmp(first,"-mat_double",11)) {
+      ierr = PetscStrncmp(first,"-mat_double",11,&wrongtype);CHKERRQ(ierr);
+      if (wrongtype) {
         SETERRQ(1,1,"Loading double number matrix with complex number code");
       }
 #else
-      if (!PetscStrncmp(first,"-mat_complex",12)) {
+      ierr = PetscStrncmp(first,"-mat_complex",12,&wrongtype);CHKERRQ(ierr);
+      if (wrongtype) {
         SETERRQ(1,1,"Loading complex number matrix with double number code");
       }
 #endif

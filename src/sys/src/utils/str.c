@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.31 1999/09/27 21:28:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.32 1999/10/01 21:20:41 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -136,7 +136,11 @@ int PetscStrcmp(const char a[],const char b[])
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrcasecmp"
-int PetscStrcasecmp(const char a[],const char b[])
+/*
+    Note: This is different from system strncmp() this returns PETSC_TRUE
+    if the strings are the same!
+*/
+int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 {
   int c;
 
@@ -148,18 +152,26 @@ int PetscStrcasecmp(const char a[],const char b[])
 #else
   else c = strcasecmp(a,b);
 #endif
-  PetscFunctionReturn(c);
+  if (c == 0) *t = PETSC_TRUE;
+  else        *t = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrncmp"
-int PetscStrncmp(const char a[],const char b[],int n)
+/*
+    Note: This is different from system strncmp() this returns PETSC_TRUE
+    if the strings are the same!
+*/
+int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
 {
   int c;
 
   PetscFunctionBegin;
   c = strncmp(a,b,n);
-  PetscFunctionReturn(c);
+  if (c == 0) *t = PETSC_TRUE;
+  else        *t = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  

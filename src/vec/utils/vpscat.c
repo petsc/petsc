@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.119 1999/06/30 23:50:17 balay Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.120 1999/10/01 21:20:56 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -73,7 +73,7 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
       }
 
       fflush(fd);
-      PetscSequentialPhaseEnd(ctx->comm,1);
+      ierr = PetscSequentialPhaseEnd(ctx->comm,1);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

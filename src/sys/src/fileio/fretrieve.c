@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.15 1999/06/30 23:49:32 balay Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.16 1999/10/01 21:20:34 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -74,6 +74,9 @@ EXTERN_C_END
    If the environmental variable PETSC_TMP is set it will use this directory
   as the "/tmp" directory.
 
+   If the environmental variable PETSC_SHARED_TMP is set it will always return 
+  PETSC_TRUE
+
 @*/
 int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 {
@@ -83,6 +86,18 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   static int Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
 
   PetscFunctionBegin;
+  ierr = OptionsHasName(PETSC_NULL,"-petsc_shared_tmp",&iflag);CHKERRQ(ierr);
+  if (iflag) {
+    *shared = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }
+
+  ierr = OptionsGetenv(comm,"PETSC_SHARED_TMP",PETSC_NULL,0,&flag);CHKERRQ(ierr);
+  if (flag) {
+    *shared = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     *shared = PETSC_TRUE;
@@ -96,13 +111,17 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,&iflag);CHKERRQ(ierr);
   if (!iflag) {
     char       filename[256];
+
     /* This communicator does not yet have a shared tmp attribute */
     tagvalp    = (int *) PetscMalloc( sizeof(int) );CHKPTRQ(tagvalp);
     ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval, tagvalp);CHKERRQ(ierr);
 
-    ierr = OptionsGetenv(comm,"PETSC_TMP",filename,238,&flag);CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-petsc_tmp",filename,238,&iflag);CHKERRQ(ierr);
     if (!flag) {
-      ierr = PetscStrcpy(filename,"/tmp");CHKERRQ(ierr);
+      ierr = OptionsGetenv(comm,"PETSC_TMP",filename,238,&flag);CHKERRQ(ierr);
+      if (!flag) {
+        ierr = PetscStrcpy(filename,"/tmp");CHKERRQ(ierr);
+      }
     }
     ierr = PetscStrcat(filename,"/petsctestshared");CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -114,7 +133,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       if (rank == i) {
         fd = fopen(filename,"w");
         if (!fd) {
-          SETERRQ(1,1,"Unable to open test file in /tmp directory");
+          SETERRQ1(1,1,"Unable to open test file %s",filename);
         }
         fclose(fd);
       }
@@ -170,10 +189,10 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 @*/
 int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
-  char       *par,buf[1024];
-  FILE       *fp;
-  int        i,rank,ierr,len = 0;
-  PetscTruth sharedtmp;
+  char              *par,buf[1024];
+  FILE              *fp;
+  int               i,rank,ierr,len = 0;
+  PetscTruth        flag1,flag2,sharedtmp;
 
   PetscFunctionBegin;
   *found = PETSC_FALSE;
@@ -182,7 +201,9 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
   ierr = PetscStrstr(libname,".gz",&par);CHKERRQ(ierr);
   if (par) {ierr = PetscStrlen(par,&len);CHKERRQ(ierr);}
 
-  if (PetscStrncmp(libname,"ftp://",6) && PetscStrncmp(libname,"http://",7) && (!par || len != 3)) {
+  ierr = PetscStrncmp(libname,"ftp://",6,&flag1);CHKERRQ(ierr);
+  ierr = PetscStrncmp(libname,"http://",7,&flag2);CHKERRQ(ierr);
+  if (!flag1 && !flag2 && (!par || len != 3)) {
     ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
     ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -221,7 +242,9 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
         break;
       }
     }
-    if (!PetscStrncmp(buf,"Error",5) ||!PetscStrncmp(buf,"Traceback",9)) {
+    ierr = PetscStrncmp(buf,"Error",5,&flag1);CHKERRQ(ierr);
+    ierr = PetscStrncmp(buf,"Traceback",9,&flag2);CHKERRQ(ierr);
+    if (flag1 || flag2) {
       PLogInfo(0,"PetscFileRetrieve:Did not find file %s",libname);
     } else {
       *found = PETSC_TRUE;

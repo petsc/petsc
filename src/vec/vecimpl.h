@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.65 1999/05/04 20:30:01 balay Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.66 1999/09/27 21:28:52 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -118,7 +118,6 @@ struct _p_Vec {
    currently Vec_Seq and Vec_MPI
 */
 #define VECHEADER                         \
-  int    n;                               \
   Scalar *array;                          \
   Scalar *array_allocated;            
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.91 1999/09/27 21:31:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.92 1999/10/01 21:22:26 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -265,17 +265,17 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   if (!ctx->func) {
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
       eval_fct = SNESComputeFunction;
-      ierr = SNESGetFunction(snes,&F,PETSC_NULL);CHKERRQ(ierr);
+      ierr     = SNESGetFunction(snes,&F,PETSC_NULL);CHKERRQ(ierr);
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       eval_fct = SNESComputeGradient;
-      ierr = SNESGetGradient(snes,&F,PETSC_NULL);CHKERRQ(ierr);
+      ierr     = SNESGetGradient(snes,&F,PETSC_NULL);CHKERRQ(ierr);
     } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid method class");
     ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
   } else {
     F = ctx->funcvec;
     /* compute func(U) as base for differencing */
     if (ctx->ncurrenth == 1) {
-      ierr            = (*ctx->func)(snes,U,F,ctx->funcctx);CHKERRQ(ierr);
+      ierr = (*ctx->func)(snes,U,F,ctx->funcctx);CHKERRQ(ierr);
     }
     ierr = (*ctx->func)(snes,w,y,ctx->funcctx);CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.125 1999/09/20 19:35:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.126 1999/10/01 21:21:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -545,11 +545,11 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     MatInfo info;
     ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-    PetscSequentialPhaseBegin(mat->comm,1);
+    ierr = PetscSequentialPhaseBegin(mat->comm,1);CHKERRQ(ierr);
       fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mdn->m,
          (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);       
       fflush(fd);
-    PetscSequentialPhaseEnd(mat->comm,1);
+    ierr = PetscSequentialPhaseEnd(mat->comm,1);CHKERRQ(ierr);
     ierr = VecScatterView(mdn->Mvctx,viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0); 
   } else if (format == VIEWER_FORMAT_ASCII_INFO) {

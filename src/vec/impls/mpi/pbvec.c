@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.137 1999/09/27 21:29:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.138 1999/10/01 21:21:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -169,7 +169,6 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   s            = (Vec_MPI *) PetscMalloc(sizeof(Vec_MPI));CHKPTRQ(s);
   ierr         = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   v->data      = (void *) s;
-  s->n         = v->n;
   s->nghost    = nghost;
   s->N         = v->N;
   v->mapping   = 0;
@@ -601,14 +600,14 @@ int VecDuplicate_MPI( Vec win, Vec *v)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecCreate(win->comm,w->n,w->N,v);CHKERRQ(ierr);
+  ierr = VecCreate(win->comm,win->n,win->N,v);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,0,win->map);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,w->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     PLogObjectParent(*v,vw->localrep);
     vw->localupdate = w->localupdate;

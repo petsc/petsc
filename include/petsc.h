@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.249 1999/09/02 14:54:31 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.250 1999/10/01 21:23:20 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -91,6 +91,15 @@ extern int PetscDataTypeGetSize(PetscDataType,int*);
 extern int PetscDataTypeGetName(PetscDataType,char*[]);
 
 /*
+       Basic PETSc constants
+*/
+typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
+#define PETSC_NULL            0
+#define PETSC_DECIDE         -1
+#define PETSC_DETERMINE      PETSC_DECIDE
+#define PETSC_DEFAULT        -2
+
+/*
     Basic memory and string operations. These are usually simple wrappers
    around the basic Unix system calls, but a few of them have additional
    functionality and/or error checking.
@@ -102,8 +111,8 @@ extern int   PetscMemzero(void *,int);
 extern int   PetscMemcmp(const void*,const void*, int);
 extern int   PetscStrlen(const char[],int*);
 extern int   PetscStrcmp(const char[],const char[]);
-extern int   PetscStrcasecmp(const char[],const char[]);
-extern int   PetscStrncmp(const char[],const char[],int );
+extern int   PetscStrcasecmp(const char[],const char[],PetscTruth*);
+extern int   PetscStrncmp(const char[],const char[],int,PetscTruth*);
 extern int   PetscStrcpy(char[],const char[]);
 extern int   PetscStrcat(char[],const char[]);
 extern int   PetscStrncat(char[],const char[],int);
@@ -116,14 +125,6 @@ extern int   PetscStrallocpy(const char[],char **);
 
 #define PetscTypeCompare(a,b) (!PetscStrcmp((char*)(((PetscObject)(a))->type_name),(char *)(b)))
 
-/*
-       Basic PETSc constants
-*/
-typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
-#define PETSC_NULL            0
-#define PETSC_DECIDE         -1
-#define PETSC_DETERMINE      PETSC_DECIDE
-#define PETSC_DEFAULT        -2
 
 /*
     Each PETSc object class has it's own cookie (internal integer in the 
@@ -254,10 +255,10 @@ extern int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
      Useful utility routines
 */
 extern int PetscSplitOwnership(MPI_Comm,int*,int*);
-extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
-extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
-extern int  PetscBarrier(PetscObject);
-extern int  PetscMPIDump(FILE*);
+extern int PetscSequentialPhaseBegin(MPI_Comm,int);
+extern int PetscSequentialPhaseEnd(MPI_Comm,int);
+extern int PetscBarrier(PetscObject);
+extern int PetscMPIDump(FILE*);
 
 /*
     Defines basic graphics available from PETSc.

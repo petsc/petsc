@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.31 1999/05/04 20:37:40 balay Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.32 1999/06/30 23:55:20 balay Exp bsmith $";
 #endif
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
@@ -95,10 +95,10 @@ int main(int argc,char **argv)
   flg = 0;
   ierr = OptionsHasName(PETSC_NULL,"-local_print",&flg);CHKERRA(ierr);
   if (flg) {
-    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
+    ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
     printf("\nLocal Vector: processor %d\n",rank);
     ierr = VecView(local,VIEWER_STDOUT_SELF);CHKERRA(ierr); 
-    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
+    ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
   }
 
   /* Tests mappings betweeen application/PETSc orderings */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.46 1999/09/29 20:13:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.47 1999/10/01 21:20:38 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -383,15 +383,15 @@ int OptionsCheckInitial_Alice(void)
   ierr = OptionsHasName(PETSC_NULL,"-fp_trap",&flg1);CHKERRQ(ierr);
   if (flg1) { ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON);CHKERRQ(ierr); }
   ierr = OptionsHasName(PETSC_NULL,"-on_error_abort",&flg1);CHKERRQ(ierr);
-  if (flg1) { PetscPushErrorHandler(PetscAbortErrorHandler,0); } 
+  if (flg1) { ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0); CHKERRQ(ierr)} 
   ierr = OptionsHasName(PETSC_NULL,"-on_error_stop",&flg1);CHKERRQ(ierr);
-  if (flg1) { PetscPushErrorHandler(PetscStopErrorHandler,0); }
+  if (flg1) { ierr = PetscPushErrorHandler(PetscStopErrorHandler,0); CHKERRQ(ierr)}
   ierr = OptionsHasName(PETSC_NULL,"-mpi_return_on_error", &flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = MPI_Errhandler_set(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler", &flg1);CHKERRQ(ierr);
-  if (!flg1) { PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0); }
+  if (!flg1) { ierr = PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);CHKERRQ(ierr) }
 
   /*
       Setup debugger information
@@ -903,15 +903,15 @@ int AliceFinalize(void)
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_mpe",mname,64,&flg1);CHKERRQ(ierr);
     if (flg1){
-      if (mname[0]) PLogMPEDump(mname); 
-      else          PLogMPEDump(0);
+      if (mname[0]) {ierr = PLogMPEDump(mname); CHKERRQ(ierr);}
+      else          {ierr = PLogMPEDump(0);CHKERRQ(ierr);}
     }
 #endif
     mname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-log_summary",mname,64,&flg1);CHKERRQ(ierr);
     if (flg1) { 
-      if (mname[0])  PLogPrintSummary(PETSC_COMM_WORLD,mname); 
-      else           PLogPrintSummary(PETSC_COMM_WORLD,0); 
+      if (mname[0])  {ierr = PLogPrintSummary(PETSC_COMM_WORLD,mname); CHKERRQ(ierr);}
+      else           {ierr = PLogPrintSummary(PETSC_COMM_WORLD,0); CHKERRQ(ierr);}
     }
 
     mname[0] = 0;
@@ -925,7 +925,7 @@ int AliceFinalize(void)
   }
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1);CHKERRQ(ierr);
-  if (!flg1) { PetscPopSignalHandler(); }
+  if (!flg1) { ierr = PetscPopSignalHandler(); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-mpidump",&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscMPIDump(stdout);CHKERRQ(ierr);
@@ -936,7 +936,7 @@ int AliceFinalize(void)
     if (!rank) {ierr = OptionsPrint(stdout);CHKERRQ(ierr);}
   }
   ierr = OptionsHasName(PETSC_NULL,"-optionsleft",&flg1);CHKERRQ(ierr);
-  nopt = OptionsAllUsed();
+  ierr = OptionsAllUsed(&nopt);CHKERRQ(ierr);
   if (flg1) {
     ierr = OptionsPrint(stdout);CHKERRQ(ierr);
   }
@@ -965,7 +965,7 @@ int AliceFinalize(void)
   }
   ierr = OptionsHasName(PETSC_NULL,"-log_history",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    PLogCloseHistoryFile(&petsc_history);
+    ierr = PLogCloseHistoryFile(&petsc_history);CHKERRQ(ierr);
     petsc_history = 0;
   }
 
@@ -1002,9 +1002,9 @@ int AliceFinalize(void)
       MPI_Comm local_comm;
 
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
-      PetscSequentialPhaseBegin_Private(local_comm,1);
+      ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
         ierr = PetscTrDump(stderr);CHKERRQ(ierr);
-      PetscSequentialPhaseEnd_Private(local_comm,1);
+      ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
   } else if (flg2) {
@@ -1013,9 +1013,9 @@ int AliceFinalize(void)
 
     ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
     ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm);CHKERRQ(ierr);
-    PetscSequentialPhaseBegin_Private(local_comm,1);
+    ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
       printf("[%d] Maximum memory used %g\n",rank,maxm);
-    PetscSequentialPhaseEnd_Private(local_comm,1);
+    ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
   if (flg3) {

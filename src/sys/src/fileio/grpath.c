@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.28 1999/09/20 19:31:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.29 1999/10/01 21:20:34 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -67,11 +67,12 @@ static char vcid[] = "$Id: grpath.c,v 1.28 1999/09/20 19:31:20 bsmith Exp bsmith
 @*/
 int PetscGetRealPath(char path[], char rpath[])
 {
-  int  ierr;
-  char tmp3[MAXPATHLEN];
+  int        ierr;
+  char       tmp3[MAXPATHLEN];
+  PetscTruth flag;
 #if defined(PETSC_HAVE_READLINK)
-  char tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
-  int  n, m, N, len,len1,len2;
+  char       tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
+  int        n, m, N, len,len1,len2;
 #endif
 
   PetscFunctionBegin;
@@ -93,8 +94,6 @@ int PetscGetRealPath(char path[], char rpath[])
     if (n > 0) {
       tmp3[n] = 0; /* readlink does not automatically add 0 to string end */
       if (tmp3[0] != '/') {
-        int len1,len2;
-
         ierr = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
         ierr = PetscStrlen(tmp1,&len1);CHKERRQ(ierr);
         ierr = PetscStrlen(tmp2,&len2);CHKERRQ(ierr);
@@ -108,14 +107,13 @@ int PetscGetRealPath(char path[], char rpath[])
         ierr = PetscGetRealPath(tmp4,rpath);CHKERRQ(ierr);
         ierr = PetscStrlen(rpath,&len);CHKERRQ(ierr);
         ierr = PetscStrncat(rpath,path+N,MAXPATHLEN - len);CHKERRQ(ierr);
-        PetscFunctionReturn(0);
       } else {
         ierr = PetscGetRealPath(tmp3,tmp1);CHKERRQ(ierr);
         ierr = PetscStrncpy(rpath,tmp1,MAXPATHLEN);CHKERRQ(ierr);
         ierr = PetscStrlen(rpath,&len);CHKERRQ(ierr);
         ierr = PetscStrncat(rpath,path+N,MAXPATHLEN - len  );CHKERRQ(ierr);
-        PetscFunctionReturn(0);
       }
+      PetscFunctionReturn(0);
     }  
     ierr = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
     if (tmp2) {
@@ -130,7 +128,8 @@ int PetscGetRealPath(char path[], char rpath[])
 #endif
 
   /* remove garbage some automounters put at the beginning of the path */
-  if (PetscStrncmp( "/tmp_mnt/", rpath, 9 ) == 0) {
+  ierr = PetscStrncmp( "/tmp_mnt/", rpath, 9,&flag);CHKERRQ(ierr); 
+  if (flag) {
     ierr = PetscStrcpy( tmp3, rpath + 8 );CHKERRQ(ierr);
     ierr = PetscStrcpy( rpath, tmp3 );CHKERRQ(ierr);
   }

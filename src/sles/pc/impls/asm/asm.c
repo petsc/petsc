@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.100 1999/06/30 23:53:10 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.101 1999/10/01 21:21:59 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -108,7 +108,7 @@ static int PCSetUp_ASM(PC pc)
     n_local      = osm->n_local;
     n_local_true = osm->n_local_true;  
     if (!osm->is){ /* build the index sets */
-      osm->is    = (IS *) PetscMalloc( n_local_true*sizeof(IS **) );CHKPTRQ(osm->is);
+      osm->is    = (IS *) PetscMalloc( (n_local_true+1)*sizeof(IS **) );CHKPTRQ(osm->is);
       ierr  = MatGetOwnershipRange(pc->pmat,&start_val,&end_val);CHKERRQ(ierr);
       ierr  = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
       sz    = end_val - start_val;
@@ -125,7 +125,7 @@ static int PCSetUp_ASM(PC pc)
       osm->is_flg = PETSC_TRUE;
     }
 
-    osm->sles = (SLES *) PetscMalloc(n_local_true*sizeof(SLES **));CHKPTRQ(osm->sles);
+    osm->sles = (SLES *) PetscMalloc((n_local_true+1)*sizeof(SLES **));CHKPTRQ(osm->sles);
     osm->scat = (VecScatter *) PetscMalloc(n_local*sizeof(VecScatter **));CHKPTRQ(osm->scat);
     osm->x    = (Vec *) PetscMalloc(2*n_local*sizeof(Vec **));CHKPTRQ(osm->x);
     osm->y    = osm->x + n_local;
@@ -397,10 +397,11 @@ int PCASMSetLocalSubdomains_ASM(PC pc, int n, IS *is)
 
   PetscFunctionBegin;
 
-  if (pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,
-"PCASMSetLocalSubdomains() should be called before calling PCSetup().");
+  if (pc->setupcalled) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"PCASMSetLocalSubdomains() should be called before calling PCSetup().");
+  }
 
-  if (n <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Each process must have 1 or more blocks");
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Each process must have 0 or more blocks");
   osm               = (PC_ASM *) pc->data;
   osm->n_local_true = n;
   osm->is           = is;
@@ -431,8 +432,8 @@ they cannot be set globally yet.");
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   osm->n_local_true = N/size + ((N % size) > rank);
-  if (osm->n_local_true <= 0) {
-    SETERRQ(PETSC_ERR_SUP,0,"Each process must have 1 or more blocks");
+  if (osm->n_local_true < 0) {
+    SETERRQ(PETSC_ERR_SUP,0,"Each process must have 0 or more blocks");
   }
   osm->is           = 0;
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec1.c,v 1.28 1999/01/27 21:21:48 balay Exp bsmith $"
+static char vcid[] = "$Id: bvec1.c,v 1.29 1999/05/12 03:28:22 bsmith Exp bsmith $"
 #endif
 
 /*
@@ -27,15 +27,15 @@ int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
   {
     int    i;
     Scalar sum = 0.0, *xa = x->array, *ya = y->array;
-    for ( i=0; i<x->n; i++ ) {
+    for ( i=0; i<xin->n; i++ ) {
       sum += xa[i]*PetscConj(ya[i]);
     }
     *z = sum;
   }
 #else
-  *z = BLdot_( &x->n, x->array, &one, y->array, &one );
+  *z = BLdot_( &xin->n, x->array, &one, y->array, &one );
 #endif
-  PLogFlops(2*x->n-1);
+  PLogFlops(2*xin->n-1);
   PetscFunctionReturn(0);
 }
 
@@ -54,14 +54,14 @@ int VecTDot_Seq(Vec xin, Vec yin,Scalar *z )
      not happy about returning a double complex */
   int    i;
   Scalar sum = 0.0, *xa = x->array, *ya = y->array;
-  for ( i=0; i<x->n; i++ ) {
+  for ( i=0; i<xin->n; i++ ) {
     sum += xa[i]*ya[i];
   }
   *z = sum;
 #else
-  *z = BLdot_( &x->n, x->array, &one, y->array, &one );
+  *z = BLdot_( &xin->n, x->array, &one, y->array, &one );
 #endif
-  PLogFlops(2*x->n-1);
+  PLogFlops(2*xin->n-1);
   PetscFunctionReturn(0);
 }
 
@@ -73,8 +73,8 @@ int VecScale_Seq(const Scalar *alpha,Vec xin )
   int     one = 1;
 
   PetscFunctionBegin;
-  BLscal_( &x->n, (Scalar *)alpha, x->array, &one );
-  PLogFlops(x->n);
+  BLscal_( &xin->n, (Scalar *)alpha, x->array, &one );
+  PLogFlops(xin->n);
   PetscFunctionReturn(0);
 }
 
@@ -86,7 +86,7 @@ int VecCopy_Seq(Vec xin, Vec yin )
   int     one = 1;
 
   PetscFunctionBegin;
-  BLcopy_( &x->n, x->array, &one, y->array, &one );
+  BLcopy_( &xin->n, x->array, &one, y->array, &one );
   PetscFunctionReturn(0);
 }
 
@@ -98,7 +98,7 @@ int VecSwap_Seq(  Vec xin,Vec yin )
   int     one = 1;
 
   PetscFunctionBegin;
-  BLswap_( &x->n, x->array, &one, y->array, &one );
+  BLswap_( &xin->n, x->array, &one, y->array, &one );
   PetscFunctionReturn(0);
 }
 
@@ -112,9 +112,9 @@ int VecAXPY_Seq(const Scalar *alpha, Vec xin, Vec yin )
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
-  BLaxpy_( &x->n, (Scalar *)alpha, x->array, &one, yarray, &one );
+  BLaxpy_( &xin->n, (Scalar *)alpha, x->array, &one, yarray, &one );
   ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
-  PLogFlops(2*x->n);
+  PLogFlops(2*xin->n);
   PetscFunctionReturn(0);
 }
 
@@ -123,7 +123,7 @@ int VecAXPY_Seq(const Scalar *alpha, Vec xin, Vec yin )
 int VecAXPBY_Seq(const Scalar *alpha,const Scalar *beta,Vec xin, Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
-  int      n = x->n, i;
+  int      n = xin->n, i;
   Scalar   *xx = x->array, *yy = y->array, a = *alpha, b = *beta;
 
   PetscFunctionBegin;
@@ -131,7 +131,7 @@ int VecAXPBY_Seq(const Scalar *alpha,const Scalar *beta,Vec xin, Vec yin)
     yy[i] = a*xx[i] + b*yy[i];
   }
 
-  PLogFlops(3*x->n);
+  PLogFlops(3*xin->n);
   PetscFunctionReturn(0);
 }
 

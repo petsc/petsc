@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.100 1999/07/11 16:41:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.101 1999/09/27 21:27:50 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -222,7 +222,7 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
       char portn[16];
       ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflag);CHKERRQ(ierr);
       if (tflag) {
-        port = OptionsAtoi(portn);
+        ierr = OptionsAtoi(portn,&port);CHKERRQ(ierr);
       } else {
         port = DEFAULTPORT;
       }
@@ -231,7 +231,10 @@ int ViewerSocketSetConnection(Viewer v,const char machine[],int port)
   if (!machine) {
     ierr = OptionsGetString(PETSC_NULL,"-viewer_socket_machine",mach,128,&flag);CHKERRQ(ierr);
     if (!flag) {
-      ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
+      ierr = OptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,128,&tflag);CHKERRQ(ierr);
+      if (!tflag) {
+        ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
+      }
     }
   } else {
     ierr = PetscStrncpy(mach,machine,256);CHKERRQ(ierr);

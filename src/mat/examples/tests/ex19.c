@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.13 1999/05/12 03:30:15 bsmith Exp balay $";
+static char vcid[] = "$Id: ex19.c,v 1.14 1999/06/30 23:52:15 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -97,7 +97,7 @@ int main(int argc,char **args)
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRA(ierr);
     ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
+    ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
     printf("processor number %d: start=%d, end=%d, mystart=%d, myend=%d\n",
             rank,start,end,mystart,myend);
     for (i=0; i<nrsub; i++) {
@@ -113,7 +113,7 @@ int main(int argc,char **args)
 #endif
       }
     }
-    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
+    ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
     ierr = PetscFree(rsub);CHKERRA(ierr);
     ierr = PetscFree(csub);CHKERRA(ierr);
     ierr = PetscFree(vals);CHKERRA(ierr);
