@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.120 1996/02/01 18:52:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.121 1996/02/03 04:20:03 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1314,9 +1314,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
    (the default parallel PETSc format). For good performance you should 
-   preallocate the matrix storage by setting the parameters d_nz or d_nzz and
-   o_nz or o_nzz. By setting these parameters accurately performance can 
-   be increased by more then a factor of 50.
+   preallocate the matrix storage by setting the parameters d_nz (or d_nzz)
+   and o_nz (or o_nzz). By setting these parameters accurately, performance
+   can be increased by more than a factor of 50.
 
    Input Parameters:
 .  comm - MPI communicator
@@ -1348,6 +1348,14 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
+   By default, this format uses inodes (identical nodes) when possible.
+   We search for consecutive rows with the same nonzero structure, thereby
+   reusing matrix information to achieve increased efficiency.
+
+   Options Database Keys:
+$    -mat_aij_no_inode  - Do not use inodes
+$    -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)
+
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 
    to be its local rows and the corresponding columns (a square submatrix);  
@@ -1360,33 +1368,27 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    memory allocation.  Likewise, specify preallocated storage for the
    off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
 
-   Consider a processor that owns rows 3, 4 and 5 (in this figure we depict 
-   those three rows and all columns (0-11).
+   Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
+   the figure below we depict these three local rows and all columns (0-11).
 
-$  0   1 2 3 4 5 6 7 8 9 10 11
-$  -------------------
-$  3 | o o o d d d o o o o o o
-$  4 | o o o d d d o o o o o o
-$  5 | o o o d d d o o o o o o
+$          0 1 2 3 4 5 6 7 8 9 10 11
+$         -------------------
+$  row 3  |  o o o d d d o o o o o o
+$  row 4  |  o o o d d d o o o o o o
+$  row 5  |  o o o d d d o o o o o o
+$         -------------------
 $ 
-     Thus any entries in the d locations are stored in the d matrix and 
-   any in the o locations are store in the o matrix. (The d and the o matrix
-   are simply SeqAIJ matrix (that is they store the matrices in compress 
-   row storage)).
 
-   Now d_nz should give the number of non zeros per row in the d matrix
-   and o_nz should give the number of nonzeros per row in the o matrix.
-   In general for PDE problems where most nonzeros are near the diagonal
-   one expects d_nz >> o_nz. See the users manual chapter on matrices for 
+   Thus, any entries in the d locations are stored in the d (diagonal) 
+   submatrix, and any entries in the o locations are stored in the
+   o (off-diagonal) submatrix.  Note that the d and the o submatrices are
+   stored simply in the MATSEQAIJ format for compressed row storage.
+
+   Now d_nz should indicate the number of nonzeros per row in the d matrix,
+   and o_nz should indicate the number of nonzeros per row in the o matrix.
+   In general, for PDE problems in which most nonzeros are near the diagonal,
+   one expects d_nz >> o_nz.  See the users manual chapter on matrices for 
    more details.
-
-   By default, this format uses inodes (identical nodes) when possible.
-   We search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
-
-   Options Database Keys:
-$    -mat_aij_no_inode  - Do not use inodes
-$    -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
