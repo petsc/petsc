@@ -104,13 +104,17 @@ class BuildGraph(object):
     return filter(lambda v: not len(graph.getEdges(v)[1]), graph.vertices)
   getLeaves = staticmethod(getLeaves)
 
-  def depthFirstVisit(graph, vertex, seen = None, returnFinished = 0):
-    '''This is a generator returning vertices in a depth-first traversal only for the subtree rooted at vertex'''
+  def depthFirstVisit(graph, vertex, seen = None, returnFinished = 0, outEdges = 1):
+    '''This is a generator returning vertices in a depth-first traversal only for the subtree rooted at vertex
+       - If returnFinished is True, return a vertex when it finishes
+       - Otherwise, return a vertex when it is first seen
+       - If outEdges is True, proceed along these, otherwise use inEdges'''
     if seen is None: seen = []
     seen.append(vertex)
     if not returnFinished:
       yield vertex
-    for v in graph.getEdges(vertex)[1]:
+    # Cute trick since outEdges is index 1, and inEdges is index 0
+    for v in graph.getEdges(vertex)[outEdges]:
       if not v in seen:
         try:
           for v2 in BuildGraph.depthFirstVisit(graph, v, seen, returnFinished):
@@ -122,15 +126,16 @@ class BuildGraph(object):
     return
   depthFirstVisit = staticmethod(depthFirstVisit)
 
-  def depthFirstSearch(graph, returnFinished = 0):
+  def depthFirstSearch(graph, returnFinished = 0, outEdges = 1):
     '''This is a generator returning vertices in a depth-first traversal
        - If returnFinished is True, return a vertex when it finishes
-       - Otherwise, return a vertex when it is first seen'''
+       - Otherwise, return a vertex when it is first seen
+       - If outEdges is True, proceed along these, otherwise use inEdges'''
     seen = []
     for vertex in graph.vertices:
       if not vertex in seen:
         try:
-          for v in BuildGraph.depthFirstVisit(graph, vertex, seen, returnFinished):
+          for v in BuildGraph.depthFirstVisit(graph, vertex, seen, returnFinished, outEdges):
             yield v
         except StopIteration:
           pass
