@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.38 1995/10/01 21:52:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.39 1995/11/01 23:16:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,8 +9,8 @@ static char vcid[] = "$Id: sor.c,v 1.38 1995/10/01 21:52:05 bsmith Exp bsmith $"
 #include "pinclude/pviewer.h"
 
 typedef struct {
-  int        its;
-  MatSORType sym;
+  int        its;        /* inner iterations, number of sweeps */
+  MatSORType sym;        /* forward, reverse, symmetric etc. */
   double     omega;
 } PC_SOR;
 
@@ -184,9 +184,7 @@ int PCSORSetOmega(PC pc, double omega)
   PC_SOR *jac = (PC_SOR *) pc->data; 
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCSOR) return 0;
-  if (omega >= 2.0 || omega <= 0.0) { 
-    SETERRQ(1,"PCSORSetOmega:Relaxation out of range");
-  }
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"PCSORSetOmega:Relaxation out of range");
   jac->omega = omega;
   return 0;
 }

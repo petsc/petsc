@@ -1,6 +1,8 @@
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
-
+/*
+    Private data for Block Jacobi preconditioner.
+*/
 #include "sles.h"
 
 typedef struct {

@@ -1,7 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.52 1995/10/13 00:57:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.53 1995/11/01 23:16:17 bsmith Exp bsmith $";
 #endif
-
+/*
+    The PC (preconditioner) interface routines, callable by users.
+*/
 #include "pcimpl.h"            /*I "pc.h" I*/
 #include "pinclude/pviewer.h"
 
@@ -319,6 +321,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
   return 0;
 }
+
 /*@C
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
@@ -460,9 +463,10 @@ $    ViewerFileOpenASCII() - output to a specified file
 int PCView(PC pc,Viewer viewer)
 {
   PetscObject vobj = (PetscObject) viewer;
-  FILE *fd;
-  char *cstring;
-  int  fmt, ierr, mat_exists;
+  FILE        *fd;
+  char        *cstring;
+  int         fmt, ierr, mat_exists;
+
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if ((vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) &&
      vobj->cookie == VIEWER_COOKIE) {
@@ -491,4 +495,5 @@ int PCView(PC pc,Viewer viewer)
   }
   return 0;
 }
+
 
