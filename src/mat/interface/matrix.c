@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.325 1999/03/18 00:59:51 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.326 1999/03/18 15:39:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -3775,12 +3775,16 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
    used during the assembly process to store values that belong to 
    other processors.
 
-   Collective on Mat
+   Not Collective
 
    Input Parameters:
 +  mat   - the matrix
 .  size  - the initial size of the stash.
 -  bsize - the initial size of the block-stash(if used).
+
+   Options Database Keys:
++   -matstash_initial_size <size>
+-   -matstash_block_initial_size <size>
 
    Level: intermediate
 
