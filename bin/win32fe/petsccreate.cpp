@@ -1,4 +1,4 @@
-/* $Id: petsccreate.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp buschelm $ */
+/* $Id: petsccreate.cpp,v 1.2 2001/03/07 21:48:16 buschelm Exp $ */
 #include <map>
 #include <string>
 #include <iostream>
@@ -15,6 +15,7 @@ using namespace std;
 namespace PETScFE {
 
   void CreateCL(tool *&Tool) {Tool = new cl;}
+  void CreateDF(tool *&Tool) {Tool = new df;}
   void CreateBCC(tool *&Tool) {Tool = new bcc;}
   void CreateCC(tool *&Tool) {Tool = new cc;}
   void CreateLIB(tool *&Tool) {Tool = new lib;}
@@ -27,8 +28,8 @@ namespace PETScFE {
     if (KnownTools.find(arg)!=string::npos) {
       map<string,void (*)(PETScFE::tool*&)> CreateTool;
       CreateTool["cl"] = PETScFE::CreateCL;
-      CreateTool["df"] = PETScFE::CreateCL;
-      CreateTool["f90"] = PETScFE::CreateCL;
+      CreateTool["df"] = PETScFE::CreateDF;
+      CreateTool["f90"] = PETScFE::CreateDF;
       CreateTool["bcc32"] = PETScFE::CreateBCC;
       CreateTool["cc"] = PETScFE::CreateCC;
       CreateTool["lib"] = PETScFE::CreateLIB;

@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petsctoolfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
 #include "petscfe.h"
 #include <iostream>
 #include <string>
@@ -6,12 +6,12 @@
 using namespace PETScFE;
 
 tool::tool(void) {
-  tool::OptionTags= "use.quiet.arg";
+  tool::OptionTags= "use.verbose.arg";
   tool::Options["use"] = &tool::FoundUse;
-  tool::Options["quiet"] = &tool::FoundQuiet;
+  tool::Options["verbose"] = &tool::FoundVerbose;
   tool::Options["unknown"] = &tool::FoundArg;
 
-  quiet = 0;
+  verbose = 0;
 }
   
 void tool::GetArgs(int argc,char *argv[]) {
@@ -46,7 +46,7 @@ void tool::Parse(int argc,char *argv[]) {
 }
 
 void tool::Execute(void) {
- if (!quiet) cout << "PETSc Front End" << endl;
+ if (verbose) cout << "PETSc Front End" << endl;
 }
 
 void tool::FoundArg(int &loc,string temp) {
@@ -59,8 +59,8 @@ void tool::FoundUse(int &loc,string temp) {
   arg[++loc] = "";
 }
 
-void tool::FoundQuiet(int &loc,string temp) {
-  quiet = -1;
+void tool::FoundVerbose(int &loc,string temp) {
+  verbose = -1;
   arg[loc] = "";
 }
 
@@ -70,10 +70,12 @@ void tool::ReplaceSlashWithBackslash(string &name) {
 }
 
 void tool::PrintStringVector(vector<string> &strvec) {
-  if (!quiet) cout << "Printing..." << endl;
-  int size = strvec.size()-1;
-  for (int i=0;i<size;i++) if (!quiet) cout << strvec[i] + " ";
-  if (!quiet) cout << strvec[size] << endl;
+  if (verbose) {
+    cout << "Printing..." << endl;
+    int size = strvec.size()-1;
+    for (int i=0;i<size;i++) cout << strvec[i] + " ";
+    cout << strvec[size] << endl;
+  }
 }
 
 void tool::Squeeze(vector<string> &strvec) {

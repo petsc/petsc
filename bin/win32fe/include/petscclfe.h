@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petscclfe.h,v 1.1 2001/03/06 23:57:40 buschelm Exp $ */
 #ifndef PETScClFE_h
 #define PETScClFE_h
 
@@ -10,22 +10,24 @@ namespace PETScFE {
   public:
     cl();
     ~cl() {}
-    void Parse(void);
-    void GetArgs(int argc,char *argv[]);
+    virtual void Parse(void);
+    virtual void GetArgs(int argc,char *argv[]);
   protected:
-    void Compile(void);
+    virtual void Compile(void);
 
-    void FoundD(int &,string);
-    void FoundL(int &,string);
-    void Foundl(int &,string);
-    void Foundo(int &,string);
-  private:
-    void FixFx(void);
-    typedef void (PETScFE::cl::*ptm)(int &,string);
-    map<char,ptm> Options;
+    virtual void FoundD(int &,string);
+    virtual void FoundL(int &,string);
+    virtual void Foundl(int &,string);
+    virtual void Foundo(int &,string);
+    virtual void FixFx(void);
+
     int OutputFlag;
   };
 
+  class df : public cl {
+  protected:
+    virtual void Foundo(int &,string);
+  };
 }
 
 #endif

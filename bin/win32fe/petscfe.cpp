@@ -1,4 +1,4 @@
-/* $Id: petscfe.cpp,v 1.2 2001/03/07 15:02:12 balay Exp buschelm $ */
+/* $Id: petscfe.cpp,v 1.3 2001/03/07 21:53:23 buschelm Exp $ */
 #include <iostream>
 #include "petscfe.h"
 
@@ -26,10 +26,10 @@ int main(int argc,char *argv[]) {
     cout << "bcc32: Borland C++ for Win32" << endl;
     cout << "lib:   Microsoft Library Manager" << endl;
     cout << "tlib:  Borland Library Manager" << endl << endl;
-    cout << "<win32fe options>: {use,quiet}" << endl;
+    cout << "<win32fe options>: {use,verbose}" << endl;
     cout << "--use:   Specifies the variant of <tool> to use" << endl;
-    cout << "--quiet: Do not echo to stdout the translated commandline" << endl << endl;
-    cout << "Ex: win32fe cl -Zi -c foo.c --quiet" << endl;
+    cout << "--verbose: Echo to stdout the translated commandline" << endl << endl;
+    cout << "Ex: win32fe cl -Zi -c foo.c --verbose" << endl;
   }
   return(0);
 }

@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petscfe.h,v 1.1 2001/03/06 23:57:40 buschelm Exp $ */
 #ifndef PETScFE_h_
 #define PETScFE_h_
 
@@ -27,12 +27,12 @@ namespace PETScFE {
     void Merge(string &,vector<string> &,int);
 
     vector<string> arg;
-    int quiet;
+    int verbose;
   private:
     void FoundArg(int &,string);
     void FoundUse(int &,string);
     void FoundVersion(int &,string);
-    void FoundQuiet(int &,string);
+    void FoundVerbose(int &,string);
 
     string OptionTags;
     typedef void (PETScFE::tool::*ptm)(int &,string);

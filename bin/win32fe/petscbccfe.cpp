@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petscbccfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
 #include <iostream>
 #include <stdlib.h>
 #include <Windows.h>
@@ -6,14 +6,8 @@
 
 using namespace PETScFE;
 
-#define UNKNOWN '*'
-
 bcc::bcc() {
   OutputFlag = 0;
-  Options['I'] = &PETScFE::bcc::FoundI;
-  Options['L'] = &PETScFE::bcc::FoundL;
-  Options['l'] = &PETScFE::bcc::Foundl;
-  Options['o'] = &PETScFE::bcc::Foundo;
 }
 
 void bcc::GetArgs(int argc,char *argv[]) {
@@ -41,8 +35,8 @@ void bcc::Compile(void) {
       outfile = filebase + ".o";
     }
     if (file[i]!="") {
-      string compileeach = compile + " " + outfile + " -c " + file[i];
-      if (!quiet) cout << compileeach << endl;
+      string compileeach = compile + " " + outfile + " " + file[i];
+      if (verbose) cout << compileeach << endl;
       system(compileeach.c_str());
     }
   }
@@ -70,7 +64,7 @@ void bcc::Link(void) {
       temp[i]=file[i];
       string outfile = (string)path + file[i].substr(0,n) + ".obj";
       string copy = "copy " + file[i] + " " + outfile;
-      if (!quiet) cout << copy << endl;
+      if (verbose) cout << copy << endl;
       system(copy.c_str());
       file[i] = outfile;
     }
@@ -81,7 +75,7 @@ void bcc::Link(void) {
   Merge(link,compilearg,1);
   Merge(link,linkarg,0);
   Merge(link,file,0);
-  if (!quiet) cout << link << endl;
+  if (verbose) cout << link << endl;
   system(link.c_str());
 
   /* Remove /tmp/file.obj's */
@@ -89,12 +83,25 @@ void bcc::Link(void) {
     if (file[i]=="") break;
     if (ext[i] == ".o") {
       string del = "del " + file[i];
-      if (!quiet) cout << del << endl;
+      if (verbose) cout << del << endl;
       system(del.c_str());
       file[i] = temp[i];
     }
   }
 }
+void bcc::FoundD(int &loc,string temp) {
+  string::size_type i,j;
+  i = temp.find("\"");
+  if (i!=string::npos) {
+    temp = temp.substr(0,i+1)+"\\\""+temp.substr(i+1,string::npos);
+    j = temp.rfind("\"");
+    if (j!=i+2) {
+      temp = temp.substr(0,j)+"\\\""+temp.substr(j,string::npos);
+    }
+  }
+  compilearg[loc]=temp;  
+}
+
 
 void bcc::FoundI(int &loc,string temp) {
   string str = temp.substr(2,string::npos);

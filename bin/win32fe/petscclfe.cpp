@@ -1,19 +1,12 @@
-/* $Id:$ */
+/* $Id: petscclfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
 #include <iostream>
 #include <stdlib.h>
 #include "petscclfe.h"
 
 using namespace PETScFE;
 
-#define UNKNOWN '*'
-
 cl::cl() {
   OutputFlag = 0;
-  OptionTags = "DILclo";
-  Options['D'] = &PETScFE::cl::FoundD;
-  Options['L'] = &PETScFE::cl::FoundL;
-  Options['l'] = &PETScFE::cl::Foundl;
-  Options['o'] = &PETScFE::cl::Foundo;
 }
 
 void cl::GetArgs(int argc,char *argv[]) {
@@ -43,8 +36,8 @@ void cl::Compile(void) {
       outfile = filebase + ".o";
     }
     if (file[i]!="") {
-      string compileeach = compile + " -c " + file[i] + " " + outfile;
-      if (!quiet) cout << compileeach << endl;
+      string compileeach = compile + " " + file[i] + " " + outfile;
+      if (verbose) cout << compileeach << endl;
       system(compileeach.c_str());
     }
   }
@@ -54,14 +47,10 @@ void cl::FoundD(int &loc,string temp) {
   string::size_type i,j;
   i = temp.find("\"");
   if (i!=string::npos) {
-    if (i!=1) {
-      temp = temp.substr(0,i)+"\\"+temp.substr(i,string::npos);
-    } else {
-      temp = "\\" + temp;
-    }
+    temp = temp.substr(0,i+1)+"\\\""+temp.substr(i+1,string::npos);
     j = temp.rfind("\"");
-    if (j!=i+1) {
-      temp = temp.substr(0,j)+"\\"+temp.substr(j,string::npos);
+    if (j!=i+2) {
+      temp = temp.substr(0,j)+"\\\""+temp.substr(j,string::npos);
     }
   }
   compilearg[loc]=temp;  
@@ -93,5 +82,13 @@ void cl::FixFx(void) {
     } else {
       compilearg[OutputFlag][2]='e';
     }
+  }
+}
+
+void df::Foundo(int &loc,string temp) {
+  if (temp == "-o") {
+    cl::Foundo(loc,temp);
+  } else {
+    compilearg[loc] = temp;
   }
 }

@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petscarchivefe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
 #include <iostream>
 #include <stdlib.h>
 #include "petscfe.h"
@@ -36,7 +36,7 @@ void archiver::Execute(void) {
     if (file[i]=="") break;
     archive += " " + file[i];
   }
-  if (!quiet) cout << archive << endl;
+  if (verbose) cout << archive << endl;
   system(archive.c_str());
 }
 

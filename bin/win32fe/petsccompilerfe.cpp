@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petsccompilefe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
 #include <iostream>
 #include <stdlib.h>
 #include "petscfe.h"
@@ -57,7 +57,7 @@ void compiler::Compile(void) {
   string compile=compilearg[0];
   Merge(compile,compilearg,1);
   Merge(compile,file,0);
-  if (!quiet) cout << compile << endl;
+  if (verbose) cout << compile << endl;
   system(compile.c_str());
 }
 
@@ -68,7 +68,7 @@ void compiler::Link(void) {
   Merge(link,compilearg,1);
   Merge(link,file,0);
   Merge(link,linkarg,0);
-  if (!quiet) cout << link << endl;
+  if (verbose) cout << link << endl;
   system(link.c_str());
 }
 
