@@ -1,5 +1,5 @@
 
-C    "$Id: ex12.F,v 1.8 1995/09/30 19:31:28 bsmith Exp curfman $";
+C    "$Id: ex12.F,v 1.9 1995/10/09 19:54:33 curfman Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -32,8 +32,8 @@ C
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 
-      call  MPI_Comm_rank(MPI_COMM_WORLD,ctx(4),ierr)
-      call  MPI_Comm_size(MPI_COMM_WORLD,ctx(5),ierr)
+      call MPI_Comm_rank(MPI_COMM_WORLD,ctx(4),ierr)
+      call MPI_Comm_size(MPI_COMM_WORLD,ctx(5),ierr)
 
 C Set up data structures
       call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,ctx(1),ierr)
@@ -46,7 +46,7 @@ C Set up data structures
       call VecDuplicate(x,F,ierr)
       ctx(2) = F
       call VecDuplicate(x,U,ierr)
-      call  PetscObjectSetName(U,'Exact Solution',ierr)
+      call PetscObjectSetName(U,'Exact Solution',ierr)
 
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
      *                     N,3,0,0,0,J,ierr)
