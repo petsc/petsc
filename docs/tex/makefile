@@ -40,6 +40,7 @@ onepager.html: onepager.tex
 	tohtml onepager.tex -notopnames -nocontents -nonavnames 
 	rm -f *.gif *.xbm latex.err
 	-@chmod g+w onepager.html
+	-mv onepager.html ..
 
 clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
