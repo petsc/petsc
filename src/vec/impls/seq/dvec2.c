@@ -38,7 +38,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
 
   if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
                                        (vobj->type == FILES_VIEWER)))  {
-    fd = ViewerFileGetPointer(ptr);
+    fd = ViewerFileGetPointer_Private(ptr);
     for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
       fprintf(fd,"%g + %gi\n",real(x->array[i]),imag(x->array[i]));
@@ -90,6 +90,7 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
     DOT(sum,xx,yy,n);
     z[i] = sum;
   }
+  PLogFlops(nv*(2*x->n-1));
   return 0;
 }
 
@@ -165,6 +166,7 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec yin, Vec *x )
   register int n = y->n;
   Scalar *yy = y->array, *xx;
   int      j;
+  PLogFlops(nv*2*n);
   for (j=0; j<nv; j++) {
     xx = ((Vec_Seq *)(x[j]->data))->array;
     /* This should really look at the case alpha = +1 as well */
@@ -183,6 +185,7 @@ static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
   Vec_Seq *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
   register int n = x->n;
   Scalar   *xx = x->array, *yy = y->array;
+  PLogFlops(2*n);
   AYPX(yy,*alpha,xx,n);
   return 0;
 }
@@ -194,9 +197,15 @@ static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
   register int i, n = x->n;
   Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
   if (*alpha == 1.0) {
+    PLogFlops(n);
     for (i=0; i<n; i++) ww[i] = yy[i] + xx[i];
   }
+  else if (*alpha == -1.0) {
+    PLogFlops(n);
+    for (i=0; i<n; i++) ww[i] = yy[i] - xx[i];
+  }
   else {
+    PLogFlops(2*n);
     for (i=0; i<n; i++) ww[i] = yy[i] + (*alpha) * xx[i];
   }
   return 0;
@@ -208,6 +217,7 @@ static int VecPMult_Seq( Vec xin, Vec yin, Vec win )
   Vec_Seq *y = (Vec_Seq *)yin->data;
   register int n = x->n, i;
   Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
+  PLogFlops(n);
   for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
   return 0;
 }
@@ -218,6 +228,7 @@ static int VecPDiv_Seq(Vec xin,Vec yin,Vec win )
   Vec_Seq *y = (Vec_Seq *)yin->data;
   register int n = x->n, i;
   Scalar   *xx = x->array, *yy = y->array, *ww = w->array;
+  PLogFlops(n);
   for (i=0; i<n; i++) ww[i] = xx[i] / yy[i];
   return 0;
 }
@@ -272,3 +283,6 @@ static int VecDestroy_Seq(PetscObject obj )
   return 0;
 }
  
+
+
+
