@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.155 1998/07/29 20:17:11 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.156 1998/09/25 03:14:27 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -90,8 +90,8 @@ int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatConvertSameType_SeqDense"
-int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
+#define __FUNC__ "MatDuplicate_SeqDense"
+int MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data, *l;
   int          ierr;
@@ -100,7 +100,7 @@ int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
   PetscFunctionBegin;
   ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,PETSC_NULL,&newi); CHKERRQ(ierr);
   l = (Mat_SeqDense *) newi->data;
-  if (cpvalues == COPY_VALUES) {
+  if (cpvalues == MAT_COPY_VALUES) {
     PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   }
   newi->assembled = PETSC_TRUE;
@@ -115,7 +115,7 @@ int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,double f,Mat *fact)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = MatConvertSameType_SeqDense(A,fact,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatDuplicate_SeqDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1225,7 +1225,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0, 
        MatGetArray_SeqDense, 
        MatRestoreArray_SeqDense,
-       MatConvertSameType_SeqDense,
+       MatDuplicate_SeqDense,
        0,
        0,
        0,

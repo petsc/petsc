@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.96 1998/07/23 22:47:48 bsmith Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.97 1998/09/10 19:37:15 balay Exp bsmith $";
 #endif
 
 /*
@@ -891,7 +891,7 @@ int MatScale_MPIDense(Scalar *alpha,Mat inA)
   PetscFunctionReturn(0);
 }
 
-static int MatConvertSameType_MPIDense(Mat,Mat *,int);
+static int MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat *);
 extern int MatGetSubMatrices_MPIDense(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
 
 /* -------------------------------------------------------------------*/
@@ -931,7 +931,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0, 
        MatGetArray_MPIDense, 
        MatRestoreArray_MPIDense,
-       MatConvertSameType_MPIDense,
+       MatDuplicate_MPIDense,
        0,
        0,
        0,
@@ -1082,8 +1082,8 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatConvertSameType_MPIDense"
-static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
+#define __FUNC__ "MatDuplicate_MPIDense"
+static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat          mat;
   Mat_MPIDense *a,*oldmat = (Mat_MPIDense *) A->data;
@@ -1125,7 +1125,7 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   PLogObjectParent(mat,a->lvec);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,a->Mvctx);
-  ierr =  MatConvert(oldmat->A,MATSAME,&a->A); CHKERRQ(ierr);
+  ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
   *newmat = mat;
   PetscFunctionReturn(0);
