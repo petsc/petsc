@@ -517,7 +517,7 @@ proc main { }  {
             return 0
         }
         set routines_file {}
-        set temp [ catch { glob docs/www/*/$routine_name.html} routines_file ]
+        set temp [ catch { glob docs/www/man*/$routine_name.html} routines_file ]
         if { $temp != 0 } {
             set mesg $routines_file
             puts stderr $mesg
