@@ -1,11 +1,11 @@
-/* $Id: petscclfe.h,v 1.5 2001/03/28 21:04:59 buschelm Exp buschelm $ */
+/* $Id: petscclfe.h,v 1.6 2001/03/28 22:13:02 buschelm Exp $ */
 #ifndef PETScClFE_h
 #define PETScClFE_h
 
-#include <map>
-#include "petscfe.h"
+#include "petsccompilerfe.h"
 
 namespace PETScFE {
+
   class cl : public compiler {
   public:
     cl();
@@ -14,6 +14,7 @@ namespace PETScFE {
     virtual void GetArgs(int argc,char *argv[]);
   protected:
     virtual void Compile(void);
+    virtual void Help(void);
 
     virtual void FoundD(LI &);
     virtual void FoundL(LI &);
@@ -28,6 +29,7 @@ namespace PETScFE {
   protected:
     virtual void Foundo(LI &);
   };
+
 }
 
 #endif

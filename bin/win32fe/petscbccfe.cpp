@@ -1,5 +1,4 @@
 /* $Id: petscbccfe.cpp,v 1.7 2001/03/28 21:03:32 buschelm Exp $ */
-#include <iostream>
 #include <vector>
 #include <stdlib.h>
 #include <Windows.h>
@@ -98,6 +97,18 @@ void bcc::Link(void) {
       f = file.insert(f,temp[i]);
     }
   }
+}
+
+void bcc::Help(void) {
+  tool::Help();
+  cout << "  Note: The bcc32 option -l conflicts with the win32fe use of -l." << endl;
+  cout << "        The following additional options are enabled for bcc32." << endl << endl;
+  cout << "  -l:<flag>    enables <flag> for the linker, ilink32.exe" << endl;
+  cout << "  -l:-<flag>   disables <flag> for the linker, ilink32.exe" << endl << endl;
+  cout << "  ======================================================================" << endl << endl;
+  string help = *(compilearg.begin());
+  help = help.substr(0,help.find(" -q"));
+  system(help.c_str());
 }
 
 void bcc::FoundD(LI &i) {

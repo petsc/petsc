@@ -1,8 +1,8 @@
-/* $Id: petsclibfe.h,v 1.1 2001/03/06 23:57:40 buschelm Exp $ */
+/* $Id: petsclibfe.h,v 1.2 2001/03/23 19:33:28 buschelm Exp $ */
 #ifndef PETScLibFE_h
 #define PETScLibFE_h
 
-#include "petscfe.h"
+#include "petscarchiverfe.h"
 
 namespace PETScFE {
   class lib : public archiver {
@@ -10,6 +10,7 @@ namespace PETScFE {
     lib() {}
     ~lib() {}
     virtual void Execute(void);
+    virtual void Help(void);
   };
 
 }

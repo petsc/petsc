@@ -1,11 +1,11 @@
-/* $Id: petscbccfe.h,v 1.1 2001/03/06 23:57:40 buschelm Exp $ */
+/* $Id: petscbccfe.h,v 1.4 2001/03/28 21:05:04 buschelm Exp $ */
 #ifndef PETScBccFE_h
 #define PETScBccFE_h
 
-#include <map>
-#include "petscfe.h"
+#include "petsccompilerfe.h"
 
 namespace PETScFE {
+
   class bcc : public compiler {
   public:
     bcc();
@@ -15,6 +15,7 @@ namespace PETScFE {
   protected:
     virtual void Compile(void);
     virtual void Link(void);
+    virtual void Help(void);
 
     virtual void FoundD(LI &);
     virtual void Foundl(LI &);

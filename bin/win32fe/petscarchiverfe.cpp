@@ -1,7 +1,6 @@
-/* $Id: petscarchivefe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
-#include <iostream>
+/* $Id: petscarchivefe.cpp,v 1.4 2001/03/23 19:31:16 buschelm Exp $ */
 #include <stdlib.h>
-#include "petscfe.h"
+#include "petscarchiverfe.h"
 
 using namespace PETScFE;
 
@@ -13,6 +12,7 @@ void archiver::GetArgs(int argc,char *argv[]) {
 }
 
 void archiver::Parse(void) {
+  tool::Parse();
   LI i = arg.begin();
   while (i !=arg.end()) {
     string temp = *i;
@@ -28,12 +28,21 @@ void archiver::Parse(void) {
 
 void archiver::Execute(void) {
   tool::Execute();
-  LI i = archivearg.begin();
-  string archive = *i++;
-  Merge(archive,archivearg,i);
-  Merge(archive,file,file.begin());
-  if (verbose) cout << archive << endl;
-  system(archive.c_str());
+  if (!helpfound) {
+    LI i = archivearg.begin();
+    string archive = *i++;
+    Merge(archive,archivearg,i);
+    Merge(archive,file,file.begin());
+    if (verbose) cout << archive << endl;
+    system(archive.c_str());
+  }
+}
+
+void archiver::Help(void) {
+  tool::Help();
+  string help = *archivearg.begin();
+  help += " -help";
+  system(help.c_str());
 }
 
 void archiver::FoundFile(LI &i) {
@@ -43,5 +52,10 @@ void archiver::FoundFile(LI &i) {
 }
 
 void archiver::FoundFlag(LI &i) {
-  archivearg.push_back(*i);
+  string temp = *i;
+  if (temp == "-help") {
+    helpfound = -1;
+  } else {
+    archivearg.push_back(*i);
+  }
 }

@@ -1,18 +1,18 @@
-/* $Id: petsccompilefe.cpp,v 1.4 2001/03/28 21:03:39 buschelm Exp buschelm $ */
-#include <iostream>
+/* $Id: petsccompilefe.cpp,v 1.5 2001/03/28 22:05:13 buschelm Exp $ */
 #include <stdlib.h>
-#include "petscfe.h"
+#include "petsccompilerfe.h"
 
 using namespace PETScFE;
 
 #define UNKNOWN '*'
 
 compiler::compiler() {
-  OptionTags = "DILclo";
+  OptionTags = "DILchlo";
   Options['D'] = &compiler::FoundD;
   Options['I'] = &compiler::FoundI;
   Options['L'] = &compiler::FoundL;
   Options['c'] = &compiler::Foundc;
+  Options['h'] = &compiler::Foundhelp;
   Options['l'] = &compiler::Foundl;
   Options['o'] = &compiler::Foundo;
   Options[UNKNOWN] = &compiler::FoundUnknown;
@@ -26,6 +26,7 @@ void compiler::GetArgs(int argc,char *argv[]) {
 }
 
 void compiler::Parse(void) {
+  tool::Parse();
   LI i = arg.begin();
   while (i != arg.end()) {
     string temp = *i;
@@ -46,12 +47,22 @@ void compiler::Parse(void) {
 
 void compiler::Execute(void) {
   tool::Execute();
-  LI i=linkarg.begin();
-  if (*i == "-c") {
-    Compile();
-  } else {
-    Link();
+  if (!helpfound) {
+    LI i=linkarg.begin();
+    string temp = *i;
+    if (temp == "-c") {
+      Compile();
+    } else {
+      Link();
+    }
   }
+}
+
+void compiler::Help(void) {
+  tool::Help();
+  string help = *compilearg.begin();
+  help += " -help";
+  system(help.c_str());
 }
 
 void compiler::Compile(void) {
@@ -109,11 +120,15 @@ void compiler::Foundc(LI &i) {
   linkarg.push_front(temp);
 }
 
+void compiler::Foundhelp(LI &i) {
+  helpfound = -1;
+}
+
 void compiler::Foundl(LI &i) { 
   file.push_back(*i);
 } 
 
-void compiler::Foundo(LI &i){
+void compiler::Foundo(LI &i) {
   compilearg.push_back(*i);
   i++;
   arg.pop_front();
@@ -124,7 +139,7 @@ void compiler::Foundo(LI &i){
   /* Should perform some error checking ... */
 }   
 
-void compiler::FoundUnknown(LI &i){
+void compiler::FoundUnknown(LI &i) {
   string temp = *i;
   compilearg.push_back(temp);
 }

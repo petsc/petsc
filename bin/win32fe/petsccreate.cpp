@@ -1,8 +1,4 @@
-/* $Id: petsccreate.cpp,v 1.2 2001/03/07 21:48:16 buschelm Exp $ */
-#include <map>
-#include <string>
-#include <iostream>
-#include "petscfe.h"
+/* $Id: petsccreate.cpp,v 1.8 2001/03/28 17:50:24 buschelm Exp $ */
 #include "petscclfe.h"
 #include "petscbccfe.h"
 #include "petsclibfe.h"
@@ -29,14 +25,14 @@ namespace PETScFE {
     CreateTool["bcc32"] = PETScFE::CreateBCC;
     CreateTool["lib"] = PETScFE::CreateLIB;
     CreateTool["tlib"] = PETScFE::CreateTLIB;
-      
-    if (KnownTools.find(argv)!=string::npos) {
-      CreateTool[argv](Tool);
+
+    if (KnownTools.find(argv)==string::npos) {
+      argv = "--help";
+      Tool = new(tool);
     } else {
-      cout << "Unknown Tool " << argv << endl;
-      cout << "Error: 1" << endl;
-      return(1);
+      CreateTool[argv](Tool);
     }
+    (Tool->arg).push_front(argv);
     return(0);
   }
 

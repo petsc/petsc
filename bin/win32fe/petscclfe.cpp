@@ -1,7 +1,7 @@
-/* $Id: petscclfe.cpp,v 1.7 2001/03/28 21:03:26 buschelm Exp buschelm $ */
-#include <iostream>
+/* $Id: petscclfe.cpp,v 1.8 2001/03/28 22:12:54 buschelm Exp $ */
 #include <stdlib.h>
 #include "petscclfe.h"
+#include "Windows.h"
 
 using namespace PETScFE;
 
@@ -24,6 +24,14 @@ void cl::Parse(void) {
   compiler::Parse();
   /* Fix Output flag for compile or link (-Fe or -Fo) */ 
   FixFx();
+}
+
+void cl::Help(void) {
+  tool::Help();
+  string help = *compilearg.begin();
+  help = help.substr(0,help.find(" -nologo"));
+  help += " -? 2>&1";
+  system(help.c_str());
 }
 
 void cl::Compile(void) {
