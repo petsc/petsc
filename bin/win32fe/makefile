@@ -1,7 +1,7 @@
-# $Id: makefile,v 1.6 2001/04/18 00:36:41 buschelm Exp buschelm $ 
+# $Id: makefile,v 1.7 2001/05/04 02:44:08 buschelm Exp buschelm $ 
 CXX       = cl
-CXX_FLAGS = -nologo -GX -GR -MD
-CXXFLAGS  =
+CXXFLAGS  = 
+CXX_FLAGS = -nologo -GX -GR -MD $(CXXFLAGS)
 
 # Note: under WindowsNT (2000) the DOS shell is named cmd
 RM        = cmd /C del
@@ -18,6 +18,8 @@ OBJECTS = petsccompilerfe.obj petscbccfe.obj petscclfe.obj petsciclfe.cpp \
 
 INCLUDEPATHS = -Iinclude
 
+LIBS = Advapi32.lib
+
 win32fe: $(SOURCES)
-	$(CXX) $(CXX_FLAGS) $(CXXFLAGS) -Fewin32fe.exe $(SOURCES) $(INCLUDEPATHS) 
+	$(CXX) $(CXX_FLAGS) -Fewin32fe.exe $(SOURCES) $(INCLUDEPATHS) $(LIBS)
 	$(RM) $(OBJECTS)
