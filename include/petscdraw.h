@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.43 1997/05/20 03:21:47 bsmith Exp balay $ */
+/* $Id: draw.h,v 1.44 1997/05/23 16:30:51 balay Exp balay $ */
 /*
   Interface to the graphics
 */
@@ -85,7 +85,7 @@ extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double
 /*
     Routines for drawing X-Y axises in a Draw object
 */
-typedef struct _DrawAxis* DrawAxis;
+typedef struct _p_DrawAxis* DrawAxis;
 #define DRAWAXIS_COOKIE PETSC_COOKIE+16
 extern int DrawAxisCreate(Draw,DrawAxis *);
 extern int DrawAxisDestroy(DrawAxis);
@@ -97,7 +97,7 @@ extern int DrawAxisSetLabels(DrawAxis,char*,char*,char*);
 /*
     Routines to draw line curves in X-Y space
 */
-typedef struct _DrawLG*   DrawLG;
+typedef struct _p_DrawLG*   DrawLG;
 #define DRAWLG_COOKIE PETSC_COOKIE+7
 extern int DrawLGCreate(Draw,int,DrawLG *);
 extern int DrawLGDestroy(DrawLG);
@@ -114,7 +114,7 @@ extern int DrawLGSetLimits(DrawLG,double,double,double,double);
 /*
     Routines to draw scatter plots in complex space
 */
-typedef struct _DrawSP*   DrawSP;
+typedef struct _p_DrawSP*   DrawSP;
 #define DRAWSP_COOKIE PETSC_COOKIE+27
 extern int DrawSPCreate(Draw,int,DrawSP *);
 extern int DrawSPDestroy(DrawSP);
@@ -134,7 +134,7 @@ extern int ViewerDrawGetDraw(Viewer, Draw*);
 extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
 
 /* Mesh management routines */
-typedef struct _DrawMesh* DrawMesh;
+typedef struct _p_DrawMesh* DrawMesh;
 int DrawMeshCreate( DrawMesh *, 
 		    double *, double *, double *,
 		    int, int, int, int, int, int, int, int, int,

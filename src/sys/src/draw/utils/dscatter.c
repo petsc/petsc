@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dscatter.c,v 1.7 1997/03/26 01:36:57 bsmith Exp balay $";
+static char vcid[] = "$Id: dscatter.c,v 1.8 1997/05/07 01:45:55 balay Exp balay $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dscatter.c,v 1.7 1997/03/26 01:36:57 bsmith Exp balay
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-struct _DrawSP {
+struct _p_DrawSP {
   PETSCHEADER 
   int         len,loc;
   Draw        win;
@@ -47,7 +47,7 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
     (*outctx)->win = win;
     return 0;
   }
-  PetscHeaderCreate(sp,_DrawSP,DRAWSP_COOKIE,0,vobj->comm);
+  PetscHeaderCreate(sp,_p_DrawSP,DRAWSP_COOKIE,0,vobj->comm);
   sp->view    = 0;
   sp->destroy = 0;
   sp->nopts   = 0;

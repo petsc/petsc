@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.41 1997/03/26 01:36:57 bsmith Exp balay $";
+static char vcid[] = "$Id: lg.c,v 1.42 1997/05/07 01:45:51 balay Exp balay $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: lg.c,v 1.41 1997/03/26 01:36:57 bsmith Exp balay $";
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-struct _DrawLG {
+struct _p_DrawLG {
   PETSCHEADER 
   int         len,loc;
   Draw        win;
@@ -49,7 +49,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
     (*outctx)->win = win;
     return 0;
   }
-  PetscHeaderCreate(lg,_DrawLG,DRAWLG_COOKIE,0,vobj->comm);
+  PetscHeaderCreate(lg,_p_DrawLG,DRAWLG_COOKIE,0,vobj->comm);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;
