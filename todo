@@ -18,10 +18,11 @@
   Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
   the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
 
-   Check if indices passed into vecscattercreate are sorted (often they will be); if they are then 
-   do much faster check to which processor owns them
+   Check if indices passed into matsetvalues_xxx MatZeroRows_MPIAIJ,MPIBAIJ,mpibdiag, MPIDense,rowbs are locally sorted 
+   (often they will be); if they are then do much faster check to which processor owns them
+   like I did with VecScatterCreate_xxxxx().
 
-    Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
+    (Priority 0) Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
     in ASM.
 
     Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
@@ -58,6 +59,8 @@
   Cleaner code
   ------------
 
+  (Priority 2) Add more PetscMallocXXX() especially in the VecScatterCreate_.... stuff.
+
   (Priority 0) change PetscLogEventBarrierBegin() and friends to use ? : || ... to properly return error codes
 
   (Priority 0) for configure optional external packages, write a package independent rule to check if the
@@ -73,7 +76,7 @@
 
   (Priority 0) Have make in the root directory stop on error in any compile! Default behavior
 
-  Allow setting precision of printed numbers in ASCII viewers.
+  (Priority 1) Allow setting precision of printed numbers in ASCII viewers.
 
   (Priority 1) add DAVecGatherAll and DAVecGather
 
@@ -87,10 +90,10 @@
 
    (Priority 1) Add option to KSP to compute and print true residual norm after solve is complete.
 
-     Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
+     (Piority 1) Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
      Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason
 
-   Add option to SNES to generate error when convergence fails, rather than continuing with ConvergedReason
+   (Priority 1) Add option to SNES to generate error when convergence fails, rather than continuing with ConvergedReason
 
    (Priority 2) Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input allow setting type before sizes
    provide VecSetMap()

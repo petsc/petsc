@@ -2619,12 +2619,14 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   PetscInt               *lowner,*start,lengthy;
   PetscInt               *nprocs,i,j,idx,nsends,nrecvs;
   PetscInt               *owner,*starts,count,slen;
-  PetscInt               *rvalues,*svalues,base,nmax,*values,len,*indx,nprocslocal;
+  PetscInt               *rvalues,*svalues,base,nmax,*values,len,*indx,nprocslocal,lastidx;
   MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
   PetscMap               map;
-  PetscTruth             found;
+#if defined(PETSC_DEBUG)
+  PetscTruth             found = PETSC_FALSE;
+#endif
   
   PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
@@ -2639,15 +2641,27 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   ierr = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMalloc(nx*sizeof(PetscInt),&owner);CHKERRQ(ierr);
+  j       = 0;
+  lastidx = -1;
   for (i=0; i<nx; i++) {
-    idx = inidx[i];
-    found = PETSC_FALSE;
-    for (j=0; j<size; j++) {
+    /* if indices are NOT locally sorted, need to start search at the beginning */
+    if (lastidx > (idx = inidx[i])) j = 0;
+    lastidx = idx;
+    for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
+        nprocs[2*j]++; 
+        nprocs[2*j+1] = 1; 
+        owner[i] = j; 
+#if defined(PETSC_DEBUG)
+        found = PETSC_TRUE; 
+#endif
+        break;
       }
     }
+#if defined(PETSC_DEBUG)
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
+    found = PETSC_FALSE;
+#endif
   }
   nprocslocal    = nprocs[2*rank]; 
   nprocs[2*rank] = nprocs[2*rank+1] = 0; 
@@ -2943,11 +2957,13 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   PetscInt               *lowner,*start;
   PetscInt               *nprocs,i,j,idx,nsends,nrecvs;
   PetscInt               *owner,*starts,count,slen;
-  PetscInt               *rvalues,*svalues,base,nmax,*values,len;
-  PetscTruth             found;
+  PetscInt               *rvalues,*svalues,base,nmax,*values,len,lastidx;
   MPI_Comm               comm = yin->comm;
   MPI_Request            *send_waits,*recv_waits;
   MPI_Status             recv_status,*send_status;
+#if defined(PETSC_DEBUG)
+  PetscTruth             found = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
@@ -2955,15 +2971,27 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
 
   /*  count number of contributors to each processor */
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  j       = 0;
+  lastidx = -1;
   for (i=0; i<nx; i++) {
-    idx   = inidy[i];
-    found = PETSC_FALSE;
-    for (j=0; j<size; j++) {
+    /* if indices are NOT locally sorted, need to start search at the beginning */
+    if (lastidx > (idx = inidy[i])) j = 0;
+    lastidx = idx;
+    for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
+        nprocs[2*j]++; 
+        nprocs[2*j+1] = 1; 
+        owner[i] = j; 
+#if defined(PETSC_DEBUG)
+        found = PETSC_TRUE; 
+#endif
+        break;
       }
     }
+#if defined(PETSC_DEBUG)
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
+    found = PETSC_FALSE;
+#endif
   }
   nprocslocal    = nprocs[2*rank];
   nprocs[2*rank] = nprocs[2*rank+1] = 0; 
@@ -3132,11 +3160,14 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   PetscInt       *lens,*owners = xin->map->range;
   PetscInt       *nprocs,i,j,idx,nsends,nrecvs,*local_inidx,*local_inidy;
   PetscInt       *owner,*starts,count,slen;
-  PetscInt       *rvalues,*svalues,base,nmax,*values;
+  PetscInt       *rvalues,*svalues,base,nmax,*values,lastidx;
   MPI_Comm       comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-  PetscTruth     duplicate = PETSC_FALSE,found;
+  PetscTruth     duplicate = PETSC_FALSE;
+#if defined(PETSC_DEBUG)
+  PetscTruth     found = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
@@ -3155,15 +3186,27 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   /*  first count number of contributors to each processor */
   ierr  = PetscMalloc3(2*size,PetscInt,&nprocs,nx,PetscInt,&owner,(size+1),PetscInt,&starts);CHKERRQ(ierr);
   ierr  = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  lastidx = -1;
+  j       = 0;
   for (i=0; i<nx; i++) {
-    idx   = inidx[i];
-    found = PETSC_FALSE;
-    for (j=0; j<size; j++) {
+    /* if indices are NOT locally sorted, need to start search at the beginning */
+    if (lastidx > (idx = inidx[i])) j = 0;
+    lastidx = idx;
+    for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
+        nprocs[2*j]++; 
+        nprocs[2*j+1] = 1; 
+        owner[i] = j; 
+#if defined(PETSC_DEBUG)
+        found = PETSC_TRUE; 
+#endif
+        break;
       }
     }
+#if defined(PETSC_DEBUG)
     if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
+    found = PETSC_FALSE;
+#endif
   }
   nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];} 
 
