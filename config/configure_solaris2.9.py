@@ -13,10 +13,12 @@ if __name__ == '__main__':
     '--with-f90-header=f90impl/f90_solaris.h',
     '--with-f90-source=src/sys/src/f90/f90_solaris.c',
     '--with-mpi',
-    '--with-mpi-dir=/home/petsc/soft/solaris-9/mpich-1.2.5'
+    '--with-mpi-include=/home/petsc/soft/solaris-9/mpich-1.2.5/include',
+    '--with-mpi-lib=[/home/petsc/soft/solaris-9/mpich-1.2.5/lib/libmpich.a,libsocket.a,libnsl.a,librt.a,libnsl.a,libaio.a]',
     '-PETSC_ARCH=solaris2.9',
     '-PETSC_DIR=/sandbox/petsc/petsc-test',
-    '--with-blas=libsunperf.a'
+    '--with-blas=libsunperf.a',
+    '--with-lapack=libsunperf.a'
     ]
 
     configure.petsc_configure(configure_options)
