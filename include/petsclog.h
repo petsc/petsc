@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.119 1998/03/31 23:43:11 balay Exp balay $ */
+/* $Id: petsclog.h,v 1.120 1998/04/15 18:03:04 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -284,11 +284,12 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
    uses macros to defined the MPI operations. 
 
      It does not work correctly from HP-UX because it processes the 
-   macros in a way that sometimes it double counts.
+   macros in a way that sometimes it double counts, hence 
+   HAVE_BROKEN_RECURSIVE_MACRO
 
      It does not work with Windows NT because winmpich lacks MPI_Type_size()
 */
-#if !defined(PETSC_USING_MPIUNI) && !defined(PARCH_hpux) && !defined (PARCH_nt)
+#if !defined(PETSC_USING_MPIUNI) && !defined(HAVE_BROKEN_RECURSIVE_MACRO)
 /*
    Logging of MPI activities
 */
@@ -378,7 +379,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
   MPI_Start( requests)                   \
 )
 
-#endif /* ! PETSC_USING_MPIUNI && ! PARCH_hpux */
+#endif /* ! PETSC_USING_MPIUNI && ! HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 
