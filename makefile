@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.247 1998/07/13 18:50:40 balay Exp bsmith $ 
+# $Id: makefile,v 1.248 1998/09/24 13:35:18 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -17,7 +17,7 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 # f90     : builds the fortran and the f90 libraries.
 #
 all       : info chkpetsc_dir deletelibs build_c build_fortrankernels \
-	    shared build_fortran build_fortran90
+	    build_fortran build_fortran90 shared
 fortran   : info chkpetsc_dir build_fortran
 fortran90 : fortran build_fortran90
 
