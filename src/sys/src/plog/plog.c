@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.54 1995/12/07 20:13:09 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.55 1995/12/31 17:25:17 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -9,6 +9,7 @@ static char vcid[] = "$Id: plog.c,v 1.54 1995/12/07 20:13:09 balay Exp bsmith $"
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include "sys.h"
 #include "pinclude/petscfix.h"
 #include "pinclude/ptime.h"
 
@@ -124,6 +125,8 @@ static int     EventsStageMax = 0; /* highest event log used */
 static int     EventsStagePushed = 0;
 static int     EventsStageStack[100];
 static char    *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
+static double  EventsStageFlops[] = {0,0,0,0,0,0,0,0,0,0};
+static double  EventsStageTime[] = {0,0,0,0,0,0,0,0,0,0};
 #define COUNT 0
 #define FLOPS 1
 #define TIME  2
@@ -177,10 +180,17 @@ $
 int PLogStagePush(int stage)
 {
   if (stage < 0 || stage > 10) SETERRQ(1,"PLogStagePush:Out of range");
+  /* record flops/time of previous stage */
+  if (EventsStagePushed) {
+    PetscTimeAdd(EventsStageTime[EventsStage]);
+    EventsStageFlops[EventsStage] += _TotalFlops;
+  }
   EventsStageStack[EventsStagePushed++] = EventsStage;
   if (EventsStagePushed++ > 99) SETERRQ(1,"PLogStagePush:Too many pushes");
   EventsStage = stage;
   if (stage > EventsStageMax) EventsStageMax = stage;
+  PetscTimeSubtract(EventsStageTime[EventsStage]);
+  EventsStageFlops[EventsStage] -= _TotalFlops;
   return 0;
 }
 
@@ -209,8 +219,14 @@ $
 @*/
 int PLogStagePop()
 {
-  if (EventsStagePushed < 1) return 0;
+  PetscTimeAdd(EventsStageTime[EventsStage]);
+  EventsStageFlops[EventsStage] += _TotalFlops;
+  if (EventsStagePushed < 1) SETERRQ(1,"PLogStagePop:Too many pops\n");
   EventsStage = EventsStageStack[--EventsStagePushed];
+  if (EventsStagePushed) {
+    PetscTimeSubtract(EventsStageTime[EventsStage]);
+    EventsStageFlops[EventsStage] -= _TotalFlops;
+  }
   return 0;
 }
 
@@ -407,6 +423,7 @@ int PLogAllBegin()
   /* all processors sync here for more consistent logging */
   MPI_Barrier(MPI_COMM_WORLD);
   PetscTime(BaseTime);
+  PLogStagePush(0);
   return 0;
 }
 
@@ -479,6 +496,7 @@ int PLogBegin()
   /* all processors sync here for more consistent logging */
   MPI_Barrier(MPI_COMM_WORLD);
   PetscTime(BaseTime);
+  PLogStagePush(0);
   return 0;
 }
 
@@ -572,15 +590,15 @@ static char *(name[]) = {"MatMult         ",
                          "MatGetReordering",
                          "MatMultTrans    ",
                          "MatMultAdd      ",
-                         "MatMultTransAdd ",
+                         "MatMltTrnsAdd   ",
                          "MatLUFactor     ",
-                         "MatCholeskyFacto",
-                         "MatLUFactorSymbo",
-                         "MatILUFactorSymb",
-                         "MatCholeskyFacto",
+                         "MatCholeskyFctr ",
+                         "MatLUFctrSymbol ",
+                         "MatILUFctrSymbol",
+                         "MatCholeskyFctr ",
                          "MatIncompleteCho",
                          "MatLUFactorNumer",
-                         "MatCholeskyFacto",
+                         "MatCholeskyFact ",
                          "MatRelax        ",
                          "MatCopy         ",
                          "MatConvert      ",
@@ -650,7 +668,7 @@ static char *(name[]) = {"MatMult         ",
                          "SNESLineSearch  ",
                          "SNESFunctionEval",
                          "SNESJacobianEval",
-                         "SNESMinFunctEval",
+                         "SNESMinFunctnEvl",
                          "SNESGradientEval",
                          "SNESHessianEval ",
                          " ",
@@ -743,12 +761,16 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
 {
   double maxo,mino,aveo,mem,totmem,maxmem,minmem;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
-  double fmin,fmax,ftot,wdou,totts,totff;
+  double fmin,fmax,ftot,wdou,totts,totff,rat,stime,sflops,ratf;
   int    size,i,j;
+  char   arch[10];
 
-  MPI_Comm_size(comm,&size);
+  /* pop off any stages the user forgot to remove */
+  while (EventsStagePushed) PLogStagePop();
 
   PetscTime(_TotalTime);  _TotalTime -= BaseTime;
+
+  MPI_Comm_size(comm,&size);
 
   wdou = _TotalFlops; 
   MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
@@ -766,7 +788,10 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   MPI_Reduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,0,comm);
   avet = (tott)/((double) size);
 
-  MPIU_fprintf(comm,fd,"\nPerformance Summary:\n");
+  MPIU_fprintf(comm,fd,
+   "\nPerformance Summary:------------------------------------------------------------\n");
+  SYGetArchType(arch,10);
+  MPIU_fprintf(comm,fd,"Machine: %s with %d processors run on %s",arch,size,SYGetDate());
 
   MPIU_fprintf(comm,fd,"\n                Max         Min        Avg        Total \n");
   MPIU_fprintf(comm,fd,"Time:        %5.3e   %5.3e   %5.3e\n",maxt,mint,avet);
@@ -789,23 +814,43 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
  
   }
 
+  if (!tott) tott = 1.e-5;
+
+  if (EventsStageMax) {
+    MPIU_fprintf(comm,fd,"\nStages summary        Ave. Time %%Total  Ave. Flops/sec %%Total\n");
+    for ( j=0; j<=EventsStageMax; j++ ) {
+      MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      if (EventsStageName[j]) {
+        MPIU_fprintf(comm,fd," %d: %15s: %5.3e   %4.1f%% %5.3e   %4.1f%% \n",
+                     j,EventsStageName[j],stime/size,100.0*stime/tott,sflops/size,
+                     100.*sflops/totf);
+      } else {
+        MPIU_fprintf(comm,fd," %d:          %5.3e   %4.1f%%  %5.3e   %4.1f%% \n",
+                    j,stime/size,100.0*stime/tott,sflops/size,100.*sflops/totf);
+      }
+    }
+  }
+
+
   MPIU_fprintf(comm,fd,
     "\n------------------------------------------------------------------------------\n"); 
 
   /* loop over operations looking for interesting ones */
-  MPIU_fprintf(comm,fd,"\nPhase               Count       Time (sec)        \
-   Flops/sec     %%Time %%Flop\n");
-  MPIU_fprintf(comm,fd,"                             Min       Max      \
-  Min       Max\n");
+  MPIU_fprintf(comm,fd,"Phase            Count    Time (sec)      Flops/sec\
+      Global       Stage\n");
+  MPIU_fprintf(comm,fd,"                        Max    Ratio     Max    Ratio\
+     %%T %%F       %%T %%F\n");
   MPIU_fprintf(comm,fd,
-    "\n------------------------------------------------------------------------------\n"); 
+    "------------------------------------------------------------------------------\n"); 
   for ( j=0; j<=EventsStageMax; j++ ) {
+    MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
+    MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
     if (EventsStageMax) {
       if (EventsStageName[j]) {
-        MPIU_fprintf(comm,fd,"\n               -------- Event Stage %d: %s -------\n\n",
-                     j,EventsStageName[j]);
+        MPIU_fprintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);
       } else {
-        MPIU_fprintf(comm,fd,"\n                       -------- Event Stage %d: --------\n\n",j);
+        MPIU_fprintf(comm,fd,"\n--- Event Stage %d:\n\n",j);
       }
     }
     /* This loop assumes that PLOG_USER_EVENT_HIGH is the max event number */
@@ -823,10 +868,11 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
       MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
       MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
       if (EventsType[j][i][COUNT]) {
-        if (!tott) tott = 1.e-5;
-        MPIU_fprintf(comm,fd,"%s %8d  %3.2e  %3.2e   %3.2e  %3.2e %5.1f %5.1f\n",
-                     name[i],(int)EventsType[j][i][COUNT],mint,maxt,minf,maxf,
-                    100.*totts/tott,100.*totff/totf);
+        if (mint > 0.0) rat = maxt/mint; else rat = 0.0;
+        if (minf > 0.0) ratf = maxf/minf; else ratf = 0.0;
+        MPIU_fprintf(comm,fd,"%s %4d  %2.1e %6.1f  %2.1e %6.1f   %4.1f %4.1f   %4.1f %4.1f\n",
+                     name[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
+                    100.*totts/tott,100.*totff/totf,100.*totts/stime,100.*totff/sflops);
       }
     }
   }
@@ -838,7 +884,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
 
   /* loop over objects looking for interesting ones */
   MPIU_fprintf(comm,fd,"Object Type      Creations   Destructions   Memory  Descendants' Mem.\n");
-  for ( i=0; i<15; i++ ) {
+  for ( i=0; i<18; i++ ) {
     if (ObjectsType[i][0]) {
       MPIU_fprintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
           ObjectsType[i][0],(int)ObjectsType[i][1],(int)ObjectsType[i][2],
@@ -878,7 +924,6 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
 
 .keywords:  Petsc, time
 @*/
-
 double PetscGetTime()
 {
   double t;
