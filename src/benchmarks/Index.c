@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: Index.c,v 1.9 1996/04/22 20:44:28 balay Exp balay $";
+static char vcid[] = "$Id: Index.c,v 1.10 1996/05/08 22:29:56 balay Exp balay $";
 #endif
 
 #include "stdio.h"
@@ -7,7 +7,9 @@ static char vcid[] = "$Id: Index.c,v 1.9 1996/04/22 20:44:28 balay Exp balay $";
 #include "sys.h"
 
 int BlastCache();
-
+int test1();
+int test2();
+ 
 int main( int argc, char **argv)
 {
   PetscInitialize(&argc, &argv,0,0);
@@ -187,7 +189,7 @@ int BlastCache()
   int    i,n = 1000000;
   Scalar *x,*y,*z,*a, *b;
 
-  x = (Scalar *) PetscMalloc(5*n); CHKPTRA(x);
+  x = (Scalar *) PetscMalloc(5*n*sizeof(Scalar)); CHKPTRA(x);
   y = x + n;
   z = y + n;
   a = z + n;
