@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.38 2000/08/17 04:50:22 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.39 2000/09/22 20:41:49 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -24,6 +24,7 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PLogInfo(v,"Publishing with the AMS on port %d\n",port);CHKERRQ(ierr);
   ierr = AMS_Comm_publish((char *)name,&vams->ams_comm,MPI_TYPE,v->comm,&port);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-ams_printf",&flg);CHKERRQ(ierr);
