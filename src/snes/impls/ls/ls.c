@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.112 1998/06/02 14:45:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.113 1998/07/23 15:21:14 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -762,16 +762,13 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
   ierr = OptionsGetString(snes->prefix,"-snes_eq_ls",ver,16, &flg); CHKERRQ(ierr);
   if (flg) {
     if (!PetscStrcmp(ver,"basic")) {
-      SNESSetLineSearch(snes,SNESNoLineSearch);
-    }
-    else if (!PetscStrcmp(ver,"basicnonorms")) {
-      SNESSetLineSearch(snes,SNESNoLineSearchNoNorms);
-    }
-    else if (!PetscStrcmp(ver,"quadratic")) {
-      SNESSetLineSearch(snes,SNESQuadraticLineSearch);
-    }
-    else if (!PetscStrcmp(ver,"cubic")) {
-      SNESSetLineSearch(snes,SNESCubicLineSearch);
+      ierr = SNESSetLineSearch(snes,SNESNoLineSearch);CHKERRQ(ierr);
+    } else if (!PetscStrcmp(ver,"basicnonorms")) {
+      ierr = SNESSetLineSearch(snes,SNESNoLineSearchNoNorms);CHKERRQ(ierr);
+    } else if (!PetscStrcmp(ver,"quadratic")) {
+      ierr = SNESSetLineSearch(snes,SNESQuadraticLineSearch);CHKERRQ(ierr);
+    } else if (!PetscStrcmp(ver,"cubic")) {
+      ierr = SNESSetLineSearch(snes,SNESCubicLineSearch);CHKERRQ(ierr);
     }
     else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown line search");}
   }
