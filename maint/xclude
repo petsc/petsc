@@ -34,7 +34,7 @@ petsc/src/contrib/reusememory
 petsc/src/benchmarks/results
 petsc/src/benchmarks/notes
 petsc/src/snes/examples/tutorials/unstruct
-petsc/src/snes/examples/tutorials/ex7.c
+petsc/src/snes/examples/tutorials/ex9.c
 petsc/src/adic
 petsc/src/adic/examples/RCS
 petsc/src/adic/blas/RCS
