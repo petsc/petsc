@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.85 1996/03/11 23:40:34 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.86 1996/03/19 21:30:22 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -645,18 +645,18 @@ int PLogBegin()
    Input Parameter:
 .  name - an optional file name
 
-   Notes:
-   The default file name is 
-$      Log.<rank>
-   where <rank> is the processor number. If no name is specified, 
-   this file will be used.
-
    Options Database Keys:
 $  -log : Prints basic log information (for code compiled 
 $      with PETSC_LOG)
 $  -log_all : Prints extensive log information (for code compiled
 $      with PETSC_LOG)
    
+   Notes:
+   The default file name is 
+$      Log.<rank>
+   where <rank> is the processor number. If no name is specified, 
+   this file will be used.
+
 .keywords: log, dump
 
 .seealso: PLogBegin(), PLogPrintSummary()

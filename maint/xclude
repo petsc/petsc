@@ -1,5 +1,6 @@
 petsc/docs/www/www.cit
 petsc/docs/www/petsc.cit
+petsc/docs/www/sec
 petsc/bmake/sun4_local
 petsc/include/finclude/generateincludes
 petsc/include/finclude/RCS
