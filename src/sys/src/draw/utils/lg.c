@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.42 1997/05/07 01:45:51 balay Exp balay $";
+static char vcid[] = "$Id: lg.c,v 1.43 1997/05/23 16:41:39 balay Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -59,8 +59,8 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
   lg->ymin    = 1.e20;
   lg->xmax    = -1.e20;
   lg->ymax    = -1.e20;
-  lg->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));
-                CHKPTRQ(lg->x);
+  lg->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(lg->x);
+  PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(double));
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
@@ -90,8 +90,8 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 
   PetscFree(lg->x);
   lg->dim = dim;
-  lg->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));
-                CHKPTRQ(lg->x);
+  lg->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(lg->x);
+  PLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(double));
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   return 0;
@@ -168,8 +168,8 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     double *tmpx,*tmpy;
-    tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(double));
-    CHKPTRQ(tmpx);
+    tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(double));CHKPTRQ(tmpx);
+    PLogObjectMemory(lg,2*lg->dim*CHUNCKSIZE*sizeof(double));
     tmpy = tmpx + lg->len + lg->dim*CHUNCKSIZE;
     PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));
     PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));
@@ -235,14 +235,14 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
     double *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
     if (n > chunk) chunk = n;
-    tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*chunk)*sizeof(double));
-    CHKPTRQ(tmpx);
+    tmpx = (double *) PetscMalloc((2*lg->len+2*lg->dim*chunk)*sizeof(double));CHKPTRQ(tmpx);
+    PLogObjectMemory(lg,2*lg->dim*chunk*sizeof(double));
     tmpy = tmpx + lg->len + lg->dim*chunk;
     PetscMemcpy(tmpx,lg->x,lg->len*sizeof(double));
     PetscMemcpy(tmpy,lg->y,lg->len*sizeof(double));
     PetscFree(lg->x);
-    lg->x = tmpx; lg->y = tmpy;
-    lg->len += lg->dim*CHUNCKSIZE;
+    lg->x    = tmpx; lg->y = tmpy;
+    lg->len += lg->dim*chunk;
   }
   for (j=0; j<lg->dim; j++) {
     x = xx[j]; y = yy[j];

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.58 1997/05/20 02:48:49 bsmith Exp balay $";
+static char vcid[] = "$Id: da3.c,v 1.59 1997/05/23 16:17:59 balay Exp bsmith $";
 #endif
 
 /*
@@ -1760,6 +1760,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   ldim = x*y*z;
   ierr = VecGetSize(global,&gdim); CHKERRQ(ierr);
   da->gtog1 = (int *)PetscMalloc(gdim*sizeof(int)); CHKPTRQ(da->gtog1);
+  PLogObjectMemory(da,gdim*sizeof(int));
   gA        = (int *)PetscMalloc((2*(gdim+ldim))*sizeof(int)); CHKPTRQ(gA);
   gB        = (int *)(gA + ldim);
   gAall     = (int *)(gB + ldim);

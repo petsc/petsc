@@ -13,6 +13,10 @@ FC_LIB         = -L/opt/SUNWspro/SC4.0/lib -lF77 -lM77 -lsunmath
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
+# If your machine has the file /opt/SUNWspro/SC4.0/lib/libsunperf.a you 
+# can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
+# installing BLAS and LAPACK yourself.
+#
 BLAS_LIB       =  /home/bsmith/lapack/blas_solaris.a  $(FC_LIB)
 LAPACK_LIB     =  /home/bsmith/lapack/lapack_solaris.a
 #

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.37 1997/02/22 02:27:05 bsmith Exp balay $";
+static char vcid[] = "$Id: draw.c,v 1.38 1997/05/23 16:31:12 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -58,6 +58,7 @@ int DrawSetTitle(Draw draw,char *title)
   if (title) {
     int len = PetscStrlen(title);
     draw->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->title);
+    PLogObjectMemory(draw,(len+1)*sizeof(char*))
     PetscStrcpy(draw->title,title);
   } else {
     draw->title = 0;
@@ -87,6 +88,7 @@ int DrawAppendTitle(Draw draw,char *title)
   if (draw->title) {
     int len  = PetscStrlen(title) + PetscStrlen(draw->title);
     newtitle = (char *) PetscMalloc( (len + 1)*sizeof(char*) );CHKPTRQ(newtitle);
+    PLogObjectMemory(draw,(len+1)*sizeof(char*));
     PetscStrcpy(newtitle,draw->title);
     PetscStrcat(newtitle,title);
     PetscFree(draw->title);
@@ -94,6 +96,7 @@ int DrawAppendTitle(Draw draw,char *title)
   } else {
     int len     = PetscStrlen(title);
     draw->title = (char *) PetscMalloc((len + 1)*sizeof(char*));CHKPTRQ(draw->title);
+    PLogObjectMemory(draw,(len+1)*sizeof(char*));
     PetscStrcpy(draw->title,title);
   }
   if (draw->ops.settitle) return (*draw->ops.settitle)(draw,draw->title);

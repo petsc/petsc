@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.17 1997/05/23 16:05:21 balay Exp balay $";
+static char vcid[] = "$Id: aodebug.c,v 1.18 1997/05/23 16:08:21 balay Exp bsmith $";
 #endif
 
 /*
@@ -148,6 +148,7 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 
   /* generate a list of application and PETSc node numbers */
   aodebug->app = (int *) PetscMalloc(2*N*sizeof(int));CHKPTRQ(aodebug->app);
+  PLogObjectMemory(ao,2*N*sizeof(int));
   aodebug->petsc = aodebug->app + N;
   PetscMemzero(aodebug->app,2*N*sizeof(int));
   for ( i=0; i<N; i++ ) {

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.155 1997/04/04 14:22:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.156 1997/05/03 15:32:14 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -448,7 +448,7 @@ static Objects *objects = 0;
 static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
 static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
 /* make sure the 50 below is larger then any cookie - PETSC_COOKIE */
-static PLogDouble  ObjectsType[50][4];
+static PLogDouble  ObjectsType[10][50][4];
 
 static int     EventsStage = 0;    /* which log sessions are we using */
 static int     EventsStageMax = 0; /* highest event log used */ 
@@ -643,7 +643,7 @@ int PLogDefaultPHC(PetscObject obj)
   PetscMemzero(objects[nobjects].string,64*sizeof(char));
   PetscMemzero(objects[nobjects].name,16*sizeof(char));
   obj->id = nobjects++;
-  ObjectsType[obj->cookie - PETSC_COOKIE-1][0]++;
+  ObjectsType[EventsStage][obj->cookie - PETSC_COOKIE-1][0]++;
   return 0;
 }
 /*
@@ -678,8 +678,8 @@ int PLogDefaultPHD(PetscObject obj)
   if (obj->name) { PetscStrncpy(objects[obj->id].name,obj->name,16);}
   objects[obj->id].obj      = 0;
   objects[obj->id].mem      = obj->mem;
-  ObjectsType[obj->cookie - PETSC_COOKIE-1][1]++;
-  ObjectsType[obj->cookie - PETSC_COOKIE-1][2] += obj->mem;
+  ObjectsType[EventsStage][obj->cookie - PETSC_COOKIE-1][1]++;
+  ObjectsType[EventsStage][obj->cookie - PETSC_COOKIE-1][2] += obj->mem;
   /*
      Credit all ancestors with your memory 
   */
@@ -688,7 +688,7 @@ int PLogDefaultPHD(PetscObject obj)
     int exists;
     PetscObjectExists(parent,&exists);
     if (!exists) break;
-    ObjectsType[parent->cookie - PETSC_COOKIE-1][3] += obj->mem;   
+    ObjectsType[EventsStage][parent->cookie - PETSC_COOKIE-1][3] += obj->mem;   
     parent = parent->parent;
   } 
   ObjectsDestroyed++;
@@ -1509,13 +1509,21 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
   /* loop over objects looking for interesting ones */
   PetscFPrintf(comm,fd,"Object Type      Creations   Destructions   Memory  Descendants' Mem.\n");
-  for ( i=0; i<50; i++ ) {
-    if (ObjectsType[i][0]) {
-      PetscFPrintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
-          ObjectsType[i][0],(int)ObjectsType[i][1],(int)ObjectsType[i][2],
-          ObjectsType[i][3]);
+  for ( j=0; j<=EventsStageMax; j++ ) {
+    if (EventsStageMax) {
+      if (EventsStageName[j]) {
+        PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);
+      } else {
+        PetscFPrintf(comm,fd,"\n--- Event Stage %d:\n\n",j);
+      }
     }
-
+    for ( i=0; i<50; i++ ) {
+      if (ObjectsType[j][i][0]) {
+        PetscFPrintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
+            ObjectsType[j][i][0],(int)ObjectsType[j][i][1],(int)ObjectsType[j][i][2],
+            ObjectsType[j][i][3]);
+      }
+    }
   }
   PetscFPrintf(comm,fd,"\n");
   if (filename && !rank) fclose(fd);

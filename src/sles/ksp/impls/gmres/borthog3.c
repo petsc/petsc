@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog3.c,v 1.3 1997/03/01 15:44:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog3.c,v 1.4 1997/03/09 17:57:21 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -77,7 +77,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
   } while (dnorm > 1.0e-16 && ncnt++ < it);
 
   /* It would be nice to put ncnt somewhere.... */
-  PLogInfo(ksp,"KSPGMRESIROrthogonalization: Number of iterative refinement steps\n",ncnt);
+  PLogInfo(ksp,"KSPGMRESIROrthogonalization: Number of iterative refinement steps %d\n",ncnt);
 
   if (it >= 20) PetscFree( lhh );
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);

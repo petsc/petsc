@@ -22,7 +22,7 @@ CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
 
 include $(PETSC_DIR)/bmake/common
 
-libc: $(LIBNAME)($(OBJSC))
+libc: $(LIBNAME)($(OBJSC) $(SOBJSC))
 libadic: $(LIBNAME)($(OBJSADIC))
 libf: $(LIBNAME)($(OBJSF))
 

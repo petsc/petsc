@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.79 1997/05/07 01:46:15 balay Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.80 1997/05/23 16:18:09 balay Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -830,10 +830,12 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ldim = x*y;
   ierr = VecGetSize(global,&gdim); CHKERRQ(ierr);
   da->gtog1 = (int *)PetscMalloc(gdim*sizeof(int)); CHKPTRQ(da->gtog1);
+  PLogObjectMemory(da,gdim*sizeof(int));
   gA        = (int *)PetscMalloc((2*(gdim+ldim))*sizeof(int)); CHKPTRQ(gA);
   gB        = (int *)(gA + ldim);
   gAall     = (int *)(gB + ldim);
   gBall     = (int *)(gAall + gdim);
+
   /* Compute local parts of global orderings */
   ict = 0;
   for (j=ys; j<ye; j++) {

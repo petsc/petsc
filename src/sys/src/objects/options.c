@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.130 1997/04/10 00:01:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.131 1997/05/28 23:19:41 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -442,16 +442,26 @@ $      utility Upshot/Nupshot (in MPICH distribution)
 @*/
 int PetscFinalize()
 {
-  int  ierr,i,rank = 0,flg1,flg2,flg3;
+  int        ierr,i,rank = 0,flg1,flg2,flg3;
+  PLogDouble rss;
 
   if (!PetscInitializedCalled) {
     fprintf(stderr,"PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
     return 0;
   }
 
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+
   ViewerDestroy_Private();
   ViewerDestroyDrawX_Private();
   ViewerDestroyMatlab_Private();
+
+  ierr = OptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
+    fprintf(stderr,"[%d] Size of entire process memory %d\n",rank,(int)rss);
+  }
+
 #if defined(PETSC_LOG)
   {
     char mname[64];
@@ -487,7 +497,6 @@ int PetscFinalize()
     ierr = PetscMPIDump(stdout); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   ierr = OptionsHasName(PETSC_NULL,"-optionstable",&flg1); CHKERRQ(ierr);
   if (flg1) {
     if (!rank) OptionsPrint(stdout);
@@ -520,7 +529,9 @@ int PetscFinalize()
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
+#if defined(PETSC_LOG)
   PLogEventRegisterDestroy_Private();
+#endif
   OptionsDestroy_Private();
   NRDestroyAll(); 
   /*

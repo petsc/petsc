@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.22 1997/05/03 15:31:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: beuler.c,v 1.23 1997/05/30 20:31:04 curfman Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -396,6 +396,7 @@ int TSCreate_BEuler(TS ts )
   } else SETERRQ(1,0,"No such problem");
 
   beuler   = PetscNew(TS_BEuler); CHKPTRQ(beuler);
+  PLogObjectMemory(ts,sizeof(TS_BEuler));
   PetscMemzero(beuler,sizeof(TS_BEuler));
   ts->data = (void *) beuler;
 

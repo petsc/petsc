@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.30 1997/02/03 05:57:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.31 1997/02/22 02:24:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -88,6 +88,8 @@ int PCCreate_Shell(PC pc)
 
   pc->destroy    = PCDestroy_Shell;
   shell          = PetscNew(PC_Shell); CHKPTRQ(shell);
+  PLogObjectMemory(pc,sizeof(PC_Shell));
+
   pc->data       = (void *) shell;
   pc->apply      = PCApply_Shell;
   pc->applyrich  = 0;

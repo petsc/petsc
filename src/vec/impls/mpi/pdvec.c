@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.73 1997/03/26 01:34:30 bsmith Exp balay $ */
+/* $Id: pdvec.c,v 1.74 1997/04/05 00:39:20 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -522,10 +522,8 @@ int VecAssemblyBegin_MPI(Vec xin)
      this is a lot of wasted space.
        This could be done better.
   */
-  rvalues = (Scalar *) PetscMalloc(2*(nreceives+1)*(nmax+1)*sizeof(Scalar));
-  CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));
-  CHKPTRQ(recv_waits);
+  rvalues = (Scalar *) PetscMalloc(2*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
+  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
     MPI_Irecv(rvalues+2*nmax*i,2*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
@@ -536,8 +534,7 @@ int VecAssemblyBegin_MPI(Vec xin)
          the ith processor
   */
   svalues = (Scalar *) PetscMalloc(2*(x->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));
-  CHKPTRQ(send_waits);
+  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
   starts = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
@@ -607,8 +604,7 @@ int VecAssemblyEnd_MPI(Vec vec)
  
   /* wait on sends */
   if (x->nsends) {
-    send_status = (MPI_Status *) PetscMalloc( x->nsends*sizeof(MPI_Status) );
-    CHKPTRQ(send_status);
+    send_status = (MPI_Status *) PetscMalloc(x->nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     MPI_Waitall(x->nsends,x->send_waits,send_status);
     PetscFree(send_status);
   }

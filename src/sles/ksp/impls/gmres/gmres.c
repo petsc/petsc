@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.81 1997/03/13 03:43:49 curfman Exp balay $";
+static char vcid[] = "$Id: gmres.c,v 1.82 1997/03/25 23:59:09 balay Exp bsmith $";
 #endif
 
 /*
@@ -94,28 +94,26 @@ int    KSPSetUp_GMRES(KSP ksp )
     size = (max_k + 3)*(max_k + 9)*sizeof(Scalar);
     gmres->Rsvd = (Scalar *) PetscMalloc(size);CHKPTRQ(gmres->Rsvd);
     gmres->Dsvd = (double *) PetscMalloc(5*(max_k+2)*sizeof(double));CHKPTRQ(gmres->Dsvd);
+    PLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(double));
   }
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  gmres->vecs = (Vec *) PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));
-  CHKPTRQ(gmres->vecs);
+  gmres->vecs = (Vec *) PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(gmres->vecs);
   gmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  gmres->user_work = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));
-  CHKPTRQ(gmres->user_work);
-  gmres->mwork_alloc = (int *) PetscMalloc( (VEC_OFFSET+2+max_k)*sizeof(int) );
-  CHKPTRQ(gmres->mwork_alloc);
+  gmres->user_work   = (Vec **)PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *));CHKPTRQ(gmres->user_work);
+  gmres->mwork_alloc = (int *) PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int));CHKPTRQ(gmres->mwork_alloc);
   PLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
 
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
-    ierr = VecDuplicateVecs(VEC_RHS,gmres->vv_allocated,&gmres->user_work[0]);
-    CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(VEC_RHS,gmres->vv_allocated,&gmres->user_work[0]);CHKERRQ(ierr);
     PLogObjectParents(ksp,gmres->vv_allocated,gmres->user_work[0]);
     gmres->mwork_alloc[0] = gmres->vv_allocated;
     gmres->nwork_alloc    = 1;
-    for (k=0; k<gmres->vv_allocated; k++)
-	gmres->vecs[k] = gmres->user_work[0][k];
+    for (k=0; k<gmres->vv_allocated; k++) {
+      gmres->vecs[k] = gmres->user_work[0][k];
+    }
   }
   else {
     gmres->vv_allocated    = 5;
@@ -523,7 +521,7 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
   }
   if (!gmres->nrs) {
     /* allocate the work area */
-    gmres->nrs = (Scalar *)PetscMalloc((unsigned)(gmres->max_k*sizeof(Scalar)));
+    gmres->nrs = (Scalar *)PetscMalloc(gmres->max_k*sizeof(Scalar));
     PLogObjectMemory(ksp,gmres->max_k*sizeof(Scalar));
   }
 

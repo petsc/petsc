@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.93 1997/02/22 02:24:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.94 1997/04/10 00:02:02 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -339,6 +339,7 @@ int PCCreate_BJacobi(PC pc)
   int          rank,size;
   PC_BJacobi   *jac = PetscNew(PC_BJacobi); CHKPTRQ(jac);
 
+  PLogObjectMemory(pc,sizeof(PC_BJacobi));
   MPI_Comm_rank(pc->comm,&rank);
   MPI_Comm_size(pc->comm,&size);
   pc->apply              = 0;
@@ -415,6 +416,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
   }
   else {
     jac->g_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_lens);
+    PLogObjectMemory(pc,blocks*sizeof(int));
     PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
   }
   return 0;
@@ -479,6 +481,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
   }
   else {
     jac->l_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_lens);
+    PLogObjectMemory(pc,blocks*sizeof(int));
     PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
   }
   return 0;

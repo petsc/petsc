@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellcnv.c,v 1.1 1997/01/25 03:29:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellcnv.c,v 1.2 1997/01/27 18:16:47 bsmith Exp bsmith $";
 #endif
 
 
@@ -42,7 +42,6 @@ int MatConvert_Shell(Mat oldmat,MatType newtype, Mat *mat)
   }
 
   for ( i=0; i<M; i++ ) {
-
     ierr = VecSet(&zero,in); CHKERRQ(ierr);
     ierr = VecSetValues(in,1,&i,&one,INSERT_VALUES); CHKERRQ(ierr);
     ierr = VecAssemblyBegin(in); CHKERRQ(ierr);

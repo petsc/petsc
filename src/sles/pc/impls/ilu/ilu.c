@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.87 1997/04/03 18:19:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.88 1997/05/28 23:20:09 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -422,6 +422,8 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 int PCCreate_ILU(PC pc)
 {
   PC_ILU           *ilu = PetscNew(PC_ILU); CHKPTRQ(ilu);
+  PLogObjectMemory(pc,sizeof(PC_ILU));
+
   ilu->fact             = 0;
   ilu->levels           = 0;
   ilu->fill             = 1.0;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.78 1997/04/10 15:40:43 balay Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.79 1997/05/23 18:34:32 balay Exp bsmith $";
 #endif
 
 /*
@@ -77,7 +77,7 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int nghost,int N,int size,in
   mem           = sizeof(Vec_MPI)+(size+1)*sizeof(int);
   PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECMPI,comm);
   PLogObjectCreate(v);
-  PLogObjectMemory(v,mem + sizeof(struct _p_Vec) + (n+1)*sizeof(Scalar));
+  PLogObjectMemory(v,mem + sizeof(struct _p_Vec) + (nghost+1)*sizeof(Scalar));
   s              = (Vec_MPI *) PetscMalloc(mem); CHKPTRQ(s);
   PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
@@ -110,8 +110,7 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int nghost,int N,int size,in
   s->stash.donotstash = 0;
   s->stash.nmax       = 10;
   s->stash.n          = 0;
-  s->stash.array      = (Scalar *) PetscMalloc(10*(sizeof(Scalar)+sizeof(int)));
-  CHKPTRQ(s->stash.array);
+  s->stash.array      = (Scalar *) PetscMalloc(10*(sizeof(Scalar)+sizeof(int)));CHKPTRQ(s->stash.array);
   PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
   s->stash.idx = (int *) (s->stash.array + 10);
   *vv = v;

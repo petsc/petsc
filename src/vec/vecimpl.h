@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.37 1997/05/23 18:35:48 balay Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.38 1997/05/28 23:19:09 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -45,11 +45,12 @@ struct _VeOps {
 };
 
 struct _p_Vec {
-  PETSCHEADER                              /* general PETSc header */
-  struct _VeOps          ops;              /* vector operations */
-  void                   *data;            /* implementation-specific data */
-  int                    N, n;             /* global, local vector size */
-  ISLocalToGlobalMapping mapping;          /* mapping used in VecSetValuesLocal() */
+  PETSCHEADER                       /* general PETSc header */
+  struct _VeOps          ops;       /* vector operations */
+  void                   *data;     /* implementation-specific data */
+  int                    N, n;      /* global, local vector size */
+  ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
+  ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
 };
 
 /*

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.19 1997/02/22 02:25:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.20 1997/04/10 00:03:16 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,8 +20,8 @@ int MatOrder_QMD(Mat mat, MatReordering type, IS *row, IS *col)
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
   if (!done) SETERRQ(1,0,"Cannot get rows for matrix");
 
-  perm = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(perm);
-  iperm = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(iperm);
+  perm   = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(perm);
+  iperm  = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(iperm);
   deg    = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(deg);
   marker = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(marker);
   rchset = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(rchset);

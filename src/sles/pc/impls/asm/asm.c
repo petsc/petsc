@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.60 1997/04/22 14:35:15 curfman Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.61 1997/04/24 15:19:52 curfman Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -327,6 +327,7 @@ int PCCreate_ASM(PC pc)
 {
   PC_ASM *osm = PetscNew(PC_ASM); CHKPTRQ(osm);
 
+  PLogObjectMemory(pc,sizeof(PC_ASM));
   PetscMemzero(osm,sizeof(PC_ASM)); 
   osm->n                 = PETSC_DECIDE;
   osm->n_local_true      = PETSC_DECIDE;

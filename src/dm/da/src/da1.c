@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.62 1997/05/23 16:10:38 balay Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.63 1997/05/23 16:18:15 balay Exp bsmith $";
 #endif
 
 /* 
@@ -325,6 +325,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
    */
   ierr = VecGetSize(global,&gdim); CHKERRQ(ierr);
   da->gtog1 = (int *)PetscMalloc(gdim*sizeof(int)); CHKPTRQ(da->gtog1);
+  PLogObjectMemory(da,gdim*sizeof(int));
   for (i=0; i<gdim; i++) da->gtog1[i] = i;
 
   /* Create discrete function shell and associate with vectors in DA */

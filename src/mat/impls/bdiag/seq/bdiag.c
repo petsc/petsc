@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.135 1997/05/03 21:10:27 curfman Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.136 1997/05/23 18:37:49 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1764,9 +1764,6 @@ int MatDestroy_SeqBDiag(PetscObject obj)
   PetscFree(a->colloc);
   PetscFree(a->dvalue);
   PetscFree(a);
-  if (A->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(A->mapping); CHKERRQ(ierr);
-  }
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
   return 0;

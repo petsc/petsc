@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.90 1997/04/12 19:13:24 balay Exp balay $";
+static char vcid[] = "$Id: itcl.c,v 1.91 1997/04/12 19:21:01 balay Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -170,23 +170,30 @@ int KSPSetFromOptions(KSP ksp)
   if (flg) { KSPSetPreconditionerSide(ksp,PC_RIGHT); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_symmetric_pc",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetPreconditionerSide(ksp,PC_SYMMETRIC); }
+
   ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg); CHKERRQ(ierr);
   if (flg) { KSPGMRESSetRestart(ksp,restart); }
+
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ksp, 
              KSPGMRESUnmodifiedGramSchmidtOrthogonalization ); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_dgksorthog",&flg);CHKERRQ(ierr);
+  if (flg) { KSPGMRESSetOrthogonalization(ksp, KSPGMRESDGKSOrthogonalization);}
+
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_singularvalues",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetComputeSingularValues(ksp); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flg);CHKERRQ(ierr);
   if (flg) { KSPSetComputeSingularValues(ksp); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flg);CHKERRQ(ierr);
   if (flg) { KSPSetComputeSingularValues(ksp); }
+
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
   if (flg) { KSPCGSetType(ksp,KSP_CG_HERMITIAN); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
   if (flg) { KSPCGSetType(ksp,KSP_CG_SYMMETRIC); }
+
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_richardson_scale",&tmp,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp); CHKERRQ(ierr); }
 

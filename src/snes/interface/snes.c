@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.121 1997/04/12 19:22:21 balay Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.122 1997/05/23 18:35:37 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -596,6 +596,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   kctx = PetscNew(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
+  PLogObjectMemory(snes,sizeof(SNES_KSP_EW_ConvCtx));
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
   kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but 

@@ -1,5 +1,9 @@
 PARCH    = solaris
-CC       = cc -DPARCH_solaris -KPIC
+#
+#  If you are using gcc or an old version cc you may need to remove the
+#  -dalign -xtarget=native from below.
+#
+CC       = cc -DPARCH_solaris -KPIC -dalign -xtarget=native
 FC       = f77
 AR       = ar
 RM       = rm -f

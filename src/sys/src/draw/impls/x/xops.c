@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.82 1997/05/23 16:30:58 balay Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.83 1997/05/23 18:34:36 balay Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -434,7 +434,14 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
 {
   Display *display;
   display = XOpenDisplay( name );
-  if (!display) { *width = 0; *height = 0; return 1;}
+  if (!display) {
+    *width  = 0; 
+    *height = 0; 
+    fprintf(stderr,"Unable to open display on %s\n",name);
+    SETERRQ(1,0,"Could not open display: make sure your DISPLAY variable\n\
+    is set, or you use the -display name option and xhost + has been\n\
+    run on your displaying machine.\n" );
+  }
 
   *width  = DisplayWidth(display,0);
   *height = DisplayHeight(display,0);
@@ -566,6 +573,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   if (title) {
     int len = PetscStrlen(title);
     ctx->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(ctx->title);
+    PLogObjectMemory(ctx,(len+1)*sizeof(char*));
     PetscStrcpy(ctx->title,title);
   } else {
     ctx->title = 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dscatter.c,v 1.8 1997/05/07 01:45:55 balay Exp balay $";
+static char vcid[] = "$Id: dscatter.c,v 1.9 1997/05/23 16:41:44 balay Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -58,6 +58,7 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
   sp->xmax    = -1.e20;
   sp->ymax    = -1.e20;
   sp->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double));CHKPTRQ(sp->x);
+  PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(double));
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   sp->loc     = 0;
@@ -87,6 +88,7 @@ int DrawSPSetDimension(DrawSP sp,int dim)
   PetscFree(sp->x);
   sp->dim     = dim;
   sp->x       = (double *)PetscMalloc(2*dim*CHUNCKSIZE*sizeof(double)); CHKPTRQ(sp->x);
+  PLogObjectMemory(sp,2*dim*CHUNCKSIZE*sizeof(double));
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   return 0;
@@ -163,6 +165,7 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     double *tmpx,*tmpy;
     tmpx = (double *) PetscMalloc((2*sp->len+2*sp->dim*CHUNCKSIZE)*sizeof(double));CHKPTRQ(tmpx);
+    PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(double));
     tmpy = tmpx + sp->len + sp->dim*CHUNCKSIZE;
     PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));
     PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));
@@ -211,13 +214,13 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
     double *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
     if (n > chunk) chunk = n;
-    tmpx = (double *) PetscMalloc((2*sp->len+2*sp->dim*chunk)*sizeof(double));
-    CHKPTRQ(tmpx);
+    tmpx = (double *) PetscMalloc((2*sp->len+2*sp->dim*chunk)*sizeof(double));CHKPTRQ(tmpx);
+    PLogObjectMemory(sp,2*sp->dim*CHUNCKSIZE*sizeof(double));
     tmpy = tmpx + sp->len + sp->dim*chunk;
     PetscMemcpy(tmpx,sp->x,sp->len*sizeof(double));
     PetscMemcpy(tmpy,sp->y,sp->len*sizeof(double));
     PetscFree(sp->x);
-    sp->x = tmpx; sp->y = tmpy;
+    sp->x   = tmpx; sp->y = tmpy;
     sp->len += sp->dim*CHUNCKSIZE;
   }
   for (j=0; j<sp->dim; j++) {

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.90 1997/05/28 01:42:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.91 1997/05/28 20:29:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -43,10 +43,16 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     }
     else {
       if (scat->work1) xvt = scat->work1; 
-      else {scat->work1 = xvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt);}
+      else {
+        scat->work1 = xvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt);
+        PLogObjectMemory(ctx,size*sizeof(Scalar));
+      }
       if (!yy->rank) { /* I am the zeroth processor, values are accumulated here */
         if   (scat->work2) xvt2 = scat->work2; 
-        else {scat->work2 = xvt2 = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt2);}
+        else {
+          scat->work2 = xvt2 = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt2);
+          PLogObjectMemory(ctx,size*sizeof(Scalar));
+        }
         MPI_Gatherv(yv,yy->n,MPIU_SCALAR,xvt2,scat->count,yy->ownership,MPIU_SCALAR,0,ctx->comm);
 #if defined(PETSC_COMPLEX)
         MPI_Reduce(xv, xvt, 2*size, MPI_DOUBLE, MPI_SUM, 0, ctx->comm);
@@ -81,7 +87,10 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     }
     else {
       if (scat->work1) yvt = scat->work1; 
-      else {scat->work1 = yvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(yvt);}
+      else {
+        scat->work1 = yvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(yvt);
+        PLogObjectMemory(ctx,size*sizeof(Scalar));
+      }
       MPI_Allgatherv(xv,xx->n,MPIU_SCALAR,yvt,scat->count,xx->ownership,MPIU_SCALAR,ctx->comm);
       for ( i=0; i<size; i++ ) {
 	yv[i] += yvt[i];
@@ -452,7 +461,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
       len               = sizeof(VecScatter_Seq_General) + nx*sizeof(int);
       to                = (VecScatter_Seq_General *) PetscMalloc(len); CHKPTRQ(to)
-      PLogObjectMemory(ctx,len);
+      PLogObjectMemory(ctx,2*len);
       to->slots         = (int *) (to + 1); 
       to->n             = nx; 
       PetscMemcpy(to->slots,idy,nx*sizeof(int));

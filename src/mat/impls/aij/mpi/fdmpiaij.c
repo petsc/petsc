@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: fdmpiaij.c,v 1.7 1997/01/06 20:24:32 balay Exp bsmith $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.8 1997/02/22 02:25:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -30,6 +30,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   c->nrows         = (int *) PetscMalloc( nis*sizeof(int) );   CHKPTRQ(c->nrows);
   c->rows          = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->rows);
   c->columnsforrow = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->columnsforrow);
+  PLogObjectMemory(c,5*nis*sizeof(int));
 
   /* Allow access to data structures of local part of matrix */
   if (!aij->colmap) {
@@ -61,6 +62,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     c->ncolumns[i] = n;
     if (n) {
       c->columns[i]  = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(c->columns[i]);
+      PLogObjectMemory(c,n*sizeof(int));
       PetscMemcpy(c->columns[i],is,n*sizeof(int)); 
     } else {
       c->columns[i]  = 0;
@@ -127,6 +129,7 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
       c->nrows[i]         = nrows;
       c->rows[i]          = (int *) PetscMalloc((nrows+1)*sizeof(int)); CHKPTRQ(c->rows[i]);
       c->columnsforrow[i] = (int *) PetscMalloc((nrows+1)*sizeof(int)); CHKPTRQ(c->columnsforrow[i]);
+      PLogObjectMemory(c,2*(nrows+1)*sizeof(int));
       nrows = 0;
       for ( j=0; j<M; j++ ) {
         if (rowhit[j]) {
@@ -182,6 +185,7 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
       c->nrows[i]         = nrows;
       c->rows[i]          = (int *)PetscMalloc((nrows+1)*sizeof(int));CHKPTRQ(c->rows[i]);
       c->columnsforrow[i] = (int *)PetscMalloc((nrows+1)*sizeof(int));CHKPTRQ(c->columnsforrow[i]);
+      PLogObjectMemory(c,(nrows+1)*sizeof(int));
       /* now store the linked list of rows into c->rows[i] */
       nrows = 0;
       fm    = rowhit[M];
@@ -200,6 +204,7 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
   ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done); CHKERRQ(ierr); 
 
   c->scale  = (Scalar *) PetscMalloc( 2*mat->N*sizeof(Scalar) ); CHKPTRQ(c->scale);
+  PLogObjectMemory(c,2*mat->N*sizeof(Scalar));
   c->wscale = c->scale + mat->N;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.102 1997/05/23 18:38:09 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.103 1997/06/03 20:26:37 balay Exp bsmith $";
 #endif
 
 /*
@@ -808,7 +808,6 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
 {
   Mat         A  = (Mat) obj;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
@@ -821,9 +820,6 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
   if (a->solve_work) PetscFree(a->solve_work);
   if (a->mult_work) PetscFree(a->mult_work);
   PetscFree(a); 
-  if (A->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(A->mapping); CHKERRQ(ierr);
-  }
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
   return 0;
@@ -1842,7 +1838,10 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   a->row        = row;
   a->col        = col;
 
-  a->solve_work = (Scalar *) PetscMalloc((a->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);
+  if (!a->solve_work) {
+    a->solve_work = (Scalar *) PetscMalloc((a->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);
+    PLogObjectMemory(inA,(a->m+a->bs)*sizeof(Scalar));
+  }
 
   if (!a->diag) {
     ierr = MatMarkDiag_SeqBAIJ(inA); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.58 1997/01/06 20:23:49 balay Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.59 1997/02/22 02:24:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -218,6 +218,8 @@ static int PCSetUp_Eisenstat(PC pc)
 int PCCreate_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = PetscNew(PC_Eisenstat); CHKPTRQ(eis);
+  PLogObjectMemory(pc,sizeof(PC_Eisenstat));
+
   pc->apply         = PCApply_Eisenstat;
   pc->presolve      = PCPre_Eisenstat;
   pc->postsolve     = PCPost_Eisenstat;
