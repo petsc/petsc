@@ -59,7 +59,7 @@ class Configure(config.base.Configure):
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
-    if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40, c1 = 0x80, c2 = 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
+    if not self.checkRun('#include <string.h>\nvoid exit(int);\n\n', 'char c0 = 0x40;\nchar c1 = (char) 0x80;\nchar c2 = (char) 0x81;\nexit(memcmp(&c0, &c2, 1) < 0 && memcmp(&c1, &c2, 1) < 0 ? 0 : 1);\n'):
       raise RuntimeError('Failed to find 8-bit clean memcmp()')
     return
 
