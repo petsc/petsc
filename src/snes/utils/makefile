@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2000/08/17 04:52:55 bsmith Exp bsmith $
+# $Id: makefile,v 1.4 2001/06/21 21:18:57 bsmith Exp balay $
 
 ALL: lib
 
@@ -15,6 +15,6 @@ DIRS     =
 EDIRS    = 
 LOCDIR   = src/snes/utils/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 

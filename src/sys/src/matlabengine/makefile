@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.5 2000/10/24 20:24:43 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.6 2001/02/25 04:38:55 bsmith Exp balay $ 
 
 #requirespackage  'PETSC_HAVE_MATLAB_ENGINE'
 #requiresscalar real 
@@ -18,7 +18,7 @@ LIBBASE	  = libpetsc
 LOCDIR	  = src/sys/src/objects/matlabengine/
 DIRS      = examples
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 

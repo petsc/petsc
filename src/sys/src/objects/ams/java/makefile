@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.22 2001/08/09 18:09:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.23 2001/08/10 03:29:05 bsmith Exp balay $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
 
@@ -22,8 +22,8 @@ LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/objects/ams/java/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 TCLASSPATH    = ".:./AMSBean"
 PETSCBINPATH  = ${PETSC_DIR}

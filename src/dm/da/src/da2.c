@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.177 2001/08/07 03:04:39 balay Exp bsmith $*/
+/*$Id: da2.c,v 1.178 2001/08/21 21:04:33 bsmith Exp balay $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1725,7 +1725,7 @@ int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 {
   PetscFunctionBegin;
-  SETERRQ(1,"Must compile with base.site flag PETSC_HAVE_ADIC for this routine");
+  SETERRQ(1,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
 }
 
 #undef __FUNCT__
@@ -1733,7 +1733,7 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 {
   PetscFunctionBegin;
-  SETERRQ(1,"Must compile with base.site flag PETSC_HAVE_ADIC for this routine");
+  SETERRQ(1,"Must compile with bmake/PETSC_ARCH/packages flag PETSC_HAVE_ADIC for this routine");
 }
 
 #endif

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.29 2000/08/17 04:52:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.30 2000/11/28 17:30:10 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -7,5 +7,5 @@ DIRS     = interface impls  examples
 LOCDIR   = src/sles/pc/
 MANSEC   = PC
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.18 2000/08/17 04:53:33 bsmith Exp balay $ 
+# $Id: makefile,v 1.19 2001/03/29 16:37:03 balay Exp balay $ 
 
 #requiresscalar real
 
@@ -22,7 +22,7 @@ LOCDIR           = src/contrib/fun3d/
 EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
 #
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include $(PETSC_DIR)/bmake/common/base
 
 flow: flow.o $(OBJSF) chkopts
 	-$(CLINKER) -o flow flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
@@ -45,11 +45,7 @@ runflow64:
 
 TESTEXAMPLES_3	 = flow.PETSc runflow1 runflow4 flow.rm
 
-include $(PETSC_DIR)/bmake/common_test
-
-
-
-
+include $(PETSC_DIR)/bmake/common/test
 
 
 

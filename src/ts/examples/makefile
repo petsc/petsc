@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.10 1999/02/03 04:31:47 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.11 2000/08/17 04:53:03 bsmith Exp balay $ 
 
 ALL:
 
 LOCDIR	 = src/ts/examples/
 DIRS	 = tests tutorials
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1999/03/31 18:42:31 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2000/08/17 04:52:15 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -14,5 +14,5 @@ DIRS     =
 MANSEC   = PC
 LOCDIR   = src/sles/pc/impls/redundant/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

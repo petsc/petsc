@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 2000/08/17 04:52:01 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.20 2001/03/13 04:06:39 bsmith Exp balay $ 
 #
 #  All the Minpack coloring routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -25,5 +25,5 @@ MANSEC   = MatOrderings
 
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.36 1999/02/02 21:29:16 balay Exp bsmith $
+# $Id: makefile,v 1.37 2000/08/17 04:52:25 bsmith Exp balay $
 
 ALL: lib 
 
@@ -13,5 +13,5 @@ LIBBASE  = libpetscsles
 MANSEC   = KSP
 LOCDIR   = src/sles/ksp/impls/cg/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.4 2001/03/29 17:10:07 buschelm Exp balay $ 
+# $Id: variables,v 1.5 2001/05/10 20:32:00 balay Exp balay $ 
 #
 # Regular petsc-makefile variables
 #
@@ -69,7 +69,6 @@ OCOMP_PETSCFLAGS = -DPETSC_USE_DEBUG -DPETSC_USE_BOPT_O -DPETSC_USE_LOG -DPETSC_
 
 PARCH    = nt
 
-include ${PETSC_DIR}/bmake/common_variables
 ################################################################
 # Notes:
 #	MDd Multithread-DLL-debug (libraries)

@@ -1,4 +1,4 @@
-/*$Id: zpetsc.h,v 1.63 2001/08/06 21:19:11 bsmith Exp balay $*/
+/*$Id: zpetsc.h,v 1.64 2001/08/10 16:50:40 balay Exp balay $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
@@ -73,7 +73,7 @@ Fortran.
 #define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
 
 #elif (PETSC_SIZEOF_VOIDP == 8)
-#error "Use Either of the following flags in the variable MPI_INCLUDE in base.site file: \
+#error "Use Either of the following flags in the variable MPI_INCLUDE in bmake/PETSC_ARCH/packages file: \
 -DPETSC_HAVE_INT_MPI_COMM, -DPETSC_HAVE_MPI_COMM_F2C"
 
 #else

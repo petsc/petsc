@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.40 1999/01/31 16:04:46 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.41 2000/08/17 04:50:24 bsmith Exp balay $ 
 
 
 
@@ -7,5 +7,5 @@ LIBBASE	 = libpetscvec
 DIRS	 = tutorials tests
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

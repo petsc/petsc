@@ -1,10 +1,4 @@
-# $Id: base,v 1.69 2001/04/05 21:05:54 balay Exp bsmith $ 
-#
-#     See the file bmake/base_variables.defs for a complete explanation of all these fields
-#
-
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
-include ${PETSC_DIR}/bmake/common
+# $Id: rules,v 1.70 2001/06/21 21:14:27 bsmith Exp balay $ 
 
 libc:
 	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} LIBNAME=${LIBNAME} libmember LIBMEMBER=$$i ; done

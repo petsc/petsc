@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.22 1999/02/03 04:29:46 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.23 2000/08/17 04:51:25 bsmith Exp balay $ 
 
 ALL: lib
 
 DIRS     = seq mpi
 LOCDIR   = src/mat/impls/dense/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

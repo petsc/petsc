@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 1999/07/16 14:19:41 balay Exp bsmith $
+# $Id: makefile,v 1.20 2000/08/17 04:51:05 bsmith Exp balay $
 
 ALL: lib
 
@@ -14,5 +14,5 @@ DIRS	 =
 MANSEC	 = IS
 LOCDIR	 = src/vec/is/utils/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

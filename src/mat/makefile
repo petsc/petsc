@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 2000/08/17 04:51:22 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.31 2000/11/28 17:28:44 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -14,5 +14,5 @@ DIRS     = interface impls examples utils matfd partition order color
 LOCDIR   = src/mat/
 MANSEC   = Mat
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 2001/06/21 21:15:10 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.20 2001/08/05 03:31:04 bsmith Exp balay $ 
 
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
@@ -7,7 +7,7 @@
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
 # in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If cmex fails 
 # in compiling these files and you are using the gcc compiler then try 
-# removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
+# removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/variables
 #
 SPECIALLIB     = yes
 SPECIALFASTLIB = yes
@@ -35,10 +35,10 @@ DIRS      =
 LOCDIR    = src/sys/src/viewer/impls/socket/matlab
 NOADIC    = true
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
-# CMEX and MCC are defined in bmake/${PETSC_ARCH}/base.site
+# CMEX and MCC are defined in bmake/${PETSC_ARCH}/packages
 #
 receive:  
 	-@${CMEX} -V4 -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} receive.c receivesparse.c  receivedense.c bread.c

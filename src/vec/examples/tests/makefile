@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.106 2000/08/17 19:36:01 balay Exp balay $ 
+# $Id: makefile,v 1.107 2001/03/29 16:35:01 balay Exp balay $ 
 
 
 
@@ -13,7 +13,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex23.c ex24.c ex25.c ex26.c ex28.c ex29.c ex31.c
 EXAMPLESF       = ex17f.F ex19.F ex20.F ex30f.F ex32f.F
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts 
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
@@ -327,4 +327,4 @@ TESTEXAMPLES_4  = ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm \
                   ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm 
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.350 2001/06/19 18:39:23 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.351 2001/08/06 15:22:34 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -8,8 +8,8 @@ ALL: all
 LOCDIR = . 
 DIRS   = src include docs 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 #
 # Basic targets to build PETSc libraries.
@@ -258,7 +258,8 @@ etags_fexamples:
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = bmake/common* bmake/*/base bmake/*/base_variables bmake/*/base.site \
+BMAKEFILES = bmake/common/base bmake/common/rules_win32 bmake/common/test \
+	     bmake/common/bopt* bmake/*/rules bmake/*/variables bmake/*/packages \
 	     bmake/*/petscconf.h bmake/*/petscfix.h bmake/win32/makefile.dos bmake/config/*.in \
              bmake/*/buildtest bmake/adic.init bmake/adicmf.init
 DOCS	   = bmake/readme bmake/petscconf.defs

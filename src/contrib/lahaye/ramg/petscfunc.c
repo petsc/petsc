@@ -1,4 +1,4 @@
-/*$Id: petscfunc.c,v 1.10 2001/08/06 21:19:01 bsmith Exp balay $*/
+/*$Id: petscfunc.c,v 1.11 2001/08/07 03:04:54 balay Exp balay $*/
 
 #include "petscfunc.h"
 #include "ramgfunc.h"
@@ -30,22 +30,24 @@ int KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx)
   double   bnrm2;
   char     filename[161];
   FILE     *ftol;
-  //  CONVHIST *convhist;
+  /* 
+  CONVHIST *convhist;
 
-  //  convhist = (CONVHIST*)(ctx); 
-  //  bnrm2 =    (*convhist).BNRM2;
+  convhist = (CONVHIST*)(ctx); 
+  bnrm2 =    (*convhist).BNRM2;
+  */
 
   sprintf(filename,"petsctol"); 
 
   if (n == 0){
      PetscFOpen(MPI_COMM_WORLD,filename,"w",&ftol);
-     //     PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2); 
+     /*  PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2); */
      PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm); 
      PetscFClose(MPI_COMM_WORLD,ftol);
   }
   else if (n > 0) {
      PetscFOpen(MPI_COMM_WORLD,filename,"a",&ftol);
-     //     PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2); 
+     /* PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2);  */
      PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm); 
      PetscFClose(MPI_COMM_WORLD,ftol);
   }
@@ -72,22 +74,24 @@ int KSPMonitorAmg(KSP ksp,int n,double rnorm,void* ctx)
   double   bnrm2;
   char     filename[161];
   FILE     *ftol;
-  //  CONVHIST *convhist;
+  /*
+  CONVHIST *convhist;
 
-  //  convhist = (CONVHIST*)(ctx); 
-  //  bnrm2 =    (*convhist).BNRM2;
+  convhist = (CONVHIST*)(ctx); 
+  bnrm2 =    (*convhist).BNRM2;
+  */
 
   sprintf(filename,"petsctol"); 
 
   if (n == 0){
      PetscFOpen(MPI_COMM_WORLD,filename,"w",&ftol);
-     //     PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2); 
+     /*    PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2); */
      PetscFPrintf(MPI_COMM_WORLD,ftol,"%d %14.12e \n",n, rnorm); 
      PetscFClose(MPI_COMM_WORLD,ftol);
   }
   else if (n > 0) {
      PetscFOpen(MPI_COMM_WORLD,filename,"a",&ftol);
-     //     PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2); 
+     /*     PetscFPrintf(MPI_COMM_WORLD,ftol,"%14.12e \n",rnorm/bnrm2); */
      PetscFPrintf(MPI_COMM_WORLD,ftol,"%d %14.12e \n",n, rnorm); 
      PetscFClose(MPI_COMM_WORLD,ftol);
   }
@@ -120,11 +124,11 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 
   ierr = KSPBuildResidual(ksp, t, v, &V); CHKERRQ(ierr); 
   
-  //  ierr = PetscViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer); CHKERRQ(ierr);
-  //  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB); 
-  //         CHKERRQ(ierr);
-  //  ierr = VecView(V, viewer); CHKERRQ(ierr);
-  //  ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
+  /*  ierr = PetscViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer); CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB); 
+           CHKERRQ(ierr);
+    ierr = VecView(V, viewer); CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr); */
   ierr = VecGetArray(V,&values); CHKERRQ(ierr); 
   PetscFOpen(MPI_COMM_WORLD,filename,"w",&fout);
   for (i=0;i<numnodes;i++)
@@ -214,7 +218,7 @@ int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   PetscDraw   draw; 
 
   for (i=0; i<nsub; i++) {
-    // ierr = MatView(submat[i],PETSC_NULL); CHKERRQ(ierr);
+     /* ierr = MatView(submat[i],PETSC_NULL); CHKERRQ(ierr); */
      ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
             0, 0, 500,500,&viewer); 
      ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.260 2001/04/18 20:48:24 balay Exp bsmith $*/
+/*$Id: plog.c,v 1.261 2001/04/19 17:25:40 bsmith Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1606,8 +1606,9 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,"      #   The code for various complex numbers numerical       #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #   kernels uses C++, which generally is not well        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #   optimized.  For performance that is about 4-5 times  #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,"      #   faster, specify the flag -DPETSC_USE_FORTRAN_KERNELS in    #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,"      #   base_variables and recompile the PETSc libraries.    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   faster, specify the flag -DPETSC_USE_FORTRAN_KERNELS #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   in PETSC_ARCH/variables and recompile                #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   the PETSc libraries.                                 #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
 #endif
@@ -1618,9 +1619,10 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
     ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   This code was run without the PreLoadinBegin() macros   #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   To get timing results we always recommend preloading #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   otherwise timing numbers may be meaningless.         #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   This code was run without the PreLoadinBegin()       #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   macros. To get timing results we always recommend    #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   preloading. otherwise timing numbers may be          #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   meaningless.                                         #\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
   }
 

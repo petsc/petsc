@@ -1,4 +1,4 @@
-/* $Id: petscblaslapack.h,v 1.49 2001/08/07 14:56:33 bsmith Exp bsmith $ */
+/* $Id: petscblaslapack.h,v 1.50 2001/08/10 01:50:08 balay Exp balay $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -173,7 +173,50 @@ Cray T3D/T3E.
 #define LAtrmv_  DTRMV
 #define LAtrsl_  DTRSL
 #define LAgetrf_ DGETRF
-#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
+
+#elif defined(PETSC_USE_SINGLE)
+
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
+#define LAormqr_ sormqr_
+#define LAtrtrs_ strtrs_
+#define LApotrf_ spotrf_
+#define LApotrs_ spotrs_
+#define LAgemv_  sgemv_
+#define LAgetrs_ sgetrs_
+#define LAtrmv_  strmv_
+#define LAtrsl_  strsl_
+#define BLgemm_  sgemm_
+#define LAgesvd_ sgesvd_
+#define LAgeev_  sgeev_
+#elif defined(PETSC_HAVE_FORTRAN_CAPS)
+#define LAormqr_ SORMQR
+#define LAtrtrs_ STRTRS
+#define LApotrf_ SPOTRF
+#define LApotrs_ SPOTRS
+#define LAgemv_  SGEMV
+#define LAgetrs_ SGETRS
+#define LAtrmv_  STRMV
+#define LAtrsl_  STRSL
+#define LAgesvd_ SGESVD
+#define LAgeev_  SGEEV
+#define BLgemm_  SGEMM
+#else
+#define LAormqr_ sormqr
+#define LAtrtrs_ strtrs
+#define LApotrf_ spotrf
+#define LApotrs_ spotrs
+#define LAgemv_  sgemv
+#define LAgetrs_ sgetrs
+#define LAtrmv_  strmv
+#define LAtrsl_  strsl
+#define BLgemm_  sgemm
+#define LAgesvd_ sgesvd
+#define LAgeev_  sgeev
+#endif
+
+#else /* PETSC_USE_SINGLE */
+
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_F2C)
 #define LAormqr_ dormqr_
 #define LAtrtrs_ dtrtrs_
 #define LApotrf_ dpotrf_
@@ -210,6 +253,8 @@ Cray T3D/T3E.
 #define LAgesvd_ dgesvd
 #define LAgeev_  dgeev
 #endif
+
+#endif /* PETSC_USES_CPTOFCD */
 
 #else
 /*

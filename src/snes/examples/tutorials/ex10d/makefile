@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 2000/08/17 04:52:55 bsmith Exp balay $ 
+# $Id: makefile,v 1.10 2001/03/29 16:36:34 balay Exp balay $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -8,7 +8,7 @@ LOCDIR		 = src/snes/examples/tutorials/ex10d/
 EXAMPLESC	 = ex10.c
 EXAMPLESF	 =
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex10: ex10.o  chkopts
 	-$(CLINKER) -o ex10 ex10.o $(PETSC_LIB)
@@ -22,7 +22,7 @@ runex10:
 
 TESTEXAMPLES_6	 = ex10.PETSc runex10 ex10.rm
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test
 
 
 

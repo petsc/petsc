@@ -1,6 +1,6 @@
-# $Id: base_variables,v 1.9 2001/03/29 16:33:52 balay Exp balay $ 
+# $Id: variables,v 1.10 2001/04/11 03:27:00 balay Exp balay $ 
 #
-#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#     See the file bmake/variables.defs for a complete explanation of all these fields
 #
 WIN32FE            = ${PETSC_DIR}/bin/win32fe/win32fe.exe
 AR		   = ${WIN32FE} tlib -C -P128
@@ -71,4 +71,3 @@ OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
 
 PARCH		   = win32_borland
 
-include ${PETSC_DIR}/bmake/common_variables

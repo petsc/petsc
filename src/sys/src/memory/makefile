@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1999/02/02 21:23:53 balay Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/08/17 04:50:43 bsmith Exp balay $ 
 
 ALL: lib 
 
@@ -14,8 +14,8 @@ LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/memory/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.22 2001/04/05 21:06:52 balay Exp buschelm $ 
+# $Id: makefile,v 1.23 2001/04/13 21:02:02 buschelm Exp balay $ 
 
 ALL: lib 
 
@@ -19,6 +19,6 @@ LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/utils/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 

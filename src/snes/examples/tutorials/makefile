@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.106 2001/07/20 21:25:39 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.107 2001/08/06 21:17:42 bsmith Exp balay $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  Examples of unconstrained minimization problems
@@ -22,7 +22,7 @@ EXAMPLESFH       =
 DOCS		 = ex5m.m
 DIRS		 = ex10d
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
@@ -353,4 +353,4 @@ TESTEXAMPLES_14  = ex5.PETSc runex5_11 runex5_12 ex5.rm
 TESTEXAMPLES_AMS  = 
 TESTEXAMPLES_ADIFOR  = ex5f.PETSc runex5f_2 ex5f.rm
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

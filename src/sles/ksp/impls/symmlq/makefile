@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2000/08/17 04:52:33 bsmith Exp $ 
+# $Id: makefile,v 1.1 2000/08/18 20:00:17 balay Exp balay $ 
 
 ALL: lib 
 
@@ -11,5 +11,5 @@ OBJSF    =
 LIBBASE  = libpetscsles
 LOCDIR   = src/sles/ksp/impls/symmlq/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

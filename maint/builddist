@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.87 2001/04/11 01:22:10 balay Exp balay $ 
+# $Id: builddist,v 1.88 2001/05/15 22:10:11 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -72,8 +72,8 @@ find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS and VI-TAGS
 make etags etags_examples TAGSDIR=`pwd`
 
-# Clean up the external Packages from base.site files
-foreach i (bmake/*/base.site)
+# Clean up the external Packages from PETSC_ARCH/packages files
+foreach i (bmake/*/packages)
   cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | sed "s/^MPE_LIB/#MPE_LIB/g" | \
     sed "s/^PETSC_HAVE_MPE/#PETSC_HAVE_MPE/g" | \
     sed "s/^BLOCKSOLVE_INCLUDE/#BLOCKSOLVE_INCLUDE/g" | sed "s/^BLOCKSOLVE_LIB/#BLOCKSOLVE_LIB/g" | \

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.38 2000/12/15 19:26:49 balay Exp bsmith $ 
+# $Id: makefile,v 1.39 2001/03/13 04:04:50 bsmith Exp balay $ 
 #
 #  All the Sparspack routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -25,5 +25,5 @@ MANSEC   = MatOrderings
 
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

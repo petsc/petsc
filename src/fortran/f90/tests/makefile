@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 2000/08/30 21:18:49 balay Exp balay $ 
+# $Id: makefile,v 1.15 2001/03/29 16:37:18 balay Exp balay $ 
 
 ALL: lib
 
@@ -11,7 +11,7 @@ LIBBASE    = libpetscfortran
 LOCDIR     = src/fortran/f90/tests
 TESTS      = test_IRIX
 CLEANFILES =
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1f90: ex1.o ex1f90.o chkopts
 	-${FLINKER} -o ex1f90 ex1f90.o ex1.o ${PETSC_SYS_LIB}
@@ -33,4 +33,4 @@ runex1f90:
 
 TESTEXAMPLES_12 = ex1f90.PETSc runex1f90 ex1f90.rm
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

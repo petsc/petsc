@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.27 2001/03/29 16:34:44 balay Exp bsmith $ 
+# $Id: makefile,v 1.28 2001/04/11 03:11:55 bsmith Exp balay $ 
 
 ALL:
 
@@ -11,7 +11,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF       = ex3f.F
 MANSEC          = Sys
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -60,5 +60,5 @@ TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 TESTEXAMPLES_3  = ex3f.PETSc runex3f ex3f.rm
 TESTEXAMPLES_13 = ex4.PETSc ex4.rm
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test
 

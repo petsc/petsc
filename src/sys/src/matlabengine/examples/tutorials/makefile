@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2000/08/17 04:50:54 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.4 2001/03/22 20:29:12 bsmith Exp balay $ 
 
 
 
@@ -10,13 +10,13 @@ LOCDIR          = src/sys/src/matlabengine/examples/tutorials/
 EXAMPLESC       = ex1.c
 EXAMPLESF       = 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
 	${RM} -f ex1.o
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test
 
 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2001/07/27 15:56:51 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.4 2001/08/02 15:56:25 bsmith Exp balay $ 
 
 #requirespackage  'PETSC_HAVE_ADIC'
 #requiresscalar real 
@@ -17,5 +17,5 @@ DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/adic
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

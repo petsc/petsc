@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.29 1998/06/15 15:54:47 balay Exp bsmith $
+# $Id: makefile,v 1.30 2000/08/17 04:51:10 bsmith Exp balay $
 
 ALL: lib
 
@@ -13,6 +13,6 @@ LIBBASE  = libpetscvec
 DIRS     = seq mpi shared
 LOCDIR   = src/vec/impls/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 

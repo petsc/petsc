@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.47 2001/01/15 21:43:07 bsmith Exp balay $ 
+# $Id: makefile,v 1.48 2001/01/23 20:52:23 balay Exp balay $ 
 
 #
 #
@@ -18,7 +18,7 @@ DIRS      = matlab
 LOCDIR    = src/sys/src/viewer/impls/socket/
 NOADIC    = true
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 

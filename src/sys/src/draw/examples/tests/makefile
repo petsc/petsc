@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.74 2000/08/17 04:50:36 bsmith Exp balay $ 
+# $Id: makefile,v 1.75 2000/08/17 19:56:58 balay Exp balay $ 
 
 
 
@@ -10,7 +10,7 @@ LOCDIR          = src/sys/src/draw/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex9.c ex10.c
 EXAMPLESF       = ex4f.F ex5.F
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -74,4 +74,4 @@ TESTEXAMPLES_3  = ex4f.PETSc ex4f.rm ex5.PETSc ex5.rm
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm 
 TESTEXAMPLES_13 = ex9.PETSc ex9.rm 
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

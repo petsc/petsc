@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.97 2001/08/07 03:05:33 balay Exp balay $;
+!  $Id: petsc.h,v 1.98 2001/08/10 16:50:53 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !
@@ -93,6 +93,20 @@
       parameter (PETSC_PI = 3.14159265358979323846264d0)
       parameter (PETSC_DEGREES_TO_RADIANS = 0.01745329251994d0)
       parameter (PETSC_MAX = 1.d300,PETSC_MIN = -1.d300)
+
+      PetscFortranDouble PETSC_MACHINE_EPSILON
+      PetscFortranDouble PETSC_SQRT_MACHINE_EPSILON
+      PetscFortranDouble PETSC_SMALL
+
+#if defined(PETSC_USE_SINGLE)
+      parameter (PETSC_MACHINE_EPSILON = 1.e-7)
+      parameter (PETSC_SQRT_MACHINE_EPSILON = 3.e-4)
+      parameter (PETSC_SMALL = 1.e-5)
+#else
+      parameter (PETSC_MACHINE_EPSILON = 1.d-14)
+      parameter (PETSC_SQRT_MACHINE_EPSILON = 1.d-7)
+      parameter (PETSC_SMALL = 1.d-10)
+#endif
 !
 ! ----------------------------------------------------------------------------
 !    BEGIN COMMON-BLOCK VARIABLES

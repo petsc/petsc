@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.10 1999/01/31 16:11:13 bsmith Exp bsmith $
+# $Id: makefile,v 1.11 2000/08/17 04:53:09 bsmith Exp balay $
 
 ALL: lib
 
 DIRS     = basic
 LOCDIR   = src/dm/ao/impls/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 

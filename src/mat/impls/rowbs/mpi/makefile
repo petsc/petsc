@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.34 2000/08/17 04:51:32 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.35 2000/10/24 20:25:39 bsmith Exp balay $ 
 
 #requirespackage  'PETSC_HAVE_BLOCKSOLVE'
 #requiresscalar real 
@@ -18,5 +18,5 @@ DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/rowbs/mpi/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

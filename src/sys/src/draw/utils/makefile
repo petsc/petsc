@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.38 2001/01/15 21:43:37 bsmith Exp balay $
+# $Id: makefile,v 1.39 2001/01/23 20:52:55 balay Exp balay $
 
 ALL: lib
 
@@ -13,5 +13,5 @@ LIBBASE  = libpetsc
 MANSEC   = Draw
 LOCDIR   = src/sys/src/draw/utils/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.42 2000/08/17 04:50:15 bsmith Exp balay $ 
+# $Id: makefile,v 1.43 2000/08/17 19:11:42 balay Exp balay $ 
 
 ALL: lib 
 SOURCEH   = ctable.h
 DIRS      = src examples
 LOCDIR    = src/sys/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

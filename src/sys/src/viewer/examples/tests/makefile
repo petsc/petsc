@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 1999/07/16 14:13:32 balay Exp bsmith $ 
+# $Id: makefile,v 1.18 2000/08/17 04:50:25 bsmith Exp balay $ 
 
 
 
@@ -9,7 +9,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/src/viewer/examples/tests/
 EXAMPLESC       = ex3.c
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_SYS_LIB}
@@ -18,5 +18,5 @@ ex3: ex3.o   chkopts
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_4  = ex3.PETSc ex3.rm
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test
 

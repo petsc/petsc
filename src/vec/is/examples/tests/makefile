@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.24 2000/08/17 04:51:03 bsmith Exp balay $ 
+# $Id: makefile,v 1.25 2000/08/17 19:58:11 balay Exp balay $ 
 
 
 
@@ -10,7 +10,7 @@ LOCDIR          = src/vec/is/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF       = ex1f.F ex2f.F
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_VEC_LIB}
@@ -64,4 +64,4 @@ TESTEXAMPLES_9  =
 TESTEXAMPLES_4  = 
 TESTEXAMPLES_13 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm 
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

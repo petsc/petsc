@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.10 2001/06/21 21:17:56 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.11 2001/07/23 02:52:23 bsmith Exp balay $ 
 #
-#   SPAI_LIB should be defined in bmake/$PETSC_ARCH/base.site
+#   SPAI_LIB should be defined in bmake/$PETSC_ARCH/packages
 #
 ALL: ex1
 
@@ -11,8 +11,8 @@ FPPFLAGS        =
 LOCDIR          = src/contrib/pc/spai/examples/tutorials/
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_LIB} ${SPAI_LIB} ${PETSC_LIB} 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 2000/12/05 01:40:32 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.20 2000/12/10 17:35:51 bsmith Exp balay $ 
 
 CFLAGS	        =
 FFLAGS	        =
@@ -8,7 +8,7 @@ LOCDIR          = src/dm/da/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       = 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
@@ -30,4 +30,4 @@ TESTEXAMPLES_4  =
 TESTEXAMPLES_5  =
 TESTEXAMPLES_13 = 
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

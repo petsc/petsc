@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2000/01/06 20:43:25 bsmith Exp balay $ 
+# $Id: makefile,v 1.4 2000/08/17 20:56:21 balay Exp balay $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
@@ -23,8 +23,8 @@ main: chkopts main.o appload.o appcreate.o appsetref.o integrator.o functions.o 
           functions.o $(PETSC_LIB)
 	-$(RM) main.o appview.o appload.o functions.o integrator.o appcreate.o  appsetref.o 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
-include $(PETSC_DIR)/bmake/common_test
+include $(PETSC_DIR)/bmake/common/base
+include $(PETSC_DIR)/bmake/common/test
 
 biquadinput: chkopts biquadinput.o
 	-${CLINKER} -o biquadinput biquadinput.o ${PETSC_LIB}

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.8 2000/08/17 04:52:16 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.9 2001/02/12 18:30:37 bsmith Exp balay $ 
 
 ALL: lib
 #
-#    SPAI_INCLUDE should be defined in bmake/$PETSC_ARCH/base.site
+#    SPAI_INCLUDE should be defined in bmake/$PETSC_ARCH/packages
 #
 CFLAGS   = 
 FFLAGS   = 
@@ -16,7 +16,7 @@ LIBBASE  = libpetscsles
 DIRS     = 
 LOCDIR   = src/contrib/pc/spai/src/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 

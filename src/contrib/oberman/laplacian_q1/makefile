@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 2000/08/17 04:53:30 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.10 2000/08/24 22:43:38 bsmith Exp balay $ 
 
 # -----------------------------------------------------------------------
 # Specify  user-defined compiler flags
@@ -28,10 +28,10 @@ finput: chkopts finput.o
 	-$(CLINKER) -o finput finput.o $(PETSC_LIB)
 	-$(RM) finput.o
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include $(PETSC_DIR)/bmake/common/base
 
 TESTEXAMPLES_1 = main.PETSc main.rm
 
-include $(PETSC_DIR)/bmake/common_test
+include $(PETSC_DIR)/bmake/common/test
 
 

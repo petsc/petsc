@@ -1,0 +1,5 @@
+# $Id: common_0,v 1.2 2000/10/24 20:23:40 bsmith Exp $ 
+
+#
+#  This file should never be included, PETSc will print an error
+# message reminding the user they should use an O not a zero

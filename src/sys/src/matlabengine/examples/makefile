@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.2 2000/05/04 16:24:55 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2000/08/17 04:50:53 bsmith Exp balay $ 
 
 ALL:
 
 LOCDIR   = src/sys/src/matlabengine/examples
 DIRS     = tutorials
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

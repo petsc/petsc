@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.26 2000/08/17 04:50:57 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.27 2000/11/28 17:28:11 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -7,6 +7,6 @@ DIRS     = is utils interface impls  examples
 LOCDIR   = src/vec/
 MANSEC   = Vec
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 

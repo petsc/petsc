@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 2000/10/24 20:27:26 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.12 2001/08/06 21:18:13 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -18,6 +18,6 @@ LIBBASE  = libpetscts
 MANSEC   = TS
 LOCDIR   = src/ts/impls/implicit/pvode/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 

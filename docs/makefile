@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.47 2001/02/20 15:21:09 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.48 2001/04/15 03:49:57 bsmith Exp balay $ 
 
 CFLAGS   =
 FFLAGS   =
@@ -17,8 +17,8 @@ LINCLUDE = ${SOURCEH}
 DIRS     = 
 LOCDIR   = docs/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 bib2html:
 	${RM} /mcs/www-unix/petsc/petscapps.html /mcs/www-unix/petsc/petscapps-bib.html

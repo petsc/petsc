@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 2001/06/21 21:17:55 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.10 2001/08/06 21:16:33 bsmith Exp balay $ 
 
 #requirespackage   'PETSC_HAVE_SPAI'
 #requireslanguage  CONLY
@@ -17,5 +17,5 @@ LIBBASE  = libpetscsles
 DIRS     = src examples
 LOCDIR   = src/sles/pc/impls/spai/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

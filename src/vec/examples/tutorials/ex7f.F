@@ -1,5 +1,5 @@
 !
-!    "$Id: ex7f.F,v 1.20 2001/03/06 20:23:56 balay Exp balay $";
+!    "$Id: ex7f.F,v 1.21 2001/08/07 03:02:34 balay Exp balay $";
 !
        subroutine ex7f(vec,comm)
 
@@ -30,7 +30,7 @@
        call ex7c(vec,comm,ierr)
 !
 !     IO from the fortran routines may cause all kinds of
-!     grief while linking. *_SYS_LIB in base_variables is supporsed
+!     grief while linking. *_SYS_LIB in PETSC_ARCH/variables is supporsed
 !     to take care of it. 
 !
  100   format ('[',i1,']',' Calling VecView from Fortran')

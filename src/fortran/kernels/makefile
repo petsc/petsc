@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 2001/03/13 04:15:29 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.17 2001/08/21 21:05:00 bsmith Exp balay $ 
 
 # This directory contains some computational kernels written in
 # Fortran77.  These are mainly intended to provide high performance for
@@ -23,7 +23,7 @@ LIBBASE  = libpetsc
 MANSEC   = Sys
 LOCDIR   = src/fortran/kernels/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 

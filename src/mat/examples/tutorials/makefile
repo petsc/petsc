@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.18 2000/08/17 04:51:54 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.19 2001/04/10 19:35:58 bsmith Exp balay $ 
 
 
 
@@ -11,7 +11,7 @@ EXAMPLESC       = ex1.c
 EXAMPLESF       =
 MANSEC          = Mat
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_MAT_LIB} 
@@ -32,5 +32,5 @@ TESTEXAMPLES_9  =
 TESTEXAMPLES_13 = ex1.PETSc ex1.rm
 
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test
 

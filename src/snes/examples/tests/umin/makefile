@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.73 2001/03/29 16:36:31 balay Exp curfman $ 
+# $Id: makefile,v 1.74 2001/08/22 00:38:44 balay Exp balay $ 
 
 # This directory contains example programs for the SNES unconstrained
 # minimization solvers.  Examples of solving systems of nonlinear
@@ -15,7 +15,7 @@ LOCDIR          = src/snes/examples/tests/umin/
 EXAMPLESC       = ex2.c ex3.c
 EXAMPLESF       = 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex2: ex2.o chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_LIB}
@@ -66,4 +66,4 @@ TESTEXAMPLES_2  = ex3.PETSc runex3_2 ex3.rm
 TESTEXAMPLES_8  = 
 TESTEXAMPLES_13 = 
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

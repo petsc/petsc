@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.43 2001/03/29 16:35:03 balay Exp bsmith $ 
+# $Id: makefile,v 1.44 2001/04/11 03:12:05 bsmith Exp balay $ 
 #
 CFLAGS		 = 
 FFLAGS		 = 
@@ -9,7 +9,7 @@ LOCDIR		 = src/vec/examples/tutorials/
 EXAMPLESC	 = ex1.c ex1e.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c
 EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F ex14f.F
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts 
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
@@ -253,4 +253,4 @@ TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm \
 TESTEXAMPLES_12	 = ex1f90.PETSc runex1f90 ex1f90.rm ex4f90.PETSc runex4f90 ex4f90.rm
 TESTEXAMPLES_13  = ex10.PETSc ex10.rm
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

@@ -1,0 +1,5 @@
+# $Id: base,v 1.70 2001/06/21 21:14:27 bsmith Exp $ 
+
+include ${PETSC_DIR}/bmake/common/variables
+include ${PETSC_DIR}/bmake/common/rules
+

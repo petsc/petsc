@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.15 1999/01/12 23:18:07 bsmith Exp balay $ 
+# $Id: makefile,v 1.16 2000/08/17 19:54:10 balay Exp balay $ 
 
 ALL: lib
 
@@ -13,7 +13,7 @@ EXAMPLES_3    = ex2
 EXAMPLESC     = ex1.c
 EXAMPLESF     = ex2.F
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_CONTRIB}  ${PETSC_LIB}
@@ -42,4 +42,4 @@ runex1:
             done; \
           done;
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

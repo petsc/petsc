@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2000/09/07 03:14:05 balay Exp balay $ 
+# $Id: makefile,v 1.2 2000/09/07 19:57:16 balay Exp balay $ 
 
 CFLAGS   =
 FFLAGS   =
@@ -13,5 +13,5 @@ DIRS     =
 LOCDIR   = include/f90impl
 MANSEC   = Sys
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

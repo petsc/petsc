@@ -1,6 +1,6 @@
-# $Id: base_variables,v 1.25 2001/03/29 16:33:52 balay Exp $ 
+# $Id: variables,v 1.15 2001/04/10 22:33:39 balay Exp balay $ 
 #
-#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#     See the file bmake/variables.defs for a complete explanation of all these fields
 #
 AR		   = ar
 AR_FLAGS           = cr
@@ -79,4 +79,3 @@ NEEDED_A_LIBS      = -lm
 PARCH		   = solaris
 
 
-include ${PETSC_DIR}/bmake/common_variables

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 2000/08/17 04:50:41 bsmith Exp balay $ 
+# $Id: makefile,v 1.10 2001/04/05 21:06:44 balay Exp balay $ 
 
 ALL: lib 
 CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' \
@@ -15,7 +15,7 @@ LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/dll/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 

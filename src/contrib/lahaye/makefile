@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2001/01/15 21:49:36 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2001/08/06 21:19:00 bsmith Exp balay $ 
 
 #requireslanguage  CONLY
 #requiresscalar    real 
@@ -18,5 +18,5 @@ MANSEC   = PC
 LOCDIR   = src/contrib/lahaye
 DIRS     = ramg samg
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2001/04/10 19:37:38 bsmith Exp balay $ 
+# $Id: makefile,v 1.3 2001/04/12 03:29:02 balay Exp balay $ 
 
 #requiresscalar real 
 
@@ -16,5 +16,5 @@ LIBBASE  = libpetscmat
 MANSEC   = Mat
 LOCDIR   = src/contrib/libtfs
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.5 2000/05/10 16:43:56 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.6 2000/08/17 04:53:32 bsmith Exp balay $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
@@ -20,10 +20,10 @@ main: chkopts main.o appview.o appload.o functions.o appsetalg.o
 	-$(CLINKER) -o main main.o appview.o appload.o appsetalg.o functions.o $(PETSC_LIB)
 	-$(RM) main.o appview.o appload.o functions.o appsetalg.o
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include $(PETSC_DIR)/bmake/common/base
 
 TESTEXAMPLES_1 = main.PETSc main.rm
 
-include $(PETSC_DIR)/bmake/common_test
+include $(PETSC_DIR)/bmake/common/test
 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1999/11/24 21:55:48 bsmith Exp balay $ 
+# $Id: makefile,v 1.3 2000/08/17 20:56:53 balay Exp balay $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
@@ -23,8 +23,8 @@ main: chkopts main.o appview.o appload.o functions.o integrator.o appcreate.o
 	-$(RM) main.o appview.o appload.o functions.o integrator.o appcreate.o
 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
-include $(PETSC_DIR)/bmake/common_test
+include $(PETSC_DIR)/bmake/common/base
+include $(PETSC_DIR)/bmake/common/test
 
 
 

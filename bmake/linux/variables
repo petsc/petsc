@@ -1,6 +1,6 @@
-# $Id: base_variables,v 1.27 2001/03/29 16:33:52 balay Exp balay $ 
+# $Id: variables,v 1.28 2001/08/21 23:48:14 balay Exp balay $ 
 #
-#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#     See the file bmake/variables.defs for a complete explanation of all these fields
 #
 AR		   = ar
 AR_FLAGS	   = cr

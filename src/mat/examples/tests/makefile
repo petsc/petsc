@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.249 2001/03/29 16:35:33 balay Exp bsmith $ 
+# $Id: makefile,v 1.250 2001/06/21 21:17:18 bsmith Exp balay $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -16,7 +16,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c
 EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex63.F ex67f.F ex79f.F ex85f.F
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_MAT_LIB} 
@@ -819,4 +819,4 @@ TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm
 TESTEXAMPLES_13  = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS  = ex73.PETSc ex73.rm
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

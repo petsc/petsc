@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.12 2001/01/23 20:52:31 balay Exp bsmith $ 
+# $Id: makefile,v 1.13 2001/03/08 17:12:16 bsmith Exp balay $ 
 
 #requirespackage  'PETSC_HAVE_AMS'
 
@@ -16,8 +16,8 @@ LIBBASE  = libpetsc
 DIRS     = 
 LOCDIR   = src/sys/src/viewer/impls/ams/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.5 2001/06/02 03:10:55 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.6 2001/06/21 21:19:47 bsmith Exp balay $ 
 
 
 
@@ -11,7 +11,7 @@ LOCDIR		 = src/pf/examples/tutorials/
 EXAMPLESC	 = ex1.c
 EXAMPLESF	 = 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex1: ex1.o  chkopts  
 	-${CLINKER} -o ex1 ex1.o   ${PETSC_LIB}
@@ -25,4 +25,4 @@ TESTEXAMPLES_9	 =
 TESTEXAMPLES_12	 = 
 TESTEXAMPLES_13  = 
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

@@ -1,4 +1,4 @@
-/* $Id: makefile,v 1.1 2000/11/22 22:25:41 bsmith Exp bsmith $ */
+/* $Id: petscfunc.h,v 1.2 2000/11/28 17:32:36 bsmith Exp balay $ */
 #ifndef PETSCFUNC_H
 #define PETSCFUNC_H
 
@@ -91,7 +91,7 @@ typedef struct{
   Mat  Interp; 
   Vec  x, b, upd_b, r, y, b_y, r_y; 
   int  size; /*..Number of variables on level..*/ 
-  //  int  debug;
+  /*  int  debug; */
 } GridCtx; 
 
 /*..Level 2 routine to get coarser level matrices..*/ 

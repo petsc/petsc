@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2000/10/24 20:26:18 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.5 2001/03/22 20:30:45 bsmith Exp balay $ 
 #
 ALL: lib
 
@@ -16,5 +16,5 @@ MANSEC   = MatOrderings
 
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

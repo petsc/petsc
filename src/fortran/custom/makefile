@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.28 2001/02/26 04:53:38 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.29 2001/03/22 20:33:25 bsmith Exp balay $ 
 
 ALL: lib
 SPECIALFASTLIB = yes
@@ -19,7 +19,7 @@ LIBBASE  = libpetscfortran
 MANSEC   = Sys
 LOCDIR   = src/fortran/custom/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 

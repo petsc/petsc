@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2000/08/17 04:53:31 bsmith Exp balay $ 
+# $Id: makefile,v 1.5 2000/08/17 20:02:26 balay Exp balay $ 
 
 # -----------------------------------------------------------------------
 # Specify user-defined compiler flags
@@ -20,7 +20,7 @@ main: chkopts main.o appview.o appload.o functions.o integrator.o
 	-$(RM) main
 	-$(CLINKER) -o main main.o appview.o appload.o integrator.o functions.o $(PETSC_LIB)
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include $(PETSC_DIR)/bmake/common/base
 
 TESTEXAMPLES_1 = main.PETSc main.rm
-include $(PETSC_DIR)/bmake/common_test
+include $(PETSC_DIR)/bmake/common/test

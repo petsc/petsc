@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.26 1999/02/02 21:26:45 balay Exp bsmith $ 
+# $Id: makefile,v 1.27 2000/08/17 04:51:34 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -13,5 +13,5 @@ LIBBASE  = libpetscmat
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/bdiag/mpi/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

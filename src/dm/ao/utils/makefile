@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 1999/09/27 21:32:28 bsmith Exp bsmith $
+# $Id: makefile,v 1.12 2000/08/17 04:53:13 bsmith Exp balay $
 
 ALL: lib
 
@@ -13,6 +13,6 @@ LIBBASE  = libpetscdm
 MANSEC   = AO
 LOCDIR   = src/dm/ao/utils/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.8 2000/08/17 04:53:25 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.9 2001/03/13 04:13:39 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -36,10 +36,10 @@ triconvert: chkopts triconvert.o
 	-${CLINKER} -o triconvert triconvert.o ${PETSC_LIB}
 	-${RM} triconvert.o
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 #--------------------------------------------------
 TESTEXAMPLES_1 = input.PETSc input.rm triconvert.PETSc triconvert.rm
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test
 

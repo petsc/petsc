@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2000/08/24 22:42:38 bsmith Exp balay $
+# $Id: makefile,v 1.3 2000/08/25 16:46:59 balay Exp balay $
 
 CFLAGS   =
 FFLAGS   =
@@ -10,5 +10,5 @@ SOURCEH  = is.h
 OBJSC    = is.o
 MANSEC   = PC
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

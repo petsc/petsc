@@ -1,7 +1,4 @@
-# $Id: base,v 1.1 2000/12/15 15:57:44 bsmith Exp balay $ 
-
-include ${PETSC_DIR}/bmake/common
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
+# $Id: rules,v 1.2 2001/03/07 03:20:15 balay Exp balay $ 
 
 libc: ${OBJSC}
 	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}

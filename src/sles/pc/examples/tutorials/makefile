@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 2000/08/17 04:52:20 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.21 2001/03/13 04:07:41 bsmith Exp balay $ 
 
 CFLAGS	        = 
 FFLAGS          =
@@ -6,6 +6,6 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sles/pc/examples/tutorials/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2000/09/01 03:36:30 bsmith Exp curfman $ 
+# $Id: makefile,v 1.2 2000/09/25 18:03:04 curfman Exp balay $ 
 
 ALL: lib
 
@@ -14,5 +14,5 @@ DIRS     =
 MANSEC   = PC
 LOCDIR   = src/sles/pc/impls/cholesky/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

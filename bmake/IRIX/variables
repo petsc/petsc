@@ -1,6 +1,6 @@
-# $Id: base_variables,v 1.21 2001/03/05 22:07:59 balay Exp balay $ 
+# $Id: variables,v 1.22 2001/03/29 16:33:52 balay Exp balay $ 
 #
-#     See the file bmake/base_variables.defs for a complete explanation of all these fields
+#     See the file bmake/variables.defs for a complete explanation of all these fields
 #
 #     For SGI 64 bit machines use the PETSC_ARCH IRIX64
 #
@@ -78,4 +78,3 @@ OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG -DPETSC_USE_BOPT_O  \
 
 PARCH		   = IRIX
 
-include ${PETSC_DIR}/bmake/common_variables

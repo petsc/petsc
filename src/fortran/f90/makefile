@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.24 2000/09/28 21:16:27 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.25 2000/10/06 15:32:49 bsmith Exp balay $ 
 
 #requirespackage 'PETSC_HAVE_F90_H'
 ALL: lib
@@ -15,7 +15,7 @@ MANSEC   = Sys
 DIRS     = tests
 LOCDIR   = src/fortran/f90/
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
 
 

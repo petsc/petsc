@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 2000/08/17 19:54:16 balay Exp balay $ 
+# $Id: makefile,v 1.10 2001/04/05 21:09:44 balay Exp balay $ 
 
 ALL: lib
 
@@ -11,7 +11,7 @@ LOCDIR   = src/contrib/sda/examples/tutorials/
 EXAMPLES_2    =
 EXAMPLES_3    =
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common/base
 
 PETSC_CONTRIB = -L${PETSC_LIB_DIR} -lpetsccontrib
 
@@ -24,4 +24,4 @@ ex2: ex2.o  chkopts
                     ${PETSC_LIB}
 	${RM} -f ex2.o
 
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/test

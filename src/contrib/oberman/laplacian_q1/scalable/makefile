@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2000/08/24 22:43:40 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2001/03/22 20:33:03 bsmith Exp balay $ 
 
 # -----------------------------------------------------------------------
 # Specify  user-defined compiler flags
@@ -22,5 +22,5 @@ main.$(BOPT): chkopts ${EXAMPLESO}
 	-$(CLINKER) -o main.$(BOPT) ${EXAMPLESO} $(PETSC_LIB)
 	-$(RM) ${EXAMPLESO}
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
-include $(PETSC_DIR)/bmake/common_test
+include $(PETSC_DIR)/bmake/common/base
+include $(PETSC_DIR)/bmake/common/test

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.365 2001/08/07 03:05:45 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.366 2001/08/16 15:53:54 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4857,7 +4857,7 @@ then various kinds of profiling of code between calls to \trl{
 PetscInitialize()} and \trl{PetscFinalize()} can be \findex{PETSC_USE_LOG}
 activated at runtime.  Note that the flag \trl{-DPETSC_USE_LOG} can be
 specified for an installation of PETSc in the file \trl{
-${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables}, as discussed in
+${PETSC_DIR}/bmake/${PETSC_ARCH}/variables}, as discussed in
 Section~\ref{sec:makeflags}.  The profiling options include the following:
 \findex{-log_summary} \findex{-log_info}
 \findex{-log_trace}
@@ -5167,7 +5167,7 @@ the MPICH.  The user must compile the PETSc library with the \trl{
 -DPETSC_HAVE_MPE} flag, which is {\em not} activated by default. The user
 can turn on MPE logging by specifying \trl{-DPETSC_HAVE_MPE} in the \trl{
 PCONF} variable within \trl{
-${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site} and (re)compiling all
+${PETSC_DIR}/bmake/${PETSC_ARCH}/packages} and (re)compiling all
 of PETSc.
 
 By default, not all PETSc events are logged with MPE. For example,
@@ -5491,7 +5491,7 @@ The user can specify alternative compiler options instead of
 the defaults set in the PETSc distribution.  One can set
 the compiler options for a particular architecture
 (\trl{PETSC_ARCH}) and \trl{BOPT} by editing the file
-\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/base.${BOPT}}.
+\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/variables}.
 Section~\ref{sec:custom} gives details.
 
 \section{Profiling}
@@ -6471,9 +6471,8 @@ can easily be modified to serve specialized needs.
 
 \sindex{graphics, disabling}
 To disable all x-window-based graphics, edit the file
-\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/base} and remove the flag
-\trl{-PETSC_DHAVE_X11} from the CONF variable definition.  Then (re)compile
-the PETSc libraries.
+\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/packages} and comment the variable
+\trl{PETSC_DHAVE_X11}.  Then (re)compile the PETSc libraries.
 
 
 %----------------------------------------------------------------------
@@ -6541,18 +6540,18 @@ architecture that contains machine-specific information, enabling the
 portability of our makefile system.
 For instance, for Sun workstations running OS 5.7, the 
 directory is called \trl{solaris}.  Each architecture directory contains
-two base makefiles:
+three makefiles:
 \begin{itemize}
-\item \trl{base.site} - locations of all needed include
-      and library files for a particular site. This file (discussed
-      below) is usually the only one that the user needs to alter.
-\item \trl{base_variables} - definitions of the compilers, linkers, etc.
+\item \trl{packages} - locations of all needed packages for a particular site. 
+      This file (discussed below) is usually the only one that the user 
+      needs to alter.
+\item \trl{variables} - definitions of the compilers, linkers, etc.
+\item \trl{rules} - some build rules specific to this machine.
 \end{itemize}
-Each architecture base file, denoted by
-\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/base},
-includes the file \break \trl{${PETSC_DIR}/bmake/common},
-which contains the rules discussed in Section~\ref{sec:common}
-that are common to all machines.
+
+The architecture independent makefiles, are located in
+\trl{${PETSC_DIR}/bmake/common}, and the machine-spcecific
+makefiles get included from here.
 
 \section{PETSc Flags}
 \label{sec:makeflags}
@@ -6581,7 +6580,7 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{verbatim}
-   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+   include ${PETSC_DIR}/bmake/common/base
 \end{verbatim}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -6602,7 +6601,7 @@ within the makefile.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+   include ${PETSC_DIR}/bmake/common/base
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -6635,7 +6634,7 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+   include ${PETSC_DIR}/bmake/common/base
 
    ex1: ex1.o 
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -6737,7 +6736,7 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat
    MANSEC   = Mat
 
-   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+   include ${PETSC_DIR}/bmake/common/base
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}

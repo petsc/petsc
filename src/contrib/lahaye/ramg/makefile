@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2001/01/15 21:49:37 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.4 2001/06/18 18:56:35 bsmith Exp balay $ 
 
 #requirespackage 'PETSC_HAVE_RAMG'
 #requiresscalar real 
@@ -16,5 +16,5 @@ LIBBASE  = libpetscsles
 MANSEC   = PC
 LOCDIR   = src/contrib/lahaye/ramg
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test

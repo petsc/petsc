@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2001/01/16 18:18:44 balay Exp bsmith $ 
+# $Id: makefile,v 1.3 2001/03/22 20:30:50 bsmith Exp balay $ 
 
 #requirespackage 'PETSC_HAVE_DSCPACK'
 
@@ -15,5 +15,5 @@ MANSEC   = MatOrderings
 
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-include ${PETSC_DIR}/bmake/common_test
+include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/bmake/common/test
