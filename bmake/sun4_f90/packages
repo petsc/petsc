@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.12 1998/12/04 23:22:05 bsmith Exp balay $ 
+# $Id: base.site,v 1.13 1999/01/15 22:12:57 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -36,13 +36,13 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 #
 MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
 MPE_INCLUDE   = -I/usr/local/mpi/include
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE   = -I${MPI_HOME}/include 
 #
 # Optional location of BlockSolve (MPI version)
 #
 #BS_INCLUDE = -I/home/petsc/BlockSolve95/include
 #BS_LIB     = /home/petsc/BlockSolve95/lib/libO/sun4/libBS95.a
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-MPE_INCLUDE   = -I${MPI_HOME}/include 
 #
 # Optional Matlab location
 #
@@ -69,7 +69,7 @@ CMEX           = /usr/local/bin/cmex
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE
+PCONF         = -DHAVE_MPE
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 

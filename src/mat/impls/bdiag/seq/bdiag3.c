@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag3.c,v 1.4 1998/12/17 22:10:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag3.c,v 1.5 1999/01/12 23:15:33 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -68,12 +68,19 @@ int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
   PetscFunctionReturn(0);
 }
 
+/*
+     Note: this currently will generate different answers if you request
+ all items or a subset. If you request all items it checks if the value is
+ nonzero and only includes it if it is nonzero; if you check a subset of items
+ it returns a list of all active columns in the row (some which may contain
+ a zero)
+*/
 #undef __FUNC__  
 #define __FUNC__ "MatGetRow_SeqBDiag"
 int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          nd = a->nd, bs = a->bs;
+  int          nd = a->nd, bs = a->bs,bs2 = bs*bs*sizeof(MatScalar);
   int          nc = a->n, *diag = a->diag, pcol, shift, i, j, k;
 
   PetscFunctionBegin;
@@ -85,9 +92,14 @@ int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
     if (bs == 1) { 
       for (j=0; j<nd; j++) {
         pcol = row - diag[j];
-        if (pcol > -1 && pcol < nc) {
+#if defined(USE_PETSC_COMPLEX)
+        if (pcol > -1 && pcol < nc && PetscAbsScalar((a->diagv[j])[row])) {
+#else
+        if (pcol > -1 && pcol < nc && (a->diagv[j])[row]) {
+#endif
 	  (*v)[k]   = (a->diagv[j])[row];
-          (*col)[k] = pcol;  k++;
+          (*col)[k] = pcol; 
+          k++;
 	}
       }
       *nz = k;
@@ -97,10 +109,16 @@ int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
         pcol = bs * (row/bs - diag[j]);
         if (pcol > -1 && pcol < nc) {
           for (i=0; i<bs; i++) {
-	    (*v)[k+i]   = (a->diagv[j])[shift + i*bs];
-	    (*col)[k+i] = pcol + i;
+#if defined(USE_PETSC_COMPLEX)
+            if (PetscAbsScalar((a->diagv[j])[shift + i*bs])) {
+#else
+            if ((a->diagv[j])[shift + i*bs]) {
+#endif
+              (*v)[k]   = (a->diagv[j])[shift + i*bs];
+              (*col)[k] = pcol + i; 
+              k++;
+            }
 	  }
-          k += bs;
         } 
       }
       *nz = k;
@@ -472,16 +490,18 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     int nline = PetscMin(10,a->nd), k, nk, np;
-    if (a->user_alloc)
-      fprintf(fd,"  block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);
-    else
-      fprintf(fd,"  block size=%d, number of diagonals=%d, PETSc-allocated storage\n",bs,a->nd);
+    if (a->user_alloc) {
+      ViewerASCIIPrintf(viewer,"  block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);
+    } else {
+      ViewerASCIIPrintf(viewer,"  block size=%d, number of diagonals=%d, PETSc-allocated storage\n",bs,a->nd);
+    }
     nk = (a->nd-1)/nline + 1;
     for (k=0; k<nk; k++) {
-      fprintf(fd,"  diag numbers:");
+      ViewerASCIIPrintf(viewer,"  diag numbers:");
       np = PetscMin(nline,a->nd - nline*k);
-      for (i=0; i<np; i++) 
+      for (i=0; i<np; i++) {
         fprintf(fd,"  %d",a->diag[i+nline*k]);
+      }
       fprintf(fd,"\n");        
     }
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
