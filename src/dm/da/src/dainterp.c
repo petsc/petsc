@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.10 2000/05/22 21:42:36 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.11 2000/06/15 15:32:59 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -116,7 +116,7 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
-  MatPreallocateInitialize(dac->comm,dof*m_f*n_f,dof*m_c*n_c,dnz,onz);
+  ierr = MatPreallocateInitialize(dac->comm,dof*m_f*n_f,dof*m_c*n_c,dnz,onz);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -146,15 +146,15 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       if (j_c*ratio != j && i_c*ratio != i) { 
         cols[nc++] = idx_c[col+(m_ghost_c+1)*dof];
       }
-      MatPreallocateSet(row,nc,cols,dnz,onz);
+      ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
       for (k=1; k<dof; k++) {
         row++;
-        MatPreallocateSet(row,nc,cols,dnz,onz);
+        ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
   }
   ierr = MatCreateMPIAIJ(dac->comm,dof*m_f*n_f,dof*m_c*n_c,dof*mx*my,dof*Mx*My,0,dnz,0,onz,&mat);CHKERRQ(ierr);
-  MatPreallocateFinalize(dnz,onz);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
@@ -244,7 +244,7 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix, determining exact preallocation */
-  MatPreallocateInitialize(dac->comm,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dnz,onz);
+  ierr = MatPreallocateInitialize(dac->comm,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
   /* loop over local fine grid nodes counting interpolating points */
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
@@ -284,16 +284,16 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
         if (i_c*ratio != i && l_c*ratio != l && j_c*ratio != j) { 
           cols[nc++] = idx_c[col+(m_ghost_c*n_ghost_c+m_ghost_c+1)*dof];
         }
-        MatPreallocateSet(row,nc,cols,dnz,onz);
+        ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
         for (k=1; k<dof; k++) {
           row++;
-          MatPreallocateSet(row,nc,cols,dnz,onz);
+          ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
         }
       }
     }
   }
   ierr = MatCreateMPIAIJ(dac->comm,dof*m_f*n_f*p_f,dof*m_c*n_c*p_c,dof*mx*my*mz,dof*Mx*My*Mz,0,dnz,0,onz,&mat);CHKERRQ(ierr);
-  MatPreallocateFinalize(dnz,onz);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
