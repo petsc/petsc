@@ -1,22 +1,20 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	$(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
-
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscvec
-LOCDIR        = src/pc/examples/
-EXAMPLES_1    = ex1 ex2 ex3 ex4
-RUNEXAMPLES_1 = runex1 runex2 runex3 runex4
-EXAMPLES_2    = ex5
-RUNEXAMPLES_2 = runex5
-EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5
-RUNEXAMPLES_4 = runex1 runex2 runex3 runex4 runex5
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c
+CFLAGS	       = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscvec
+LOCDIR         = src/pc/examples/
+TESTEXAMPLES_1 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex3.PETSc \
+		runex3 clean ex4.PETSc runex4 clean 
+TESTEXAMPLES_2 = ex5.PETSc runex5 clean
+TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 ex3.PETSc runex3 \
+		clean ex4.PETSc runex4 clean ex5.PETSc runex5 clean
+EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c
 
 
 ex1: ex1.o 
