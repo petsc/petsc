@@ -1,6 +1,7 @@
 
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
+#include "src/mat/matimpl.h"
 #include "petscmat.h"
 
 #undef __FUNCT__
@@ -9,9 +10,10 @@ int main(int argc,char **args)
 {
   Mat            C,A,B,D; 
   PetscErrorCode ierr;
-  PetscInt       i,j,k,ntypes = 3,bs,mbs,m,n,block,d_nz=3, o_nz=3,col[3],row,msglvl=0;
-  PetscMPIInt    size;
-  const MatType  type[9] = {MATSEQAIJ,MATSEQBAIJ,MATSEQSBAIJ,MATMPIROWBS};
+  PetscInt       i,j,ntypes = 3,bs,mbs,m,block,d_nz=3, o_nz=3,col[3],row,msglvl=1;
+  PetscMPIInt    size,rank;
+  /* const MatType  type[9] = {MATMPIAIJ,MATMPIBAIJ,MATMPIROWBS};*/ /* BlockSolve95 is required for MATMPIROWBS */
+  const MatType  type[9] = {MATSEQAIJ,MATSEQBAIJ,MATSEQSBAIJ}; 
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
   PetscTruth     equal,flg_loadmat;
@@ -20,7 +22,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg_loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size > 1) ntypes = 5;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_ERR_SUP,"At present, this is a uniprocessor example!");
 
   /* input matrix C */
   if (flg_loadmat){
@@ -29,7 +32,7 @@ int main(int argc,char **args)
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
 
     /* Load the matrix, then destroy the viewer. */
-    ierr = MatLoad(fd,MATMPIAIJ,&C);CHKERRQ(ierr);
+    ierr = MatLoad(fd,MATAIJ,&C);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
     bs = 1;  /* assume the loaded matrix has block size 1 */
   } else { /* Convert a baij mat with bs>1 to other formats */
@@ -72,8 +75,8 @@ int main(int argc,char **args)
     ierr = MatConvert(C,type[i],&A);CHKERRQ(ierr);
     for (j=0; j<ntypes; j++) { 
       if (j==i) continue; 
-      if (msglvl>0)
-        ierr = PetscPrintf(PETSC_COMM_SELF," test conversion between %s and %s\n",type[i],type[j]);
+      if (msglvl>0 && !rank)
+        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] test conversion between %s and %s\n",rank,type[i],type[j]);
 
       ierr = MatConvert(A,type[j],&B);CHKERRQ(ierr);
       ierr = MatConvert(B,type[i],&D);CHKERRQ(ierr); 
@@ -90,34 +93,8 @@ int main(int argc,char **args)
           SETERRQ2(1,"Error in conversion from %s to %s",type[i],type[j]);
         }
       } else { /* bs > 1 */
-        Vec         x,s1,s2;
-        PetscRandom rctx;
-        PetscReal   r1,r2,tol=1.e-10;
-
-        ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-        ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
-        ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-        ierr = VecSetSizes(x,m,PETSC_DECIDE);CHKERRQ(ierr);
-        ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-        ierr = VecDuplicate(x,&s1);CHKERRQ(ierr);
-        ierr = VecDuplicate(x,&s2);CHKERRQ(ierr);
-
-        for (k=0; k<10; k++) {
-          ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
-          ierr = MatMult(A,x,s1);CHKERRQ(ierr);
-          ierr = MatMult(B,x,s2);CHKERRQ(ierr);
-          /* ierr = MatMult(D,x,s2);CHKERRQ(ierr); */
-          ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
-          ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
-          r1 -= r2;
-          if (r1<-tol || r1>tol) {
-            SETERRQ2(1,"Error in conversion from %s to %s",type[i],type[j]);
-          }
-        }
-        ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
-        ierr = VecDestroy(x);CHKERRQ(ierr);
-        ierr = VecDestroy(s1);CHKERRQ(ierr);
-        ierr = VecDestroy(s2);CHKERRQ(ierr);
+        ierr = MatMultEqual(A,B,10,&equal);CHKERRQ(ierr);
+        if (!equal) SETERRQ2(PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[i],type[j]);
       }
       ierr = MatDestroy(B);CHKERRQ(ierr);
       ierr = MatDestroy(D);CHKERRQ(ierr); 
