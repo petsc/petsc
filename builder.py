@@ -260,7 +260,11 @@ class Builder(logging.Logger):
           outputFiles = {'ELF': [target]}
         else:
           outputFiles = {}
-      config.outputFiles.update(outputFiles)
+      for language in outputFiles:
+        if language in config.outputFiles:
+          config.outputFiles[language].extend(outputFiles[language])
+        else:
+          config.outputFiles[language] = outputFiles[language]
     else:
       output      = ''
       error       = ''

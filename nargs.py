@@ -79,7 +79,7 @@ in order to declare the type of that option.'''
 
   def findArgument(key, argList):
     '''Locate an argument with the given key in argList, returning the value or None on failure
-       - This isgenerally used to process arguments which must take effect before canonical argument parsing'''
+       - This is generally used to process arguments which must take effect before canonical argument parsing'''
     if not isinstance(argList, list): return None
     # Reverse the list so that we preserve the semantics which state that the last
     #   argument with a given key takes effect

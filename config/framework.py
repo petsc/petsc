@@ -147,11 +147,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''Create all children specified by --configModules'''
     import nargs
 
-    self.argDB['configModules'] = nargs.Arg.findArgument('configModules', self.clArgs)
-    if self.argDB['configModules'] is None:
+    modules = nargs.Arg.findArgument('configModules', self.clArgs)
+    if modules is None:
       self.argDB['configModules'] = []
-    elif not isinstance(self.argDB['configModules'], list):
-      self.argDB['configModules'] = [self.argDB['configModules']]
+    elif not isinstance(modules, list):
+      self.argDB['configModules'] = [modules]
+    else:
+      self.argDB['configModules'] = modules
     for moduleName in self.argDB['configModules']:
       try:
         self.getChild(moduleName)

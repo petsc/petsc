@@ -46,7 +46,7 @@ class Compiler(script.Script):
     import os
 
     if not hasattr(self, 'scandal'):
-      self.scandal = self.getModule(os.path.join(self.argDB['ASE_DIR'], 'driver', 'python'), 'scandal').Scandal(argDB = self.argDB)
+      self.scandal = self.getModule(self.argDB['SCANDAL_DIR'], 'scandal').Scandal(argDB = self.argDB)
       self.scandal.setup()
     return self.scandal
 
