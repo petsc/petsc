@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.4 1998/06/21 00:45:13 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.5 1998/06/21 01:05:48 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
@@ -47,7 +47,7 @@ Input parameters include:\n\
    This code demonstrates the TS solver interface to two variants of 
    linear problems, u_t = f(u,t), namely
      - time-dependent f:   f(u,t) is a function of t
-     - time-independent f: f(u,t) is simply just f(u)
+     - time-independent f: f(u,t) is simply f(u)
 
     The uniprocessor version of this code is ts/examples/tutorials/ex3.c
 
