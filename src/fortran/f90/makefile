@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.15 1998/09/25 19:12:02 balay Exp bsmith $ 
+# $Id: makefile,v 1.16 1999/02/01 02:59:43 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -13,7 +13,7 @@ OBJSC    = zf90vec.o zf90mat.o zf90da.o f90_nag.o f90_IRIX.o f90_rs6000.o\
 OBJSF    = 
 LIBBASE  = libpetscfortran
 MANSEC   = 7
-DIRS     = test
+DIRS     = tests
 LOCDIR   = src/fortran/f90/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
