@@ -8,10 +8,12 @@ outfiles=""
 verbose="no"
 shared="no"
 nolocal=""
+local="no"
 showtimes="yes"
 ctransin="parin"
 ctransout="parout"
 showoutput="no"
+keeptmp="no"
 #
 # Process arguments
 while [ $# -gt 0 ] ; do
@@ -21,6 +23,12 @@ while [ $# -gt 0 ] ; do
     -np) 
     np=$1
     shift
+    ;;
+    -keeptmp) 
+    keeptmp="yes"
+    ;;
+    -local) 
+    local="yes"
     ;;
     -shared) 
     shared="yes"
@@ -65,8 +73,7 @@ while [ $# -gt 0 ] ; do
     ;;
     -u|-usage|-help)
     echo "$0       [-np n] [-maxtime min] [-showoutput ] "
-    echo "         [-showtimesoff] [-shared] [-infile file] [-outfile file] prog [ progs args ]"
-    echo "Multiple -infile and -outfile args may be used."
+    echo "         [-showtimesoff] [-shared] prog [ progs args ]"
     exit 0;
     ;;
     *)
@@ -81,7 +88,7 @@ while [ $# -gt 0 ] ; do
     esac
 done
 if [ $np -gt 32 ] ; then
-  shared=no
+  shared="no"
 fi
 #
 # Now process program options looking for possible input files
@@ -95,8 +102,9 @@ while [ $# -gt 0 ] ; do
     shift
     case $arg in 
     -start_in_debugger|-on_error_attach_debugger) 
-      shared="yes"
-      nolocal="-nolocal"
+      shared="no"
+      nolocal=""
+      local="yes"
       newprogargs="$newprogargs $arg"
     ;;
     -f|-f0|-f1|-options_file) 
@@ -122,7 +130,11 @@ while [ $# -gt 0 ] ; do
     ;; 
   esac
 done
-if [ "$infiles" != "" ] ; then echo "Staging files: $infiles" ; fi
+if [ $local = "no" ] ; then
+  if [ $showtimes = "yes" ] ; then
+    if [ "$infiles" != "" ] ; then echo "Staging files: $infiles" ; fi
+  fi
+fi
 #
 jobdir=$HOME/myjobs
 if [ ! -d $jobdir ] ; then mkdir $jobdir ; fi
@@ -139,10 +151,12 @@ cp ${PETSC_DIR}/bin/parseargs.py $rundir
 # Check if this should be a myrinet job:
 #
 hasgm="`nm $programname | egrep 'T gm_init$'`"
-if [ -n "$has_gm" ] ; then
-  usemyrinet=yes
+if [ -n "$hasgm" ] ; then
+  usemyrinet="yes"
+  shared="no"
+  local="no"
 else
-  usemyrinet=no
+  usemyrinet="no"
 fi
 #
 # strip path from program name
@@ -157,13 +171,15 @@ programbase=`basename $programname`
 #PBS -S /bin/sh
 #PBS -l nodes=$np
 #PBS -l walltime=0:${maxtime}:00
-#ctrans $ctransout $rundir
+##ctrans $ctransout $rundir
 #
-if [ $showtimes = "yes" ] ; then
-  echo -n "Staging files to shared nodes " 
-  date
+if [ $local = "no" ] ; then
+  if [ $showtimes = "yes" ] ; then
+    echo -n "Staging files to nodes " 
+    date
+  fi
+  /my/bin/ctrans -t $ctransin -s $rundir -d $rundir -nf \$PBS_NODEFILE 
 fi
-/my/bin/ctrans -t $ctransin -s $rundir -d $rundir -nf \$PBS_NODEFILE 
 if [ $showtimes = "yes" ] ; then
   echo -n "Starting mpi program "
   date
@@ -182,16 +198,27 @@ fi
 
 if [ $usemyrinet = "yes" ] ; then
   pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
-  mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
+  /soft/apps/packages/mpich-gmpg-1.2..4pre3.1/bin/mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
+  cat \${pbsfile} | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
 else
-  mpirun.ch_p4 -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
+  /soft/apps/packages/mpich-1.2.1/bin/mpirun -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
   cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase parseargs.py urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+fi
+
+if [ $showtimes = "yes" ] ; then
+  echo -n "Bringing data files back "
+  date
+fi
+/my/bin/ctrans -t $ctransout -s $rundir -d $rundir -nf \$PBS_NODEFILE
+if [ $showtimes = "yes" ] ; then
+  echo -n "Done "
+  date
 fi
 #
 exit 0;
 EOF
 #
-#  Don't use patch system, just run script directly
+#  Don't use batch system, just run script directly
 # 
 if [ $shared = "yes" ] ; then
   head -$np ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
@@ -199,15 +226,15 @@ if [ $shared = "yes" ] ; then
   export PBS_NODEFILE
   chmod u+x ./.mpirun$$
   ./.mpirun$$
-  if [ $showtimes = "yes" ] ; then
-    echo -n "Bringing data files back "
-    date
-  fi
-  /my/bin/ctrans -t $ctransout -s $rundir -d $rundir -nf $PBS_NODEFILE >/dev/null 2>&1
-  if [ $showtimes = "yes" ] ; then
-    echo -n "Done "
-    date
-  fi
+elif [ $local = "yes" ] ; then
+  echo "localhost" > ./.pbsnodefile.$$
+  echo "localhost" >> ./.pbsnodefile.$$
+  echo "localhost" >> ./.pbsnodefile.$$
+  echo "localhost" >> ./.pbsnodefile.$$
+  PBS_NODEFILE=`pwd`/.pbsnodefile.$$
+  export PBS_NODEFILE
+  chmod u+x ./.mpirun$$
+  ./.mpirun$$
 else 
 #
 #  submit to batch system
@@ -303,23 +330,25 @@ fi
 #
 # decide if we should make an output directory (was there output?)
 #
-pushd $rundir > /dev/null
-rm -rf $programbase $shortinfiles parseargs.py urlget.py
-rm -rf [0-9]*
-popd > /dev/null
-if [ "`ls $rundir/*`" != "" ] ; then
-  cp -rf $rundir ./output.$$ 
-  cd output.$$
-  mv */*.[0-9]* . > /dev/null 2>&1
-  if [ "`ls ./ccn[0-9]*/* 2> /dev/null`" = "" ] ; then
-    rm -rf ccn[0-9]*
-  fi
-  cd ..
-  if [ "`ls ./output.$$/* 2> /dev/null`" = "" ] ; then
-    rm -rf output.$$
-  else 
-    if [ $showtimes = "yes" ] ; then
-      echo "Output files placed into " output.$$
+if [ $local = "no" ] ; then
+  pushd $rundir > /dev/null
+  rm -rf $programbase $shortinfiles parseargs.py urlget.py
+  rm -rf [0-9]*
+  popd > /dev/null
+  if [ "`ls $rundir/*`" != "" ] ; then
+    cp -rf $rundir ./output.$$ 
+    cd output.$$
+    mv */*.[0-9]* . > /dev/null 2>&1
+    if [ "`ls ./ccn[0-9]*/* 2> /dev/null`" = "" ] ; then
+      rm -rf ccn[0-9]*
+    fi
+    cd ..
+    if [ "`ls ./output.$$/* 2> /dev/null`" = "" ] ; then
+      rm -rf output.$$
+    else 
+      if [ $showtimes = "yes" ] ; then
+        echo "Output files placed into " output.$$
+      fi
     fi
   fi
 fi
@@ -327,8 +356,11 @@ fi
 #
 #  Remove all files mpirun.chiba has created
 #
-rm -rf .mpirun$$* 
-rm -f .pbsnodefile*
-rm -rf $rundir
+if [ $keeptmp != "yes" ] ; then
+#  rm -rf .mpirun$$* 
+  rm -f .pbsnodefile*
+  rm -rf $rundir
+fi
+
 
 
