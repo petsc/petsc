@@ -16,6 +16,13 @@ include ${PETSC_DIR}/bmake/common/test
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
 	-@${OMAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}
+	@egrep -i "( error | error:)" make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
+           echo "********************************************************************"; \
+           echo "  Error during compile, check make_log_${PETSC_ARCH}"; \
+           echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\
+           echo "********************************************************************"; \
+           exit 1; fi
+
 all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared
 #
 # Prints information about the system and version of PETSc being compiled
@@ -112,12 +119,6 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
-	@egrep -i "( error | error:)" make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
-           echo "********************************************************************"; \
-           echo "  Error during compile, check make_log_${PETSC_ARCH}"; \
-           echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\
-           echo "********************************************************************"; \
-           exit 1; fi
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
@@ -310,6 +311,8 @@ alldoc: alldoc1 alldoc2
 # Build everything that goes into 'doc' dir except html sources
 alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
+	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
+	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 	cd src/docs/tex/manual; ${OMAKE} build_manual.pdf LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
 	-maint/wwwindex.py ${PETSC_DIR} ${LOC}

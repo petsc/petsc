@@ -30,16 +30,6 @@
 
 \newcommand{\findex}[1]{\index{FUNCTION #1}}
 \newcommand{\sindex}[1]{\index{#1}}
-\newcommand{\trllink}[2]{{%
-    \pdfstartlink user{%
-        /Subtype /Link
-        /A << 
-            /Type /Action 
-            /S /URI 
-            /URI (#1) 
-        >>}%
-    \Red  \trl{#2} \Black
-    \pdfendlink}}
  
 % Defines the environment where design issues are discussed. In the manual
 % version of this report, these regions are ignored.
