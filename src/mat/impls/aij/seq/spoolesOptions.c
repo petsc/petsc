@@ -22,7 +22,7 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
   /* set default input parameters */ 
   options->tau            = 100.; 
   options->seed           = 10101;  
-  options->ordering       = 1;     /* MMD */
+  options->ordering       = 0;     /* BestOfNDandMS */
   options->maxdomainsize  = 500;
   options->maxzeros       = 1000;
   options->maxsize        = 96;   
@@ -54,7 +54,7 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
     } 
 
     ierr = PetscOptionsEList("-mat_spooles_ordering","ordering type","None",
-             ordertype,4,ordertype[1],buff,32,&flg);CHKERRQ(ierr);
+             ordertype,4,ordertype[0],buff,32,&flg);CHKERRQ(ierr);
     while (flg) {
       ierr = PetscStrcmp(buff,"BestOfNDandMS",&flg);CHKERRQ(ierr);
       if (flg) {
