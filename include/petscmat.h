@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.122 1997/01/12 04:36:13 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.123 1997/01/22 18:46:23 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -10,6 +10,7 @@
 
 typedef struct _Mat*           Mat;
 
+#define MAX_MATRIX_TYPES 12
 /*
    The default matrix data storage formats and routines to create them.
 */
@@ -72,9 +73,14 @@ extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
 extern int MatConvert(Mat,MatType,Mat*);
+extern int MatConvertRegister(MatType,MatType,int (*)(Mat,MatType,Mat*));
+extern int MatConvertRegisterAll();
+
 extern int MatCopy(Mat,Mat);
 extern int MatView(Mat,Viewer);
 extern int MatLoad(Viewer,MatType,Mat*);
+extern int MatLoadRegister(MatType,int (*)(Viewer,MatType,Mat*));
+extern int MatLoadRegisterAll();
 
 extern int MatGetRowIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
 extern int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);

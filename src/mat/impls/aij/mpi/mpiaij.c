@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.187 1997/01/14 20:34:14 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.188 1997/01/14 20:44:34 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1354,8 +1354,6 @@ static int MatSetUnfactored_MPIAIJ(Mat A)
   return 0;
 }
 
-
-extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
 static int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
 extern int MatIncreaseOverlap_MPIAIJ(Mat , int, IS *, int);
 extern int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
@@ -1378,7 +1376,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        0,0,0,0,
        MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
        0,0,
-       0,0,MatConvert_MPIAIJ,MatConvertSameType_MPIAIJ,0,0,
+       0,0,MatConvertSameType_MPIAIJ,0,0,
        0,0,0,
        MatGetSubMatrices_MPIAIJ,MatIncreaseOverlap_MPIAIJ,MatGetValues_MPIAIJ,0,
        MatPrintHelp_MPIAIJ,

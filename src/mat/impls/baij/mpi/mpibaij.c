@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.50 1997/01/14 17:15:35 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.51 1997/01/14 20:35:51 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -1235,7 +1235,7 @@ static struct _MatOps MatOps = {
   MatZeroEntries_MPIBAIJ,MatZeroRows_MPIBAIJ,0,
   0,0,0,MatGetSize_MPIBAIJ,
   MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,0,0,
-  0,0,0,MatConvertSameType_MPIBAIJ,0,0,
+  0,0,MatConvertSameType_MPIBAIJ,0,0,
   0,0,0,MatGetSubMatrices_MPIBAIJ,
   MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,MatPrintHelp_MPIBAIJ,
   MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ,

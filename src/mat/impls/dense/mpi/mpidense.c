@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.62 1997/01/06 20:24:18 balay Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.63 1997/01/22 18:42:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -870,7 +870,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatGetSize_MPIDense,MatGetLocalSize_MPIDense,
        MatGetOwnershipRange_MPIDense,
        0,0, MatGetArray_MPIDense, MatRestoreArray_MPIDense,
-       0,MatConvertSameType_MPIDense,
+       MatConvertSameType_MPIDense,
        0,0,0,0,0,
        0,0,MatGetValues_MPIDense,0,0,MatScale_MPIDense,
        0,0,0,MatGetBlockSize_MPIDense};

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.121 1997/01/06 20:24:14 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.122 1997/01/16 23:15:26 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1102,7 +1102,6 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        0, 
        MatGetArray_SeqDense, 
        MatRestoreArray_SeqDense,
-       0,
        MatConvertSameType_SeqDense,0,0,0,0,
        MatAXPY_SeqDense,MatGetSubMatrices_SeqDense,0,
        MatGetValues_SeqDense,
@@ -1178,13 +1177,6 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   return 0;
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCreate_SeqDense"
-int MatCreate_SeqDense(Mat A,Mat *newmat)
-{
-  Mat_SeqDense *m = (Mat_SeqDense *) A->data;
-  return MatCreateSeqDense(A->comm,m->m,m->n,PETSC_NULL,newmat);
-}
 
 
 

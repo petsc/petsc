@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.203 1997/01/06 20:24:23 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.204 1997/01/22 18:42:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -394,7 +394,7 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   int         ierr, i,j, m = a->m, shift = a->indexshift,pause,color;
   int         format;
-  double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r,maxv;
+  double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r,maxv = 0.0;
   Draw        draw;
   DrawButton  button;
   PetscTruth  isnull;
@@ -452,7 +452,6 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
     int    nz = a->nz,count;
     Draw   popup;
 
-    maxv = 0.0;
     for ( i=0; i<nz; i++ ) {
       if (PetscAbsScalar(a->a[i]) > maxv) maxv = PetscAbsScalar(a->a[i]);
     }
@@ -575,14 +574,16 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax,ierr;
-  int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift;
+  int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift,rmax;
   Scalar     *aa = a->a, *ap;
 
   if (mode == MAT_FLUSH_ASSEMBLY) return 0;
 
+  rmax = ailen[0]; /* determine row with most nonzeros */
   for ( i=1; i<m; i++ ) {
     /* move each row back by the amount of empty slots (fshift) before it*/
     fshift += imax[i-1] - ailen[i-1];
+    rmax   = PetscMax(rmax,ailen[i]);
     if (fshift) {
       ip = aj + ai[i] + shift; ap = aa + ai[i] + shift;
       N = ailen[i];
@@ -613,6 +614,7 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
            m,a->n,fshift,a->nz);
   PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is %d\n",
            a->reallocs);
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Most nonzeros in any row is %d\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (double)fshift;
 
@@ -1388,7 +1390,9 @@ static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
   a->row        = row;
   a->col        = col;
 
-  a->solve_work = (Scalar *) PetscMalloc( (a->m+1)*sizeof(Scalar)); CHKPTRQ(a->solve_work);
+  if (!a->solve_work) { /* this matrix may have been factored before */
+    a->solve_work = (Scalar *) PetscMalloc( (a->m+1)*sizeof(Scalar)); CHKPTRQ(a->solve_work);
+  }
 
   if (!a->diag) {
     ierr = MatMarkDiag_SeqAIJ(inA); CHKERRQ(ierr);
@@ -1564,7 +1568,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatLUFactorSymbolic_SeqAIJ,MatLUFactorNumeric_SeqAIJ,0,0,
        MatGetSize_SeqAIJ,MatGetSize_SeqAIJ,MatGetOwnershipRange_SeqAIJ,
        MatILUFactorSymbolic_SeqAIJ,0,
-       0,0,MatConvert_SeqAIJ,
+       0,0,
        MatConvertSameType_SeqAIJ,0,0,
        MatILUFactor_SeqAIJ,0,0,
        MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.82 1997/01/20 22:11:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.83 1997/01/21 21:50:35 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -50,6 +50,8 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   snes->norm = fnorm;
   if (history) history[0] = fnorm;
   SNESMonitor(snes,0,fnorm);
+
+  if (fnorm == 0.0) {outits = 0; return 0;}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -224,6 +226,10 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
   steptol = neP->steptol;
 
   ierr = VecNorm(y,NORM_2,ynorm); CHKERRQ(ierr);
+  if (*ynorm == 0.0) {
+    PLogInfo(snes,"SNESCubicLineSearch: Search direction and size is 0\n");
+    goto theend;
+  }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
 #if defined(PETSC_COMPLEX)
@@ -381,6 +387,10 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   steptol = neP->steptol;
 
   VecNorm(y, NORM_2,ynorm );
+  if (*ynorm == 0.0) {
+    PLogInfo(snes,"SNESQuadraticLineSearch: Search direction and size is 0\n");
+    goto theend;
+  }
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
     ierr = VecScale(&scale,y); CHKERRQ(ierr);

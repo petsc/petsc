@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.37 1997/01/01 03:38:57 bsmith Exp balay $";
+static char vcid[] = "$Id: matio.c,v 1.38 1997/01/06 20:26:03 balay Exp bsmith $";
 #endif
 
 /* 
@@ -11,15 +11,29 @@ static char vcid[] = "$Id: matio.c,v 1.37 1997/01/01 03:38:57 bsmith Exp balay $
 #include "sys.h"
 #include "pinclude/pviewer.h"
 
-extern int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
-extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_SeqBDiag(Viewer,MatType,Mat*);
-extern int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
-extern int MatLoad_SeqDense(Viewer,MatType,Mat*);
-extern int MatLoad_MPIDense(Viewer,MatType,Mat*);
-extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
+
+static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*) = 
+           {0,0,0,0,0,0,0,0,0,0,0,0};
+
+#undef __FUNC__  
+#define __FUNC__ "MatLoadRegister"
+/*@C
+    MatLoadRegister - Allows one to register a routine that reads matrices
+        from a binary file for a particular matrix type.
+
+  Input Parameters:
+.   type - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
+.   loader - the function that reads the matrix from the binary file.
+
+.seealso: MatLoadRegisterAll()
+
+@*/
+int MatLoadRegister(MatType type,int (*loader)(Viewer,MatType,Mat*))
+{
+  MatLoaders[type] = loader;
+  MatLoadersSet    = 1;
+  return 0;
+}  
 
 extern int MatLoadGetInfo_Private(Viewer);
 
@@ -105,7 +119,8 @@ $    Scalar *values of all nonzeros
 
 .keywords: matrix, load, binary, input
 
-.seealso: ViewerFileOpenBinary(), MatView(), VecLoad() 
+.seealso: ViewerFileOpenBinary(), MatView(), VecLoad(), MatLoadRegister(),
+          MatLoadRegisterAll()
  @*/  
 int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 {
@@ -114,9 +129,16 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   ViewerType  vtype;
   MPI_Comm    comm;
 
-  
-  *newmat  = 0;
+  if (outtype > MAX_MATRIX_TYPES || outtype < 0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Not a valid matrix type");
+  }
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  *newmat  = 0;
+
+  if (!MatLoadersSet) {
+    ierr = MatLoadRegisterAll(); CHKERRQ(ierr);
+  }
+
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype != BINARY_FILE_VIEWER)
    SETERRQ(1,0,"Invalid viewer; open viewer with ViewerFileOpenBinary()");
@@ -129,40 +151,11 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 
   PLogEventBegin(MAT_Load,viewer,0,0,0);
 
-  if (type == MATSEQAIJ) {
-    ierr = MatLoad_SeqAIJ(viewer,type,newmat); CHKERRQ(ierr);
+  if (!MatLoaders[outtype]) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,1,"Invalid matrix type, or matrix load not registered");
   }
-  else if (type == MATMPIAIJ) {
-    ierr = MatLoad_MPIAIJ(viewer,type,newmat); CHKERRQ(ierr);
-  }
-  else if (type == MATSEQBDIAG) {
-    ierr = MatLoad_SeqBDiag(viewer,type,newmat); CHKERRQ(ierr);
-  }
-  else if (type == MATMPIBDIAG) {
-    ierr = MatLoad_MPIBDiag(viewer,type,newmat); CHKERRQ(ierr);
-  }
-  else if (type == MATSEQDENSE) {
-    ierr = MatLoad_SeqDense(viewer,type,newmat); CHKERRQ(ierr);
-  }
-  else if (type == MATMPIDENSE) {
-    ierr = MatLoad_MPIDense(viewer,type,newmat); CHKERRQ(ierr);
-  }
-  else if (type == MATMPIROWBS) {
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
-    ierr = MatLoad_MPIRowbs(viewer,type,newmat); CHKERRQ(ierr);
-#else
-    SETERRQ(1,0,"MATMPIROWBS does not support complex numbers");
-#endif
-  }
-  else if (type == MATSEQBAIJ) {
-    ierr = MatLoad_SeqBAIJ(viewer,type,newmat); CHKERRQ(ierr);
-  }
-  else if (type == MATMPIBAIJ) {
-    ierr = MatLoad_MPIBAIJ(viewer,type,newmat); CHKERRQ(ierr);
-  }
-  else {
-    SETERRQ(1,0,"cannot load with that matrix type yet");
-  }
+
+  ierr = (*MatLoaders[outtype])(viewer,type,newmat); CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat); CHKERRQ(ierr); }

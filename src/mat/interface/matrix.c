@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.219 1997/01/22 20:12:37 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.220 1997/01/23 15:48:25 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1323,6 +1323,35 @@ int MatCopy(Mat A,Mat B)
   return 0;
 }
 
+static int MatConvertersSet = 0;
+static int (*MatConverters[MAX_MATRIX_TYPES][MAX_MATRIX_TYPES])(Mat,MatType,Mat*) = 
+           {{0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0}};
+
+#undef __FUNC__  
+#define __FUNC__ "MatConvertRegister"
+/*@C
+    MatConvertRegister - Allows one to register a routine that converts between
+        two matrix types.
+
+  Input Parameters:
+.   intype - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
+.   outtype - new matrix type, or MATSAME
+
+.seealso: MatConvertRegisterAll()
+
+@*/
+int MatConvertRegister(MatType intype,MatType outtype,int (*converter)(Mat,MatType,Mat*))
+{
+  MatConverters[intype][outtype] = converter;
+  MatConvertersSet               = 1;
+  return 0;
+}  
+
 #undef __FUNC__  
 #define __FUNC__ "MatConvert"
 /*@C  
@@ -1354,20 +1383,26 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
 
+  if (newtype > MAX_MATRIX_TYPES || newtype < -1) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Not a valid matrix type");
+  }
+  *M  = 0;
+
+  if (!MatConvertersSet) {
+    ierr = MatLoadRegisterAll(); CHKERRQ(ierr);
+  }
+
   PLogEventBegin(MAT_Convert,mat,0,0,0); 
-  if (newtype == mat->type || newtype == MATSAME) {
-    if (mat->ops.convertsametype) { /* customized copy */
-      ierr = (*mat->ops.convertsametype)(mat,M,COPY_VALUES); CHKERRQ(ierr);
+  if ((newtype == mat->type || newtype == MATSAME) && mat->ops.convertsametype) {
+    ierr = (*mat->ops.convertsametype)(mat,M,COPY_VALUES); CHKERRQ(ierr);
+  } else {
+    if (!MatConvertersSet) {
+      ierr = MatConvertRegisterAll(); CHKERRQ(ierr);
     }
-    else { /* generic conversion */
-      ierr = MatConvert_Basic(mat,newtype,M); CHKERRQ(ierr);
+    if (!MatConverters[mat->type][newtype]) {
+      SETERRQ(PETSC_ERR_ARG_WRONG,1,"Invalid matrix type, or matrix converter not registered");
     }
-  }
-  else if (mat->ops.convert) { /* customized conversion */
-    ierr = (*mat->ops.convert)(mat,newtype,M); CHKERRQ(ierr);
-  }
-  else { /* generic conversion */
-    ierr = MatConvert_Basic(mat,newtype,M); CHKERRQ(ierr);
+    ierr = (*MatConverters[mat->type][newtype])(mat,newtype,M); CHKERRQ(ierr);
   }
   PLogEventEnd(MAT_Convert,mat,0,0,0); 
   return 0;
@@ -2495,5 +2530,46 @@ int MatSetUnfactored(Mat mat)
   mat->factor = 0;
   if (!mat->ops.setunfactored) return 0;
   ierr = (*mat->ops.setunfactored)(mat); CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatGetType"
+/*@C
+   MatGetType - Gets the matrix type and name (as a string) from the matrix.
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  type - the matrix type (or use PETSC_NULL)
+.  name - name of matrix type (or use PETSC_NULL)
+
+.keywords: matrix, get, type, name
+@*/
+int MatGetType(Mat mat,MatType *type,char **name)
+{
+  int  itype = (int)mat->type;
+  char *matname[10];
+
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+
+  if (type) *type = (MatType) mat->type;
+  if (name) {
+    /* Note:  Be sure that this list corresponds to the enum in mat.h */
+    matname[0] = "MATSEQDENSE";
+    matname[1] = "MATSEQAIJ";
+    matname[2] = "MATMPIAIJ";
+    matname[3] = "MATSHELL";
+    matname[4] = "MATMPIROWBS";
+    matname[5] = "MATSEQBDIAG";
+    matname[6] = "MATMPIBDIAG";
+    matname[7] = "MATMPIDENSE";
+    matname[8] = "MATSEQBAIJ";
+    matname[9] = "MATMPIBAIJ";
+    
+    if (itype < 0 || itype > 9) *name = "Unknown matrix type";
+    else                        *name = matname[itype];
+  }
   return 0;
 }

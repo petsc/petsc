@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.43 1996/12/19 01:36:19 balay Exp balay $";
+static char vcid[] = "$Id: cholbs.c,v 1.44 1997/01/06 20:24:43 balay Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -216,11 +216,13 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 #undef __FUNC__  
 #define __FUNC__ "MatNullMPIRowbs"
 int MatNullMPIRowbs()
-{return 0;}
+{
+  return 0;
+}
 #endif
 
 /* 
-    The loging variables required by BlockSolve, 
+    The logging variables required by BlockSolve, 
 
     This is an ugly hack that allows PETSc to run properly with BlockSolve regardless
   of whether PETSc or BlockSolve is compiled with logging turned on. 
@@ -229,18 +231,14 @@ int MatNullMPIRowbs()
   logging but we have no choice, plus it is unlikely BlockSolve will be developed
   in the near future anyways.
 */
-#if defined (MLOG_MAX_EVNTS) 
 double MLOG_flops;
 double MLOG_event_flops;
 double MLOG_time_stamp;
-int MLOG_sequence_num;
+int    MLOG_sequence_num;
+#if defined (MLOG_MAX_EVNTS) 
 MLOG_log_type MLOG_event_log[MLOG_MAX_EVNTS];
 MLOG_log_type MLOG_accum_log[MLOG_MAX_ACCUM];
 #else
-double MLOG_flops;
-double MLOG_event_flops;
-double MLOG_time_stamp;
-int MLOG_sequence_num;
-int MLOG_event_log[300];
-int MLOG_accum_log[75];
+int    MLOG_event_log[300];
+int    MLOG_accum_log[75];
 #endif

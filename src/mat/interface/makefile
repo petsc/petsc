@@ -3,10 +3,10 @@
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
-SOURCEC  = matrix.c mhas.c fdmatrix.c
+SOURCEC  = matrix.c mhas.c fdmatrix.c matcnv.c mgtype.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = matrix.o mhas.o fdmatrix.o
+OBJSC    = matrix.o mhas.o fdmatrix.o matcnv.o mgtype.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = 2

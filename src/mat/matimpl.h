@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.66 1997/01/03 18:42:54 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.67 1997/01/22 18:42:34 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -50,7 +50,6 @@ struct _MatOps {
             (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
             (*getarray)(Mat,Scalar **),
             (*restorearray)(Mat,Scalar **),
-            (*convert)(Mat,MatType,Mat *),
             (*convertsametype)(Mat,Mat *,int),
             (*forwardsolve)(Mat,Vec,Vec),
             (*backwardsolve)(Mat,Vec,Vec),

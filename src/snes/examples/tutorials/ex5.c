@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.71 1997/01/01 03:41:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.72 1997/01/06 20:43:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -486,3 +486,63 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   *flag = SAME_NONZERO_PATTERN;
   return 0;
 }
+
+/*
+    Demonstrates how you can restrict the linking in of solvers, etc
+  to those that you KNOW you are going to use. This decreases the size
+  of your executable and decreases the time it takes to link your program.
+*/
+/* ------------- Note currently these are commented out -----------------
+extern int SNESCreate_EQ_LS(SNES);
+int SNESRegisterAll()
+{
+  SNESRegister((int)SNES_EQ_LS,         "ls",      SNESCreate_EQ_LS);
+  return 0;
+}
+
+extern int KSPCreate_GMRES(KSP);
+int KSPRegisterAll()
+{
+   KSPRegister(KSPGMRES      , "gmres",      KSPCreate_GMRES); 
+  return 0;
+}
+
+extern int PCCreate_BJacobi(PC);
+extern int PCCreate_ILU(PC);
+int PCRegisterAll()
+{
+  PCRegister(PCBJACOBI      , "bjacobi",    PCCreate_BJacobi);
+  PCRegister(PCILU          , "ilu",        PCCreate_ILU);
+  return 0;
+}
+
+
+extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
+extern int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
+int MatLoadRegisterAll()
+{
+  int ierr;
+
+  ierr = MatLoadRegister(MATSEQAIJ,MatLoad_SeqAIJ); CHKERRQ(ierr);
+  ierr = MatLoadRegister(MATMPIAIJ,MatLoad_MPIAIJ); CHKERRQ(ierr);
+  return 0;
+}  
+
+int MatConvertRegisterAll()
+{
+  return 0;
+}
+
+extern int MatOrder_Natural(Mat,MatReordering,IS*,IS*);
+int MatReorderingRegisterAll()
+{
+  int           ierr;
+  MatReordering name;
+  static int  called = 0;
+  if (called) return 0; else called = 1;
+
+  ierr = MatReorderingRegister(&name,"natural",MatOrder_Natural);CHKERRQ(ierr);
+  return 0;
+}
+ ----------------------------------------------------------------------*/
+

@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.6 1997/01/06 20:31:55 balay Exp bsmith $ */
+/* $Id: petscerror.h,v 1.7 1997/01/22 18:46:23 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -18,7 +18,7 @@
    in printing error messages.
 */
 #if !defined(__FUNC__)
-#define __FUNC__ 0
+#define __FUNC__ "unknownfunction"
 #endif
 
 /* 

@@ -1,8 +1,22 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.15 1996/12/16 19:44:26 balay Exp balay $";
+static char vcid[] = "$Id: itregis.c,v 1.16 1997/01/06 20:22:18 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
+
+
+extern int KSPCreate_Richardson(KSP);
+extern int KSPCreate_Chebychev(KSP);
+extern int KSPCreate_CG(KSP);
+extern int KSPCreate_TCQMR(KSP);
+extern int KSPCreate_GMRES(KSP);
+extern int KSPCreate_BCGS(KSP);
+extern int KSPCreate_CGS(KSP);
+extern int KSPCreate_TFQMR(KSP);
+extern int KSPCreate_LSQR(KSP);
+extern int KSPCreate_PREONLY(KSP);
+extern int KSPCreate_CR(KSP);
+extern int KSPCreate_QCG(KSP);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPRegisterAll"
@@ -25,6 +39,8 @@ $       routine requires recompilation.
   save memory, copy this routine and modify it to register only 
   those methods you desire.  Make sure that the replacement routine 
   is linked before libpetscksp.a.
+
+  Notes: You currently must register GMRES.
 
 .keywords: KSP, register, all
 

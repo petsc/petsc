@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.69 1997/01/01 03:37:37 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.70 1997/01/06 20:24:23 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1487,7 +1487,8 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 
   if (A->type != MATSEQAIJ) return 0;
 
-  if (!a->inode.size) return 0;
+  if (!a->inode.size) return 0; /* no inodes so return */
+  if (a->inode.node_count == m) return 0; /* all inodes are of size 1 */
 
   ierr = Mat_AIJ_CreateColInode(a,&nslim_col,&ns_col); CHKERRQ(ierr);
   tns   = (int *) PetscMalloc((((nslim_row>nslim_col)?nslim_row:nslim_col)+1)*sizeof(int));CHKPTRQ(tns);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.1 1996/12/10 13:57:47 bsmith Exp $";
+static char vcid[] = "$Id: ex55.c,v 1.1 1997/01/24 23:39:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
@@ -9,46 +9,63 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 
 int main(int argc,char **args)
 {
-  Mat     C, A; 
-  int     i, j, m = 5, n = 4, I, J, ierr, set, rank;
-  Scalar  v;
-  MatType mtype;
+  Mat     C, A, B; 
+  int     ierr, i, j, flg, ntypes = 9,size;
+  MatType type[9] = {MATMPIAIJ,  MATMPIROWBS,  MATMPIBDIAG, MATMPIDENSE,
+                     MATMPIBAIJ, MATSEQDENSE, MATSEQAIJ,   MATSEQBDIAG, MATSEQBAIJ};
+  char    file[128];
+  Vec     v;
+  Viewer  fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  if (size > 1) ntypes = 5;
 
- /* Create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
-  for ( i=0; i<m; i++ ) { 
-    for ( j=2*rank; j<2*rank+2; j++ ) {
-      v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
+  /* 
+     Open binary file.  Note that we use BINARY_RDONLY to indicate
+     reading from this file.
+  */
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+
+  /*
+     Load the matrix and vector; then destroy the viewer.
+  */
+  ierr = MatLoad(fd,MATMPIAIJ,&C); CHKERRA(ierr);
+  ierr = VecLoad(fd,&v); CHKERRA(ierr);
+  ierr = ViewerDestroy(fd); CHKERRA(ierr);
+
+  
+  for ( i=0; i<ntypes; i++ ) {
+    ierr = MatConvert(C,type[i],&A); CHKERRA(ierr);
+    for ( j=0; j<ntypes; j++ ) {
+      ierr = MatConvert(A,type[i],&B); CHKERRA(ierr);
+      ierr = MatDestroy(B);  CHKERRA(ierr);
     }
+    ierr = MatDestroy(A);  CHKERRA(ierr);
   }
 
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  
-  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,"conv_",&mtype,&set); CHKERRQ(ierr);
-  ierr = MatConvert(C,mtype,&A); CHKERRA(ierr);
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_IMPL,0);CHKERRA(ierr);
-  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  if (size == 1) {
+    ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"testmat",BINARY_CREATE,&fd);CHKERRA(ierr);
+    ierr = MatView(C,fd); CHKERRA(ierr);
+    ierr = VecView(v,fd); CHKERRA(ierr);
+    ierr = ViewerDestroy(fd); CHKERRA(ierr);
+  }
 
-  /* Free data structures */
-  ierr = MatDestroy(A); CHKERRA(ierr);
   ierr = MatDestroy(C); CHKERRA(ierr);
+  ierr = VecDestroy(v); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+

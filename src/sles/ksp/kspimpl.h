@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.25 1996/11/07 15:07:59 bsmith Exp curfman $ */
+/* $Id: kspimpl.h,v 1.26 1997/01/21 20:38:49 curfman Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -81,19 +81,6 @@ struct _KSP {
             CHKERRQ(_ierr); \
 	  } \
 	}
-
-extern int KSPCreate_Richardson(KSP);
-extern int KSPCreate_Chebychev(KSP);
-extern int KSPCreate_CG(KSP);
-extern int KSPCreate_GMRES(KSP);
-extern int KSPCreate_TCQMR(KSP);
-extern int KSPCreate_BCGS(KSP);
-extern int KSPCreate_CGS(KSP);
-extern int KSPCreate_TFQMR(KSP);
-extern int KSPCreate_LSQR(KSP);
-extern int KSPCreate_PREONLY(KSP);
-extern int KSPCreate_CR(KSP);
-extern int KSPCreate_QCG(KSP);
 
 extern int KSPDefaultAdjustWork(KSP);
 extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);

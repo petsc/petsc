@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: str.c,v 1.7 1996/12/16 22:10:46 balay Exp balay $";
+static char vcid[] = "$Id: str.c,v 1.8 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -54,6 +54,8 @@ void PetscStrncat(char *s,char *t,int n)
 #define __FUNC__ "PetscStrcmp"
 int PetscStrcmp(char *a,char *b)
 {
+  if (!a && !b) return 0;
+  if (!a || !b) return 1;
   return strcmp(a,b);
 }
 

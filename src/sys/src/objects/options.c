@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.117 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.118 1997/01/22 18:41:59 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -294,6 +294,7 @@ $  -debugger_pause sleeptime (in seconds)
 $  -trdebug
 $  -trmalloc
 $  -trmalloc_off
+$  -trmalloc_log
 $  -no_signal_handler : Turns off the signal handler
 $  -fp_trap : Stops on floating point exceptions
 $      Note: On the IBM RS6000 this slows code by
@@ -407,7 +408,7 @@ $      utility Upshot/Nupshot (in MPICH distribution)
 @*/
 int PetscFinalize()
 {
-  int  ierr,i,rank = 0,flg1,flg2;
+  int  ierr,i,rank = 0,flg1,flg2,flg3;
 
   ViewerDestroy_Private();
   ViewerDestroyDrawX_Private();
@@ -474,6 +475,7 @@ int PetscFinalize()
   }
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
   if (flg1) {
     OptionsDestroy_Private();
     NRDestroyAll();
@@ -494,6 +496,9 @@ int PetscFinalize()
   else {
     OptionsDestroy_Private();
     NRDestroyAll(); 
+  }
+  if (flg3) {
+    ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 
   }
   if (PetscBeganMPI) {
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -543,14 +548,18 @@ int OptionsCheckInitial_Private()
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_nan",&flg4);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
 #if defined(PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1); CHKERRQ(ierr);
   if (!flg1) { ierr = PetscSetUseTrMalloc_Private(flg4); CHKERRQ(ierr); }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2); CHKERRQ(ierr);
-  if (flg1 || flg2 || flg4) {ierr = PetscSetUseTrMalloc_Private(flg4);CHKERRQ(ierr);}
+  if (flg1 || flg2 || flg3 || flg4) {ierr = PetscSetUseTrMalloc_Private(flg4);CHKERRQ(ierr);}
 #endif
+  if (flg3) {
+    ierr = PetscTrLog();CHKERRQ(ierr); 
+  }
   ierr = OptionsHasName(PETSC_NULL,"-trdebug",&flg1); CHKERRQ(ierr);
   if (flg1) { 
     ierr = PetscTrDebugLevel(1);CHKERRQ(ierr);

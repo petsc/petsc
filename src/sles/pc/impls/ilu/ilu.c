@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.80 1997/01/06 20:23:51 balay Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.81 1997/01/23 15:51:11 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -254,17 +254,20 @@ static int PCSetUp_ILU(PC pc)
   PC_ILU      *ilu = (PC_ILU *) pc->data;
 
   if (ilu->inplace) {
-    ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
-    ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
-    if (ilu->row) PLogObjectParent(pc,ilu->row);
-    if (ilu->col) PLogObjectParent(pc,ilu->col);
+    if (!pc->setupcalled) {
+      /* Inplace factorization only makes sense with Natural ordering
+         so we only need to get the ordering once, even if nonzero structure changes */
+      ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
+      ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
+      if (ilu->row) PLogObjectParent(pc,ilu->row);
+      if (ilu->col) PLogObjectParent(pc,ilu->col);
+    }
     if (setups[pc->pmat->type]) {
       ierr = (*setups[pc->pmat->type])(pc);
     }
-    f = 1.0 + .5*ilu->levels;
-    /* this uses an arbritrary 5.0 as the fill factor! User may set
-       with the option -mat_ilu_fill */
-    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,f,ilu->levels); CHKERRQ(ierr);
+    /* In place ILU only makes sense with fill factor of 1.0 because 
+       cannot have levels of fill */
+    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,1.0,ilu->levels); CHKERRQ(ierr);
     ilu->fact = pc->pmat;
   }
   else if (ilu->usedt) {

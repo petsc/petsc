@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.77 1997/01/06 20:22:18 balay Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.78 1997/01/22 18:41:42 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -200,7 +200,7 @@ int KSPSolve(KSP ksp, int *its)
     ierr = VecGetSize(ksp->vec_sol,&n); CHKERRQ(ierr);
     r = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(r);
     c = r + n;
-    ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c); CHKERRQ(ierr);
+    ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c); CHKERRQ(ierr); 
     if (flag1) {
       PetscPrintf(ksp->comm,"Explicitly computed Eigenvalues\n");
       for ( i=0; i<n; i++ ) {

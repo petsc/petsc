@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.123 1997/01/06 20:24:51 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.124 1997/01/22 18:43:14 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2107,7 +2107,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
        0,MatLUFactorNumeric_SeqBDiag_N,0,0,
        MatGetSize_SeqBDiag,MatGetSize_SeqBDiag,MatGetOwnershipRange_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag,0,
-       0,0,MatConvert_SeqBDiag,
+       0,0,
        MatConvertSameType_SeqBDiag,0,0,
        MatILUFactor_SeqBDiag,0,0,
        MatGetSubMatrices_SeqBDiag,0,MatGetValues_SeqBDiag_N,0,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.28 1996/12/16 20:13:35 balay Exp balay $";
+static char vcid[] = "$Id: pcregis.c,v 1.29 1997/01/06 20:23:25 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -7,13 +7,13 @@ static char vcid[] = "$Id: pcregis.c,v 1.28 1996/12/16 20:13:35 balay Exp balay 
 
 extern int PCCreate_Jacobi(PC);
 extern int PCCreate_BJacobi(PC);
+extern int PCCreate_ILU(PC);
 extern int PCCreate_None(PC);
 extern int PCCreate_LU(PC);
 extern int PCCreate_SOR(PC);
 extern int PCCreate_Shell(PC);
 extern int PCCreate_MG(PC);
 extern int PCCreate_Eisenstat(PC);
-extern int PCCreate_ILU(PC);
 extern int PCCreate_ICC(PC);
 extern int PCCreate_ASM(PC);
 extern int PCCreate_BGS(PC);
@@ -40,6 +40,7 @@ $       routine requires recompilation.
   those methods you desire.  Make sure that the replacement routine 
   is linked before libpetscsles.a.
 
+  Notes: You currently must register ILU (and in parallel bjacobi).
 .keywords: PC, register, all
 
 .seealso: PCRegister(), PCRegisterDestroy()

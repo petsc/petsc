@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.75 1997/01/06 20:22:36 balay Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.76 1997/01/22 18:41:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -57,7 +57,6 @@ static char vcid[] = "$Id: gmres.c,v 1.75 1997/01/06 20:22:36 balay Exp bsmith $
  */
 
 #include <math.h>
-#include <stdio.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 #include "pinclude/pviewer.h"
 #define GMRES_DELTA_DIRECTIONS 10
@@ -509,44 +508,6 @@ static int GMRESGetNewVectors( KSP ksp,int it )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetRestart"
-/*@
-    KSPGMRESSetRestart - Sets the number of search directions 
-    for GMRES before restart.
-
-    Input Parameters:
-.   ksp - the iterative context
-.   max_k - the number of directions
-
-    Options Database Key:
-$   -ksp_gmres_restart <max_k>
-
-    Note:
-    The default value of max_k = 30.
-
-.keywords: GMRES, set, restart
-
-.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
-@*/
-int KSPGMRESSetRestart(KSP ksp,int max_k )
-{
-  KSP_GMRES *gmres;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  gmres = (KSP_GMRES *)ksp->data;
-  if (ksp->type != KSPGMRES) return 0;
-  gmres->max_k = max_k;
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "KSPDefaultConverged_GMRES"
-int KSPDefaultConverged_GMRES(KSP ksp,int n,double rnorm,void *dummy)
-{
-  if ( rnorm <= ksp->ttol ) return(1);
-  else return(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ "KSPBuildSolution_GMRES"
 static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 {
@@ -568,45 +529,6 @@ static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 
   ierr = BuildGmresSoln(gmres->nrs,VEC_SOLN,ptr,ksp,gmres->it); CHKERRQ(ierr);
   *result = ptr; return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetOrthogonalization"
-/*@C
-  KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
-
-  Input Parameters:
-.   ksp   - iterative context obtained from KSPCreate
-.   fcn   - Orthogonalization function
-
-  Notes:
-  Several orthogonalization routines are predefined.
-$    KSPGMRESModifiedGramSchmidtOrthogonalization() - default.
-
-$    KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - 
-       NOT recommended; however, for some problems, particularly
-       when using parallel distributed vectors, this may be
-       significantly faster.
-
-$    KSPGMRESIROrthogonalization() - interative refinement
-       version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization(),
-       which may be more numerically stable.
-
-  Options Database Keys:
-$  -ksp_gmres_unmodifiedgramschmidt
-$  -ksp_gmres_irorthog
-
-.keywords: GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
-
-.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreallocateVectors()
-@*/
-int KSPGMRESSetOrthogonalization( KSP ksp,int (*fcn)(KSP,int) )
-{
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type == KSPGMRES) {
-    ((KSP_GMRES *)ksp->data)->orthog = fcn;
-  }
-  return 0;
 }
 
 #undef __FUNC__  
@@ -640,6 +562,7 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
 
 extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
 extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *);
+extern int KSPDefaultConverged_GMRES(KSP,int,double,void*);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPCreate_GMRES"
@@ -672,33 +595,6 @@ int KSPCreate_GMRES(KSP ksp)
   gmres->sol_temp       = 0;
   gmres->max_k          = GMRES_DEFAULT_MAXK;
   gmres->Rsvd           = 0;
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetPreAllocateVectors"
-/*@
-    KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
-    needed work vectors at initial setup rather than the default, which 
-    is to allocate them in chunks when needed.
-
-    Input Paramter:
-.   ksp   - iterative context obtained from KSPCreate
-
-    Options Database Key:
-$   -ksp_gmres_preallocate
-
-.keywords: GMRES, preallocate, vectors
-
-.seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization()
-@*/
-int KSPGMRESSetPreAllocateVectors(KSP ksp)
-{
-  KSP_GMRES *gmres;
-
-  if (ksp->type != KSPGMRES) return 0;
-  gmres = (KSP_GMRES *)ksp->data;
-  gmres->q_preallocate = 1;
   return 0;
 }
 

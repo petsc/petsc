@@ -69,7 +69,7 @@ EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		 ex27.c ex28.c ex30.c ex31.c ex32.c ex33.c \
 		 ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
 		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
-		 ex53.c
+		 ex53.c ex55.c
 EXAMPLESF      = ex36.F ex16f90.F
 
 ex1: ex1.o  chkopts
@@ -292,6 +292,9 @@ ex54: ex54.o chkopts
 	-$(CLINKER) -o ex54 ex54.o $(PETSC_LIB)
 	$(RM) ex54.o
 
+ex55: ex55.o chkopts
+	-$(CLINKER) -o ex55 ex55.o $(PETSC_LIB)
+	$(RM) ex55.o
 
 
 NPROCS    = 1 3

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.48 1997/01/01 03:36:13 bsmith Exp balay $";
+static char vcid[] = "$Id: rich.c,v 1.49 1997/01/06 20:22:42 balay Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -22,29 +22,6 @@ int KSPSetUp_Richardson(KSP ksp)
     {SETERRQ(2,0,"no symmetric preconditioning for KSPRICHARDSON");}
   /* get work vectors from user code */
   return KSPDefaultGetWork(ksp,2);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "KSPRichardsonSetScale"
-/*@
-    KSPRichardsonSetScale - Call after KSPCreate(KSPRICHARDSON) to set
-    the damping factor; if this routine is not called, the factor 
-    defaults to 1.0.
-
-    Input Parameters:
-.   ksp - the iterative context
-.   scale - the relaxation factor
-
-.keywords: KSP, Richardson, set, scale
-@*/
-int KSPRichardsonSetScale(KSP ksp,double scale)
-{
-  KSP_Richardson *richardsonP;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (ksp->type != KSPRICHARDSON) return 0;
-  richardsonP = (KSP_Richardson *) ksp->data;
-  richardsonP->scale = scale;
-  return 0;
 }
 
 #undef __FUNC__  
