@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.50 1996/01/12 17:31:43 balay Exp balay $ */
+/* $Id: pc.h,v 1.51 1996/01/19 18:57:04 balay Exp curfman $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -82,6 +82,8 @@ extern int PCBSIterSolve(PC,Vec,Vec,int*);
 
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
+extern int PCShellSetName(PC,char*);
+extern int PCShellGetName(PC,char**);
 
 extern int PCLUSetUseInPlace(PC);
 extern int PCILUSetUseInPlace(PC);
