@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.32 1997/07/01 19:32:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.33 1997/09/11 20:33:21 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -34,6 +34,7 @@ static char vcid[] = "$Id: zsys.c,v 1.32 1997/07/01 19:32:56 bsmith Exp bsmith $
 #define petscbinaryread_           PETSCBINARYREAD
 #define petscbinarywrite_          PETSCBINARYWRITE
 #define petscbinaryclose_          PETSCBINARYCLOSE
+#define petscbinaryseek_           PETSCBINARYSEEK
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petsctrlog_                petsctrlog
 #define petscattachdebugger_       petscattachdebugger
@@ -61,6 +62,7 @@ static char vcid[] = "$Id: zsys.c,v 1.32 1997/07/01 19:32:56 bsmith Exp bsmith $
 #define petscbinaryread_           petscbinaryread
 #define petscbinarywrite_          petscbinarywrite
 #define petscbinaryclose_          petscbinaryclose
+#define petscbinaryseek_           petscbinaryseek
 #endif
 
 #if defined(__cplusplus)
@@ -86,6 +88,11 @@ void petscbinarywrite_(int *fd,void *p,int *n,PetscBinaryType *type,int *istemp,
 void petscbinaryread_(int *fd,void *p,int *n,PetscBinaryType *type,int *__ierr)
 {
   *__ierr = PetscBinaryRead(*fd,p,*n,*type);
+}
+
+void petscbinaryseek_(int *fd,int *size,PetscBinarySeekType *whence,int *__ierr)
+{
+  *__ierr = PetscBinarySeek(*fd,*size,*whence);
 }
 
 void petscbinaryclose_(int *fd,int *__ierr)

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.27 1997/05/23 18:33:50 balay Exp bsmith $ */
+/* $Id: sys.h,v 1.28 1997/07/29 14:13:39 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -46,6 +46,22 @@ extern int PetscBinaryRead(int,void*,int,PetscBinaryType);
 extern int PetscBinaryWrite(int,void*,int,PetscBinaryType,int);
 extern int PetscBinaryOpen(char *,int,int *);
 extern int PetscBinaryClose(int);
+
+/*
+   In binary files variables are stored using the following lengths,
+  regardless of how they are stored in memory on any one particular
+  machine. Use these rather then sizeof() in computing sizes for 
+  PetscBinarySeek().
+*/
+#define BINARY_INT_SIZE    32
+#define BINARY_FLOAT_SIZE  32
+#define BINARY_CHAR_SIZE    8
+#define BINARY_SHORT_SIZE  16
+#define BINARY_DOUBLE_SIZE 64
+#define BINARY_SCALAR_SIZE sizeof(Scalar)
+
+typedef enum {BINARY_SEEK_SET, BINARY_SEEK_CUR} PetscBinarySeekType;
+extern int PetscBinarySeek(int,int,PetscBinarySeekType);
 
 extern int PetscSetDebugger(char *,int,char *);
 extern int PetscAttachDebugger();

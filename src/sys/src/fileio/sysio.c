@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.23 1997/07/27 22:59:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.24 1997/08/22 15:11:48 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -97,11 +97,11 @@ void PetscByteSwapScalar(Scalar *buff,int n)
    Output Parameters:
 .  p - the buffer
 
-   Note: 
+   Notes: 
    PetscBinaryRead() uses byte swapping to work on all machines.
-
-   Fortran Note:
-   This routine is not supported in Fortran.
+   Integers are stored on the file as 32 long, regardless of whether
+   they are stored in the machine as 32 or 64, this means the same
+   binary file may be read on any machine.
 
 .keywords: binary, input, read
 
@@ -181,11 +181,12 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 .  n  - the number of items to read 
 .  type - the type of items to read (BINARY_INT or BINARY_SCALAR)
 
-   Note: 
+   Notes: 
    PetscBinaryWrite() uses byte swapping to work on all machines.
+   Integers are stored on the file as 32 long, regardless of whether
+   they are stored in the machine as 32 or 64, this means the same
+   binary file may be read on any machine.
 
-   Fortran Note:
-   This routine is not supported in Fortran.
 
 .keywords: binary, output, write
 
@@ -327,5 +328,42 @@ int PetscBinaryOpen(char *name,int type,int *fd)
 int PetscBinaryClose(int fd)
 {
   close(fd);
+  return 0;
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "PetscBinarySeek" 
+/*@C
+   PetscBinarySeek - Moves the file pointer on a PETSc binary file.
+
+   Output Parameter:
+.  fd - the file
+.  whence - if BINARY_SEEK_SET then size is an absolute location in the file
+            if BINARY_SEEK_CUR then size is offset from current location
+.  size - number of bytes to move. Use BINARY_INT_SIZE, BINARY_SCALAR_SIZE,
+          etc in your calculation rather then sizeof() to compute byte lengths.
+
+   Notes: 
+   Integers are stored on the file as 32 long, regardless of whether
+   they are stored in the machine as 32 or 64, this means the same
+   binary file may be read on any machine. Hence you CANNOT use sizeof()
+   to determine the offset or location.
+
+.keywords: binary, output, write
+
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+@*/
+int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
+{
+  int iwhence;
+  if (whence == BINARY_SEEK_SET) {
+    iwhence = SEEK_SET;
+  } else if (whence == BINARY_SEEK_CUR) {
+    iwhence = SEEK_CUR;
+  } else {
+    SETERRQ(1,1,"Unknown seek location");
+  }
+  lseek(fd,(off_t)size,iwhence);
   return 0;
 }
