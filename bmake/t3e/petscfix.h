@@ -162,7 +162,9 @@ extern char*  mktemp(char*);
    included by <ulocks.h> (required by shared memory stuff) uses a 
    k_sigset_t though it has never been declared.
 */
-typedef int k_sigset_t;
+typedef struct { 
+        __uint32_t sigbits[2];
+} k_sigset_t; 
 }
 
 #else
