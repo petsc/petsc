@@ -114,7 +114,7 @@ latexpages:
 
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	$(ITOOLSDIR)/doc/doctext -html \
+	$(ITOOLSDIR)/doc/doctext -html -index $(PETSCLIB)/docs/www/www.cit \
                 -mpath $(PETSCLIB)/docs/www/man$(MANSEC) -ext $(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); fi 
 
