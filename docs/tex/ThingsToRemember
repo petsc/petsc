@@ -65,6 +65,12 @@ Berkeley: i86pc machines running Solaris
    Userid: bfsmith
    Password: in Barry's office
 
+LIBS        = -L/usr/now/mpi/mpich/lib/solaris/am2i86pc -L/usr/now/lib\
+              -lmpi -lam2 -lens -leutl -lglunix -lthread -lposix4\
+              -lsocket -lnsl
+
+INCLUDES    = -I/usr/now/mpi/mpich/include
+
 LLNL: unsecure
 
    IBM SP2: blue.llnl.gov
