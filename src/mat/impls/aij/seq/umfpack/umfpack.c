@@ -6,7 +6,6 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_UMFPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 EXTERN_C_BEGIN
 #include "umfpack.h"
 EXTERN_C_END
@@ -18,29 +17,72 @@ typedef struct {
   PetscScalar  *av;
   MatStructure flg;
   PetscTruth   PetscMatOdering;
+
+  /* A few function pointers for inheritance */
+  int (*MatView)(Mat,PetscViewer);
+  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatDestroy)(Mat);
+  
+  /* Flag to clean up UMFPACK objects during Destroy */
+  PetscTruth CleanUpUMFPACK;
 } Mat_SeqAIJ_UMFPACK;
-
-
-extern int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_UMFPACK"
 int MatDestroy_SeqAIJ_UMFPACK(Mat A)
 {
   Mat_SeqAIJ_UMFPACK *lu = (Mat_SeqAIJ_UMFPACK*)A->spptr;
-  int                ierr;
+  int                ierr,(*destroy)(Mat);
 
   PetscFunctionBegin;
-  umfpack_di_free_symbolic(&lu->Symbolic) ;
-  umfpack_di_free_numeric(&lu->Numeric) ;
-  ierr = PetscFree(lu->Wi);CHKERRQ(ierr);
-  ierr = PetscFree(lu->W);CHKERRQ(ierr);
+  if (lu->CleanUpUMFPACK) {
+    umfpack_di_free_symbolic(&lu->Symbolic) ;
+    umfpack_di_free_numeric(&lu->Numeric) ;
+    ierr = PetscFree(lu->Wi);CHKERRQ(ierr);
+    ierr = PetscFree(lu->W);CHKERRQ(ierr);
 
-  if (lu->PetscMatOdering) {
-    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+    if (lu->PetscMatOdering) {
+      ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+    }
   }
+
+  destroy = lu->MatDestroy;
   ierr = PetscFree(lu);CHKERRQ(ierr);
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = (*destroy)(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatView_SeqAIJ_UMFPACK"
+int MatView_SeqAIJ_UMFPACK(Mat A,PetscViewer viewer)
+{
+  int                 ierr;
+  PetscTruth          isascii;
+  PetscViewerFormat   format;
+  Mat_SeqAIJ_UMFPACK  *lu=(Mat_SeqAIJ_UMFPACK*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      ierr = MatSeqAIJFactorInfo_UMFPACK(A,viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_UMFPACK"
+int MatAssemblyEnd_SeqAIJ_UMFPACK(Mat A,MatAssemblyType mode) {
+  int                ierr;
+  Mat_SeqAIJ_UMFPACK *lu=(Mat_SeqAIJ_UMFPACK*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  ierr = MatUseUMFPACK_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -139,9 +181,11 @@ int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
   /* Control parameters used by numeric factorization */
   ierr = PetscOptionsReal("-mat_umfpack_pivot_tolerance","Control[UMFPACK_PIVOT_TOLERANCE]","None",lu->Control[UMFPACK_PIVOT_TOLERANCE],&lu->Control[UMFPACK_PIVOT_TOLERANCE],PETSC_NULL);CHKERRQ(ierr);
+#if !defined(PETSC_HAVE_UMFPACK_41_OR_NEWER)
   ierr = PetscOptionsReal("-mat_umfpack_relaxed_amalgamation","Control[UMFPACK_RELAXED_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED_AMALGAMATION],&lu->Control[UMFPACK_RELAXED_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_umfpack_relaxed2_amalgamation","Control[UMFPACK_RELAXED2_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED2_AMALGAMATION],&lu->Control[UMFPACK_RELAXED2_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_umfpack_relaxed3_amalgamation","Control[UMFPACK_RELAXED3_AMALGAMATION]","None",lu->Control[UMFPACK_RELAXED3_AMALGAMATION],&lu->Control[UMFPACK_RELAXED3_AMALGAMATION],PETSC_NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscOptionsReal("-mat_umfpack_alloc_init","Control[UMFPACK_ALLOC_INIT]","None",lu->Control[UMFPACK_ALLOC_INIT],&lu->Control[UMFPACK_ALLOC_INIT],PETSC_NULL);CHKERRQ(ierr);
 
   /* Control parameters used by solve */
@@ -162,7 +206,11 @@ int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
 
   /* symbolic factorization of A' */
   /* ---------------------------------------------------------------------- */
+#if defined(PETSC_HAVE_UMFPACK_41_OR_NEWER)
+  status = umfpack_di_qsymbolic(n,m,ai,aj,PETSC_NULL,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info) ;
+#else
   status = umfpack_di_qsymbolic(n,m,ai,aj,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info) ;
+#endif
   if (status < 0){
     umfpack_di_report_info(lu->Control, lu->Info) ;
     umfpack_di_report_status(lu->Control, status) ;
@@ -209,9 +257,11 @@ int MatSeqAIJFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
 
   /* Control parameters used by numeric factorization */
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_PIVOT_TOLERANCE]: %g\n",lu->Control[UMFPACK_PIVOT_TOLERANCE]);CHKERRQ(ierr);
+#if !defined(PETSC_HAVE_UMFPACK_42_OR_NEWER)
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED_AMALGAMATION]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED2_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED2_AMALGAMATION]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_RELAXED3_AMALGAMATION]: %g\n",lu->Control[UMFPACK_RELAXED3_AMALGAMATION]);CHKERRQ(ierr);
+#endif
   ierr = PetscViewerASCIIPrintf(viewer,"  Control[UMFPACK_ALLOC_INIT]: %g\n",lu->Control[UMFPACK_ALLOC_INIT]);CHKERRQ(ierr);
 
   /* Control parameters used by solve */
@@ -223,16 +273,26 @@ int MatSeqAIJFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#else
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SeqAIJ_UMFPACK"
+int MatCreate_SeqAIJ_UMFPACK(Mat A) {
+  int                ierr;
+  Mat_SeqAIJ_UMFPACK *lu;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseUMFPACK_SeqAIJ"
-int MatUseUMFPACK_SeqAIJ(Mat A)
-{
   PetscFunctionBegin;
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatUseUMFPACK_SeqAIJ(A);CHKERRQ(ierr);
+
+  ierr                = PetscNew(Mat_SeqAIJ_UMFPACK,&lu);CHKERRQ(ierr);
+  lu->MatView         = A->ops->view;
+  lu->MatAssemblyEnd  = A->ops->assemblyend;
+  lu->MatDestroy      = A->ops->destroy;
+  lu->CleanUpUMFPACK  = PETSC_FALSE;
+  A->spptr            = (void*)lu;
+  A->ops->view        = MatView_SeqAIJ_UMFPACK;
+  A->ops->assemblyend = MatAssemblyEnd_SeqAIJ_UMFPACK;
+  A->ops->destroy     = MatDestroy_SeqAIJ_UMFPACK;
   PetscFunctionReturn(0);
 }
-
-#endif
-
-
+EXTERN_C_END
