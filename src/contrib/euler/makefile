@@ -76,7 +76,7 @@ ALL: ex1
 #
   SOURCEF_COMMON   = xnd.F xmod2.F
   SOURCEF_JULIANNE = xjul.F
-  SOURCEF_PETSC    = xmod.F implbc.F mat.F 
+  SOURCEF_PETSC    = xmod.F implbc.F mat.F dnest.f
   SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_JULIANNE)
 
   OBJSF_COMMON     = xnd.o xmod2.o
@@ -90,7 +90,7 @@ ALL: ex1
 # Define C source code:
 #
   OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o da3.o utils.o noise.o
-  SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c da3.c
+  SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c da3.c utils.c noise.c
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
@@ -205,11 +205,11 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 # Compilation rule for rs6000 only (using debugger)
 # Use the compiler option -C for array bounds checking
 #.F.o:
-#	-$(RM) $*.f
-#	-$(CC) $(CFLAGS) -E $< | grep -v '^ *#' > $*.f
-#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) -C $*.f
-##	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-##	-$(RM) $*.f
+#	-$(RM) $*.f __$*.c
+#	-cp $*.F __$*.c
+#	-$(CC) $(CFLAGS) -E  __$*.c | grep -v '^ *#' > $*.f
+#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+##	-$(RM) $*.f __$*.c
 
 # Compilation rule for freebsd only (using debugger)
 #.F.o:
