@@ -83,7 +83,10 @@ class Configure(config.base.Configure):
     if not self.checkCompile():
       raise RuntimeError('Cannot compile '+language+' with '+self.compiler+'.')
     if not self.checkLink():
-      raise RuntimeError('Cannot link '+language+' with '+self.linker+'.')
+      if hasattr(self, 'linker'):
+        raise RuntimeError('Cannot link '+language+' with '+self.linker+'.')
+      else:
+        raise RuntimeError('Cannot compile '+language+' with '+self.compiler+'.')
     if not self.checkRun():
       raise RuntimeError('Cannot run executables created with '+language+'.')
     self.popLanguage()
