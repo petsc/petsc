@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.34 1999/06/08 22:56:19 balay Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.35 1999/06/30 23:51:57 balay Exp bsmith $";
 #endif
 
 /*
@@ -30,7 +30,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
 
   for (i=0; i<imax; i++) {
     isz  = 0;
-    BTMemzero(Nbs,table);
+    ierr = BTMemzero(Nbs,table);CHKERRQ(ierr);
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISGetSize(is_in[i],&n);CHKERRQ(ierr);
     for (j=0; j<n ; j++) {
@@ -41,7 +41,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, (is_out+i));CHKERRQ(ierr);
   }
-  BTDestroy(table);
+  ierr = BTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -605,7 +605,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
     ct2    =  ct1;
     ct3    += ct1;
     for (j=1; j<=rbuf_0; j++) { /* for each IS from proc i*/
-      BTMemzero(Mbs,xtable);
+      ierr = BTMemzero(Mbs,xtable);CHKERRQ(ierr);
       oct2 = ct2;
       kmax = rbuf_i[2*j];
       for (k=0; k<kmax; k++, ct1++) { 
@@ -671,7 +671,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
     xdata[i+1]  = xdata[i] + ct2;
     isz1[i]     = ct2; /* size of each message */
   }
-  BTDestroy(xtable);
+  ierr = BTDestroy(xtable);CHKERRQ(ierr);
   PLogInfo(0,"MatIncreaseOverlap_MPIBAIJ:[%d] Allocated %d bytes, required %d, no of mallocs = %d\n",rank,mem_estimate,ct3,no_malloc);    
   PetscFunctionReturn(0);
 }  

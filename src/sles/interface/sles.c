@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.122 1999/05/11 19:15:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.123 1999/07/15 18:41:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -391,6 +391,9 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscCheckSameComm(sles,b);
+  PetscCheckSameComm(sles,x);
+
   ksp = sles->ksp; pc = sles->pc;
   ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
   ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
@@ -515,6 +518,11 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscCheckSameComm(sles,b);
+  PetscCheckSameComm(sles,x);
+
   if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,0,"b and x must be different vectors");
   ksp = sles->ksp; pc = sles->pc;
   ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
@@ -627,7 +635,12 @@ int SLESSolveTrans(SLES sles,Vec b,Vec x,int *its)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,0,"b and x must be different vectors");
+  PetscCheckSameComm(sles,b);
+  PetscCheckSameComm(sles,x);
+
   ksp = sles->ksp; pc = sles->pc;
   ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
   ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);

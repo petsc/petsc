@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.57 1999/05/04 20:28:34 balay Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.58 1999/05/12 03:26:40 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -71,6 +71,8 @@ int XiSetGC(Draw_X* XiWin,PixVal fg )
     If w and/or h are 0, use the sizes in the fields of XiWin
     (which may have been set by, for example, XiSetWindowSize)
 */
+#undef __FUNC__  
+#define __FUNC__ "XiDisplayWindow"
 int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
                      int w,int h,PixVal backgnd_pixel )
 {

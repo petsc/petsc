@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.28 1999/05/04 20:36:53 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.29 1999/07/08 15:37:58 balay Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -230,7 +230,7 @@ int Initial(Vec global, void *ctx)
   /* Initialize the array */
   ierr = VecGetArray(global,&localptr);CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
-    localptr[i-mybase] = sin(PETSC_PI*i*6.*h) + 3.*sin(PETSC_PI*i*2.*h);
+    localptr[i-mybase] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
   }
   ierr = VecRestoreArray(global,&localptr);CHKERRQ(ierr);
   return 0;
@@ -250,11 +250,12 @@ int Solution(double t,Vec solution, void *ctx)
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(solution,&mybase,&myend);CHKERRQ(ierr);
 
-  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
+  ex1 = PetscExpScalar(-36.*PETSC_PI*PETSC_PI*t); 
+  ex2 = PetscExpScalar(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   ierr = VecGetArray(solution,&localptr);CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
-    localptr[i-mybase] = sin(sc1*(double)i)*ex1 + 3.*sin(sc2*(double)i)*ex2;
+    localptr[i-mybase] = PetscSinScalar(sc1*(double)i)*ex1 + 3.*PetscSinScalar(sc2*(double)i)*ex2;
   }
   ierr = VecRestoreArray(solution,&localptr);CHKERRQ(ierr);
   return 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.13 1999/06/30 23:53:54 balay Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.14 1999/09/02 14:53:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -97,9 +97,9 @@ int main(int argc,char **args)
     x = hx;
     for ( i=0; i<m; i++ ) {
       rho[I]      = x;
-      solution[I] = sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y);
-      userb[I]    = -2*PETSC_PI*cos(2*PETSC_PI*x)*sin(2*PETSC_PI*y) +
-                    8*PETSC_PI*PETSC_PI*x*sin(2*PETSC_PI*x)*sin(2*PETSC_PI*y);
+      solution[I] = PetscSinScalar(2.*PETSC_PI*x)*PetscSinScalar(2.*PETSC_PI*y);
+      userb[I]    = -2*PETSC_PI*PetscCosScalar(2*PETSC_PI*x)*PetscSinScalar(2*PETSC_PI*y) +
+                    8*PETSC_PI*PETSC_PI*x*PetscSinScalar(2*PETSC_PI*x)*PetscSinScalar(2*PETSC_PI*y);
       x += hx;
       I++;
     }

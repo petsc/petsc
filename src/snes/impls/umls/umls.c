@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.83 1999/06/30 23:54:17 balay Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.84 1999/09/02 14:54:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -21,16 +21,19 @@ extern int SNESStep(SNES,double*,double*,double*,double*,
 #define __FUNC__ "SNESSolve_UM_LS"
 static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
-  SNES_UMLS    *neP = (SNES_UMLS *) snes->data;
-  int          maxits, success, iters, i, global_dim, ierr, kspmaxit;
-  double       snorm, *f, *gnorm, two = 2.0,tnorm;
-  Scalar       neg_one = -1.0;
-  Vec          G, X, RHS, S, W;
-  SLES         sles;
-  KSP          ksp;
-  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
+  SNES_UMLS           *neP = (SNES_UMLS *) snes->data;
+  int                 maxits, success, iters, i, global_dim, ierr, kspmaxit;
+  double              snorm, *f, *gnorm, two = 2.0,tnorm;
+  Scalar              neg_one = -1.0;
+  Vec                 G, X, RHS, S, W;
+  SLES                sles;
+  KSP                 ksp;
+  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
+  SNESConvergedReason reason;
 
   PetscFunctionBegin;
+  snes->reason  = SNES_CONVERGED_ITERATING;
+
   maxits	= snes->max_its;        /* maximum number of iterations */
   X		= snes->vec_sol; 	/* solution vector */
   G		= snes->vec_func;	/* gradient vector */
@@ -108,7 +111,8 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
              snes->iter, *f, *gnorm, snorm, neP->step, iters );
 
     /* Test for convergence */
-    if ((*snes->converged)(snes,snorm,*gnorm,*f,snes->cnvP)) break;
+    ierr = (*snes->converged)(snes,snorm,*gnorm,*f,&reason,snes->cnvP);CHKERRQ(ierr);
+    if (reason) break;
     neP->gamma_factor /= two;
   }
   /* Verify solution is in correct location */
@@ -120,7 +124,9 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   if (i == maxits) {
     PLogInfo(snes,"SNESSolve_UM_LS: Maximum number of iterations reached: %d\n",maxits);
     i--;
+    reason = SNES_DIVERGED_MAX_IT;
   }
+  snes->reason = reason;
   *outits = i+1;
   PetscFunctionReturn(0);
 }
@@ -234,60 +240,50 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
 .  f - objective function value
 -  dummy - unused dummy context
 
-   Returns:
-+   1  if  ( f < fmin ),
-.   2  if  ( gnorm < atol ),
-.  -1  if  ( nfunc > max_func ),
-.  -2  if  ( gnorm < epsmch ),
-.  -3  if  line search attempt failed,
--   0  otherwise,
+   Output Parameter:
+.   reason - one of
+$   SNES_CONVERGED_FNORM_ABS         ( F < F_minabs ),
+$   SNES_CONVERGED_GNORM_ABS         ( grad F < grad ),
+$   SNES_DIVERGED_FUNCTION_COUNT     ( nfunc > max_func ),
+$   SNES_DIVERGED_LS_FAILURE         ( line search attempt failed )
+$   SNES_DIVERGED_FNORM_NAN          ( f = NaN ),
+$   SNES_CONVERGED_ITERATING         otherwise
 
    where
-+  atol     - absolute gradient norm tolerance,
-              set with SNESSetTolerances()
-.  epsmch   - machine epsilon
-.  fmin     - lower bound on function value,
-              set with SNESSetMinimizationFunctionTolerance()
-.  max_func - maximum number of function evaluations,
-              set with SNESSetTolerances()
++  atol     - absolute gradient norm tolerance, set with SNESSetTolerances()
+.  fmin     - lower bound on function value, set with SNESSetMinimizationFunctionTolerance()
+.  max_func - maximum number of function evaluations, set with SNESSetTolerances()
 -  nfunc    - number of function evaluations
 
    Level: intermediate
 
 @*/
-int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy)
+int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
 {
   SNES_UMLS *neP = (SNES_UMLS *) snes->data;
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
   PetscFunctionBegin;
-  /* Test for successful convergence */
+
   if (f != f) {
     PLogInfo(snes,"SNESConverged_UM_LS:Failed to converged, function is NaN\n");
-    PetscFunctionReturn(-3);
-  }
-  if (f < snes->fmin) {
+    *reason = SNES_DIVERGED_FNORM_NAN;
+  } else if (f < snes->fmin) {
     PLogInfo(snes,"SNESConverged_UM_LS: Converged due to function value %g < minimum function value %g\n",
              f,snes->fmin);
-    PetscFunctionReturn(1);
-  }
-  if (gnorm < snes->atol) {
+    *reason = SNES_CONVERGED_FNORM_ABS ;
+  } else if (gnorm < snes->atol) {
     PLogInfo(snes,"SNESConverged_UM_LS: Converged due to gradient norm %g < %g\n",gnorm,snes->atol);
-    PetscFunctionReturn(2);
-  }
-  /* Test for termination and stringent tolerances. (failure and stop) */
-  if (snes->nfuncs > snes->max_funcs) {
+    *reason = SNES_CONVERGED_GNORM_ABS;
+  } else if (snes->nfuncs > snes->max_funcs) {
     PLogInfo(snes,"SNESConverged_UM_LS: Exceeded maximum number of function evaluations: %d > %d\n",
              snes->nfuncs,snes->max_funcs );
-    PetscFunctionReturn(-1);
-  } 
-  if (gnorm < epsmch) {
-    PLogInfo(snes,"SNESConverged_UM_LS: Gradient norm %g < minimum tolerance %g\n",gnorm,epsmch);
-    PetscFunctionReturn(-2);
-  }
-  if (neP->line != 1) {
+    *reason = SNES_DIVERGED_FUNCTION_COUNT;
+  } else if (neP->line != 1) {
     PLogInfo(snes,"SNESConverged_UM_LS: Line search failed for above reason\n");
-    PetscFunctionReturn(-3);
+    *reason = SNES_DIVERGED_LS_FAILURE;
+  } else {
+    *reason = SNES_CONVERGED_ITERATING;
   }
   PetscFunctionReturn(0);
 }

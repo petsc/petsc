@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.140 1999/07/01 03:34:24 balay Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.141 1999/09/02 14:54:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -65,13 +65,16 @@ static char vcid[] = "$Id: ls.c,v 1.140 1999/07/01 03:34:24 balay Exp bsmith $";
 #define __FUNC__ "SNESSolve_EQ_LS"
 int SNESSolve_EQ_LS(SNES snes,int *outits)
 {
-  SNES_LS       *neP = (SNES_LS *) snes->data;
-  int           maxits, i, ierr, lits, lsfail;
-  MatStructure  flg = DIFFERENT_NONZERO_PATTERN;
-  double        fnorm, gnorm, xnorm, ynorm;
-  Vec           Y, X, F, G, W, TMP;
+  SNES_LS            *neP = (SNES_LS *) snes->data;
+  int                 maxits, i, ierr, lits, lsfail;
+  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
+  double              fnorm, gnorm, xnorm, ynorm;
+  Vec                 Y, X, F, G, W, TMP;
+  SNESConvergedReason reason;
 
   PetscFunctionBegin;
+  snes->reason  = SNES_CONVERGED_ITERATING;
+
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;	/* solution vector */
   F		= snes->vec_func;	/* residual vector */
@@ -88,7 +91,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
-  if (fnorm < snes->atol) {*outits = 0; PetscFunctionReturn(0);}
+  if (fnorm < snes->atol) {*outits = 0; snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -125,7 +128,8 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     /* Test for convergence */
     if (snes->converged) {
       ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm = || X || */
-      if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
+      ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      if (reason) {
         break;
       }
     }
@@ -138,7 +142,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   if (i == maxits) {
     PLogInfo(snes,"SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
+    reason = SNES_DIVERGED_MAX_IT;
   }
+  snes->reason = reason;
   *outits = i+1;
   PetscFunctionReturn(0);
 }
@@ -727,7 +733,7 @@ int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,
 {
   PetscFunctionBegin;
   ((SNES_LS *)(snes->data))->LineSearch = func;
-  ((SNES_LS *)(snes->data))->lsP = lsctx;
+  ((SNES_LS *)(snes->data))->lsP        = lsctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -803,7 +809,7 @@ int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),
 {
   PetscFunctionBegin;
   ((SNES_LS *)(snes->data))->CheckStep = func;
-  ((SNES_LS *)(snes->data))->checkP = checkctx;
+  ((SNES_LS *)(snes->data))->checkP    = checkctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.33 1999/03/19 21:22:50 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.34 1999/05/04 20:36:07 balay Exp bsmith $";
 #endif
 
 static char help[] =
@@ -188,7 +188,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
           uxx = (two*u - x[loc-1] - x[loc+1])*HyHzdHx;
           uyy = (two*u - x[loc-Xm] - x[loc+Xm])*HxHzdHy;
           uzz = (two*u - x[loc-Xm*Ym] - x[loc+Xm*Ym])*HxHydHz;
-          f[loc] = uxx + uyy + uzz - sc*exp(u);
+          f[loc] = uxx + uyy + uzz - sc*PetscExpScalar(u);
         }
       }  
     }

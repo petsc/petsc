@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.84 1999/06/30 23:54:15 balay Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.85 1999/09/02 14:54:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -34,18 +34,22 @@ static char vcid[] = "$Id: umtr.c,v 1.84 1999/06/30 23:54:15 balay Exp bsmith $"
 #define __FUNC__ "SNESSolve_UM_TR"
 static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
-  SNES_UMTR    *neP = (SNES_UMTR *) snes->data;
-  int          maxits, i, nlconv, ierr, qits, newton;
-  double       *gnorm, xnorm, max_val, ftrial, delta;
-  double       zero = 0.0, *f, two = 2.0, four = 4.0;
-  Scalar       one = 1.0;
-  Vec          X, G,  S, Xtrial;
-  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
-  SLES         sles;
-  KSP          ksp;
-  KSP_QCG      *qcgP;
+  SNES_UMTR           *neP = (SNES_UMTR *) snes->data;
+  int                 maxits, i, nlconv, ierr, qits, newton;
+  double              *gnorm, xnorm, max_val, ftrial, delta;
+  double              zero = 0.0, *f, two = 2.0, four = 4.0;
+  Scalar              one = 1.0;
+  Vec                 X, G,  S, Xtrial;
+  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
+  SLES                sles;
+  KSP                 ksp;
+  KSP_QCG             *qcgP;
+  SNESConvergedReason reason;
 
   PetscFunctionBegin;
+
+  snes->reason  = SNES_CONVERGED_ITERATING;
+
   nlconv        = 0;
   maxits	= snes->max_its;         /* maximum number of iterations */
   X		= snes->vec_sol; 	 /* solution vector */
@@ -151,7 +155,8 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       }
 
       neP->delta = delta;
-      if ((*snes->converged)(snes,xnorm,*gnorm,ftrial,snes->cnvP)) nlconv = 1;
+      ierr = (*snes->converged)(snes,xnorm,*gnorm,ftrial,&reason,snes->cnvP);CHKERRQ(ierr);
+      if (reason) nlconv = 1;
     } while (!neP->success && !nlconv);
 
     /* Question:  If (!neP->success && break), then last step was rejected, 
@@ -178,7 +183,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   if (i == maxits) {
     PLogInfo(snes,"SNESSolve_UM_TR: Maximum number of iterations reached: %d\n",maxits);
     i--;
+    reason = SNES_DIVERGED_MAX_IT;
   }
+  snes->reason = SNES_DIVERGED_MAX_IT;
   *outits = i;  /* not i+1, since update for i happens in loop above */
   PetscFunctionReturn(0);
 }
@@ -226,14 +233,15 @@ static int SNESDestroy_UM_TR(SNES snes )
 .  f - objective function value
 -  dummy - unused dummy context
 
-   Returns:
-+  1  if  ( f < fmin ),
-.  2  if  ( abs(ared) <= rtol*abs(f) && 
-            pred <= rtol*abs(f) ),
-.  3  if  ( delta <= deltatol*xnorm ),
-. -1  if  ( nfuncs > maxfunc ),
-. -2  if  ( abs(ared) <= epsmch && pred <= epsmch ),
--  0  otherwise.
+   Output Parameter:
+.  reason - one of 
+$   SNES_CONVERGED_FNORM_ABS         ( f < fmin ),
+$   SNES_CONVERGED_TR_REDUCTION      ( abs(ared) <= rtol*abs(f) && pred <= rtol*abs(f) ),
+$   SNES_CONVERGED_TR_DELTA          ( delta <= deltatol*xnorm ),
+$   SNES_DIVERGED_TR_REDUCTION       ( abs(ared) <= epsmch && pred <= epsmch ),
+$   SNES_DIVERGED_FUNCTION_COUNT     ( nfunc > max_func ),
+$   SNES_DIVERGED_FNORM_NAN          ( f = NaN ),
+$   SNES_CONVERGED_ITERATING         ( otherwise ).
 
    where
 +    ared     - actual reduction
@@ -253,7 +261,7 @@ static int SNESDestroy_UM_TR(SNES snes )
    Level: intermediate
 
 @*/
-int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,void *dummy)
+int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
 {
   SNES_UMTR *neP = (SNES_UMTR *) snes->data;
   double    rtol = snes->rtol, delta = neP->delta,ared = neP->actred, pred = neP->prered;
@@ -262,38 +270,31 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,void *dummy
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-
-  if (f != f) {
+  } else if (f != f) {
     PLogInfo(snes,"SNESConverged_UM_TR:Failed to converged, function is NaN\n");
-    PetscFunctionReturn(-3);
-  }
-  /* Test for successful convergence */
-  if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
+    *reason = SNES_DIVERGED_FNORM_NAN;
+  } else if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
     neP->sflag = 0;
     PLogInfo(snes,"SNESConverged_UM_TR: Trust region param satisfies tolerance: %g<=%g*%g\n",
              delta,snes->deltatol,xnorm);  
-    PetscFunctionReturn(3);
-  }
-  if ((PetscAbsDouble(ared) <= PetscAbsDouble(f) * rtol) && (pred) <= rtol*PetscAbsDouble(f)) {
+    *reason = SNES_CONVERGED_TR_DELTA;
+  } else if ((PetscAbsDouble(ared) <= PetscAbsDouble(f) * rtol) && (pred) <= rtol*PetscAbsDouble(f)) {
     PLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<%g*%g\n",
              PetscAbsDouble(ared),pred,rtol,PetscAbsDouble(f));
-    PetscFunctionReturn(2);
-  }
-  if (f < snes->fmin) {
+    *reason = SNES_CONVERGED_TR_REDUCTION;
+  } else if (f < snes->fmin) {
     PLogInfo(snes,"SNESConverged_UM_TR:Function value (%g)<f_{minimum} (%g)\n",f,snes->fmin);
-    PetscFunctionReturn(1);
-  }
-  /* Test for termination and stringent tolerances. (failure and stop) */
-  if ( (PetscAbsDouble(ared) <= epsmch) && pred <= epsmch ) {
+    *reason = SNES_CONVERGED_FNORM_ABS ;
+  } else if ( (PetscAbsDouble(ared) <= epsmch) && pred <= epsmch ) {
     PLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
              PetscAbsDouble(ared),pred,epsmch);
-    PetscFunctionReturn(-2);
-  }
-  if (snes->nfuncs > snes->max_funcs) {
+    *reason = SNES_DIVERGED_TR_REDUCTION;
+  } else if (snes->nfuncs > snes->max_funcs) {
     PLogInfo(snes,"SNESConverged_UM_TR:Exceeded maximum number of function evaluations:%d>%d\n",
              snes->nfuncs, snes->max_funcs ); 
-    PetscFunctionReturn(-1);
+    *reason = SNES_DIVERGED_FUNCTION_COUNT;
+  } else {
+    *reason = SNES_CONVERGED_ITERATING;
   }
   PetscFunctionReturn(0);
 }

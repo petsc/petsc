@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.15 1999/04/19 22:15:12 bsmith Exp balay $";
+static char vcid[] = "$Id: ex14.c,v 1.16 1999/05/04 20:35:25 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -418,7 +418,7 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
       u = x[row];
       uxx = (two*u - x[row-1] - x[row+1])*hydhx;
       uyy = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
-      f[row] = uxx + uyy - sc*exp(u);
+      f[row] = uxx + uyy - sc*PetscExpScalar(u);
     }
   }
 
@@ -518,7 +518,7 @@ int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
       /* interior grid points */
       v[0] = -hxdhy; col[0] = ltog[row - gxm];
       v[1] = -hydhx; col[1] = ltog[row - 1];
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
+      v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = grow;
       v[3] = -hydhx; col[3] = ltog[row + 1];
       v[4] = -hxdhy; col[4] = ltog[row + gxm];
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);

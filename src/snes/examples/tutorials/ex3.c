@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.62 1999/04/21 18:18:36 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.63 1999/05/04 20:36:19 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -223,7 +223,7 @@ int main( int argc, char **argv )
   */
   xp = ctx.h*xs;
   for (i=0; i<xm; i++ ) {
-    FF[i] = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
+    FF[i] = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     UU[i] = xp*xp*xp;
     xp += ctx.h;
   }

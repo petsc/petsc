@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.73 1999/05/12 03:35:01 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.74 1999/07/12 18:37:05 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -233,6 +233,19 @@ valid
 */
 #define PetscCheckSameType(a,b) \
   if ((a)->type != (b)->type) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,0,"Objects not of same type");
+/* 
+   Use this macro to check if the type is set
+*/
+#define PetscValidType(a) \
+  if (!(a)->type_name) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Object Type not set");
+/*
+   Sometimes object must live on same communicator to inter-operate
+*/
+#define PetscCheckSameComm(a,b) \
+  {int __ierr,__flag; __ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag);\
+  CHKERRQ(__ierr); \
+  if (__flag != MPI_CONGRUENT && __flag != MPI_IDENT) \
+  SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,0,"Different communicators in the two objects");}
 
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.
@@ -248,5 +261,8 @@ extern int PetscObjectPublishBaseBegin(PetscObject);
 extern int PetscObjectPublishBaseEnd(PetscObject);
 
 #endif
+
+
+
 
 

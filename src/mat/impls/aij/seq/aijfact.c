@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.121 1999/07/15 13:04:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.122 1999/09/02 14:53:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -174,7 +174,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscFunctionReturn(0); 
 }
 /* ----------------------------------------------------------- */
-int Mat_AIJ_CheckInode(Mat);
+extern int Mat_AIJ_CheckInode(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorNumeric_SeqAIJ"

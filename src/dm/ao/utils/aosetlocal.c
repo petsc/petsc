@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aopart.c,v 1.8 1999/05/04 20:37:22 balay Exp $";
+static char vcid[] = "$Id: aosetlocal.c,v 1.1 1999/09/21 20:53:26 bsmith Exp bsmith $";
 #endif
 
 #include "ao.h"       /*I  "ao.h"  I*/
@@ -61,22 +61,5 @@ int AODataPartitionAndSetupLocal(AOData ao, char *keyname,  char *segmentname, I
   PetscFunctionReturn(0);
 }
 
- /*       Get the list of segment entries (vertices) used by these key entries (cells)   */
-  ierr = AODataSegmentGetReducedIS(ao,keyname,segmentname,*iskey,issegment);CHKERRQ(ierr);
 
- /*     Make local to global mapping of key entries (cells)  */
-  ierr = ISLocalToGlobalMappingCreateIS(*iskey,&ltogkey);CHKERRQ(ierr);
-
-  /*       Make local to global mapping of segment entries (vertices)  */
-  ierr = ISLocalToGlobalMappingCreateIS(*issegment,ltog);CHKERRQ(ierr);
-
-  /*        Attach the local to global mappings to the database */
-  ierr = AODataKeySetLocalToGlobalMapping(ao,keyname,ltogkey);CHKERRQ(ierr);
-  ierr = AODataKeySetLocalToGlobalMapping(ao,segmentname,*ltog);CHKERRQ(ierr);
-
-  /*      Dereference the ltogkey; we don't need a copy of it */
-  ierr = PetscObjectDereference((PetscObject)ltogkey);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
 

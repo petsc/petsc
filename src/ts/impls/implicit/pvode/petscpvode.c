@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.42 1999/06/30 23:54:43 balay Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.43 1999/09/18 16:33:08 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -173,14 +173,14 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     if (ts->ptime >= tout) break;
     ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
     flag = CVode(cvode->mem, tout, cvode->y, &t, ONE_STEP);
-    ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+    ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
     if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE failed");	
 
     if (t > tout && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
       flag = CVodeDky(cvode->mem,tout,0,cvode->y);
-      ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+      ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
       if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE interpolation to final time failed");	
       t = tout;
     }
@@ -253,7 +253,7 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   /* allocate the memory for N_Vec y */
   cvode->y         = N_VNew(M,machEnv); 
   ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
-  ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
 
   /* initializing vector update and func */
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);  
@@ -280,7 +280,7 @@ int TSSetUp_PVode_Nonlinear(TS ts)
                                   NEWTON,SS,&cvode->reltol,
                                   &cvode->abstol,ts,NULL,FALSE,cvode->iopt,
                                   cvode->ropt,machEnv);CHKPTRQ(cvode->mem);
-  ierr = VecRestoreArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -295,7 +295,7 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int      ierr, flag,restart;
   char     method[128];
-  double   aabs = PETSC_DECIDE,rel = PETSC_DECIDE,ltol = .05;
+  double   aabs = PETSC_DECIDE,rel = PETSC_DECIDE,ltol;
 
   PetscFunctionBegin;
 
@@ -324,10 +324,14 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
   ierr = TSPVodeSetTolerance(ts,aabs,rel);CHKERRQ(ierr);
 
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_linear_tolerance",&ltol,&flag);CHKERRQ(ierr);
-  ierr = TSPVodeSetLinearTolerance(ts,ltol);CHKERRQ(ierr);
+  if (flag) {
+    ierr = TSPVodeSetLinearTolerance(ts,ltol);CHKERRQ(ierr);
+  }
 
   ierr = OptionsGetInt(PETSC_NULL,"-ts_pvode_gmres_restart",&restart,&flag);CHKERRQ(ierr);
-  ierr = TSPVodeSetGMRESRestart(ts,restart);CHKERRQ(ierr);
+  if (flag) {
+    ierr = TSPVodeSetGMRESRestart(ts,restart);CHKERRQ(ierr);
+  }
 
   ierr = OptionsHasName(PETSC_NULL,"-ts_pvode_not_exact_final_time",&flag);CHKERRQ(ierr);
   if (flag) {

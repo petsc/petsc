@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.135 1999/09/02 14:52:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.136 1999/09/08 18:30:42 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -648,7 +648,8 @@ EXTERN_C_END
 #define __FUNC__ "dummy9" 
 int dummy9(void)
 {
-  return 0;  /* some compilers hate empty files */
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #endif

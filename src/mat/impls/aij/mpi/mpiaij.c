@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.299 1999/09/14 17:38:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.300 1999/09/15 02:05:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -873,23 +873,24 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   int        n = mat->n, m = mat->m, i,shift = A->indexshift;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
-  xs = x + shift; /* shift by one for index start of 1 */
-  ls = ls + shift;
   if (!A->diag) {ierr = MatMarkDiag_SeqAIJ(AA);CHKERRQ(ierr);}
   diag = A->diag;
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
-      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
-      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+    if (xx != bb) {
+      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+    } else {
+      b = x;
+    }
+    ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
+    xs = x + shift; /* shift by one for index start of 1 */
+    ls = ls + shift;
     while (its--) {
       /* go down through the rows */
       for ( i=0; i<m; i++ ) {
@@ -922,16 +923,25 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
     }    
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
+    ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
   } else if (flag & SOR_LOCAL_FORWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
-      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
-      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+    if (xx != bb) {
+      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+    } else {
+      b = x;
+    }
+    ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
+    xs = x + shift; /* shift by one for index start of 1 */
+    ls = ls + shift;
     while (its--) {
       for ( i=0; i<m; i++ ) {
         n    = A->i[i+1] - A->i[i]; 
@@ -948,16 +958,25 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
     } 
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
+    ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
   } else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
-      ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-      ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
-      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+    ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+    if (xx != bb) {
+      ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+    } else {
+      b = x;
+    }
+    ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
+    xs = x + shift; /* shift by one for index start of 1 */
+    ls = ls + shift;
     while (its--) {
       for ( i=m-1; i>-1; i-- ) {
         n    = A->i[i+1] - A->i[i]; 
@@ -974,12 +993,12 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         x[i] = (1. - omega)*x[i] + omega*(sum + A->a[diag[i]+shift]*x[i])/d;
       }
     } 
+    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); }
+    ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"Parallel SOR not supported");
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.99 1999/06/30 23:54:13 balay Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.100 1999/09/02 14:54:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -59,14 +59,15 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
 #define __FUNC__ "SNESSolve_EQ_TR"
 static int SNESSolve_EQ_TR(SNES snes,int *its)
 {
-  SNES_TR      *neP = (SNES_TR *) snes->data;
-  Vec          X, F, Y, G, TMP, Ytmp;
-  int          maxits, i, ierr, lits, breakout = 0;
-  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
-  double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,ynorm,norm1;
-  Scalar       mone = -1.0,cnorm;
-  KSP          ksp;
-  SLES         sles;
+  SNES_TR             *neP = (SNES_TR *) snes->data;
+  Vec                 X, F, Y, G, TMP, Ytmp;
+  int                 maxits, i, ierr, lits, breakout = 0;
+  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
+  double              rho, fnorm, gnorm, gpnorm, xnorm, delta,norm,ynorm,norm1;
+  Scalar              mone = -1.0,cnorm;
+  KSP                 ksp;
+  SLES                sles;
+  SNESConvergedReason reason;
 
   PetscFunctionBegin;
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -89,7 +90,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
- if (fnorm < snes->atol) {*its = 0; PetscFunctionReturn(0);}
+ if (fnorm < snes->atol) {*its = 0; snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -145,7 +146,8 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       PLogInfo(snes,"SNESSolve_EQ_TR: Trying again in smaller region\n");
       /* check to see if progress is hopeless */
       neP->itflag = 0;
-      if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
+      ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      if (reason) {
         /* We're not progressing, so return with the current iterate */
         breakout = 1; break;
       }
@@ -165,7 +167,8 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 
       /* Test for convergence */
       neP->itflag = 1;
-      if ((*snes->converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
+      ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      if (reason) {
         break;
       } 
     } else {
@@ -181,8 +184,10 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   if (i == maxits) {
     PLogInfo(snes,"SNESSolve_EQ_TR: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
+    reason = SNES_DIVERGED_MAX_IT;
   }
   *its = i+1;
+  snes->reason = reason;
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -296,13 +301,15 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 .  fnorm - 2-norm of function
 -  dummy - unused context
 
-   Returns:
-+  1  if  ( delta < xnorm*deltatol ),
-.  2  if  ( fnorm < atol ),
-.  3  if  ( pnorm < xtol*xnorm ),
-. -2  if  ( nfct > maxf ),
-. -1  if  ( delta < xnorm*epsmch ),
--  0  otherwise
+   Output Parameter:
+.   reason - one of
+$  SNES_CONVERGED_FNORM_ABS       - ( fnorm < atol ),
+$  SNES_CONVERGED_PNORM_RELATIVE  - ( pnorm < xtol*xnorm ),
+$  SNES_CONVERGED_FNORM_RELATIVE  - ( fnorm < rtol*fnorm0 ),
+$  SNES_DIVERGED_FUNCTION_COUNT   - ( nfct > maxf ),
+$  SNES_DIVERGED_FNORM_NAN        - ( fnorm == NaN ),
+$  SNES_CONVERGED_TR_DELTA        - ( delta < xnorm*deltatol ),
+$  SNES_CONVERGED_ITERATING       - ( otherwise )
 
    where
 +    delta    - trust region paramenter
@@ -322,11 +329,11 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
+int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,SNESConvergedReason *reason,void *dummy)
 {
   SNES_TR *neP = (SNES_TR *)snes->data;
   double  epsmch = 1.0e-14;   /* This must be fixed */
-  int     info;
+  int     ierr;
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
@@ -335,25 +342,17 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
 
   if (fnorm != fnorm) {
     PLogInfo(snes,"SNESConverged_EQ_TR:Failed to converged, function norm is NaN\n");
-    PetscFunctionReturn(-3);
-  }
-  if (neP->delta < xnorm * snes->deltatol) {
-    PLogInfo(snes,"SNESConverged_EQ_TR: Converged due to trust region param %g<%g*%g\n",
-             neP->delta,xnorm,snes->deltatol);
-    PetscFunctionReturn(1);
-  }
-  if (neP->itflag) {
-    info = SNESConverged_EQ_LS(snes,xnorm,pnorm,fnorm,dummy);
-    if (info) PetscFunctionReturn(info);
+    *reason = SNES_DIVERGED_FNORM_NAN;
+  } else if (neP->delta < xnorm * snes->deltatol) {
+    PLogInfo(snes,"SNESConverged_EQ_TR: Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
+    *reason = SNES_CONVERGED_TR_DELTA;
+  } else if (neP->itflag) {
+    ierr = SNESConverged_EQ_LS(snes,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
   } else if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,"SNESConverged_EQ_TR: Exceeded maximum number of function evaluations: %d > %d\n",
-             snes->nfuncs, snes->max_funcs );
-    PetscFunctionReturn(-2);
-  }  
-  if (neP->delta < xnorm * epsmch) {
-    PLogInfo(snes,"SNESConverged_EQ_TR: Converged due to trust region param %g < %g * %g\n",
-             neP->delta,xnorm, epsmch);
-    PetscFunctionReturn(-1);
+    PLogInfo(snes,"SNESConverged_EQ_TR: Exceeded maximum number of function evaluations: %d > %d\n",snes->nfuncs, snes->max_funcs );
+    *reason = SNES_DIVERGED_FUNCTION_COUNT;
+  } else {
+    *reason = SNES_CONVERGED_ITERATING;
   }
   PetscFunctionReturn(0);
 }

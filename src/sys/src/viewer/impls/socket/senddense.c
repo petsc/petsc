@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.34 1999/05/12 03:26:02 bsmith Exp balay $";
+static char vcid[] = "$Id: senddense.c,v 1.35 1999/06/04 00:09:33 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
@@ -46,6 +46,8 @@ int ViewerSocketPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerSocketPutDouble_Private"
 /*
    ViewerSocketPutDouble_Private - Passes a double precision array to 
    a Matlab viewer.

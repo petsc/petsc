@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.5 1999/05/04 20:37:40 balay Exp balay $";
+static char vcid[] = "$Id: ex11.c,v 1.6 1999/06/14 20:42:34 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
@@ -59,7 +59,7 @@ ierr = VecView(coors,VIEWER_STDOUT_SELF);
     cnt = 0;
     for ( j=0; j<n; j++ ) {
       for ( i=0; i<m; i++ ) {
-        alocal[k+dof*cnt] = sin(2.0*PETSC_PI*(k+1)*xy[2*cnt]);
+        alocal[k+dof*cnt] = PetscSinScalar(2.0*PETSC_PI*(k+1)*xy[2*cnt]);
         cnt++;
       }
     }

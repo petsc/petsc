@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.124 1999/05/12 03:34:00 bsmith Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.125 1999/06/30 23:55:09 balay Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -178,15 +178,16 @@ int DAPublish_Petsc(PetscObject object)
   DA          v = (DA) object;
   int         ierr;
   
+#endif
+
   PetscFunctionBegin;
 
+#if defined(PETSC_HAVE_AMS)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
   ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
-#else
-  PetscFunctionBegin;
 #endif
 
   PetscFunctionReturn(0);

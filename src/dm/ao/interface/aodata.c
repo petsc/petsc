@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.34 1999/04/19 22:16:56 bsmith Exp balay $";
+static char vcid[] = "$Id: aodata.c,v 1.35 1999/05/04 20:37:06 balay Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -904,210 +904,6 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataKeyRemove" 
-/*@C
-   AODataKeyRemove - Remove a data key from a AOData database.
-
-   Collective on AOData
-
-   Input Parameters:
-+  aodata - the database
--  name - the name of the key
-
-   Level: advanced
-
-.keywords: database removal
-
-.seealso:
-@*/
-int AODataKeyRemove(AOData aodata,char *name)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops->keyremove)(aodata,name);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentRemove" 
-/*@C
-   AODataSegmentRemove - Remove a data segment from a AOData database.
-
-   Collective on AOData
-
-   Input Parameters:
-+  aodata - the database
-.  name - the name of the key
--  segname - name of the segment
-
-   Level: advanced
-
-.keywords: database removal
-
-.seealso:
-@*/
-int AODataSegmentRemove(AOData aodata,char *name,char *segname)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  ierr = (*aodata->ops->segmentremove)(aodata,name,segname);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "AODataKeyAdd" 
-/*@C
-   AODataKeyAdd - Add another data key to a AOData database.
-
-   Collective on AOData
-
-   Input Parameters:
-+  aodata - the database
-.  name - the name of the key
-.  N - the number of indices in the key
--  nlocal - number of indices to be associated with this processor
-
-   Level: advanced
-
-.keywords: database additions
-
-.seealso:
-@*/
-int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
-{
-  int       ierr,flag,size,rank,i,len;
-  AODataKey *key,*oldkey;
-  MPI_Comm  comm = aodata->comm;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-
-  ierr = AODataKeyFind_Private(aodata,name,&flag,&oldkey);CHKERRQ(ierr);
-  if (flag == 1)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key already exists with given name: %s",name);
-
-  key                = PetscNew(AODataKey);CHKPTRQ(key);
-  if (oldkey) { oldkey->next = key;} 
-  else        { aodata->keys = key;} 
-  len            = PetscStrlen(name);
-  key->name      = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(key->name);
-  ierr           = PetscStrcpy(key->name,name);CHKERRQ(ierr);
-  key->N         = N;
-  key->nsegments = 0;
-  key->segments  = 0;
-  key->ltog      = 0;
-  key->next      = 0;
-
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-
-  /*  Set nlocal and ownership ranges */
-  ierr         = PetscSplitOwnership(comm,&nlocal,&N);CHKERRQ(ierr);
-  key->rowners = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(key->rowners);
-  ierr = MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
-  key->rowners[0] = 0;
-  for (i=2; i<=size; i++ ) {
-    key->rowners[i] += key->rowners[i-1];
-  }
-  key->rstart        = key->rowners[rank];
-  key->rend          = key->rowners[rank+1];
-
-  key->nlocal        = nlocal;
-
-  aodata->nkeys++;
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentAdd" 
-/*@C
-   AODataSegmentAdd - Adds another data segment to a AOData database.
-
-   Collective on AOData
-
-   Input Parameters:
-+  aodata  - the database
-.  name    - the name of the key
-.  segment - the name of the data segment
-.  bs      - the fundamental blocksize of the data
-.  n       - the number of data items contributed by this processor
-.  keys    - the keys provided by this processor
-.  data    - the actual data
--  dtype   - the data type (one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.)
-
-   Level: advanced
-
-.keywords: database additions
-
-.seealso: AODataSegmentAddIS()
-@*/
-int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,
-                     PetscDataType dtype)
-{
-  int      ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-
-  ierr = (*aodata->ops->segmentadd)(aodata,name,segment,bs,n,keys,data,dtype);CHKERRQ(ierr);
-
-  /*
-  ierr = OptionsHasName(PETSC_NULL,"-ao_data_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = AODataView(aodata,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = ViewerPushFormat(VIEWER_STDOUT_(comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-    ierr = AODataView(aodata,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-    ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-  }
-  */
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentAddIS" 
-/*@C
-   AODataSegmentAddIS - Add another data segment to a AOData database.
-
-   Collective on AOData and IS
-
-   Input Parameters:
-+  aodata - the database
-.  name - the name of the key
-.  segment - name of segment
-.  bs - the fundamental blocksize of the data
-.  is - the keys provided by this processor
-.  data - the actual data
--  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.
-
-   Level: advanced
-
-.keywords: database additions
-
-.seealso: AODataSegmentAdd()
-@*/
-int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,
-                       PetscDataType dtype)
-{
-  int n,*keys,ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&keys);CHKERRQ(ierr);
-  ierr = (*aodata->ops->segmentadd)(aodata,name,segment,bs,n,keys,data,dtype);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&keys);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "AODataKeyGetOwnershipRange"
@@ -1302,6 +1098,7 @@ int AODataDestroy(AOData aodata)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   if (--aodata->refct > 0) PetscFunctionReturn(0);
   ierr = (*aodata->ops->destroy)(aodata);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -1394,4 +1191,272 @@ int AODataSegmentPartition(AOData aodata,char *key,char *seg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AODataPublish_Petsc"
+int AODataPublish_Petsc(PetscObject object)
+{
+#if defined(PETSC_HAVE_AMS)
+  AOData        ao = (AOData) object;
+  AODataKey     *key;
+  AODataSegment *segment;
+  int           ierr,keys,segments;
+  char          tmp[1024];
+#endif
 
+  PetscFunctionBegin;
+
+#if defined(PETSC_HAVE_AMS)
+  /* if it is already published then return */
+  if (ao->amem >=0 ) PetscFunctionReturn(0);
+
+  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,"Number_of_Keys",&ao->nkeys,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  /* Loop over keys publishing info on each */
+  for ( keys=0; keys<ao->nkeys; keys++ ) {
+    if (keys == 0) key = ao->keys;
+    else           key = key->next;
+
+    ierr = PetscStrcpy(tmp,key->name);CHKERRQ(ierr);
+    ierr = PetscStrcat(tmp,"_N");CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,tmp,&key->N,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+ 
+    ierr = PetscStrcpy(tmp,key->name);CHKERRQ(ierr);
+    ierr = PetscStrcat(tmp,"_nsegments");CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,tmp,&key->nsegments,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+
+    for (segments=0; segments<key->nsegments; segments++) {
+      if (segments == 0) segment = key->segments;
+      else               segment = segment->next;
+   
+      ierr = PetscStrcpy(tmp,key->name);CHKERRQ(ierr);
+      ierr = PetscStrcat(tmp,"_");CHKERRQ(ierr);
+      ierr = PetscStrcat(tmp,segment->name);CHKERRQ(ierr);
+      ierr = PetscStrcat(tmp,"_bs");CHKERRQ(ierr);
+      ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,tmp,&segment->bs,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    }
+  }
+
+  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+#endif
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyRemove" 
+/*@C
+   AODataKeyRemove - Remove a data key from a AOData database.
+
+   Collective on AOData
+
+   Input Parameters:
++  aodata - the database
+-  name - the name of the key
+
+   Level: advanced
+
+.keywords: database removal
+
+.seealso:
+@*/
+int AODataKeyRemove(AOData aodata,char *name)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops->keyremove)(aodata,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentRemove" 
+/*@C
+   AODataSegmentRemove - Remove a data segment from a AOData database.
+
+   Collective on AOData
+
+   Input Parameters:
++  aodata - the database
+.  name - the name of the key
+-  segname - name of the segment
+
+   Level: advanced
+
+.keywords: database removal
+
+.seealso:
+@*/
+int AODataSegmentRemove(AOData aodata,char *name,char *segname)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops->segmentremove)(aodata,name,segname);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyAdd" 
+/*@C
+   AODataKeyAdd - Add another data key to a AOData database.
+
+   Collective on AOData
+
+   Input Parameters:
++  aodata - the database
+.  name - the name of the key
+.  N - the number of indices in the key
+-  nlocal - number of indices to be associated with this processor
+
+   Level: advanced
+
+.keywords: database additions
+
+.seealso:
+@*/
+int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
+{
+  int       ierr,flag,size,rank,i,len;
+  AODataKey *key,*oldkey;
+  MPI_Comm  comm = aodata->comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+
+  ierr = AODataKeyFind_Private(aodata,name,&flag,&oldkey);CHKERRQ(ierr);
+  if (flag == 1)  SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key already exists with given name: %s",name);
+
+  key                = PetscNew(AODataKey);CHKPTRQ(key);
+  if (oldkey) { oldkey->next = key;} 
+  else        { aodata->keys = key;} 
+  len            = PetscStrlen(name);
+  key->name      = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(key->name);
+  ierr           = PetscStrcpy(key->name,name);CHKERRQ(ierr);
+  key->N         = N;
+  key->nsegments = 0;
+  key->segments  = 0;
+  key->ltog      = 0;
+  key->next      = 0;
+
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  /*  Set nlocal and ownership ranges */
+  ierr         = PetscSplitOwnership(comm,&nlocal,&N);CHKERRQ(ierr);
+  key->rowners = (int *) PetscMalloc((size+1)*sizeof(int));CHKPTRQ(key->rowners);
+  ierr = MPI_Allgather(&nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+  key->rowners[0] = 0;
+  for (i=2; i<=size; i++ ) {
+    key->rowners[i] += key->rowners[i-1];
+  }
+  key->rstart        = key->rowners[rank];
+  key->rend          = key->rowners[rank+1];
+
+  key->nlocal        = nlocal;
+
+  aodata->nkeys++;
+
+#if defined(PETSC_HAVE_AMS)
+  if (aodata->amem >=0 ) {
+    char namesize[1024];
+    ierr = PetscStrcpy(namesize,name);CHKERRQ(ierr);
+    ierr = PetscStrcat(namesize,"_N");CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field((AMS_Memory)aodata->amem,namesize,&key->N,1,AMS_INT,AMS_READ,
+                                AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  }
+#endif
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentAdd" 
+/*@C
+   AODataSegmentAdd - Adds another data segment to a AOData database.
+
+   Collective on AOData
+
+   Input Parameters:
++  aodata  - the database
+.  name    - the name of the key
+.  segment - the name of the data segment
+.  bs      - the fundamental blocksize of the data
+.  n       - the number of data items contributed by this processor
+.  keys    - the keys provided by this processor
+.  data    - the actual data
+-  dtype   - the data type (one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.)
+
+   Level: advanced
+
+.keywords: database additions
+
+.seealso: AODataSegmentAddIS()
+@*/
+int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,
+                     PetscDataType dtype)
+{
+  int      ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+
+  ierr = (*aodata->ops->segmentadd)(aodata,name,segment,bs,n,keys,data,dtype);CHKERRQ(ierr);
+
+  /*
+  ierr = OptionsHasName(PETSC_NULL,"-ao_data_view",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = AODataView(aodata,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = AODataView(aodata,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+  }
+  */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentAddIS" 
+/*@C
+   AODataSegmentAddIS - Add another data segment to a AOData database.
+
+   Collective on AOData and IS
+
+   Input Parameters:
++  aodata - the database
+.  name - the name of the key
+.  segment - name of segment
+.  bs - the fundamental blocksize of the data
+.  is - the keys provided by this processor
+.  data - the actual data
+-  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.
+
+   Level: advanced
+
+.keywords: database additions
+
+.seealso: AODataSegmentAdd()
+@*/
+int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,
+                       PetscDataType dtype)
+{
+  int n,*keys,ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+
+  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&keys);CHKERRQ(ierr);
+  ierr = (*aodata->ops->segmentadd)(aodata,name,segment,bs,n,keys,data,dtype);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&keys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

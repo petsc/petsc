@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aoreduced.c,v 1.14 1999/06/08 22:58:16 balay Exp balay $";
+static char vcid[] = "$Id: aoreduced.c,v 1.15 1999/06/30 23:54:54 balay Exp bsmith $";
 #endif
 
 #include "src/dm/ao/aoimpl.h"     /*I   "ao.h"  I*/
 #include "sys.h"
 #include "bitarray.h"
 
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentGetReduced_Basic"
 int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
 {
   AODataSegment    *segment; 
@@ -55,7 +57,7 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
     if (found[i] < 0) continue;
     if (!BTLookupSet(mask,found[i] - imin)) count++;
   }
-  BTMemzero(imax-imin,mask);
+  ierr = BTMemzero(imax-imin,mask);CHKERRQ(ierr);
   out = (int *) PetscMalloc((count+1)*sizeof(int));CHKPTRQ(out);
   count = 0;
   for ( i=0; i<n; i++ ) {

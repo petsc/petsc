@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.128 1999/06/04 14:43:55 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.129 1999/07/01 01:55:37 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -64,10 +64,6 @@ int PetscSetUseTrMalloc_Private(void)
     PetscTrFree.
  */
 
-/* HEADER_DOUBLES is the number of doubles in a PetscTrSpace header */
-/* We have to be careful about alignment rules here */
-
-#define HEADER_DOUBLES      8
 
 #if (PETSC_SIZEOF_VOIDP == 8)
 #define TR_ALIGN_BYTES      8
@@ -91,8 +87,17 @@ typedef struct _trSPACE {
     char            *functionname;
     char            *dirname;
     unsigned long   cookie;        
+#if defined(PETSC_USE_STACK)
+    PetscStack      stack;
+#endif
     struct _trSPACE *next, *prev;
 } TRSPACE;
+
+/* HEADER_DOUBLES is the number of doubles in a PetscTrSpace header */
+/* We have to be careful about alignment rules here */
+
+#define HEADER_DOUBLES      sizeof(TRSPACE)/sizeof(double)+1
+
 
 /* This union is used to insure that the block passed to the user is
    aligned on a double boundary */
@@ -272,6 +277,10 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
     TRMaxMem   = allocated;
   }
   frags++;
+
+#if defined(PETSC_USE_STACK)
+  ierr = PetscStackCopy(petscstack,&head->stack); if (ierr) PetscFunctionReturn(0);
+#endif
 
   /*
          Allow logging of all mallocs made
@@ -459,6 +468,9 @@ int PetscTrDump( FILE *fp )
   while (head) {
     fprintf(fp,"[%2d]%8d bytes %s() line %d in %s%s\n",rank,(int) head->size,
             head->functionname,head->lineno,head->dirname,head->filename);
+#if defined(PETSC_USE_STACK)
+    PetscStackPrint(&head->stack,fp);
+#endif
     head = head->next;
   }
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ftest.c,v 1.20 1999/04/02 00:48:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ftest.c,v 1.21 1999/05/12 03:27:04 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -32,6 +32,7 @@ static char vcid[] = "$Id: ftest.c,v 1.20 1999/04/02 00:48:03 balay Exp bsmith $
 #endif
 #include "pinclude/petscfix.h"
 
+#if defined (PARCH_win32)
 #undef __FUNC__  
 #define __FUNC__ "PetscTestFile"
 /*+
@@ -45,7 +46,6 @@ static char vcid[] = "$Id: ftest.c,v 1.20 1999/04/02 00:48:03 balay Exp bsmith $
   flag - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
 
 +*/
-#if defined (PARCH_win32)
 int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
 {
   int m;
@@ -60,6 +60,8 @@ int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 #else 
+#undef __FUNC__  
+#define __FUNC__ "PetscTestFile"
 int PetscTestFile( const char fname[], char mode,PetscTruth *flag)
 {
   struct stat statbuf;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.110 1999/05/04 20:36:19 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.111 1999/06/30 22:52:04 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -374,7 +374,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
       u = x[row];
       uxx = (two*u - x[row-1] - x[row+1])*hydhx;
       uyy = (two*u - x[row-gxm] - x[row+gxm])*hxdhy;
-      f[row] = uxx + uyy - sc*exp(u);
+      f[row] = uxx + uyy - sc*PetscExpScalar(u);
     }
   }
 
@@ -487,7 +487,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       /* interior grid points */
         v[0] = -hxdhy; col[0] = row - gxm;
         v[1] = -hydhx; col[1] = row - 1;
-        v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
+        v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = row;
         v[3] = -hydhx; col[3] = row + 1;
         v[4] = -hxdhy; col[4] = row + gxm;
         ierr = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);

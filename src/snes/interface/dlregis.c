@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.8 1999/01/27 19:49:12 bsmith Exp balay $";
+static char vcid[] = "$Id: dlregis.c,v 1.9 1999/05/04 20:35:43 balay Exp bsmith $";
 #endif
 
 #include "snes.h"
@@ -22,11 +22,12 @@ int DLLibraryRegister(char *path)
 
   ierr = PetscInitializeNoArguments(); if (ierr) return 1;
 
+  PetscFunctionBegin;
   /*
       If we got here then PETSc was properly loaded
   */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
@@ -44,11 +45,11 @@ EXTERN_C_BEGIN
 #define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
+  PetscFunctionBegin;
   if (!PetscStrcmp(type,"Contents"))     *mess = contents;
   else if (!PetscStrcmp(type,"Authors")) *mess = authors;
   else if (!PetscStrcmp(type,"Version")) *mess = version;
   else *mess = 0;
-
-  return 0;
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END

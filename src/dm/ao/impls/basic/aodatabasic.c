@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.39 1999/06/08 22:58:16 balay Exp balay $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.40 1999/06/30 23:54:54 balay Exp bsmith $";
 #endif
 
 /*
@@ -29,6 +29,9 @@ int AODataDestroy_Basic(AOData ao)
   AODataSegment *seg,*nextseg;
 
   PetscFunctionBegin;
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscAMSDestroy(ao);CHKERRQ(ierr);
+
   while (key) {
     ierr = PetscFree(key->name);CHKERRQ(ierr);
     if (key->ltog) {
@@ -825,6 +828,7 @@ int AODataKeyGetActiveLocal_Basic(AOData aodata,char *name,char *segname,int n,i
 }
 
 extern int AODataSegmentGetReduced_Basic(AOData,char *,char *,int,int*,IS *);
+extern int AODataPublish_Petsc(PetscObject);
 
 static struct _AODataOps myops = {AODataSegmentAdd_Basic,
                                   AODataSegmentGet_Basic,
@@ -839,7 +843,9 @@ static struct _AODataOps myops = {AODataSegmentAdd_Basic,
                                   AODataKeyGetActiveLocal_Basic,
                                   AODataSegmentPartition_Basic,
                                   AODataKeyRemove_Basic,
-                                  AODataSegmentRemove_Basic};
+                                  AODataSegmentRemove_Basic, 
+                                  AODataDestroy_Basic,
+                                  AODataView_Basic};
 
 #undef __FUNC__  
 #define __FUNC__ "AODataCreateBasic" 
@@ -877,14 +883,15 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
   PLogObjectMemory(ao,sizeof(struct _p_AOData));
 
   ierr = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  ao->ops->destroy  = AODataDestroy_Basic;
-  ao->ops->view     = AODataView_Basic;
+  ao->bops->publish = AODataPublish_Petsc;
 
   ao->nkeys        = 0;
   ao->keys         = 0;
   ao->datacomplete = 0;
 
-  *aoout = ao; PetscFunctionReturn(0);
+  PetscPublishAll(ao);
+  *aoout = ao; 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -941,11 +948,10 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
   PLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void *));
 
   ierr = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  ao->ops->destroy  = AODataDestroy_Basic;
-  ao->ops->view     = AODataView_Basic;
+  ao->bops->publish  = AODataPublish_Petsc;
 
   ao->nkeys      = nkeys;
-  
+
   for ( i=0; i<nkeys; i++ ) {
     if (i == 0) {
       key = ao->keys  = PetscNew(AODataKey);CHKPTRQ(ao->keys);
@@ -961,7 +967,6 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
     len  = PetscStrlen(paddedname);
     key->name = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(key->name);
     ierr = PetscStrcpy(key->name,paddedname);CHKERRQ(ierr);
-
     ierr = PetscBinaryRead(fd,&key->N,1,PETSC_INT);CHKERRQ(ierr);    
 
     /* determine Nlocal and rowners for key */
@@ -1017,6 +1022,7 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
     ierr = AODataView(ao,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
+  PetscPublishAll(ao);
   PetscFunctionReturn(0);
 }
 

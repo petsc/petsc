@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.28 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.29 1999/05/12 03:34:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -22,7 +22,9 @@ static char vcid[] = "$Id: zdraw.c,v 1.28 1999/05/04 20:38:08 balay Exp bsmith $
 #define drawsettitle_        DRAWSETTITLE
 #define drawappendtitle_     DRAWAPPENDTITLE
 #define drawgetpopup_        DRAWGETPOPUP
+#define drawzoom_            DRAWZOOM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define drawzoom_            drawzoom
 #define drawaxisdestroy_     drawaxisdestroy
 #define drawaxiscreate_      drawaxiscreate
 #define drawaxissetlabels_   drawaxissetlabels
@@ -43,6 +45,21 @@ static char vcid[] = "$Id: zdraw.c,v 1.28 1999/05/04 20:38:08 balay Exp bsmith $
 #endif
 
 EXTERN_C_BEGIN
+
+static void (*f1)(Draw *,void *,int *);
+static int ourdrawzoom(Draw draw,void *ctx)
+{
+  int ierr = 0;
+
+  (*f1)(&draw,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+void drawzoom_(Draw *draw,void (*f)(Draw *,void *,int *),void *ctx,int *__ierr)
+{
+  f1      = f;
+  *__ierr = DrawZoom(*draw,ourdrawzoom,ctx);
+}
 
 void viewerdrawgetdraw_(Viewer *vin,int *win,Draw *draw, int *__ierr )
 {

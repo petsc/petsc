@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.64 1999/03/19 01:00:56 balay Exp balay $ */
+/* $Id: vecimpl.h,v 1.65 1999/05/04 20:30:01 balay Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -263,6 +263,8 @@ extern int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
 }
 
 extern int VecReciprocal_Default(Vec);
+
+
 
 #endif
 

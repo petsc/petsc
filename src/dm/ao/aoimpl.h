@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.14 1998/03/12 23:24:29 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.15 1998/04/03 23:18:46 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -50,7 +50,8 @@ struct _AODataOps {
 
            - key1 
 	       * name      = name of first key
-               * N         = number of local keys 
+               * N         = number of key entries
+               * nlocal    = number of local key entries
                * nsegments = number of segments in first key  
                * ltog      = local to global mapping 
                - segment1 
@@ -73,22 +74,21 @@ struct __AODataSegment {
   int               bs;                      /* block size of basic chunk */
   PetscDataType     datatype;                /* type of data item, int, double etc */
   AODataSegment     *next;  
-} ;
+};
 
 typedef struct __AODataKey AODataKey;
-
 
 struct __AODataKey {
   void                   *data;                   /* implementation-specific data */
   char                   *name;
-  int                    N;                       /* number of keys */
+  int                    N;                       /* number of key entries */
   int                    nsegments;               /* number of segments in key */
   AODataSegment          *segments;
   ISLocalToGlobalMapping ltog;
 
   /* should the following be so public? */
 
-  int                    nlocal;                  /* number of keys owned locally */
+  int                    nlocal;                  /* number of key entries owned locally */
   int                    *rowners;                /* ownership range of each processor */
   int                    rstart,rend;             /* first and 1 + last owned locally */
   AODataKey              *next;

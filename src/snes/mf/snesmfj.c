@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.89 1999/06/30 23:54:09 balay Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.90 1999/08/23 18:30:28 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -267,10 +267,10 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   if (!ctx->func) {
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
       eval_fct = SNESComputeFunction;
-      ierr = SNESGetFunction(snes,&F);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes,&F,PETSC_NULL);CHKERRQ(ierr);
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       eval_fct = SNESComputeGradient;
-      ierr = SNESGetGradient(snes,&F);CHKERRQ(ierr);
+      ierr = SNESGetGradient(snes,&F,PETSC_NULL);CHKERRQ(ierr);
     } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid method class");
     ierr = eval_fct(snes,w,y);CHKERRQ(ierr);
   } else {

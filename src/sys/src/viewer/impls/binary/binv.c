@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.69 1999/06/30 23:48:54 balay Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.70 1999/09/02 14:52:44 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -254,6 +254,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
   PetscTruth       found;
   ViewerBinaryType type = vbinary->btype;
 
+  PetscFunctionBegin;
   if (type == (ViewerBinaryType) -1) {
     SETERRQ(1,1,"Must call ViewerBinarySetType() before ViewerSetFilename()");
   }

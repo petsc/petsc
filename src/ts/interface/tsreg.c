@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.48 1999/06/30 23:54:35 balay Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.49 1999/09/02 14:54:11 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -256,9 +256,11 @@ int TSSetFromOptions(TS ts)
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg)  {ierr = TSPrintHelp(ts);CHKERRQ(ierr);}
-  if (!ts->setfromoptions) PetscFunctionReturn(0);
-  ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);
+  if (ts->setfromoptions) {
+    ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
 
 

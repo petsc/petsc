@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.25 1999/08/14 23:25:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.26 1999/08/15 22:25:13 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -199,10 +199,14 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
 
     /*
-        Determine the min and max coordinate in plot 
+        Determine the min and max color in plot 
     */
     ierr = VecStrideMin(xin,zctx.k,PETSC_NULL,&zctx.min);CHKERRQ(ierr);
     ierr = VecStrideMax(xin,zctx.k,PETSC_NULL,&zctx.max);CHKERRQ(ierr);
+    if (zctx.min == zctx.max) {
+      zctx.min -= 1.e-12;
+      zctx.max += 1.e-12;
+    }
 
     if (!rank) {
       char *title;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.194 1999/09/20 19:07:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.195 1999/09/20 19:08:41 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -55,7 +55,11 @@ int SNESView(SNES snes,Viewer viewer)
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
     ierr = SNESGetType(snes,&method);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    if (method) {
+      ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    } else {
+      ierr = ViewerASCIIPrintf(viewer,"  method: not set yet\n");CHKERRQ(ierr);
+    }
     if (snes->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*snes->view)(snes,viewer);CHKERRQ(ierr);
@@ -693,6 +697,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->conv_hist         = PETSC_NULL;
   snes->conv_hist_its     = PETSC_NULL;
   snes->conv_hist_reset   = PETSC_TRUE;
+  snes->reason            = SNES_CONVERGED_ITERATING;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
   kctx = PetscNew(SNES_KSP_EW_ConvCtx);CHKPTRQ(kctx);
@@ -760,9 +765,12 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(r,VEC_COOKIE);
+  PetscCheckSameComm(snes,r);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
+
   snes->computefunction     = func; 
   snes->vec_func            = snes->vec_func_always = r;
   snes->funP                = ctx;
@@ -804,9 +812,15 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
   int    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscCheckSameComm(snes,x);
+  PetscCheckSameComm(snes,y);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
+
   PLogEventBegin(SNES_FunctionEval,snes,x,y,0);
   PetscStackPush("SNES user function");
   ierr = (*snes->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
@@ -898,9 +912,13 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
   int    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscCheckSameComm(snes,x);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Only for SNES_UNCONSTRAINED_MINIMIZATION");
   }
+
   PLogEventBegin(SNES_MinimizationFunctionEval,snes,x,y,0);
   PetscStackPush("SNES user minimzation function");
   ierr = (*snes->computeumfunction)(snes,x,y,snes->umfunP);CHKERRQ(ierr);
@@ -948,6 +966,8 @@ int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(r,VEC_COOKIE);
+  PetscCheckSameComm(snes,r);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
@@ -993,6 +1013,11 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
   int    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscCheckSameComm(snes,x);
+  PetscCheckSameComm(snes,y);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
@@ -1047,6 +1072,9 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   int    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(X,VEC_COOKIE);
+  PetscCheckSameComm(snes,X);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
@@ -1107,6 +1135,9 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
   int    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscCheckSameComm(snes,x);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
@@ -1170,9 +1201,14 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscCheckSameComm(snes,A);
+  PetscCheckSameComm(snes,B);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
+
   snes->computejacobian = func;
   snes->jacP            = ctx;
   snes->jacobian        = A;
@@ -1203,6 +1239,7 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
@@ -1259,6 +1296,10 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscCheckSameComm(snes,A);
+  PetscCheckSameComm(snes,B);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
@@ -1294,6 +1335,7 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION){
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
@@ -1337,6 +1379,7 @@ int SNESSetUp(SNES snes,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscCheckSameComm(snes,x);
   snes->vec_sol = snes->vec_sol_always = x;
 
   ierr = OptionsHasName(snes->prefix,"-snes_mf_operator", &flg);CHKERRQ(ierr); 
@@ -1609,6 +1652,7 @@ int SNESLGMonitor(SNES snes,int it,double norm,void *ctx)
   int ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   ierr = KSPLGMonitor((KSP)snes,it,norm,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1688,6 +1732,7 @@ _    -snes_cancelmonitors - cancels all monitors that have
 int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx,int (*monitordestroy)(void *))
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->numbermonitors >= MAXSNESMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many monitors set");
   }
@@ -1725,6 +1770,7 @@ int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx,int
 int SNESClearMonitor( SNES snes )
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
@@ -1744,10 +1790,11 @@ int SNESClearMonitor( SNES snes )
           (may be PETSC_NULL)
 
    Calling sequence of func:
-$     int func (SNES snes,double xnorm,double gnorm,double f,void *cctx)
+$     int func (SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *cctx)
 
 +    snes - the SNES context
 .    cctx - [optional] convergence context
+.    reason - reason for convergence/divergence
 .    xnorm - 2-norm of current iterate
 .    gnorm - 2-norm of current step (SNES_NONLINEAR_EQUATIONS methods)
 .    f - 2-norm of function (SNES_NONLINEAR_EQUATIONS methods)
@@ -1761,11 +1808,43 @@ $     int func (SNES snes,double xnorm,double gnorm,double f,void *cctx)
 .seealso: SNESConverged_EQ_LS(), SNESConverged_EQ_TR(), 
           SNESConverged_UM_LS(), SNESConverged_UM_TR()
 @*/
-int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*),void *cctx)
+int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,SNESConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   (snes)->converged = func;
   (snes)->cnvP      = cctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESGetConvergedReason"
+/*@C
+   SNESGetConvergedReason - Gets the reason the SNES iteration was stopped.
+
+   Not Collective
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
+.  reason - negative value indicates diverged, positive value converged, see snes.h or the 
+            manual pages for the individual convergence tests for complete lists
+
+   Level: intermediate
+
+   Notes: Can only be called after the call the SNESSolve() is complete.
+
+.keywords: SNES, nonlinear, set, convergence, test
+
+.seealso: SNESSetConvergenceTest(), SNESConverged_EQ_LS(), SNESConverged_EQ_TR(), 
+          SNESConverged_UM_LS(), SNESConverged_UM_TR()
+@*/
+int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  *reason = snes->reason;
   PetscFunctionReturn(0);
 }
 
@@ -1887,6 +1966,10 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
   int    ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscCheckSameComm(snes,y);
+
   ierr = VecNorm(y,NORM_2, &norm );CHKERRQ(ierr);
   if (norm > *delta) {
      norm = *delta/norm;
@@ -1934,6 +2017,8 @@ int SNESSolve(SNES snes,Vec x,int *its)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscCheckSameComm(snes,x);
   PetscValidIntPointer(its);
   if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
@@ -2071,6 +2156,7 @@ int SNESRegisterDestroy(void)
 int SNESGetType(SNES snes, SNESType *method)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   *method = snes->type_name;
   PetscFunctionReturn(0);
 }
@@ -2488,7 +2574,8 @@ int SNESRegister_Private(char *sname,char *path,char *name,int (*function)(SNES)
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
   ierr = FListAdd_Private(&SNESList,sname,fullname, (int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

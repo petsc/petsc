@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.325 1999/09/02 14:53:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.326 1999/09/15 02:03:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1721,7 +1721,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   for ( i=0; i<is_max; i++ ) {
     /* Initialize the two local arrays */
     isz  = 0;
-    BTMemzero(m,table);
+    ierr = BTMemzero(m,table);CHKERRQ(ierr);
                  
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
@@ -1749,7 +1749,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, (is+i));CHKERRQ(ierr);
   }
-  BTDestroy(table);
+  ierr = BTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.11 1999/05/04 20:36:56 balay Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.12 1999/07/08 14:37:16 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
@@ -307,7 +307,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
      VecSetValues() or VecSetValuesLocal().
   */
   for (i=mybase; i<myend; i++) {
-    u_localptr[i-mybase] = sin(PETSC_PI*i*6.*h) + 3.*sin(PETSC_PI*i*2.*h);
+    u_localptr[i-mybase] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
   }
 
   /* 
@@ -362,7 +362,7 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=mybase; i<myend; i++) {
-    s_localptr[i-mybase] = sin(sc1*(double)i)*ex1 + 3.*sin(sc2*(double)i)*ex2;
+    s_localptr[i-mybase] = PetscSinScalar(sc1*(double)i)*ex1 + 3.*PetscSinScalar(sc2*(double)i)*ex2;
   }
 
   /* 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.8 1999/07/28 15:09:28 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.9 1999/07/28 15:14:06 balay Exp bsmith $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -285,7 +285,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
      VecSetValues() or VecSetValuesLocal().
   */
   for (i=0; i<appctx->m; i++) {
-    u_localptr[i] = sin(PETSC_PI*i*6.*h) + 3.*sin(PETSC_PI*i*2.*h);
+    u_localptr[i] = PetscSinScalar(PETSC_PI*i*6.*h) + 3.*PetscSinScalar(PETSC_PI*i*2.*h);
   }
 
   /* 
@@ -331,10 +331,11 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
      Simply write the solution directly into the array locations.
      Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
-  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
+  ex1 = PetscExpScalar(-36.*PETSC_PI*PETSC_PI*t); 
+  ex2 = PetscExpScalar(-4.*PETSC_PI*PETSC_PI*t);
   sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   for (i=0; i<appctx->m; i++) {
-    s_localptr[i] = sin(sc1*(double)i)*ex1 + 3.*sin(sc2*(double)i)*ex2;
+    s_localptr[i] = PetscSinScalar(sc1*(double)i)*ex1 + 3.*PetscSinScalar(sc2*(double)i)*ex2;
   }
 
   /* 

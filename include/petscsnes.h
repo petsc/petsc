@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.91 1999/06/08 23:00:00 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.92 1999/09/20 18:07:26 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -43,7 +43,7 @@ extern int SNESRegister_Private(char*,char*,char*,int(*)(SNES));
 extern int SNESGetSLES(SNES,SLES*);
 extern int SNESGetSolution(SNES,Vec*);
 extern int SNESGetSolutionUpdate(SNES,Vec*);
-extern int SNESGetFunction(SNES,Vec*);
+extern int SNESGetFunction(SNES,Vec*,void**);
 extern int SNESPrintHelp(SNES);
 extern int SNESView(SNES,Viewer);
 
@@ -101,7 +101,28 @@ extern int SNESLGMonitorDestroy(DrawLG);
 
 extern int SNESSetApplicationContext(SNES,void *);
 extern int SNESGetApplicationContext(SNES,void **);
-extern int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,void*),void*);
+
+typedef enum {/* converged */
+              SNES_CONVERGED_FNORM_ABS         =  2, /* F < F_minabs */
+              SNES_CONVERGED_FNORM_RELATIVE    =  3, /* F < F_mintol*F_initial */
+              SNES_CONVERGED_PNORM_RELATIVE    =  4, /* step size small */
+              SNES_CONVERGED_GNORM_ABS         =  5, /* grad F < grad F_min */
+              SNES_CONVERGED_TR_REDUCTION      =  6,
+              SNES_CONVERGED_TR_DELTA          =  7,
+              /* diverged */
+              SNES_DIVERGED_FUNCTION_COUNT     = -2,  
+              SNES_DIVERGED_FNORM_NAN          = -4, 
+              SNES_DIVERGED_MAX_IT             = -5,
+              SNES_DIVERGED_LS_FAILURE         = -6,
+              SNES_DIVERGED_TR_REDUCTION       = -7,
+              SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
+
+extern int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,SNESConvergedReason*,void*),void*);
+extern int SNESConverged_UM_LS(SNES,double,double,double,SNESConvergedReason*,void*);
+extern int SNESConverged_UM_TR(SNES,double,double,double,SNESConvergedReason*,void*);
+extern int SNESConverged_EQ_LS(SNES,double,double,double,SNESConvergedReason*,void*);
+extern int SNESConverged_EQ_TR(SNES,double,double,double,SNESConvergedReason*,void*);
+extern int SNESGetConvergedReason(SNES,SNESConvergedReason*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
 extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);
@@ -110,8 +131,6 @@ extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,
 extern int SNESGetJacobian(SNES,Mat*,Mat*,void **);
 extern int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int SNESConverged_EQ_LS(SNES,double,double,double,void*);
-extern int SNESConverged_EQ_TR(SNES,double,double,double,void*);
 extern int SNESSetLineSearch(SNES,int(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*),void*);
 extern int SNESNoLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESNoLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
@@ -127,16 +146,14 @@ extern int SNESGetHessian(SNES,Mat*,Mat*,void **);
 extern int SNESDefaultComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESDefaultComputeHessianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
-extern int SNESGetGradient(SNES,Vec*);
+extern int SNESGetGradient(SNES,Vec*,void**);
 extern int SNESGetGradientNorm(SNES,Scalar*);
 extern int SNESComputeGradient(SNES,Vec,Vec);
 extern int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,double*,void*),void*);
 extern int SNESComputeMinimizationFunction(SNES,Vec,double*);
-extern int SNESGetMinimizationFunction(SNES,double*);
+extern int SNESGetMinimizationFunction(SNES,double*,void**);
 extern int SNESSetMinimizationFunctionTolerance(SNES,double);
 extern int SNESLineSearchSetDampingParameter(SNES,Scalar*);
-extern int SNESConverged_UM_LS(SNES,double,double,double,void*);
-extern int SNESConverged_UM_TR(SNES,double,double,double,void*);
 
 
 /* Should these 2 routines be private? */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.14 1999/04/16 16:10:14 bsmith Exp balay $";
+static char vcid[] = "$Id: ex13.c,v 1.15 1999/05/04 20:36:07 balay Exp bsmith $";
 #endif
 
 static char help[] =
@@ -195,7 +195,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
       u = x[row];
       uxx = (two*u - x[row-1] - x[row+1])*hydhx;
       uyy = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
-      f[row] = uxx + uyy - sc*exp(u);
+      f[row] = uxx + uyy - sc*PetscExpScalar(u);
     }
   }
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
@@ -241,7 +241,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       }
       v[0] = -hxdhy; col[0] = ltog[row - Xm];
       v[1] = -hydhx; col[1] = ltog[row - 1];
-      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
+      v[2] = two*(hydhx + hxdhy) - sc*lambda*PetscExpScalar(x[row]); col[2] = grow;
       v[3] = -hydhx; col[3] = ltog[row + 1];
       v[4] = -hxdhy; col[4] = ltog[row + Xm];
       ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.99 1999/06/30 23:48:45 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.100 1999/07/11 16:41:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -332,6 +332,8 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
 /*
        If there is a Viewer associated with this communicator it is destroyed.
 */
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_SOCKET_Destroy" 
 int VIEWER_SOCKET_Destroy(MPI_Comm comm)
 {
   int    ierr,flag;
@@ -354,28 +356,37 @@ int VIEWER_SOCKET_Destroy(MPI_Comm comm)
 #include "viewer.h"
 Viewer VIEWER_SOCKET_WORLD_PRIVATE = 0;
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerInitializeSocketWorld_Private" 
 int ViewerInitializeSocketWorld_Private(void)
 { 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-
+#undef __FUNC__  
+#define __FUNC__ "ViewerSocketOpen"
 int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroySocket_Private"
 int ViewerDestroySocket_Private(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_SOCKET_"
 Viewer VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerCreate_Socket"
 int ViewerCreate_Socket(Viewer v)
 {
   PetscFunctionBegin;

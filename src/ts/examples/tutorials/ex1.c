@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.14 1999/03/19 21:23:41 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.15 1999/05/04 20:36:56 balay Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -254,7 +254,7 @@ int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
       ur = x[row + 1];
       uxx = (-ur + two*u - ul)*hydhx;
       uyy = (-ut + two*u - ub)*hxdhy;
-      f[row] = -uxx + -uyy + sc*lambda*exp(u);
+      f[row] = -uxx + -uyy + sc*lambda*PetscExpScalar(u);
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr
       }
       v[0] = hxdhy; col[0] = row - mx;
       v[1] = hydhx; col[1] = row - 1;
-      v[2] = -two*(hydhx + hxdhy) + sc*lambda*exp(x[row]); col[2] = row;
+      v[2] = -two*(hydhx + hxdhy) + sc*lambda*PetscExpScalar(x[row]); col[2] = row;
       v[3] = hydhx; col[3] = row + 1;
       v[4] = hxdhy; col[4] = row + mx;
       ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);

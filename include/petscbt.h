@@ -1,4 +1,4 @@
-/* $Id: bitarray.h,v 1.10 1998/03/24 16:59:23 balay Exp bsmith $ */
+/* $Id: bitarray.h,v 1.11 1998/10/16 03:15:04 bsmith Exp bsmith $ */
 
 /*    
 
@@ -68,6 +68,8 @@ extern int  _BT_idx;
                                  _BT_mask        = (char)1 << ((index)%BITSPERBYTE), \
                                  (_BT_c & _BT_mask) != 0 )
 
-#define BTDestroy(array) (PetscFree(array),0)
+#define BTDestroy(array) PetscFree(array)
 
 #endif
+
+

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.1 1999/08/31 21:09:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.2 1999/09/02 14:52:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of DrawZoom()\n";
@@ -13,7 +13,7 @@ int zoomfunction(Draw draw,void *dummy)
   int  ierr, i; 
 
   for ( i=0; i<256; i++) {
-    ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i);
+    ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -23,7 +23,7 @@ int zoomfunction(Draw draw,void *dummy)
 int main(int argc,char **argv)
 {
   Draw draw;
-  int  ierr, x = 0, y = 0, width = 256, height = 256,i; 
+  int  ierr, x = 0, y = 0, width = 256, height = 256; 
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 

@@ -135,6 +135,10 @@ int TSSetRHSMatrix(TS ts,Mat A, Mat B,int (*f)(TS,double,Mat*,Mat*,MatStructure*
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscCheckSameComm(ts,A);
+  PetscCheckSameComm(ts,B);
   if (ts->problem_type == TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not for nonlinear problems; use TSSetRHSJacobian()");
   }
@@ -197,6 +201,10 @@ int TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscCheckSameComm(ts,A);
+  PetscCheckSameComm(ts,B);
   if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not for linear problems; use TSSetRHSMatrix()");
   }
@@ -223,6 +231,7 @@ int TSComputeRHSBoundaryConditions(TS ts,double t,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   PetscValidHeader(x);
+  PetscCheckSameComm(ts,x);
 
   if (ts->rhsbc) {
     PetscStackPush("TS user boundary condition function");
@@ -317,7 +326,11 @@ int TSView(TS ts,Viewer viewer)
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
     ierr = TSGetType(ts,(TSType *)&method);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    if (method) {
+      ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    } else {
+      ierr = ViewerASCIIPrintf(viewer,"  method: not yet set\n");CHKERRQ(ierr);
+    }
     if (ts->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ts->view)(ts,viewer);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.66 1999/04/21 18:18:36 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.67 1999/05/04 20:36:19 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
@@ -141,7 +141,7 @@ int main( int argc, char **argv )
 
   xp = 0.0;
   for ( i=0; i<n; i++ ) {
-    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
+    v = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
     v= xp*xp*xp;
     ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);

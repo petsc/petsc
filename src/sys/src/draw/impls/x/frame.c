@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: frame.c,v 1.19 1999/05/12 03:26:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: frame.c,v 1.20 1999/05/14 20:39:53 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -125,6 +125,9 @@ int XiFrameColorsByName(Draw_X* XiWin, char *Hi, char *Lo )
 }
 
 #else
+
+#undef __FUNC__  
+#define __FUNC__ "dummy_frame"
 int dummy_frame(void)
 {
   PetscFunctionBegin;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfjdef.c,v 1.4 1999/06/30 22:51:53 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfjdef.c,v 1.5 1999/06/30 23:54:09 balay Exp bsmith $";
 #endif
 /*
   Implements the default PETSc approach for computing the h 
@@ -72,6 +72,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
   Scalar           dot;
   int              ierr;
 
+  PetscFunctionBegin;
   /*
      This algorithm requires 2 norms and 1 inner product. Rather than
      use directly the VecNorm() and VecDot() routines (and thus have 

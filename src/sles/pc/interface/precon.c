@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.177 1999/09/02 14:53:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.178 1999/09/20 19:20:30 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -886,6 +886,7 @@ int PCSetVector(PC pc,Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscCheckSameComm(pc,vec);
   pc->vec = vec;
   PetscFunctionReturn(0);
 }
@@ -1209,7 +1210,11 @@ int PCView(PC pc,Viewer viewer)
     ierr = ViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",cstr);CHKERRQ(ierr);
+    if (cstr) {
+      ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",cstr);CHKERRQ(ierr);
+    } else {
+      ierr = ViewerASCIIPrintf(viewer,"  method: not yet set\n");CHKERRQ(ierr);
+    }
     if (pc->ops->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);

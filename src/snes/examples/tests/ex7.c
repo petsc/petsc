@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.43 1999/04/21 18:18:31 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.44 1999/05/04 20:36:07 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -52,7 +52,7 @@ int main( int argc, char **argv )
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {
-    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
+    v = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
     v= xp*xp*xp;
     ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);

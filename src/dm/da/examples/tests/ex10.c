@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.6 1999/05/04 20:37:40 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.7 1999/06/14 20:42:41 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   n    = n/dof;
   for ( j=0; j<dof; j++ ) {
     for ( i=0; i<n; i++ ) {
-      alocal[j+dof*i] = sin(2*PETSC_PI*(j+1)*x[i]); 
+      alocal[j+dof*i] = PetscSinScalar(2*PETSC_PI*(j+1)*x[i]); 
     }
   }
   ierr = VecRestoreArray(global,&alocal);CHKERRA(ierr);

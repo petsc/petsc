@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.48 1999/06/30 23:52:39 balay Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.49 1999/09/20 19:22:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -486,7 +486,6 @@ int MatFDColoringDestroy(MatFDColoring c)
   PetscFunctionReturn(0);
 }
 
-#include "snes.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringApply"
@@ -605,8 +604,6 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#include "ts.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringApplyTS"

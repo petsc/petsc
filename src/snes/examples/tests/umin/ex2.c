@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.50 1999/06/30 23:54:24 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.51 1999/07/08 14:09:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -565,7 +565,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       }
       dvdx = (vr-v)/hx;
       dvdy = (vt-v)/hy;
-      fl = sqrt(one + dvdx*dvdx + dvdy*dvdy);
+      fl = PetscSqrtScalar(one + dvdx*dvdx + dvdy*dvdy);
       if (fg & FunctionEval) {
 #if !defined(PETSC_USE_COMPLEX)
         *f += fl;
@@ -614,7 +614,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       }
       dvdx = (v-vl)/hx;
       dvdy = (v-vb)/hy;
-      fu = sqrt(one + dvdx*dvdx + dvdy*dvdy);
+      fu = PetscSqrtScalar(one + dvdx*dvdx + dvdy*dvdy);
       if (fg & FunctionEval) {
 #if !defined(PETSC_USE_COMPLEX)
         *f += fu;
@@ -730,7 +730,7 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        dzdxhx = dzdx/hx;
        dzdyhy = dzdy/hy;
        tl = one + dvdx*dvdx + dvdy*dvdy;
-       fl = sqrt(tl);
+       fl = PetscSqrtScalar(tl);
        fl3 = fl*tl;
        if (i != -1 && j != -1) {
          ind = k;
@@ -787,7 +787,7 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        dzdxhx = dzdx/hx;
        dzdyhy = dzdy/hy;
        tu = one + dvdx*dvdx + dvdy*dvdy;
-       fu = sqrt(tu);
+       fu = PetscSqrtScalar(tu);
        fu3 = fu*tu;
        if (i != nx && j != ny) {
          ind = k;
@@ -860,9 +860,9 @@ int BoundaryValues(AppCtx *user)
       u[0] = xt;
       u[1] = -yt;
       for (k=0; k<maxit; k++) {
-        nf[0] = u[0] + u[0]*u[1]*u[1] - pow(u[0],three)/three - xt;
-        nf[1] = -u[1] - u[0]*u[0]*u[1] + pow(u[1],three)/three - yt;
-        fnorm = sqrt(nf[0]*nf[0]+nf[1]*nf[1]);
+        nf[0] = u[0] + u[0]*u[1]*u[1] - PetscPowScalar(u[0],three)/three - xt;
+        nf[1] = -u[1] - u[0]*u[0]*u[1] + PetscPowScalar(u[1],three)/three - yt;
+        fnorm = PetscSqrtScalar(nf[0]*nf[0]+nf[1]*nf[1]);
 #if !defined(PETSC_USE_COMPLEX)
         if (fnorm <= tol) break;
 #else

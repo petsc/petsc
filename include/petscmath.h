@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.15 1999/05/12 03:35:01 bsmith Exp balay $ */
+/* $Id: petscmath.h,v 1.16 1999/05/27 19:41:20 balay Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -31,42 +31,54 @@
 #include <complex.h>
 #endif
 
-extern  MPI_Datatype       MPIU_COMPLEX;
-#define MPIU_SCALAR        MPIU_COMPLEX
+extern  MPI_Datatype        MPIU_COMPLEX;
+#define MPIU_SCALAR         MPIU_COMPLEX
 #if defined (PETSC_HAVE_STD_COMPLEX)
-#define PetscReal(a)       (a).real()
-#define PetscImaginary(a)  (a).imag()
-#define PetscAbsScalar(a)  std::abs(a)
-#define PetscConj(a)       std::conj(a)
-#define PetscSqrtScalar(a) std::sqrt(a)
+#define PetscReal(a)        (a).real()
+#define PetscImaginary(a)   (a).imag()
+#define PetscAbsScalar(a)   std::abs(a)
+#define PetscConj(a)        std::conj(a)
+#define PetscSqrtScalar(a)  std::sqrt(a)
+#define PetscPowScalar(a,b) std::pow(a,b)
+#define PetscExpScalar(a)   std::exp(a)
+#define PetscSinScalar(a)   std::sin(a)
+#define PetscCosScalar(a)   std::cos(a)
 #else
-#define PetscReal(a)       real(a)
-#define PetscImaginary(a)  imag(a)
-#define PetscAbsScalar(a)  abs(a)
-#define PetscConj(a)       conj(a)
-#define PetscSqrtScalar(a) sqrt(a)
+#define PetscReal(a)        real(a)
+#define PetscImaginary(a)   imag(a)
+#define PetscAbsScalar(a)   abs(a)
+#define PetscConj(a)        conj(a)
+#define PetscSqrtScalar(a)  sqrt(a)
+#define PetscPowScalar(a,b) pow(a,b)
+#define PetscExpScalar(a)   exp(a)
+#define PetscSinScalar(a)   sin(a)
+#define PetscCosScalar(a)   cos(a)
 #endif
 /*
   The new complex class for GNU C++ is based on templates and is not backward
   compatible with all previous complex class libraries.
 */
 #if defined(PETSC_HAVE_STD_COMPLEX)
-#define Scalar            std::complex<double>
+#define Scalar             std::complex<double>
 #elif defined(PETSC_HAVE_TEMPLATED_COMPLEX)
-#define Scalar            complex<double>
+#define Scalar             complex<double>
 #else
-#define Scalar            complex
+#define Scalar             complex
 #endif
 
 /* Compiling for real numbers only */
 #else
-#define MPIU_SCALAR        MPI_DOUBLE
-#define PetscReal(a)       (a)
-#define PetscImaginary(a)  (a)
-#define PetscAbsScalar(a)  ( ((a)<0.0)   ? -(a) : (a) )
-#define Scalar             double
-#define PetscConj(a)       (a)
-#define PetscSqrtScalar(a) sqrt(a)
+#define MPIU_SCALAR         MPI_DOUBLE
+#define PetscReal(a)        (a)
+#define PetscImaginary(a)   (a)
+#define PetscAbsScalar(a)   ( ((a)<0.0)   ? -(a) : (a) )
+#define Scalar              double
+#define PetscConj(a)        (a)
+#define PetscSqrtScalar(a)  sqrt(a)
+#define PetscPowScalar(a,b) pow(a,b)
+#define PetscExpScalar(a)   exp(a)
+#define PetscSinScalar(a)   sin(a)
+#define PetscCosScalar(a)   cos(a)
 #endif
 
 /*

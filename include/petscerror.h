@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.35 1999/07/10 21:16:17 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.36 1999/07/15 17:43:50 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -128,53 +128,56 @@ extern int PetscInitializeLargeInts(int *,int);
 */
 #if defined(PETSC_USE_STACK)
 
+#define PETSCSTACKSIZE 15
+
 typedef struct  {
-  char **function;
-  char **file;
-  char **directory;
-  int  *line;
+  char *function[PETSCSTACKSIZE];
+  char *file[PETSCSTACKSIZE];
+  char *directory[PETSCSTACKSIZE];
+  int  line[PETSCSTACKSIZE];
+  int  currentsize;
 } PetscStack;
 
-extern int        petscstacksize_max;
-extern int        petscstacksize;
 extern PetscStack *petscstack;
+extern int PetscStackCopy(PetscStack*,PetscStack*);
+extern int PetscStackPrint(PetscStack*,FILE* fp);
+
+#define PetscStackActive (petscstack != 0)
 
 #if !defined(PETSC_HAVE_AMS)
 
 #define PetscFunctionBegin \
   {\
-   if (petscstack && (petscstacksize < petscstacksize_max)) {    \
-    petscstack->function[petscstacksize]  = __FUNC__; \
-    petscstack->file[petscstacksize]      = __FILE__; \
-    petscstack->directory[petscstacksize] = __SDIR__; \
-    petscstack->line[petscstacksize]      = __LINE__; \
-    petscstacksize++; \
+   if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
+    petscstack->function[petscstack->currentsize]  = __FUNC__; \
+    petscstack->file[petscstack->currentsize]      = __FILE__; \
+    petscstack->directory[petscstack->currentsize] = __SDIR__; \
+    petscstack->line[petscstack->currentsize]      = __LINE__; \
+    petscstack->currentsize++; \
   }}
 
 #define PetscStackPush(n) \
-  {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
-    petscstack->function[petscstacksize]  = n; \
-    petscstack->file[petscstacksize]      = "unknown"; \
-    petscstack->directory[petscstacksize] = "unknown"; \
-    petscstack->line[petscstacksize]      = 0; \
-    petscstacksize++; \
+  {if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
+    petscstack->function[petscstack->currentsize]  = n; \
+    petscstack->file[petscstack->currentsize]      = "unknown"; \
+    petscstack->directory[petscstack->currentsize] = "unknown"; \
+    petscstack->line[petscstack->currentsize]      = 0; \
+    petscstack->currentsize++; \
   }}
 
 #define PetscStackPop \
-  {if (petscstack && petscstacksize > 0) {     \
-    petscstacksize--; \
-    petscstack->function[petscstacksize]  = 0; \
-    petscstack->file[petscstacksize]      = 0; \
-    petscstack->directory[petscstacksize] = 0; \
-    petscstack->line[petscstacksize]      = 0; \
+  {if (petscstack && petscstack->currentsize > 0) {     \
+    petscstack->currentsize--; \
+    petscstack->function[petscstack->currentsize]  = 0; \
+    petscstack->file[petscstack->currentsize]      = 0; \
+    petscstack->directory[petscstack->currentsize] = 0; \
+    petscstack->line[petscstack->currentsize]      = 0; \
   }};
 
 #define PetscFunctionReturn(a) \
   {\
   PetscStackPop; \
   return(a);}
-
-#define PetscStackActive (petscstack != 0)
 
 #else
 
@@ -191,35 +194,35 @@ extern int        stack_err;
 
 #define PetscFunctionBegin \
   {\
-   if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+   if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
-    petscstack->function[petscstacksize]  = __FUNC__; \
-    petscstack->file[petscstacksize]      = __FILE__; \
-    petscstack->directory[petscstacksize] = __SDIR__; \
-    petscstack->line[petscstacksize]      = __LINE__; \
-    petscstacksize++; \
+    petscstack->function[petscstack->currentsize]  = __FUNC__; \
+    petscstack->file[petscstack->currentsize]      = __FILE__; \
+    petscstack->directory[petscstack->currentsize] = __SDIR__; \
+    petscstack->line[petscstack->currentsize]      = __LINE__; \
+    petscstack->currentsize++; \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
   }}
 
 #define PetscStackPush(n) \
-  {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+  {if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
-    petscstack->function[petscstacksize]  = n; \
-    petscstack->file[petscstacksize]      = "unknown"; \
-    petscstack->directory[petscstacksize] = "unknown"; \
-    petscstack->line[petscstacksize]      = 0; \
-    petscstacksize++; \
+    petscstack->function[petscstack->currentsize]  = n; \
+    petscstack->file[petscstack->currentsize]      = "unknown"; \
+    petscstack->directory[petscstack->currentsize] = "unknown"; \
+    petscstack->line[petscstack->currentsize]      = 0; \
+    petscstack->currentsize++; \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
   }}
 
 #define PetscStackPop \
-  {if (petscstack && petscstacksize > 0) {     \
+  {if (petscstack && petscstack->currentsize > 0) {     \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
-    petscstacksize--; \
-    petscstack->function[petscstacksize]  = 0; \
-    petscstack->file[petscstacksize]      = 0; \
-    petscstack->directory[petscstacksize] = 0; \
-    petscstack->line[petscstacksize]      = 0; \
+    petscstack->currentsize--; \
+    petscstack->function[petscstack->currentsize]  = 0; \
+    petscstack->file[petscstack->currentsize]      = 0; \
+    petscstack->directory[petscstack->currentsize] = 0; \
+    petscstack->line[petscstack->currentsize]      = 0; \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\
   }};
 
@@ -227,8 +230,6 @@ extern int        stack_err;
   {\
   PetscStackPop; \
   return(a);}
-
-#define PetscStackActive (petscstack != 0)
 
 #endif
 
@@ -242,7 +243,7 @@ extern int        stack_err;
 
 #endif
 
-extern int PetscStackCreate(int);
+extern int PetscStackCreate(void);
 extern int PetscStackView(Viewer);
 extern int PetscStackDestroy(void);
 extern int PetscStackPublish(void);

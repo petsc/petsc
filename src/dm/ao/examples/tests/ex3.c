@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.12 1999/05/04 20:37:15 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.13 1999/06/30 23:55:02 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
     if (i % 2) BTSet(ld,i);
   }
   ierr = AODataSegmentAdd(aodata,"key1","seg3",bs,n,keys,ld,PETSC_LOGICAL);CHKERRA(ierr); 
-  BTDestroy(ld);
+  ierr = BTDestroy(ld);CHKERRA(ierr);
 
   /*
        Use same data for second key and first segment 

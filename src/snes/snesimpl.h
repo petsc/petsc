@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.47 1999/04/21 18:18:14 bsmith Exp balay $ */
+/* $Id: snesimpl.h,v 1.48 1999/05/04 20:35:41 balay Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -39,8 +39,9 @@ struct _p_SNES {
   int   (*monitordestroy[MAXSNESMONITORS])(void*);          /* monitor context destroy routine */
   void  *monitorcontext[MAXSNESMONITORS];                   /* monitor context */
   int   numbermonitors;                                     /* number of monitors */
-  int   (*converged)(SNES,double,double,double,void*);      /* convergence routine */
+  int   (*converged)(SNES,double,double,double,SNESConvergedReason*,void*);      /* convergence routine */
   void  *cnvP;	                                            /* convergence context */
+  SNESConvergedReason reason;
 
   /* --- Routines and data that are unique to each particular solver --- */
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.135 1999/06/30 22:50:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.136 1999/09/02 14:53:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,11 +17,11 @@ static int VecPublish_MPI(PetscObject object)
 #if defined(PETSC_HAVE_AMS)
   Vec          v = (Vec) object;
   Vec_MPI      *s = (Vec_MPI *) v->data;
-  int          ierr;
-  int          (*f)(AMS_Memory,char *,Vec);
-  
-  PetscFunctionBegin;
+  int          ierr, (*f)(AMS_Memory,char *,Vec);
+#endif  
 
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
@@ -38,11 +38,7 @@ static int VecPublish_MPI(PetscObject object)
     ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
   }
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
-
-#else
-  PetscFunctionBegin;
 #endif
-
   PetscFunctionReturn(0);
 }
 
@@ -482,6 +478,8 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "VecCreateGhostWithArray"
 /*@C
    VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space.
@@ -552,6 +550,8 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "VecCreateGhost"
 /*@C
    VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
 
@@ -644,6 +644,8 @@ int VecDuplicate_MPI( Vec win, Vec *v)
 }
 
 /* ------------------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ "VecCreateGhostBlockWithArray"
 /*@C
    VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
    the caller allocates the array space. Indices in the ghost region are based on blocks.
@@ -722,6 +724,8 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "VecCreateGhost"
 /*@C
    VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
         The indicing of the ghost points is done with blocks.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.168 1999/06/30 23:53:21 balay Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.169 1999/07/08 18:11:01 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -50,7 +50,11 @@ int KSPView(KSP ksp,Viewer viewer)
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = KSPGetType(ksp,&method);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    if (method) {
+      ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    } else {
+      ierr = ViewerASCIIPrintf(viewer,"  method: not yet set\n");CHKERRQ(ierr);
+    }
     if (ksp->ops->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
@@ -114,9 +118,11 @@ static int KSPPublish_Petsc(PetscObject object)
 #if defined(PETSC_HAVE_AMS)
   KSP          v = (KSP) object;
   int          ierr;
-  
+#endif
+
   PetscFunctionBegin;
 
+#if defined(PETSC_HAVE_AMS)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
@@ -126,8 +132,6 @@ static int KSPPublish_Petsc(PetscObject object)
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->rnorm,1,AMS_DOUBLE,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
-#else
-  PetscFunctionBegin;
 #endif
 
   PetscFunctionReturn(0);
