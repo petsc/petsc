@@ -1,4 +1,4 @@
-/*$Id: dgefa3.c,v 1.19 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: dgefa3.c,v 1.20 2001/03/23 23:22:07 balay Exp bsmith $*/
 /*
      Inverts 3 by 3 matrix using partial pivoting.
 
@@ -17,7 +17,7 @@
 #define __FUNCT__ "Kernel_A_gets_inverse_A_3"
 int Kernel_A_gets_inverse_A_3(MatScalar *a)
 {
-    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[3],*ipvt = ipvt_l-1,kb,k3;
+    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt[3],kb,k3;
     int        k4,j3;
     MatScalar  *aa,*ax,*ay,work_l[9],*work = work_l-1,stmp;
     MatReal    tmp,max;
@@ -43,7 +43,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
           if (tmp > max) { max = tmp; l = ll+1;}
         }
         l       += k - 1;
-	ipvt[k] = l;
+	ipvt[k-1] = l;
 
 	if (a[l + k3] == 0.) {
 	  SETERRQ(k,"Zero pivot");
@@ -84,7 +84,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
             }
 	}
     }
-    ipvt[3] = 3;
+    ipvt[2] = 3;
     if (a[12] == 0.) {
 	SETERRQ(3,"Zero pivot,final row");
     }
@@ -137,7 +137,7 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
             ay[1] += stmp*ax[1];
             ay[2] += stmp*ax[2];
 	}
-	l = ipvt[k];
+	l = ipvt[k-1];
 	if (l != k) {
             ax = &a[k3 + 1]; 
             ay = &a[3*l + 1];

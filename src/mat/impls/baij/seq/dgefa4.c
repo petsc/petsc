@@ -1,4 +1,4 @@
-/*$Id: dgefa4.c,v 1.15 2001/03/23 23:22:07 balay Exp buschelm $*/
+/*$Id: dgefa4.c,v 1.16 2001/04/05 18:07:25 buschelm Exp bsmith $*/
 /*
        Inverts 4 by 4 matrix using partial pivoting.
 
@@ -17,7 +17,7 @@
 #define __FUNCT__ "Kernel_A_gets_inverse_A_4"
 int Kernel_A_gets_inverse_A_4(MatScalar *a)
 {
-    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[4],*ipvt = ipvt_l-1,kb,k3;
+    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt[4],kb,k3;
     int        k4,j3;
     MatScalar  *aa,*ax,*ay,work_l[16],*work = work_l-1,stmp;
     MatReal    tmp,max;
@@ -43,7 +43,7 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
           if (tmp > max) { max = tmp; l = ll+1;}
         }
         l       += k - 1;
-        ipvt[k] = l;
+        ipvt[k-1] = l;
 
         if (a[l + k3] == 0.) {
           SETERRQ(k,"Zero pivot");
@@ -84,7 +84,7 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
             }
         }
     }
-    ipvt[4] = 4;
+    ipvt[3] = 4;
     if (a[20] == 0.) {
         SETERRQ(3,"Zero pivot,final row");
     }
@@ -138,7 +138,7 @@ int Kernel_A_gets_inverse_A_4(MatScalar *a)
             ay[2] += stmp*ax[2];
             ay[3] += stmp*ax[3];
         }
-        l = ipvt[k];
+        l = ipvt[k-1];
         if (l != k) {
             ax = &a[k3 + 1]; 
             ay = &a[4*l + 1];
