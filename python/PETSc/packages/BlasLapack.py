@@ -135,9 +135,9 @@ class Configure(config.base.Configure):
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
     else:
       if not self.foundBlas:
-        raise RuntimeError('Could not find a functional BLAS\n')
+        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas=<lib> to indicate location of BLAS\n')
       if not self.foundLapack:
-        raise RuntimeError('Could not find a functional LAPACK\n')
+        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack=<lib> to indicate location of LAPACK\n')\n')
     return
 
   def unique(self, l):
