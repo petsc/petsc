@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.292 1998/05/19 01:49:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.293 1998/05/20 13:41:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2715,7 +2715,7 @@ int MatGetArray(Mat mat,Scalar **v)
 
    Fortran Note:
    This routine is used differently from Fortran
-$    Vec         mat
+$    Mat         mat
 $    Scalar      mat_array(1)
 $    PetscOffset i_mat
 $    int         ierr
