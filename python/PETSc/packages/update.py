@@ -80,9 +80,9 @@ class Configure(config.base.Configure):
     '''Returns 1 if it is GNU patch or equivilent, exception if cannot run'''
     if self.framework.archBase.startswith('solaris') or self.framework.archBase.startswith('alpha'):
       try:
-        (status,output) = self.executeShellCommand(patch+' --help')
+        output = self.executeShellCommand(patch+' --help')
       except:
-        raise RuntimeException('Unable to run '+patch+' command')
+        raise RuntimeError('Unable to run '+patch+' command')
       if output.find('gnu.org') == -1: return 0
     return 1
 
@@ -165,19 +165,28 @@ class Configure(config.base.Configure):
   # should only apply patch if it truly has something new in it. Keep checksum somewhere?
   def updatePatches(self):
     '''Updates the source code from any available patches'''
-    self.framework.getExecutable('patch')
-    if not hasattr(self.framework, 'patch'):
-      self.framework.log.write('Cannot find patch program.\nContinuing configure without patches.\n')
-      return
-#    try:
-    if not self.isGNUPatch(self.framework.patch):
-      self.framework.log.write('Solaris and Alpha require GNU patch, run with --with-patch=<full path of gnu patch> \n')
-      self.framework.log.write('Continuing configure without patch files\n')
-      return
- #   except:
-#      self.framework.log.write('Error running patch --help, run with --with-patch=<full path of gnu patch> \n')
-#      self.framework.log.write('Continuing configure without patch files\n')
-      return 0
+    if self.framework.argDB.has_key('with-patch'):
+      patch = self.framework.argDB['with-patch']
+      try:
+        if not self.isGNUPatch(patch):
+          raise RuntimeError('Patch program provided with --with-patch='+patch+' must be gnu patch')
+      except:
+        raise RuntimeError('Cannot run patch program provided with --with-patch='+patch)
+    else:
+      self.framework.getExecutable('patch')
+      if not hasattr(self.framework, 'patch'):
+        self.framework.log.write('Cannot find patch program.\nContinuing configure without patches.\n')
+        return
+      patch = self.framework.patch
+      try:
+        if not self.isGNUPatch(patch):
+          self.framework.log.write('Solaris and Alpha require GNU patch, run with --with-patch=<full path of gnu patch> \n')
+          self.framework.log.write('Continuing configure without patch files\n')
+          return
+      except:
+        self.framework.log.write('Error running patch --help, run with --with-patch=<full path of gnu patch> \n')
+        self.framework.log.write('Continuing configure without patch files\n')
+        return 0
     
     # Get PETSc current version number
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
@@ -205,9 +214,9 @@ class Configure(config.base.Configure):
       self.framework.log.write('Unable to download patches. Perhaps you are off the network?\nContinuing configure without patches.\n')
       return
     try:
-      output1 = self.executeShellCommand('echo patch -Np1 < patches1')
+      output1 = self.executeShellCommand(patch+' -Np1 < patches1')
       os.unlink('patches1')
-      output2 = self.executeShellCommand('cd python/BuildSystem; echo patch -Np1 < ../../patches2')
+      output2 = self.executeShellCommand('cd python/BuildSystem; '+patch+' -Np1 < ../../patches2')
       os.unlink('patches2')
       if output1.find('error') >= 0 or output2.find('error') >= 0:
         self.framework.log.write(output1+'\n')
@@ -226,7 +235,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureArchitecture)
     if not self.framework.argDB['enable-update']: return
-    if os.path.isdir('joeBitKeeper'): 
+    if os.path.isdir('BitKeeper'): 
       self.executeTest(self.updateBK)
       self.executeTest(self.updateBKBuildSystem)
     else:                          self.executeTest(self.updatePatches)
