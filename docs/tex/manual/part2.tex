@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.261 1998/04/13 21:08:48 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.262 1998/04/14 22:15:48 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1776,9 +1776,10 @@ distribution across the processors can (and should) be done in a ``pre-processin
 before the numerical computations. However, this does not mean it need be done
 in a separate, sequential program, rather it should be done before one sets up the 
 parallel grid data structures in the actual program. PETSc provides an interface to
-the ParMETIS (developed by George Karypis), to allow the partitioning to be done in
+the ParMETIS (developed by George Karypis; see the docs/installation.html file
+for directions on installing PETSc to use ParMETIS), to allow the partitioning to be done in
 parallel. PETSc does not currently provide directly support for dynamic
-repartitioning, load balancing by migrating matrix entries between processors etc.
+repartitioning, load balancing by migrating matrix entries between processors, etc.
 For problems that require mesh refinement, PETSc uses the ``rebuild the data structure''
 approach, as opposed to the ``maintain dynamic data structures that support the 
 insertion/deletion of additional vector and matrix rows and columns entries'' approach.
@@ -1788,14 +1789,63 @@ One first creates a parallel matrix that contains the connectivity information a
 grid (or other graph-type object) that is to be partitioned. This is done with the 
 command
 \begin{verbatim}
-  ierr = MatCreateMPIAdj(MPI_Comm comm,int mlocal,int n,int *ia,int *ja, Mat *A);
+  ierr = MatCreateMPIAdj(MPI_Comm comm,int mlocal,int n,int *ia,int *ja, Mat *Adj);
 \end{verbatim}
 The argument {\tt mlocal} indicates the number of rows of the graph being provided
 by the given processor, {\tt n} is the total number of columns; equal to the 
 sum of all the {\tt mlocal}. The arguments {\tt ia} and {\tt ja} are the row pointers
 and column pointers for the given rows, these are the usual format for parallel 
 compressed sparse row storage, using indices starting at 0, {\bf not} 1.
-For example, 
+
+This, of course, assumes that one has already distributed the grid (graph) information
+among the processors. The details of this initial distribution is not important; it 
+could be simply determined by assigning to the first processor the first $n_0$ nodes
+from a file, the second processor the next $ n_1$ nodes, etc.
+
+For example, we demonstrate the form of the {\tt ia} and {\tt ja} for a triangular
+grid where we (1) partition by element (triangle) and (2) partition by vertex.
+
+GIVE A SIMPLE FIGURE AND EXAMPLE OF IA AND JA HERE.
+
+Once the connectivity matrix has been created the following code will generate the 
+renumbering required for the new partition
+\begin{verbatim}
+  ierr = PartitioningCreate(MPI_Comm comm,Partitioning *part);
+  ierr = PartitioningSetAdjacency(Partitioning part,Mat Adj);
+  ierr = PartitioningSetFromOptions(Partitioning part);
+  ierr = PartitioningApply(Partitioning part,IS *is);
+  ierr = PartitioningDestroy(Partitioning part); 
+  ierr = MatDestroy(Mat Adj);
+  ierr = ISPartitioningToNumbering(IS is,IS *isg);
+\end{verbatim}
+The \findex{PartitioningCreate()} \findex{PartitioningSetAdjacency()} 
+\findex{PartitioningSetFromOptions()} \findex{PartitioningApply()} 
+\findex{PartitioningDestroy()}  resulting {\tt isg} contains for each local node the new global
+number of that node. The resulting {\tt is} contains the new processor number
+that each local node has been assigned to.
+
+Now that a new numbering of the nodes has been determined one must 
+renumber all the nodes and migrate the grid information to the correct processor.
+The command
+\begin{verbatim}
+  ierr = AOCreateBasicIS(isg,PETSC_NULL,&ao);
+\end{verbatim}
+generates, see Section \ref{sec:ao}, an AO object that can be used in conjunction with the
+{\tt is} and {\tt gis} to move the relevant grid information to the correct processor
+and renumber the nodes etc. 
+
+PETSc does not currently provide tools that completely manage the migration and 
+node renumbering, since it will be dependent on the particular data structure you 
+use to store the grid information and the type of grid information that you need
+for your application. We do plan to include more support for this in the future,
+but designing the appropriate user interface and providing a scalable implementation
+that can be used for a wide variety of different grids requires a great deal of time.
+Thus we demonstrate how this may be managed for the model
+grid depicted above using (1) element based partitioning and (2) a vertex based 
+partitioning. 
+
+
+
  
 
 
