@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.46 1998/04/22 04:02:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.47 1998/04/22 12:35:01 bsmith Exp balay $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -130,6 +130,7 @@ static int PCSetUp_Jacobi(PC pc)
   }
   if (diagsqrt) {
     ierr = MatGetDiagonal(pc->pmat,diagsqrt); CHKERRQ(ierr);
+    ierr = VecGetLocalSize(diagsqrt,&n); CHKERRQ(ierr);
     ierr = VecGetArray(diagsqrt,&x); CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
