@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.2 2001/03/29 16:33:52 balay Exp buschelm $ 
+# $Id: base_variables,v 1.3 2001/03/29 17:05:51 buschelm Exp buschelm $ 
 #
 # Regular petsc-makefile variables
 #
@@ -21,8 +21,8 @@ C_CLINKER_SLFLAG = -L
 C_FLINKER_SLFLAG = -L
 C_CLINKER        = ${WIN32FE} cl
 C_FLINKER        = ${WIN32FE} f90
-C_CCV            = cl
-C_FCV            = f90
+C_CCV            = cl 2>&1| head -1
+C_FCV            = f90 2>&1| head -1
 C_SYS_LIB        =  kernel32.lib user32.lib  gdi32.lib advapi32.lib
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -MTd -Z7 -W2
@@ -38,8 +38,8 @@ CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER      = ${WIN32FE} cl
 CXX_FLINKER      = ${WIN32FE} df
-CXX_CCV          = cl
-CXX_FCV          = f90
+CXX_CCV          = cl 2>&1| head -1
+CXX_FCV          = f90 2>&1| head -1
 CXX_SYS_LIB      = kernel32.lib user32.lib  gdi32.lib advapi32.lib
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -MTd -Z7 -W2
