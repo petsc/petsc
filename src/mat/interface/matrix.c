@@ -5262,7 +5262,7 @@ int MatDiagonalScaleLocal(Mat mat,Vec diag)
     if (m == n) {
       ierr = MatDiagonalScale(mat,0,diag);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,"Only supprted for sequential matrices when no ghost points/periodic conditions");
+      SETERRQ(1,"Only supported for sequential matrices when no ghost points/periodic conditions");
     }
   } else {
     int (*f)(Mat,Vec);
@@ -5379,7 +5379,7 @@ int MatSolves(Mat mat,Vecs b,Vecs x)
 
    Concepts: matrix^symmetry
 
-.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption()
+.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetricKnown()
 @*/
 int MatIsSymmetric(Mat A,PetscTruth *flg)
 {
@@ -5392,8 +5392,7 @@ int MatIsSymmetric(Mat A,PetscTruth *flg)
     if (!A->ops->issymmetric) {
       MatType mattype;
       ierr = MatGetType(A,&mattype); CHKERRQ(ierr);
-      SETERRQ1(1,"Matrix of type <%s> does not support checking for symmetric",
-	       mattype);
+      SETERRQ1(1,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
     ierr = (*A->ops->issymmetric)(A,&A->symmetric); CHKERRQ(ierr);
     A->symmetric_set = PETSC_TRUE;
@@ -5403,6 +5402,44 @@ int MatIsSymmetric(Mat A,PetscTruth *flg)
     }
   }
   *flg = A->symmetric;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsSymmetricKnown"
+/*@C
+   MatIsSymmetricKnown - Checks the flag on the matrix to see if it is symmetric.
+
+   Collective on Mat
+
+   Input Parameter:
+.  A - the matrix to check
+
+   Output Parameters:
++  set - if the symmetric flag is set (this tells you if the next flag is valid)
+-  flg - the result
+
+   Level: advanced
+
+   Concepts: matrix^symmetry
+
+   Note: Does not check the matrix values directly, so this may return unknown (set = PETSC_FALSE). Use MatIsSymmetric()
+         if you want it explicitly checked
+
+.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetric()
+@*/
+int MatIsSymmetricKnown(Mat A,PetscTruth *set,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidPointer(set,2);
+  PetscValidPointer(flg,3);
+  if (A->symmetric_set) {
+    *set = PETSC_TRUE;
+    *flg = A->symmetric;
+  } else {
+    *set = PETSC_FALSE;
+  }
   PetscFunctionReturn(0);
 }
 

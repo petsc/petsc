@@ -474,6 +474,12 @@ static int PCView_ICC(PC pc,PetscViewer viewer)
 
           For BAIJ matrices this implements a point block ICC.
 
+          The Manteuffel shift is only implemented for matrices with block size 1
+
+          By default, the Manteuffel is applied (for matrices with block size 1). Call PCICCSetShift(pc,PETSC_FALSE);
+          to turn off the shift.
+
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCICCSetSetZeroPivot(), PCICCSetDamping(), PCICCSetShift(), 
            PCICCSetFill(), PCICCSetMatOrdering(), PCICCSetReuseOrdering(), 
@@ -501,7 +507,7 @@ int PCCreate_ICC(PC pc)
 
   icc->info.dtcol              = PETSC_DEFAULT;
   icc->info.damping            = 0.0;
-  icc->info.shift              = PETSC_FALSE;
+  icc->info.shift              = PETSC_TRUE;
   icc->info.shift_fraction     = 0.0;
   icc->info.zeropivot          = 1.e-12;
   pc->data	               = (void*)icc;

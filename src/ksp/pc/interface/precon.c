@@ -14,7 +14,7 @@ int PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
 int PCGetDefaultType_Private(PC pc,const char* type[])
 {
   int        ierr,size;
-  PetscTruth flg1,flg2;
+  PetscTruth flg1,flg2,set,flg3;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
@@ -24,7 +24,8 @@ int PCGetDefaultType_Private(PC pc,const char* type[])
     if (size == 1) {
       ierr = MatHasOperation(pc->pmat,MATOP_ICCFACTOR_SYMBOLIC,&flg1);CHKERRQ(ierr);
       ierr = MatHasOperation(pc->pmat,MATOP_ILUFACTOR_SYMBOLIC,&flg2);CHKERRQ(ierr);
-      if (flg1 && !flg2) { /* for sbaij mat */
+      ierr = MatIsSymmetricKnown(pc->pmat,&set,&flg3);CHKERRQ(ierr);
+      if (flg1 && (!flg2 || (set && flg3))) {
 	*type = PCICC;
       } else if (flg2) {
 	*type = PCILU;
