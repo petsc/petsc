@@ -1,20 +1,22 @@
 # $Id: makefile,v 1.4 2001/08/22 18:01:03 balay Exp $ 
+#requirespackage    'PETSC_HAVE_SPOOLES'
+#requiresprecision  double
 
 ALL: lib
 
-CFLAGS	 =
+CFLAGS	 = ${SPOOLES_INCLUDE}
 FFLAGS	 = 
 CPPFLAGS = 
 FPPFLAGS = 
-SOURCEC	 = mpisbaij.c mmsbaij.c
+SOURCEC	 = mpisbaijspooles.c
 SOURCEF	 = 
-SOURCEH	 = mpisbaij.h
-OBJSC	 = mpisbaij.o mmsbaij.o
+SOURCEH	 = 
+OBJSC	 = mpisbaijspooles.o
 OBJSF	 = 
 LIBBASE	 = libpetscmat
-DIRS	 = spooles
+DIRS	 = 
 MANSEC	 = Mat
-LOCDIR	 = src/mat/impls/sbaij/mpi/
+LOCDIR	 = src/mat/impls/sbaij/mpi/spooles
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
