@@ -1,0 +1,18 @@
+[INACTIVE_FUNCTIONS]
+	PetscLogFlops
+	CHKERRQ
+
+[NO_PREFIX_FUNCTIONS]
+
+[UNEXPANDED_MACROS]
+	Vec = "typedef int Vec;"
+	DA = "typedef int DA;"
+	PetscTruth = "typedef int PetscTruth;"
+	Scalar = "typedef double Scalar;"
+
+[DEFINES]
+	PetscAbsScalar = fabs
+
+[ACTIVE_FUNCTIONS]
+
+[INACTIVE_VARIABLES]
