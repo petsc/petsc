@@ -125,7 +125,7 @@ class Configure(config.base.Configure):
     elif self.functions.check('GETARG16'): 
       self.addDefine('USE_NARGS')
       self.addDefine('HAVE_IARG_COUNT_PROGNAME')
-    self.popLanguage('C')
+    self.popLanguage()
     return
 
   def configureDynamicLibraries(self):
@@ -535,7 +535,7 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureFortranCPP)
-    self.executeTest(configureFortranCommandline)
+    self.executeTest(self.configureFortranCommandline)
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configurePIC)
