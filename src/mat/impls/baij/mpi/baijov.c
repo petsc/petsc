@@ -1,4 +1,4 @@
-/*$Id: baijov.c,v 1.49 2000/07/10 03:39:45 bsmith Exp $*/
+/*$Id: baijov.c,v 1.50 2000/09/15 14:52:58 balay Exp balay $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -833,6 +833,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
   MatScalar   *a_a=a->a,*b_a=b->a;
   PetscTruth  flag;
 #if defined (PETSC_USE_CTABLE)
+  int *rw1;
   int tt;
   PetscTable  *rowmaps,*colmaps,lrow1_grow1,lcol1_gcol1;
 #else
@@ -926,7 +927,6 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
     msz   += w1[j];  
   }
   /* Do a global reduction to determine how many messages to expect*/
-  int *rw1;
   rw1  = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(rw1);
   ierr = MPI_Allreduce(w1,rw1,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   bsz  = rw1[rank];
