@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.5 1998/07/29 01:00:00 curfman Exp curfman $";
+static char vcid[] = "$Id: cn.c,v 1.6 1998/07/29 01:50:55 curfman Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -84,18 +84,16 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = TSComputeRHSFunctionEuler(ts,ts->ptime,sol,update); CHKERRQ(ierr);
-    ierr = VecView(update,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-    ierr = VecAXPY(&dt,update,sol); CHKERRQ(ierr);
-    /*    ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr); */
+    ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr);
 
     /* phase 2 - implicit step */
-    /*    ierr = VecCopy(sol,rhs); CHKERRQ(ierr); */
+    ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    /*    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
 
     ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
-    ierr = VecCopy(update,sol); CHKERRQ(ierr); */
+    ierr = VecCopy(update,sol); CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
   }
