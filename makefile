@@ -175,7 +175,7 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree \
-         2>&1 | tee make_log_${BOPT} | egrep "(^lib|^*\.c:|Error)"
+         2>&1 | tee make_log_${BOPT} 
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 	-@chmod g+w  ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 	-@echo "Completed building libraries"

@@ -25,7 +25,7 @@ LOCDIR	  = src/sys/src/objects/ams/java/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
 
-TCLASSPATH    = ".:./AMSBean"
+TCLASSPATH    = "."
 PETSCBINPATH  = ${PETSC_DIR}
 
 PETScRun:

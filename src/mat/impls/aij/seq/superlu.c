@@ -11,6 +11,7 @@
 #if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 EXTERN_C_BEGIN
 #include "dsp_defs.h"
+#include "util.h"
 EXTERN_C_END
 
 
