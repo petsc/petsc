@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.152 1998/12/21 01:00:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.153 1999/01/12 23:15:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,6 +12,25 @@ static char vcid[] = "$Id: baij.c,v 1.152 1998/12/21 01:00:55 bsmith Exp bsmith 
 #include "src/inline/spops.h"
 
 #define CHUNKSIZE  10
+
+/*
+     Checks for missing diagonals
+*/
+#undef __FUNC__  
+#define __FUNC__ "MatMissingDiag_SeqBAIJ"
+int MatMissingDiag_SeqBAIJ(Mat A)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
+  int         *diag = a->diag, *jj = a->j,i;
+
+  PetscFunctionBegin;
+  for ( i=0; i<a->m; i++ ) {
+    if (jj[diag[i]] != i) {
+      SETERRQ1(1,1,"Matrix is missing diagonal number %d",i);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "MatMarkDiag_SeqBAIJ"

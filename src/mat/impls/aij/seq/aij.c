@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.292 1999/01/05 19:08:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.293 1999/01/12 23:15:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -935,7 +935,6 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 /*
      Adds diagonal pointers to sparse matrix structure.
 */
-
 #undef __FUNC__  
 #define __FUNC__ "MatMarkDiag_SeqAIJ"
 int MatMarkDiag_SeqAIJ(Mat A)
@@ -959,10 +958,28 @@ int MatMarkDiag_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+/*
+     Checks for missing diagonals
+*/
+#undef __FUNC__  
+#define __FUNC__ "MatMissingDiag_SeqAIJ"
+int MatMissingDiag_SeqAIJ(Mat A)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
+  int        *diag = a->diag, *jj = a->j,i,shift = a->indexshift;
+
+  PetscFunctionBegin;
+  for ( i=0; i<a->m; i++ ) {
+    if (jj[diag[i]+shift] != i-shift) {
+      SETERRQ1(1,1,"Matrix is missing diagonal number %d",i);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "MatRelax_SeqAIJ"
-int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
-                           double fshift,int its,Vec xx)
+int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int its,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb;
