@@ -249,6 +249,7 @@ allwwwpages: deletewwwpages
 	-make ACTION=wwwpages tree
 	-maint/wwwman
 	-maint/examplesindex.tcl -www
+	-maint/htmlkeywords.tcl
 	-@chmod g+w docs/www/man*/*
 alllatexpages: deletelatexpages
 	-make ACTION=latexpages tree
