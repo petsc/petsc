@@ -8,6 +8,8 @@
 #include "petscmat.h"
 PETSC_EXTERN_CXX_BEGIN
 
+EXTERN int PCInitializePackage(const char[]);
+
 /*
     PCList contains the list of preconditioners currently registered
    These are added with the PCRegisterDynamic() macro

@@ -29,7 +29,8 @@ int PetscGetArchType(char str[],int slen)
 
   PetscFunctionBegin;
 #if defined(PETSC_ARCH_NAME)
-  ierr = PetscStrncpy(str,PETSC_ARCH_NAME,slen);CHKERRQ(ierr);
+  ierr = PetscStrncpy(str,PETSC_ARCH_NAME,slen-1);CHKERRQ(ierr);
+  str[slen-1] = 0;
 #else
 #error "bmake/$PETSC_ARCH/petscconf.h is missing PETSC_ARCH_NAME"
 #endif

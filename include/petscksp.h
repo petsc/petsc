@@ -7,6 +7,8 @@
 #include "petscpc.h"
 PETSC_EXTERN_CXX_BEGIN
 
+EXTERN int KSPInitializePackage(const char[]);
+
 /*S
      KSP - Abstract PETSc object that manages all Krylov methods
 
@@ -50,6 +52,7 @@ typedef char * KSPType;
 /* Logging support */
 extern int KSP_COOKIE;
 extern int KSP_GMRESOrthogonalization;
+extern int KSP_SetUp, KSP_Solve;
 
 EXTERN int KSPCreate(MPI_Comm,KSP *);
 EXTERN int KSPSetType(KSP,KSPType);

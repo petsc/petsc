@@ -105,7 +105,7 @@ int main(int argc,char **args)
   */
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetUpOnBlocks(sles);CHKERRQ(ierr);
+  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
   ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
 

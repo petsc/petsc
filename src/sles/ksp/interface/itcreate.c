@@ -7,9 +7,8 @@
 
 /* Logging support */
 int KSP_COOKIE = 0;
-int KSP_GMRESOrthogonalization = 0;
+int KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
 
-EXTERN int SLESInitializePackage(const char[]);
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
@@ -206,7 +205,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscValidPointer(inksp);
   *inksp = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = SLESInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
+  ierr = KSPInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);

@@ -190,6 +190,8 @@ int KSPSetUp(KSP ksp)
   }
 
   if (ksp->setupcalled) PetscFunctionReturn(0);
+
+  ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   ksp->setupcalled = 1;
   ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
 
@@ -225,6 +227,7 @@ int KSPSetUp(KSP ksp)
       SETERRQ(1,"No support for diagonal scaling of linear system if preconditioner matrix not actual matrix");
     }
   }
+  ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -302,6 +305,7 @@ int KSPSolve(KSP ksp)
     ierr = VecView(ksp->vec_rhs,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
   }
 
+  ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
     Mat mat;
@@ -353,6 +357,7 @@ int KSPSolve(KSP ksp)
       ksp->dscalefix2 = PETSC_TRUE;
     }
   }
+  ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
 
@@ -1511,7 +1516,7 @@ int KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetDiagonalScaleFix"
-/*@C
+/*@
    KSPSetDiagonalScaleFix - Tells KSP to diagonally scale the system
      back after solving.
 
@@ -1549,7 +1554,7 @@ int KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetDiagonalScaleFix"
-/*@C
+/*@
    KSPGetDiagonalScaleFix - Determines if KSP diagonally scales the system
      back after solving.
 

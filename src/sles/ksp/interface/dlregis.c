@@ -44,6 +44,8 @@ int SLESInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&PC_ApplySymmetricRight,     "PCApplySymmRight", PC_COOKIE);               CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_ModifySubMatrices,       "PCModifySubMatri", PC_COOKIE);               CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&KSP_GMRESOrthogonalization, "KSPGMRESOrthog",   KSP_COOKIE);              CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&KSP_SetUp,                  "KSPSetup",         KSP_COOKIE);             CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&KSP_Solve,                  "KSPSolve",         KSP_COOKIE);             CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&SLES_SetUp,                 "SLESSetup",        SLES_COOKIE);             CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&SLES_Solve,                 "SLESSolve",        SLES_COOKIE);             CHKERRQ(ierr);
   /* Process info exclusions */
@@ -85,6 +87,115 @@ int SLESInitializePackage(const char path[]) {
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCInitializePackage"
+/*@C
+  PCInitializePackage - This function initializes everything in the PC package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PCCreate()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: PC, initialize, package
+.seealso: PetscInitialize()
+@*/
+int PCInitializePackage(const char path[]) {
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char             *className;
+  PetscTruth        opt;
+  int               ierr;
+
+  PetscFunctionBegin;
+  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&PC_COOKIE,   "Preconditioner");                                           CHKERRQ(ierr);
+  /* Register Constructors and Serializers */
+  ierr = PCRegisterAll(path);                                                                             CHKERRQ(ierr);
+  /* Register Events */
+  ierr = PetscLogEventRegister(&PC_SetUp,                   "PCSetUp",          PC_COOKIE);               CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_SetUpOnBlocks,           "PCSetUpOnBlocks",  PC_COOKIE);               CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_Apply,                   "PCApply",          PC_COOKIE);               CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplyCoarse,             "PCApplyCoarse",    PC_COOKIE);               CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplyMultiple,           "PCApplyMultiple",  PC_COOKIE);               CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplySymmetricLeft,      "PCApplySymmLeft",  PC_COOKIE);               CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplySymmetricRight,     "PCApplySymmRight", PC_COOKIE);               CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ModifySubMatrices,       "PCModifySubMatri", PC_COOKIE);               CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "pc", &className);                                                        CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogInfoDeactivateClass(PC_COOKIE);                                                      CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "pc", &className);                                                        CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(PC_COOKIE);                                                     CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPInitializePackage"
+/*@C
+  KSPInitializePackage - This function initializes everything in the KSP package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to KSPCreate()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: KSP, initialize, package
+.seealso: PetscInitialize()
+@*/
+int KSPInitializePackage(const char path[]) {
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char             *className;
+  PetscTruth        opt;
+  int               ierr;
+
+  PetscFunctionBegin;
+  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&KSP_COOKIE,  "Krylov Solver");                                            CHKERRQ(ierr);
+  /* Register Constructors and Serializers */
+  ierr = KSPRegisterAll(path);                                                                            CHKERRQ(ierr);
+  /* Register Events */
+  ierr = PetscLogEventRegister(&KSP_GMRESOrthogonalization, "KSPGMRESOrthog",   KSP_COOKIE);              CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&KSP_SetUp,                  "KSPSetup",         KSP_COOKIE);             CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&KSP_Solve,                  "KSPSolve",         KSP_COOKIE);             CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "ksp", &className);                                                       CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogInfoDeactivateClass(KSP_COOKIE);                                                     CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "ksp", &className);                                                       CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(KSP_COOKIE);                                                    CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -108,6 +219,8 @@ int PetscDLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
+  ierr = PCInitializePackage(path);                                                                     CHKERRQ(ierr);
+  ierr = KSPInitializePackage(path);                                                                     CHKERRQ(ierr);
   ierr = SLESInitializePackage(path);                                                                     CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
