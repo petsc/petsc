@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.site,v 1.11 1997/09/10 18:14:09 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -9,8 +9,6 @@
 #
 #  FC_LIB contains the libraries for a CLINKER to use for code containing
 #  FORTRAN code (such as I/O or special Fortran runtimes).  
-#  The extra -lm is needed to force the C version of libm.a to 
-#  be searched before the Fortran 77 version.
 #
 FC_LIB         =  /usr/lib/libf2c.a -lm
 #
@@ -27,33 +25,54 @@ X11_LIB        = /usr/X11/lib/libX11.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        =/usr/local/mpich/lib/LINUX/ch_p4/libmpe.a \
-                 /usr/local/mpich/lib/LINUX/ch_p4/libmpi.a
-MPI_INCLUDE    = -Dmpi -I/usr/local/mpich/include 
+MPI_LIB        = -L/usr/local/mpich/lib/LINUX/ch_p4/ -lmpi
+MPI_INCLUDE    = -I/usr/local/mpich/include 
 MPIRUN         = /usr/local/mpich/bin/mpirun
-#MPI_LIB        = /home/curfman/mpich/lib/LINUX/ch_p4/libmpe.a \
-#		 /home/curfman/mpich/lib/LINUX/ch_p4/libmpi.a
-#MPI_INCLUDE    =  -Dmpi -I/home/curfman/mpich/include 
-#MPIRUN         = /home/curfman/mpich/bin/mpirun
 #
-# Optional location of BlockSolve, if you do not have BlockSolve, then
-# remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there
-# and comment out or remove the next two lines below.
+# ----------------------------------------------------------------------------------------  
+#
+# Optional location of MPE
+#
+MPE_LIB       = -L/usr/local/mpich/lib/LINUX/ch_p4/ -lmpe
+MPE_INCLUDE   = -I/usr/local/mpi/include
+#
+# Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE     = -I/home/curfman//BlockSolve95/include
 BS_LIB         =  /home/curfman/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
-# PCONF - indicates which external packages are available at your site
+# Optional Matlab location
 #
-#    Make sure that -DHAVE_BLOCKSOLVE is not listed below, unless you have 
-#  installed Blocksolve95 on your machine and set its paths above.
-#  Also remove -DHAVE_MPE unless you have installed MPICH with the MPE option.
+#MATLAB_LIB     = /usr/local/matlab/extern/lib/linux/libmex.a
+#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+#CMEX           = /usr/local/bin/cmex 
 #
-PCONF          =   -DHAVE_BLOCKSOLVE -DHAVE_MPE
+# Option location where adiC is installed
 #
-#    Points to directories where you have other shared libraries needed.
-#    Make sure you do not have a trailing / at the end below.
+#ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+#PVODE_INCLUDE = -I/home/bsmith/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/MPI_PVODE/lib/linux/libpvode.a
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
+#
+PCONF         = -DHAVE_BLOCKSOLVE -DHAVE_MPE
+#PCONF        = -DHAVE_BLOCKSOLVE -DHAVE_MPE -DHAVE_PVODE
+EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
+#
+# ---------------------------------------------------------------------------------------
+#
+# If you are using dynamic libraries you must make this
+# point to the directories where all your shared libraries are stored.
 #
 DYLIBPATH     = /home/curfman/lapack.src
-
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
