@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.10 1999/07/14 21:56:18 balay Exp balay $ 
+# $Id: base_variables,v 1.11 1999/08/04 20:13:32 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -28,8 +28,8 @@ O_FOPTFLAGS      = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
 #
 CXX_CC           = CC -64 -woff 1164 -woff 1048
 CXX_FC           = f90 -cpp -64
-C_CC_SLFLAG      = -rpath
-C_FC_SLFLAG      = -rpath
+CXX_CC_SLFLAG    = -rpath
+CXX_FC_SLFLAG    = -rpath
 CXX_CLINKER      = CC -64 -Wl,-woff,84,-woff,85,-woff,134
 CXX_FLINKER      = CC -64 -Wl,-woff,84,-woff,85,-woff,134
 CXX_CCV          = unknown
