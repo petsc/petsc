@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.6 2000/05/07 17:02:26 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.7 2000/05/10 16:39:39 bsmith Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -41,6 +41,7 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
   PLogObjectCreate(e);
 
   if (!machine) machine = "\0";
+  PLogInfo(0,"Starting Matlab engine on %s\n",machine);
   e->ep = engOpen(machine);
   if (!e->ep) SETERRQ1(1,1,"Unable to start Matlab engine on %s\n",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
@@ -49,6 +50,7 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   sprintf(buffer,"MPI_Comm_rank = %d; MPI_Comm_size = %d;\n",rank,size);
   engEvalString(e->ep, buffer);
+  PLogInfo(0,"Started Matlab engine on %s\n",machine);
   
   *engine = e;
   PetscFunctionReturn(0);
@@ -103,14 +105,36 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
 {
   va_list           Argp;
   char              buffer[1024];
+  int               ierr,len,flops;
 
   PetscFunctionBegin;  
+  ierr = PetscStrcpy(buffer,"flops(0);");
   va_start(Argp,string);
-  vsprintf(buffer,string,(char *)Argp);
+  vsprintf(buffer+9,string,(char *)Argp);
   va_end(Argp);
+  ierr = PetscStrcat(buffer,",flops");
 
   PLogInfo(0,"Evaluating Matlab string: %s\n",buffer);
   engEvalString(engine->ep, buffer);
+  /*
+     Get flop number back from Matlab output
+  */
+  ierr = PetscStrlen(engine->buffer,&len);CHKERRQ(ierr);
+  len -= 2;
+  while (len >= 0) {
+    len--;
+    if (engine->buffer[len] == ' ') break;
+    if (engine->buffer[len] == '\n') break;
+    if (engine->buffer[len] == '\t') break;
+  }
+  sscanf(engine->buffer+len," %d\n",&flops);
+  PLogFlops(flops);
+  /* strip out of engine->buffer the end part about flops */
+  if (len < 14) SETERRQ(1,1,"Internal PETSc error");
+  len -= 14;
+  engine->buffer[len] = 0;
+
+  PLogInfo(0,"Done evaluating Matlab string: %s\n",buffer);
   PetscFunctionReturn(0);
 }
 
@@ -195,8 +219,9 @@ int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
   if (!put) {
     SETERRQ1(1,1,"Object %s cannot be put into Matlab engine",obj->class_name);
   }
+  PLogInfo(0,"Putting Matlab object\n");
   ierr = (*put)(obj,engine->ep);CHKERRQ(ierr);
-  PLogInfo(0,"Putting Matlab object: %s\n",obj->name);
+  PLogInfo(0,"Put Matlab object: %s\n",obj->name);
 
   PetscFunctionReturn(0);
 }
@@ -223,12 +248,16 @@ int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
   int ierr,(*get)(PetscObject,void*);
   
   PetscFunctionBegin;  
+  if (!obj->name) {
+    SETERRQ(1,1,"Cannot get object that has no name");
+  }
   ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",(void**)&get);CHKERRQ(ierr);
   if (!get) {
     SETERRQ1(1,1,"Object %s cannot be get into Matlab engine",obj->class_name);
   }
+  PLogInfo(0,"Getting Matlab object\n");
   ierr = (*get)(obj,engine->ep);CHKERRQ(ierr);
-  PLogInfo(0,"Getting Matlab object: %s\n",obj->name);
+  PLogInfo(0,"Got Matlab object: %s\n",obj->name);
 
   PetscFunctionReturn(0);
 }
@@ -276,7 +305,12 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
   ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int*)&flg);
   if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
   if (!flg) { /* viewer not yet created */
-    ierr = PetscMatlabEngineCreate(comm,PETSC_NULL,&engine);
+    char *machinename = 0,machine[64];
+
+    ierr = OptionsGetString(PETSC_NULL,"-matlab_engine_machine",machine,64,&flg);
+    if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
+    if (flg) machinename = machine;
+    ierr = PetscMatlabEngineCreate(comm,machinename,&engine);
     if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)engine);
     if (ierr) {PetscError(__LINE__,"MATLAB_ENGINE_",__FILE__,__SDIR__,1,1,0); engine = 0;}
