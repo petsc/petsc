@@ -1,9 +1,9 @@
-/*$Id: vecio.c,v 1.68 2000/10/24 20:24:58 bsmith Exp bsmith $*/
+/*$Id: vecio.c,v 1.69 2001/01/15 21:44:37 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
    analogous output routines are within each vector implementation's 
-   VecView (with viewer types PETSC_BINARY_VIEWER)
+   VecView (with viewer types PETSC_VIEWER_BINARY)
  */
 
 #include "petsc.h"
@@ -71,7 +71,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 
   PetscFunctionBegin;
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
   ierr = PetscLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.387 2000/12/19 21:52:13 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.388 2001/01/15 21:45:27 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -168,16 +168,16 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
    The user can call PetscViewerSetFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_FORMAT_ASCII_DEFAULT - default, prints matrix contents
-.    PETSC_VIEWER_FORMAT_ASCII_MATLAB - prints matrix contents in Matlab format
-.    PETSC_VIEWER_FORMAT_ASCII_DENSE - prints entire matrix including zeros
-.    PETSC_VIEWER_FORMAT_ASCII_COMMON - prints matrix contents, using a sparse 
++    PETSC_VIEWER_ASCII_DEFAULT - default, prints matrix contents
+.    PETSC_VIEWER_ASCII_MATLAB - prints matrix contents in Matlab format
+.    PETSC_VIEWER_ASCII_DENSE - prints entire matrix including zeros
+.    PETSC_VIEWER_ASCII_COMMON - prints matrix contents, using a sparse 
          format common among all matrix types
-.    PETSC_VIEWER_FORMAT_ASCII_IMPL - prints matrix contents, using an implementation-specific 
+.    PETSC_VIEWER_ASCII_IMPL - prints matrix contents, using an implementation-specific 
          format (which is in many cases the same as the default)
-.    PETSC_VIEWER_FORMAT_ASCII_INFO - prints basic information about the matrix
+.    PETSC_VIEWER_ASCII_INFO - prints basic information about the matrix
          size and structure (not the matrix entries)
--    PETSC_VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
+-    PETSC_VIEWER_ASCII_INFO_LONG - prints more detailed information about
          the matrix structure
 
    Level: beginner
@@ -191,9 +191,10 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 @*/
 int MatView(Mat mat,PetscViewer viewer)
 {
-  int        format,ierr,rows,cols;
+  int        ierr,rows,cols;
   PetscTruth isascii;
   char       *cstr;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -207,7 +208,7 @@ int MatView(Mat mat,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
-    if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
       ierr = PetscViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatGetType(mat,&cstr);CHKERRQ(ierr);
@@ -230,7 +231,7 @@ int MatView(Mat mat,PetscViewer viewer)
   }
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
-    if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
@@ -1439,7 +1440,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   if (flg) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }
     ierr = MatView(*fact,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
@@ -2691,13 +2692,13 @@ int MatView_Private(Mat mat)
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(mat->prefix,"-mat_view_info",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(mat->prefix,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO_LONG);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
@@ -2707,7 +2708,7 @@ int MatView_Private(Mat mat)
   }
   ierr = PetscOptionsHasName(mat->prefix,"-mat_view_matlab",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
   }
@@ -2715,7 +2716,7 @@ int MatView_Private(Mat mat)
   if (flg) {
     ierr = PetscOptionsHasName(mat->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
-      PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }
     ierr = MatView(mat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);

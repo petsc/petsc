@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.7 2001/01/08 19:13:02 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.8 2001/01/15 21:48:06 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -188,7 +188,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = MatFDColoringApply((Mat)dmmg->user,fd,vu,PETSC_NULL,w);CHKERRQ(ierr);
   ierr = MatMultTranspose((Mat)dmmg->user,vglambda,vflambda);CHKERRQ(ierr);
 
-  PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"joe");
+  PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
   ierr = MatView((Mat)dmmg->user,PETSC_VIEWER_STDOUT_WORLD); 
 
   /* derivative of constraint portion of L() w.r.t. u */

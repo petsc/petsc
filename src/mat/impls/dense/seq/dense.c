@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.191 2000/10/30 03:25:58 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.192 2001/01/15 21:45:30 bsmith Exp balay $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -648,16 +648,17 @@ EXTERN_C_END
 static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
-  int          ierr,i,j,format;
-  char         *outputname;
+  int          ierr,i,j;
+  char         *name;
   Scalar       *v;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
     PetscFunctionReturn(0);  /* do nothing for now */
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_COMMON) {
+  } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<A->m; i++) {
       v = a->v + i;
@@ -689,12 +690,11 @@ static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
       if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break ;}
     }
 #endif
-    if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
-      ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
-      if (!outputname) outputname = "A";
+    if (format == PETSC_VIEWER_ASCII_MATLAB) {
+      ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %d %d \n",A->m,A->n);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%d,%d);\n",outputname,A->m,A->n);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",outputname);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%d,%d);\n",name,A->m,A->n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
     }
 
     for (i=0; i<A->m; i++) {
@@ -712,7 +712,7 @@ static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
+    if (format == PETSC_VIEWER_ASCII_MATLAB) {
       ierr = PetscViewerASCIIPrintf(viewer,"];\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
@@ -727,14 +727,14 @@ static int MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
   int          ict,j,n = A->n,m = A->m,i,fd,*col_lens,ierr,nz = m*n;
-  int          format;
   Scalar       *v,*anonz,*vals;
+  PetscViewerFormatType  format;
   
   PetscFunctionBegin;
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_FORMAT_BINARY_NATIVE) {
+  if (format == PETSC_VIEWER_BINARY_NATIVE) {
     /* store the matrix as a dense matrix */
     ierr = PetscMalloc(4*sizeof(int),&col_lens);CHKERRQ(ierr);
     col_lens[0] = MAT_COOKIE;
@@ -795,11 +795,12 @@ int MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   Mat           A = (Mat) Aa;
   Mat_SeqDense  *a = (Mat_SeqDense*)A->data;
-  int           m = A->m,n = A->n,format,color,i,j,ierr;
+  int           m = A->m,n = A->n,color,i,j,ierr;
   Scalar        *v = a->v;
   PetscViewer        viewer;
   PetscDraw          popup;
-  PetscReal     xl,yl,xr,yr,x_l,x_r,y_l,y_r,scale,maxv = 0.0;
+  PetscReal          xl,yl,xr,yr,x_l,x_r,y_l,y_r,scale,maxv = 0.0;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin; 
 
@@ -808,7 +809,7 @@ int MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
 
   /* Loop over matrix elements drawing boxes */
-  if (format != PETSC_VIEWER_FORMAT_DRAW_CONTOUR) {
+  if (format != PETSC_VIEWER_DRAW_CONTOUR) {
     /* Blue for negative and Red for positive */
     color = PETSC_DRAW_BLUE;
     for(j = 0; j < n; j++) {
@@ -894,8 +895,8 @@ int MatView_SeqDense(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
 
   if (issocket) {
     ierr = PetscViewerSocketPutScalar(viewer,A->m,A->n,a->v);CHKERRQ(ierr);

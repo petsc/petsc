@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.5 2001/01/16 18:20:54 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.6 2001/01/17 22:27:09 bsmith Exp balay $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -150,7 +150,7 @@ int main(int argc,char **argv)
 
   ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"out.m",&viewfile);CHKERRQ(ierr); 
-  ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_FORMAT_ASCII_MATLAB,"u");CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
   ierr = VecView(global,viewfile);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)

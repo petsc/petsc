@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.166 2001/01/15 21:44:37 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.167 2001/01/18 17:27:36 bsmith Exp balay $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -1303,7 +1303,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   if (tiy) {ierr = ISDestroy(tiy);CHKERRQ(ierr);}
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_view_info",&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm),PETSC_VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = VecScatterView(ctx,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }

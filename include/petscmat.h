@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.211 2001/01/15 21:45:26 bsmith Exp balay $ */
+/* $Id: petscmat.h,v 1.212 2001/01/16 18:17:18 balay Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -619,7 +619,7 @@ EXTERN int MatShellSetContext(Mat,void*);
 /*
    Codes for matrices stored on disk. By default they are
  stored in a universal format. By changing the format with 
- PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_BINARY_NATIVE); the matrices will
+ PetscViewerSetFormat(viewer,PETSC_VIEWER_BINARY_NATIVE); the matrices will
  be stored in a way natural for the matrix, for example dense matrices
  would be stored as dense. Matrices stored this way may only be
  read into matrices of the same time.

@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.360 2001/01/16 18:17:28 balay Exp bsmith $*/
+/*$Id: aij.c,v 1.361 2001/01/19 21:04:59 bsmith Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -306,19 +306,20 @@ int MatView_SeqAIJ_Binary(Mat A,PetscViewer viewer)
 int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
-  int         ierr,i,j,m = A->m,shift = a->indexshift,format;
-  char        *outputname;
+  int         ierr,i,j,m = A->m,shift = a->indexshift;
+  char        *name;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;  
-  ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG || format == PETSC_VIEWER_FORMAT_ASCII_INFO) {
+  if (format == PETSC_VIEWER_ASCII_INFO_LONG || format == PETSC_VIEWER_ASCII_INFO) {
     if (a->inode.size) {
       ierr = PetscViewerASCIIPrintf(viewer,"using I-node routines: found %d nodes, limit used is %d\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"not using I-node routines\n");CHKERRQ(ierr);
     }
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
+  } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     int nofinalvalue = 0;
     if ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != A->n-!shift)) {
       nofinalvalue = 1;
@@ -341,10 +342,9 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     if (nofinalvalue) {
       ierr = PetscViewerASCIIPrintf(viewer,"%d %d  %18.16e\n",m,A->n,0.0);CHKERRQ(ierr);
     } 
-    if (outputname) {ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",outputname);CHKERRQ(ierr);}
-    else            {ierr = PetscViewerASCIIPrintf(viewer,"];\n M = spconvert(zzz);\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_COMMON) {
+  } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
@@ -364,7 +364,7 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_SYMMODU) {
+  } else if (format == PETSC_VIEWER_ASCII_SYMMODU) {
     int nzd=0,fshift=1,*sptr;
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     ierr = PetscMalloc((m+1)*sizeof(int),&sptr);CHKERRQ(ierr);
@@ -414,7 +414,7 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_DENSE) {
+  } else if (format == PETSC_VIEWER_ASCII_DENSE) {
     int    cnt = 0,jcnt;
     Scalar value;
 
@@ -469,9 +469,9 @@ int MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   Mat         A = (Mat) Aa;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
   int         ierr,i,j,m = A->m,shift = a->indexshift,color;
-  int         format;
   PetscReal   xl,yl,xr,yr,x_l,x_r,y_l,y_r,maxv = 0.0;
   PetscViewer      viewer;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin; 
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr); 
@@ -480,7 +480,7 @@ int MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
   /* loop over matrix elements drawing boxes */
 
-  if (format != PETSC_VIEWER_FORMAT_DRAW_CONTOUR) {
+  if (format != PETSC_VIEWER_DRAW_CONTOUR) {
     /* Blue for negative, Cyan for zero and  Red for positive */
     color = PETSC_DRAW_BLUE;
     for (i=0; i<m; i++) {
@@ -578,8 +578,8 @@ int MatView_SeqAIJ(Mat A,PetscViewer viewer)
   PetscFunctionBegin;  
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (issocket) {
     if (a->indexshift) {
       SETERRQ(1,"Can only socket send sparse matrix with 0 based indexing");

@@ -1,4 +1,4 @@
-/*$Id: daload.c,v 1.20 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: daload.c,v 1.21 2001/01/15 21:48:51 bsmith Exp balay $*/
 
 #include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 
@@ -30,7 +30,7 @@ int DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidPointer(da);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
 
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);

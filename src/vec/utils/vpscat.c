@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.153 2001/01/15 21:44:37 bsmith Exp balay $*/
+/*$Id: vpscat.c,v 1.154 2001/01/16 18:16:44 balay Exp balay $*/
 /*
     Defines parallel vector scatters.
 */
@@ -15,7 +15,8 @@ int VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to=(VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General*)ctx->fromdata;
-  int                    i,rank,ierr,format;
+  int                    i,rank,ierr;
+  PetscViewerFormatType  format;
   PetscTruth             isascii;
 
   PetscFunctionBegin;
@@ -23,7 +24,7 @@ int VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
   if (isascii) {
     ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format ==  PETSC_VIEWER_FORMAT_ASCII_INFO) {
+    if (format ==  PETSC_VIEWER_ASCII_INFO) {
       int nsend_max,nrecv_max,lensend_max,lenrecv_max,alldata,itmp;
 
       ierr = MPI_Reduce(&to->n,&nsend_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);

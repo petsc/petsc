@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.17 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex20.c,v 1.18 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -44,10 +44,10 @@ int main(int argc,char **args)
   ierr = PetscStrcpy(mtype,MATSAME);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-conv_mat_type",mtype,256,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatConvert(C,mtype,&A);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_IMPL,0);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_IMPL);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free data structures */

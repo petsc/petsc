@@ -1,5 +1,5 @@
 !
-!      "$Id: ex12.F,v 1.34 2000/11/05 16:39:52 bsmith Exp bsmith $";
+!      "$Id: ex12.F,v 1.35 2001/01/15 21:47:31 bsmith Exp balay $";
 !
       program main
        implicit none
@@ -32,7 +32,7 @@
 
 ! Read in matrix and RHS
       call PetscOptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,PETSC_BINARY_RDONLY,           &
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,f,PETSC_BINARY_RDONLY,&
      &     fd,ierr)
 
       call MatLoad(fd,MATSEQAIJ,A,ierr)

@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.189 2000/12/01 21:32:02 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.190 2001/01/15 21:45:02 bsmith Exp balay $*/
 /*
    Implements the sequential vectors.
 */
@@ -73,14 +73,15 @@ int VecGetOwnershipRange_Seq(Vec xin,int *low,int *high)
 int VecView_Seq_File(Vec xin,PetscViewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      i,n = xin->n,ierr,format;
-  char     *outputname;
+  int      i,n = xin->n,ierr;
+  char     *name;
+  PetscViewerFormatType format;
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
-    ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",outputname);CHKERRQ(ierr);
+  if (format == PETSC_VIEWER_ASCII_MATLAB) {
+    ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(x->array[i]) > 0.0) {
@@ -95,7 +96,7 @@ int VecView_Seq_File(Vec xin,PetscViewer viewer)
 #endif
     }
     ierr = PetscViewerASCIIPrintf(viewer,"];\n");CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_SYMMODU) {
+  } else if (format == PETSC_VIEWER_ASCII_SYMMODU) {
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)
       ierr = PetscViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",PetscRealPart(x->array[i]),PetscImaginaryPart(x->array[i]));CHKERRQ(ierr);
@@ -105,7 +106,7 @@ int VecView_Seq_File(Vec xin,PetscViewer viewer)
     }
   } else {
     for (i=0; i<n; i++) {
-      if (format == PETSC_VIEWER_FORMAT_ASCII_INDEX) {
+      if (format == PETSC_VIEWER_ASCII_INDEX) {
         ierr = PetscViewerASCIIPrintf(viewer,"%d: ",i);CHKERRQ(ierr);
       }
 #if defined(PETSC_USE_COMPLEX)
@@ -167,10 +168,10 @@ static int VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 #define __FUNC__ "VecView_Seq_Draw"
 static int VecView_Seq_Draw(Vec xin,PetscViewer v)
 {
-  int        ierr;
-  PetscDraw       draw;
-  PetscTruth isnull;
-  int        format;
+  int                    ierr;
+  PetscDraw              draw;
+  PetscTruth             isnull;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
@@ -179,11 +180,11 @@ static int VecView_Seq_Draw(Vec xin,PetscViewer v)
   ierr = PetscViewerGetFormat(v,&format);CHKERRQ(ierr);
   /*
      Currently it only supports drawing to a line graph */
-  if (format != PETSC_VIEWER_FORMAT_DRAW_LG) {
-    ierr = PetscViewerPushFormat(v,PETSC_VIEWER_FORMAT_DRAW_LG,PETSC_NULL);CHKERRQ(ierr);
+  if (format != PETSC_VIEWER_DRAW_LG) {
+    ierr = PetscViewerPushFormat(v,PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
   } 
   ierr = VecView_Seq_Draw_LG(xin,v);CHKERRQ(ierr);
-  if (format != PETSC_VIEWER_FORMAT_DRAW_LG) {
+  if (format != PETSC_VIEWER_DRAW_LG) {
     ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
   } 
 
@@ -224,10 +225,10 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
   PetscTruth  isdraw,isascii,issocket,isbinary;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (isdraw){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (isascii){

@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.84 2001/01/15 21:46:34 bsmith Exp balay $*/
+/*$Id: sorder.c,v 1.85 2001/01/16 18:18:38 balay Exp balay $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -273,7 +273,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     Mat tmat;
     ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }
     ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
     ierr = MatView(tmat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);

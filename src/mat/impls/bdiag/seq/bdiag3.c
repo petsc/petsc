@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.25 2000/10/24 20:25:42 bsmith Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.26 2001/01/15 21:45:45 bsmith Exp balay $*/
 
 /* Block diagonal matrix format */
 
@@ -478,14 +478,15 @@ int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  char         *outputname;
-  int          ierr,*col,i,j,len,diag,nr = A->m,bs = a->bs,format,iprint,nz;
+  char         *name;
+  int          ierr,*col,i,j,len,diag,nr = A->m,bs = a->bs,iprint,nz;
   Scalar       *val,*dv,zero = 0.0;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
     int nline = PetscMin(10,a->nd),k,nk,np;
     if (a->user_alloc) {
       ierr = PetscViewerASCIIPrintf(viewer,"block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);CHKERRQ(ierr);
@@ -503,7 +504,7 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);        
       ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
     }
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
+  } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %d %d \n",nr,A->n);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%% Nonzeros = %d \n",a->nz);CHKERRQ(ierr);
@@ -523,9 +524,9 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
       }
       ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",outputname);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_IMPL) {
+  } else if (format == PETSC_VIEWER_ASCII_IMPL) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     if (bs == 1) { /* diagonal format */
       for (i=0; i<a->nd; i++) {
@@ -631,7 +632,7 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
-    /* the usual row format (PETSC_VIEWER_FORMAT_ASCII_NONZERO_ONLY) */
+    /* the usual row format (PETSC_VIEWER_ASCII_NONZERO_ONLY) */
     for (i=0; i<A->m; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
       ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
@@ -699,8 +700,8 @@ int MatView_SeqBDiag(Mat A,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (isascii) {
     ierr = MatView_SeqBDiag_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {

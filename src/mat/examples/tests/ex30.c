@@ -1,4 +1,4 @@
-/*$Id: ex30.c,v 1.21 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex30.c,v 1.22 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\
@@ -51,7 +51,7 @@ int main(int argc,char **args)
 
   ierr = MatGetOrdering(C,MATORDERING_RCM,&row,&col);CHKERRQ(ierr);
   printf("original matrix:\n");
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ int main(int argc,char **args)
   ierr = MatLUFactorNumeric(C,&A);CHKERRQ(ierr);
 
   printf("factored matrix:\n");
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);

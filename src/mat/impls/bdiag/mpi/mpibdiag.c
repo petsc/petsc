@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.193 2000/11/28 17:29:11 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.194 2001/01/15 21:45:48 bsmith Exp balay $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -469,16 +469,17 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag*)mbd->A->data;
-  int          ierr,format,i,size = mbd->size,rank = mbd->rank;
+  int          ierr,i,size = mbd->size,rank = mbd->rank;
   PetscTruth   isascii,isdraw;
   PetscViewer       sviewer;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
       int nline = PetscMin(10,mbd->gnd),k,nk,np;
       ierr = PetscViewerASCIIPrintf(viewer,"  block size=%d, total number of diagonals=%d\n",dmat->bs,mbd->gnd);CHKERRQ(ierr);
       nk = (mbd->gnd-1)/nline + 1;
@@ -490,7 +491,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);        
       }
-      if (format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+      if (format == PETSC_VIEWER_ASCII_INFO_LONG) {
         MatInfo info;
         ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
         ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -558,8 +559,8 @@ int MatView_MPIBDiag(Mat mat,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (isascii || isdraw) {
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer);CHKERRQ(ierr);
   } else if (isbinary) {

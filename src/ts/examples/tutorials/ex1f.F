@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.24 2000/09/22 20:46:37 bsmith Exp bsmith $"
+! "$Id: ex1f.F,v 1.25 2001/01/15 21:48:36 bsmith Exp balay $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !
@@ -70,11 +70,12 @@
 !
 !     Allow user to set the grid dimensions and nonlinearity parameter at run-time
 !
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-mx',user(lmx),flg,   &
-     &                      ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(lmy),flg,ierr)
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-param',user(param),  &
-     &                      flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-mx',user(lmx),  &
+     &     flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(lmy),     &
+     &     flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-param',         &
+     &     user(param),flg,ierr)
       if (user(param) .ge. param_max .or.                               &
      &                                user(param) .le. param_min) then
         print*,'Parameter is out of range'

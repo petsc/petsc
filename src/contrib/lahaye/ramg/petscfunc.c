@@ -119,7 +119,7 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
   ierr = KSPBuildResidual(ksp, t, v, &V); CHKERRQ(ierr); 
   
   //  ierr = PetscViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer); CHKERRQ(ierr);
-  //  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,PETSC_NULL); 
+  //  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB); 
   //         CHKERRQ(ierr);
   //  ierr = VecView(V, viewer); CHKERRQ(ierr);
   //  ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);

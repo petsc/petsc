@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.18 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.19 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-view_info",&flg);CHKERRQ(ierr);
-  if (flg)  {ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);}
+  if (flg)  {ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);

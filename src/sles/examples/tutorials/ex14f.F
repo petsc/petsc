@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.21 2000/09/22 20:45:46 bsmith Exp bsmith $";
+!    "$Id: ex14f.F,v 1.22 2001/01/15 21:47:36 bsmith Exp balay $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -106,8 +106,8 @@
       N = mx*my
 
       nooutput = 0
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-no_output',nooutput,    &
-     &                    ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-no_output',       &
+     &     nooutput,ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create linear solver context

@@ -1,4 +1,4 @@
-/*$Id: ex59.c,v 1.14 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex59.c,v 1.15 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
 
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* 

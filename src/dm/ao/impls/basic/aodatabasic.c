@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.58 2001/01/15 21:48:44 bsmith Exp balay $*/
+/*$Id: aodatabasic.c,v 1.59 2001/01/16 18:21:03 balay Exp balay $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -112,11 +112,12 @@ int AODataView_Basic_Binary(AOData ao,PetscViewer viewer)
 #define __FUNC__ "AODataView_Basic_ASCII"
 int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
 {
-  int             ierr,format,j,k,l,rank,size,nkeys,nsegs,i,N,bs,zero = 0;
+  int             ierr,j,k,l,rank,size,nkeys,nsegs,i,N,bs,zero = 0;
   char            *dt,**keynames,**segnames,*stype,*segvalue;
   AODataSegment   *segment;
   AODataKey       *key = ao->keys;
   PetscDataType   dtype;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
@@ -124,7 +125,7 @@ int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
   ierr = MPI_Comm_size(ao->comm,&size);CHKERRQ(ierr);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_FORMAT_ASCII_INFO) {
+  if (format == PETSC_VIEWER_ASCII_INFO) {
     ierr = AODataGetInfo(ao,&nkeys,&keynames);CHKERRQ(ierr);
     for (i=0; i<nkeys; i++) {
       ierr = AODataKeyGetInfo(ao,keynames[i],&N,0,&nsegs,&segnames);CHKERRQ(ierr);
@@ -230,7 +231,7 @@ int AODataView_Basic(AOData ao,PetscViewer viewer)
   if (rank) PetscFunctionReturn(0);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) { 
     ierr = AODataView_Basic_ASCII(ao,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
@@ -931,7 +932,7 @@ int AODataLoadBasic(PetscViewer viewer,AOData *aoout)
 
   PetscFunctionBegin;
   *aoout = 0;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Viewer must be obtained from PetscViewerBinaryOpen()");
   }
@@ -1018,7 +1019,7 @@ int AODataLoadBasic(PetscViewer viewer,AOData *aoout)
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm),PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = AODataView(ao,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }

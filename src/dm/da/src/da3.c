@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.125 2001/01/17 19:47:38 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.126 2001/01/18 17:37:47 bsmith Exp balay $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -24,8 +24,8 @@ int DAView_3d(DA da,PetscViewer viewer)
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
                rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.62 2000/10/24 20:26:55 bsmith Exp bsmith $";
+!    "$Id: ex2f.F,v 1.63 2001/01/15 21:47:36 bsmith Exp balay $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -200,7 +200,7 @@
 !  elements of 1.0;  Alternatively, using the runtime option
 !  -random_sol forms a solution vector with random components.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                         &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &             "-random_exact_sol",flg,ierr)
       if (flg .eq. 1) then
          call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,        &
@@ -214,7 +214,7 @@
 
 !  View the exact solution vector if desired
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                         &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &             "-view_exact_sol",flg,ierr)
       if (flg .eq. 1) then
          call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
@@ -255,7 +255,7 @@
 
 !  Set user-defined monitoring routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',       &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',  &
      &                    flg,ierr)
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)
@@ -274,8 +274,8 @@
 
 !  Set convergence test routine if desired
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_convergence',   &
-     &                    flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
+     &     '-my_ksp_convergence',flg,ierr)
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)
         call KSPSetConvergenceTest(ksp,MyKSPConverged,                  &

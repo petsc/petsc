@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.74 2000/11/28 17:29:54 bsmith Exp bsmith $*/
+/*$Id: matio.c,v 1.75 2001/01/15 21:46:25 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -158,7 +158,7 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
     ierr = MatLoadRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   }

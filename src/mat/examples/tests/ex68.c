@@ -1,4 +1,4 @@
-/*$Id: ex68.c,v 1.11 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex68.c,v 1.12 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   printf("Original matrix\n");
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_FORMAT_ASCII_DENSE,0);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   ierr = MatGetOrdering(mat,MATORDERING_NATURAL,&isrow,&iscol);CHKERRQ(ierr);

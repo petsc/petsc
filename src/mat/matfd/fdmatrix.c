@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.79 2001/01/04 22:21:25 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.80 2001/01/15 21:46:28 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -85,8 +85,9 @@ static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 @*/
 int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 {
-  int        i,j,format,ierr;
+  int        i,j,ierr;
   PetscTruth isdraw,isascii;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
@@ -94,7 +95,7 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE); 
   PetscCheckSameComm(c,viewer);
 
-  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isdraw) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
@@ -105,7 +106,7 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%d\n",c->ncolors);CHKERRQ(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format != PETSC_VIEWER_FORMAT_ASCII_INFO) {
+    if (format != PETSC_VIEWER_ASCII_INFO) {
       for (i=0; i<c->ncolors; i++) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Information for color %d\n",i);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"    Number of columns %d\n",c->ncolumns[i]);CHKERRQ(ierr);
@@ -333,7 +334,7 @@ int MatFDColoringView_Private(MatFDColoring fd)
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(fd->comm),PETSC_VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(fd->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatFDColoringView(fd,PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
   }

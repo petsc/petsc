@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.220 2001/01/15 21:44:52 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.221 2001/01/17 19:44:15 bsmith Exp balay $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1408,7 +1408,7 @@ int VecAssemblyEnd(Vec vec)
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_matlab",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(vec->comm),PETSC_VIEWER_FORMAT_ASCII_MATLAB,"V");CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(vec->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
   }
@@ -1419,7 +1419,7 @@ int VecAssemblyEnd(Vec vec)
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-vec_view_draw_lg",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_DRAW_(vec->comm),PETSC_VIEWER_FORMAT_DRAW_LG,0);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(PETSC_VIEWER_DRAW_(vec->comm),PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
     ierr = VecView(vec,PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
     ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
   }
@@ -1816,14 +1816,14 @@ int VecRestoreArray(Vec x,Scalar *a[])
    The user can call PetscViewerSetFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_FORMAT_ASCII_DEFAULT - default, prints vector contents
-.    PETSC_VIEWER_FORMAT_ASCII_MATLAB - prints vector contents in Matlab format
-.    PETSC_VIEWER_FORMAT_ASCII_INDEX - prints vector contents, including indices of vector elements
-.    PETSC_VIEWER_FORMAT_ASCII_COMMON - prints vector contents, using a 
++    PETSC_VIEWER_ASCII_DEFAULT - default, prints vector contents
+.    PETSC_VIEWER_ASCII_MATLAB - prints vector contents in Matlab format
+.    PETSC_VIEWER_ASCII_INDEX - prints vector contents, including indices of vector elements
+.    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a 
          format common among all vector types
-.    PETSC_VIEWER_FORMAT_ASCII_INFO - prints basic information about the matrix
+.    PETSC_VIEWER_ASCII_INFO - prints basic information about the matrix
          size and structure (not the matrix entries)
--    PETSC_VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
+-    PETSC_VIEWER_ASCII_INFO_LONG - prints more detailed information about
          the matrix structure
 
    Level: beginner
@@ -1837,7 +1837,8 @@ int VecRestoreArray(Vec x,Scalar *a[])
 @*/
 int VecView(Vec vec,PetscViewer viewer)
 {
-  int ierr,format;
+  int ierr;
+  PetscViewerFormatType format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
@@ -1851,12 +1852,10 @@ int VecView(Vec vec,PetscViewer viewer)
      Check if default viewer has been overridden, but user request it anyways
   */
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (vec->ops->viewnative && format == PETSC_VIEWER_FORMAT_NATIVE) {
-    char *fname;
-    ierr   = PetscViewerGetOutputname(viewer,&fname);CHKERRQ(ierr);
+  if (vec->ops->viewnative && format == PETSC_VIEWER_NATIVE) {
     ierr   = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = (*vec->ops->viewnative)(vec,viewer);CHKERRQ(ierr);
-    ierr   = PetscViewerPushFormat(viewer,PETSC_VIEWER_FORMAT_NATIVE,fname);CHKERRQ(ierr);
+    ierr   = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   } else {
     ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   }

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.349 2001/01/16 18:22:28 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.350 2001/01/17 22:29:26 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4502,12 +4502,12 @@ is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer 
 over when and what vectors and matrices are dumped one can use the VecView() and 
 MatView() functions with a viewer type of ASCII (see \url{ViewerASCIIOpen()}, 
 \url{VIEWER_STDOUT_WORLD}, \url{VIEWER_STDOUT_SELF}, or \url{VIEWER_STDOUT_(MPI_Comm)}). Before calling
-the viewer set the output type with \url{ViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,char *name)} or
-\url{ViewerPushFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_MATLAB,char *name)}. \findex{VIEWER_FORMAT_ASCII_MATLAB}
+the viewer set the output type with \url{ViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB,char *name)} or
+\url{ViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB}. \findex{PETSC_VIEWER_ASCII_MATLAB}
 \begin{verbatim}
-  PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_MATLAB,''VecA'');
+  PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
   VecView(A,PETSC_VIEWER_STDOUT_WORLD);
-  PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_MATLAB,''MatB'');
+  PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
   MatView(B,PETSC_VIEWER_STDOUT_WORLD);
 \end{verbatim}
 
@@ -6025,22 +6025,22 @@ predefined viewers:
 The user can control the format of ASCII printed objects with viewers 
 created by \url{ViewerASCIIOpen()} by calling
 \begin{verbatim}
-   ierr = PetscViewerSetFormat(PetscViewer viewer,int format,char *name);
+   ierr = PetscViewerSetFormat(PetscViewer viewer,int format);
 \end{verbatim}  
-\findex{VIEWER_FORMAT_ASCII_DEFAULT} \findex{VIEWER_FORMAT_ASCII_MATLAB} 
-\findex{VIEWER_FORMAT_ASCII_IMPL} \findex{ViewerSetFormat()}
+\findex{PETSC_VIEWER_ASCII_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB} 
+\findex{PETSC_VIEWER_ASCII_IMPL} \findex{ViewerSetFormat()}
 Possible formats include 
-\url{VIEWER_FORMAT_ASCII_DEFAULT}, \url{VIEWER_FORMAT_ASCII_MATLAB}, and
-\break \url{VIEWER_FORMAT_ASCII_IMPL}.  The implementation-specific format, 
-\url{VIEWER_FORMAT_ASCII_IMPL}, displays the object in the most natural way
+\url{PETSC_VIEWER_ASCII_DEFAULT}, \url{PETSC_VIEWER_ASCII_MATLAB}, and
+\break \url{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
+\url{PETSC_VIEWER_ASCII_IMPL}, displays the object in the most natural way
 for a particular implementation.  For example, when viewing a block 
 diagonal matrix that has been created with \url{MatCreateSeqBDiag()},
-\url{VIEWER_FORMAT_ASCII_IMPL} prints by diagonals, while \url{VIEWER_FORMAT_ASCII_DEFAULT}
+\url{PETSC_VIEWER_ASCII_IMPL} prints by diagonals, while \url{PETSC_VIEWER_ASCII_DEFAULT}
 uses the conventional row-oriented format.
 
 The routines
 \begin{verbatim}
-   ierr = PetscViewerPushFormat(PetscViewer viewer,int format,char *name);
+   ierr = PetscViewerPushFormat(PetscViewer viewer,int format);
    ierr = PetscViewerPopFormat(PetscViewer viewer);
 \end{verbatim} 
 allow one to temporarily change the format of a viewer.

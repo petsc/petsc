@@ -1,4 +1,4 @@
-/*$Id: zviewer.c,v 1.27 2000/10/24 20:28:01 bsmith Exp bsmith $*/
+/*$Id: zviewer.c,v 1.28 2001/01/15 21:49:49 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"
@@ -102,24 +102,18 @@ void PETSC_STDCALL viewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL viewersetformat_(PetscViewer *vin,int *format,CHAR name PETSC_MIXED_LEN(len),
-                                    int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL viewersetformat_(PetscViewer *vin,int *format,int *ierr)
 {
   PetscViewer v;
-  char   *c1;
   PetscPatchDefaultViewers_Fortran(vin,v);
-  FIXCHAR(name,len,c1);
-  *ierr = PetscViewerSetFormat(v,*format,c1);
+  *ierr = PetscViewerSetFormat(v,*format);
 }
 
-void PETSC_STDCALL viewerpushformat_(PetscViewer *vin,int *format,CHAR name PETSC_MIXED_LEN(len),
-                                     int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL viewerpushformat_(PetscViewer *vin,PetscViewerFormatType *format,int *ierr)
 {
   PetscViewer v;
-  char   *c1;
   PetscPatchDefaultViewers_Fortran(vin,v);
-  FIXCHAR(name,len,c1);
-  *ierr = PetscViewerPushFormat(v,*format,c1);
+  *ierr = PetscViewerPushFormat(v,*format);
 }
 
 void PETSC_STDCALL viewerpopformat_(PetscViewer *vin,int *ierr)

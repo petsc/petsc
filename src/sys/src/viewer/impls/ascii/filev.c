@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.112 2000/10/24 20:24:15 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.113 2001/01/15 21:43:11 bsmith Exp balay $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -497,8 +497,9 @@ EXTERN_C_END
 #define __FUNC__ "PetscViewerGetSingleton_ASCII" 
 int PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 {
-  int          rank,ierr;
+  int               rank,ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data,*ovascii;
+  char              *name;
 
   PetscFunctionBegin;
   if (vascii->sviewer) {
@@ -514,7 +515,9 @@ int PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 
   (*outviewer)->format     = viewer->format;
   (*outviewer)->iformat    = viewer->iformat;
-  (*outviewer)->outputname = viewer->outputname;
+
+  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   ((PetscViewer_ASCII*)((*outviewer)->data))->bviewer = viewer;
@@ -572,9 +575,8 @@ int PetscViewerCreate_ASCII(PetscViewer viewer)
   vascii->fd             = stdout;
   vascii->bviewer        = 0;
   vascii->sviewer        = 0;
-  viewer->format         = PETSC_VIEWER_FORMAT_ASCII_DEFAULT;
+  viewer->format         = PETSC_VIEWER_ASCII_DEFAULT;
   viewer->iformat        = 0;
-  viewer->outputname     = 0;
   vascii->tab            = 0;
   vascii->tab_store      = 0;
   vascii->filename       = 0;

@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.41 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: gr2.c,v 1.42 2001/01/15 21:48:51 bsmith Exp balay $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -72,7 +72,7 @@ int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DA             da,dac,dag;
-  int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w,format;
+  int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
   double         coors[4],ymin,ymax,xmin,xmax;
   PetscDraw           draw,popup;
   PetscTruth     isnull,useports;
@@ -82,6 +82,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   DAStencilType  st;
   ZoomCtx        zctx;
   PetscDrawViewPorts  *ports;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -190,7 +191,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-draw_ports",&useports);CHKERRQ(ierr);
-  if (useports || format == PETSC_VIEWER_FORMAT_DRAW_PORTS){
+  if (useports || format == PETSC_VIEWER_DRAW_PORTS){
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     ierr = PetscDrawViewPortsCreate(draw,zctx.step,&ports);CHKERRQ(ierr);
   }
@@ -257,7 +258,7 @@ int VecView_MPI_DA(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(1,"Vector not generated from a DA");
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (isdraw) {
     ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
     if (dim == 1) {

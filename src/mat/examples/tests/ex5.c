@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.20 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.21 2001/01/17 22:23:09 bsmith Exp balay $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
 MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscTruth flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,0);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   n = m;
   ierr = PetscOptionsHasName(PETSC_NULL,"-rectA",&flg);CHKERRQ(ierr);

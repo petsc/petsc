@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.121 2001/01/16 18:21:11 balay Exp bsmith $*/
+/*$Id: da1.c,v 1.122 2001/01/17 19:47:38 bsmith Exp balay $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -24,8 +24,8 @@ int DAView_1d(DA da,PetscViewer viewer)
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
                  da->m,da->w,da->s);CHKERRQ(ierr);

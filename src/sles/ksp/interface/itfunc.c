@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.150 2001/01/15 21:47:10 bsmith Exp balay $*/
+/*$Id: itfunc.c,v 1.151 2001/01/16 18:19:24 balay Exp balay $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -300,7 +300,7 @@ int KSPSolve(KSP ksp,int *its)
     Mat A,B;
     ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(ksp->comm),PETSC_VIEWER_FORMAT_ASCII_MATLAB,"A");CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(ksp->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);

@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.154 2001/01/16 18:21:11 balay Exp bsmith $*/
+/*$Id: da2.c,v 1.155 2001/01/17 19:47:38 bsmith Exp balay $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -25,8 +25,8 @@ int DAView_2d(DA da,PetscViewer viewer)
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
                              da->N,da->m,da->n,da->w,da->s);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.45 2001/01/15 21:46:03 bsmith Exp balay $*/
+/*$Id: sbaij.c,v 1.46 2001/01/16 18:18:03 balay Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -336,17 +336,18 @@ static int MatView_SeqSBAIJ_Binary(Mat A,PetscViewer viewer)
 static int MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         ierr,i,j,format,bs = a->bs,k,l,bs2=a->bs2;
-  char        *outputname;
+  int         ierr,i,j,bs = a->bs,k,l,bs2=a->bs2;
+  char        *name;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_FORMAT_ASCII_INFO || format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
+  } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_COMMON) {
+  } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<a->mbs; i++) {
       for (j=0; j<bs; j++) {
@@ -512,8 +513,8 @@ int MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (issocket) {
     SETERRQ(PETSC_ERR_SUP,"Socket viewer not supported");
   } else if (isascii){

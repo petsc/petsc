@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.94 2000/10/24 20:24:16 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.95 2001/01/15 21:43:13 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -29,7 +29,7 @@ int PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr    = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
-    ierr    = PetscViewerSetType(*outviewer,PETSC_BINARY_VIEWER);CHKERRQ(ierr);
+    ierr    = PetscViewerSetType(*outviewer,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
     obinary = (PetscViewer_Binary*)(*outviewer)->data;
     ierr    = PetscMemcpy(obinary,vbinary,sizeof(PetscViewer_Binary));CHKERRQ(ierr);
   } else {
@@ -202,7 +202,7 @@ int PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerBinaryType 
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*binv,PETSC_BINARY_VIEWER);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*binv,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
   ierr = PetscViewerBinarySetType(*binv,type);CHKERRQ(ierr);
   ierr = PetscViewerSetFilename(*binv,name);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: ex43.c,v 1.13 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex43.c,v 1.14 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
@@ -32,7 +32,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",PETSC_BINARY_CREATE,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_FORMAT_BINARY_NATIVE,"Dummy");CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_BINARY_NATIVE);CHKERRQ(ierr);
   ierr = MatView(C,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);

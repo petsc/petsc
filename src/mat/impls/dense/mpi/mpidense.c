@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.147 2001/01/15 21:45:32 bsmith Exp balay $*/
+/*$Id: mpidense.c,v 1.148 2001/01/16 18:17:25 balay Exp balay $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -516,19 +516,20 @@ static int MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 #define __FUNC__ "MatView_MPIDense_ASCIIorDraworSocket"
 static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
-  Mat_MPIDense *mdn = (Mat_MPIDense*)mat->data;
-  int          ierr,format,size = mdn->size,rank = mdn->rank; 
-  PetscViewerType   vtype;
-  PetscTruth   isascii,isdraw;
-  PetscViewer       sviewer;
+  Mat_MPIDense           *mdn = (Mat_MPIDense*)mat->data;
+  int                    ierr,size = mdn->size,rank = mdn->rank; 
+  PetscViewerType        vtype;
+  PetscTruth             isascii,isdraw;
+  PetscViewer            sviewer;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerGetType(viewer,&vtype);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO_LONG) {
       MatInfo info;
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mat->m,
@@ -536,7 +537,7 @@ static int MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = VecScatterView(mdn->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0); 
-    } else if (format == PETSC_VIEWER_FORMAT_ASCII_INFO) {
+    } else if (format == PETSC_VIEWER_ASCII_INFO) {
       PetscFunctionReturn(0);
     }
   } else if (isdraw) {
@@ -596,9 +597,9 @@ int MatView_MPIDense(Mat mat,PetscViewer viewer)
   PetscFunctionBegin;
   
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
 
   if (isascii || issocket || isdraw) {
     ierr = MatView_MPIDense_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);

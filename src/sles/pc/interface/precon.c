@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.204 2001/01/16 18:18:53 balay Exp bsmith $*/
+/*$Id: precon.c,v 1.205 2001/01/19 21:05:38 bsmith Exp balay $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1186,8 +1186,9 @@ int PCPostSolve(PC pc,KSP ksp)
 int PCView(PC pc,PetscViewer viewer)
 {
   PCType      cstr;
-  int         fmt,ierr;
+  int         ierr;
   PetscTruth  mat_exists,isascii,isstring;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -1198,7 +1199,7 @@ int PCView(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
     if (cstr) {
@@ -1213,7 +1214,7 @@ int PCView(PC pc,PetscViewer viewer)
     }
     ierr = PetscObjectExists((PetscObject)pc->mat,&mat_exists);CHKERRQ(ierr);
     if (mat_exists) {
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
       if (pc->pmat == pc->mat) {
         ierr = PetscViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex5.F,v 1.25 2000/09/27 20:04:05 bsmith Exp bsmith $";
+!    "$Id: ex5.F,v 1.26 2001/01/15 21:43:34 bsmith Exp balay $";
 !
       program main
 #include "include/finclude/petsc.h"
@@ -22,20 +22,24 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-width',width,flg,ierr) 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-height',height,flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-width',width,      &
+     &     flg,ierr) 
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-height',height,    &
+     &     flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-!     call PetscDrawOpenX(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,              
+!     call PetscDrawOpenX(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,         &
 !                   PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
-      call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,             &
+      call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
       call PetscDrawSetType(draw,PETSC_DRAW_X,ierr)
 
       call PetscDrawLGCreate(draw,1,lg,ierr)
       call PetscDrawLGGetAxis(lg,axis,ierr)
-      call PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE,ierr)
-      call PetscDrawAxisSetLabels(axis,'toplabel','xlabel','ylabel',ierr)
+      call PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED, &
+     &     PETSC_DRAW_BLUE,ierr)
+      call PetscDrawAxisSetLabels(axis,'toplabel','xlabel','ylabel',    &
+     &     ierr)
 
       do 10, i=0,n-1
         xd = i - 5.0

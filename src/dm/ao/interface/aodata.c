@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.51 2001/01/15 21:48:41 bsmith Exp balay $*/
+/*$Id: aodata.c,v 1.52 2001/01/16 18:21:01 balay Exp balay $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -1510,7 +1510,7 @@ int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *ke
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1);CHKERRQ(ierr);
   if (flg1) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm),PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }

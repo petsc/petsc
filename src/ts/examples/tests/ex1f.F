@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.36 2000/10/24 20:27:27 bsmith Exp bsmith $";
+! "$Id: ex1f.F,v 1.37 2001/01/15 21:48:34 bsmith Exp balay $";
 !
 !       Formatted test for TS routines.
 !
@@ -65,8 +65,8 @@
 
       M = 60
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr) 
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,flg,   &
-     &                   ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-time',time_steps,   &
+     &     flg,ierr)
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-nox',flg,ierr) 
       if (flg .eq. 1) then
@@ -115,32 +115,32 @@
 !    of TS, we do not expect users to generally need to use more
 !    then a single TSProblemType
 !
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-linear_no_matrix',     &
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-linear_no_matrix',&
      &                    flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear_no_matrix
       endif
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                         &
-     &                    '-linear_constant_matrix',flg,ierr) 
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
+     &     '-linear_constant_matrix',flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear_no_time
       endif
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-linear_variable_matrix'&
-     &                    ,flg,ierr) 
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
+     &     '-linear_variable_matrix',flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_LINEAR
         problem   = linear
       endif
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_no_jacobian',&
-     &                    flg,ierr) 
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
+     &     '-nonlinear_no_jacobian',flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_NONLINEAR
         problem   = nonlinear_no_jacobian
       endif
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-nonlinear_jacobian',   &
-     &                    flg,ierr) 
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
+     &     '-nonlinear_jacobian',flg,ierr) 
       if (flg .eq. 1) then
         tsproblem = TS_NONLINEAR
         problem   = nonlinear

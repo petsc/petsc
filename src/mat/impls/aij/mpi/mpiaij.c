@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.324 2001/01/15 21:45:38 bsmith Exp balay $*/
+/*$Id: mpiaij.c,v 1.325 2001/01/17 19:45:00 balay Exp balay $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -711,16 +711,17 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
-  int         ierr,format,shift = C->indexshift,rank = aij->rank,size = aij->size;
+  int         ierr,shift = C->indexshift,rank = aij->rank,size = aij->size;
   PetscTruth  isdraw,isascii,flg;
   PetscViewer      sviewer;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
-  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) { 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_FORMAT_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO_LONG) {
       MatInfo info;
       ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -739,7 +740,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = VecScatterView(aij->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0); 
-    } else if (format == PETSC_VIEWER_FORMAT_ASCII_INFO) {
+    } else if (format == PETSC_VIEWER_ASCII_INFO) {
       PetscFunctionReturn(0);
     }
   } else if (isdraw) {
@@ -814,8 +815,8 @@ int MatView_MPIAIJ(Mat mat,PetscViewer viewer)
  
   PetscFunctionBegin;
   ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr  = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   if (isascii || isdraw || isbinary || issocket) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);

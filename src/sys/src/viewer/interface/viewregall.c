@@ -1,4 +1,4 @@
-/*$Id: viewregall.c,v 1.15 2000/09/22 20:41:53 bsmith Exp bsmith $*/
+/*$Id: viewregall.c,v 1.16 2001/01/15 21:43:19 bsmith Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -29,9 +29,9 @@ int PetscViewerRegisterAll(char *path)
   PetscFunctionBegin;
   
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_ASCII,    path,"PetscViewerCreate_ASCII",      PetscViewerCreate_ASCII);CHKERRQ(ierr);
-  ierr = PetscViewerRegisterDynamic(PETSC_BINARY_VIEWER,   path,"PetscViewerCreate_Binary",     PetscViewerCreate_Binary);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_BINARY,   path,"PetscViewerCreate_Binary",     PetscViewerCreate_Binary);CHKERRQ(ierr);
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_STRING,   path,"PetscViewerCreate_String",     PetscViewerCreate_String);CHKERRQ(ierr);
-  ierr = PetscViewerRegisterDynamic(PETSC_DRAW_VIEWER,     path,"PetscViewerCreate_Draw",       PetscViewerCreate_Draw);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_DRAW,     path,"PetscViewerCreate_Draw",       PetscViewerCreate_Draw);CHKERRQ(ierr);
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_SOCKET,   path,"PetscViewerCreate_Socket",     PetscViewerCreate_Socket);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_AMS,      path,"PetscViewerCreate_AMS",        PetscViewerCreate_AMS);CHKERRQ(ierr); 

@@ -1,4 +1,4 @@
-/*$Id: view.c,v 1.40 2000/09/22 20:41:53 bsmith Exp bsmith $*/
+/*$Id: view.c,v 1.41 2001/01/15 21:43:19 bsmith Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -52,9 +52,9 @@ int PetscViewerDestroy(PetscViewer viewer)
    Available Types Include:
 .  PETSC_VIEWER_SOCKET - Socket PetscViewer
 .  PETSC_VIEWER_ASCII - ASCII PetscViewer
-.  PETSC_BINARY_VIEWER - binary file PetscViewer
+.  PETSC_VIEWER_BINARY - binary file PetscViewer
 .  PETSC_VIEWER_STRING - string PetscViewer
-.  PETSC_DRAW_VIEWER - drawing PetscViewer
+.  PETSC_VIEWER_DRAW - drawing PetscViewer
 
    Level: intermediate
 

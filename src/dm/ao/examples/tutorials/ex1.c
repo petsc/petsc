@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.15 2001/01/15 21:48:48 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.16 2001/01/17 22:27:34 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-d",&flag);CHKERRQ(ierr);
   if (!flag) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr)
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr)
   }
   ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
       printf("Enter keyname: (or return to end) ");
       gets(string);
     } 
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr)
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr)
     ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
       printf("Enter keyname segment name to remove: (or return to end) ");
       gets(string);
     }
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr)
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr)
     ierr = AODataView(aodata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 

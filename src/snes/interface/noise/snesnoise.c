@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesnoise.c,v 1.1 2001/01/19 21:11:04 bsmith Exp balay $";
+static char vcid[] = "$Id: snesnoise.c,v 1.2 2001/01/19 21:11:07 balay Exp balay $";
 #endif
 
 
@@ -266,7 +266,7 @@ int JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   ierr = OptionsHasName(PETSC_NULL,"-print_vecs",&printv);CHKERRQ(ierr);
   if (printv) {
     ierr = ViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRQ(ierr);
+    ierr = ViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecView(yy1,view2);CHKERRQ(ierr);
     ierr = ViewerDestroy(view2);CHKERRQ(ierr);
   }
@@ -286,7 +286,7 @@ int JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
     if (printv) {
       sprintf(filename,"y2.%d.out",i);
       ierr = ViewerASCIIOpen(comm,filename,&view2);CHKERRQ(ierr);
-      ierr = ViewerSetFormat(view2,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL);CHKERRQ(ierr);
+      ierr = ViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON,PETSC_NULL);CHKERRQ(ierr);
       ierr = VecView(yy2,view2);CHKERRQ(ierr);
       ierr = ViewerDestroy(view2);CHKERRQ(ierr);
     }

@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.159 2000/09/28 21:12:51 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.160 2001/01/15 21:46:55 bsmith Exp balay $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -541,7 +541,7 @@ static int PCView_ILU(PC pc,PetscViewer viewer)
     if (ilu->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
     ierr = MatView(ilu->fact,viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

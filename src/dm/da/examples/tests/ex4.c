@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.46 2001/01/16 18:21:19 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.47 2001/01/17 22:27:51 bsmith Exp balay $*/
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_NATIVE,0);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
     ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
     ierr = PetscPrintf (PETSC_COMM_WORLD,"\n\n");CHKERRQ(ierr);
   }

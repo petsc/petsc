@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.54 2000/09/28 21:08:16 bsmith Exp bsmith $*/
+/*$Id: drawv.c,v 1.55 2001/01/15 21:43:15 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
@@ -70,7 +70,7 @@ int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidPointer(draw);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   }
@@ -122,7 +122,7 @@ int PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *dr
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidPointer(drawlg);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   }
@@ -173,7 +173,7 @@ int PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidPointer(drawaxis);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   }
@@ -231,8 +231,8 @@ int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[]
 .  PetscViewer - the PetscViewer
 
    Format Options:
-+  PETSC_VIEWER_FORMAT_DRAW_BASIC - displays with basic format
--  PETSC_VIEWER_FORMAT_DRAW_LG    - displays using a line graph
++  PETSC_VIEWER_DRAW_BASIC - displays with basic format
+-  PETSC_VIEWER_DRAW_LG    - displays using a line graph
 
    Options Database Keys:
    PetscViewerDrawOpen() calls PetscDrawOpen(), so see the manual page for
@@ -265,7 +265,7 @@ int PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],in
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer,PETSC_DRAW_VIEWER);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*viewer,PETSC_VIEWER_DRAW);CHKERRQ(ierr);
   ierr = PetscViewerDrawSetInfo(*viewer,display,title,x,y,w,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -286,7 +286,7 @@ int PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr   = PetscViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
-    ierr   = PetscViewerSetType(*sviewer,PETSC_DRAW_VIEWER);CHKERRQ(ierr);
+    ierr   = PetscViewerSetType(*sviewer,PETSC_VIEWER_DRAW);CHKERRQ(ierr);
     vsdraw = (PetscViewer_Draw *)(*sviewer)->data;
     for (i=0; i<PETSC_VIEWER_DRAW_MAX; i++) {
       if (vdraw->draw[i]) {
@@ -376,7 +376,7 @@ int PetscViewerDrawClear(PetscViewer viewer)
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (isdraw) {
     vdraw = (PetscViewer_Draw*)viewer->data;
     for (i=0; i<PETSC_VIEWER_DRAW_MAX; i++) {

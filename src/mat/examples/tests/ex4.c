@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.16 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.17 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
 MatGetSubMatrices and MatZeroEntries.\n\n";
@@ -16,8 +16,8 @@ int main(int argc,char **argv)
   PetscViewer    sviewer;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,0);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_FORMAT_ASCII_COMMON,0);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);

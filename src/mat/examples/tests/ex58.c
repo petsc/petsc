@@ -1,4 +1,4 @@
-/*$Id: ex58.c,v 1.11 2001/01/15 21:46:09 bsmith Exp bsmith $*/
+/*$Id: ex58.c,v 1.12 2001/01/17 22:23:09 bsmith Exp balay $*/
 
 static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   char       *eq[2];
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_COMMON,0);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   n = m;
 

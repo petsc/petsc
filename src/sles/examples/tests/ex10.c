@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.88 2001/01/16 18:19:49 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.89 2001/01/17 22:25:27 bsmith Exp balay $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -171,7 +171,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatConvert(submat,type,newmat);CHKERRQ(ierr);
   ierr = MatDestroy(submat);CHKERRQ(ierr);
 
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(*newmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",norm);CHKERRQ(ierr);

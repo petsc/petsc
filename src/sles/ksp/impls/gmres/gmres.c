@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.159 2001/01/15 21:47:19 bsmith Exp balay $*/
+/*$Id: gmres.c,v 1.160 2001/01/16 18:19:33 balay Exp balay $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -574,7 +574,7 @@ int KSPGMRESKrylovMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 
   PetscFunctionBegin;
   ierr = PetscViewersGetViewer(viewers,gmres->it+1,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer,PETSC_DRAW_VIEWER);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer,PETSC_VIEWER_DRAW);CHKERRQ(ierr);
 
   x      = VEC_VV(gmres->it+1);
   ierr   = VecView(x,viewer);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: viewa.c,v 1.17 2001/01/19 20:43:43 bsmith Exp balay $*/
+/*$Id: viewa.c,v 1.18 2001/01/19 21:32:46 balay Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -45,11 +45,8 @@
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpenX(),PetscViewerSocketOpen()
 @*/
-int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
+int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormatType format)
 {
-  int        ierr;
-  PetscTruth isascii;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   viewer->format     = format;
@@ -99,16 +96,14 @@ int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerSetFormat(), PetscViewerPopFormat()
 @*/
-int PetscViewerPushFormat(PetscViewer viewer,int format,char *name)
+int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormatType format)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (viewer->iformat > 9) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many pushes");
 
-  viewer->formats[viewer->iformat]       = viewer->format;
-  viewer->outputnames[viewer->iformat++] = viewer->outputname;
+  viewer->formats[viewer->iformat]  = viewer->format;
   viewer->format                    = format;
-  viewer->outputname                = name;
 
   PetscFunctionReturn(0);
 }
@@ -137,13 +132,12 @@ int PetscViewerPopFormat(PetscViewer viewer)
   if (viewer->iformat <= 0) PetscFunctionReturn(0);
 
   viewer->format     = viewer->formats[--viewer->iformat];
-  viewer->outputname = viewer->outputnames[viewer->iformat];
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscViewerGetFormat" 
-int PetscViewerGetFormat(PetscViewer viewer,int *format)
+int PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormatType *format)
 {
   PetscFunctionBegin;
   *format =  viewer->format;

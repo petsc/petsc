@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.55 2001/01/15 21:46:00 bsmith Exp balay $*/
+/*$Id: mpiadj.c,v 1.56 2001/01/16 18:17:59 balay Exp balay $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -11,15 +11,16 @@
 int MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_MPIAdj  *a = (Mat_MPIAdj*)A->data;
-  int         ierr,i,j,m = A->m, format;
-  char        *outputname;
+  int         ierr,i,j,m = A->m;
+  char        *name;
+  PetscViewerFormatType  format;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_FORMAT_ASCII_INFO) {
+  if (format == PETSC_VIEWER_ASCII_INFO) {
     PetscFunctionReturn(0);
-  } else if (format == PETSC_VIEWER_FORMAT_ASCII_MATLAB) {
+  } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);

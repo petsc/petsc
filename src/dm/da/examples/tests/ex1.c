@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.42 2001/01/15 21:49:08 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.43 2001/01/17 22:27:51 bsmith Exp balay $*/
 
 static char help[] = "Tests various DA routines.\n\n";
 
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = VecScale(&value,local);CHKERRQ(ierr);
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
 
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_FORMAT_NATIVE,0);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DAView(da,viewer);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.79 2001/01/19 20:40:02 bsmith Exp bsmith $ */
+/* $Id: petscviewer.h,v 1.80 2001/01/19 20:43:48 bsmith Exp balay $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
@@ -19,9 +19,9 @@ typedef char*PetscViewerType;
 
 #define PETSC_VIEWER_SOCKET       "socket"
 #define PETSC_VIEWER_ASCII        "ascii"
-#define PETSC_BINARY_VIEWER       "binary"
+#define PETSC_VIEWER_BINARY       "binary"
 #define PETSC_VIEWER_STRING       "string"
-#define PETSC_DRAW_VIEWER         "draw"
+#define PETSC_VIEWER_DRAW         "draw"
 #define PETSC_VIEWER_AMS          "ams"
 
 extern PetscFList PetscViewerList;
@@ -52,30 +52,21 @@ EXTERN int PetscViewerDestroy(PetscViewer);
 EXTERN int PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 EXTERN int PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
 
-#define PETSC_VIEWER_FORMAT_ASCII_DEFAULT       0
-#define PETSC_VIEWER_FORMAT_ASCII_MATLAB        1
-#define PETSC_VIEWER_FORMAT_ASCII_IMPL          2
-#define PETSC_VIEWER_FORMAT_ASCII_INFO          3
-#define PETSC_VIEWER_FORMAT_ASCII_INFO_LONG     4
-#define PETSC_VIEWER_FORMAT_ASCII_COMMON        5
-#define PETSC_VIEWER_FORMAT_ASCII_SYMMODU       6
-#define PETSC_VIEWER_FORMAT_ASCII_INDEX         7
-#define PETSC_VIEWER_FORMAT_ASCII_DENSE         8
 
-#define PETSC_VIEWER_FORMAT_BINARY_DEFAULT      9
-#define PETSC_VIEWER_FORMAT_BINARY_NATIVE       10
+typedef enum { 
+  PETSC_VIEWER_ASCII_DEFAULT, PETSC_VIEWER_ASCII_MATLAB, PETSC_VIEWER_ASCII_IMPL,
+  PETSC_VIEWER_ASCII_INFO, PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_COMMON,
+  PETSC_VIEWER_ASCII_SYMMODU, PETSC_VIEWER_ASCII_INDEX, PETSC_VIEWER_ASCII_DENSE,
+  PETSC_VIEWER_BINARY_DEFAULT, PETSC_VIEWER_BINARY_NATIVE, PETSC_VIEWER_DRAW_BASIC,
+  PETSC_VIEWER_DRAW_LG, PETSC_VIEWER_DRAW_CONTOUR, PETSC_VIEWER_DRAW_PORTS,
+  PETSC_VIEWER_NATIVE} PetscViewerFormatType;
 
-#define PETSC_VIEWER_FORMAT_DRAW_BASIC          11
-#define PETSC_VIEWER_FORMAT_DRAW_LG             12
-#define PETSC_VIEWER_FORMAT_DRAW_CONTOUR        13
-#define PETSC_VIEWER_FORMAT_DRAW_PORTS          15
 
-#define PETSC_VIEWER_FORMAT_NATIVE              14
 
-EXTERN int PetscViewerSetFormat(PetscViewer,int,char[]);
-EXTERN int PetscViewerPushFormat(PetscViewer,int,char[]);
+EXTERN int PetscViewerSetFormat(PetscViewer,PetscViewerFormatType);
+EXTERN int PetscViewerPushFormat(PetscViewer,PetscViewerFormatType);
 EXTERN int PetscViewerPopFormat(PetscViewer);
-EXTERN int PetscViewerGetFormat(PetscViewer,int*);
+EXTERN int PetscViewerGetFormat(PetscViewer,PetscViewerFormatType*);
 EXTERN int PetscViewerFlush(PetscViewer);
 
 /*
