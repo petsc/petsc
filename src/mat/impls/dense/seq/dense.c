@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.71 1995/11/01 19:10:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.72 1995/11/01 23:17:41 bsmith Exp bsmith $";
 #endif
 
 #include "dense.h"
@@ -622,7 +622,7 @@ static int MatNorm_SeqDense(Mat A,NormType type,double *norm)
     for ( j=0; j<mat->n; j++ ) {
       sum = 0.0;
       for ( i=0; i<mat->m; i++ ) {
-        sum += PetscAbsScalar(*v++); 
+        sum += PetscAbsScalar(*v);  v++;
       }
       if (sum > *norm) *norm = sum;
     }
