@@ -1,5 +1,6 @@
 
-/* $Id: dvec2.c,v 1.45 1997/10/19 03:22:39 bsmith Exp balay $ */
+
+/* $Id: dvec2.c,v 1.46 1997/11/05 20:36:32 balay Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -87,11 +88,12 @@ int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 }
 
 #else
-int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
+int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar * restrict z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
   register int n = xv->n,i,j,nv_rem,j_rem;
-  Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
+  Scalar   sum0,sum1,sum2,sum3,x0,x1,x2,x3,* restrict x;
+  Scalar   * restrict yy0, * restrict yy1, * restrict yy2, *restrict yy3; 
   Vec      *yy;
   
 /*
