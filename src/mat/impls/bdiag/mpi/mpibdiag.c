@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.76 1996/03/18 00:40:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.77 1996/03/19 21:26:38 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -474,10 +474,10 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr;
 
 #if defined(PETSC_LOG)
+  Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
   PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",
                   mbd->M,mbd->N,ms->nb,ms->nd);
 #endif

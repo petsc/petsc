@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.62 1996/03/21 22:22:38 gropp Exp curfman $ */
+/* $Id: plog.h,v 1.63 1996/03/22 19:56:40 curfman Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -105,7 +105,6 @@
 #define PLOG_USER_EVENT_LOW_STATIC              120
 #define PLOG_USER_EVENT_HIGH                    200
 
-
 /* Global flop counter */
 extern double _TotalFlops;
 #if defined(PETSC_LOG)
@@ -114,11 +113,8 @@ extern double _TotalFlops;
 #define PLogFlops(n)
 #endif 
 
-extern int PLogPrintSummary(MPI_Comm,FILE *);
-extern int PLogBegin();
-extern int PLogAllBegin();
-extern int PLogDump(char*);
-extern int PLogEventRegister(int*,char*,char*);
+/* General logging of information; different from event logging */
+extern int PLogInfo(PetscObject,char*,...);
 
 #if defined (HAVE_MPE)
 #include "mpe.h"
@@ -129,7 +125,6 @@ extern int UseMPE,MPEFlags[];
 #endif
 
 #if defined(PETSC_LOG)
-
 extern int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PHC)(PetscObject);
@@ -176,31 +171,42 @@ extern int (*_PHD)(PetscObject);
 #define PLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
                                     ((PetscObject)(p))->mem += (m);}
 extern int PLogObjectState(PetscObject,char *,...);
-extern int PLogInfo(PetscObject,char*,...);
 extern int PLogDestroy();
 extern int PLogStagePush(int);
 extern int PLogStagePop();
 extern int PLogStageRegister(int,char*);
+extern int PLogPrintSummary(MPI_Comm,FILE *);
+extern int PLogBegin();
+extern int PLogAllBegin();
+extern int PLogDump(char*);
+extern int PLogEventRegister(int*,char*,char*);
 
 #else
 
-#define PLogObjectCreate(h) 
-#define PLogObjectDestroy(h)
-#define PLogObjectMemory(p,m)
 #define PLogEventBegin(e,o1,o2,o3,o4)
 #define PLogEventEnd(e,o1,o2,o3,o4)
 #define PLogObjectParent(p,c)
 #define PLogObjectParents(p,n,c)
-extern int PLogInfo(PetscObject,char*,...);
-extern int PLogDestroy();
-extern int PLogStagePush(int);
-extern int PLogStagePop();
-extern int PLogStageRegister(int,char*);
+#define PLogObjectCreate(h) 
+#define PLogObjectDestroy(h)
+#define PLogObjectMemory(p,m)
+/* #define PLogObjectState(a,b,...) */
+#define PLogDestroy()
+#define PLogStagePush(int)
+#define PLogStagePop()
+#define PLogStageRegister(a,b)
+#define PLogPrintSummary(comm,file)
+#define PLogBegin()
+#define PLogAllBegin()
+#define PLogDump(char)
+#define PLogEventRegister(a,b,c)
+#define PLogMPEBegin()
+#define PLogMPEDump(a)
+
 #endif
 
 /*M
    PLogFlops - Adds floating point operations to the global counter.
-               You must include "plog.h" to use this function.
 
    Input Parameter:
 .  f - flop counter
@@ -223,13 +229,13 @@ extern int PLogStageRegister(int,char*);
 $     int USER_EVENT;
 $     PLogEventRegister(&USER_EVENT,"User event","Color:");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
-$     [code segment to monitor]
-$     PLogFlops(user_flops)
+$        [code segment to monitor]
+$        PLogFlops(user_flops)
 $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
-.seealso:  PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
+.seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
 
-.keywords:  Petsc, log, flops, floating point operations
+.keywords: log, flops, floating point operations
 M*/
 
 

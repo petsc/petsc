@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.86 1996/03/19 21:30:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.87 1996/03/19 21:59:48 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -718,7 +718,7 @@ extern int  *MPEFlag,UseMPE;
             pattern ( used by upshot/ nupshot) eg - "red:", "green:vlines3"
 
     Output Parameter:
-.   e -  event id for use with PLogEventBegin() and End().
+.   e -  event id for use with PLogEventBegin() and PLogEventEnd().
 
     Notes: 
     PETSc automatically logs library events if the code has been
@@ -965,7 +965,6 @@ double PetscGetFlops()
 {
   return _TotalFlops;
 }
-
 
 #endif
 
