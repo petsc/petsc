@@ -75,6 +75,11 @@ to do what you need.
 
     Changed ViewerType from an enum to a char *
 
+    Added ViewerASCIIPushTab(), ViewerASCIIPopTab() and 
+      ViewerASCIIPrintf(). These allow multi-level display of solver
+      information (tabing the text further for each inner solver).
+      Thanks to Victor Eijkhout and Matt Knepley for pushing this 
+
   SNES 
 
     Changed SNESDefaultMatrixFreeMatCreate() to MatSNESFDMFCreate()
