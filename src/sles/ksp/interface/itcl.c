@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.81 1996/12/12 03:40:46 bsmith Exp balay $";
+static char vcid[] = "$Id: itcl.c,v 1.82 1996/12/16 19:33:33 balay Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -33,7 +33,7 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 {
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
-    SETERRQ(1,"KSPAddOptionsChecker:Too many options checkers, only 5 allowed");
+    SETERRQ(1,"Too many options checkers, only 5 allowed");
   }
 
   othersetfromoptions[numberofsetfromoptions++] = kspcheck;

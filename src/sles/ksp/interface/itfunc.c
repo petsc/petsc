@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.73 1996/11/13 19:53:39 curfman Exp balay $";
+static char vcid[] = "$Id: itfunc.c,v 1.74 1996/12/16 19:42:22 balay Exp balay $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -39,7 +39,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
   PetscValidScalarPointer(emax);
   PetscValidScalarPointer(emin);
   if (!ksp->calc_sings) {
-    SETERRQ(4,"KSPComputeExtremeSingularValues:SingularValues not requested before KSPSetUp");
+    SETERRQ(4,"SingularValues not requested before KSPSetUp");
   }
 
   if (ksp->computeextremesingularvalues) {
@@ -82,7 +82,7 @@ int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c)
   PetscValidScalarPointer(r);
   PetscValidScalarPointer(c);
   if (!ksp->calc_sings) {
-    SETERRQ(4,"KSPComputeEigenvalues:Eigenvalues not requested before KSPSetUp");
+    SETERRQ(4,"Eigenvalues not requested before KSPSetUp");
   }
 
   if (ksp->computeeigenvalues) {
@@ -109,7 +109,7 @@ int KSPSetUp(KSP ksp)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->setupcalled) return 0;
   if (ksp->type == -1) {
-    SETERRQ(1,"KSPSetUp:Type must be set first");
+    SETERRQ(1,"Type must be set first");
   }
   ksp->setupcalled = 1;
   return (*ksp->setup)(ksp);
@@ -715,7 +715,7 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
     return 0;
   }
   if (ksp->numbermonitors >= MAXKSPMONITORS) {
-    SETERRQ(1,"KSPSetMonitor:Too many monitors set");
+    SETERRQ(1,"Too many monitors set");
   }
 
   ksp->monitor[ksp->numbermonitors]           = monitor;
@@ -870,7 +870,7 @@ $    KSPBuildSolution(ctx,v,PETSC_NULL);
 int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 {
   PetscValidHeaderSpecific(ctx,KSP_COOKIE);
-  if (!V && !v) SETERRQ(1,"KSPBuildSolution:Must provide either v or V");
+  if (!V && !v) SETERRQ(1,"Must provide either v or V");
   if (!V) V = &v;
   return (*ctx->buildsolution)(ctx,v,V);
 }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdmatrix.c,v 1.3 1996/11/27 22:52:45 bsmith Exp balay $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.4 1996/12/16 19:47:15 balay Exp balay $";
 #endif
 
 /*
@@ -164,7 +164,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   int           ierr,M,N;
 
   ierr = MatGetSize(mat,&M,&N); CHKERRQ(ierr);
-  if (M != N) SETERRQ(1,"MatFDColoringCreate:Only for square matrices");
+  if (M != N) SETERRQ(1,"Only for square matrices");
 
   PetscObjectGetComm((PetscObject)mat,&comm);
   PetscHeaderCreate(c,_MatFDColoring,MAT_FDCOLORING_COOKIE,0,comm);
@@ -173,7 +173,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   if (mat->ops.fdcoloringcreate) {
     ierr = (*mat->ops.fdcoloringcreate)(mat,iscoloring,c); CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"MatFDColoringCreate:Code not yet written for this matrix type");
+    SETERRQ(1,"Code not yet written for this matrix type");
   }
 
   c->error_rel = 1.e-8;

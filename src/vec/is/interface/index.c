@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.36 1996/09/28 17:33:59 curfman Exp balay $";
+static char vcid[] = "$Id: index.c,v 1.37 1996/12/16 19:30:59 balay Exp balay $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -126,7 +126,7 @@ int ISDestroy(IS is)
 int ISInvertPermutation(IS is,IS *isout)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  if (!is->isperm) SETERRQ(1,"ISInvertPermutation:not a permutation");
+  if (!is->isperm) SETERRQ(1,"not a permutation");
   return (*is->ops.invertpermutation)(is,isout);
 }
 

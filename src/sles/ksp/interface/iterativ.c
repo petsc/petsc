@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.53 1996/09/28 16:25:06 curfman Exp balay $";
+static char vcid[] = "$Id: iterativ.c,v 1.54 1996/12/16 19:37:54 balay Exp balay $";
 #endif
 
 /*
@@ -217,7 +217,7 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
   if (ksp->pc_side == PC_RIGHT) {
     if (ksp->B) {
       if (v) {ierr = PCApply(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
-      else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with right preconditioner");}
+      else {SETERRQ(1,"Not working with right preconditioner");}
     }
     else        {
       if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
@@ -227,7 +227,7 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
   else if (ksp->pc_side == PC_SYMMETRIC) {
     if (ksp->B) {
       if (v) {ierr = PCApplySymmetricRight(ksp->B,ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
-      else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with symmetric preconditioner");}
+      else {SETERRQ(1,"Not working with symmetric preconditioner");}
     }
     else        {
       if (v) {ierr = VecCopy(ksp->vec_sol,v); CHKERRQ(ierr); *V = v;}
