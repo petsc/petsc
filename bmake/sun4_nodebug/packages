@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.24 2000/09/28 21:06:05 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.25 2000/11/28 17:26:31 bsmith Exp balay $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,9 +14,8 @@
 # you can use -lsunperf or /usr/lang/SC3.0.1/lib/libsunperf.a below as the 
 # BLAS and LAPACK library
 #
-BLAS_LIB       =  /usr/local/lapack/lib/blas.a
-LAPACK_LIB     =  /usr/local/lapack/lib/lapack.a
-
+BLASLAPACK_LIB =  /usr/local/lapack/lib/lapack.a /usr/local/lapack/lib/blas.a
+#
 # Location of MPI (Message Passing Interface) software  
 #
 MPI_HOME       = /home/petsc/software/mpich-1.1.2
