@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.75 1998/12/21 01:04:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.76 1998/12/23 22:53:24 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -23,7 +23,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
   SNES_UMLS    *neP = (SNES_UMLS *) snes->data;
   int          maxits, success, iters, history_len, i, global_dim, ierr, kspmaxit;
-  double       *history, snorm, *f, *gnorm, two = 2.0;
+  double       *history, snorm, *f, *gnorm, two = 2.0,tnorm;
   Scalar       neg_one = -1.0;
   Vec          G, X, RHS, S, W;
   SLES         sles;
@@ -42,10 +42,15 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   f		= &(snes->fc);		/* function to minimize */
   gnorm		= &(snes->norm);	/* gradient norm */
 
+  PetscAMSTakeAccess(snes);
   snes->iter = 0;
+  PetscAMSGrantAccess(snes);
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);     /* G(X) <- gradient */
+
+  PetscAMSTakeAccess(snes);
   ierr = VecNorm(G,NORM_2,gnorm);   CHKERRQ(ierr);         /* gnorm = || G || */
+  PetscAMSGrantAccess(snes);
   if (history) history[0] = *gnorm;
   SNESMonitor(snes,0,*gnorm);
 
@@ -53,11 +58,12 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
   ierr = VecGetSize(X,&global_dim); CHKERRQ(ierr);
   kspmaxit = neP->max_kspiter_factor * ((int) sqrt((double) global_dim));
-  ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,kspmaxit);
-         CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,kspmaxit);CHKERRQ(ierr);
 
   for ( i=0; i<maxits; i++ ) {
+    PetscAMSTakeAccess(snes);
     snes->iter = i+1;
+    PetscAMSGrantAccess(snes);
     neP->gamma = neP->gamma_factor*(*gnorm);
     success = 0;
     ierr = VecCopy(G,RHS); CHKERRQ(ierr);
@@ -92,7 +98,10 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     ierr = VecNorm(S,NORM_2,&snorm); CHKERRQ(ierr);
 
     /* Line search */
-    ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),gnorm,&(neP->line));
+    ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),&tnorm,&(neP->line));
+    PetscAMSTakeAccess(snes);
+    snes->norm = tnorm;
+    PetscAMSGrantAccess(snes);
     if (neP->line != 1) snes->nfailures++;CHKERRQ(ierr);
 
     if (history && history_len > i+1) history[i+1] = *gnorm;

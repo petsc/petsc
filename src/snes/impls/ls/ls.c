@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.121 1999/02/01 03:26:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.122 1999/02/09 23:24:21 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -81,7 +81,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   G		= snes->work[1];
   W		= snes->work[2];
 
+  PetscAMSTakeAccess(snes);
   snes->iter = 0;
+  PetscAMSGrantAccess(snes);
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm); CHKERRQ(ierr);	/* fnorm <- ||F||  */
   PetscAMSTakeAccess(snes);
@@ -96,7 +98,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   snes->ttol = fnorm*snes->rtol;
 
   for ( i=0; i<maxits; i++ ) {
+    PetscAMSTakeAccess(snes);
     snes->iter = i+1;
+    PetscAMSGrantAccess(snes);
 
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg); CHKERRQ(ierr);

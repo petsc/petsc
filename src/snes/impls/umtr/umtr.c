@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.77 1999/01/31 16:10:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.78 1999/02/09 23:26:39 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -59,7 +59,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   gnorm		= &(snes->norm);	/* gradient norm */
 
   ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);              /* xnorm = || X || */
+  PetscAMSTakeAccess(snes);
   snes->iter = 0;
+  PetscAMSGrantAccess(snes);
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
   PetscAMSTakeAccess(snes);
@@ -75,24 +77,23 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   qcgP = (KSP_QCG *) ksp->data;
 
   for ( i=0; i<maxits && !nlconv; i++ ) {
+    PetscAMSTakeAccess(snes);
     snes->iter = i+1;
+    PetscAMSGrantAccess(snes);
     newton = 0;
     neP->success = 0;
     snes->nfailures = 0;
-    ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);
-           CHKERRQ(ierr);
-    ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
-           CHKERRQ(ierr);
+    ierr = SNESComputeHessian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
+    ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
     if (i == 0) {			/* Initialize delta */
       if (delta <= 0) {
         if (xnorm > zero) delta = neP->factor1*xnorm;
         else delta = neP->delta0;
-        ierr = MatNorm(snes->jacobian,NORM_1,&max_val);
+        ierr = MatNorm(snes->jacobian,NORM_1,&max_val);CHKERRQ(ierr);
         if (ierr == PETSC_ERR_SUP) {
           PLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info\n");
         } else {
-          CHKERRQ(ierr);
           if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,0,"Hessian norm is too small");
           delta = PetscMax(delta,*gnorm/max_val);
         }
