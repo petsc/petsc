@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.53 1997/01/01 03:41:03 bsmith Exp balay $";
+static char vcid[] = "$Id: umtr.c,v 1.54 1997/01/06 20:30:03 balay Exp curfman $";
 #endif
 
 #include <math.h>
@@ -104,6 +104,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       /* Minimize the quadratic to compute the step s */
       qcgP->delta = delta;
       ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
+      snes->linear_its += PetscAbsInt(qits);
       if (qits < 0) SETERRQ(1,0,"Failure in SLESSolve");
       if (qcgP->info == 3) newton = 1;	            /* truncated Newton step */
       PLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.104 1997/01/01 03:40:47 bsmith Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.105 1997/01/06 20:29:45 balay Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -64,6 +64,8 @@ int SNESView(SNES snes,Viewer viewer)
     PetscFPrintf(snes->comm,fd,
     "  tolerances: relative=%g, absolute=%g, truncation=%g, solution=%g\n",
       snes->rtol, snes->atol, snes->trunctol, snes->xtol);
+    PetscFPrintf(snes->comm,fd,
+    "  total number of linear solver iterations=%d\n",snes->linear_its);
     if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
       PetscFPrintf(snes->comm,fd,"  min function tolerance=%g\n",snes->fmin);
     if (snes->ksp_ewconv) {
@@ -544,6 +546,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->trunctol	  = 1.e-12; /* no longer used */
   snes->nfuncs            = 0;
   snes->nfailures         = 0;
+  snes->linear_its        = 0;
   snes->numbermonitors    = 0;
   snes->data              = 0;
   snes->view              = 0;

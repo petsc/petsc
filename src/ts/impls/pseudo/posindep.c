@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.9 1997/01/01 03:40:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.10 1997/01/06 20:42:03 bsmith Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -254,6 +254,7 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
     while (1) {
       ts->ptime  += current_time_step;
       ierr = SNESSolve(ts->snes,pseudo->update,&its); CHKERRQ(ierr);
+      ts->nonlinear_its += PetscAbsInt(its);
       ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->time_step,&ok); CHKERRQ(ierr);
       if (ok) break;
       ts->ptime        -= current_time_step;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.79 1997/01/01 03:40:57 bsmith Exp balay $";
+static char vcid[] = "$Id: ls.c,v 1.80 1997/01/06 20:29:52 balay Exp curfman $";
 #endif
 
 #include <math.h>
@@ -61,6 +61,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg); CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg); CHKERRQ(ierr);
     ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERRQ(ierr);
+    snes->linear_its += PetscAbsInt(lits);
     PLogInfo(snes,"SNESSolve_EQ_LS: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
 
     /* Compute a (scaled) negative update in the line search routine: 

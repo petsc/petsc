@@ -1,4 +1,4 @@
-/* $Id: tsimpl.h,v 1.9 1996/11/07 15:10:36 bsmith Exp bsmith $ */
+/* $Id: tsimpl.h,v 1.10 1997/01/06 20:41:51 bsmith Exp curfman $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -6,10 +6,9 @@
 
 /*
     Timesteping context. 
-      
-      General case: U_t = F(t,U) <-- the right hand side function.
-      Linear  case: U_t = A(t) U. <-- the right hand side matrix.
-      Linear (no time) case: U_t = A U. <-- the right hand side matrix
+      General case: U_t = F(t,U) <-- the right-hand-side function
+      Linear  case: U_t = A(t) U <-- the right-hand-side matrix
+      Linear (no time) case: U_t = A U <-- the right-hand-side matrix
 */
 
 /*
@@ -53,6 +52,7 @@ struct _TS {
   void          *data;                    /* implementationspecific data */
 
   void          *user;                    /* user context */
+
   /* ------------------  Parameters -------------------------------------- */
 
   int           max_steps;          /* max number of steps */
@@ -60,6 +60,8 @@ struct _TS {
   double        time_step;
   int           steps;              /* steps taken so far */
   double        ptime;              /* time taken so far */
+  int           linear_its;         /* total number of linear solver iterations */
+  int           nonlinear_its;      /* total number of nonlinear solver iterations */
 
   /* ------------------- Default work-area management ------------------ */
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.16 1997/01/01 03:40:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.17 1997/01/06 20:42:01 bsmith Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -43,6 +43,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
     ierr = VecCopy(sol,rhs); CHKERRQ(ierr);
     ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
     ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
+    ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol); CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
@@ -90,6 +91,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
     ierr = VecScale(&mdt,rhs); CHKERRQ(ierr);
     ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str); CHKERRQ(ierr);
     ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
+    ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol); CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
@@ -118,6 +120,7 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update); CHKERRQ(ierr);
     ierr = SNESSolve(ts->snes,beuler->update,&its); CHKERRQ(ierr);
+    ts->nonlinear_its += PetscAbsInt(its);
     ierr = VecCopy(beuler->update,sol); CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);

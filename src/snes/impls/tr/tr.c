@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.66 1997/01/01 03:41:00 bsmith Exp balay $";
+static char vcid[] = "$Id: tr.c,v 1.67 1997/01/06 20:29:57 balay Exp curfman $";
 #endif
 
 #include <math.h>
@@ -102,6 +102,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
+    snes->linear_its += PetscAbsInt(lits);
     PLogInfo(snes,"SNESSolve_EQ_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
     ierr = VecNorm(Ytmp,NORM_2,&norm); CHKERRQ(ierr);
     norm1 = norm;
