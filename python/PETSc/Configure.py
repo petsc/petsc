@@ -675,6 +675,39 @@ class Configure(config.base.Configure):
       self.framework.addSubstitution('INSTALL_DIR', self.framework.argDB['PETSC_DIR'])
     return
 
+  def fixWin32Flinker(self):
+    '''Change CXX_FLINKER back to f90 for win32 (from cl)'''
+
+    win32fe  = os.path.join(self.framework.argDB['PETSC_DIR'],'bin','win32fe','win32fe')
+    regfix  = re.compile('(CXX_FLINKER [= ]*'+win32fe+' )(cl)')
+    
+    filename = os.path.join(self.bmakeDir, 'configure.py')
+    found   = 0
+    f = open(filename)
+    newfile = filename + ".tmp"
+    g = open(newfile,"w")
+    line = f.readline()
+    while (line):
+      fl = regfix.search(line)
+      if fl:
+        found = 1
+        # Found a match - now modify and replace cl with f90 retaining the rest
+        self.framework.log.write('Win32fe found! substituting cl with f90 for CXX_FLINKER')
+        modline = regfix.sub('\g<1>f90',line)
+        g.write(modline)
+      else:
+        g.write(line)
+      line = f.readline()
+    f.close()
+    g.close()
+    # If there is a match replace variables file with the modified one - else delete
+    if found:
+      os.remove(filename)
+      os.rename(newfile,filename)
+    else:
+      os.remove(newfile)
+    self.framework.log.write('================================================================================\n')
+
   def configure(self):
     self.framework.header  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
     self.framework.cHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
@@ -717,5 +750,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
+    self.executeTest(self.fixWin32Flinker)    
     self.logClear()
     return
