@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.27 1995/07/07 16:15:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.28 1995/07/09 23:16:25 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -105,6 +105,13 @@ static int PCPrintHelp_LU(PC pc)
   return 0;
 }
 
+static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
+{
+  PC_LU *dir = (PC_LU *) pc->data;
+  *mat = dir->fact;
+  return 0;
+}
+
 static int PCSetUp_LU(PC pc)
 {
   IS        row,col;
@@ -154,15 +161,16 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 int PCCreate_LU(PC pc)
 {
   PC_LU *dir = PETSCNEW(PC_LU); CHKPTRQ(dir);
-  dir->fact     = 0;
-  dir->ordering = ORDER_ND;
-  dir->inplace  = 0;
-  pc->destroy   = PCDestroy_LU;
-  pc->apply     = PCApply_LU;
-  pc->setup     = PCSetUp_LU;
-  pc->type      = PCLU;
-  pc->data      = (void *) dir;
-  pc->setfrom   = PCSetFromOptions_LU;
-  pc->printhelp = PCPrintHelp_LU;
+  dir->fact      = 0;
+  dir->ordering  = ORDER_ND;
+  dir->inplace   = 0;
+  pc->destroy    = PCDestroy_LU;
+  pc->apply      = PCApply_LU;
+  pc->setup      = PCSetUp_LU;
+  pc->type       = PCLU;
+  pc->data       = (void *) dir;
+  pc->setfrom    = PCSetFromOptions_LU;
+  pc->printhelp  = PCPrintHelp_LU;
+  pc->getfactmat = PCGetFactoredMatrix_LU;
   return 0;
 }
