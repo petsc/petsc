@@ -2857,7 +2857,7 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void *)&merge);CHKERRQ(ierr); 
+    ierr  = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
     ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
     ierr = PetscFree(merge->len_sra);CHKERRQ(ierr);
     ierr = PetscFree(merge->bi);CHKERRQ(ierr);
@@ -2911,11 +2911,11 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   PetscMPIInt       size,rank;
   int               M=seqmat->m,N=seqmat->n,i,j,*owners,*ai=a->i,*aj=a->j;
   int               tag,taga,len,len_a = 0,*len_s,*len_sa,proc,*len_r,*len_ra;
-  int               tagi,tagj,*len_si,*len_ri,*len_rj,*id_r,**buf_ri,**buf_rj;  /* new! */
+  int               tagi,tagj,*len_si=NULL,*len_ri,*len_rj,**buf_ri,**buf_rj;  /* new! */
   int               **ijbuf_r,*ijbuf_s,*nnz_ptr,k,anzi,*bj_i,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj; 
   MPI_Request       *s_waits,*r_waits,*si_waits,*sj_waits,*ri_waits,*rj_waits,*s_waitsa,*r_waitsa;
   MPI_Status        *status;
-  MatScalar         *ba,*aa=a->a,**abuf_r,*abuf_i,*ba_i;
+  MatScalar         *ba,*aa=a->a,**abuf_r,*ba_i;
   FreeSpaceList     free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT           lnkbt;
   Mat_Merge_SeqsToMPI  *merge;
@@ -2932,7 +2932,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     B_mpi = *mpimat;
     ierr = PetscObjectQuery((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
     if (container) {
-      ierr  = PetscObjectContainerGetPointer(container,(void *)&merge);CHKERRQ(ierr); 
+      ierr  = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
     }
     bi      = merge->bi;
     bj      = merge->bj;

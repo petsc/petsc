@@ -307,7 +307,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   int rank;
-  PetscTruth   flag1,flag2,viewed=0,flg;
+  PetscTruth   flag1,flag2,viewed=PETSC_FALSE,flg;
   char         view[10];
   PetscScalar  zero = 0.0;
 
