@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.1 1998/11/09 03:49:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.2 1998/11/09 19:32:10 bsmith Exp balay $";
 #endif
 /*
       Implements an alternative approach for computing the h
@@ -138,7 +138,6 @@ static int MatSNESFDMFView_WP(MatSNESFDMFCtx ctx,Viewer viewer)
 static int MatSNESFDMFPrintHelp_WP(MatSNESFDMFCtx ctx)
 {
   char*         p;
-  MatSNESFDMFWP *hctx = (MatSNESFDMFWP *)ctx->hctx;
   int           ierr;
 
   PetscFunctionBegin;
