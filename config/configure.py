@@ -15,14 +15,12 @@ def petsc_configure(configure_options):
   # use the name of the config/configure_arch.py to determine the arch
   if getarch(): configure_options.append('-PETSC_ARCH='+getarch())
   
-  # Should be run from the toplevel or from ./config
-  pythonDir = os.path.abspath(os.path.join('..', 'python'))
-  if not os.path.exists(pythonDir):
-    pythonDir = os.path.abspath(os.path.join('python'))
-    if not os.path.exists(pythonDir):
-      raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
-
-  if not os.path.isdir('python/BuildSystem'):
+  # Should be run from the toplevel
+  pythonDir = os.path.abspath(os.path.join('python'))
+  bsDir     = os.path.join(pythonDir, 'BuildSystem')
+  if not os.path.isdir(pythonDir):
+    raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
+  if not os.path.isdir(bsDir):
     print '''Could not locate BuildSystem in $PETSC_DIR/python.
     Downloading it using "bk clone bk://sidl.bkbits.net/BuildSystem $PETSC_DIR/python/BuildSystem"'''
     (status,output) = commands.getstatusoutput('bk clone bk://sidl.bkbits.net/BuildSystem python/BuildSystem')
@@ -34,9 +32,9 @@ def petsc_configure(configure_options):
       else:
         print '''Unable to download BuildSystem. Please send this message to petsc-maint@mcs.anl.gov'''
       print output
-      sys.exit(3);
+      sys.exit(3)
       
-  sys.path.insert(0, os.path.join(pythonDir, 'BuildSystem'))
+  sys.path.insert(0, bsDir)
   sys.path.insert(0, pythonDir)
   import config.framework
 
