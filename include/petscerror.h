@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.3 1996/12/08 23:59:22 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.4 1997/01/01 03:42:38 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -36,6 +36,7 @@
 #define PETSC_ERR_MEM             55   /* unable to allocate requested memory */
 #define PETSC_ERR_SUP             56   /* no support yet for requested operation */
 #define PETSC_ERR_SIG             59   /* signal received */
+#define PETSC_ERR_FP              72   /* floating point exception */
 
 #define PETSC_ERR_ARG_SIZ         60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN         61   /* two arguments not allowed to be the same */

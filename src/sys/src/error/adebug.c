@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.55 1996/12/16 21:14:21 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.56 1997/01/01 03:36:26 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -311,7 +311,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 {
   int ierr,rank;
   if (!fun)  fun = "unknownfunction";
-  if (!dir)  dir = "???/";
+  if (!dir)  dir = " ";
   if (!mess) mess = " ";
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);

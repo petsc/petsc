@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.35 1996/10/14 14:30:30 balay Exp balay $ */
+/* $Id: mpi.h,v 1.36 1996/11/24 16:32:05 balay Exp bsmith $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -497,7 +497,7 @@ typedef char*   MPI_Errhandler;
 
 #define MPI_Abort(comm, errorcode) \
                         (MPIUNI_TMP = (void *) (comm),\
-     PetscError(__LINE__,__DIR__,__FILE__,errorcode,"[0] Aborting program!"), \
+     PetscError(__LINE__,__FUNCTION__,__FILE__,__DIR__,errorcode,0,"[0] Aborting program!"), \
                exit(errorcode))
 #define MPI_NULL_COPY_FN   0
 #define MPI_NULL_DELETE_FN 0
