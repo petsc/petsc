@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.15 1998/03/06 00:06:09 bsmith Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.16 1998/03/30 22:22:24 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -55,146 +55,122 @@ static char vcid[] = "$Id: zsnes.c,v 1.15 1998/03/06 00:06:09 bsmith Exp balay $
 extern "C" {
 #endif
 
-void snessettype_(SNES snes,CHAR itmethod, int *__ierr,int len )
+void snessettype_(SNES *snes,CHAR itmethod, int *__ierr,int len )
 {
   char *t;
 
   FIXCHAR(itmethod,len,t);
-  *__ierr = SNESSetType((SNES)PetscToPointer(snes),t);
+  *__ierr = SNESSetType(*snes,t);
   FREECHAR(itmethod,t);
 }
 
-void snesappendoptionsprefix_(SNES snes,CHAR prefix, int *__ierr,int len ){
+void snesappendoptionsprefix_(SNES *snes,CHAR prefix, int *__ierr,int len )
+{
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = SNESAppendOptionsPrefix((SNES)PetscToPointer(snes),t);
+  *__ierr = SNESAppendOptionsPrefix(*snes,t);
   FREECHAR(prefix,t);
 }
 
-void snesdefaultmatrixfreematcreate_(SNES snes,Vec x,Mat *J, int *__ierr ){
-  Mat mm;
-  *__ierr = SNESDefaultMatrixFreeMatCreate(
-	(SNES)PetscToPointer(snes),
-	(Vec)PetscToPointer(x),&mm);
-  *(PetscFortranAddr*) J = PetscFromPointer(mm);
+void snesdefaultmatrixfreematcreate_(SNES *snes,Vec *x,Mat *J, int *__ierr )
+{
+  *__ierr = SNESDefaultMatrixFreeMatCreate(*snes,*x,J);
 }
 
-static int (*f7)(PetscFortranAddr*,int*,double*,void*,int*);
+static int (*f7)(SNES*,int*,double*,void*,int*);
 static int oursnesmonitor(SNES snes,int i,double d,void*ctx)
 {
   int              ierr = 0;
-  PetscFortranAddr s1;
 
-  s1 = PetscFromPointer(snes);
-  (*f7)(&s1,&i,&d,ctx,&ierr); CHKERRQ(ierr);
-  PetscRmPointer(&s1);
+  (*f7)(&snes,&i,&d,ctx,&ierr); CHKERRQ(ierr);
   return 0;
 }
-void snessetmonitor_(SNES snes,int (*func)(PetscFortranAddr*,int*,double*,void*,int*),
-                    void *mctx, int *__ierr ){
+void snessetmonitor_(SNES *snes,int (*func)(SNES*,int*,double*,void*,int*),
+                    void *mctx, int *__ierr )
+{
   f7 = func;
-  *__ierr = SNESSetMonitor(
-	(SNES)PetscToPointer(snes),oursnesmonitor,mctx);
+  *__ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx);
 }
-static int (*f8)(PetscFortranAddr*,double*,double*,double*,void*,int*);
+
+static int (*f8)(SNES*,double*,double*,double*,void*,int*);
 static int oursnestest(SNES snes,double a,double d,double c,void*ctx)
 {
   int              ierr = 0;
-  PetscFortranAddr s1;
 
-  s1 = PetscFromPointer(snes);
-  (*f8)(&s1,&a,&d,&c,ctx,&ierr); CHKERRQ(ierr);
-  PetscRmPointer(&s1);
+  (*f8)(&snes,&a,&d,&c,ctx,&ierr); CHKERRQ(ierr);
   return 0;
 }
-void snessetconvergencetest_(SNES snes,
-       int (*func)(PetscFortranAddr*,double*,double*,double*,void*,int*),
-       void *cctx, int *__ierr ){
+
+void snessetconvergencetest_(SNES *snes,
+       int (*func)(SNES*,double*,double*,double*,void*,int*),
+       void *cctx, int *__ierr )
+{
   f8 = func;
-  *__ierr = SNESSetConvergenceTest(
-	(SNES)PetscToPointer(snes),oursnestest,cctx);
-}
-void snesgetsolution_(SNES snes,Vec *x, int *__ierr ){
-  Vec rr;
-  *__ierr = SNESGetSolution((SNES)PetscToPointer(snes),&rr);
-  *(PetscFortranAddr*) x = PetscFromPointer(rr);  
-}
-void snesgetsolutionupdate_(SNES snes,Vec *x, int *__ierr ){
-  Vec rr;
-  *__ierr = SNESGetSolutionUpdate((SNES)PetscToPointer(snes),&rr);
-  *(PetscFortranAddr*) x = PetscFromPointer(rr);  
-}
-void snesgetfunction_(SNES snes,Vec *r, int *__ierr ){
-  Vec rr;
-  *__ierr = SNESGetFunction((SNES)PetscToPointer(snes),&rr);
-  *(PetscFortranAddr*) r = PetscFromPointer(rr);
-}
-void snesgetgradient_(SNES snes,Vec *r, int *__ierr ){
-  Vec rr;
-  *__ierr = SNESGetGradient((SNES)PetscToPointer(snes),&rr);
-  *(PetscFortranAddr*) r = PetscFromPointer(rr);
+  *__ierr = SNESSetConvergenceTest(*snes,oursnestest,cctx);
 }
 
-void snesdestroy_(SNES snes, int *__ierr ){
-  *__ierr = SNESDestroy((SNES)PetscToPointer(snes));
-  PetscRmPointer(snes);
+void snesgetsolution_(SNES *snes,Vec *x, int *__ierr )
+{
+  *__ierr = SNESGetSolution(*snes,x);
 }
-void snesgetsles_(SNES snes,SLES *sles, int *__ierr ){
-  SLES s;
-  *__ierr = SNESGetSLES((SNES)PetscToPointer(snes),&s);
-  *(PetscFortranAddr*) sles = PetscFromPointer(s);
+
+void snesgetsolutionupdate_(SNES *snes,Vec *x, int *__ierr )
+{
+  *__ierr = SNESGetSolutionUpdate(*snes,x);
 }
-static int (*f6)(PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,int*,void*,int*);
+
+void snesgetfunction_(SNES *snes,Vec *r, int *__ierr )
+{
+  *__ierr = SNESGetFunction(*snes,r);
+}
+
+void snesgetgradient_(SNES *snes,Vec *r, int *__ierr )
+{
+  *__ierr = SNESGetGradient(*snes,r);
+}
+
+void snesdestroy_(SNES *snes, int *__ierr )
+{
+  *__ierr = SNESDestroy(*snes);
+}
+
+void snesgetsles_(SNES *snes,SLES *sles, int *__ierr )
+{
+  *__ierr = SNESGetSLES(*snes,sles);
+}
+
+static int (*f6)(SNES *,Vec *,Mat *,Mat *,int*,void*,int*);
 static int oursneshessianfunction(SNES snes,Vec x,Mat* mat,Mat* pmat,
                                   MatStructure* st,void *ctx)
 {
   int              ierr = 0;
-  PetscFortranAddr s1,s2,s3,s4,o3,o4;
 
-  s1 = PetscFromPointer(snes);
-  s2 = PetscFromPointer(x);
-  o3 = s3 = PetscFromPointer(*mat);
-  o4 = s4 = PetscFromPointer(*pmat);
-  (*f6)(&s1,&s2,&s3,&s4,(int*)st,ctx,&ierr); CHKERRQ(ierr);
-  if (o3 != s3) *mat  = (Mat) PetscToPointer(&s3);
-  if (o4 != s4) *pmat = (Mat) PetscToPointer(&s4);
-  PetscRmPointer(&s1);
-  PetscRmPointer(&s2);
-  PetscRmPointer(&o3);
-  PetscRmPointer(&o3);
+  (*f6)(&snes,&x,mat,pmat,(int*)st,ctx,&ierr); CHKERRQ(ierr);
+
   return 0;
 }
-void snessethessian_(SNES snes,Mat A,Mat B,int (*func)(PetscFortranAddr*,PetscFortranAddr*,
-                 PetscFortranAddr*,PetscFortranAddr*,int*,void*,int*),void *ctx, int *__ierr ){
+
+void snessethessian_(SNES *snes,Mat *A,Mat *B,int (*func)(SNES*,Vec*,Mat*,Mat*,int*,void*,int*),
+                     void *ctx, int *__ierr )
+{
   f6 = func;
-  *__ierr = SNESSetHessian(
-	(SNES)PetscToPointer(snes),
-	(Mat)PetscToPointer(A),
-	(Mat)PetscToPointer(B),oursneshessianfunction,ctx);
+  *__ierr = SNESSetHessian(*snes,*A,*B,oursneshessianfunction,ctx);
 }
 
-static int (*f5)(PetscFortranAddr*,PetscFortranAddr*,PetscFortranAddr*,void*,int*);
+static int (*f5)(SNES*,Vec*,Vec *,void*,int*);
 static int oursnesgradientfunction(SNES snes,Vec x,Vec d,void *ctx)
 {
   int              ierr = 0;
-  PetscFortranAddr s1,s2,s3;
 
-  s1 = PetscFromPointer(snes);
-  s2 = PetscFromPointer(x);
-  s3 = PetscFromPointer(d);
-  (*f5)(&s1,&s2,&s3,ctx,&ierr); CHKERRQ(ierr);
-  PetscRmPointer(&s1);
-  PetscRmPointer(&s2);
-  PetscRmPointer(&s3);
+  (*f5)(&snes,&x,&d,ctx,&ierr); CHKERRQ(ierr);
+
   return 0;
 }
-void snessetgradient_(SNES snes,Vec r,int (*func)(PetscFortranAddr*,PetscFortranAddr*,
-               PetscFortranAddr*,void*,int*),void *ctx, int *__ierr ){
+
+void snessetgradient_(SNES *snes,Vec *r,int (*func)(SNES*,Vec*,Vec*,void*,int*),void *ctx, int *__ierr ){
   f5 = func;
-  *__ierr = SNESSetGradient(
-	(SNES)PetscToPointer(snes),
-	(Vec)PetscToPointer(r),oursnesgradientfunction,ctx);
+  *__ierr = SNESSetGradient(*snes,*r,oursnesgradientfunction,ctx);
 }
 
 static int (*f4)(PetscFortranAddr*,PetscFortranAddr*,double*,void*,int*);
@@ -210,6 +186,7 @@ static int oursnesminfunction(SNES snes,Vec x,double* d,void *ctx)
   PetscRmPointer(&s2);
   return 0;
 }
+
 void snessetminimizationfunction_(SNES snes,
           int (*func)(PetscFortranAddr*,PetscFortranAddr*,double*,void*,int*),void *ctx, int *__ierr ){
   f4 = func;
