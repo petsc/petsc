@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.23 2001/01/11 20:36:11 bsmith Exp balay $ 
+# $Id: common_variables,v 1.24 2001/02/14 22:29:00 balay Exp balay $ 
 #
 # PDIR (defined from $PETSC_DIR) determines where the PETSc libraries are built.
 # LDIR defines location of libraries similar to PDIR. It can be reset by external packages like TAO.
@@ -24,10 +24,9 @@ PDIR	       = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
 LIBNAME	       = ${LDIR}/${LIBBASE}.a
 SOURCE	       = ${SOURCEC} ${SOURCEF}
 OBJS	       = ${OBJSC} ${OBJSF}
-PETSC_INCLUDE  = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
-                 ${MPI_INCLUDE} ${MPE_INCLUDE} ${AMS_INCLUDE}
-CCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${CPPFLAGS} \
-		 -D__SDIR__='"${LOCDIR}"'
+PETSC_INCLUDE  = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include ${MPI_INCLUDE} \
+                  ${MPE_INCLUDE} ${AMS_INCLUDE}
+CCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FCPPFLAGS      = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${PETSC_PARCH} ${FPPFLAGS}
 C_SH_LIB_PATH  = ${CLINKER_SLFLAG}${PDIR} ${C_DYLIBPATH}
 F_SH_LIB_PATH  = ${FLINKER_SLFLAG}${PDIR} ${F_DYLIBPATH}
@@ -37,18 +36,17 @@ F_SH_LIB_PATH  = ${FLINKER_SLFLAG}${PDIR} ${F_DYLIBPATH}
 # The order of listing these libraries is important!
 #
 
-PETSC_EXTERNAL_LIB_BASIC   = ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
-                             ${MPI_LIB} ${SYS_LIB}
-PETSC_SYS_LIB_BASIC     = -lpetsc 
-PETSC_VEC_LIB_BASIC     = -lpetscvec ${PETSC_SYS_LIB_BASIC}
-PETSC_MAT_LIB_BASIC     = -lpetscmat ${PETSC_VEC_LIB_BASIC}
-PETSC_DM_LIB_BASIC      = -lpetscdm ${PETSC_MAT_LIB_BASIC}
-PETSC_SLES_LIB_BASIC    = -lpetscsles ${PETSC_DM_LIB_BASIC}
-PETSC_SNES_LIB_BASIC    = -lpetscsnes ${PETSC_SLES_LIB_BASIC}
-PETSC_TS_LIB_BASIC      = -lpetscts ${PETSC_SNES_LIB_BASIC}
-PETSC_LIB_BASIC         = ${PETSC_TS_LIB_BASIC}
-PETSC_FORTRAN_LIB_BASIC = -lpetscfortran
-PETSC_CONTRIB_BASIC     = -lpetsccontrib
+PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} ${MPI_LIB} ${SYS_LIB}
+PETSC_SYS_LIB_BASIC      = -lpetsc 
+PETSC_VEC_LIB_BASIC      = -lpetscvec ${PETSC_SYS_LIB_BASIC}
+PETSC_MAT_LIB_BASIC      = -lpetscmat ${PETSC_VEC_LIB_BASIC}
+PETSC_DM_LIB_BASIC       = -lpetscdm ${PETSC_MAT_LIB_BASIC}
+PETSC_SLES_LIB_BASIC     = -lpetscsles ${PETSC_DM_LIB_BASIC}
+PETSC_SNES_LIB_BASIC     = -lpetscsnes ${PETSC_SLES_LIB_BASIC}
+PETSC_TS_LIB_BASIC       = -lpetscts ${PETSC_SNES_LIB_BASIC}
+PETSC_LIB_BASIC          = ${PETSC_TS_LIB_BASIC}
+PETSC_FORTRAN_LIB_BASIC  = -lpetscfortran
+PETSC_CONTRIB_BASIC      = -lpetsccontrib
 
 PETSC_SYS_LIB     = -L${PDIR} ${PETSC_SYS_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_VEC_LIB     = -L${PDIR} ${PETSC_VEC_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
@@ -75,30 +73,19 @@ PCONF         = ${PETSC_HAVE_MPE}  ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} 
                 ${PETSC_HAVE_AMS}  ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB} \
                 ${PETSC_HAVE_ADIC} ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL} ${PETSC_HAVE_RAMG} \
                 ${PETSC_HAVE_XXT}  ${PETSC_HAVE_DSCPACK}
-EXTERNAL_LIB  = ${MPE_LIB}         ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
-                ${AMS_LIB}         ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
-                ${ADIC_LIB}                                 ${LUSOL_LIB}        ${RAMG_LIB} \
-                ${XXT_LIB}         ${DSCPACK_LIB}
+EXTERNAL_LIB  = ${MPE_LIB}         ${BLOCKSOLVE_LIB}      ${PVODE_LIB}        ${PARMETIS_LIB} \
+                ${AMS_LIB}         ${SPAI_LIB}            ${X11_LIB}          ${MATLAB_LIB}   \
+                ${ADIC_LIB}        ${LUSOL_LIB}           ${RAMG_LIB}         ${XXT_LIB} \
+                ${DSCPACK_LIB}
 #
 # ----------------------------------------------------------------------------------------
 #
 #   Currently ignore this entry
 #
-PETSC_ADIC_LIB  = -L${PDIR} -lpetscsnes -lpetscsles \
-		 -lpetscmat  -lpetscvec -lpetscsys  \
-                  -lpetscblas -lmpiuni  ${EXTERNAL_LIB}  ${LAPACK_LIB} \
-                  ${BLAS_LIB} ${X11_LIB} ${SYS_LIB}
-#
-# Link if you are using the PETSc Fortran interface.
-#
-
-#
-# Link if you are using code from the contributed part of PETSc
-#
+PETSC_ADIC_LIB  = -L${PDIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${EXTERNAL_LIB_BASIC}
 #
 # Some variables used to build shared libraries
-SHLIBS = libpetsccontrib libpetsc libpetscmat libpetscsles \
-	libpetscsnes libpetscts libpetscvec libpetscdm
+SHLIBS   = libpetsccontrib libpetsc libpetscmat libpetscsles libpetscsnes libpetscts libpetscvec libpetscdm
 SLSUFFIX = so
 #
 # The following include files set customized site, optimization, and version
