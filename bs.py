@@ -64,7 +64,7 @@ class BS (maker.Maker):
     self.setupArgDB(clArgs)
     maker.Maker.__init__(self)
     self.project          = projectObj
-    self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
+    self.sourceDBFilename = os.path.join(projectObj.getRoot(), 'bsSource.db')
     self.setupSourceDB()
     # Put current project name into the database
     if not argDB.has_key('installedprojects'):
@@ -248,9 +248,10 @@ class BS (maker.Maker):
       output = getattr(self, 't_'+target)()
     else:
       print 'Invalid target: '+target
+      output = ''
     return output
 
-  def main(self):
+  def main(self, target = None):
     # add to database list of packages in current project
     try:
       import SIDL.Loader
@@ -261,8 +262,8 @@ class BS (maker.Maker):
       if argDB.has_key('installedpackages'):
         ipackages = argDB['installedpackages']
       else: ipackages = []
-      for target in self.filesets['sidl'].getFiles():
-        tree = compiler.parseFile(target)
+      for source in self.filesets['sidl'].getFiles():
+        tree = compiler.parseFile(source)
         v = SIDLLanguage.Visitor.Visitor(SIDL.Loader.createClass('ANL.SIDLVisitorI.GetPackageNames'))
         tree.accept(v)
         for p in v.getnames():
@@ -272,10 +273,13 @@ class BS (maker.Maker):
     except: pass
 
     try:
-      print argDB.target
-      map(self.executeTarget, argDB.target)
+      if target is None:               target = argDB.target
+      if not isinstance(target, list): target = [target]
+      print target
+      map(self.executeTarget, target)
     except Exception, e:
       print str(e)
       if not argDB.has_key('noStackTrace') or not int(argDB['noStackTrace']):
         print traceback.print_tb(sys.exc_info()[2])
     self.cleanupDir(self.tmpDir)
+    return
