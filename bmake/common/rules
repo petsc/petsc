@@ -115,8 +115,8 @@ examples_3: chkopts
           (for ex in $(EXAMPLES_3) foo ; do \
           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
           > trashz 2>&1; \
-          grep -v EXTERNAL | \
-          egrep -i '(Error|warning|Can)' trashz >> /dev/null ; \
+          grep -v EXTERNAL trashz | \
+          egrep -i '(Error|warning|Can)'  >> /dev/null ; \
           if [ "$$?" != 1 ]; then \
           cat trashz ; fi; $(RM) trashz;\
           done;) fi
