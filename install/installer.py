@@ -24,5 +24,5 @@ if __name__ == '__main__':
   installer = Installer(sys.argv[1:])
   for url in installer.argDB.target:
     if url == 'default':
-      url = 'bk://sidl.bkbits.net/Runtime'
+      url = 'bk://sidl.bkbits.net/Compiler'
     installer.install(url)

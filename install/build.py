@@ -19,7 +19,7 @@ class Builder(install.base.Base):
     finally:
       if fp: fp.close()
 
-  def build(self, root):
+  def build(self, root, target = 'default'):
     self.debugPrint('Building in '+root, 3, 'install')
     maker = self.getMakeModule(root).PetscMake(sys.argv[1:])
     for url in maker.executeTarget('getDependencies'):
@@ -27,4 +27,4 @@ class Builder(install.base.Base):
       if not self.getInstalledProject(url) is None: continue
       self.build(self.retriever.retrieve(url))
     self.debugPrint('Compiling '+sys.modules[maker.__module__].__file__, 3, 'install')
-    return maker.main('default')
+    return maker.main(target)
