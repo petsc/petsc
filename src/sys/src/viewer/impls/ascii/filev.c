@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.60 1997/08/22 15:17:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.61 1997/09/26 02:20:48 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -42,6 +42,8 @@ int ViewerDestroy_Private()
   ViewerDestroy(VIEWER_STDOUT_SELF);
   ViewerDestroy(VIEWER_STDOUT_WORLD);
   ViewerDestroy(VIEWER_STDERR_WORLD);
+  VIEWER_STDOUT_Destroy(PETSC_COMM_SELF);
+  VIEWER_STDERR_Destroy(PETSC_COMM_SELF);
   VIEWER_STDOUT_Destroy(PETSC_COMM_WORLD);
   VIEWER_STDERR_Destroy(PETSC_COMM_WORLD);
   return 0;
