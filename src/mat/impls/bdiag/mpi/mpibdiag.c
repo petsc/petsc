@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.29 1995/09/07 04:26:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.30 1995/09/11 18:48:48 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -394,7 +394,7 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  Mat_BDiag    *ms = (Mat_BDiag *) mbd->A->data;
+  Mat_SeqBDiag    *ms = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr;
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",
@@ -429,7 +429,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   ierr = ViewerFileGetFormat_Private(viewer,&format);
   if (vobj->cookie == VIEWER_COOKIE && format == FILE_FORMAT_INFO &&
      (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER)) {
-      Mat_BDiag *dmat = (Mat_BDiag *) mbd->A->data;
+      Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
       FILE *fd;
       ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
       MPIU_fprintf(mat->comm,fd,"  block size=%d, number of diagonals=%d\n",
@@ -456,7 +456,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
       Mat       A;
       int       M = mbd->M, N = mbd->N,m,row,i, nz, *cols;
       Scalar    *vals;
-      Mat_BDiag *Ambd = (Mat_BDiag*) mbd->A->data;
+      Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*) mbd->A->data;
 
       if (!mytid) {
         ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->nb,
@@ -610,7 +610,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 {
   Mat          mat;
   Mat_MPIBDiag *mbd;
-  Mat_BDiag    *mlocal;
+  Mat_SeqBDiag    *mlocal;
   int          ierr, i, k, *ldiag;
   Scalar       **ldiagv = 0;
 
@@ -706,7 +706,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
                                   ldiag,ldiagv,&mbd->A); CHKERRQ(ierr); 
 
   /* Fix main diagonal location */
-  mlocal = (Mat_BDiag *) mbd->A->data;
+  mlocal = (Mat_SeqBDiag *) mbd->A->data;
   mlocal->mainbd = -1; 
   for (i=0; i<k; i++) {
     if (ldiag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
@@ -731,7 +731,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 }
 
 /*@
-   MatBDiagGetData - Gets the data for the block diagonal matrix format.
+   MatSeqBDiagGetData - Gets the data for the block diagonal matrix format.
    For the parallel case, this returns information for the local submatrix.
 
    Input Parameters:
@@ -756,20 +756,20 @@ $     diag = i/nb - j/nb  (integer division)
 
 .seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
+int MatSeqBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
                     Scalar ***diagv)
 {
   Mat_MPIBDiag *pdmat;
-  Mat_BDiag *dmat;
+  Mat_SeqBDiag *dmat;
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  if (mat->type == MATBDIAG) {
-    dmat = (Mat_BDiag *) mat->data;
+  if (mat->type == MATSEQBDIAG) {
+    dmat = (Mat_SeqBDiag *) mat->data;
   } else if (mat->type == MATMPIBDIAG) {
     pdmat = (Mat_MPIBDiag *) mat->data;
-    dmat = (Mat_BDiag *) pdmat->A->data;
+    dmat = (Mat_SeqBDiag *) pdmat->A->data;
   } else SETERRQ(1,
-    "MatBDiagGetDappta: Valid only for MATBDIAG and MATMPIBDIAG formats");
+    "MatSeqBDiagGetData: Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
   *nd    = dmat->nd;
   *nb    = dmat->nb;
   *diag  = dmat->diag;

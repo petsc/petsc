@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.7 1995/06/08 03:09:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.8 1995/08/15 20:28:05 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
 
 /*
-  MatToSymmetricIJ_AIJ - Convert a sparse AIJ matrix to IJ format 
+  MatToSymmetricIJ_SeqAIJ - Convert a sparse AIJ matrix to IJ format 
            (ignore the "A" part)
            Allocates the space needed. Uses only the lower triangular 
            part of the matrix.
@@ -30,7 +30,7 @@ $    symmetric structure.  It is used in SpOrder (and derivatives) since
 $    those routines call SparsePak routines that expect a symmetric 
 $    matrix.
 */
-int MatToSymmetricIJ_AIJ( Mat_AIJ *Matrix, int **iia, int **jja )
+int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *Matrix, int **iia, int **jja )
 {
   int          *work,*ia,*ja,*j,i, nz, n, row, wr;
   register int col;

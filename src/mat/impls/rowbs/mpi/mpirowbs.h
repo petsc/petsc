@@ -1,12 +1,12 @@
-/* $Id: mpirowbs.h,v 1.18 1995/08/17 01:31:09 curfman Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.19 1995/09/01 04:52:24 bsmith Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
 #include <math.h>
 #include "BSsparse.h"
 
-#if !defined(__MPIROW_BS_H)
-#define __MPIROW_BS_H
+#if !defined(__MPIROWBS_H)
+#define __MPIROWBS_H
 
 /*
    Mat_MPIRowbs - Parallel, compressed row storage format that's the

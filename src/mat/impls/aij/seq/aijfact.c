@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.35 1995/09/06 21:06:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.36 1995/09/11 18:47:41 bsmith Exp bsmith $";
 #endif
 
 
@@ -9,20 +9,20 @@ static char vcid[] = "$Id: aijfact.c,v 1.35 1995/09/06 21:06:35 curfman Exp bsmi
     Factorization code for AIJ format. 
 */
 
-int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
+int MatLUFactorSymbolic_SeqAIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
 {
-  Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *) mat->data, *aijnew;
   IS      isicol;
   int     *r,*ic, ierr, i, n = aij->m, *ai = aij->i, *aj = aij->j;
   int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz;
   int     *idnew, idx, row,m,fm, nnz, nzi,len, realloc = 0,nzbd,*im;
  
   if (n != aij->n) 
-    SETERRQ(1,"MatLUFactorSymbolic_AIJ:Matrix must be square");
+    SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ:Matrix must be square");
   if (!isrow) 
-    SETERRQ(1,"MatLUFactorSymbolic_AIJ:Matrix must have row permutation");
+    SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ:Matrix must have row permutation");
   if (!iscol) 
-    SETERRQ(1,"MatLUFactorSymbolic_AIJ:Matrix must have column permutation");
+    SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ:Matrix must have column permutation");
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
@@ -107,7 +107,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   }
 
   PLogInfo((PetscObject)mat,
-    "Info:MatLUFactorSymbolic_AIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+    "Info:MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
                              realloc,f,((double)ainew[n])/((double)ai[i]));
 
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
@@ -117,7 +117,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
-  aijnew = (Mat_AIJ *) (*fact)->data;
+  aijnew = (Mat_SeqAIJ *) (*fact)->data;
   PETSCFREE(aijnew->imax);
   aijnew->singlemalloc = 0;
   len = (ainew[n] - 1)*sizeof(Scalar);
@@ -143,10 +143,10 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
   return 0; 
 }
 /* ----------------------------------------------------------- */
-int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
+int MatLUFactorNumeric_SeqAIJ(Mat mat,Mat *infact)
 {
   Mat     fact = *infact;
-  Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew = (Mat_AIJ *)fact->data;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *) mat->data, *aijnew = (Mat_SeqAIJ *)fact->data;
   IS      iscol = aijnew->col, isrow = aijnew->row, isicol;
   int     *r,*ic, ierr, i, j, n = aij->m, *ai = aijnew->i, *aj = aijnew->j;
   int     *ajtmpold, *ajtmp, nz, row,*pj;
@@ -188,7 +188,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
     pv = aijnew->a + ai[i] - 1;
     pj = aijnew->j + ai[i] - 1;
     nz = ai[i+1] - ai[i];
-    if (rtmp[i] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_AIJ:Zero pivot");}
+    if (rtmp[i] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
     rtmp[i] = 1.0/rtmp[i];
     for ( j=0; j<nz; j++ ) {pv[j] = rtmp[pj[j]-1];}
   } 
@@ -202,13 +202,13 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
   return 0;
 }
 /* ----------------------------------------------------------- */
-int MatLUFactor_AIJ(Mat matin,IS row,IS col,double f)
+int MatLUFactor_SeqAIJ(Mat matin,IS row,IS col,double f)
 {
-  Mat_AIJ *mat = (Mat_AIJ *) matin->data;
+  Mat_SeqAIJ *mat = (Mat_SeqAIJ *) matin->data;
   int     ierr;
   Mat     fact;
-  ierr = MatLUFactorSymbolic_AIJ(matin,row,col,f,&fact); CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric_AIJ(matin,&fact); CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic_SeqAIJ(matin,row,col,f,&fact); CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric_SeqAIJ(matin,&fact); CHKERRQ(ierr);
 
   /* free all the data structures from mat */
   PETSCFREE(mat->a); 
@@ -224,16 +224,16 @@ int MatLUFactor_AIJ(Mat matin,IS row,IS col,double f)
   return 0;
 }
 /* ----------------------------------------------------------- */
-int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
+int MatSolve_SeqAIJ(Mat mat,Vec bb, Vec xx)
 {
-  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *) mat->data;
   IS      iscol = aij->col, isrow = aij->row;
   int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
   if (mat->factor != FACTOR_LU) 
-    SETERRQ(1,"MatSolve_AIJ:Cannot solve with unfactored matrix");
+    SETERRQ(1,"MatSolve_SeqAIJ:Cannot solve with unfactored matrix");
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
@@ -268,16 +268,16 @@ int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
   PLogFlops(2*aij->nz - aij->n);
   return 0;
 }
-int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
+int MatSolveAdd_SeqAIJ(Mat mat,Vec bb, Vec yy, Vec xx)
 {
-  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *) mat->data;
   IS      iscol = aij->col, isrow = aij->row;
   int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
   if (mat->factor != FACTOR_LU) 
-    SETERRQ(1,"MatSolveAdd_AIJ: Cannot solve with unfactored matrix");
+    SETERRQ(1,"MatSolveAdd_SeqAIJ: Cannot solve with unfactored matrix");
   if (yy != xx) {ierr = VecCopy(yy,xx); CHKERRQ(ierr);}
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -316,16 +316,16 @@ int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
   return 0;
 }
 /* -------------------------------------------------------------------*/
-int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
+int MatSolveTrans_SeqAIJ(Mat mat,Vec bb, Vec xx)
 {
-  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *) mat->data;
   IS      iscol = aij->col, isrow = aij->row, invisrow,inviscol;
   int     *r,*c, ierr, i, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
   if (mat->factor != FACTOR_LU) 
-    SETERRQ(1,"MatSolveTrans_AIJ:Cannot solve with unfactored matrix");
+    SETERRQ(1,"MatSolveTrans_SeqAIJ:Cannot solve with unfactored matrix");
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   tmp = aij->solve_work;
@@ -373,16 +373,16 @@ int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
   return 0;
 }
 
-int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
+int MatSolveTransAdd_SeqAIJ(Mat mat,Vec bb, Vec zz,Vec xx)
 {
-  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *) mat->data;
   IS      iscol = aij->col, isrow = aij->row, invisrow,inviscol;
   int     *r,*c, ierr, i, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
   if (mat->factor != FACTOR_LU) 
-    SETERRQ(1,"MatSolveTransAdd_AIJ:Cannot solve with unfactored matrix");
+    SETERRQ(1,"MatSolveTransAdd_SeqAIJ:Cannot solve with unfactored matrix");
   if (zz != xx) VecCopy(zz,xx);
 
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -431,10 +431,10 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
   return 0;
 }
 /* ----------------------------------------------------------------*/
-int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
+int MatILUFactorSymbolic_SeqAIJ(Mat mat,IS isrow,IS iscol,double f,
                              int levels,Mat *fact)
 {
-  Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *) mat->data, *aijnew;
   IS      isicol;
   int     *r,*ic, ierr, prow, n = aij->m, *ai = aij->i, *aj = aij->j;
   int     *ainew,*ajnew, jmax,*fill, *xi, nz, *im,*ajfill,*flev;
@@ -442,11 +442,11 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
   int     incrlev,nnz,i;
  
   if (n != aij->n) 
-    SETERRQ(1,"MatILUFactorSymbolic_AIJ:Matrix must be square");
+    SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:Matrix must be square");
   if (!isrow) 
-    SETERRQ(1,"MatILUFactorSymbolic_AIJ:Matrix must have row permutation");
+    SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:Matrix must have row permutation");
   if (!iscol) SETERRQ(1,
-    "MatILUFactorSymbolic_AIJ:Matrix must have column permutation");
+    "MatILUFactorSymbolic_SeqAIJ:Matrix must have column permutation");
 
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);
@@ -493,7 +493,7 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
       flev    = ajfill + ainew[row] - 1 + nz + 1;
       nnz     = ainew[row+1] - ainew[row] - nz - 1;
       if (*xi++ - 1 != row) {
-        SETERRQ(1,"MatILUFactorSymbolic_AIJ:zero pivot");
+        SETERRQ(1,"MatILUFactorSymbolic_SeqAIJ:zero pivot");
       }
       fm      = row;
       while (nnz-- > 0) {
@@ -557,12 +557,12 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
   PETSCFREE(fill); PETSCFREE(im);
 
   PLogInfo((PetscObject)mat,
-    "Info:MatILUFactorSymbolic_AIJ:Realloc %d Fill ratio:given %g needed %g\n",
+    "Info:MatILUFactorSymbolic_SeqAIJ:Realloc %d Fill ratio:given %g needed %g\n",
                              realloc,f,((double)ainew[n])/((double)ai[prow]));
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJ(mat->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
-  aijnew = (Mat_AIJ *) (*fact)->data;
+  aijnew = (Mat_SeqAIJ *) (*fact)->data;
   PETSCFREE(aijnew->imax);
   aijnew->singlemalloc = 0;
   len = (ainew[n] - 1)*sizeof(Scalar);

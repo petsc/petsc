@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.77 1995/09/11 16:52:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.78 1995/09/11 18:47:52 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -14,7 +14,7 @@ length of colmap equals the global matrix length.
 static int CreateColmap_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat_AIJ    *B = (Mat_AIJ*) aij->B->data;
+  Mat_SeqAIJ    *B = (Mat_SeqAIJ*) aij->B->data;
   int        n = B->n,i;
   aij->colmap = (int *) PETSCMALLOC(aij->N*sizeof(int));CHKPTRQ(aij->colmap);
   PLogObjectMemory(mat,aij->N*sizeof(int));
@@ -63,7 +63,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
           if (aij->assembled) {
             if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
             col = aij->colmap[idxn[j]] - 1;
-            if (col < 0 && !((Mat_AIJ*)(aij->A->data))->nonew) {
+            if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
               ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
               col =  idxn[j];              
             }
@@ -218,7 +218,7 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
         if (aij->assembled) {
           if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
           col = aij->colmap[col] - 1;
-          if (col < 0  && !((Mat_AIJ*)(aij->A->data))->nonew) {
+          if (col < 0  && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
             ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
             col = (int) PETSCREAL(values[3*i+1]);
           }
@@ -552,7 +552,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
     else {
       /* assemble the entire matrix onto first processor. */
       Mat     A;
-      Mat_AIJ *Aloc;
+      Mat_SeqAIJ *Aloc;
       int     M = aij->M, N = aij->N,m,*ai,*aj,row,*cols,i,*ct;
       Scalar  *a;
 
@@ -566,7 +566,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
       CHKERRQ(ierr);
 
       /* copy over the A part */
-      Aloc = (Mat_AIJ*) aij->A->data;
+      Aloc = (Mat_SeqAIJ*) aij->A->data;
       m = Aloc->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
       row = aij->rstart;
       for ( i=0; i<ai[m]-1; i++ ) {aj[i] += aij->cstart - 1;}
@@ -579,7 +579,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
       for ( i=0; i<ai[m]-1; i++ ) {aj[i] -= aij->cstart - 1;}
 
       /* copy over the B part */
-      Aloc = (Mat_AIJ*) aij->B->data;
+      Aloc = (Mat_SeqAIJ*) aij->B->data;
       m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
       row = aij->rstart;
       ct = cols = (int *) PETSCMALLOC( (ai[m]+1)*sizeof(int) ); CHKPTRQ(cols);
@@ -601,7 +601,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-extern int MatMarkDiag_AIJ(Mat);
+extern int MatMarkDiag_SeqAIJ(Mat);
 /*
     This has to provide several versions.
 
@@ -615,7 +615,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   Mat        AA = mat->A, BB = mat->B;
-  Mat_AIJ    *A = (Mat_AIJ *) AA->data, *B = (Mat_AIJ *)BB->data;
+  Mat_SeqAIJ    *A = (Mat_SeqAIJ *) AA->data, *B = (Mat_SeqAIJ *)BB->data;
   Scalar     zero = 0.0,*b,*x,*xs,*ls,d,*v,sum,scale,*t,*ts;
   int        ierr,*idx, *diag;
   int        n = mat->n, m = mat->m, i;
@@ -626,7 +626,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x -1; /* shift by one for index start of 1 */
   ls--;
-  if (!A->diag) {if ((ierr = MatMarkDiag_AIJ(AA))) return ierr;}
+  if (!A->diag) {if ((ierr = MatMarkDiag_SeqAIJ(AA))) return ierr;}
   diag = A->diag;
   if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
     SETERRQ(1,"MatRelax_MPIAIJ:Option not yet supported");
@@ -1064,7 +1064,7 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr, i, j, cstart = aij->cstart;
   double     sum = 0.0;
-  Mat_AIJ    *amat = (Mat_AIJ*) aij->A->data, *bmat = (Mat_AIJ*) aij->B->data;
+  Mat_SeqAIJ    *amat = (Mat_SeqAIJ*) aij->A->data, *bmat = (Mat_SeqAIJ*) aij->B->data;
   Scalar     *v;
 
   if (!aij->assembled) 
@@ -1157,7 +1157,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
   Mat        B;
-  Mat_AIJ    *Aloc;
+  Mat_SeqAIJ    *Aloc;
   int        M = a->M, N = a->N,m,*ai,*aj,row,*cols,i,*ct;
   Scalar     *array;
 
@@ -1167,7 +1167,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   CHKERRQ(ierr);
 
   /* copy over the A part */
-  Aloc = (Mat_AIJ*) a->A->data;
+  Aloc = (Mat_SeqAIJ*) a->A->data;
   m = Aloc->m; ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
   row = a->rstart;
   for ( i=0; i<ai[m]-1; i++ ) {aj[i] += a->cstart - 1;}
@@ -1180,7 +1180,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   for ( i=0; i<ai[m]-1; i++ ) {aj[i] -= a->cstart - 1;}
 
   /* copy over the B part */
-  Aloc = (Mat_AIJ*) a->B->data;
+  Aloc = (Mat_SeqAIJ*) a->B->data;
   m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
   row = a->rstart;
   ct = cols = (int *) PETSCMALLOC( (ai[m]+1)*sizeof(int) ); CHKPTRQ(cols);
@@ -1404,7 +1404,7 @@ static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat)
     PLogObjectMemory(mat,(aij->N)*sizeof(int));
     PETSCMEMCPY(aij->colmap,oldmat->colmap,(aij->N)*sizeof(int));
   } else aij->colmap = 0;
-  if (oldmat->garray && (len = ((Mat_AIJ *) (oldmat->B->data))->n)) {
+  if (oldmat->garray && (len = ((Mat_SeqAIJ *) (oldmat->B->data))->n)) {
     aij->garray      = (int *) PETSCMALLOC(len*sizeof(int) ); CHKPTRQ(aij->garray);
     PLogObjectMemory(mat,len*sizeof(int));
     PETSCMEMCPY(aij->garray,oldmat->garray,len*sizeof(int));

@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.10 1995/06/27 21:27:03 curfman Exp curfman $ */
+/* $Id: aij.h,v 1.11 1995/08/17 01:31:13 curfman Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -7,7 +7,7 @@
 #define __AIJ_H
 
 /*  
-  MATAIJ format - Compressed row storage (also called Yale sparse matrix
+  MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format), compatible with Fortran.  The i[] and j[] arrays start at 1,
   not zero, to support Fortran 77.  For example, in Fortran 
   j[i[k]+p-1] is the pth column in row k.
@@ -30,6 +30,6 @@ typedef struct {
   Scalar *a;               /* nonzero elements */
   IS     row, col;         /* index sets, used for reorderings */
   Scalar *solve_work;      /* work space used in MatSolve_AIJ */
-} Mat_AIJ;
+} Mat_SeqAIJ;
 
 #endif

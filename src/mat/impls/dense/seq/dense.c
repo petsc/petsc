@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.56 1995/09/10 20:51:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.57 1995/09/11 18:47:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,12 +17,12 @@ typedef struct {
   int    roworiented;
   int    m,n,pad;
   int    *pivots;   /* pivots in LU factorization */
-} Mat_Dense;
+} Mat_SeqDense;
 
-static int MatGetInfo_Dense(Mat matin,MatInfoType flag,int *nz,
+static int MatGetInfo_SeqDense(Mat matin,MatInfoType flag,int *nz,
                             int *nzalloc,int *mem)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int    i,N = mat->m*mat->n,count = 0;
   Scalar *v = mat->v;
   for ( i=0; i<N; i++ ) {if (*v != 0.0) count++; v++;}
@@ -33,9 +33,9 @@ static int MatGetInfo_Dense(Mat matin,MatInfoType flag,int *nz,
 /* ---------------------------------------------------------------*/
 /* COMMENT: I have chosen to hide column permutation in the pivots,
    rather than put it in the Mat->col slot.*/
-static int MatLUFactor_Dense(Mat matin,IS row,IS col,double f)
+static int MatLUFactor_SeqDense(Mat matin,IS row,IS col,double f)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int    info;
   if (!mat->pivots) {
     mat->pivots = (int *) PETSCMALLOC(mat->m*sizeof(int));
@@ -43,34 +43,34 @@ static int MatLUFactor_Dense(Mat matin,IS row,IS col,double f)
     PLogObjectMemory(matin,mat->m*sizeof(int));
   }
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
-  if (info) SETERRQ(1,"MatLUFactor_Dense: Bad LU factorization");
+  if (info) SETERRQ(1,"MatLUFactor_SeqDense: Bad LU factorization");
   matin->factor = FACTOR_LU;
   return 0;
 }
-static int MatLUFactorSymbolic_Dense(Mat matin,IS row,IS col,double f,
+static int MatLUFactorSymbolic_SeqDense(Mat matin,IS row,IS col,double f,
                                      Mat *fact)
 {
   int ierr;
   ierr = MatConvert(matin,MATSAME,fact); CHKERRQ(ierr);
   return 0;
 }
-static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
+static int MatLUFactorNumeric_SeqDense(Mat matin,Mat *fact)
 {
   return MatLUFactor(*fact,0,0,1.0);
 }
-static int MatCholeskyFactorSymbolic_Dense(Mat matin,IS row,double f,Mat *fact)
+static int MatCholeskyFactorSymbolic_SeqDense(Mat matin,IS row,double f,Mat *fact)
 {
   int ierr;
   ierr = MatConvert(matin,MATSAME,fact); CHKERRQ(ierr);
   return 0;
 }
-static int MatCholeskyFactorNumeric_Dense(Mat matin,Mat *fact)
+static int MatCholeskyFactorNumeric_SeqDense(Mat matin,Mat *fact)
 {
   return MatCholeskyFactor(*fact,0,1.0);
 }
-static int MatCholeskyFactor_Dense(Mat matin,IS perm,double f)
+static int MatCholeskyFactor_SeqDense(Mat matin,IS perm,double f)
 {
-  Mat_Dense    *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense    *mat = (Mat_SeqDense *) matin->data;
   int       info;
   if (mat->pivots) {
     PETSCFREE(mat->pivots);
@@ -78,14 +78,14 @@ static int MatCholeskyFactor_Dense(Mat matin,IS perm,double f)
     mat->pivots = 0;
   }
   LApotrf_("L",&mat->n,mat->v,&mat->m,&info);
-  if (info) SETERRQ(1,"MatCholeskyFactor_Dense: Bad factorization");
+  if (info) SETERRQ(1,"MatCholeskyFactor_SeqDense: Bad factorization");
   matin->factor = FACTOR_CHOLESKY;
   return 0;
 }
 
-static int MatSolve_Dense(Mat matin,Vec xx,Vec yy)
+static int MatSolve_SeqDense(Mat matin,Vec xx,Vec yy)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int    one = 1, info;
   Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
@@ -98,13 +98,13 @@ static int MatSolve_Dense(Mat matin,Vec xx,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  else SETERRQ(1,"MatSolve_Dense: Matrix must be factored to solve");
-  if (info) SETERRQ(1,"MatSolve_Dense: Bad solve");
+  else SETERRQ(1,"MatSolve_SeqDense: Matrix must be factored to solve");
+  if (info) SETERRQ(1,"MatSolve_SeqDense: Bad solve");
   return 0;
 }
-static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
+static int MatSolveTrans_SeqDense(Mat matin,Vec xx,Vec yy)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int    one = 1, info;
   Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
@@ -118,12 +118,12 @@ static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"MatSolveTrans_Dense: Bad solve");
+  if (info) SETERRQ(1,"MatSolveTrans_SeqDense: Bad solve");
   return 0;
 }
-static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
+static int MatSolveAdd_SeqDense(Mat matin,Vec xx,Vec zz,Vec yy)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int    one = 1, info,ierr;
   Scalar *x, *y, sone = 1.0;
   Vec    tmp = 0;
@@ -143,14 +143,14 @@ static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"MatSolveAdd_Dense: Bad solve");
+  if (info) SETERRQ(1,"MatSolveAdd_SeqDense: Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
 }
-static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
+static int MatSolveTransAdd_SeqDense(Mat matin,Vec xx,Vec zz, Vec yy)
 {
-  Mat_Dense  *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense  *mat = (Mat_SeqDense *) matin->data;
   int     one = 1, info,ierr;
   Scalar  *x, *y, sone = 1.0;
   Vec     tmp;
@@ -170,16 +170,16 @@ static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
               y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"MatSolveTransAdd_Dense: Bad solve");
+  if (info) SETERRQ(1,"MatSolveTransAdd_SeqDense: Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
 }
 /* ------------------------------------------------------------------*/
-static int MatRelax_Dense(Mat matin,Vec bb,double omega,MatSORType flag,
+static int MatRelax_SeqDense(Mat matin,Vec bb,double omega,MatSORType flag,
                           double shift,int its,Vec xx)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   Scalar *x, *b, *v = mat->v, zero = 0.0, xt;
   int    o = 1,ierr, m = mat->m, i;
 
@@ -229,9 +229,9 @@ static int MatRelax_Dense(Mat matin,Vec bb,double omega,MatSORType flag,
 } 
 
 /* -----------------------------------------------------------------*/
-static int MatMultTrans_Dense(Mat matin,Vec xx,Vec yy)
+static int MatMultTrans_SeqDense(Mat matin,Vec xx,Vec yy)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   Scalar *v = mat->v, *x, *y;
   int _One=1;Scalar _DOne=1.0, _DZero=0.0;
   VecGetArray(xx,&x), VecGetArray(yy,&y);
@@ -239,9 +239,9 @@ static int MatMultTrans_Dense(Mat matin,Vec xx,Vec yy)
          x, &_One, &_DZero, y, &_One );
   return 0;
 }
-static int MatMult_Dense(Mat matin,Vec xx,Vec yy)
+static int MatMult_SeqDense(Mat matin,Vec xx,Vec yy)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   Scalar *v = mat->v, *x, *y;
   int _One=1;Scalar _DOne=1.0, _DZero=0.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
@@ -249,9 +249,9 @@ static int MatMult_Dense(Mat matin,Vec xx,Vec yy)
          x, &_One, &_DZero, y, &_One );
   return 0;
 }
-static int MatMultAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
+static int MatMultAdd_SeqDense(Mat matin,Vec xx,Vec zz,Vec yy)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   Scalar *v = mat->v, *x, *y, *z;
   int    _One=1; Scalar _DOne=1.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z);
@@ -260,9 +260,9 @@ static int MatMultAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
          x, &_One, &_DOne, y, &_One );
   return 0;
 }
-static int MatMultTransAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
+static int MatMultTransAdd_SeqDense(Mat matin,Vec xx,Vec zz,Vec yy)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   Scalar *v = mat->v, *x, *y, *z;
   int    _One=1;
   Scalar _DOne=1.0;
@@ -275,10 +275,10 @@ static int MatMultTransAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
 }
 
 /* -----------------------------------------------------------------*/
-static int MatGetRow_Dense(Mat matin,int row,int *ncols,int **cols,
+static int MatGetRow_SeqDense(Mat matin,int row,int *ncols,int **cols,
                         Scalar **vals)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   Scalar *v;
   int    i;
   *ncols = mat->n;
@@ -293,7 +293,7 @@ static int MatGetRow_Dense(Mat matin,int row,int *ncols,int **cols,
   }
   return 0;
 }
-static int MatRestoreRow_Dense(Mat matin,int row,int *ncols,int **cols,
+static int MatRestoreRow_SeqDense(Mat matin,int row,int *ncols,int **cols,
                             Scalar **vals)
 {
   if (cols) { PETSCFREE(*cols); }
@@ -301,10 +301,10 @@ static int MatRestoreRow_Dense(Mat matin,int row,int *ncols,int **cols,
   return 0;
 }
 /* ----------------------------------------------------------------*/
-static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
+static int MatInsert_SeqDense(Mat matin,int m,int *indexm,int n,
                         int *indexn,Scalar *v,InsertMode addv)
 { 
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int    i,j;
  
   if (!mat->roworiented) {
@@ -343,25 +343,25 @@ static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
 }
 
 /* -----------------------------------------------------------------*/
-static int MatCopyPrivate_Dense(Mat matin,Mat *newmat)
+static int MatCopyPrivate_SeqDense(Mat matin,Mat *newmat)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int ierr;
   Mat newi;
-  Mat_Dense *l;
+  Mat_SeqDense *l;
   ierr = MatCreateSeqDense(matin->comm,mat->m,mat->n,&newi);
   CHKERRQ(ierr);
-  l = (Mat_Dense *) newi->data;
+  l = (Mat_SeqDense *) newi->data;
   PETSCMEMCPY(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   *newmat = newi;
   return 0;
 }
 #include "viewer.h"
 
-int MatView_Dense(PetscObject obj,Viewer ptr)
+int MatView_SeqDense(PetscObject obj,Viewer ptr)
 {
   Mat         matin = (Mat) obj;
-  Mat_Dense   *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense   *mat = (Mat_SeqDense *) matin->data;
   Scalar      *v;
   int         i,j,ierr;
   PetscObject vobj = (PetscObject) ptr;
@@ -398,10 +398,10 @@ int MatView_Dense(PetscObject obj,Viewer ptr)
 }
 
 
-static int MatDestroy_Dense(PetscObject obj)
+static int MatDestroy_SeqDense(PetscObject obj)
 {
   Mat    mat = (Mat) obj;
-  Mat_Dense *l = (Mat_Dense *) mat->data;
+  Mat_SeqDense *l = (Mat_SeqDense *) mat->data;
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",l->m,l->n);
 #endif
@@ -412,16 +412,16 @@ static int MatDestroy_Dense(PetscObject obj)
   return 0;
 }
 
-static int MatTranspose_Dense(Mat matin,Mat *matout)
+static int MatTranspose_SeqDense(Mat matin,Mat *matout)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int       k, j, m, n;
   Scalar    *v, tmp;
 
   v = mat->v; m = mat->m; n = mat->n;
   if (!matout) { /* in place transpose */
     if (m != n) SETERRQ(1,
-      "MatTranspose_Dense: Cannot transpose rectangular matrix in place");
+      "MatTranspose_SeqDense: Cannot transpose rectangular matrix in place");
     for ( j=0; j<m; j++ ) {
       for ( k=0; k<j; k++ ) {
         tmp = v[j + k*n]; 
@@ -433,10 +433,10 @@ static int MatTranspose_Dense(Mat matin,Mat *matout)
   else { /* out-of-place transpose */
     int ierr;
     Mat tmat;
-    Mat_Dense *tmatd;
+    Mat_SeqDense *tmatd;
     Scalar *v2;
     ierr = MatCreateSeqDense(matin->comm,mat->n,mat->m,&tmat); CHKERRQ(ierr);
-    tmatd = (Mat_Dense *) tmat->data;
+    tmatd = (Mat_SeqDense *) tmat->data;
     v = mat->v; v2 = tmatd->v;
     for ( j=0; j<n; j++ ) {
       for ( k=0; k<m; k++ ) v2[j + k*n] = v[k + j*m];
@@ -448,10 +448,10 @@ static int MatTranspose_Dense(Mat matin,Mat *matout)
   return 0;
 }
 
-static int MatEqual_Dense(Mat matin1,Mat matin2)
+static int MatEqual_SeqDense(Mat matin1,Mat matin2)
 {
-  Mat_Dense *mat1 = (Mat_Dense *) matin1->data;
-  Mat_Dense *mat2 = (Mat_Dense *) matin2->data;
+  Mat_SeqDense *mat1 = (Mat_SeqDense *) matin1->data;
+  Mat_SeqDense *mat2 = (Mat_SeqDense *) matin2->data;
   int    i;
   Scalar *v1 = mat1->v, *v2 = mat2->v;
   if (mat1->m != mat2->m) return 0;
@@ -463,27 +463,27 @@ static int MatEqual_Dense(Mat matin1,Mat matin2)
   return 1;
 }
 
-static int MatGetDiagonal_Dense(Mat matin,Vec v)
+static int MatGetDiagonal_SeqDense(Mat matin,Vec v)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int       i, n;
   Scalar    *x;
   VecGetArray(v,&x); VecGetSize(v,&n);
-  if (n != mat->m) SETERRQ(1,"MatGetDiagonal_Dense:Nonconforming mat and vec");
+  if (n != mat->m) SETERRQ(1,"MatGetDiagonal_SeqDense:Nonconforming mat and vec");
   for ( i=0; i<mat->m; i++ ) {
     x[i] = mat->v[i*mat->m + i];
   }
   return 0;
 }
 
-static int MatScale_Dense(Mat matin,Vec ll,Vec rr)
+static int MatScale_SeqDense(Mat matin,Vec ll,Vec rr)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   Scalar *l,*r,x,*v;
   int    i,j,m = mat->m, n = mat->n;
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != mat->m) SETERRQ(1,"MatScale_Dense:Left scaling vec wrong size");
+    if (m != mat->m) SETERRQ(1,"MatScale_SeqDense:Left scaling vec wrong size");
     for ( i=0; i<m; i++ ) {
       x = l[i];
       v = mat->v + i;
@@ -492,7 +492,7 @@ static int MatScale_Dense(Mat matin,Vec ll,Vec rr)
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != mat->n) SETERRQ(1,"MatScale_Dense:Right scaling vec wrong size");
+    if (n != mat->n) SETERRQ(1,"MatScale_SeqDense:Right scaling vec wrong size");
     for ( i=0; i<n; i++ ) {
       x = r[i];
       v = mat->v + i*m;
@@ -502,9 +502,9 @@ static int MatScale_Dense(Mat matin,Vec ll,Vec rr)
   return 0;
 }
 
-static int MatNorm_Dense(Mat matin,MatNormType type,double *norm)
+static int MatNorm_SeqDense(Mat matin,MatNormType type,double *norm)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   Scalar *v = mat->v;
   double sum = 0.0;
   int    i, j;
@@ -548,30 +548,30 @@ static int MatNorm_Dense(Mat matin,MatNormType type,double *norm)
     }
   }
   else {
-    SETERRQ(1,"MatNorm_Dense:No two norm yet");
+    SETERRQ(1,"MatNorm_SeqDense:No two norm yet");
   }
   return 0;
 }
 
-static int MatSetOption_Dense(Mat aijin,MatOption op)
+static int MatSetOption_SeqDense(Mat aijin,MatOption op)
 {
-  Mat_Dense *aij = (Mat_Dense *) aijin->data;
+  Mat_SeqDense *aij = (Mat_SeqDense *) aijin->data;
   if (op == ROW_ORIENTED)            aij->roworiented = 1;
   else if (op == COLUMN_ORIENTED)    aij->roworiented = 0;
   /* doesn't care about sorted rows or columns */
   return 0;
 }
 
-static int MatZeroEntries_Dense(Mat A)
+static int MatZeroEntries_SeqDense(Mat A)
 {
-  Mat_Dense *l = (Mat_Dense *) A->data;
+  Mat_SeqDense *l = (Mat_SeqDense *) A->data;
   PETSCMEMSET(l->v,0,l->m*l->n*sizeof(Scalar));
   return 0;
 }
 
-static int MatZeroRows_Dense(Mat A,IS is,Scalar *diag)
+static int MatZeroRows_SeqDense(Mat A,IS is,Scalar *diag)
 {
-  Mat_Dense *l = (Mat_Dense *) A->data;
+  Mat_SeqDense *l = (Mat_SeqDense *) A->data;
   int    n = l->n, i, j,ierr,N, *rows;
   Scalar *slot;
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
@@ -590,36 +590,36 @@ static int MatZeroRows_Dense(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-static int MatGetSize_Dense(Mat matin,int *m,int *n)
+static int MatGetSize_SeqDense(Mat matin,int *m,int *n)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   *m = mat->m; *n = mat->n;
   return 0;
 }
 
-static int MatGetOwnershipRange_Dense(Mat matin,int *m,int *n)
+static int MatGetOwnershipRange_SeqDense(Mat matin,int *m,int *n)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   *m = 0; *n = mat->m;
   return 0;
 }
 
-static int MatGetArray_Dense(Mat matin,Scalar **array)
+static int MatGetArray_SeqDense(Mat matin,Scalar **array)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   *array = mat->v;
   return 0;
 }
 
 
-static int MatGetSubMatrixInPlace_Dense(Mat matin,IS isrow,IS iscol)
+static int MatGetSubMatrixInPlace_SeqDense(Mat matin,IS isrow,IS iscol)
 {
-  SETERRQ(1,"MatGetSubMatrixInPlace_Dense: not done");
+  SETERRQ(1,"MatGetSubMatrixInPlace_SeqDense: not done");
 }
 
-static int MatGetSubMatrix_Dense(Mat matin,IS isrow,IS iscol,Mat *submat)
+static int MatGetSubMatrix_SeqDense(Mat matin,IS isrow,IS iscol,Mat *submat)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_SeqDense *mat = (Mat_SeqDense *) matin->data;
   int     nznew, *smap, i, j, ierr, oldcols = mat->n;
   int     *irow, *icol, nrows, ncols, *cwork;
   Scalar  *vwork, *val;
@@ -663,25 +663,25 @@ static int MatGetSubMatrix_Dense(Mat matin,IS isrow,IS iscol,Mat *submat)
 }
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatInsert_Dense,
-       MatGetRow_Dense, MatRestoreRow_Dense,
-       MatMult_Dense, MatMultAdd_Dense, 
-       MatMultTrans_Dense, MatMultTransAdd_Dense, 
-       MatSolve_Dense,MatSolveAdd_Dense,
-       MatSolveTrans_Dense,MatSolveTransAdd_Dense,
-       MatLUFactor_Dense,MatCholeskyFactor_Dense,
-       MatRelax_Dense,
-       MatTranspose_Dense,
-       MatGetInfo_Dense,MatEqual_Dense,
-       MatGetDiagonal_Dense,MatScale_Dense,MatNorm_Dense,
+static struct _MatOps MatOps = {MatInsert_SeqDense,
+       MatGetRow_SeqDense, MatRestoreRow_SeqDense,
+       MatMult_SeqDense, MatMultAdd_SeqDense, 
+       MatMultTrans_SeqDense, MatMultTransAdd_SeqDense, 
+       MatSolve_SeqDense,MatSolveAdd_SeqDense,
+       MatSolveTrans_SeqDense,MatSolveTransAdd_SeqDense,
+       MatLUFactor_SeqDense,MatCholeskyFactor_SeqDense,
+       MatRelax_SeqDense,
+       MatTranspose_SeqDense,
+       MatGetInfo_SeqDense,MatEqual_SeqDense,
+       MatGetDiagonal_SeqDense,MatScale_SeqDense,MatNorm_SeqDense,
        0,0,
-       0, MatSetOption_Dense,MatZeroEntries_Dense,MatZeroRows_Dense,0,
-       MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
-       MatCholeskyFactorSymbolic_Dense,MatCholeskyFactorNumeric_Dense,
-       MatGetSize_Dense,MatGetSize_Dense,MatGetOwnershipRange_Dense,
-       0,0,MatGetArray_Dense,0,0,
-       MatGetSubMatrix_Dense,MatGetSubMatrixInPlace_Dense,
-       MatCopyPrivate_Dense};
+       0, MatSetOption_SeqDense,MatZeroEntries_SeqDense,MatZeroRows_SeqDense,0,
+       MatLUFactorSymbolic_SeqDense,MatLUFactorNumeric_SeqDense,
+       MatCholeskyFactorSymbolic_SeqDense,MatCholeskyFactorNumeric_SeqDense,
+       MatGetSize_SeqDense,MatGetSize_SeqDense,MatGetOwnershipRange_SeqDense,
+       0,0,MatGetArray_SeqDense,0,0,
+       MatGetSubMatrix_SeqDense,MatGetSubMatrixInPlace_SeqDense,
+       MatCopyPrivate_SeqDense};
 
 /*@C
    MatCreateSeqDense - Creates a sequential dense matrix that 
@@ -702,16 +702,16 @@ static struct _MatOps MatOps = {MatInsert_Dense,
 @*/
 int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
 {
-  int       size = sizeof(Mat_Dense) + m*n*sizeof(Scalar);
+  int       size = sizeof(Mat_SeqDense) + m*n*sizeof(Scalar);
   Mat mat;
-  Mat_Dense    *l;
+  Mat_SeqDense    *l;
   *newmat        = 0;
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSE,comm);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
   PLogObjectCreate(mat);
-  l              = (Mat_Dense *) PETSCMALLOC(size); CHKPTRQ(l);
+  l              = (Mat_SeqDense *) PETSCMALLOC(size); CHKPTRQ(l);
   mat->ops       = &MatOps;
-  mat->destroy   = MatDestroy_Dense;
-  mat->view      = MatView_Dense;
+  mat->destroy   = MatDestroy_SeqDense;
+  mat->view      = MatView_SeqDense;
   mat->data      = (void *) l;
   mat->factor    = 0;
   PLogObjectMemory(mat,sizeof(struct _Mat) + size);
@@ -727,8 +727,8 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
   return 0;
 }
 
-int MatCreate_Dense(Mat matin,Mat *newmat)
+int MatCreate_SeqDense(Mat matin,Mat *newmat)
 {
-  Mat_Dense *m = (Mat_Dense *) matin->data;
+  Mat_SeqDense *m = (Mat_SeqDense *) matin->data;
   return MatCreateSeqDense(matin->comm,m->m,m->n,newmat);
 }

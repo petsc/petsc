@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.39 1995/09/10 20:52:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.40 1995/09/11 18:49:22 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: gcreate.c,v 1.39 1995/09/10 20:52:22 curfman Exp bsmi
 .  V - location to stash resulting matrix
 
    Options Database Keywords:
-$  -mat_aij      : AIJ type, uses MatCreateSeqAIJ()
+$  -mat_SeqAIJ      : AIJ type, uses MatCreateSeqAIJ()
 $  -mat_mpiaij   : MatCreateMPIAIJ()
 $  -mat_dense    : dense type, uses MatCreateSeqDense()
 $  -mat_row      : row type, uses MatCreateSeqRow()
@@ -113,14 +113,14 @@ int MatGetName(Mat mat,char **name)
   /* Note:  Be sure that this list corresponds to the enum in mat.h */
   int  itype = (int)mat->type;
   char *matname[9];
-  matname[0] = "MATDENSE";
-  matname[1] = "MATAIJ";
+  matname[0] = "MATSEQDENSE";
+  matname[1] = "MATSEQAIJ";
   matname[2] = "MATMPIAIJ";
   matname[3] = "MATSHELL";
-  matname[4] = "MATROW";
+  matname[4] = "MATSEQROW";
   matname[5] = "MATMPIROW";
-  matname[6] = "MATMPIROW_BS";
-  matname[7] = "MATBDIAG";
+  matname[6] = "MATMPIROWBS";
+  matname[7] = "MATSEQBDIAG";
   matname[8] = "MATMPIBDIAG";
   if (itype < 0 || itype > 8) *name = "unknown matrix type";
   else                        *name = matname[itype];

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.11 1995/08/15 20:28:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.12 1995/09/11 18:48:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: mmbdiag.c,v 1.11 1995/08/15 20:28:38 bsmith Exp bsmit
 int MatSetUpMultiply_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  Mat_BDiag    *lmbd = (Mat_BDiag *) mbd->A->data;
+  Mat_SeqBDiag    *lmbd = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr, N = mbd->N, *indices, *garray, ec=0;
   int          nb = lmbd->nb, d, i, j, diag;
   IS           to_from;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mscat.c,v 1.4 1995/08/07 18:53:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mscat.c,v 1.5 1995/09/11 18:49:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,14 +12,14 @@ static char vcid[] = "$Id: mscat.c,v 1.4 1995/08/07 18:53:19 bsmith Exp bsmith $
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 /*
-   MatScatterBegin_Rows - sends rows of matrix in scatter
+   MatScatterBegin_SeqRows - sends rows of matrix in scatter
 */
-static int MatScatterBegin_Rows(Mat x,Mat y,InsertMode addv,
+static int MatScatterBegin_SeqRows(Mat x,Mat y,InsertMode addv,
                                 MatScatterCtx ctx)
 {
   return 0;
 }
-static int MatScatterEnd_Rows(Mat x,Mat y,InsertMode addv,
+static int MatScatterEnd_SeqRows(Mat x,Mat y,InsertMode addv,
                               MatScatterCtx ctx)
 {
   MatAssemblyBegin(y,FINAL_ASSEMBLY);
@@ -27,7 +27,7 @@ static int MatScatterEnd_Rows(Mat x,Mat y,InsertMode addv,
   return 0;
 }
 
-static int MatScatterCtxDestroy_Rows(PetscObject obj)
+static int MatScatterCtxDestroy_SeqRows(PetscObject obj)
 {
   MatScatterCtx             ctx = (MatScatterCtx) obj;
   MatScatterCtx_MPISendRows *rows = 
@@ -68,7 +68,7 @@ int MatScatterCtxCreate(Mat X,IS xr,IS xc,Mat Y,IS yr,IS yc,
   if (X->type != (int) MATMPIAIJ) {
     SETERRQ(1,"MatScatterCtxCreate:only supports scatter from MPIAIJ");
   }
-  if (Y->type != (int) MATAIJ) {
+  if (Y->type != (int) MATSEQAIJ) {
     SETERRQ(1,"MatScatterCtxCreate:only supports scatter to AIJ");
   }
 
@@ -172,9 +172,9 @@ printf("procs %d %d\n",i,procs[i]);
     mpirecv = PETSCNEW(MatScatterCtx_MPIRecvRows); CHKPTRQ(mpirecv);
     PETSCHEADERCREATE(scat,_MatScatterCtx,MAT_SCATTER_COOKIE,0,comm);
     scat->send    = (void *) mpisend;
-    scat->begin   = MatScatterBegin_Rows;
-    scat->end     = MatScatterEnd_Rows;
-    scat->destroy = MatScatterCtxDestroy_Rows;
+    scat->begin   = MatScatterBegin_SeqRows;
+    scat->end     = MatScatterEnd_SeqRows;
+    scat->destroy = MatScatterCtxDestroy_SeqRows;
 
     mpisend->n = nreceives;
     mpisend->procs = (int *) PETSCMALLOC( (2*nreceives+1)*sizeof(int));

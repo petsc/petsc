@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.49 1995/09/11 18:48:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.50 1995/09/12 00:50:34 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -8,23 +8,23 @@ static char vcid[] = "$Id: bdiag.c,v 1.49 1995/09/11 18:48:38 bsmith Exp curfman
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
 
-static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
+static int MatSetValues_SeqBDiag(Mat matin,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode  addv)
 {
-  Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) matin->data;
   int       i, kk, j, k, loc, ldiag, shift, row, nz = n, dfound, temp;
   int       nb = dmat->nb, nd = dmat->nd, *diag = dmat->diag, *diag_new;
   int       newnz, *bdlen_new;
   Scalar    *valpt, **diagv_new, *dtemp;
 
   if (m!=1) SETERRQ(1,
-    "MatSetValues_BDiag:Currently can set only 1 row at a time");
+    "MatSetValues_SeqBDiag:Currently can set only 1 row at a time");
   if (nb == 1) {
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row  = idxm[kk];   
-      if (row < 0) SETERRQ(1,"MatSetValues_BDiag:Negative row");
+      if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
       if (row >= dmat->m) 
-        SETERRQ(1,"MatSetValues_BDiag:Row too large");
+        SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
       for (j=0; j<nz; j++) {
         ldiag = row - idxn[j]; /* diagonal number */
         dfound = 0;
@@ -36,7 +36,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	    if ((valpt = &((dmat->diagv[k])[loc]))) {
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
-            } else SETERRQ(1,"MatSetValues_BDiag: Invalid data location");
+            } else SETERRQ(1,"MatSetValues_SeqBDiag: Invalid data location");
             break;
           }
         }
@@ -48,11 +48,11 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
             if (dmat->user_alloc && real(v[j]) || imag(v[j])) {
 #endif
               PLogInfo((PetscObject)matin,
-                "MatSetValues_BDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
+                "MatSetValues_SeqBDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
             }
           } else {
             nd++; 
-            PLogInfo((PetscObject)matin,"MatSetValues_BDiag: Allocating new diagonal: %d\n",ldiag);
+            PLogInfo((PetscObject)matin,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
             /* free old bdiag storage info and reallocate */
             diag_new = (int *)PETSCMALLOC(2*nd*sizeof(int)); CHKPTRQ(diag_new);
             bdlen_new = diag_new + nd;
@@ -87,7 +87,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	    if ((valpt = &((dmat->diagv[dmat->nd])[loc]))) {
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
-            } else SETERRQ(1,"MatSetValues_BDiag: Invalid data location");
+            } else SETERRQ(1,"MatSetValues_SeqBDiag: Invalid data location");
 
             for (i=0; i<nd; i++) {  /* Sort diagonals */
               for (k=i+1; k<nd; k++) {
@@ -113,8 +113,8 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row    = idxm[kk];   
-      if (row < 0) SETERRQ(1,"MatSetValues_BDiag:Negative row");
-      if (row >= dmat->m) SETERRQ(1,"MatSetValues_BDiag:Row too large");
+      if (row < 0) SETERRQ(1,"MatSetValues_SeqBDiag:Negative row");
+      if (row >= dmat->m) SETERRQ(1,"MatSetValues_SeqBDiag:Row too large");
       shift = (row/nb)*nb*nb + row%nb;
       for (j=0; j<nz; j++) {
         ldiag = row/nb - idxn[j]/nb; /* block diagonal */
@@ -129,7 +129,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
-            } else SETERRQ(1,"MatSetValues_BDiag: Invalid data location");
+            } else SETERRQ(1,"MatSetValues_SeqBDiag: Invalid data location");
             break;
           }
         }
@@ -141,11 +141,11 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
             if (dmat->user_alloc && real(v[j]) || imag(v[j])) {
 #endif
               PLogInfo((PetscObject)matin,
-                "MatSetValues_BDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
+                "MatSetValues_SeqBDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
             }
           } else {
             nd++; 
-            PLogInfo((PetscObject)matin,"MatSetValues_BDiag: Allocating new diagonal: %d\n",ldiag);
+            PLogInfo((PetscObject)matin,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
             /* free old bdiag storage info and reallocate */
             diag_new = (int *)PETSCMALLOC(2*nd*sizeof(int)); CHKPTRQ(diag_new);
             bdlen_new = diag_new + nd;
@@ -181,7 +181,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
-            } else SETERRQ(1,"MatSetValues_BDiag: Invalid data location");
+            } else SETERRQ(1,"MatSetValues_SeqBDiag: Invalid data location");
 
             for (i=0; i<nd; i++) {  /* Sort diagonals */
               for (k=i+1; k<nd; k++) {
@@ -208,12 +208,12 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 }
 
 /*
-  MatMult_BDiag_base - This routine is intended for use with 
-  MatMult_BDiag() and MatMultAdd_BDiag().  It computes yy += mat * xx.
+  MatMult_SeqBDiag_base - This routine is intended for use with 
+  MatMult_SeqBDiag() and MatMultAdd_SeqBDiag().  It computes yy += mat * xx.
  */
-static int MatMult_BDiag_base(Mat matin,Vec xx,Vec yy)
+static int MatMult_SeqBDiag_base(Mat matin,Vec xx,Vec yy)
 { 
-  Mat_BDiag *mat= (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat= (Mat_SeqBDiag *) matin->data;
   int             nd = mat->nd, nb = mat->nb, diag;
   int             kshift, kloc;
   Scalar          *vin, *vout;
@@ -262,13 +262,13 @@ static int MatMult_BDiag_base(Mat matin,Vec xx,Vec yy)
 }
 
 /*
-  MatMultTrans_BDiag_base - This routine is intended for use with 
-  MatMultTrans_BDiag() and MatMultTransAdd_BDiag().  It computes 
+  MatMultTrans_SeqBDiag_base - This routine is intended for use with 
+  MatMultTrans_SeqBDiag() and MatMultTransAdd_SeqBDiag().  It computes 
             yy += mat^T * xx.
  */
-static int MatMultTrans_BDiag_base(Mat matin,Vec xx,Vec yy)
+static int MatMultTrans_SeqBDiag_base(Mat matin,Vec xx,Vec yy)
 {
-  Mat_BDiag       *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag       *mat = (Mat_SeqBDiag *) matin->data;
   int             nd = mat->nd, nb = mat->nb, diag;
   int             kshift, kloc;
   register Scalar *pvin, *pvout, *dv;
@@ -319,37 +319,37 @@ static int MatMultTrans_BDiag_base(Mat matin,Vec xx,Vec yy)
   }
   return 0;
 }
-static int MatMult_BDiag(Mat matin,Vec xx,Vec yy)
+static int MatMult_SeqBDiag(Mat matin,Vec xx,Vec yy)
 {
   Scalar zero = 0.0;
   int    ierr;
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
-  return MatMult_BDiag_base(matin,xx,yy);
+  return MatMult_SeqBDiag_base(matin,xx,yy);
 }
-static int MatMultTrans_BDiag(Mat matin,Vec xx,Vec yy)
+static int MatMultTrans_SeqBDiag(Mat matin,Vec xx,Vec yy)
 {
   Scalar zero = 0.0;
   int    ierr;
   ierr = VecSet(&zero,yy); CHKERRQ(ierr);
-  return MatMultTrans_BDiag_base(matin,xx,yy);
+  return MatMultTrans_SeqBDiag_base(matin,xx,yy);
 }
-static int MatMultAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
+static int MatMultAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
 {
   int ierr;
   ierr = VecCopy(zz,yy); CHKERRQ(ierr);
-  return MatMult_BDiag_base(matin,xx,yy);
+  return MatMult_SeqBDiag_base(matin,xx,yy);
 }
-static int MatMultTransAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
+static int MatMultTransAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
 {
   int ierr;
   ierr = VecCopy(zz,yy); CHKERRQ(ierr);
-  return MatMultTrans_BDiag_base(matin,xx,yy);
+  return MatMultTrans_SeqBDiag_base(matin,xx,yy);
 }
 
-static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
+static int MatRelax_SeqBDiag(Mat matin,Vec bb,double omega,MatSORType flag,
                         double shift,int its,Vec xx)
 {
-  Mat_BDiag  *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag  *mat = (Mat_SeqBDiag *) matin->data;
   Scalar     *x, *b, *xb, *dvmain, *dv, dval, sum;
   int        m = mat->m, i, j, k, d, kbase, nb = mat->nb, loc, kloc;
   int        mainbd = mat->mainbd, diag, mblock = mat->mblock, bloc;
@@ -357,7 +357,7 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
   /* Currently this code doesn't use wavefront orderings, although
      we should eventually incorporate that option */
   VecGetArray(xx,&x); VecGetArray(bb,&b);
-  if (mainbd == -1) SETERRQ(1,"MatRelax_BDiag:Main diagonal not set");
+  if (mainbd == -1) SETERRQ(1,"MatRelax_SeqBDiag:Main diagonal not set");
   dvmain = mat->diagv[mainbd];
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
@@ -567,26 +567,26 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
   return 0;
 } 
 
-static int MatGetInfo_BDiag(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
+static int MatGetInfo_SeqBDiag(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
                                                                      int *mem)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   *nz      = mat->nz;
   *nzalloc = mat->maxnz;
   *mem     = (int)matin->mem;
   return 0;
 }
 
-static int MatGetOwnershipRange_BDiag(Mat matin,int *m,int *n)
+static int MatGetOwnershipRange_SeqBDiag(Mat matin,int *m,int *n)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   *m = 0; *n = mat->m;
   return 0;
 }
 
-static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
+static int MatGetRow_SeqBDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
 {
-  Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) matin->data;
   int       nd = dmat->nd, nb = dmat->nb, loc;
   int       nc = dmat->n, *diag = dmat->diag, pcol, shift, i, j, k;
 
@@ -707,7 +707,7 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
   return 0;
 }
 
-static int MatRestoreRow_BDiag(Mat matin,int row,int *ncols,int **cols,
+static int MatRestoreRow_SeqBDiag(Mat matin,int row,int *ncols,int **cols,
                             Scalar **vals)
 {
   /* Work space is allocated once during matrix creation and then freed
@@ -715,15 +715,15 @@ static int MatRestoreRow_BDiag(Mat matin,int row,int *ncols,int **cols,
   return 0;
 }
 
-static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
+static int MatNorm_SeqBDiag(Mat matin,MatNormType type,double *norm)
 {
-  Mat_BDiag *mat= (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat= (Mat_SeqBDiag *) matin->data;
   double    sum = 0.0, *tmp;
   int       d, i, j, k, nd = mat->nd, nb = mat->nb, diag, kshift, kloc, len;
   Scalar    *dv;
 
   if (!mat->assembled) 
-    SETERRQ(1,"MatNorm_BDiag: Cannot compute norm of unassembled mat");
+    SETERRQ(1,"MatNorm_SeqBDiag: Cannot compute norm of unassembled mat");
 
   if (type == NORM_FROBENIUS) {
     for (d=0; d<nd; d++) {
@@ -873,14 +873,14 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
     PETSCFREE(tmp);
   }
   else {
-    SETERRQ(1,"MatNorm_BDiag: No support for the two norm");
+    SETERRQ(1,"MatNorm_SeqBDiag: No support for the two norm");
   }
   return 0;
 }
 
-static int MatTranspose_BDiag(Mat A,Mat *matout)
+static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 { 
-  Mat_BDiag *mbd = (Mat_BDiag *) A->data, *mbdnew;
+  Mat_SeqBDiag *mbd = (Mat_SeqBDiag *) A->data, *mbdnew;
   Mat       tmat;
   int       i, j, k, d, ierr, nd = mbd->nd, *diag = mbd->diag, *diagnew;
   int       nb = mbd->nb, kshift;
@@ -893,12 +893,12 @@ static int MatTranspose_BDiag(Mat A,Mat *matout)
   ierr = MatCreateSeqBDiag(A->comm,mbd->n,mbd->m,nd,nb,diagnew,
                                     0,&tmat); CHKERRQ(ierr);
   PETSCFREE(diagnew);
-  mbdnew = (Mat_BDiag *) tmat->data;
+  mbdnew = (Mat_SeqBDiag *) tmat->data;
   for (d=0; d<nd; d++) {
     dvnew = mbdnew->diagv[d];
     dwork = mbd->diagv[nd-d-1];
     if (mbdnew->bdlen[d] != mbd->bdlen[nd-d-1])
-      SETERRQ(1,"MatTranspose_BDiag: Incompatible diagonal lengths");
+      SETERRQ(1,"MatTranspose_SeqBDiag: Incompatible diagonal lengths");
     if (nb == 1) {
       for (k=0; k<mbdnew->bdlen[d]; k++) dvnew[k] = dwork[k];
     } else {
@@ -939,24 +939,24 @@ static int MatTranspose_BDiag(Mat A,Mat *matout)
 #include "draw.h"
 #include "pinclude/pviewer.h"
 
-int MatView_BDiag(PetscObject obj,Viewer ptr)
+int MatView_SeqBDiag(PetscObject obj,Viewer ptr)
 {
   Mat       matin = (Mat) obj;
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   int       ierr, *col, i, j, len, diag, nr = mat->m, nb = mat->nb;
   int       nz, nzalloc, mem;
   Scalar    *val, *dv, zero = 0.0;
   PetscObject vobj = (PetscObject) ptr;
 
   if (!mat->assembled) 
-    SETERRQ(1,"MatView_BDiag:Cannot view unassembled matrix");
+    SETERRQ(1,"MatView_SeqBDiag:Cannot view unassembled matrix");
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
   }
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   if (vobj && vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
     SETERRQ(1,
-      "MatView_BDiag:Matlab viewer not yet supported for MATBDIAG format");
+      "MatView_SeqBDiag:Matlab viewer not yet supported for MATSEQBDIAG format");
   }
   if (vobj && vobj->cookie == DRAW_COOKIE) {
     DrawCtx draw = (DrawCtx) ptr;
@@ -1090,10 +1090,10 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
   return 0;
 }
 
-static int MatDestroy_BDiag(PetscObject obj)
+static int MatDestroy_SeqBDiag(PetscObject obj)
 {
   Mat       bmat = (Mat) obj;
-  Mat_BDiag *mat = (Mat_BDiag *) bmat->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) bmat->data;
   int       i;
 
 #if defined(PETSC_LOG)
@@ -1114,32 +1114,32 @@ static int MatDestroy_BDiag(PetscObject obj)
   return 0;
 }
 
-static int MatAssemblyEnd_BDiag(Mat matin,MatAssemblyType mode)
+static int MatAssemblyEnd_SeqBDiag(Mat matin,MatAssemblyType mode)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   if (mode == FLUSH_ASSEMBLY) return 0;
   mat->assembled = 1;
   return 0;
 }
 
-static int MatSetOption_BDiag(Mat mat,MatOption op)
+static int MatSetOption_SeqBDiag(Mat mat,MatOption op)
 {
-  Mat_BDiag *mbd = (Mat_BDiag *) mat->data;
+  Mat_SeqBDiag *mbd = (Mat_SeqBDiag *) mat->data;
   if (op == NO_NEW_NONZERO_LOCATIONS)       mbd->nonew = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) mbd->nonew = 0;
   return 0;
 }
 
-static int MatGetDiagonal_BDiag(Mat matin,Vec v)
+static int MatGetDiagonal_SeqBDiag(Mat matin,Vec v)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   int    i, j, n, ibase, nb = mat->nb, iloc;
   Scalar *x, *dvmain;
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
   if (n != mat->m) 
-     SETERRQ(1,"MatGetDiagonal_BDiag:Nonconforming matrix and vector");
+     SETERRQ(1,"MatGetDiagonal_SeqBDiag:Nonconforming matrix and vector");
   if (mat->mainbd == -1) 
-     SETERRQ(1,"MatGetDiagonal_BDiag:Main diagonal is not set");
+     SETERRQ(1,"MatGetDiagonal_SeqBDiag:Main diagonal is not set");
   dvmain = mat->diagv[mat->mainbd];
   if (mat->nb == 1) {
     for (i=0; i<mat->m; i++) x[i] = dvmain[i];
@@ -1152,9 +1152,9 @@ static int MatGetDiagonal_BDiag(Mat matin,Vec v)
   return 0;
 }
 
-static int MatZeroEntries_BDiag(Mat matin)
+static int MatZeroEntries_SeqBDiag(Mat matin)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   int       d, i, len, nb = mat->nb;
   Scalar    *dv;
 
@@ -1166,9 +1166,9 @@ static int MatZeroEntries_BDiag(Mat matin)
   return 0;
 }
 
-static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
+static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
 {
-  Mat_BDiag *l = (Mat_BDiag *) A->data;
+  Mat_SeqBDiag *l = (Mat_SeqBDiag *) A->data;
   int     i, ierr, N, *rows, m = l->m - 1, nz, *col;
   Scalar  *dvmain, *val;
 
@@ -1176,7 +1176,7 @@ static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
     if (rows[i] < 0 || rows[i] > m) 
-      SETERRQ(1,"MatZeroRows_BDiag:row out of range");
+      SETERRQ(1,"MatZeroRows_SeqBDiag:row out of range");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
     PETSCMEMSET(val,0,nz*sizeof(Scalar));
     ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERTVALUES); CHKERRQ(ierr);
@@ -1184,7 +1184,7 @@ static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
   }
   if (diag) {
     if (l->mainbd == -1) 
-      SETERRQ(1,"MatZeroRows_BDiag:Main diagonal does not exist");
+      SETERRQ(1,"MatZeroRows_SeqBDiag:Main diagonal does not exist");
     dvmain = l->diagv[l->mainbd];
     for ( i=0; i<N; i++ ) dvmain[rows[i]] = *diag;
   }
@@ -1194,18 +1194,18 @@ static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-static int MatGetSize_BDiag(Mat matin,int *m,int *n)
+static int MatGetSize_SeqBDiag(Mat matin,int *m,int *n)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   *m = mat->m; *n = mat->n;
   return 0;
 }
 
 extern int MatDetermineDiagonals_Private(Mat,int,int,int,int*,int*,int*,int**);
 
-static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
+static int MatGetSubMatrix_SeqBDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   int       nznew, *smap, i, j, ierr, oldcols = mat->n;
   int       *irow, *icol, newr, newc, *cwork, *col;
   int       nz, nb, ndiag, *diag;
@@ -1213,7 +1213,7 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   Mat       newmat;
 
   if (!mat->assembled) SETERRQ(1,
-    "MatGetSubMatrix_BDiag:Cannot extract submatrix from unassembled matrix");
+    "MatGetSubMatrix_SeqBDiag:Cannot extract submatrix from unassembled matrix");
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&newr); CHKERRQ(ierr);
@@ -1259,34 +1259,34 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   return 0;
 }
 
-static int MatCopyPrivate_BDiag(Mat,Mat *);
-extern int MatLUFactorSymbolic_BDiag(Mat,IS,IS,double,Mat*);
-extern int MatLUFactorNumeric_BDiag(Mat,Mat*);
-extern int MatLUFactor_BDiag(Mat,IS,IS,double);
-extern int MatSolve_BDiag(Mat,Vec,Vec);
-extern int MatSolveAdd_BDiag(Mat,Vec,Vec,Vec);
-extern int MatSolveTrans_BDiag(Mat,Vec,Vec);
-extern int MatSolveTransAdd_BDiag(Mat,Vec,Vec,Vec);
+static int MatCopyPrivate_SeqBDiag(Mat,Mat *);
+extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
+extern int MatLUFactorNumeric_SeqBDiag(Mat,Mat*);
+extern int MatLUFactor_SeqBDiag(Mat,IS,IS,double);
+extern int MatSolve_SeqBDiag(Mat,Vec,Vec);
+extern int MatSolveAdd_SeqBDiag(Mat,Vec,Vec,Vec);
+extern int MatSolveTrans_SeqBDiag(Mat,Vec,Vec);
+extern int MatSolveTransAdd_SeqBDiag(Mat,Vec,Vec,Vec);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatSetValues_BDiag,
-       MatGetRow_BDiag, MatRestoreRow_BDiag,
-       MatMult_BDiag, MatMultAdd_BDiag, 
-       MatMultTrans_BDiag, MatMultTransAdd_BDiag, 
-       MatSolve_BDiag,MatSolveAdd_BDiag,
-       MatSolveTrans_BDiag,MatSolveTransAdd_BDiag,
-       MatLUFactor_BDiag, 0,
-       MatRelax_BDiag, MatTranspose_BDiag,
-       MatGetInfo_BDiag, 0,
-       MatGetDiagonal_BDiag, 0, MatNorm_BDiag,
-       0,MatAssemblyEnd_BDiag,
-       0, MatSetOption_BDiag, MatZeroEntries_BDiag,MatZeroRows_BDiag, 0,
-       MatLUFactorSymbolic_BDiag,MatLUFactorNumeric_BDiag, 0, 0,
-       MatGetSize_BDiag,MatGetSize_BDiag,MatGetOwnershipRange_BDiag,
+static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
+       MatGetRow_SeqBDiag, MatRestoreRow_SeqBDiag,
+       MatMult_SeqBDiag, MatMultAdd_SeqBDiag, 
+       MatMultTrans_SeqBDiag, MatMultTransAdd_SeqBDiag, 
+       MatSolve_SeqBDiag,MatSolveAdd_SeqBDiag,
+       MatSolveTrans_SeqBDiag,MatSolveTransAdd_SeqBDiag,
+       MatLUFactor_SeqBDiag, 0,
+       MatRelax_SeqBDiag, MatTranspose_SeqBDiag,
+       MatGetInfo_SeqBDiag, 0,
+       MatGetDiagonal_SeqBDiag, 0, MatNorm_SeqBDiag,
+       0,MatAssemblyEnd_SeqBDiag,
+       0, MatSetOption_SeqBDiag, MatZeroEntries_SeqBDiag,MatZeroRows_SeqBDiag, 0,
+       MatLUFactorSymbolic_SeqBDiag,MatLUFactorNumeric_SeqBDiag, 0, 0,
+       MatGetSize_SeqBDiag,MatGetSize_SeqBDiag,MatGetOwnershipRange_SeqBDiag,
        0, 0,
        0, 0, 0,
-       MatGetSubMatrix_BDiag, 0,
-       MatCopyPrivate_BDiag, 0, 0 };
+       MatGetSubMatrix_SeqBDiag, 0,
+       MatCopyPrivate_SeqBDiag, 0, 0 };
 
 /*@C
    MatCreateSeqBDiag - Creates a sequential block diagonal matrix.
@@ -1329,7 +1329,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
                              int *diag,Scalar **diagv,Mat *newmat)
 {
   Mat       bmat;
-  Mat_BDiag *mat;
+  Mat_SeqBDiag *mat;
   int       i, j, nda, temp, sizetot;
   Scalar    *dtemp;
 
@@ -1338,12 +1338,12 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     SETERRQ(1,"MatCreateSeqBDiag:Invalid block size");
   if (!nd) nda = nd + 1;
   else nda = nd;
-  PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATBDIAG,comm);
+  PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATSEQBDIAG,comm);
   PLogObjectCreate(bmat);
-  bmat->data    = (void *) (mat = PETSCNEW(Mat_BDiag)); CHKPTRQ(mat);
+  bmat->data    = (void *) (mat = PETSCNEW(Mat_SeqBDiag)); CHKPTRQ(mat);
   bmat->ops     = &MatOps;
-  bmat->destroy = MatDestroy_BDiag;
-  bmat->view    = MatView_BDiag;
+  bmat->destroy = MatDestroy_SeqBDiag;
+  bmat->view    = MatView_SeqBDiag;
   bmat->factor  = 0;
 
   mat->m      = m;
@@ -1403,7 +1403,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->maxnz  = sizetot;
   mat->dvalue = (Scalar *)PETSCMALLOC(n*sizeof(Scalar)); CHKPTRQ(mat->dvalue);
   PLogObjectMemory(bmat,(nda*(nb+2))*sizeof(int) + nb*nda*sizeof(Scalar)
-                    + nda*sizeof(Scalar*) + sizeof(Mat_BDiag)
+                    + nda*sizeof(Scalar*) + sizeof(Mat_SeqBDiag)
                     + sizeof(struct _Mat) + sizetot*sizeof(Scalar));
 
   if (!mat->user_alloc) {
@@ -1423,21 +1423,21 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   return 0;
 }
 
-static int MatCopyPrivate_BDiag(Mat matin,Mat *matout)
+static int MatCopyPrivate_SeqBDiag(Mat matin,Mat *matout)
 { 
-  Mat_BDiag *newmat, *oldmat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *newmat, *oldmat = (Mat_SeqBDiag *) matin->data;
   int       i, ierr, len;
   Mat       mat;
 
   if (!oldmat->assembled) 
-    SETERRQ(1,"MatCopyPrivate_BDiag:Cannot copy unassembled matrix");
+    SETERRQ(1,"MatCopyPrivate_SeqBDiag:Cannot copy unassembled matrix");
 
   ierr = MatCreateSeqBDiag(matin->comm,oldmat->m,oldmat->n,
          oldmat->nd,oldmat->nb,oldmat->diag,0,matout); CHKERRQ(ierr);
 
   /* Copy contents of diagonals */
   mat = *matout;
-  newmat = (Mat_BDiag *) mat->data;
+  newmat = (Mat_SeqBDiag *) mat->data;
   for (i=0; i<oldmat->nd; i++) {
     len = oldmat->bdlen[i] * oldmat->nb * oldmat->nb * sizeof(Scalar);
     PETSCMEMCPY(newmat->diagv[i],oldmat->diagv[i],len);

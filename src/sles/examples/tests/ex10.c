@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.32 1995/08/28 16:29:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.33 1995/09/11 18:49:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -171,13 +171,13 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
-  { MatType type = MATBDIAG;
-  if (OptionsHasName(0,"-mat_row")) type = MATROW; 
+  { MatType type = MATSEQBDIAG;
+  if (OptionsHasName(0,"-mat_row")) type = MATSEQROW; 
   if (OptionsHasName(0,"-mat_aij")) type = MATSAME;
-  if (OptionsHasName(0,"-mat_dense")) type = MATDENSE;
+  if (OptionsHasName(0,"-mat_dense")) type = MATSEQDENSE;
   if (OptionsHasName(0,"-mat_mpiaij")) type = MATMPIAIJ;
   if (OptionsHasName(0,"-mat_mpirow")) type = MATMPIROW;
-  if (OptionsHasName(0,"-mat_mpirowbs")) type = MATMPIROW_BS;
+  if (OptionsHasName(0,"-mat_mpirowbs")) type = MATMPIROWBS;
   if (OptionsHasName(0,"-mat_mpibdiag")) type = MATMPIBDIAG;
   ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
   ierr = MatDestroy(submat); CHKERRQ(ierr);

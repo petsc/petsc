@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.34 1995/09/04 17:24:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.35 1995/09/06 03:05:12 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -89,7 +89,7 @@ static int PCSetUp_ILU(PC pc)
   if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
   if (!pc->setupcalled) {
 #if defined(HAVE_BLOCKSOLVE) && !defined(_cplusplus)
-    if (pc->pmat->type == MATMPIROW_BS) {
+    if (pc->pmat->type == MATMPIROWBS) {
       ilu->ImplCreate = PCImplCreate_ILU_MPIRowbs;
     }
 #endif

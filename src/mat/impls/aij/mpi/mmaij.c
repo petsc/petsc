@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.16 1995/08/15 20:28:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.17 1995/09/11 18:47:52 bsmith Exp bsmith $";
 #endif
 
 
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: mmaij.c,v 1.16 1995/08/15 20:28:20 bsmith Exp bsmith 
 int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat_AIJ    *B = (Mat_AIJ *) (aij->B->data);  
+  Mat_SeqAIJ    *B = (Mat_SeqAIJ *) (aij->B->data);  
   int        N = aij->N,i,j,*indices,*aj = B->j;
   int        ierr,ec = 0,*garray;
   IS         from,to;
@@ -91,7 +91,7 @@ int DisAssemble_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) A->data;
   Mat        B = aij->B,Bnew;
-  Mat_AIJ    *Baij = (Mat_AIJ*)B->data;
+  Mat_SeqAIJ    *Baij = (Mat_SeqAIJ*)B->data;
   int        ierr,i,j,m=Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
   int        *nz,ec;
   Scalar     v;

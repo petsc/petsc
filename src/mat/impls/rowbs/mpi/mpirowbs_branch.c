@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.61 1995/09/10 20:51:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.62 1995/09/11 18:48:26 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: mpirowbs.c,v 1.61 1995/09/10 20:51:48 curfman Exp bsm
 
 #define CHUNCKSIZE_LOCAL   10
 
-/* Same as MatRow format ... should share these! */
+/* Same as MATSEQROW format ... should share these! */
 static int MatFreeRowbs_Private(Mat matin,int n,int *i,Scalar *v)
 {
   if (v) {
@@ -253,7 +253,7 @@ static int MatZeroRows_MPIRowbs_local(Mat mat,IS is,Scalar *diag)
   return 0;
 }
 
-static int MatNorm_Rowbs_local(Mat matin,MatNormType type,double *norm)
+static int MatNorm_MPIRowbs_local(Mat matin,MatNormType type,double *norm)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs *) matin->data;
   BSsprow   *vs, **rs;
@@ -261,7 +261,7 @@ static int MatNorm_Rowbs_local(Mat matin,MatNormType type,double *norm)
   double  sum = 0.0;
   int     *xi, nz, i, j;
   if (!mat->assembled) 
-    SETERRQ(1,"MatNorm_Rowbs_local:Cannot compute norm of unassembled mat");
+    SETERRQ(1,"MatNorm_MPIRowbs_local:Cannot compute norm of unassembled mat");
   rs = mat->A->rows;
   if (type == NORM_FROBENIUS) {
     for (i=0; i<mat->m; i++ ) {
@@ -320,7 +320,7 @@ static int MatNorm_Rowbs_local(Mat matin,MatNormType type,double *norm)
     }
   }
   else {
-    SETERRQ(1,"MatNorm_Rowbs_local:No support for the two norm");
+    SETERRQ(1,"MatNorm_MPIRowbs_local:No support for the two norm");
   }
   return 0;
 }
@@ -947,7 +947,7 @@ static int MatNorm_MPIRowbs(Mat mat,MatNormType type,double *norm)
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   int ierr;
   if (mrow->numtids == 1) {
-    ierr = MatNorm_Rowbs_local(mat,type,norm); CHKERRQ(ierr);
+    ierr = MatNorm_MPIRowbs_local(mat,type,norm); CHKERRQ(ierr);
   } else 
     SETERRQ(1,"MatNorm_MPIRowbs:Not supported in parallel");
   return 0; 
@@ -1250,6 +1250,45 @@ static int MatRestoreRow_MPIRowbs(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+/* ------------------------------------------------------------------ */
+
+int MatConvert_MPIRowbs(Mat mat, MatType newtype, Mat *newmat)
+{
+  Mat_MPIRowbs *row = (Mat_MPIRowbs *) mat->data;
+  int          ierr, nz, i, ig,rstart = row->rstart, m = row->m, *cwork;
+  int          mytid;
+  Scalar       *vwork;
+
+  switch (newtype) {
+    case MATMPIROW:
+      ierr = MatCreateMPIRow(mat->comm,m,row->n,row->M,row->N,0,0,
+			0,0,newmat); CHKERRQ(ierr);
+      break;
+    case MATMPIAIJ:
+      ierr = MatCreateMPIAIJ(mat->comm,m,row->n,row->M,row->N,0,0,
+			0,0,newmat); CHKERRQ(ierr);
+      break;
+    case MATSEQROW:
+      ierr = MatCreateSeqRow(mat->comm,row->M,row->N,0,0,newmat);CHKERRQ(ierr);
+      break;
+    case MATSEQAIJ:
+      ierr = MatCreateSeqAIJ(mat->comm,row->M,row->N,0,0,newmat); CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ(1,"MatConvert_MPIRowbs:Matrix format not yet supported");
+  }
+  /* Each processor converts its local rows */
+  for (i=0; i<m; i++) {
+    ig   = i + rstart;
+    ierr = MatGetRow(mat,ig,&nz,&cwork,&vwork);	CHKERRQ(ierr);
+    ierr = MatSetValues(*newmat,1,&ig,nz,cwork,vwork,INSERTVALUES);CHKERRQ(ierr);
+    ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork); CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 extern int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
 extern int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,double,int,Mat *);
@@ -1275,8 +1314,10 @@ static struct _MatOps MatOps = {MatSetValues_MPIRowbs,
        0,MatLUFactorNumeric_MPIRowbs,0,MatCholeskyFactorNumeric_MPIRowbs,
        MatGetSize_MPIRowbs,MatGetLocalSize_MPIRowbs,
        MatGetOwnershipRange_MPIRowbs,
-       MatILUFactorSymbolic_MPIRowbs,MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
-       0,0,0,0,0,0,MatForwardSolve_MPIRowbs,MatBackwardSolve_MPIRowbs};
+       MatILUFactorSymbolic_MPIRowbs,
+       MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
+       0,0,MatConvert_MPIRowbs,
+       0,0,0,MatForwardSolve_MPIRowbs,MatBackwardSolve_MPIRowbs};
 
 /* ------------------------------------------------------------------- */
 
@@ -1321,7 +1362,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   int          i, ierr, Mtemp, *offset, low, high;
   BSprocinfo   *bspinfo = (BSprocinfo *) procinfo;
   
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROWBS,comm);
   PLogObjectCreate(mat);
   PLogObjectMemory(mat,sizeof(struct _Mat));
 
@@ -1453,14 +1494,14 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   procinfo - processor information context
 
   Note:
-  This routine is valid only for matrices stored in the MATMPIROW_BS
+  This routine is valid only for matrices stored in the MATMPIROWBS
   format.
 @ */
 int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  if (mat->type != MATMPIROW_BS) 
-    SETERRQ(1,"MatGetBSProcinfo:Valid only for MATMPIROW_BS matrix type");
+  if (mat->type != MATMPIROWBS) 
+    SETERRQ(1,"MatGetBSProcinfo:Valid only for MATMPIROWBS matrix type");
   procinfo = mrow->procinfo;
   return 0;
 }

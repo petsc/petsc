@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.6 1995/09/07 04:27:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.7 1995/09/07 22:36:56 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -59,7 +59,7 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
   if (vobj->type != BINARY_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
-  if (outtype == MATMPIROW_BS) {
+  if (outtype == MATMPIROWBS) {
     return MatLoad_MPIRowbs(bview,outtype,newmat);
   }
   else {

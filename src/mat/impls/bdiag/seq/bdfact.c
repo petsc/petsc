@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.4 1995/08/15 20:28:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.5 1995/08/24 22:28:44 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -10,14 +10,14 @@ static char vcid[] = "$Id: bdfact.c,v 1.4 1995/08/15 20:28:36 bsmith Exp bsmith 
 /* COMMENT: I have chosen to hide column permutation in the pivots,
    rather than put it in the Mat->col slot.*/
 
-int MatLUFactor_BDiag(Mat matin,IS row,IS col,double f)
+int MatLUFactor_SeqBDiag(Mat matin,IS row,IS col,double f)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   int    info, i, nb = mat->nb;
   Scalar *submat;
 
   if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
-    "MatLUFactor_BDiag: Currently supports factoriz only for main diagonal");
+    "MatLUFactor_SeqBDiag: Currently supports factoriz only for main diagonal");
   if (!mat->pivots) {
     mat->pivots = (int *) PETSCMALLOC( mat->m*sizeof(int) );
     CHKPTRQ(mat->pivots);
@@ -25,13 +25,13 @@ int MatLUFactor_BDiag(Mat matin,IS row,IS col,double f)
   submat = mat->diagv[0];
   for (i=0; i<mat->bdlen[0]; i++) {
     LAgetrf_(&nb,&nb,&submat[i*nb*nb],&nb,&mat->pivots[i*nb],&info);
-    if (info) SETERRQ(1,"MatLUFactor_BDiag:Bad LU factorization");
+    if (info) SETERRQ(1,"MatLUFactor_SeqBDiag:Bad LU factorization");
   }
   matin->factor = FACTOR_LU;
   return 0;
 }
 
-int MatLUFactorSymbolic_BDiag(Mat matin,IS row,IS col,double f,
+int MatLUFactorSymbolic_SeqBDiag(Mat matin,IS row,IS col,double f,
                                      Mat *fact)
 {
   int ierr;
@@ -39,20 +39,20 @@ int MatLUFactorSymbolic_BDiag(Mat matin,IS row,IS col,double f,
   return 0;
 }
 
-int MatLUFactorNumeric_BDiag(Mat matin,Mat *fact)
+int MatLUFactorNumeric_SeqBDiag(Mat matin,Mat *fact)
 {
   return MatLUFactor(*fact,0,0,1.0);
 }
 
-int MatSolve_BDiag(Mat matin,Vec xx,Vec yy)
+int MatSolve_SeqBDiag(Mat matin,Vec xx,Vec yy)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   int    one = 1, info, i, nb = mat->nb;
   Scalar *x, *y;
   Scalar *submat;
 
   if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
-    "MatSolve_BDiag: Currently supports triangular solves only for main diag");
+    "MatSolve_SeqBDiag: Currently supports triangular solves only for main diag");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
   if (matin->factor == FACTOR_LU) {
@@ -62,20 +62,20 @@ int MatSolve_BDiag(Mat matin,Vec xx,Vec yy)
               y+i*nb, &nb, &info );
     }
   }
-  else SETERRQ(1,"MatSolve_BDiag:Matrix must be factored to solve");
-  if (info) SETERRQ(1,"MatSolve_BDiag:Bad solve");
+  else SETERRQ(1,"MatSolve_SeqBDiag:Matrix must be factored to solve");
+  if (info) SETERRQ(1,"MatSolve_SeqBDiag:Bad solve");
   return 0;
 }
 
-int MatSolveTrans_BDiag(Mat matin,Vec xx,Vec yy)
+int MatSolveTrans_SeqBDiag(Mat matin,Vec xx,Vec yy)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   int    one = 1, info, i, nb = mat->nb;
   Scalar *x, *y;
   Scalar *submat;
 
   if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
-    "MatSolveTrans_BDiag: Currently supports triangular solves only for main diag");
+    "MatSolveTrans_SeqBDiag: Currently supports triangular solves only for main diag");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
   if (matin->factor == FACTOR_LU) {
@@ -85,21 +85,21 @@ int MatSolveTrans_BDiag(Mat matin,Vec xx,Vec yy)
               y+i*nb, &nb, &info );
     }
   }
-  else SETERRQ(1,"MatSolveTrans_BDiag:Matrix must be factored to solve");
-  if (info) SETERRQ(1,"MatSolveTrans_BDiag:Bad solve");
+  else SETERRQ(1,"MatSolveTrans_SeqBDiag:Matrix must be factored to solve");
+  if (info) SETERRQ(1,"MatSolveTrans_SeqBDiag:Bad solve");
   return 0;
 }
 
-int MatSolveAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
+int MatSolveAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
 {
-  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag *mat = (Mat_SeqBDiag *) matin->data;
   int    one = 1, info, ierr, i, nb = mat->nb;
   Scalar *x, *y, sone = 1.0;
   Vec    tmp = 0;
   Scalar *submat;
 
   if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
-    "MatSolveAdd_BDiag: Currently supports triangular solves only for main diag");
+    "MatSolveAdd_SeqBDiag: Currently supports triangular solves only for main diag");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
@@ -114,21 +114,21 @@ int MatSolveAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
               y+i*nb, &nb, &info );
     }
   }
-  if (info) SETERRQ(1,"MatSolveAdd_BDiag:Bad solve");
+  if (info) SETERRQ(1,"MatSolveAdd_SeqBDiag:Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;
 }
-int MatSolveTransAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
+int MatSolveTransAdd_SeqBDiag(Mat matin,Vec xx,Vec zz,Vec yy)
 {
-  Mat_BDiag  *mat = (Mat_BDiag *) matin->data;
+  Mat_SeqBDiag  *mat = (Mat_SeqBDiag *) matin->data;
   int     one = 1, info,ierr, i, nb = mat->nb;
   Scalar  *x, *y, sone = 1.0;
   Vec     tmp;
   Scalar *submat;
 
   if (mat->nd != 1 || mat->diag[0] !=0) SETERRQ(1,
-    "MatSolveTransAdd_BDiag: Currently supports triangular solves only for main diag");
+    "MatSolveTransAdd_SeqBDiag: Currently supports triangular solves only for main diag");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
@@ -143,7 +143,7 @@ int MatSolveTransAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
               y+i*nb, &nb, &info );
     }
   }
-  if (info) SETERRQ(1,"MatSolveTransAdd_BDiag:Bad solve");
+  if (info) SETERRQ(1,"MatSolveTransAdd_SeqBDiag:Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   return 0;

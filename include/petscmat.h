@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.60 1995/09/07 22:37:32 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.61 1995/09/11 19:20:08 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -12,8 +12,8 @@
 typedef struct _Mat*           Mat;
 typedef struct _MatScatterCtx* MatScatterCtx;
 
-typedef enum { MATSAME=-1, MATDENSE, MATAIJ, MATMPIAIJ, MATSHELL, MATROW, 
-               MATMPIROW, MATMPIROW_BS, MATBDIAG, MATMPIBDIAG } MatType;
+typedef enum { MATSAME=-1, MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, MATSHELL, MATSEQROW, 
+               MATMPIROW, MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG } MatType;
 
 extern int MatCreateSeqDense(MPI_Comm,int,int,Mat*);
 extern int MatCreateSeqAIJ(MPI_Comm,int,int,int,int *,Mat*);
@@ -134,7 +134,7 @@ extern int MatAXPY(Scalar *,Mat,Mat);
 extern int MatCompress(Mat);
 
 /* Routines unique to particular data structures */
-extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
+extern int MatSeqBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 
 #endif
 
