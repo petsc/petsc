@@ -78,6 +78,7 @@ typedef struct {
   int            ires,iramp,itstep;
   int            max_steps,print_freq;
   int            LocalTimeStepping;                         
+  PetscTruth     use_parabolic;
 } TstepCtx;
 
 /*
@@ -177,6 +178,8 @@ int main(int argc,char **argv)
     tsCtx.max_steps = 50;   tsCtx.max_time    = 1.0e+12; tsCtx.iramp   = -50;
     tsCtx.dt        = 0.01; tsCtx.fnorm_ratio = 1.0e+10;
     tsCtx.LocalTimeStepping = 0;
+    tsCtx.use_parabolic     = PETSC_FALSE;
+    ierr = PetscOptionsGetLogical(PETSC_NULL,"-use_parabolic",&tsCtx.use_parabolic,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
@@ -200,7 +203,7 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
        
-       Process adiC: FormFunctionLocal FormFunctionLocali AddTSTermLocal
+       Process adiC(20):  AddTSTermLocal FormFunctionLocal FormFunctionLocali
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
@@ -346,6 +349,46 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   return 0;
 } 
 
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "AddTSTermLocal"
+int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
+/*---------------------------------------------------------------------*/
+{
+  AppCtx         *user = (AppCtx*)ptr;
+  TstepCtx       *tsCtx = user->tsCtx;
+  DA             da = info->da;
+  int            ierr,i,j, xints,xinte,yints,yinte;
+  PetscReal      hx,hy,dhx,dhy,hxhy;
+  PassiveScalar  dtinv;
+  PassiveField   **xold;
+  PetscTruth     use_parab = tsCtx->use_parabolic;
+
+  PetscFunctionBegin; 
+  xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
+  dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
+  hx = 1.0/dhx;                   hy = 1.0/dhy;
+  hxhy = hx*hy;
+  ierr = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  dtinv = hxhy/(tsCtx->cfl*tsCtx->dt);
+  /* 
+     use_parab = PETSC_TRUE for parabolic equations; all the four equations have temporal term.
+               = PETSC_FALSE for differential algebraic equtions (DAE); 
+                 velocity equations do not have temporal term.
+  */
+  for (j=yints; j<yinte; j++) {
+    for (i=xints; i<xinte; i++) {
+      if (use_parab) {
+	f[j][i].u     += dtinv*(x[j][i].u-xold[j][i].u);
+	f[j][i].v     += dtinv*(x[j][i].v-xold[j][i].v);
+      }
+      f[j][i].omega += dtinv*(x[j][i].omega-xold[j][i].omega);
+      f[j][i].temp  += dtinv*(x[j][i].temp-xold[j][i].temp);
+    }
+  }
+  ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
@@ -710,44 +753,3 @@ int ComputeTimeStep(SNES snes,void *ptr)
   PetscFunctionReturn(0);
 }
 
-/*---------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "AddTSTermLocal"
-int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,void *ptr)
-/*---------------------------------------------------------------------*/
-{
-  AppCtx         *user = (AppCtx*)ptr;
-  TstepCtx       *tsCtx = user->tsCtx;
-  DA             da = info->da;
-  int            ierr,i,j, xints,xinte,yints,yinte;
-  PetscReal      hx,hy,dhx,dhy,hxhy;
-  PassiveScalar  dtinv;
-  PassiveField   **xold;
-  PetscTruth     use_parab = PETSC_FALSE;
-
-  PetscFunctionBegin; 
-  xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
-  dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
-  hx = 1.0/dhx;                   hy = 1.0/dhy;
-  hxhy = hx*hy;
-  ierr = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
-  dtinv = hxhy/(tsCtx->cfl*tsCtx->dt);
-  /* 
-     use_parab = PETSC_TRUE for parabolic equations; all the four equations have temporal term.
-               = PETSC_FALSE for differential algebraic equtions (DAE); 
-                 velocity equations do not have temporal term.
-  */
-  ierr = PetscOptionsGetLogical(PETSC_NULL,"-use_parabolic",&use_parab,PETSC_IGNORE);CHKERRQ(ierr);
-  for (j=yints; j<yinte; j++) {
-    for (i=xints; i<xinte; i++) {
-      if (use_parab) {
-	f[j][i].u     += dtinv*(x[j][i].u-xold[j][i].u);
-	f[j][i].v     += dtinv*(x[j][i].v-xold[j][i].v);
-      }
-      f[j][i].omega += dtinv*(x[j][i].omega-xold[j][i].omega);
-      f[j][i].temp  += dtinv*(x[j][i].temp-xold[j][i].temp);
-    }
-  }
-  ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
