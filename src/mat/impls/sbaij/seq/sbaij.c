@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.56 2001/04/10 22:35:39 balay Exp bsmith $*/
+/*$Id: sbaij.c,v 1.57 2001/06/16 02:48:46 bsmith Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -138,25 +138,47 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
 
   PetscFunctionBegin;
-  if      (op == MAT_ROW_ORIENTED)                 a->roworiented    = PETSC_TRUE;
-  else if (op == MAT_COLUMN_ORIENTED)              a->roworiented    = PETSC_FALSE;
-  else if (op == MAT_COLUMNS_SORTED)               a->sorted         = PETSC_TRUE;
-  else if (op == MAT_COLUMNS_UNSORTED)             a->sorted         = PETSC_FALSE;
-  else if (op == MAT_KEEP_ZEROED_ROWS)             a->keepzeroedrows = PETSC_TRUE;
-  else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)     a->nonew          = 1;
-  else if (op == MAT_NEW_NONZERO_LOCATION_ERR)     a->nonew          = -1;
-  else if (op == MAT_NEW_NONZERO_ALLOCATION_ERR)   a->nonew          = -2;
-  else if (op == MAT_YES_NEW_NONZERO_LOCATIONS)    a->nonew          = 0;
-  else if (op == MAT_ROWS_SORTED || 
-           op == MAT_ROWS_UNSORTED ||
-           op == MAT_YES_NEW_DIAGONALS ||
-           op == MAT_IGNORE_OFF_PROC_ENTRIES ||
-           op == MAT_USE_HASH_TABLE) {
+  switch (op) {
+  case MAT_ROW_ORIENTED:
+    a->roworiented    = PETSC_TRUE;
+    break;
+  case MAT_COLUMN_ORIENTED:
+    a->roworiented    = PETSC_FALSE;
+    break;
+  case MAT_COLUMNS_SORTED:
+    a->sorted         = PETSC_TRUE;
+    break;
+  case MAT_COLUMNS_UNSORTED:
+    a->sorted         = PETSC_FALSE;
+    break;
+  case MAT_KEEP_ZEROED_ROWS:
+    a->keepzeroedrows = PETSC_TRUE;
+    break;
+  case MAT_NO_NEW_NONZERO_LOCATIONS:
+    a->nonew          = 1;
+    break;
+  case MAT_NEW_NONZERO_LOCATION_ERR:
+    a->nonew          = -1;
+    break;
+  case MAT_NEW_NONZERO_ALLOCATION_ERR:
+    a->nonew          = -2;
+    break;
+  case MAT_YES_NEW_NONZERO_LOCATIONS:
+    a->nonew          = 0;
+    break;
+  case MAT_ROWS_SORTED:
+  case MAT_ROWS_UNSORTED:
+  case MAT_YES_NEW_DIAGONALS:
+  case MAT_IGNORE_OFF_PROC_ENTRIES:
+  case MAT_USE_HASH_TABLE:
     PetscLogInfo(A,"MatSetOption_SeqSBAIJ:Option ignored\n");
-  } else if (op == MAT_NO_NEW_DIAGONALS) {
+    break;
+  case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-  } else {
+    break;
+  default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
+    break;
   }
   PetscFunctionReturn(0);
 }
