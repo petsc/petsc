@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.119 1999/02/27 16:12:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.120 1999/03/07 17:28:24 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -599,6 +599,10 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
 .  ksp - iterative context obtained from KSPCreate()
 
    Level: beginner
+
+   Notes:
+    If this is not called the X vector is zeroed in the call to 
+SLESSolve() (or KSPSolve()).
 
 .keywords: KSP, set, initial guess, nonzero
 

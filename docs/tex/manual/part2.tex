@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.315 1999/03/19 21:25:28 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.316 1999/03/29 23:18:16 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2147,7 +2147,8 @@ The LSQR algorithm does not involve a preconditioner, any preconditioner
 set to work with the KSP object is ignored if LSQR was selected.
 
 By default, KSP assumes an initial guess of zero by zeroing the initial 
-value for the solution vector that is given. To use a nonzero 
+value for the solution vector that is given; this zeroing is done at the
+call to {\tt SLESSolve()} (or {\tt KSPSolve()}). To use a nonzero 
 initial guess, the user {\em must} call \findex{KSPSetInitialGuessNonzero()}
 \begin{verbatim}
    ierr = KSPSetInitialGuessNonzero(KSP ksp);
