@@ -62,6 +62,8 @@ add to it).
 
   General
 
+   PETSc functions and objects that began with Table now begin with PetscTable
+
    Changed these routines to return an error code.
 extern int   PetscStrchr(const char[],char,char **);
 extern int   PetscStrrchr(const char[],char,char **);
