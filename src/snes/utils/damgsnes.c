@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.36 2001/05/01 16:19:08 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.37 2001/05/01 16:22:38 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -151,7 +151,7 @@ int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   PetscFunctionReturn(0);
 }
 
-extern int DMMGFormJacobianWithAD(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveSNES"
@@ -258,10 +258,12 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
       dmmg[i]->computejacobian = SNESDefaultComputeJacobianColor;
     }
 #if defined(PETSC_HAVE_ADIC)
-  } else if (jacobian == DMMGFormJacobianWithAD) {
+  } else if (jacobian == DMMGComputeJacobianWithAdic) {
     for (i=0; i<nlevels; i++) {
-      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GHOSTED,MATMPIAIJ,&dmmg[i]->iscoloring,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatSetColoring(dmmg[i]->B,dmmg[i]->iscoloring);CHKERRQ(ierr);
+      ISColoring iscoloring;
+      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatSetColoring(dmmg[i]->B,iscoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     }
 #endif
   }
@@ -314,107 +316,6 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 }
 
 /* ---------------------------------------------------------------------------*/
-#undef __FUNCT__
-#define __FUNCT__ "DAFormFunction1"
-/*@
-    DAFormFunction1 - Evaluates a user provided function on each processor that 
-        share a DA
-
-   Input Parameters:
-+    da - the DA that defines the grid
-.    lf - the user provided local function
-.    vu - input vector
-.    vfu - output vector 
--    w - any user data
-
-    Calling sequence of lf
-$     int (*lf)(DALocalInfo*,void *in,void *out,void *w)
- 
-    Notes: Does NOT do ghost updates on vu upon entry
-
-.seealso: DAFormJacobian1()
-
-@*/
-int DAFormFunction1(DA da,DALocalFunction1 lf,Vec vu,Vec vfu,void *w)
-{
-  int         ierr;
-  void        *u,*fu;
-  DALocalInfo info;
-
-  PetscFunctionBegin;
-
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
-
-  ierr = (*lf)(&info,u,fu,w);CHKERRQ(ierr);
-
-  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#if defined(PETSC_HAVE_ADIC)
-
-#include "adic_utils.h"
-
-#undef __FUNCT__
-#define __FUNCT__ "DAFormJacobian1"
-/*@
-    DAFormJacobian1 - Evaluates a adiC provided Jacobian function on each processor that 
-        share a DA
-
-   Input Parameters:
-+    da - the DA that defines the grid
-.    iscoloring - obtained with DAGetColoring()
-.    lf - the user provided local function
-.    vu - input vector
-.    J - output matrix
--    w - any user data
-
-    Calling sequence of lf
-$     int (*lf)(DALocalInfo*,void *in,Mat J,void *w)
- 
-    Notes: Does NOT do ghost updates on vu upon entry
-
-.seealso: DAFormFunction1()
-
-@*/
-int DAFormJacobian1(DA da,ISColoring iscoloring,DALocalFunction1 lf,Vec vu,Mat J,void *w)
-{
-  int         ierr,gtdof,tdof;
-  Scalar      *u,*ustart;
-  DALocalInfo info;
-  void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
-
-  PetscFunctionBegin;
-
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-
-  /* get space for derivative objects.  */
-  ierr = DAGetADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
-  ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
-  my_AD_SetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
-  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
-
-  my_AD_ResetIndep();
-  my_AD_SetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors);
-  my_AD_IncrementTotalGradSize(iscoloring->n);
-  my_AD_SetIndepDone();
-
-  ierr = (*lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
-
-  /* stick the values into the matrix */
-  ierr = MatSetValuesAD(J,(Scalar**)ad_fstart);CHKERRQ(ierr);
-
-  /* return space for derivative objects.  */
-  ierr = DARestoreADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DARestoreADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormFunction"
@@ -433,87 +334,83 @@ int DAFormJacobian1(DA da,ISColoring iscoloring,DALocalFunction1 lf,Vec vu,Mat J
  */
 int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  DMMG        dmmg = (DMMG)ptr;
-  int         ierr;
-  Vec         localX;
-  DA          da = (DA)dmmg->dm;
+  DMMG             dmmg = (DMMG)ptr;
+  int              ierr;
+  Vec              localX;
+  DA               da = (DA)dmmg->dm;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-
   /*
      Scatter ghost points to local vector, using the 2-step process
         DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
   */
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAFormFunction1(da,localX,F,dmmg->user);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+} 
 
-  ierr = DAFormFunction1(da,dmmg->computefunctionlocal,localX,F,dmmg->user);
+#undef __FUNCT__
+#define __FUNCT__ "SNESDAFormFunction"
+/*@C 
+   SNESDAFormFunction - This is a universal form function that may be used with 
+     SNESSetFunction() so long as the user context has a DA as the first record
+     and has called DASetLocalFunction()
 
-  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+   Collective on SNES
 
+   Input Parameters:
++  snes - the SNES context
+.  X - input vector
+.  F - function vector
+-  ptr - optional user-defined context, as set by SNESSetFunction()
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), SNESSetFunction(), SNESSetJacobian()
+
+@*/
+int SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
+{
+  int              ierr;
+  Vec              localX;
+  DA               da = *(DA*)ptr;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAFormFunction1(da,localX,F,ptr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
 /* ---------------------------------------------------------------------------------------------------------------------------*/
 
-#if defined(PETSC_HAVE_ADIC)
-
 #undef __FUNCT__
-#define __FUNCT__ "DMMGFormJacobianWithAD"
+#define __FUNCT__ "DMMGComputeJacobianWithAdic"
 /*
-    DMMGFormJacobianWithAD - Evaluates the Jacobian via AD when the user has provide
+    DMMGComputeJacobianWithAdic - Evaluates the Jacobian via Adic when the user has provide
         a local form function
 */
-int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+int DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  DMMG           dmmg = (DMMG) ptr;
-  int            ierr,i,j,k,l,*colors = dmmg->iscoloring->colors;
-  int            *colorptr,size,gtdof,tdof;
-  Vec            localX;
-  Scalar         *xstart;
-  DALocalInfo    info;
-  void           *ad_x,*ad_f,*ad_xstart,*ad_fstart;
-  DA             da = (DA) dmmg->dm;
+  DMMG             dmmg = (DMMG) ptr;
+  int              ierr;
+  Vec              localX;
+  DA               da = (DA) dmmg->dm;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(dmmg->comm,&size);CHKERRQ(ierr);
-  if (size > 1 && dmmg->iscoloring->ctype != IS_COLORING_GHOSTED) {
-    SETERRQ(1,"ISColoring must be of type IS_COLORING_GHOSTED");
-  }
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-
-  /* get space for derivative objects.  */
-  ierr = DAGetADArray(da,PETSC_TRUE,(void **)&ad_x,&ad_xstart,&gtdof);CHKERRQ(ierr);
-  ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
-
-  /* copy over function inputs to derivate enhanced variable */
-  ierr = VecGetArray(localX,&xstart);CHKERRQ(ierr);
-  my_AD_SetValArray(((DERIV_TYPE*)ad_xstart),gtdof,xstart);
-  ierr = VecRestoreArray(localX,&xstart);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
-
-  my_AD_ResetIndep();
-  my_AD_SetIndepArrayColored(ad_xstart,gtdof,colors);
-  my_AD_IncrementTotalGradSize(dmmg->iscoloring->n);
-  my_AD_SetIndepDone();
-
-  /* 
-     Compute entries for the locally owned part of the Jacobian.
-  */
-  ierr = (*dmmg->ad_computefunctionlocal)(&info,ad_x,ad_f,dmmg->user);CHKERRQ(ierr); 
-
-  /* stick the values into the matrix */
-  ierr = MatSetValuesAD(*B,(Scalar**)ad_fstart);CHKERRQ(ierr);
-
-  /* return space for derivative objects.  */
-  ierr = DARestoreADArray(da,PETSC_TRUE,(void **)&ad_x,&ad_xstart,&gtdof);CHKERRQ(ierr);
-  ierr = DARestoreADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
-
+  ierr = DAComputeJacobian1WithAdic(da,localX,*B,dmmg->user);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
     ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -524,7 +421,132 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   PetscFunctionReturn(0);
 }
 
-#endif
+#undef __FUNCT__
+#define __FUNCT__ "SNESDAComputeJacobianWithAdic"
+/*@
+    SNESDAComputeJacobianWithAdic - This is a universal form function that may be used with 
+     SNESSetJacobian() so long as the user context has a DA as the first record
+     and has called DASetLocalFunction()
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  X - input vector
+.  J - Jacobian
+.  B - Jacobian used in preconditioner (usally same as J)
+.  flag - indicates if the matrix changed its structure
+-  ptr - optional user-defined context, as set by SNESSetFunction()
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), SNESSetFunction(), SNESSetJacobian()
+
+@*/
+int SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+{
+  DA   da = *(DA*) ptr;
+  int  ierr;
+  Vec  localX;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAComputeJacobian1WithAdic(da,localX,*B,ptr);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  if (*J != *B) {
+    ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr  = MatSetOption(*B,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESDAComputeJacobianWithAdifor"
+/*
+    SNESDAComputeJacobianWithAdifor - This is a universal form function that may be used with 
+     SNESSetJacobian() from Fortran
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  X - input vector
+.  J - Jacobian
+.  B - Jacobian used in preconditioner (usally same as J)
+.  flag - indicates if the matrix changed its structure
+-  ptr - optional user-defined context, as set by SNESSetFunction()
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), SNESSetFunction(), SNESSetJacobian()
+
+*/
+int SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+{
+  DA   da = *(DA*) ptr;
+  int  ierr;
+  Vec  localX;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAComputeJacobian1WithAdifor(da,localX,*B,ptr);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  if (*J != *B) {
+    ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr  = MatSetOption(*B,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESDAComputeJacobian"
+/*
+    SNESDAComputeJacobian - This is a universal form function for a locally provided Jacobian
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  X - input vector
+.  J - Jacobian
+.  B - Jacobian used in preconditioner (usally same as J)
+.  flag - indicates if the matrix changed its structure
+-  ptr - optional user-defined context, as set by SNESSetFunction()
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), SNESSetFunction(), SNESSetJacobian()
+
+*/
+int SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+{
+  DA   da = *(DA*) ptr;
+  int  ierr;
+  Vec  localX;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAComputeJacobian1(da,localX,*B,ptr);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  if (*J != *B) {
+    ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr  = MatSetOption(*B,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
 
 /*M
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
@@ -558,19 +580,18 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
-int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,int (*jacobian)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),DALocalFunction1 ad_function)
+int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function)
 {
   int ierr,i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_ADIC)
-  ierr = DMMGSetSNES(dmmg,DMMGFormFunction,DMMGFormJacobianWithAD);CHKERRQ(ierr);
+  ierr = DMMGSetSNES(dmmg,DMMGFormFunction,DMMGComputeJacobianWithAdic);CHKERRQ(ierr);
 #else 
   ierr = DMMGSetSNES(dmmg,DMMGFormFunction,0);CHKERRQ(ierr);
 #endif
   for (i=0; i<nlevels; i++) {
-    dmmg[i]->computefunctionlocal    = function;
-    dmmg[i]->ad_computefunctionlocal = ad_function;
+    ierr = DASetLocalFunction((DA)dmmg[i]->dm,function,jacobian,ad_function);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

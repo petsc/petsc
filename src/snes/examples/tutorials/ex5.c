@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.133 2001/05/04 15:11:17 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.134 2001/05/04 19:54:30 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -159,11 +159,13 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ADIC)
   } else if (adic_jacobian) {
     ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
     ierr = MatSetColoring(J,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdic,&user);CHKERRQ(ierr);
+#endif
   } else if (global_jacobian){
     ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
