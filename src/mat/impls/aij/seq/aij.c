@@ -186,13 +186,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
         ierr = PetscMemcpy(new_a,aa,(((size_t) ai[row])+nrow)*sizeof(PetscScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+ai[row]+nrow+CHUNKSIZE,aa+ai[row]+nrow,len*sizeof(PetscScalar));CHKERRQ(ierr);
         /* free up old matrix storage */
-        if (!a->singlemalloc) {
-          ierr = PetscFree(a->a);CHKERRQ(ierr);
-          ierr = PetscFree(a->i);CHKERRQ(ierr);
-          ierr = PetscFree(a->j);CHKERRQ(ierr);
-        } else {
-          ierr = PetscFree3(a->a,a->i,a->j);CHKERRQ(ierr);
-        }
+        ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,a->a,a->j,a->i);CHKERRQ(ierr);
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
         a->singlemalloc = PETSC_TRUE;
 

@@ -54,7 +54,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat,const MatType matype)
 
     /* free the old data structure if it existed */
     if (mat->ops->destroy) {
-      MatPreallocated(mat);
+      ierr = MatPreallocated(mat);CHKERRQ(ierr);
       ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
       mat->ops->destroy = PETSC_NULL;
       mat->preallocated = PETSC_FALSE;

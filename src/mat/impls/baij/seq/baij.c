@@ -827,13 +827,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->m,A->n,a->nz);
 #endif
-  if (!a->singlemalloc) {
-    if (a->a) {ierr = PetscFree(a->a);CHKERRQ(ierr);}
-    if (a->i) {ierr = PetscFree(a->i);CHKERRQ(ierr);}
-    if (a->j) {ierr = PetscFree(a->j);CHKERRQ(ierr);}
-  } else if (a) {
-    ierr = PetscFree3(a->a,a->i,a->j);CHKERRQ(ierr);
-  }
+  ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,a->a,a->j,a->i);CHKERRQ(ierr);
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
   }
@@ -1484,13 +1478,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,PetscInt m,const Pets
         ierr = PetscMemzero(new_a+bs2*(ai[row]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+bs2*(ai[row]+nrow+CHUNKSIZE),aa+bs2*(ai[row]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
         /* free up old matrix storage */
-       if (!a->singlemalloc) {
-          ierr = PetscFree(a->a);CHKERRQ(ierr);
-          ierr = PetscFree(a->i);CHKERRQ(ierr);
-          ierr = PetscFree(a->j);CHKERRQ(ierr);
-        } else {
-          ierr = PetscFree3(a->a,a->i,a->j);CHKERRQ(ierr);
-        }
+        ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,a->a,a->j,a->i);CHKERRQ(ierr);\
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
         a->singlemalloc = PETSC_TRUE;
 
@@ -1785,14 +1773,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
         ierr = PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
         ierr = PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE),aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
         /* free up old matrix storage */
-        /* free up old matrix storage */
-       if (!a->singlemalloc) {
-          ierr = PetscFree(a->a);CHKERRQ(ierr);
-          ierr = PetscFree(a->i);CHKERRQ(ierr);
-          ierr = PetscFree(a->j);CHKERRQ(ierr);
-        } else {
-          ierr = PetscFree3(a->a,a->i,a->j);CHKERRQ(ierr);
-        }
+        ierr = MatSeqXAIJFreeAIJ(a->singlemalloc,a->a,a->j,a->i);CHKERRQ(ierr);
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
         a->singlemalloc = PETSC_TRUE;
 

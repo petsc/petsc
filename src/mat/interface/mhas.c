@@ -31,10 +31,12 @@
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
 {
+  PetscErrorCode ierr;
+ 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  MatPreallocated(mat);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
   PetscValidPointer(has,3);
   if (((void **)mat->ops)[op]) {*has =  PETSC_TRUE;}
   else {*has = PETSC_FALSE;}

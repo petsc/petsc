@@ -246,8 +246,20 @@ struct _p_Mat {
   void                   *spptr;          /* pointer for special library like SuperLU */
 };
 
-#define MatPreallocated(A) {PetscInt _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}
+#define MatPreallocated(A)  ((!(A)->preallocated) ? MatSetUpPreallocation(A) : 0)
 extern PetscErrorCode MatAXPY_Basic(const PetscScalar*,Mat,Mat,MatStructure);
+
+PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(PetscTruth singlemalloc,PetscScalar *a,PetscInt *j,PetscInt *i) {
+                                     PetscErrorCode ierr;
+                                     if (singlemalloc) {
+                                       ierr = PetscFree3(a,j,i);CHKERRQ(ierr);
+                                     } else {
+                                       ierr = PetscFree(a);CHKERRQ(ierr);
+                                       ierr = PetscFree(j);CHKERRQ(ierr);
+                                       ierr = PetscFree(i);CHKERRQ(ierr);
+                                     }
+                                     return 0;
+                                   }
 
 /*
     Object for partitioning graphs

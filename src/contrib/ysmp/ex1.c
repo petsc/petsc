@@ -213,8 +213,6 @@ int MatLUFactorSymbolic_SeqAIJ_YSMP(Mat A ,IS row,IS col,double f,Mat *B)
   ierr = MatCreateSeqAIJ(A->comm,N,N,MAT_SKIP_ALLOCATION,PETSC_NULL,B); CHKERRQ(ierr);
   PLogObjectParent(*B,icol); 
   b = (Mat_SeqAIJ *) (*B)->data;
-  PetscFree(b->imax); b->imax = 0;
-  PetscFree(b->ilen);
   b->singlemalloc = PETSC_FALSE;
 
   b->row        = row;
