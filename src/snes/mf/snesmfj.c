@@ -277,7 +277,7 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
       Compute differencing parameter 
   */
   if (!ctx->ops->compute) {
-    ierr = MatSNESMFSetType(mat,MATSNESMF_DEFAULT);CHKERRQ(ierr);
+    ierr = MatSNESMFSetType(mat,MATSNESMF_WP);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(mat);CHKERRQ(ierr);
   }
   ierr = (*ctx->ops->compute)(ctx,U,a,&h);CHKERRQ(ierr);
