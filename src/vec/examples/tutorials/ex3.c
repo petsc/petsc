@@ -1,12 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.27 1996/03/23 18:32:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.28 1996/10/28 22:44:14 curfman Exp curfman $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
 
 /*T
    Concepts: Vectors^Drawing vectors;
-   Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy();
+   Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy(); 
+   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
    Routines: ViewerDrawOpenX(); ViewerDestroy();
    Processors: n
 T*/

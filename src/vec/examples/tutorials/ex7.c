@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex24.c,v 1.5 1996/07/08 22:16:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.6 1996/10/23 22:14:05 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
@@ -28,16 +28,16 @@ int __main()
   and C. Sorry, but this is out of our PETSc hands to cleanup.
 */
 #if defined(HAVE_FORTRAN_CAPS)
-#define ex24f_ EX24F
-#define ex24c_ EX24C
+#define ex7f_ EX7F
+#define ex7c_ EX7C
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define ex24f_ ex24f
-#define ex24c_ ex24c
+#define ex7f_ ex7f
+#define ex7c_ ex7c
 #endif
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern void ex24f_(int*);
+extern void ex7f_(int*);
 #if defined(__cplusplus)
 }
 #endif
@@ -62,7 +62,7 @@ int main(int argc,char **args)
      Fortran side. Note that Fortran treats all PETSc objects as integers.
   */
   ierr = PetscCObjectToFortranObject(vec,&fvec);
-  ex24f_(&fvec);
+  ex7f_(&fvec);
 
   ierr = VecView(vec,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
   ierr = VecDestroy(vec); CHKERRA(ierr);
@@ -74,7 +74,7 @@ int main(int argc,char **args)
 extern "C" {
 #endif
 
-int ex24c_(int *fvec)
+int ex7c_(int *fvec)
 {
   Vec vec;
   int ierr,size;
