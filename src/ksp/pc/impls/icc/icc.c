@@ -530,6 +530,8 @@ int PCCreate_ICC(PC pc)
                     PCICCSetShift_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetMatOrdering_C","PCICCSetMatOrdering_ICC",
                     PCICCSetMatOrdering_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetZeroPivot_C","PCICCSetZeroPivot_ICC",
+                    PCICCSetZeroPivot_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
