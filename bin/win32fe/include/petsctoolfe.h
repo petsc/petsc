@@ -21,6 +21,7 @@ namespace PETScFE {
     virtual void Help(void);
 
     void FoundHelp(LI &);
+    void FoundNoDetect(LI &);
     void FoundPath(LI &);
     void FoundUse(LI &);
     void FoundV(LI &);
@@ -36,6 +37,7 @@ namespace PETScFE {
 
     void PrintListString(list<string> &);
     int GetShortPath(string &);
+    int GetLongPath(string &,string &);
     virtual void ProtectQuotes(string &);
     virtual void ReplaceSlashWithBackslash(string &);
     virtual void Merge(string &,list<string> &,LI &);
@@ -43,12 +45,13 @@ namespace PETScFE {
     list<string> arg;
     list<string> file;
     string InstallDir;
-    string version;
-    bool woff;
-    bool verbose;
-    bool helpfound;
-    bool versionfound;
+    string version_string;
+    bool detect;
     bool inpath;
+    bool helpfound;
+    bool verbose;
+    bool versionfound;
+    bool woff;
   private:
     string OptionTags;
     typedef void (PETScFE::tool::*ptm)(LI &);
