@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.89 1996/01/24 05:46:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.90 1996/01/26 04:34:02 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -509,15 +509,18 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
   ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
 
   if (format == FILE_FORMAT_INFO) {
-/*   int ind_l, ind_g, clq_l, clq_g, color;
-   ind_l = BSlocal_num_inodes(a->pA); CHKERRBS(0);
-   ind_g = BSglobal_num_inodes(a->pA); CHKERRBS(0);
-   clq_l = BSlocal_num_cliques(a->pA); CHKERRBS(0);
-   clq_g = BSglobal_num_cliques(a->pA); CHKERRBS(0);
-   color = BSnum_colors(a->pA); CHKERRBS(0);
-   MPIU_fprintf(mat->comm,fd,
-    "  inodes: %d local %d global, cliques: %d local %d global, %d colors\n",
-    ind_l,ind_g,clq_l,clq_g,color); */
+    int ind_l, ind_g, clq_l, clq_g, color;
+    ind_l = BSlocal_num_inodes(a->pA); CHKERRBS(0);
+    ind_g = BSglobal_num_inodes(a->pA); CHKERRBS(0);
+    clq_l = BSlocal_num_cliques(a->pA); CHKERRBS(0);
+    clq_g = BSglobal_num_cliques(a->pA); CHKERRBS(0);
+    color = BSnum_colors(a->pA); CHKERRBS(0);
+    MPIU_fprintf(mat->comm,fd,
+     "  %d global inodes, %d global cliques, %d colors\n",ind_g,clq_g,color);
+    MPIU_Seq_begin(mat->comm,1);
+    fprintf(fd,"    [%d] %d local inodes, %d local cliques\n",a->rank,ind_l,clq_l);
+    fflush(fd);
+    MPIU_Seq_end(mat->comm,1);
   }
   else {
     BSspmat *A = a->A;
