@@ -1,5 +1,7 @@
-/* $Id: f90_IRIX.h,v 1.1 1998/03/12 18:01:55 balay Exp balay $ */
+/* $Id: f90_IRIX.h,v 1.2 1998/04/06 22:51:43 balay Exp balay $ */
 
+#if !defined(__F90_IRIX_H)
+#define __F90_IRIX_H
 
 typedef struct {
   long lower;   /* starting index of the fortran array */
@@ -36,3 +38,4 @@ typedef struct {
   tripple dim[4];
 }array4d;
 
+#endif

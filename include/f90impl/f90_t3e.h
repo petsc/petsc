@@ -1,4 +1,7 @@
-/* $Id: f90_t3e.h,v 1.2 1998/04/06 22:51:43 balay Exp $ */
+/* $Id: f90_t3e.h,v 1.1 1998/04/25 21:09:24 balay Exp balay $ */
+
+#if !defined (__F90_T3E_H)
+#define __F90_T3E_H
 
 #define F90_INT_ID     33570816
 #define F90_DOUBLE_ID  50348032
@@ -46,3 +49,4 @@ typedef struct {
   tripple dim[4];
 }array4d;
 
+#endif

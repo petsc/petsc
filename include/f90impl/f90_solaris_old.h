@@ -1,5 +1,8 @@
-/* $Id: f90_solaris.h,v 1.1 1998/06/25 21:40:39 balay Exp balay $ */
+/* $Id: f90_solaris.h,v 1.2 1998/06/25 22:15:54 balay Exp balay $ */
 
+#if !defined (__F90_SOLARIS_H)
+#define __F90_SOLARIS_H
+ 
 typedef struct {
   long lower;   /* starting index of the fortran array */
   long extent;  /* length of the array */
@@ -54,3 +57,4 @@ typedef struct {
 }array4d;
 
 
+#endif

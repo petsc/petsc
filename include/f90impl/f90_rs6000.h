@@ -1,4 +1,7 @@
-/* $Id: f90_rs6000.h,v 1.3 1998/04/25 20:28:50 balay Exp bsmith $ */
+/* $Id: f90_rs6000.h,v 1.4 1998/04/26 15:16:13 bsmith Exp balay $ */
+
+#if !defined (__F90_RS6000_H)
+#define __F90_RS6000_H
 
 typedef struct {
   long lower;   /* starting index of the fortran array */
@@ -53,3 +56,4 @@ typedef struct {
 }array4d;
 
 
+#endif
