@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,n,-1,&x); CHKERRA(ierr);
-  ierr = VecCreateSequential(n,&y); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&y); CHKERRA(ierr);
 
   /* create two index sets */
   ierr = ISCreateSequential(MPI_COMM_SELF,2,idx1,&is1); CHKERRA(ierr);

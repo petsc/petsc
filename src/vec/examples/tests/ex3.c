@@ -26,8 +26,8 @@ int main(int argc,char **argv)
   if (numtids < 2) SETERRA(1,"Must be run with at least two processors");
 
   /* create two vector */
-  ierr = VecCreateSequential(n,&x); CHKERRA(ierr);
-  ierr = VecCreateMPI(MPI_COMM_WORLD,n,-1,&y); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,n,PETSC_DECIDE,&y); CHKERRA(ierr);
   ierr = VecSet(&one,x);CHKERRA(ierr);
   ierr = VecSet(&two,y);CHKERRA(ierr);
 
