@@ -1,5 +1,5 @@
 PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g -Dlint
-COPTFLAGS  = -g -Wall
+COPTFLAGS  = -g -Wall -Wshadow
 #
 # To prohibit Fortran implicit typing, add -u in FOPTFLAGS definition
 #
