@@ -41,8 +41,9 @@ class PetscMake(build.framework.Framework):
   def t_updateWebsite(self):
     build.framework.Framework.t_updateWebsite(self)
     self.cpWebsite('docs/website/index.html')
-    self.cpWebsite('install/bootstrap.sh')
+    self.cpWebsite('install/bootstrap.py', 'bootstrap.sh')
     self.cpWebsite('docs/tutorials/*.ppt')
+    return
        
 if __name__ ==  '__main__':
   import sys

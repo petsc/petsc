@@ -499,8 +499,11 @@ class Framework(base.Base):
       os.remove(f)
     return
 
-  def cpWebsite(self,filenames):
-    self.executeShellCommand('scp '+filenames+' '+self.project.getWebDirectory())
+  def cpWebsite(self, localFile, remoteFile = None):
+    if remoteFile:
+      self.executeShellCommand('scp '+localFile+' '+os.path.join(self.project.getWebDirectory(), remoteFile))
+    else:
+      self.executeShellCommand('scp '+localFile+' '+self.project.getWebDirectory())
     return
 
   def setupProject(self):
