@@ -1,4 +1,4 @@
-/*$Id: ffpath.c,v 1.35 2001/01/15 21:43:46 bsmith Exp balay $*/
+/*$Id: ffpath.c,v 1.36 2001/03/23 23:20:30 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -70,7 +70,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mo
 
   PetscFunctionBegin;
   /* Setup default */
-  PetscGetFullPath(defname,fname,MAXPATHLEN);
+  ierr = PetscGetFullPath(defname,fname,MAXPATHLEN);CHKERRQ(ierr);
 
   if (path) {
     /* Check to see if the path is a valid regular FILE */
