@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.59 1997/09/03 22:26:04 balay Exp gropp $";
+static char vcid[] = "$Id: send.c,v 1.60 1997/09/07 19:10:27 gropp Exp gropp $";
 #endif
 
 /* Include incase petscconf.h is used to pick up options/features */
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: send.c,v 1.59 1997/09/03 22:26:04 balay Exp gropp $";
 /* 
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
-#if defined(PARCH_paragon) ||  defined(PARCH_alpha)
+#if defined(NEED_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't
    ensure that the following definitions are made */
 typedef unsigned char   u_char;
