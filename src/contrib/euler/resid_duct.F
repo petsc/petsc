@@ -1,5 +1,5 @@
-
-c  "$Id: resid.F,v 1.4 1997/10/12 17:21:17 curfman Exp curfman $";
+c
+c  "$Id: resid_duct.F,v 1.2 1997/10/16 02:44:07 curfman Exp curfman $";
 c
       integer function residbc_duct(jacform,xx,fff,p,xx_bc,p_bc,
      &                sadai,sadaj,sadak,
