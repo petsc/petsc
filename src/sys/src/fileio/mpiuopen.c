@@ -100,6 +100,23 @@ int PetscFClose(MPI_Comm comm,FILE *fd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPClose"
+/*@C
+      PetscPClose - Closes (ends) a program on processor zero run with PetscPOpen()
+
+     Collective on MPI_Comm, but only process 0 runs the command
+
+   Input Parameters:
++   comm - MPI communicator, only processor zero runs the program
+-   fp - the file pointer where program input or output may be read or PETSC_NULL if don't care
+
+   Level: intermediate
+
+   Notes:
+       Does not work under Windows
+
+.seealso: PetscFOpen(), PetscFClose(), PetscPOpen()
+
+@*/
 int PetscPClose(MPI_Comm comm,FILE *fd)
 {
   int  rank,ierr;

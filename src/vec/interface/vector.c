@@ -82,7 +82,7 @@ static int VecSetTypeFromOptions_Private(Vec vec)
   Concepts: vectors^setting type
 
 .keywords: Vec, set, options, database
-.seealso: VecCreate(), VecPrintHelp(), VechSetOptionsPrefix()
+.seealso: VecCreate(), VecPrintHelp(), VecSetOptionsPrefix()
 @*/
 int VecSetFromOptions(Vec vec)
 {

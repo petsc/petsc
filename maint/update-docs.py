@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: update-docs.py,v 1.7 2001/08/30 17:51:36 bsmith Exp $ 
 #
 # update-docs.py LOC
 # update-docs.py LOC clean
@@ -12,6 +11,7 @@ import posixpath
 import string
 from sys import *
 import shutil
+import os.path
 
 def modifyfile(filename):
     print 'processing file : ' + filename
@@ -102,12 +102,12 @@ def main():
         'changes/index.html',
         'installation.html']
 
-    # if clean option is providedm then delete the files and exit
+    # if clean option is provided then delete the files and exit
     if cleanfiles == 1 :
         for basename in htmlfiles:
             urlname  = baseurl + basename
             filename = LOC + '/docs/' + basename
-            rmfile(filename)
+            if os.path.isfile(filename): rmfile(filename)
         exit()
 
     for basename in htmlfiles:

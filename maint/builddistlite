@@ -1,6 +1,4 @@
 #! /bin/csh
-# $Id: builddistlite,v 1.6 2001/04/11 15:01:18 balay Exp $ 
-
 # 
 #  takes a full distribution tar file, and creates a 'lite' distribution
 #

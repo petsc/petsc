@@ -1,5 +1,4 @@
 #! /bin/csh
-# $Id: buildconfigtest,v 1.5 2001/02/13 19:42:16 bsmith Exp $ 
 # 
 ## Compiles and tests PETSc using configure in our nightly builds.
 

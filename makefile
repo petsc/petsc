@@ -342,7 +342,12 @@ BMAKEFILES = bmake/common/base bmake/common/test \
 	     bmake/config/petscfix.h.in  bmake/config/rules.in  \
 	     bmake/config/variables.in bmake/adic.init bmake/adicmf.init
 DOCS	   = bmake/readme bmake/petscconf.defs
-SCRIPTS    = maint/builddist  maint/wwwman maint/xclude python/PETSc/Configure.py python/PETSc/Options.py \
+SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint/buildconfigtest maint/builddistlite \
+             maint/buildtest maint/checkBuilds.py maint/copylognightly maint/copylognightly.tao maint/countfiles maint/findbadfiles \
+             maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris killnightly \
+             maint/lex.py maint/makepatch maint/mapnameslatex.py maint/startnightly maint/startnightly.tao maint/submitPatch.py \
+             maint/update-docs.py maint/updatetestbk maint/wwwindex.py maint/xcludebackup maint/xcludecblas maint/zap maint/zapall \
+             python/PETSc/Configure.py python/PETSc/Options.py \
              python/PETSc/packages/ADIC.py python/PETSc/packages/MPE.py python/PETSc/packages/Mathematica.py \
              python/PETSc/packages/PLAPACK.py python/PETSc/packages/Triangle.py python/PETSc/packages/Matlab.py \
              python/PETSc/packages/PVODE.py python/PETSc/packages/BlasLapack.py python/PETSc/packages/MPI.py \
@@ -394,10 +399,10 @@ alldocclean: deletemanualpages allcleanhtml
 deletemanualpages: chk_loc
 	-@if [ -d ${LOC} -a -d ${LOC}/docs/manualpages ]; then \
           find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \; ;\
-          ${RM} ${LOC}/docs/tex/exampleconcepts ;\
-          ${RM} ${LOC}/docs/tex/manconcepts ;\
+          ${RM} ${LOC}/docs/exampleconcepts ;\
+          ${RM} ${LOC}/docs/manconcepts ;\
           ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
-          -maint/update-docs.py ${LOC} clean;\
+          maint/update-docs.py ${LOC} clean;\
         fi
 
 allcleanhtml: 

@@ -1,8 +1,7 @@
 #! /usr/bin/env python
 #!/bin/env python
-# $Id: helpindex.py,v 1.14 2001/08/30 17:51:39 bsmith Exp $ 
 # 
-# reads in docs/tex/exampleconcepts,manconcepts, and create
+# reads in docs/exampleconcepts,manconcepts, and create
 # the file help.html
 # 
 #
@@ -249,8 +248,8 @@ def main():
       dict = {}
 
       # open and read in the input files
-      fd1 = open( PETSC_DIR + '/docs/tex/exampleconcepts','r')
-#      fd2 = open( PETSC_DIR + '/docs/tex/manconcepts','r')
+      fd1 = open( PETSC_DIR + '/docs/exampleconcepts','r')
+#      fd2 = open( PETSC_DIR + '/docs/manconcepts','r')
 
       for line in fd1.readlines():
             updatedata(PETSC_DIR,dict,strip(line))

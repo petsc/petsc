@@ -594,6 +594,17 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,const PetscScalar array[],Vec *V)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   VECSEQ - VECSEQ = "seq" - The basic sequential vector
+
+   Options Database Keys:
+. -vec_type seq - sets the vector type to VECSEQ during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateSeqWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateSeq()
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Seq"

@@ -299,7 +299,7 @@ EXTERN int  PetscClearMalloc(void);
 EXTERN int   PetscTrDump(FILE *);
 EXTERN int   PetscTrSpace(PetscLogDouble *,PetscLogDouble *,PetscLogDouble *);
 EXTERN int   PetscTrValid(int,const char[],const char[],const char[]);
-EXTERN int   PetscTrDebugLevel(int);
+EXTERN int   PetscTrDebug(PetscTruth);
 EXTERN int   PetscTrLog(void);
 EXTERN int   PetscTrLogDump(FILE *);
 EXTERN int   PetscGetResidentSetSize(PetscLogDouble *);
@@ -369,7 +369,15 @@ EXTERN int   PetscStrstr(const char[],const char[],char *[]);
 EXTERN int   PetscStrallocpy(const char[],char *[]);
 EXTERN int   PetscStrreplace(MPI_Comm,const char[],char[],int);
 #define      PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
+/*S
+    PetscToken - 'Token' used for managing tokenizing strings
+
+  Level: intermediate
+
+.seealso: PetscTokenCreate(), PetscTokenFind(), PetscTokenDestroy()
+S*/
 typedef struct {char token;char *array;char *current;} PetscToken;
+
 EXTERN int   PetscTokenCreate(const char[],const char,PetscToken**);
 EXTERN int   PetscTokenFind(PetscToken*,char *[]);
 EXTERN int   PetscTokenDestroy(PetscToken*);

@@ -1,6 +1,4 @@
 #! /bin/sh
-# $Id: makepatch,v 1.3 1997/09/10 19:44:09 balay Exp $ 
-
 #
 # Create a patch file for a single file or multiple files
 #

@@ -1,5 +1,4 @@
 #! /bin/sh
-# $Id: fixinclude,v 1.7 2001/04/13 14:13:12 bsmith Exp $ 
 # 
 # Used by bmake/common rule html to replace #includes in the source files with links when possible
 #

@@ -216,6 +216,17 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
   PetscFunctionReturn(0);
 }
 
+/*MC
+   VECMPI - VECMPI = "mpi" - The basic parallel vector
+
+   Options Database Keys:
+. -vec_type mpi - sets the vector type to VECMPI during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMpiWithArray(), VECMPI, VecType, VecCreateMPI(), VecCreateMpi()
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI"

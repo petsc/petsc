@@ -1,5 +1,4 @@
 #! /bin/csh
-# $Id: buildtest,v 1.2 2001/10/19 16:20:25 petsc Exp $
 #
 # Example usage: killnightly solaris
 #

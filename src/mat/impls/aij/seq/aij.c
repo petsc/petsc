@@ -2567,7 +2567,7 @@ EXTERN_C_END
 
   Level: beginner
 
-.seealso: MatCreateSeqAIJ
+.seealso: MatCreateSeqAIJ(), MatSetFromOptions(), MatSetType(), MatCreate(), MatType
 M*/
 
 EXTERN_C_BEGIN

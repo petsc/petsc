@@ -665,3 +665,22 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
 
   PetscFunctionReturn(0);
 }
+
+/*MC
+   PetscStrfree - Frees a string (if it is not null)
+
+   Not Collective
+
+   Synopsis:
+   int PetscStrfree(char *s)
+
+   Input Parameter:
+.  s - pointer to string
+
+   Level: intermediate
+
+  Concepts: string free
+  
+.seealso: PetscStrncpy(), PetscStrcat(), PetscStrncat(), PetscStrallocpy()
+
+M*/

@@ -409,7 +409,7 @@ int PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-trdebug",&flg1);CHKERRQ(ierr);
   if (flg1) { 
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
-    ierr = PetscTrDebugLevel(1);CHKERRQ(ierr);
+    ierr = PetscTrDebug(PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /*

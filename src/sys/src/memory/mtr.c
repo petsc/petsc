@@ -104,11 +104,11 @@ typedef union {
     double  v[HEADER_DOUBLES];
 } TrSPACE;
 
-static long    TRallocated    = 0,TRfrags = 0;
-static TRSPACE *TRhead      = 0;
-static int     TRid         = 0;
-static int     TRdebugLevel = 0;
-static long    TRMaxMem     = 0;
+static long       TRallocated    = 0,TRfrags = 0;
+static TRSPACE    *TRhead      = 0;
+static int        TRid         = 0;
+static PetscTruth TRdebugLevel = PETSC_FALSE;
+static long       TRMaxMem     = 0;
 /*
       Arrays to log information on all Mallocs
 */
@@ -215,7 +215,7 @@ int PetscTrMallocDefault(size_t a,int lineno,const char function[],const char fi
   int              ierr;
 
   PetscFunctionBegin;
-  if (TRdebugLevel > 0) {
+  if (TRdebugLevel) {
     ierr = PetscTrValid(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(ierr);
   }
   if (a == 0) SETERRQ(PETSC_ERR_MEM_MALLOC_0,"Cannot malloc size zero");
@@ -312,7 +312,7 @@ int PetscTrFreeDefault(void *aa,int line,const char function[],const char file[]
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Trying to free null block");
   }
   
-  if (TRdebugLevel > 0) {
+  if (TRdebugLevel) {
     ierr = PetscTrValid(line,function,file,dir);CHKERRQ(ierr);
   }
   
@@ -616,16 +616,20 @@ int PetscTrLogDump(FILE *fp)
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscTrDebugLevel"
-/*
-    PetscTrDebugLevel - Set the level of debugging for the space management 
-                   routines.
+#define __FUNCT__ "PetscTrDebug"
+/*@C
+    PetscTrDebug - Turns on/off debugging for the memory management routines.
+
+    Not Collective
 
     Input Parameter:
-.   level - level of debugging.  Currently, either 0 (no checking) or 1
-    (use PetscTrValid at each PetscTrMalloc or PetscTrFree).
-*/
-int  PetscTrDebugLevel(int level)
+.   level - PETSC_TRUE or PETSC_FALSE
+
+   Level: intermediate
+
+.seealso: CHKMEMQ(), PetscTrValid()
+@*/
+int  PetscTrDebug(PetscTruth level)
 {
   PetscFunctionBegin;
 

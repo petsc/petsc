@@ -536,7 +536,7 @@ manexamples:
         fi
 
 #
-#   Goes through all examples adding the Concepts: to the /tmp/exampleconcepts file
+#   Goes through all examples adding the Concepts: to the exampleconcepts file
 #
 exampleconcepts:
 	-@base=`basename ${LOCDIR}`; \
@@ -550,7 +550,7 @@ exampleconcepts:
               line=`expr $$line + 1` ; \
               while [ $$line -gt 0 ] ; do \
                 a=`head -$$line ltmp | tail -1`; \
-                echo ${LOCDIR}$$i $$a >> ${LOC}/docs/tex/exampleconcepts; \
+                echo ${LOCDIR}$$i $$a >> ${LOC}/docs/exampleconcepts; \
                 line=`expr $$line - 1` ; \
               done; \
               ${RM} ltmp; \
@@ -559,10 +559,10 @@ exampleconcepts:
         fi
 #
 #   Goes through all manual pages removing the Concepts: field and adding the 
-# concepts to the /tmp/manconcepts file
+# concepts to the manconcepts file
 #
 manconcepts:
-	-@${RM} ${LOC}/docs/tex/manconcepts ${LOC}/docs/tex/exampleconcepts
+	-@${RM} ${LOC}/docs/manconcepts ${LOC}/docs/exampleconcepts
 	-@for i in docs/manualpages/*/*.html ; do \
               ${RM} ltmp; \
               grep Concepts: $$i | sed s?Concepts:??g > ltmp;  \
@@ -572,7 +572,7 @@ manconcepts:
               if [ $$line -gt 0 ] ; then \
                 while [ $$line -gt 0 ] ; do \
                   a=`head -$$line ltmp | tail -1`; \
-                  echo $$i $$a >> ${LOC}/docs/tex/manconcepts; \
+                  echo $$i $$a >> ${LOC}/docs/manconcepts; \
                   line=`expr $$line - 1` ; \
                 done; \
                 grep -v Concepts: $$i > tmp; \
@@ -598,6 +598,7 @@ html:
 	-@cat ${PETSC_DIR}/docs/mpi.www.index >> /tmp/$$USER.htmlmap
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
+          ${MKDIR} -p $${loc} ;\
           for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} foo ; do\
 	    if [ -f $$i ]; then \
               iroot=`echo $$i | sed -e s?[a-z.]*/??g`;\
@@ -611,7 +612,7 @@ html:
               echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
               sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
               -e "s/ierr [ ]*= //g"  $$i | ${C2HTML} -n  | ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
-              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|int ierr;|#if !defined\(__|#define __|#undef __)' | \
+              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|int ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done

@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: countfiles,v 1.2 1997/09/10 19:41:20 balay Exp $ 
 
 # Counts the number of makefile, *.c, *.h files in /home/bsmith/petsc
 
