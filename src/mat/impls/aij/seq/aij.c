@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.103 1995/10/19 19:43:09 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.104 1995/10/19 22:22:19 curfman Exp curfman $";
 #endif
 
 #include "aij.h"
@@ -1022,8 +1022,8 @@ extern int MatUseDXML_SeqAIJ(Mat);
    Notes:
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
-   storage.  That is, the stored row and column indices begin at 
-   one, not zero.
+   storage.  That is, the stored row and column indices can begin at
+   either one (as in Fortran) or zero.  See the users manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set both nz and nnz to zero for PETSc to control dynamic memory 

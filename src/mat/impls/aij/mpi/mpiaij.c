@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.90 1995/10/17 02:21:15 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.91 1995/10/19 22:22:37 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1277,8 +1277,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    Notes:
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
-   storage.  That is, the stored row and column indices begin at 
-   one, not zero.  See the users manual for further details.
+   storage.  That is, the stored row and column indices can begin at
+   either one (as in Fortran) or zero.  See the users manual for details.
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
