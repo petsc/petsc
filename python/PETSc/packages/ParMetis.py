@@ -163,7 +163,7 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing ParMetis'''
-    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+    packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -184,20 +184,20 @@ class Configure(config.base.Configure):
     except RuntimeError:
       import urllib
 
-      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      packages = self.framework.argDB['with-external-packages-dir']
       if hasattr(self.sourceControl, 'bk'):
-        config.base.Configure.executeShellCommand('bk clone bk://parmetis.bkbits.net/ParMetis-dev packages/ParMetis', log = self.framework.log)
+        config.base.Configure.executeShellCommand('bk clone bk://parmetis.bkbits.net/ParMetis-dev '+os.path.join(packages,'ParMetis'), log = self.framework.log)
       else:
         try:
           urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
         except Exception, e:
           raise RuntimeError('Error downloading ParMetis: '+str(e))
         try:
-          config.base.Configure.executeShellCommand('cd packages; gunzip parmetis.tar.gz', log = self.framework.log)
+          config.base.Configure.executeShellCommand('cd '+packages+'; gunzip parmetis.tar.gz', log = self.framework.log)
         except RuntimeError, e:
           raise RuntimeError('Error unzipping parmetis.tar.gz: '+str(e))
         try:
-          config.base.Configure.executeShellCommand('cd packages; tar -xf parmetis.tar', log = self.framework.log)
+          config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf parmetis.tar', log = self.framework.log)
         except RuntimeError, e:
           raise RuntimeError('Error doing tar -xf parmetis.tar: '+str(e))
         os.unlink(os.path.join(packages, 'parmetis.tar'))
