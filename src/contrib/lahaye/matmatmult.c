@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.6 2001/09/05 00:16:48 buschelm Exp buschelm $*/
+/*$Id: matmatmult.c,v 1.7 2001/09/05 18:47:21 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -135,7 +135,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   ierr = PetscMalloc((ci[an]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
   
   /* put together the new matrix */
-  MatCreateSeqAIJWithArrays(A->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(A->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flag to free them */
