@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.64 1998/03/31 20:04:37 balay Exp balay $;
+!  $Id: petsc.h,v 1.65 1998/03/31 23:34:23 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -118,7 +118,8 @@
 !
 #if defined(USE_PETSC_COMPLEX)
 #define PetscReal(a)  real(a)
-#define PetscConj(a)  dconjg(a)
+!For now, use aimag() instead of dconjg()
+#define PetscConj(a)  aimag(a)
 #define Scalar        double complex
 #define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
 #else
