@@ -140,7 +140,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 #include "src/mat/impls/maij/maij.h"
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqMAIJ"
-PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) 
+PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C) 
 {
   /* This routine requires testing -- but it's getting better. */
   PetscErrorCode ierr;
@@ -361,6 +361,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 #define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqMAIJ"
 PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C) 
 {
+  /* This routine requires testing -- first draft only */
   PetscErrorCode ierr;
   PetscInt       flops=0;
   Mat_SeqMAIJ    *pp=(Mat_SeqMAIJ*)PP->data;
