@@ -323,6 +323,7 @@ class Framework(config.base.Configure):
     help.addArgument('Framework', 'ignoreCompileOutput', nargs.ArgBool(None, 1, 'Ignore compiler output'))
     help.addArgument('Framework', 'ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
     help.addArgument('Framework', 'ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
+    help.addArgument('Framework', 'with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     return
 
   def configure(self, out = None):
