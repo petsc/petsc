@@ -1,5 +1,5 @@
 !
-!      "$Id: ex12.F,v 1.26 1998/04/01 00:30:12 balay Exp balay $";
+!      "$Id: ex12.F,v 1.27 1998/04/15 18:02:21 balay Exp bsmith $";
 !
        implicit none
 
@@ -34,10 +34,6 @@
       call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
       call ViewerFileOpenBinary(PETSC_COMM_WORLD,f,BINARY_RDONLY,       &
      &     fd,ierr)
-      if (ierr .ne. 0) then
-        print*, 'Unable to open file ',f
-        SETERRA(1,0,' ')
-      endif
 
       call MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER, &
      &                           mtype,set,ierr)
