@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.305 1999/02/03 00:31:47 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.306 1999/02/03 16:15:00 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -280,6 +280,38 @@ The global vector length can be determined by \findex{VecGetSize()}
 \begin{verbatim}
    ierr = VecGetSize(Vec v,int *size);
 \end{verbatim}
+
+
+In addition to {\tt VecDot()} and {\tt VecMDot()} and {\tt VecNorm()} PETSc provides
+split phase versions of these that allow several independent inner products and/or norms
+to share the same communication (thus improving parallel efficiency). For example,
+one may have code such as 
+begin{verbatim}
+  ierr = VecDot(Vec x,Vec y,Scalar *dot);
+  ierr = VecNorm(Vec x,NormType NORM_2,double *norm2);
+  ierr = VecNorm(Vec x,NormType NORM_1,double *norm1);
+\end{verbatim}
+This code works fine, the problem is that it performs three seperate parallel communication
+operations. Instead one can write 
+begin{verbatim}
+  ierr = VecDotBegin(Vec x,Vec y,Scalar *dot);
+  ierr = VecNormBegin(Vec x,NormType NORM_2,double *norm2);
+  ierr = VecNormBegin(Vec x,NormType NORM_1,double *norm1);
+  ierr = VecDotEnd(Vec x,Vec y,Scalar *dot);
+  ierr = VecNormEnd(Vec x,NormType NORM_2,double *norm2);
+  ierr = VecNormEnd(Vec x,NormType NORM_1,double *norm1);
+\end{verbatim}
+With this code, \findex{VecDotBegin()} \findex{VecDotEnd()} \findex{VecNormBegin()} 
+the \findex{VecNormEnd()} communication is delayed until the first call to {\tt VecxxxEnd()} at which 
+a single MPI reduction is used to communicate all the required values. It is required that the
+calls to the {\tt VecxxxEnd()} are performed in the same order as the calls to the 
+{\tt VecxxxBegin()}; however if you mistakenly make the calls in the wrong order PETSc will generate an error,
+informing you of this. 
+
+Note: these routines use only MPI 1 functionality; so they do not allow you to overlap 
+computation and communication. Once MPI 2 implementations are more common we'll improve these
+routines to allow overlap of inner product and norm calculations with other calculations.
+Also currently these routines only work for the PETSc built in vector types.
 
 % ----------------------------------------------------------------------------------
 \section{Indexing and Ordering}
