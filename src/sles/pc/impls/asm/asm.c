@@ -172,7 +172,7 @@ static int PCSetUp_ASM(PC pc)
       PetscLogObjectParent(pc,sles);
       ierr = SLESGetKSP(sles,&subksp);CHKERRQ(ierr);
       ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
-      ierr = SLESGetPC(sles,&subpc);CHKERRQ(ierr);
+      ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
       ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
       ierr = SLESSetOptionsPrefix(sles,prefix);CHKERRQ(ierr);
@@ -798,7 +798,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES *sles[])
         
      To set the options on the solvers seperate for each block call PCASMGetSubSLES()
          and set the options directly on the resulting SLES object (you can access its KSP and PC
-         with SLESGetKSP() and SLESGetPC())
+         with SLESGetKSP() and KSPGetPC())
 
    Level: beginner
 

@@ -150,7 +150,7 @@ int main(int argc,char **args)
        to set various options.
   */
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
          PETSC_DEFAULT);CHKERRQ(ierr);
 

@@ -101,7 +101,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
       /* coarse solve is (redundant) LU by default */
       ierr = SLESGetKSP(mg[0]->smoothd,&ksp);CHKERRQ(ierr);
       ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-      ierr = SLESGetPC(mg[0]->smoothd,&ipc);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&ipc);CHKERRQ(ierr);
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
         ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
@@ -334,7 +334,7 @@ static int PCSetUp_MG(PC pc)
 {
   MG          *mg = (MG*)pc->data;
   int         ierr,i,n = mg[0]->levels;
-  KSP         ksp;
+  KSP         ksp,subksp;
   PC          cpc;
   PetscTruth  preonly,lu,redundant,monitor = PETSC_FALSE,dump;
   PetscViewer ascii;
@@ -402,7 +402,7 @@ static int PCSetUp_MG(PC pc)
   ierr = SLESGetKSP(mg[0]->smoothd,&ksp);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)ksp,KSPPREONLY,&preonly);CHKERRQ(ierr);
   if (preonly) {
-    ierr = SLESGetPC(mg[0]->smoothd,&cpc);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&cpc);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
     if (!lu && !redundant) {
@@ -435,7 +435,8 @@ static int PCSetUp_MG(PC pc)
       ierr = MatView(mg[i]->restrct,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
     }
     for (i=0; i<n; i++) {
-      ierr = SLESGetPC(mg[i]->smoothd,&pc);CHKERRQ(ierr);
+      ierr = SLESGetKSP(mg[i]->smoothd,&subksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(subksp,&pc);CHKERRQ(ierr);
       ierr = MatView(pc->mat,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
     }
   }

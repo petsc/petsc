@@ -40,7 +40,7 @@ int main(int Argc,char **Args)
   char        *shellname;
   Vec         x,solution,X[20],R[20],B[20];
   PetscScalar zero = 0.0;
-  KSP         ksp,kspmg;
+  KSP         cksp,ksp,kspmg,kspi;
   PC          pcmg,pc;
   PetscTruth  flg;
 
@@ -67,8 +67,8 @@ int main(int Argc,char **Args)
   ierr = Create1dLaplacian(N[levels-1],&cmat);CHKERRQ(ierr);
 
   ierr = SLESCreate(PETSC_COMM_WORLD,&slesmg);CHKERRQ(ierr);
-  ierr = SLESGetPC(slesmg,&pcmg);CHKERRQ(ierr);
   ierr = SLESGetKSP(slesmg,&kspmg);CHKERRQ(ierr);
+  ierr = KSPGetPC(kspmg,&pcmg);CHKERRQ(ierr);
   ierr = SLESSetFromOptions(slesmg);CHKERRQ(ierr);
   ierr = PCSetType(pcmg,PCMG);CHKERRQ(ierr);
   ierr = MGSetLevels(pcmg,levels,PETSC_NULL);CHKERRQ(ierr);
@@ -76,7 +76,8 @@ int main(int Argc,char **Args)
 
   ierr = MGGetCoarseSolve(pcmg,&csles);CHKERRQ(ierr);
   ierr = SLESSetOperators(csles,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESGetPC(csles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(csles,&cksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = SLESGetKSP(csles,&ksp);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
@@ -93,7 +94,8 @@ int main(int Argc,char **Args)
 
     /* set smoother */
     ierr = MGGetSmoother(pcmg,levels - 1 - i,&sles[i]);CHKERRQ(ierr);
-    ierr = SLESGetPC(sles[i],&pc);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles[i],&kspi);CHKERRQ(ierr);
+    ierr = KSPGetPC(kspi,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
     ierr = PCShellSetName(pc,"user_precond");CHKERRQ(ierr);
     ierr = PCShellGetName(pc,&shellname);CHKERRQ(ierr);

@@ -308,9 +308,9 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
 
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ksp_monitor",&monitor);CHKERRQ(ierr);
   if (monitor) {
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
     ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-nlevels);CHKERRQ(ierr);
@@ -318,10 +318,8 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
   }
 
   /* use fgmres on outer iteration by default */
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPFGMRES);CHKERRQ(ierr);
-
-  ierr  = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr  = KSPSetType(ksp,KSPFGMRES);CHKERRQ(ierr);
+  ierr  = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr  = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr  = PetscMalloc(nlevels*sizeof(MPI_Comm),&comms);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
@@ -356,8 +354,10 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
       ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATDAAD,&ismf);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATMFFD,&ismffd);CHKERRQ(ierr);
       if (isshell || ismf || ismffd) {
-        PC lpc;
-        ierr = SLESGetPC(lsles,&lpc);CHKERRQ(ierr);
+        PC  lpc;
+        KSP tksp;
+        ierr = SLESGetKSP(lsles,&tksp);CHKERRQ(ierr);
+        ierr = KSPGetPC(tksp,&lpc);CHKERRQ(ierr);
         ierr = PCSetType(lpc,PCNONE);CHKERRQ(ierr);
       }
     }

@@ -19,8 +19,8 @@ options at runtime via the options database (e.g.,
 </font face>
 ).  
 SLES users can also set PC options directly in application
-codes by first extracting the PC context from the SLES context via
-<A HREF="PETSC_DIRdocs/manualpages/SLES/SLESGetPC.html">SLESGetPC()</A>
+codes by first extracting the PC context from the KSP context via
+<A HREF="PETSC_DIRdocs/manualpages/KSP/KSPGetPC.html">KSPGetPC()</A>
 and then directly calling the PC routines listed below (e.g., 
 <A HREF="PETSC_DIRdocs/manualpages/PC/PCSetType.html">PCSetType()</A>
 ).

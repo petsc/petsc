@@ -136,7 +136,7 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
 
    /*..Extract pc type from context..*/
-   ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
+   ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
 
    /*..Customize tolerances..*/ 
    ierr = KSPSetTolerances(ksp,1e-12,1e-14,PETSC_DEFAULT,
@@ -215,7 +215,7 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
                                FineLevelMatrix, DIFFERENT_NONZERO_PATTERN); 
               CHKERRQ(ierr);
        ierr = SLESGetKSP(grid[k].sles_pre,&ksp_pre); CHKERRQ(ierr);
-       ierr = SLESGetPC(grid[k].sles_pre,&pc_pre); CHKERRQ(ierr);
+       ierr = KSPGetPC(ksp_pre_pre,&pc_pre); CHKERRQ(ierr);
        ierr = KSPSetType(ksp_pre, KSPRICHARDSON); CHKERRQ(ierr);
        ierr = KSPSetTolerances(ksp_pre, 1e-12, 1e-50, 1e7,1); 
               CHKERRQ(ierr); 
@@ -227,7 +227,7 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
                                FineLevelMatrix, DIFFERENT_NONZERO_PATTERN); 
               CHKERRQ(ierr);
        ierr = SLESGetKSP(grid[k].sles_post,&ksp_post); CHKERRQ(ierr);
-       ierr = SLESGetPC(grid[k].sles_post,&pc_post); CHKERRQ(ierr);
+       ierr = KSPGetPC(ksp_post,&pc_post); CHKERRQ(ierr);
        ierr = KSPSetInitialGuessNonzero(ksp_post, PETSC_TRUE); CHKERRQ(ierr);
        ierr = KSPSetType(ksp_post, KSPRICHARDSON); CHKERRQ(ierr);
        ierr = KSPSetTolerances(ksp_post, 1e-12, 1e-50, 1e7,1);
@@ -255,7 +255,7 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    ierr = SLESSetOperators(coarsegridsles, grid[levels].A, grid[levels].A, 
                            DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
    ierr = SLESGetKSP(coarsegridsles,&coarsegridksp); CHKERRQ(ierr);
-   ierr = SLESGetPC(coarsegridsles,&coarsegridpc); CHKERRQ(ierr);
+   ierr = KSPGetPC(coarsegridksp,&coarsegridpc); CHKERRQ(ierr);
    ierr = KSPSetType(coarsegridksp, KSPPREONLY); CHKERRQ(ierr);
    ierr = PCSetType(coarsegridpc, PCLU); CHKERRQ(ierr); 
 

@@ -78,7 +78,7 @@ int main(int argc,char **argv)
    * ILU preconditioner;
    * this will break down unless you add the Shift line,
    * or use the -pc_ilu_shift option */
-  ierr = SLESGetPC(solver,&prec); CHKERRQ(ierr);
+  ierr = KSPGetPC(itmeth,&prec); CHKERRQ(ierr);
   ierr = PCSetType(prec,PCILU); CHKERRQ(ierr);
   /*  ierr = PCILUSetShift(prec,PETSC_TRUE); CHKERRQ(ierr); */
 

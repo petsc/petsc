@@ -43,6 +43,7 @@
       double precision v,h2
       external         MyResidual
       PetscScalar      pfive
+      KSP              ksp
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -137,7 +138,8 @@
 !  Create linear solver context
 
       call SLESCreate(PETSC_COMM_WORLD,sles,ierr)
-      call SLESGetPC(sles,pc,ierr)
+      call SLESGetKSP(sles,ksp,ierr)
+      call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCMG,ierr)
       call MGSetLevels(pc,1,PETSC_NULL_OBJECT,ierr)
       call MGSetResidual(pc,0,MGDefaultResidual,A,ierr)

@@ -82,7 +82,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
     ierr = PCNullSpaceAttach(pc,nullsp);CHKERRQ(ierr);
     ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);

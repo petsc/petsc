@@ -84,7 +84,7 @@ int main(int argc,char **args)
       ierr = KSPSetType(ksp,KSPSYMMLQ);CHKERRQ(ierr); 
     }
 
-    ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     /* ierr = PCSetType(pc,PCICC);CHKERRQ(ierr); */
     ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr); 
     ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);

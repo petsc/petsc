@@ -106,7 +106,8 @@ int main(int argc,char **args)
      This choice can be overridden at runtime with the option
         -pc_type <type>
   */
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
 
 
@@ -175,8 +176,8 @@ int main(int argc,char **args)
        for each block.  
     */
     for (i=0; i<nlocal; i++) {
-      ierr = SLESGetPC(subsles[i],&subpc);CHKERRQ(ierr);
       ierr = SLESGetKSP(subsles[i],&subksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
       if (!rank) {
         if (i%2) {
           ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
@@ -224,7 +225,6 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRQ(ierr);
 

@@ -7,7 +7,6 @@
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define slesdestroy_             SLESDESTROY
 #define slescreate_              SLESCREATE
-#define slesgetpc_               SLESGETPC
 #define slessetoptionsprefix_    SLESSETOPTIONSPREFIX
 #define slesappendoptionsprefix_ SLESAPPENDOPTIONSPREFIX
 #define slesgetksp_              SLESGETKSP
@@ -41,7 +40,6 @@
 #define slesappendoptionsprefix_ slesappendoptionsprefix
 #define slesdestroy_             slesdestroy
 #define slescreate_              slescreate
-#define slesgetpc_               slesgetpc
 #define slesgetksp_              slesgetksp
 #define slesgetoptionsprefix_    slesgetoptionsprefix
 #define slesview_                slesview
@@ -188,11 +186,6 @@ void PETSC_STDCALL slesappendoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_L
 void PETSC_STDCALL slesgetksp_(SLES *sles,KSP *ksp,int *ierr)
 {
   *ierr = SLESGetKSP(*sles,ksp);
-}
-
-void PETSC_STDCALL slesgetpc_(SLES *sles,PC *pc,int *ierr)
-{
-  *ierr = SLESGetPC(*sles,pc);
 }
 
 void PETSC_STDCALL slesdestroy_(SLES *sles,int *ierr)

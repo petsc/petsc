@@ -122,6 +122,43 @@ int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPSetUpOnBlocks"
+/*@
+   KSPSetUpOnBlocks - Sets up the preconditioner for each block in
+   the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
+   methods.
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - the KSP context
+
+   Notes:
+   KSPSetUpOnBlocks() is a routine that the user can optinally call for
+   more precise profiling (via -log_summary) of the setup phase for these
+   block preconditioners.  If the user does not call KSPSetUpOnBlocks(),
+   it will automatically be called from within SLESSolve().
+   
+   Calling KSPSetUpOnBlocks() is the same as calling PCSetUpOnBlocks()
+   on the PC context within the KSP context.
+
+   Level: advanced
+
+.keywords: KSP, setup, blocks
+
+.seealso: PCSetUpOnBlocks(), KSPSetUp(), PCSetUp()
+@*/
+int KSPSetUpOnBlocks(KSP ksp)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ierr = PCSetUpOnBlocks(ksp->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp"
 /*@
    KSPSetUp - Sets up the internal data structures for the
@@ -186,7 +223,10 @@ static char *convergedreasons[] = {"preconditioner is indefinite",              
 .  -ksp_plot_eigenvalues - plot the computed eigenvalues in an X-window
 .  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the 
       dense operator and useing LAPACK
--  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
+.  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
+-  -ksp_view_binary - save matrix and right hand side that define linear system to the 
+                      default binary viewer (can be
+       read later with src/sles/examples/tutorials/ex10.c for testing solvers)
 
    Notes:
    On return, the parameter "its" contains either the iteration
@@ -215,16 +255,24 @@ static char *convergedreasons[] = {"preconditioner is indefinite",              
 int KSPSolve(KSP ksp) 
 {
   int          ierr,rank;
-  PetscTruth   flag1,flag2;
+  PetscTruth   flag1,flag2,flg;
   PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
+  if (flg) {
+    Mat mat;
+    ierr = PCGetOperators(ksp->B,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+    ierr = VecView(ksp->vec_rhs,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+  }
+
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
-    ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol,PC_LEFT);
+    ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol,PC_LEFT);CHKERRQ(ierr);
     ksp->guess_zero = PETSC_FALSE;
   }
 

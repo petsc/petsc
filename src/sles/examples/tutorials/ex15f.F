@@ -176,7 +176,7 @@
 !     to set various options.
 
       call SLESGetKSP(sles,ksp,ierr)
-      call SLESGetPC(sles,pc,ierr)
+      call KSPGetPC(ksp,pc,ierr)
       tol = 1.e-7
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)

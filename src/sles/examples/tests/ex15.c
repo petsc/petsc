@@ -60,7 +60,9 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* Insure that preconditioner has same null space as matrix */
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  /* currently does not do anything */
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
   ierr = SLESSolve(sles,b,x);CHKERRQ(ierr);
@@ -69,7 +71,6 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
 

@@ -159,6 +159,7 @@ int main(int argc,char **argv)
     for (i=0; i<nlevels; i++) {
       SLES sles;
       PC   pc,mpc;
+      KSP  ksp;
 
       appctx = (AppCtx*) dmmg[i]->user;
       ierr   = SLESCreate(PETSC_COMM_WORLD,&appctx->sles);CHKERRQ(ierr);
@@ -166,10 +167,12 @@ int main(int argc,char **argv)
       ierr   = SLESSetFromOptions(appctx->sles);CHKERRQ(ierr);
 
       ierr = SNESGetSLES(dmmg[i]->snes,&sles);CHKERRQ(ierr);
-      ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       for (j=0; j<=i; j++) {
 	ierr = MGGetSmoother(pc,j,&sles);CHKERRQ(ierr);
-	ierr = SLESGetPC(sles,&mpc);CHKERRQ(ierr);
+	ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+	ierr = KSPGetPC(ksp,&mpc);CHKERRQ(ierr);
 	ierr = PCSetType(mpc,PCSHELL);CHKERRQ(ierr);
 	ierr = PCShellSetApply(mpc,(int (*)(void*,Vec,Vec))myPCApply,dmmg[j]);CHKERRQ(ierr);
 	ierr = PCShellSetView(mpc,(int (*)(void*,PetscViewer))myPCView);CHKERRQ(ierr);

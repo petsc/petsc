@@ -54,6 +54,7 @@ extern int KSP_GMRESOrthogonalization;
 EXTERN int KSPCreate(MPI_Comm,KSP *);
 EXTERN int KSPSetType(KSP,KSPType);
 EXTERN int KSPSetUp(KSP);
+EXTERN int KSPSetUpOnBlocks(KSP);
 EXTERN int KSPSolve(KSP);
 EXTERN int KSPSolveTranspose(KSP);
 EXTERN int KSPDestroy(KSP);
