@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.9 1995/08/26 20:56:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.10 1995/08/27 16:57:24 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -54,14 +54,14 @@ int main( int argc, char **argv )
   PetscObjectSetName((PetscObject)U,"Exact Solution");
   if (OptionsHasName(0,"-mat_row")) {
     ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-                         0,0,&J); CHKERRA(ierr);
+           0,0,&J); CHKERRA(ierr);
   } else if (OptionsHasName(0,"-mat_bdiag")) {
     int diag[3]; diag[0] = -1; diag[1] = 0; diag[2] = 1;
-    ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,&diag,0,&J);
+    ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,diag,0,&J);
            CHKERRA(ierr);
   } else {
     ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-                         0,0,&J);   CHKERRA(ierr);
+           0,0,&J); CHKERRA(ierr);
   }
 
   /* Store right-hand-side of PDE and exact solution */
