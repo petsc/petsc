@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.302 1999/01/22 00:39:44 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.303 1999/01/31 16:12:41 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2070,9 +2070,16 @@ and {\tt -ksp\_richardson\_scale <factor>}. \findex{-ksp_gmres_restart}
 \findex{-ksp_richardson_scale}
 
 The default technique for orthogonalization of the Hessenberg
-matrix in GMRES is the modified Gram-Schmidt method, which
-employs many {\tt VecDot()} operations and can thus be slow in parallel.
-A fast approach is to use the 
+matrix in GMRES is the iterative refinement Gram-Schmidt method.
+\findex{KSPGMRESIROrthogonalization} This can be set  by using the command line option 
+{\tt -ksp\_gmres\_irorthog}. \findex{-ksp_gmres_irorthog} Or
+via 
+\begin{verbatim}
+   ierr = KSPGMRESSetOrthogonalization(KSP ksp,
+                               KSPGMRESModifiedGramSchmidtOrthogonalization);
+\end{verbatim}
+A slightly
+faster approachis to use the 
 unmodified (classical) Gram-Schmidt method, which can be set \sindex{Gram-Schmidt}
 with \findex{KSPGMRESSetOrthogonalization()} 
 \findex{KSPGMRESUnmodifiedGramSchmidtOrthogonalization}
@@ -2082,11 +2089,11 @@ with \findex{KSPGMRESSetOrthogonalization()}
 \end{verbatim}
 or the options database command {\tt -ksp\_gmres\_unmodifiedgramschmidt}.
 Note that this algorithm is numerically unstable, but may deliver 
-much better speed performance. One can also use 
-unmodifed Gram-Schmidt with iterative refinement, 
-\findex{KSPGMRESIROrthog} by setting the orthogonalization routine,
-{\tt KSPGMRESIROrthog()}, by using the command line option 
-{\tt -ksp\_gmres\_irorthog}. \findex{-ksp_gmres_irorthog}
+slightly better speed performance. One can also use 
+modifed Gram-Schmidt, 
+\findex{KSPGMRESModifiedGramSchmidtOrthogonalization} by setting the orthogonalization routine,
+{\tt KSPGMRESModifiedGramSchmidtOrthogonalization()}, by using the command line option 
+{\tt -ksp\_gmres\__modifiedgramschmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
 
 For the conjugate gradient method with complex numbers, there are two
 slightly different algorithms depending on whether the matrix is 
