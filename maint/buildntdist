@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.13 1998/04/23 22:43:39 balay Exp balay $ 
+# $Id: buildntdist,v 1.14 1998/04/23 23:17:20 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -12,7 +12,7 @@ endif
 /bin/rm -r -f /mcs/tmp/petscnt
 /bin/rm -f /mcs/tmp/petscnt.tar
 cd /home/bsmith/petsc
-make ACTION=clean tree
+#make ACTION=clean tree
 
 cd /home/bsmith
 tar cFFXf /home/bsmith/petsc/maint/xclude /mcs/tmp/petscnt.tar petsc
@@ -49,6 +49,6 @@ cd ~/
 /bin/rm -r -f /mcs/tmp/petscnt
 
 gzip /mcs/tmp/petscnt$version.tar
-/bin/cp /mcs/tmp/petscnt$version.tar ~/
+/bin/cp /mcs/tmp/petscnt$version.tar.gz ~/
 chmod ug+w ~/petsc.tar.gz
-/bin/rm -f /mcs/tmp/petscnt$version.tar
+/bin/rm -f /mcs/tmp/petscnt$version.tar.gz

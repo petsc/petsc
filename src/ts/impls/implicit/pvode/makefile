@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.3 1997/09/10 19:05:30 balay Exp balay $ 
+# $Id: makefile,v 1.4 1998/03/19 02:11:22 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' ${PVODE_INCLUDE}
+CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' ${PVODE_INCLUDE}
 SOURCEC  = petscpvode.c
 SOURCEF  =
 SOURCEH  = petscpvode.h

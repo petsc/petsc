@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.13 1997/09/10 18:47:35 balay Exp balay $ 
+# $Id: makefile,v 1.14 1998/03/19 02:07:18 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = mpidense.c mmdense.c
 SOURCEF  =
 SOURCEH  = mpidense.h

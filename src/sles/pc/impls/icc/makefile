@@ -1,10 +1,9 @@
-# $Id: makefile,v 1.22 1997/09/10 18:52:14 balay Exp balay $ 
+# $Id: makefile,v 1.23 1998/03/19 02:06:38 balay Exp balay $ 
 
 ALL: lib
 
 # This matrix dependency should be fixed!
-CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'   \
-           ${BS_INCLUDE} 
+CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' ${BS_INCLUDE} 
 SOURCEC  = icc.c
 SOURCEF  =
 SOURCEH  = icc.h

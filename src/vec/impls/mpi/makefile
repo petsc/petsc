@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.33 1997/09/10 18:53:34 balay Exp balay $ 
+# $Id: makefile,v 1.34 1998/03/19 02:05:03 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = pbvec.c pdvec.c pvec2.c
 SOURCEF  =
 SOURCEH  = pvecimpl.h 

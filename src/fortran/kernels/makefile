@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.3 1997/09/18 16:06:47 balay Exp balay $ 
+# $Id: makefile,v 1.4 1998/03/24 17:37:40 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS   = 
 SOURCEC  = 
 SOURCEF  = fmaxpy.F fmdot.F fnorm.F fmult.F fmultadd.F fsolve.F

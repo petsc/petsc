@@ -1,8 +1,8 @@
 
-# $Id: makefile,v 1.29 1997/08/22 15:16:14 bsmith Exp balay $
+# $Id: makefile,v 1.30 1998/03/19 02:10:35 balay Exp balay $
 
 ALL: lib 
-CFLAGS    =  ${CPPFLAGS} ${X11_INCLUDE} ${CONF}  -D__SDIR__='"${LOCDIR}"'
+CFLAGS    =  ${CPPFLAGS} ${X11_INCLUDE} -D__SDIR__='"${LOCDIR}"'
 SOURCEC   = xinit.c  frame.c wmap.c xcolor.c xops.c text.c tone.c
 SOURCEF   =
 SOURCEH   = ximpl.h

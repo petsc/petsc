@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.234 1998/04/22 21:56:53 balay Exp balay $ 
+# $Id: makefile,v 1.235 1998/04/23 22:55:02 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -39,7 +39,7 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
-	-@echo "Using configuration flags: ${CONF}"
+	-@echo "Using configuration flags:"
 	-@grep "define " bmake/${PETSC_ARCH}/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
@@ -381,7 +381,7 @@ allco:
 #   The commands below are for generating ADIC versions of the code;
 # they are not currently used.
 #
-CFLAGS   =  ${CPPFLAGS} ${CONF}
+CFLAGS   =  ${CPPFLAGS}
 alladicignore:
 	-@${RM} ${PDIR}/adicignore
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adicignore  tree 
@@ -406,7 +406,8 @@ alladiclib:
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
-	-@echo "Using configuration flags: ${CONF}"
+	-@echo "Using configuration flags:"
+	-@grep "define " bmake/${PETSC_ARCH}/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"
