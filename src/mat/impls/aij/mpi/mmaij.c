@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.20 1995/09/30 19:28:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.21 1995/10/24 21:46:03 bsmith Exp bsmith $";
 #endif
 
 
@@ -22,7 +22,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
   indices = (int *) PETSCMALLOC( N*sizeof(int) ); CHKPTRQ(indices);
-  PetscZero(indices,N*sizeof(int));
+  PetscMemzero(indices,N*sizeof(int));
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       if (!indices[aj[B->i[i] +shift + j] + shift]) ec++; 

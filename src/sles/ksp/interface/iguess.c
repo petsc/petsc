@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.9 1995/08/07 18:51:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.10 1995/08/15 20:26:43 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -80,7 +80,7 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
   PCGetOperators(itctx->B,&Amat,&Pmat,&pflag);
   if (curl == itg->maxl) {
     MatMult(Amat,x,itg->btilde[0] );
-    VecNorm(itg->btilde[0],&normax);
+    VecNorm(itg->btilde[0],NORM_2,&normax);
     tmp = 1.0/normax; VecScale(&tmp,itg->btilde[0]);
     /* VCOPY(itctx->vc,x,itg->xtilde[0]); */
     VecScale(&tmp,itg->xtilde[0]);
@@ -94,9 +94,9 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
       VecAXPY(&tmp,itg->btilde[i-1],itg->btilde[curl]);
       VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],itg->xtilde[curl]);
     }
-    VecNorm(itg->btilde[curl],&norm);
+    VecNorm(itg->btilde[curl],NORM_2,&norm);
     tmp = 1.0/norm; VecScale(&tmp,itg->btilde[curl]);
-    VecNorm(itg->xtilde[curl],&norm);
+    VecNorm(itg->xtilde[curl],NORM_2,&norm);
     VecScale(&tmp,itg->xtilde[curl]);
     itg->curl++;
   }

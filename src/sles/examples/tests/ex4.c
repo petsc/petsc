@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.30 1995/10/12 04:18:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.31 1995/10/12 20:05:51 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -126,7 +126,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(ustar); CHKERRA(ierr);
 
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
-  ierr = VecNorm(u,&norm); CHKERRA(ierr);
+  ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   if (norm*h > 1.e-12)
     MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
   else

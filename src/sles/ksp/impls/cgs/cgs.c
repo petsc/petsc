@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.16 1995/08/14 17:06:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.17 1995/10/17 21:41:03 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -43,7 +43,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
   ierr = KSPResidual(itP,X,V,T, R, BINVF, B ); CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr = VecNorm(R,&dp); CHKERRQ(ierr);
+  ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
   if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
   MONITOR(itP,dp,0);
   if (history) history[0] = dp;
@@ -66,7 +66,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
     ierr = VecAXPY(&a,T,X); CHKERRQ(ierr);           /* x <- x + a (u + q)   */
     ierr = PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,U); CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R); CHKERRQ(ierr);       /* r <- r - a K (u + q) */
-    ierr = VecNorm(R,&dp); CHKERRQ(ierr);
+    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
 
     if (history && hist_len > i + 1) history[i+1] = dp;
     MONITOR(itP,dp,i+1);

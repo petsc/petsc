@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.10 1995/10/11 15:18:37 bsmith Exp curfman $";
+C    "$Id: ex19.F,v 1.11 1995/10/19 14:39:08 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -32,17 +32,17 @@ C Create a vector, then duplicate it
   100  format('Result of inner product ',f10.4)
 
        call VecScale(two,x,ierr)
-       call VecNorm(x,norm,ierr)
+       call VecNorm(x,NORM_2,norm,ierr)
        write(6,110) norm
   110  format('Result of scaling ',f10.4)
 
        call VecCopy(x,w,ierr)
-       call VecNorm(w,norm,ierr)
+       call VecNorm(w,NORM_2,norm,ierr)
        write(6,120) norm
   120  format('Result of copy ',f10.4)
 
        call VecAXPY(three,x,y,ierr)
-       call VecNorm(y,norm,ierr)
+       call VecNorm(y,NORM_2,norm,ierr)
        write(6,130) norm
   130  format('Result of axpy ',f10.4)
 

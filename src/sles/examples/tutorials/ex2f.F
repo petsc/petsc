@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.5 1995/10/17 21:42:34 bsmith Exp curfman $";
+C    "$Id: ex7.F,v 1.6 1995/10/19 22:26:52 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -78,7 +78,7 @@ C Solve linear system
 
 C Check the error
       call VecAXPY(none,u,x,ierr)
-      call VecNorm(x,norm,ierr)
+      call VecNorm(x,NORM_2,norm,ierr)
       if (rank .eq. 0) then
         if (norm .gt. 1.e-12) then
            write(6,100) norm, its

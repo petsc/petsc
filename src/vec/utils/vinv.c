@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.12 1995/09/06 03:04:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.13 1995/10/12 04:09:23 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"   /*I "vec.h" I*/
@@ -40,7 +40,7 @@ int VecReciprocal(Vec v)
 
 .keywords: vector, sum
 
-.seealso: VecASum()
+.seealso: VecNorm()
 @*/
 int VecSum(Vec v,Scalar *sum)
 {
@@ -104,11 +104,7 @@ int VecAbs(Vec v)
   ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
-#if defined(PETSC_COMPLEX)
-    x[i] = abs(x[i]);
-#else
-    if (x[i] < 0.0) x[i] = -x[i];
-#endif
+    x[i] = PetscAbsScalar(x[i]);
   }
   return 0;
 }

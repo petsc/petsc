@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.43 1995/10/24 21:43:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.44 1995/10/30 03:33:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -154,8 +154,8 @@ int phc(PetscObject obj)
   events[nevents++].event = CREATE;
   objects[nobjects].parent= -1;
   objects[nobjects].obj   = obj;
-  PetscZero(objects[nobjects].string,64*sizeof(char));
-  PetscZero(objects[nobjects].name,16*sizeof(char));
+  PetscMemzero(objects[nobjects].string,64*sizeof(char));
+  PetscMemzero(objects[nobjects].name,16*sizeof(char));
   obj->id = nobjects++;
   ObjectsType[obj->cookie - PETSC_COOKIE-1][0]++;
   return 0;
@@ -358,8 +358,8 @@ int PLogDestroy()
   _PHD             = 0;
 
   /* Resetting phase */
-  PetscZero(EventsType,sizeof(EventsType));
-  PetscZero(ObjectsType,sizeof(ObjectsType));
+  PetscMemzero(EventsType,sizeof(EventsType));
+  PetscMemzero(ObjectsType,sizeof(ObjectsType));
   _TotalFlops      = 0;
   nobjects         = 0;
   nevents          = 0;
@@ -512,8 +512,8 @@ static char *(name[]) = {"MatMult         ",
                          "MatILUFactor    ",
                          "VecDot          ",
                          "VecNorm         ",
-                         "VecASum         ",
-                         "VecAMax         ",
+                         "                ",
+                         "                ",
                          "VecMax          ",
                          "VecMin          ",
                          "VecTDot         ",

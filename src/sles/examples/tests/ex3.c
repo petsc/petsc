@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.35 1995/10/12 20:06:22 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.36 1995/10/19 22:26:52 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -142,7 +142,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(ustar); CHKERRA(ierr);
   ierr = VecAssemblyEnd(ustar); CHKERRA(ierr);
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
-  ierr = VecNorm(u,&norm); CHKERRA(ierr);
+  ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   if (norm*h > 1.e-12) 
     MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
   else

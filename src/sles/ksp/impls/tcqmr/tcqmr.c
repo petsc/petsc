@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.15 1995/09/30 19:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.16 1995/10/17 21:41:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,7 +24,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
 
   it = 0;
   ierr = KSPResidual(itP,x,u,v,r,v0,b); CHKERRQ(ierr);
-  ierr = VecNorm(r,&rnorm0); CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
+  ierr = VecNorm(r,NORM_2,&rnorm0); CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
 
   ierr = VecSet(&zero,um1); CHKERRQ(ierr);
   ierr = VecCopy(r,u); CHKERRQ(ierr);
@@ -74,7 +74,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
     ierr = PCApplyBAorAB(itP->B,itP->right_pre,utmp,up1,vtmp); CHKERRQ(ierr);
     tmp = -alpha; ierr = VecAXPY(&tmp,utmp,up1); CHKERRQ(ierr);
     tmp = f*beta*beta; ierr = VecAXPY(&tmp,um1,up1); CHKERRQ(ierr);
-    ierr = VecNorm(up1,&dp1); CHKERRQ(ierr);
+    ierr = VecNorm(up1,NORM_2,&dp1); CHKERRQ(ierr);
     f = 1.0 / dp1;
     ierr = VecScale(&f,up1); CHKERRQ(ierr);
     tmp = -beta; 
@@ -87,7 +87,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
     ierr = PCApplyBAorAB(itP->B,itP->right_pre,v,vp1,vtmp); CHKERRQ(ierr);
     tmp = -alpha; ierr = VecAXPY(&tmp,v,vp1); CHKERRQ(ierr);
     tmp = -beta; ierr = VecAXPY(&tmp,vm1,vp1); CHKERRQ(ierr);
-    ierr = VecNorm(vp1,&Gamma); CHKERRQ(ierr);
+    ierr = VecNorm(vp1,NORM_2,&Gamma); CHKERRQ(ierr);
     tmp = 1.0/Gamma; ierr = VecScale(&tmp,vp1); CHKERRQ(ierr);
     ierr = VecCopy(v,vm1); CHKERRQ(ierr);
     ierr = VecCopy(vp1,v); CHKERRQ(ierr);
@@ -104,11 +104,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
       ep     = -cl*eptmp + sl*alpha;
       deltmp = -sl*eptmp - cl*alpha;
     }
-#if defined(PETSC_COMPLEX)
-    if (fabs(Gamma) > abs(deltmp)) {
-#else    
-    if (fabs(Gamma) > fabs(deltmp)) {
-#endif
+    if (PetscAbsScalar(Gamma) > PetscAbsScalar(deltmp)) {
       ta = -deltmp / Gamma;
       s = 1.0 / sqrt(1.0 + ta*ta);
       c = s*ta;
@@ -132,11 +128,10 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
     VecCopy(pvec,pvec1);
 
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
+    sprod = sprod*PetscAbsScalar(s);
 #if defined(PETSC_COMPLEX)
-    sprod = sprod*abs(s);
     rnorm = rnorm0 * sqrt((double)it+2.0) * real(sprod);     
 #else
-    sprod = sprod*fabs(s);
     rnorm = rnorm0 * sqrt((double)it+2.0) * sprod;     
 #endif
     it++; if (it > itP->max_it) {break;}

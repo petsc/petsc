@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.20 1995/10/17 03:31:37 curfman Exp curfman $";
+static char vcid[] = "$Id: draw.c,v 1.21 1995/10/18 03:16:54 curfman Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -199,7 +199,7 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 
 /*@
    DrawSetPause - Sets the amount of time that program pauses after 
-   a DrawSyncFlush() is called. 
+   a DrawPause() is called. 
 
    Input Paramters:
 .  ctx - the drawing object
@@ -211,13 +211,38 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 
 .keywords: draw, set, pause
 
-.seealso: DrawSyncFlush()
+.seealso: DrawGetPause(), DrawPause()
 @*/
 int DrawSetPause(DrawCtx ctx,int pause)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
   if (ctx->type == NULLWINDOW) return 0;
   ctx->pause = pause;
+  return 0;
+}
+
+/*@
+   DrawGetPause - Gets the amount of time that program pauses after 
+   a DrawPause() is called. 
+
+   Input Paramters:
+.  ctx - the drawing object
+.  pause - number of seconds to pause, -1 implies until user input
+
+   Note:
+   By default the pause time is zero unless the -draw_pause option is given 
+   during DrawOpenX().
+
+.keywords: draw, set, pause
+
+.seealso: DrawSetPause(), DrawPause()
+@*/
+int DrawGetPause(DrawCtx ctx,int *pause)
+{
+  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
+  if (!pause) SETERRQ(1,"DrawGetPause:Null address to store pause");
+  if (ctx->type == NULLWINDOW) return 0;
+  *pause = ctx->pause;
   return 0;
 }
 
@@ -261,6 +286,24 @@ int DrawSetDoubleBuffer(DrawCtx ctx)
 }
 
 /*@
+   DrawPause - Waits n seconds or until user input, depending on input 
+               to DrawSetPause().
+
+   Input Parameter:
+.  ctx - the drawing context
+
+
+.keywords: 
+@*/
+int DrawPause(DrawCtx ctx)
+{
+  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
+  if (ctx->ops.pause) return (*ctx->ops.pause)(ctx);
+  return 0;
+}
+
+/*@
    DrawFlush - Flushs graphical output.
 
    Input Parameters:
@@ -286,7 +329,6 @@ int DrawFlush(DrawCtx ctx)
 
 .keywords: draw, sync, flush
 
-.seealso: DrawSetPause()
 @*/
 int DrawSyncFlush(DrawCtx ctx)
 {
@@ -381,7 +423,7 @@ int DrawOpenNull(MPI_Comm comm,DrawCtx *win)
   *win = 0;
   PETSCHEADERCREATE(ctx,_DrawCtx,DRAW_COOKIE,NULLWINDOW,comm);
   PLogObjectCreate(ctx);
-  PetscZero(&ctx->ops,sizeof(struct _DrawOps));
+  PetscMemzero(&ctx->ops,sizeof(struct _DrawOps));
   ctx->destroy = DrawDestroy_Null;
   ctx->view    = 0;
   ctx->pause   = 0;
@@ -391,6 +433,29 @@ int DrawOpenNull(MPI_Comm comm,DrawCtx *win)
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
   *win = ctx;
   return 0;
+}
+
+/*@
+       DrawGetMouseButton - Returns location of mouse and which button was
+            pressed. Waits for button to be pressed.
+
+  Input Parameter:
+.   draw - the window to be used
+
+  Output Parameters:
+.   button - one of BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT
+.   x_user, y_user - user coordinates of location (user may pass in 0).
+.   x_phys, y_phys - window coordinates (user may pass in 0).
+
+@*/
+int DrawGetMouseButton(DrawCtx draw,DrawButton *button,double* x_user,double *y_user,
+                       double *x_phys,double *y_phys)
+{
+  PETSCVALIDHEADERSPECIFIC(draw,DRAW_COOKIE);
+  *button = BUTTON_NONE;
+  if (draw->type == NULLWINDOW) return 0;
+  if (!draw->ops.getmousebutton) return 0;
+  return (*draw->ops.getmousebutton)(draw,button,x_user,y_user,x_phys,y_phys);
 }
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.17 1995/10/12 04:20:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.18 1995/10/17 21:43:01 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -59,10 +59,10 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   gnorm		= &(snes->norm);	/* gradient norm */
 
   ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);/* X <- X_0 */
-  ierr = VecNorm(X,&xnorm); CHKERRQ(ierr);              /* xnorm = || X || */
+  ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);              /* xnorm = || X || */
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
-  ierr = VecNorm(G,gnorm); CHKERRQ(ierr);               /* gnorm = || G || */
+  ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);               /* gnorm = || G || */
   if (history && history_len > 0) history[0] = *gnorm;
   if (snes->monitor){(*snes->monitor)(snes,0,*gnorm,snes->monP); CHKERRQ(ierr);}
 
@@ -91,7 +91,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
           PLogInfo((PetscObject)snes,"Initial delta computed without matrix norm info");
         } else {
           CHKERRQ(ierr);
-          if (PETSCABS(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UMTR:Hessian norm is too small");
+          if (PetscAbsScalar(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UMTR:Hessian norm is too small");
           delta = PETSCMAX(delta,*gnorm/max_val);
         }
       } else { 
@@ -108,7 +108,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
                i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
 
       ierr = VecWAXPY(&one,X,S,Xtrial); CHKERRQ(ierr); /* Xtrial <- X + S */
-      ierr = VecNorm(Xtrial,&xnorm); CHKERRQ(ierr);
+      ierr = VecNorm(Xtrial,NORM_2,&xnorm); CHKERRQ(ierr);
                            		               /* ftrial = f(Xtrial) */
       ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial); CHKERRQ(ierr);
 
@@ -159,7 +159,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
     snes->vec_sol_always = X;
     /* Note:  At last iteration, the gradient evaluation is unnecessary */
     ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
-    ierr = VecNorm(G,gnorm); CHKERRQ(ierr);
+    ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
     if (history && history_len > i+1) history[i+1] = *gnorm;
     snes->vec_func_always = G;
 
@@ -249,9 +249,9 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
              delta,snes->deltatol,xnorm);  
     return 3;
   }
-  if ((fabs(ared) <= fabs(f) * rtol) && (pred) <= rtol*fabs(f)) {
+  if ((PetscAbsScalar(ared) <= PetscAbsScalar(f) * rtol) && (pred) <= rtol*PetscAbsScalar(f)) {
     PLogInfo((PetscObject)snes,"SNES:Actual (%g) and predicted (%g) reductions<%g*%g\n",
-             fabs(ared),pred,rtol,fabs(f));
+             PetscAbsScalar(ared),pred,rtol,PetscAbsScalar(f));
     return 2;
   }
   if (f < snes->fmin) {
@@ -259,9 +259,9 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
     return 1;
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
-  if ( (fabs(ared) <= epsmch) && pred <= epsmch ) {
+  if ( (PetscAbsScalar(ared) <= epsmch) && pred <= epsmch ) {
     PLogInfo((PetscObject)snes,"SNES:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
-             fabs(ared),pred,epsmch);
+             PetscAbsScalar(ared),pred,epsmch);
     return -2;
   }
   if (snes->nfuncs > snes->max_funcs) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.11 1995/10/01 21:53:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.12 1995/10/12 04:20:34 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -43,7 +43,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
   ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);/* X <- X_0 */
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
-  ierr = VecNorm(G,gnorm);   CHKERRQ(ierr);             /* gnorm = || G || */
+  ierr = VecNorm(G,NORM_2,gnorm);   CHKERRQ(ierr);             /* gnorm = || G || */
   if (history && history_len > 0) history[0] = *gnorm;
   if (snes->monitor){(*snes->monitor)(snes,0,*gnorm,snes->monP); CHKERRQ(ierr);}
 
@@ -67,7 +67,7 @@ static int SNESSolve_UMLS(SNES snes,int *outits)
       ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
              CHKERRQ(ierr);
       ierr = SLESSolve(snes->sles,RHS,S,&iters); CHKERRQ(ierr);
-      ierr = VecNorm(S,&snorm); CHKERRQ(ierr);
+      ierr = VecNorm(S,NORM_2,&snorm); CHKERRQ(ierr);
       if ((iters < 0) || (iters >= kspmaxit)) {
         neP->gamma_factor *= two; 
         neP->gamma = neP->gamma_factor*(*gnorm); 
@@ -424,7 +424,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
         "Relative width of interval of uncertainty is at most rtol (%g)\n",neP->rtol);
       *info = 2;
     }
-    if ((*f <= ftest1) && (fabs(dg) <= neP->gtol*(-dginit))) {
+    if ((*f <= ftest1) && (PetscAbsScalar(dg) <= neP->gtol*(-dginit))) {
       PLogInfo((PetscObject)snes,
         "Line search success: Sufficient decrease and directional deriv conditions hold\n");
       *info = 1;
@@ -465,16 +465,16 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
    /* Force a sufficient decrease in the interval of uncertainty */
    if (neP->bracket) {
-     if (fabs(sty - stx) >= p66 * width1) *step = stx + p5*(sty - stx);
+     if (PetscAbsScalar(sty - stx) >= p66 * width1) *step = stx + p5*(sty - stx);
        width1 = width;
-       width = fabs(sty - stx);
+       width = PetscAbsScalar(sty - stx);
      }
    }
 
   /* Finish computations */
   PLogInfo((PetscObject)snes,"%d function evals in line search, step = %10.4f\n", 
            neP->nfev,neP->step);
-  ierr = VecNorm(G,gnorm); CHKERRQ(ierr);
+  ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
   return 0;
 }
 /* ---------------------------------------------------------- */

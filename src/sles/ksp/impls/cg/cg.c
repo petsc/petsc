@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.29 1995/10/01 21:51:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.30 1995/10/17 21:41:01 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -67,10 +67,10 @@ int  KSPSolve_CG(KSP itP,int *its)
   }
   ierr = PCApply(itP->B,R,Z); CHKERRQ(ierr);       /*     z <- Br         */
   if (pres) {
-      ierr = VecNorm(Z,&dp); CHKERRQ(ierr);        /*    dp <- z'*z       */
+      ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- z'*z       */
   }
   else {
-      ierr = VecNorm(R,&dp); CHKERRQ(ierr);        /*    dp <- r'*r       */
+      ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- r'*r       */
   }
   cerr = (*itP->converged)(itP,0,dp,itP->cnvP);
   if (cerr) {*its =  0; return 0;}
@@ -104,10 +104,10 @@ int  KSPSolve_CG(KSP itP,int *its)
      ma = -a; VecAXPY(&ma,Z,R);                    /*     r <- r - az     */
      if (pres) {
        ierr = MatMult(Amat,R,Z); CHKERRQ(ierr);    /*     z <- Br         */
-       ierr = VecNorm(Z,&dp); CHKERRQ(ierr);       /*    dp <- z'*z       */
+       ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
      }
      else {
-       ierr = VecNorm(R,&dp); CHKERRQ(ierr);       /*    dp <- r'*r       */
+       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
      }
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);

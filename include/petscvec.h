@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.35 1995/10/11 17:59:04 curfman Exp bsmith $ */
+/* $Id: vec.h,v 1.36 1995/10/24 21:55:05 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -35,10 +35,11 @@ extern int VecDot(Vec, Vec, Scalar*);
 extern int VecTDot(Vec, Vec, Scalar*);  
 extern int VecMDot(int,      Vec ,Vec*,Scalar*);
 extern int VecMTDot(int,      Vec ,Vec*,Scalar*); 
-extern int VecNorm(Vec, double*);
-extern int VecASum(Vec, double*);
+
+typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4} NormType;
+#define NORM_MAX NORM_INFINITY
+extern int VecNorm(Vec,NormType,double *);
 extern int VecSum(Vec,Scalar*);
-extern int VecAMax(Vec, int *,   double*);
 extern int VecMax(Vec, int *,    double*);
 extern int VecMin(Vec, int *,    double*);
 extern int VecScale(Scalar*, Vec);    

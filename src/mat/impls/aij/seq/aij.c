@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.105 1995/10/20 02:00:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.106 1995/10/24 21:45:28 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -202,21 +202,103 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
-  int         ierr, i,j, m = a->m, shift = a->indexshift;
-  double      xl,yl,xr,yr,w,h;
-  DrawCtx draw = (DrawCtx) viewer;
+  int         ierr, i,j, m = a->m, shift = a->indexshift,pause,color;
+  double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
+  DrawCtx     draw = (DrawCtx) viewer;
+  DrawButton  button;
+
   xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
   /* loop over matrix elements drawing boxes */
+  color = DRAW_BLUE;
   for ( i=0; i<m; i++ ) {
-    yl = m - i - 1.0; yr = yl + 1.0;
+    y_l = m - i - 1.0; y_r = y_l + 1.0;
     for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-      xl = a->j[j] + shift; xr = xl + 1.0;
-      DrawRectangle(draw,xl,yl,xr,yr,DRAW_BLACK,DRAW_BLACK,DRAW_BLACK,DRAW_BLACK);
+      x_l = a->j[j] + shift; x_r = x_l + 1.0;
+#if defined(PETSC_COMPLEX)
+      if (real(a->a[j]) >=  0.) continue;
+#else
+      if (a->a[j] >=  0.) continue;
+#endif
+      DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+    } 
+  }
+  color = DRAW_CYAN;
+  for ( i=0; i<m; i++ ) {
+    y_l = m - i - 1.0; y_r = y_l + 1.0;
+    for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+      x_l = a->j[j] + shift; x_r = x_l + 1.0;
+      if (a->a[j] !=  0.) continue;
+      DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+    } 
+  }
+  color = DRAW_RED;
+  for ( i=0; i<m; i++ ) {
+    y_l = m - i - 1.0; y_r = y_l + 1.0;
+    for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+      x_l = a->j[j] + shift; x_r = x_l + 1.0;
+#if defined(PETSC_COMPLEX)
+      if (real(a->a[j]) <=  0.) continue;
+#else
+      if (a->a[j] <=  0.) continue;
+#endif
+      DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
     } 
   }
   DrawFlush(draw); 
+  DrawGetPause(draw,&pause);
+  if (pause >= 0) { PetscSleep(pause); return 0;}
+
+  /* allow the matrix to zoom or shrink */
+  ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  while (button != BUTTON_RIGHT) {
+    DrawClear(draw);
+    if (button == BUTTON_LEFT) scale = .5;
+    else if (button == BUTTON_CENTER) scale = 2.;
+    xl = scale*(xl + w - xc) + xc - w*scale;
+    xr = scale*(xr - w - xc) + xc + w*scale;
+    yl = scale*(yl + h - yc) + yc - h*scale;
+    yr = scale*(yr - h - yc) + yc + h*scale;
+    w *= scale; h *= scale;
+    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+    color = DRAW_BLUE;
+    for ( i=0; i<m; i++ ) {
+      y_l = m - i - 1.0; y_r = y_l + 1.0;
+      for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+        x_l = a->j[j] + shift; x_r = x_l + 1.0;
+#if defined(PETSC_COMPLEX)
+        if (real(a->a[j]) >=  0.) continue;
+#else
+        if (a->a[j] >=  0.) continue;
+#endif
+        DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+      } 
+    }
+    color = DRAW_CYAN;
+    for ( i=0; i<m; i++ ) {
+      y_l = m - i - 1.0; y_r = y_l + 1.0;
+      for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+        x_l = a->j[j] + shift; x_r = x_l + 1.0;
+        if (a->a[j] !=  0.) continue;
+        DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+      } 
+    }
+    color = DRAW_RED;
+    for ( i=0; i<m; i++ ) {
+      y_l = m - i - 1.0; y_r = y_l + 1.0;
+      for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+        x_l = a->j[j] + shift; x_r = x_l + 1.0;
+#if defined(PETSC_COMPLEX)
+        if (real(a->a[j]) <=  0.) continue;
+#else
+        if (a->a[j] <=  0.) continue;
+#endif
+        DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+      } 
+    }
+    ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  }
   return 0;
 }
 
@@ -293,7 +375,7 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 static int MatZeroEntries_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
-  PetscZero(a->a,(a->i[a->m]+a->indexshift)*sizeof(Scalar));
+  PetscMemzero(a->a,(a->i[a->m]+a->indexshift)*sizeof(Scalar));
   return 0;
 }
 
@@ -374,7 +456,7 @@ static int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
 
   if (!a->assembled) SETERRQ(1,"MatMultTrans_SeqAIJ:Not for unassembled matrix");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
-  PetscZero(y,a->n*sizeof(Scalar));
+  PetscMemzero(y,a->n*sizeof(Scalar));
   y = y + shift; /* shift for Fortran start by 1 indexing */
   for ( i=0; i<m; i++ ) {
     idx   = a->j + a->i[i] + shift;
@@ -414,7 +496,7 @@ static int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 
   if (!a->assembled) SETERRQ(1,"MatMult_SeqAIJ:Not for unassembled matrix");
   VecGetArray(xx,&x); VecGetArray(yy,&y);
-  x = x + shift; /* shift for Fortran start by 1 indexing */
+  x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v    = a->a;
   ii   = a->i;
@@ -434,17 +516,19 @@ static int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *z, *v, sum;
-  int        m = a->m, n, i, *idx, shift = a->indexshift;
+  int        m = a->m, n, i, *idx, shift = a->indexshift,*ii;
 
   if (!a->assembled) SETERRQ(1,"MatMultAdd_SeqAIJ:Not for unassembled matrix");
   VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z); 
-  x = x + shift; /* shift for Fortran start by 1 indexing */
+  x    = x + shift; /* shift for Fortran start by 1 indexing */
+  idx  = a->j;
+  v    = a->a;
+  ii   = a->i;
   for ( i=0; i<m; i++ ) {
-    idx  = a->j + a->i[i] + shift;
-    v    = a->a + a->i[i] + shift;
-    n    = a->i[i+1] - a->i[i];
+    n    = ii[1] - ii[0]; ii++;
     sum  = y[i];
-    SPARSEDENSEDOT(sum,x,v,idx,n); 
+    /* SPARSEDENSEDOT(sum,x,v,idx,n);  */
+    while (n--) sum += *v++ * x[*idx++];
     z[i] = sum;
   }
   PLogFlops(2*a->nz);
@@ -704,7 +788,7 @@ static int MatRestoreRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
-static int MatNorm_SeqAIJ(Mat A,MatNormType type,double *norm)
+static int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *v = a->a;
@@ -726,14 +810,10 @@ static int MatNorm_SeqAIJ(Mat A,MatNormType type,double *norm)
     double *tmp;
     int    *jj = a->j;
     tmp = (double *) PETSCMALLOC( a->n*sizeof(double) ); CHKPTRQ(tmp);
-    PetscZero(tmp,a->n*sizeof(double));
+    PetscMemzero(tmp,a->n*sizeof(double));
     *norm = 0.0;
     for ( j=0; j<a->nz; j++ ) {
-#if defined(PETSC_COMPLEX)
-        tmp[*jj++ + shift] += abs(*v++); 
-#else
-        tmp[*jj++ + shift] += fabs(*v++); 
-#endif
+        tmp[*jj++ + shift] += PetscAbsScalar(*v++); 
     }
     for ( j=0; j<a->n; j++ ) {
       if (tmp[j] > *norm) *norm = tmp[j];
@@ -746,11 +826,7 @@ static int MatNorm_SeqAIJ(Mat A,MatNormType type,double *norm)
       v = a->a + a->i[j] + shift;
       sum = 0.0;
       for ( i=0; i<a->i[j+1]-a->i[j]; i++ ) {
-#if defined(PETSC_COMPLEX)
-        sum += abs(*v); v++;
-#else
-        sum += fabs(*v); v++;
-#endif
+        sum += PetscAbsScalar(*v); v++;
       }
       if (sum > *norm) *norm = sum;
     }
@@ -771,7 +847,7 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
 
   if (!B && m != a->n) SETERRQ(1,"MatTranspose_SeqAIJ:Not for rectangular mat in place");
   col = (int *) PETSCMALLOC((1+a->n)*sizeof(int)); CHKPTRQ(col);
-  PetscZero(col,(1+a->n)*sizeof(int));
+  PetscMemzero(col,(1+a->n)*sizeof(int));
   if (shift) {
     for ( i=0; i<ai[m]-1; i++ ) aj[i] -= 1;
   }
@@ -836,7 +912,7 @@ static int MatScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   return 0;
 }
 
-static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
+static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data,*c;
   int        nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
@@ -871,7 +947,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
       }
     }
     /* create submatrix */
-    if (MatValidMatrix(*B)) {
+    if (scall == MAT_REUSE_MATRIX) {
       int n_cols,n_rows;
       ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
       if (n_rows != nrows || n_cols != ncols) SETERRQ(1,"MatGetSubMatrix_SeqAIJ:");
@@ -906,7 +982,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
     cwork = (int *) PETSCMALLOC((1+2*ncols)*sizeof(int)); CHKPTRQ(cwork);
     lens  = cwork + ncols;
     vwork = (Scalar *) PETSCMALLOC((1+ncols)*sizeof(Scalar)); CHKPTRQ(vwork);
-    PetscZero(smap,oldcols*sizeof(int));
+    PetscMemzero(smap,oldcols*sizeof(int));
     for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
     /* determine lens of each row */
     for (i=0; i<nrows; i++) {
@@ -980,6 +1056,21 @@ static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
   return 0;
 }
 
+static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
+                                    Mat **B)
+{
+  int ierr,i;
+
+  if (scall == MAT_INITIAL_MATRIX) {
+    *B = (Mat *) PETSCMALLOC( (n+1)*sizeof(Mat) ); CHKPTRQ(*B);
+  }
+
+  for ( i=0; i<n; i++ ) {
+    ierr = MatGetSubMatrix(A,irow[i],icol[i],scall,&(*B)[i]); CHKERRQ(ierr);
+  }
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 
 static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
@@ -1003,7 +1094,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        0,0,MatConvert_SeqAIJ,
        MatGetSubMatrix_SeqAIJ,0,
        MatCopyPrivate_SeqAIJ,0,0,
-       MatILUFactor_SeqAIJ};
+       MatILUFactor_SeqAIJ,0,0,
+       MatGetSubMatrices_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
@@ -1074,7 +1166,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   len     = nz*(sizeof(int) + sizeof(Scalar)) + (b->m+1)*sizeof(int);
   b->a  = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(b->a);
   b->j  = (int *) (b->a + nz);
-  PetscZero(b->j,nz*sizeof(int));
+  PetscMemzero(b->j,nz*sizeof(int));
   b->i  = b->j + nz;
   b->singlemalloc = 1;
 

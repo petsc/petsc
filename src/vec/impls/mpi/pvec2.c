@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.10 1995/07/17 03:53:35 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.11 1995/10/01 21:51:20 bsmith Exp bsmith $ */
 
 #include <math.h>
 #include "pvecimpl.h" 
@@ -19,40 +19,42 @@ static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   return 0;
 }
 
-static int VecNorm_MPI(  Vec xin, double *z )
+
+static int VecNorm_MPI(  Vec xin,NormType type, double *z )
 {
   Vec_MPI *x = (Vec_MPI *) xin->data;
   double sum, work = 0.0;
   Scalar  *xx = x->array;
   register int n = x->n;
+
+  if (type == NORM_2) {
 #if defined(PETSC_COMPLEX)
-  int i;
-  for (i=0; i<n; i++ ) {
-    work += real(conj(xx[i])*xx[i]);
-  }
+    int i;
+    for (i=0; i<n; i++ ) {
+      work += real(conj(xx[i])*xx[i]);
+    }
 #else
-  SQR(work,xx,n);
+    SQR(work,xx,n);
 #endif
-  MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
-  *z = sqrt( sum );
-  PLogFlops(2*x->n);
-  return 0;
-}
-
-
-static int VecAMax_MPI( Vec xin, int *idx, double *z )
-{
-  double work;
-  /* Find the local max */
-  VecAMax_Seq( xin, idx, &work );
-
-  /* Find the global max */
-  if (!idx) {
+    MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+    *z = sqrt( sum );
+    PLogFlops(2*x->n);
+  }
+  else if (type == NORM_1) {
+    /* Find the local part */
+    VecNorm_Seq( xin, NORM_1, &work );
+    /* Find the global max */
+    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+  }
+  else if (type == NORM_INFINITY) {
+    /* Find the local max */
+    VecNorm_Seq( xin, NORM_INFINITY, &work );
+    /* Find the global max */
     MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );
   }
-  else {
-    /* Need to use special linked max */
-    SETERRQ( 1, "VecAMax_MPI:Parallel max with index not supported" );
+  else if (type == NORM_1) {
+    VecNorm_Seq( xin, NORM_1, &work );
+    MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
   }
   return 0;
 }

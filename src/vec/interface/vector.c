@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.51 1995/10/01 21:51:16 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.52 1995/10/17 14:28:59 curfman Exp bsmith $";
 #endif
 
 #include "vecimpl.h"    /*I "vec.h" I*/
@@ -47,68 +47,22 @@ int VecDot(Vec x, Vec y, Scalar *val)
 
    Input Parameters:
 .  x - the vector
+.  type - one of NORM_1, NORM_2, NORM_INFINITY
 
    Output Parameter:
 .  val - the norm 
 
 .keywords: vector, norm
 
-.seealso: VecASum()
+.seealso: 
 @*/
-int VecNorm(Vec x,double *val)  
+int VecNorm(Vec x,NormType type,double *val)  
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
   PLogEventBegin(VEC_Norm,x,0,0,0);
-  ierr = (*x->ops.norm)(x,val); CHKERRQ(ierr);
+  ierr = (*x->ops.norm)(x,type,val); CHKERRQ(ierr);
   PLogEventEnd(VEC_Norm,x,0,0,0);
-  return 0;
-}
-/*@
-   VecASum - Computes the vector one norm (sum of components' absolute values).
-
-   Input Parameter:
-.  x - the vector
-
-   Output Parameter:
-.  val - the sum 
-
-.keywords: vector, sum, absolute value, norm
-
-.seealso: VecNorm(), VecSum()
-@*/
-int VecASum(Vec x,double *val)
-{
-  int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
-  PLogEventBegin(VEC_ASum,x,0,0,0);
-  ierr = (*x->ops.asum)(x,val); CHKERRQ(ierr);
-  PLogEventEnd(VEC_ASum,x,0,0,0);
-  return 0;
-}
-
-/*@
-   VecAMax - Determines the vector infinity norm (component with maximum
-   absolute value) and its location.
-
-   Input Parameter:
-.  x - the vector
-
-   Output Parameters:
-.  val - the component with maximum absolute value
-.  p - the location of val
-
-.keywords: vector, maximum, norm, absolute value
-
-.seealso: VecMax(), VecNorm(), VecASum()
-@*/
-int VecAMax(Vec x,int *p,double *val)
-{
-  int ierr;
-  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
-  PLogEventBegin(VEC_AMax,x,0,0,0);
-  ierr = (*x->ops.amax)(x,p,val); CHKERRQ(ierr);
-  PLogEventEnd(VEC_AMax,x,0,0,0);
   return 0;
 }
 
@@ -124,7 +78,7 @@ int VecAMax(Vec x,int *p,double *val)
 
 .keywords: vector, maximum
 
-.seealso: VecAMax(), VecMin()
+.seealso: VecNorm(), VecMin()
 @*/
 int VecMax(Vec x,int *p,double *val)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.29 1995/09/30 19:28:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.30 1995/10/12 04:15:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -77,7 +77,7 @@ int main(int argc,char **args)
   MPIU_printf(MPI_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);
-  ierr = VecNorm(u,&norm);
+  ierr = VecNorm(u,NORM_2,&norm);
   if (norm < 1.e-11) {
     fprintf(stdout,"Number of iterations %d 2 norm error < 1.e-11\n",its);
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.18 1995/10/01 21:51:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.19 1995/10/17 21:41:01 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -201,14 +201,14 @@ static int ccgtql1_private(int *n, Scalar *d, Scalar *e, int *ierr)
     i__1 = *n;
     for (l = 1; l <= i__1; ++l) {
         j = 0;
-        h = (d__1 = d[l], PETSCABS(d__1)) + (d__2 = e[l], PETSCABS(d__2));
+        h = (d__1 = d[l], PetscAbsScalar(d__1)) + (d__2 = e[l], PetscAbsScalar(d__2));
         if (tst1 < h) {
             tst1 = h;
         }
 /*     .......... LOOK FOR SMALL SUB-DIAGONAL ELEMENT .......... */
         i__2 = *n;
         for (m = l; m <= i__2; ++m) {
-            tst2 = tst1 + (d__1 = e[m], PETSCABS(d__1));
+            tst2 = tst1 + (d__1 = e[m], PetscAbsScalar(d__1));
             if (tst2 == tst1) {
                 goto L120;
             }
@@ -279,7 +279,7 @@ L145:
         p = -s * s2 * c3 * el1 * e[l] / dl1;
         e[l] = s * p;
         d[l] = c * p;
-        tst2 = tst1 + (d__1 = e[l], PETSCABS(d__1));
+        tst2 = tst1 + (d__1 = e[l], PetscAbsScalar(d__1));
         if (tst2 > tst1) {
             goto L130;
         }
@@ -329,13 +329,13 @@ static double cgpthy_private(double *a, double *b)
 
 
 /* Computing MAX */
-    d__1 = PETSCABS(*a), d__2 = PETSCABS(*b);
+    d__1 = PetscAbsScalar(*a), d__2 = PetscAbsScalar(*b);
     p = PETSCMAX(d__1,d__2);
     if (p == 0.) {
         goto L20;
     }
 /* Computing MIN */
-    d__2 = PETSCABS(*a), d__3 = PETSCABS(*b);
+    d__2 = PetscAbsScalar(*a), d__3 = PetscAbsScalar(*b);
 /* Computing 2nd power */
     d__1 = PETSCMIN(d__2,d__3) / p;
     r = d__1 * d__1;

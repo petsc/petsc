@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.10 1995/10/17 15:11:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.11 1995/10/24 21:42:47 bsmith Exp bsmith $";
 #endif
 
 #define RERROR  gmres_error
@@ -8,11 +8,11 @@ static char vcid[] = "$Id: borthog.c,v 1.10 1995/10/17 15:11:12 bsmith Exp bsmit
 /*
   This is the basic version and does not assume anything. 
  */
-int GMRESBasicOrthog( KSP itP,int it )
+int KSPGMRESBasicOrthog( KSP itP,int it )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
-  int    j;
-  Scalar *hh, *hes, tmp;
+  int       j;
+  Scalar    *hh, *hes, tmp;
 
   PLogEventBegin(KSP_GMRESOrthogonalization,itP,0,0,0);
   /* update hessenberg matrix and do Gram-Schmidt */
@@ -37,11 +37,11 @@ int GMRESBasicOrthog( KSP itP,int it )
   Multiple applications of this can be used to provide a better 
   orthogonalization (but be careful of the HH and HES values).
  */
-int GMRESUnmodifiedOrthog(KSP  itP,int it )
+int KSPGMRESUnmodifiedOrthog(KSP  itP,int it )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
-  int    j;
-  Scalar *hh, *hes;
+  int       j;
+  Scalar    *hh, *hes;
 
   PLogEventBegin(KSP_GMRESOrthogonalization,itP,0,0,0);
   /* update hessenberg matrix and do unmodified Gram-Schmidt */
@@ -73,7 +73,7 @@ int GMRESUnmodifiedOrthog(KSP  itP,int it )
 
   Care is taken to accumulate the updated HH/HES values.
  */
-int GMRESIROrthog(KSP  itP,int it )
+int KSPGMRESIROrthog(KSP  itP,int it )
 {
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
   int       j,ncnt;
@@ -134,4 +134,3 @@ int GMRESIROrthog(KSP  itP,int it )
   PLogEventEnd(KSP_GMRESOrthogonalization,itP,0,0,0);
   return 0;
 }
-

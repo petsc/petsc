@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.22 1995/08/24 22:30:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.23 1995/09/30 19:30:45 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -228,6 +228,7 @@ int DrawLG(DrawLGCtx lg)
     }
   }
   DrawSyncFlush(lg->win);
+  DrawPause(lg->win);
   return 0;
 } 
  

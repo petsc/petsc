@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.108 1995/10/27 14:01:20 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.109 1995/10/28 21:10:33 curfman Exp bsmith $";
 #endif
 
 /*
@@ -964,7 +964,7 @@ int MatScale(Mat mat,Vec l,Vec r)
 
 .keywords: matrix, norm, Frobenius
 @*/
-int MatNorm(Mat mat,MatNormType type,double *norm)
+int MatNorm(Mat mat,NormType type,double *norm)
 {
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!norm) SETERRQ(1,"MatNorm:bad addess for value");
@@ -1343,6 +1343,7 @@ int MatGetArray(Mat mat,Scalar **v)
    Input Parameters:
 .  mat - the matrix
 .  irow, icol - index sets of rows and columns to extract
+.  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
 .  submat - the submatrix
@@ -1354,13 +1355,16 @@ int MatGetArray(Mat mat,Scalar **v)
 
 .seealso: MatZeroRows(), MatGetSubMatrixInPlace()
 @*/
-int MatGetSubMatrix(Mat mat,IS irow,IS icol,Mat *submat)
+int MatGetSubMatrix(Mat mat,IS irow,IS icol,MatGetSubMatrixCall scall,Mat *submat)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (scall == MAT_REUSE_MATRIX) {
+    PETSCVALIDHEADERSPECIFIC(*submat,MAT_COOKIE); 
+  }   
   if (!mat->ops.getsubmatrix) SETERRQ(PETSC_ERR_SUP,"MatGetSubMatrix");
   PLogEventBegin(MAT_GetSubMatrix,mat,irow,icol,0);
-  ierr = (*mat->ops.getsubmatrix)(mat,irow,icol,submat); CHKERRQ(ierr);
+  ierr = (*mat->ops.getsubmatrix)(mat,irow,icol,scall,submat); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetSubMatrix,mat,irow,icol,0);
   return 0;
 }
@@ -1380,13 +1384,14 @@ int MatGetSubMatrix(Mat mat,IS irow,IS icol,Mat *submat)
 
 .seealso: MatGetSubMatrix()
 @*/
-int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,Mat **submat)
+int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
+                      Mat **submat)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->ops.getsubmatrices) SETERRQ(PETSC_ERR_SUP,"MatGetSubMatrices");
   PLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);
-  ierr = (*mat->ops.getsubmatrices)(mat,n,irow,icol,submat); CHKERRQ(ierr);
+  ierr = (*mat->ops.getsubmatrices)(mat,n,irow,icol,scall,submat); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);
   return 0;
 }

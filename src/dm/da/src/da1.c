@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.20 1995/10/19 22:30:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.21 1995/10/24 21:54:33 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -69,6 +69,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
     }
 
     DrawSyncFlush(win); 
+    DrawPause(win);
     MPI_Barrier(da->comm);
 
     /* draw my box */
@@ -86,7 +87,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
     }
 
     DrawSyncFlush(win);
- 
+    DrawPause(win); 
   }
   return 0;
 }

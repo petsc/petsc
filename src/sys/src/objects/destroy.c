@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.15 1995/10/01 21:51:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.16 1995/10/06 22:23:55 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
@@ -35,6 +35,42 @@ int PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
   if (!obj) SETERRQ(1,"PetscObjectGetComm:Null object");
   *comm = obj->comm;
+  return 0;
+}
+
+/*@C
+   PetscObjectGetType - Gets the type for any PetscObject, 
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP.
+
+   Output Parameter:
+.  type - the type
+
+.keywords: object, get, type
+@*/
+int PetscObjectGetType(PetscObject obj,int *type)
+{
+  if (!obj) SETERRQ(1,"PetscObjectGetComm:Null object");
+  *type = obj->type;
+  return 0;
+}
+
+/*@C
+   PetscObjectGetCookie - Gets the cookie for any PetscObject, 
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP.
+
+   Output Parameter:
+.  cookie - the cookie
+
+.keywords: object, get, cookie
+@*/
+int PetscObjectGetCookie(PetscObject obj,int *cookie)
+{
+  if (!obj) SETERRQ(1,"PetscObjectGetComm:Null object");
+  *cookie = obj->cookie;
   return 0;
 }
 

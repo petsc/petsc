@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.16 1995/08/21 18:14:36 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.17 1995/08/22 16:33:42 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -49,6 +49,11 @@ extern int DrawSetDoubleBuffer(DrawCtx);
 extern int DrawFlush(DrawCtx);
 extern int DrawSyncFlush(DrawCtx);
 extern int DrawClear(DrawCtx);
+extern int DrawPause(DrawCtx);
+extern int DrawGetPause(DrawCtx,int*);
+
+typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton;
+extern int DrawGetMouseButton(DrawCtx,DrawButton *,double*,double *,double *,double *);
 
 typedef struct _DrawAxisCtx* DrawAxisCtx;
 #define AXIS_COOKIE PETSC_COOKIE+16

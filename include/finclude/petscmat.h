@@ -8,7 +8,7 @@ C
 #define MatOrdering     integer
 #define MATSORType      integer
 #define MatInfoType     integer
-#define MatNormType     integer
+
 
       integer MATSAME, MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, MATSHELL, 
      *        MATSEQROW, MATMPIROW, MATMPIROWBS, MATSEQBDIAG, 
@@ -53,9 +53,6 @@ C
 
       parameter( MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
 
-      integer NORM_1,NORM_2,NORM_FROBENIUS,NORM_INFINITY
-
-      parameter( NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4)
 C
 C      End of Fortran include file for the Mat package in PETSc
 

@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.8 1995/09/11 18:45:40 bsmith Exp bsmith $ */
+/* $Id: bvec1.c,v 1.9 1995/09/30 19:26:35 bsmith Exp bsmith $ */
 
 /*
    Defines the BLAS based vector operations
@@ -27,15 +27,6 @@ static int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
   *z = BLdot_( &x->n, x->array, &one, y->array, &one );
 #endif
   PLogFlops(2*x->n-1);
-  return 0;
-}
-
-static int VecAsum_Seq( Vec xin, double *z )
-{
-  Vec_Seq *x = (Vec_Seq *) xin->data;
-  int     one = 1;
-  *z = BLasum_( &x->n, x->array, &one );
-  PLogFlops(x->n-1);
   return 0;
 }
 

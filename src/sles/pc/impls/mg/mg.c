@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.34 1995/09/30 19:28:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.35 1995/10/01 21:52:16 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -55,7 +55,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 
   for ( i=0; i<levels; i++ ) {
     mg[i]         = (MG) PETSCMALLOC( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
-    PetscZero(mg[i],sizeof(MG));
+    PetscMemzero(mg[i],sizeof(MG));
     mg[i]->level  = levels - i - 1;
     mg[i]->cycles = 1;
     if ( i==levels-1) {

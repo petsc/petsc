@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.29 1995/10/01 21:53:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.30 1995/10/12 04:20:13 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -32,7 +32,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
 
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x); CHKERRQ(ierr);
-  ierr = VecNorm(x,&norm); CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRQ(ierr);
   if (norm >= neP->delta) {
     PLogInfo((PetscObject)snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
     PLogInfo((PetscObject)snes,
@@ -74,10 +74,10 @@ static int SNESSolve_TR(SNES snes,int *its)
   Ytmp          = snes->work[2];
 
   ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr); /* X <- X_0 */
-  ierr = VecNorm(X,&xnorm); CHKERRQ(ierr);               /* xnorm = || X || */
+  ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);               /* xnorm = || X || */
    
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);   /* (+/-) F(X) */
-  ierr = VecNorm(F, &fnorm ); CHKERRQ(ierr);             /* fnorm <- || F || */
+  ierr = VecNorm(F, NORM_2,&fnorm ); CHKERRQ(ierr);             /* fnorm <- || F || */
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
@@ -97,7 +97,7 @@ static int SNESSolve_TR(SNES snes,int *its)
      ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
             CHKERRQ(ierr);
      ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
-     ierr = VecNorm(Ytmp,&norm); CHKERRQ(ierr);
+     ierr = VecNorm(Ytmp,NORM_2,&norm); CHKERRQ(ierr);
      while(1) {
        ierr = VecCopy(Ytmp,Y); CHKERRQ(ierr);
        /* Scale Y if need be and predict new value of F norm */
@@ -118,7 +118,7 @@ static int SNESSolve_TR(SNES snes,int *its)
        ierr = VecAXPY(&one,X,Y); CHKERRQ(ierr);             /* Y <- X + Y */
        ierr = VecCopy(X,snes->vec_sol_update_always); CHKERRQ(ierr);
        ierr = SNESComputeFunction(snes,Y,G); CHKERRQ(ierr); /* (+/-) F(X) */
-       ierr = VecNorm(G,&gnorm); CHKERRQ(ierr);             /* gnorm <- || g || */
+       ierr = VecNorm(G,NORM_2,&gnorm); CHKERRQ(ierr);             /* gnorm <- || g || */
        if (fnorm == gpnorm) rho = 0.0;
        else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
 
@@ -150,7 +150,7 @@ static int SNESSolve_TR(SNES snes,int *its)
      if (history && history_len > i+1) history[i+1] = fnorm;
      TMP = F; F = G; snes->vec_func_always = F; G = TMP;
      TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
-     VecNorm(X, &xnorm );		/* xnorm = || X || */
+     VecNorm(X, NORM_2,&xnorm );		/* xnorm = || X || */
      if (snes->monitor) {ierr = (*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
 
      /* Test for convergence */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.13 1995/08/14 17:06:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.14 1995/10/17 21:41:15 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -47,7 +47,7 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
   ierr = KSPResidual(itP,X,V,T, R, BINVF, B ); CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr = VecNorm(R,&dp); CHKERRQ(ierr);
+  ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
   if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
   MONITOR(itP,dp,0);
 
@@ -73,7 +73,7 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
     ierr = VecWAXPY(&one,U,Q,T); CHKERRQ(ierr);     /* t <- u + q           */
     ierr = PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,T1); CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R); CHKERRQ(ierr);      /* r <- r - a K (u + q) */
-    ierr = VecNorm(R,&dp); CHKERRQ(ierr);
+    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
     for (m=0; m<2; m++) {
       if (m == 0)
         w = sqrt(dp*dpold);

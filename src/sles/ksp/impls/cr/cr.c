@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.18 1995/08/14 17:06:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.19 1995/10/01 21:51:30 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -61,10 +61,10 @@ static int  KSPSolve_CR(KSP itP,int *its)
   ierr = VecSet(&zero,Qm1); CHKERRQ(ierr);      /*    Qm1 <- 0         */
   ierr = PCApply(itP->B,R,P); CHKERRQ(ierr);    /*     p <- Br         */
   if (pres) {
-    ierr = VecNorm(P,&dp); CHKERRQ(ierr);       /*    dp <- z'*z       */
+    ierr = VecNorm(P,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
   }
   else {
-    ierr = VecNorm(R,&dp); CHKERRQ(ierr);       /*    dp <- r'*r       */
+    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
   }
   if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
   MONITOR(itP,dp,0);
@@ -79,7 +79,7 @@ static int  KSPSolve_CR(KSP itP,int *its)
     ierr = VecAXPY(&lambda,P,X); CHKERRQ(ierr); /*   x <- x + lambda p  */
     tmp = -lambda; 
     ierr =VecAXPY(&tmp,Q,R); CHKERRQ(ierr);     /*   r <- r - lambda q  */
-    ierr =VecNorm(R,&dp); CHKERRQ(ierr);        /*   dp <- r'*r         */
+    ierr =VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
     if (history && hist_len > i + 1) history[i+1] = dp;
     MONITOR(itP,dp,i+1);
     cerr = (*itP->converged)(itP,i+1,dp,itP->cnvP);
@@ -96,7 +96,7 @@ static int  KSPSolve_CR(KSP itP,int *its)
     tmp = -alpha0; ierr = VecAXPY(&tmp,Q,Qp1); CHKERRQ(ierr);
     tmp = -alpha1; ierr = VecAXPY(&tmp,Qm1,Qp1); CHKERRQ(ierr);
     /* scale the search direction !! Not mentioned in any reference */
-    ierr = VecNorm(Pp1,&dp); CHKERRQ(ierr);
+    ierr = VecNorm(Pp1,NORM_2,&dp); CHKERRQ(ierr);
     tmp = 1.0/dp; ierr = VecScale(&tmp,Pp1); CHKERRQ(ierr);
     ierr = VecScale(&tmp,Qp1); CHKERRQ(ierr);
     /* rotate work vectors */

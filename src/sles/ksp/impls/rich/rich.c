@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.27 1995/10/01 21:51:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.28 1995/10/17 21:41:09 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -85,10 +85,10 @@ int  KSPSolve_Richardson(KSP itP,int *its)
      ierr = PCApply(itP->B,r,z); CHKERRQ(ierr);    /*   z <- B r          */
      if (itP->calc_res) {
 	if (!pres) {
-          ierr = VecNorm(r,&rnorm); CHKERRQ(ierr); /*   rnorm <- r'*r     */
+          ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- r'*r     */
         }
 	else {
-          ierr = VecNorm(z,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
+          ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
         }
         if (history && hist_len > i) history[i] = rnorm;
         MONITOR(itP,rnorm,i);
@@ -102,11 +102,11 @@ int  KSPSolve_Richardson(KSP itP,int *its)
   }
   if (itP->calc_res && !brokeout) {
     if (!pres) {
-      ierr = VecNorm(r,&rnorm); CHKERRQ(ierr);     /*   rnorm <- r'*r     */
+      ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- r'*r     */
     }
     else {
       ierr = PCApply(itP->B,r,z); CHKERRQ(ierr);   /*   z <- B r          */
-      ierr = VecNorm(z,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
+      ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
     }
     if (history && hist_len > i) history[i] = rnorm;
     MONITOR(itP,rnorm,i);

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.34 1995/10/11 15:20:50 bsmith Exp curfman $ */
+/* $Id: pc.h,v 1.35 1995/10/12 18:55:35 curfman Exp bsmith $ */
 
 /*
       Preconditioner module.
@@ -9,7 +9,7 @@
 #include "mat.h"
 
 typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-               PCEISENSTAT, PCILU, PCICC } PCMethod;
+               PCEISENSTAT, PCILU, PCICC, PCASM } PCMethod;
 
 typedef struct _PC* PC;
 #define PC_COOKIE    PETSC_COOKIE+9

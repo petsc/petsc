@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.2 1995/10/12 04:18:22 bsmith Exp curfman $";
+C      "$Id: ex12.F,v 1.3 1995/10/19 22:26:52 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -54,7 +54,7 @@ C Solve system
 C Show result
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
-      call VecNorm(u,norm,ierr)
+      call VecNorm(u,NORM_2,norm,ierr)
       print*, 'Number of iterations = ',its
       print*, 'Residual norm = ',norm
       print*, 'Time for solve = ',time

@@ -2,12 +2,11 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../.. $(PCONF)\
-           $(CONF) -D__DIR__='"pc/impls/jacobi/"'
-SOURCEC  = jacobi.c
+CFLAGS   =  $(PETSC_INCLUDE) -I../.. $(PCONF) $(CONF) -D__DIR__='"pc/impls/asm/"'
+SOURCEC  = asm.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = jacobi.o
+OBJSC    = asm.o
 OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 

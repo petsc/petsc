@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.12 1995/09/30 19:30:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.13 1995/10/01 21:53:10 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -133,9 +133,9 @@ int XiMatchFontSize( XiFont *font, int w, int h )
 
   /* determine closest fit, per max. norm */
   imax = 0;
-  max  = PETSCMAX(PETSCABS(nfonts[0].w - w),PETSCABS(nfonts[0].h - h));
+  max  = PETSCMAX(PetscAbsInt(nfonts[0].w - w),PetscAbsInt(nfonts[0].h - h));
   for (i=1; i<act_nfonts; i++) {
-    tmp = PETSCMAX(PETSCABS(nfonts[i].w - w),PETSCABS(nfonts[i].h - h));
+    tmp = PETSCMAX(PetscAbsInt(nfonts[i].w - w),PetscAbsInt(nfonts[i].h - h));
     if (tmp < max) {max = tmp; imax = i;}
   }
 

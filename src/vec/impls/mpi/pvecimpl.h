@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.5 1995/08/07 21:57:45 bsmith Exp curfman $ */
+/* $Id: pvecimpl.h,v 1.6 1995/10/19 22:16:25 curfman Exp bsmith $ */
 /* 
  */
 
@@ -21,6 +21,8 @@ typedef struct {
     Scalar      *svalues,*rvalues;
     int         rmax;
 } Vec_MPI;
+
+extern int VecNorm_Seq(Vec, NormType, double *work );
 
 #endif
 

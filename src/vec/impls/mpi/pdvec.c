@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.29 1995/10/11 17:52:54 curfman Exp curfman $ */
+/* $Id: pdvec.c,v 1.30 1995/10/19 22:16:25 curfman Exp bsmith $ */
 
 #include "pinclude/pviewer.h"
 #include "sysio.h"
@@ -206,6 +206,7 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
 #endif
   }
   DrawSyncFlush(win);
+  DrawPause(win);
   return 0;
 }
 
@@ -243,6 +244,7 @@ static int VecView_MPI_LG(Vec xin, DrawLGCtx lg )
   }
   DrawLGGetDrawCtx(lg,&win);
   DrawSyncFlush(win);
+  DrawPause(win);
   return 0;
 }
 
@@ -374,7 +376,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC( (x->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<x->stash.n; i++ ) {
     idx = x->stash.idx[i];

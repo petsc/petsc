@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.27 1995/09/30 19:28:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.28 1995/10/12 04:15:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -355,10 +355,10 @@ int CalculateError(Vec solution,Vec u,Vec r,double *e)
   Scalar mone = -1.0;
   int    ierr;
 
-  ierr = VecNorm(r,e+2); CHKERRQ(ierr);
+  ierr = VecNorm(r,NORM_2,e+2); CHKERRQ(ierr);
   ierr = VecWAXPY(&mone,u,solution,r); CHKERRQ(ierr);
-  ierr = VecNorm(r,e); CHKERRQ(ierr);
-  ierr = VecASum(r,e+1); CHKERRQ(ierr);
+  ierr = VecNorm(r,NORM_2,e); CHKERRQ(ierr);
+  ierr = VecNorm(r,NORM_1,e+1); CHKERRQ(ierr);
   return 0;
 }
 

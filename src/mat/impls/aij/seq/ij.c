@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.10 1995/09/21 20:10:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.11 1995/09/30 19:28:44 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -36,7 +36,7 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
 
   /* allocate space for row pointers */
   *iia = ia = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(ia);
-  PetscZero(ia,(n+1)*sizeof(int));
+  PetscMemzero(ia,(n+1)*sizeof(int));
   work = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.26 1995/09/06 03:04:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.27 1995/10/17 21:41:07 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -99,8 +99,8 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
 
     /* calculate residual norm if requested */
     if (itP->calc_res) {
-      if (!pres) {ierr = VecNorm(r,&rnorm); CHKERRQ(ierr);}
-      else {ierr = VecNorm(p[kp1],&rnorm); CHKERRQ(ierr);}
+      if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);}
+      else {ierr = VecNorm(p[kp1],NORM_2,&rnorm); CHKERRQ(ierr);}
       if (history && hist_len > i) history[i] = rnorm;
       itP->vec_sol = p[k]; 
       MONITOR(itP,rnorm,i);
@@ -122,10 +122,10 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   if (!cerr && itP->calc_res) {
     ierr = MatMult(Amat,p[k],r); CHKERRQ(ierr);       /*  r = b - Ap[k]    */
     ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
-    if (!pres) {ierr = VecNorm(r,&rnorm); CHKERRQ(ierr);}
+    if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);}
     else {
       ierr = PCApply(itP->B,r,p[kp1]); CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
-      ierr = VecNorm(p[kp1],&rnorm); CHKERRQ(ierr);
+      ierr = VecNorm(p[kp1],NORM_2,&rnorm); CHKERRQ(ierr);
     }
     if (history && hist_len > i) history[i] = rnorm;
     itP->vec_sol = p[k]; 

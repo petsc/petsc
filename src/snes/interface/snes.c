@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.22 1995/10/13 01:56:32 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.23 1995/10/19 22:28:49 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1204,7 +1204,7 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
 {
   double norm;
   Scalar cnorm;
-  VecNorm(y, &norm );
+  VecNorm(y,NORM_2, &norm );
   if (norm > *delta) {
      norm = *delta/norm;
      *gpnorm = (1.0 - norm)*(*fnorm);

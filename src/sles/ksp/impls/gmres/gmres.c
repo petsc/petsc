@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.44 1995/10/24 21:42:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.45 1995/10/30 03:55:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -62,7 +62,7 @@ static char vcid[] = "$Id: gmres.c,v 1.44 1995/10/24 21:42:47 bsmith Exp bsmith 
 #define GMRES_DELTA_DIRECTIONS 5
 #define GMRES_DEFAULT_MAXK 10
 static int    GMRESGetNewVectors( KSP ,int );
-static double GMRESUpdateHessenberg( KSP , int );
+static int    GMRESUpdateHessenberg( KSP , int,double * );
 static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
 static int    KSPSetUp_GMRES(KSP itP )
 {
@@ -170,14 +170,14 @@ static int GMRESResidual(  KSP itP,int restart )
  */
 int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 {
-  double  res_norm, res, rtol;
-  Scalar   tmp;
-  int     hist_len= itP->res_hist_size, cerr, ierr;
-  double  hapbnd,*nres = itP->residual_history,tt;
+  double    res_norm, res, rtol;
+  Scalar    tmp;
+  int       hist_len= itP->res_hist_size, cerr, ierr;
+  double    hapbnd,*nres = itP->residual_history,tt;
   /* Note that hapend is ignored in the code */
-  int     it, hapend, converged;
+  int       it, hapend, converged;
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->data);
-  int     max_k = gmresP->max_k, max_it = itP->max_it;
+  int       max_k = gmresP->max_k, max_it = itP->max_it;
 
   /* Question: on restart, compute the residual?  No; provide a restart 
      driver */
@@ -185,7 +185,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   it = 0;
 
   /* dest . dest */
-  ierr = VecNorm(VEC_VV(0),&res_norm); CHKERRQ(-ierr);
+  ierr = VecNorm(VEC_VV(0),NORM_2,&res_norm); CHKERRQ(-ierr);
   res    = res_norm;
   *RS(0) = res_norm;
 
@@ -208,11 +208,11 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
     if (itP->monitor) {
 	gmresP->it = (it - 1);
-        (*itP->monitor)( itP,  it + itsSoFar, res,itP->monP );
+        ierr = (*itP->monitor)(itP,it + itsSoFar,res,itP->monP);CHKERRQ(-ierr);
 	}
     if (gmresP->vv_allocated <= it + VEC_OFFSET + 1) {
 	/* get more vectors */
-	GMRESGetNewVectors(  itP, it+1 );
+	ierr = GMRESGetNewVectors(  itP, it+1 );CHKERRQ(-ierr);
 	}
     ierr = PCApplyBAorAB(itP->B,itP->right_pre,VEC_VV(it),VEC_VV(1+it),
                          VEC_TEMP_MATOP); CHKERRQ(-ierr);
@@ -221,17 +221,13 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
     (*gmresP->orthog)(  itP, it );
 
     /* vv(i+1) . vv(i+1) */
-    ierr = VecNorm(VEC_VV(it+1),&tt); CHKERRQ(-ierr);
+    ierr = VecNorm(VEC_VV(it+1),NORM_2,&tt); CHKERRQ(-ierr);
     /* save the magnitude */
     *HH(it+1,it)    = tt;
     *HES(it+1,it)   = tt;
 
     /* check for the happy breakdown */
-#if defined(PETSC_COMPLEX)
-    hapbnd  = gmresP->epsabs * abs( *HH(it,it) / *RS(it) );
-#else
-    hapbnd  = gmresP->epsabs * fabs( *HH(it,it) / *RS(it) );
-#endif
+    hapbnd  = gmresP->epsabs * PetscAbsScalar( *HH(it,it) / *RS(it) );
     if (hapbnd > gmresP->haptol) hapbnd = gmresP->haptol;
     if (tt > hapbnd) {
         tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it+1) ); CHKERRQ(-ierr);
@@ -241,7 +237,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
            here.  This happens when the solution is exactly reached. */
       hapend = 1;
     }
-    res = GMRESUpdateHessenberg( itP, it );
+    ierr = GMRESUpdateHessenberg( itP, it, &res ); CHKERRQ(-ierr);
     it++;
     gmresP->it = (it-1);  /* For converged */
   }
@@ -250,7 +246,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
     itP->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it + itsSoFar + 1;
   if (itP->monitor) {
     gmresP->it = it - 1;
-    (*itP->monitor)( itP,  it + itsSoFar, res, itP->monP );
+    ierr = (*itP->monitor)( itP,  it + itsSoFar, res, itP->monP ); CHKERRQ(-ierr);
   }
   if (itcount) *itcount    = it;
 
@@ -310,7 +306,7 @@ static int KSPSolve_GMRES(KSP itP,int *outits )
 static int KSPAdjustWork_GMRES(KSP itP )
 {
   KSP_GMRES *gmresP;
-  int       i;
+  int       i,ierr;
 
   if ( itP->adjust_work_vectors ) {
     gmresP = (KSP_GMRES *) itP->data;
@@ -410,7 +406,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
 /*
    Do the scalar work for the orthogonalization.  Return new residual.
  */
-static double GMRESUpdateHessenberg( KSP itP, int it )
+static int GMRESUpdateHessenberg( KSP itP, int it, double *res )
 {
   Scalar    *hh, *cc, *ss, tt;
   int       j;
@@ -442,11 +438,8 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
   *RS(it+1) = - ( *ss * *RS(it) );
   *RS(it)   = *cc * *RS(it);
   *hh       = *cc * *hh + *ss * *(hh+1);
-#if defined(PETSC_COMPLEX)
-  return abs( *RS(it+1) );
-#else
-  return fabs( *RS(it+1) );
-#endif
+  *res = PetscAbsScalar( *RS(it+1) );
+  return 0;
 }
 /*
    This routine allocates more work vectors, starting from VEC_VV(it).

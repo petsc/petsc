@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.23 1995/10/01 21:52:21 bsmith Exp $";
+static char vcid[] = "$Id: iccbs.c,v 1.1 1995/10/05 02:47:22 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
@@ -114,7 +114,7 @@ int KSPMonitor_MPIRowbs(KSP itP,int n,double rnorm,Mat mat)
 
   ierr = KSPBuildResidual(itP,0,bsif->xwork,&resid); CHKERRQ(ierr);
   ierr = VecPMult(resid,bsif->diag,resid); CHKERRQ(ierr);
-  ierr = VecNorm(resid,&scnorm); CHKERRQ(ierr);
+  ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
   MPIU_printf(itP->comm,"%d %14.12e \n",n,scnorm); 
   return 0;
 }

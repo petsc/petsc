@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.2 1995/09/30 19:27:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: memc.c,v 1.3 1995/10/17 03:15:36 curfman Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -34,7 +34,7 @@ void PetscMemcpy(void *a,void *b,int n)
 }
 
 /*@
-   PetscZero - Zeros the specified memory.
+   PetscMemzero - Zeros the specified memory.
 
    Input Parameters:
 .  a - pointer to beginning memory location
@@ -47,7 +47,7 @@ void PetscMemcpy(void *a,void *b,int n)
 
 .seealso: PetscMemcpy()
 @*/
-void PetscZero(void *a,int n)
+void PetscMemzero(void *a,int n)
 {
   memset((char*)(a),0,n);
 }

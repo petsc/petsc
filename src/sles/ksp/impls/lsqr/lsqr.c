@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.15 1995/08/14 17:06:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.16 1995/10/17 21:41:10 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -48,16 +48,16 @@ static int KSPSolve_LSQR(KSP itP,int *its)
   ierr = KSPResidual(itP,X,V,U, W,BINVF,B); CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr = VecNorm(W,&rnorm); CHKERRQ(ierr);
+  ierr = VecNorm(W,NORM_2,&rnorm); CHKERRQ(ierr);
   if ((*itP->converged)(itP,0,rnorm,itP->cnvP)) { *its = 0; return 0;}
   MONITOR(itP,rnorm,0);
   if (history) history[0] = rnorm;
 
   ierr = VecCopy(B,U); CHKERRQ(ierr);
-  ierr = VecNorm(U,&beta); CHKERRQ(ierr);
+  ierr = VecNorm(U,NORM_2,&beta); CHKERRQ(ierr);
   tmp = 1.0/beta; ierr = VecScale(&tmp,U); CHKERRQ(ierr);
   ierr = MatMultTrans(Amat,U,V); CHKERRQ(ierr);
-  ierr = VecNorm(V,&alpha); CHKERRQ(ierr);
+  ierr = VecNorm(V,NORM_2,&alpha); CHKERRQ(ierr);
   tmp = 1.0/alpha; ierr = VecScale(&tmp,V); CHKERRQ(ierr);
 
   ierr = VecCopy(V,W); CHKERRQ(ierr);
@@ -68,12 +68,12 @@ static int KSPSolve_LSQR(KSP itP,int *its)
   for (i=0; i<maxit; i++) {
     ierr = MatMult(Amat,V,U1); CHKERRQ(ierr);
     tmp = -alpha; ierr = VecAXPY(&tmp,U,U1); CHKERRQ(ierr);
-    ierr = VecNorm(U1,&beta); CHKERRQ(ierr);
+    ierr = VecNorm(U1,NORM_2,&beta); CHKERRQ(ierr);
     tmp = 1.0/beta; ierr = VecScale(&tmp,U1); CHKERRQ(ierr);
 
     ierr = MatMultTrans(Amat,U1,V1); CHKERRQ(ierr);
     tmp = -beta; ierr = VecAXPY(&tmp,V,V1); CHKERRQ(ierr);
-    ierr = VecNorm(V1,&alpha); CHKERRQ(ierr);
+    ierr = VecNorm(V1,NORM_2,&alpha); CHKERRQ(ierr);
     tmp = 1.0 / alpha; ierr = VecScale(&tmp,V1); CHKERRQ(ierr);
 
     rho    = sqrt(rhobar*rhobar + beta*beta);

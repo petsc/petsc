@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.94 1995/10/23 18:37:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.95 1995/10/24 21:46:03 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -19,7 +19,7 @@ static int CreateColmap_Private(Mat mat)
 
   aij->colmap = (int *) PETSCMALLOC(aij->N*sizeof(int));CHKPTRQ(aij->colmap);
   PLogObjectMemory(mat,aij->N*sizeof(int));
-  PetscZero(aij->colmap,aij->N*sizeof(int));
+  PetscMemzero(aij->colmap,aij->N*sizeof(int));
   for ( i=0; i<n; i++ ) aij->colmap[aij->garray[i]] = i-shift;
   return 0;
 }
@@ -102,7 +102,7 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC( (aij->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<aij->stash.n; i++ ) {
     idx = aij->stash.idx[i];
@@ -286,7 +286,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
@@ -1095,7 +1095,7 @@ static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
-static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
+static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ *amat = (Mat_SeqAIJ*) aij->A->data, *bmat = (Mat_SeqAIJ*) aij->B->data;
@@ -1132,23 +1132,15 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
       int    *jj, *garray = aij->garray;
       tmp  = (double *) PETSCMALLOC( aij->N*sizeof(double) ); CHKPTRQ(tmp);
       tmp2 = (double *) PETSCMALLOC( aij->N*sizeof(double) ); CHKPTRQ(tmp2);
-      PetscZero(tmp,aij->N*sizeof(double));
+      PetscMemzero(tmp,aij->N*sizeof(double));
       *norm = 0.0;
       v = amat->a; jj = amat->j;
       for ( j=0; j<amat->nz; j++ ) {
-#if defined(PETSC_COMPLEX)
-        tmp[cstart + *jj++ + shift] += abs(*v++); 
-#else
-        tmp[cstart + *jj++ + shift] += fabs(*v++); 
-#endif
+        tmp[cstart + *jj++ + shift] += PetscAbsScalar(*v++); 
       }
       v = bmat->a; jj = bmat->j;
       for ( j=0; j<bmat->nz; j++ ) {
-#if defined(PETSC_COMPLEX)
-        tmp[garray[*jj++ + shift]] += abs(*v++); 
-#else
-        tmp[garray[*jj++ + shift]] += fabs(*v++); 
-#endif
+        tmp[garray[*jj++ + shift]] += PetscAbsScalar(*v++); 
       }
       MPI_Allreduce((void*)tmp,(void*)tmp2,aij->N,MPI_DOUBLE,MPI_SUM,mat->comm);
       for ( j=0; j<aij->N; j++ ) {
@@ -1162,19 +1154,11 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
         v = amat->a + amat->i[j] + shift;
         sum = 0.0;
         for ( i=0; i<amat->i[j+1]-amat->i[j]; i++ ) {
-#if defined(PETSC_COMPLEX)
-          sum += abs(*v); v++;
-#else
-          sum += fabs(*v); v++;
-#endif
+          sum += PetscAbsScalar(*v); v++;
         }
         v = bmat->a + bmat->i[j] + shift;
         for ( i=0; i<bmat->i[j+1]-bmat->i[j]; i++ ) {
-#if defined(PETSC_COMPLEX)
-          sum += abs(*v); v++;
-#else
-          sum += fabs(*v); v++;
-#endif
+          sum += PetscAbsScalar(*v); v++;
         }
         if (sum > ntemp) ntemp = sum;
       }
@@ -1501,7 +1485,7 @@ int MatLoad_MPIAIJorMPIRow(Viewer bview,MatType type,Mat *newmat)
   if (!rank) {
     /* calculate the number of nonzeros on each processor */
     procsnz = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(procsnz);
-    PetscZero(procsnz,size*sizeof(int));
+    PetscMemzero(procsnz,size*sizeof(int));
     for ( i=0; i<size; i++ ) {
       for ( j=rowners[i]; j< rowners[i+1]; j++ ) {
         procsnz[i] += rowlengths[j];
@@ -1544,7 +1528,7 @@ int MatLoad_MPIAIJorMPIRow(Viewer bview,MatType type,Mat *newmat)
   }
 
   /* loop over local rows, determining number of off diagonal entries */
-  PetscZero(offlens,m*sizeof(int));
+  PetscMemzero(offlens,m*sizeof(int));
   jj = 0;
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<ourlens[i]; j++ ) {

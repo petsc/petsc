@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.20 1995/10/13 19:39:54 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.21 1995/10/16 20:29:20 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -86,7 +86,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
    */
   if (nb == 1) {
     dgptr = (int *) PETSCMALLOC((m+n)*sizeof(int)); CHKPTRQ(dgptr);
-    PetscZero(dgptr,(m+n)*sizeof(int));
+    PetscMemzero(dgptr,(m+n)*sizeof(int));
     for ( k=0; k<nd; k++ ) dgptr[diag[k]+m] = k+1;
     for ( k=0; k<m; k++ ) { /* k = pivot_row */
       dd[k] = 1.0/dd[k];
@@ -123,7 +123,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     }
     nb2 = nb*nb;
     dgptr = (int *) PETSCMALLOC((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
-    PetscZero(dgptr,(mblock+nblock)*sizeof(int));
+    PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));
     for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
     for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
       knb = k*nb; knb2 = knb*nb;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.30 1995/10/12 04:18:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.31 1995/10/19 22:26:52 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  To test the\n\
@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   /* Check error */
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
-  ierr = VecNorm(x,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
   if (norm > 1.e-12)
     MPIU_printf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
   else 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.19 1995/09/04 17:25:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.20 1995/10/29 18:41:55 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -39,8 +39,8 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 
   /* Determine a "good" step size */
   ierr = VecDot(U,dx,&dot); CHKERRQ(ierr);
-  ierr = VecASum(dx,&sum); CHKERRQ(ierr);
-  ierr = VecNorm(dx,&norm); CHKERRQ(ierr);
+  ierr = VecNorm(dx,NORM_1,&sum); CHKERRQ(ierr);
+  ierr = VecNorm(dx,NORM_2,&norm); CHKERRQ(ierr);
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}
 #if defined(PETSC_COMPLEX)
   else if (abs(dot) < 1.e-16*sum && real(dot) >= 0.0) dot = 1.e-16*sum;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.69 1995/10/23 23:13:48 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.70 1995/10/25 22:42:34 curfman Exp bsmith $";
 #endif
 
 #include "dense.h"
@@ -599,7 +599,7 @@ static int MatScale_SeqDense(Mat A,Vec ll,Vec rr)
   return 0;
 }
 
-static int MatNorm_SeqDense(Mat A,MatNormType type,double *norm)
+static int MatNorm_SeqDense(Mat A,NormType type,double *norm)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v = mat->v;
@@ -622,11 +622,7 @@ static int MatNorm_SeqDense(Mat A,MatNormType type,double *norm)
     for ( j=0; j<mat->n; j++ ) {
       sum = 0.0;
       for ( i=0; i<mat->m; i++ ) {
-#if defined(PETSC_COMPLEX)
-        sum += abs(*v++); 
-#else
-        sum += fabs(*v++); 
-#endif
+        sum += PetscAbsScalar(*v++); 
       }
       if (sum > *norm) *norm = sum;
     }
@@ -638,11 +634,7 @@ static int MatNorm_SeqDense(Mat A,MatNormType type,double *norm)
       v = mat->v + j;
       sum = 0.0;
       for ( i=0; i<mat->n; i++ ) {
-#if defined(PETSC_COMPLEX)
-        sum += abs(*v); v += mat->m;
-#else
-        sum += fabs(*v); v += mat->m;
-#endif
+        sum += PetscAbsScalar(*v); v += mat->m;
       }
       if (sum > *norm) *norm = sum;
     }
@@ -676,7 +668,7 @@ static int MatSetOption_SeqDense(Mat A,MatOption op)
 static int MatZeroEntries_SeqDense(Mat A)
 {
   Mat_SeqDense *l = (Mat_SeqDense *) A->data;
-  PetscZero(l->v,l->m*l->n*sizeof(Scalar));
+  PetscMemzero(l->v,l->m*l->n*sizeof(Scalar));
   return 0;
 }
 
@@ -729,7 +721,8 @@ static int MatGetSubMatrixInPlace_SeqDense(Mat A,IS isrow,IS iscol)
   SETERRQ(1,"MatGetSubMatrixInPlace_SeqDense:not done");
 }
 
-static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,Mat *submat)
+static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
+                                    Mat *submat)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          nznew, *smap, i, j, ierr, oldcols = mat->n;
@@ -745,7 +738,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,Mat *submat)
   smap = (int *) PETSCMALLOC(oldcols*sizeof(int)); CHKPTRQ(smap);
   cwork = (int *) PETSCMALLOC(ncols*sizeof(int)); CHKPTRQ(cwork);
   vwork = (Scalar *) PETSCMALLOC(ncols*sizeof(Scalar)); CHKPTRQ(vwork);
-  PetscZero((char*)smap,oldcols*sizeof(int));
+  PetscMemzero((char*)smap,oldcols*sizeof(int));
   for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
 
   /* Create and fill new matrix */
@@ -835,7 +828,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
   l->pivots      = 0;
   l->roworiented = 1;
 
-  PetscZero(l->v,m*n*sizeof(Scalar));
+  PetscMemzero(l->v,m*n*sizeof(Scalar));
   *newmat = mat;
   return 0;
 }

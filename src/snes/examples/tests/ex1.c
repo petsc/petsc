@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.21 1995/09/30 19:31:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.22 1995/10/12 04:20:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -117,6 +117,7 @@ int main( int argc, char **argv )
   MPIU_printf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
   DrawTensorContour(win,user.mx,user.my,0,0,x);
   DrawSyncFlush(win);
+  DrawPause(win);
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);

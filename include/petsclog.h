@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.23 1995/10/24 21:55:05 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.24 1995/10/30 03:32:02 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -45,8 +45,6 @@
 
 #define VEC_Dot                                 30
 #define VEC_Norm                                31
-#define VEC_ASum                                32
-#define VEC_AMax                                33
 #define VEC_Max                                 34
 #define VEC_Min                                 35
 #define VEC_TDot                                36

@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.44 1995/10/11 17:52:54 curfman Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.45 1995/10/19 22:16:25 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -34,20 +35,12 @@ static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
   return 0;
 }
 
-static int VecAsum_MPI(  Vec xin, double *z )
-{
-  double work;
-  VecAsum_Seq( xin, &work );
-  MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
-  return 0;
-}
-
 static int VecDuplicate_MPI( Vec, Vec *);
 
 static struct _VeOps DvOps = { VecDuplicate_MPI, 
             Veiobtain_vectors, Veirelease_vectors, VecDot_MPI, 
             VecMDot_MPI,
-            VecNorm_MPI, VecAMax_MPI, VecAsum_MPI, VecDot_MPI, 
+            VecNorm_MPI, VecDot_MPI, 
             VecMDot_MPI,
             VecScale_Seq, VecCopy_Seq,
             VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecMAXPY_Seq, VecAYPX_Seq,

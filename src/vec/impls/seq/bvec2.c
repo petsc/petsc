@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.50 1995/09/30 19:26:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.51 1995/10/01 21:51:19 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -17,20 +17,38 @@ static char vcid[] = "$Id: bvec2.c,v 1.50 1995/09/30 19:26:39 bsmith Exp bsmith 
 #include "../bvec1.c"
 #include "../dvec2.c"
 
-static int VecNorm_Seq(Vec xin,double* z )
+int VecNorm_Seq(Vec xin,NormType type,double* z )
 {
   Vec_Seq * x = (Vec_Seq *) xin->data;
   int     one = 1;
-/*
-   This is because the Fortran BLAS 1 Norm is very slow! 
-*/
+
+  if (type == NORM_2) {
+    /*
+      This is because the Fortran BLAS 1 Norm is very slow! 
+    */
 #if defined(PARCH_sun4) && !defined(PETSC_COMPLEX)
-  *z = BLdot_( &x->n, x->array, &one, x->array, &one );
-  *z = sqrt(*z);
+    *z = BLdot_( &x->n, x->array, &one, x->array, &one );
+    *z = sqrt(*z);
 #else
-  *z = BLnrm2_( &x->n, x->array, &one );
+    *z = BLnrm2_( &x->n, x->array, &one );
 #endif
-  PLogFlops(2*x->n-1);
+    PLogFlops(2*x->n-1);
+  }
+  else if (type == NORM_INFINITY) {
+    register int    i, n = x->n;
+    register double max = 0.0, tmp;
+    Scalar          *xx = x->array;
+
+    for (i=0; i<n; i++) {
+      if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
+      xx++;
+    }
+    *z   = max;
+  }
+  else if (type == NORM_1) {
+    *z = BLasum_( &x->n, x->array, &one );
+    PLogFlops(x->n-1);
+  }
   return 0;
 }
 
@@ -82,6 +100,7 @@ static int VecView_Seq_LG(Vec xin,DrawLGCtx lg)
   PETSCFREE(xx);
   DrawLG(lg);
   DrawSyncFlush(win);
+  DrawPause(win);
   return 0;
 }
 
@@ -188,7 +207,7 @@ static int VecDuplicate_Seq(Vec,Vec*);
 
 static struct _VeOps DvOps = {VecDuplicate_Seq, 
             Veiobtain_vectors, Veirelease_vectors, VecDot_Seq, VecMDot_Seq,
-            VecNorm_Seq, VecAMax_Seq, VecAsum_Seq, VecDot_Seq, VecMDot_Seq,
+            VecNorm_Seq,  VecDot_Seq, VecMDot_Seq,
             VecScale_Seq, VecCopy_Seq,
             VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecMAXPY_Seq, VecAYPX_Seq,
             VecWAXPY_Seq, VecPMult_Seq,

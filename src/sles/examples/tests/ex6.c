@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.13 1995/10/26 22:40:01 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.14 1995/10/27 00:33:22 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -51,10 +51,10 @@ int main(int argc,char **args)
   /* Show result */
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
-  ierr = VecNorm(u,&norm); CHKERRA(ierr);
+  ierr = VecNorm(u,NORM_2,&norm); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
   MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
-  MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time);
+  /* MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time); */
 
   /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.18 1995/10/19 22:30:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.19 1995/10/24 21:54:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -72,6 +72,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
       }
     }
     DrawSyncFlush(win);
+    DrawPause(win);
     MPI_Barrier(da->comm);
 
 
@@ -108,6 +109,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
       }
     } 
     DrawSyncFlush(win);
+    DrawPause(win);
     MPI_Barrier(da->comm);
     for (k=0-da->s; k<da->P+da->s; k++) {  
       /*Go through and draw for each plane*/
@@ -141,6 +143,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
       }         
     } 
     DrawSyncFlush(win);
+    DrawPause(win);
   }
   return 0;
 }

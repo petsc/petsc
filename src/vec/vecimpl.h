@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.16 1995/10/12 03:45:39 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.17 1995/10/22 04:17:00 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
@@ -13,9 +13,7 @@ struct _VeOps {
        (*freevecs)(Vec*,int),            /* Free array of vectors */
        (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
        (*mdot)(int,Vec,Vec*,Scalar*),    /*   z[j] = x dot y[j] */
-       (*norm)(Vec,double*),             /* z = sqrt(x^H * x) */
-       (*amax)(Vec,int*,double*),        /* z = max(|x|); idx = index of max(|x|) */
-       (*asum)(Vec,double*),             /*  z = sum |x| */
+       (*norm)(Vec,NormType,double*),    /* z = sqrt(x^H * x) */
        (*tdot)(Vec,Vec,Scalar*),         /* x'*y */
        (*mtdot)(int,Vec,Vec*,Scalar*),   /*   z[j] = x dot y[j] */
        (*scale)(Scalar*,Vec),            /*  x = alpha * x   */
@@ -71,6 +69,7 @@ typedef struct {
   Scalar             *values;   /* buffer for all sends or receives */
                                /* note that we pack/unpack ourself,do not use MPI packing */
   VecScatter_General local;     /* any part that happens to be local */
+  MPI_Status         *sstatus;
 } VecScatter_MPI;
 
 struct _VecScatter {

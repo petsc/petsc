@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.18 1995/09/21 20:10:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.19 1995/09/30 19:28:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -107,7 +107,7 @@ int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
   newmat->destroy= MatDestroy_Shell;
   PetscMemcpy(&newmat->ops,&MatOps,sizeof(struct _MatOps));
   shell          = PETSCNEW(Mat_Shell); CHKPTRQ(shell);
-  PetscZero(shell,sizeof(Mat_Shell));
+  PetscMemzero(shell,sizeof(Mat_Shell));
   newmat->data   = (void *) shell;
   shell->mult    = 0;
   shell->m       = m;

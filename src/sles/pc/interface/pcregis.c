@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.20 1995/08/23 14:50:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.21 1995/09/04 17:24:09 bsmith Exp bsmith $";
 #endif
 
 
@@ -16,6 +16,7 @@ extern int PCCreate_MG(PC);
 extern int PCCreate_Eisenstat(PC);
 extern int PCCreate_ILU(PC);
 extern int PCCreate_ICC(PC);
+extern int PCCreate_ASM(PC);
 
 /*@
   PCRegisterAll - Registers all of the preconditioners in the PC package.
@@ -53,6 +54,7 @@ int PCRegisterAll()
   PCRegister(PCEISENSTAT    , "eisenstat",  PCCreate_Eisenstat);
   PCRegister(PCILU          , "ilu",        PCCreate_ILU);
   PCRegister(PCICC          , "icc",        PCCreate_ICC);
+  PCRegister(PCASM          , "asm",        PCCreate_ASM);
   return 0;
 }
 

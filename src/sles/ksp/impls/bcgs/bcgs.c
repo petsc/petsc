@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.21 1995/10/01 21:51:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.22 1995/10/17 21:40:59 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -42,7 +42,7 @@ static int  KSPSolve_BCGS(KSP itP,int *its)
   ierr = KSPResidual(itP,X,V,T,R,BINVF,B); CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr = VecNorm(R,&dp); CHKERRQ(ierr);
+  ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
   if ((*itP->converged)(itP,0,dp,itP->cnvP)) {*its = 0; return 0;}
   MONITOR(itP,dp,0);
   if (history) history[0] = dp;
@@ -86,7 +86,7 @@ static int  KSPSolve_BCGS(KSP itP,int *its)
     ierr = VecAXPY(&omega,S,X); CHKERRQ(ierr);     /*   x <- x + w s       */
     tmp = -omega; 
     ierr = VecWAXPY(&tmp,T,S,R); CHKERRQ(ierr);    /*   r <- s - w t       */
-    ierr = VecNorm(R,&dp); CHKERRQ(ierr);
+    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
 
     rhoold   = rho;
     omegaold = omega;

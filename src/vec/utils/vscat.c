@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.41 1995/10/24 21:41:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.42 1995/10/30 03:34:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -369,10 +369,14 @@ $    SCATTER_REVERSE, SCATTER_ALL_REVERSE
 @*/
 int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
+  int ierr;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
-  return (*(inctx)->scatterbegin)(x,y,addv,mode,inctx);
+  PLogEventBegin(VEC_ScatterBegin,inctx,x,y,0);
+  ierr = (*inctx->scatterbegin)(x,y,addv,mode,inctx); CHKERRQ(ierr);
+  PLogEventEnd(VEC_ScatterBegin,inctx,x,y,0);
+  return 0;
 }
 
 /* --------------------------------------------------------------------*/
@@ -402,11 +406,15 @@ $    SCATTER_REVERSE, SCATTER_ALL_REVERSE
 @*/
 int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
 {
+  int ierr;
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(ctx,VEC_SCATTER_COOKIE);
+  if (!(ctx)->scatterend) return 0;
   ctx->inuse = 0;
-  if ((ctx)->scatterend) return (*(ctx)->scatterend)(x,y,addv,mode,ctx);
-  else return 0;
+  PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
+  ierr = (*(ctx)->scatterend)(x,y,addv,mode,ctx); CHKERRQ(ierr);
+  PLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);
+  return 0;
 }
 
 /*@C

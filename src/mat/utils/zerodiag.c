@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.4 1995/07/17 20:41:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.5 1995/07/30 14:58:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -11,11 +11,6 @@ static char vcid[] = "$Id: zerodiag.c,v 1.4 1995/07/17 20:41:50 bsmith Exp bsmit
 #include <math.h>
 
 #define SWAP(a,b) {int _t; _t = a; a = b; b = _t; }
-#if !defined(PETSC_COMPLEX)
-#define ABS(a)  fabs(a)
-#else
-#define ABS(a) abs(a)
-#endif
 
 /* Given a current row and current permutation, find a column permutation
    that removes a zero diagonal */
@@ -27,13 +22,13 @@ int SpiZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
 
   MatGetRow( mat, row[prow], &nz, &j, &v );
   for (k=0; k<nz; k++) {
-    if (col[j[k]] < prow && ABS(v[k]) > repla) {
+    if (col[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
       /* See if this one will work */
       repl  = col[j[k]];
       MatGetRow( mat, row[repl], &nnz, &jj, &vv );
       for (kk=0; kk<nnz; kk++) {
-	if (col[jj[kk]] == prow && ABS(vv[kk]) > atol) {
-	  *rcv = ABS(v[k]);
+	if (col[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
+	  *rcv = PetscAbsScalar(v[k]);
 	  *rc  = repl;
           MatRestoreRow( mat, row[repl], &nnz, &jj, &vv );
           MatRestoreRow( mat, row[prow], &nz, &j, &v );
@@ -80,14 +75,14 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
   for (prow=0; prow<n; prow++) {
     MatGetRow( mat, row[prow], &nz, &j, &v );
     for (k=0; k<nz; k++) {if (col[j[k]] == prow) break;}
-    if (k >= nz || ABS(v[k]) <= atol) {
+    if (k >= nz || PetscAbsScalar(v[k]) <= atol) {
       /* Element too small or zero; find the best candidate */
       repl  = prow;
-      repla = (k >= nz) ? 0.0 : ABS(v[k]);
+      repla = (k >= nz) ? 0.0 : PetscAbsScalar(v[k]);
       for (k=0; k<nz; k++) {
-	if (col[j[k]] > prow && ABS(v[k]) > repla) {
+	if (col[j[k]] > prow && PetscAbsScalar(v[k]) > repla) {
 	  repl = col[j[k]];
-	  repla = ABS(v[k]);
+	  repla = PetscAbsScalar(v[k]);
         }
       }
       if (prow == repl) {

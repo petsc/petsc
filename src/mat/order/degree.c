@@ -59,7 +59,7 @@ L100:
     for (i = lbegin; i <= i__1; ++i) {
 	node = ls[i];
 	jstrt = -xadj[node];
-	jstop = (i__2 = xadj[node + 1], (int)PETSCABS(i__2)) - 1;
+	jstop = (i__2 = xadj[node + 1], (int)PetscAbsInt(i__2)) - 1;
 	ideg = 0;
 	if (jstop < jstrt) {
 	    goto L300;

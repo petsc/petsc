@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.7 1995/10/01 21:51:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.8 1995/10/17 21:41:16 bsmith Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -86,7 +86,7 @@ int KSPSolve_QCG(KSP itP,int *its)
   /* Compute:  BS = D^{-1} B */
   ierr = PCApply(pc,B,BS); CHKERRQ(ierr);
   /* ierr = MatForwardSolve(Factmat,B,BS); CHKERRQ(ierr); */
-  ierr = VecNorm(BS,&bsnrm); CHKERRQ(ierr);
+  ierr = VecNorm(BS,NORM_2,&bsnrm); CHKERRQ(ierr);
   MONITOR(itP,bsnrm,0);
   if (history) history[0] = bsnrm;
   cerr = (*itP->converged)(itP,0,bsnrm,itP->cnvP);
@@ -126,7 +126,7 @@ int KSPSolve_QCG(KSP itP,int *its)
 
        if (i == 0) {
          ierr = VecCopy(P,X); CHKERRQ(ierr);
-         ierr = VecNorm(X,&xnorm); CHKERRQ(ierr);
+         ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);
          scal = pcgP->delta / xnorm;
          ierr = VecScale(&scal,X); CHKERRQ(ierr);
        } else {
@@ -173,7 +173,7 @@ int KSPSolve_QCG(KSP itP,int *its)
        step = rtr/ptasp;
        ierr = VecCopy(W,X); CHKERRQ(ierr);	   /*  x = w  */
        ierr = VecAXPY(&step,P,X); CHKERRQ(ierr);   /*  x <- step*p + x  */
-       ierr = VecNorm(X,&pcgP->ltsnrm); CHKERRQ(ierr);
+       ierr = VecNorm(X,NORM_2,&pcgP->ltsnrm); CHKERRQ(ierr);
 
        if (pcgP->ltsnrm > pcgP->delta ) {
 
@@ -214,7 +214,7 @@ int KSPSolve_QCG(KSP itP,int *its)
          ierr = VecCopy(X,W); CHKERRQ(ierr);	/* update interior iterate */
          nstep = -step;
          ierr = VecAXPY(&nstep,ASP,R); CHKERRQ(ierr); /* r <- -step*asp + r */
-         ierr = VecNorm(R,&rnrm); CHKERRQ(ierr);
+         ierr = VecNorm(R,NORM_2,&rnrm); CHKERRQ(ierr);
 
          if (history && hist_len > i + 1) history[i+1] = rnrm;
          MONITOR(itP,rnrm,i+1);

@@ -14,12 +14,12 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex3 runex3_2 runex3_3\
                 runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
                 runex8 runex8_2
-EXAMPLES_2    = ex10 ex11 ex6 ex13
-RUNEXAMPLES_2 = runex11
+EXAMPLES_2    = ex10 ex11 ex6 ex13 ex14
+RUNEXAMPLES_2 = runex11 runex6
 EXAMPLES_3    = ex7 ex12
 RUNEXAMPLES_3 = runex7
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
-                ex11.c ex13.c
+                ex11.c ex13.c ex14.c
 EXAMPLESF     = ex7.F ex12.F
 
 ex1: ex1.o  chkopts
@@ -73,6 +73,10 @@ ex12: ex12.o  chkopts
 ex13: ex13.o  chkopts
 	-$(CLINKER) -o ex13 ex13.o  $(PETSC_LIB)
 	$(RM) ex13.o
+
+ex14: ex14.o  chkopts
+	-$(CLINKER) -o ex14 ex14.o  $(PETSC_LIB)
+	$(RM) ex14.o
 
 runex1:
 	-@$(MPIRUN) ex1 -ksp_smonitor > ex1_1.tmp 2>&1;   \
@@ -185,6 +189,12 @@ runex5:
            if (diff output/ex5_1.out ex5_1.tmp) then true; \
            else echo "Possible problem with ex5_1, diffs above"; fi; \
            $(RM) -f ex5_1.tmp
+runex6:
+	-@$(MPIRUN) ex6 -ksp_preonly  -pc_method lu \
+           -f ../../mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
+           if (diff output/ex6_1.out ex6_1.tmp) then true; \
+           else echo "Possible problem with ex6_1, diffs above"; fi; \
+           $(RM) -f ex6_1.tmp
 runex7:
 	-@$(MPIRUN) -np 2 ex7 -ksp_smonitor > ex7_1.tmp 2>&1; \
            if (diff output/ex7_1.out ex7_1.tmp) then true; \

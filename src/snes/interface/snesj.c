@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.22 1995/09/04 17:25:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.23 1995/09/21 20:12:25 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -82,13 +82,9 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
 #endif
     VecScale(&scale,j2);
     VecGetArray(j2,&y);
-    VecAMax(j2,0,&amax); amax *= 1.e-14;
+    VecNorm(j2,NORM_INFINITY,&amax); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
-#if defined(PETSC_COMPLEX)
-      if (abs(y[j-start]) > amax) {
-#else
-      if (y[j-start] > amax || y[j-start] < -amax) {
-#endif
+      if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
       }
     }

@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.5 1995/08/07 22:00:38 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.6 1995/09/30 19:30:24 bsmith Exp bsmith $ */
 
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
@@ -21,6 +21,8 @@ struct _DrawOps {
   int (*sflush)(DrawCtx);
   int (*rectangle)(DrawCtx,double,double,double,double,int,int,int,int);
   int (*triangle)(DrawCtx,double,double,double,double,double,double,int,int,int);
+  int (*getmousebutton)(DrawCtx,DrawButton*,double *,double *,double*,double*);
+  int (*pause)(DrawCtx);
 };
 
 struct _DrawCtx {

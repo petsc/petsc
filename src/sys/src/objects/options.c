@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.50 1995/10/19 22:19:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.51 1995/10/24 21:43:29 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -452,7 +452,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
   char pfile[128];
   if (!options) {
     options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
-    PetscZero(options->used,MAXOPTIONS*sizeof(int));
+    PetscMemzero(options->used,MAXOPTIONS*sizeof(int));
   }
   if (!env) env = "PETSC_OPTIONS";
   if (!file) {
@@ -910,7 +910,7 @@ int OptionsGetString(char *pre,char *name,char *string,int len)
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
   if (value) PetscStrncpy(string,value,len);
-  else PetscZero(string,len);
+  else PetscMemzero(string,len);
   return 1; 
 }
 

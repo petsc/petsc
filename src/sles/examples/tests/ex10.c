@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.43 1995/10/24 22:22:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.44 1995/10/27 00:46:03 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -71,7 +71,7 @@ int main(int argc,char **args)
  
   /* Check error */
   ierr = VecAXPY(&neg1,u,x); CHKERRA(ierr);
-  ierr = VecNorm(x,&norm); CHKERRA(ierr);
+  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
 
   if (norm > 1.e-12) 
     MPIU_printf(MPI_COMM_WORLD,
@@ -162,7 +162,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
     ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERRQ(ierr);
   }
   ierr = ISCreateSeq(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(mat,iskeep,iskeep,&submat); CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,iskeep,iskeep,MAT_INITIAL_MATRIX,&submat); CHKERRQ(ierr);
   PETSCFREE(rowkeep);
   ierr = ISDestroy(iskeep);  CHKERRQ(ierr);
   ierr = MatDestroy(mat); CHKERRQ(ierr);
@@ -193,7 +193,7 @@ int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
    NOTE you should never do this! Inserting values 1 at a time is 
    just too expensive!
 */
-      if (PETSCABS(K[h1+l1][h2+l2]) != 0.0) {
+      if (PetscAbsScalar(K[h1+l1][h2+l2]) != 0.0) {
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
 	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES); CHKERRQ(ierr);
         row = r2+l2; col = r1+l1;
@@ -270,7 +270,7 @@ int Elastic20Stiff(double **Ke)
       for ( k=0; k<3; k++ ) {
         for ( l=0; l<3; l++ ) {
           Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[I+k][J+l];
-          m = PETSCMAX(m,PETSCABS(v));
+          m = PETSCMAX(m,PetscAbsScalar(v));
         }
       }
       J += 3;
@@ -281,7 +281,7 @@ int Elastic20Stiff(double **Ke)
   m = (1.e-8)*m;
   for ( i=0; i<81; i++ ) {
     for ( j=0; j<81; j++ ) {
-      if (PETSCABS(Ke[i][j]) < m)  Ke[i][j] = 0.0;
+      if (PetscAbsScalar(Ke[i][j]) < m)  Ke[i][j] = 0.0;
     }
   }  
   /* force the matrix to be exactly symmetric */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.30 1995/10/18 01:57:23 curfman Exp curfman $";
+static char vcid[] = "$Id: xops.c,v 1.31 1995/10/19 22:27:25 curfman Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -147,7 +147,6 @@ static int DrawFlush_X(DrawCtx Win )
 {
   DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
   XFlush( XiWin->disp ); XSync(XiWin->disp,False);
-  PetscSleep(Win->pause);
   return 0;
 }
 
@@ -168,7 +167,6 @@ static int DrawSyncFlush_X(DrawCtx Win )
       XFlush( XiWin->disp );
     }
   }
-  PetscSleep(Win->pause);
   return 0;
 }
 
@@ -212,7 +210,52 @@ static int DrawSetDoubleBuffer_X(DrawCtx Win)
   MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,Win->comm);
   return 0;
 }
-extern int XiQuickWindow(DrawCtx_X*,char*,char*,int,int,int,int,int);
+
+static int DrawGetMouseButton_X(DrawCtx draw,DrawButton *button,double* x_user,
+                                double *y_user,double *x_phys,double *y_phys)
+{
+  XEvent       report;
+  DrawCtx_X*   win = (DrawCtx_X*) draw->data;
+  Window       root, child;
+  int          root_x, root_y,px,py;
+  unsigned int keys_button;
+
+  XSelectInput( win->disp, win->win, ButtonPressMask | ButtonReleaseMask );
+
+  while (XCheckTypedEvent( win->disp, ButtonPress, &report ));
+  XMaskEvent( win->disp, ButtonReleaseMask, &report );
+  switch (report.xbutton.button) {
+    case Button1: *button = BUTTON_LEFT; break;
+    case Button2: *button = BUTTON_CENTER; break;
+    case Button3: *button = BUTTON_RIGHT; break;
+  }
+  XQueryPointer(win->disp, report.xmotion.window,&root,&child,&root_x,&root_y,
+                &px,&py,&keys_button);
+
+  if (x_phys) *x_phys = ((double) px)/((double) win->w);
+  if (y_phys) *y_phys = 1.0 - ((double) py)/((double) win->h);
+
+  if (x_user) *x_user = draw->coor_xl + ((((double) px)/((double) win->w)-draw->port_xl))*
+                        (draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
+  if (y_user) *y_user = draw->coor_yl + 
+                        ((1.0 - ((double) py)/((double) win->h)-draw->port_yl))*
+                        (draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
+  return 0;
+}
+
+static int DrawPause_X(DrawCtx draw)
+{
+  int ierr;
+  if (draw->pause > 0) PetscSleep(draw->pause);
+  else if (draw->pause < 0) {
+    DrawButton button;
+    int        rank;
+    MPI_Comm_rank(draw->comm,&rank);
+    if (rank) return 0;
+    ierr = DrawGetMouseButton(draw,&button,0,0,0,0); CHKERRQ(ierr);
+  }
+  return 0;
+}
 
 static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawFlush_X,DrawLine_X,0,DrawPoint_X,0,
@@ -221,7 +264,9 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawSetViewport_X,DrawClear_X,
                                  DrawSyncFlush_X,
                                  DrawRectangle_X,
-                                 DrawTriangle_X};
+                                 DrawTriangle_X,
+                                 DrawGetMouseButton_X,
+                                 DrawPause_X};
 
 int DrawDestroy_X(PetscObject obj)
 {
@@ -233,6 +278,7 @@ int DrawDestroy_X(PetscObject obj)
   return 0;
 }
 
+extern int XiQuickWindow(DrawCtx_X*,char*,char*,int,int,int,int,int);
 extern int XiQuickWindowFromWindow(DrawCtx_X*,char*,Window,int);
 
 /*@C
@@ -249,7 +295,6 @@ extern int XiQuickWindowFromWindow(DrawCtx_X*,char*,Window,int);
 .  ctx - the drawing context.
 
    Options Database Keys:
-$  -pause <sec> : number of seconds to pause after DrawSyncFlush() is called
 $  -nox : disable all x-windows output
 $  -display <name> : name of machine for the X display
 
@@ -286,7 +331,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   /* actually create and open the window */
   Xwin         = (DrawCtx_X *) PETSCMALLOC( sizeof(DrawCtx_X) ); CHKPTRQ(Xwin);
   PLogObjectMemory(ctx,sizeof(DrawCtx_X)+sizeof(struct _DrawCtx));
-  PetscZero(Xwin,sizeof(DrawCtx_X));
+  PetscMemzero(Xwin,sizeof(DrawCtx_X));
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
   if (rank == 0) {

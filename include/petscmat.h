@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.70 1995/10/20 03:00:08 curfman Exp curfman $ */
+/* $Id: mat.h,v 1.71 1995/10/26 21:45:32 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -117,8 +117,7 @@ extern int MatScatterEnd(Mat,Mat,InsertMode,MatScatterCtx);
 extern int MatScatterCtxCreate(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
 extern int MatScatterCtxDestroy(MatScatterCtx);
 
-typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4} MatNormType;
-extern int MatNorm(Mat,MatNormType,double *);
+extern int MatNorm(Mat,NormType,double *);
 
 extern int MatZeroEntries(Mat);
 extern int MatZeroRows(Mat,IS,Scalar*);
@@ -132,8 +131,10 @@ extern int MatGetOwnershipRange(Mat,int*,int*);
 
 extern int MatCreate(MPI_Comm,int,int,Mat*);
 
-extern int MatGetSubMatrix(Mat,IS,IS,Mat*);
+typedef enum {MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX} MatGetSubMatrixCall;
+extern int MatGetSubMatrix(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
 extern int MatGetSubMatrixInPlace(Mat,IS,IS);
+extern int MatGetSubMatrices(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
 
 extern int MatAXPY(Scalar *,Mat,Mat);
 extern int MatCompress(Mat);

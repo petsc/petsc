@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.25 1995/10/17 14:09:32 curfman Exp bsmith $ */
+/* $Id: ksp.h,v 1.26 1995/10/24 21:55:05 bsmith Exp bsmith $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -59,9 +59,9 @@ extern int KSPCGGetEigenvalues(KSP, int n,Scalar*,Scalar*);
 extern int KSPGMRESSetRestart(KSP, int);
 
 extern int KSPGMRESSetOrthogRoutine(KSP,int (*)(KSP,int));
-extern int GMRESUnmodifiedOrthog(KSP,int);
-extern int GMRESBasicOrthog(KSP,int);
-extern int GMRESIROrthog(KSP,int);
+extern int KSPGMRESUnmodifiedOrthog(KSP,int);
+extern int KSPGMRESBasicOrthog(KSP,int);
+extern int KSPGMRESIROrthog(KSP,int);
 
 extern int KSPSetFromOptions(KSP);
 

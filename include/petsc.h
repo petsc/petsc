@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.62 1995/10/13 21:33:28 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.63 1995/10/14 19:48:26 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -42,7 +42,7 @@ extern int  TrGetMaximumAllocated(double*);
 #define PETSCNEW(A)         (A*) PETSCMALLOC(sizeof(A))
 
 extern void  PetscMemcpy(void *,void *,int);
-extern void  PetscZero(void *,int);
+extern void  PetscMemzero(void *,int);
 extern int   PetscStrlen(char *);
 extern int   PetscStrcmp(char *,char *);
 extern int   PetscStrncmp(char *,char *,int );
@@ -58,7 +58,13 @@ extern char* PetscStrrtok(char*,char*);
 
 #define PETSCMIN(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PETSCMAX(a,b)      ( ((a)<(b)) ? (b) : (a) )
-#define PETSCABS(a)        ( ((a)<0)   ? -(a) : (a) )
+#define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
+
+#if defined(PETSC_COMPLEX)
+#define PetscAbsScalar(a)     abs(a)
+#else
+#define PetscAbsScalar(a)     ( ((a)<0.0)   ? -(a) : (a) )
+#endif
 
 /*  Macros for error checking */
 #if !defined(__DIR__)
@@ -107,6 +113,8 @@ extern int PetscFinalize();
 extern int PetscObjectDestroy(PetscObject);
 extern int PetscObjectExists(PetscObject,int*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
+extern int PetscObjectGetCookie(PetscObject,int *cookie);
+extern int PetscObjectGetType(PetscObject,int *type);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
 

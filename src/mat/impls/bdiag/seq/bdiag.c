@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.67 1995/10/27 01:06:37 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.68 1995/10/29 18:20:34 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -72,7 +72,7 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
             newnz = bdlen_new[a->nd];
             diagv_new[a->nd] = (Scalar*)PETSCMALLOC(newnz*sizeof(Scalar));
             CHKPTRQ(diagv_new[a->nd]);
-            PetscZero(diagv_new[a->nd],newnz*sizeof(Scalar));
+            PetscMemzero(diagv_new[a->nd],newnz*sizeof(Scalar));
             a->maxnz += newnz;
             a->nz += newnz;
             PETSCFREE(a->diagv); PETSCFREE(a->diag); 
@@ -151,7 +151,7 @@ static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
             newnz = nb*nb*bdlen_new[a->nd];
             diagv_new[a->nd] = (Scalar*)PETSCMALLOC(newnz*sizeof(Scalar));
             CHKPTRQ(diagv_new[a->nd]);
-            PetscZero(diagv_new[a->nd],newnz*sizeof(Scalar));
+            PetscMemzero(diagv_new[a->nd],newnz*sizeof(Scalar));
             a->maxnz += newnz; a->nz += newnz;
             PETSCFREE(a->diagv); PETSCFREE(a->diag); 
             a->diag  = diag_new; 
@@ -681,7 +681,7 @@ static int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **v
   return 0;
 }
 
-static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
+static int MatNorm_SeqBDiag(Mat A,NormType type,double *norm)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   double       sum = 0.0, *tmp;
@@ -706,7 +706,7 @@ static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
   }
   else if (type == NORM_1) { /* max column norm */
     tmp = (double *) PETSCMALLOC( a->n*sizeof(double) ); CHKPTRQ(tmp);
-    PetscZero(tmp,a->n*sizeof(double));
+    PetscMemzero(tmp,a->n*sizeof(double));
     *norm = 0.0;
     if (nb == 1) {
       for (d=0; d<nd; d++) {
@@ -715,19 +715,11 @@ static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
         len  = a->bdlen[d];
         if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
           for (i=0; i<len; i++) {
-#if defined(PETSC_COMPLEX)
-            tmp[i] += abs(dv[i]); 
-#else
-            tmp[i] += fabs(dv[i]); 
-#endif
+            tmp[i] += PetscAbsScalar(dv[i]); 
           }
         } else {	/* upper triangle: row = loc, col = loc-diag */
           for (i=0; i<len; i++) {
-#if defined(PETSC_COMPLEX)
-            tmp[i-diag] += abs(dv[i]); 
-#else
-            tmp[i-diag] += fabs(dv[i]); 
-#endif
+            tmp[i-diag] += PetscAbsScalar(dv[i]); 
           }
         }
       }
@@ -742,11 +734,7 @@ static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
             kloc = k*nb; kshift = kloc*nb; 
             for (i=0; i<nb; i++) {	/* i = local row */
               for (j=0; j<nb; j++) {	/* j = local column */
-#if defined(PETSC_COMPLEX)
-                tmp[kloc + j] += abs(dv[kshift + j*nb + i]);
-#else
-                tmp[kloc + j] += fabs(dv[kshift + j*nb + i]);
-#endif
+                tmp[kloc + j] += PetscAbsScalar(dv[kshift + j*nb + i]);
               }
             }
           }
@@ -755,11 +743,7 @@ static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
             kloc = k*nb; kshift = kloc*nb; 
             for (i=0; i<nb; i++) {	/* i = local row */
               for (j=0; j<nb; j++) {	/* j = local column */
-#if defined(PETSC_COMPLEX)
-                tmp[kloc + j - nb*diag] += abs(dv[kshift + j*nb + i]);
-#else
-                tmp[kloc + j - nb*diag] += fabs(dv[kshift + j*nb + i]);
-#endif
+                tmp[kloc + j - nb*diag] += PetscAbsScalar(dv[kshift + j*nb + i]);
               }
             }
           }
@@ -773,7 +757,7 @@ static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
   }
   else if (type == NORM_INFINITY) { /* max row norm */
     tmp = (double *) PETSCMALLOC( a->m*sizeof(double) ); CHKPTRQ(tmp);
-    PetscZero(tmp,a->m*sizeof(double));
+    PetscMemzero(tmp,a->m*sizeof(double));
     *norm = 0.0;
     if (nb == 1) {
       for (d=0; d<nd; d++) {
@@ -782,19 +766,11 @@ static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
         len  = a->bdlen[d];
         if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
           for (i=0; i<len; i++) {
-#if defined(PETSC_COMPLEX)
-            tmp[i+diag] += abs(dv[i]); 
-#else
-            tmp[i+diag] += fabs(dv[i]); 
-#endif
+            tmp[i+diag] += PetscAbsScalar(dv[i]); 
           }
         } else {	/* upper triangle: row = loc, col = loc-diag */
           for (i=0; i<len; i++) {
-#if defined(PETSC_COMPLEX)
-            tmp[i] += abs(dv[i]); 
-#else
-            tmp[i] += fabs(dv[i]); 
-#endif
+            tmp[i] += PetscAbsScalar(dv[i]); 
           }
         }
       }
@@ -808,11 +784,7 @@ static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
             kloc = k*nb; kshift = kloc*nb; 
             for (i=0; i<nb; i++) {	/* i = local row */
               for (j=0; j<nb; j++) {	/* j = local column */
-#if defined(PETSC_COMPLEX)
-                tmp[kloc + i + nb*diag] += abs(dv[kshift + j*nb + i]);
-#else
-                tmp[kloc + i + nb*diag] += fabs(dv[kshift + j*nb + i]);
-#endif
+                tmp[kloc + i + nb*diag] += PetscAbsScalar(dv[kshift + j*nb + i]);
               }
             }
           }
@@ -821,11 +793,7 @@ static int MatNorm_SeqBDiag(Mat A,MatNormType type,double *norm)
             kloc = k*nb; kshift = kloc*nb; 
             for (i=0; i<nb; i++) {	/* i = local row */
               for (j=0; j<nb; j++) {	/* j = local column */
-#if defined(PETSC_COMPLEX)
-                tmp[kloc + i] += abs(dv[kshift + j*nb + i]);
-#else
-                tmp[kloc + i] += fabs(dv[kshift + j*nb + i]);
-#endif
+                tmp[kloc + i] += PetscAbsScalar(dv[kshift + j*nb + i]);
               }
             }
           }
@@ -1286,7 +1254,7 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
   for ( i=0; i<N; i++ ) {
     if (rows[i] < 0 || rows[i] > m) SETERRQ(1,"MatZeroRows_SeqBDiag:row out of range");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
-    PetscZero(val,nz*sizeof(Scalar));
+    PetscMemzero(val,nz*sizeof(Scalar));
     ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
   }
@@ -1308,7 +1276,8 @@ static int MatGetSize_SeqBDiag(Mat A,int *m,int *n)
   return 0;
 }
 
-static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,Mat *submat)
+static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
+                                    Mat *submat)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          nznew, *smap, i, j, ierr, oldcols = a->n;
@@ -1325,7 +1294,7 @@ static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,Mat *submat)
   smap  = (int *) PETSCMALLOC(oldcols*sizeof(int)); CHKPTRQ(smap);
   cwork = (int *) PETSCMALLOC(newc*sizeof(int)); CHKPTRQ(cwork);
   vwork = (Scalar *) PETSCMALLOC(newc*sizeof(Scalar)); CHKPTRQ(vwork);
-  PetscZero((char*)smap,oldcols*sizeof(int));
+  PetscMemzero((char*)smap,oldcols*sizeof(int));
   for ( i=0; i<newc; i++ ) smap[icol[i]] = i+1;
 
   /* Determine diagonals; then create submatrix */
@@ -1487,7 +1456,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
     for (i=0; i<nd; i++) {
       a->diagv[i] = (Scalar*)PETSCMALLOC(nb*nb*a->bdlen[i]*sizeof(Scalar));
       CHKPTRQ(a->diagv[i]);
-      PetscZero(a->diagv[i],nb*nb*a->bdlen[i]*sizeof(Scalar));
+      PetscMemzero(a->diagv[i],nb*nb*a->bdlen[i]*sizeof(Scalar));
     }
     a->nonew = 0; a->nonew_diag = 0;
   } else { /* diagonals are set on input; don't allow dynamic allocation */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.72 1995/10/13 02:04:27 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.73 1995/10/19 22:23:43 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -240,7 +240,7 @@ static int MatZeroRows_MPIRowbs_local(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-static int MatNorm_MPIRowbs_local(Mat A,MatNormType type,double *norm)
+static int MatNorm_MPIRowbs_local(Mat A,NormType type,double *norm)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs *) A->data;
   BSsprow      *vs, **rs;
@@ -268,7 +268,7 @@ static int MatNorm_MPIRowbs_local(Mat A,MatNormType type,double *norm)
   else if (type == NORM_1) { /* max column norm */
     double *tmp;
     tmp = (double *) PETSCMALLOC( mat->n*sizeof(double) ); CHKPTRQ(tmp);
-    PetscZero(tmp,mat->n*sizeof(double));
+    PetscMemzero(tmp,mat->n*sizeof(double));
     *norm = 0.0;
     for (i=0; i<mat->m; i++) {
       vs = *rs++;
@@ -276,11 +276,7 @@ static int MatNorm_MPIRowbs_local(Mat A,MatNormType type,double *norm)
       xi = vs->col;
       xv = vs->nz;
       while (nz--) {
-#if defined(PETSC_COMPLEX)
-        tmp[*xi] += abs(*xv); 
-#else
-        tmp[*xi] += fabs(*xv); 
-#endif
+        tmp[*xi] += PetscAbsScalar(*xv); 
         xi++; xv++;
       }
     }
@@ -297,11 +293,7 @@ static int MatNorm_MPIRowbs_local(Mat A,MatNormType type,double *norm)
       xv = vs->nz;
       sum = 0.0;
       while (nz--) {
-#if defined(PETSC_COMPLEX)
-        sum += abs(*xv); xv++;
-#else
-        sum += fabs(*xv); xv++;
-#endif
+        sum += PetscAbsScalar(*xv); xv++;
       }
       if (sum > *norm) *norm = sum;
     }
@@ -425,7 +417,7 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC( (a->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<a->stash.n; i++ ) {
     idx = a->stash.idx[i];
@@ -569,7 +561,7 @@ static int MatView_MPIRowbs_Binary(Mat mat,Viewer viewer)
     PETSCFREE(sbuff);
     ierr = SYWrite(fd,rowlengths,4+M,SYINT,0); CHKERRQ(ierr);
     /* count the number of nonzeros on each processor */
-    PetscZero(recvcts,size*sizeof(int));
+    PetscMemzero(recvcts,size*sizeof(int));
     for ( i=0; i<size; i++ ) {
       for ( j=recvdisp[i]; j<recvdisp[i+1]; j++ ) {
         recvcts[i] += rowlengths[j+3];
@@ -758,8 +750,8 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     ierr = VecGetArray(a->diag,&diag); CHKERRQ(ierr);
     for (i=0; i<ldim; i++) {
       if (a->pA->scale_diag[i] != 0.0) {
-        diag[i] = 1.0/sqrt(fabs(a->pA->scale_diag[i]));
-        a->inv_diag[i] = 1.0/fabs((a->pA->scale_diag[i]));
+        diag[i] = 1.0/sqrt(PetscAbsScalar(a->pA->scale_diag[i]));
+        a->inv_diag[i] = 1.0/PetscAbsScalar((a->pA->scale_diag[i]));
       }
       else {
         diag[i] = 1.0;
@@ -810,7 +802,7 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
@@ -910,7 +902,7 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
   return 0;
 }
 
-static int MatNorm_MPIRowbs(Mat mat,MatNormType type,double *norm)
+static int MatNorm_MPIRowbs(Mat mat,NormType type,double *norm)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
   int          ierr;
@@ -1512,7 +1504,7 @@ int MatLoad_MPIRowbs(Viewer bview,MatType type,Mat *newmat)
   if (!rank) {
     /* calculate the number of nonzeros on each processor */
     procsnz = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(procsnz);
-    PetscZero(procsnz,size*sizeof(int));
+    PetscMemzero(procsnz,size*sizeof(int));
     for ( i=0; i<size; i++ ) {
       for ( j=rowners[i]; j< rowners[i+1]; j++ ) {
         procsnz[i] += rowlengths[j];

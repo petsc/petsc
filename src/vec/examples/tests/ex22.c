@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.1 1995/10/26 22:46:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex22.c,v 1.1 1995/10/26 22:47:21 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
-This does the tricky case.\n\n";
+static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -28,11 +27,11 @@ int main(int argc,char **argv)
   /* create two vectors */
   N = size*n;
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,N,&x); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,n,rank,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,2*n,0,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,2*n,n+2,1,&is2); CHKERRA(ierr);
 
   value = rank+1; 
   ierr = VecSet(&value,x); CHKERRA(ierr);

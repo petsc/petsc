@@ -14,12 +14,12 @@ EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
 RUNEXAMPLES_1 = runex1 runex1_2 runex2 runex3 runex4 runex5 runex6 runex7 \
                 runex8 runex9 runex10 runex11 runex12 runex13 runex14 runex16\
                 runex17 runex20 runex20_2
-EXAMPLES_2    = ex15
+EXAMPLES_2    = ex15 ex22
 RUNEXAMPLES_2 = runex15
 EXAMPLES_3    = ex19 ex21
 RUNEXAMPLES_3 = runex19 runex21
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-                ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c
+                ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c
 EXAMPLESF     = ex19.F ex21.F
 
 ex1: ex1.o  chkopts 
@@ -105,6 +105,10 @@ ex20: ex20.o  chkopts
 ex21: ex21.o  chkopts
 	-$(FLINKER) -o ex21 ex21.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
 	$(RM) -f ex21.o
+
+ex22: ex22.o  chkopts
+	-$(CLINKER) -o ex22 ex22.o   $(SLES_LIB)
+	$(RM) -f ex22.o
 
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \

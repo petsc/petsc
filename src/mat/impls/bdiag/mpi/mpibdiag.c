@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.53 1995/10/25 22:43:27 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.54 1995/10/27 00:47:19 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -58,7 +58,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC( (mbd->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<mbd->stash.n; i++ ) {
     idx = mbd->stash.idx[i];
@@ -186,7 +186,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   len = Mblock + Nblock + 1; /* add 1 to prevent 0 malloc */
   tmp = (int *) PETSCMALLOC( (2*len)*sizeof(int) ); CHKPTRQ(tmp);
   tmp2 = tmp + len;
-  PetscZero(tmp,2*len*sizeof(int));
+  PetscMemzero(tmp,2*len*sizeof(int));
   mlocal->mainbd = -1; 
   for (i=0; i<mlocal->nd; i++) {
     if (mlocal->diag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
@@ -247,7 +247,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
@@ -653,7 +653,7 @@ static int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
 }
 
 
-static int MatNorm_MPIBDiag(Mat A,MatNormType type,double *norm)
+static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) mbd->A->data;
@@ -960,7 +960,7 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
   if (!rank) {
     /* calculate the number of nonzeros on each processor */
     procsnz = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(procsnz);
-    PetscZero(procsnz,size*sizeof(int));
+    PetscMemzero(procsnz,size*sizeof(int));
     for ( i=0; i<size; i++ ) {
       for ( j=rowners[i]; j< rowners[i+1]; j++ ) {
         procsnz[i] += rowlengths[j];

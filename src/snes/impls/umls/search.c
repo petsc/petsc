@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.11 1995/10/01 21:53:38 bsmith Exp $";
+static char vcid[] = "$Id: search.c,v 1.4 1995/10/12 04:20:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -85,7 +85,7 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     SETERRQ(1,"SNESDefaultUMLineSearch: stepmax > stepmin");
 
   /* Determine if the derivatives have opposite sign */
-  sgnd = *dp * (*dx/PETSCABS(*dx));
+  sgnd = *dp * (*dx/PetscAbsScalar(*dx));
 
 /*   Case 1: a higher function value.
      the minimum is bracketed. if the cubic step is closer
@@ -96,8 +96,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     neP->infoc = 1;
     bound = 1;
     theta = 3 * (*fx - *fp) / (*stp - *stx) + *dx + *dp;
-    s = PETSCMAX(PETSCABS(theta),PETSCABS(*dx));
-    s = PETSCMAX(s,PETSCABS(*dp));
+    s = PETSCMAX(PetscAbsScalar(theta),PetscAbsScalar(*dx));
+    s = PETSCMAX(s,PetscAbsScalar(*dp));
     gamma1 = s*sqrt(pow(theta/s,two) - (*dx/s)*(*dp/s));
     if (*stp < *stx) gamma1 = -gamma1;
     p = (gamma1 - *dx) + theta;
@@ -105,7 +105,7 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     r = p/q;
     stpc = *stx + r*(*stp - *stx);
     stpq = *stx + ((*dx/((*fx-*fp)/(*stp-*stx)+*dx))*0.5) * (*stp - *stx);
-    if (PETSCABS(stpc-*stx) < PETSCABS(stpq-*stx)) {
+    if (PetscAbsScalar(stpc-*stx) < PetscAbsScalar(stpq-*stx)) {
       stpf = stpc;
     } else {
       stpf = stpc + 0.5*(stpq - stpc);
@@ -122,8 +122,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     neP->infoc = 2;
     bound = 0;
     theta = 3*(*fx - *fp)/(*stp - *stx) + *dx + *dp;
-    s = PETSCMAX(PETSCABS(theta),PETSCABS(*dx));
-    s = PETSCMAX(s,PETSCABS(*dp));
+    s = PETSCMAX(PetscAbsScalar(theta),PetscAbsScalar(*dx));
+    s = PETSCMAX(s,PetscAbsScalar(*dp));
     gamma1 = s*sqrt(pow(theta/s,two) - (*dx/s)*(*dp/s));
     if (*stp > *stx) gamma1 = -gamma1;
     p = (gamma1 - *dp) + theta;
@@ -131,8 +131,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     r = p/q;
     stpc = *stp + r*(*stx - *stp);
     stpq = *stp + (*dp/(*dp-*dx))*(*stx - *stp);
-    if (PETSCABS(stpc-*stp) > PETSCABS(stpq-*stp)) stpf = stpc;
-    else                                           stpf = stpq;
+    if (PetscAbsScalar(stpc-*stp) > PetscAbsScalar(stpq-*stp)) stpf = stpc;
+    else                                                       stpf = stpq;
     neP->bracket = 1;
   }
 
@@ -146,12 +146,12 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
      closest to stx is taken, else the step farthest away is taken.
  */
 
-  else if (PETSCABS(*dp) < PETSCABS(*dx)) {
+  else if (PetscAbsScalar(*dp) < PetscAbsScalar(*dx)) {
     neP->infoc = 3;
     bound = 1;
     theta = 3*(*fx - *fp)/(*stp - *stx) + *dx + *dp;
-    s = PETSCMAX(PETSCABS(theta),PETSCABS(*dx));
-    s = PETSCMAX(s,PETSCABS(*dp));
+    s = PETSCMAX(PetscAbsScalar(theta),PetscAbsScalar(*dx));
+    s = PETSCMAX(s,PetscAbsScalar(*dp));
 
     /* The case gamma1 = 0 only arises if the cubic does not tend
        to infinity in the direction of the step. */
@@ -165,12 +165,12 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     else                         stpc = neP->stepmin;
     stpq = *stp + (*dp/(*dp-*dx)) * (*stx - *stp);
     if (neP->bracket) {
-      if (PETSCABS(*stp-stpc) < PETSCABS(*stp-stpq)) stpf = stpc;
-      else                                           stpf = stpq;
+      if (PetscAbsScalar(*stp-stpc) < PetscAbsScalar(*stp-stpq)) stpf = stpc;
+      else                                                       stpf = stpq;
     }
     else {
-      if (PETSCABS(*stp-stpc) > PETSCABS(*stp-stpq)) stpf = stpc;
-      else                                           stpf = stpq;
+      if (PetscAbsScalar(*stp-stpc) > PetscAbsScalar(*stp-stpq)) stpf = stpc;
+      else                                                       stpf = stpq;
     }
   }
 
@@ -184,8 +184,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     bound = 0;
     if (neP->bracket) {
       theta = 3*(*fp - *fy)/(*sty - *stp) + *dy + *dp;
-      s = PETSCMAX(PETSCABS(theta),PETSCABS(*dy));
-      s = PETSCMAX(s,PETSCABS(*dp));
+      s = PETSCMAX(PetscAbsScalar(theta),PetscAbsScalar(*dy));
+      s = PETSCMAX(s,PetscAbsScalar(*dp));
       gamma1 = s*sqrt(pow(theta/s,two) - (*dy/s)*(*dp/s));
       if (*stp > *sty) gamma1 = -gamma1;
       p = (gamma1 - *dp) + theta;

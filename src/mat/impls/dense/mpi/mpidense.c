@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.5 1995/10/24 02:51:08 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.6 1995/10/25 22:43:35 curfman Exp bsmith $";
 #endif
 
 #include "mpidense.h"
@@ -58,7 +58,7 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC( (mdn->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<mdn->stash.n; i++ ) {
     idx = mdn->stash.idx[i];
@@ -216,7 +216,7 @@ static int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PETSCMALLOC( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscZero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
+  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
   owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
@@ -607,7 +607,7 @@ static int MatRestoreRow_MPIDense(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
-static int MatNorm_MPIDense(Mat A,MatNormType type,double *norm)
+static int MatNorm_MPIDense(Mat A,NormType type,double *norm)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) A->data;
   Mat_SeqDense *mat = (Mat_SeqDense*) mdn->A->data;
@@ -635,16 +635,12 @@ static int MatNorm_MPIDense(Mat A,MatNormType type,double *norm)
       double *tmp, *tmp2;
       tmp  = (double *) PETSCMALLOC( 2*mdn->N*sizeof(double) ); CHKPTRQ(tmp);
       tmp2 = tmp + mdn->N;
-      PetscZero(tmp,2*mdn->N*sizeof(double));
+      PetscMemzero(tmp,2*mdn->N*sizeof(double));
       *norm = 0.0;
       v = mat->v;
       for ( j=0; j<mat->n; j++ ) {
         for ( i=0; i<mat->m; i++ ) {
-#if defined(PETSC_COMPLEX)
-          tmp[j] += abs(*v++); 
-#else
-          tmp[j] += fabs(*v++); 
-#endif
+          tmp[j] += PetscAbsScalar(*v++); 
         }
       }
       MPI_Allreduce((void*)tmp,(void*)tmp2,mdn->N,MPI_DOUBLE,MPI_SUM,A->comm);
@@ -908,7 +904,7 @@ int MatLoad_MPIDense(Viewer bview,MatType type,Mat *newmat)
   if (!rank) {
     /* calculate the number of nonzeros on each processor */
     procsnz = (int*) PETSCMALLOC( size*sizeof(int) ); CHKPTRQ(procsnz);
-    PetscZero(procsnz,size*sizeof(int));
+    PetscMemzero(procsnz,size*sizeof(int));
     for ( i=0; i<size; i++ ) {
       for ( j=rowners[i]; j< rowners[i+1]; j++ ) {
         procsnz[i] += rowlengths[j];
@@ -951,7 +947,7 @@ int MatLoad_MPIDense(Viewer bview,MatType type,Mat *newmat)
   }
 
   /* loop over local rows, determining number of off diagonal entries */
-  PetscZero(offlens,m*sizeof(int));
+  PetscMemzero(offlens,m*sizeof(int));
   jj = 0;
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<ourlens[i]; j++ ) {

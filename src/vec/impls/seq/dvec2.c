@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.16 1995/09/30 19:26:35 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.17 1995/10/24 21:41:42 bsmith Exp bsmith $ */
 
 #include "inline/dot.h"
 #include "inline/vmult.h"
@@ -27,25 +27,7 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
   return 0;
 }
 
-static int VecAMax_Seq(Vec xin,int* idx,double * z )
-{
-  Vec_Seq         *x = (Vec_Seq *) xin->data;
-  register int    i, j=0, n = x->n;
-  register double max = 0.0, tmp;
-  Scalar          *xx = x->array;
 
-  for (i=0; i<n; i++) {
-#if defined(PETSC_COMPLEX)
-    if ((tmp = abs(*xx++)) > max) max = tmp;
-#else
-    if ( (tmp = *xx++) > 0.0 ) { if (tmp > max) { j = i; max = tmp; } }
-    else                       { if (-tmp > max) { j = i; max = -tmp; } }
-#endif
-  }
-  *z   = max;
-  if (idx) *idx = j;
-  return 0;
-}
 
 static int VecMax_Seq(Vec xin,int* idx,double * z )
 {

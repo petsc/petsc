@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.33 1995/10/27 14:01:58 curfman Exp bsmith $ */
+/* $Id: matimpl.h,v 1.34 1995/10/30 04:25:37 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -17,7 +17,7 @@ struct _MatOps {
             (*transpose)(Mat,Mat*),
             (*getinfo)(Mat,MatInfoType,int*,int*,int*),(*equal)(Mat,Mat),
             (*getdiagonal)(Mat,Vec),(*scale)(Mat,Vec,Vec),
-            (*norm)(Mat,MatNormType,double*),
+            (*norm)(Mat,NormType,double*),
             (*assemblybegin)(Mat,MatAssemblyType),
             (*assemblyend)(Mat,MatAssemblyType),(*compress)(Mat),
             (*setoption)(Mat,MatOption),(*zeroentries)(Mat),
@@ -40,7 +40,7 @@ struct _MatOps {
             (*ilufactor)(Mat,IS,IS,double,int),
             (*incompletecholeskyfactor)(Mat,IS,double),
             (*axpy)(Scalar *,Mat,Mat),
-            (*getsubmatrices)(Mat,int n,IS *,IS *,Mat **);
+            (*getsubmatrices)(Mat,int n,IS *,IS *,MatGetSubMatrixCall,Mat **);
 };
 
 #define FACTOR_LU       1
