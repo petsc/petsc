@@ -2,8 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS	 =  $(PETSC_INCLUDE) -I.. $(PCONF) \
-	   $(CONF) -D__DIR__='"is/utils/"'
+CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I.. 
 SOURCEC	 = iscomp.c
 SOURCEF	 =
 SOURCEH	 =

@@ -2,8 +2,7 @@ PETSC_DIR = ../../../..
 
 
 ALL: lib 
-CFLAGS    =  -I../.. $(PETSC_INCLUDE) $(PCONF)\
-            $(CONF) -D__DIR__='"viewer/impls/string/"'
+CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../..
 SOURCEC   = stringv.c
 SOURCEF   =
 SOURCEH   =

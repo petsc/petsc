@@ -2,12 +2,11 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I.. $(PCONF)\
-           -I../impls/aij/seq -I../impls/aij/mpi \
+CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
+	   -I.. -I../impls/aij/seq -I../impls/aij/mpi \
            -I../impls/row/seq -I../impls/row/mpi \
            -I../impls/bdiag/seq -I../impls/bdiag/mpi \
-           -I../impls/rowbs/mpi \
-           $(CONF) -D__DIR__='"mat/utils/"'
+           -I../impls/rowbs/mpi
 SOURCEC  = gcreate.c convert.c stash.c axpy.c zerodiag.c matio.c
 SOURCEF  =
 SOURCEH  =

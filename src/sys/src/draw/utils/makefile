@@ -2,8 +2,7 @@ PETSC_DIR = ../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../impls -I.. $(PCONF)\
-           $(COPT) $(CONF) -D__DIR__='"draw/utils/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../impls -I.. 
 SOURCEC  = axis.c lg.c
 SOURCEF  =
 SOURCEH  = 
