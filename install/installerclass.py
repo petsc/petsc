@@ -25,6 +25,7 @@ class Installer(install.urlMapping.UrlMapping):
     argDB.setType('forceInstall',      nargs.ArgBool(None, 0, 'Forced installation overwrites any existing project', isTemporary = 1), forceLocal = 1)
     argDB.setType('retrievalCanExist', nargs.ArgBool(None, 0, 'Allow a project to exist prior to installation', isTemporary = 1), forceLocal = 1)
     argDB.setType('urlMappingModules', nargs.Arg(None, '', 'Module name or list of names with a method setupUrlMapping(urlMaps)'), forceLocal = 1)
+    argDB.setType('profile',           nargs.ArgBool(None, 0, 'Profile the installation', isTemporary = 1), forceLocal = 1)
     install.urlMapping.UrlMapping.setupArgDB(self, argDB, clArgs)
     return argDB
 
