@@ -2,7 +2,7 @@ ALL: lib
 IPETSCDIR = ../../../../
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF)  \
-           -I$(IPETSCDIR)/pinclude -I../.. -D__DIR__='"ksp/impls/cg"'
+           -I$(IPETSCDIR)/pinclude -I../.. -D__DIR__='"ksp/impls/cg/"'
 FFLAGS   =
 SOURCEC  = cg.c cgeig.c
 SOURCEF  =

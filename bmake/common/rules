@@ -52,6 +52,12 @@ examples: chkbopt
           cat trashz ; fi; $(RM) trashz;\
           done;) fi
 
+runexamples:
+	@-if [ "$(REXAMPLES)" != "" ] ; then \
+          (for ex in $(REXAMPLES) foo ; do \
+          $(OMAKE) -f makefile $$ex; \
+          done;) fi
+
 foo:
 
 lib: $(SOURCE)
@@ -135,7 +141,7 @@ wwwpages:
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(CEXAMPLES) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
-               trashz
+               trashz #*#
 
 testexamples: examples runexamples clean
 
