@@ -26,7 +26,7 @@ runexamples:
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            $(RM) -f ex2_1.tmp 
 	-@$(MPIRUN) ex3 -ksp_method gmres -ksp_monitor -pc_method sor\
-                             -sor_symmetric > ex3_1.tmp 2>&1;   \
+                             -pc_sor_symmetric > ex3_1.tmp 2>&1;   \
            if (diff ex3_1.out ex3_1.tmp) then true; \
            else echo "Possible problem with ex3_1, diffs above"; fi; \
            $(RM) -f ex3_1.tmp 
