@@ -561,17 +561,17 @@ static int ourmulttransposeadd(Mat mat,Vec x,Vec y,Vec z)
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,int*),int *ierr)
 {
   if (*op == MATOP_MULT) {
-    *ierr = MatShellSetOperation(*mat,*op,(void(*)(void))ourmult);
-    ((PetscObject)*mat)->fortran_func_pointers[0] = (void(*)(void))f;
+    *ierr = MatShellSetOperation(*mat,*op,(FCNVOID)ourmult);
+    ((PetscObject)*mat)->fortran_func_pointers[0] = (FCNVOID)f;
   } else if (*op == MATOP_MULT_TRANSPOSE) {
-    *ierr = MatShellSetOperation(*mat,*op,(void(*)(void))ourmulttranspose);
-    ((PetscObject)*mat)->fortran_func_pointers[2] = (void(*)(void))f;
+    *ierr = MatShellSetOperation(*mat,*op,(FCNVOID)ourmulttranspose);
+    ((PetscObject)*mat)->fortran_func_pointers[2] = (FCNVOID)f;
   } else if (*op == MATOP_MULT_ADD) {
-    *ierr = MatShellSetOperation(*mat,*op,(void(*)(void))ourmultadd);
-    ((PetscObject)*mat)->fortran_func_pointers[1] = (void(*)(void))f;
+    *ierr = MatShellSetOperation(*mat,*op,(FCNVOID)ourmultadd);
+    ((PetscObject)*mat)->fortran_func_pointers[1] = (FCNVOID)f;
   } else if (*op == MATOP_MULT_TRANSPOSE_ADD) {
-    *ierr = MatShellSetOperation(*mat,*op,(void(*)(void))ourmulttransposeadd);
-    ((PetscObject)*mat)->fortran_func_pointers[3] = (void(*)(void))f;
+    *ierr = MatShellSetOperation(*mat,*op,(FCNVOID)ourmulttransposeadd);
+    ((PetscObject)*mat)->fortran_func_pointers[3] = (FCNVOID)f;
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");

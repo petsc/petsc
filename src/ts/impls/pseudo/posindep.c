@@ -4,7 +4,6 @@
 */
 #include "src/ts/tsimpl.h"                /*I   "petscts.h"   I*/
 
-EXTERN_C_BEGIN
 typedef struct {
   Vec  update;      /* work vector where new solution is formed */
   Vec  func;        /* work vector where F(t[i],u[i]) is stored */
@@ -23,7 +22,6 @@ typedef struct {
   PetscReal  dt_increment;                  /* scaling that dt is incremented each time-step */
   PetscTruth increment_dt_from_initial_dt;  
 } TS_Pseudo;
-EXTERN_C_END
 
 /* ------------------------------------------------------------------------------*/
 
@@ -485,10 +483,11 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,PetscReal*,void*),void* ctx)
 
 /* ----------------------------------------------------------------------------- */
 
+typedef int (*FCN1)(TS,Vec,void*,PetscReal*,int*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"
-int TSPseudoSetVerifyTimeStep_Pseudo(TS ts,int (*dt)(TS,Vec,void*,PetscReal*,int*),void* ctx)
+int TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void* ctx)
 {
   TS_Pseudo *pseudo;
 
@@ -526,10 +525,11 @@ int TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 }
 EXTERN_C_END
 
+typedef int (*FCN2)(TS,PetscReal*,void*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetTimeStep_Pseudo"
-int TSPseudoSetTimeStep_Pseudo(TS ts,int (*dt)(TS,PetscReal*,void*),void* ctx)
+int TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void* ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 

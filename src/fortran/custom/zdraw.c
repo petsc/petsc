@@ -46,9 +46,10 @@
 #define petscdrawgetpopup_        petscdrawgetpopup
 #endif
 
+typedef void (PETSC_STDCALL *FCN)(PetscDraw*,void*,int*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 
-static void (PETSC_STDCALL *f1)(PetscDraw *,void *,int *);
+static FCN f1;
 static int ourdrawzoom(PetscDraw draw,void *ctx)
 {
   int ierr = 0;
@@ -57,7 +58,7 @@ static int ourdrawzoom(PetscDraw draw,void *ctx)
   return 0;
 }
 
-void PETSC_STDCALL petscdrawzoom_(PetscDraw *draw,void (PETSC_STDCALL *f)(PetscDraw *,void *,int *),void *ctx,int *ierr)
+void PETSC_STDCALL petscdrawzoom_(PetscDraw *draw,FCN f,void *ctx,int *ierr)
 {
   f1      = f;
   *ierr = PetscDrawZoom(*draw,ourdrawzoom,ctx);

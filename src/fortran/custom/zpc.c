@@ -382,12 +382,12 @@ static int ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
 void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,int (*residual)(Mat*,Vec*,Vec*,Vec*,int*),Mat *mat, int *ierr)
 {
   int (*rr)(Mat,Vec,Vec,Vec);
-  if ((void(*)(void))residual == (void(*)(void))mgdefaultresidual_) rr = MGDefaultResidual;
+  if ((FCNVOID)residual == (FCNVOID)mgdefaultresidual_) rr = MGDefaultResidual;
   else {
     if (!((PetscObject)*mat)->fortran_func_pointers) {
       *ierr = PetscMalloc(1*sizeof(void *),&((PetscObject)*mat)->fortran_func_pointers);
     }
-    ((PetscObject)*mat)->fortran_func_pointers[0] = (void(*)(void))residual;
+    ((PetscObject)*mat)->fortran_func_pointers[0] = (FCNVOID)residual;
     rr = ourresidualfunction;
   }
   *ierr = MGSetResidual(*pc,*l,rr,*mat);

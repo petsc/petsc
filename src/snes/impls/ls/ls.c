@@ -832,12 +832,13 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,Petsc
   }
   PetscFunctionReturn(0);
 }
+
+typedef int (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*); /* force argument to next function to not be extern C*/
 /* -------------------------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearch_LS"
-int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,
-                         PetscReal,PetscReal*,PetscReal*,int*),void *lsctx)
+int SNESSetLineSearch_LS(SNES snes,FCN2 func,void *lsctx)
 {
   PetscFunctionBegin;
   ((SNES_LS *)(snes->data))->LineSearch = func;

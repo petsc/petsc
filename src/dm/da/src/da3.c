@@ -162,7 +162,8 @@ EXTERN int DAPublish_Petsc(PetscObject);
 .  wrap - type of periodicity the array should have, if any.  Use one
           of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, or DA_YZPERIODIC.
 .  stencil_type - Type of stencil (DA_STENCIL_STAR or DA_STENCIL_BOX)
-.  M,N,P - global dimension in each direction of the array
+.  M,N,P - global dimension in each direction of the array (use -M, -N, and or -P to indicate that it may be set to a different value 
+            from the command line with -da_grid_x <M> -da_grid_y <N> -da_grid_z <P>)
 .  m,n,p - corresponding number of processors in each dimension 
            (or PETSC_DECIDE to have calculated)
 .  dof - number of degrees of freedom per node
