@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.84 1997/06/05 12:55:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.85 1997/07/02 22:26:33 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -291,9 +291,9 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
   while (XCheckTypedEvent( win->disp, ButtonPress, &report ));
   XMaskEvent( win->disp, ButtonReleaseMask, &report );
   switch (report.xbutton.button) {
-    case Button1: *button = BUTTON_LEFT; break;
+    case Button1: *button = BUTTON_LEFT;   break;
     case Button2: *button = BUTTON_CENTER; break;
-    case Button3: *button = BUTTON_RIGHT; break;
+    case Button3: *button = BUTTON_RIGHT;  break;
   }
   XQueryPointer(win->disp, report.xmotion.window,&root,&child,&root_x,&root_y,
                 &px,&py,&keys_button);
@@ -307,7 +307,8 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
                         ((1.0 - ((double) py)/((double) win->h)-draw->port_yl))*
                         (draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
 
-  XDefineCursor(win->disp, win->win, None);
+  /* Next line doesn't work, don't know why! */
+  XUndefineCursor(win->disp, win->win);
   return 0;
 }
 
