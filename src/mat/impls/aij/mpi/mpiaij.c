@@ -395,7 +395,6 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   
   b->inode.use             = PETSC_FALSE;
   b->compressedrow.use     = PETSC_TRUE; 
-  c->compressedrow.checked = PETSC_FALSE;
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
 

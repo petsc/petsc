@@ -1059,7 +1059,6 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     ierr = MatSetUpMultiply_MPIBAIJ(mat);CHKERRQ(ierr);
   }
   b->compressedrow.use = PETSC_TRUE;
-  b->compressedrow.checked = PETSC_FALSE;
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   

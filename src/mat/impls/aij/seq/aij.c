@@ -646,14 +646,21 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   }
 
   /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
-  /* fshift=0 <-> samestructure? */
   if (!a->inode.use && !a->compressedrow.checked && a->compressedrow.use){
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
     if (a->compressedrow.use){
       A->ops->mult    = MatMult_SeqAIJ_CompressedRow;
       A->ops->multadd = MatMultAdd_SeqAIJ_CompressedRow; 
     }
-  } 
+  } else if (a->compressedrow.checked && a->compressedrow.use){ 
+    /* mat structure likely has been changed. Do not use compressed row format until a better
+       flag on changing mat structure is introduced */
+    ierr = PetscFree(a->compressedrow.i);CHKERRQ(ierr); 
+    a->compressedrow.use    = PETSC_FALSE;
+    a->compressedrow.rindex = PETSC_NULL;
+    A->ops->mult    = MatMult_SeqAIJ;
+    A->ops->multadd = MatMultAdd_SeqAIJ;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2927,7 +2934,13 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     c->compressedrow.rindex = c->compressedrow.i + i + 1;
     ierr = PetscMemcpy(c->compressedrow.i,a->compressedrow.i,(i+1)*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscMemcpy(c->compressedrow.rindex,a->compressedrow.rindex,i*sizeof(PetscInt));CHKERRQ(ierr); 
-  } 
+  } else {
+    c->compressedrow.use    = PETSC_FALSE;
+    c->compressedrow.i      = PETSC_NULL;
+    c->compressedrow.rindex = PETSC_NULL;
+    C->ops->mult            = MatMult_SeqAIJ;
+    C->ops->multadd         = MatMultAdd_SeqAIJ; 
+  }
   
   *B = C;
   ierr = PetscFListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
