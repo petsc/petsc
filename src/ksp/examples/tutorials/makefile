@@ -571,7 +571,7 @@ TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
                    runex10_5 runex10_6 runex10_7 runex10_8 runex10_9 \
-                   runex10_10 runex10_19 runex10_20 ex10.rm \
+                   runex10_10 runex10_19 runex10_20 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples

@@ -16,6 +16,13 @@ include ${PETSC_DIR}/bmake/common/test
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
 	-@${OMAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}
+	@egrep -i "( error | error:)" make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
+           echo "********************************************************************"; \
+           echo "  Error during compile, check make_log_${PETSC_ARCH}"; \
+           echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\
+           echo "********************************************************************"; \
+           exit 1; fi
+
 all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared
 #
 # Prints information about the system and version of PETSc being compiled
@@ -112,12 +119,6 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
-	@egrep -i "( error | error:)" make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
-           echo "********************************************************************"; \
-           echo "  Error during compile, check make_log_${PETSC_ARCH}"; \
-           echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\
-           echo "********************************************************************"; \
-           exit 1; fi
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
