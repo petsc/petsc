@@ -175,9 +175,10 @@ class TagSIDL (transform.GenericTag):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
 
 class TagAllSIDL (transform.GenericTag):
-  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = ''):
+  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, extraExt = '', force = 0):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
     self.taggedFiles = fileset.FileSet()
+    self.force       = force
 
   def fileExecute(self, source):
     (base, ext) = os.path.splitext(source)
@@ -187,7 +188,7 @@ class TagAllSIDL (transform.GenericTag):
 
   def execute(self):
     self.genericExecute(self.sources)
-    if len(self.changed):
+    if len(self.changed) or self.force:
       ## This is bad, should have a clear()
       self.changed.data   = []
       self.changed.extend(self.taggedFiles)

@@ -93,6 +93,13 @@ class Defaults(logging.Logger):
     self.compilerDefaults.setupIncludes(compiler)
     return compiler
 
+  def getSIDLPrintCompiler(self, outputDir = None, printer = None):
+    compiler = self.compilerDefaults.getCompilerModule().CompileSIDLPrint(compilerFlags = self.usingSIDL.getCompilerFlags())
+    if outputDir: compiler.outputDir = outputDir
+    if printer:   compiler.printer   = printer
+    self.compilerDefaults.setupIncludes(compiler)
+    return compiler
+
   def getRepositoryTargets(self):
     action = self.compilerDefaults.getCompilerModule().CompileSIDLRepository(compilerFlags = self.usingSIDL.getCompilerFlags())
     action.outputDir = self.usingSIDL.repositoryDir
@@ -136,3 +143,6 @@ class Defaults(logging.Logger):
     return target.Target(self.sources, [tuple(self.getRepositoryTargets()+self.getSIDLServerTargets()+self.getSIDLClientTargets()),
                                         transform.Update(),
                                         transform.SetFilter('old sidl')])
+
+  def getSIDLPrintTarget(self):
+    return target.Target(self.sources, [sidlDefaults.TagAllSIDL(force = 1), self.getSIDLPrintCompiler()])
