@@ -53,6 +53,7 @@ struct _p_VecPack {
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
          VecPackGather(), VecPackCreateGlobalVector(), VecPackGetGlobalIndices(), VecPackGetAccess()
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackCreate(MPI_Comm comm,VecPack *packer)
@@ -278,7 +279,7 @@ PetscErrorCode VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
          VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackScatter(),
-         VecPackRestoreAccess()
+         VecPackRestoreAccess(), VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackGetAccess(VecPack packer,Vec gvec,...)
@@ -378,7 +379,8 @@ PetscErrorCode VecPackRestoreAccess(VecPack packer,Vec gvec,...)
     Level: advanced
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess()
+         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
@@ -428,7 +430,8 @@ PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
     Level: advanced
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess()
+         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackGather(VecPack packer,Vec gvec,...)
@@ -478,7 +481,8 @@ PetscErrorCode VecPackGather(VecPack packer,Vec gvec,...)
     Level: advanced
 
 .seealso VecPackDestroy(), VecPackGather(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess()
+         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackAddArray(VecPack packer,PetscInt n)
@@ -524,7 +528,8 @@ PetscErrorCode VecPackAddArray(VecPack packer,PetscInt n)
     Level: advanced
 
 .seealso VecPackDestroy(), VecPackGather(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess()
+         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackAddDA(VecPack packer,DA da)
@@ -581,7 +586,8 @@ PetscErrorCode VecPackAddDA(VecPack packer,DA da)
     Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess()
+         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
@@ -633,7 +639,8 @@ PetscErrorCode VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
        The idx parameters should be freed by the calling routine with PetscFree()
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetAccess()
+         VecPackGather(), VecPackCreate(), VecPackGetAccess(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackGetGlobalIndices(VecPack packer,...)
@@ -880,7 +887,8 @@ PetscErrorCode VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
          VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(), 
-         VecPackRestoreLocalVectors(), VecPackGetLocalVectors(), VecPackRestoreEntries()
+         VecPackRestoreLocalVectors(), VecPackGetLocalVectors(), VecPackRestoreEntries(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackGetEntries(VecPack packer,...)
@@ -928,7 +936,8 @@ PetscErrorCode VecPackGetEntries(VecPack packer,...)
     Level: advanced
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess()
+         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackRefine(VecPack packer,MPI_Comm comm,VecPack *fine)
@@ -1140,7 +1149,8 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
     Level: advanced
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess()
+         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
+         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
 PetscErrorCode VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v)

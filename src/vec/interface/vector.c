@@ -2048,6 +2048,9 @@ PetscErrorCode  VecMAXPY(PetscInt nv,const PetscScalar *alpha,Vec y,Vec *x)
    array and return a pointer to that. You MUST call VecRestoreArray() 
    when you no longer need access to the array.
 
+   Synopsis:
+   PetscErrorCode VecGetArray(Vec x,PetscScalar *a)
+
    Not Collective
 
    Input Parameter:
@@ -2185,6 +2188,9 @@ PetscErrorCode VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
    Not Collective
+
+   Synopsis:
+   PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a)
 
    Input Parameters:
 +  x - the vector
