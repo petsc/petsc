@@ -269,7 +269,7 @@ runex6_7:
 	   else echo "Possible problem with ex6_7, diffs above"; fi; \
 	   $(RM) -f ex6_7.tmp
 runex7:
-	-@$(MPIRUN) -np 2 ex7 -ksp_smonitor > ex7_1.tmp 2>&1; \
+	-@$(MPIRUN) -np 2 ex7 -pc_type jacobi -ksp_smonitor > ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   $(RM) -f ex7_1.tmp
@@ -331,7 +331,7 @@ runex19:
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   $(RM) -f ex19_1.tmp
 runex20:
-	-@$(MPIRUN) ex20 -mat_view -ksp_smonitor > ex20_1.tmp 2>&1; \
+	-@$(MPIRUN) ex20 -pc_type jacobi -mat_view -ksp_smonitor > ex20_1.tmp 2>&1; \
 	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   $(RM) -f ex20_1.tmp
