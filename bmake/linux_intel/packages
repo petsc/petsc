@@ -3,12 +3,12 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/software/mkl-52/lib/32 -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide
+BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/soft/linux-rh73-intel/mkl-52/lib/32 -L/home/petsc/soft/linux-rh73-intel/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /home/petsc/software/mpich-1.2.2.3/linux_intel
-MPI_LIB        = -L${MPI_HOME}/lib  -lmpich
+MPI_HOME       = /home/petsc/soft/linux-rh73-intel/mpich-1.2.5
+MPI_LIB        = -L${MPI_HOME}/lib  -lmpich -lpmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 #
