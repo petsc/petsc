@@ -742,6 +742,8 @@ int MatDestroy_SeqAIJ(Mat A)
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
   if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
+  if (a->xtoy) {ierr = PetscFree(a->xtoy);CHKERRQ(ierr);}
+  
   ierr = PetscFree(a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2058,29 +2060,34 @@ int MatAXPY_SeqAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
   if (str == SAME_NONZERO_PATTERN) {
     BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
-
-    ierr = PetscMalloc(x->nz*sizeof(int),&xtoy);CHKERRQ(ierr);
-    i = 0;    
-    for (row=0; row<X->m; row++){
-      nz = xi[1] - xi[0];
-      jy = 0;
-      for (jx=0; jx<nz; jx++,jy++){
-        xcol = xj[*xi + jx];
-        ycol = yj[*yi + jy];  /* col index for y */
-        while ( ycol < xcol ) {
-          jy++; 
-          ycol = yj[*yi + jy]; 
+    if (y->xtoy && y->XtoY != X) {
+      ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
+      ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
+    }
+    if (!y->xtoy) { /* get xtoy */
+      ierr = PetscMalloc(x->nz*sizeof(int),&xtoy);CHKERRQ(ierr);
+      i = 0;    
+      for (row=0; row<X->m; row++){
+        nz = xi[1] - xi[0];
+        jy = 0;
+        for (jx=0; jx<nz; jx++,jy++){
+          xcol = xj[*xi + jx];
+          ycol = yj[*yi + jy];  /* col index for y */
+          while ( ycol < xcol ) {
+            jy++; 
+            ycol = yj[*yi + jy]; 
+          }
+          if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
+          xtoy[i++] = *yi + jy;
         }
-        if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
-        xtoy[i++] = *yi + jy;
+        xi++; yi++;
       }
-      xi++; yi++;
+      y->xtoy = xtoy; /* attach xtoy to the denser matrix Y */
+      y->XtoY = X;
     }
 
-    for (i=0; i<x->nz; i++) {
-      y->a[xtoy[i]] += (*a)*(x->a[i]);
-    }
-    ierr =  PetscFree(xtoy);CHKERRQ(ierr);
+    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += (*a)*(x->a[i]);
+   
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }
@@ -2698,6 +2705,8 @@ int MatCreate_SeqAIJ(Mat B)
   b->idiag             = 0;
   b->ssor              = 0;
   b->keepzeroedrows    = PETSC_FALSE;
+  b->xtoy              = 0;
+  b->XtoY              = 0;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 

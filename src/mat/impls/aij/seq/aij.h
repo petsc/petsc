@@ -57,6 +57,9 @@ typedef struct {
   PetscTruth       ignorezeroentries;
   ISColoring       coloring;         /* set with MatADSetColoring() used by MatADSetValues() */
   Mat              sbaijMat;         /* mat in sbaij format */
+
+  int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */
+  Mat              XtoY;             /* used by MatAXPY() */
 } Mat_SeqAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);

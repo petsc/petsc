@@ -403,6 +403,13 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);
     aij->rowvalues = 0;
   }
+
+  /* used by MatAXPY() */
+  Mat_SeqAIJ *a  = (Mat_SeqAIJ *)aij->A->data;
+  Mat_SeqAIJ *b  = (Mat_SeqAIJ *)aij->B->data;
+  a->xtoy = 0; b->xtoy = 0;  
+  a->XtoY = 0; b->XtoY = 0;
+
 #if defined(PETSC_HAVE_SUPERLUDIST) 
   ierr = PetscOptionsHasName(mat->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(mat);CHKERRQ(ierr); }
@@ -1528,34 +1535,42 @@ int MatAXPY_MPIAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
     x  = (Mat_SeqAIJ *)xx->B->data;
     y  = (Mat_SeqAIJ *)yy->B->data;
     BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
-  } else if (str == SUBSET_NONZERO_PATTERN) {  /* B indeces have problem: map to original index! */
+  } else if (str == SUBSET_NONZERO_PATTERN) {  
     ierr = MatAXPY_SeqAIJ(a,xx->A,yy->A,str);CHKERRQ(ierr);
-    /* ierr = MatAXPY_SeqAIJ(a,xx->B,yy->B,str);CHKERRQ(ierr); */
+    
+    
+    int *xtoy,row,i,xcol,ycol,nz,jx,jy;   
+    x  = (Mat_SeqAIJ *)xx->B->data;
+    y  = (Mat_SeqAIJ *)yy->B->data;
+    int *xi=x->i,*yi=y->i;
 
-    int rank,nx,ny;
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-    if (rank == 0) {
-      x  = (Mat_SeqAIJ *)xx->B->data;
-      int j,row=0,*garray=xx->garray;
-      MatGetSize(xx->B,PETSC_NULL,&nx);
-      MatGetSize(yy->B,PETSC_NULL,&ny);
-      printf("nx: %d, ny: %d\n",nx,ny);
-      for (j=0; j<nx; j++){
-        printf("%d, ",garray[j]);
+    if (y->xtoy && y->XtoY != xx->B) {
+      ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
+      ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
+    }
+    if (!y->xtoy) { /* get xtoy */
+      ierr = PetscMalloc(x->nz*sizeof(int),&xtoy);CHKERRQ(ierr);
+      i = 0;    
+      for (row=0; row<xx->B->m; row++){
+        nz = xi[1] - xi[0];      
+        jy = 0;
+        for (jx=0; jx<nz; jx++,jy++){
+          xcol = xx->garray[x->j[*xi + jx]];
+          ycol = yy->garray[y->j[*yi + jy]];  
+          while ( ycol < xcol ) {
+            jy++; 
+            ycol = yy->garray[y->j[*yi + jy]]; 
+          }
+          if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
+          xtoy[i++] = *yi + jy;
+        }
+        xi++; yi++;
       }
-      printf("\n----------- \n");
-      for (j=x->i[row]; j<x->i[row+1]; j++){
-        printf("%d, ",x->j[j]);
-      }
-      printf("\n----------- \n");
-      /* printf("[%d], xx->A: \n", rank);
-         ierr = MatView(xx->A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-      printf("[%d], xx->B: \n", rank);
-      ierr = MatView(xx->B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      printf(" -----------\n");
+      y->xtoy = xtoy; /* attach xtoy to the denser matrix Y */
+      y->XtoY = xx->B;
     }
     
-    ierr = MatView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += (*a)*(x->a[i]);   
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }
