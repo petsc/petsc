@@ -15,7 +15,7 @@ DIRS     = is vec ksp sys pc mat sles options draw include/pinclude
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
 all:
-	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PARCH) libfasttree 
+	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PARCH) ACTION=libfast  tree 
 
 ranlib:
 	$(RANLIB) $(LDIR)/$(COMPLEX)/*.a
@@ -24,5 +24,5 @@ deletelibs:
 	-$(RM) $(LDIR)/*.o $(LDIR)/*.a $(LDIR)/complex/*
 
 deletemanpages:
-	$(RM) -f man/man*/*
+	$(RM) -f $(PETSCLIB)/man/man*/*
 
