@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.59 2001/03/09 20:05:26 balay Exp buschelm $ */
+/* $Id: petscsys.h,v 1.60 2001/07/13 14:55:50 buschelm Exp buschelm $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -81,6 +81,6 @@ EXTERN int PetscGatherMessageLengths(MPI_Comm,int,int,int*,int**,int**);
 EXTERN int PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
 EXTERN int PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,Scalar***,MPI_Request**);
 
-EXTERN int PetscSSEIsEnabled(PetscTruth *);
+EXTERN int PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
 #endif      
 
