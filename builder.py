@@ -1,7 +1,10 @@
 import logging
 import script
 
-import sets
+try:
+  import sets
+except ImportError:
+  import config.setsBackport
 
 class CompileError(RuntimeError):
   pass
