@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.60 1995/12/12 22:55:20 curfman Exp $";
+static char vcid[] = "$Id: mpi.h,v 1.17 1995/12/18 16:39:59 balay Exp balay $";
 #endif
 
 /*
@@ -40,7 +40,6 @@ extern double MPI_Wtime();
 #define MPI_ANY_SOURCE (-2)
 #define MPI_KEYVAL_INVALID   0
 #define MPI_ERR_UNKNOWN     18      /* Unknown error */
-#define MPI_ERR_EXHAUSTED    1
 #define MPI_ERR_INTERN      21      /* internal error code    */
 #define MPI_TAG_UB           0
 

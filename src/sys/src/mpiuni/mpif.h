@@ -1,5 +1,5 @@
 
-c     static char vcid[] = "$Id: mpif.h,v 1.4 1995/12/18 16:40:29 balay Exp balay $";
+c     static char vcid[] = "$Id: mpif.h,v 1.5 1995/12/18 16:41:28 balay Exp balay $";
 
 
 C     Trying to provide as little support for fortran code in petsc as needed
@@ -21,8 +21,6 @@ c     External objects outside of MPI calls
        parameter (MPI_KEYVAL_INVALID = 0 )
        integer MPI_ERR_UNKNOWN
        parameter (MPI_ERR_UNKNOWN = 18 )
-       integer MPI_ERR_EXHAUSTED
-       parameter (MPI_ERR_EXHAUSTED = 1 )
        integer MPI_ERR_INTERN 
        parameter (MPI_ERR_INTERN = 21 )
        
