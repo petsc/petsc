@@ -12,6 +12,8 @@ int OptionsPrint(FILE *);
 int OptionsHasName(int, char*,char *);
 int OptionsGetInt(int, char*,char *,int *);
 int OptionsGetDouble(int, char *,char *,double *);
+int OptionsGetInt(int, char*,char *,int *);
+int OptionsGetDouble(int, char *,char *,double *);
 int OptionsGetString(int, char*,char *,char *,int);
 int OptionsGetScalar(int,char*,char *,Scalar *);
 int OptionsAllUsed();
