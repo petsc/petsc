@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.55 1999/05/15 15:47:17 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.56 1999/07/15 18:58:26 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -31,7 +31,7 @@ CFLAGS	        =
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
-LOCDIR          = sec/dm/da/examples/tests/
+LOCDIR          = src/dm/da/examples/tests/
 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 1999/01/26 02:20:32 bsmith Exp balay $ 
+# $Id: makefile,v 1.21 1999/04/01 17:08:52 balay Exp balay $ 
 
 ALL: ex1
 
@@ -6,7 +6,7 @@ CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         = 
-LOCDIR           = src/is/examples/tutorial/
+LOCDIR           = src/vec/is/examples/tutorials/
 
 TESTEXAMPLES_1   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
                    runex3 ex3.rm clean

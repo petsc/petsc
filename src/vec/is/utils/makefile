@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 1999/02/01 21:45:00 curfman Exp balay $
+# $Id: makefile,v 1.18 1999/02/02 21:20:19 balay Exp balay $
 
 ALL: lib
 
@@ -12,6 +12,6 @@ OBJSF	 =
 LIBBASE	 = libpetscvec
 DIRS	 = 
 MANSEC	 = IS
-LOCDIR	 = src/is/utils/
+LOCDIR	 = src/vec/is/utils/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

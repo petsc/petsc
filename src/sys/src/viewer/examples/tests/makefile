@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.15 1999/02/01 21:20:53 balay Exp balay $ 
+# $Id: makefile,v 1.16 1999/02/01 22:18:56 balay Exp balay $ 
 
 ALL: ex1
 
@@ -6,7 +6,7 @@ CFLAGS	        =
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
-LOCDIR          = src/viewer/examples/tests/
+LOCDIR          = src/sys/src/viewer/examples/tests/
 
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_4  = ex3.PETSc ex3.rm clean

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 1999/04/01 17:12:05 balay Exp bsmith $ 
+# $Id: makefile,v 1.15 1999/04/16 16:11:37 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -6,7 +6,7 @@ CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        = 
-LOCDIR          = sec/dm/da/examples/tutorials/
+LOCDIR          = src/dm/da/examples/tutorials/
 
 TESTEXAMPLES_1  =
 TESTEXAMPLES_2  =
