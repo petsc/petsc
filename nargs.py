@@ -7,7 +7,6 @@ import sys
 try:
   import readline
 except ImportError: pass
-
 import RDict
 
 #===============================================================================
