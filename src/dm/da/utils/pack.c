@@ -1,19 +1,28 @@
-/*$Id: pack.c,v 1.1 2000/06/06 03:49:19 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.2 2000/06/09 21:09:05 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
+
+/*
+   rstart is where an array/subvector starts in the global parallel vector, so arrays
+   rstarts are meaningless (and set to the previous one) except on processor 0
+*/
+
+typedef enum {VECPACK_ARRAY, VECPACK_DA, VECPACK_VECSCATTER} VecPackLinkType;
 
 struct VecPackLink {
   Vec                globalholder;
   DA                 da;
   int                n,rstart;      /* rstart is relative to this processor */
+  VecPackLinkType    type;
   struct VecPackLink *next;
 };
 
 struct _p_VecPack {
   MPI_Comm           comm;
   int                rank;
-  int                n,N,rstart,rend;
+  int                n,N,rstart;   /* rstart is relative to all processors */
+  Vec                globalvector;
   struct VecPackLink *next;
 };
 
@@ -33,8 +42,8 @@ struct _p_VecPack {
 
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackApplyForward(),
-         VecPackApplyReverse(), VecPackCreateGlobalVector()
+.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
+         VecPackGather(), VecPackCreateGlobalVector()
 
 @*/
 int VecPackCreate(MPI_Comm comm,VecPack *packer)
@@ -43,11 +52,12 @@ int VecPackCreate(MPI_Comm comm,VecPack *packer)
   VecPack p;
 
   PetscFunctionBegin;
-  p       = PetscNew(struct _p_VecPack);CHKPTRQ(p);
-  p->n    = 0;
-  p->next = PETSC_NULL;
-  p->comm = comm;
-  ierr    = MPI_Comm_size(comm,&p->rank);CHKERRQ(ierr);
+  p               = PetscNew(struct _p_VecPack);CHKPTRQ(p);
+  p->n            = 0;
+  p->next         = PETSC_NULL;
+  p->comm         = comm;
+  p->globalvector = PETSC_NULL;
+  ierr            = MPI_Comm_rank(comm,&p->rank);CHKERRQ(ierr);
   *packer = p;
   PetscFunctionReturn(0);
 }
@@ -64,8 +74,8 @@ int VecPackCreate(MPI_Comm comm,VecPack *packer)
 
     Level: advanced
 
-.seealso VecPackCreate(), VecPackAddArray(), VecPackAddDA(), VecPackApplyForward(),
-         VecPackApplyReverse(), VecPackCreateGlobalVector()
+.seealso VecPackCreate(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
+         VecPackGather(), VecPackCreateGlobalVector()
 
 @*/
 int VecPackDestroy(VecPack packer)
@@ -78,6 +88,9 @@ int VecPackDestroy(VecPack packer)
     prev = next;
     next = next->next;
     ierr = PetscFree(prev);CHKERRQ(ierr);
+  }
+  if (packer->globalvector) {
+    ierr = VecDestroy(packer->globalvector);CHKERRQ(ierr);
   }
   ierr = PetscFree(packer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -101,6 +114,51 @@ int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar 
   PetscFunctionReturn(0);
 }
 
+#include <stdarg.h>
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecPackScatter"></a>*/"VecPackScatter"
+/*@C
+    VecPackScatter - Scatters from a global packed vector into its individual local vectors
+
+    Collective on VecPack
+
+    Input Parameter:
++    packer - the packer object
+.    gvec - the global vector
+-    ... - the individual sequential objects (arrays or vectors)
+ 
+.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
+         VecPackGather(), VecPackCreate()
+
+@*/
+int VecPackScatter(VecPack packer,Vec gvec,...)
+{
+  va_list            Argp;
+  int                ierr,nprev = 0,rank;
+  struct VecPackLink *next = packer->next;
+  Scalar             *array;
+
+  PetscFunctionBegin;
+  if (!packer->globalvector) {
+    SETERRQ(1,1,"Must first create global vector with VecPackCreateGlobalVector()");
+  }
+
+  /* loop over packed objects, handling one at at time */
+  va_start(Argp,gvec);
+  while (next) {
+    if (next->type = VECPACK_ARRAY) {
+      array = va_arg(Argp, Scalar*);
+      ierr = VecPackScatter_Array(packer,next,gvec,array);CHKERRQ(ierr);
+    } else {
+      SETERRQ(1,1,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ /*<a name="VecPackAddArray"></a>*/"VecPackAddArray"
 int VecPackAddArray(VecPack packer,int n)
@@ -109,12 +167,16 @@ int VecPackAddArray(VecPack packer,int n)
   struct VecPackLink *mine,*next = packer->next;
 
   PetscFunctionBegin;
+  if (packer->globalvector) {
+    SETERRQ(1,1,"Cannot add an array once you have called VecPackCreateGlobalVector()");
+  }
 
   /* create new link */
   mine               = PetscNew(struct VecPackLink);CHKPTRQ(mine);
   mine->n            = n;
   mine->da           = PETSC_NULL;
   mine->globalholder = PETSC_NULL;
+  mine->type         = VECPACK_ARRAY;
   if (!packer->rank) packer->n += n;
 
   /* add to end of list */
@@ -126,6 +188,58 @@ int VecPackAddArray(VecPack packer,int n)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecPackCreateGlobalVector"></a>*/"VecPackCreateGlobalVector"
+/*@C
+    VecPackCreateGlobalVector - Creates a vector of the correct size to be gathered into 
+        by the packer.
+
+    Collective on VecPack
+
+    Input Parameter:
+.    packer - the packer object
+
+    Output Parameters:
+.   gvec - the global vector
+
+    Level: advanced
+
+    Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
+
+.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
+         VecPackGather(), VecPackCreate()
+
+@*/
+int VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
+{
+  int                ierr,nprev = 0,rank;
+  struct VecPackLink *next = packer->next;
+
+  PetscFunctionBegin;
+  if (packer->globalvector) {
+    ierr = VecDuplicate(packer->globalvector,gvec);CHKERRQ(ierr);
+  } else {
+    ierr = VecCreateMPI(packer->comm,packer->n,PETSC_DETERMINE,gvec);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)*gvec);CHKERRQ(ierr);
+    packer->globalvector = *gvec;
+
+    ierr = VecGetSize(*gvec,&packer->N);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(*gvec,&packer->rstart,PETSC_NULL);CHKERRQ(ierr);
+    
+    /* now set the rstart for each linked array/vector */
+    ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
+    while (next) {
+      next->rstart = packer->rstart + nprev; 
+      nprev        = next->n;
+      if (rank && next->type == VECPACK_ARRAY) nprev = 0;
+      next         = next->next;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
 
 
 
