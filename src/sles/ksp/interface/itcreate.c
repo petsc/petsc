@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.40 1995/07/07 19:17:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.41 1995/07/08 15:06:48 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -27,16 +27,16 @@ int KSPView(KSP ksp,Viewer viewer)
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
                                         vobj->type == FILES_VIEWER)){
     fd = ViewerFileGetPointer_Private(viewer);
-    fprintf(fd,"KSP Object:\n");
+    MPIU_fprintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetMethodName((KSPMethod)ksp->type,&method);
-    fprintf(fd,"  method: %s\n",method);
-    if (ksp->guess_zero) fprintf(fd,
+    MPIU_fprintf(ksp->comm,fd,"  method: %s\n",method);
+    if (ksp->guess_zero) MPIU_fprintf(ksp->comm,fd,
       "  maximum iterations=%d\n, initial guess is zero",ksp->max_it);
-    else fprintf(fd,"  maximum iterations=%d\n", ksp->max_it);
+    else MPIU_fprintf(ksp->comm,fd,"  maximum iterations=%d\n", ksp->max_it);
     fprintf(fd,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",
             ksp->rtol, ksp->atol, ksp->divtol);
-    if (ksp->right_pre) fprintf(fd,"  right preconditioning\n");
-    else fprintf(fd,"  left preconditioning\n");
+    if (ksp->right_pre) MPIU_fprintf(ksp->comm,fd,"  right preconditioning\n");
+    else MPIU_fprintf(ksp->comm,fd,"  left preconditioning\n");
   }
   return 0;
 }
