@@ -1,4 +1,4 @@
-# $Id: base.g_complex,v 1.7 1997/10/28 14:19:37 bsmith Exp curfman $ 
+# $Id: base.g_complex,v 1.8 1997/11/10 04:49:07 curfman Exp balay $ 
 
 CC         = xlC -+ -DPARCH_rs6000
 #
@@ -13,8 +13,8 @@ PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_g \
              -DUSE_PETSC_STACK  -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS
 KERNEL_LIB = -lpetsckernels
 #
-COPTFLAGS  = -g 
-FOPTFLAGS  = -g
+COPTFLAGS  = -g -qfullpath
+FOPTFLAGS  = -g -qfullpath
 CLINKER    = xlC $(COPTFLAGS)
 FLINKER    = xlC $(COPTFLAGS)
 SYS_LIB    = -lcomplex
