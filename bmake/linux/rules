@@ -1,28 +1,71 @@
-# $Id: base,v 1.38 1998/10/19 22:14:14 bsmith Exp balay $ 
+# $Id: base,v 1.39 1998/11/20 17:08:32 balay Exp balay $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make  --no-print-directory
+RANLIB           = ranlib
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = /home/alice/software/egcs/linux/bin/gcc -fPIC
+C_FC             = /home/alice/software/egcs/linux/bin/g77
+C_CLINKER        = /home/alice/software/egcs/linux/bin/gcc \
+                  -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_FLINKER        = /home/alice/software/egcs/linux/bin/g77 \
+                  -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
+C_CCV            = /home/alice/software/egcs/linux/bin/gcc --version
+C_SYS_LIB        = -ldl -lc -lg2c -lm
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g 
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O -Wall -Wshadow  -fomit-frame-pointer
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = /home/alice/software/egcs/linux/bin/g++ -fPIC
+CXX_FC           = /home/alice/software/egcs/linux/bin/g77
+CXX_CLINKER      = /home/alice/software/egcs/linux/bin/g++ \
+	           -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = /home/alice/software/egcs/linux/bin/g++ \
+                   -Wl,-rpath,${LDIR}:${DYLIBPATH}
+CXX_CCV          = /home/alice/software/egcs/linux/bin/gcc --version
+CXX_SYS_LIB      = -ldl -lc -lg2c -lm
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g 
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O 
+OCXX_FOPTFLAGS   = -O
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+O_PETSCFLAGS     = -DUSE_FOR_KERNELS -DUSE_PETSC_LOG -DUSE_PETSC_DEBUG  \
+	           -DUSE_PETSC_BOPT_O
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK 
+OCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK -DUSE_PETSC_COMPLEX -DUSES_TEMPLATED_COMPLEX
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+		   -DUSE_PETSC_COMPLEX -DUSES_TEMPLATED_COMPLEX
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
 
 PARCH    = linux
-CC       = /home/alice/software/egcs/linux/bin/gcc -fPIC
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then leave this blank.
-#
-CCV      = ${CC} --version
-#
-FC       = /home/alice/software/egcs/linux/bin/g77
-AR       = ar
-RM       = rm -f
-OMAKE    = make  --no-print-directory
-RANLIB   = ranlib
-SHELL    = /bin/sh
-CLINKER  = /home/alice/software/egcs/linux/bin/gcc \
-           ${COPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
-FLINKER  = /home/alice/software/egcs/linux/bin/g77 \
-           ${FOPTFLAGS} -rdynamic -Wl,-rpath,${LDIR}:${DYLIBPATH}
-
-#
-#  -ldl is the dynamic link library that allows one to use dlopen() etc
-#
-SYS_LIB  = -ldl -lc
 
 include ${PETSC_DIR}/bmake/common
 
@@ -72,3 +115,9 @@ oshared: chkopts_basic
                ; \
 	cd ../ ; \
 	${RM} -rf tmp
+
+#
+# Notes:
+#
+#  -ldl is the dynamic link library that allows one to use dlopen() etc
+#

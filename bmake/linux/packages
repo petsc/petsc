@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.24 1998/11/20 17:13:49 balay Exp balay $ 
+# $Id: base.site,v 1.25 1998/11/20 17:13:53 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -6,13 +6,6 @@
 #  The following naming convention is used:
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
-#
-#  FC_LIB contains the libraries for a CLINKER to use for code containing
-#  FORTRAN code (such as I/O or special Fortran runtimes).  
-#
-#FC_LIB         =  /usr/lib/libf2c.a  -lm
-#FC_LIB         =  /soft/gnu/packages/egcs-1.0.2/lib/libf2c.a -lm
-FC_LIB         =  -lg2c -lm
 #
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
