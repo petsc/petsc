@@ -1,0 +1,11 @@
+ld -elf -shared -rdata_shared -all libmpiuni.a        -o libmpiuni.so
+ld -elf -shared -rdata_shared -all libpetsccontrib.a  -o libpetsccontrib.so
+ld -elf -shared -rdata_shared -all libpetscdraw.a     -o libpetscdraw.so
+ld -elf -shared -rdata_shared -all libpetscksp.a      -o libpetscksp.so
+ld -elf -shared -rdata_shared -all libpetscmat.a      -o libpetscmat.so
+ld -elf -shared -rdata_shared -all libpetscsles.a     -o libpetscsles.so
+ld -elf -shared -rdata_shared -all libpetscsnes.a     -o libpetscsnes.so
+ld -elf -shared -rdata_shared -all libpetscsys.a      -o libpetscsys.so
+ld -elf -shared -rdata_shared -all libpetscts.a       -o libpetscts.so
+ld -elf -shared -rdata_shared -all libpetscvec.a      -o libpetscvec.so
+ld -elf -shared -rdata_shared -all libpetscfortran.a  -o libpetscfortran.so
