@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.17 1999/09/16 19:02:40 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.18 1999/11/24 21:52:17 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -29,7 +29,6 @@
 #define PETSC_NEEDS_UTYPE_TYPEDEFS 
 #define _XOPEN_SOURCE_EXTENDED 1
 #define PETSC_HAVE_UNAME  
-#define PETSC_HAVE_BROKEN_REQUEST_FREE 
 #define PETSC_HAVE_TEMPLATED_COMPLEX
 #define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
 
