@@ -831,7 +831,7 @@ int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,int m,int *im,int n,int *in,MatS
   PetscFunctionReturn(0);
 } 
 
-
+EXTERN int MatUseDSCPACK_MPIBAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqBAIJ"
 int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
@@ -841,6 +841,9 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   int        m = A->m,*ip,N,*ailen = a->ilen;
   int        mbs = a->mbs,bs2 = a->bs2,rmax = 0,ierr;
   MatScalar  *aa = a->a,*ap;
+#if defined(PETSC_HAVE_DSCPACK)
+  PetscTruth   flag;
+#endif
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -881,6 +884,11 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   PetscLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Most nonzeros blocks in any row is %d\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
+#if defined(PETSC_HAVE_DSCPACK)
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(A);CHKERRQ(ierr); }
+#endif
+
 
   PetscFunctionReturn(0);
 }
