@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.159 2000/07/28 14:46:38 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.160 2000/08/01 20:57:22 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -65,7 +65,9 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
     ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
     ierr = VecNorm(W1,NORM_2,&a1);CHKERRQ(ierr);
     ierr = VecNorm(W2,NORM_2,&a2);CHKERRQ(ierr);
-    PLogInfo(0,"SNESSolve_EQ_LS: || J^T(F - Ax)|| %g near zero implies inconsistent rhs\n",a2/a1);
+    if (PetscAbsScalar(a1) != 0) {
+      PLogInfo(0,"SNESSolve_EQ_LS: ||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n",a2/a1);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -170,7 +172,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SLESSolve(snes->sles,F,Y,&lits);CHKERRQ(ierr);
 
-    ierr = SNESLSCheckResidual_Private(snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
+    if (PLogPrintInfo){
+      ierr = SNESLSCheckResidual_Private(snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
+    }
 
     /* should check what happened to the linear solve? */
     snes->linear_its += lits;
