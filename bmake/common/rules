@@ -457,6 +457,8 @@ fortranstubs:
           grep -v -i inconsistent | grep -v Anachronism | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
+          echo "--------------Error detected during compile or link!-----------------------";\
+          echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
 	  cat trashz ; fi; ${RM} trashz
 .F.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} $* > trashz 2>&1
@@ -483,6 +485,8 @@ fortranstubs:
 	  grep -v "Unused dummy argument" | \
 	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
+          echo "--------------Error detected during compile or link!-----------------------";\
+          echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
 	  cat trashz ; fi; ${RM} trashz;
 
 # Actions taken by Linux to rebuild an out-of-date shared library
