@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.86 1996/08/04 23:11:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.87 1996/08/08 14:40:14 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -753,8 +753,8 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 } 
 
 /*@C
-   VecGetArray - Returns a pointer to vector data. For default seqential 
-   vectors, VecGetArray() returns a pointer to the data array. Otherwise,
+   VecGetArray - Returns a pointer to vector data. For default PETSc
+   vectors, VecGetArray() returns a pointer to the local data array. Otherwise,
    this routine is implementation dependent. You MUST call VecRestoreArray() 
    when you no longer need access to the array.
 
