@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.70 2001/05/04 14:53:01 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.71 2001/05/04 18:53:33 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -51,17 +51,16 @@
 !     x, r        - solution, residual vectors
 !     J           - Jacobian matrix
 !     its         - iterations for convergence
-!     Nx, Ny      - number of preocessors in x- and y- directions
-!     matrix_free - flag - 1 indicates matrix-free version
 !
 !  See additional variable declarations in the file ex5f.h
 !
       SNES                   snes
       Vec                    x,r
       Mat                    J
-      integer                its,matrix_free,flg,ierr,skipadifor
+      integer                its,flg,ierr,skipadifor
       double precision       lambda_max,lambda_min
       ISColoring             coloring
+      PetscTruth             adic_jacobian
 
 !  Note: Any user-defined Fortran routines (such as FormJacobianLocal)
 !  MUST be declared as external.
@@ -152,7 +151,6 @@
 
 !  Set Jacobian matrix data structure and default Jacobian evaluation
 !  routine. User can override with:
-!     -snes_fd : default finite differencing approximation of Jacobian
 !     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
 !                (unless user explicitly sets preconditioner) 
 !     -snes_mf_operator : form preconditioning matrix as set by the user,
@@ -160,24 +158,20 @@
 !                         products within Newton-Krylov method
 !
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',                   &
-     &     matrix_free,ierr)
-      if (matrix_free .eq. 0) then
-        call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-skipadifor',              &
-     &     skipadifor,ierr)
-        if (skipadifor .eq. 1) then
-          call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
+      call PetscOptionsGetLogical(PETSC_NULL_CHARACTER,'-adic_jacobian',           &
+     &     adic_jacobian,PETSC_NULL_INTEGER,ierr)
+      if (adic_jacobian .eq. 0) then
+        call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
      &                     PETSC_NULL_OBJECT,J,ierr)
-          call SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,                      &
+        call SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,                      &
      &                       da,ierr)
-        else
-          call DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,                      &
+      else
+        call DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,                      &
      &                     coloring,J,ierr)
-          call MatSetColoring(J,coloring,ierr)
-          call SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdifor,            &
+        call MatSetColoring(J,coloring,ierr)
+        call SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdifor,            &
      &                         da,ierr)
-          call ISColoringDestroy(coloring,ierr)
-         endif
+        call ISColoringDestroy(coloring,ierr)
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -186,7 +180,7 @@
 
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
-      call SNESSetFromOptions(snes,ierr)
+          call SNESSetFromOptions(snes,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
@@ -210,7 +204,7 @@
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (matrix_free .eq. 0) call MatDestroy(J,ierr)
+      call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call SNESDestroy(snes,ierr)
