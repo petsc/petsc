@@ -5,7 +5,6 @@
 #include "petscengine.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define petscgettime_              PETSCGETTIME
 #define petscgetcputime_           PETSCGETCPUTIME
 #define petscfopen_                PETSCFOPEN
 #define petscfclose_               PETSCFCLOSE
@@ -111,7 +110,6 @@
 #define petscsynchronizedflush_    petscsynchronizedflush
 #define petscfptrap_               petscfptrap
 #define petscgetcputime_           petscgetcputime
-#define petscgettime_              petscgettime
 #define petscgetresidentsetsize_   petscgetresidentsetsize
 #define petsctrspace_              petsctrspace
 #endif
@@ -145,11 +143,6 @@ void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,int *shift,
 {
   *ierr = 0;
   *shift = y - x;
-}
-
-void PETSC_STDCALL petscgettime_(PetscLogDouble *t, int *ierr)
-{
-  *ierr = PetscGetTime(t);
 }
 
 void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, int *ierr)
