@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.103 1998/05/19 02:07:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.104 1998/05/21 20:13:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -271,7 +271,7 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
 
 #undef __FUNC__  
 #define __FUNC__ "VecGhostGetLocalRepresentation"
-/*@
+/*@C
      VecGhostGetLocalRepresentation - Obtain the local ghosted representation of 
          a parallel vector created with VecCreateGhost().
 
@@ -318,7 +318,7 @@ int VecGhostGetLocalRepresentation(Vec g,Vec *l)
 
 #undef __FUNC__  
 #define __FUNC__ "VecGhostRestoreLocalRepresentation"
-/*@
+/*@C
      VecGhostRestoreLocalRepresentation - Restore the local ghosted representation of 
          a parallel vector obtained with VecGhostGetLocalRepresentation().
 
