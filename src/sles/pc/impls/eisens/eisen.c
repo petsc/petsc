@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.51 1996/07/22 17:27:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.52 1996/08/08 14:42:16 bsmith Exp curfman $";
 #endif
 
 /*
@@ -21,7 +21,7 @@ typedef struct {
 /*@
    PCEisenstatUseDiagonalScaling - Causes the Eisenstat preconditioner
    to do an additional diagonal preconditioning. For matrices with very 
-   different values along the diagonal this may improve convergence.
+   different values along the diagonal, this may improve convergence.
 
    Input Parameter:
 .  pc - the preconditioner context

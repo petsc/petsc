@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.194 1996/09/12 16:26:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.195 1996/09/23 19:23:44 curfman Exp curfman $";
 #endif
 
 /*
@@ -1589,7 +1589,7 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
    MatGetOwnershipRange - Returns the range of matrix rows owned by
    this processor, assuming that the matrix is laid out with the first
    n1 rows on the first processor, the next n2 rows on the second, etc.
-   For certain parallel layouts this range may not be well-defined.
+   For certain parallel layouts this range may not be well defined.
 
    Input Parameters:
 .  mat - the matrix

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.72 1996/08/20 15:12:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.73 1996/09/12 16:26:03 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -53,7 +53,7 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 }  
 
 /*@
-   PCILUSetReuseReordering - When similar matrices are are factored this
+   PCILUSetReuseReordering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
    following factors; applies to both fill and drop tolerance ILUs.
 
