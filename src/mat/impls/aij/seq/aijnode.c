@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.58 1996/10/24 14:30:43 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.59 1996/11/19 16:30:54 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -260,8 +260,8 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, i
   ierr = Mat_AIJ_CreateColInode(A,&nslim_col,&ns_col); CHKERRQ(ierr);
   
   /* allocate space for reformated column_inode structure */
-  tns = (int *) PetscMalloc((nslim_col +1 )*sizeof(int)); CHKPTRQ(tns);
-  tvc = (int *) PetscMalloc((n +1 )*sizeof(int)); CHKPTRQ(tvc);
+  tns = (int *) PetscMalloc((nslim_col + 1)*sizeof(int)); CHKPTRQ(tns);
+  tvc = (int *) PetscMalloc((n + 1)*sizeof(int)); CHKPTRQ(tvc);
   for (i1=0, tns[0]=0; i1<nslim_col; ++i1) tns[i1+1] = tns[i1] + ns_row[i1];
 
   for (i1=0,col=0; i1<nslim_col; ++i1){
