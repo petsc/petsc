@@ -4381,7 +4381,8 @@ M*/
 
     Level: advanced
 
-    Notes: the iscol argument MUST be the same on each processor.
+    Notes: the iscol argument MUST be the same on each processor. You might be 
+    able to create the iscol argument with ISAllGather().
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
    the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
@@ -4390,7 +4391,7 @@ M*/
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrices()
+.seealso: MatGetSubMatrices(), ISAllGather()
 @*/
 int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat)
 {

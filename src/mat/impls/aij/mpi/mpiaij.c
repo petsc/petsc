@@ -1370,6 +1370,30 @@ EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
 EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatLUInfo*,Mat*);
 #endif
 
+#include "petscblaslapack.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY_MPIAIJ"
+int MatAXPY_MPIAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+{
+  int        ierr,one;
+  Mat_MPIAIJ *xx  = (Mat_MPIAIJ *)X->data,*yy = (Mat_MPIAIJ *)Y->data;
+  Mat_SeqAIJ *x,*y;
+
+  PetscFunctionBegin;
+  if (str == SAME_NONZERO_PATTERN) {
+    x  = (Mat_SeqAIJ *)xx->A->data;
+    y  = (Mat_SeqAIJ *)yy->A->data;
+    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+    x  = (Mat_SeqAIJ *)xx->B->data;
+    y  = (Mat_SeqAIJ *)yy->B->data;
+    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+  } else {
+    ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -1415,7 +1439,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        0,
-       0,
+       MatAXPY_MPIAIJ,
        MatGetSubMatrices_MPIAIJ,
        MatIncreaseOverlap_MPIAIJ,
        MatGetValues_MPIAIJ,

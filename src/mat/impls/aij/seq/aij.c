@@ -2030,6 +2030,25 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
   PetscFunctionReturn(0);
 }
 
+#include "petscblaslapack.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY_SeqAIJ"
+int MatAXPY_SeqAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+{
+  int        ierr,one;
+  Mat_SeqAIJ *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
+
+  PetscFunctionBegin;
+  if (str == SAME_NONZERO_PATTERN) {
+    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+  } else {
+    ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,
@@ -2071,7 +2090,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatILUFactor_SeqAIJ,
        0,
-       0,
+       MatAXPY_SeqAIJ,
        MatGetSubMatrices_SeqAIJ,
        MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,
