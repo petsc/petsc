@@ -59,28 +59,30 @@ class UsingCxx (base.Base):
 
   def getServerCompileTarget(self, package):
     '''All purposes are in Cxx, so only a Cxx compiler is necessary for the skeleton and implementation.'''
-    inputTag     = ['server '+package]
+    inputTag      = ['server '+package]
     if len(self.usingSIDL.staticPackages):
       inputTag.append('client')
     (target,    compiler)    = self.getGenericCompileTarget(inputTag)
     (iorTarget, iorCompiler) = self.getIORCompileTarget('server '+package)
     compiler.includeDirs.append(self.usingSIDL.getServerRootDir(self.language, package))
-    inputTags    = [compiler.output.tag, iorCompiler.output.tag]
-    archiveTag   = self.language.lower()+' server library directory'
-    sharedTag    = self.language.lower()+' server shared library'
-    clientTag    = self.language.lower()+' client shared library'
-    library      = self.getServerLibrary(package)
-    linker       = build.buildGraph.BuildGraph()
-    archiver     = build.processor.DirectoryArchiver(self.sourceDB, 'cp', inputTags, archiveTag, isSetwise = 1, library = library)
-    consolidator = build.transform.Consolidator(archiveTag, archiveTag, 'old '+archiveTag)
-    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, archiveTag, sharedTag, isSetwise = 1, library = library)
+    inputTags     = [compiler.output.tag, iorCompiler.output.tag]
+    archiveTag    = self.language.lower()+' server library directory'
+    sharedTag     = self.language.lower()+' server shared library'
+    clientTag     = self.language.lower()+' client shared library'
+    library       = self.getServerLibrary(package)
+    linker        = build.buildGraph.BuildGraph()
+    archiver      = build.processor.DirectoryArchiver(self.sourceDB, 'cp', inputTags, archiveTag, isSetwise = 1, library = library)
+    consolidator  = build.transform.Consolidator(archiveTag, archiveTag, 'old '+archiveTag)
+    sharedLinker  = build.processor.SharedLinker(self.sourceDB, compiler.processor, archiveTag, sharedTag, isSetwise = 1, library = library)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
-    libraryAdder = build.processor.LibraryAdder([clientTag, 'old '+clientTag], sharedLinker)
+    libraryAdder  = build.processor.LibraryAdder([clientTag, 'old '+clientTag], sharedLinker)
+    archiveFilter = build.transform.Filter(archiveTag)
     linker.addVertex(archiver)
     linker.addEdges(consolidator, [archiver])
     linker.addEdges(libraryAdder, [consolidator])
     linker.addEdges(sharedLinker, [libraryAdder])
-    linker.addEdges(build.transform.Remover(inputTags), [sharedLinker])
+    linker.addEdges(archiveFilter, [sharedLinker])
+    linker.addEdges(build.transform.Remover(inputTags), [archiveFilter])
     target.appendGraph(iorTarget)
     target.appendGraph(linker)
     return target

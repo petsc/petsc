@@ -43,6 +43,24 @@ class Transform(base.Base):
     map(self.handleFileSet, set.children)
     return self.output
 
+class Filter (Transform):
+  '''A Filter removes every file in sets matching inputTag'''
+  def __init__(self, inputTag):
+    Transform.__init__(self)
+    self.inputTag = inputTag
+    if not isinstance(self.inputTag, list):
+      self.inputTag = [self.inputTag]
+    return
+
+  def __str__(self):
+    return 'Filter for '+str(self.inputTag)
+
+  def handleFile(self, f, tag):
+    '''Drop files with inputTag'''
+    if tag in self.inputTag:
+      return self.output
+    return Transform.handleFile(self, f, tag)
+
 class Remover (Transform):
   '''A Remover removes every file in sets matching inputTag'''
   def __init__(self, inputTag = None):

@@ -109,7 +109,7 @@ class UsingPython (base.Base):
     '''Python code does not need compilation, so only a C compiler is necessary.'''
     import build.compile.C
     outputTag = self.language.lower()+' '+action+' '+self.usingC.language.lower()
-    tagger    = build.fileState.GenericTag(self.sourceDB, outputTag, inputTag = self.language.lower()+' '+action, ext = 'c', deferredExt = 'h')
+    tagger    = build.fileState.GenericTag(self.sourceDB, outputTag, inputTag = self.language.lower()+' '+action, ext = 'c', deferredExt = ['h', 'py'])
     compiler  = build.compile.C.Compiler(self.sourceDB, self.usingC, inputTag = outputTag)
     compiler.includeDirs.extend(self.includeDirs)
     target    = build.buildGraph.BuildGraph()
@@ -120,21 +120,23 @@ class UsingPython (base.Base):
   def getServerCompileTarget(self, package):
     '''Python code does not need compilation, so only a C compiler is necessary for the skeleton.'''
     (target, compiler) = self.getGenericCompileTarget('server '+package)
-    archiveTag   = self.language.lower()+' server library directory'
-    sharedTag    = self.language.lower()+' server shared library'
-    library      = self.getServerLibrary(package)
-    linker       = build.buildGraph.BuildGraph()
-    archiver     = build.processor.DirectoryArchiver(self.sourceDB, 'cp', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
-    consolidator = build.transform.Consolidator(archiveTag, archiveTag, 'old '+archiveTag)
-    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, archiveTag, sharedTag, isSetwise = 1, library = library)
+    archiveTag    = self.language.lower()+' server library directory'
+    sharedTag     = self.language.lower()+' server shared library'
+    library       = self.getServerLibrary(package)
+    linker        = build.buildGraph.BuildGraph()
+    archiver      = build.processor.DirectoryArchiver(self.sourceDB, 'cp', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
+    consolidator  = build.transform.Consolidator(archiveTag, archiveTag, 'old '+archiveTag)
+    sharedLinker  = build.processor.SharedLinker(self.sourceDB, compiler.processor, archiveTag, sharedTag, isSetwise = 1, library = library)
     if not (self.project.getUrl() == 'bk://sidl.bkbits.net/Compiler' and package == 'pythonGenerator'):
       # Also need pythonGenerator library
       sharedLinker.extraLibraries.append(self.getServerLibrary('pythonGenerator', proj = self.getInstalledProject('bk://sidl.bkbits.net/Compiler')))
     sharedLinker.extraLibraries.extend(self.extraLibraries)
+    archiveFilter = build.transform.Filter(archiveTag)
     linker.addVertex(archiver)
     linker.addEdges(consolidator, [archiver])
     linker.addEdges(sharedLinker, [consolidator])
-    linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])
+    linker.addEdges(archiveFilter, [sharedLinker])
+    linker.addEdges(build.transform.Remover(compiler.output.tag), [archiveFilter])
     target.appendGraph(linker)
     return target
 

@@ -93,7 +93,7 @@ class GenericTag (FileChanged):
       elif not self.deferredExt is None and ext in self.deferredExt:
         if self.hasChanged(f):
           self.deferredUpdates.append(f)
-          return self.output
+        return self.output
     return build.transform.Transform.handleFile(self, f, tag)
 
   def handleFileSet(self, set):

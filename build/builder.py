@@ -32,7 +32,7 @@ class Builder (base.Base):
           continue
         started = 1
         if None in inputs:
-          self.debugPrint('Processing initial input '+self.debugFileSetStr(input), 3, 'build')
+          self.debugPrint('Processing initial input '+self.debugFileSetStr(inputs[None]), 3, 'build')
           vertex.handleFileSet(inputs[None])
       if vertex in inputs:
         self.debugPrint('Processing specified input '+self.debugFileSetStr(inputs[vertex]), 3, 'build')
