@@ -1,4 +1,4 @@
-/*$Id: superlu.c,v 1.1 2001/06/21 02:16:11 bsmith Exp bsmith $*/
+/*$Id: superlu.c,v 1.1 2001/06/21 19:15:09 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver
@@ -213,7 +213,7 @@ extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   /* Set SuperLU options */
   lu->relax      = sp_ienv(2);
   lu->panel_size = sp_ienv(1);
-  lu->perm_spec  = 0;
+  lu->perm_spec  = 1;
   ierr           = PetscMalloc(A->n*sizeof(int),&etree);CHKERRQ(ierr);
   /* We have to initialize global data or SuperLU crashes (sucky design) */
   StatInit(lu->panel_size,lu->relax);
@@ -233,15 +233,6 @@ extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
       SETERRQ1(PETSC_ERR_ARG_WRONG,"Memory allocation failure after %d bytes were allocated",ierr-A->m);
     }
   }
-
-  /* Set the row permutation */
-  ierr = ISCreateGeneral(A->comm,A->n,lu->perm_r,&a->icol);CHKERRQ(ierr);
-  ierr = ISSetPermutation(a->icol);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(a->icol,PETSC_DECIDE,&a->col);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(A->comm,A->m,lu->perm_c,&tempIS);CHKERRQ(ierr);
-  ierr = ISSetPermutation(tempIS);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(tempIS,PETSC_DECIDE,&a->row);CHKERRQ(ierr);
-  ierr = ISDestroy(tempIS);CHKERRQ(ierr);
 
   /* Shift indices up */
   if (aa->indexshift) {
