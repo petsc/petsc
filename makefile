@@ -157,7 +157,7 @@ etags:
 	etags -a -f TAGS src/*/interface/makefile src/makefile 
 	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
-	etags -a -f TAGS src/*/examples/*/makefile
+	etags -a -f TAGS src/*/examples/*/makefile src/*/examples/*/*/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS src/contrib/*/makefile src/contrib/*/src/makefile 
 	etags -a -f TAGS src/fortran/makefile src/fortran/auto/makefile 
@@ -166,6 +166,7 @@ etags:
 	etags -a -f TAGS bmake/common bmake/*/base*
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c src/benchmarks/*.c
 	etags -a -f TAGS src/*/examples/*.F src/*/examples/*.f src/fortran/custom/*.F 
+	etags -a -f TAGS src/*/examples/*/*.F src/*/examples/*/*.f
 	chmod g+w TAGS
 
 # Builds complete etags list; only for PETSc developers.
@@ -186,7 +187,7 @@ etags_complete:
 	etags -a -f TAGS_COMPLETE src/*/interface/makefile src/makefile 
 	etags -a -f TAGS_COMPLETE src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_COMPLETE src/*/utils/makefile src/*/examples/makefile
-	etags -a -f TAGS_COMPLETE src/*/examples/*/makefile
+	etags -a -f TAGS_COMPLETE src/*/examples/*/makefile src/*/examples/*/*/makefile
 	etags -a -f TAGS_COMPLETE src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS_COMPLETE src/contrib/*/makefile src/contrib/*/src/makefile 
 	etags -a -f TAGS_COMPLETE src/fortran/makefile src/fortran/auto/makefile 
@@ -195,6 +196,7 @@ etags_complete:
 	etags -a -f TAGS_COMPLETE bmake/common bmake/*/base*
 	etags -a -f TAGS_COMPLETE src/fortran/custom/*.c src/fortran/auto/*.c src/benchmarks/*.c
 	etags -a -f TAGS_COMPLETE src/*/examples/*.F src/*/examples/*.f src/fortran/custom/*.F 
+	etags -a -f TAGS_COMPLETE src/*/examples/*/*.F src/*/examples/*/*.f
 	etags -a -f TAGS_COMPLETE docs/tex/manual/routin.tex docs/tex/manual/manual.tex
 	etags -a -f TAGS_COMPLETE docs/tex/manual/manual_tex.tex
 	etags -a -f TAGS_COMPLETE docs/tex/manual/intro.tex docs/tex/manual/part1.tex
@@ -245,6 +247,7 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES src/*/utils/makefile src/*/interface/makefile
 	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS_MAKEFILES src/*/examples/makefile src/*/examples/*/makefile
+	etags -a -f TAGS_MAKEFILES src/*/examples/*/*/makefile
 	etags -a -f TAGS_MAKEFILES src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS_MAKEFILES src/contrib/*/makefile src/contrib/*/src/makefile 
 	etags -a -f TAGS_MAKEFILES src/fortran/custom/makefile

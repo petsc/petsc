@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.50 1996/08/27 17:48:22 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.51 1996/08/27 18:13:39 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -7,7 +7,8 @@ static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
 /*T
    Concepts: SLES (solving linear equations)
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESView();
+   Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
+   Routines: KSPSetTolerances(); PCSetType();
    Processors: 1
 T*/
 
@@ -27,6 +28,8 @@ int main(int argc,char **args)
   Vec     x, b, u;      /* approx solution, RHS, exact solution */
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* linear solver context */
+  PC       pc;          /* preconditioner context */
+  KSP      ksp;         /* Krylov subspace method context */
   double  norm;         /* norm of solution error */
   int     ierr, i, n = 10, col[3], its, flg, size;
   Scalar  none = -1.0, one = 1.0, value[3];
@@ -35,6 +38,11 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+
+  /* -------------------------------------------------------------------
+         Compute the matrix and right-hand-side vector that define
+         the linear system, Ax = b.
+     ------------------------------------------------------------------- */
 
   /* 
      Create matrix.  When using MatCreate(), the matrix format can
@@ -71,6 +79,10 @@ int main(int argc,char **args)
   ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
+  /* -------------------------------------------------------------------
+                Create the linear solver and set various options
+     ------------------------------------------------------------------- */
+
   /* 
      Create linear solver context
   */
@@ -83,9 +95,31 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
 
   /* 
-    Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
+     Set linear solver defaults for this problem (optional).
+     - By extracting the KSP and PC contexts from the SLES context,
+       we can then directly directly call any KSP and PC routines
+       to set various options.
+     - The following four statements are optional; all of these
+       parameters could alternatively be specified at runtime via
+       SLESSetFromOptions();
+  */
+  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,n); CHKERRA(ierr);
+
+  /* 
+    Set runtime options, e.g.,
+        -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
+    These options will override those specified above as long as
+    SLESSetFromOptions() is called _after_ any other customization
+    routines.
   */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+
+  /* -------------------------------------------------------------------
+                      Solve the linear system
+     ------------------------------------------------------------------- */
 
   /* 
      Solve linear system
@@ -96,6 +130,10 @@ int main(int argc,char **args)
      View solver options; we could instead use the option -sles_view
   */
   ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+
+  /* -------------------------------------------------------------------
+                      Check solution and clean up
+     ------------------------------------------------------------------- */
 
   /* 
      Check the error
