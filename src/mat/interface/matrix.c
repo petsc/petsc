@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.128 1996/01/18 21:16:23 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.129 1996/01/21 16:56:57 balay Exp balay $";
 #endif
 
 /*
@@ -294,6 +294,7 @@ int MatMult(Mat mat,Vec x,Vec y)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE); 
+  if (x == y) SETERRQ(1,"MatMult:x and y must be different vectors");
   PLogEventBegin(MAT_Mult,mat,x,y,0);
   ierr = (*mat->ops.mult)(mat,x,y); CHKERRQ(ierr);
   PLogEventEnd(MAT_Mult,mat,x,y,0);
@@ -318,6 +319,7 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  if (x == y) SETERRQ(1,"MatMultTrans:x and y must be different vectors");
   PLogEventBegin(MAT_MultTrans,mat,x,y,0);
   ierr = (*mat->ops.multtrans)(mat,x,y); CHKERRQ(ierr);
   PLogEventEnd(MAT_MultTrans,mat,x,y,0);
@@ -343,6 +345,7 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);PETSCVALIDHEADERSPECIFIC(v1,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(v2,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(v3,VEC_COOKIE);
   PLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);
+  if (v1 == v3) SETERRQ(1,"MatMultAdd:v1 and v3 must be different vectors");
   ierr = (*mat->ops.multadd)(mat,v1,v2,v3); CHKERRQ(ierr);
   PLogEventEnd(MAT_MultAdd,mat,v1,v2,v3);
   return 0;
@@ -367,6 +370,7 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE); PETSCVALIDHEADERSPECIFIC(v1,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(v2,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(v3,VEC_COOKIE);
   if (!mat->ops.multtransadd) SETERRQ(PETSC_ERR_SUP,"MatMultTransAdd");
+  if (v1 == v3) SETERRQ(1,"MatMultTransAdd:v1 and v2 must be different vectors");
   PLogEventBegin(MAT_MultTransAdd,mat,v1,v2,v3);
   ierr = (*mat->ops.multtransadd)(mat,v1,v2,v3); CHKERRQ(ierr);
   PLogEventEnd(MAT_MultTransAdd,mat,v1,v2,v3); 
@@ -623,6 +627,7 @@ int MatSolve(Mat mat,Vec b,Vec x)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  if (x == b) SETERRQ(1,"MatSolve:x and y must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatSolve:Unfactored matrix");
   if (!mat->ops.solve) SETERRQ(PETSC_ERR_SUP,"MatSolve");
   PLogEventBegin(MAT_Solve,mat,b,x,0); 
@@ -654,6 +659,7 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  if (x == b) SETERRQ(1,"MatForwardSolve:x and y must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatForwardSolve:Unfactored matrix");
   if (!mat->ops.forwardsolve) SETERRQ(PETSC_ERR_SUP,"MatForwardSolve");
   PLogEventBegin(MAT_ForwardSolve,mat,b,x,0); 
@@ -685,6 +691,7 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  if (x == b) SETERRQ(1,"MatBackwardSolve:x and b must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatBackwardSolve:Unfactored matrix");
   if (!mat->ops.backwardsolve) SETERRQ(PETSC_ERR_SUP,"MatBackwardSolve");
   PLogEventBegin(MAT_BackwardSolve,mat,b,x,0); 
@@ -715,6 +722,7 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
   int    ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  if (x == b) SETERRQ(1,"MatSolveAdd:x and b must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatSolveAdd:Unfactored matrix");
   PLogEventBegin(MAT_SolveAdd,mat,b,x,y); 
   if (mat->ops.solveadd)  {
@@ -758,6 +766,7 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
   if (!mat->factor) SETERRQ(1,"MatSolveTrans:Unfactored matrix");
+  if (x == b) SETERRQ(1,"MatSolveTrans:x and b must be different vectors");
   if (!mat->ops.solvetrans) SETERRQ(PETSC_ERR_SUP,"MatSolveTrans");
   PLogEventBegin(MAT_SolveTrans,mat,b,x,0); 
   ierr = (*mat->ops.solvetrans)(mat,b,x); CHKERRQ(ierr);
@@ -787,6 +796,7 @@ int MatSolveTransAdd(Mat mat,Vec b,Vec y,Vec x)
   Vec    tmp;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
   PETSCVALIDHEADERSPECIFIC(b,VEC_COOKIE);  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
+  if (x == b) SETERRQ(1,"MatSolveTransAdd:x and b must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatSolveTransAdd:Unfactored matrix");
   PLogEventBegin(MAT_SolveTransAdd,mat,b,x,y); 
   if (mat->ops.solvetransadd) {
