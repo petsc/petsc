@@ -6,7 +6,7 @@
 # SOURCE        - source files
 # SSOURCE       - single precision versions of some source code
 # OBJS          - object files
-# OBJS          - single precision versions of some object files
+# SOBJS         - single precision versions of some object files
 # PETSC_INCLUDE - locations of include files
 # CPPFLAGS      - preprocessor flags for *.c, *.F preprocessing
 # DOCS          - files that contain PETSc documentation, readmes etc.
@@ -124,14 +124,14 @@ lib: chkpetsc_dir $(SOURCE)
 # Builds library - fast version
 libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
-	     $(CC) -c $(CFLAGS) $(COPTFLAGS) $(SOURCEC) ;\
+	     $(CC) -c $(CFLAGS) $(COPTFLAGS) $(SOURCEC) $(SSOURCE) ;\
 	fi
 	@-if [ "$(SOURCEF)" != "" ] ; then \
 	     $(FC) -c $(FFLAGS) $(FOPTFLAGS) $(SOURCEF) ;\
 	fi
 	@-if [ "$(OBJS)" != " " ] ; then \
-	  $(AR) cr $(LIBNAME) $(OBJS); \
-	  $(RM) -f $(OBJS); \
+	  $(AR) cr $(LIBNAME) $(OBJS) $(SOBJS); \
+	  $(RM) -f $(OBJS) $(SOBJS); \
 	fi
 
 # Removes garbage files
