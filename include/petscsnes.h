@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.3 1995/03/20 00:43:49 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.4 1995/04/16 20:19:40 bsmith Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -53,8 +53,11 @@ extern int SNESSetFromOptions(SNES);
 extern int SNESDefaultMonitor(SNES,int, Vec,Vec,double,void *);
 extern int SNESDefaultConverged(SNES,double,double,double,void*);
 
-extern int SNESSetSolutionTol(SNES,double);
-extern int SNESSetAbsConvergenceTol(SNES,double);
-extern int SNESSetRelConvergenceTol(SNES,double);
+extern int SNESSetSolutionTolerance(SNES,double);
+extern int SNESSetAbsoluteTolerance(SNES,double);
+extern int SNESSetRelativeTolerance(SNES,double);
+extern int SNESSetTruncationTolerance(SNES,double);
+extern int SNESSetMaxIterations(SNES,int);
+extern int SNESSetMaxResidualEvaluations(SNES,int);
 #endif
 

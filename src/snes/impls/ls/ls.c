@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.3 1995/04/13 14:42:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.4 1995/04/15 03:29:40 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -100,20 +100,20 @@ int SNESDestroy_LS(PetscObject obj)
   return 0;
 }
 /*@ 
-   SNESDefaultMonitor - Default monitor for NLE solvers.  Prints the 
+   SNESDefaultMonitor - Default SNES monitoring routine.  Prints the 
    residual norm at each iteration.
 
    Input Parameters:
-.  nlP - nonlinear context
+.  snes - the SNES context
+.  its - iteration number
 .  x - current iterate
 .  f - current residual (+/-)
-.  fnorm - 2-norm residual value (may be estimated).
+.  fnorm - 2-norm residual value (may be estimated)
+.  dummy - unused context
 
    Notes:
    f is either the residual or its negative, depending on the user's
-   preference, as set with NLSetResidualRoutine().
-
-
+   preference, as set with SNESSetResidual().
 @*/
 int SNESDefaultMonitor(SNES snes,int its, Vec x,Vec f,double fnorm,void *dummy)
 {
@@ -123,13 +123,14 @@ int SNESDefaultMonitor(SNES snes,int its, Vec x,Vec f,double fnorm,void *dummy)
 
 /*@ 
    SNESDefaultConverged - Default test for monitoring the convergence 
-   of the NLE solvers.
+   of the SNES solvers.
 
    Input Parameters:
-.  nlP - nonlinear context
+.  snes - the SNES context
 .  xnorm - 2-norm of current iterate
 .  pnorm - 2-norm of current step 
 .  fnorm - 2-norm of residual
+.  dummy - unused context
 
    Returns:
 $  2  if  ( fnorm < atol ),
@@ -139,17 +140,16 @@ $  0  otherwise,
 
    where
 $    atol    - absolute residual norm tolerance,
-$              set with NLSetAbsConvergenceTol()
+$              set with SNESSetAbsoluteTolerance()
 $    max_res - maximum number of residual evaluations,
-$              set with NLSetMaxResidualEvaluations()
+$              set with SNESSetMaxResidualEvaluations()
 $    nres    - number of residual evaluations
 $    xtol    - relative residual norm tolerance,
+$              set with SNESSetRelativeTolerance()
 
-$              set with NLSetMaxResidualEvaluations()
-$    nres    - number of residual evaluations
-$    xtol    - relative residual norm tolerance,
-$              set with NLSetRelConvergenceTol()
+.keywords: SNES, nonlinear, default, converged, convergence
 
+.seealso: SNESSetConvergenceTest()
 @*/
 int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
                          void *dummy)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.15 1995/04/16 00:50:30 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.16 1995/04/16 03:50:17 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -73,20 +73,20 @@ int KSPDestroy(KSP itP)
 }
 
 /*@
-   KSPSetIterations - Sets the maximum number of iterations to use.
+   KSPSetMaxIterations - Sets the maximum number of iterations to use.
 
    Input Parameters:
 .  itP  - iterative context obtained from KSPCreate()
 .  maxits - maximum number of iterations to use
 
    Options Database Key:
-$  -kspmax_it  maxits
+$  -kspmaxit  maxits
 
 .keywords: KSP, set, maximum, iterations
 
 .seealso: KSPSetRelativeTolerance(), KSPSetAbsoluteTolerance()
 @*/
-int KSPSetIterations(KSP itP, int maxits)
+int KSPSetMaxIterations(KSP itP, int maxits)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   (itP)->max_it = maxits;

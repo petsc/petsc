@@ -31,7 +31,7 @@ extern int KSPGetMethodName(KSPMETHOD,char **);
 extern int KSPGetWorkCounts(KSP,int*,int*,int*,int*,int*);
 extern int KSPClearWorkCounts(KSP);
 
-extern int KSPSetIterations(KSP,int);
+extern int KSPSetMaxIterations(KSP,int);
 extern int KSPSetRightPreconditioner(KSP);
 extern int KSPGetPreconditionerSide(KSP,int *);
 extern int KSPGetMethodFromContext(KSP,KSPMETHOD *);
