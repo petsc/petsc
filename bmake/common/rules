@@ -346,7 +346,7 @@ fortranstubs:
 .c.a .cpp.a .cc.a .C.a: 
 	-${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $<
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
-	-${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo
+	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo
 
 .F.o .F90.o:
