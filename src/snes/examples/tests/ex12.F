@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.13 1995/11/27 22:25:17 bsmith Exp curfman $";
+C    "$Id: ex12.F,v 1.14 1995/11/28 19:42:39 curfman Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -174,7 +174,7 @@ C --------------------  Form initial approximation -----------------
       return
       end
 
-C --------------------  Evaluate Jacobian F'(x) -------------------- 
+C --------------------  Evaluate Jacobian -------------------- 
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
 #include "include/finclude/petsc.h"
