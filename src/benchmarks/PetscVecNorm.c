@@ -7,7 +7,7 @@
 int main(int argc,char **argv)
 {
   Vec            x;
-  double         norm;
+  PetscReal      norm;
   PetscLogDouble t1,t2;
   int            ierr,n = 10000;
 
@@ -34,7 +34,7 @@ int main(int argc,char **argv)
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
 
 
-  fprintf(stdout,"%s : \n","PetscMemcpy");
+  fprintf(stdout,"%s : \n","VecNorm");
   fprintf(stdout," Time %g\n",t2-t1);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
