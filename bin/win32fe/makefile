@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2001/04/17 15:26:31 buschelm Exp buschelm $ 
+# $Id: makefile,v 1.4 2001/04/17 18:23:48 buschelm Exp buschelm $ 
 CXX       = cl
 CXX_FLAGS = -nologo -GX -GR -MD
 CXXFLAGS  =
@@ -8,13 +8,13 @@ RM        = cmd /C del
 # Note: under Windows9x the DOS shell is named command
 # RM        = command /C del
 
-SOURCES = compilerfe.cpp bccfe.cpp clfe.cpp \
-          archiverfe.cpp libfe.cpp tlibfe.cpp \
-          createfe.cpp toolfe.cpp fe.cpp
+SOURCES = petsccompilerfe.cpp petscbccfe.cpp petscclfe.cpp \
+          petscarchiverfe.cpp petsclibfe.cpp petsctlibfe.cpp \
+          petsccreate.cpp petsctoolfe.cpp petscfe.cpp
 
-OBJECTS = compilerfe.obj bccfe.obj clfe.obj \
-          archiverfe.obj libfe.obj tlibfe.obj \
-          createfe.obj toolfe.obj fe.obj
+OBJECTS = petsccompilerfe.obj petscbccfe.obj petscclfe.obj \
+          petscarchiverfe.obj petsclibfe.obj petsctlibfe.obj \
+          petsccreate.obj petsctoolfe.obj petscfe.obj
 
 INCLUDEPATHS = -Iinclude
 

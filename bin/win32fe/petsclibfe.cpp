@@ -1,6 +1,6 @@
-/* $Id: libfe.cpp,v 1.5 2001/04/17 15:24:24 buschelm Exp $ */
+/* $Id: libfe.cpp,v 1.6 2001/04/17 20:51:59 buschelm Exp buschelm $ */
 #include <fstream>
-#include "libfe.h"
+#include "petsclibfe.h"
 
 using namespace PETScFE;
   

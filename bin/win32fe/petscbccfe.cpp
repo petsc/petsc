@@ -1,8 +1,8 @@
-/* $Id: bccfe.cpp,v 1.10 2001/04/17 15:24:24 buschelm Exp $ */
+/* $Id: bccfe.cpp,v 1.11 2001/04/17 20:51:59 buschelm Exp buschelm $ */
 #include <vector>
 #include <stdlib.h>
 #include <Windows.h>
-#include "bccfe.h"
+#include "petscbccfe.h"
 
 using namespace PETScFE;
 

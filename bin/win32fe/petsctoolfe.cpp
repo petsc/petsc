@@ -1,6 +1,6 @@
-/* $Id: toolfe.cpp,v 1.7 2001/04/17 15:24:24 buschelm Exp $ */
+/* $Id: toolfe.cpp,v 1.8 2001/04/17 20:51:59 buschelm Exp buschelm $ */
 #include "Windows.h"
-#include "toolfe.h"
+#include "petsctoolfe.h"
 
 using namespace PETScFE;
 

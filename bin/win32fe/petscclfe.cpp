@@ -1,6 +1,6 @@
-/* $Id: clfe.cpp,v 1.10 2001/04/17 15:24:24 buschelm Exp $ */
+/* $Id: clfe.cpp,v 1.11 2001/04/17 20:51:59 buschelm Exp buschelm $ */
 #include <stdlib.h>
-#include "clfe.h"
+#include "petscclfe.h"
 #include "Windows.h"
 
 using namespace PETScFE;

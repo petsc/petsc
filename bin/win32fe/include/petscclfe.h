@@ -1,8 +1,8 @@
-/* $Id: clfe.h,v 1.7 2001/04/11 07:51:10 buschelm Exp $ */
+/* $Id: clfe.h,v 1.8 2001/04/17 20:52:49 buschelm Exp buschelm $ */
 #ifndef PETScClFE_h
 #define PETScClFE_h
 
-#include "compilerfe.h"
+#include "petsccompilerfe.h"
 
 namespace PETScFE {
 

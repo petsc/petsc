@@ -1,7 +1,7 @@
-/* $Id: archiverfe.cpp,v 1.7 2001/04/17 15:24:24 buschelm Exp $ */
+/* $Id: archiverfe.cpp,v 1.8 2001/04/17 20:51:59 buschelm Exp buschelm $ */
 #include <stdlib.h>
 #include <process.h>
-#include "archiverfe.h"
+#include "petscarchiverfe.h"
 #include <string.h>
 
 using namespace PETScFE;

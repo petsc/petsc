@@ -1,8 +1,8 @@
-/* $Id: libfe.h,v 1.3 2001/04/11 07:51:10 buschelm Exp $ */
+/* $Id: libfe.h,v 1.4 2001/04/17 20:52:49 buschelm Exp buschelm $ */
 #ifndef PETScLibFE_h
 #define PETScLibFE_h
 
-#include "archiverfe.h"
+#include "petscarchiverfe.h"
 
 namespace PETScFE {
   class lib : public archiver {

@@ -1,8 +1,8 @@
-/* $Id: compilerfe.h,v 1.1 2001/04/11 07:51:10 buschelm Exp $ */
+/* $Id: compilerfe.h,v 1.2 2001/04/17 20:52:49 buschelm Exp buschelm $ */
 #ifndef PETScCompilerFE_h_
 #define PETScCompilerFE_h_
 
-#include "toolfe.h"
+#include "petsctoolfe.h"
 
 namespace PETScFE {
 
