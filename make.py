@@ -50,7 +50,8 @@ class PetscMake(bs.BS):
     self.defineTargets()
 
   def install(self):
-    # this is pitiful
+    '''this is pitiful'''
+    if not bs.argDB.has_key('install'): return
     try:
       os.makedirs(bs.argDB['installlib'])
     except:
@@ -90,7 +91,8 @@ class PetscMake(bs.BS):
 if __name__ ==  '__main__':
   try:
       pm = PetscMake(sys.argv[1:])
-  except:
-     sys.exit(1)
+  except Exception, e:
+    print 'ERROR: '+str(e)
+    sys.exit(1)
   pm.main()
   pm.install()
