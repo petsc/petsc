@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.138 1998/12/03 04:01:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.139 1998/12/17 22:10:47 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -1855,7 +1855,11 @@ static struct _MatOps MatOps_Values = {
   0,
   0,
   MatGetMaps_Petsc};
-                                
+
+#include "pc.h"
+EXTERN_C_BEGIN                                
+extern int PCSetUp_BJacobi_BAIJ(PC);
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateMPIBAIJ"
@@ -2106,6 +2110,9 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
     ierr = MatMPIBAIJSetHashTableFactor(B,fact); CHKERRQ(ierr);
     PLogInfo(0,"MatCreateMPIBAIJ:Hash table Factor used %5.2f\n",fact);
   }
+  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
+                                     "PCSetUp_BJacobi_BAIJ",
+                                     (void*)PCSetUp_BJacobi_BAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2180,12 +2187,14 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec); CHKERRQ(ierr);
   PLogObjectParent(mat,a->lvec);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);
+
   PLogObjectParent(mat,a->Mvctx);
   ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
   ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B); CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr); 
+  ierr = FListDuplicate(mat->qlist,&matin->qlist);CHKERRQ(ierr);
   if (flg) {
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
   }
