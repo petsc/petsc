@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.175 1997/09/10 18:46:54 balay Exp balay $ 
 
 ALL: ex1
 
@@ -39,7 +39,7 @@ TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 TESTEXAMPLES_6  = ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 ex42.rm \
                   ex41.PETSc ex41.rm ex47.PETSc ex47.rm  ex53.PETSc runex53 \
                   ex53.rm clean
-TESTEXAMPLES_7  = ex46.PETSc runex46 ex46.rm clean
+TESTEXAMPLES_7  = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm clean
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex3.PETSc ex3.rm ex5.PETSc ex5.rm ex6.PETSc \
 		  ex6.rm ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm\
 		  ex11.PETSc ex11.rm ex14.PETSc ex14.rm	ex15.PETSc ex15.rm \
@@ -376,6 +376,13 @@ runex5_2:
 	      else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
 	      $(RM) -f ex5_2.tmp; \
 	  done; \
+	done;
+runex5_3:	
+	@-for np in $(NPROCS); do \
+	  $(MPIRUN) -np $$np ex5 $$mattype > ex5_3.tmp 2>&1; \
+	  if (diff output/ex5_3.out ex5_3.tmp) then true; \
+	  else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
+	  $(RM) -f ex5_3.tmp; \
 	done;
 runex6:
 	-@$(MPIRUN) -np 1  ex6 > ex6_1.tmp 2>&1;   \
