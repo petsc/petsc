@@ -76,46 +76,38 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 #endif
   PetscFunctionReturn(0);
 }
-#else 
+
 #undef __FUNCT__  
-#define __FUNCT__ "PetscTestFile"
-int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
+#define __FUNCT__ "PetscTestDirectory"
+int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
 {
-  struct stat statbuf;
-  int         err,stmode,rbit,wbit,ebit,numGroups;
-  uid_t       uid;
-  gid_t      *gid;
+  SETERRQ(PETSC_ERR_SUP, "");
+}
+
+#else  /* HAVE_ACCESS */
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTestOwnership"
+int PetscTestOwnership(const char fname[], char mode, PetscTruth *flg) {
+  uid_t  uid;
+  gid_t *gid;
+  int    numGroups;
+  int    rbit, wbit, ebit;
+  int    ierr;
 
   PetscFunctionBegin;
-  *flg = PETSC_FALSE;
-  if (!fname) PetscFunctionReturn(0);
-
   /* Get the number of supplementary group IDs */
   numGroups = getgroups(0, gid); if (numGroups < 0) {SETERRQ(numGroups, "Unable to count supplementary group IDs");}
-  err = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid); CHKERRQ(err);
+  ierr = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid);                                                CHKERRQ(ierr);
 
   /* Get the (effective) user and group of the caller */
   uid    = geteuid();
   gid[0] = getegid();
 
   /* Get supplementary group IDs */
-  err = getgroups(numGroups, gid+1); if (err < 0) {SETERRQ(err, "Unable to obtain supplementary group IDs");}
+  ierr = getgroups(numGroups, gid+1); if (ierr < 0) {SETERRQ(ierr, "Unable to obtain supplementary group IDs");}
 
-#if defined(PETSC_HAVE_STAT_NO_CONST)
-  err = stat((char*)fname,&statbuf);
-#else
-  err = stat(fname,&statbuf);
-#endif
-  if (err != 0) PetscFunctionReturn(0);
-
-  /* At least the file exists ... */
-  stmode = statbuf.st_mode;
-  /*
-     Except for systems that have this broken stat macros (rare), this
-     is the correct way to check for a (not) regular file */
-  if (!S_ISREG(stmode)) PetscFunctionReturn(0);
-
-  /* Test for accessible. */
+  /* Test for accessibility */
   if (statbuf.st_uid == uid) {
     rbit = S_IRUSR;
     wbit = S_IWUSR;
@@ -137,17 +129,74 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
       ebit = S_IXOTH;
     }
   }
-  err = PetscFree(gid); CHKERRQ(err);
+  ierr = PetscFree(gid);                                                                                  CHKERRQ(ierr);
 
   if (mode == 'r') {
-    if ((stmode & rbit))   *flg = PETSC_TRUE;
+    if (stmode & rbit) *flg = PETSC_TRUE;
   } else if (mode == 'w') {
-    if ((stmode & wbit))   *flg = PETSC_TRUE;
+    if (stmode & wbit) *flg = PETSC_TRUE;
   } else if (mode == 'x') {
-    if ((stmode & ebit))   *flg = PETSC_TRUE;
+    if (stmode & ebit) *flg = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTestFile"
+int PetscGetFileStatMode(const char fname[], int *statMode) {
+  struct stat statbuf;
+  int         ierr;
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_STAT_NO_CONST)
+  ierr = stat((char*) fname, &statbuf);                                                                   CHKERRQ(ierr);
+#else
+  ierr = stat(fname, &statbuf);                                                                           CHKERRQ(ierr);
+#endif
+  *statMode = statbuf.st_mode;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTestFile"
+int PetscTestFile(const char fname[], char mode, PetscTruth *flg)
+{
+  int stmode;
+  int err;
+
+  PetscFunctionBegin;
+  *flg = PETSC_FALSE;
+  if (!fname) PetscFunctionReturn(0);
+
+  ierr = PetscGetFileMode(fname, &stmode);                                                                CHKERRQ(ierr);
+  /* Except for systems that have this broken stat macros (rare), this
+     is the correct way to check for a regular file */
+  if (!S_ISREG(stmode)) PetscFunctionReturn(0);
+
+  ierr = PetscTestOwnership(fname, mode, flg);                                                            CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTestDirectory"
+int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
+{
+  int stmode;
+  int ierr;
+
+  PetscFunctionBegin;
+  *flg = PETSC_FALSE;
+  if (!fname) PetscFunctionReturn(0);
+
+  /* Except for systems that have this broken stat macros (rare), this
+     is the correct way to check for a directory */
+  if (!S_ISDIR(stmode)) PetscFunctionReturn(0);
+
+  ierr = PetscTestOwnership(fname, mode, flg);                                                            CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#endif /* HAVE_ACCESS */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLs"
@@ -170,5 +219,3 @@ int PetscLs(MPI_Comm comm,const char libname[],char *found,int tlen,PetscTruth *
   if (*flg) PetscLogInfo(0,"ls on %s gives \n%s\n",libname,found);
   PetscFunctionReturn(0);
 }
-
-#endif
