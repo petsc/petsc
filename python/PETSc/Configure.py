@@ -395,12 +395,9 @@ libf: ${OBJSF}
 
   def configureMissingSignals(self):
     '''Check for missing signals, and define MISSING_<signal name> if necessary'''
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGSYS;\n\nif (i);\n'):
-      self.addDefine('MISSING_SIGSYS', 1)
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGBUS;\n\nif (i);\n'):
-      self.addDefine('MISSING_SIGBUS', 1)
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGQUIT;\n\nif (i);\n'):
-      self.addDefine('MISSING_SIGQUIT', 1)
+    for signal in ['ALRM', 'BUS', 'CHLD', 'CONT', 'HUP', 'KILL', 'PIPE', 'QUIT', 'STOP', 'SYS', 'TRAP', 'TSTP', 'URG', 'USR1', 'USR2']:
+      if not self.checkCompile('#include <signal.h>\n', 'int i=SIG'+signal+';\n\nif (i);\n'):
+        self.addDefine('MISSING_SIG'+signal, 1)
     return
 
   def configureMemorySize(self):
