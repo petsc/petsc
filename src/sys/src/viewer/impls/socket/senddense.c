@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.27 1998/04/27 14:28:12 curfman Exp curfman $";
+static char vcid[] = "$Id: senddense.c,v 1.28 1998/04/27 14:28:29 curfman Exp curfman $";
 #endif
 
 #include "src/viewer/impls/matlab/matlab.h"
@@ -46,7 +46,8 @@ int ViewerMatlabPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 }
 
 /*
-   ViewerMatlabPutDouble_Private - Passes an integer array to a Matlab viewer.
+   ViewerMatlabPutDouble_Private - Passes a double precision array to 
+   a Matlab viewer.
 
   Input Parameters:
 .  viewer - obtained from ViewerMatlabOpen()
