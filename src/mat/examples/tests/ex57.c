@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B); CHKERRQ(ierr);
   ierr = MatView(B[0],fdout); CHKERRQ(ierr);
 
-  ierr = VecCreate(PETSC_COMM_SELF,size,&b); CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,size,&b); CHKERRQ(ierr);
   ierr = MatView(B[0],fdout); CHKERRQ(ierr);
   ierr = ViewerDestroy(fdout); CHKERRA(ierr);
 
