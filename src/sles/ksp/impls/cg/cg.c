@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.105 2000/05/10 16:42:06 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.106 2000/08/18 17:38:50 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -155,7 +155,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
   if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
   KSPLogResidualHistory(ksp,dp);
   KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
-  ksp->rnorm              = dp;
+  ksp->rnorm = dp;
 
   for (i=0; i<maxit; i++) {
      ksp->its = i+1;
