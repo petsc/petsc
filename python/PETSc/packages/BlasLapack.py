@@ -46,12 +46,17 @@ class Configure(config.base.Configure):
     # Check for BLAS
     oldLibs   = self.framework.argDB['LIBS']
     foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = mangleFunc)
+    if not foundBlas:
+      foundBlas = self.libraries.check(blasLibrary, 'ddot_', otherLibs = otherLibs, fortranMangle = 0)
     self.framework.argDB['LIBS'] = oldLibs
     # Check for LAPACK
     if foundBlas and separateBlas:
       otherLibs = ' '.join(map(self.libraries.getLibArgument, blasLibrary))+' '+otherLibs
     oldLibs     = self.framework.argDB['LIBS']
     foundLapack = self.libraries.check(lapackLibrary, 'dtrtrs', otherLibs = otherLibs, fortranMangle = mangleFunc)
+    if not foundLapack:
+      foundLapack = self.libraries.check(blasLibrary, 'dtrtrs_', otherLibs = otherLibs, fortranMangle = 0)
+      if foundLapack: self.addDefine('BLASLAPACK_F2C',1)
     self.framework.argDB['LIBS'] = oldLibs
     return (foundBlas, foundLapack)
 
