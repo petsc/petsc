@@ -1,4 +1,4 @@
-/* $Id: pops.c,v 1.7 2001/01/15 21:43:32 bsmith Exp balay $*/
+/* $Id: pops.c,v 1.8 2001/01/17 19:44:12 balay Exp balay $*/
 
 /*
     Defines the operations for the Postscript PetscDraw implementation.
@@ -180,7 +180,7 @@ static int PetscDrawDestroy_PS(PetscDraw draw)
   char       *filename,par[1024];
  
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");CHKERRQ(ierr);
   ierr = PetscOptionsHasName(draw->prefix,"-draw_ps_show",&show);CHKERRQ(ierr);
   if (show) {
     ierr = PetscViewerGetFilename(ps->ps_file,&filename);CHKERRQ(ierr);    
@@ -214,7 +214,7 @@ static int PetscDrawSynchronizedClear_PS(PetscDraw draw)
 
   PetscFunctionBegin;
   ierr = PetscViewerFlush(ps->ps_file);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -269,18 +269,18 @@ int PetscDrawCreate_PS(PetscDraw draw)
   ierr = PetscNew(PetscDraw_PS,&ps);CHKERRQ(ierr);
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(draw->comm,draw->display,&ps->ps_file);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%!PS-Adobe-2.0\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Creator: PETSc %s\n",PETSC_VERSION_NUMBER);
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Title: %s\n",draw->display);
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Pages: 1\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%PageOrder: Ascend\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%BoundingBox: 0 0 612 792\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%DocumentFonts: Helvetica-normal Symbol\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%EndComments\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/Helvetica-normal findfont 10 scalefont setfont\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/c {setrgbcolor} def\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/l {lineto stroke} def\n");
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/m {moveto} def\n");
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%!PS-Adobe-2.0\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Creator: PETSc %s\n",PETSC_VERSION_NUMBER);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Title: %s\n",draw->display);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Pages: 1\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%PageOrder: Ascend\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%BoundingBox: 0 0 612 792\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%DocumentFonts: Helvetica-normal Symbol\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%EndComments\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/Helvetica-normal findfont 10 scalefont setfont\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/c {setrgbcolor} def\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/l {lineto stroke} def\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"/m {moveto} def\n");CHKERRQ(ierr);
 
   ps->currentcolor = PETSC_DRAW_BLACK;
 
