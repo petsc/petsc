@@ -68,6 +68,8 @@ Additional Capabilities that PETSc Needs:
 
    - Make special MatLUFactorNumeric_SeqAIJ() for identity permutation.
 
+   * Improve history (-log_history) logging.
+
    * In-place ILU(0) for AIJ (Done), Row matrix formats (not done, should we?)
 
    * Upgrade tohtml and doc2tex
