@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.119 2000/07/21 03:49:31 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.120 2000/09/13 03:13:00 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -1242,6 +1242,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   da->Nl     = nn;
   da->base   = base;
   da->view   = DAView_3d;
+  da->wrap   = wrap;
   *inra = da;
 
   /* 
