@@ -132,8 +132,12 @@ class ArgInt(ArgEmpty):
 #   Dictionary of actual command line arguments, etc.
 #
 class ArgDict (RDict.RArgs):
-  def __init__(self, name = "ArgDict",argList = None):
-    RDict.RArgs.__init__(self,name)
+  def __init__(self, name = "ArgDict",argList = None,localDict = 0):
+    if localDict or '-localDict' in argList:
+      self.purelocal = 1
+    else:
+      self.purelocal = 0
+      RDict.RArgs.__init__(self,name)
     self.local  = {}
     self.target = ['default']
     #  the list of targets is always local
@@ -146,6 +150,8 @@ class ArgDict (RDict.RArgs):
   def __setitem__(self,key,value):
     if self.local.has_key(key):
       self.local[key].value = value
+    else if self.purelocal:
+      self.local[key] = Arg(value)
     else:
       # set the value into the remote dictionary
       RDict.RArgs.__setitem__(self,key,Arg(value))
