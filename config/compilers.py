@@ -414,17 +414,22 @@ class Configure(config.base.Configure):
     self.framework.argDB['LIBS'] = oldLibs
     return
 
+  def stripquotes(self,str):
+    if str[0] =='"': str = str[1:]
+    if str[-1] =='"': str = str[:-1]
+    return str
+
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
     if self.framework.argDB.has_key('with-f90-header'):
-      headerPath = os.path.abspath(self.framework.argDB['with-f90-header'].strip('"'))
+      headerPath = os.path.abspath(self.stripquotes(self.framework.argDB['with-f90-header']))
       if not os.path.isfile(headerPath):
-        headerPath = os.path.abspath(os.path.join('include', self.framework.argDB['with-f90-header'].strip('"')))
+        headerPath = os.path.abspath(self.stripquotes(os.path.join('include', self.framework.argDB['with-f90-header'])))
         if not os.path.isfile(headerPath):
-          raise RuntimeError('Invalid F90 header: '+str(self.framework.argDB['with-f90-header'].strip('"')))
+          raise RuntimeError('Invalid F90 header: '+str(self.stripquotes(self.framework.argDB['with-f90-header'])))
       self.f90HeaderPath = headerPath
     if self.framework.argDB.has_key('with-f90-source'):
-      sourcePath = os.path.abspath(self.framework.argDB['with-f90-source'].strip('"'))
+      sourcePath = os.path.abspath(self.stripquotes(self.framework.argDB['with-f90-source']))
       if not os.path.isfile(sourcePath):
         raise RuntimeError('Invalid F90 source: '+str(sourcePath))
       self.f90SourcePath = sourcePath
