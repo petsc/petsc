@@ -7,9 +7,15 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Parmetis for mpiaij matrices
+
   MatFDColoring() stuff for BAIJ.
 
-  TSSetMonitor() should take destroy argument (see kspsetmonitor)
+ make buildtest include list of jobs to run from indivudial files in bmake/ARCH directories
+
+  take the long list of routines out of the users manual and put in seperate document.
+
+  try inlining 2 by 2, 3by 3, 4 by 4 etc matrix inverses in the LU factorizations fro BAIj matrices
 
   Manual pages for enum types, objects, data structures etc
 
@@ -33,7 +39,6 @@ allows reusing with different boundary conditions.
 has a different max than appindices[] and one or both of them have "holes" or 
 two values mapped to the same slot? Suggested by George Biros.
 
-  Make KSPGetConvergedReason() and new converged tests for KSP like SNES ones.
 
   Graphics for 3d DA. Also matlab graphics for 2 and 3d DA
 
@@ -44,7 +49,6 @@ two values mapped to the same slot? Suggested by George Biros.
 
 *  Add C_FCV to all base_variables files; see solaris
 
-  Add Tony Coaola's ILUDT stuff to PETSc, see src/contrib/tonycoaloailu
 
   Add Mark Adams parallel coloring stuff to PETSc, see src/contrib/markadamscolor
 
@@ -75,7 +79,6 @@ two values mapped to the same slot? Suggested by George Biros.
  look at MatGeetSubMatrices_MPI(B)AIJ to see if much of the information
  could be used between repeated calls.
 
- add MatSolveTrans_SeqBAIj_....
 
 Documentation:
  - put vec/examples/tests/ex13.c in tutorials section; add other vecscatter
@@ -1152,3 +1155,10 @@ X  Fixed OptionsGetXXX() so the final argument is a PetscTruth instead of int.
 X*  Supplument the MG preconditioner to support the storage of the
 tranpose of restriction and interpolation; so user need not use shell.
 
+X  TSSetMonitor() should take destroy argument (see kspsetmonitor)
+
+X  Make KSPGetConvergedReason() and new converged tests for KSP like SNES ones.
+
+X  Add Tony Coaola's ILUDT stuff to PETSc, see src/contrib/tonycoaloailu
+
+X add MatSolveTrans_SeqBAIj_....
