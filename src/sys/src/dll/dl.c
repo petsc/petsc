@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.3 1998/01/14 14:41:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.4 1998/01/14 14:52:43 bsmith Exp balay $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -37,13 +37,42 @@ struct _DLLibraryList {
 */
 int DLObtainLibrary(char *libname,char *llibname)
 {
-#if defined(USE_EXPECT_FOR_REMOTE_DLLS)
+#if defined(USE_PYTHON_FOR_REMOTE_DLLS)
+  char *par4,buf[1024];
+  FILE *fp;
+  PetscFunctionBegin;
+
+  if (PetscStrncmp(libname,"ftp://",6) && PetscStrncmp(libname,"http://",7)) {
+    SETERRQ(1,1,"Only support for ftp/http DLL retrieval with \n\
+      USE_PYTHON_FOR_REMOTE_DLLS installation option");
+  }
+    
+  /* Construct the Python script run command */
+  par4 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par4);
+  PetscStrcpy(par4,PETSC_DIR);
+  PetscStrcat(par4,"/bin/urlget.py ");
+  PetscStrcat(par4,libname);
+  PetscStrcat(par4," ");
+  PetscStrcat(par4,llibname);
+
+  if ((fp = popen(par4,"r")) == NULL) {
+    SETERRQ(1,1,"Cannot Execute $(PETSC_DIR)/bin/urlget.py\n\
+      Check if python1.5 is in your path");
+  }
+  if (fgets(buf,1024,fp) == NULL) {
+    SETERRQ(1,1,"No output from $(PETSC_DIR)/bin/urlget.py");
+  }
+  if (PetscStrncmp(buf,"Error",5)) { SETERRQ(1,1,buf); }
+  PetscStrcpy(llibname,buf);
+  PetscFree(par4);
+ 
+#elif defined(USE_EXPECT_FOR_REMOTE_DLLS)
   char *par4;
   int  ierr;
 
   PetscFunctionBegin;
 
-  if (PetscStrncmp(par2,"ftp://",6) {
+  if (PetscStrncmp(par2,"ftp://",6)) {
     SETERRQ(1,1,"Only support for ftp DLL retrieval with \n\
       USE_EXPECT_FOR_REMOTE_DLLS installation option");
   }
