@@ -235,15 +235,15 @@ PetscPolymorphicScalar(VecAYPX,(PetscScalar _t,Vec x,Vec y),(&_T,x,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(const PetscScalar*,Vec,Vec,Vec);
 PetscPolymorphicScalar(VecWAXPY,(PetscScalar _t,Vec x,Vec y,Vec z),(&_T,x,y,z))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMax,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseMax,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMaxAbs,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseMaxAbs,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMin,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseMin,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,y,y));
+PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec,Vec,PetscReal*);    
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(const PetscScalar*,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec);
@@ -406,9 +406,9 @@ M*/
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 PetscPolymorphicFunction(VecScatterCreate,(Vec x,IS is1,Vec y,IS is2),(x,is1,y,is2,&s),VecScatter,s)
-PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,IS is,Vec y,VecScatter *s),(x,is,y,PETSC_NULL,s));
+PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,IS is,Vec y,VecScatter *s),(x,is,y,PETSC_NULL,s))
 PetscPolymorphicFunction(VecScatterCreate,(Vec x,IS is,Vec y),(x,is,y,PETSC_NULL,&s),VecScatter,s)
-PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,Vec y,IS is,VecScatter *s),(x,PETSC_NULL,y,is,s));
+PetscPolymorphicSubroutine(VecScatterCreate,(Vec x,Vec y,IS is,VecScatter *s),(x,PETSC_NULL,y,is,s))
 PetscPolymorphicFunction(VecScatterCreate,(Vec x,Vec y,IS is),(x,PETSC_NULL,y,is,&s),VecScatter,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
