@@ -1,8 +1,0 @@
-Add support for requesting 32 bit or 64 bit code
-
-Put in crazy windows compiler flags
-
-make sbaij support colmap stuff, best way to do this
-is use inheritence to reuse baij code for sbaij.
-
-Fix X11 test

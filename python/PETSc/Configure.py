@@ -389,6 +389,8 @@ class Configure(config.base.Configure):
 
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
+    if not 'HAVE_MPI_FINT' in self.mpi.defines:
+      self.missingPrototypes.append('typedef int MPI_Fint;')
     if not 'HAVE_MPI_COMM_F2C' in self.mpi.defines:
       self.missingPrototypes.append('#define MPI_Comm_f2c(a) (a)')
     if not 'HAVE_MPI_COMM_C2F' in self.mpi.defines:

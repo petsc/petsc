@@ -359,6 +359,8 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_MPI_COMM_F2C', 1)
     if self.checkMPILink('#include <mpi.h>\n', 'if (MPI_Comm_c2f(MPI_COMM_WORLD));\n'):
       self.addDefine('HAVE_MPI_COMM_C2F', 1)
+    if self.checkMPILink('#include <mpi.h>\n', 'MPI_Fint a;\n'):
+      self.addDefine('HAVE_FINT', 1)
     return
 
   def configureMPIRUN(self):

@@ -1,0 +1,11 @@
+
+PETSc configure
+   Add support for requesting 32 bit or 64 bit code
+
+   Put in crazy windows compiler flags
+
+   Fix X11 test
+
+Matrices
+   Add getoverlap code for seq and mpi (mpi more important) sbaij matrices
+
