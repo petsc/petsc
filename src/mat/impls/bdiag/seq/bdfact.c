@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.31 1996/05/03 19:26:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.32 1996/05/10 20:57:13 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -197,6 +198,253 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
     y[i] = sum*dd[i];
   }
   PLogFlops(2*a->nz - a->n);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
+  return 0;
+}
+
+int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
+  int          m = a->m, *diag = a->diag, col;
+  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
+  Scalar       w0,w1,sum0,sum1;
+
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  PetscMemcpy(y,x,m*sizeof(Scalar));
+
+  /* forward solve the lower triangular part */
+  if (mainbd != 0) {
+    inb = 0;
+    for (i=0; i<mblock; i++) {
+      sum0 = sum1 = 0.0;
+      for (d=0; d<mainbd; d++) {
+        loc = 2*(i - diag[d]);
+        if (loc >= 0) {
+          dvt = &dv[d][4*i]; 
+          w0 = y[loc]; w1 = y[loc+1];
+          sum0 += dvt[0]*w0 + dvt[2]*w1;
+          sum1 += dvt[1]*w0 + dvt[3]*w1;
+        }
+      }
+      y[inb] -= sum0; y[inb+1] -= sum1; 
+
+      inb += 2;
+    }
+  }
+  /* backward solve the upper triangular part */
+  inb = 2*(mblock-1); inb2 = 2*inb;
+  for ( i=mblock-1; i>=0; i-- ) {
+    sum0 = y[inb]; sum1 = y[inb+1];
+    for (d=mainbd+1; d<a->nd; d++) {
+      col = 2*(i - diag[d]);
+      if (col < 2*nblock) {
+        dvt = &dv[d][4*i]; 
+        w0 = y[col]; w1 = y[col+1];
+        sum0 -= dvt[0]*w0 + dvt[2]*w1;
+        sum1 -= dvt[1]*w0 + dvt[3]*w1;
+      }
+    }
+    dvt = dd+inb2;
+    y[inb]   = dvt[0]*sum0 + dvt[2]*sum1;
+    y[inb+1] = dvt[1]*sum0 + dvt[3]*sum1;
+    inb -= 2; inb2 -= 4;
+  }
+  PLogFlops(2*a->nz - a->n);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
+  return 0;
+}
+
+int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
+  int          m = a->m, *diag = a->diag, col;
+  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
+  Scalar       w0,w1,w2,sum0,sum1,sum2;
+
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  PetscMemcpy(y,x,m*sizeof(Scalar));
+
+  /* forward solve the lower triangular part */
+  if (mainbd != 0) {
+    inb = 0;
+    for (i=0; i<mblock; i++) {
+      sum0 = sum1 = sum2 = 0.0;
+      for (d=0; d<mainbd; d++) {
+        loc = 3*(i - diag[d]);
+        if (loc >= 0) {
+          dvt = &dv[d][9*i]; 
+          w0 = y[loc]; w1 = y[loc+1]; w2 = y[loc+2];
+          sum0 += dvt[0]*w0 + dvt[3]*w1 + dvt[6]*w2;
+          sum1 += dvt[1]*w0 + dvt[4]*w1 + dvt[7]*w2;
+          sum2 += dvt[2]*w0 + dvt[5]*w1 + dvt[8]*w2;
+        }
+      }
+      y[inb] -= sum0; y[inb+1] -= sum1; y[inb+2] -= sum2;
+      inb += 3;
+    }
+  }
+  /* backward solve the upper triangular part */
+  inb = 3*(mblock-1); inb2 = 3*inb;
+  for ( i=mblock-1; i>=0; i-- ) {
+    sum0 = y[inb]; sum1 = y[inb+1]; sum2 =  y[inb+2];
+    for (d=mainbd+1; d<a->nd; d++) {
+      col = 3*(i - diag[d]);
+      if (col < 3*nblock) {
+        dvt = &dv[d][9*i]; 
+        w0 = y[col]; w1 = y[col+1];w2 = y[col+2];
+        sum0 -= dvt[0]*w0 + dvt[3]*w1 + dvt[6]*w2;
+        sum1 -= dvt[1]*w0 + dvt[4]*w1 + dvt[7]*w2;
+        sum2 -= dvt[2]*w0 + dvt[5]*w1 + dvt[8]*w2;
+      }
+    }
+    dvt = dd+inb2;
+    y[inb]   = dvt[0]*sum0 + dvt[3]*sum1 + dvt[6]*sum2;
+    y[inb+1] = dvt[1]*sum0 + dvt[4]*sum1 + dvt[7]*sum2;
+    y[inb+2] = dvt[2]*sum0 + dvt[5]*sum1 + dvt[8]*sum2;
+    inb -= 3; inb2 -= 9;
+  }
+  PLogFlops(2*a->nz - a->n);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
+  return 0;
+}
+
+int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
+  int          m = a->m, *diag = a->diag, col;
+  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
+  Scalar       w0,w1,w2,w3,sum0,sum1,sum2,sum3;
+
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  PetscMemcpy(y,x,m*sizeof(Scalar));
+
+  /* forward solve the lower triangular part */
+  if (mainbd != 0) {
+    inb = 0;
+    for (i=0; i<mblock; i++) {
+      sum0 = sum1 = sum2 = sum3 = 0.0;
+      for (d=0; d<mainbd; d++) {
+        loc = 4*(i - diag[d]);
+        if (loc >= 0) {
+          dvt = &dv[d][16*i]; 
+          w0 = y[loc]; w1 = y[loc+1]; w2 = y[loc+2];w3 = y[loc+3];
+          sum0 += dvt[0]*w0 + dvt[4]*w1 + dvt[8]*w2  + dvt[12]*w3;
+          sum1 += dvt[1]*w0 + dvt[5]*w1 + dvt[9]*w2  + dvt[13]*w3;
+          sum2 += dvt[2]*w0 + dvt[6]*w1 + dvt[10]*w2 + dvt[14]*w3;
+          sum3 += dvt[3]*w0 + dvt[7]*w1 + dvt[11]*w2 + dvt[15]*w3;
+        }
+      }
+      y[inb] -= sum0; y[inb+1] -= sum1; y[inb+2] -= sum2;y[inb+3] -= sum3; 
+      inb += 4;
+    }
+  }
+  /* backward solve the upper triangular part */
+  inb = 4*(mblock-1); inb2 = 4*inb;
+  for ( i=mblock-1; i>=0; i-- ) {
+    sum0 = y[inb]; sum1 = y[inb+1]; sum2 =  y[inb+2]; sum3 =  y[inb+3];
+    for (d=mainbd+1; d<a->nd; d++) {
+      col = 4*(i - diag[d]);
+      if (col < 4*nblock) {
+        dvt = &dv[d][16*i]; 
+        w0 = y[col]; w1 = y[col+1];w2 = y[col+2];w3 = y[col+3];
+        sum0 -= dvt[0]*w0 + dvt[4]*w1 + dvt[8]*w2  + dvt[12]*w3;
+        sum1 -= dvt[1]*w0 + dvt[5]*w1 + dvt[9]*w2  + dvt[13]*w3;
+        sum2 -= dvt[2]*w0 + dvt[6]*w1 + dvt[10]*w2 + dvt[14]*w3;
+        sum3 -= dvt[3]*w0 + dvt[7]*w1 + dvt[11]*w2 + dvt[15]*w3;
+      }
+    }
+    dvt = dd+inb2;
+    y[inb]   = dvt[0]*sum0 + dvt[4]*sum1 + dvt[8]*sum2 + dvt[12]*sum3;
+    y[inb+1] = dvt[1]*sum0 + dvt[5]*sum1 + dvt[9]*sum2 + dvt[13]*sum3;
+    y[inb+2] = dvt[2]*sum0 + dvt[6]*sum1 + dvt[10]*sum2 + dvt[14]*sum3;
+    y[inb+3] = dvt[3]*sum0 + dvt[7]*sum1 + dvt[11]*sum2 + dvt[15]*sum3;
+    inb -= 4; inb2 -= 16;
+  }
+  PLogFlops(2*a->nz - a->n);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
+  return 0;
+}
+
+int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  int          i, d, loc, ierr, mainbd = a->mainbd;
+  int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
+  int          m = a->m, *diag = a->diag, col;
+  Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv,*dvt;
+  Scalar       w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
+
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  PetscMemcpy(y,x,m*sizeof(Scalar));
+
+  /* forward solve the lower triangular part */
+  if (mainbd != 0) {
+    inb = 0;
+    for (i=0; i<mblock; i++) {
+      sum0 = sum1 = sum2 = sum3 = sum4 = 0.0;
+      for (d=0; d<mainbd; d++) {
+        loc = 5*(i - diag[d]);
+        if (loc >= 0) {
+          dvt = &dv[d][25*i]; 
+          w0 = y[loc]; w1 = y[loc+1]; w2 = y[loc+2];w3 = y[loc+3];w4 = y[loc+4];
+          sum0 += dvt[0]*w0 + dvt[5]*w1 + dvt[10]*w2 + dvt[15]*w3 + dvt[20]*w4;
+          sum1 += dvt[1]*w0 + dvt[6]*w1 + dvt[11]*w2 + dvt[16]*w3 + dvt[21]*w4;
+          sum2 += dvt[2]*w0 + dvt[7]*w1 + dvt[12]*w2 + dvt[17]*w3 + dvt[22]*w4;
+          sum3 += dvt[3]*w0 + dvt[8]*w1 + dvt[13]*w2 + dvt[18]*w3 + dvt[23]*w4;
+          sum4 += dvt[4]*w0 + dvt[9]*w1 + dvt[14]*w2 + dvt[19]*w3 + dvt[24]*w4;
+        }
+      }
+      y[inb]   -= sum0; y[inb+1] -= sum1; y[inb+2] -= sum2;y[inb+3] -= sum3; 
+      y[inb+4] -= sum4;
+      inb += 5;
+    }
+  }
+  /* backward solve the upper triangular part */
+  inb = 5*(mblock-1); inb2 = 5*inb;
+  for ( i=mblock-1; i>=0; i-- ) {
+    sum0 = y[inb];sum1 = y[inb+1];sum2 = y[inb+2];sum3 = y[inb+3];sum4 = y[inb+4];
+    for (d=mainbd+1; d<a->nd; d++) {
+      col = 5*(i - diag[d]);
+      if (col < 5*nblock) {
+        dvt = &dv[d][25*i]; 
+        w0 = y[col]; w1 = y[col+1];w2 = y[col+2];w3 = y[col+3];w4 = y[col+4];
+        sum0 -= dvt[0]*w0 + dvt[5]*w1 + dvt[10]*w2 + dvt[15]*w3 + dvt[20]*w4;
+        sum1 -= dvt[1]*w0 + dvt[6]*w1 + dvt[11]*w2 + dvt[16]*w3 + dvt[21]*w4;
+        sum2 -= dvt[2]*w0 + dvt[7]*w1 + dvt[12]*w2 + dvt[17]*w3 + dvt[22]*w4;
+        sum3 -= dvt[3]*w0 + dvt[8]*w1 + dvt[13]*w2 + dvt[18]*w3 + dvt[23]*w4;
+        sum4 -= dvt[4]*w0 + dvt[9]*w1 + dvt[14]*w2 + dvt[19]*w3 + dvt[24]*w4;
+      }
+    }
+    dvt = dd+inb2;
+    y[inb]   = dvt[0]*sum0 + dvt[5]*sum1 + dvt[10]*sum2 + dvt[15]*sum3 
+               + dvt[20]*sum4;
+    y[inb+1] = dvt[1]*sum0 + dvt[6]*sum1 + dvt[11]*sum2 + dvt[16]*sum3 
+               + dvt[21]*sum4;
+    y[inb+2] = dvt[2]*sum0 + dvt[7]*sum1 + dvt[12]*sum2 + dvt[17]*sum3 
+               + dvt[22]*sum4;
+    y[inb+3] = dvt[3]*sum0 + dvt[8]*sum1 + dvt[13]*sum2 + dvt[18]*sum3 
+               + dvt[23]*sum4;
+    y[inb+4] = dvt[4]*sum0 + dvt[9]*sum1 + dvt[14]*sum2 + dvt[19]*sum3 
+               + dvt[24]*sum4;
+    inb -= 5; inb2 -= 25;
+  }
+  PLogFlops(2*a->nz - a->n);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
 
@@ -205,7 +453,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          i, d, loc, ierr, mainbd = a->mainbd;
   int          mblock = a->mblock, nblock = a->nblock, inb, inb2;
-  int          nb = a->nb, m = a->m, *diag = a->diag, col;
+  int          nb = a->nb, m = a->m, *diag = a->diag, col, nb2 = nb*nb;
   Scalar       *x, *y, *dd = a->diagv[mainbd], **dv = a->diagv;
   Scalar       work[25];
 
@@ -216,19 +464,20 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
+    inb = 0;
     for (i=0; i<mblock; i++) {
-      inb = i*nb;
       for (d=0; d<mainbd; d++) {
         loc = i - diag[d];
         if (loc >= 0) {
-          Kernel_v_gets_v_minus_A_times_w(nb,y+inb,&dv[d][i*nb*nb],y+loc*nb);
+          Kernel_v_gets_v_minus_A_times_w(nb,y+inb,&dv[d][i*nb2],y+loc*nb);
         }
       }
+      inb += nb;
     }
   }
   /* backward solve the upper triangular part */
+  inb = nb*(mblock-1); inb2 = inb*nb;
   for ( i=mblock-1; i>=0; i-- ) {
-    inb = i*nb; inb2 = inb*nb;
     for (d=mainbd+1; d<a->nd; d++) {
       col = i - diag[d];
       if (col < nblock) {
@@ -237,8 +486,16 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
     }
     Kernel_w_gets_A_times_v(nb,y+inb,dd+inb2,work);  
     PetscMemcpy(y+inb,work,nb*sizeof(Scalar));
+    inb -= nb; inb2 -= nb2;
   }
-  PLogFlops(2*(a->nb*nb)*(a->nz) - a->n);
+  PLogFlops(2*a->nz - a->n);
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   return 0;
 }
+
+
+
+
+
 
