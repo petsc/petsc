@@ -74,10 +74,13 @@ class Configure(PETSc.package.Package):
   def configure(self):
     '''Determine whether the Sowing exist or not'''
     if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
-      self.framework.log.write('BitKeeper clone of PETSc, checking for Sowing\n')
-      self.Install()
-      self.buildFortranStubs()
+      if self.framework.argDB['with-batch']:
+        self.logPrintBox('Cross compiling with petsc-dev; you will need to generate Fortran stubs on another system and copy them over')
+      else:
+        self.framework.log.write('BitKeeper clone of PETSc, checking for Sowing\n')
+        self.Install()
+        self.buildFortranStubs()
     else:
-      self.framework.log.write("Not BitKeeper clone of PETSc, don't need Sowing\n")
+      self.framework.log.write("Not BitKeeper clone of PETSc and cross compiling, don't need Sowing\n")
     return
 
