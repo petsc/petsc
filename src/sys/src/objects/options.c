@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.217 1999/10/01 21:20:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.218 1999/10/04 18:49:33 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -140,12 +140,17 @@ int OptionsInsertFile(const char file[])
           len--; final[len] = 0;
         }
         ierr = OptionsSetValue(first,second);CHKERRQ(ierr);
-      } else if (first && !PetscStrcmp(first,"alias")) {
-        ierr = PetscStrtok(0," ",&third);CHKERRQ(ierr);
-        if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias missing (%s)",second);
-        ierr = PetscStrlen(third,&len); CHKERRQ(ierr);
-        if (third[len-1] == '\n') third[len-1] = 0;
-        ierr = OptionsSetAlias(second,third);CHKERRQ(ierr);
+      } else if (first) {
+        int match;
+
+        match = !PetscStrcmp(first,"alias");
+        if (match) {
+          ierr = PetscStrtok(0," ",&third);CHKERRQ(ierr);
+          if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias missing (%s)",second);
+          ierr = PetscStrlen(third,&len); CHKERRQ(ierr);
+          if (third[len-1] == '\n') third[len-1] = 0;
+          ierr = OptionsSetAlias(second,third);CHKERRQ(ierr);
+        }
       }
     }
     fclose(fd);
@@ -231,10 +236,22 @@ int OptionsInsert(int *argc,char ***args,const char file[])
   if (argc && args && *argc) {
     int   left    = *argc - 1;
     char  **eargs = *args + 1;
+    int   isoptions_file,isp4,tisp4;
+
     while (left) {
+      isoptions_file = !PetscStrcmp(eargs[0],"-options_file");
+      isp4           = !PetscStrcmp(eargs[0],"-p4pg");
+      isp4           = isp4 || tisp4;
+      tisp4          = !PetscStrcmp(eargs[0],"-p4wd");
+      isp4           = isp4 || tisp4;
+      tisp4          = !PetscStrcmp(eargs[0],"-p4amslave");
+      isp4           = isp4 || tisp4;
+      tisp4          = !PetscStrcmp(eargs[0],"-np");
+      isp4           = isp4 || tisp4;
+
       if (eargs[0][0] != '-') {
         eargs++; left--;
-      } else if (!PetscStrcmp(eargs[0],"-options_file")) {
+      } else if (isoptions_file) {
         ierr = OptionsInsertFile(eargs[1]);CHKERRQ(ierr);
         eargs += 2; left -= 2;
 
@@ -242,24 +259,15 @@ int OptionsInsert(int *argc,char ***args,const char file[])
          These are "bad" options that MPICH, etc put on the command line
          we strip them out here.
       */
-      } else if (!PetscStrcmp(eargs[0],"-p4pg")) {
+      } else if (isp4) {
         eargs += 2; left -= 2;
 
-      } else if (!PetscStrcmp(eargs[0],"-p4wd")) {
-        eargs += 2; left -= 2;
-
-      } else if (!PetscStrcmp(eargs[0],"-p4amslave")) {
-        eargs += 1; left -= 1;
-
-      } else if (!PetscStrcmp(eargs[0],"-np")) {
-        eargs += 2; left -= 2;
-      
       } else if ((left < 2) || ((eargs[1][0] == '-') && 
                ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
-        OptionsSetValue(eargs[0],(char *)0);
+        ierr = OptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
         eargs++; left--;
       } else {
-        OptionsSetValue(eargs[0],eargs[1]);
+        ierr = OptionsSetValue(eargs[0],eargs[1]);CHKERRQ(ierr);
         eargs += 2; left -= 2;
       }
     }
