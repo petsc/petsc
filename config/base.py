@@ -49,9 +49,28 @@ class Configure:
         self._root_ = os.getcwd()
     return self._root_
 
+  def printLine(self,msg):
+    import sys
+    if not hasattr(self.framework,'linewidth'):
+      import curses
+      stdscr = curses.initscr()
+      (y,x) = stdscr.getmaxyx()
+      curses.endwin()
+
+      self.framework.linewidth = x
+      self.framework.cwd       = os.getcwd()+'/'
+    else:
+      for i in range(0,self.framework.linewidth): sys.stdout.write('\b')
+      pass
+    msg = msg.replace(self.framework.cwd,'')
+    msg = msg+'                                                                                                                       '
+    sys.stdout.write(msg[0:self.framework.linewidth])
+    sys.stdout.flush()
+
   def executeTest(self, test, args = []):
     self.framework.log.write('================================================================================\n')
     self.framework.log.write('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
+    self.printLine('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')')
     if test.__doc__: self.framework.log.write('  '+test.__doc__+'\n')
     if not isinstance(args, list): args = [args]
     return apply(test, args)
