@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.31 1996/03/23 18:32:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.32 1996/03/26 04:45:45 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -50,8 +50,8 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
-  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
   KSPMonitor(ksp,0,dp);
+  if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; return 0;}
   if (history) history[0] = dp;
 
   /* Make the initial Rp == R */
