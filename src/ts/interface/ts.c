@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.37 2001/03/23 23:24:34 balay Exp bsmith $ */
+/* $Id: ts.c,v 1.38 2001/04/04 17:13:14 bsmith Exp balay $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
@@ -975,12 +975,12 @@ int TSClearMonitor(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDefaultMonitor"
-int TSDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
+int TSDefaultMonitor(TS ts,int step,double ptime,Vec v,void *ctx)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(ts->comm,"timestep %d dt %g time %g\n",step,ts->time_step,time);CHKERRQ(ierr);
+  ierr = PetscPrintf(ts->comm,"timestep %d dt %g time %g\n",step,ts->time_step,ptime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -996,7 +996,7 @@ int TSDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
 
    Output Parameters:
 +  steps - number of iterations until termination
--  time - time until termination
+-  ptime - time until termination
 
    Level: beginner
 
@@ -1004,7 +1004,7 @@ int TSDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
 
 .seealso: TSCreate(), TSSetUp(), TSDestroy()
 @*/
-int TSStep(TS ts,int *steps,double *time)
+int TSStep(TS ts,int *steps,double *ptime)
 {
   int        ierr;
   PetscTruth flg;
@@ -1013,7 +1013,7 @@ int TSStep(TS ts,int *steps,double *time)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (!ts->setupcalled) {ierr = TSSetUp(ts);CHKERRQ(ierr);}
   ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
-  ierr = (*ts->step)(ts,steps,time);CHKERRQ(ierr);
+  ierr = (*ts->step)(ts,steps,ptime);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(ts->prefix,"-ts_view",&flg);CHKERRQ(ierr);
   if (flg  && !PetscPreLoadingOn) {ierr = TSView(ts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
@@ -1025,13 +1025,13 @@ int TSStep(TS ts,int *steps,double *time)
 /*
      Runs the user provided monitor routines, if they exists.
 */
-int TSMonitor(TS ts,int step,double time,Vec x)
+int TSMonitor(TS ts,int step,double ptime,Vec x)
 {
   int i,ierr,n = ts->numbermonitors;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
-    ierr = (*ts->monitor[i])(ts,step,time,x,ts->monitorcontext[i]);CHKERRQ(ierr);
+    ierr = (*ts->monitor[i])(ts,step,ptime,x,ts->monitorcontext[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1085,10 +1085,10 @@ int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSLGMonitor"
-int TSLGMonitor(TS ts,int n,double time,Vec v,void *monctx)
+int TSLGMonitor(TS ts,int n,double ptime,Vec v,void *monctx)
 {
   PetscDrawLG lg = (PetscDrawLG) monctx;
-  double      x,y = time;
+  double      x,y = ptime;
   int         ierr;
 
   PetscFunctionBegin;
@@ -1457,7 +1457,7 @@ int TSRegister(char *sname,char *path,char *name,int (*function)(TS))
    Input Parameters:
 +  ts - the TS context
 .  step - current time-step
-.  time - current time
+.  ptime - current time
 -  dummy - either a viewer or PETSC_NULL
 
    Level: intermediate
@@ -1466,7 +1466,7 @@ int TSRegister(char *sname,char *path,char *name,int (*function)(TS))
 
 .seealso: TSSetMonitor(), TSDefaultMonitor(), VecView()
 @*/
-int TSVecViewMonitor(TS ts,int step,PetscReal time,Vec x,void *dummy)
+int TSVecViewMonitor(TS ts,int step,PetscReal ptime,Vec x,void *dummy)
 {
   int         ierr;
   PetscViewer viewer = (PetscViewer) dummy;

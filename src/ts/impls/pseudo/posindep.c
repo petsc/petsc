@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.53 2001/03/28 19:42:34 balay Exp bsmith $*/
+/*$Id: posindep.c,v 1.54 2001/04/04 17:12:38 bsmith Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -139,7 +139,7 @@ int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Pseudo"
-static int TSStep_Pseudo(TS ts,int *steps,double *time)
+static int TSStep_Pseudo(TS ts,int *steps,double *ptime)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,ok,lits;
@@ -169,7 +169,7 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
   }
 
   *steps += ts->steps;
-  *time  = ts->ptime;
+  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 
@@ -305,13 +305,13 @@ static int TSSetUp_Pseudo(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoDefaultMonitor"
-int TSPseudoDefaultMonitor(TS ts,int step,double time,Vec v,void *ctx)
+int TSPseudoDefaultMonitor(TS ts,int step,double ptime,Vec v,void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(ts->comm,"TS %d dt %g time %g fnorm %g\n",step,ts->time_step,time,pseudo->fnorm);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm,"TS %d dt %g time %g fnorm %g\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

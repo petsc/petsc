@@ -1,4 +1,4 @@
-/*$Id: euler.c,v 1.26 2001/03/23 23:24:37 balay Exp bsmith $*/
+/*$Id: euler.c,v 1.27 2001/04/04 17:13:02 bsmith Exp balay $*/
 /*
        Code for Timestepping with explicit Euler.
 */
@@ -22,7 +22,7 @@ static int TSSetUp_Euler(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Euler"
-static int TSStep_Euler(TS ts,int *steps,double *time)
+static int TSStep_Euler(TS ts,int *steps,double *ptime)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
   Vec      sol = ts->vec_sol,update = euler->update;
@@ -43,7 +43,7 @@ static int TSStep_Euler(TS ts,int *steps,double *time)
   }
 
   *steps += ts->steps;
-  *time  = ts->ptime;
+  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
