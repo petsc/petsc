@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.332 1999/04/19 22:11:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.333 1999/04/30 13:30:29 balay Exp balay $";
 #endif
 
 /*
@@ -2065,7 +2065,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 
    Input Parameters:
 +  mat - the matrix
--  op - either MAT_DO_NO_COPY_VALUES or MAT_COPY_VALUES, cause it to copy nonzero
+-  op - either MAT_DO_NOT_COPY_VALUES or MAT_COPY_VALUES, cause it to copy nonzero
         values as well or not
 
    Output Parameter:
