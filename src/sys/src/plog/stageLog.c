@@ -7,6 +7,30 @@
 StageLog _stageLog;
 
 #undef __FUNCT__  
+#define __FUNCT__ "StageInfoDestroy"
+/*
+  StageInfoDestroy - This destroys a StageInfo object.
+
+  Not collective
+
+  Input Paramter:
+. stageInfo - The StageInfo
+
+  Level: beginner
+
+.keywords: log, stage, destroy
+.seealso: StageLogCreate()
+*/
+int StageInfoDestroy(StageInfo *stageInfo) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = EventPerfLogDestroy(stageInfo->eventLog);                                                        CHKERRQ(ierr);
+  ierr = ClassPerfLogDestroy(stageInfo->classLog);                                                        CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "StageLogDestroy"
 /*
   StageLogDestroy - This destroys a StageLog object.
@@ -21,21 +45,18 @@ StageLog _stageLog;
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
 */
-int StageLogDestroy(StageLog stageLog)
-{
+int StageLogDestroy(StageLog stageLog) {
   int stage;
   int ierr;
 
   PetscFunctionBegin;
-  for(stage = 0; stage < stageLog->numStages; stage++) {
-    ierr = PerfInfoDestroy(&stageLog->stageInfo[stage]);                                                  CHKERRQ(ierr);
-    ierr = EventLogDestroy(stageLog->eventLog[stage]);                                                    CHKERRQ(ierr);
-    ierr = ClassLogDestroy(stageLog->classLog[stage]);                                                    CHKERRQ(ierr);
-  }
   ierr = StackDestroy(stageLog->stack);                                                                   CHKERRQ(ierr);
+  ierr = EventRegLogDestroy(stageLog->eventLog);                                                          CHKERRQ(ierr);
+  ierr = ClassRegLogDestroy(stageLog->classLog);                                                          CHKERRQ(ierr);
+  for(stage = 0; stage < stageLog->numStages; stage++) {
+    ierr = StageInfoDestroy(&stageLog->stageInfo[stage]);                                                 CHKERRQ(ierr);
+  }
   ierr = PetscFree(stageLog->stageInfo);                                                                  CHKERRQ(ierr);
-  ierr = PetscFree(stageLog->eventLog);                                                                   CHKERRQ(ierr);
-  ierr = PetscFree(stageLog->classLog);                                                                   CHKERRQ(ierr);
   ierr = PetscFree(stageLog);                                                                             CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -59,59 +80,37 @@ int StageLogDestroy(StageLog stageLog)
 .keywords: log, stage, register
 .seealso: StageLogPush(), StageLogPop(), StageLogCreate()
 @*/
-int StageLogRegister(StageLog stageLog, const char sname[], int *stage)
-{
-  PerfInfo   *stageInfo;
-  EventLog   *eventLog;
-  ClassLog   *classLog;
-  char       *str;
-  int         s;
-  int         ierr;
+int StageLogRegister(StageLog stageLog, const char sname[], int *stage) {
+  StageInfo *stageInfo;
+  char      *str;
+  int        s;
+  int        ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(sname);
   PetscValidIntPointer(stage);
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
-    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(PerfInfo),   &stageInfo);                           CHKERRQ(ierr);
-    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(EventLog),   &eventLog);                            CHKERRQ(ierr);
-    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(ClassLog),   &classLog);                            CHKERRQ(ierr);
-    ierr = PetscMemcpy(stageInfo,    stageLog->stageInfo,    stageLog->maxStages * sizeof(PerfInfo));     CHKERRQ(ierr);
-    ierr = PetscMemcpy(eventLog,     stageLog->eventLog,     stageLog->maxStages * sizeof(EventLog));     CHKERRQ(ierr);
-    ierr = PetscMemcpy(classLog,     stageLog->classLog,     stageLog->maxStages * sizeof(ClassLog));     CHKERRQ(ierr);
+    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(StageInfo), &stageInfo);                            CHKERRQ(ierr);
+    ierr = PetscMemcpy(stageInfo, stageLog->stageInfo, stageLog->maxStages * sizeof(StageInfo));          CHKERRQ(ierr);
     ierr = PetscFree(stageLog->stageInfo);                                                                CHKERRQ(ierr);
-    ierr = PetscFree(stageLog->eventLog);                                                                 CHKERRQ(ierr);
-    ierr = PetscFree(stageLog->classLog);                                                                 CHKERRQ(ierr);
-    stageLog->stageInfo    = stageInfo;
-    stageLog->eventLog     = eventLog;
-    stageLog->classLog     = classLog;
-    stageLog->maxStages   *= 2;
+    stageLog->stageInfo  = stageInfo;
+    stageLog->maxStages *= 2;
   }
   /* Setup stage */
   ierr = PetscStrallocpy(sname, &str);                                                                    CHKERRQ(ierr);
-  stageLog->stageInfo[s].name          = str;
-  stageLog->stageInfo[s].color         = PETSC_NULL;
-  stageLog->stageInfo[s].cookie        = -1;
-  stageLog->stageInfo[s].active        = PETSC_FALSE;
-  stageLog->stageInfo[s].visible       = PETSC_TRUE;
-  stageLog->stageInfo[s].count         = 0;
-  stageLog->stageInfo[s].flops         = 0.0;
-  stageLog->stageInfo[s].time          = 0.0;
-  stageLog->stageInfo[s].numMessages   = 0.0;
-  stageLog->stageInfo[s].messageLength = 0.0;
-  stageLog->stageInfo[s].numReductions = 0.0;
-  /* Create eventLog */
-  if (s == 0) {
-    ierr = EventLogCreate(&stageLog->eventLog[s]);                                                        CHKERRQ(ierr);
-  } else {
-    ierr = EventLogCopy(stageLog->eventLog[0], &stageLog->eventLog[s]);                                   CHKERRQ(ierr);
-  }
-  /* Create classLog */
-  if (s == 0) {
-    ierr = ClassLogCreate(&stageLog->classLog[s]);                                                        CHKERRQ(ierr);
-  } else {
-    ierr = ClassLogCopy(stageLog->classLog[0], &stageLog->classLog[s]);                                   CHKERRQ(ierr);
-  }
+  stageLog->stageInfo[s].name                   = str;
+  stageLog->stageInfo[s].color                  = PETSC_NULL;
+  stageLog->stageInfo[s].perfInfo.active        = PETSC_FALSE;
+  stageLog->stageInfo[s].perfInfo.visible       = PETSC_TRUE;
+  stageLog->stageInfo[s].perfInfo.count         = 0;
+  stageLog->stageInfo[s].perfInfo.flops         = 0.0;
+  stageLog->stageInfo[s].perfInfo.time          = 0.0;
+  stageLog->stageInfo[s].perfInfo.numMessages   = 0.0;
+  stageLog->stageInfo[s].perfInfo.messageLength = 0.0;
+  stageLog->stageInfo[s].perfInfo.numReductions = 0.0;
+  ierr = EventPerfLogCreate(&stageLog->stageInfo[s].eventLog);                                            CHKERRQ(ierr);
+  ierr = ClassPerfLogCreate(&stageLog->stageInfo[s].classLog);                                            CHKERRQ(ierr);
   *stage = s;
   PetscFunctionReturn(0);
 }
@@ -169,23 +168,23 @@ int StageLogPush(StageLog stageLog, int stage)
   ierr = StackEmpty(stageLog->stack, &empty);                                                             CHKERRQ(ierr);
   if (empty == PETSC_FALSE) {
     ierr = StackTop(stageLog->stack, &curStage);                                                          CHKERRQ(ierr);
-    PetscTimeAdd(stageLog->stageInfo[curStage].time);
-    stageLog->stageInfo[curStage].flops         += _TotalFlops;
-    stageLog->stageInfo[curStage].numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
-    stageLog->stageInfo[curStage].messageLength += irecv_len + isend_len + recv_len + send_len;
-    stageLog->stageInfo[curStage].numReductions += allreduce_ct;
+    PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
+    stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
+    stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
+    stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
+    stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
   }
   /* Activate the stage */
   ierr = StackPush(stageLog->stack, stage);                                                               CHKERRQ(ierr);
-  stageLog->stageInfo[stage].active = PETSC_TRUE;
-  stageLog->stageInfo[stage].count++;
+  stageLog->stageInfo[stage].perfInfo.active = PETSC_TRUE;
+  stageLog->stageInfo[stage].perfInfo.count++;
   stageLog->curStage = stage;
   /* Subtract current quantities so that we obtain the difference when we pop */
-  PetscTimeSubtract(stageLog->stageInfo[stage].time);
-  stageLog->stageInfo[stage].flops         -= _TotalFlops;
-  stageLog->stageInfo[stage].numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
-  stageLog->stageInfo[stage].messageLength -= irecv_len + isend_len + recv_len + send_len;
-  stageLog->stageInfo[stage].numReductions -= allreduce_ct;
+  PetscTimeSubtract(stageLog->stageInfo[stage].perfInfo.time);
+  stageLog->stageInfo[stage].perfInfo.flops         -= _TotalFlops;
+  stageLog->stageInfo[stage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
+  stageLog->stageInfo[stage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
+  stageLog->stageInfo[stage].perfInfo.numReductions -= allreduce_ct;
   PetscFunctionReturn(0);
 }
 
@@ -231,20 +230,20 @@ int StageLogPop(StageLog stageLog)
   PetscFunctionBegin;
   /* Record flops/time of current stage */
   ierr = StackPop(stageLog->stack, &curStage);                                                            CHKERRQ(ierr);
-  PetscTimeAdd(stageLog->stageInfo[curStage].time);
-  stageLog->stageInfo[curStage].flops         += _TotalFlops;
-  stageLog->stageInfo[curStage].numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
-  stageLog->stageInfo[curStage].messageLength += irecv_len + isend_len + recv_len + send_len;
-  stageLog->stageInfo[curStage].numReductions += allreduce_ct;
+  PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
+  stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
+  stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
+  stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
+  stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
   ierr = StackEmpty(stageLog->stack, &empty);                                                             CHKERRQ(ierr);
   if (empty == PETSC_FALSE) {
     /* Subtract current quantities so that we obtain the difference when we pop */
     ierr = StackTop(stageLog->stack, &curStage);                                                          CHKERRQ(ierr);
-    PetscTimeSubtract(stageLog->stageInfo[curStage].time);
-    stageLog->stageInfo[curStage].flops         -= _TotalFlops;
-    stageLog->stageInfo[curStage].numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
-    stageLog->stageInfo[curStage].messageLength -= irecv_len + isend_len + recv_len + send_len;
-    stageLog->stageInfo[curStage].numReductions -= allreduce_ct;
+    PetscTimeSubtract(stageLog->stageInfo[curStage].perfInfo.time);
+    stageLog->stageInfo[curStage].perfInfo.flops         -= _TotalFlops;
+    stageLog->stageInfo[curStage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
+    stageLog->stageInfo[curStage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
+    stageLog->stageInfo[curStage].perfInfo.numReductions -= allreduce_ct;
     stageLog->curStage                           = curStage;
   } else {
     stageLog->curStage                           = -1;
@@ -273,8 +272,7 @@ int StageLogPop(StageLog stageLog)
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetCurrent(StageLog stageLog, int *stage)
-{
+int StageLogGetCurrent(StageLog stageLog, int *stage) {
   PetscTruth empty;
   int        ierr;
 
@@ -294,62 +292,82 @@ int StageLogGetCurrent(StageLog stageLog, int *stage)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetClassLog"
+#define __FUNCT__ "StageLogGetClassRegLog"
 /*@C
-  StageLogGetClassLog - This function returns the ClassLog for the given stage.
+  StageLogGetClassRegLog - This function returns the ClassRegLog for the given stage.
 
   Not Collective
 
   Input Parameters:
-+ stageLog - The StageLog
-- stage    - The stage number
+. stageLog - The StageLog
 
   Output Parameter:
-. classLog - The ClassLog
+. classLog - The ClassRegLog
 
   Level: intermediate
 
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetClassLog(StageLog stageLog, int stage, ClassLog *classLog)
+int StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
 {
+  PetscFunctionBegin;
+  PetscValidPointer(classLog);
+  *classLog = stageLog->classLog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StageLogGetEventRegLog"
+/*@C
+  StageLogGetEventRegLog - This function returns the EventRegLog.
+
+  Not Collective
+
+  Input Parameters:
+. stageLog - The StageLog
+
+  Output Parameter:
+. eventLog - The EventRegLog
+
+  Level: intermediate
+
+.keywords: log, stage
+.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+@*/
+int StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog) {
+  PetscFunctionBegin;
+  PetscValidPointer(eventLog);
+  *eventLog = stageLog->eventLog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StageLogGetClassPerfLog"
+/*@C
+  StageLogGetClassPerfLog - This function returns the ClassPerfLog for the given stage.
+
+  Not Collective
+
+  Input Parameters:
++ stageLog - The StageLog
+- stage    - The stage
+
+  Output Parameter:
+. classLog - The ClassPerfLog
+
+  Level: intermediate
+
+.keywords: log, stage
+.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+@*/
+int StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog) {
   PetscFunctionBegin;
   PetscValidPointer(classLog);
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
-  *classLog = stageLog->classLog[stage];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "StageLogGetEventLog"
-/*@C
-  StageLogGetEventLog - This function returns the EventLog for the given stage.
-
-  Not Collective
-
-  Input Parameters:
-+ stageLog - The StageLog
-- stage    - The stage number
-
-  Output Parameter:
-. eventLog - The EventLog
-
-  Level: intermediate
-
-.keywords: log, stage
-.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
-@*/
-int StageLogGetEventLog(StageLog stageLog, int stage, EventLog *eventLog)
-{
-  PetscFunctionBegin;
-  PetscValidPointer(eventLog);
-  if ((stage < 0) || (stage >= stageLog->numStages)) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
-  }
-  *eventLog = stageLog->eventLog[stage];
+  *classLog = stageLog->stageInfo[stage].classLog;
   PetscFunctionReturn(0);
 }
 
@@ -373,13 +391,12 @@ int StageLogGetEventLog(StageLog stageLog, int stage, EventLog *eventLog)
 .keywords: log, visible, stage
 .seealso: StageLogGetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible)
-{
+int StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible) {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
-  stageLog->stageInfo[stage].visible = isVisible;
+  stageLog->stageInfo[stage].perfInfo.visible = isVisible;
   PetscFunctionReturn(0);
 }
 
@@ -405,14 +422,13 @@ int StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible)
 .keywords: log, visible, stage
 .seealso: StageLogSetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible)
-{
+int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible) {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
   PetscValidIntPointer(isVisible);
-  *isVisible = stageLog->stageInfo[stage].visible;
+  *isVisible = stageLog->stageInfo[stage].perfInfo.visible;
   PetscFunctionReturn(0);
 }
 
@@ -435,8 +451,7 @@ int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible)
 .keywords: log, stage
 .seealso: StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogGetStage(StageLog stageLog, const char name[], int *stage)
-{
+int StageLogGetStage(StageLog stageLog, const char name[], int *stage) {
   PetscTruth match;
   int        s;
   int        ierr;
@@ -468,8 +483,7 @@ int StageLogGetStage(StageLog stageLog, const char name[], int *stage)
 .keywords: log, stage, create
 .seealso: StageLogCreate()
 */
-int StageLogCreate(StageLog *stageLog)
-{
+int StageLogCreate(StageLog *stageLog) {
   StageLog l;
   int      ierr;
 
@@ -478,10 +492,10 @@ int StageLogCreate(StageLog *stageLog)
   l->numStages = 0;
   l->maxStages = 10;
   l->curStage  = -1;
-  ierr = PetscMalloc(l->maxStages * sizeof(PerfInfo),   &l->stageInfo);                                   CHKERRQ(ierr);
-  ierr = PetscMalloc(l->maxStages * sizeof(EventLog),   &l->eventLog);                                    CHKERRQ(ierr);
-  ierr = PetscMalloc(l->maxStages * sizeof(ClassLog),   &l->classLog);                                    CHKERRQ(ierr);
   ierr = StackCreate(&l->stack);                                                                          CHKERRQ(ierr);
+  ierr = PetscMalloc(l->maxStages * sizeof(StageInfo), &l->stageInfo);                                    CHKERRQ(ierr);
+  ierr = EventRegLogCreate(&l->eventLog);                                                                 CHKERRQ(ierr);
+  ierr = ClassRegLogCreate(&l->classLog);                                                                 CHKERRQ(ierr);
   *stageLog = l;
   PetscFunctionReturn(0);
 }

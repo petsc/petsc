@@ -11,16 +11,29 @@
      corresponding instantiations are called Objects.
 
    StageLog:
-     This class holds information about stages of computation. These
-     are understood to be chunks encompassing several events. This
-     log contains a separate EventLog for each stage, as well as, a
-     separate ClassLog for each stage.
+     This type holds information about stages of computation. These
+     are understood to be chunks encompassing several events, or
+     alternatively, as a covering (possibly nested) of the timeline.
 
-   EventLog:
-     This class holds the performance information logged for each
+   StageInfo:
+     The information about each stage. This log contains an
+     EventPerfLog and a ClassPerfLog.
+
+   EventRegLog:
+     This type holds the information generated for each event as
+     it is registered. This information does not change and thus is
+     stored separately from performance information.
+
+   EventPerfLog:
+     This type holds the performance information logged for each
      event. Usually this information is logged for only one stage.
 
-   ClassLog:
+   ClassRegLog:
+     This type holds the information generated for each class as
+     it is registered. This information does not change and thus is
+     stored separately from performance information.
+
+   ClassPerfLog:
      This class holds information describing class/object usage during
      a run. Usually this information is logged for only one stage.
 */
@@ -81,8 +94,10 @@ EXTERN int StageLogPop(StageLog);
 EXTERN int StageLogGetCurrent(StageLog, int *);
 EXTERN int StageLogSetVisible(StageLog, int, PetscTruth);
 EXTERN int StageLogGetVisible(StageLog, int, PetscTruth *);
-EXTERN int StageLogGetClassLog(StageLog, int, ClassLog *);
-EXTERN int StageLogGetEventLog(StageLog, int, EventLog *);
+EXTERN int StageLogGetClassRegLog(StageLog, ClassRegLog *);
+EXTERN int StageLogGetEventRegLog(StageLog, EventRegLog *);
+EXTERN int StageLogGetClassPerfLog(StageLog, int, ClassPerfLog *);
+EXTERN int StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 EXTERN int StageLogGetStage(StageLog, const char [], int *);
 /* Stack Functions */
 EXTERN int StackCreate(IntStack *);
@@ -93,20 +108,21 @@ EXTERN int StackTop(IntStack, int *);
 EXTERN int StackEmpty(IntStack, PetscTruth *);
 
 /* Creation and destruction functions */
-EXTERN int EventLogCreate(EventLog *);
-EXTERN int EventLogDestroy(EventLog);
-EXTERN int EventLogCopy(EventLog, EventLog *);
+EXTERN int EventRegLogCreate(EventRegLog *);
+EXTERN int EventRegLogDestroy(EventRegLog);
+EXTERN int EventPerfLogCreate(EventPerfLog *);
+EXTERN int EventPerfLogDestroy(EventPerfLog);
 /* Registration functions */
-EXTERN int EventLogRegister(EventLog, const char [], const char [], int, int *);
+EXTERN int EventRegLogRegister(EventRegLog, const char [], const char [], int, int *);
 /* Query functions */
-EXTERN int EventLogSetVisible(EventLog, int, PetscTruth);
-EXTERN int EventLogGetVisible(EventLog, int, PetscTruth *);
-EXTERN int EventLogGetEvent(EventLog, int, int *);
+EXTERN int EventPerfLogSetVisible(EventPerfLog, int, PetscTruth);
+EXTERN int EventPerfLogGetVisible(EventPerfLog, int, PetscTruth *);
+EXTERN int EventRegLogGetEvent(EventRegLog, int, int *);
 /* Activaton functions */
-EXTERN int EventLogActivate(EventLog, int);
-EXTERN int EventLogDeactivate(EventLog, int);
-EXTERN int EventLogActivateClass(EventLog, int);
-EXTERN int EventLogDeactivateClass(EventLog, int);
+EXTERN int EventPerfLogActivate(EventPerfLog, int);
+EXTERN int EventPerfLogDeactivate(EventPerfLog, int);
+EXTERN int EventPerfLogActivateClass(EventPerfLog, EventRegLog, int);
+EXTERN int EventPerfLogDeactivateClass(EventPerfLog, EventRegLog, int);
 
 /* Logging functions */
 EXTERN int PetscLogEventBeginDefault(int, int, PetscObject, PetscObject, PetscObject, PetscObject);
@@ -117,19 +133,21 @@ EXTERN int PetscLogEventBeginTrace(int, int, PetscObject, PetscObject, PetscObje
 EXTERN int PetscLogEventEndTrace(int, int, PetscObject, PetscObject, PetscObject, PetscObject);
 
 /* Creation and destruction functions */
-EXTERN int ClassLogCreate(ClassLog *);
-EXTERN int ClassLogDestroy(ClassLog);
-EXTERN int ClassLogCopy(ClassLog, ClassLog *);
+EXTERN int ClassRegLogCreate(ClassRegLog *);
+EXTERN int ClassRegLogDestroy(ClassRegLog);
+EXTERN int ClassPerfLogCreate(ClassPerfLog *);
+EXTERN int ClassPerfLogDestroy(ClassPerfLog);
+EXTERN int ClassRegInfoDestroy(ClassRegInfo *);
 /* Registration functions */
-EXTERN int ClassLogRegister(ClassLog, const char [], int *);
+EXTERN int ClassRegLogRegister(ClassRegLog, const char [], int *);
 /* Query functions */
-EXTERN int ClassLogGetClass(ClassLog, int, int *);
+EXTERN int ClassRegLogGetClass(ClassRegLog, int, int *);
 /* Logging functions */
 EXTERN int PetscLogObjCreateDefault(PetscObject);
 EXTERN int PetscLogObjDestroyDefault(PetscObject);
 
 /* Creation and destruction functions */
 EXTERN int PerfInfoDestroy(PerfInfo *);
-EXTERN int ClassInfoDestroy(ClassInfo *);
+EXTERN int ClassPerfInfoDestroy(ClassPerfInfo *);
 
 #endif /* PETSC_USE_LOG */
