@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.125 1998/05/06 18:55:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.126 1998/05/12 22:05:54 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -329,6 +329,7 @@ int KSPPrintHelp(KSP ksp)
                      p,ksp->max_it);
   (*PetscHelpPrintf)(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);
   (*PetscHelpPrintf)(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
+  (*PetscHelpPrintf)(ksp->comm," %sksp_avoid_norms: do not compute residual norms (CG and Bi-CG-stab)\n",p);
 
   (*PetscHelpPrintf)(ksp->comm," KSP Monitoring Options: Choose any of the following\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_cancelmonitors: cancel all monitors hardwired in code\n",p);
@@ -401,6 +402,11 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, &flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_divtol",&ksp->divtol, &flg); CHKERRQ(ierr);
+
+  ierr = OptionsHasName(ksp->prefix,"-ksp_avoid_norms", &flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = KSPSetAvoidNorms(ksp);CHKERRQ(ierr);
+  }
 
   /* -----------------------------------------------------------------------*/
   /*
