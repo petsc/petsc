@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.222 2001/07/11 15:46:57 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.223 2001/07/20 21:19:19 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -449,6 +449,7 @@ typedef struct {
   double     dtcount;        /* maximum nonzeros to be allowed per row */
   double     damping;        /* scaling of identity added to matrix to prevent zero pivots */
   double     damp;           /* if is 1.0 and factorization fails, damp until successful */
+  double     zeropivot; /* pivot is called zero if less than this */
 } MatILUInfo;
 
 /*S 
@@ -469,6 +470,7 @@ typedef struct {
   double     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
   double     damping; /* scaling of identity added to matrix to prevent zero pivots */
   double     damp;    /* if this is 1.0 and factorization fails, damp until successful */
+  double     zeropivot; /* pivot is called zero if less than this */
 } MatLUInfo;
 
 /*S 
