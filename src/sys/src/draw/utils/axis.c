@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.36 1997/02/22 02:27:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.37 1997/03/26 01:36:57 bsmith Exp balay $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -179,14 +179,14 @@ int DrawAxisDraw(DrawAxis ad)
   if (ad->ylow == ad->yhigh) {ad->ylow -= .5; ad->yhigh += .5;}
   xl = ad->xlow; xr = ad->xhigh; yl = ad->ylow; yr = ad->yhigh;
   DrawSetCoordinates(awin,xl,yl,xr,yr);
-  DrawTextGetSize(awin,&tw,&th);
+  DrawStringGetSize(awin,&tw,&th);
   numx = (int) (.15*(xr-xl)/tw); if (numx > 6) numx = 6; if (numx< 2) numx = 2;
   numy = (int) (.5*(yr-yl)/th); if (numy > 6) numy = 6; if (numy< 2) numy = 2;
   xl -= 8*tw; xr += 2*tw; yl -= 2.5*th; yr += 2*th;
   if (ad->xlabel) yl -= 2*th;
   if (ad->ylabel) xl -= 2*tw;
   DrawSetCoordinates(awin,xl,yl,xr,yr);
-  DrawTextGetSize(awin,&tw,&th);
+  DrawStringGetSize(awin,&tw,&th);
 
   DrawLine( awin, ad->xlow,ad->ylow,ad->xhigh,ad->ylow,ac);
   DrawLine( awin, ad->xlow,ad->ylow,ad->xlow,ad->yhigh,ac);
@@ -194,7 +194,7 @@ int DrawAxisDraw(DrawAxis ad)
   if (ad->toplabel) {
     w = xl + .5*(xr - xl) - .5*((int)PetscStrlen(ad->toplabel))*tw;
     h = ad->yhigh;
-    DrawText(awin,w,h,cc,ad->toplabel); 
+    DrawString(awin,w,h,cc,ad->toplabel); 
   }
 
   /* Draw the ticks and labels */
@@ -213,14 +213,14 @@ int DrawAxisDraw(DrawAxis ad)
 	    else               sep = 0.0;
 	    p = (*ad->xlabelstr)( tickloc[i], sep );
 	    w = .5*((int)PetscStrlen(p)) * tw;
-	    DrawText( awin, tickloc[i]-w,ad->ylow-1.2*th,cc,p); 
+	    DrawString( awin, tickloc[i]-w,ad->ylow-1.2*th,cc,p); 
         }
     }
   }
   if (ad->xlabel) {
     w = xl + .5*(xr - xl) - .5*((int)PetscStrlen(ad->xlabel))*tw;
     h = ad->ylow - 2.5*th;
-    DrawText(awin,w,h,cc,ad->xlabel); 
+    DrawString(awin,w,h,cc,ad->xlabel); 
   }
   if (ad->yticks) {
     (*ad->yticks)( ad->ylow, ad->yhigh, numy, &ntick, tickloc, MAXSEGS );
@@ -237,14 +237,14 @@ int DrawAxisDraw(DrawAxis ad)
 	    else               sep = 0.0;
 	    p = (*ad->xlabelstr)( tickloc[i], sep );
 	    w = ad->xlow - ((int)PetscStrlen(p)) * tw - 1.2*tw;
-	    DrawText( awin, w,tickloc[i]-.5*th,cc,p); 
+	    DrawString( awin, w,tickloc[i]-.5*th,cc,p); 
         }
     }
   }
   if (ad->ylabel) {
     h = yl + .5*(yr - yl) + .5*((int)PetscStrlen(ad->ylabel))*th;
     w = xl + .5*tw;
-    DrawTextVertical(awin,w,h,cc,ad->ylabel); 
+    DrawStringVertical(awin,w,h,cc,ad->ylabel); 
   }
   return 0;
 }

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.214 1997/04/10 00:08:38 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.215 1997/04/22 14:36:56 curfman Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3971,17 +3971,17 @@ to pause {\tt n} seconds at each {\tt DrawPause()}. A time of {\tt -1}
 indicates that the application should pause until receiving mouse 
 input from the user.
 
-Text can be drawn with either of the two \findex{DrawTextVertical()}
-commands \findex{DrawText()} \sindex{text, drawing}
+Text can be drawn with either of the two \findex{DrawStringVertical()}
+commands \findex{DrawString()} \sindex{text, drawing}
 \begin{verbatim}
-   ierr = DrawText(Draw win,double x,double y,int color,char *text);
-   ierr = DrawTextVertical(Draw win,double x,double y,int color,char *text);
+   ierr = DrawString(Draw win,double x,double y,int color,char *text);
+   ierr = DrawStringVertical(Draw win,double x,double y,int color,char *text);
 \end{verbatim}
 The user can set the text font size or determine it with the 
-commands \findex{DrawTextSetSize()} \findex{DrawTextGetSize()}
+commands \findex{DrawStringSetSize()} \findex{DrawStringGetSize()}
 \begin{verbatim}
-   ierr = DrawTextSetSize(Draw win,double width,double height);
-   ierr = DrawTextGetSize(Draw win,double *width,double *height);
+   ierr = DrawStringSetSize(Draw win,double width,double height);
+   ierr = DrawStringGetSize(Draw win,double *width,double *height);
 \end{verbatim}
 
 \section{Line Graphs}

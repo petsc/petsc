@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.59 1997/03/26 01:38:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.60 1997/04/10 00:07:00 bsmith Exp balay $";
 #endif
 
 /* 
@@ -81,7 +81,7 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
     base = da->base / da->w;
     for ( x=xmin; x<=xmax; x++ ) {
       sprintf(node,"%d",base++);
-      DrawText(draw,x,ymin,DRAW_RED,node);
+      DrawString(draw,x,ymin,DRAW_RED,node);
     }
 
     DrawSyncFlush(draw);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.77 1997/05/01 17:50:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.78 1997/05/03 15:31:51 bsmith Exp balay $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -76,7 +76,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
     for ( y=ymin; y<=ymax; y++ ) {
       for ( x=xmin; x<=xmax; x++ ) {
         sprintf(node,"%d",base++);
-        DrawText(draw,x,y,DRAW_BLACK,node);
+        DrawString(draw,x,y,DRAW_BLACK,node);
       }
     }
 
@@ -92,7 +92,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
       for ( x=xmin; x<xmax; x++ ) {
         if ((base % da->w) == 0) {
           sprintf(node,"%d",idx[base]/da->w);
-          DrawText(draw,x/da->w,y,DRAW_BLUE,node);
+          DrawString(draw,x/da->w,y,DRAW_BLUE,node);
         }
         base++;
       }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.40 1997/02/22 02:27:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.41 1997/03/26 01:36:57 bsmith Exp balay $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -291,7 +291,7 @@ int DrawLGDraw(DrawLG lg)
       DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
                    lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK+i);
       if (lg->use_dots) {
-        DrawText(win,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");
+        DrawString(win,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");
       }
     }
   }

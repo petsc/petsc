@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.55 1997/05/01 17:50:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.56 1997/05/03 15:31:51 bsmith Exp balay $";
 #endif
 
 /*
@@ -95,12 +95,12 @@ int DAView_3d(PetscObject dain,Viewer viewer)
 
         /* Identify which processor owns the box */
         sprintf(node,"%d",rank);
-        DrawText(draw,xmin+(da->M+1)*k+.2,ymin+.3,DRAW_RED,node);
+        DrawString(draw,xmin+(da->M+1)*k+.2,ymin+.3,DRAW_RED,node);
 
         for ( y=ymin; y<=ymax; y++ ) {
           for ( x=xmin+(da->M+1)*k; x<=xmax+(da->M+1)*k; x++ ) {
             sprintf(node,"%d",base++);
-            DrawText(draw,x,y,DRAW_BLACK,node);
+            DrawString(draw,x,y,DRAW_BLACK,node);
           }
         } 
  
@@ -134,7 +134,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
 
             if (x<xmin)  { xcoord = xmax - (xmin-x); }
             if (x>=xmax) { xcoord = xmin + (x-xmax); }
-            DrawText(draw,xcoord/da->w,ycoord,DRAW_BLUE,node);
+            DrawString(draw,xcoord/da->w,ycoord,DRAW_BLUE,node);
             base+=da->w;
           }
         }

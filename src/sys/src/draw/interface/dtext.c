@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dtext.c,v 1.8 1997/01/06 20:26:34 balay Exp bsmith $";
+static char vcid[] = "$Id: dtext.c,v 1.9 1997/02/22 02:27:05 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: dtext.c,v 1.8 1997/01/06 20:26:34 balay Exp bsmith $"
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawText" /* ADIC Ignore */
+#define __FUNC__ "DrawString" /* ADIC Ignore */
 /*@C
-   DrawText - Draws text onto a drawable.
+   DrawString - Draws text onto a drawable.
 
    Input Parameters:
 .  draw - the drawing context
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: dtext.c,v 1.8 1997/01/06 20:26:34 balay Exp bsmith $"
 
 .keywords:  draw, text
 @*/
-int DrawText(Draw draw,double xl,double yl,int cl,char *text)
+int DrawString(Draw draw,double xl,double yl,int cl,char *text)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) return 0;

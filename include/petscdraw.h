@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.40 1997/03/26 01:38:58 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.41 1997/04/02 21:03:40 bsmith Exp balay $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -55,10 +55,10 @@ extern int DrawRectangle(Draw,double,double,double,double,int,int,int,int);
 extern int DrawTriangle(Draw,double,double,double,double,double,double,int,int,int);
 extern int DrawTensorContourPatch(Draw,int,int,double*,double*,double,double,Scalar*);
 
-extern int DrawText(Draw,double,double,int,char*);
-extern int DrawTextVertical(Draw,double,double,int,char*);
-extern int DrawTextSetSize(Draw,double,double);
-extern int DrawTextGetSize(Draw,double*,double*);
+extern int DrawString(Draw,double,double,int,char*);
+extern int DrawStringVertical(Draw,double,double,int,char*);
+extern int DrawStringSetSize(Draw,double,double);
+extern int DrawStringGetSize(Draw,double*,double*);
 
 extern int DrawSetViewPort(Draw,double,double,double,double);
 extern int DrawSetCoordinates(Draw,double,double,double,double);

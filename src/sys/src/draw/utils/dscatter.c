@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dscatter.c,v 1.6 1997/02/22 02:27:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.7 1997/03/26 01:36:57 bsmith Exp balay $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -264,7 +264,7 @@ int DrawSPDraw(DrawSP sp)
   DrawAxisDraw(sp->axis);
   for ( i=0; i<dim; i++ ) {
     for ( j=0; j<nopts; j++ ) {
-      DrawText(win,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");
+      DrawString(win,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");
     }
   }
   DrawSyncFlush(sp->win);

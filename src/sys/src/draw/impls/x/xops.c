@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.76 1997/04/22 18:24:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.77 1997/05/02 19:06:29 bsmith Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -100,8 +100,8 @@ static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawText_X" /* ADIC Ignore */
-static int DrawText_X(Draw Win,double x,double  y,int c,char *chrs )
+#define __FUNC__ "DrawString_X" /* ADIC Ignore */
+static int DrawString_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy;
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -116,8 +116,8 @@ static int DrawText_X(Draw Win,double x,double  y,int c,char *chrs )
 int XiFontFixed( Draw_X*,int, int,XiFont **);
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTextSetSize_X" /* ADIC Ignore */
-static int DrawTextSetSize_X(Draw Win,double x,double  y)
+#define __FUNC__ "DrawStringSetSize_X" /* ADIC Ignore */
+static int DrawStringSetSize_X(Draw Win,double x,double  y)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
   int     w,h;
@@ -129,8 +129,8 @@ static int DrawTextSetSize_X(Draw Win,double x,double  y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTextGetSize_X" /* ADIC Ignore */
-int DrawTextGetSize_X(Draw Win,double *x,double  *y)
+#define __FUNC__ "DrawStringGetSize_X" /* ADIC Ignore */
+int DrawStringGetSize_X(Draw Win,double *x,double  *y)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
   double  w,h;
@@ -142,8 +142,8 @@ int DrawTextGetSize_X(Draw Win,double *x,double  *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTextVertical_X" /* ADIC Ignore */
-int DrawTextVertical_X(Draw Win,double x,double  y,int c,char *chrs )
+#define __FUNC__ "DrawStringVertical_X" /* ADIC Ignore */
+int DrawStringVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy,n = PetscStrlen(chrs),i;
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -152,7 +152,7 @@ int DrawTextVertical_X(Draw Win,double x,double  y,int c,char *chrs )
   
   tmp[1] = 0;
   XiSetColor( XiWin, c );
-  DrawTextGetSize_X(Win,&tw,&th);
+  DrawStringGetSize_X(Win,&tw,&th);
   xx = XTRANS(Win,XiWin,x);
   for ( i=0; i<n; i++ ) {
     tmp[0] = chrs[i];
@@ -394,8 +394,8 @@ static int DrawCheckResizedWindow_X(Draw draw)
 
 static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawFlush_X,DrawLine_X,0,0,DrawPoint_X,0,
-                                 DrawText_X,DrawTextVertical_X,
-                                 DrawTextSetSize_X,DrawTextGetSize_X,
+                                 DrawString_X,DrawStringVertical_X,
+                                 DrawStringSetSize_X,DrawStringGetSize_X,
                                  DrawSetViewport_X,DrawClear_X,
                                  DrawSyncFlush_X,
                                  DrawRectangle_X,

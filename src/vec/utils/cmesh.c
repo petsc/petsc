@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.39 1997/04/10 00:00:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.40 1997/05/02 19:08:47 bsmith Exp balay $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -27,7 +27,7 @@ int DrawScalePopup(Draw popup,double min,double max)
     /* look for a value that should be zero, but is not due to round-off */
     if (PetscAbsDouble(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
     sprintf(string,"%g",value);
-    DrawText(popup,.2,.02 + i/10.0,DRAW_BLACK,string);
+    DrawString(popup,.2,.02 + i/10.0,DRAW_BLACK,string);
   }
   DrawSetTitle(popup,"Contour Scale");
   DrawFlush(popup);
