@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.35 1995/10/01 21:52:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.36 1995/10/04 15:06:29 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -704,14 +704,6 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   /* Form local matrix */
   ierr = MatCreateSeqBDiag(MPI_COMM_SELF,mbd->m,mbd->n,k,nb,
                                   ldiag,ldiagv,&mbd->A); CHKERRQ(ierr); 
-
-  /* Fix main diagonal location */
-  mlocal = (Mat_SeqBDiag *) mbd->A->data;
-  mlocal->mainbd = -1; 
-  for (i=0; i<k; i++) {
-    if (ldiag[i] + mbd->brstart == 0) mlocal->mainbd = i; 
-  }
- 
   PLogObjectParent(mat,mbd->A);
   PETSCFREE(ldiag); if (ldiagv) PETSCFREE(ldiagv);
 
