@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: monitor.c,v 1.39 1997/10/11 18:39:18 curfman Exp curfman $";
 #endif
 
 /*
@@ -85,6 +85,11 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
           sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","n",app->cfl_snes_it,overlap,app->size);
           sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","n",app->cfl_snes_it,overlap,app->size);
         }
+        else if (app->problem == 5) {
+          sprintf(filename,"f_duct_asm%d_p%d.m",overlap,app->size);
+          sprintf(outstring,"zsnes_duct_asm%d_p%d = [\n",overlap,app->size);
+        } 
+        else SETERRQ(1,0,"No support for this problem number");
         app->fp = fopen(filename,"w"); 
 	fprintf(app->fp,"%% iter, fnorm2, log(fnorm2), CFL#, time, ksp_its, ksp_rtol, c_lift, c_drag, nsup\n");
         fprintf(app->fp,outstring);
@@ -184,6 +189,16 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     }
 
     app->sles_tot += app->lin_its[its];
+
+    
+    ierr = OptionsHasName(PETSC_NULL,"-bump_dump",&flg); CHKERRQ(ierr);
+    if (flg && app->problem == 5) {
+      Scalar *xa;
+      ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
+      ierr = VecGetArray(X,&xa); CHKERRQ(ierr);
+      ierr = ComputeMachDuct(its,app,xa); CHKERRQ(ierr);
+      ierr = VecRestoreArray(X,&xa); CHKERRQ(ierr);
+    }
 
     if (!app->no_output) {
       /* Check solution */
@@ -291,6 +306,100 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
       }
     }
   }
+  return 0;
+}
+/* --------------------------------------------------------------- */
+/*
+   ComputeMachDuct - Computes the mach contour for the duct problem
+
+   Input Parameters:
+   app   - user-defined application context
+   x     - solution vector
+   iter  - iteration number
+
+ */
+int ComputeMachDuct(int iter,Euler *app,Scalar *x)
+{
+  int    foo, i, j, k, ni1 = app->ni1, nj1 = app->nj1;
+  int    ni = app->ni, nj = app->nj;
+  int    kj,ijk, jstart, jend, istart, iend;
+  Scalar sfluid, ssound, smach, r, gm1, gamma1, xv, yv;
+  Scalar *xc = app->xc, *yc = app->yc;
+  FILE   *fp2;
+  char   filename[64];
+
+  if (app->mmtype != MMFP) SETERRQ(1,0,"Unsupported model type");
+
+  istart = 0;
+  iend   = ni;
+  jstart = 0;
+  jend   = nj;
+
+  gamma1 = 1.4;
+  gm1   = gamma1 - 1.0;
+  k     = 1;
+
+#define xcoord(i,j) xc[k*nj*ni + j*ni + i]
+
+  foo = 1;
+  if (foo) {
+    sprintf(filename,"duct_%d.m",iter);
+    fp2 = fopen(filename,"w");
+    fprintf(fp2,"X = [\n");
+    for (j=jstart; j<jend; j++) {
+      for (i=istart; i<iend; i++) {
+        fprintf(fp2,"%8.4f ",xcoord(i,j));
+      }
+      fprintf(fp2,"\n");
+    }
+    fprintf(fp2,"];\n\n");
+    fprintf(fp2,"Y = [\n");
+    for (j=jstart; j<jend; j++) {
+      kj = k*nj*ni + j*ni;
+      for (i=istart; i<iend; i++) {
+        ijk = kj + i;
+        fprintf(fp2,"%8.4f ",app->yc[ijk]);
+      }
+      fprintf(fp2,"\n");
+    }
+    fprintf(fp2,"];\n\n");
+    fprintf(fp2,"Z = [\n");
+    for (j=jstart; j<jend; j++) {
+      kj = k*nj*ni + j*ni;
+      for (i=istart; i<iend; i++) {
+        ijk = kj + i;
+        fprintf(fp2,"%8.4f ",app->zc[ijk]);
+      }
+      fprintf(fp2,"\n");
+    }
+    fprintf(fp2,"];\n\n");
+    fprintf(fp2,"mach = [\n");
+    for (j=jstart; j<jend; j++) {
+      for (i=istart; i<iend; i++) {
+        ijk = k*nj1*ni1 + j*ni1 + i;
+        r  = app->den_a[ijk];
+        xv = app->xvel_a[ijk];
+        yv = app->yvel_a[ijk];
+        sfluid = sqrt(xv*xv + yv*yv);
+        ssound = sqrt(pow(r,gm1));
+        smach = sfluid/ssound;
+        fprintf(fp2,"%8.4f ",smach);
+      }
+      fprintf(fp2,"\n");
+    }
+    fprintf(fp2,"];\n\n");
+    fprintf(fp2,"potential = [\n");
+    for (j=jstart; j<jend; j++) {
+      for (i=istart; i<iend; i++) {
+        ijk = k*nj1*ni1 + j*ni1 + i;
+        fprintf(fp2,"%8.4f ",x[ijk]);
+      }
+      fprintf(fp2,"\n");
+    }
+    fprintf(fp2,"];\n\n");
+    fclose(fp2);
+  }
+
   return 0;
 }
 /* --------------------------------------------------------------- */
