@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.84 1997/03/26 01:34:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.85 1997/04/17 18:37:59 curfman Exp bsmith $";
 #endif
 
 /*
@@ -422,7 +422,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   VecScatter ctx;
   int        len,size,cando,islocal,totalv,ierr; 
   MPI_Comm   comm = xin->comm;
-  PetscTruth ixblock,iyblock;
+  PetscTruth ixblock,iyblock,iystride;
 
   /* next 2 lines insure that we use parallel comm if it exists */
   MPI_Comm_size(yin->comm,&size);
@@ -651,20 +651,43 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     }
     ierr = ISBlock(ix,&ixblock); CHKERRQ(ierr);
     ierr = ISBlock(iy,&iyblock); CHKERRQ(ierr);
+    ierr = ISStride(iy,&iystride); CHKERRQ(ierr);
     /* test for blocked indices */
-    if (ixblock && iyblock) {
-      int nx, ny, *idx, *idy, bsx, bsy;
-      ierr = ISBlockGetBlockSize(ix,&bsx); CHKERRQ(ierr);
-      ierr = ISBlockGetBlockSize(iy,&bsy); CHKERRQ(ierr);
-      if (bsx == bsy && bsx == 5) {
-        ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
-        ISBlockGetSize(iy,&ny); ISBlockGetIndices(iy,&idy);
-        if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
-        ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,5,ctx); CHKERRQ(ierr);
-        ISBlockRestoreIndices(ix,&idx);
-        ISBlockRestoreIndices(iy,&idy);
-        *newctx = ctx;
-        return 0;
+    if (ixblock) {
+      if (iyblock) {
+        int nx, ny, *idx, *idy, bsx, bsy;
+        ierr = ISBlockGetBlockSize(iy,&bsy); CHKERRQ(ierr);
+        if (bsx == bsy && (bsx == 5 || bsx == 4)) {
+          ierr = ISBlockGetBlockSize(ix,&bsx); CHKERRQ(ierr);
+          ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
+          ISBlockGetSize(iy,&ny); ISBlockGetIndices(iy,&idy);
+          if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
+          ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,bsx,ctx); CHKERRQ(ierr);
+          ISBlockRestoreIndices(ix,&idx);
+          ISBlockRestoreIndices(iy,&idy);
+          *newctx = ctx;
+          return 0;
+        }
+      } else if (iystride) {
+        int ystart,ystride,ysize,bsx;
+        ierr = ISStrideGetInfo(iy,&ystart,&ystride);CHKERRQ(ierr);
+        ierr = ISGetSize(iy,&ysize); CHKERRQ(ierr);
+        ierr = ISBlockGetBlockSize(ix,&bsx); CHKERRQ(ierr);
+        /* see if stride index set is equivalent to block index set */
+        if (((bsx == 4) || (bsx == 5)) && 
+            ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
+          int nx, *idx, *idy,il;
+          ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
+          if (ysize != bsx*nx) SETERRQ(1,0,"Local scatter sizes don't match");
+          idy    = (int *) PetscMalloc( nx*sizeof(int) );CHKPTRQ(idy);
+          idy[0] = ystart;
+          for ( il=1; il<nx; il++ ) idy[il] = idy[il-1] + bsx; 
+          ierr = VecScatterCreate_PtoS(nx,idx,nx,idy,xin,bsx,ctx); CHKERRQ(ierr);
+          PetscFree(idy);
+          ISBlockRestoreIndices(ix,&idx);
+          *newctx = ctx;
+          return 0;
+        }
       }
     }
     /* left over general case */
