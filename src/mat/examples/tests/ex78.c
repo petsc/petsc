@@ -1,7 +1,7 @@
 
 static char help[] = "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format.\n\
 Writes them using the PETSc sparse format.\n\
-Note: I and J start at 1, not 0!\n\
+Note: I and J start at 1, not 0, use -noshift if indices in file start with zero!\n\
 Input parameters are:\n\
   -Ain  <filename> : input matrix in ascii format\n\
   -bin  <filename> : input rhs in ascii format\n\
@@ -19,21 +19,32 @@ int main(int argc,char **args)
   char           Ain[PETSC_MAX_PATH_LEN],bin[PETSC_MAX_PATH_LEN],uin[PETSC_MAX_PATH_LEN]; 
   PetscErrorCode ierr;
   int            m,n,nz,dummy,*col=0,*row=0; /* these are fscaned so kept as int */
-  PetscInt       i,col_i,row_i,*nnz,*ib;
+  PetscInt       i,col_i,row_i,*nnz,*ib,shift = 1,sizes[3],nsizes;
   PetscScalar    val_i,*work=0,mone=-1.0;
   PetscReal      res_norm,*val=0,*bval=0,*uval=0;
   FILE           *Afile,*bfile,*ufile;
   PetscViewer    view;
-  PetscTruth     flg_A,flg_b,flg_u;
+  PetscTruth     flg_A,flg_b,flg_u,flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read in matrix, rhs and exact solution from an ascii file */
   ierr = PetscOptionsGetString(PETSC_NULL,"-Ain",Ain,PETSC_MAX_PATH_LEN-1,&flg_A);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-noshift",&flg);CHKERRQ(ierr);
+  if (flg) shift = 0;
   if (flg_A){
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read matrix in ascii format ...\n");CHKERRQ(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,Ain,"r",&Afile);CHKERRQ(ierr); 
-    fscanf(Afile,"%d %d %d\n",&m,&n,&nz);
+    nsizes = 3;
+    ierr = PetscOptionsGetIntArray(PETSC_NULL,"-nosizesinfile",sizes,&nsizes,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (nsizes != 3) SETERRQ(1,"Must pass in three m,n,nz as arguments for -nosizesinfile");
+      m = sizes[0];
+      n = sizes[1];
+      nz = sizes[2];
+    } else {
+      fscanf(Afile,"%d %d %d\n",&m,&n,&nz);
+    }
     printf("m: %d, n: %d, nz: %d \n", m,n,nz);
     if (m != n) SETERRQ(PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for SBAIJ format\n");
 
@@ -47,7 +58,7 @@ int main(int argc,char **args)
     ierr = PetscMalloc(nz*sizeof(PetscInt),&col);CHKERRQ(ierr);
     for (i=0; i<nz; i++) {
       fscanf(Afile,"%d %d %le\n",row+i,col+i,(double*)val+i); /* modify according to data file! */
-      row[i]--; col[i]--;  /* set index set starts at 0 */
+      row[i] -= shift; col[i] -= shift;  /* set index set starts at 0 */
       nnz[row[i]]++;
     }
     printf("row[0]: %d, col[0]: %d, val: %g\n",row[0],col[0],val[0]);

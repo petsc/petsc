@@ -1,6 +1,8 @@
 /*
     Reads in individual PETSc matrix files for each processor and concatinates them
   together into a single file containing the entire matrix
+
+    Do NOT use this, use ../ex5.c instead, it is MUCH more memory efficient
 */
 #include "petscmat.h"
 #undef __FUNCT__
