@@ -289,6 +289,16 @@ class Framework(config.base.Configure):
     self.argDB.insertArgs(clArgs)
     return
 
+  def outputBanner(self):
+    import time
+    self.log.write(('='*80)+'\n')
+    self.log.write(('='*80)+'\n')
+    self.log.write('Starting Configure Run at '+time.ctime(time.time())+'\n')
+    self.log.write('Configure Options: '+str(self.clArgs)+'\n')
+    self.log.write('Working directory: '+os.getcwd()+'\n')
+    self.log.write(('='*80)+'\n')
+    return
+
   def configureHelp(self, help):
     help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
     help.addOption('Framework', 'help', 'Print this help message', nargs.ArgBool)
@@ -311,6 +321,7 @@ class Framework(config.base.Configure):
     if self.argDB['help'] or self.argDB['h']:
       self.help.output()
       return
+    self.outputBanner()
     for child in self.children:
       print 'Configuring '+child.__module__
       child.configure()
