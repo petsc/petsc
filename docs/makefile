@@ -26,5 +26,7 @@ homepage:
 	/usr/bin/cp  manual.ps /home/ftp/pub/petsc/manual.ps
 	/usr/bin/cp  ../readme /home/ftp/pub/petsc/installation
 	/usr/bin/cp  tex/ftp_readme /home/ftp/pub/petsc/README
+	/usr/bin/cp  ../Machines /home/ftp/pub/petsc
 	chmod ug+w /home/ftp/pub/petsc/installation /home/ftp/pub/petsc/README
+	chmod ug+w /home/ftp/pub/petsc/Machines
 	@echo "Finshed making PETSc homepage"
