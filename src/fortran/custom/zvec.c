@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.58 2000/01/11 21:03:48 bsmith Exp balay $*/
+/*$Id: zvec.c,v 1.59 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -42,8 +42,10 @@
 #define drawtensorcontour_        DRAWTENSORCONTOUR
 #define vecsetrandom_              VECSETRANDOM
 #define veccreateghostblockwitharray_ VECCREATEGHOSTBLOCKWITHARRAY
-#define veccreateghostblock_ VECCREATEGHOSTBLOCK
+#define veccreateghostblock_          VECCREATEGHOSTBLOCK
+#define vecloadintovector_            VECLOADINTOVECTOR   
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define vecloadintovector_            vecloadintovector
 #define veccreateghostblockwitharray_ veccreateghostblockwitharray
 #define veccreateghostblock_      veccreateghostblock
 #define drawtensorcontour_        drawtensorcontour
@@ -87,6 +89,11 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL vecloadintovector_(Viewer *viewer,Vec *vec,int *ierr)
+{
+  *ierr = VecLoadIntoVector(*viewer,*vec);
+}
 
 void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
 {
