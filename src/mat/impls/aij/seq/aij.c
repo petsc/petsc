@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.146 1996/02/09 15:11:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.147 1996/02/13 23:27:29 bsmith Exp balay $";
 #endif
 
 /*
@@ -990,8 +990,9 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
-  
-  if (ISStrideGetInfo(iscol,&first,&step) && step == 1) {
+  ierr = SYIsort(nrows, irow); CHKERRQ(ierr);
+
+  if (ISStrideGetInfo(iscol,&first,&step) && step == 1) { /* no need to sort */
     /* special case of contiguous rows */
     lens   = (int *) PetscMalloc((2*ncols+1)*sizeof(int)); CHKPTRQ(lens);
     starts = lens + ncols;
@@ -1045,6 +1046,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
   }
   else {
     ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
+    ierr = SYIsort(ncols,icol); CHKERRQ(ierr);
     smap  = (int *) PetscMalloc((1+oldcols)*sizeof(int)); CHKPTRQ(smap);
     ssmap = smap + shift;
     cwork = (int *) PetscMalloc((1+nrows+ncols)*sizeof(int)); CHKPTRQ(cwork);
@@ -1217,6 +1219,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
 #endif
   return 0;
 }
+int MatEqual_SeqAIJ(Mat A,Mat B, int* flg);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,MatRestoreRow_SeqAIJ,
@@ -1227,7 +1230,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatLUFactor_SeqAIJ,0,
        MatRelax_SeqAIJ,
        MatTranspose_SeqAIJ,
-       MatGetInfo_SeqAIJ,0,
+       MatGetInfo_SeqAIJ,MatEqual_SeqAIJ,
        MatGetDiagonal_SeqAIJ,MatDiagonalScale_SeqAIJ,MatNorm_SeqAIJ,
        0,MatAssemblyEnd_SeqAIJ,
        MatCompress_SeqAIJ,
@@ -1509,3 +1512,34 @@ int MatLoad_SeqAIJ(Viewer bview,MatType type,Mat *A)
 
 
 
+/*
+
+  flg =0 if error;
+  flg =1 if both are equal;
+  */
+int MatEqual_SeqAIJ(Mat A,Mat B, int* flg)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
+
+  if (B->type !=MATSEQAIJ)  SETERRQ(1,"MatEqual_SeqAIJ:Both matrices should be of type MATSEQAIJ");
+
+  /* If the  matrix dimensions are not equal, or no of nonzeros or shift */
+  if ((a->m != b->m ) || (a->n !=b->n) ||( a->nz != b->nz)|| 
+      (a->indexshift != b->indexshift)) { *flg =0 ; return 0; }
+  
+  /* if the a->i are the same */
+  if(PetscMemcmp((char *)a->i, (char*)b->i, (a->n+1)*sizeof(int))) { *flg =0 ; return 0;}
+  
+  /* if a->j are the same */
+  if(PetscMemcmp((char *)a->j, (char*)b->j, (a->nz)*sizeof(int))) { 
+    *flg =0 ; return 0;
+  }
+  
+  /* if a->j are the same */
+  if(PetscMemcmp((char *)a->a, (char*)b->a, (a->nz)*sizeof(Scalar))) {
+    *flg =0 ; return 0;
+  }
+  *flg =1 ; 
+  return 0;
+  
+}
