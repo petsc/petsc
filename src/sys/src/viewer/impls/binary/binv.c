@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.3 1995/08/25 19:35:28 curfman Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.4 1995/09/05 19:23:00 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -20,9 +20,13 @@ int ViewerFileGetDescriptor_Private(Viewer viewer)
 static int ViewerDestroy_BinaryFile(PetscObject obj)
 {
   Viewer v = (Viewer) obj;
-  int    mytid = 0;
+
+/*  int    mytid = 0;
   if (v->type == BIN_FILES_VIEWER) {MPI_Comm_rank(v->comm,&mytid);} 
-  if (!mytid) close(v->fdes);
+  if (!mytid) close(v->fdes); */
+
+  /* for now, file is opened on all processors, so close on all procs */
+  close(v->fdes);
   PLogObjectDestroy(obj);
   PETSCHEADERDESTROY(obj);
   return 0;

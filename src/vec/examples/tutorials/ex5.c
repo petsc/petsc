@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.5 1995/08/22 14:28:42 curfman Exp curfman $";
+static char vcid[] = "$Id: ex20.c,v 1.6 1995/09/05 14:41:37 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -23,7 +23,6 @@ int main(int argc,char **args)
   IS      ind;
   VecType vtype;
   Viewer  bview;
-  char    filename[10];
 
 #define VECTOR_GENERATE 76
 #define VECTOR_READ     77
@@ -53,9 +52,8 @@ int main(int argc,char **args)
 
   MPIU_printf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
 
-  sprintf(filename,"vector.dat");
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,filename,BIN_CREAT,&bview); 
-  CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BIN_CREAT,&bview); 
+         CHKERRA(ierr);
   ierr = VecView(u,bview); CHKERRA(ierr);
   ierr = ViewerDestroy(bview); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
@@ -76,8 +74,8 @@ int main(int argc,char **args)
   PLogEventRegister(VECTOR_READ,"Read Vector     ");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,filename,BIN_RDONLY,&bview); 
-  CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BIN_RDONLY,&bview); 
+         CHKERRA(ierr);
   vtype = VECSEQ;
   if (OptionsHasName(0,"-mpi_objects") || numtids>1) vtype = VECMPI;
   ierr = VecLoad(MPI_COMM_WORLD,bview,vtype,ind,&u); CHKERRA(ierr);
@@ -85,6 +83,7 @@ int main(int argc,char **args)
   PLogEventEnd(VECTOR_READ,0,0,0,0);
   ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
+  /* Free data structures */
   ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = ISDestroy(ind); CHKERRA(ierr);
   PetscFinalize();
