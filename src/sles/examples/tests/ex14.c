@@ -1,5 +1,5 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.4 1997/07/11 16:07:45 balay Exp balay $";
+#ifndef lint
+static char vcid[] = "$Id: ex14.c,v 1.3 1997/04/02 21:01:39 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
