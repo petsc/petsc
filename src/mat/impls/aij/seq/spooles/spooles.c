@@ -145,11 +145,11 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   Chv                *rootchv ;
   IVL                *adjIVL;
   PetscErrorCode ierr;
-  int                nz,nrow=A->m,irow,nedges,neqns=A->n,*ai,*aj,i,*diag=0;
+  int                nz,nrow=A->m,irow,nedges,neqns=A->n,*ai,*aj,i,*diag=0,fierr;
   PetscScalar        *av;
   double             cputotal,facops;
 #if defined(PETSC_USE_COMPLEX)
-  int                nz_row,*aj_tmp,fierr;
+  int                nz_row,*aj_tmp;
   PetscScalar        *av_tmp;
 #else
   int                *ivec1,*ivec2,j;
