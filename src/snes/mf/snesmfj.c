@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.100 2000/01/11 21:02:32 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.101 2000/02/02 20:10:02 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
@@ -28,7 +28,7 @@ PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: MatCreateSNESMF(), MatSNESMFRegisterDynamic)
 @*/
-int MatSNESMFSetType(Mat mat,char *ftype)
+int MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
 {
   int          ierr,(*r)(MatSNESMFCtx);
   MatSNESMFCtx ctx;
