@@ -4,7 +4,7 @@
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
 set DATAFILESPATH=/home/balay/datafiles
-set TMP=/home/balay/petsc-test
+set TMP=/home/balay/petsc
 set MACH=balay@parth
 set ARCH=win32_gnu
 set TEST=testexamples_
