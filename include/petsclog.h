@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.87 1996/08/29 00:17:33 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.88 1996/09/11 22:44:21 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -101,6 +101,7 @@
 #define SNES_HessianEval                        86
 
 #define TS_Step                                 90
+#define TS_PseudoComputeTimeStep                91
 
 #define Petsc_Barrier                           100
 
@@ -325,15 +326,15 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 extern int PLogMPEBegin();
 extern int PLogMPEDump(char *);
 #else
-#define PLogEventMPEActivate(a)
-#define PLogEventMPEDeactivate(a)
+#define PLogEventMPEActivate(a) 0
+#define PLogEventMPEDeactivate(a) 0
 #endif
 
-#define PLogEventActivate(a)
-#define PLogEventDeactivate(a)
+#define PLogEventActivate(a) 0
+#define PLogEventDeactivate(a) 0
 
-#define PLogEventActivateClass()
-#define PLogEventDeactivateClass()
+#define PLogEventActivateClass(a) 0
+#define PLogEventDeactivateClass(a) 0
 
 #define _PLB                          0
 #define _PLE                          0
@@ -348,7 +349,7 @@ extern int PLogMPEDump(char *);
 #define PLogObjectDestroy(h)
 #define PLogObjectMemory(p,m)
 #define PLogDestroy()
-#define PLogStagePush(int)
+#define PLogStagePush(a)
 #define PLogStagePop()
 #define PLogStageRegister(a,b)
 #define PLogPrintSummary(comm,file)
