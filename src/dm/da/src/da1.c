@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.82 1998/11/05 17:19:16 balay Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.83 1998/11/20 15:31:08 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -152,8 +152,10 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   PLogObjectCreate(da);
   da->bops->publish = DAPublish_Petsc;
   PLogObjectMemory(da,sizeof(struct _p_DA));
-  da->dim   = 1;
-  da->gtog1 = 0;
+  da->dim        = 1;
+  da->gtog1      = 0;
+  da->localused  = PETSC_FALSE;
+  da->globalused = PETSC_FALSE;
 
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 
@@ -173,13 +175,11 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
     if (flg1) {      /* Block Comm type Distribution */
       xs = rank*M/m;
       x  = (rank + 1)*M/m - xs;
-    }
-    else if (flg2) { /* The odd nodes are evenly distributed across last nodes */
+    } else if (flg2) { /* The odd nodes are evenly distributed across last nodes */
       x = (M + rank)/m;
       if (M/m == x) { xs = rank*x; }
       else          { xs = rank*(x-1) + (M+rank)%(x*m); }
-    }
-    else { /* The odd nodes are evenly distributed across the first k nodes */
+    } else { /* The odd nodes are evenly distributed across the first k nodes */
       /* Regular PETSc Distribution */
       x = M/m + ((M % m) > rank);
       if (rank >= (M % m)) {xs = (rank * (int) (M/m) + M % m);}
@@ -211,9 +211,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   if (wrap == DA_XPERIODIC) {
     Xs = xs - s; 
     Xe = xe + s;
-  }
-  else
-  {
+  } else {
     if ((xs-s) >= 0)   Xs = xs-s;  else Xs = 0; 
     if ((xe+s) <= M*w) Xe = xe+s;  else Xe = M*w;    
   }
@@ -267,9 +265,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
       if ((xe+i)<M*w) { idx [nn++] =  xe+i; }
       else            { idx [nn++] = (xe+i) - M*w;}
     }
-  }
-
-  else {      /* Now do all cases with no wrapping */
+  } else {      /* Now do all cases with no wrapping */
 
     if (s <= xs) {for (i=0; i<s; i++) {idx[nn++] = xs - s + i;}}
     else         {for (i=0; i<xs;  i++) {idx[nn++] = i;}}

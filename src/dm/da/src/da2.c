@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.102 1998/10/19 22:20:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.103 1998/11/20 15:31:08 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -251,7 +251,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PLogObjectCreate(da);
   da->bops->publish = DAPublish_Petsc;
   PLogObjectMemory(da,sizeof(struct _p_DA));
-  da->dim = 2;
+  da->dim        = 2;
+  da->gtog1      = 0;
+  da->localused  = PETSC_FALSE;
+  da->globalused = PETSC_FALSE;
 
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 
