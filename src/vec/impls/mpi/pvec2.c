@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.31 1997/11/03 04:42:59 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.32 1997/12/12 19:36:34 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -7,6 +7,35 @@
 #include <math.h>
 #include "src/vec/impls/mpi/pvecimpl.h" 
 #include "src/inline/dot.h"
+
+#define do_not_use_ethernet
+int Ethernet_Allreduce(double *in,double *out,int n,MPI_Datatype type,MPI_Op op,MPI_Comm comm)
+{
+  int        i,rank,size;
+  MPI_Status status;
+
+
+  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm,&rank);
+
+  if (rank) {
+    MPI_Recv(out,n,MPI_DOUBLE,rank-1,837,comm,&status);
+    for (i =0; i<n; i++ ) in[i] += out[i];
+  }
+  if (rank != size - 1) {
+    MPI_Send(in,n,MPI_DOUBLE,rank+1,837,comm);
+  }
+  if (rank == size-1) {
+    for (i=0; i<n; i++ ) out[i] = in[i];    
+  } else {
+    MPI_Recv(out,n,MPI_DOUBLE,rank+1,838,comm,&status);
+  }
+  if (rank) {
+    MPI_Send(out,n,MPI_DOUBLE,rank-1,838,comm);
+  }
+  return 0;
+}
+
 
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_MPI"
@@ -23,10 +52,12 @@ int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #if defined(USE_PETSC_COMPLEX)
   ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
+#elif defined(use_ethernet)
+  ierr = Ethernet_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
 #else
   ierr = MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-  PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
 #endif
+  PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
     PetscFree(work);
   }
