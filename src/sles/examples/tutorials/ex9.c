@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.15 1996/08/18 19:35:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.16 1996/08/18 19:48:03 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -63,7 +63,7 @@ int main(int argc,char **args)
   PLogStageRegister(2,"Linear System 2");
 
   /* 
-     Register a user-defined event for logging (error checking).
+     Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
   PLogEventRegister(&CHECK_ERROR,"Check Error     ","Red:");
@@ -148,7 +148,7 @@ int main(int argc,char **args)
   PLogFlops(2*ldim);
 
   /*
-     End curent logging stage
+     End curent profiling stage
   */
   PLogStagePop();
 
@@ -164,7 +164,7 @@ int main(int argc,char **args)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /*
-       Begin logging stage #1
+       Begin profiling stage #1
     */
     PLogStagePush(1);
 
@@ -268,7 +268,7 @@ int main(int argc,char **args)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /*
-       Conclude logging stage # 1; begin logging stage #2
+       Conclude profiling stage #1; begin profiling stage #2
     */
     PLogStagePop();
     PLogStagePush(2);
@@ -337,7 +337,7 @@ int main(int argc,char **args)
     ierr = CheckError(u,x2,b2,its,CHECK_ERROR); CHKERRA(ierr); 
 
     /* 
-       Conclude logging stage #2
+       Conclude profiling stage #2
     */
     PLogStagePop();
   }
