@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matstash.c,v 1.27 1999/03/18 00:33:52 balay Exp balay $";
+static char vcid[] = "$Id: matstash.c,v 1.28 1999/03/18 01:26:13 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -24,21 +24,33 @@ static char vcid[] = "$Id: matstash.c,v 1.27 1999/03/18 00:33:52 balay Exp balay
 #define __FUNC__ "MatStashCreate_Private"
 int MatStashCreate_Private(MPI_Comm comm,int bs, MatStash *stash)
 {
-  int ierr,flg,max=DEFAULT_STASH_SIZE;
+  int ierr,flg,max,*opt,nopt;
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
   ierr = PetscCommDuplicate_Private(comm,&stash->comm,&stash->tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2); CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-matstash_initial_size",&max,&flg);CHKERRQ(ierr);
-  ierr = MatStashSetInitialSize_Private(stash,max); CHKERRQ(ierr);
   ierr = MPI_Comm_size(stash->comm,&stash->size); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(stash->comm,&stash->rank); CHKERRQ(ierr);
 
+  nopt = stash->size;
+  opt  = (int*) PetscMalloc(nopt*sizeof(int)); CHKPTRQ(opt);
+  ierr = OptionsGetIntArray(PETSC_NULL,"-vecstash_initial_size",opt,&nopt,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (nopt == 1)                max = opt[0];
+    else if (nopt == stash->size) max = opt[stash->rank];
+    else if (stash->rank < nopt)  max = opt[stash->rank];
+    /* else use the default */
+    stash->umax = max;
+  } else {
+    stash->umax = 0;
+  }
+  PetscFree(opt);
   if (bs <= 0) bs = 1;
 
   stash->bs       = bs;
   stash->nmax     = 0;
+  stash->oldnmax  = 0;
   stash->n        = 0;
   stash->reallocs = -1;
   stash->idx      = 0;
@@ -85,7 +97,7 @@ int MatStashDestroy_Private(MatStash *stash)
 #define __FUNC__ "MatStashScatterEnd_Private"
 int MatStashScatterEnd_Private(MatStash *stash)
 { 
-  int         nsends=stash->nsends,ierr,bs2;
+  int         nsends=stash->nsends,ierr,bs2,oldnmax;
   MPI_Status  *send_status;
 
   PetscFunctionBegin;
@@ -97,9 +109,12 @@ int MatStashScatterEnd_Private(MatStash *stash)
   }
 
   /* Now update nmaxold to be app 10% more than max n used, this way the
-     wastage of space is reduced the next time this stash is used */
-  bs2               = stash->bs*stash->bs;
-  stash->oldnmax    = ((int)(stash->n * 1.1) + 5)*bs2;
+     wastage of space is reduced the next time this stash is used.
+     Also update the oldmax, only if it increases */
+  bs2      = stash->bs*stash->bs;
+  oldnmax  = ((int)(stash->n * 1.1) + 5)*stash->bs;
+  if (oldnmax > stash->oldnmax) stash->oldnmax = oldnmax;
+
   stash->nmax       = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
@@ -138,7 +153,8 @@ int MatStashGetInfo_Private(MatStash *stash,int *nstash, int *reallocs)
 
   PetscFunctionBegin;
   *nstash   = stash->n*bs2;
-  *reallocs = stash->reallocs;
+  if (stash->reallocs < 0) *reallocs = 0;
+  else                     *reallocs = stash->reallocs;
   PetscFunctionReturn(0);
 }
 
@@ -156,8 +172,7 @@ int MatStashGetInfo_Private(MatStash *stash,int *nstash, int *reallocs)
 int MatStashSetInitialSize_Private(MatStash *stash,int max)
 {
   PetscFunctionBegin;
-  stash->oldnmax = max;
-  stash->nmax    = 0;
+  stash->umax = max;
   PetscFunctionReturn(0);
 }
 
@@ -182,8 +197,13 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
   PetscFunctionBegin;
   /* allocate a larger stash */
   bs2     = stash->bs*stash->bs; 
-  if (stash->nmax == 0) newnmax = stash->oldnmax/bs2;
-  else                  newnmax = stash->nmax*2;
+  if (stash->oldnmax == 0)  { /* new stash */
+    if (stash->umax)                  newnmax = stash->umax/bs2;             
+    else                              newnmax = DEFAULT_STASH_SIZE/bs2;
+  } else if (stash->nmax == 0) { /* resuing stash */ 
+    if (stash->umax > stash->oldnmax) newnmax = stash->umax/bs2;
+    else                              newnmax = stash->oldnmax/bs2;
+  } else                              newnmax = stash->nmax*2;
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
   n_array = (Scalar *)PetscMalloc((newnmax)*(2*sizeof(int)+bs2*sizeof(Scalar)));CHKPTRQ(n_array);
