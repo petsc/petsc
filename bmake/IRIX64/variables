@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.23 2000/08/15 18:21:29 balay Exp balay $ 
+# $Id: base_variables,v 1.24 2000/08/15 18:21:55 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -25,9 +25,9 @@ C_SYS_LIB	   = -lfpe -lfortran -lftn -lfastm -lmalloc  -lm
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g 
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -Ofast=ip27 -OPT:Olimit=0
+O_COPTFLAGS	   = -Ofast -OPT:Olimit=0
 #O_COPTFLAGS	   = -O3
-O_FOPTFLAGS	   = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1 -OPT:Olimit=0
+O_FOPTFLAGS	   = -Ofast -OPT:Olimit=0
 #O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #
