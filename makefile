@@ -26,7 +26,7 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 all: chkpetsc_dir
 	-$(RM) -f $(PDIR)/*.a
 	-@echo "Beginning to compile libraries in all directories"
-	-@echo "Using $(CC) $(PETSC_INCLUDE) $(CONF) $(PCONF) $(BASEOPT)"
+	-@echo "Using compiler: $(CC) $(PETSC_INCLUDE) $(CONF) $(PCONF) $(BASEOPT)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=libfast  tree 
@@ -84,6 +84,7 @@ testfortran: chkpetsc_dir
 fortran: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscfortran.a
 	-@echo "Beginning to compile Fortran interface library"
+	-@echo "Using compiler: $(FC) $(BASEOPTF)"
 	-@echo "------------------------------------------"
 	-@cd src/fortran/custom; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
