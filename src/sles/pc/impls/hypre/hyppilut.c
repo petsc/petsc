@@ -109,8 +109,11 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
   PetscScalar        *bv,*xv;
   HYPRE_ParVector    jbv,jxv;
   PetscScalar        *sbv,*sxv; 
+  PetscScalar        zero=0.0;
+
 
   PetscFunctionBegin;
+  ierr = VecSet(&zero,x);CHKERRQ(ierr);
   ierr = VecGetArray(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   HYPREReplacePointer(jac->b,bv,sbv);
@@ -451,11 +454,10 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       jac->relaxtype[3] = type;
     }
     ierr = HYPRE_BoomerAMGSetGridRelaxType(jac->hsolver,jac->relaxtype);CHKERRQ(ierr); 
-    /*
     ierr = PetscOptionsLogical("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
     if (jac->printstatistics) {
-      ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,3);CHKERRQ(ierr);
-      }*/
+      ierr = HYPRE_BoomerAMGSetDebugFlag(jac->hsolver,3);CHKERRQ(ierr);
+      }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
