@@ -68,6 +68,10 @@ routines.red: routines.tex ../rsum/rsum1.tex ../rsum/rsum2.tex \
                 sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum6.tex
 	sort ../rsum/rsum7.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
                 sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssum7.tex
+	sort ../rsum/rsumv.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumv.tex
+	sort ../rsum/rsump.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
+                sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssump.tex
 	sort ../rsum/rsumx.tex|sed 's/_/\\_/g' |sed 's/\\\\/ /g'| \
                 grep -v document | sed 's/\\DeFn/}{\\DeFn/g' > ../rsum/ssumx.tex
 
