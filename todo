@@ -53,6 +53,8 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
    (Priority 2) General mechanism for DMGetMatrix() etc ...for composite matrices
 
+  Make all KSP (if possible) use either preocnditioned or unpreconditioned norms for monitoring & convergence (e.g. BCGSL)
+
   ------------
   Cleaner code
   ------------
