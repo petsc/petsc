@@ -13,10 +13,9 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
-  - ILUDT(); ordering with flow direction.
+  - ILUDT()
 
-  X Provide etags rule in makefile for public releases (no inclusion of
-    *.tex files, etc.)
+  - ordering with flow direction.
 
   - Better way of dealing with MatAssembly - when elements are not inserted
     (satish)
@@ -32,24 +31,17 @@ Additional Capabilities that PETSc Needs:
 
   - interface to Tom Coleman's post-docs Cholesky code.
 
-  X Fix the F*&^ bug that PETSc does not work on Cray T3d with two 
-    processors bjacobi preconditioner with ILU(0) on subdomains!!!!!!!!
-    For example, arco1
-
   - Change PCSetUp_BJacobiAIJ() to use MatGetSubMatrices() rather then 
     MatGetSubMatrix() since someone decided MatGetSubMatrix cannot 
     be logged so MPIAIJ format with bjacobi is completely worthless 
     cause we don't have a clue as to how much time is spent getting 
     submatrices.
 
-  - Fix MPIRowbs so factorization routiens return NEW matrixz, NOT the 
+  - Fix MPIRowbs so factorization routiens return NEW matrix, NOT the 
     original matrix. Then fix MatMult() etc to make sure one does not
-    multiply a factoredc matrix!!!!!!!!!!!!
+    multiply a factored matrix!!!!!!!!!!!!
 
-  - Take mention of BLACS and Scalapack from PETSc picture.
-
-  - Mat interface routines for MatMult etc should generate error if matrix 
-    is a factored matrix.
+  * Take mention of BLACS and Scalapack from PETSc picture.
 
   - Create an INDEX for examples
 
@@ -58,32 +50,14 @@ Additional Capabilities that PETSc Needs:
     unformated ascii. For example blocksize 5 blockdiagonals -1,0,3
     symmetric, symmetricstructure .....
 
-  X fix rules on all machines that do .F files, so they work properly 
-    with PETSC_COMPLEX but don't generate warnign messages like
-cpp -I../../.. -I../../../include -I/usr/local/mpi/include  -I../../../src -O -D
-PETSC_DEBUG -DPETSC_BOPT_O  somefort.F  > somefort.f
-cpp: Invalid option `-O'
-gmake[1]: [../../../lib/libO_complex/freebsd_nolog/libpetscfortran.a(somefort.o)
-] Error 33 (ignored)
-f77 -c  -O somefort.f
-
-  X Fix F.o rules to pass proper flags; i.e. yes -I flags but maybe not
-    -O flags on some machines, for example paragon.
 
   - find LAgesvd_ on Cray T3D.
 
-  - Fix BDiag factorization to use Barry's new Linpack-modified stuff.
+  * Fix BDiag factorization to use Barry's new Linpack-modified stuff.
     Also change to actually invert diagonal blocks rather then keeping 
     triangular factors and doing triangular solves on the blocks in 
     each backsolve. As is done in SeqBAIJ.
 
-  X fix output formats for -log_summary so that 3-digit numbers (e.g., 100.0) 
-    doesn't screw up column alignment
-
-  X update petscopts ( some of the options are outdated  for eg: pc_method )
-
-  - extend PETSc PLogInfo() logging so that individual components can disable
-    their printouts (e.g., get SNES loggin but not matrix logging)
 
   * Provide routine for initializeing Fortran side of PETSc when 
     main program is C. i.e. this sets common blocks and PETSC_NULL_Fortran
@@ -100,19 +74,47 @@ f77 -c  -O somefort.f
     this means the bmake files must insure that -DPETSC_COMPLEX is 
     properly set.
 
-  - Note fixes needed for ICASE SP (poseidon) in petsc/src/sys/src/mtr.c
+  * Note fixes needed for ICASE SP (poseidon) in petsc/src/sys/src/mtr.c
     and petsc/src/viewer/impls/matlab/send.c
 
   - Do something about viewer formats - maybe use enum?
     Make ViewerGetFormat() a real public routine (seems good to me); else
     make it obviously private.
 
-   * Test PETSc with LAM.
+  * Test PETSc with LAM.
     
   - Fix binary I/O for complex numbers.
 
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David.
+
+  X Provide etags rule in makefile for public releases (no inclusion of
+    *.tex files, etc.)
+
+  X Fix the F*&^ bug that PETSc does not work on Cray T3d with two 
+    processors bjacobi preconditioner with ILU(0) on subdomains!!!!!!!!
+    For example, arco1
+
+  X fix rules on all machines that do .F files, so they work properly 
+    with PETSC_COMPLEX but don't generate warnign messages like
+    cpp -I../../.. -I../../../include -I/usr/local/mpi/include  
+    -I../../../src -O -D
+    PETSC_DEBUG -DPETSC_BOPT_O  somefort.F  > somefort.f
+    cpp: Invalid option `-O'
+    gmake[1]: [../../../lib/libO_complex/freebsd_nolog/libpetscfortran
+    .a(somefort.o)
+    ] Error 33 (ignored)
+    f77 -c  -O somefort.f
+
+  X Fix F.o rules to pass proper flags; i.e. yes -I flags but maybe not
+    -O flags on some machines, for example paragon.
+  X fix output formats for -log_summary so that 3-digit numbers (e.g., 100.0) 
+    doesn't screw up column alignment
+
+  X update petscopts ( some of the options are outdated  for eg: pc_method )
+
+  X extend PETSc PLogInfo() logging so that individual components can disable
+    their printouts (e.g., get SNES logging but not matrix logging)
 
   X Debugger info? fixed. 
 
@@ -217,8 +219,6 @@ f77 -c  -O somefort.f
    Features for TOHTML
    ------------------
 
-   X reorganize format of manpages (both Unix and HTML) to display synopsis 
-     before keywords and seealso.
 
    * Fix fact that first line of verbatim in html files have all leading blanks
      removed. (Note our makefile puts in three blanks before ierr which fixes
@@ -252,6 +252,8 @@ f77 -c  -O somefort.f
 
    Make \begin{tabular} environments look better. 
 
+   X reorganize format of manpages (both Unix and HTML) to display synopsis 
+     before keywords and seealso.
 
 
    To do sometime soon:
@@ -259,7 +261,7 @@ f77 -c  -O somefort.f
 
   - Right and left preconditioning for all KSP types.
 
-  - Make jacobi and SOR be seperate for each matrix type. So then 
+  ? Make jacobi and SOR be seperate for each matrix type. So then 
     have default use natural block size and support option 
     -pc_jacobi_pointwise etc.
 
@@ -271,10 +273,6 @@ f77 -c  -O somefort.f
     subSLES info once?  Or maybe better - collect info that differs among
     blocks/procs (such as LU nonzeros) and then print only from 1 proc.
 
-  - Add provision so that all -info printouts indicate the associated
-    processor.  In particular, storage allocation of submatrices for MATMPIAIJ:
-      MatAssemblyEnd_SeqAIJ:Unneeded storage space 351 used 609 rows 60
-    What processor is this coming from?
 
   - Add routine for forming big matrix from a bunch of smaller ones, something like:
         MatSetSubmatrix(Mat large,Mat small,int *rows, int *cols)
@@ -283,15 +281,9 @@ f77 -c  -O somefort.f
 
   - Treat interleaved vector as seperate named vectors
 
-   - Provide index of all example programs in by extracting the help char string 
-     from the top of each file.  Similar to the index provided by the
-     UNM PETSc tutorial -- fully automate this process though.
-
    - Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX everywhere.
 
    - Add matrix viewers to show element magnitude by coloring (requested by Andreas).
-
-   X Add nonsymmetric matrix reorderings for use in LU (requested by Andreas)
 
    - Add viewer for matrix graph - possibly interface to external software?
      (requested by Andreas) 
@@ -299,12 +291,12 @@ f77 -c  -O somefort.f
    - Allow one to view a reordered matrix, perhaps 
        by providing a MatReOrder(Mat,IS,IS,Mat*)?
 
-   - Reorganize multigrid code. (requested by Andreas).
+   ? Reorganize multigrid code. (requested by Andreas).
 
    - Maybe add a routine VecCreateVecs()?  Seems useful to me instead of having
      to create a base vector, then duplicate it.
 
-   - Add copyright info to header of each file?  See, e.g., MPICH.
+   ? Add copyright info to header of each file?  See, e.g., MPICH.
 
    - Examine the SPEC benchmarks to verify that we're using the appropriate
      compiler options for optimized code.  For info:  http://www.specbench.org
@@ -315,13 +307,6 @@ f77 -c  -O somefort.f
         # This can be used, in comparison with the routine index, to find routines
         # still needing tests.
 
-   X When one is using a MatShell it would be nice if PC knew to use no
-     preconditioning when no special preconditioner is applied. This would 
-     prevent the annouying error message about MatGetDiagonal() when it 
-     tries to use the default jacobi preconditioner.
-
-   X Add error checking in SLESSolve(), MatMult(), PCApply(), etc. for the case 
-     when input vector == output vector.
 
    - Augment some KSP methods to support symmetric preconditioning; fix relevant
      KSP support routines.
@@ -363,6 +348,21 @@ f77 -c  -O somefort.f
 
    * Improve history (-log_history) logging.
 
+  X Add provision so that all -info printouts indicate the associated
+    processor.  In particular, storage allocation of submatrices for MATMPIAIJ:
+      MatAssemblyEnd_SeqAIJ:Unneeded storage space 351 used 609 rows 60
+    What processor is this coming from?
+
+   X Add nonsymmetric matrix reorderings for use in LU (requested by Andreas)
+
+   X When one is using a MatShell it would be nice if PC knew to use no
+     preconditioning when no special preconditioner is applied. This would 
+     prevent the annouying error message about MatGetDiagonal() when it 
+     tries to use the default jacobi preconditioner.
+
+   X Add error checking in SLESSolve(), MatMult(), PCApply(), etc. for the case 
+     when input vector == output vector.
+
    X In-place ILU(0) for AIJ (Done), Row matrix formats (not done, should we?)
 
    X More nonlinear solvers, including those for unconstrained minimization
@@ -402,7 +402,7 @@ f77 -c  -O somefort.f
    * Develop code to rebalance matrices (and vectors) for better 
      load balance during matrix vector multiplies.
 
-   - Interface to ScaLAPACK and BLACS
+   ? Interface to ScaLAPACK and BLACS
 
    X Automatic collection of information about the solution process
 
