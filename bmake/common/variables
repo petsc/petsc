@@ -12,8 +12,7 @@
 PETSC_LIB_DIR	    = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
 PETSC_INCLUDE	    = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
 			${MPI_INCLUDE} ${MPE_INCLUDE} ${AMS_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
-PETSC_CCPPFLAGS	    = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${CPPFLAGS} \
-			-D__SDIR__='"${LOCDIR}"'
+PETSC_CCPPFLAGS	    = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 PETSC_FCPPFLAGS	    = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${FPPFLAGS}
 PETSC_C_SH_LIB_PATH = ${CLINKER_SLFLAG}${PETSC_LIB_DIR} ${C_DYLIBPATH}
 PETSC_F_SH_LIB_PATH = ${FLINKER_SLFLAG}${PETSC_LIB_DIR} ${F_DYLIBPATH}
@@ -159,20 +158,23 @@ PLAPACK_DIRS       = src/sys/src/utils src/sles/pc/impls/ml
 HYPRE_DIRS         = src/sles/pc/impls/hypre src/vec/impls/hypre src/mat/impls/hypre src/sles/pc/interface
 SPOOLES_DIR        = src/mat/impls/aij src/mat/impls/sbaij
 ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/custom
-
-PDT_PARSE          = ${PDTDIR}/${PDTARCHDIR}/bin/cxxparse
-TAU_INSTR          = ${TAUROOT}/${CONFIG_ARCH}/bin/tau_instrumentor
-PDT_PETSC_OPTS     = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"' \
-                     -DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_ARCH='"${PETSC_ARCH}"'
-TAU_PETSC_OPTS     = -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\(\); 
-TAU_COMPILE_SINGLE = ${PDT_PARSE} $$filename ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${PDT_PETSC_OPTS}; \
-                     ${TAU_INSTR} $$name.c.pdb $$filename -o $$name.inst.c ${TAU_PETSC_OPTS} \
-                     ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${TAU_DEFS} ${TAU_INCLUDE} $$name.inst.c -o $$name.o; \
+#
+# ----------------------------------------------------------------------------------------
+#
+PDT_PETSC_OPTS     = -DPETSC_BOPT='\"${BOPT}\"' -DPETSC_LIB_DIR='\".\/\"' -DPETSC_SLSUFFIX='\"${SLSUFFIX}\"' \
+                     -DPETSC_DIR='\".\/\"' -DPETSC_ARCH='"${PETSC_ARCH}"'
+TAU_CPPFLAGS       = ${PETSC_INCLUDE} ${PCONF} ${PETSCFLAGS} ${CPPFLAGS}
+TAU_PETSC_OPTS     = -c -rn PetscFunctionReturn -rv PetscFunctionReturnVoid\(\) 
+TAU_COMPILE_SINGLE =  name=`basename $$filename .c`;\
+		     ${PDT_PARSE} $$filename ${COPTFLAGS} ${CFLAGS} ${TAU_CPPFLAGS} ${PDT_PETSC_OPTS}; \
+                     ${TAU_INSTR} $$name.c.pdb $$filename -o $$name.inst.c ${TAU_PETSC_OPTS}; \
+                     ${CC} -c ${COPTFLAGS} ${CFLAGS} ${TAU_CPPFLAGS} ${TAU_DEFS} ${TAU_INCLUDE} $$name.inst.c -o $$name.o ;\
+                     ${RM} $$name.c.pdb $$name.inst.c;
 TAU_COMPILE        = files="${SOURCEC} ${SSOURCE}"; \
-                     for filename in $$files; do \
-                         name=`basename $$filename .c`; \
-                         ${TAU_COMPILE_SINGLE} \
-                         ${RM} $$name.c.pdb $$name.inst.c; \
+                     for filename in $$files foo ; do \
+                         if [ "$$filename" != "foo" ] ; then \
+	                    ${TAU_COMPILE_SINGLE} \
+			fi; \
                      done;
 #
 # ----------------------------------------------------------------------------------------
