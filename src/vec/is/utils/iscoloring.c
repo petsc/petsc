@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.36 1998/12/21 23:09:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.37 1999/01/04 21:47:10 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -43,9 +43,9 @@ int ISColoringDestroy(ISColoring iscoloring)
 
    Input Parameters:
 +  iscoloring - the coloring context
--  viewer- the viewer with which to view
+-  viewer - the viewer
 
-.seealso: ISColoringDestroy(), MatGetColoring()
+.seealso: ISColoringDestroy(), ISColoringGetIS(), MatGetColoring()
 @*/
 int ISColoringView(ISColoring iscoloring,Viewer viewer)
 {
@@ -120,7 +120,7 @@ int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
     Options Database Key:
 .   -is_coloring_view - Activates ISColoringView()
 
-.seealso: MatColoringCreate(), ISColoringView(),ISColoringDestroy()
+.seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy()
 @*/
 int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscoloring)
 {
@@ -346,11 +346,11 @@ int ISPartitioningCount(IS part,int count[])
     Notes: 
     ISAllGather() is clearly not scalable for large index sets.
 
-    Notes: the IS created on each processor should be created with a common
-      communicator (e.g. PETSC_COMM_WORLD). If they were created with 
-      PETSC_COMM_SELF this routine will not work as expected, since 
-      each process will generate its own new IS that consists only of
-      itself.
+    The IS created on each processor must be created with a common
+    communicator (e.g., PETSC_COMM_WORLD). If the index sets were created 
+    with PETSC_COMM_SELF, this routine will not work as expected, since 
+    each process will generate its own new IS that consists only of
+    itself.
 
 @*/
 int ISAllGather(IS is,IS *isout)
