@@ -20,7 +20,7 @@ EXAMPLES_3    = ex7
 RUNEXAMPLES_3 = runex7
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c\
                 ex6.c
-EXAMPLESF     = ex6.F
+EXAMPLESF     = ex7.F
 
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
