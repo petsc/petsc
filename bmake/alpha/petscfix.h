@@ -156,6 +156,13 @@ extern void   *malloc(long unsigned int );
 extern int    abort();
 extern void   exit(int);
 extern int    strcasecmp(const char *,const char *);
+extern char*  mktemp(char*);
+/*
+   The next declaration is because /usr/include/sys/prctl.h which is
+   included by <ulocks.h> (required by shared memory stuff) uses a 
+   k_sigset_t though it has never been declared.
+*/
+typedef int k_sigset_t;
 }
 
 #else

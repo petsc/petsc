@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.88 1997/10/19 03:22:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.89 1997/11/03 04:42:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: pbvec.c,v 1.88 1997/10/19 03:22:42 bsmith Exp bsmith 
 
 #include "petsc.h"
 #include <math.h>
-#include "pvecimpl.h"   /*I  "vec.h"   I*/
+#include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
 
 #undef __FUNC__  
 #define __FUNC__ "VecDot_MPI"
@@ -64,7 +64,7 @@ int VecSetOption_MPI(Vec v,VecOption op)
   Vec_MPI *w = (Vec_MPI *) v->data;
 
   PetscFunctionBegin;
-  if (op == VEC_IGNORE_OFF_PROCESSOR_ENTRIES) {
+  if (op == VEC_IGNORE_OFF_PROCESSOR_VALUES) {
     w->stash.donotstash = 1;
   }
   PetscFunctionReturn(0);
@@ -95,7 +95,7 @@ static struct _VeOps DvOps = { VecDuplicate_MPI,
     VecCreateMPI_Private - Basic create routine called by VecCreateMPI(), VecCreateGhost()
   and VecDuplicate_MPI() to reduce code duplication.
 */
-static int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,int *owners,Scalar *array,Vec *vv)
+int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,int *owners,Scalar *array,Vec *vv)
 {
   Vec     v;
   Vec_MPI *s;
@@ -516,7 +516,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     ierr = VecGetArray(*v,&array); CHKERRQ(ierr);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,w->n+w->nghost,array,&vw->localrep); CHKERRQ(ierr);
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,w->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
     PLogObjectParent(*v,vw->localrep);
     ierr = VecRestoreArray(*v,&array); CHKERRQ(ierr);
     vw->localupdate = w->localupdate;

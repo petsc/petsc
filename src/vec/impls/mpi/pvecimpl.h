@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.14 1997/09/08 19:55:07 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.15 1997/09/11 20:38:20 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -46,6 +46,8 @@ extern int VecGetSize_MPI(Vec,int *);
 extern int VecSetValues_MPI(Vec, int, int *, Scalar*,InsertMode);
 extern int VecAssemblyBegin_MPI(Vec);
 extern int VecAssemblyEnd_MPI(Vec);
+
+extern int VecCreateMPI_Private(MPI_Comm,int,int,int,int,int,int *,Scalar *,Vec *);
 
 #endif
 
