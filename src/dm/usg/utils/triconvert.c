@@ -59,7 +59,7 @@ int main(int argc,char **args)
       if (bound) PetscBTSet(vertex_boundary,i);
     }
   } else  if (nstuff == 0) {
-    double v0,v1,ddummy;
+    double v0,v1;
     for (i=0; i<nvertex; i++) {
       fscanf(file,"%d %le %le %d\n",&dummy,&v0,&v1,&bound);
       vertex[2*i]   = v0;

@@ -288,10 +288,13 @@ class Configure(config.base.Configure):
     if name.find('MacOSX') >= 0 and 'FC' in self.framework.argDB:
       self.setcompilers.pushLanguage('F77')
       if self.setcompilers.getCompiler().find('xlf') >= 0 or self.setcompilers.getCompiler().find('xlF') >= 0:
+        # should check if compiler is already using underscore and that -qextname works 
         self.compilers.fortranMangling = 'underscore'
-#        flags = self.framework.getCompilerObject(self.language[-1]).getFlags()+' -qextname'
         self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS'] + ' -qextname'
-#        self.framework.getCompilerObject(self.language[-1]).setFlags(flags)
+        self.framework.log.write('Using the MacOX blas/lapack libraries and xlF so forcing _ after Fortran symbols\n')
+        self.compilers.delDefine('HAVE_FORTRAN_NOUNDERSCORE')
+        self.compilers.addDefine('HAVE_FORTRAN_UNDERSCORE',1)
+        self.delDefine('BLASLAPACK_F2C')
       self.setcompilers.popLanguage()
     return
 
