@@ -1,10 +1,10 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.24 1996/03/26 04:17:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: zmat.c,v 1.25 1996/04/09 02:23:39 curfman Exp bsmith $";
 #endif
 
-#include "zpetsc.h"
+#include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
 #include "pinclude/petscfix.h"
 
@@ -26,13 +26,13 @@ static char vcid[] = "$Id: zmat.c,v 1.24 1996/03/26 04:17:15 bsmith Exp curfman 
 #define matcreatempidense_               MATCREATEMPIDENSE
 #define matconvert_                      MATCONVERT
 #define matreorderingregister_           MATREORDERINGREGISTER
-#define matgetsubmatrix_                 MATGETSUBMATRIX
 #define matload_                         MATLOAD
 #define mattranspose_                    MATTRANSPOSE
 #define matgetarray_                     MATGETARRAY
 #define matrestorearray_                 MATRESTOREARRAY
 #define matgettype_                      MATGETTYPE
 #define matgetinfo_                      MATGETINFO
+#define matshellsetoperation_            MATSHELLSETOPERATION
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define matgetinfo_                      matgetinfo
 #define matgettype_                      matgettype
@@ -52,11 +52,11 @@ static char vcid[] = "$Id: zmat.c,v 1.24 1996/03/26 04:17:15 bsmith Exp curfman 
 #define matcreatempidense_               matcreatempidense
 #define matconvert_                      matconvert
 #define matreorderingregister_           matreorderingregister
-#define matgetsubmatrix_                 matgetsubmatrix
 #define matload_                         matload
 #define mattranspose_                    mattranspose
 #define matgetarray_                     matgetarray
 #define matrestorearray_                 matrestorearray
+#define matshellsetoperation_            matshellsetoperation
 #endif
 
 #if defined(__cplusplus)
@@ -74,7 +74,7 @@ void matgetinfo_(Mat mat,MatInfoType *flag,int *nz,int *nzalloc,int *mem, int *_
   /*
      this next one is TOTALLY wrong 
   */
-void matgetreorderingtypefromoptions_(CHAR prefix,MatOrdering *type, 
+void matgetreorderingtypefromoptions_(CHAR prefix,MatReordering *type, 
                                       int *__ierr,int len )
 {
   char *t;
@@ -124,17 +124,6 @@ void matload_(Viewer viewer,MatType *outtype,Mat *newmat, int *__ierr )
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
-void matgetsubmatrix_(Mat mat,IS irow,IS icol,MatGetSubMatrixCall *scall,
-                      Mat *submat, int *__ierr )
-{
-  Mat mm;
-  *__ierr = MatGetSubMatrix(
-	(Mat)MPIR_ToPointer( *(int*)(mat) ),
-	(IS)MPIR_ToPointer( *(int*)(irow) ),
-	(IS)MPIR_ToPointer( *(int*)(icol) ),*scall,&mm);
-  *(int*) submat = MPIR_FromPointer(mm);
-}
-
 static void (*f5)(int*,int*,int*,int*,int*,int*);
 static int ourorder(int* a,int* b,int* c,int *d, int* e)
 {
@@ -143,7 +132,7 @@ static int ourorder(int* a,int* b,int* c,int *d, int* e)
   return 0;
 }
 
-void matreorderingregister_(MatOrdering *name,CHAR sname,PetscTruth *sym,
+void matreorderingregister_(MatReordering *name,CHAR sname,PetscTruth *sym,
   int *shift,void (*order)(int*,int*,int*,int*,int*,int*),int *__ierr,int len)
 {
   char *t;
@@ -180,22 +169,22 @@ void matcreatempidense_(MPI_Comm comm,int *m,int *n,int *M,int *N,Scalar *data,M
 }
 
 /* Fortran ignores diagv */
-void matcreatempibdiag_(MPI_Comm comm,int *m,int *M,int *N,int *nd,int *nb,
+void matcreatempibdiag_(MPI_Comm comm,int *m,int *M,int *N,int *nd,int *bs,
                         int *diag,Scalar **diagv,Mat *newmat, int *__ierr )
 {
   Mat mm;
   *__ierr = MatCreateMPIBDiag((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),
-                              *m,*M,*N,*nd,*nb,diag,PETSC_NULL,&mm);
+                              *m,*M,*N,*nd,*bs,diag,PETSC_NULL,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
 /* Fortran ignores diagv */
-void matcreateseqbdiag_(MPI_Comm comm,int *m,int *n,int *nd,int *nb,
+void matcreateseqbdiag_(MPI_Comm comm,int *m,int *n,int *nd,int *bs,
                         int *diag,Scalar **diagv,Mat *newmat, int *__ierr )
 {
   Mat mm;
   *__ierr = MatCreateSeqBDiag(
-    (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*m,*n,*nd,*nb,diag,
+    (MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm) ),*m,*n,*nd,*bs,diag,
     PETSC_NULL,&mm);
   *(int*) newmat = MPIR_FromPointer(mm);
 }
@@ -211,7 +200,7 @@ void matcreatempirowbs_(MPI_Comm comm,int *m,int *M,int *nz,int *nnz,
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
-void matgetreordering_(Mat mat,MatOrdering *type,IS *rperm,IS *cperm, 
+void matgetreordering_(Mat mat,MatReordering *type,IS *rperm,IS *cperm, 
                        int *__ierr )
 {
   IS i1,i2;
@@ -240,7 +229,7 @@ void matgettype_(Mat mm,MatType *type,CHAR name,int *__ierr,int len)
 
   if (FORTRANNULL(type)) type = PETSC_NULL;
   *__ierr = MatGetType((Mat)MPIR_ToPointer(*(int*)mm),type,&tname);
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
   {
   char *t = _fcdtocp(name); int len1 = _fcdlen(name);
   if (t != PETSC_NULL_CHAR_Fortran) PetscStrncpy(t,tname,len1);
@@ -287,6 +276,31 @@ void matcreatempiaij_(MPI_Comm comm,int *m,int *n,int *M,int *N,
   *__ierr = MatCreateMPIAIJ((MPI_Comm)MPIR_ToPointer_Comm(*(int*)(comm)),
       *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
   *(int*)newmat = MPIR_FromPointer(mm);
+}
+
+static void (*theirmult)(int *,int *,int *,int*);
+
+  /* call Fortran multiply function */
+static int ourmult(Mat mat, Vec x, Vec y)
+{
+  int ierr,s1,s2,s3;
+  s1 = MPIR_FromPointer(mat);
+  s2 = MPIR_FromPointer(x);
+  s3 = MPIR_FromPointer(y);
+  (*theirmult)(&s1,&s2,&s3,&ierr);
+  return ierr;
+}
+
+void matshellsetoperation_(Mat mat,MatOperation *op,void*f, int *__ierr )
+{
+  if (*op == MAT_MULT) {
+    *__ierr = MatShellSetOperation((Mat)MPIR_ToPointer(*(int*)(mat)),*op,
+                                   (void*) ourmult);
+    theirmult = (void (*)(int *,int *,int *,int*)) f;
+  } else {
+    PetscError(__LINE__,__DIR__,__FILE__,1,"Cannot set that matrix operation");
+    *__ierr = 0;
+  }
 }
 
 #if defined(__cplusplus)
