@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.57 1995/07/12 03:04:20 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.58 1995/07/12 03:12:25 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1048,6 +1048,17 @@ static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  int ierr;
+  if (aij->numtids == 1) {
+    ierr =  MatNorm_MPIAIJ(aij->A,type,norm); CHKERRQ(ierr);
+  } else 
+    SETERRQ(1,"MatNorm_MPIAIJ:  not yet supported in parallel.");
+  return 0; 
+}
+
 static int MatTranspose_MPIAIJ(Mat A,Mat *Bin)
 { 
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -1105,7 +1116,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatRelax_MPIAIJ,
        MatTranspose_MPIAIJ,
        MatGetInfo_MPIAIJ,0,
-       MatGetDiagonal_MPIAIJ,0,0,
+       MatGetDiagonal_MPIAIJ,0,MatNorm_MPIAIJ,
        MatAssemblyBegin_MPIAIJ,MatAssemblyEnd_MPIAIJ,
        0,
        MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,
