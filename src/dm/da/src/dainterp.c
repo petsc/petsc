@@ -201,7 +201,7 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   PetscScalar    v[4],x,y;
   Mat            mat;
   DAPeriodicType pt;
-  DACoor2d       **coors,**ccoors;
+  DACoor2d       **coors = 0,**ccoors;
   Vec            vcoors,cvcoors;
 
   PetscFunctionBegin;
@@ -376,7 +376,7 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   PetscScalar    v[8],x,y,z;
   Mat            mat;
   DAPeriodicType pt;
-  DACoor3d       ***coors,***ccoors;
+  DACoor3d       ***coors = 0,***ccoors;
   Vec            vcoors,cvcoors;
 
   PetscFunctionBegin;
