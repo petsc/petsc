@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.102 1995/10/23 00:42:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.103 1995/10/23 20:10:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -173,7 +173,7 @@ int MatView(Mat mat,Viewer ptr)
     MPIU_fprintf(mat->comm,fd,"  type=%s, rows=%d, cols=%d\n",cstring,rows,cols);
     if (mat->ops.getinfo) {
       ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&nz,&nzalloc,&mem); CHKERRQ(ierr);
-      MPIU_fprintf(mat->comm,fd,"Total:  nonzeros=%d, allocated nonzeros=%d\n",nz,nzalloc);
+      MPIU_fprintf(mat->comm,fd,"  total: nonzeros=%d, allocated nonzeros=%d\n",nz,nzalloc);
     }
   }
   if (mat->view) {ierr = (*mat->view)((PetscObject)mat,ptr); CHKERRQ(ierr);}
