@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.23 1999/05/12 03:34:00 bsmith Exp balay $";
+static char vcid[] = "$Id: gr2.c,v 1.24 1999/06/08 22:58:32 balay Exp bsmith $";
 #endif
 
 /* 
@@ -206,10 +206,6 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     */
     ierr = VecStrideMin(xin,zctx.k,PETSC_NULL,&zctx.min);CHKERRQ(ierr);
     ierr = VecStrideMax(xin,zctx.k,PETSC_NULL,&zctx.max);CHKERRQ(ierr);
-    if (zctx.min + 1.e-10 > zctx.max) {
-      zctx.min -= 1.e-5;
-      zctx.max += 1.e-5;
-    }
 
     if (!rank) {
       char *title;
