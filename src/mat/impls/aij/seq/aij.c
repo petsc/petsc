@@ -115,10 +115,10 @@ PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmet
 PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscInt       *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted = a->sorted;
+  PetscInt       *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N;
   PetscInt       *imax = a->imax,*ai = a->i,*ailen = a->ilen;
   PetscErrorCode ierr;
-  PetscInt       *aj = a->j,nonew = a->nonew;
+  PetscInt       *aj = a->j,nonew = a->nonew,lastcol = -1;
   PetscScalar    *ap,value,*aa = a->a;
   PetscTruth     ignorezeroentries = ((a->ignorezeroentries && is == ADD_VALUES) ? PETSC_TRUE:PETSC_FALSE);
   PetscTruth     roworiented = a->roworiented;
@@ -146,7 +146,8 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       }
       if (value == 0.0 && ignorezeroentries && (is == ADD_VALUES)) continue;
 
-      if (!sorted) low = 0; high = nrow;
+      if (col < lastcol) low = 0; high = nrow;
+      lastcol = col;
       while (high-low > 5) {
         t = (low+high)/2;
         if (rp[t] > col) high = t;

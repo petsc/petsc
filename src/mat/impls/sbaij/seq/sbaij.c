@@ -535,7 +535,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode  ierr;
-  PetscInt        *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
+  PetscInt        *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,lastcol = -1;
   PetscInt        *imax=a->imax,*ai=a->i,*ailen=a->ilen;
   PetscInt        *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=A->bs,stepval;
   PetscTruth      roworiented=a->roworiented; 
@@ -571,7 +571,8 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
       } else {
         value = v + l*(stepval+bs)*bs + k*bs;
       }
-      if (!sorted) low = 0; high = nrow;
+      if (col < lastcol) low = 0; high = nrow;
+      lastcol = col;
       while (high-low > 7) {
         t = (low+high)/2;
         if (rp[t] > col) high = t;
@@ -793,7 +794,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
+  PetscInt       *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,lastcol = -1;
   PetscInt       *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
   PetscInt       *aj=a->j,nonew=a->nonew,bs=A->bs,brow,bcol;
   PetscInt       ridx,cidx,bs2=a->bs2;
@@ -833,7 +834,8 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
           }
 
           /* move pointer bap to a(k,l) quickly and add/insert value */
-          if (!sorted) low = 0; high = nrow;
+          if (col < lastcol) low = 0; high = nrow;
+          lastcol = col;
           while (high-low > 7) {
             t = (low+high)/2;
             if (rp[t] > bcol) high = t;

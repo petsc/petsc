@@ -84,6 +84,7 @@
     </menu>
     <p><a href="#usage"><b>Usage</b></a></p>
     <ul>
+      <li><a href="#nosaij">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric storage, how come no SAIJ?</a></li>
       <li><a href="#domaindecomposition">How do I use PETSc for domain decomposition?</a></li>
       <li><a href="#blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></li>
     </ul>
@@ -334,6 +335,12 @@ Note that this simply concatenates in the
 
 
     <h3><a name="Using">Using</a></h3>
+    <p>&nbsp;<strong><a name="nosaij"><font color="#FF0000">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric
+            storage, how come no SAIJ</font></a></strong>
+
+</p>
+    Just for historical reasons, the SBAIJ format with blocksize one is just as efficient as an SAIJ would be</p>
+
     <p>&nbsp;<strong><a name="long-link-time"><font color="#FF0000">How do I use
     P</font></a></strong><strong><a name="domaindecomposition"><font color="#FF0000">ETSc
     for Domain Decomposition?</font></a></strong>
