@@ -15,8 +15,8 @@ REXAMPLES = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
             runex2 runex2_2 runex2_3 runex2_4 runex2_5\
             runex3 runex3_2 runex3_3\
             runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex8 runex8_2
-CEXAMPLES = ex1 ex2 ex3 ex4 ex8 ex9 ex10
-EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex8.c ex9.c ex10.c
+CEXAMPLES = ex1 ex2 ex3 ex4 ex8 ex9 ex10 ex11
+EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex8.c ex9.c ex10.c ex11.c
 LINCLUDE  = $(SOURCEH)
 
 ex1: ex1.o  chkopts
