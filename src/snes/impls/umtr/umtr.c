@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.8 1995/08/17 01:22:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.9 1995/08/24 22:30:56 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -35,8 +35,7 @@ static char vcid[] = "$Id: umtr.c,v 1.8 1995/08/17 01:22:14 curfman Exp bsmith $
 static int SNESSolve_UMTR(SNES snes,int *outits)
 {
   SNES_UMTR    *neP = (SNES_UMTR *) snes->data;
-  int          maxits, i, history_len, nlconv, ierr;
-  int          qits, newton;
+  int          maxits, i, history_len, nlconv, ierr, qits, newton, has_norm;
   double       *gnorm, xnorm, max_val, *history, ftrial, delta;
   double       zero = 0.0, *f, two = 2.0, four = 4.0;
   Scalar       one = 1.0;
@@ -89,8 +88,13 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
         if (xnorm > zero) delta = neP->factor1*xnorm;
         else delta = neP->delta0;
         /* Compute L-1 matrix norm */
-        ierr = MatNorm(snes->jacobian,NORM_1,&max_val); CHKERRQ(ierr);
-        delta = PETSCMAX(delta,*gnorm/max_val);
+        ierr = MatHasNorm_Private(snes->jacobian,&has_norm); CHKERRQ(ierr);
+        if (has_norm) {
+          ierr = MatNorm(snes->jacobian,NORM_1,&max_val); CHKERRQ(ierr);
+          if (PETSCABS(max_val) < 1.e-14) 
+            SETERRQ(1,"SNESSolve_UMTR: Hessian norm is too small");
+          delta = PETSCMAX(delta,*gnorm/max_val);
+        }
       } else { 
         delta = neP->delta0;
       }
