@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.104 1996/05/11 04:06:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.105 1996/06/12 20:22:02 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -57,7 +57,7 @@ extern FILE *petsc_history;
 
 .seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow()
 @*/
-int PLogInfoDeActivateClass(int objclass)
+int PLogInfoDeactivateClass(int objclass)
 {
   PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 0;
   if (objclass == SLES_COOKIE) {
