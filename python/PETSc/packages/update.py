@@ -78,7 +78,12 @@ class Configure(config.base.Configure):
 
     # Check if PETSC_ARCH is a built-in arch
     if os.path.isdir(os.path.join('bmake',self.framework.argDB['PETSC_ARCH'])) and not os.path.isfile(os.path.join('bmake',self.framework.argDB['PETSC_ARCH'],'configure.py')):
-      raise RuntimeError('The selected PETSC_ARCH is not allowed with config/configure.py\nbecause it clashes with a built-in PETSC_ARCH\nplease rerun config/configure.py with -PETSC_ARCH=somethingelse')
+      dirs   = os.listdir('bmake')
+      arches = ''
+      for d in dirs:
+        if os.path.isdir(os.path.join('bmake',d)) and not os.path.isfile(os.path.join('bmake',d,'configure.py')):
+          arches = arches + ' '+d
+      raise RuntimeError('The selected PETSC_ARCH is not allowed with config/configure.py\nbecause it clashes with a built-in PETSC_ARCH, rerun config/configure.py with -PETSC_ARCH=somethingelse;\n   DO NOT USE the following names:'+arches)
     
     # if PETSC_ARCH is not set use one last created with configure
     if self.framework.argDB['with-default-arch']:

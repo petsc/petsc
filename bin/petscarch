@@ -91,7 +91,6 @@ else # maybe use a case statement instead of if test for the entire script?
     esac
 fi
 
-if [ $# -gt 0 ]; then
   if [ "${PETSC_DIR}" = "" ]; then
      if [ -f `pwd`"/bin/petscarch" ]; then
         PETSC_DIR=`pwd`
@@ -111,36 +110,8 @@ if [ $# -gt 0 ]; then
       fi
   fi
   
-  # try to get configure arch
-  ${PETSC_DIR}/bin/configarch > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
-     echo 'Automatic configuration of PETSc use the following PETSC_ARCH' 
-     echo '  ' `${PETSC_DIR}/bin/configarch`
-  fi
-  echo 'Manual configuration of PETSc select one of the following PETSC_ARCH choices'
+  echo 'If doing manual configuration of PETSc (that is you are NOT using config/configure.py but are editing'
+  echo 'the configuration files in bmake/${PETSC_ARCH}/ directly) select one of the following PETSC_ARCH choices'
   ls -d ${PETSC_DIR}/bmake/${LARCH}* | sed -e "s?${PETSC_DIR}/bmake/\([_a-zA-Z0-9]*\)?   \1?g"
   exit 0
-fi
 
-# Now check if there is an installed set of libraries
-
-if [ "${PETSC_DIR}" != "" ]; then
-    ls ${PETSC_DIR}/lib/libg/${LARCH}*/libpetscdm*.* | head -1 > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-	LARCH=`ls -t ${PETSC_DIR}/lib/libg/${LARCH}*/libpetscdm*.* | head -1 | sed -e "s?${PETSC_DIR}/lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9\-]*\)/libpetscdm.[a-zA-Z0-9]*?\1?g"`
-    else 
-	# check if there is a configure installed version
-        ${PETSC_DIR}/bin/configarch > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-           TARCH=`${PETSC_DIR}/bin/configarch`
-           ls ${PETSC_DIR}/lib/libg/${TARCH}*/libpetscdm*.* > /dev/null 2>&1
-           if [ $? -eq 0 ]; then
-	       LARCH=$TARCH
-           fi
-        fi
-    fi
-fi
-
-
-echo $LARCH
-exit 0
