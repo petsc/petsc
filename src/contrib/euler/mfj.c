@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.16 1997/10/17 02:16:16 curfman Exp curfman $";
+static char vcid[] = "$Id: mfj.c,v 1.17 1997/10/17 02:29:48 curfman Exp curfman $";
 #endif
 
 /* 
@@ -488,45 +488,51 @@ int FixJacobian(Euler *user,Mat mat)
           }
         }
       }
-      
-      if ((user->problem == 1 || user->problem == 2 || user->problem ==3) && (j == 0)) {
-        for (k=zsi; k<zei; k++) {
-          if (k > user->ktip) {
-            jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
-            for (i=xsi; i<xei; i++) {
-              ijkv = jkx + i-gxs;
-              ijkx = ltog[ndof * ijkv];
-              dti = one/user->dt[ijkv];
-              for (m=0; m<ndof; m++) {
-                diag = ijkx + m;
-                ierr = MatSetValues(mat,1,&diag,1,&diag,&dti,INSERT_VALUES); CHKERRQ(ierr);
-              }
+    }
+
+    /* Modify certain Jacobian rows corresponding to wake BC (which we ignore in the
+       preconditioner because it destroys sparsity */
+    j = 0;         
+    if (user->problem == 1 || user->problem == 2 || user->problem ==3) {
+      for (k=zsi; k<zei; k++) {
+        if (k > user->ktip) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xsi; i<xei; i++) {
+            ijkv = jkx + i-gxs;
+            ijkx = ltog[ndof * ijkv];
+            dti = one/user->dt[ijkv];
+            for (m=0; m<ndof; m++) {
+              diag = ijkx + m;
+              ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
             }
           }
         }
-        for (k=zsi; k<zei; k++) {
-          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
-          for (i=xsi; i<xei; i++) {
-            if (i <= user->ile || i > user->itu) {
-              ijkv = jkx + i-gxs;
-              ijkx = ltog[ndof * ijkv];
-              dti = one/user->dt[ijkv];
-              for (m=0; m<ndof; m++) {
-                diag = ijkx + m;
-                ierr = MatSetValues(mat,1,&diag,1,&diag,&dti,INSERT_VALUES); CHKERRQ(ierr);
-              }
+      }
+      for (k=zsi; k<zei; k++) {
+        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+        for (i=xsi; i<xei; i++) {
+          if (i <= user->ile || i > user->itu) {
+            ijkv = jkx + i-gxs;
+            ijkx = ltog[ndof * ijkv];
+            dti = one/user->dt[ijkv];
+            for (m=0; m<ndof; m++) {
+              diag = ijkx + m;
+              ierr = MatSetValues(mat,1,&diag,1,&diag,&one,INSERT_VALUES); CHKERRQ(ierr);
             }
           }
         }
       }
     }
+    else if (user->problem == 5 || user->problem == 6 {
+      /* No modifications needed for wake BC */
+    } 
+    else SETERRQ(1,0,"Unsupported problem");
 
     ierr = MatAssemblyBegin(mat,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(mat,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
 
-    /* Interior grid points ... Add pseudo-transient continuation term:
-       dt != 0. 
-    */
+    /* Add pseudo-transient continuation term to interior grid points,
+       where dt != 0. */
     for (k=zsi; k<zei; k++) {
       for (j=ysi; j<yei; j++) {
         jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
