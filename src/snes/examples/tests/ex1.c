@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.85 2001/08/07 21:31:12 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.86 2001/08/24 16:13:20 bsmith Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -75,7 +75,6 @@ int main(int argc,char **argv)
   int            i,ierr,its,N,size,hist_its[50]; 
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
-  PetscScalar    *array;
   PetscTruth     matrix_free,flg,fd_coloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
