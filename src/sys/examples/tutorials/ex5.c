@@ -8,14 +8,14 @@ T*/
 #include "petsc.h"
 #include "petscbag.h"
 
+typedef struct {
+  PetscReal   x1,x2;
+} TwoVec;
+
 /*
    Define a C struct that will contain my program's parameters.
    It MUST begin with the PetscBag struct.
 */
-
-typedef struct {
-  PetscReal   x1,x2;
-} TwoVec;
 
 typedef struct {
   PetscBag    bag;
@@ -60,8 +60,8 @@ int main(int argc,char **argv)
   ierr  = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
   ierr  = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
 
-  /* get options from command line */
-  ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
+  /* get options from command line THIS IS NO LONGER NECESSARY */
+  //ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
 
   /* write bag to stdio & file */
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
