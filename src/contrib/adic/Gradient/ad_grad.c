@@ -17,6 +17,7 @@ int ad_grad_size = 0;
 int ad_total_grad_size = 0;
 int ad_grad_size_shadow = 0;
 
+
 EXTERN_C_BEGIN
 
 int ad_AD_IncrShadowVar(void)
@@ -47,18 +48,46 @@ void ad_grad_axpy_n(int arity, void* ddz, ...)
   { 
     gradv = DERIV_grad(*grads[0]);
     alpha = alphas[0];
-    for (i = 0; i < ad_grad_size_dynamic; i++) {
+    for (i = 0; i < ad_GRAD_MAX; i++) {
       z[i] = alpha*gradv[i];
     }
   }
   for (j = 1; j < arity; j++) {
     gradv = DERIV_grad(*grads[j]);
     alpha = alphas[j];
-    for (i = 0; i < ad_grad_size_dynamic; i++) {
+    for (i = 0; i < ad_GRAD_MAX; i++) {
       z[i] += alpha*gradv[i];
     }
   }   
-  PetscLogFlops(2*ad_grad_size_dynamic*(arity-.5));
+  PetscLogFlops(2*ad_GRAD_MAX*(arity-.5));
+}
+
+void mfad_grad_axpy_n(int arity, void* ddz, ...)
+{
+  int                j;
+  double             *z,*gradv;
+  static double      alphas[100];
+  static DERIV_TYPE* grads[100];
+  va_list            parg;
+
+  va_start(parg, ddz);
+  for (j = 0; j < arity; j++) {
+    alphas[j] = va_arg(parg, double);
+    grads[j]  = (DERIV_TYPE*)va_arg(parg, DERIV_TYPE*);
+  }
+  va_end(parg);
+
+  z = DERIV_grad(*((DERIV_TYPE*)ddz));
+  { 
+    gradv = DERIV_grad(*grads[0]);
+    z[0] = alphas[0]*gradv[0];
+  }
+
+  for (j = 1; j < arity; j++) {
+    gradv = DERIV_grad(*grads[j]);
+    z[0] += alphas[j]*gradv[0];
+  }
+  PetscLogFlops(2*(arity-.5));
 }
 
 EXTERN_C_END

@@ -119,6 +119,34 @@ int DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMGetInjection"
+/*@C
+    DMGetInjection - Gets injection matrix between two DA or VecPack objects
+
+    Collective on DM
+
+    Input Parameter:
++   dm1 - the DM object
+-   dm2 - the second, coarser DM object
+
+    Output Parameter:
+.   mat - the injection
+
+    Level: developer
+
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMGetInterpolation()
+
+@*/
+int DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm1->ops->getinjection)(dm1,dm2,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring"
 /*@C
     DMGetColoring - Gets coloring and empty Jacobian for a DA or VecPack

@@ -111,20 +111,21 @@ int DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRQ(ierr);}
   }
   for (i=0; i<nlevels; i++) {
-    if (dmmg[i]->dm) {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
-    if (dmmg[i]->x)  {ierr = VecDestroy(dmmg[i]->x);CHKERRQ(ierr);}
-    if (dmmg[i]->b)  {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}
-    if (dmmg[i]->r)  {ierr = VecDestroy(dmmg[i]->r);CHKERRQ(ierr);}
-    if (dmmg[i]->work1)  {ierr = VecDestroy(dmmg[i]->work1);CHKERRQ(ierr);}
-    if (dmmg[i]->w)  {ierr = VecDestroy(dmmg[i]->w);CHKERRQ(ierr);}
-    if (dmmg[i]->work2)  {ierr = VecDestroy(dmmg[i]->work2);CHKERRQ(ierr);}
+    if (dmmg[i]->dm)      {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
+    if (dmmg[i]->x)       {ierr = VecDestroy(dmmg[i]->x);CHKERRQ(ierr);}
+    if (dmmg[i]->b)       {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}
+    if (dmmg[i]->r)       {ierr = VecDestroy(dmmg[i]->r);CHKERRQ(ierr);}
+    if (dmmg[i]->work1)   {ierr = VecDestroy(dmmg[i]->work1);CHKERRQ(ierr);}
+    if (dmmg[i]->w)       {ierr = VecDestroy(dmmg[i]->w);CHKERRQ(ierr);}
+    if (dmmg[i]->work2)   {ierr = VecDestroy(dmmg[i]->work2);CHKERRQ(ierr);}
     if (dmmg[i]->lwork1)  {ierr = VecDestroy(dmmg[i]->lwork1);CHKERRQ(ierr);}
     if (dmmg[i]->B && dmmg[i]->B != dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);}
-    if (dmmg[i]->J)  {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
-    if (dmmg[i]->Rscale)  {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
-    if (dmmg[i]->fdcoloring)  {ierr = MatFDColoringDestroy(dmmg[i]->fdcoloring);CHKERRQ(ierr);}
-    if (dmmg[i]->sles)  {ierr = SLESDestroy(dmmg[i]->sles);CHKERRQ(ierr);}
-    if (dmmg[i]->snes)  {ierr = PetscObjectDestroy((PetscObject)dmmg[i]->snes);CHKERRQ(ierr);} 
+    if (dmmg[i]->J)         {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
+    if (dmmg[i]->Rscale)    {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
+    if (dmmg[i]->fdcoloring){ierr = MatFDColoringDestroy(dmmg[i]->fdcoloring);CHKERRQ(ierr);}
+    if (dmmg[i]->sles)      {ierr = SLESDestroy(dmmg[i]->sles);CHKERRQ(ierr);}
+    if (dmmg[i]->snes)      {ierr = PetscObjectDestroy((PetscObject)dmmg[i]->snes);CHKERRQ(ierr);} 
+    if (dmmg[i]->inject)    {ierr = VecScatterDestroy(dmmg[i]->inject);CHKERRQ(ierr);} 
     ierr = PetscFree(dmmg[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(dmmg);CHKERRQ(ierr);

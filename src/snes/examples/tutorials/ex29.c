@@ -277,13 +277,12 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
        
-       Process adiC(20):  AddTSTermLocal FormFunctionLocal
-       Process adiC(20):  AddTSTermLocal AddTSTermLocal2 FormFunctionLocal
+       Process adiC(20):  AddTSTermLocal AddTSTermLocal2 FormFunctionLocal FormFunctionLocali
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,
                             ad_FormFunctionLocal, admf_FormFunctionLocal);
     CHKERRQ(ierr);
-    /*    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);*/
+    ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
 
     /* attach nullspace to each level of the preconditioner */
     {
@@ -767,7 +766,7 @@ int Update(DMMG *dmmg)
       Vec v;
       ierr = SNESGetSolution(snes,&v);CHKERRQ(ierr);
       ierr = VecView(v,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
-      SETERRQ1(1,"Saved solution at time %d",tsCtx->t);
+      SETERRQ1(1,"Saved solution at time %g",tsCtx->t);
     }
 
     if (ts_monitor) {
@@ -1276,6 +1275,7 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
              Byp * (D_ym(x,U,i,j)) + Bym * (D_yp(x,U,i,j))) * rhos2 -
             eta * Lapl(x,psi,i,j)) * hxhy;
           *f += dtinv*(x[j][i].F-xold[j][i].F);
+          break;
       }
       ierr = DAVecRestoreArray(info->da,user->Xold,(void**)&xold);CHKERRQ(ierr);
 
