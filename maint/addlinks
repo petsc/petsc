@@ -5,18 +5,18 @@
 #
 
 set shadowdir=$1
-set barrysdir=$2
-set barrysdir=`echo $barrysdir | sed s%.%/home/bsmith/petsc%`
-set shadowdir=`echo $barrysdir | sed s%/home/bsmith/petsc%$shadowdir%`
+set petscdir=$2
+set petscdir=`echo $petscdir | sed s%.%/home/bsmith/petsc%`
+set shadowdir=`echo $petscdir | sed s%/home/bsmith/petsc%$shadowdir%`
 
 if (! -e $shadowdir) then
   echo "mkdir $shadowdir"
   mkdir $shadowdir
 endif
 
-set allfiles=$barrysdir/*
+set allfiles=$petscdir/*
 foreach file ($allfiles)
-  set short=`echo $file | sed s%$barrysdir/%$shadowdir/%` 
+  set short=`echo $file | sed s%$petscdir/%$shadowdir/%` 
   if (! -e $short && -f $file ) then
     set omit=0
     foreach bad ("\.a" "\.o" "PI" "\.ln" "l\.outa" "mputil.mp_" "core"\
@@ -24,8 +24,11 @@ foreach file ($allfiles)
                  "f\.c" "\#")
       set dummy=`echo $file | grep $bad` 
       if ($dummy == $file) then
-        echo "rejecting $file due to" $bad
-        set omit=1
+        set dummy=`echo $file | grep -v "\.out"` 
+        if ($dummy == $file) then
+          echo "rejecting $file due to" $bad
+          set omit=1
+        endif
       endif
     end
     if ($omit) continue
