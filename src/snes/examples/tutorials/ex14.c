@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5_3d.c,v 1.2 1998/12/02 21:28:14 curfman Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.1 1999/07/02 13:57:52 curfman Exp curfman $";
 #endif
 
-/* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
+/* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
-We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
+We solve the  Bratu (SFI - solid fuel ignition) problem in a 3D rectangular\n\
 domain, using distributed arrays (DAs) to partition the parallel grid.\n\
 The command line options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
