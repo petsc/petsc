@@ -26,8 +26,8 @@ Barry  * Fix fortran interface for TS. and read David Keyes comments.
 Satish - Finish "Performance" chapter: section "System Related Problems"
 
 Lois   * Finish users manual:
-            - Add info about BAIJ matrix to Chapter 15
-            - Update viewer section (add VRML stuff, reorganize)
+            X Add info about BAIJ matrix to Chapter 15
+            * Update viewer section (add VRML stuff, reorganize)
 
 Satish * Create an Database for examples
 
