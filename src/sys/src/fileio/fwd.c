@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fwd.c,v 1.10 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: fwd.c,v 1.11 1997/08/22 15:11:48 bsmith Exp gropp $";
 #endif
 /*
       Code for manipulating files.
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: fwd.c,v 1.10 1997/07/09 20:51:14 balay Exp bsmith $";
 @*/
 int PetscGetWorkingDirectory( char *path,int len )
 {
-#if defined(PARCH_sun4)
+#if defined(HAVE_GETWD)
   getwd( path );
 #elif defined(PARCH_nt)
   _getcwd( path, len );
