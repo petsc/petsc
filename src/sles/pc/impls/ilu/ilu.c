@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.61 1996/03/19 21:25:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.62 1996/03/23 18:33:46 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -34,7 +34,7 @@ static int (*setups[])(PC) = {0,
 .  levels - number of levels of fill
 
    Options Database Key:
-$  -pc_ilu_levels  levels
+$  -pc_ilu_levels <levels>
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 
@@ -98,13 +98,13 @@ static int PCSetFromOptions_ILU(PC pc)
 static int PCPrintHelp_ILU(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCILU preconditioner:\n");
-  PetscPrintf(pc->comm," -mat_order name: ordering to reduce fill",p);
+  PetscPrintf(pc->comm," -mat_order <name>: ordering to reduce fill",p);
   PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
-  PetscPrintf(pc->comm," %spc_ilu_levels levels: levels of fill\n",p);
+  PetscPrintf(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);
   PetscPrintf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
   PetscPrintf(pc->comm," %spc_ilu_factorpointwise: DO NOT use block factorization\n",p);
-  PetscPrintf(pc->comm,"    (note this only applies to MatCreateMPIRowBS, all others\n");
-  PetscPrintf(pc->comm,"    currently only support point factorization.\n");
+  PetscPrintf(pc->comm,"    (note this only applies to MATMPIROWBS matrix format; all\n");
+  PetscPrintf(pc->comm,"    others currently only support point factorization.\n");
   return 0;
 }
 
