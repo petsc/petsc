@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.55 1995/07/06 17:47:13 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.56 1995/07/07 17:14:32 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -23,6 +23,17 @@ static int CreateColmap_Private(Mat mat)
 }
 
 extern int DisAssemble_MPIAIJ(Mat);
+
+static int MatGetReordering_MPIAIJ(Mat mat,int type,IS *rperm, IS *cperm)
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
+  int ierr;
+  if (aij->numtids == 1) {
+    ierr = MatGetReordering(mat,type,rperm,cperm); CHKERRQ(ierr);
+  } else 
+    SETERRQ(1,"MatGetReordering_MPIAIJ:  not yet supported in parallel.");
+  return 0;
+}
 
 static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
@@ -929,6 +940,15 @@ static int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,int *nz,
   return 0;
 }
 
+extern int MatLUFactorSymbolic_MPIAIJ(Mat,IS,IS,double,Mat*);
+extern int MatLUFactorNumeric_MPIAIJ(Mat,Mat*);
+extern int MatLUFactor_MPIAIJ(Mat,IS,IS,double);
+extern int MatILUFactorSymbolic_MPIAIJ(Mat,IS,IS,double,int,Mat *);
+extern int MatSolve_MPIAIJ(Mat,Vec,Vec);
+extern int MatSolveAdd_MPIAIJ(Mat,Vec,Vec,Vec);
+extern int MatSolveTrans_MPIAIJ(Mat,Vec,Vec);
+extern int MatSolveTransAdd_MPIAIJ(Mat,Vec,Vec,Vec);
+
 static int MatSetOption_MPIAIJ(Mat aijin,MatOption op)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
@@ -987,7 +1007,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   if (v  || idx) {
     if (nztot) {
       /* Sort by increasing column numbers, assuming A and B already sorted */
-      int imark, imark2;
+      int imark;
       if (mat->assembled) {
         for (i=0; i<nzB; i++) cworkB[i] = mat->garray[cworkB[i]];
       }
@@ -999,8 +1019,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         }
         imark = i;
         for ( i=0; i<nzA; i++ )     (*v)[imark+i] = vworkA[i];
-        imark2 = imark+nzA;
-        for ( i=imark; i<nzB; i++ ) (*v)[imark2+i] = vworkB[i];
+        for ( i=imark; i<nzB; i++ ) (*v)[nzA+i] = vworkB[i];
       }
       if (idx) {
         *idx = (int *) PETSCMALLOC( (nztot)*sizeof(int) ); CHKPTRQ(*idx);
@@ -1011,8 +1030,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         }
         imark = i;
         for ( i=0; i<nzA; i++ )     (*idx)[imark+i] = cworkA[i];
-        imark2 = imark+nzA;
-        for ( i=imark; i<nzB; i++ ) (*idx)[imark2+i] = cworkB[i];
+        for ( i=imark; i<nzB; i++ ) (*idx)[nzA+i] = cworkB[i];
       } 
     } 
     else {*idx = 0; *v=0;}
@@ -1081,18 +1099,20 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,MatRestoreRow_MPIAIJ,
        MatMult_MPIAIJ,MatMultAdd_MPIAIJ,
        MatMultTrans_MPIAIJ,MatMultTransAdd_MPIAIJ,
-       0,0,0,0,
-       0,0,
+       MatSolve_MPIAIJ,MatSolveAdd_MPIAIJ,
+       MatSolveTrans_MPIAIJ,MatSolveTransAdd_MPIAIJ,
+       MatLUFactor_MPIAIJ,0,
        MatRelax_MPIAIJ,
        MatTranspose_MPIAIJ,
        MatGetInfo_MPIAIJ,0,
        MatGetDiagonal_MPIAIJ,0,0,
        MatAssemblyBegin_MPIAIJ,MatAssemblyEnd_MPIAIJ,
        0,
-       MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,0,
-       0,0,0,0,
+       MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,
+       MatGetReordering_MPIAIJ,
+       MatLUFactorSymbolic_MPIAIJ,MatLUFactorNumeric_MPIAIJ,0,0,
        MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
-       0,0,
+       MatILUFactorSymbolic_MPIAIJ,0,
        0,0,MatConvert_MPIAIJ,0,0,MatCopyPrivate_MPIAIJ};
 
 /*@
