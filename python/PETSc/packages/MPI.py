@@ -412,7 +412,9 @@ class Configure(config.base.Configure):
     return
 
   def configureMPIRUN(self):
-    '''Checking for mpirun'''
+    '''Checking for mpirun
+       - If --can-execute=0, then no checking is done'''
+    if not self.framework.argDB['can-execute']: return
     if 'with-mpirun' in self.framework.argDB:
       self.mpirun = self.framework.argDB['with-mpirun']
     else:
