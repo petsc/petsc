@@ -1,6 +1,6 @@
-/*$Id: ex1.c,v 1.18 2000/07/10 03:39:11 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.19 2000/09/22 20:42:58 bsmith Exp bsmith $*/
 
-static char help[] = "Demonstrates creating a general index set.\n\n";
+static char help[] = "Creating a general index set.\n\n";
 
 /*T
     Concepts: index sets^manipulating a general index set;

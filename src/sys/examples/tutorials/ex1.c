@@ -1,11 +1,12 @@
-/*$Id: ex1.c,v 1.11 2000/01/11 20:59:51 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.12 2000/09/22 20:42:48 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
-static char help[] = "This is an introductory PETSc example that illustrates printing.\n\n";
+static char help[] = "Introductory example that illustrates printing.\n\n";
 
 /*T
    Concepts: introduction to PETSc;
+   Concepts: printing^in parallel
    Processors: n
 T*/
  

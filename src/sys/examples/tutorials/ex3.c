@@ -1,7 +1,7 @@
-/*$Id: ex3.c,v 1.33 2000/09/07 15:24:03 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.34 2000/09/22 20:42:48 bsmith Exp bsmith $*/
 
-static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
-inserting their own event logging.  Run this program with one of the\n\
+static char help[] = "Augmenting PETSc profiling by add events.\n\
+Run this program with one of the\n\
 following options to generate logging information:  -log, -log_summary,\n\
 -log_all.  The PETSc routines automatically log event times and flops,\n\
 so this monitoring is intended solely for users to employ in application\n\
@@ -10,7 +10,9 @@ codes.  Note that the code must be compiled with the flag -DPETSC_USE_LOG\n\
 
 /*T
    Concepts: PLog^user-defined event profiling
+   Concepts: profiling^user-defined event
    Concepts: PLog^activating/deactivating events for profiling
+   Concepts: profiling^activating/deactivating events
    Processors: n
 T*/
 
