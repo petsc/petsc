@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daltog.c,v 1.2 1996/03/19 21:29:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daltog.c,v 1.3 1996/08/08 14:47:19 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -28,8 +28,8 @@ int DALocalToGlobal(DA da,Vec l, InsertMode mode,Vec g)
 {
   int ierr;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = VecScatterBegin(l,g,mode,SCATTER_ALL,da->ltog); CHKERRQ(ierr);
-  ierr = VecScatterEnd(l,g,mode,SCATTER_ALL,da->ltog); CHKERRQ(ierr);
+  ierr = VecScatterBegin(l,g,mode,SCATTER_FORWARD,da->ltog); CHKERRQ(ierr);
+  ierr = VecScatterEnd(l,g,mode,SCATTER_FORWARD,da->ltog); CHKERRQ(ierr);
   return 0;
 }
 

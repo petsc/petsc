@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbaij.c,v 1.7 1996/08/15 12:48:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmbaij.c,v 1.8 1996/11/19 16:31:35 bsmith Exp bsmith $";
 #endif
 
 
@@ -88,7 +88,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
     this on the chance that the user immediately calls MatMult() after assemblying 
     the matrix.
   */
-  ierr = VecScatterPostRecvs(gvec,baij->lvec,INSERT_VALUES,SCATTER_ALL,baij->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterPostRecvs(gvec,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
   MPI_Barrier(mat->comm);
 
   PLogObjectParent(mat,baij->Mvctx);

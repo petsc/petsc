@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.39 1996/09/28 16:09:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.40 1996/10/30 23:27:59 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -178,18 +178,18 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
   Scalar zero = 0.0;
 
   for ( i=0; i<n_local; i++ ) {
-    ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,SCATTER_ALL,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,SCATTER_FORWARD,osm->scat[i]);CHKERRQ(ierr);
   }
   ierr = VecSet(&zero,y); CHKERRQ(ierr);
   /* do the local solves */
   for ( i=0; i<n_local_true; i++ ) {
-    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_ALL,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_FORWARD,osm->scat[i]);CHKERRQ(ierr);
     ierr = SLESSolve(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,SCATTER_REVERSE,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
   for ( i=n_local_true; i<n_local; i++ ) {
-    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_ALL,osm->scat[i]);CHKERRQ(ierr);
+    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_FORWARD,osm->scat[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,SCATTER_REVERSE,osm->scat[i]);CHKERRQ(ierr);
   }
   for ( i=0; i<n_local; i++ ) {

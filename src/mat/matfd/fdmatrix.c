@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdmatrix.c,v 1.1 1996/10/09 17:52:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.2 1996/11/07 15:09:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -217,5 +217,91 @@ int MatFDColoringDestroy(MatFDColoring c)
   PetscFree(c->scale);
   PLogObjectDestroy(c);
   PetscHeaderDestroy(c);
+  return 0;
+}
+
+/*@
+     MatFDColoringApply - Given a matrix for which a MatFDColoring has been created,
+         computes the Jacobian for a function via finite differences.
+
+  Input Parameters:
+.   mat - location to store Jacobian
+.   coloring - coloring context created with MatFDColoringCreate()
+.   x1 - location at which Jacobian is to be computed
+.   w1,w2,w3 - three work vectors
+.   f - function for which Jacobian is required
+.   fctx - optional context required by function
+
+.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
+
+.keywords: coloring, Jacobian, finite differences
+@*/
+int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,Vec w1,Vec w2,Vec w3,
+                       int (*f)(void *,Vec,Vec,void*),void *sctx,void *fctx)
+{
+  int           k, ierr,N,start,end,l,row,col,srow;
+  Scalar        dx, mone = -1.0,*y,*scale = coloring->scale,*xx,*wscale = coloring->wscale;
+  double        epsilon = coloring->error_rel, umin = coloring->umin; 
+  MPI_Comm      comm = coloring->comm;
+
+  ierr = MatZeroEntries(J); CHKERRQ(ierr);
+
+  ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
+  ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
+  ierr = VecGetArray(x1,&xx); CHKERRQ(ierr);
+  ierr = (*f)(sctx,x1,w1,fctx); CHKERRQ(ierr);
+
+  PetscMemzero(wscale,N*sizeof(Scalar));
+  /*
+      Loop over each color
+  */
+
+  for (k=0; k<coloring->ncolors; k++) { 
+    ierr = VecCopy(x1,w3); CHKERRQ(ierr);
+    /*
+       Loop over each column associated with color adding the 
+       perturbation to the vector w3.
+    */
+    for (l=0; l<coloring->ncolumns[k]; l++) {
+      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+      dx  = xx[col-start];
+#if !defined(PETSC_COMPLEX)
+      if (dx < umin && dx >= 0.0) dx = .1;
+      else if (dx < 0.0 && dx > -umin) dx = -.1;
+#else
+      if (abs(dx) < umin && real(dx) >= 0.0) dx = .1;
+      else if (real(dx) < 0.0 && abs(dx) < umin) dx = -.1;
+#endif
+      dx          *= epsilon;
+      wscale[col] = 1.0/dx;
+      VecSetValues(w3,1,&col,&dx,ADD_VALUES); 
+    } 
+    VecRestoreArray(x1,&xx);
+    /*
+       Evaluate function at x1 + dx (here dx is a vector, of perturbations)
+    */
+    ierr = (*f)(sctx,w3,w2,fctx); CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,w1,w2); CHKERRQ(ierr);
+    /* Communicate scale to all processors */
+#if !defined(PETSC_COMPLEX)
+    MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);
+#else
+    MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);
+#endif
+    /*
+       Loop over rows of vector putting results into Jacobian matrix
+    */
+    VecGetArray(w2,&y);
+    for (l=0; l<coloring->nrows[k]; l++) {
+      row    = coloring->rows[k][l];
+      col    = coloring->columnsforrow[k][l];
+      y[row] *= scale[col];
+      srow   = row + start;
+      ierr   = MatSetValues(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    VecRestoreArray(w2,&y);
+  }
+  ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }

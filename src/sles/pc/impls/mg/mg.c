@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.55 1996/10/24 21:23:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.56 1996/11/07 15:08:56 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -382,23 +382,25 @@ static int PCSetUp_MG(PC pc)
   mg[n-1]->x = pc->vec;
   mg[n-1]->b = pc->vec;
 
-  for ( i=0; i<n; i++ ) {
+  for ( i=1; i<n; i++ ) {
     if (mg[i]->smoothd) {
-      ierr = SLESAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_"); CHKERRQ(ierr);
+      ierr = SLESSetOptionsPrefix(mg[i]->smoothd,"mg_levels_"); CHKERRQ(ierr);
       ierr = SLESSetFromOptions(mg[i]->smoothd); CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothd,&ksp); CHKERRQ(ierr);
-      if (i != 0) {ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);}
-      if (i != 0) {ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x); CHKERRQ(ierr);}
+      ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
+      ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
     }
+  }
+  for ( i=0; i<n; i++ ) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
-      ierr = SLESAppendOptionsPrefix(mg[i]->smoothu,"mg_levels_"); CHKERRQ(ierr);
+      ierr = SLESSetOptionsPrefix(mg[i]->smoothu,"mg_levels_"); CHKERRQ(ierr);
       ierr = SLESSetFromOptions(mg[i]->smoothu); CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothu,&ksp); CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
       ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
     }
   }
-  ierr = SLESAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_"); CHKERRQ(ierr);
+  ierr = SLESSetOptionsPrefix(mg[0]->smoothd,"mg_coarse_"); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(mg[0]->smoothd); CHKERRQ(ierr);
   ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x); CHKERRQ(ierr);
   return 0;

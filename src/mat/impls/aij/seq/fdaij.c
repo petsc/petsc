@@ -1,11 +1,14 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdaij.c,v 1.2 1996/11/07 15:09:23 bsmith Exp balay $";
+static char vcid[] = "$Id: fdaij.c,v 1.3 1996/11/19 20:03:06 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 #include "petsc.h"
+
+extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
 int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
@@ -20,7 +23,12 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   c->nrows         = (int *) PetscMalloc( nis*sizeof(int) );   CHKPTRQ(c->nrows);
   c->rows          = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->rows);
   c->columnsforrow = (int **) PetscMalloc( nis*sizeof(int *)); CHKPTRQ(c->columnsforrow);
-  ierr = MatGetColumnIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done); CHKERRQ(ierr);
+
+  /*
+      Calls the _SeqAIJ() version of these routines to make sure it does not 
+     get the reduced (by inodes) version of I and J
+  */
+  ierr = MatGetColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done); CHKERRQ(ierr);
 
   /*
      Temporary option to allow for debugging/testing
@@ -118,7 +126,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     } /* ---------------------------------------------------------------------------------------*/
     ierr = ISRestoreIndices(isa[i],&is); CHKERRQ(ierr);  
   }
-  ierr = MatRestoreColumnIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done); CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done); CHKERRQ(ierr);
 
   PetscFree(rowhit);
   PetscFree(columnsforrow);

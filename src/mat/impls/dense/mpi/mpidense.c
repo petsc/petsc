@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.53 1996/11/20 05:01:08 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.54 1996/11/20 19:59:48 curfman Exp bsmith $";
 #endif
 
 /*
@@ -371,8 +371,8 @@ static int MatMult_MPIDense(Mat mat,Vec xx,Vec yy)
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr;
 
-  ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
   ierr = MatMult_SeqDense(mdn->A,mdn->lvec,yy); CHKERRQ(ierr);
   return 0;
 }
@@ -382,8 +382,8 @@ static int MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   int          ierr;
 
-  ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_ALL,mdn->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,mdn->lvec,INSERT_VALUES,SCATTER_FORWARD,mdn->Mvctx);CHKERRQ(ierr);
   ierr = MatMultAdd_SeqDense(mdn->A,mdn->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
 }

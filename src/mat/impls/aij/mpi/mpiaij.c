@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.175 1996/11/20 05:04:38 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.176 1996/11/20 19:59:58 curfman Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -470,9 +470,9 @@ static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   if (nt != a->n) {
     SETERRQ(1,"MatMult_MPIAIJ:Incompatible parition of A and xx");
   }
-  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx); CHKERRQ(ierr);
   ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx); CHKERRQ(ierr);
   ierr = (*a->B->ops.multadd)(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
   return 0;
 }
@@ -481,9 +481,9 @@ static int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
-  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->A->ops.multadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->B->ops.multadd)(a->B,a->lvec,zz,zz); CHKERRQ(ierr);
   return 0;
 }
@@ -741,9 +741,9 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       return (*mat->A->ops.relax)(mat->A,bb,omega,flag,fshift,its,xx);
     }
-    ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,mat->Mvctx);
+    ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);
     CHKERRQ(ierr);
-    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,mat->Mvctx);
+    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);
     CHKERRQ(ierr);
     while (its--) {
       /* go down through the rows */
@@ -780,9 +780,9 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       return (*mat->A->ops.relax)(mat->A,bb,omega,flag,fshift,its,xx);
     }
-    ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,mat->Mvctx);
+    ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);
     CHKERRQ(ierr);
-    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,mat->Mvctx);
+    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);
     CHKERRQ(ierr);
     while (its--) {
       for ( i=0; i<m; i++ ) {
@@ -804,9 +804,9 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       return (*mat->A->ops.relax)(mat->A,bb,omega,flag,fshift,its,xx);
     }
-    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,
+    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,
                             mat->Mvctx); CHKERRQ(ierr);
-    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,
+    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,
                             mat->Mvctx); CHKERRQ(ierr);
     while (its--) {
       for ( i=m-1; i>-1; i-- ) {
@@ -1173,7 +1173,7 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
     VecGetLocalSize_Fast(rr,s1);
     if (s1!=s3) SETERRQ(1,"MatDiagonalScale: right vector non-conforming local size");
     /* Overlap communication with computation. */
-    ierr = VecScatterBegin(rr,aij->lvec,INSERT_VALUES,SCATTER_ALL,aij->Mvctx); CHKERRQ(ierr);
+    ierr = VecScatterBegin(rr,aij->lvec,INSERT_VALUES,SCATTER_FORWARD,aij->Mvctx); CHKERRQ(ierr);
   }
   if (ll) {
     VecGetLocalSize_Fast(ll,s1);
@@ -1185,7 +1185,7 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 
   if (rr) {
     /* Do a scatter end and then right scale the off-diagonal block */
-    ierr = VecScatterEnd(rr,aij->lvec,INSERT_VALUES,SCATTER_ALL,aij->Mvctx); CHKERRQ(ierr);
+    ierr = VecScatterEnd(rr,aij->lvec,INSERT_VALUES,SCATTER_FORWARD,aij->Mvctx); CHKERRQ(ierr);
     ierr = (*b->ops.diagonalscale)(b,0,aij->lvec); CHKERRQ(ierr);
   } 
   

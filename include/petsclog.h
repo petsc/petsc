@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.91 1996/11/19 16:28:04 bsmith Exp balay $ */
+/* $Id: plog.h,v 1.92 1996/11/19 16:38:46 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -125,6 +125,7 @@ extern double _TotalFlops;
 extern int PLogInfo(void*,char*,...);
 extern int PLogInfoDeactivateClass(int);
 extern int PLogInfoActivateClass(int);
+extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 
 #if defined(PETSC_LOG)  /* --------------------------------------------*/
 

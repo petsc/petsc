@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.29 1996/08/15 12:45:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.30 1996/09/12 16:24:55 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -57,8 +57,8 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   PLogObjectParent(win,W); PLogObjectParent(win,from); PLogObjectParent(win,to);
   ierr = VecScatterCreate(V,from,W,to,&ctx); CHKERRQ(ierr);
   PLogObjectParent(win,ctx);
-  ierr = VecScatterBegin(V,W,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRQ(ierr);
-  ierr = VecScatterEnd(V,W,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(V,W,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(V,W,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRQ(ierr);
   ISDestroy(from); ISDestroy(to); VecScatterDestroy(ctx);
 
   /* create scale window */

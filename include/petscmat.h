@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.117 1996/11/07 15:12:51 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.118 1996/11/19 16:34:06 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -195,6 +195,8 @@ extern int MatFDColoringView(MatFDColoring,Viewer);
 extern int MatFDColoringSetParameters(MatFDColoring,double,double);
 extern int MatFDColoringSetFromOptions(MatFDColoring);
 extern int MatFDColoringPrintHelp(MatFDColoring);
+extern int MatFDColoringApply(Mat,MatFDColoring,Vec,Vec,Vec,Vec,int (*)(void *,Vec,Vec,void*),
+                              void *,void *);
 
 /*
     If you add entries here you must also add them to FINCLUDE/mat.h

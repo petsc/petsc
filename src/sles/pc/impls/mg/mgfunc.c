@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.15 1996/09/28 16:08:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.16 1996/11/07 15:08:56 bsmith Exp bsmith $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -129,7 +129,7 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 int MGGetSmoother(PC pc,int l,SLES *sles)
 {
   MG *mg = (MG*) pc->data;
-  *sles = mg[l]->smoothu;  
+  *sles = mg[l]->smoothd;  
   return 0;
 }
 
@@ -150,8 +150,23 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 @*/
 int MGGetSmootherUp(PC pc,int l,SLES *sles)
 {
-  MG *mg = (MG*) pc->data;
-  *sles = mg[l]->smoothu;  
+  MG   *mg = (MG*) pc->data;
+  int  ierr;
+  char *prefix;
+
+  /*
+     This is called only if user wants a different pre-smoother from post.
+     Thus we check if a different one has already been allocated, 
+     if not we allocate it.
+  */
+  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
+
+  if (mg[l]->smoothu == mg[l]->smoothd) {
+    ierr = SLESCreate(pc->comm,&mg[l]->smoothu); CHKERRQ(ierr);
+    ierr = SLESSetOptionsPrefix( mg[l]->smoothu,prefix); CHKERRQ(ierr);
+    PLogObjectParent(pc,mg[l]->smoothu);
+  }
+  *sles = mg[l]->smoothu;
   return 0;
 }
 
@@ -172,23 +187,8 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 @*/
 int MGGetSmootherDown(PC pc,int l,SLES *sles)
 {
-  MG   *mg = (MG*) pc->data;
-  int  ierr;
-  char *prefix;
-
-  /*
-     This is called only if user wants a different pre-smoother from post.
-     Thus we check if a different one has already been allocated, 
-     if not we allocate it.
-  */
-  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
-
-  if (mg[l]->smoothd == mg[l]->smoothu) {
-    ierr = SLESCreate(pc->comm,&mg[l]->smoothd); CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix( mg[l]->smoothd,prefix); CHKERRQ(ierr);
-    PLogObjectParent(pc,mg[l]->smoothd);
-  }
-  *sles = mg[l]->smoothd;
+  MG *mg = (MG*) pc->data;
+  *sles = mg[l]->smoothd;  
   return 0;
 }
 

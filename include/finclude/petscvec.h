@@ -1,5 +1,5 @@
 C
-C  $Id: vec.h,v 1.12 1996/04/16 00:40:41 balay Exp bsmith $;
+C  $Id: vec.h,v 1.13 1996/08/04 23:14:49 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Vec package in PETSc
 C
@@ -32,9 +32,9 @@ C
 C
 C  Types of vector scatters
 C
-      integer SCATTER_REVERSE,SCATTER_ALL
+      integer SCATTER_REVERSE,SCATTER_FORWARD
 
-      parameter (SCATTER_REVERSE = 1,SCATTER_ALL = 8)
+      parameter (SCATTER_REVERSE = 1,SCATTER_FORWARD = 8)
 
 C
 C  End of Fortran include file for the Vec package in PETSc

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.33 1996/11/26 20:17:11 curfman Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.34 1996/11/27 19:49:19 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -570,11 +570,11 @@ static int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
   if (nt != a->m) {
     SETERRQ(1,"MatMult_MPIBAIJ:Incompatible parition of A and yy");
   }
-  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->B->ops.multadd)(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
-  ierr = VecScatterPostRecvs(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterPostRecvs(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   return 0;
 }
 
@@ -582,9 +582,9 @@ static int MatMultAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) A->data;
   int        ierr;
-  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->A->ops.multadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->B->ops.multadd)(a->B,a->lvec,zz,zz); CHKERRQ(ierr);
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.47 1996/09/27 20:12:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.48 1996/11/19 16:33:13 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -121,6 +121,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   IS         to,from;
   DF         df_local;
   *inra = 0;
+
+  if (w < 1) SETERRQ(1,"DACreate1d:Must have 1 or more degrees of freedom per node");
+  if (s < 0) SETERRQ(1,"DACreate1d:Stencil width cannot be negative");
 
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.29 1996/07/08 22:16:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.30 1996/08/15 12:45:25 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
@@ -32,8 +32,8 @@ int main(int argc,char **argv)
   VecView(x,VIEWER_STDOUT_SELF); PetscPrintf(MPI_COMM_SELF,"----\n");
   ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_ALL,ctx);CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_ALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
+  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx); CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx); CHKERRA(ierr);
   
   ierr = VecView(y,VIEWER_STDOUT_SELF); CHKERRA(ierr);

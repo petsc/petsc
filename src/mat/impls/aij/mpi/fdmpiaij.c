@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: fdmpiaij.c,v 1.1 1996/10/15 18:50:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.2 1996/10/28 14:59:58 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -9,6 +9,8 @@ static char vcid[] = "$Id: fdmpiaij.c,v 1.1 1996/10/15 18:50:07 bsmith Exp bsmit
 #include "petsc.h"
 
 extern int CreateColmap_MPIAIJ_Private(Mat);
+extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
 int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
@@ -31,8 +33,12 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   if (!aij->colmap) {
     ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
   }
-  ierr = MatGetColumnIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done); CHKERRQ(ierr); 
-  ierr = MatGetColumnIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done); CHKERRQ(ierr); 
+  /*
+      Calls the _SeqAIJ() version of these routines to make sure it does not 
+     get the reduced (by inodes) version of I and J
+  */
+  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done); CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done); CHKERRQ(ierr); 
 
   MPI_Comm_size(mat->comm,&size);
   ncolsonproc = (int *) PetscMalloc( 2*size*sizeof(int *) ); CHKPTRQ(ncolsonproc);
@@ -188,8 +194,8 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
   PetscFree(rowhit);
   PetscFree(columnsforrow);
   PetscFree(ncolsonproc);
-  ierr = MatRestoreColumnIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done); CHKERRQ(ierr); 
-  ierr = MatRestoreColumnIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done); CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done); CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done); CHKERRQ(ierr); 
 
   c->scale  = (Scalar *) PetscMalloc( 2*mat->N*sizeof(Scalar) ); CHKPTRQ(c->scale);
   c->wscale = c->scale + mat->N;

@@ -10,7 +10,7 @@ CFLAGS	 =
 SOURCEC	 =
 SOURCEF	 =
 SOURCEH	 = Changes Machines Readme maint/addlinks \
-	   maint/builddist FAQ Installation Performance BugReporting\
+	   maint/builddist FAQ Installation BugReporting\
 	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
 	   bmake/common bmake/*/base* maint/autoftp docs/www/sec/* \
            include/finclude/generateincludes bin/petscviewinfo.text \

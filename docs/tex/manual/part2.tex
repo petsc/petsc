@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.169 1996/11/16 00:45:57 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.170 1996/11/27 17:29:07 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -341,13 +341,13 @@ actually a combination of scatters and gathers.
 
 \findex{VecScatterCreate()} \findex{VecScatterBegin()}
 \findex{VecScatterEnd()} \findex{VecScatterDestroy()}
-\findex{INSERT_VALUES} \findex{SCATTER_ALL}
+\findex{INSERT_VALUES} \findex{SCATTER_FORWARD}
 To copy selected components from one vector 
 to another, one uses the following set of commands:
 \begin{verbatim}
    ierr = VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);
-   ierr = VecScatterBegin(Vec x,Vec y,INSERT_VALUES,SCATTER_ALL,VecScatter ctx);
-   ierr = VecScatterEnd(Vec x,Vec y,INSERT_VALUES,SCATTER_ALL,VecScatter ctx);
+   ierr = VecScatterBegin(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
+   ierr = VecScatterEnd(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
    ierr = VecScatterDestroy(VecScatter ctx);
 \end{verbatim} 
 Here {\tt ix} denotes the index set of the first vector, while {\tt
@@ -417,8 +417,8 @@ elements it needed, or none by creating an index set with no entries.
    ISCreateGeneral(MPI_COMM_SELF,2,idx_from,&from);
    ISCreateGeneral(MPI_COMM_SELF,2,idx_to,&to);
    VecScatterCreate(p,from,x,to,&scatter);
-   VecScatterBegin(p,x,INSERT_VALUES,SCATTER_ALL,scatter);
-   VecScatterEnd(p,x,INSERT_VALUES,SCATTER_ALL,scatter);
+   VecScatterBegin(p,x,INSERT_VALUES,SCATTER_FORWARD,scatter);
+   VecScatterEnd(p,x,INSERT_VALUES,SCATTER_FORWARD,scatter);
    VecGetArray(x,&values);
    ISDestroy(from);
    ISDestroy(to); 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.97 1996/11/19 16:31:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.98 1996/11/20 19:50:39 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -398,8 +398,8 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 
-  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = (*mbd->A->ops.mult)(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
   return 0;
 }
@@ -409,8 +409,8 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
 
-  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_FORWARD,mbd->Mvctx);CHKERRQ(ierr);
   ierr = (*mbd->A->ops.multadd)(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
 }

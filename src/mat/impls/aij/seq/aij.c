@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.194 1996/11/15 20:00:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.195 1996/11/19 16:30:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -73,7 +73,7 @@ static int MatRestoreRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,i
   return 0; 
 }
 
-static int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
+int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
                            PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -113,7 +113,7 @@ static int MatGetColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,i
   return 0; 
 }
 
-static int MatRestoreColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,
+int MatRestoreColumnIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,
                                      int **ja,PetscTruth *done)
 {
   if (!ia) return 0;
@@ -944,8 +944,7 @@ static int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
     }
   }
   ISRestoreIndices(is,&rows);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
