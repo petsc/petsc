@@ -52,3 +52,4 @@ BS_INCLUDE =
 BS_LIB     = 
 #
 
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)

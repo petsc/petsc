@@ -43,7 +43,4 @@ BS_LIB     =
 #
 PCONF         =  
 #
-
-
-
-
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)

@@ -50,3 +50,5 @@ PCONF         =
 # point to the directories where all your shared libraries are stored.
 #
 DYLIBPATH     = /home/bsmith/lapack
+
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)

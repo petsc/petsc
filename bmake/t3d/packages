@@ -48,7 +48,4 @@ BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/libO/$(PETSC_ARCH)/libBS95.a
 #
 PCONF         =  -DHAVE_BLOCKSOLVE
 #
-
-
-
-
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)

@@ -42,3 +42,5 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -lp
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below
 PCONF         =  -DHAVE_BLOCKSOLVE
 #
+
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)

@@ -53,3 +53,5 @@ PCONF          =   -DHAVE_BLOCKSOLVE -DHAVE_MPE
 #    Make sure you do not have a trailing / at the end below.
 #
 DYLIBPATH     = /home/curfman/lapack.src
+
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
