@@ -1,5 +1,5 @@
 C
-C  $Id: viewer.h,v 1.6 1996/03/18 00:44:15 bsmith Exp curfman $;
+C  $Id: viewer.h,v 1.7 1996/04/12 00:07:51 curfman Exp balay $;
 C
 C  Include file for Fortran use of the Viewer package in PETSc
 C
@@ -15,12 +15,13 @@ C
 C  Viewer formats
 C
       integer  ASCII_FORMAT_DEFAULT, ASCII_FORMAT_MATLAB,
-     &         ASCII_FORMAT_IMPL, ASCII_FORMAT_INFO
+     &         ASCII_FORMAT_IMPL, ASCII_FORMAT_INFO,
      &         ASCII_FORMAT_INFO_DETAILED, ASCII_FORMAT_COMMON
 
       parameter ( ASCII_FORMAT_DEFAULT = 0, ASCII_FORMAT_MATLAB = 1,
      &            ASCII_FORMAT_IMPL = 2, ASCII_FORMAT_INFO = 3,
-     &            ASCII_FORMAT_INFO_DETAILED = 2, ASCII_FORMAT_COMMON = 5)
+     &            ASCII_FORMAT_INFO_DETAILED = 2, 
+     &            ASCII_FORMAT_COMMON = 5)
       integer  BINARY_FORMAT_DEFAULT, BINARY_FORMAT_NATIVE
 
       parameter (BINARY_FORMAT_DEFAULT = 0, BINARY_FORMAT_NATIVE = 1)
