@@ -2138,7 +2138,7 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
     ierr   = MPI_Scan(&nlocal,&rend,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     rstart = rend - nlocal;
     if (rank == size - 1 && rend != n) {
-      SETERRQ(1,"Local column sizes do not add up to total number of columns");
+      SETERRQ2(1,"Local column sizes %d do not add up to total number of columns %d",rend,n);
     }
 
     /* next, compute all the lengths */
