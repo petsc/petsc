@@ -1,4 +1,4 @@
-/* $Id: petsccreate.cpp,v 1.4 2001/03/22 19:19:11 buschelm Exp buschelm $ */
+/* $Id: petsccreate.cpp,v 1.5 2001/03/22 19:27:41 buschelm Exp buschelm $ */
 #include <map>
 #include <string>
 #include <iostream>
@@ -29,9 +29,9 @@ namespace PETScFE {
       map<string,void (*)(PETScFE::tool*&)> CreateTool;
       CreateTool["cl"] = PETScFE::CreateCL;
       CreateTool["icl"] = PETScFE::CreateCL;
+      CreateTool["ifl"] = PETScFE::CreateCL;
       CreateTool["df"] = PETScFE::CreateDF;
       CreateTool["f90"] = PETScFE::CreateDF;
-      CreateTool["ifl"] = PETScFE::CreateDF;
       CreateTool["bcc32"] = PETScFE::CreateBCC;
       CreateTool["cc"] = PETScFE::CreateCC;
       CreateTool["lib"] = PETScFE::CreateLIB;
