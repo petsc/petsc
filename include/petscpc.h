@@ -59,7 +59,7 @@ E*/
 #define PCMAT             "mat"
 #define PCHYPRE           "hypre"
 #define PCFIELDSPLIT      "fieldsplit"
-#define PCTF              "tf"
+#define PCTFS             "tfs"
 
 /* Logging support */
 extern PetscCookie PC_COOKIE;
