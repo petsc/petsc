@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.12 2001/01/17 22:25:27 bsmith Exp balay $*/
+/*$Id: ex20.c,v 1.13 2001/01/23 20:56:37 balay Exp balay $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -9,8 +9,8 @@ differently from the way it is assembled.  Input arguments are:\n\
 
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "FormElementStiffness"
+#undef __FUNCT__
+#define __FUNCT__ "FormElementStiffness"
 int FormElementStiffness(double H,Scalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -20,8 +20,8 @@ int FormElementStiffness(double H,Scalar *Ke)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat          C; 

@@ -1,4 +1,4 @@
-/*$Id: ex81.c,v 1.5 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex81.c,v 1.6 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format\n\
   -fout <output_file> : file to load.\n\
@@ -11,8 +11,8 @@ static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int         ierr,n,m,i,*ai,*aj,size,nz;

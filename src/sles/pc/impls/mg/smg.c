@@ -1,4 +1,4 @@
-/*$Id: smg.c,v 1.21 2000/04/12 04:24:39 bsmith Exp bsmith $*/
+/*$Id: smg.c,v 1.22 2001/01/15 21:46:52 bsmith Exp balay $*/
 /*
      Additive Multigrid V Cycle routine    
 */
@@ -13,8 +13,8 @@
 .   mg - structure created with  MGCreate().
 
 */
-#undef __FUNC__  
-#define __FUNC__ "MGACycle_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MGACycle_Private"
 int MGACycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,its,ierr;

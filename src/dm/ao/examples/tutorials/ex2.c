@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.37 2001/01/23 20:57:52 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.38 2001/03/09 04:03:32 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -124,8 +124,8 @@ extern int DataPartitionVertices(GridData *);
 extern int DataMoveVertices(GridData *);
 extern int DataDestroy(GridData *);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int          ierr;
@@ -163,8 +163,8 @@ int main(int argc,char **args)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "DataRead"
+#undef __FUNCT__
+#define __FUNCT__ "DataRead"
 /*
      Reads in the grid data from a file; each processor is naively 
   assigned a continuous chunk of vertex and element data. Later the data
@@ -399,8 +399,8 @@ int DataRead(GridData *gdata)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "DataPartitionElements"
+#undef __FUNCT__
+#define __FUNCT__ "DataPartitionElements"
 /*
          Given the grid data spread across the processors, determines a
    new partitioning of the CELLS (elements) to reduce the number of cut edges between
@@ -451,8 +451,8 @@ int DataPartitionElements(GridData *gdata)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "DataMoveElements"
+#undef __FUNCT__
+#define __FUNCT__ "DataMoveElements"
 /*
       Moves the grid element data to be on the correct processor for the new
    element partitioning.
@@ -550,8 +550,8 @@ int DataMoveElements(GridData *gdata)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "DataPartitionVertice"
+#undef __FUNCT__
+#define __FUNCT__ "DataPartitionVertice"
 /*
          Given the newly partitioned cells (elements), this routine partitions the 
      vertices.
@@ -667,8 +667,8 @@ int DataPartitionVertices(GridData *gdata)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "DataMoveVertices"
+#undef __FUNCT__
+#define __FUNCT__ "DataMoveVertices"
 /*
      Given the partitioning of the vertices; renumbers the element vertex lists for the 
      new vertex numbering and moves the vertex coordinate values to the correct processor
@@ -759,8 +759,8 @@ int DataMoveVertices(GridData *gdata)
 }  
 
 
-#undef __FUNC__
-#define __FUNC__ "DataDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "DataDestroy"
 int DataDestroy(GridData *gdata)
 {
   int ierr;

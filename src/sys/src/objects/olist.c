@@ -1,4 +1,4 @@
-/*$Id: olist.c,v 1.20 2000/08/06 03:55:09 bsmith Exp bsmith $*/
+/*$Id: olist.c,v 1.21 2001/01/15 21:43:52 bsmith Exp balay $*/
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects
@@ -12,8 +12,8 @@ struct _PetscOList {
     PetscOList       next;
 };
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOListAdd"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOListAdd"
 /*
 
        Notes: Replaces item if it is already in list. Removes item if you pass in a 
@@ -82,8 +82,8 @@ int PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOListDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOListDestroy"
 /*
     PetscOListDestroy - Destroy a list of objects
 
@@ -107,8 +107,8 @@ int PetscOListDestroy(PetscOList *fl)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOListFind"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOListFind"
 /*
     PetscOListFind - givn a name, find the matching object
 
@@ -145,8 +145,8 @@ int PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOListReverseFind"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOListReverseFind"
 /*
     PetscOListReverseFind - given a object, find the matching name if it exists
 
@@ -180,8 +180,8 @@ int PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOListDuplicate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOListDuplicate"
 /*
     PetscOListDuplicate - Creates a new list from a give object list.
 

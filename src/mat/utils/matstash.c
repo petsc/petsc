@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.48 2001/01/16 18:18:31 balay Exp balay $*/
+/*$Id: matstash.c,v 1.49 2001/03/09 19:38:14 balay Exp balay $*/
 
 #include "src/mat/matimpl.h"
 
@@ -22,8 +22,8 @@
   Output Parameters:
   stash    - the newly created stash
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashCreate_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashCreate_Private"
 int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
 {
   int        ierr,max,*opt,nopt;
@@ -77,8 +77,8 @@ int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
 /* 
    MatStashDestroy_Private - Destroy the stash
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashDestroy_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashDestroy_Private"
 int MatStashDestroy_Private(MatStash *stash)
 {
   int ierr;
@@ -99,8 +99,8 @@ int MatStashDestroy_Private(MatStash *stash)
    for the stash. It also keeps track of the current memory usage
    so that the same value can be used the next time through.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashScatterEnd_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashScatterEnd_Private"
 int MatStashScatterEnd_Private(MatStash *stash)
 { 
   int         nsends=stash->nsends,ierr,bs2,oldnmax;
@@ -168,8 +168,8 @@ int MatStashScatterEnd_Private(MatStash *stash)
    reallocs - the number of additional mallocs incurred.
    
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashGetInfo_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashGetInfo_Private"
 int MatStashGetInfo_Private(MatStash *stash,int *nstash,int *reallocs)
 {
   int bs2 = stash->bs*stash->bs;
@@ -190,8 +190,8 @@ int MatStashGetInfo_Private(MatStash *stash,int *nstash,int *reallocs)
    max    - the value that is used as the max size of the stash. 
             this value is used while allocating memory.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashSetInitialSize_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashSetInitialSize_Private"
 int MatStashSetInitialSize_Private(MatStash *stash,int max)
 {
   PetscFunctionBegin;
@@ -210,8 +210,8 @@ int MatStashSetInitialSize_Private(MatStash *stash,int max)
    Notes: 
    This routine doubles the currently used memory. 
  */
-#undef __FUNC__  
-#define __FUNC__ "MatStashExpand_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashExpand_Private"
 static int MatStashExpand_Private(MatStash *stash,int incr)
 { 
   int       *n_idx,*n_idy,newnmax,bs2,ierr;
@@ -255,8 +255,8 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
   idxn   - the global column indices corresponding to each of the values.
   values - the values inserted
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashValuesRow_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashValuesRow_Private"
 int MatStashValuesRow_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values)
 {
   int    ierr,i; 
@@ -288,8 +288,8 @@ int MatStashValuesRow_Private(MatStash *stash,int row,int n,int *idxn,MatScalar 
   stepval - the consecutive values are sepated by a distance of stepval.
             this happens because the input is columnoriented.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashValuesCol_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashValuesCol_Private"
 int MatStashValuesCol_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int stepval)
 {
   int    ierr,i; 
@@ -326,8 +326,8 @@ int MatStashValuesCol_Private(MatStash *stash,int row,int n,int *idxn,MatScalar 
   cmax   - the number of block-columsn on the original block.
   idx    - the index of the current block-row in the original block.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashValuesRowBlocked_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashValuesRowBlocked_Private"
 int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int rmax,int cmax,int idx)
 {
   int       ierr,i,j,k,bs2,bs=stash->bs; 
@@ -374,8 +374,8 @@ int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,int *idxn,Mat
   cmax   - the number of block-columsn on the original block.
   idx    - the index of the current block-row in the original block.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashValuesColBlocked_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashValuesColBlocked_Private"
 int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,int *idxn,MatScalar *values,int rmax,int cmax,int idx)
 {
   int       ierr,i,j,k,bs2,bs=stash->bs; 
@@ -418,8 +418,8 @@ int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,int *idxn,Mat
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashScatterBegin_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashScatterBegin_Private"
 int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 { 
   int         *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
@@ -540,8 +540,8 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
            1 indicates that the current call successfully received a message, and the
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatStashScatterGetMesg_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashScatterGetMesg_Private"
 int MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** cols,MatScalar **vals,int *flg)
 {
   int         i,ierr,size=stash->size,*flg_v,*flg_i,i1,i2,*rindices,bs2;

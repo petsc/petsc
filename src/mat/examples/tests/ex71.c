@@ -1,11 +1,11 @@
-/*$Id: ex71.c,v 1.41 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex71.c,v 1.42 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 
 #include "petscmat.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int     ierr,m = 4,n = 5,i,j,I,J;

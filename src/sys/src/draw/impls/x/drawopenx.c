@@ -1,12 +1,12 @@
-/*$Id: drawopenx.c,v 1.17 2001/01/15 21:43:29 bsmith Exp balay $*/
+/*$Id: drawopenx.c,v 1.18 2001/01/17 19:44:09 balay Exp balay $*/
 /*
     Defines the operations for the X PetscDraw implementation.
 */
 
 #include "src/sys/src/draw/impls/x/ximpl.h"         /*I  "petsc.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawOpenX" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawOpenX" 
 /*@C
    PetscDrawOpenX - Opens an X-window for use with the PetscDraw routines.
 

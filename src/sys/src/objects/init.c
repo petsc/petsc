@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.69 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: init.c,v 1.70 2001/01/17 19:44:24 balay Exp balay $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -62,8 +62,8 @@ int (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 */
 FILE *petsc_history = PETSC_NULL;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogOpenHistoryFile"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogOpenHistoryFile"
 int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   int  ierr,rank,size;
@@ -96,8 +96,8 @@ int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogCloseHistoryFile"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogCloseHistoryFile"
 int PetscLogCloseHistoryFile(FILE **fd)
 {
   int  rank,ierr;
@@ -120,8 +120,8 @@ int PetscLogCloseHistoryFile(FILE **fd)
 PetscTruth PetscCompare          = PETSC_FALSE;
 PetscReal  PetscCompareTolerance = 1.e-10;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscCompareInt"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscCompareInt"
 /*@C
    PetscCompareInt - Compares integers while running with PETScs incremental
    debugger.
@@ -150,8 +150,8 @@ int PetscCompareInt(int d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscCompareDouble"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscCompareDouble"
 /*@C
    PetscCompareDouble - Compares doubles while running with PETScs incremental
    debugger.
@@ -182,8 +182,8 @@ int PetscCompareDouble(double d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscCompareScalar"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscCompareScalar"
 /*@C
    PetscCompareScalar - Compares scalars while running with PETScs incremental
    debugger.
@@ -214,8 +214,8 @@ int PetscCompareScalar(Scalar d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscCompareInitialize"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscCompareInitialize"
 /*
     PetscCompareInitialize - If there is a command line option -compare then
     this routine calls MPI_Init() and sets up two PETSC_COMM_WORLD, one for 
@@ -284,8 +284,8 @@ int PetscCompareInitialize(double tol)
   frames. The default abort cleans up and exits.
 */
 
-#undef __FUNC__  
-#define __FUNC__ "Petsc_MPI_AbortOnError"
+#undef __FUNCT__  
+#define __FUNCT__ "Petsc_MPI_AbortOnError"
 void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag) 
 {
   PetscFunctionBegin;
@@ -293,8 +293,8 @@ void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag)
   abort();
 }
 
-#undef __FUNC__  
-#define __FUNC__ "Petsc_MPI_DebuggerOnError"
+#undef __FUNCT__  
+#define __FUNCT__ "Petsc_MPI_DebuggerOnError"
 void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag) 
 {
   int ierr;
@@ -317,8 +317,8 @@ static char       emacsmachinename[128];
 int (*PetscExternalVersionFunction)(MPI_Comm) = 0;
 int (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSetHelpVersionFunctions"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSetHelpVersionFunctions"
 /*@C 
    PetscSetHelpVersionFunctions - Sets functions that print help and version information
    before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
@@ -341,8 +341,8 @@ int PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsCheckInitial"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsCheckInitial"
 int PetscOptionsCheckInitial(void)
 {
   char       string[64],mname[256],*f;

@@ -1,10 +1,10 @@
-/*$Id: ex10.c,v 1.13 2001/01/22 23:01:52 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.14 2001/01/23 20:52:52 balay Exp balay $*/
 static char help[] = "Tests repeatedly setting a window type\n";
 
 #include "petsc.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscDraw draw;

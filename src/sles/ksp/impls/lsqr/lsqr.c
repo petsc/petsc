@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.66 2001/01/16 18:19:40 balay Exp bsmith $*/
+/*$Id: lsqr.c,v 1.67 2001/03/22 20:31:34 bsmith Exp balay $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -17,8 +17,8 @@ typedef struct {
   Vec  *vwork_n;  /* work vectors of length m */
 } KSP_LSQR;
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_LSQR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_LSQR"
 static int KSPSetUp_LSQR(KSP ksp)
 {
   int      ierr,nw;
@@ -47,8 +47,8 @@ static int KSPSetUp_LSQR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_LSQR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_LSQR"
 static int KSPSolve_LSQR(KSP ksp,int *its)
 {
   int          i,maxit,ierr;
@@ -162,8 +162,8 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPDestroy_LSQR" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_LSQR" 
 int KSPDestroy_LSQR(KSP ksp)
 {
   KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
@@ -183,8 +183,8 @@ int KSPDestroy_LSQR(KSP ksp)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_LSQR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_LSQR"
 int KSPCreate_LSQR(KSP ksp)
 {
   KSP_LSQR *lsqr;

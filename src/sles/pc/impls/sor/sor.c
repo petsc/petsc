@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.98 2000/09/28 21:12:42 bsmith Exp bsmith $*/
+/*$Id: sor.c,v 1.99 2001/01/15 21:46:48 bsmith Exp balay $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
@@ -11,8 +11,8 @@ typedef struct {
   PetscReal  omega;
 } PC_SOR;
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_SOR"
 static int PCDestroy_SOR(PC pc)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -23,8 +23,8 @@ static int PCDestroy_SOR(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_SOR"
 static int PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -35,8 +35,8 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyRichardson_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyRichardson_SOR"
 static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
@@ -47,8 +47,8 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_SOR"
 static int PCSetFromOptions_SOR(PC pc)
 {
   PC_SOR     *jac = (PC_SOR*)pc->data;
@@ -73,8 +73,8 @@ static int PCSetFromOptions_SOR(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_SOR"
 static int PCView_SOR(PC pc,PetscViewer viewer)
 {
   PC_SOR     *jac = (PC_SOR*)pc->data;
@@ -109,8 +109,8 @@ static int PCView_SOR(PC pc,PetscViewer viewer)
 
 /* ------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSORSetSymmetric_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSORSetSymmetric_SOR"
 int PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
 {
   PC_SOR *jac;
@@ -123,8 +123,8 @@ int PCSORSetSymmetric_SOR(PC pc,MatSORType flag)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSORSetOmega_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSORSetOmega_SOR"
 int PCSORSetOmega_SOR(PC pc,PetscReal omega)
 {
   PC_SOR *jac;
@@ -138,8 +138,8 @@ int PCSORSetOmega_SOR(PC pc,PetscReal omega)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSORSetIterations_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSORSetIterations_SOR"
 int PCSORSetIterations_SOR(PC pc,int its)
 {
   PC_SOR *jac;
@@ -152,8 +152,8 @@ int PCSORSetIterations_SOR(PC pc,int its)
 EXTERN_C_END
 
 /* ------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PCSORSetSymmetric"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSORSetSymmetric"
 /*@
    PCSORSetSymmetric - Sets the SOR preconditioner to use symmetric (SSOR), 
    backward, or forward relaxation.  The local variants perform SOR on
@@ -204,8 +204,8 @@ int PCSORSetSymmetric(PC pc,MatSORType flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSORSetOmega"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSORSetOmega"
 /*@
    PCSORSetOmega - Sets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
@@ -237,8 +237,8 @@ int PCSORSetOmega(PC pc,PetscReal omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSORSetIterations"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSORSetIterations"
 /*@
    PCSORSetIterations - Sets the number of inner iterations to 
    be used by the SOR preconditioner. The default is 1.
@@ -272,8 +272,8 @@ int PCSORSetIterations(PC pc,int its)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_SOR"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_SOR"
 int PCCreate_SOR(PC pc)
 {
   int    ierr;

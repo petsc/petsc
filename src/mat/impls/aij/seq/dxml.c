@@ -1,4 +1,4 @@
-/*$Id: dxml.c,v 1.20 2000/05/09 03:57:12 bsmith Exp bsmith $*/
+/*$Id: dxml.c,v 1.21 2001/01/15 21:45:34 bsmith Exp balay $*/
 
 /* 
         Provides an interface to the DEC Alpha DXML library
@@ -8,8 +8,8 @@
 
 #if defined(PETSC_HAVE_DXML) && !defined(__cplusplus)
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqAIJ_DXML"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqAIJ_DXML"
 static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -25,8 +25,8 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseDXML_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
@@ -36,8 +36,8 @@ int MatUseDXML_SeqAIJ(Mat A)
 
 #else
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseDXML_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;

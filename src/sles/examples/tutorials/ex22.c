@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.13 2001/01/23 20:56:41 balay Exp bsmith $*/
+/*$Id: ex22.c,v 1.14 2001/03/22 20:31:44 bsmith Exp balay $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -29,8 +29,8 @@ The command line options are:\n\
 extern int ComputeJacobian(DMMG,Mat);
 extern int ComputeRHS(DMMG,Vec);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int       ierr,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
@@ -69,8 +69,8 @@ int main(int argc,char **argv)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "ComputeRHS"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeRHS"
 int ComputeRHS(DMMG dmmg,Vec b)
 {
   int    ierr,mx,my,mz;
@@ -83,8 +83,8 @@ int ComputeRHS(DMMG dmmg,Vec b)
   PetscFunctionReturn(0);
 }
     
-#undef __FUNC__
-#define __FUNC__ "ComputeJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeJacobian"
 int ComputeJacobian(DMMG dmmg,Mat jac)
 {
   DA     da = (DA)dmmg->dm;

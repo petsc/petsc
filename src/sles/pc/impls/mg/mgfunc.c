@@ -1,10 +1,10 @@
-/*$Id: mgfunc.c,v 1.38 2000/07/18 16:07:43 bsmith Exp bsmith $*/
+/*$Id: mgfunc.c,v 1.39 2001/01/15 21:46:52 bsmith Exp balay $*/
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "petscsles.h" I*/
                           /*I "petscmg.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "MGDefaultResidual"
+#undef __FUNCT__  
+#define __FUNCT__ "MGDefaultResidual"
 /*@C
    MGDefaultResidual - Default routine to calculate the residual.
 
@@ -37,8 +37,8 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 
 /* ---------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "MGGetCoarseSolve"
+#undef __FUNCT__  
+#define __FUNCT__ "MGGetCoarseSolve"
 /*@C
    MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
@@ -63,8 +63,8 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetResidual"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetResidual"
 /*@C
    MGSetResidual - Sets the function to be used to calculate the residual 
    on the lth level. 
@@ -95,8 +95,8 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetInterpolate"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetInterpolate"
 /*@
    MGSetInterpolate - Sets the function to be used to calculate the 
    interpolation on the lth level. 
@@ -131,8 +131,8 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetRestriction"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetRestriction"
 /*@
    MGSetRestriction - Sets the function to be used to restrict vector
    from level l to l-1. 
@@ -167,8 +167,8 @@ int MGSetRestriction(PC pc,int l,Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGGetSmoother"
+#undef __FUNCT__  
+#define __FUNCT__ "MGGetSmoother"
 /*@C
    MGGetSmoother - Gets the SLES context to be used as smoother for 
    both pre- and post-smoothing.  Call both MGGetSmootherUp() and 
@@ -199,8 +199,8 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGGetSmootherUp"
+#undef __FUNCT__  
+#define __FUNCT__ "MGGetSmootherUp"
 /*@C
    MGGetSmootherUp - Gets the SLES context to be used as smoother after 
    coarse grid correction (post-smoother). 
@@ -249,8 +249,8 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGGetSmootherDown"
+#undef __FUNCT__  
+#define __FUNCT__ "MGGetSmootherDown"
 /*@C
    MGGetSmootherDown - Gets the SLES context to be used as smoother before 
    coarse grid correction (pre-smoother). 
@@ -279,8 +279,8 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetCyclesOnLevel"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetCyclesOnLevel"
 /*@
    MGSetCyclesOnLevel - Sets the number of cycles to run on this level. 
 
@@ -307,8 +307,8 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetRhs"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetRhs"
 /*@
    MGSetRhs - Sets the vector space to be used to store the right-hand side
    on a particular level.  The user should free this space at the conclusion 
@@ -337,8 +337,8 @@ int MGSetRhs(PC pc,int l,Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetX"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetX"
 /*@
    MGSetX - Sets the vector space to be used to store the solution on a 
    particular level.  The user should free this space at the conclusion 
@@ -367,8 +367,8 @@ int MGSetX(PC pc,int l,Vec c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetR"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetR"
 /*@
    MGSetR - Sets the vector space to be used to store the residual on a
    particular level.  The user should free this space at the conclusion of

@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.115 2001/01/15 21:47:52 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.116 2001/03/09 20:27:38 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -6,8 +6,8 @@
 PetscFList      MatSNESMPetscFList              = 0;
 PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetType"
 /*@C
     MatSNESMFSetType - Sets the method that is used to compute the 
     differencing parameter for finite differene matrix-free formulations. 
@@ -101,8 +101,8 @@ $     -snes_mf_type my_h
 .seealso: MatSNESMFRegisterAll(), MatSNESMFRegisterDestroy()
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFRegister"
 int MatSNESMFRegister(char *sname,char *path,char *name,int (*function)(MatSNESMFCtx))
 {
   int ierr;
@@ -115,8 +115,8 @@ int MatSNESMFRegister(char *sname,char *path,char *name,int (*function)(MatSNESM
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFRegisterDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFRegisterDestroy"
 /*@C
    MatSNESMFRegisterDestroy - Frees the list of MatSNESMF methods that were
    registered by MatSNESMFRegisterDynamic).
@@ -143,8 +143,8 @@ int MatSNESMFRegisterDestroy(void)
 }
 
 /* ----------------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFDestroy_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFDestroy_Private"
 int MatSNESMFDestroy_Private(Mat mat)
 {
   int          ierr;
@@ -159,8 +159,8 @@ int MatSNESMFDestroy_Private(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFView_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFView_Private"
 /*
    MatSNESMFView_Private - Views matrix-free parameters.
 
@@ -191,8 +191,8 @@ int MatSNESMFView_Private(Mat J,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFAssemblyEnd_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFAssemblyEnd_Private"
 /*
    MatSNESMFAssemblyEnd_Private - Resets the ctx->ncurrenth to zero. This 
    allows the user to indicate the beginning of a new linear solve by calling
@@ -220,8 +220,8 @@ int MatSNESMFAssemblyEnd_Private(Mat J)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFMult_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFMult_Private"
 /*
   MatSNESMFMult_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
@@ -302,8 +302,8 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCreateSNESMF"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateSNESMF"
 /*@C
    MatCreateSNESMF - Creates a matrix-free matrix context for use with
    a SNES solver.  This matrix can be used as the Jacobian argument for
@@ -369,8 +369,8 @@ int MatCreateSNESMF(SNES snes,Vec x,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCreateMF"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMF"
 /*@C
    MatCreateMF - Creates a matrix-free matrix. See also MatCreateSNESMF() 
 
@@ -471,8 +471,8 @@ int MatCreateMF(Vec x,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFromOptions"
 /*@
    MatSNESMFSetFromOptions - Sets the MatSNESMF options from the command line
    parameter.
@@ -533,8 +533,8 @@ int MatSNESMFSetFromOptions(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFGetH"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFGetH"
 /*@
    MatSNESMFGetH - Gets the last value that was used as the differencing 
    parameter.
@@ -567,8 +567,8 @@ int MatSNESMFGetH(Mat mat,Scalar *h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFKSPMonitor"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFKSPMonitor"
 /*
    MatSNESMFKSPMonitor - A KSP monitor for use with the default PETSc
    SNES matrix free routines. Prints the differencing parameter used at 
@@ -605,8 +605,8 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFSetFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFunction"
 /*@C
    MatSNESMFSetFunction - Sets the function used in applying the matrix free.
 
@@ -648,8 +648,8 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFSetPeriod"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetPeriod"
 /*@
    MatSNESMFSetPeriod - Sets how often h is recomputed, by default it is everytime
 
@@ -684,8 +684,8 @@ int MatSNESMFSetPeriod(Mat mat,int period)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFSetFunctionError"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFunctionError"
 /*@
    MatSNESMFSetFunctionError - Sets the error_rel for the approximation of
    matrix-vector products using finite differences.
@@ -729,8 +729,8 @@ int MatSNESMFSetFunctionError(Mat mat,PetscReal error)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFAddNullSpace"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFAddNullSpace"
 /*@
    MatSNESMFAddNullSpace - Provides a null space that an operator is
    supposed to have.  Since roundoff will create a small component in
@@ -768,8 +768,8 @@ int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFSetHHistory"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetHHistory"
 /*@
    MatSNESMFSetHHistory - Sets an array to collect a history of the
    differencing values (h) computed for the matrix-free product.
@@ -812,8 +812,8 @@ int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFResetHHistory"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFResetHHistory"
 /*@
    MatSNESMFResetHHistory - Resets the counter to zero to begin 
    collecting a new set of differencing histories.
@@ -850,8 +850,8 @@ int MatSNESMFResetHHistory(Mat J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFFormJacobian"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFFormJacobian"
 int MatSNESMFFormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   int ierr;
@@ -861,8 +861,8 @@ int MatSNESMFFormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,voi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFSetBase"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetBase"
 int MatSNESMFSetBase(Mat J,Vec U)
 {
   int          ierr;

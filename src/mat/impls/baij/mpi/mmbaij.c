@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.38 2001/01/16 18:17:55 balay Exp bsmith $*/
+/*$Id: mmbaij.c,v 1.39 2001/03/22 20:30:21 bsmith Exp balay $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -7,8 +7,8 @@
 #include "src/vec/vecimpl.h"
 EXTERN int MatSetValues_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetUpMultiply_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUpMultiply_MPIBAIJ"
 int MatSetUpMultiply_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ        *baij = (Mat_MPIBAIJ*)mat->data;
@@ -158,8 +158,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
    Kind of slow! But that's what application programmers get when 
    they are sloppy.
 */
-#undef __FUNC__  
-#define __FUNC__ "DisAssemble_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "DisAssemble_MPIBAIJ"
 int DisAssemble_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)A->data;

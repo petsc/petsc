@@ -1,4 +1,4 @@
-/*$Id: sortd.c,v 1.25 2000/09/22 20:42:32 bsmith Exp bsmith $*/
+/*$Id: sortd.c,v 1.26 2001/01/15 21:44:00 bsmith Exp balay $*/
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
@@ -13,8 +13,8 @@
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
    
-#undef __FUNC__  
-#define __FUNC__ "PetsciDqsort"
+#undef __FUNCT__  
+#define __FUNCT__ "PetsciDqsort"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static int PetsciDqsort(double *v,int right)
 {
@@ -40,8 +40,8 @@ static int PetsciDqsort(double *v,int right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortDouble"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortDouble"
 /*@
    PetscSortDouble - Sorts an array of doubles in place in increasing order.
 

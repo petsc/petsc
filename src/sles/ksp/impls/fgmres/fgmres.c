@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.24 2001/01/31 04:16:19 bsmith Exp bsmith $ */
+/* $Id: fgmres.c,v 1.25 2001/03/22 20:31:39 bsmith Exp balay $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -28,8 +28,8 @@ static int    BuildFgmresSoln(Scalar*,Vec,Vec,KSP,int);
     but can be called directly by KSPSetUp().
 
 */
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_FGMRES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_FGMRES"
 int    KSPSetUp_FGMRES(KSP ksp)
 {
   unsigned  int size,hh,hes,rs,cc;
@@ -114,8 +114,8 @@ int    KSPSetUp_FGMRES(KSP ksp)
 /* 
     FGMRESResidual - This routine computes the initial residual (NOT PRECONDITIONED) 
 */
-#undef __FUNC__  
-#define __FUNC__ "FGMRESResidual"
+#undef __FUNCT__  
+#define __FUNCT__ "FGMRESResidual"
 static int FGMRESResidual(KSP ksp)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -153,8 +153,8 @@ static int FGMRESResidual(KSP ksp)
 
 
  */
-#undef __FUNC__  
-#define __FUNC__ "FGMREScycle"
+#undef __FUNCT__  
+#define __FUNCT__ "FGMREScycle"
 int FGMREScycle(int *itcount,KSP ksp)
 {
 
@@ -327,8 +327,8 @@ int FGMREScycle(int *itcount,KSP ksp)
 .     outits - number of iterations used
 
 */
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_FGMRES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_FGMRES"
 
 int KSPSolve_FGMRES(KSP ksp,int *outits)
 {
@@ -378,8 +378,8 @@ int KSPSolve_FGMRES(KSP ksp,int *outits)
    KSPDestroy_FGMRES - Frees all memory space used by the Krylov method.
 
 */
-#undef __FUNC__  
-#define __FUNC__ "KSPDestroy_FGMRES" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_FGMRES" 
 int KSPDestroy_FGMRES(KSP ksp)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES*)ksp->data;
@@ -429,8 +429,8 @@ int KSPDestroy_FGMRES(KSP ksp)
 
      This is an internal routine that knows about the FGMRES internals.
  */
-#undef __FUNC__  
-#define __FUNC__ "BuildFgmresSoln"
+#undef __FUNCT__  
+#define __FUNCT__ "BuildFgmresSoln"
 static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 {
   Scalar     tt,zero = 0.0,one = 1.0;
@@ -491,8 +491,8 @@ static int BuildFgmresSoln(Scalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 .        res - the new residual
 	
  */
-#undef __FUNC__  
-#define __FUNC__ "FGMRESUpdateHessenberg"
+#undef __FUNCT__  
+#define __FUNCT__ "FGMRESUpdateHessenberg"
 static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   Scalar     *hh,*cc,*ss,tt;
@@ -576,8 +576,8 @@ static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *re
                          from PREVEC(i).
 
 */
-#undef __FUNC__  
-#define __FUNC__ "FGMRESGetNewVectors" 
+#undef __FUNCT__  
+#define __FUNCT__ "FGMRESGetNewVectors" 
 static int FGMRESGetNewVectors(KSP ksp,int it)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
@@ -634,8 +634,8 @@ static int FGMRESGetNewVectors(KSP ksp,int it)
    calls directly.  
 
 */
-#undef __FUNC__  
-#define __FUNC__ "KSPBuildSolution_FGMRES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPBuildSolution_FGMRES"
 int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data; 
@@ -667,8 +667,8 @@ int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
                   being used.
 
  */
-#undef __FUNC__  
-#define __FUNC__ "KSPView_FGMRES" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPView_FGMRES" 
 int KSPView_FGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)ksp->data; 
@@ -695,8 +695,8 @@ int KSPView_FGMRES(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetFromOptions_FGMRES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetFromOptions_FGMRES"
 int KSPSetFromOptions_FGMRES(KSP ksp)
 {
   int         ierr,restart;
@@ -733,8 +733,8 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPFGMRESSetModifyPC_FGMRES" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES" 
 int KSPFGMRESSetModifyPC_FGMRES(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void *ctx,int (*d)(void*))
 {
   PetscFunctionBegin;
@@ -753,8 +753,8 @@ EXTERN int KSPGMRESSetOrthogonalization_GMRES(KSP,int (*)(KSP,int));
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_FGMRES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_FGMRES"
 int KSPCreate_FGMRES(KSP ksp)
 {
   KSP_FGMRES *fgmres;

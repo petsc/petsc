@@ -1,4 +1,4 @@
-/*$Id: mmbdiag.c,v 1.38 2000/10/24 20:25:50 bsmith Exp bsmith $*/
+/*$Id: mmbdiag.c,v 1.39 2001/01/15 21:45:48 bsmith Exp balay $*/
 
 /*
    Support for the MPIBDIAG matrix-vector multiply
@@ -6,8 +6,8 @@
 #include "src/mat/impls/bdiag/mpi/mpibdiag.h"
 #include "src/vec/vecimpl.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetUpMultiply_MPIBDiag"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUpMultiply_MPIBDiag"
 int MatSetUpMultiply_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;

@@ -1,4 +1,4 @@
-/*$Id: ex26.c,v 1.8 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex26.c,v 1.9 2001/01/17 22:21:24 bsmith Exp balay $*/
 /*
 
 Test program follows. Writing it I realised that 
@@ -20,8 +20,8 @@ If this is not clear, I'll try to elaborate.
 */
 #include "petscvec.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
   Vec         src_v,tar_v,loc_v;

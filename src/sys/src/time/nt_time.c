@@ -1,12 +1,12 @@
-/*$Id: nt_time.c,v 1.21 2000/04/12 04:21:36 bsmith Exp bsmith $*/
+/*$Id: nt_time.c,v 1.22 2001/01/15 21:43:58 bsmith Exp balay $*/
 
 #include <petsc.h>
 #if defined (PARCH_win32_gnu) || defined (PARCH_win32)
 #include <Windows.h>
 #define FACTOR   4294967296.0 /* pow(2,32) */
 
-#undef __FUNC__  
-#define __FUNC__ "nt_time"
+#undef __FUNCT__  
+#define __FUNCT__ "nt_time"
 PetscLogDouble nt_time(void) 
 {
   static PetscTruth flag = PETSC_TRUE;

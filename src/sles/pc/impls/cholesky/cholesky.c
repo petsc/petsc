@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.7 2000/09/28 21:13:03 bsmith Exp bsmith $*/
+/*$Id: cholesky.c,v 1.8 2001/01/15 21:47:04 bsmith Exp balay $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -18,8 +18,8 @@ typedef struct {
 } PC_Cholesky;
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetReuseOrdering_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetReuseOrdering_Cholesky"
 int PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
 {
   PC_Cholesky *lu;
@@ -32,8 +32,8 @@ int PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetReuseFill_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetReuseFill_Cholesky"
 int PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
 {
   PC_Cholesky *lu;
@@ -45,8 +45,8 @@ int PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_Cholesky"
 static int PCSetFromOptions_Cholesky(PC pc)
 {
   PC_Cholesky      *lu = (PC_Cholesky*)pc->data;
@@ -84,8 +84,8 @@ static int PCSetFromOptions_Cholesky(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_Cholesky"
 static int PCView_Cholesky(PC pc,PetscViewer viewer)
 {
   PC_Cholesky      *lu = (PC_Cholesky*)pc->data;
@@ -115,8 +115,8 @@ static int PCView_Cholesky(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetFactoredMatrix_Cholesky"
 static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -127,8 +127,8 @@ static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_Cholesky"
 static int PCSetUp_Cholesky(PC pc)
 {
   int        ierr;
@@ -190,8 +190,8 @@ static int PCSetUp_Cholesky(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Cholesky"
 static int PCDestroy_Cholesky(PC pc)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -206,8 +206,8 @@ static int PCDestroy_Cholesky(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_Cholesky"
 static int PCApply_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -219,8 +219,8 @@ static int PCApply_Cholesky(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyTranspose_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_Cholesky"
 static int PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -235,8 +235,8 @@ static int PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 /* -----------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetFill_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetFill_Cholesky"
 int PCCholeskySetFill_Cholesky(PC pc,PetscReal fill)
 {
   PC_Cholesky *dir;
@@ -249,8 +249,8 @@ int PCCholeskySetFill_Cholesky(PC pc,PetscReal fill)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetDamping_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetDamping_Cholesky"
 int PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
 {
   PC_Cholesky *dir;
@@ -264,8 +264,8 @@ int PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetUseInPlace_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetUseInPlace_Cholesky"
 int PCCholeskySetUseInPlace_Cholesky(PC pc)
 {
   PC_Cholesky *dir;
@@ -278,8 +278,8 @@ int PCCholeskySetUseInPlace_Cholesky(PC pc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetMatOrdering_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetMatOrdering_Cholesky"
 int PCCholeskySetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
@@ -294,8 +294,8 @@ EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetReuseOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetReuseOrdering"
 /*@
    PCCholeskySetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -329,8 +329,8 @@ int PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetReuseFill"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetReuseFill"
 /*@
    PCCholeskySetReuseFill - When matrices with same nonzero structure are Cholesky factored,
    this causes later ones to use the fill computed in the initial factorization.
@@ -363,8 +363,8 @@ int PCCholeskySetReuseFill(PC pc,PetscTruth flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetFill"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetFill"
 /*@
    PCCholeskySetFill - Indicates the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
@@ -404,8 +404,8 @@ int PCCholeskySetFill(PC pc,PetscReal fill)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetDamping"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetDamping"
 /*@
    PCCholeskySetDamping - Adds this quantity to the diagonal of the matrix during the 
    Cholesky numerical factorization.
@@ -438,8 +438,8 @@ int PCCholeskySetDamping(PC pc,PetscReal damping)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetUseInPlace"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetUseInPlace"
 /*@
    PCCholeskySetUseInPlace - Tells the system to do an in-place factorization.
    For dense matrices, this enables the solution of much larger problems. 
@@ -483,8 +483,8 @@ int PCCholeskySetUseInPlace(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCholeskySetMatOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCholeskySetMatOrdering"
 /*@
     PCCholeskySetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used it the Cholesky factorization.
@@ -517,8 +517,8 @@ int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 /* ------------------------------------------------------------------------ */
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_Cholesky"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_Cholesky"
 int PCCreate_Cholesky(PC pc)
 {
   int         ierr;

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.14 2001/01/22 23:08:25 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.15 2001/01/23 20:58:17 balay Exp balay $*/
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
@@ -12,8 +12,8 @@ static char help[] = "Tests SDALocalToLocal().\n\n";
    not also work with DA contexts.
 */
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            rank,M=8,ierr,dof=1,stencil_width=1,i,start,end,P=5;

@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.10 2001/01/17 22:26:53 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.11 2001/03/15 19:50:38 bsmith Exp balay $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -10,8 +10,8 @@
 /*
           Version for matrix-free Jacobian 
 */
-#undef __FUNC__
-#define __FUNC__ "DMMGComputeJacobian_MF"
+#undef __FUNCT__
+#define __FUNCT__ "DMMGComputeJacobian_MF"
 int DMMGComputeJacobian_MF(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DMMG       *dmmg = (DMMG*)ptr;
@@ -62,8 +62,8 @@ int DMMGComputeJacobian_MF(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 /*
     Version for user provided Jacobian
 */
-#undef __FUNC__
-#define __FUNC__ "DMMGComputeJacobian_User"
+#undef __FUNCT__
+#define __FUNCT__ "DMMGComputeJacobian_User"
 int DMMGComputeJacobian_User(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DMMG       *dmmg = (DMMG*)ptr;
@@ -108,8 +108,8 @@ int DMMGComputeJacobian_User(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,vo
     Version for Jacobian computed via PETSc finite differencing. This is the same 
   as DMMGComputeJacobian_User() except passes in the fdcoloring as the private context
 */
-#undef __FUNC__
-#define __FUNC__ "DMMGComputeJacobian_FD"
+#undef __FUNCT__
+#define __FUNCT__ "DMMGComputeJacobian_FD"
 int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DMMG       *dmmg = (DMMG*)ptr;
@@ -151,8 +151,8 @@ int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSolveSNES"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSolveSNES"
 int DMMGSolveSNES(DMMG *dmmg,int level)
 {
   int  ierr,nlevels = dmmg[0]->nlevels,its;
@@ -166,8 +166,8 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 
 EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSetSNES"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSNES"
 /*@C
     DMMGSetSNES - Sets the nonlinear solver object that will use the grid hierarchy
 
@@ -257,8 +257,8 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSetInitialGuess"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetInitialGuess"
 /*@C
     DMMGSetInitialGuess - Sets the function that computes an initial guess, if not given
          uses 0.

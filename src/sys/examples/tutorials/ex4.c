@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.14 2001/01/15 21:44:21 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.15 2001/01/17 22:20:38 bsmith Exp balay $*/
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
 
@@ -8,8 +8,8 @@ static char help[] = "Prints loadable objects from dynamic library.\n\n";
 T*/
  
 #include "petsc.h"
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int        ierr;

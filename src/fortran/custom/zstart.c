@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.77 2001/01/15 21:49:49 bsmith Exp balay $*/
+/*$Id: zstart.c,v 1.78 2001/01/16 18:22:02 balay Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -18,11 +18,6 @@
 
 extern PetscTruth PetscBeganMPI;
 
-#if defined(PETSC_HAVE_NAGF90)
-#define iargc_  f90_unix_MP_iargc
-#define getarg_ f90_unix_MP_getarg
-#endif
-
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitialize_              PETSCINITIALIZE
 #define petscfinalize_                PETSCFINALIZE
@@ -30,8 +25,6 @@ extern PetscTruth PetscBeganMPI;
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
-#if defined(PARCH_win32)
-#define IARGC                         NARGS
 #endif
 
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -39,15 +32,27 @@ extern PetscTruth PetscBeganMPI;
 #define petscfinalize_                petscfinalize
 #define petscsetcommworld_            petscsetcommworld
 #define mpi_init_                     mpi_init
-/*
-    HP-UX does not have Fortran underscore but iargc and getarg 
-  do have underscores????
-*/
-#if !defined(PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE)
 #define iargc_                        iargc
 #define getarg_                       getarg
 #endif
 
+#if defined(PETSC_HAVE_NAGF90)
+#undef iargc_
+#undef getarg_
+#define iargc_  f90_unix_MP_iargc
+#define getarg_ f90_unix_MP_getarg
+#endif
+#if defined(PETSC_USE_NARGS) /* Digital Fortran */
+#undef iargc_
+#undef getarg_
+#define iargc_  NARGS
+#define getarg_ GETARG
+#endif
+#if defined(PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE) /* HPUX + no underscore */
+#undef iargc_
+#undef getarg_
+#define iargc   iargc_
+#define getarg  getarg_
 #endif
 
 /*
@@ -65,13 +70,9 @@ extern void PETSC_STDCALL mpi_init_(int*);
 /*
      Different Fortran compilers handle command lines in different ways
 */
-#if defined(PARCH_win32)
-/*
-extern short  __declspec(dllimport) __stdcall iargc_();
-extern void __declspec(dllimport) __stdcall  getarg_(short*,char*,int,short *);
-*/
-extern short __stdcall iargc_();
-extern void __stdcall  getarg_(short*,char*,int,short *);
+#if defined(PETSC_USE_NARGS)
+extern short __stdcall NARGS();
+extern void  __stdcall GETARG(short*,char*,int,short *);
 
 #else
 extern int  iargc_();
@@ -109,7 +110,7 @@ EXTERN int PetscInitialize_DynamicLibraries(void);
 
 int PETScParseFortranArgs_Private(int *argc,char ***argv)
 {
-#if defined (PARCH_win32)
+#if defined (PETSC_USE_NARGS)
   short i,flg;
 #else
   int  i;
@@ -119,7 +120,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
-#if defined (PARCH_win32)
+#if defined (PETSC_HAVE_IARG_COUNT_PROGNAME)
     *argc = iargc_();
 #else
     /* most compilers do not count the program name for argv[0] */
@@ -141,8 +142,8 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
        PXFGETARG(&i,_cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
        tmp[ilen] = 0;
       } 
-#elif defined (PARCH_win32)
-      getarg_(&i,(*argv)[i],warg,&flg);
+#elif defined (PETSC_USE_NARGS)
+      GETARG(&i,(*argv)[i],warg,&flg);
 #else
       getarg_(&i,(*argv)[i],warg);
 #endif
@@ -176,7 +177,7 @@ EXTERN_C_BEGIN
 */
 void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
-#if defined (PARCH_win32)
+#if defined (PETSC_USE_NARGS)
   short flg,i;
 #else
   int   i;
@@ -197,8 +198,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
     if (*ierr) return;
     name[ilen] = 0;
   }
-#elif defined (PARCH_win32)
-  getarg_(&i,name,256,&flg);
+#elif defined (PETSC_USE_NARGS)
+  GETARG(&i,name,256,&flg);
 #else
   getarg_(&i,name,256);
   /* Eliminate spaces at the end of the string */

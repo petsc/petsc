@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.120 2001/02/12 22:13:31 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.121 2001/03/12 17:27:03 bsmith Exp balay $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -13,8 +13,8 @@
     Input Parameter:
 .   mg - structure created with  MGCreate().
 */
-#undef __FUNC__  
-#define __FUNC__ "MGMCycle_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MGMCycle_Private"
 int MGMCycle_Private(MG *mglevels)
 {
   MG     mg = *mglevels,mgc = *(mglevels - 1);
@@ -44,8 +44,8 @@ int MGMCycle_Private(MG *mglevels)
                finest level is stored first in the array).
 
 */
-#undef __FUNC__  
-#define __FUNC__ "MGCreate_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MGCreate_Private"
 static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **result)
 {
   MG   *mg;
@@ -100,8 +100,8 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_MG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_MG"
 static int PCDestroy_MG(PC pc)
 {
   MG  *mg = (MG*)pc->data;
@@ -132,8 +132,8 @@ EXTERN int MGKCycle_Private(MG*);
   Note: 
   A simple wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
 */ 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_MG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_MG"
 static int PCApply_MG(PC pc,Vec b,Vec x)
 {
   MG     *mg = (MG*)pc->data;
@@ -159,8 +159,8 @@ static int PCApply_MG(PC pc,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyRichardson_MG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyRichardson_MG"
 static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,int its)
 {
   MG  *mg = (MG*)pc->data;
@@ -175,8 +175,8 @@ static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,int its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_MG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_MG"
 static int PCSetFromOptions_MG(PC pc)
 {
   int        ierr,m,levels = 1;
@@ -225,8 +225,8 @@ static int PCSetFromOptions_MG(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_MG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_MG"
 static int PCView_MG(PC pc,PetscViewer viewer)
 {
   MG         *mg = (MG*)pc->data;
@@ -273,8 +273,8 @@ static int PCView_MG(PC pc,PetscViewer viewer)
 /*
     Calls setup for the SLES on each level
 */
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_MG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_MG"
 static int PCSetUp_MG(PC pc)
 {
   MG          *mg = (MG*)pc->data;
@@ -384,8 +384,8 @@ static int PCSetUp_MG(PC pc)
 
 /* -------------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetLevels"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetLevels"
 /*@C
    MGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
@@ -427,8 +427,8 @@ int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGGetLevels"
+#undef __FUNCT__  
+#define __FUNCT__ "MGGetLevels"
 /*@
    MGGetLevels - Gets the number of levels to use with MG.
 
@@ -458,8 +458,8 @@ int MGGetLevels(PC pc,int *levels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetType"
 /*@
    MGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
@@ -496,8 +496,8 @@ int MGSetType(PC pc,MGType form)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetCycles"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetCycles"
 /*@
    MGSetCycles - Sets the type cycles to use.  Use MGSetCyclesOnLevel() for more 
    complicated cycling.
@@ -534,8 +534,8 @@ int MGSetCycles(PC pc,int n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGCheck"
+#undef __FUNCT__  
+#define __FUNCT__ "MGCheck"
 /*@
    MGCheck - Checks that all components of the MG structure have 
    been set.
@@ -592,8 +592,8 @@ int MGCheck(PC pc)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetNumberSmoothDown"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetNumberSmoothDown"
 /*@
    MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels. Use MGGetSmootherDown() to set different 
@@ -634,8 +634,8 @@ int MGSetNumberSmoothDown(PC pc,int n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MGSetNumberSmoothUp"
+#undef __FUNCT__  
+#define __FUNCT__ "MGSetNumberSmoothUp"
 /*@
    MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
    on all levels. Use MGGetSmootherUp() to set different numbers of 
@@ -679,8 +679,8 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 /* ----------------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_MG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_MG"
 int PCCreate_MG(PC pc)
 {
   PetscFunctionBegin;

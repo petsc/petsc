@@ -1,4 +1,4 @@
-/*$Id: sorti.c,v 1.27 2000/09/22 20:42:32 bsmith Exp bsmith $*/
+/*$Id: sorti.c,v 1.28 2001/01/15 21:44:00 bsmith Exp balay $*/
 /*
    This file contains routines for sorting integers. Values are sorted in place.
 
@@ -14,8 +14,8 @@
 
 /* -----------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortInt_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortInt_Private"
 /* 
    A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
@@ -44,8 +44,8 @@ static int PetscSortInt_Private(int *v,int right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortInt" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortInt" 
 /*@
    PetscSortInt - Sorts an array of integers in place in increasing order.
 
@@ -86,8 +86,8 @@ int PetscSortInt(int n,int i[])
 
 /* -----------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortIntWithArray_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortIntWithArray_Private"
 /* 
    A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
@@ -116,8 +116,8 @@ static int PetscSortIntWithArray_Private(int *v,int *V,int right)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortIntWithArray" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortIntWithArray" 
 /*@
    PetscSortIntWithArray - Sorts an array of integers in place in increasing order;
        changes a second array to match the sorted first array.

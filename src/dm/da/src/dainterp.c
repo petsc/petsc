@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.19 2000/10/05 19:02:52 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.20 2001/01/15 21:48:51 bsmith Exp balay $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -7,8 +7,8 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 #include "petscmg.h"
 
-#undef __FUNC__  
-#define __FUNC__ "DMGetInterpolationScale"
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetInterpolationScale"
 int DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
   int    ierr;
@@ -25,8 +25,8 @@ int DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="DAGetInterpolation_1D_dof"></a>*/"DAGetInterpolation_1D_dof"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="DAGetInterpolation_1D_dof"></a>*/"DAGetInterpolation_1D_dof"
 int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,i_start,m_f,Mx,*idx_f;
@@ -96,8 +96,8 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 
 
 /*   dof degree of freedom per node, nonperiodic */
-#undef __FUNC__  
-#define __FUNC__ /*<a name="DAGetInterpolation_2D_dof"></a>*/"DAGetInterpolation_2D_dof"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="DAGetInterpolation_2D_dof"></a>*/"DAGetInterpolation_2D_dof"
 int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
@@ -244,8 +244,8 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 
 
 /*   dof degree of freedom per node, nonperiodic */
-#undef __FUNC__  
-#define __FUNC__ /*<a name="DAGetInterpolation_3D_dof"></a>*/"DAGetInterpolation_3D_dof"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="DAGetInterpolation_3D_dof"></a>*/"DAGetInterpolation_3D_dof"
 int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
@@ -414,8 +414,8 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetInterpolation"
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetInterpolation"
 /*@C
    DAGetInterpolation - Gets an interpolation matrix that maps between 
    grids associated with two DAs.

@@ -1,4 +1,4 @@
-/*$Id: Index.c,v 1.29 2001/01/17 22:28:38 bsmith Exp balay $*/
+/*$Id: Index.c,v 1.30 2001/01/23 20:58:37 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -7,8 +7,8 @@ extern int BlastCache(void);
 extern int test1(void);
 extern int test2(void);
  
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int ierr;
@@ -22,8 +22,8 @@ int main(int argc,char **argv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "test1"
+#undef __FUNCT__
+#define __FUNCT__ "test1"
 int test1(void)
 {
   PetscLogDouble  t1,t2;
@@ -115,8 +115,8 @@ int test1(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "test2"
+#undef __FUNCT__
+#define __FUNCT__ "test2"
 int test2(void)
 {
   PetscLogDouble   t1,t2;
@@ -188,8 +188,8 @@ int test2(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "BlastCache"
+#undef __FUNCT__
+#define __FUNCT__ "BlastCache"
 int BlastCache(void)
 {
   int    i,n = 1000000;

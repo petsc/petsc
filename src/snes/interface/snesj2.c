@@ -1,10 +1,10 @@
-/*$Id: snesj2.c,v 1.25 2000/09/07 15:18:01 balay Exp bsmith $*/
+/*$Id: snesj2.c,v 1.26 2001/01/15 21:47:49 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultComputeJacobianColor"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultComputeJacobianColor"
 /*@C
     SNESDefaultComputeJacobianColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity. 

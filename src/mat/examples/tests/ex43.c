@@ -1,11 +1,11 @@
-/*$Id: ex43.c,v 1.15 2001/01/19 23:20:49 balay Exp balay $*/
+/*$Id: ex43.c,v 1.16 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
 #include "petscmat.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat     C;

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.68 2001/01/17 22:25:27 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.69 2001/01/23 20:56:37 balay Exp balay $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -9,8 +9,8 @@ Input arguments are:\n\
 #include "petscsles.h"
 #include "petsclog.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int        ierr,its;

@@ -1,4 +1,4 @@
-/*$Id: stringv.c,v 1.40 1999/10/24 14:01:05 bsmith Exp bsmith $*/
+/*$Id: stringv.c,v 1.42 2001/03/09 17:19:37 balay Exp balay $*/
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -12,8 +12,8 @@ typedef struct  {
   int          curlen,maxlen;
 } PetscViewer_String;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDestroy_String" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_String" 
 static int PetscViewerDestroy_String(PetscViewer viewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
@@ -24,8 +24,8 @@ static int PetscViewerDestroy_String(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerStringSPrintf" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerStringSPrintf" 
 /*@C
     PetscViewerStringSPrintf - Prints information to a PetscViewer string.
 
@@ -78,8 +78,8 @@ int PetscViewerStringSPrintf(PetscViewer viewer,char *format,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerStringOpen" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerStringOpen" 
 /*@C
     PetscViewerStringOpen - Opens a string as a PetscViewer. This is a very 
     simple PetscViewer; information on the object is simply stored into 
@@ -114,8 +114,8 @@ int PetscViewerStringOpen(MPI_Comm comm,char string[],int len,PetscViewer *lab)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerGetSingleton_String" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerGetSingleton_String" 
 int PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
@@ -126,8 +126,8 @@ int PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerRestoreSingleton_String" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerRestoreSingleton_String" 
 int PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
   int           ierr;
@@ -143,8 +143,8 @@ int PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerCreate_String" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate_String" 
 int PetscViewerCreate_String(PetscViewer v)
 {
   PetscViewer_String *vstr;
@@ -163,18 +163,18 @@ int PetscViewerCreate_String(PetscViewer v)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerStringSetString" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerStringSetString" 
 int PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  int           ierr;
-  PetscTruth    isstring;
+  int                ierr;
+  PetscTruth         isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscValidCharPointer(string);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (!isstring)  PetscFunctionReturn(0);
   if (len <= 2) SETERRQ(1,"String must have length at least 2");
 

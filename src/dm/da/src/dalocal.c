@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.27 2001/01/15 21:48:51 bsmith Exp bsmith $*/
+/*$Id: dalocal.c,v 1.28 2001/02/02 16:52:57 bsmith Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -6,8 +6,8 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "DACreateLocalVector"
+#undef __FUNCT__  
+#define __FUNCT__ "DACreateLocalVector"
 /*@C
    DACreateLocalVector - Creates a Seq PETSc vector that
    may be used with the DAXXX routines.
@@ -43,8 +43,8 @@ int DACreateLocalVector(DA da,Vec* g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetLocalVector"
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetLocalVector"
 /*@C
    DAGetLocalVector - Gets a Seq PETSc vector that
    may be used with the DAXXX routines.
@@ -95,8 +95,8 @@ int DAGetLocalVector(DA da,Vec* g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DARestoreLocalVector"
+#undef __FUNCT__  
+#define __FUNCT__ "DARestoreLocalVector"
 /*@C
    DARestoreLocalVector - Returns a Seq PETSc vector that
      obtained from DAGetLocalVector(). Do not use with vector obtained via
@@ -138,8 +138,8 @@ int DARestoreLocalVector(DA da,Vec* g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetGlobalVector"
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetGlobalVector"
 /*@C
    DAGetGlobalVector - Gets a MPI PETSc vector that
    may be used with the DAXXX routines.
@@ -190,8 +190,8 @@ int DAGetGlobalVector(DA da,Vec* g)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DARestoreGlobalVector"
+#undef __FUNCT__  
+#define __FUNCT__ "DARestoreGlobalVector"
 /*@C
    DARestoreGlobalVector - Returns a Seq PETSc vector that
      obtained from DAGetGlobalVector(). Do not use with vector obtained via

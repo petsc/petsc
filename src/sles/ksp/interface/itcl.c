@@ -1,4 +1,4 @@
-/*$Id: itcl.c,v 1.119 2000/09/28 21:13:11 bsmith Exp bsmith $*/
+/*$Id: itcl.c,v 1.120 2001/01/15 21:47:10 bsmith Exp balay $*/
 /*
     Code for setting KSP options from the options database.
 */
@@ -14,8 +14,8 @@
 int numberofsetfromoptions;
 int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
-#undef __FUNC__  
-#define __FUNC__ "KSPAddOptionsChecker"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPAddOptionsChecker"
 /*@
     KSPAddOptionsChecker - Adds an additional function to check for KSP options.
 
@@ -41,8 +41,8 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetOptionsPrefix"
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
    KSP options in the database.
@@ -86,8 +86,8 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
   PetscFunctionReturn(0);  
 }
  
-#undef __FUNC__  
-#define __FUNC__ "KSPAppendOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPAppendOptionsPrefix"
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
    KSP options in the database.
@@ -117,8 +117,8 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetOptionsPrefix"
 /*@C
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
    KSP options in the database.

@@ -1,4 +1,4 @@
-/*$Id: mpitr.c,v 1.27 2000/11/28 17:27:57 bsmith Exp bsmith $*/
+/*$Id: mpitr.c,v 1.28 2001/01/15 21:44:04 bsmith Exp balay $*/
 
 /*
     Code for tracing mistakes in MPI usage. For example, sends that are never received,
@@ -9,8 +9,8 @@
 
 #if defined(PETSC_USE_LOG) && !defined(USING_MPIUNI)
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMPIDump"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMPIDump"
 /*@C
    PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
    have never been received, etc.
@@ -59,8 +59,8 @@ int PetscMPIDump(FILE *fd)
 
 #else
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMPIDump"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMPIDump"
 int PetscMPIDump(FILE *fd)
 {
   PetscFunctionBegin;

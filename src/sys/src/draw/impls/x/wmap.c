@@ -1,4 +1,4 @@
-/*$Id: wmap.c,v 1.28 2000/07/10 03:38:43 bsmith Exp bsmith $*/
+/*$Id: wmap.c,v 1.29 2001/01/15 21:43:29 bsmith Exp balay $*/
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
@@ -6,8 +6,8 @@
     This routine waits until the window is actually created or destroyed
     Returns 0 if window is mapped; 1 if window is destroyed.
  */
-#undef __FUNC__  
-#define __FUNC__ "Xi_wait_map" 
+#undef __FUNCT__  
+#define __FUNCT__ "Xi_wait_map" 
 int Xi_wait_map(PetscDraw_X *XiWin)
 {
   XEvent  event;

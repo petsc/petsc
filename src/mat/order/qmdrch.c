@@ -1,4 +1,4 @@
-/*$Id: qmdrch.c,v 1.13 2000/04/12 04:24:20 bsmith Exp bsmith $*/
+/*$Id: qmdrch.c,v 1.14 2001/01/15 21:46:34 bsmith Exp balay $*/
 /* qmdrch.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -27,8 +27,8 @@
 /*              LT 0 MEANS THE NODE HAS BEEN MERGED WITH*/
 /*              OTHERS IN THE QUOTIENT OR IT IS IN NBRHD SET.*/
 /*****************************************************************/
-#undef __FUNC__  
-#define __FUNC__ "SPARSEPACKqmdrch"
+#undef __FUNCT__  
+#define __FUNCT__ "SPARSEPACKqmdrch"
 int SPARSEPACKqmdrch(int *root, int *xadj, int *adjncy, 
 	int *deg, int *marker, int *rchsze, int *rchset, 
 	int *nhdsze, int *nbrhd)

@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.125 2001/01/16 18:19:09 balay Exp bsmith $*/
+/*$Id: asm.c,v 1.126 2001/01/17 22:24:30 bsmith Exp balay $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -29,8 +29,8 @@ typedef struct {
                                      factorization in the case of LU and ILU */
 } PC_ASM;
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_ASM"
 static int PCView_ASM(PC pc,PetscViewer viewer)
 {
   PC_ASM     *jac = (PC_ASM*)pc->data;
@@ -88,8 +88,8 @@ static int PCView_ASM(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_ASM"
 static int PCSetUp_ASM(PC pc)
 {
   PC_ASM   *osm  = (PC_ASM*)pc->data;
@@ -208,8 +208,8 @@ static int PCSetUp_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUpOnBlocks_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUpOnBlocks_ASM"
 static int PCSetUpOnBlocks_ASM(PC pc)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -229,8 +229,8 @@ static int PCSetUpOnBlocks_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_ASM"
 static int PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
@@ -275,8 +275,8 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyTranspose_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_ASM"
 static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
@@ -324,8 +324,8 @@ static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_ASM"
 static int PCDestroy_ASM(PC pc)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
@@ -354,8 +354,8 @@ static int PCDestroy_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_ASM"
 static int PCSetFromOptions_ASM(PC pc)
 {
   PC_ASM     *osm = (PC_ASM*)pc->data;
@@ -395,8 +395,8 @@ static int PCSetFromOptions_ASM(PC pc)
 /*------------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetLocalSubdomains_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetLocalSubdomains_ASM"
 int PCASMSetLocalSubdomains_ASM(PC pc,int n,IS *is)
 {
   PC_ASM *osm;
@@ -416,8 +416,8 @@ int PCASMSetLocalSubdomains_ASM(PC pc,int n,IS *is)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetTotalSubdomains_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetTotalSubdomains_ASM"
 int PCASMSetTotalSubdomains_ASM(PC pc,int N,IS *is)
 {
   PC_ASM *osm;
@@ -445,8 +445,8 @@ they cannot be set globally yet.");
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetOverlap_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetOverlap_ASM"
 int PCASMSetOverlap_ASM(PC pc,int ovl)
 {
   PC_ASM *osm;
@@ -461,8 +461,8 @@ int PCASMSetOverlap_ASM(PC pc,int ovl)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetType_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetType_ASM"
 int PCASMSetType_ASM(PC pc,PCASMType type)
 {
   PC_ASM *osm;
@@ -475,8 +475,8 @@ int PCASMSetType_ASM(PC pc,PCASMType type)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCASMGetSubSLES_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMGetSubSLES_ASM"
 int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
 {
   PC_ASM   *jac = (PC_ASM*)pc->data;
@@ -501,8 +501,8 @@ int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetUseInPlace_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetUseInPlace_ASM"
 int PCASMSetUseInPlace_ASM(PC pc)
 {
   PC_ASM *dir;
@@ -515,8 +515,8 @@ int PCASMSetUseInPlace_ASM(PC pc)
 EXTERN_C_END
 
 /*----------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetUseInPlace"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetUseInPlace"
 /*@
    PCASMSetUseInPlace - Tells the system to destroy the matrix after setup is done.
 
@@ -553,8 +553,8 @@ int PCASMSetUseInPlace(PC pc)
 }
 /*----------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetLocalSubdomains"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetLocalSubdomains"
 /*@C
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner. 
@@ -597,8 +597,8 @@ int PCASMSetLocalSubdomains(PC pc,int n,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetTotalSubdomains"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetTotalSubdomains"
 /*@C
     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -647,8 +647,8 @@ int PCASMSetTotalSubdomains(PC pc,int N,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetOverlap"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetOverlap"
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -701,8 +701,8 @@ int PCASMSetOverlap(PC pc,int ovl)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCASMSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMSetType"
 /*@
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
@@ -742,8 +742,8 @@ int PCASMSetType(PC pc,PCASMType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCASMGetSubSLES"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMGetSubSLES"
 /*@C
    PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -792,8 +792,8 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 
 /* -------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_ASM"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_ASM"
 int PCCreate_ASM(PC pc)
 {
   int    ierr;
@@ -844,8 +844,8 @@ ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASMSetUseInPlace_C",
 EXTERN_C_END
 
 
-#undef __FUNC__  
-#define __FUNC__ "PCASMCreateSubdomains2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMCreateSubdomains2D"
 /*@
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz 
    preconditioner for a two-dimensional problem on a regular grid.
@@ -916,8 +916,8 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCASMGetLocalSubdomains"
+#undef __FUNCT__  
+#define __FUNCT__ "PCASMGetLocalSubdomains"
 /*@C
     PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner. 

@@ -1,4 +1,4 @@
-/*$Id: dgefa.c,v 1.20 2000/09/28 21:11:23 bsmith Exp bsmith $*/
+/*$Id: dgefa.c,v 1.21 2001/01/15 21:45:50 bsmith Exp balay $*/
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 
@@ -14,8 +14,8 @@
 */
 #include "petsc.h"
 
-#undef __FUNC__  
-#define __FUNC__ "LINPACKdgefa"
+#undef __FUNCT__  
+#define __FUNCT__ "LINPACKdgefa"
 int LINPACKdgefa(MatScalar *a,int n,int *ipvt)
 {
     int        i__2,i__3,kp1,nm1,j,k,l,ll,kn,knp1,jn1;

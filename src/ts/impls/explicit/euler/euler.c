@@ -1,4 +1,4 @@
-/*$Id: euler.c,v 1.24 2000/09/02 02:49:56 bsmith Exp bsmith $*/
+/*$Id: euler.c,v 1.25 2001/01/15 21:48:29 bsmith Exp balay $*/
 /*
        Code for Timestepping with explicit Euler.
 */
@@ -8,8 +8,8 @@ typedef struct {
   Vec update;     /* work vector where F(t[i],u[i]) is stored */
 } TS_Euler;
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetUp_Euler"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetUp_Euler"
 static int TSSetUp_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
@@ -20,8 +20,8 @@ static int TSSetUp_Euler(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSStep_Euler"
+#undef __FUNCT__  
+#define __FUNCT__ "TSStep_Euler"
 static int TSStep_Euler(TS ts,int *steps,double *time)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
@@ -47,8 +47,8 @@ static int TSStep_Euler(TS ts,int *steps,double *time)
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "TSDestroy_Euler"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDestroy_Euler"
 static int TSDestroy_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
@@ -61,16 +61,16 @@ static int TSDestroy_Euler(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetFromOptions_Euler"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetFromOptions_Euler"
 static int TSSetFromOptions_Euler(TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSView_Euler"
+#undef __FUNCT__  
+#define __FUNCT__ "TSView_Euler"
 static int TSView_Euler(TS ts,PetscViewer viewer)
 {
   PetscFunctionBegin;
@@ -79,8 +79,8 @@ static int TSView_Euler(TS ts,PetscViewer viewer)
 
 /* ------------------------------------------------------------ */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "TSCreate_Euler"
+#undef __FUNCT__  
+#define __FUNCT__ "TSCreate_Euler"
 int TSCreate_Euler(TS ts)
 {
   TS_Euler *euler;

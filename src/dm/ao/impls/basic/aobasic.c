@@ -1,4 +1,4 @@
-/*$Id: aobasic.c,v 1.58 2001/01/15 21:48:44 bsmith Exp balay $*/
+/*$Id: aobasic.c,v 1.59 2001/01/16 18:21:03 balay Exp balay $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -14,8 +14,8 @@ typedef struct {
                     /* petsc[j] is the partner for the jth app slot */
 } AO_Basic;
 
-#undef __FUNC__  
-#define __FUNC__ "AOBasicGetIndices_Private" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOBasicGetIndices_Private" 
 int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
 {
   AO_Basic *basic = (AO_Basic*)ao->data;
@@ -26,8 +26,8 @@ int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODestroy_Basic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AODestroy_Basic" 
 int AODestroy_Basic(AO ao)
 {
   AO_Basic *aodebug = (AO_Basic*)ao->data;
@@ -44,8 +44,8 @@ int AODestroy_Basic(AO ao)
 /*
        All processors have the same data so processor 1 prints it
 */
-#undef __FUNC__  
-#define __FUNC__ "AOView_Basic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOView_Basic" 
 int AOView_Basic(AO ao,PetscViewer viewer)
 {
   int        rank,ierr,i;
@@ -70,8 +70,8 @@ int AOView_Basic(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication_Basic"  
+#undef __FUNCT__  
+#define __FUNCT__ "AOPetscToApplication_Basic"  
 int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 {
   int      i;
@@ -84,8 +84,8 @@ int AOPetscToApplication_Basic(AO ao,int n,int *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc_Basic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOApplicationToPetsc_Basic" 
 int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
 {
   int      i;
@@ -101,8 +101,8 @@ int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
 static struct _AOOps myops = {AOPetscToApplication_Basic,
                               AOApplicationToPetsc_Basic};
 
-#undef __FUNC__  
-#define __FUNC__ "AOCreateBasic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreateBasic" 
 /*@C
    AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
@@ -207,8 +207,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   *aoout = ao; PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOCreateBasicIS" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreateBasicIS" 
 /*@C
    AOCreateBasicIS - Creates a basic application ordering using two index sets.
 

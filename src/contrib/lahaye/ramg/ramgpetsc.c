@@ -41,8 +41,8 @@
         approximation to the solution.                                   */
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "RamgShellPCCreate"
+#undef __FUNCT__
+#define __FUNCT__ "RamgShellPCCreate"
 /*.. RamgShellPCCreate - This routine creates a user-defined
      preconditioner context.
 
@@ -60,8 +60,8 @@ int RamgShellPCCreate(RamgShellPC **shell)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "RamgShellPCSetUp"
+#undef __FUNCT__
+#define __FUNCT__ "RamgShellPCSetUp"
 /*..RamgShellPCSetUp - This routine sets up a user-defined
     ramg preconditioner context.  
 
@@ -232,8 +232,8 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "RamgShellPCApply"
+#undef __FUNCT__
+#define __FUNCT__ "RamgShellPCApply"
 /*..RamgShellPCApply - This routine applies the AMG code as preconditioner 
 
     Input Parameters:
@@ -360,8 +360,8 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "RamgShellPCDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "RamgShellPCDestroy"
 /*..RamgShellPCDestroy - This routine destroys a user-defined
     preconditioner context.
 
@@ -385,8 +385,8 @@ int RamgShellPCDestroy(RamgShellPC *shell)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ " RamgGetParam"
+#undef __FUNCT__
+#define __FUNCT__ " RamgGetParam"
 int RamgGetParam(struct RAMG_PARAM *ramg_param)
 {
   int       ierr; 
@@ -434,8 +434,8 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
 
 #include "src/sles/pc/pcimpl.h"
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_RAMG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_RAMG"
 static int PCSetUp_RAMG(PC pc)
 {
   int        ierr;
@@ -445,8 +445,8 @@ static int PCSetUp_RAMG(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_RAMG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_RAMG"
 static int PCApply_RAMG(PC pc,Vec x,Vec y)
 {
   int       ierr;
@@ -456,8 +456,8 @@ static int PCApply_RAMG(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_RAMG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_RAMG"
 static int PCDestroy_RAMG(PC pc)
 {
   int       ierr;
@@ -468,8 +468,8 @@ static int PCDestroy_RAMG(PC pc)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_RAMG"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_RAMG"
 int PCCreate_RAMG(PC pc)
 {
   int       ierr;

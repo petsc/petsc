@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.74 2001/02/09 19:06:36 bsmith Exp bsmith $*/
+/*$Id: zoptions.c,v 1.75 2001/03/12 17:33:07 bsmith Exp balay $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -344,8 +344,8 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
   return 0;
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MPICCommToFortranComm"
+#undef __FUNCT__  
+#define __FUNCT__ "MPICCommToFortranComm"
 /*@C
     MPICCommToFortranComm - Converts a MPI_Comm represented
     in C to one appropriate to pass to a Fortran routine.
@@ -383,8 +383,8 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MPIFortranCommToCComm"
+#undef __FUNCT__  
+#define __FUNCT__ "MPIFortranCommToCComm"
 /*@C
     MPIFortranCommToCComm - Converts a MPI_Comm represented
     int Fortran (as an integer) to a MPI_Comm in C.

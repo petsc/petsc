@@ -1,12 +1,12 @@
-/*$Id: appalgebra.c,v 1.17 2001/01/20 03:37:03 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.18 2001/01/22 21:00:49 bsmith Exp balay $*/
 #include "appctx.h"
 #include "math.h"
 
 /*
          Sample right hand side and boundary conditions
 */
-#undef __FUNC__
-#define __FUNC__ "pde_rhs"
+#undef __FUNCT__
+#define __FUNCT__ "pde_rhs"
 int pde_rhs(void *dummy,int n,double *xx,double *f)
 {
   double pi = M_PI, x = xx[0], y = xx[1];
@@ -14,8 +14,8 @@ int pde_rhs(void *dummy,int n,double *xx,double *f)
   *f = 8*pi*pi*sin(2*pi*x)*sin(2*pi*y)-20*pi*cos(2*pi*x)*sin(2*pi*y);
   PetscFunctionReturn(0);
 }
-#undef __FUNC__
-#define __FUNC__ "pde_bc"
+#undef __FUNCT__
+#define __FUNCT__ "pde_bc"
 int pde_bc(void *dummy,int n,double *xx,double *f)
 {
   double pi = 3.1415927, x = xx[0], y = xx[1];
@@ -28,8 +28,8 @@ int pde_bc(void *dummy,int n,double *xx,double *f)
 /*
          Sets up the linear system associated with the PDE and solves it
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtSolve"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSolve"
 int AppCtxSolve(AppCtx* appctx, int *its)
 {
   AppAlgebra  *algebra = &appctx->algebra;
@@ -136,8 +136,8 @@ int AppCtxSolve(AppCtx* appctx, int *its)
        1  -  Generates the "global" parallel vector to contain the 
 	     right hand side and solution.
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreateRhs"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreateRhs"
 int AppCtxCreateRhs(AppCtx *appctx)
 {
   AppGrid     *grid = &appctx->grid;
@@ -161,8 +161,8 @@ int AppCtxCreateRhs(AppCtx *appctx)
 /*---------------------------------------------------------------
       2  - Generates the "global" parallel matrix
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreateMatrix"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreateMatrix"
 int AppCtxCreateMatrix(AppCtx* appctx)
 {
 
@@ -185,8 +185,8 @@ int AppCtxCreateMatrix(AppCtx* appctx)
      3 - Computes the entries in the right hand side and sets them into the parallel vector
          Uses B and C
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtSetRhs"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSetRhs"
 int AppCtxSetRhs(AppCtx* appctx)
 {
   /********* Context informatrion ***********/
@@ -229,8 +229,8 @@ int AppCtxSetRhs(AppCtx* appctx)
       4 - Computes the element stiffness matrices and stick into 
    global stiffness matrix. Uses B and D.
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtSetMatrix"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSetMatrix"
 int AppCtxSetMatrix(AppCtx* appctx)
 {
   /********* Contex information ***********/
@@ -278,8 +278,8 @@ int AppCtxSetMatrix(AppCtx* appctx)
      thus forcing the solution at the given points to match the 
      Dirichlet function.
 */
-#undef __FUNC__
-#define __FUNC__ "SetBoundaryConditions"
+#undef __FUNCT__
+#define __FUNCT__ "SetBoundaryConditions"
 int SetBoundaryConditions(AppCtx *appctx)
 {
  /********* Context informatrion ***********/
@@ -328,8 +328,8 @@ int SetBoundaryConditions(AppCtx *appctx)
      6 - Set the matrix boundary conditions (see also 5). Replace the corresponding 
          rows in the matrix with the identity.
 */
-#undef __FUNC__
-#define __FUNC__ "SetMatrixBoundaryConditions"
+#undef __FUNCT__
+#define __FUNCT__ "SetMatrixBoundaryConditions"
 int SetMatrixBoundaryConditions(AppCtx *appctx)
 {
   /********* Context informatrion ***********/

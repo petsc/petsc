@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.22 2001/02/12 19:21:54 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.23 2001/02/12 19:28:50 bsmith Exp balay $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -55,8 +55,8 @@ typedef struct {
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_SPAI"
 static int PCSetUp_SPAI(PC pc)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -119,8 +119,8 @@ static int PCSetUp_SPAI(PC pc)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_SPAI"
 static int PCApply_SPAI(PC pc,Vec x,Vec y)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -134,8 +134,8 @@ static int PCApply_SPAI(PC pc,Vec x,Vec y)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_SPAI"
 static int PCDestroy_SPAI(PC pc)
 {
   int     ierr;
@@ -149,8 +149,8 @@ static int PCDestroy_SPAI(PC pc)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_SPAI"
 static int PCView_SPAI(PC pc,PetscViewer viewer)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -175,8 +175,8 @@ static int PCView_SPAI(PC pc,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetEpsilon_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetEpsilon_SPAI"
 int PCSPAISetEpsilon_SPAI(PC pc,double epsilon)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -189,8 +189,8 @@ EXTERN_C_END
 /**********************************************************************/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetNBSteps_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetNBSteps_SPAI"
 int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -204,8 +204,8 @@ EXTERN_C_END
 
 /* added 1/7/99 g.h. */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetMax_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetMax_SPAI"
 int PCSPAISetMax_SPAI(PC pc,int max)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -218,8 +218,8 @@ EXTERN_C_END
 /**********************************************************************/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetMaxNew_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetMaxNew_SPAI"
 int PCSPAISetMaxNew_SPAI(PC pc,int maxnew)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -232,8 +232,8 @@ EXTERN_C_END
 /**********************************************************************/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetBlockSize_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetBlockSize_SPAI"
 int PCSPAISetBlockSize_SPAI(PC pc,int block_size)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -246,8 +246,8 @@ EXTERN_C_END
 /**********************************************************************/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetCacheSize_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetCacheSize_SPAI"
 int PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -260,8 +260,8 @@ EXTERN_C_END
 /**********************************************************************/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetVerbose_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetVerbose_SPAI"
 int PCSPAISetVerbose_SPAI(PC pc,int verbose)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -274,8 +274,8 @@ EXTERN_C_END
 /**********************************************************************/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetSp_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetSp_SPAI"
 int PCSPAISetSp_SPAI(PC pc,int sp)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -287,8 +287,8 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetEpsilon"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetEpsilon"
 int PCSPAISetEpsilon(PC pc,double epsilon)
 {
   int ierr,(*f)(PC,double);
@@ -302,8 +302,8 @@ int PCSPAISetEpsilon(PC pc,double epsilon)
     
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetNBSteps"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetNBSteps"
 int PCSPAISetNBSteps(PC pc,int nbsteps)
 {
   int ierr,(*f)(PC,int);
@@ -318,8 +318,8 @@ int PCSPAISetNBSteps(PC pc,int nbsteps)
 /**********************************************************************/
 
 /* added 1/7/99 g.h. */
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetMax"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetMax"
 int PCSPAISetMax(PC pc,int max)
 {
   int ierr,(*f)(PC,int);
@@ -333,8 +333,8 @@ int PCSPAISetMax(PC pc,int max)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetMaxNew"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetMaxNew"
 int PCSPAISetMaxNew(PC pc,int maxnew)
 {
   int ierr,(*f)(PC,int);
@@ -348,8 +348,8 @@ int PCSPAISetMaxNew(PC pc,int maxnew)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetBlockSize"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetBlockSize"
 int PCSPAISetBlockSize(PC pc,int block_size)
 {
   int ierr,(*f)(PC,int);
@@ -363,8 +363,8 @@ int PCSPAISetBlockSize(PC pc,int block_size)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetCacheSize"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetCacheSize"
 int PCSPAISetCacheSize(PC pc,int cache_size)
 {
   int ierr,(*f)(PC,int);
@@ -378,8 +378,8 @@ int PCSPAISetCacheSize(PC pc,int cache_size)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetVerbose"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetVerbose"
 int PCSPAISetVerbose(PC pc,int verbose)
 {
   int ierr,(*f)(PC,int);
@@ -393,8 +393,8 @@ int PCSPAISetVerbose(PC pc,int verbose)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSPAISetSp"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSPAISetSp"
 int PCSPAISetSp(PC pc,int sp)
 {
   int ierr,(*f)(PC,int);
@@ -410,8 +410,8 @@ int PCSPAISetSp(PC pc,int sp)
 
 /**********************************************************************/
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_SPAI"
 static int PCSetFromOptions_SPAI(PC pc)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
@@ -466,8 +466,8 @@ EXTERN_C_BEGIN
                    preconditioner written by Stephen Barnard.
 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_SPAI"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_SPAI"
 int PCCreate_SPAI(PC pc)
 {
   PC_SPAI *ispai;
@@ -529,8 +529,8 @@ EXTERN_C_END
 /*
    Converts from a PETSc matrix to an SPAI matrix 
 */
-#undef __FUNC__  
-#define __FUNC__ "ConvertMatToMatrix"
+#undef __FUNCT__  
+#define __FUNCT__ "ConvertMatToMatrix"
 int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 {
   matrix   *M;
@@ -700,8 +700,8 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
    This assumes that the the SPAI matrix B is stored in
    COMPRESSED-ROW format.
 */
-#undef __FUNC__  
-#define __FUNC__ "ConvertMatrixToMat"
+#undef __FUNCT__  
+#define __FUNCT__ "ConvertMatrixToMat"
 int ConvertMatrixToMat(matrix *B,Mat *PB)
 {
   int    size,rank;
@@ -761,8 +761,8 @@ int ConvertMatrixToMat(matrix *B,Mat *PB)
 /*
    Converts from an SPAI vector v  to a PETSc vec Pv.
 */
-#undef __FUNC__  
-#define __FUNC__ "ConvertVectorToVec"
+#undef __FUNCT__  
+#define __FUNCT__ "ConvertVectorToVec"
 int ConvertVectorToVec(vector *v,Vec *Pv)
 {
   int size,rank,ierr,m,M,i,*mnls,*start_indices,*global_indices;
@@ -816,8 +816,8 @@ int ConvertVectorToVec(vector *v,Vec *Pv)
   f2 <output_file> : matrix and vector in PETSc format
 
 */
-#undef __FUNC__  
-#define __FUNC__ "MM_to_PETSC"
+#undef __FUNCT__  
+#define __FUNCT__ "MM_to_PETSC"
 int MM_to_PETSC(char *f0,char *f1,char *f2)
 {
   Mat         A_PETSC;          /* matrix */

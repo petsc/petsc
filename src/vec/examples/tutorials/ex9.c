@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.28 2001/01/17 22:21:32 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.29 2001/01/23 20:54:12 balay Exp balay $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -21,8 +21,8 @@ T*/
 */
 #include "petscvec.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int        rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend;

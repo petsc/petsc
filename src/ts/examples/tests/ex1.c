@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.42 2001/01/22 23:07:42 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.43 2001/01/23 20:57:36 balay Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -38,8 +38,8 @@ extern int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 #define nonlinear_no_jacobian  3
 #define nonlinear              4
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int           ierr,time_steps = 100,steps,size,m;
@@ -218,8 +218,8 @@ int main(int argc,char **argv)
 }
 
 /* -------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "Initial" 
+#undef __FUNCT__
+#define __FUNCT__ "Initial" 
 int Initial(Vec global,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
@@ -238,8 +238,8 @@ int Initial(Vec global,void *ctx)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "Solution"
+#undef __FUNCT__
+#define __FUNCT__ "Solution"
 /*
        Exact solution 
 */
@@ -263,8 +263,8 @@ int Solution(double t,Vec solution,void *ctx)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "Monitor"
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
 int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 {
   AppCtx   *appctx = (AppCtx*) ctx;
@@ -296,8 +296,8 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 }
 
 /* -----------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "RHSMatrixFree"
+#undef __FUNCT__
+#define __FUNCT__ "RHSMatrixFree"
 int RHSMatrixFree(Mat mat,Vec x,Vec y)
 {
   int  ierr;
@@ -308,8 +308,8 @@ int RHSMatrixFree(Mat mat,Vec x,Vec y)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "RHSFunctionHeat"
+#undef __FUNCT__
+#define __FUNCT__ "RHSFunctionHeat"
 int RHSFunctionHeat(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
@@ -345,8 +345,8 @@ int RHSFunctionHeat(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 }
 
 /* ---------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "RHSMatrixHeat"
+#undef __FUNCT__
+#define __FUNCT__ "RHSMatrixHeat"
 int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;
@@ -385,8 +385,8 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "RHSJacobianHeat"
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobianHeat"
 int RHSJacobianHeat(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   return RHSMatrixHeat(ts,t,AA,BB,str,ctx);

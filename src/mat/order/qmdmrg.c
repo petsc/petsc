@@ -1,4 +1,4 @@
-/*$Id: qmdmrg.c,v 1.13 2000/04/12 04:24:20 bsmith Exp bsmith $*/
+/*$Id: qmdmrg.c,v 1.14 2001/01/15 21:46:34 bsmith Exp balay $*/
 /* qmdmrg.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -31,8 +31,8 @@
 /*              REACHABLE SETS.                                  */
 /*                                                               */
 /*****************************************************************/
-#undef __FUNC__  
-#define __FUNC__ "SPARSEPACKqmdmrg" 
+#undef __FUNCT__  
+#define __FUNCT__ "SPARSEPACKqmdmrg" 
 int SPARSEPACKqmdmrg(int *xadj, int *adjncy, int *deg, 
 	int *qsize, int *qlink, int *marker, int *deg0, 
 	int *nhdsze, int *nbrhd, int *rchset, int *ovrlp)

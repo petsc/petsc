@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.21 2000/12/15 15:31:27 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.22 2001/01/15 21:43:39 bsmith Exp balay $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -33,8 +33,8 @@ static char *PetscErrorStrings[] = {
 
 extern char PetscErrorBaseMessage[1024];
 
-#undef __FUNC__  
-#define __FUNC__ "PetscErrorMessage" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorMessage" 
 /*@C
    PetscErrorMessage - returns the text string associated with a PETSc error code.
 
@@ -68,8 +68,8 @@ int PetscErrorMessage(int errnum,char **text,char **specific)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTraceBackErrorHandler" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTraceBackErrorHandler" 
 /*@C
    PetscTraceBackErrorHandler - Default error handler routine that generates
    a traceback on error detection.
@@ -78,7 +78,7 @@ int PetscErrorMessage(int errnum,char **text,char **specific)
 
    Input Parameters:
 +  line - the line number of the error (indicated by __LINE__)
-.  func - the function where error is detected (indicated by __FUNC__)
+.  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen

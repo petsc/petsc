@@ -1,4 +1,4 @@
-/*$Id: fn1wd.c,v 1.21 2000/05/10 16:41:27 bsmith Exp bsmith $*/
+/*$Id: fn1wd.c,v 1.22 2001/01/15 21:46:34 bsmith Exp balay $*/
 /* fn1wd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -29,8 +29,8 @@
 /*    PROGRAM SUBROUTINE -                                       */
 /*       FNROOT.                                                 */
 /*****************************************************************/
-#undef __FUNC__  
-#define __FUNC__ "SPARSEPACKfn1wd" 
+#undef __FUNCT__  
+#define __FUNCT__ "SPARSEPACKfn1wd" 
 int SPARSEPACKfn1wd(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *nlvl, int *
 	xls, int *ls)

@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.108 2001/01/15 21:46:54 bsmith Exp bsmith $*/
+/*$Id: eisen.c,v 1.109 2001/01/17 22:24:25 bsmith Exp balay $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -16,8 +16,8 @@ typedef struct {
 } PC_Eisenstat;
 
 
-#undef __FUNC__  
-#define __FUNC__ "PCMult_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCMult_Eisenstat"
 static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
 {
   int          ierr;
@@ -31,8 +31,8 @@ static int PCMult_Eisenstat(Mat mat,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_Eisenstat"
 static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -44,8 +44,8 @@ static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCPre_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCPre_Eisenstat"
 static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -79,8 +79,8 @@ static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCPost_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCPost_Eisenstat"
 static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data;
@@ -95,8 +95,8 @@ static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Eisenstat"
 static int PCDestroy_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data; 
@@ -110,8 +110,8 @@ static int PCDestroy_Eisenstat(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_Eisenstat"
 static int PCSetFromOptions_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
@@ -129,8 +129,8 @@ static int PCSetFromOptions_Eisenstat(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_Eisenstat"
 static int PCView_Eisenstat(PC pc,PetscViewer viewer)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
@@ -152,8 +152,8 @@ static int PCView_Eisenstat(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_Eisenstat"
 static int PCSetUp_Eisenstat(PC pc)
 {
   int          ierr,M,N,m,n;
@@ -179,8 +179,8 @@ static int PCSetUp_Eisenstat(PC pc)
 /* --------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCEisenstatSetOmega_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCEisenstatSetOmega_Eisenstat"
 int PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 {
   PC_Eisenstat  *eis;
@@ -194,8 +194,8 @@ int PCEisenstatSetOmega_Eisenstat(PC pc,PetscReal omega)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCEisenstatNoDiagonalScaling_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCEisenstatNoDiagonalScaling_Eisenstat"
 int PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis;
@@ -207,8 +207,8 @@ int PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCEisenstatSetOmega"
+#undef __FUNCT__  
+#define __FUNCT__ "PCEisenstatSetOmega"
 /*@ 
    PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).
@@ -251,8 +251,8 @@ int PCEisenstatSetOmega(PC pc,PetscReal omega)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCEisenstatNoDiagonalScaling"
+#undef __FUNCT__  
+#define __FUNCT__ "PCEisenstatNoDiagonalScaling"
 /*@
    PCEisenstatNoDiagonalScaling - Causes the Eisenstat preconditioner
    not to do additional diagonal preconditioning. For matrices with a constant 
@@ -292,8 +292,8 @@ int PCEisenstatNoDiagonalScaling(PC pc)
 /* --------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_Eisenstat"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_Eisenstat"
 int PCCreate_Eisenstat(PC pc)
 {
   int          ierr;

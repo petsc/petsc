@@ -1,11 +1,11 @@
-/*$Id: PetscTime.c,v 1.18 2001/01/17 22:28:38 bsmith Exp balay $*/
+/*$Id: PetscTime.c,v 1.19 2001/01/23 20:58:37 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscfix.h"
 #include "src/sys/src/PetscLog/ptime.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscLogDouble x,y;

@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.5 2000/08/01 20:58:20 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.6 2001/01/15 21:49:27 bsmith Exp balay $*/
 
 
 /*
@@ -8,8 +8,8 @@
 
 #include "appctx.h"
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtView"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtView"
 int AppCtxView(PetscDraw idraw,void *iappctx)
 {
   AppCtx                 *appctx = (AppCtx *)iappctx;
@@ -150,8 +150,8 @@ int AppCtxView(PetscDraw idraw,void *iappctx)
    Note:
    See the companion Matlab file mscript.m for usage instructions.
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtViewMatlab"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtViewMatlab"
 int AppCtxViewMatlab(AppCtx* appctx)
 {
   int    ierr,*cell_vertex,rstart,rend;
@@ -183,8 +183,8 @@ int AppCtxViewMatlab(AppCtx* appctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtViewSolution"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtViewSolution"
 int AppCtxViewSolution(PetscDraw idraw,void *iappctx)
 {
   AppCtx                 *appctx = (AppCtx *)iappctx;

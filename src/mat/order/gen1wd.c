@@ -1,4 +1,4 @@
-/*$Id: gen1wd.c,v 1.14 2000/05/10 16:41:27 bsmith Exp bsmith $*/
+/*$Id: gen1wd.c,v 1.15 2001/01/15 21:46:34 bsmith Exp balay $*/
 /* gen1wd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -27,8 +27,8 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       FN1WD, REVRSE, ROOTLS.*/
 /****************************************************************/
-#undef __FUNC__  
-#define __FUNC__ "SPARSEPACKgen1wd" 
+#undef __FUNCT__  
+#define __FUNCT__ "SPARSEPACKgen1wd" 
 int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *nblks, int *xblk, int *perm, int *
 	xls, int *ls)

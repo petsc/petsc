@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.27 2001/01/17 22:26:15 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.28 2001/01/23 20:57:06 balay Exp balay $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -43,8 +43,8 @@ typedef struct {
 extern int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
 extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES          snes;                      /* nonlinear solver */
@@ -125,8 +125,8 @@ int main(int argc,char **argv)
 
   return 0;
 }/* --------------------  Form initial approximation ----------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess1"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i,j,row,mx,my,ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
@@ -161,8 +161,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 } /* --------------------  Evaluate Function F(x) --------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction1"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx*)ptr;
@@ -206,8 +206,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
   return 0; 
 } /* --------------------  Evaluate Jacobian F'(x) --------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian1"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian1"
 int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx*)ptr;

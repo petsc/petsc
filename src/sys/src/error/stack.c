@@ -1,4 +1,4 @@
-/*$Id: stack.c,v 1.31 2000/10/24 20:24:29 bsmith Exp bsmith $*/
+/*$Id: stack.c,v 1.32 2001/01/15 21:43:39 bsmith Exp balay $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
@@ -15,8 +15,8 @@ int        stack_err;
 char       *msg;
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStackPublish"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackPublish"
 int PetscStackPublish(void)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -43,8 +43,8 @@ int PetscStackPublish(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStackDepublish"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackDepublish"
 int PetscStackDepublish(void)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -61,8 +61,8 @@ int PetscStackDepublish(void)
   PetscFunctionReturn(0);
 }
   
-#undef __FUNC__  
-#define __FUNC__ "PetscStackCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackCreate"
 int PetscStackCreate(void)
 {
   int ierr;
@@ -78,8 +78,8 @@ int PetscStackCreate(void)
   return 0;
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStackView"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackView"
 int PetscStackView(PetscViewer viewer)
 {
   int  i,ierr;
@@ -114,8 +114,8 @@ int PetscStackView(PetscViewer viewer)
   return 0;
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStackDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackDestroy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackDestroy(void) 
 {
@@ -132,8 +132,8 @@ int PetscStackDestroy(void)
   return 0;
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStackCopy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackCopy"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackCopy(PetscStack* sint,PetscStack* sout)
 {
@@ -153,8 +153,8 @@ int PetscStackCopy(PetscStack* sint,PetscStack* sout)
   return 0;
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStackPrint"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackPrint"
 /*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackPrint(PetscStack* sint,FILE *fp)
 {
@@ -169,36 +169,36 @@ int PetscStackPrint(PetscStack* sint,FILE *fp)
 }
 
 #else
-#undef __FUNC__  
-#define __FUNC__ "PetscStackPublish"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackPublish"
 int PetscStackPublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PetscStackDepublish"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackDepublish"
 int PetscStackDepublish(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PetscStackCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackCreate"
 int PetscStackCreate(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PetscStackView"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStackView"
 int PetscStackView(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""PetscStackDestroy></a>*/"PetscStackDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name=""PetscStackDestroy></a>*/"PetscStackDestroy"
 int PetscStackDestroy(void) 
 {
   PetscFunctionBegin;

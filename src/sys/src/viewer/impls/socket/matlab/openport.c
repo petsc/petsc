@@ -1,4 +1,4 @@
-/*$Id: openport.c,v 1.22 2001/01/15 21:43:08 bsmith Exp balay $*/
+/*$Id: openport.c,v 1.23 2001/03/02 23:01:05 balay Exp balay $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
@@ -60,8 +60,8 @@ EXTERN int SOCKConnect_Private(int);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "mexFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
   int t,portnumber;
@@ -98,8 +98,8 @@ void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 static int listenport;
 /*-----------------------------------------------------------------*/
 extern int establish(u_short);
-#undef __FUNC__  
-#define __FUNC__ "SOCKConnect_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "SOCKConnect_Private"
 int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa; 
@@ -128,8 +128,8 @@ int SOCKConnect_Private(int portnumber)
 }
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
-#undef __FUNC__  
-#define __FUNC__ "establish"
+#undef __FUNCT__  
+#define __FUNCT__ "establish"
 int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];

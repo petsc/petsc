@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.5 2001/01/19 23:22:35 balay Exp balay $*/
+/*$Id: main.c,v 1.6 2001/01/23 20:58:23 balay Exp balay $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -13,8 +13,8 @@ static char help[] =
 #include "appctx.h"
 
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            ierr,its,rank;

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 2001/03/22 04:38:46 balay Exp $ 
+# $Id: base.site,v 1.1 2001/03/22 18:59:11 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -18,18 +18,8 @@ LAPACK_LIB     = -L'"$(MKL_HOME)/lib32/dll"' mkl_c.lib
 #
 # To use the single processor MPI interface provided in PETSc
 #
-MPI_INCLUDE    = -I$(PETSC_DIR)/src/sys/src/mpiuni -DMPIUNI_USE_STDCALL
+MPI_INCLUDE    = -I$(PETSC_DIR)/src/sys/src/mpiuni
 MPI_LIB        = -lmpiuni
 MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
 
 # ----------------------------------------------------------------------------------------  
-#  Locations of OPTIONAL packages. Comment out those you do not have.
-# ----------------------------------------------------------------------------------------  
-#
-#  Optional location for ALICE Memory Snooper
-#
-#AMS_HOME    = c:/Program Files/Argonne National Laboratory/Alice Memory Snooper
-#AMS_INCLUDE = -I'"$(AMS_HOME)/include"'
-#AMS_LIB     = -L'"$(AMS_HOME)/src/pubacc/pub/Release"' -L'"$(AMS_HOME)/src/util/Release"' -L'"$(AMS_HOME)/src/mpiuni/Release"'  amspub.lib amsutil.lib amsmpiuni.lib wsock32.lib
-#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
-

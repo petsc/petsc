@@ -1,4 +1,4 @@
-/*$Id: tfqmr.c,v 1.58 2001/01/15 21:47:26 bsmith Exp bsmith $*/
+/*$Id: tfqmr.c,v 1.59 2001/03/22 20:31:36 bsmith Exp balay $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal
@@ -11,8 +11,8 @@
 
 #include "src/sles/ksp/kspimpl.h"
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_TFQMR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_TFQMR"
 static int KSPSetUp_TFQMR(KSP ksp)
 {
   int ierr;
@@ -25,8 +25,8 @@ static int KSPSetUp_TFQMR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_TFQMR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_TFQMR"
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
   int       i,maxit,m, ierr;
@@ -142,8 +142,8 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_TFQMR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_TFQMR"
 int KSPCreate_TFQMR(KSP ksp)
 {
   PetscFunctionBegin;

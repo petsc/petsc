@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.49 2001/02/05 21:17:59 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.50 2001/03/23 01:39:47 bsmith Exp balay $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\
@@ -26,8 +26,8 @@ T*/
 */
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   SLES           sles;             /* linear solver context */

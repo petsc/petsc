@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.53 2001/01/15 21:50:04 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.54 2001/01/17 22:29:08 bsmith Exp balay $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -26,8 +26,8 @@
    Defines the function where the compiled source is located; used 
    in printing error messages.
 */
-#if !defined(__FUNC__)
-#define __FUNC__ "unknownfunction"
+#if !defined(__FUNCT__)
+#define __FUNCT__ "unknownfunction"
 #endif
 
 /* 
@@ -66,15 +66,15 @@
 #define PETSC_ERR_MAT_CH_ZRPVT    81   /* detected a zero pivot during Cholesky factorization */
 
 #if defined(PETSC_USE_DEBUG)
-#define SETERRQ(n,s)              {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s);}
-#define SETERRQ1(n,s,a1)          {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1);}
-#define SETERRQ2(n,s,a1,a2)       {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1,a2);}
-#define SETERRQ3(n,s,a1,a2,a3)    {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1,a2,a3);}
-#define SETERRQ4(n,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4);}
+#define SETERRQ(n,s)              {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s);}
+#define SETERRQ1(n,s,a1)          {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1);}
+#define SETERRQ2(n,s,a1,a2)       {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2);}
+#define SETERRQ3(n,s,a1,a2,a3)    {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3);}
+#define SETERRQ4(n,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s,a1,a2,a3,a4);}
 
-#define CHKERRQ(n)     if (n) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,0,0);}
+#define CHKERRQ(n)     if (n) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0,0);}
 
-#define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__);CHKERRQ(__ierr);}
+#define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(__ierr);}
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 extern  int __gierr;
@@ -142,7 +142,7 @@ EXTERN int PetscStackPrint(PetscStack*,FILE* fp);
 #define PetscFunctionBegin \
   {\
    if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
-    petscstack->function[petscstack->currentsize]  = __FUNC__; \
+    petscstack->function[petscstack->currentsize]  = __FUNCT__; \
     petscstack->file[petscstack->currentsize]      = __FILE__; \
     petscstack->directory[petscstack->currentsize] = __SDIR__; \
     petscstack->line[petscstack->currentsize]      = __LINE__; \
@@ -193,7 +193,7 @@ extern int        stack_err;
   {\
    if (petscstack && (petscstack->currentsize < PETSCSTACKSIZE)) {    \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
-    petscstack->function[petscstack->currentsize]  = __FUNC__; \
+    petscstack->function[petscstack->currentsize]  = __FUNCT__; \
     petscstack->file[petscstack->currentsize]      = __FILE__; \
     petscstack->directory[petscstack->currentsize] = __SDIR__; \
     petscstack->line[petscstack->currentsize]      = __LINE__; \

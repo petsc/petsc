@@ -1,4 +1,4 @@
-/*$Id: dascatter.c,v 1.21 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: dascatter.c,v 1.22 2001/01/15 21:48:51 bsmith Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -6,8 +6,8 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetScatter"
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetScatter"
 /*@C
    DAGetScatter - Gets the local-to-global, local-to-global, and 
    local-to-local vector scatter contexts for a distributed array.

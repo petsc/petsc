@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.30 2001/01/16 18:20:09 balay Exp balay $*/
+/*$Id: wp.c,v 1.31 2001/03/09 19:22:51 balay Exp balay $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -31,8 +31,8 @@ typedef struct {
   PetscTruth computenorma,computenormU;   
 } MatSNESMFWP;
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFCompute_WP"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFCompute_WP"
 /*
      MatSNESMFCompute_WP - Standard PETSc code for 
    computing h with matrix-free finite differences.
@@ -74,8 +74,8 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFView_WP"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFView_WP"
 /*
    MatSNESMFView_WP - Prints information about this particular 
      method for computing h. Note that this does not print the general
@@ -106,8 +106,8 @@ static int MatSNESMFView_WP(MatSNESMFCtx ctx,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFSetFromOptions_WP"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFromOptions_WP"
 /*
    MatSNESMFSetFromOptions_WP - Looks in the options database for 
      any options appropriate for this method
@@ -131,8 +131,8 @@ static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFDestroy_WP"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFDestroy_WP"
 /*
    MatSNESMFDestroy_WP - Frees the space allocated by 
        MatSNESMFCreate_WP(). 
@@ -152,8 +152,8 @@ static int MatSNESMFDestroy_WP(MatSNESMFCtx ctx)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFWPSetComputeNormA_P"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFWPSetComputeNormA_P"
 int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx;
@@ -172,8 +172,8 @@ int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 } 
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFWPSetComputeNormA"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFWPSetComputeNormA"
 /*@
     MatSNESMFWPSetComputeNormA - Sets whether it computes the ||a|| used by the WP
              PETSc routine for computing h. With GMRES since the ||a|| is always
@@ -206,8 +206,8 @@ int MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFWPSetComputeNormU_P"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFWPSetComputeNormU_P"
 int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 {
   MatSNESMFCtx ctx;
@@ -226,8 +226,8 @@ int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 } 
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFWPSetComputeNormU"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFWPSetComputeNormU"
 /*@
     MatSNESMFWPSetComputeNormU - Sets whether it computes the ||U|| used by the WP
              PETSc routine for computing h. With any Krylov solver this need only 
@@ -260,8 +260,8 @@ int MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFCreate_WP"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFCreate_WP"
 /*
      MatSNESMFCreate_WP - Standard PETSc code for 
    computing h with matrix-free finite differences.

@@ -1,10 +1,10 @@
-/*$Id: aijbaij.c,v 1.5 2001/01/16 18:17:47 balay Exp balay $*/
+/*$Id: aijbaij.c,v 1.6 2001/03/09 22:50:54 balay Exp balay $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatConvert_SeqBAI_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_SeqBAI_SeqAIJ"
 int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 

@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.13 2001/01/15 21:49:13 bsmith Exp balay $*/
+/*$Id: pack.c,v 1.14 2001/01/16 18:21:25 balay Exp balay $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -35,8 +35,8 @@ struct _p_VecPack {
   struct VecPackLink *next;
 };
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackCreate"
 /*@C
     VecPackCreate - Creates a vector packer, used to generate "composite"
       vectors made up of several subvectors.
@@ -78,8 +78,8 @@ int VecPackCreate(MPI_Comm comm,VecPack *packer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackDestroy"
 /*@C
     VecPackDestroy - Destroys a vector packer.
 
@@ -118,8 +118,8 @@ int VecPackDestroy(VecPack packer)
 
 /* --------------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetAccess_Array"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetAccess_Array"
 int VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar **array)
 {
   int    ierr;
@@ -138,8 +138,8 @@ int VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetAccess_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetAccess_DA"
 int VecPackGetAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec *global)
 {
   int    ierr;
@@ -155,16 +155,16 @@ int VecPackGetAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec *glo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackRestoreAccess_Array"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackRestoreAccess_Array"
 int VecPackRestoreAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar **array)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackRestoreAccess_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackRestoreAccess_DA"
 int VecPackRestoreAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec *global)
 {
   int    ierr;
@@ -177,8 +177,8 @@ int VecPackRestoreAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackScatter_Array"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackScatter_Array"
 int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *array)
 {
   int    ierr;
@@ -195,8 +195,8 @@ int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackScatter_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackScatter_DA"
 int VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 {
   int    ierr;
@@ -215,8 +215,8 @@ int VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGather_Array"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGather_Array"
 int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *array)
 {
   int    ierr;
@@ -232,8 +232,8 @@ int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGather_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGather_DA"
 int VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 {
   int    ierr;
@@ -255,8 +255,8 @@ int VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 
 #include <stdarg.h>
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetAccess"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetAccess"
 /*@C
     VecPackGetAccess - Allows one to access the individual packed vectors in their global
        representation.
@@ -306,8 +306,8 @@ int VecPackGetAccess(VecPack packer,Vec gvec,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackRestoreAccess"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackRestoreAccess"
 /*@C
     VecPackRestoreAccess - Allows one to access the individual packed vectors in their global
        representation.
@@ -357,8 +357,8 @@ int VecPackRestoreAccess(VecPack packer,Vec gvec,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackScatter"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackScatter"
 /*@C
     VecPackScatter - Scatters from a global packed vector into its individual local vectors
 
@@ -407,8 +407,8 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGather"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGather"
 /*@C
     VecPackGather - Gathers into a global packed vector from its individual local vectors
 
@@ -457,8 +457,8 @@ int VecPackGather(VecPack packer,Vec gvec,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackAddArray"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackAddArray"
 /*@C
     VecPackAddArray - adds an "redundant" array to a VecPack. The array values will 
        be stored in part of the array on processor 0.
@@ -504,8 +504,8 @@ int VecPackAddArray(VecPack packer,int n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackAddDA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackAddDA"
 /*@C
     VecPackAddDA - adds a DA vector to a VecPack
 
@@ -555,8 +555,8 @@ int VecPackAddDA(VecPack packer,DA da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackCreateGlobalVector"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackCreateGlobalVector"
 /*@C
     VecPackCreateGlobalVector - Creates a vector of the correct size to be gathered into 
         by the packer.
@@ -604,8 +604,8 @@ int VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetGlobalIndices"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetGlobalIndices"
 /*@C
     VecPackGetGlobalIndices - Gets the global indices for all the entries in the packed
       vectors.
@@ -695,8 +695,8 @@ int VecPackGetGlobalIndices(VecPack packer,...)
 }
 
 /* -------------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetLocalVectors_Array"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetLocalVectors_Array"
 int VecPackGetLocalVectors_Array(VecPack packer,struct VecPackLink *mine,Scalar **array)
 {
   int ierr;
@@ -706,8 +706,8 @@ int VecPackGetLocalVectors_Array(VecPack packer,struct VecPackLink *mine,Scalar 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetLocalVectors_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetLocalVectors_DA"
 int VecPackGetLocalVectors_DA(VecPack packer,struct VecPackLink *mine,Vec *local)
 {
   int    ierr;
@@ -716,8 +716,8 @@ int VecPackGetLocalVectors_DA(VecPack packer,struct VecPackLink *mine,Vec *local
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackRestoreLocalVectors_Array"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackRestoreLocalVectors_Array"
 int VecPackRestoreLocalVectors_Array(VecPack packer,struct VecPackLink *mine,Scalar **array)
 {
   int ierr;
@@ -726,8 +726,8 @@ int VecPackRestoreLocalVectors_Array(VecPack packer,struct VecPackLink *mine,Sca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackRestoreLocalVectors_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackRestoreLocalVectors_DA"
 int VecPackRestoreLocalVectors_DA(VecPack packer,struct VecPackLink *mine,Vec *local)
 {
   int    ierr;
@@ -736,8 +736,8 @@ int VecPackRestoreLocalVectors_DA(VecPack packer,struct VecPackLink *mine,Vec *l
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetLocalVectors"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetLocalVectors"
 /*@C
     VecPackGetLocalVectors - Gets local vectors and arrays for each part of a VecPack.'
        Use VecPakcRestoreLocalVectors() to return them.
@@ -785,8 +785,8 @@ int VecPackGetLocalVectors(VecPack packer,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackRestoreLocalVectors"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackRestoreLocalVectors"
 /*@C
     VecPackRestoreLocalVectors - Restores local vectors and arrays for each part of a VecPack.'
        Use VecPakcRestoreLocalVectors() to return them.
@@ -835,8 +835,8 @@ int VecPackRestoreLocalVectors(VecPack packer,...)
 }
 
 /* -------------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetEntries_Array"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetEntries_Array"
 int VecPackGetEntries_Array(VecPack packer,struct VecPackLink *mine,int *n)
 {
   PetscFunctionBegin;
@@ -844,8 +844,8 @@ int VecPackGetEntries_Array(VecPack packer,struct VecPackLink *mine,int *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetEntries_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetEntries_DA"
 int VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *da)
 {
   PetscFunctionBegin;
@@ -853,8 +853,8 @@ int VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetEntries"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetEntries"
 /*@C
     VecPackGetEntries - Gets the DA, redundant size, etc for each entry in a VecPack.
        Use VecPakcRestoreEntries() to return them.
@@ -902,8 +902,8 @@ int VecPackGetEntries(VecPack packer,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackRefine"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackRefine"
 /*@C
     VecPackRefine - Refines a VecPack by refining all of its DAs
 
@@ -959,8 +959,8 @@ struct MatPack {
   struct MatPackLink *next;
 };
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultBoth_Shell_Pack"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultBoth_Shell_Pack"
 int MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
 {
   struct MatPack     *mpack;
@@ -1019,8 +1019,8 @@ int MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_Shell_Pack"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_Shell_Pack"
 int MatMultAdd_Shell_Pack(Mat A,Vec x,Vec y,Vec z)
 {
   int ierr;
@@ -1030,8 +1030,8 @@ int MatMultAdd_Shell_Pack(Mat A,Vec x,Vec y,Vec z)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_Shell_Pack"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_Shell_Pack"
 int MatMult_Shell_Pack(Mat A,Vec x,Vec y)
 {
   int ierr;
@@ -1040,8 +1040,8 @@ int MatMult_Shell_Pack(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultTranspose_Shell_Pack"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTranspose_Shell_Pack"
 int MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
 {
   struct MatPack     *mpack;
@@ -1090,8 +1090,8 @@ int MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_Shell_Pack"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_Shell_Pack"
 int MatDestroy_Shell_Pack(Mat A)
 {
   struct MatPack     *mpack;
@@ -1112,8 +1112,8 @@ int MatDestroy_Shell_Pack(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecPackGetInterpolation"
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetInterpolation"
 /*@C
     VecPackGetInterpolation - GetInterpolations a VecPack by refining all of its DAs
 

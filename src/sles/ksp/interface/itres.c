@@ -1,9 +1,9 @@
-/*$Id: itres.c,v 1.50 2001/01/29 19:11:32 bsmith Exp bsmith $*/
+/*$Id: itres.c,v 1.51 2001/02/05 21:18:45 bsmith Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "KSPInitialResidual"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPInitialResidual"
 /*@C
    KSPInitialResidual - Computes the residual.
 
@@ -72,8 +72,8 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPUnwindPreconditioner"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPUnwindPreconditioner"
 /*@
    KSPUnwindPreconditioner - Unwinds the preconditioning in the solution. That is,
      takes solution to the preconditioned problem and gets the solution to the 

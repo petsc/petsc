@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.103 2001/01/22 23:07:01 bsmith Exp bsmith $*/
+/*$Id: umtr.c,v 1.104 2001/01/23 17:24:38 bsmith Exp balay $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -28,8 +28,8 @@
            set KSPQCG in this routine regardless of what the user may have
            previously specified.
 */
-#undef __FUNC__  
-#define __FUNC__ "SNESSolve_UM_TR"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSolve_UM_TR"
 static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
   SNES_UM_TR          *neP = (SNES_UM_TR*)snes->data;
@@ -193,8 +193,8 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "SNESSetUp_UM_TR"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetUp_UM_TR"
 static int SNESSetUp_UM_TR(SNES snes)
 {
   int        ierr;
@@ -234,8 +234,8 @@ static int SNESSetUp_UM_TR(SNES snes)
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "SNESDestroy_UM_TR"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDestroy_UM_TR"
 static int SNESDestroy_UM_TR(SNES snes)
 {
   int  ierr;
@@ -248,8 +248,8 @@ static int SNESDestroy_UM_TR(SNES snes)
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "SNESConverged_UM_TR"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESConverged_UM_TR"
 /*@C
    SNESConverged_UM_TR - Monitors the convergence of the SNESSolve_UM_TR()
    routine (default). 
@@ -329,8 +329,8 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConverg
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "SNESSetFromOptions_UM_TR"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetFromOptions_UM_TR"
 static int SNESSetFromOptions_UM_TR(SNES snes)
 {
   SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
@@ -373,8 +373,8 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "SNESView_UM_TR"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESView_UM_TR"
 static int SNESView_UM_TR(SNES snes,PetscViewer viewer)
 {
   SNES_UM_TR *tr = (SNES_UM_TR *)snes->data;
@@ -393,8 +393,8 @@ static int SNESView_UM_TR(SNES snes,PetscViewer viewer)
 }
 /*------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "SNESCreate_UM_TR"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESCreate_UM_TR"
 int SNESCreate_UM_TR(SNES snes)
 {
   SNES_UM_TR *neP;

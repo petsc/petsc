@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.15 2001/01/22 23:02:58 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.16 2001/01/23 20:53:45 balay Exp balay $*/
 /*
        Tests ISAllGather()
 */
@@ -7,8 +7,8 @@ static char help[] = "Tests ISAllGather()\n\n";
 
 #include "petscis.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int        i,n,ierr,*indices,rank,size;

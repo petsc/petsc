@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.27 2001/03/09 19:25:19 balay Exp bsmith $*/
+/*$Id: damg.c,v 1.28 2001/03/22 20:31:46 bsmith Exp balay $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -8,8 +8,8 @@
    Code for almost fully managing multigrid/multi-level linear solvers for DA grids
 */
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGCreate"
 /*@C
     DMMGCreate - Creates a DA based multigrid solver object. This allows one to 
       easily implement MG methods on regular grids.
@@ -64,8 +64,8 @@ int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSetUseMatrixFree"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetUseMatrixFree"
 /*@C
     DMMGSetUseMatrixFree - Use matrix-free version of operator
 
@@ -91,8 +91,8 @@ int DMMGSetUseMatrixFree(DMMG *dmmg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGDestroy"
 /*@C
     DMMGDestroy - Destroys a DA based multigrid solver object. 
 
@@ -135,8 +135,8 @@ int DMMGDestroy(DMMG *dmmg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSetDM"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetDM"
 /*@C
     DMMGSetDM - Sets the coarse grid information for the grids
 
@@ -168,8 +168,8 @@ int DMMGSetDM(DMMG *dmmg,DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSetUp"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetUp"
 int DMMGSetUp(DMMG *dmmg)
 {
   int        ierr,i,nlevels = dmmg[0]->nlevels;
@@ -204,8 +204,8 @@ int DMMGSetUp(DMMG *dmmg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSolve"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSolve"
 int DMMGSolve(DMMG *dmmg)
 {
   int        i,ierr,nlevels = dmmg[0]->nlevels;
@@ -250,8 +250,8 @@ int DMMGSolve(DMMG *dmmg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSolveSLES"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSolveSLES"
 int DMMGSolveSLES(DMMG *dmmg,int level)
 {
   int        ierr,its;
@@ -266,8 +266,8 @@ int DMMGSolveSLES(DMMG *dmmg,int level)
 /*
     Sets each of the linear solvers to use multigrid 
 */
-#undef __FUNC__  
-#define __FUNC__ "DMMGSetUpLevel"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetUpLevel"
 int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 {
   int         ierr,i;
@@ -337,8 +337,8 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGSetSLES"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSLES"
 /*@C
     DMMGSetSLES - Sets the linear solver object that will use the grid hierarchy
 
@@ -382,8 +382,8 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMMGView"
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGView"
 /*@C
     DMMGView - prints information on a DA based multi-level preconditioner
 

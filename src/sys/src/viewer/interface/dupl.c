@@ -1,9 +1,9 @@
-/*$Id: dupl.c,v 1.11 2000/09/28 21:08:19 bsmith Exp bsmith $*/
+/*$Id: dupl.c,v 1.12 2001/01/15 21:43:19 bsmith Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerGetSingleton" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerGetSingleton" 
 /*@
    PetscViewerGetSingleton - Creates a new PetscViewer (same type as the old)
     that lives on a single processor (with MPI_comm PETSC_COMM_SELF)
@@ -47,8 +47,8 @@ int PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerRestoreSingleton" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerRestoreSingleton" 
 /*@
    PetscViewerRestoreSingleton - Restores a new PetscViewer obtained with PetscViewerGetSingleton().
 

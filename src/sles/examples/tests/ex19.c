@@ -1,4 +1,4 @@
-/* "$Id: ex19.c,v 1.7 2001/01/17 22:25:27 bsmith Exp balay $" */
+/* "$Id: ex19.c,v 1.8 2001/01/23 20:56:37 balay Exp balay $" */
 
 static char help[] ="\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -51,8 +51,8 @@ extern int FormJacobian_Grid(AppCtx *,GridCtx *,Mat *);
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
 */
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx        user;                      
@@ -173,8 +173,8 @@ int main(int argc,char **argv)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "FormJacobian_Grid"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian_Grid"
 int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
 {
   Mat     jac = *J;

@@ -1,4 +1,4 @@
-/*$Id: frame.c,v 1.28 2000/07/10 03:38:43 bsmith Exp bsmith $*/
+/*$Id: frame.c,v 1.29 2001/01/15 21:43:29 bsmith Exp balay $*/
 
 /*
    This file contains routines to draw a 3-d like frame about a given 
@@ -23,8 +23,8 @@ static PixVal HiPix=0,LoPix=0;
 /* 
    Set the colors for the highlights by name 
  */
-#undef __FUNC__  
-#define __FUNC__ "XiFrameColors" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiFrameColors" 
 int XiFrameColors(PetscDraw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
 {
   PetscFunctionBegin;
@@ -34,8 +34,8 @@ int XiFrameColors(PetscDraw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "XiDrawFrame" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiDrawFrame" 
 int XiDrawFrame(PetscDraw_X *XiWin,XiDecoration *Rgn)
 {
   int    xl = Rgn->Box.x,yl = Rgn->Box.y,xh = Rgn->Box.xh,yh = Rgn->Box.yh,
@@ -106,8 +106,8 @@ int XiDrawFrame(PetscDraw_X *XiWin,XiDecoration *Rgn)
 /*
    Set the colors for the highlights by name 
  */
-#undef __FUNC__  
-#define __FUNC__ "XiFrameColorsByName" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiFrameColorsByName" 
 int XiFrameColorsByName(PetscDraw_X* XiWin,char *Hi,char *Lo)
 {
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.28 2001/01/20 03:34:50 bsmith Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.29 2001/03/22 20:30:10 bsmith Exp balay $*/
 
 /* Block diagonal matrix format */
 
@@ -31,8 +31,8 @@ EXTERN int MatRelax_SeqBDiag_N(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
 EXTERN int MatRelax_SeqBDiag_1(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetInfo_SeqBDiag"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInfo_SeqBDiag"
 int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -55,8 +55,8 @@ int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_SeqBDiag" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRange_SeqBDiag" 
 int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 {
   PetscFunctionBegin;
@@ -72,8 +72,8 @@ int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
  it returns a list of all active columns in the row (some which may contain
  a zero)
 */
-#undef __FUNC__  
-#define __FUNC__ "MatGetRow_SeqBDiag"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRow_SeqBDiag"
 int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -191,8 +191,8 @@ int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_SeqBDiag"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRow_SeqBDiag"
 int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
   PetscFunctionBegin;
@@ -206,8 +206,8 @@ int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **vals)
    matrix.  We code this separately from MatNorm_SeqBDiag() so that the
    routine can be used for the parallel version as well.
  */
-#undef __FUNC__  
-#define __FUNC__ "MatNorm_SeqBDiag_Columns"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNorm_SeqBDiag_Columns"
 int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -261,8 +261,8 @@ int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatNorm_SeqBDiag"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNorm_SeqBDiag"
 int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -358,8 +358,8 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatTranspose_SeqBDiag"
+#undef __FUNCT__  
+#define __FUNCT__ "MatTranspose_SeqBDiag"
 int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 { 
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data,*anew;
@@ -428,8 +428,8 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 /* ----------------------------------------------------------------*/
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqBDiag_Binary"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqBDiag_Binary"
 int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
@@ -473,8 +473,8 @@ int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqBDiag_ASCII"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqBDiag_ASCII"
 int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
@@ -656,8 +656,8 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqBDiag_Draw"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqBDiag_Draw"
 static int MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
 {
   PetscDraw          draw;
@@ -691,8 +691,8 @@ static int MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqBDiag"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqBDiag"
 int MatView_SeqBDiag(Mat A,PetscViewer viewer)
 {
   int        ierr;

@@ -1,4 +1,4 @@
-/*$Id: iguess.c,v 1.34 2001/01/15 21:47:10 bsmith Exp balay $*/
+/*$Id: iguess.c,v 1.35 2001/01/16 18:19:24 balay Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 /* 
@@ -14,8 +14,8 @@ typedef struct {
              *btilde;  /* Saved b vectors */
 } KSPIGUESS;
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGuessCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGuessCreate" 
 int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 {
   KSPIGUESS *itg;
@@ -37,8 +37,8 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGuessDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGuessDestroy" 
 int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 {
   int ierr;
@@ -52,8 +52,8 @@ int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGuessFormB"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGuessFormB"
 int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
   int    i,ierr;
@@ -69,8 +69,8 @@ int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGuessFormX"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGuessFormX"
 int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 {
   int i,ierr;
@@ -84,8 +84,8 @@ int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGuessUpdate"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGuessUpdate"
 int  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
 {
   PetscReal    normax,norm;

@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.90 2001/01/15 21:47:21 bsmith Exp bsmith $*/
+/*$Id: cheby.c,v 1.91 2001/03/22 20:31:27 bsmith Exp balay $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -6,8 +6,8 @@
 #include "src/sles/ksp/kspimpl.h"                    /*I "petscksp.h" I*/
 #include "src/sles/ksp/impls/cheby/chebctx.h"
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_Chebychev"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_Chebychev"
 int KSPSetUp_Chebychev(KSP ksp)
 {
   int ierr;
@@ -19,8 +19,8 @@ int KSPSetUp_Chebychev(KSP ksp)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPChebychevSetEigenvalues_Chebychev"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPChebychevSetEigenvalues_Chebychev"
 int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
@@ -32,8 +32,8 @@ int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "KSPChebychevSetEigenvalues"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPChebychevSetEigenvalues"
 /*@
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
@@ -61,8 +61,8 @@ int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "KSPSolve_Chebychev"
+#undef __FUNCT__
+#define __FUNCT__ "KSPSolve_Chebychev"
 int KSPSolve_Chebychev(KSP ksp,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i,ierr;
@@ -177,8 +177,8 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPView_Chebychev" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPView_Chebychev" 
 int KSPView_Chebychev(KSP ksp,PetscViewer viewer)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
@@ -196,8 +196,8 @@ int KSPView_Chebychev(KSP ksp,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_Chebychev"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_Chebychev"
 int KSPCreate_Chebychev(KSP ksp)
 {
   int           ierr;

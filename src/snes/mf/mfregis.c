@@ -1,4 +1,4 @@
-/*$Id: mfregis.c,v 1.12 2000/05/10 16:42:39 bsmith Exp bsmith $*/
+/*$Id: mfregis.c,v 1.13 2001/01/15 21:47:52 bsmith Exp balay $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
@@ -7,8 +7,8 @@ EXTERN int MatSNESMFCreate_Default(MatSNESMFCtx);
 EXTERN int MatSNESMFCreate_WP(MatSNESMFCtx);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatSNESMFRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFRegisterAll"
 /*@C
   MatSNESMFRegisterAll - Registers all of the compute-h in the MatSNESMF package.
 

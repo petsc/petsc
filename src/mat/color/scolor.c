@@ -1,4 +1,4 @@
-/*$Id: scolor.c,v 1.22 2000/05/10 16:41:33 bsmith Exp bsmith $*/
+/*$Id: scolor.c,v 1.23 2001/01/15 21:46:39 bsmith Exp balay $*/
  
 #include "petscmat.h"
 #include "src/mat/color/color.h"
@@ -10,8 +10,8 @@ EXTERN int MatFDColoringLF_Minpack(Mat,MatColoringType,ISColoring*);
 EXTERN int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatColoringRegisterAll" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatColoringRegisterAll" 
 /*@C
   MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
 

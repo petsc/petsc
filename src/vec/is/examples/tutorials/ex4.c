@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.11 2001/01/22 23:03:00 bsmith Exp balay $"; */
+/*      "$Id: ex4.c,v 1.12 2001/01/23 20:53:47 balay Exp balay $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
@@ -13,8 +13,8 @@ T*/
 
 #include "petscis.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int                    i,n = 4,ierr,indices[] = {0,3,9,12},m = 2,input[] = {0,2};

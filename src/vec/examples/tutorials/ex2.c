@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.39 2001/01/17 22:21:32 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.40 2001/01/23 20:54:12 balay Exp balay $*/
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
 processor, 2 on the second, etc.  Then each processor adds one to all\n\
@@ -17,8 +17,8 @@ T*/
 */
 #include "petscvec.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int     i,N,ierr,rank;

@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.24 2000/11/28 17:28:23 bsmith Exp bsmith $*/
+/*$Id: vecstash.c,v 1.25 2001/01/15 21:44:37 bsmith Exp balay $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -18,8 +18,8 @@
   Output Parameters:
   stash    - the newly created stash
 */
-#undef __FUNC__  
-#define __FUNC__ "VecStashCreate_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashCreate_Private"
 int VecStashCreate_Private(MPI_Comm comm,int bs,VecStash *stash)
 {
   int        ierr,max,*opt,nopt;
@@ -73,8 +73,8 @@ int VecStashCreate_Private(MPI_Comm comm,int bs,VecStash *stash)
 /* 
    VecStashDestroy_Private - Destroy the stash
 */
-#undef __FUNC__  
-#define __FUNC__ "VecStashDestroy_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashDestroy_Private"
 int VecStashDestroy_Private(VecStash *stash)
 {
   int ierr;
@@ -95,8 +95,8 @@ int VecStashDestroy_Private(VecStash *stash)
    for the stash. It also keeps track of the current memory usage
    so that the same value can be used the next time through.
 */
-#undef __FUNC__  
-#define __FUNC__ "VecStashScatterEnd_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashScatterEnd_Private"
 int VecStashScatterEnd_Private(VecStash *stash)
 { 
   int         nsends=stash->nsends,ierr,oldnmax;
@@ -162,8 +162,8 @@ int VecStashScatterEnd_Private(VecStash *stash)
    reallocs - the number of additional mallocs incurred.
    
 */
-#undef __FUNC__  
-#define __FUNC__ "VecStashGetInfo_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashGetInfo_Private"
 int VecStashGetInfo_Private(VecStash *stash,int *nstash,int *reallocs)
 {
   PetscFunctionBegin;
@@ -185,8 +185,8 @@ int VecStashGetInfo_Private(VecStash *stash,int *nstash,int *reallocs)
             this value is used while allocating memory. It specifies
             the number of vals stored, even with the block-stash
 */
-#undef __FUNC__  
-#define __FUNC__ "VecStashSetInitialSize_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashSetInitialSize_Private"
 int VecStashSetInitialSize_Private(VecStash *stash,int max)
 {
   PetscFunctionBegin;
@@ -205,8 +205,8 @@ int VecStashSetInitialSize_Private(VecStash *stash,int max)
    Notes: 
    This routine doubles the currently used memory. 
 */
-#undef __FUNC__  
-#define __FUNC__ "VecStashExpand_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashExpand_Private"
 int VecStashExpand_Private(VecStash *stash,int incr)
 { 
   int    *n_idx,newnmax,bs=stash->bs,ierr;
@@ -250,8 +250,8 @@ int VecStashExpand_Private(VecStash *stash,int incr)
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */
-#undef __FUNC__  
-#define __FUNC__ "VecStashScatterBegin_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashScatterBegin_Private"
 int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 { 
   int         *owner,*start,tag1=stash->tag1,tag2=stash->tag2;
@@ -360,8 +360,8 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
            1 indicates that the current call successfully received a message, and the
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
-#undef __FUNC__  
-#define __FUNC__ "VecStashScatterGetMesg_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "VecStashScatterGetMesg_Private"
 int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,Scalar **vals,int *flg)
 {
   int         i,ierr,size=stash->size,*flg_v,*flg_i;

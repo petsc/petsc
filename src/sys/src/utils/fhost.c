@@ -1,4 +1,4 @@
-/*$Id: fhost.c,v 1.47 2000/09/28 17:57:16 bsmith Exp bsmith $*/
+/*$Id: fhost.c,v 1.48 2001/01/15 21:44:00 bsmith Exp balay $*/
 /*
       Code for manipulating files.
 */
@@ -26,8 +26,8 @@
 #endif
 #include "petscfix.h"
 
-#undef __FUNC__  
-#define __FUNC__ "PetscGetHostName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetHostName"
 /*@C
     PetscGetHostName - Returns the name of the host. This attempts to
     return the entire Internet name. It may not return the same name

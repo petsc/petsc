@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.4 2001/01/15 21:45:13 bsmith Exp balay $*/
+/*$Id: ex31.c,v 1.5 2001/01/23 20:54:05 balay Exp balay $*/
 
 /* 
    Demonstrates PetscMatlabEngineXXX()
@@ -6,8 +6,8 @@
 
 #include "petscvec.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int        ierr,rank,n = 5;

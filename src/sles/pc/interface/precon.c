@@ -1,11 +1,11 @@
-/*$Id: precon.c,v 1.210 2001/03/09 19:32:42 balay Exp balay $*/
+/*$Id: precon.c,v 1.211 2001/03/09 19:35:20 balay Exp balay $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
 #include "src/sles/pc/pcimpl.h"            /*I "petscsles.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCNullSpaceAttach"
+#undef __FUNCT__  
+#define __FUNCT__ "PCNullSpaceAttach"
 /*@C
    PCNullSpaceAttach - attaches a null space to a preconditioner object.
         This null space will be removed from the resulting vector whenever
@@ -42,8 +42,8 @@ int PCNullSpaceAttach(PC pc,MatNullSpace nullsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy"
 /*@C
    PCDestroy - Destroys PC context that was created with PCCreate().
 
@@ -79,8 +79,8 @@ int PCDestroy(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDiagonalScale"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDiagonalScale"
 /*@C
    PCDiagonalScale - Indicates if the preconditioner applies an additional left and right
       scaling as needed by certain time-stepping codes.
@@ -111,8 +111,8 @@ int PCDiagonalScale(PC pc,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDiagonalScaleSet"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDiagonalScaleSet"
 /*@C
    PCDiagonalScaleSet - Indicates the left scaling to use to apply an additional left and right
       scaling as needed by certain time-stepping codes.
@@ -156,8 +156,8 @@ int PCDiagonalScaleSet(PC pc,Vec s)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDiagonalScaleLeft"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDiagonalScaleLeft"
 /*@C
    PCDiagonalScaleLeft - Indicates the left scaling to use to apply an additional left and right
       scaling as needed by certain time-stepping codes.
@@ -199,8 +199,8 @@ int PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDiagonalScaleRight"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDiagonalScaleRight"
 /*@C
    PCDiagonalScaleRight - Scales a vector by the right scaling as needed by certain time-stepping codes.
 
@@ -241,8 +241,8 @@ int PCDiagonalScaleRight(PC pc,Vec in,Vec out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCPublish_Petsc"
+#undef __FUNCT__  
+#define __FUNCT__ "PCPublish_Petsc"
 static int PCPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -263,8 +263,8 @@ static int PCPublish_Petsc(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate"
 /*@C
    PCCreate - Creates a preconditioner context.
 
@@ -328,8 +328,8 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply"
 /*@
    PCApply - Applies the preconditioner to a vector.
 
@@ -373,8 +373,8 @@ int PCApply(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricLeft"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricLeft"
 /*@
    PCApplySymmetricLeft - Applies the left part of a symmetric preconditioner to a vector.
 
@@ -416,8 +416,8 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricRight"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricRight"
 /*@
    PCApplySymmetricRight - Applies the right part of a symmetric preconditioner to a vector.
 
@@ -459,8 +459,8 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyTranspose"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose"
 /*@
    PCApplyTranspose - Applies the transpose of preconditioner to a vector.
 
@@ -500,8 +500,8 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyBAorAB"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyBAorAB"
 /*@
    PCApplyBAorAB - Applies the preconditioner and operator to a vector. 
 
@@ -592,8 +592,8 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyBAorABTranspose"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyBAorABTranspose"
 /*@ 
    PCApplyBAorABTranspose - Applies the transpose of the preconditioner
    and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
@@ -651,8 +651,8 @@ int PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyRichardsonExists"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyRichardsonExists"
 /*@
    PCApplyRichardsonExists - Determines whether a particular preconditioner has a 
    built-in fast application of Richardson's method.
@@ -681,8 +681,8 @@ int PCApplyRichardsonExists(PC pc,PetscTruth *exists)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyRichardson"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyRichardson"
 /*@
    PCApplyRichardson - Applies several steps of Richardson iteration with 
    the particular preconditioner. This routine is usually used by the 
@@ -733,8 +733,8 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
                      1 needs to be resetup,
                      2 does not need any changes.
 */
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp"
 /*@
    PCSetUp - Prepares for the use of a preconditioner.
 
@@ -794,8 +794,8 @@ int PCSetUp(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUpOnBlocks"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUpOnBlocks"
 /*@
    PCSetUpOnBlocks - Sets up the preconditioner for each block in
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
@@ -825,8 +825,8 @@ int PCSetUpOnBlocks(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetModifySubMatrices"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetModifySubMatrices"
 /*@
    PCSetModifySubMatrices - Sets a user-defined routine for modifying the
    submatrices that arise within certain subdomain-based preconditioners.
@@ -875,8 +875,8 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCModifySubMatrices"
+#undef __FUNCT__  
+#define __FUNCT__ "PCModifySubMatrices"
 /*@
    PCModifySubMatrices - Calls an optional user-defined routine within 
    certain preconditioners if one has been set with PCSetModifySubMarices().
@@ -926,8 +926,8 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetOperators"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetOperators"
 /*@
    PCSetOperators - Sets the matrix associated with the linear system and 
    a (possibly) different one associated with the preconditioner.
@@ -1014,8 +1014,8 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetOperators"
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetOperators"
 /*@C
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
@@ -1048,8 +1048,8 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetVector"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetVector"
 /*@
    PCSetVector - Sets a vector associated with the preconditioner.
 
@@ -1080,8 +1080,8 @@ int PCSetVector(PC pc,Vec vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetVector"
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetVector"
 /*@
    PCGetVector - Gets a vector associated with the preconditioner; if the 
    vector was not get set it will return a 0 pointer.
@@ -1109,8 +1109,8 @@ int PCGetVector(PC pc,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix"
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetFactoredMatrix"
 /*@C 
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
@@ -1140,8 +1140,8 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetOptionsPrefix"
 /*@C
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
    PC options in the database.
@@ -1173,8 +1173,8 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCAppendOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "PCAppendOptionsPrefix"
 /*@C
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
    PC options in the database.
@@ -1206,8 +1206,8 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetOptionsPrefix"
 /*@C
    PCGetOptionsPrefix - Gets the prefix used for searching for all 
    PC options in the database.
@@ -1239,8 +1239,8 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCPreSolve"
+#undef __FUNCT__  
+#define __FUNCT__ "PCPreSolve"
 /*@
    PCPreSolve - Optional pre-solve phase, intended for any
    preconditioner-specific actions that must be performed before 
@@ -1298,8 +1298,8 @@ int PCPreSolve(PC pc,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCPostSolve"
+#undef __FUNCT__  
+#define __FUNCT__ "PCPostSolve"
 /*@
    PCPostSolve - Optional post-solve phase, intended for any
    preconditioner-specific actions that must be performed after
@@ -1354,8 +1354,8 @@ int PCPostSolve(PC pc,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView"
 /*@C
    PCView - Prints the PC data structure.
 
@@ -1484,8 +1484,8 @@ $     -pc_type my_solver
 .seealso: PCRegisterAll(), PCRegisterDestroy(), PCRegister()
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRegister"
 int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
 {
   int  ierr;
@@ -1498,8 +1498,8 @@ int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCComputeExplicitOperator"
+#undef __FUNCT__  
+#define __FUNCT__ "PCComputeExplicitOperator"
 /*@
     PCComputeExplicitOperator - Computes the explicit preconditioned operator.  
 

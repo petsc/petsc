@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.62 2001/03/14 20:33:38 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.63 2001/03/22 20:32:54 bsmith Exp balay $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -9,8 +9,8 @@ EXTERN int DAGetColoring2d_MPIAIJ(DA,ISColoring *,Mat *);
 EXTERN int DAGetColoring3d_MPIAIJ(DA,ISColoring *,Mat *);
 EXTERN int DAGetColoring3d_MPIBAIJ(DA,ISColoring *,Mat *);
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetColoring" 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetColoring" 
 /*@C
     DAGetColoring - Gets the coloring and nonzero structure required for computing the Jacobian via
     finite differences on a function defined using a stencil on the DA.
@@ -92,8 +92,8 @@ int DAGetColoring(DA da,MatType mtype,ISColoring *coloring,Mat *J)
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetColoring2d_MPIAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetColoring2d_MPIAIJ" 
 int DAGetColoring2d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
@@ -237,8 +237,8 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetColoring3d_MPIAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetColoring3d_MPIAIJ" 
 int DAGetColoring3d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
@@ -395,8 +395,8 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetColoring1d_MPIAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetColoring1d_MPIAIJ" 
 int DAGetColoring1d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,nx,*colors,i,i1,slot,gxs,gnx;           
@@ -493,8 +493,8 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetColoring3d_MPIBAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetColoring3d_MPIBAIJ" 
 int DAGetColoring3d_MPIBAIJ(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           

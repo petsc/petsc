@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.66 2001/01/22 23:03:27 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.67 2001/01/23 20:54:12 balay Exp balay $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -18,8 +18,8 @@ T*/
 
 #include "petscvec.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Vec        x,y,w;               /* vectors */

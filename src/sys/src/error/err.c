@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.124 2001/01/17 22:19:44 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.125 2001/02/09 18:57:48 bsmith Exp balay $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -18,8 +18,8 @@ struct _EH {
 
 static EH eh = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscEmacsClientErrorHandler" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscEmacsClientErrorHandler" 
 /*@C
    PetscEmacsClientErrorHandler - Error handler that uses the emacsclient program to 
     load the file where the error occured. Then calls the "previous" error handler.
@@ -28,7 +28,7 @@ static EH eh = 0;
 
    Input Parameters:
 +  line - the line number of the error (indicated by __LINE__)
-.  func - the function where error is detected (indicated by __FUNC__)
+.  func - the function where error is detected (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen
@@ -77,8 +77,8 @@ int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,i
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscPushErrorHandler" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscPushErrorHandler" 
 /*@C
    PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
@@ -92,7 +92,7 @@ int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,i
    Calling sequence of handler:
 $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess,void *ctx);
 
-+  func - the function where the error occured (indicated by __FUNC__)
++  func - the function where the error occured (indicated by __FUNCT__)
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
@@ -128,8 +128,8 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscPopErrorHandler" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscPopErrorHandler" 
 /*@C
    PetscPopErrorHandler - Removes the latest error handler that was 
    pushed with PetscPushErrorHandler().
@@ -161,8 +161,8 @@ int PetscPopErrorHandler(void)
 
 char PetscErrorBaseMessage[1024];
 
-#undef __FUNC__  
-#define __FUNC__ "PetscError" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscError" 
 /*@C
    PetscError - Routine that is called when an error has been detected, 
    usually called through the macro SETERRQ().
@@ -171,7 +171,7 @@ char PetscErrorBaseMessage[1024];
 
    Input Parameters:
 +  line - the line number of the error (indicated by __LINE__)
-.  func - the function where the error occured (indicated by __FUNC__)
+.  func - the function where the error occured (indicated by __FUNCT__)
 .  dir - the directory of file (indicated by __SDIR__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  mess - an error text string, usually just printed to the screen
@@ -237,8 +237,8 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 
 /* -------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscIntView" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscIntView" 
 /*@C
     PetscIntView - Prints an array of integers; useful for debugging.
 
@@ -317,8 +317,8 @@ int PetscIntView(int N,int idx[],PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDoubleView" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDoubleView" 
 /*@C
     PetscDoubleView - Prints an array of doubles; useful for debugging.
 
@@ -398,8 +398,8 @@ int PetscDoubleView(int N,PetscReal idx[],PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscScalarView" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscScalarView" 
 /*@C
     PetscScalarView - Prints an array of scalars; useful for debugging.
 

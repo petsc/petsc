@@ -1,4 +1,4 @@
-/*$Id: preonly.c,v 1.39 2001/01/15 21:47:24 bsmith Exp bsmith $*/
+/*$Id: preonly.c,v 1.40 2001/03/22 20:31:35 bsmith Exp balay $*/
 
 /*                       
        This implements a stub method that applies ONLY the preconditioner.
@@ -7,16 +7,16 @@
 */
 #include "src/sles/ksp/kspimpl.h"
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_PREONLY"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_PREONLY"
 static int KSPSetUp_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_PREONLY"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_PREONLY"
 static int  KSPSolve_PREONLY(KSP ksp,int *its)
 {
   int        ierr;
@@ -42,8 +42,8 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_PREONLY"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_PREONLY"
 int KSPCreate_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: degree.c,v 1.19 2000/04/12 04:24:20 bsmith Exp bsmith $*/
+/*$Id: degree.c,v 1.20 2001/01/15 21:46:34 bsmith Exp balay $*/
 /* degree.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -25,8 +25,8 @@
 /*       LS - A TEMPORARY VECTOR USED TO STORE THE NODES OF THE*/
 /*              COMPONENT LEVEL BY LEVEL.*/
 /*****************************************************************/
-#undef __FUNC__  
-#define __FUNC__ "SPARSEPACKdegree" 
+#undef __FUNCT__  
+#define __FUNCT__ "SPARSEPACKdegree" 
 int SPARSEPACKdegree(int *root, int *xadj,int *adjncy,int *mask,int *deg,int *ccsize,int *ls)
 {
     /* System generated locals */

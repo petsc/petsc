@@ -1,12 +1,12 @@
-/*$Id: ex3.c,v 1.45 2001/01/22 23:08:13 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.46 2001/01/23 20:58:05 balay Exp balay $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int         rank,size,M = 60,ierr, time_steps = 100;

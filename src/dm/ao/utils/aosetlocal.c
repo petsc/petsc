@@ -1,9 +1,9 @@
-/*$Id: aosetlocal.c,v 1.11 2001/01/15 21:48:49 bsmith Exp bsmith $*/
+/*$Id: aosetlocal.c,v 1.12 2001/01/17 22:27:36 bsmith Exp balay $*/
 
 #include "petscao.h"       /*I  "petscao.h"  I*/
 
-#undef __FUNC__
-#define __FUNC__ "AODataPartitionAndSetupLocal"
+#undef __FUNCT__
+#define __FUNCT__ "AODataPartitionAndSetupLocal"
 /*@C     
        AODataPartitionAndSetupLocal - Partitions across a given key (for example cells), then partitions a segment
          (for example vertices) subservient to that key.

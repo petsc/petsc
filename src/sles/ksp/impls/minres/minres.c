@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.13 2001/02/19 18:28:03 bsmith Exp bsmith $*/
+/*$Id: minres.c,v 1.14 2001/02/19 18:28:37 bsmith Exp balay $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -12,8 +12,8 @@ typedef struct {
   double haptol;
 } KSP_MINRES;
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_MINRES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_MINRES"
 int KSPSetUp_MINRES(KSP ksp)
 {
   int ierr;
@@ -32,8 +32,8 @@ int KSPSetUp_MINRES(KSP ksp)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_MINRES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_MINRES"
 int  KSPSolve_MINRES(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
@@ -197,8 +197,8 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_MINRES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_MINRES"
 int KSPCreate_MINRES(KSP ksp)
 {
   KSP_MINRES *minres;

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.72 2001/03/07 19:07:22 balay Exp bsmith $";*/
+/* "$Id: flow.c,v 1.73 2001/03/22 20:33:06 bsmith Exp balay $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -85,8 +85,8 @@ int s_start_ind[2], s_end_ind[2];
 /*                                                                           */
 /*===========================================================================*/
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   AppCtx 	user;
@@ -415,8 +415,8 @@ int main(int argc,char **args)
 
 /*---------------------------------------------------------------------*/
 /* ---------------------  Form initial approximation ----------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(SNES snes,GRID *grid)
 /*---------------------------------------------------------------------*/
 {
@@ -432,8 +432,8 @@ int FormInitialGuess(SNES snes,GRID *grid)
  
 /*---------------------------------------------------------------------*/
 /* ---------------------  Evaluate Function F(x) --------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 /*---------------------------------------------------------------------*/
 {
@@ -541,8 +541,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 /*---------------------------------------------------------------------*/
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
  
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
 /*---------------------------------------------------------------------*/
 {
@@ -588,8 +588,8 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "Update"
+#undef __FUNCT__
+#define __FUNCT__ "Update"
 int Update(SNES snes,void *ctx)
 /*---------------------------------------------------------------------*/
 {
@@ -751,8 +751,8 @@ int Update(SNES snes,void *ctx)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "ComputeTimeStep"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeTimeStep"
 int ComputeTimeStep(SNES snes,int iter,void *ctx)
 /*---------------------------------------------------------------------*/
 {
@@ -794,8 +794,8 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
 }
 
 /*---------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "GetLocalOrdering"
+#undef __FUNCT__
+#define __FUNCT__ "GetLocalOrdering"
 int GetLocalOrdering(GRID *grid)
 /*---------------------------------------------------------------------*/
 {
@@ -1020,7 +1020,7 @@ int GetLocalOrdering(GRID *grid)
    ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
 #endif
-  ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,0);CHKERRQ(ierr);
+  ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,0);CHKERRQ(ierr);
   k = 0;
   for (i = 0; i < nedgeLoc; i++) {
     int cross_node=nnodesLoc/2;
@@ -1963,8 +1963,8 @@ int GetLocalOrdering(GRID *grid)
 
 
 /*---------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "SetPetscDS"
+#undef __FUNCT__
+#define __FUNCT__ "SetPetscDS"
 int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /*---------------------------------------------------------------------*/
 {
@@ -2161,8 +2161,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 /*                                                                           */
 /*===========================================================================*/
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "f77CLINK"
+#undef __FUNCT__
+#define __FUNCT__ "f77CLINK"
 void PETSC_STDCALL f77CLINK(CINFO *p1,CRUNGE *p2,CGMCOM *p3)
 {
    c_info  = p1;
@@ -2176,8 +2176,8 @@ EXTERN_C_END
 /* Allocates the memory for the fine grid                                   */
 /*                                                                          */
 /*==========================================================================*/
-#undef __FUNC__
-#define __FUNC__ "set_up_grid"
+#undef __FUNCT__
+#define __FUNCT__ "set_up_grid"
 int set_up_grid(GRID *grid)                           
 {
    int nnodes,nedge;
@@ -2383,8 +2383,8 @@ PetscPrintf(PETSC_COMM_WORLD," nbface= %d\n",nbface);*/
 /* Write memory locations and other information for the fine grid            */
 /*                                                                           */
 /*===========================================================================*/
-#undef __FUNC__
-#define __FUNC__ "write_fine_grid"
+#undef __FUNCT__
+#define __FUNCT__ "write_fine_grid"
 int write_fine_grid(GRID *grid)                  
 {
    FILE *output;

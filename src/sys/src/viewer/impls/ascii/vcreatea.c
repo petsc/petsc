@@ -1,4 +1,4 @@
-/*$Id: vcreatea.c,v 1.17 2000/09/22 20:41:47 bsmith Exp bsmith $*/
+/*$Id: vcreatea.c,v 1.18 2001/01/15 21:43:11 bsmith Exp balay $*/
 
 #include "petsc.h"  /*I     "petsc.h"   I*/
 
@@ -9,8 +9,8 @@
 */
 static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNC__  
-#define __FUNC__ "VIEWER_STDOUT_"  
+#undef __FUNCT__  
+#define __FUNCT__ "VIEWER_STDOUT_"  
 /*@C
    PETSC_VIEWER_STDOUT_ - Creates a ASCII PetscViewer shared by all processors 
                     in a communicator.
@@ -62,8 +62,8 @@ PetscViewer PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 */
 static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNC__  
-#define __FUNC__ "VIEWER_STDERR_" 
+#undef __FUNCT__  
+#define __FUNCT__ "VIEWER_STDERR_" 
 /*@C
    PETSC_VIEWER_STDERR_ - Creates a ASCII PetscViewer shared by all processors 
                     in a communicator.
@@ -107,8 +107,8 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerASCIIOpen" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIIOpen" 
 /*@C
    PetscViewerASCIIOpen - Opens an ASCII file as a PetscViewer.
 

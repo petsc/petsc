@@ -3,8 +3,8 @@
 #include "petscsles.h"
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "KSPMonitorWriteConvHist"
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorWriteConvHist"
 /*
    KSPMonitorWriteConvHist - Write convergence history to external ASCII file. 
 
@@ -51,8 +51,8 @@ int KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "KSPMonitorAmg"
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorAmg"
 /*
    KSPMonitorWriteConvHist - Write convergence history to AMG-PETSc 
    interface external ASCII file. This routine differs from the previous one 
@@ -93,8 +93,8 @@ int KSPMonitorAmg(KSP ksp,int n,double rnorm,void* ctx)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "KSPMonitorWriteResVecs"
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitorWriteResVecs"
 /*
     KSPMonitorWriteResVecs - Write residual vectors to file. 
 */ 
@@ -136,8 +136,8 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "ConvhistDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "ConvhistDestroy"
 int ConvhistCtxDestroy(CONVHIST *convhist)
 {
    PetscFree(convhist);
@@ -145,8 +145,8 @@ int ConvhistCtxDestroy(CONVHIST *convhist)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "MyConvTest"
+#undef __FUNCT__
+#define __FUNCT__ "MyConvTest"
 int MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reason, 
                void* ctx)
 {
@@ -166,8 +166,8 @@ int MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reason,
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "ReorderSubmatrices"
+#undef __FUNCT__
+#define __FUNCT__ "ReorderSubmatrices"
 int ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
   int               i, j, ierr, nloc, *glo_row_ind;
@@ -182,8 +182,8 @@ int ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "PrintSubMatrices"
+#undef __FUNCT__
+#define __FUNCT__ "PrintSubMatrices"
 int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
   int    i, j, ierr, nloc, *glo_row_ind;
@@ -203,8 +203,8 @@ int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "ViewSubMatrices"
+#undef __FUNCT__
+#define __FUNCT__ "ViewSubMatrices"
 int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
   int    i, ierr;
@@ -225,8 +225,8 @@ int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "SamgShellPCSetUpOnFem"
+#undef __FUNCT__
+#define __FUNCT__ "SamgShellPCSetUpOnFem"
 int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 {
   int         ierr;
@@ -242,8 +242,8 @@ int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "MyMatView"
+#undef __FUNCT__
+#define __FUNCT__ "MyMatView"
 int MyMatView(Mat mat,void *dummy)
 {
   int    i, ierr;
@@ -262,8 +262,8 @@ int MyMatView(Mat mat,void *dummy)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "PrintMatrix"
+#undef __FUNCT__  
+#define __FUNCT__ "PrintMatrix"
 int PrintMatrix(Mat mat, char* path, char* base)
 {
    int      ierr;
@@ -317,8 +317,8 @@ int PrintMatrix(Mat mat, char* path, char* base)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "PrintVector"
+#undef __FUNCT__  
+#define __FUNCT__ "PrintVector"
 int PrintVector(Vec vec, char* path, char* base) 
 {
    int    ierr;

@@ -1,9 +1,9 @@
-/*$Id: ex3.c,v 1.82 2001/03/13 15:56:11 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.83 2001/03/22 20:32:01 bsmith Exp balay $*/
 
 static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
 routine to check candidate iterates produced by line search routines.  This code also\n\
-demonstrates use of the macro __FUNC__ to define routine names for use in error handling.\n\
+demonstrates use of the macro __FUNCT__ to define routine names for use in error handling.\n\
 The command line options include:\n\
   -check_iterates : activate checking of iterates\n\
   -check_tol <tol>: set tolerance for iterate checking\n\n";
@@ -11,7 +11,7 @@ The command line options include:\n\
 /*T
    Concepts: SNES^basic parallel example
    Concepts: SNES^setting a user-defined monitoring routine
-   Concepts: error handling^using the macro __FUNC__ to define routine names;
+   Concepts: error handling^using the macro __FUNCT__ to define routine names;
    Processors: n
 T*/
 
@@ -32,12 +32,12 @@ T*/
 
 /* 
    User-defined routines.  Note that immediately before each routine below,
-   we define the macro __FUNC__ to be a string containing the routine name.
+   we define the macro __FUNCT__ to be a string containing the routine name.
    If defined, this macro is used in the PETSc error handlers to provide a
    complete traceback of routine names.  All PETSc library routines use this
    macro, and users can optionally employ it as well in their application
    codes.  Note that users can get a traceback of PETSc errors regardless of
-   whether they define __FUNC__ in application codes; this macro merely
+   whether they define __FUNCT__ in application codes; this macro merely
    provides the added traceback detail of the application routine names.
 */
 int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -73,8 +73,8 @@ typedef struct {
    double tolerance;  /* tolerance for changes between successive iterates */
 } StepCheckCtx;
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES           snes;                 /* SNES context */
@@ -266,8 +266,8 @@ int main(int argc,char **argv)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Computes initial guess.
 
@@ -284,8 +284,8 @@ int FormInitialGuess(Vec x)
    PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -370,8 +370,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 
@@ -450,8 +450,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "Monitor"
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
 /*
    Monitor - Optional user-defined monitoring routine that views the
    current iterate with an x-window plot. Set by SNESSetMonitor().
@@ -480,8 +480,8 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "StepCheck"
+#undef __FUNCT__
+#define __FUNCT__ "StepCheck"
 /*
    StepCheck - Optional user-defined routine that checks the validity of
    candidate steps of a line search method.  Set by SNESSetLineSearchCheck().

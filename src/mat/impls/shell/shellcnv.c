@@ -1,10 +1,10 @@
-/*$Id: shellcnv.c,v 1.16 2000/10/24 20:25:38 bsmith Exp bsmith $*/
+/*$Id: shellcnv.c,v 1.17 2001/01/15 21:45:41 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
   
-#undef __FUNC__  
-#define __FUNC__ "MatConvert_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_Shell"
 int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
 {
   Vec      in,out;

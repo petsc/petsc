@@ -1,10 +1,10 @@
-/*$Id: dlregis.c,v 1.10 2000/05/05 22:16:35 balay Exp bsmith $*/
+/*$Id: dlregis.c,v 1.11 2001/01/15 21:46:25 bsmith Exp balay $*/
 
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryRegister"
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 

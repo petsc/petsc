@@ -1,10 +1,10 @@
-/*$Id: cmesh.c,v 1.70 2000/05/05 22:14:53 balay Exp bsmith $*/
+/*$Id: cmesh.c,v 1.71 2001/01/15 21:44:37 bsmith Exp balay $*/
 
 #include "petscvec.h"        /*I "petscvec.h" I*/
 
 
-#undef __FUNC__  
-#define __FUNC__ "VecContourScale"
+#undef __FUNCT__  
+#define __FUNCT__ "VecContourScale"
 /*@
     VecContourScale - Prepares a vector of values to be plotted using 
     the PetscDrawTriangle() contour plotter.

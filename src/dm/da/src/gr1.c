@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.24 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: gr1.c,v 1.25 2001/01/15 21:48:51 bsmith Exp balay $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -6,8 +6,8 @@
 
 #include "petscda.h"      /*I  "petscda.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "DASetUniformCoordinates"
+#undef __FUNCT__  
+#define __FUNCT__ "DASetUniformCoordinates"
 /*@
     DASetUniformCoordinates - Sets a DA coordinates to be a uniform grid
 
@@ -96,8 +96,8 @@ int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double yma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw_DA1d"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Draw_DA1d"
 int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
   DA             da;

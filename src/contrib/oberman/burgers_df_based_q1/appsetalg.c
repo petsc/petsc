@@ -1,4 +1,4 @@
-/*$Id: appsetalg.c,v 1.2 2000/01/06 20:43:22 bsmith Exp bsmith $*/
+/*$Id: appsetalg.c,v 1.3 2001/01/15 21:49:29 bsmith Exp balay $*/
 #include "appctx.h"
 
 /*----------------------------------------------------------------------------
@@ -9,8 +9,8 @@ extern int FormInitialGuess(AppCtx*);
 extern int SetBoundaryConditions(Vec,AppCtx *,Vec);
 extern int SetJacobian(Vec,AppCtx *,Mat*);
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtSolve"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSolve"
 int AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra             *algebra = &appctx->algebra;
@@ -170,8 +170,8 @@ PetscFunctionReturn(0);
          -  Generates "ghosted" local vectors for local computations etc.
          -  Generates scatter context for updating ghost points etc.
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreateVector"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreateVector"
 int AppCtxCreateVector(AppCtx* appctx)
 {
   /* Want everything here to be DF driven, not vertex driven 
@@ -237,8 +237,8 @@ Generally, the size of the matrix is df_total * df_total,
 but we need to compute the nonzero structure for efficiency purposes.
 DO LATER
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreateMatrix"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreateMatrix"
 int AppCtxCreateMatrix(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
@@ -264,8 +264,8 @@ int ierr;
 /*  3) Set the right hand side values into the vectors.    
        Called B)                                         */
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtSetRhs"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSetRhs"
 int AppCtxSetRhs(AppCtx* appctx)
 {
   /********* Collect context informatrion ***********/
@@ -324,8 +324,8 @@ PetscFunctionReturn(0);
 /*  4) Set the stiffness matrix entries   
        Called B)                                           */
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtSetMatrix"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSetMatrix"
 int AppCtxSetMatrix(AppCtx* appctx)
 {
 /********* Collect contex informatrion ***********/
@@ -424,8 +424,8 @@ FormStationaryFunction - Evaluates the nonlinear function, F(x),
    Output Parameter:
     - f, the value of the function
 */
-#undef __FUNC__
-#define __FUNC__ "FormStationaryFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormStationaryFunction"
 int FormStationaryFunction(SNES snes,Vec x,Vec f,void *dappctx)
 {
 /********* Collect context informatrion ***********/
@@ -467,8 +467,8 @@ to see if they need to be recomputed */
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "SetNonlinearFunction"
+#undef __FUNCT__
+#define __FUNCT__ "SetNonlinearFunction"
 /* input vector is g, output is f.  Loop over elements, getting coords of each vertex and 
 computing load vertex by vertex.  Set the values into f.  */
 int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
@@ -514,8 +514,8 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "ComputeNonlinear"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeNonlinear"
 /* input is x,output the nonlinear part into f for a particular element */
 int ComputeNonlinear(AppElement *phi,double *uvvals,double *result)
 {
@@ -557,8 +557,8 @@ Put the result in index k.  Add all possibilities up to get contribution to k, a
    PetscFunctionReturn(0);
 }                     
 
-#undef __FUNC__
-#define __FUNC__ "SetBoundaryConditions"
+#undef __FUNCT__
+#define __FUNCT__ "SetBoundaryConditions"
 int SetBoundaryConditions(Vec g,AppCtx *appctx,Vec f)
 {
  /********* Collect context informatrion ***********/
@@ -600,8 +600,8 @@ int SetBoundaryConditions(Vec g,AppCtx *appctx,Vec f)
 /*---------------------------------------------------------------------*/
 /*  7) Set Jacobian   */
 
-#undef __FUNC__
-#define __FUNC__ "FormStationaryJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormStationaryJacobian"
 int FormStationaryJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,void *dappctx)
 {
   AppCtx *appctx = (AppCtx *)dappctx;
@@ -620,8 +620,8 @@ int FormStationaryJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,vo
 } 
 
 /* input is the input vector,output is the jacobian jac */
-#undef __FUNC__
-#define __FUNC__ "SetJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "SetJacobian"
 int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 {
 /********* Collect context informatrion ***********/
@@ -676,8 +676,8 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 
 }
 
-#undef __FUNC__
-#define __FUNC__ "ComputeJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeJacobian"
 
 /* input is x, output the nonlinear part into f for a particulat element */
 /* Much of the code is dublicated from ComputeMatrix; the integral is different */
@@ -742,8 +742,8 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 /*------------------------------------------------------------------------*/
 /*  9) Initial guess */
 
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(AppCtx* appctx)
 {
     AppAlgebra *algebra = &appctx->algebra;

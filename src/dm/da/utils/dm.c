@@ -1,4 +1,4 @@
-/*$Id: dm.c,v 1.2 2001/01/15 21:49:13 bsmith Exp bsmith $*/
+/*$Id: dm.c,v 1.3 2001/03/22 20:32:54 bsmith Exp balay $*/
  
 #include "src/dm/da/daimpl.h"     /*I      "petscda.h"     I*/
 
@@ -11,8 +11,8 @@
 
 */
 
-#undef __FUNC__  
-#define __FUNC__ "DMDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "DMDestroy"
 /*@C
     DMDestroy - Destroys a vector packer or DA.
 
@@ -35,8 +35,8 @@ int DMDestroy(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMView"
+#undef __FUNCT__  
+#define __FUNCT__ "DMView"
 /*@C
     DMView - Views a vector packer or DA.
 
@@ -60,8 +60,8 @@ int DMView(DM dm,PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMCreateGlobalVector"
+#undef __FUNCT__  
+#define __FUNCT__ "DMCreateGlobalVector"
 /*@C
     DMCreateGlobalVector - Creates a global vector from a DA or VecPack object
 
@@ -87,8 +87,8 @@ int DMCreateGlobalVector(DM dm,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMGetInterpolation"
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetInterpolation"
 /*@C
     DMGetInterpolation - Gets interpolation matrix between two DA or VecPack objects
 
@@ -116,8 +116,8 @@ int DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMGetColoring"
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetColoring"
 /*@C
     DMGetColoring - Gets coloring and empty Jacobian for a DA or VecPack
 
@@ -145,8 +145,8 @@ int DMGetColoring(DM dm,MatType mtype,ISColoring *coloring,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DMRefine"
+#undef __FUNCT__  
+#define __FUNCT__ "DMRefine"
 /*@C
     DMRefine - Refines a DA or VecPack object
 

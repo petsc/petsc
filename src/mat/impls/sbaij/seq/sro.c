@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.22 2001/01/16 18:18:03 balay Exp bsmith $*/
+/*$Id: sro.c,v 1.23 2001/01/17 22:22:55 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -33,8 +33,8 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
              nonzero A_(perm(i),iperm(k)) will be stored in the upper triangle.
              Note: matrix A is not permuted by this function!
 */
-#undef __FUNC__  
-#define __FUNC__ "MatReorderingSeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatReorderingSeqSBAIJ"
 int MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ     *a=(Mat_SeqSBAIJ *)A->data;

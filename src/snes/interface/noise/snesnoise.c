@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesnoise.c,v 1.2 2001/01/19 21:11:07 balay Exp balay $";
+static char vcid[] = "$Id: snesnoise.c,v 1.3 2001/01/19 23:21:50 balay Exp balay $";
 #endif
 
 
@@ -30,8 +30,8 @@ extern int JacMatMultCompare(SNES,Vec,Vec,double);
 extern int SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
 extern int SNESUnSetMatrixFreeParameter(SNES snes);
 
-#undef __FUNC__  
-#define __FUNC__ "DiffParameterCreate_More"
+#undef __FUNCT__  
+#define __FUNCT__ "DiffParameterCreate_More"
 int DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
 {
   DIFFPAR_MORE *neP;
@@ -73,8 +73,8 @@ int DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DiffParameterDestroy_More"
+#undef __FUNCT__  
+#define __FUNCT__ "DiffParameterDestroy_More"
 int DiffParameterDestroy_More(void *nePv)
 {
   DIFFPAR_MORE *neP = (DIFFPAR_MORE *)nePv;
@@ -88,8 +88,8 @@ int DiffParameterDestroy_More(void *nePv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DiffParameterCompute_More"
+#undef __FUNCT__  
+#define __FUNCT__ "DiffParameterCompute_More"
 int DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,double *hopt)
 {
   DIFFPAR_MORE *neP = (DIFFPAR_MORE *)nePv;
@@ -230,8 +230,8 @@ int DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double *fnoise,do
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "JacMatMultCompare"
+#undef __FUNCT__  
+#define __FUNCT__ "JacMatMultCompare"
 int JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 {
   Vec          yy1, yy2; /* work vectors */

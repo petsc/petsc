@@ -1,11 +1,11 @@
-/*$Id: main.c,v 1.9 2001/01/20 03:37:07 bsmith Exp balay $*/
+/*$Id: main.c,v 1.10 2001/01/23 20:58:25 balay Exp balay $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
 #include "appctx.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            ierr;
@@ -52,8 +52,8 @@ int main(int argc,char **argv)
 /*
          Sets up the non-linear system asociated with the PDE and solves it
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtSolve"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSolve"
 int AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra             *algebra = &appctx->algebra;
@@ -117,8 +117,8 @@ printf("the number of its, %d\n",its);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
@@ -136,8 +136,8 @@ int FormInitialGuess(AppCtx* appctx)
          -  Generates "ghosted" local vectors for local computations etc.
          -  Generates scatter context for updating ghost points etc.
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreateVector"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreateVector"
 int AppCtxCreateVector(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
@@ -220,8 +220,8 @@ const int two = 2;
      Creates the sparse matrix (with the correct nonzero pattern) that will
   be later filled with the stiffness matrix
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreateMatrix"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreateMatrix"
 int AppCtxCreateMatrix(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
@@ -373,8 +373,8 @@ int AppCtxCreateMatrix(AppCtx* appctx)
    Output Parameter:
     - f, the value of the function
 */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec x,Vec f,void *dappctx)
 {
 /********* Collect context informatrion ***********/
@@ -421,8 +421,8 @@ to see if they need to be recomputed */
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "SetNonlinearFunction"
+#undef __FUNCT__
+#define __FUNCT__ "SetNonlinearFunction"
 /* input vector is g, output is f.  Loop over elements, getting coords of each vertex and 
 computing load vertex by vertex.  Set the values into f.  */
 int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
@@ -546,8 +546,8 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
 PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 int FormJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,void *dappctx)
 {
   AppCtx *appctx = (AppCtx *)dappctx;
@@ -573,8 +573,8 @@ ierr= MatCopy(A,*jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 }
 
 /* input is the input vector, output is the jacobian jac */
-#undef __FUNC__
-#define __FUNC__ "SetJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "SetJacobian"
 int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 {
 /********* Collect context informatrion ***********/
@@ -652,8 +652,8 @@ int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 
 }
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtSetRhs"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSetRhs"
 int AppCtxSetRhs(AppCtx* appctx)
 {
 /********* Collect context informatrion ***********/
@@ -714,8 +714,8 @@ int AppCtxSetRhs(AppCtx* appctx)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtSetMatrix"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSetMatrix"
 int AppCtxSetMatrix(AppCtx* appctx)
 {
 /********* Collect contex informatrion ***********/

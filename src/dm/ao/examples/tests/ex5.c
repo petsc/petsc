@@ -1,11 +1,11 @@
-/*$Id: ex5.c,v 1.16 2001/01/22 23:07:58 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.17 2001/01/23 20:57:50 balay Exp balay $*/
 
 static char help[] = "Tests AODataRemap \n\n";
 
 #include "petscao.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int         n,nglobal,bs = 1,*keys,*data,ierr,rank,size,i,start,*news;

@@ -1,9 +1,9 @@
-/*$Id: dagetarray.c,v 1.10 2001/03/13 04:01:18 bsmith Exp bsmith $*/
+/*$Id: dagetarray.c,v 1.11 2001/03/22 20:32:43 bsmith Exp balay $*/
  
 #include "petscda.h"    /*I   "petscda.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "DAVecGetArray"
+#undef __FUNCT__  
+#define __FUNCT__ "DAVecGetArray"
 /*@
    DAVecGetArray - Returns an multiple dimension array that shares data with 
       the underlying vector and is indexed using the global dimensions.
@@ -62,8 +62,8 @@ int DAVecGetArray(DA da,Vec vec,void **array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "DAVecRestoreArray"
+#undef __FUNCT__  
+#define __FUNCT__ "DAVecRestoreArray"
 /*@
    DAVecRestoreArray - Restores a multiple dimension array obtained with DAVecGetArray()
 

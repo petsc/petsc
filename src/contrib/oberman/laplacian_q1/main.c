@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.8 2001/01/17 22:28:12 bsmith Exp balay $*/
+/*$Id: main.c,v 1.9 2001/01/23 20:58:21 balay Exp balay $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -17,8 +17,8 @@ extern int PCCreate_NN (PC);
 extern int MatPartitioningCreate_Square (MatPartitioning);
 EXTERN_C_END
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            ierr,its,rank;

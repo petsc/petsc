@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.17 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex17.c,v 1.18 2001/01/23 20:56:41 balay Exp balay $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -23,8 +23,8 @@ T*/
 */
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec         x,b,u;  /* approx solution, RHS, exact solution */

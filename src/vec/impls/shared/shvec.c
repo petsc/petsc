@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.48 2001/01/17 19:44:20 bsmith Exp bsmith $*/
+/*$Id: shvec.c,v 1.49 2001/01/18 17:17:41 bsmith Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -13,8 +13,8 @@
 
 EXTERN int PetscSharedMalloc(MPI_Comm,int,int,void**);
 
-#undef __FUNC__  
-#define __FUNC__ "VecDuplicate_Shared"
+#undef __FUNCT__  
+#define __FUNCT__ "VecDuplicate_Shared"
 int VecDuplicate_Shared(Vec win,Vec *v)
 {
   int     ierr;
@@ -48,8 +48,8 @@ int VecDuplicate_Shared(Vec win,Vec *v)
 
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "VecCreate_Shared"
+#undef __FUNCT__  
+#define __FUNCT__ "VecCreate_Shared"
 int VecCreate_Shared(Vec vv)
 {
   int     ierr;
@@ -108,8 +108,8 @@ EXTERN_C_END
 static int Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
 static int Petsc_Shared_size   = 100000000;
 
-#undef __FUNC__  
-#define __FUNC__ "Petsc_DeleteShared" 
+#undef __FUNCT__  
+#define __FUNCT__ "Petsc_DeleteShared" 
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -126,8 +126,8 @@ static int Petsc_DeleteShared(MPI_Comm comm,int keyval,void* attr_val,void* extr
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSharedMemorySetSize"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSharedMemorySetSize"
 int PetscSharedMemorySetSize(int s)
 {
   PetscFunctionBegin;
@@ -139,8 +139,8 @@ int PetscSharedMemorySetSize(int s)
 
 #include <ulocks.h>
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSharedInitialize"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSharedInitialize"
 int PetscSharedInitialize(MPI_Comm comm)
 {
   int     rank,len,ierr,flag;
@@ -183,8 +183,8 @@ int PetscSharedInitialize(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSharedMalloc"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSharedMalloc"
 int PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
 {
   char    *value;
@@ -225,8 +225,8 @@ int PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
 #else
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "VecCreate_Shared"
+#undef __FUNCT__  
+#define __FUNCT__ "VecCreate_Shared"
 int VecCreate_Shared(MPI_Comm comm,int n,int N,Vec *vv)
 {
   int ierr,size;
@@ -243,8 +243,8 @@ EXTERN_C_END
 
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "VecCreateShared"
+#undef __FUNCT__  
+#define __FUNCT__ "VecCreateShared"
 /*@C
    VecCreateShared - Creates a parallel vector that uses shared memory.
 

@@ -1,12 +1,12 @@
-/*$Id: rich.c,v 1.99 2001/01/15 21:47:22 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.100 2001/03/22 20:31:33 bsmith Exp balay $*/
 /*          
             This implements Richardson Iteration.       
 */
 #include "src/sles/ksp/kspimpl.h"              /*I "petscksp.h" I*/
 #include "src/sles/ksp/impls/rich/richctx.h"
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_Richardson"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_Richardson"
 int KSPSetUp_Richardson(KSP ksp)
 {
   int ierr;
@@ -18,8 +18,8 @@ int KSPSetUp_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_Richardson"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_Richardson"
 int  KSPSolve_Richardson(KSP ksp,int *its)
 {
   int             i,maxit,ierr;
@@ -119,8 +119,8 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPView_Richardson" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPView_Richardson" 
 int KSPView_Richardson(KSP ksp,PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
@@ -137,8 +137,8 @@ int KSPView_Richardson(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetFromOptions_Richardson"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetFromOptions_Richardson"
 int KSPSetFromOptions_Richardson(KSP ksp)
 {
   KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
@@ -155,8 +155,8 @@ int KSPSetFromOptions_Richardson(KSP ksp)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPRichardsonSetScale_Richardson"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPRichardsonSetScale_Richardson"
 int KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
@@ -169,8 +169,8 @@ int KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_Richardson"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_Richardson"
 int KSPCreate_Richardson(KSP ksp)
 {
   int            ierr;

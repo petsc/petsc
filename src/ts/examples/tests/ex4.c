@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.8 2001/01/22 23:07:42 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.9 2001/01/23 20:57:36 balay Exp balay $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -52,8 +52,8 @@ double f_ini(double x,double y)
 #define nonlinear_no_jacobian  3
 #define nonlinear              4
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int           ierr,time_steps = 100,steps,size;
@@ -174,8 +174,8 @@ int main(int argc,char **argv)
 }
 
 /* -------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "Initial"
+#undef __FUNCT__
+#define __FUNCT__ "Initial"
 int Initial(Vec global,void *ctx)
 {
   Data *data = (Data*)ctx;
@@ -209,8 +209,8 @@ int Initial(Vec global,void *ctx)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "Monitor"
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
 int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 {
   VecScatter scatter;
@@ -246,8 +246,8 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
 { 
   Data *data = (Data*)ptr;
@@ -349,8 +349,8 @@ int FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   return 0;
 }  
 
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 int FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
 {  
   Data *data = (Data*)ptr;
@@ -407,8 +407,8 @@ int FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
   return 0;
 } 
 
-#undef __FUNC__
-#define __FUNC__ "RHSJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian"
 int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
 {
   Data *data = (Data*)ptr;
@@ -495,8 +495,8 @@ int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *pt
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "RHSFunction"
+#undef __FUNCT__
+#define __FUNCT__ "RHSFunction"
 int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 {
   int ierr;

@@ -1,12 +1,12 @@
-/*$Id: slo.c,v 1.12 2000/04/12 04:24:26 bsmith Exp bsmith $*/
+/*$Id: slo.c,v 1.13 2001/01/15 21:46:39 bsmith Exp balay $*/
 
 /* slo.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
 #include "petsc.h"
 #include "src/mat/color/color.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MINPACKslo" 
+#undef __FUNCT__  
+#define __FUNCT__ "MINPACKslo" 
 int MINPACKslo(int *n,int * indrow,int * jpntr,int * indcol, int *ipntr, int *ndeg,int * list,
          int * maxclq,	 int *iwa1,int * iwa2,int * iwa3,int * iwa4)
 {

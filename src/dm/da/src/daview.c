@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.46 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: daview.c,v 1.47 2001/01/15 21:48:51 bsmith Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -6,8 +6,8 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "DAView"
+#undef __FUNCT__  
+#define __FUNCT__ "DAView"
 /*@C
    DAView - Visualizes a distributed array object.
 
@@ -97,8 +97,8 @@ int DAView(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }  
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetInfo"
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetInfo"
 /*@C
    DAGetInfo - Gets information about a given distributed array.
 
@@ -144,8 +144,8 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,
   PetscFunctionReturn(0);
 }  
 
-#undef __FUNC__  
-#define __FUNC__ "DAView_Binary"
+#undef __FUNCT__  
+#define __FUNCT__ "DAView_Binary"
 int DAView_Binary(DA da,PetscViewer viewer)
 {
   int            rank,ierr;

@@ -1,4 +1,4 @@
-/*$Id: ffpath.c,v 1.34 2000/10/24 20:24:33 bsmith Exp bsmith $*/
+/*$Id: ffpath.c,v 1.35 2001/01/15 21:43:46 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -34,8 +34,8 @@
 #define MAXPATHLEN 1024
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscGetFileFromPath"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetFileFromPath"
 /*@C
    PetscGetFileFromPath - Finds a file from a name and a path string.  A 
                           default can be provided.

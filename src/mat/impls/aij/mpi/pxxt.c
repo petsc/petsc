@@ -1,4 +1,4 @@
-/*$Id: xxt.c,v 1.2 2001/01/15 21:45:38 bsmith Exp bsmith $*/
+/*$Id: xxt.c,v 1.3 2001/03/23 22:05:05 bsmith Exp balay $*/
 
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
@@ -18,8 +18,8 @@ typedef struct {
 
 EXTERN int MatDestroy_MPIAIJ(Mat);
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIAIJ_XXT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPIAIJ_XXT"
 int MatDestroy_MPIAIJ_XXT(Mat A)
 {
   Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
@@ -34,8 +34,8 @@ int MatDestroy_MPIAIJ_XXT(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSolve_MPIAIJ_XXT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_MPIAIJ_XXT"
 int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
@@ -52,16 +52,16 @@ int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_MPIAIJ_XXT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_XXT"
 int MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "LocalMult"
+#undef __FUNCT__  
+#define __FUNCT__ "LocalMult"
 static int LocalMult_XXT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
 {
   int            ierr;
@@ -80,8 +80,8 @@ static int LocalMult_XXT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_MPIAIJ_XXT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_XXT"
 int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat            B;
@@ -143,8 +143,8 @@ typedef struct {
 
 EXTERN int MatDestroy_MPIAIJ(Mat);
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIAIJ_XYT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPIAIJ_XYT"
 int MatDestroy_MPIAIJ_XYT(Mat A)
 {
   Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
@@ -159,8 +159,8 @@ int MatDestroy_MPIAIJ_XYT(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSolve_MPIAIJ_XYT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_MPIAIJ_XYT"
 int MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
@@ -177,16 +177,16 @@ int MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_MPIAIJ_XYT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_XYT"
 int MatLUFactorNumeric_MPIAIJ_XYT(Mat A,Mat *F)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "LocalMult"
+#undef __FUNCT__  
+#define __FUNCT__ "LocalMult"
 static int LocalMult_XYT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
 {
   int            ierr;
@@ -205,8 +205,8 @@ static int LocalMult_XYT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_MPIAIJ_XYT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_XYT"
 int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat            B;
@@ -257,8 +257,8 @@ int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_MPIAIJ_TFS"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_TFS"
 int MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   int ierr;
@@ -273,8 +273,8 @@ int MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseTFS_MPIAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseTFS_MPIAIJ"
 int MatUseTFS_MPIAIJ(Mat A)
 {
   PetscFunctionBegin;
@@ -285,8 +285,8 @@ int MatUseTFS_MPIAIJ(Mat A)
 
 #else
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseXXT_MPIAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseXXT_MPIAIJ"
 int MatUseTFS_MPIAIJ(Mat A)
 {
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: cholbs.c,v 1.60 2000/07/10 03:39:37 bsmith Exp bsmith $*/
+/*$Id: cholbs.c,v 1.61 2001/01/15 21:45:43 bsmith Exp balay $*/
 
 #include "petsc.h"
 
@@ -9,8 +9,8 @@
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_MPIRowbs"
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
@@ -45,8 +45,8 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_MPIRowbs"
 int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
@@ -81,8 +81,8 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatSolve_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_MPIRowbs"
 int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
@@ -134,8 +134,8 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatForwardSolve_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatForwardSolve_MPIRowbs"
 int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
@@ -177,8 +177,8 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 }
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatBackwardSolve_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatBackwardSolve_MPIRowbs"
 int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;

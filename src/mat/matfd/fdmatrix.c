@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.82 2001/01/20 03:35:11 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.83 2001/01/22 23:05:09 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -8,8 +8,8 @@
 #include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringView_Draw_Zoom"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringView_Draw_Zoom"
 static int MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   MatFDColoring fd = (MatFDColoring)Aa;
@@ -29,8 +29,8 @@ static int MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringView_Draw"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringView_Draw"
 static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 {
   int         ierr;
@@ -52,8 +52,8 @@ static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringView"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringView"
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
@@ -126,8 +126,8 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringSetParameters"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringSetParameters"
 /*@
    MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
    a Jacobian matrix using finite differences.
@@ -163,8 +163,8 @@ int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringSetFrequency"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringSetFrequency"
 /*@
    MatFDColoringSetFrequency - Sets the frequency for computing new Jacobian
    matrices. 
@@ -199,8 +199,8 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringGetFrequency"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringGetFrequency"
 /*@
    MatFDColoringGetFrequency - Gets the frequency for computing new Jacobian
    matrices. 
@@ -237,8 +237,8 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringSetFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringSetFunction"
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
@@ -269,8 +269,8 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringSetFromOptions"
 /*@
    MatFDColoringSetFromOptions - Sets coloring finite difference parameters from 
    the options database.
@@ -320,8 +320,8 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringView_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringView_Private"
 int MatFDColoringView_Private(MatFDColoring fd)
 {
   int        ierr;
@@ -346,8 +346,8 @@ int MatFDColoringView_Private(MatFDColoring fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringCreate" 
 /*@C
    MatFDColoringCreate - Creates a matrix coloring context for finite difference 
    computation of Jacobians.
@@ -405,8 +405,8 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringDestroy"
 /*@C
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
     via MatFDColoringCreate().
@@ -450,8 +450,8 @@ int MatFDColoringDestroy(MatFDColoring c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringApply"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringApply"
 /*@
     MatFDColoringApply - Given a matrix for which a MatFDColoring context 
     has been created, computes the Jacobian for a function via finite differences.
@@ -618,8 +618,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringApplyTS"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringApplyTS"
 /*@
     MatFDColoringApplyTS - Given a matrix for which a MatFDColoring context 
     has been created, computes the Jacobian for a function via finite differences.
@@ -767,8 +767,8 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringSetRecompute()"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringSetRecompute()"
 /*@C
    MatFDColoringSetRecompute - Indicates that the next time a Jacobian preconditioner
      is needed it sholuld be recomputed. Once this is called and the new Jacobian is computed

@@ -1,4 +1,4 @@
-/*$Id: signal.c,v 1.74 2000/11/03 15:00:44 bsmith Exp bsmith $*/
+/*$Id: signal.c,v 1.75 2001/01/15 21:43:39 bsmith Exp balay $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -42,8 +42,8 @@ static char *SIGNAME[] = {
 
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscSignalHandler_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSignalHandler_Private"
 /*
     PetscSignalHandler_Private - This is the signal handler called by the system. This calls 
              any signal handler set by PETSc or the application code.
@@ -77,8 +77,8 @@ static void PetscSignalHandler_Private(int sig)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDefaultSignalHandler"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDefaultSignalHandler"
 /*@
    PetscDefaultSignalHandler - Default signal handler.
 
@@ -129,8 +129,8 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 #define PETSC_SIGNAL_CAST
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscPushSignalHandler"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscPushSignalHandler"
 /*@C
    PetscPushSignalHandler - Catches the usual fatal errors and 
    calls a user-provided routine.
@@ -192,8 +192,8 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 }
 
 /* NO ERROR CODES RETURNED BY THIS FUNCTION */
-#undef __FUNC__  
-#define __FUNC__ "PetscPopSignalHandler"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscPopSignalHandler"
 int PetscPopSignalHandler(void)
 {
   struct SH *tmp;

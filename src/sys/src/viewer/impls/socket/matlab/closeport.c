@@ -1,4 +1,4 @@
-/*$Id: closeport.c,v 1.15 2000/01/11 20:58:54 bsmith Exp bsmith $*/
+/*$Id: closeport.c,v 1.16 2000/05/10 16:38:39 bsmith Exp balay $*/
 /* This was part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
@@ -27,8 +27,8 @@ typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "mexFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
   int    t = 0;

@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.34 2001/03/07 20:46:12 balay Exp bsmith $
+!  $Id: user.F,v 1.35 2001/03/08 20:09:27 bsmith Exp balay $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -12,8 +12,8 @@
 !  FORLINK establishes links between FORTRAN common blocks and C
 !
 !=====================================================================72
-#undef __FUNC__
-#define __FUNC__ "FORLINK"
+#undef __FUNCT__
+#define __FUNCT__ "FORLINK"
       subroutine FORLINK()
 
       implicit none
@@ -65,8 +65,8 @@
 ! Initializes the flow field
 !
 !=====================================================================72
-#undef __FUNC__
-#define __FUNC__ "INIT"
+#undef __FUNCT__
+#define __FUNCT__ "INIT"
       subroutine INIT(nnodes, qvec, turbre, amut,nvnode, ivnode,irank)
       implicit none
 #include "include/finclude/petscdef.h"
@@ -204,8 +204,8 @@
 !  Reads input parameters
 !
 !============================================================================
-#undef __FUNC__
-#define __FUNC__ "READR1"
+#undef __FUNCT__
+#define __FUNCT__ "READR1"
       subroutine READR1(ileast, irank)
 
       implicit none
@@ -269,8 +269,8 @@
 !  Writes a formatted file that contains an input file for TECPLOT
 !
 !=====================================================================72
-#undef __FUNC__
-#define __FUNC__ "TECFLO"
+#undef __FUNCT__
+#define __FUNCT__ "TECFLO"
       subroutine TECFLO(nnodes,                                            &
      &                  nnbound,nvbound,nfbound,                           &
      &                  nnfacet,nvfacet,nffacet,                           &
@@ -432,8 +432,8 @@
 !  Added new parameters - clift, cdrag, cmom, irank, nvertices
 !  
 !=====================================================================72
-#undef __FUNC__
-#define __FUNC__ "FORCE"
+#undef __FUNCT__
+#define __FUNCT__ "FORCE"
       subroutine FORCE(nnodes,nedge,                                    &
      &                 isnode,ivnode,                                   &
      &                 nnfacet,f2ntn,nnbound,                           &
@@ -702,8 +702,8 @@
 ! Note that this routine assumes conservative variables
 !
 !=====================================================================72
-#undef __FUNC__
-#define __FUNC__ "DELTA2"
+#undef __FUNCT__
+#define __FUNCT__ "DELTA2"
       subroutine DELTAT2(nnodes,nedge,qvec,cdt,                          &
      &                  xyz,vol,xyzn,evec,                               &
      &                  sxn,syn,szn,vxn,vyn,vzn,fxn,fyn,fzn,             &
@@ -909,8 +909,8 @@
 ! Calculates the fluxes on the face and performs the flux balance
 !
 !=============================================================================
-#undef __FUNC__
-#define __FUNC__ "FLUX"
+#undef __FUNCT__
+#define __FUNCT__ "FLUX"
 #if defined(_OPENMP)
 #if defined(HAVE_EDGE_COLORING)
       subroutine FLUX(nnodes, ncell, nedge,                                     &
@@ -1760,8 +1760,8 @@
 ! Gets the weights for calculating gradients using least squares
 !
 !=====================================================================72
-#undef __FUNC__
-#define __FUNC__ "SUMGS"
+#undef __FUNCT__
+#define __FUNCT__ "SUMGS"
       subroutine SUMGS(nnodes,nedge,evec,xyz,rxy,irank,nvertices)
 
       implicit none      
@@ -2003,8 +2003,8 @@
 ! This subroutine solves using Gram-Schmidt
 !
 !=====================================================================72
-#undef __FUNC__
-#define __FUNC__ "LSTGS"
+#undef __FUNCT__
+#define __FUNCT__ "LSTGS"
       subroutine LSTGS(nnodes,nedge,evec,                                &
      &                 qvec,grad,xyz,                                    &
      &                 rxy,irank,nvertices)
@@ -2277,8 +2277,8 @@
 ! dq, A, B, iupdate
 !
 !=====================================================================72
-#undef __FUNC__
-#define __FUNC__ "GETRES"
+#undef __FUNCT__
+#define __FUNCT__ "GETRES"
 #if defined(_OPENMP)
 #if defined(HAVE_EDGE_COLORING)
       subroutine GETRES(nnodes,ncell,nedge,nsface,nvface,nfface,nbface,     &
@@ -2570,8 +2570,8 @@
 !  Opens files for I/O
 !
 !=============================================================================
-#undef __FUNC__
-#define __FUNC__ "OPENM"
+#undef __FUNCT__
+#define __FUNCT__ "OPENM"
       SUBROUTINE OPENM(irank)
 !
 !  TAPE7  -- input:  mach number, angle of attack etc.. 
@@ -2616,8 +2616,8 @@
 ! Get the IA, JA, and IAU arrays
 !
 !===================================================================
-#undef __FUNC__
-#define __FUNC__ "GETIA"
+#undef __FUNCT__
+#define __FUNCT__ "GETIA"
       subroutine GETIA(nnodes,nedge,evec,ia,ideg,irank)
       implicit none      
 #include "include/finclude/petscdef.h"
@@ -2666,8 +2666,8 @@
 ! Get the IA, JA, and IAU arrays
 !
 !===================================================================
-#undef __FUNC__
-#define __FUNC__ "GETJA"
+#undef __FUNCT__
+#define __FUNCT__ "GETJA"
       subroutine GETJA(nnodes,nedge,evec,ia,ja,iwork,irank)
       implicit none      
 #include "include/finclude/petscdef.h"
@@ -2785,8 +2785,8 @@
 ! Sort each of our bins
 !
 !===================================================================
-#undef __FUNC__
-#define __FUNC__ "SORTER"
+#undef __FUNCT__
+#define __FUNCT__ "SORTER"
       subroutine SORTER(istart,iend,ja,inode)
       implicit none      
 #include "include/finclude/petscdef.h"

@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.6 2001/01/15 21:49:23 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.7 2001/01/17 22:28:12 bsmith Exp balay $*/
 #include "appctx.h"
 
 
@@ -13,8 +13,8 @@
    See the companion Matlab file bscript.m for usage instructions.
 
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtViewMatlab"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtViewMatlab"
 int AppCtxViewMatlab(AppCtx* appctx)
 {
   int    ierr;
@@ -39,8 +39,8 @@ int AppCtxViewMatlab(AppCtx* appctx)
 /*
         Displays the grid and its numbering
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtGraphics"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtGraphics"
 int AppCtxGraphics(AppCtx *appctx)
 {
   int    ierr;
@@ -92,8 +92,8 @@ int AppCtxGraphics(AppCtx *appctx)
          center button - zoom out
          right button - continue to next graphic
 */
-#undef __FUNC__
-#define __FUNC__ "AppCxtViewGrid"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtViewGrid"
 int AppCtxViewGrid(PetscDraw draw,void *iappctx)
 {
   AppCtx  *appctx = (AppCtx *)iappctx;  

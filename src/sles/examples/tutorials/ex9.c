@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.46 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.47 2001/01/23 20:56:41 balay Exp balay $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -28,8 +28,8 @@ T*/
 extern int CheckError(Vec,Vec,Vec,int,int);
 extern int MyKSPMonitor(KSP,int,double,void*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec        x1,b1,x2,b2; /* solution and RHS vectors for systems #1 and #2 */
@@ -357,8 +357,8 @@ int main(int argc,char **args)
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
-#undef __FUNC__
-#define __FUNC__ "CheckError"
+#undef __FUNCT__
+#define __FUNCT__ "CheckError"
 /* ------------------------------------------------------------- */
 /*
     CheckError - Checks the error of the solution.
@@ -401,8 +401,8 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   return 0;
 }
 /* ------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "MyKSPMonitor"
+#undef __FUNCT__
+#define __FUNCT__ "MyKSPMonitor"
 /*
    MyKSPMonitor - This is a user-defined routine for monitoring
    the SLES iterative solvers.

@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.67 2001/03/22 20:28:58 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.68 2001/03/23 22:03:35 bsmith Exp balay $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -6,8 +6,8 @@
 #include "petsc.h"
 #include "petscsys.h"
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListGetPathAndFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListGetPathAndFunction"
 int PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
   char work[256],*lfunction,ierr;
@@ -32,8 +32,8 @@ int PetscFListGetPathAndFunction(const char name[],char *path[],char *function[]
 */
 PetscDLLibraryList DLLibrariesLoaded = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscInitialize_DynamicLibraries"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscInitialize_DynamicLibraries"
 /*
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
     search path.
@@ -114,8 +114,8 @@ int PetscInitialize_DynamicLibraries(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFinalize_DynamicLibraries"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFinalize_DynamicLibraries"
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
 */ 
@@ -132,8 +132,8 @@ int PetscFinalize_DynamicLibraries(void)
 
 EXTERN int PetscDLLibraryRegister_Petsc(char *);
 
-#undef __FUNC__  
-#define __FUNC__ "PetscInitalize_DynamicLibraries"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscInitalize_DynamicLibraries"
 int PetscInitialize_DynamicLibraries(void)
 {
   int ierr;
@@ -147,8 +147,8 @@ int PetscInitialize_DynamicLibraries(void)
   ierr = PetscDLLibraryRegister_Petsc(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PetscFinalize_DynamicLibraries"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFinalize_DynamicLibraries"
 int PetscFinalize_DynamicLibraries(void)
 {
   PetscFunctionBegin;
@@ -198,8 +198,8 @@ static PetscFList   dlallhead = 0;
           PCRegisterDynamic(), TSRegisterDynamic()
 */
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListAdd"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListAdd"
 int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],int (*fnc)(void *))
 {
   PetscFList entry,ne;
@@ -259,8 +259,8 @@ int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],int (*fnc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListDestroy"
 /*
     PetscFListDestroy - Destroys a list of registered routines.
 
@@ -315,8 +315,8 @@ int PetscFListDestroy(PetscFList *fl)
 /*
    Destroys all the function lists that anyone has every registered, such as KSPList, VecList, etc.
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscFListDestroyAll"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListDestroyAll"
 int PetscFListDestroyAll(void)
 {
   PetscFList tmp2,tmp1 = dlallhead;
@@ -332,8 +332,8 @@ int PetscFListDestroyAll(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListFind"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListFind"
 /*
     PetscFListFind - Given a name, finds the matching routine.
 
@@ -439,8 +439,8 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],int (**r)(void 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListView"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListView"
 /*
    PetscFListView - prints out contents of an PetscFList
 
@@ -477,8 +477,8 @@ int PetscFListView(PetscFList list,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListGet"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListGet"
 /*
    PetscFListGet - Gets an array the contains the entries in PetscFList, this is used
          by help etc.
@@ -522,8 +522,8 @@ int PetscFListGet(PetscFList list,char ***array,int *n)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListPrintTypes"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListPrintTypes"
 /*
    PetscFListPrintTypes - Prints the methods available.
 
@@ -560,8 +560,8 @@ int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char n
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListDuplicate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListDuplicate"
 /*
     PetscFListDuplicate - Creates a new list from a given object list.
 
@@ -595,8 +595,8 @@ int PetscFListDuplicate(PetscFList fl,PetscFList *nl)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFListConcat"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListConcat"
 /*
     PetscFListConcat - joins name of a libary, and the path where it is located
     into a single string.

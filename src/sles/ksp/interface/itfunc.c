@@ -1,12 +1,12 @@
-/*$Id: itfunc.c,v 1.153 2001/03/09 19:26:11 balay Exp balay $*/
+/*$Id: itfunc.c,v 1.154 2001/03/09 19:26:25 balay Exp balay $*/
 /*
       Interface KSP routines that the user calls.
 */
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "KSPComputeExtremeSingularValues"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPComputeExtremeSingularValues"
 /*@
    KSPComputeExtremeSingularValues - Computes the extreme singular values
    for the preconditioned operator. Called after or during KSPSolve()
@@ -52,8 +52,8 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPComputeEigenvalues"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPComputeEigenvalues"
 /*@
    KSPComputeEigenvalues - Computes the extreme eigenvalues for the
    preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
@@ -116,8 +116,8 @@ int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp"
 /*@
    KSPSetUp - Sets up the internal data structures for the
    later use of an iterative solver.
@@ -154,8 +154,8 @@ int KSPSetUp(KSP ksp)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve"
 /*@
    KSPSolve - Solves linear system; usually not called directly, rather 
    it is called by a call to SLESSolve().
@@ -308,8 +308,8 @@ int KSPSolve(KSP ksp,int *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolveTranspose"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolveTranspose"
 /*@
    KSPSolveTranspose - Solves the transpose of a linear system. Usually
    accessed through SLESSolveTranspose().
@@ -353,8 +353,8 @@ int KSPSolveTranspose(KSP ksp,int *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy"
 /*@C
    KSPDestroy - Destroys KSP context.
 
@@ -393,8 +393,8 @@ int KSPDestroy(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetPreconditionerSide"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetPreconditionerSide"
 /*@
     KSPSetPreconditionerSide - Sets the preconditioning side.
 
@@ -436,8 +436,8 @@ int KSPSetPreconditionerSide(KSP ksp,PCSide side)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetPreconditionerSide"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetPreconditionerSide"
 /*@C
     KSPGetPreconditionerSide - Gets the preconditioning side.
 
@@ -468,8 +468,8 @@ int KSPGetPreconditionerSide(KSP ksp,PCSide *side)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetTolerances"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetTolerances"
 /*@
    KSPGetTolerances - Gets the relative, absolute, divergence, and maximum
    iteration tolerances used by the default KSP convergence tests. 
@@ -506,8 +506,8 @@ int KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetTolerances"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetTolerances"
 /*@
    KSPSetTolerances - Sets the relative, absolute, divergence, and maximum
    iteration tolerances used by the default KSP convergence testers. 
@@ -556,8 +556,8 @@ int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetComputeResidual"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetComputeResidual"
 /*@
    KSPSetComputeResidual - Sets a flag to indicate whether the two norm 
    of the residual is calculated at each iteration.
@@ -583,8 +583,8 @@ int KSPSetComputeResidual(KSP ksp,PetscTruth flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUsePreconditionedResidual"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUsePreconditionedResidual"
 /*@
    KSPSetUsePreconditionedResidual - Sets a flag so that the two norm of the 
    preconditioned residual is used rather than the true residual, in the 
@@ -616,8 +616,8 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetInitialGuessNonzero"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetInitialGuessNonzero"
 /*@
    KSPSetInitialGuessNonzero - Tells the iterative solver that the 
    initial guess is nonzero; otherwise KSP assumes the initial guess
@@ -645,8 +645,8 @@ int KSPSetInitialGuessNonzero(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetInitialGuessNonzero"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetInitialGuessNonzero"
 /*@
    KSPGetInitialGuessNonzero - Determines whether the KSP solver is using
    a zero initial guess.
@@ -673,8 +673,8 @@ int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetComputeSingularValues"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetComputeSingularValues"
 /*@
    KSPSetComputeSingularValues - Sets a flag so that the extreme singular 
    values will be calculated via a Lanczos or Arnoldi process as the linear 
@@ -709,8 +709,8 @@ int KSPSetComputeSingularValues(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetComputeEigenvalues"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetComputeEigenvalues"
 /*@
    KSPSetComputeEigenvalues - Sets a flag so that the extreme eigenvalues
    values will be calculated via a Lanczos or Arnoldi process as the linear 
@@ -738,8 +738,8 @@ int KSPSetComputeEigenvalues(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetRhs"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetRhs"
 /*@
    KSPSetRhs - Sets the right-hand-side vector for the linear system to
    be solved.
@@ -765,8 +765,8 @@ int KSPSetRhs(KSP ksp,Vec b)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetRhs"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetRhs"
 /*@C
    KSPGetRhs - Gets the right-hand-side vector for the linear system to
    be solved.
@@ -793,8 +793,8 @@ int KSPGetRhs(KSP ksp,Vec *r)
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetSolution"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetSolution"
 /*@
    KSPSetSolution - Sets the location of the solution for the 
    linear system to be solved.
@@ -820,8 +820,8 @@ int KSPSetSolution(KSP ksp,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetSolution" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetSolution" 
 /*@C
    KSPGetSolution - Gets the location of the solution for the 
    linear system to be solved.  Note that this may not be where the solution
@@ -849,8 +849,8 @@ int KSPGetSolution(KSP ksp,Vec *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetPC"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetPC"
 /*@
    KSPSetPC - Sets the preconditioner to be used to calculate the 
    application of the preconditioner on a vector. 
@@ -881,8 +881,8 @@ int KSPSetPC(KSP ksp,PC B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetPC"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetPC"
 /*@C
    KSPGetPC - Returns a pointer to the preconditioner context
    set with KSPSetPC().
@@ -909,8 +909,8 @@ int KSPGetPC(KSP ksp,PC *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetMonitor"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetMonitor"
 /*@C
    KSPSetMonitor - Sets an ADDITIONAL function to be called at every iteration to monitor 
    the residual/error etc.
@@ -976,8 +976,8 @@ int KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPClearMonitor"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPClearMonitor"
 /*@
    KSPClearMonitor - Clears all monitors for a KSP object.
 
@@ -1005,8 +1005,8 @@ int KSPClearMonitor(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetMonitorContext"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetMonitorContext"
 /*@C
    KSPGetMonitorContext - Gets the monitoring context, as set by 
    KSPSetMonitor() for the FIRST monitor only.
@@ -1033,8 +1033,8 @@ int KSPGetMonitorContext(KSP ksp,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetResidualHistory"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetResidualHistory"
 /*@
    KSPSetResidualHistory - Sets the array used to hold the residual history.
    If set, this array will contain the residual norms computed at each
@@ -1076,8 +1076,8 @@ int KSPSetResidualHistory(KSP ksp,PetscReal *a,int na,PetscTruth reset)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetResidualHistory"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetResidualHistory"
 /*@C
    KSPGetResidualHistory - Gets the array used to hold the residual history
    and the number of residuals it contains.
@@ -1113,8 +1113,8 @@ int KSPGetResidualHistory(KSP ksp,PetscReal **a,int *na)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetConvergenceTest"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetConvergenceTest"
 /*@C
    KSPSetConvergenceTest - Sets the function to be used to determine
    convergence.  
@@ -1162,8 +1162,8 @@ int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConverged
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetConvergenceContext"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetConvergenceContext"
 /*@C
    KSPGetConvergenceContext - Gets the convergence context set with 
    KSPSetConvergenceTest().  
@@ -1190,8 +1190,8 @@ int KSPGetConvergenceContext(KSP ksp,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPBuildSolution"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPBuildSolution"
 /*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
    This routine is NOT commonly needed (see SLESSolve()).
@@ -1240,8 +1240,8 @@ int KSPBuildSolution(KSP ksp,Vec v,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPBuildResidual"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPBuildResidual"
 /*@C
    KSPBuildResidual - Builds the residual in a vector provided.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.4 2001/03/22 18:46:45 balay Exp $"
+"$Id: petscconf.h,v 1.1 2001/03/22 18:59:11 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -16,9 +16,6 @@
 #define PETSC_HAVE_IO_H
 
 #define PETSC_HAVE_STD_COMPLEX
-
-#define PETSC_USE_FORTRAN_STDCALL
-#define PETSC_USE_FORTRAN_MIXED_STR_ARG
 #define PETSC_MISSING_LAPACK_GESVD
 #define PETSC_MISSING_LAPACK_GEEV
 
@@ -39,9 +36,6 @@
 #define PETSC_USE_NT_TIME
 #define PETSC_HAVE_NO_GETRUSAGE
 
-#define PETSC_HAVE_F90_H "f90impl/f90_win32.h"
-#define PETSC_HAVE_F90_C "src/sys/src/f90/f90_win32.c"
-
 #define PETSC_MISSING_SIGBUS
 #define PETSC_MISSING_SIGQUIT
 #define PETSC_MISSING_SIGSYS
@@ -49,5 +43,6 @@
 #define PETSC_HAVE_U_ACCESS
 #define PETSC_HAVE_U_GETCWD
 #define PETSC_HAVE_U_SLEEP
+#define PETSC_HAVE_IARG_COUNT_PROGNAME
 
 #endif

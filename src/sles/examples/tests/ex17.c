@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.38 2001/01/17 22:25:27 bsmith Exp balay $*/
+/*$Id: ex17.c,v 1.39 2001/01/23 20:56:37 balay Exp balay $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -8,8 +8,8 @@ intended to test the complex numbers version of various solvers.\n\n";
 typedef enum {TEST_1,TEST_2,TEST_3,HELMHOLTZ_1,HELMHOLTZ_2} TestType;
 extern int FormTestMatrix(Mat,int,TestType);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec         x,b,u;      /* approx solution, RHS, exact solution */
@@ -84,8 +84,8 @@ int main(int argc,char **args)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "FormTestMatrix"
+#undef __FUNCT__
+#define __FUNCT__ "FormTestMatrix"
 int FormTestMatrix(Mat A,int n,TestType type)
 {
 #if !defined(PETSC_USE_COMPLEX)

@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.25 2001/01/22 23:08:13 bsmith Exp balay $*/
+/*$Id: ex8.c,v 1.26 2001/01/23 20:58:05 balay Exp balay $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 
@@ -6,8 +6,8 @@ static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 #include "petscsys.h"
 #include "petscao.h"
 
-#undef __FUNC__
-#define __FUNC__ "GenerateSliceScatter"
+#undef __FUNCT__
+#define __FUNCT__ "GenerateSliceScatter"
 /*
     Given a DA generates a VecScatter context that will deliver a slice
   of the global vector to each processor. In this example, each processor
@@ -80,8 +80,8 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            rank,M = 3,N = 5,P=3,s=1;

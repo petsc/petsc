@@ -1,11 +1,11 @@
-/*$Id: prefix.c,v 1.28 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: prefix.c,v 1.29 2001/01/15 21:43:52 bsmith Exp balay $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectSetOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectSetOptionsPrefix"
 /*
    PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. 
@@ -37,8 +37,8 @@ int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectAppendOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectAppendOptionsPrefix"
 /*
    PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. 
@@ -77,8 +77,8 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectGetOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectGetOptionsPrefix"
 /*
    PetscObjectGetOptionsPrefix - Gets the prefix of the PetscObject.
 
@@ -98,8 +98,8 @@ int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectPrependOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectPrependOptionsPrefix"
 /*
    PetscObjectPrependOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. 

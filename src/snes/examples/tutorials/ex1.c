@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.23 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.24 2001/03/22 20:32:01 bsmith Exp balay $*/
 
 static char help[] = "Newton's method to solve a two-variable system, sequentially.\n\n";
 
@@ -26,8 +26,8 @@ extern int FormFunction1(SNES,Vec,Vec,void*);
 extern int FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int FormFunction2(SNES,Vec,Vec,void*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES       snes;         /* nonlinear solver context */
@@ -145,8 +145,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction1"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction1"
 /* 
    FormFunction1 - Evaluates nonlinear function, F(x).
 
@@ -188,8 +188,8 @@ int FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian1"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian1"
 /*
    FormJacobian1 - Evaluates Jacobian matrix.
 
@@ -239,8 +239,8 @@ int FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy
 
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction2"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction2"
 int FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 {
   int    ierr;
@@ -271,8 +271,8 @@ int FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian2"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian2"
 int FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   Scalar *xx,A[4];

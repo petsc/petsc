@@ -1,4 +1,4 @@
-/*$Id: ex25.c,v 1.12 2001/01/22 23:03:19 bsmith Exp balay $*/
+/*$Id: ex25.c,v 1.13 2001/01/23 20:54:05 balay Exp balay $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
 this case processor zero is as long as the entire parallel vector; rest are zero length.\n\n";
@@ -6,8 +6,8 @@ this case processor zero is as long as the entire parallel vector; rest are zero
 #include "petscvec.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int           n = 5,ierr;

@@ -1,12 +1,12 @@
-/*$Id: seq.c,v 1.12 2000/04/12 04:24:26 bsmith Exp bsmith $*/
+/*$Id: seq.c,v 1.13 2001/01/15 21:46:39 bsmith Exp balay $*/
 
 /* seq.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
 #include "petsc.h"
 #include "src/mat/color/color.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MINPACKseq" 
+#undef __FUNCT__  
+#define __FUNCT__ "MINPACKseq" 
 int MINPACKseq(int *n,int *indrow,int *jpntr,int *indcol,int *ipntr,int *list,int *ngrp,
                int *maxgrp,int *iwa)
 {

@@ -1,4 +1,4 @@
-/*$Id: shellpc.c,v 1.72 2000/11/02 22:00:39 bsmith Exp bsmith $*/
+/*$Id: shellpc.c,v 1.73 2001/01/15 21:46:50 bsmith Exp balay $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -17,8 +17,8 @@ typedef struct {
   char *name;
 } PC_Shell;
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_SetUp"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_SetUp"
 static int PCSetUp_Shell(PC pc)
 {
   PC_Shell *shell;
@@ -32,8 +32,8 @@ static int PCSetUp_Shell(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_Shell"
 static int PCApply_Shell(PC pc,Vec x,Vec y)
 {
   PC_Shell *shell;
@@ -46,8 +46,8 @@ static int PCApply_Shell(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyTranspose_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_Shell"
 static int PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 {
   PC_Shell *shell;
@@ -60,8 +60,8 @@ static int PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyRichardson_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyRichardson_Shell"
 static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 {
   int      ierr;
@@ -73,8 +73,8 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Shell"
 static int PCDestroy_Shell(PC pc)
 {
   PC_Shell *shell = (PC_Shell*)pc->data;
@@ -85,8 +85,8 @@ static int PCDestroy_Shell(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_Shell"
 static int PCView_Shell(PC pc,PetscViewer viewer)
 {
   PC_Shell   *jac = (PC_Shell*)pc->data;
@@ -106,8 +106,8 @@ static int PCView_Shell(PC pc,PetscViewer viewer)
 
 /* ------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetSetUp_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetSetUp_Shell"
 int PCShellSetSetUp_Shell(PC pc, int (*setup)(void*))
 {
   PC_Shell *shell;
@@ -120,8 +120,8 @@ int PCShellSetSetUp_Shell(PC pc, int (*setup)(void*))
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetApply_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApply_Shell"
 int PCShellSetApply_Shell(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
 {
   PC_Shell *shell;
@@ -135,8 +135,8 @@ int PCShellSetApply_Shell(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetApplyTranspose_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApplyTranspose_Shell"
 int PCShellSetApplyTranspose_Shell(PC pc,int (*applytranspose)(void*,Vec,Vec))
 {
   PC_Shell *shell;
@@ -149,8 +149,8 @@ int PCShellSetApplyTranspose_Shell(PC pc,int (*applytranspose)(void*,Vec,Vec))
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetName_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetName_Shell"
 int PCShellSetName_Shell(PC pc,char *name)
 {
   PC_Shell *shell;
@@ -163,8 +163,8 @@ int PCShellSetName_Shell(PC pc,char *name)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCShellGetName_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellGetName_Shell"
 int PCShellGetName_Shell(PC pc,char **name)
 {
   PC_Shell *shell;
@@ -177,8 +177,8 @@ int PCShellGetName_Shell(PC pc,char **name)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetApplyRichardson_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApplyRichardson_Shell"
 int PCShellSetApplyRichardson_Shell(PC pc,int (*apply)(void*,Vec,Vec,Vec,int),void *ptr)
 {
   PC_Shell *shell;
@@ -194,8 +194,8 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetSetUp"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetSetUp"
 /*@C
    PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the 
    matrix operator is changed.
@@ -232,8 +232,8 @@ int PCShellSetSetUp(PC pc,int (*setup)(void*))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetApply"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApply"
 /*@C
    PCShellSetApply - Sets routine to use as preconditioner.
 
@@ -272,8 +272,8 @@ int PCShellSetApply(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetApplyTranspose"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApplyTranspose"
 /*@C
    PCShellSetApplyTranspose - Sets routine to use as preconditioner transpose.
 
@@ -314,8 +314,8 @@ int PCShellSetApplyTranspose(PC pc,int (*applytranspose)(void*,Vec,Vec))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetName"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetName"
 /*@C
    PCShellSetName - Sets an optional name to associate with a shell
    preconditioner.
@@ -345,8 +345,8 @@ int PCShellSetName(PC pc,char *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCShellGetName"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellGetName"
 /*@C
    PCShellGetName - Gets an optional name that the user has set for a shell
    preconditioner.
@@ -380,8 +380,8 @@ int PCShellGetName(PC pc,char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCShellSetApplyRichardson"
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApplyRichardson"
 /*@C
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
    in Richardson iteration.
@@ -440,8 +440,8 @@ $             PCShellSetSetUp(pc,setup);       (optional)
 
 */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_Shell"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_Shell"
 int PCCreate_Shell(PC pc)
 {
   int      ierr;

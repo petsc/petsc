@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.43 2001/03/09 19:59:55 balay Exp balay $*/
+/*$Id: pinit.c,v 1.44 2001/03/09 20:00:24 balay Exp balay $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -28,8 +28,8 @@ int __gierr = 0;
        Checks the options database for initializations related to the 
     PETSc components
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsCheckInitial_Components"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsCheckInitial_Components"
 int PetscOptionsCheckInitial_Components(void)
 {
   MPI_Comm   comm = PETSC_COMM_WORLD;
@@ -112,8 +112,8 @@ int PetscOptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscInitializeNoArguments"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscInitializeNoArguments"
 /*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
         the command line arguments.
@@ -144,8 +144,8 @@ extern PetscTruth PetscBeganMPI;
 MPI_Op PetscMaxSum_Op = 0;
 
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "PetscMaxSum_Local"
+#undef __FUNCT__
+#define __FUNCT__ "PetscMaxSum_Local"
 void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   int *xin = (int *)in,*xout = (int*)out,i,count = *cnt;
@@ -177,8 +177,8 @@ EXTERN_C_END
 MPI_Op PetscSum_Op = 0;
 
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "PetscSum_Local"
+#undef __FUNCT__
+#define __FUNCT__ "PetscSum_Local"
 void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
@@ -200,8 +200,8 @@ void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 EXTERN_C_END
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscInitialize"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscInitialize"
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize() calls MPI_Init() if that has yet to be called,
@@ -376,8 +376,8 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   PetscFunctionReturn(ierr);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFinalize"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFinalize"
 /*@C 
    PetscFinalize - Checks for options to be called at the conclusion
    of the program and calls MPI_Finalize().

@@ -1,4 +1,4 @@
-/*$Id: xinit.c,v 1.70 2001/01/15 21:43:29 bsmith Exp bsmith $*/
+/*$Id: xinit.c,v 1.71 2001/03/22 20:28:47 bsmith Exp balay $*/
 
 /* 
    This file contains routines to open an X window display and window
@@ -24,8 +24,8 @@ EXTERN int PetscDrawSetColormap_X(PetscDraw_X*,char *,Colormap);
 /*
   XiOpenDisplay - Open a display
 */
-#undef __FUNC__  
-#define __FUNC__ "XiOpenDisplay" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiOpenDisplay" 
 int XiOpenDisplay(PetscDraw_X* XiWin,char *display_name)
 {
   PetscFunctionBegin;
@@ -43,8 +43,8 @@ int XiOpenDisplay(PetscDraw_X* XiWin,char *display_name)
 /* 
    XiSetGC - set the GC structure in the base window
 */
-#undef __FUNC__  
-#define __FUNC__ "XiSetGC" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiSetGC" 
 int XiSetGC(PetscDraw_X* XiWin,PixVal fg)
 {
   XGCValues       gcvalues;       /* window graphics context values */
@@ -66,8 +66,8 @@ int XiSetGC(PetscDraw_X* XiWin,PixVal fg)
     If w and/or h are 0, use the sizes in the fields of XiWin
     (which may have been set by, for example, XiSetWindowSize)
 */
-#undef __FUNC__  
-#define __FUNC__ "XiDisplayWindow" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiDisplayWindow" 
 int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,
                      int w,int h,PixVal backgnd_pixel)
 {
@@ -173,8 +173,8 @@ int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "XiQuickWindow" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiQuickWindow" 
 int XiQuickWindow(PetscDraw_X* w,char* host,char* name,int x,int y,int nx,int ny)
 {
   int         ierr;
@@ -201,8 +201,8 @@ int XiQuickWindow(PetscDraw_X* w,char* host,char* name,int x,int y,int nx,int ny
 /* 
    A version from an already defined window 
 */
-#undef __FUNC__  
-#define __FUNC__ "XiQuickWindowFromWindow" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiQuickWindowFromWindow" 
 int XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
 {
   Window            root;
@@ -238,8 +238,8 @@ int XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
 /*
       XiSetWindowLabel - Sets new label in open window.
 */
-#undef __FUNC__  
-#define __FUNC__ "XiSetWindowLabel" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiSetWindowLabel" 
 int XiSetWindowLabel(PetscDraw_X* Xiwin,char *label)
 {
   XTextProperty prop;
@@ -254,8 +254,8 @@ int XiSetWindowLabel(PetscDraw_X* Xiwin,char *label)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "XiSetToBackground" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiSetToBackground" 
 int XiSetToBackground(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;

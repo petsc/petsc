@@ -1,4 +1,4 @@
-/*$Id: cmatlab.c,v 1.5 2000/09/28 21:16:17 bsmith Exp bsmith $*/
+/*$Id: cmatlab.c,v 1.6 2001/01/15 21:49:45 bsmith Exp balay $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -10,8 +10,8 @@ typedef struct {
   char              *string;
 } PF_Matlab;
   
-#undef __FUNC__  
-#define __FUNC__ "PFView_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "PFView_Matlab"
 int PFView_Matlab(void *value,PetscViewer viewer)
 {
   int        ierr;
@@ -26,8 +26,8 @@ int PFView_Matlab(void *value,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFDestroy_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "PFDestroy_Matlab"
 int PFDestroy_Matlab(void *value)
 {
   int        ierr;
@@ -40,8 +40,8 @@ int PFDestroy_Matlab(void *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFApply_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "PFApply_Matlab"
 int PFApply_Matlab(void *value,int n,Scalar *in,Scalar *out)
 {
   PF_Matlab  *matlab = (PF_Matlab*)value;
@@ -55,8 +55,8 @@ int PFApply_Matlab(void *value,int n,Scalar *in,Scalar *out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFSetFromOptions_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "PFSetFromOptions_Matlab"
 int PFSetFromOptions_Matlab(PF pf)
 {
   int        ierr;
@@ -76,8 +76,8 @@ int PFSetFromOptions_Matlab(PF pf)
 
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PFCreate_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "PFCreate_Matlab"
 int PFCreate_Matlab(PF pf,void *value)
 {
   int       ierr;

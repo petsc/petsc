@@ -1,10 +1,10 @@
-/*$Id: drawv.c,v 1.56 2001/01/19 23:19:33 balay Exp bsmith $*/
+/*$Id: drawv.c,v 1.57 2001/01/22 23:01:27 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDestroy_Draw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_Draw" 
 int PetscViewerDestroy_Draw(PetscViewer v)
 {
   int         ierr,i;
@@ -23,8 +23,8 @@ int PetscViewerDestroy_Draw(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerFlush_Draw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerFlush_Draw" 
 int PetscViewerFlush_Draw(PetscViewer v)
 {
   int         ierr,i;
@@ -37,8 +37,8 @@ int PetscViewerFlush_Draw(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDrawGetDraw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawGetDraw" 
 /*@C
     PetscViewerDrawGetDraw - Returns PetscDraw object from PetscViewer object.
     This PetscDraw object may then be used to perform graphics using 
@@ -91,8 +91,8 @@ int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDrawGetDrawLG" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawGetDrawLG" 
 /*@C
     PetscViewerDrawGetDrawLG - Returns PetscDrawLG object from PetscViewer object.
     This PetscDrawLG object may then be used to perform graphics using 
@@ -142,8 +142,8 @@ int PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *dr
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDrawGetDrawAxis" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawGetDrawAxis" 
 /*@C
     PetscViewerDrawGetDrawAxis - Returns PetscDrawAxis object from PetscViewer object.
     This PetscDrawAxis object may then be used to perform graphics using 
@@ -193,8 +193,8 @@ int PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDrawSetInfo" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawSetInfo" 
 int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
   int         ierr;
@@ -210,8 +210,8 @@ int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDrawOpen" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawOpen" 
 /*@C
    PetscViewerDrawOpen - Opens an X window for use as a PetscViewer. If you want to 
    do graphics in this window, you must call PetscViewerDrawGetDraw() and
@@ -270,8 +270,8 @@ int PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],in
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerGetSingleton_Draw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerGetSingleton_Draw" 
 int PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 {
   int         ierr,rank,i;
@@ -298,8 +298,8 @@ int PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerRestoreSingleton_Draw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerRestoreSingleton_Draw" 
 int PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 {
   int         ierr,rank,i;
@@ -326,8 +326,8 @@ int PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerCreate_Draw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate_Draw" 
 int PetscViewerCreate_Draw(PetscViewer viewer)
 {
   int              i,ierr;
@@ -354,8 +354,8 @@ int PetscViewerCreate_Draw(PetscViewer viewer)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDrawClear" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawClear" 
 /*@
     PetscViewerDrawClear - Clears a PetscDraw graphic associated with a PetscViewer.
 
@@ -393,8 +393,8 @@ int PetscViewerDrawClear(PetscViewer viewer)
 */
 static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNC__  
-#define __FUNC__ "VIEWER_DRAW_" 
+#undef __FUNCT__  
+#define __FUNCT__ "VIEWER_DRAW_" 
 /*@C
      PetscViewer_DRAW_ - Creates a window PetscViewer shared by all processors 
                      in a communicator.

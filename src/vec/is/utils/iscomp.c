@@ -1,10 +1,10 @@
-/*$Id: iscomp.c,v 1.33 2000/10/24 20:24:56 bsmith Exp bsmith $*/
+/*$Id: iscomp.c,v 1.34 2001/01/15 21:44:35 bsmith Exp balay $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "ISEqual"
+#undef __FUNCT__  
+#define __FUNCT__ "ISEqual"
 /*@C
    ISEqual  - Compares if two index sets have the same set of indices.
 

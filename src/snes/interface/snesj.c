@@ -1,9 +1,9 @@
-/*$Id: snesj.c,v 1.69 2001/01/15 21:47:49 bsmith Exp bsmith $*/
+/*$Id: snesj.c,v 1.70 2001/03/09 20:56:59 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultComputeJacobian"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultComputeJacobian"
 /*@C
    SNESDefaultComputeJacobian - Computes the Jacobian using finite differences. 
 
@@ -110,8 +110,8 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultComputeHessian"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultComputeHessian"
 /*@C
    SNESDefaultComputeHessian - Computes the Hessian using finite differences. 
 
@@ -152,8 +152,8 @@ int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultComputeHessianColor"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultComputeHessianColor"
 /*@C
    SNESDefaultComputeHessianColor - Computes the Hessian using colored finite differences. 
 

@@ -1,12 +1,12 @@
-/*$Id: ex6.c,v 1.28 2001/01/17 22:21:32 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.29 2001/01/23 20:54:12 balay Exp balay $*/
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
 
 #include "petscvec.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int     i,ierr,m = 10,fd,size,sz;

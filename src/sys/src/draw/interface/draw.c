@@ -1,11 +1,11 @@
-/*$Id: draw.c,v 1.71 2000/09/28 21:08:23 bsmith Exp bsmith $*/
+/*$Id: draw.c,v 1.72 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawResizeWindow" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawResizeWindow" 
 /*@
    PetscDrawResizeWindow - Allows one to resize a window from a program.
 
@@ -29,8 +29,8 @@ int PetscDrawResizeWindow(PetscDraw draw,int w,int h)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawCheckResizedWindow" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawCheckResizedWindow" 
 /*@
    PetscDrawCheckResizedWindow - Checks if the user has resized the window.
 
@@ -54,8 +54,8 @@ int PetscDrawCheckResizedWindow(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawGetTitle" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetTitle" 
 /*@C
    PetscDrawGetTitle - Gets pointer to title of a PetscDraw context.
 
@@ -79,8 +79,8 @@ int PetscDrawGetTitle(PetscDraw draw,char **title)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSetTitle" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetTitle" 
 /*@C
    PetscDrawSetTitle - Sets the title of a PetscDraw context.
 
@@ -111,8 +111,8 @@ int PetscDrawSetTitle(PetscDraw draw,char *title)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawAppendTitle" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawAppendTitle" 
 /*@C
    PetscDrawAppendTitle - Appends to the title of a PetscDraw context.
 
@@ -157,8 +157,8 @@ int PetscDrawAppendTitle(PetscDraw draw,char *title)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawDestroy" 
 /*@C
    PetscDrawDestroy - Deletes a draw context.
 
@@ -192,8 +192,8 @@ int PetscDrawDestroy(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawGetPopup" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetPopup" 
 /*@C
    PetscDrawGetPopup - Creates a popup window associated with a PetscDraw window.
 
@@ -225,16 +225,16 @@ int PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawDestroy_Null" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawDestroy_Null" 
 int PetscDrawDestroy_Null(PetscDraw draw)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawOpenNull" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawOpenNull" 
 /*
   PetscDrawOpenNull - Opens a null drawing context. All draw commands to 
   it are ignored.
@@ -256,8 +256,8 @@ int PetscDrawOpenNull(MPI_Comm comm,PetscDraw *win)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawCreate_Null" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawCreate_Null" 
 /*
   PetscDrawCreate_Null - Opens a null drawing context. All draw commands to 
   it are ignored.
@@ -284,8 +284,8 @@ int PetscDrawCreate_Null(PetscDraw draw)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawGetSingleton" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetSingleton" 
 /*@C
    PetscDrawGetSingleton - Gain access to a PetscDraw object as if it were owned 
         by the one process.
@@ -325,8 +325,8 @@ int PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawRestoreSingleton" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawRestoreSingleton" 
 /*@C
    PetscDrawRestoreSingleton - Remove access to a PetscDraw object as if it were owned 
         by the one process.

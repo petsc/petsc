@@ -1,12 +1,12 @@
-/*$Id: tsreg.c,v 1.65 2000/09/28 21:14:45 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.66 2001/01/15 21:48:25 bsmith Exp balay $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
 PetscFList      TSList              = 0;
 PetscTruth TSRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetType"
 /*@C
    TSSetType - Sets the method for the timestepping solver.  
 
@@ -73,8 +73,8 @@ int TSSetType(TS ts,TSType type)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "TSRegisterDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of timesteppers that were
    registered by PetscFListAddDynamic().
@@ -100,8 +100,8 @@ int TSRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSGetType"
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetType"
 /*@C
    TSGetType - Gets the TS method type (as a string).
 
@@ -127,8 +127,8 @@ int TSGetType(TS ts,TSType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetFromOptions"
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
 

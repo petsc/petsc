@@ -1,9 +1,9 @@
-/*$Id: viewa.c,v 1.20 2001/01/20 03:33:45 bsmith Exp bsmith $*/
+/*$Id: viewa.c,v 1.21 2001/01/22 23:01:31 bsmith Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSetFormat" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSetFormat" 
 /*@C
    PetscViewerSetFormat - Sets the format for PetscViewers.
 
@@ -53,8 +53,8 @@ int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerPushFormat" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerPushFormat" 
 /*@C
    PetscViewerPushFormat - Sets the format for file PetscViewers.
 
@@ -108,8 +108,8 @@ int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerPopFormat" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerPopFormat" 
 /*@C
    PetscViewerPopFormat - Resets the format for file PetscViewers.
 
@@ -135,8 +135,8 @@ int PetscViewerPopFormat(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerGetFormat" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerGetFormat" 
 int PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {
   PetscFunctionBegin;

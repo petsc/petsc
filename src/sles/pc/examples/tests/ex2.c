@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.49 2001/01/17 22:24:44 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.50 2001/01/23 20:56:10 balay Exp balay $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";
@@ -8,8 +8,8 @@ users should employ the SLES interface instead of using PC directly.\n\n";
 #include "petsc.h"
 #include <stdio.h>
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat     mat;          /* matrix */

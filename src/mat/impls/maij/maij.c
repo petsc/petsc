@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.13 2001/01/15 21:46:01 bsmith Exp balay $*/
+/*$Id: maij.c,v 1.14 2001/01/16 18:18:00 balay Exp balay $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -31,8 +31,8 @@ typedef struct {
   Vec        w;           /* work space for ghost values for parallel case */
 } Mat_MPIMAIJ;
 
-#undef __FUNC__  
-#define __FUNC__ "MatMAIJGetAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMAIJGetAIJ" 
 int MatMAIJGetAIJ(Mat A,Mat *B)
 {
   int         ierr;
@@ -55,8 +55,8 @@ int MatMAIJGetAIJ(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMAIJRedimension" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMAIJRedimension" 
 int MatMAIJRedimension(Mat A,int dof,Mat *B)
 {
   int ierr;
@@ -68,8 +68,8 @@ int MatMAIJRedimension(Mat A,int dof,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_SeqMAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_SeqMAIJ" 
 int MatDestroy_SeqMAIJ(Mat A)
 {
   int         ierr;
@@ -83,8 +83,8 @@ int MatDestroy_SeqMAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIMAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPIMAIJ" 
 int MatDestroy_MPIMAIJ(Mat A)
 {
   int         ierr;
@@ -111,8 +111,8 @@ int MatDestroy_MPIMAIJ(Mat A)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatCreate_MAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_MAIJ" 
 int MatCreate_MAIJ(Mat A)
 {
   int         ierr;
@@ -136,8 +136,8 @@ int MatCreate_MAIJ(Mat A)
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMult_SeqMAIJ_2"></a>*/"MatMult_SeqMAIJ_2"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMult_SeqMAIJ_2"></a>*/"MatMult_SeqMAIJ_2"
 int MatMult_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -176,8 +176,8 @@ int MatMult_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTranspose_SeqMAIJ_2"></a>*/"MatMultTranspose_SeqMAIJ_2"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTranspose_SeqMAIJ_2"></a>*/"MatMultTranspose_SeqMAIJ_2"
 int MatMultTranspose_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -204,8 +204,8 @@ int MatMultTranspose_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultAdd_SeqMAIJ_2"></a>*/"MatMultAdd_SeqMAIJ_2"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultAdd_SeqMAIJ_2"></a>*/"MatMultAdd_SeqMAIJ_2"
 int MatMultAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -244,8 +244,8 @@ int MatMultAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTransposeAdd_SeqMAIJ_2"></a>*/"MatMultTransposeAdd_SeqMAIJ_2"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTransposeAdd_SeqMAIJ_2"></a>*/"MatMultTransposeAdd_SeqMAIJ_2"
 int MatMultTransposeAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -272,8 +272,8 @@ int MatMultTransposeAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMult_SeqMAIJ_3"></a>*/"MatMult_SeqMAIJ_3"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMult_SeqMAIJ_3"></a>*/"MatMult_SeqMAIJ_3"
 int MatMult_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -315,8 +315,8 @@ int MatMult_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTranspose_SeqMAIJ_3"></a>*/"MatMultTranspose_SeqMAIJ_3"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTranspose_SeqMAIJ_3"></a>*/"MatMultTranspose_SeqMAIJ_3"
 int MatMultTranspose_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -349,8 +349,8 @@ int MatMultTranspose_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultAdd_SeqMAIJ_3"></a>*/"MatMultAdd_SeqMAIJ_3"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultAdd_SeqMAIJ_3"></a>*/"MatMultAdd_SeqMAIJ_3"
 int MatMultAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -392,8 +392,8 @@ int MatMultAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTransposeAdd_SeqMAIJ_3"></a>*/"MatMultTransposeAdd_SeqMAIJ_3"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTransposeAdd_SeqMAIJ_3"></a>*/"MatMultTransposeAdd_SeqMAIJ_3"
 int MatMultTransposeAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -427,8 +427,8 @@ int MatMultTransposeAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 /* ------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMult_SeqMAIJ_4"></a>*/"MatMult_SeqMAIJ_4"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMult_SeqMAIJ_4"></a>*/"MatMult_SeqMAIJ_4"
 int MatMult_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -473,8 +473,8 @@ int MatMult_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTranspose_SeqMAIJ_4"></a>*/"MatMultTranspose_SeqMAIJ_4"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTranspose_SeqMAIJ_4"></a>*/"MatMultTranspose_SeqMAIJ_4"
 int MatMultTranspose_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -509,8 +509,8 @@ int MatMultTranspose_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultAdd_SeqMAIJ_4"></a>*/"MatMultAdd_SeqMAIJ_4"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultAdd_SeqMAIJ_4"></a>*/"MatMultAdd_SeqMAIJ_4"
 int MatMultAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -555,8 +555,8 @@ int MatMultAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTransposeAdd_SeqMAIJ_4"></a>*/"MatMultTransposeAdd_SeqMAIJ_4"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTransposeAdd_SeqMAIJ_4"></a>*/"MatMultTransposeAdd_SeqMAIJ_4"
 int MatMultTransposeAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -592,8 +592,8 @@ int MatMultTransposeAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 }
 /* ------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMult_SeqMAIJ_5"></a>*/"MatMult_SeqMAIJ_5"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMult_SeqMAIJ_5"></a>*/"MatMult_SeqMAIJ_5"
 int MatMult_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -641,8 +641,8 @@ int MatMult_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTranspose_SeqMAIJ_5"></a>*/"MatMultTranspose_SeqMAIJ_5"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTranspose_SeqMAIJ_5"></a>*/"MatMultTranspose_SeqMAIJ_5"
 int MatMultTranspose_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -679,8 +679,8 @@ int MatMultTranspose_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultAdd_SeqMAIJ_5"></a>*/"MatMultAdd_SeqMAIJ_5"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultAdd_SeqMAIJ_5"></a>*/"MatMultAdd_SeqMAIJ_5"
 int MatMultAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -729,8 +729,8 @@ int MatMultAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTransposeAdd_SeqMAIJ_5"></a>*/"MatMultTransposeAdd_SeqMAIJ_5"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTransposeAdd_SeqMAIJ_5"></a>*/"MatMultTransposeAdd_SeqMAIJ_5"
 int MatMultTransposeAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -768,8 +768,8 @@ int MatMultTransposeAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 /* ------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMult_SeqMAIJ_6"></a>*/"MatMult_SeqMAIJ_6"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMult_SeqMAIJ_6"></a>*/"MatMult_SeqMAIJ_6"
 int MatMult_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -820,8 +820,8 @@ int MatMult_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTranspose_SeqMAIJ_6"></a>*/"MatMultTranspose_SeqMAIJ_6"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTranspose_SeqMAIJ_6"></a>*/"MatMultTranspose_SeqMAIJ_6"
 int MatMultTranspose_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -860,8 +860,8 @@ int MatMultTranspose_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultAdd_SeqMAIJ_6"></a>*/"MatMultAdd_SeqMAIJ_6"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultAdd_SeqMAIJ_6"></a>*/"MatMultAdd_SeqMAIJ_6"
 int MatMultAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -913,8 +913,8 @@ int MatMultAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatMultTransposeAdd_SeqMAIJ_6"></a>*/"MatMultTransposeAdd_SeqMAIJ_6"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatMultTransposeAdd_SeqMAIJ_6"></a>*/"MatMultTransposeAdd_SeqMAIJ_6"
 int MatMultTransposeAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
@@ -954,8 +954,8 @@ int MatMultTransposeAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 /*===================================================================================*/
-#undef __FUNC__  
-#define __FUNC__ "MatMult_MPIMAIJ_dof"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_MPIMAIJ_dof"
 int MatMult_MPIMAIJ_dof(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
@@ -970,8 +970,8 @@ int MatMult_MPIMAIJ_dof(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultTranspose_MPIMAIJ_dof"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTranspose_MPIMAIJ_dof"
 int MatMultTranspose_MPIMAIJ_dof(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
@@ -984,8 +984,8 @@ int MatMultTranspose_MPIMAIJ_dof(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_MPIMAIJ_dof"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_MPIMAIJ_dof"
 int MatMultAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
@@ -1000,8 +1000,8 @@ int MatMultAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultTransposeAdd_MPIMAIJ_dof"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransposeAdd_MPIMAIJ_dof"
 int MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIMAIJ *b = (Mat_MPIMAIJ*)A->data;
@@ -1015,8 +1015,8 @@ int MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 /* ---------------------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatCreateMAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMAIJ" 
 int MatCreateMAIJ(Mat A,int dof,Mat *maij)
 {
   int         ierr,size,n;

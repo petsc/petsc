@@ -1,4 +1,4 @@
-/*$Id: appelement.c,v 1.2 2000/02/02 21:21:08 bsmith Exp $*/
+/*$Id: appelement.c,v 1.1 2000/08/17 15:47:44 bsmith Exp balay $*/
 #include "appctx.h"
 
 /*
@@ -12,8 +12,8 @@
 */
 
 
-#undef __FUNC__
-#define __FUNC__ "InterpolatingFunctionsElement"
+#undef __FUNCT__
+#define __FUNCT__ "InterpolatingFunctionsElement"
 static int InterpolatingFunctionsElement(int partial,int node,double xi,double eta, double *value)
 {
   /* 4 node bilinear interpolation functions */
@@ -44,8 +44,8 @@ static int InterpolatingFunctionsElement(int partial,int node,double xi,double e
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "SetReferenceElement"
+#undef __FUNCT__
+#define __FUNCT__ "SetReferenceElement"
 /* 
    Computes the numerical integration (Gauss) points and evaluates the basis funtions at
    these points. This is done ONCE for the element, the information is stored in the AppElement
@@ -91,8 +91,8 @@ int SetReferenceElement(AppCtx* appctx)
     B - Computes derivative information for each real element (this is called once per
     element. This data is used in C) and D) to compute the element load and stiffness.
 */
-#undef __FUNC__
-#define __FUNC__ "SetLocalElement"
+#undef __FUNCT__
+#define __FUNCT__ "SetLocalElement"
 int SetLocalElement(AppElement *phi)
 {
   /* the coordinates array consists of pairs (x[0],y[0],...,x[3],y[3]) representing 
@@ -157,8 +157,8 @@ int SetLocalElement(AppElement *phi)
 /*------------------------------------------------
         C - Computes an element load
 */
-#undef __FUNC__
-#define __FUNC__ "ComputeRHS"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeRHS"
 int ComputeRHSElement(AppElement *phi)
 {
   int    i,j,ierr; 
@@ -193,8 +193,8 @@ int ComputeRHSElement(AppElement *phi)
       this is evaluated by quadrature:
       = sum over Gauss points, above evaluated at Gauss pts
 */
-#undef __FUNC__
-#define __FUNC__ "ComputeStiffness"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeStiffness"
 int ComputeStiffnessElement(AppElement *phi)
 {
   int i,j,k;

@@ -1,11 +1,11 @@
-/*$Id: ex3.c,v 1.15 1999/10/24 14:01:38 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.16 2001/01/17 22:20:33 bsmith Exp balay $*/
 
 static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #include "petsc.h"
 
-#undef __FUNC__
-#define __FUNC__ "CreateError"
+#undef __FUNCT__
+#define __FUNCT__ "CreateError"
 int CreateError(double x)
 {
   int ierr;
@@ -15,8 +15,8 @@ int CreateError(double x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int ierr;

@@ -1,9 +1,9 @@
-/*$Id: zoom.c,v 1.18 2001/01/15 21:43:37 bsmith Exp balay $*/
+/*$Id: zoom.c,v 1.19 2001/01/17 19:44:18 balay Exp balay $*/
 
 #include "petscdraw.h"     /*I "petscdraw.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawZoom" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawZoom" 
 /*@C
     PetscDrawZoom - Allows one to create a graphic that users may zoom into.
 

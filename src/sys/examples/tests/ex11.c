@@ -1,11 +1,11 @@
-/*$Id: ex11.c,v 1.6 2001/01/17 22:20:33 bsmith Exp balay $*/
+/*$Id: ex11.c,v 1.7 2001/01/23 20:53:32 balay Exp balay $*/
 
 static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrintf().\n\n";
 
 #include "petsc.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int rank,ierr;

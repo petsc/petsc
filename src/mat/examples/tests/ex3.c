@@ -1,11 +1,11 @@
-/*$Id: ex3.c,v 1.14 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.15 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
 
 #include "petscmat.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat         C; 

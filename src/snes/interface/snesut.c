@@ -1,9 +1,9 @@
-/*$Id: snesut.c,v 1.61 2001/01/15 21:47:49 bsmith Exp balay $*/
+/*$Id: snesut.c,v 1.62 2001/01/17 19:46:06 balay Exp balay $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "SNESVecViewMonitor"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESVecViewMonitor"
 /*@C
    SNESVecViewMonitor - Monitors progress of the SNES solvers by calling 
    VecView() for the approximate solution at each iteration.
@@ -40,8 +40,8 @@ int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESVecViewUpdateMonitor"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESVecViewUpdateMonitor"
 /*@C
    SNESVecViewUpdateMonitor - Monitors progress of the SNES solvers by calling 
    VecView() for the UPDATE to the solution at each iteration.
@@ -78,8 +78,8 @@ int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultMonitor"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultMonitor"
 /*@C
    SNESDefaultMonitor - Monitoring progress of the SNES solvers (default).
 
@@ -121,8 +121,8 @@ int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 }
 
 /* ---------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultSMonitor"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultSMonitor"
 /*
      Default (short) SNES Monitor, same as SNESDefaultMonitor() except
   it prints fewer digits of the residual as the residual gets smaller.
@@ -155,8 +155,8 @@ int SNESDefaultSMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESConverged_EQ_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESConverged_EQ_LS"
 /*@C 
    SNESConverged_EQ_LS - Monitors the convergence of the solvers for
    systems of nonlinear equations (default).
@@ -221,8 +221,8 @@ int SNESConverged_EQ_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnor
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
-#undef __FUNC__  
-#define __FUNC__ "SNES_KSP_SetConvergenceTestEW"
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_SetConvergenceTestEW"
 /*@
    SNES_KSP_SetConvergenceTestEW - Sets alternative convergence test
    for the linear solvers within an inexact Newton method.  
@@ -254,8 +254,8 @@ int SNES_KSP_SetConvergenceTestEW(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNES_KSP_SetParametersEW"
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_SetParametersEW"
 /*@
    SNES_KSP_SetParametersEW - Sets parameters for Eisenstat-Walker
    convergence criteria for the linear solvers within an inexact
@@ -324,8 +324,8 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,PetscReal rtol_0,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNES_KSP_EW_ComputeRelativeTolerance_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_EW_ComputeRelativeTolerance_Private"
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
@@ -356,8 +356,8 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNES_KSP_EW_Converged_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_EW_Converged_Private"
 int SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES)ctx;

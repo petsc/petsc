@@ -1,4 +1,4 @@
-/*$Id: drawregall.c,v 1.19 2001/01/17 19:44:01 balay Exp balay $*/
+/*$Id: drawregall.c,v 1.20 2001/03/06 20:04:10 balay Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -11,8 +11,8 @@ EXTERN int PetscDrawCreate_Null(PetscDraw);
 EXTERN int PetscDrawCreate_Win32(PetscDraw);
 EXTERN_C_END
   
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawRegisterAll" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawRegisterAll" 
 /*@C
   PetscDrawRegisterAll - Registers all of the graphics methods in the PetscDraw package.
 

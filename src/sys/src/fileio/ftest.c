@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.36 2001/03/16 19:45:00 balay Exp balay $*/
+/*$Id: ftest.c,v 1.37 2001/03/16 19:47:26 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -41,8 +41,8 @@
 #define X_OK 01
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTestFile"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTestFile"
 /*+
   PetscTestFile - Test for a file existing with a specified mode.
 
@@ -75,8 +75,8 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 #else 
-#undef __FUNC__  
-#define __FUNC__ "PetscTestFile"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTestFile"
 int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
 {
   struct stat statbuf;

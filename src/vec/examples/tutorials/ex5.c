@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.45 2001/01/17 22:21:32 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.46 2001/01/23 20:54:12 balay Exp balay $*/
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
 user-defined event logging.\n\n";
@@ -9,8 +9,8 @@ user-defined event logging.\n\n";
   the same program.  This example is intended only to demonstrate
   both input and output. */
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int     i,m = 10,rank,size,low,high,ldim,iglobal,ierr;

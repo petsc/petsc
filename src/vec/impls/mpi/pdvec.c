@@ -1,11 +1,11 @@
-/* $Id: pdvec.c,v 1.145 2001/01/19 23:20:14 balay Exp bsmith $*/
+/* $Id: pdvec.c,v 1.146 2001/01/20 03:34:28 bsmith Exp balay $*/
 /*
      Code for some of the parallel vector primatives.
 */
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "VecGetOwnershipRange_MPI"
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetOwnershipRange_MPI"
 int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
   PetscFunctionBegin;
@@ -14,8 +14,8 @@ int VecGetOwnershipRange_MPI(Vec v,int *low,int* high)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecDestroy_MPI"
+#undef __FUNCT__  
+#define __FUNCT__ "VecDestroy_MPI"
 int VecDestroy_MPI(Vec v)
 {
   Vec_MPI *x = (Vec_MPI*)v->data;
@@ -44,8 +44,8 @@ int VecDestroy_MPI(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_ASCII"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_ASCII"
 int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
   Vec_MPI           *x = (Vec_MPI*)xin->data;
@@ -178,8 +178,8 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Binary"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Binary"
 int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
   Vec_MPI     *x = (Vec_MPI*)xin->data;
@@ -220,8 +220,8 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw_LG"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Draw_LG"
 int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
   Vec_MPI     *x = (Vec_MPI*)xin->data;
@@ -286,8 +286,8 @@ int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Draw"
 int VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 {
   Vec_MPI     *x = (Vec_MPI*)xin->data;
@@ -361,8 +361,8 @@ int VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Socket"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Socket"
 int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 {
   Vec_MPI     *x = (Vec_MPI*)xin->data;
@@ -388,8 +388,8 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI"
 int VecView_MPI(Vec xin,PetscViewer viewer)
 {
   int        ierr;
@@ -421,8 +421,8 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecGetSize_MPI"
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetSize_MPI"
 int VecGetSize_MPI(Vec xin,int *N)
 {
   PetscFunctionBegin;
@@ -430,8 +430,8 @@ int VecGetSize_MPI(Vec xin,int *N)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecSetValues_MPI"
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetValues_MPI"
 int VecSetValues_MPI(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
@@ -477,8 +477,8 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode a
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecSetValuesBlocked_MPI"
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetValuesBlocked_MPI"
 int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const Scalar yin[],InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
@@ -535,8 +535,8 @@ int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const Scalar yin[],Ins
    Since nsends or nreceives may be zero we add 1 in certain mallocs
 to make sure we never malloc an empty one.      
 */
-#undef __FUNC__  
-#define __FUNC__ "VecAssemblyBegin_MPI"
+#undef __FUNCT__  
+#define __FUNCT__ "VecAssemblyBegin_MPI"
 int VecAssemblyBegin_MPI(Vec xin)
 {
   Vec_MPI    *x = (Vec_MPI *)xin->data;
@@ -574,8 +574,8 @@ int VecAssemblyBegin_MPI(Vec xin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecAssemblyEnd_MPI"
+#undef __FUNCT__  
+#define __FUNCT__ "VecAssemblyEnd_MPI"
 int VecAssemblyEnd_MPI(Vec vec)
 {
   Vec_MPI     *x = (Vec_MPI *)vec->data;

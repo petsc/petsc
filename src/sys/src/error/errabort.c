@@ -1,4 +1,4 @@
-/*$Id: errabort.c,v 1.10 2000/10/24 20:24:29 bsmith Exp bsmith $*/
+/*$Id: errabort.c,v 1.11 2001/01/15 21:43:39 bsmith Exp balay $*/
 /*
        The default error handlers and code that allows one to change
    error handlers.
@@ -9,8 +9,8 @@
 #endif
 #include "petscfix.h"
 
-#undef __FUNC__  
-#define __FUNC__ "PetscAbortErrorHandler" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscAbortErrorHandler" 
 /*@C
    PetscAbortErrorHandler - Error handler that calls abort on error. 
    This routine is very useful when running in the debugger, because the 
@@ -20,7 +20,7 @@
 
    Input Parameters:
 +  line - the line number of the error (indicated by __LINE__)
-.  func - function where error occured (indicated by __FUNC__)
+.  func - function where error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  mess - an error text string, usually just printed to the screen

@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.54 2001/01/17 22:26:15 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.55 2001/01/23 20:57:06 balay Exp balay $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -19,8 +19,8 @@ typedef struct {
   PetscTruth variant;
 } AppCtx;
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES         snes;                 /* SNES context */
@@ -120,8 +120,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 }
 /* --------------------  Form initial approximation ----------------- */
 
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(SNES snes,Vec x)
 {
   int    ierr;
@@ -129,8 +129,8 @@ int FormInitialGuess(SNES snes,Vec x)
   ierr = VecSet(&pfive,x);CHKERRQ(ierr);
   return 0;
 }
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*  Evaluates a matrix that is used to precondition the matrix-free
     jacobian. In this case, the explict preconditioner matrix is 
@@ -178,8 +178,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 }
 /* --------------------  User-defined monitor ----------------------- */
 
-#undef __FUNC__
-#define __FUNC__ "Monitor"
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
   int        ierr;

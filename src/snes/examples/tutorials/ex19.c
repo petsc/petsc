@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.16 2001/03/19 21:01:55 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.17 2001/03/22 20:32:01 bsmith Exp balay $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -83,8 +83,8 @@ typedef struct {
    PetscTruth draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   DMMG     *dmmg;               /* multilevel grid structure */
@@ -181,8 +181,8 @@ typedef struct {
   Scalar u,v,omega,temp;
 } Field;
 
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 /* 
    FormInitialGuess - Forms initial approximation.
 
@@ -243,8 +243,8 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   return 0;
 } 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 /* 
    FormFunction - Evaluates the nonlinear function, F(x).
 

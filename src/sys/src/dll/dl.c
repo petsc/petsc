@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.67 2001/03/23 21:56:09 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.68 2001/03/23 21:56:20 bsmith Exp balay $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -58,8 +58,8 @@ EXTERN_C_BEGIN
 extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryPrintPath"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryPrintPath"
 int PetscDLLibraryPrintPath(void)
 {
   PetscDLLibraryList libs;
@@ -74,8 +74,8 @@ int PetscDLLibraryPrintPath(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryGetInfo"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryGetInfo"
 /*@C
    PetscDLLibraryGetInfo - Gets the text information from a PETSc
        dynamic library
@@ -102,8 +102,8 @@ int PetscDLLibraryGetInfo(void *handle,char *type,char **mess)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryRetrieve"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryRetrieve"
 /*@C
    PetscDLLibraryRetrieve - Copies a PETSc dynamic library from a remote location
      (if it is remote), indicates if it exits and its local name.
@@ -189,8 +189,8 @@ int PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int ll
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""PetscDLLibraryOpen></a>*/"PetscDLLibraryOpen"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name=""PetscDLLibraryOpen></a>*/"PetscDLLibraryOpen"
 /*@C
    PetscDLLibraryOpen - Opens a dynamic link library
 
@@ -281,8 +281,8 @@ int PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibrarySym"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibrarySym"
 /*@C
    PetscDLLibrarySym - Load a symbol from the dynamic link libraries.
 
@@ -395,8 +395,8 @@ int PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const char path[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryAppend"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryAppend"
 /*@C
      PetscDLLibraryAppend - Appends another dynamic link library to the seach list, to the end
                 of the search path.
@@ -451,8 +451,8 @@ int PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char li
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryPrepend"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryPrepend"
 /*@C
      PetscDLLibraryPrepend - Add another dynamic library to search for symbols to the beginning of
                  the search path.
@@ -510,8 +510,8 @@ int PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibraryList *outlist,const char l
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDLLibraryClose"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDLLibraryClose"
 /*@C
      PetscDLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
 

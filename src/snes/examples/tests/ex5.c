@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.24 2001/01/17 22:26:15 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.25 2001/01/23 20:57:06 balay Exp balay $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -71,8 +71,8 @@ typedef struct {
 extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES       snes;                /* nonlinear solver */
@@ -223,8 +223,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 /* 
    FormInitialGuess - Forms initial approximation.
 
@@ -293,8 +293,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
   return 0;
 } 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -374,8 +374,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0; 
 } 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 

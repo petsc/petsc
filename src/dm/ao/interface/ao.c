@@ -1,11 +1,11 @@
-/*$Id: ao.c,v 1.37 2000/09/28 21:15:09 bsmith Exp bsmith $*/
+/*$Id: ao.c,v 1.38 2001/01/15 21:48:41 bsmith Exp balay $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "AOView" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOView" 
 /*@C
    AOView - Displays an application ordering.
 
@@ -44,8 +44,8 @@ int AOView(AO ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "AODestroy" 
 /*@
    AODestroy - Destroys an application ordering set.
 
@@ -78,8 +78,8 @@ int AODestroy(AO ao)
 
 
 /* ---------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "AOPetscToApplicationIS" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOPetscToApplicationIS" 
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
    the application-defined ordering.
@@ -126,8 +126,8 @@ int AOPetscToApplicationIS(AO ao,IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetscIS" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOApplicationToPetscIS" 
 /*@
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
@@ -173,8 +173,8 @@ int AOApplicationToPetscIS(AO ao,IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOPetscToApplication" 
 /*@
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
    the application-defined ordering.
@@ -208,8 +208,8 @@ int AOPetscToApplication(AO ao,int n,int *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOApplicationToPetsc" 
 /*@
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.

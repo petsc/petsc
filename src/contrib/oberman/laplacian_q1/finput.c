@@ -12,8 +12,8 @@ double x_min,x_max,y_min,y_max;
 int    n_x, n_y; 
 static int InputGrid(AOData *aodata);
 
-#undef  __FUNC__
-#define __FUNC__ "main"
+#undef  __FUNCT__
+#define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
   int      size, ierr;
@@ -63,8 +63,8 @@ int main( int argc, char **argv )
   PetscFinalize();
   return 0;
 }
-#undef  __FUNC__
-#define __FUNC__ "InputGrid"
+#undef  __FUNCT__
+#define __FUNCT__ "InputGrid"
 int InputGrid (AOData *aodata)
 {
   int i, j, ierr;

@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.65 2001/01/17 22:27:06 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.66 2001/01/18 17:23:27 bsmith Exp balay $*/
 
 #include "petsc.h"
 /*
@@ -15,8 +15,8 @@
     Contributed by: Liyang Xu
 
 */
-#undef __FUNC__
-#define __FUNC__ "TSPrecond_PVode"
+#undef __FUNCT__
+#define __FUNCT__ "TSPrecond_PVode"
 int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,bool jok,
                     bool *jcurPtr,real _gamma,N_Vector ewt,real h,
                     real uround,long int *nfePtr,void *P_data,
@@ -74,8 +74,8 @@ int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,bool jok,
     Contributed by: Liyang Xu
 
 */    
-#undef __FUNC__
-#define __FUNC__ "TSPSolve_PVode"
+#undef __FUNCT__
+#define __FUNCT__ "TSPSolve_PVode"
 int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
                    real _gamma,N_Vector ewt,real delta,long int *nfePtr,
                    N_Vector r,int lr,void *P_data,N_Vector z)
@@ -106,8 +106,8 @@ int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
       
     Contributed by: Liyang Xu
 */  
-#undef __FUNC__  
-#define __FUNC__ "TSFunction_PVode"
+#undef __FUNCT__  
+#define __FUNCT__ "TSFunction_PVode"
 void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS        ts = (TS) ctx;
@@ -140,8 +140,8 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
 
     Contributed by: Liyang Xu
 */
-#undef __FUNC__  
-#define __FUNC__ "TSStep_PVode_Nonlinear"
+#undef __FUNCT__  
+#define __FUNCT__ "TSStep_PVode_Nonlinear"
 /* 
     TSStep_PVode_Nonlinear - 
   
@@ -208,8 +208,8 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 
     Contributed by: Liyang Xu
 */
-#undef __FUNC__  
-#define __FUNC__ "TSDestroy_PVode"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDestroy_PVode"
 int TSDestroy_PVode(TS ts)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -231,8 +231,8 @@ int TSDestroy_PVode(TS ts)
 
     Contributed by: Liyang Xu
 */
-#undef __FUNC__  
-#define __FUNC__ "TSSetUp_PVode_Nonlinear"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetUp_PVode_Nonlinear"
 int TSSetUp_PVode_Nonlinear(TS ts)
 {
   TS_PVode    *cvode = (TS_PVode*)ts->data;
@@ -284,8 +284,8 @@ int TSSetUp_PVode_Nonlinear(TS ts)
 
     Contributed by: Liyang Xu
 */
-#undef __FUNC__  
-#define __FUNC__ "TSSetFromOptions_PVode_Nonlinear"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetFromOptions_PVode_Nonlinear"
 int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
@@ -337,8 +337,8 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
 
     Contributed by: Liyang Xu
 */
-#undef __FUNC__  
-#define __FUNC__ "TSPrintHelp_PVode" 
+#undef __FUNCT__  
+#define __FUNCT__ "TSPrintHelp_PVode" 
 int TSPrintHelp_PVode(TS ts,char *p)
 {
   int      ierr;
@@ -360,8 +360,8 @@ int TSPrintHelp_PVode(TS ts,char *p)
 
     Contributed by: Liyang Xu
 */
-#undef __FUNC__  
-#define __FUNC__ "TSView_PVode" 
+#undef __FUNCT__  
+#define __FUNCT__ "TSView_PVode" 
 int TSView_PVode(TS ts,PetscViewer viewer)
 {
   TS_PVode   *cvode = (TS_PVode*)ts->data;
@@ -401,8 +401,8 @@ int TSView_PVode(TS ts,PetscViewer viewer)
 
 /* --------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetType_Pvode"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetType_Pvode"
 int TSPVodeSetType_PVode(TS ts,TSPVodeType type)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -414,8 +414,8 @@ int TSPVodeSetType_PVode(TS ts,TSPVodeType type)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetGMRESRestart_PVode"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetGMRESRestart_PVode"
 int TSPVodeSetGMRESRestart_PVode(TS ts,int restart)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -427,8 +427,8 @@ int TSPVodeSetGMRESRestart_PVode(TS ts,int restart)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetLinearTolerance_PVode"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetLinearTolerance_PVode"
 int TSPVodeSetLinearTolerance_PVode(TS ts,double tol)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -440,8 +440,8 @@ int TSPVodeSetLinearTolerance_PVode(TS ts,double tol)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetGramSchmidtType_PVode"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetGramSchmidtType_PVode"
 int TSPVodeSetGramSchmidtType_PVode(TS ts,TSPVodeGramSchmidtType type)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -454,8 +454,8 @@ int TSPVodeSetGramSchmidtType_PVode(TS ts,TSPVodeGramSchmidtType type)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetTolerance_PVode"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetTolerance_PVode"
 int TSPVodeSetTolerance_PVode(TS ts,double aabs,double rel)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -468,8 +468,8 @@ int TSPVodeSetTolerance_PVode(TS ts,double aabs,double rel)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "TSPVodeGetPC_PVode"
+#undef __FUNCT__  
+#define __FUNCT__ "TSPVodeGetPC_PVode"
 int TSPVodeGetPC_PVode(TS ts,PC *pc)
 { 
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -482,8 +482,8 @@ int TSPVodeGetPC_PVode(TS ts,PC *pc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "TSPVodeGetIterations_PVode"
+#undef __FUNCT__  
+#define __FUNCT__ "TSPVodeGetIterations_PVode"
 int TSPVodeGetIterations_PVode(TS ts,int *nonlin,int *lin)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -496,8 +496,8 @@ int TSPVodeGetIterations_PVode(TS ts,int *nonlin,int *lin)
 EXTERN_C_END
   
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "TSPVodeSetExactFinalTime_PVode"
+#undef __FUNCT__  
+#define __FUNCT__ "TSPVodeSetExactFinalTime_PVode"
 int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
 {
   TS_PVode *cvode = (TS_PVode*)ts->data;
@@ -509,8 +509,8 @@ int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
 EXTERN_C_END
 /* -------------------------------------------------------------------------------------------*/
 
-#undef __FUNC__
-#define __FUNC__ "TSPVodeGetIterations"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeGetIterations"
 /*@C
    TSPVodeGetIterations - Gets the number of nonlinear and linear iterations used so far by PVode.
 
@@ -546,8 +546,8 @@ int TSPVodeGetIterations(TS ts,int *nonlin,int *lin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetType"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetType"
 /*@
    TSPVodeSetType - Sets the method that PVode will use for integration.
 
@@ -581,8 +581,8 @@ int TSPVodeSetType(TS ts,TSPVodeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetGMRESRestart"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetGMRESRestart"
 /*@
    TSPVodeSetGMRESRestart - Sets the dimension of the Krylov space used by 
        GMRES in the linear solver in PVODE. PVODE DOES NOT use restarted GMRES so
@@ -618,8 +618,8 @@ int TSPVodeSetGMRESRestart(TS ts,int restart)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetLinearTolerance"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetLinearTolerance"
 /*@
    TSPVodeSetLinearTolerance - Sets the tolerance used to solve the linear
        system by PVODE.
@@ -654,8 +654,8 @@ int TSPVodeSetLinearTolerance(TS ts,double tol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetGramSchmidtType"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetGramSchmidtType"
 /*@
    TSPVodeSetGramSchmidtType - Sets type of orthogonalization used
         in GMRES method by PVODE linear solver.
@@ -689,8 +689,8 @@ int TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "TSPVodeSetTolerance"
+#undef __FUNCT__
+#define __FUNCT__ "TSPVodeSetTolerance"
 /*@
    TSPVodeSetTolerance - Sets the absolute and relative tolerance used by 
                          PVode for error control.
@@ -727,8 +727,8 @@ int TSPVodeSetTolerance(TS ts,double aabs,double rel)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSPVodeGetPC"
+#undef __FUNCT__  
+#define __FUNCT__ "TSPVodeGetPC"
 /*@
    TSPVodeGetPC - Extract the PC context from a time-step context for PVode.
 
@@ -762,8 +762,8 @@ int TSPVodeGetPC(TS ts,PC *pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSPVodeSetExactFinalTime"
+#undef __FUNCT__  
+#define __FUNCT__ "TSPVodeSetExactFinalTime"
 /*@
    TSPVodeSetExactFinalTime - Determines if PVode interpolates solution to the 
       exact final time requested by the user or just returns it at the final time
@@ -800,8 +800,8 @@ int TSPVodeSetExactFinalTime(TS ts,PetscTruth ft)
     Contributed by: Liyang Xu
 */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "TSCreate_PVode"
+#undef __FUNCT__  
+#define __FUNCT__ "TSCreate_PVode"
 int TSCreate_PVode(TS ts)
 {
   TS_PVode *cvode;

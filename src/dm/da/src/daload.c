@@ -1,10 +1,10 @@
-/*$Id: daload.c,v 1.21 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: daload.c,v 1.22 2001/01/19 23:22:22 balay Exp balay $*/
 
 #include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 
 
-#undef __FUNC__  
-#define __FUNC__ "DALoad"
+#undef __FUNCT__  
+#define __FUNCT__ "DALoad"
 /*@C
       DALoad - Creates an appropriate DA and loads its global vector from a file.
 

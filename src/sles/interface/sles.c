@@ -1,9 +1,9 @@
-/*$Id: sles.c,v 1.146 2001/01/15 21:46:43 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.147 2001/03/22 20:30:52 bsmith Exp balay $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
-#undef __FUNC__  
-#define __FUNC__ "SLESPublish_Petsc"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESPublish_Petsc"
 static int SLESPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -18,8 +18,8 @@ static int SLESPublish_Petsc(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESView"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESView"
 /*@C 
    SLESView - Prints the SLES data structure.
 
@@ -67,8 +67,8 @@ int SLESView(SLES sles,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESSetOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSetOptionsPrefix"
 /*@C
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
    SLES options in the database.
@@ -106,8 +106,8 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESAppendOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESAppendOptionsPrefix"
 /*@C
    SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SLES options in the database.
@@ -145,8 +145,8 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESGetOptionsPrefix"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESGetOptionsPrefix"
 /*@C
    SLESGetOptionsPrefix - Gets the prefix used for searching for all 
    SLES options in the database.
@@ -183,8 +183,8 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
   PetscFunctionReturn(0);  
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSetFromOptions"
 /*@
    SLESSetFromOptions - Sets various SLES parameters from user options.
    Also takes all KSP and PC options.
@@ -224,8 +224,8 @@ int SLESSetFromOptions(SLES sles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESCreate"
 /*@C
    SLESCreate - Creates a linear equation solver context.
 
@@ -266,8 +266,8 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESDestroy"
 /*@C
    SLESDestroy - Destroys the SLES context.
 
@@ -299,8 +299,8 @@ int SLESDestroy(SLES sles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESSetUp"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSetUp"
 /*@
    SLESSetUp - Performs set up required for solving a linear system.
 
@@ -386,8 +386,8 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESSolve"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSolve"
 /*@
    SLESSolve - Solves a linear system.
 
@@ -518,8 +518,8 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESSolveTranspose"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSolveTranspose"
 /*@
    SLESSolveTranspose - Solves the transpose of a linear system.
 
@@ -608,8 +608,8 @@ int SLESSolveTranspose(SLES sles,Vec b,Vec x,int *its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESGetKSP"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESGetKSP"
 /*@C
    SLESGetKSP - Returns the KSP context for a SLES solver.
 
@@ -639,8 +639,8 @@ int SLESGetKSP(SLES sles,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESGetPC"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESGetPC"
 /*@C
    SLESGetPC - Returns the preconditioner (PC) context for a SLES solver.
 
@@ -671,8 +671,8 @@ int SLESGetPC(SLES sles,PC *pc)
 }
 
 #include "src/mat/matimpl.h"
-#undef __FUNC__  
-#define __FUNC__ "SLESSetOperators"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSetOperators"
 /*@
    SLESSetOperators - Sets the matrix associated with the linear system
    and a (possibly) different one associated with the preconditioner. 
@@ -733,8 +733,8 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESSetUpOnBlocks"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSetUpOnBlocks"
 /*@
    SLESSetUpOnBlocks - Sets up the preconditioner for each block in
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
@@ -772,8 +772,8 @@ int SLESSetUpOnBlocks(SLES sles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESSetDiagonalScale"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSetDiagonalScale"
 /*@C
    SLESSetDiagonalScale - Tells SLES to diagonally scale the system
      before solving. This actually CHANGES the matrix (and right hand side).
@@ -810,8 +810,8 @@ int SLESSetDiagonalScale(SLES sles,PetscTruth scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESGetDiagonalScale"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESGetDiagonalScale"
 /*@C
    SLESGetDiagonalScale - Checks if SLES solver scales the matrix and
                           right hand side
@@ -846,8 +846,8 @@ int SLESGetDiagonalScale(SLES sles,PetscTruth *scale)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SLESSetDiagonalScaleFix"
+#undef __FUNCT__  
+#define __FUNCT__ "SLESSetDiagonalScaleFix"
 /*@C
    SLESSetDiagonalScaleFix - Tells SLES to diagonally scale the system
      back after solving.

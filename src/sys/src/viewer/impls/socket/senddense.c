@@ -1,9 +1,9 @@
-/* $Id: senddense.c,v 1.44 2000/10/24 20:24:13 bsmith Exp bsmith $ */
+/* $Id: senddense.c,v 1.45 2001/01/15 21:43:07 bsmith Exp balay $ */
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSocketPutScalar" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSocketPutScalar" 
 /*@C
    PetscViewerSocketPutScalar - Passes an Scalar array to a Socket PetscViewer.
 
@@ -47,8 +47,8 @@ int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,Scalar *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSocketPutReal" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSocketPutReal" 
 /*@C
    PetscViewerSocketPutReal - Passes a double (or single) precision array to 
    a Matlab PetscViewer.
@@ -90,8 +90,8 @@ int PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSocketPutInt" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSocketPutInt" 
 /*@C
    PetscViewerSocketPutInt - Passes an integer array to a Socket PetscViewer.
 

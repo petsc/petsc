@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.36 2001/01/22 23:08:13 bsmith Exp balay $*/
+/*$Id: ex12.c,v 1.37 2001/01/23 20:58:05 balay Exp balay $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
@@ -10,8 +10,8 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #include "petscda.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int       rank,size,M = 14,ierr,time_steps = 20,w=1,s=1;

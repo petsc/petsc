@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.35 2001/03/09 19:03:13 balay Exp balay $*/
+/*$Id: mmdense.c,v 1.36 2001/03/09 19:12:00 balay Exp balay $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -6,8 +6,8 @@
 #include "src/mat/impls/dense/mpi/mpidense.h"
 #include "src/vec/vecimpl.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetUpMultiply_MPIDense"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUpMultiply_MPIDense"
 int MatSetUpMultiply_MPIDense(Mat mat)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense*)mat->data;
@@ -43,8 +43,8 @@ int MatSetUpMultiply_MPIDense(Mat mat)
 }
 
 EXTERN int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
-#undef __FUNC__  
-#define __FUNC__ "MatGetSubMatrices_MPIDense" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrices_MPIDense" 
 int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
 { 
   int           nmax,nstages_local,nstages,i,pos,max_no,ierr;
@@ -73,8 +73,8 @@ int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scal
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "MatGetSubMatrices_MPIDense_Local" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrices_MPIDense_Local" 
 int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
 { 
   Mat_MPIDense  *c = (Mat_MPIDense*)C->data;

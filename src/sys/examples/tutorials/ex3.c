@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.37 2001/01/17 22:20:38 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.38 2001/01/23 20:53:36 balay Exp balay $*/
 
 static char help[] = "Augmenting PETSc profiling by add events.\n\
 Run this program with one of the\n\
@@ -21,8 +21,8 @@ T*/
 */
 #include "petsc.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int i,ierr,imax=10000,icount,USER_EVENT;

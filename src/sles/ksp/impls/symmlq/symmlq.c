@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.11 2001/01/16 18:19:48 balay Exp bsmith $*/
+/*$Id: symmlq.c,v 1.12 2001/02/19 18:29:26 bsmith Exp balay $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -9,8 +9,8 @@ typedef struct {
   double haptol;
 } KSP_SYMMLQ;
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_SYMMLQ"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_SYMMLQ"
 int KSPSetUp_SYMMLQ(KSP ksp)
 {
   int ierr;
@@ -25,8 +25,8 @@ int KSPSetUp_SYMMLQ(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_SYMMLQ"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_SYMMLQ"
 int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 {
   int          ierr,i,maxit;
@@ -194,8 +194,8 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_SYMMLQ"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_SYMMLQ"
 int KSPCreate_SYMMLQ(KSP ksp)
 {
   KSP_SYMMLQ *symmlq;

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.58 2001/01/17 22:25:27 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.59 2001/01/23 20:56:37 balay Exp balay $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
@@ -6,8 +6,8 @@ bilinear elements on the unit square. Input arguments are:\n\
 
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "FormatElementStiffness"
+#undef __FUNCT__
+#define __FUNCT__ "FormatElementStiffness"
 int FormElementStiffness(double H,Scalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -16,16 +16,16 @@ int FormElementStiffness(double H,Scalar *Ke)
   Ke[12] = -.125*H;  Ke[13] = H/12.0;  Ke[14] = -.125*H;  Ke[15] = H/6.0;
   return 0;
 }
-#undef __FUNC__
-#define __FUNC__ "FormElementRhs"
+#undef __FUNCT__
+#define __FUNCT__ "FormElementRhs"
 int FormElementRhs(double x,double y,double H,Scalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat         C; 

@@ -1,4 +1,4 @@
-/*$Id: random.c,v 1.55 2000/09/28 21:09:22 bsmith Exp bsmith $*/
+/*$Id: random.c,v 1.56 2001/01/15 21:44:00 bsmith Exp balay $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -26,8 +26,8 @@ struct _p_PetscRandom {
   /* array for shuffling ??? */
 };
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRandomDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomDestroy" 
 /*@C
    PetscRandomDestroy - Destroys a context that has been formed by 
    PetscRandomCreate().
@@ -52,8 +52,8 @@ int PetscRandomDestroy(PetscRandom r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRandomSetInterval"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomSetInterval"
 /*@C
    PetscRandomSetInterval - Sets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
@@ -105,8 +105,8 @@ extern double drand48();
 extern void   srand48(long);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRandomCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomCreate" 
 /*@C
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
@@ -170,8 +170,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRandomGetValue"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetValue"
 /*@C
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
@@ -231,8 +231,8 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 
 #elif defined(PETSC_HAVE_RAND)
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRandomCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomCreate" 
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
@@ -256,8 +256,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRandomGetValue"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetValue"
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
   PetscFunctionBegin;
@@ -287,8 +287,8 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 
 extern double drand48();
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRandomCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomCreate" 
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
@@ -306,8 +306,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRandomGetValue"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomGetValue"
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
   PetscFunctionBegin;

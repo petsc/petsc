@@ -1,11 +1,11 @@
-/*$Id: ex1.c,v 1.14 2001/01/17 22:25:27 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.15 2001/01/23 20:56:37 balay Exp balay $*/
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat         C; 

@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.12 2001/03/12 23:02:29 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.13 2001/03/12 23:06:42 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -41,8 +41,8 @@ static char help[] = "Solves PDE optimization problem of ex22.c with finite diff
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int PDEFormFunction(Scalar*,Vec,Vec,DA);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int        ierr,N = 5,nlevels,i;
@@ -113,8 +113,8 @@ int main(int argc,char **argv)
      BUT the global, nonghosted version of FU
 
 */
-#undef __FUNC__
-#define __FUNC__ "PDEFormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "PDEFormFunction"
 int PDEFormFunction(Scalar *w,Vec vu,Vec vfu,DA da)
 {
   int     ierr,xs,xm,i,N;
@@ -152,8 +152,8 @@ int PDEFormFunction(Scalar *w,Vec vu,Vec vfu,DA da)
    for the Lagrange multiplier equations
 
 */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   DMMG    dmmg = (DMMG)dummy;

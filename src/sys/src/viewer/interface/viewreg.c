@@ -1,11 +1,11 @@
-/*$Id: viewreg.c,v 1.32 2000/09/28 21:08:19 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.33 2001/01/15 21:43:19 bsmith Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 PetscFList PetscViewerList              = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate" 
 /*@C
    PetscViewerCreate - Creates a viewing context
 
@@ -40,8 +40,8 @@ int PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
   PetscFunctionReturn(0);
 }
  
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSetType" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSetType" 
 /*@C
    PetscViewerSetType - Builds PetscViewer for a particular implementation.
 
@@ -96,8 +96,8 @@ int PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerRegisterDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerRegisterDestroy" 
 /*@C
    PetscViewerRegisterDestroy - Frees the list of PetscViewer methods that were
    registered by PetscViewerRegisterDynamic().
@@ -158,8 +158,8 @@ $     -viewer_type my_viewer_type
 .seealso: PetscViewerRegisterAll(), PetscViewerRegisterDestroy()
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerRegister" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerRegister" 
 int PetscViewerRegister(char *sname,char *path,char *name,int (*function)(PetscViewer))
 {
   int ierr;
@@ -171,8 +171,8 @@ int PetscViewerRegister(char *sname,char *path,char *name,int (*function)(PetscV
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSetFromOptions" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSetFromOptions" 
 /*@C
    PetscViewerSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X windows graphics.

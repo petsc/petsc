@@ -1,11 +1,11 @@
-/*$Id: dgcoor.c,v 1.27 2001/01/15 21:43:22 bsmith Exp balay $*/
+/*$Id: dgcoor.c,v 1.28 2001/01/17 19:44:01 balay Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawGetCoordinates" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetCoordinates" 
 /*@
    PetscDrawGetCoordinates - Gets the application coordinates of the corners of
    the window (or page).

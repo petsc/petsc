@@ -1,4 +1,4 @@
-/*$Id: daltog.c,v 1.20 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: daltog.c,v 1.21 2001/01/15 21:48:51 bsmith Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -6,8 +6,8 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "DALocalToGlobal"
+#undef __FUNCT__  
+#define __FUNCT__ "DALocalToGlobal"
 /*@
    DALocalToGlobal - Maps values from the local patch back to the 
    global vector. The ghost points are discarded.

@@ -1,10 +1,10 @@
-/*$Id: main.c,v 1.15 2001/01/17 22:28:20 bsmith Exp balay $*/
+/*$Id: main.c,v 1.16 2001/01/23 20:58:27 balay Exp balay $*/
 static char help[] ="Solves the 2d Burgers equation. \n  u*du/dx + v*du/dy - c(lap(u)) = f. \n  u*dv/dx + v*dv/dy - c(lap(v)) = g.  This has exact solution, see Fletcher.\n  This version has new indexing of Degrees of Freedom";
 
 #include "appctx.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            ierr;

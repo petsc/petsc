@@ -1,9 +1,9 @@
-/*$Id: aodataalias.c,v 1.6 2000/05/05 22:19:09 balay Exp bsmith $*/
+/*$Id: aodataalias.c,v 1.7 2001/01/15 21:48:41 bsmith Exp balay $*/
 
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "AODataAddAlias" 
+#undef __FUNCT__  
+#define __FUNCT__ "AODataAddAlias" 
 /*@C
     AODataAddAlias - Allows accessing a key or field using an alternative
           name.

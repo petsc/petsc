@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.19 2000/11/28 17:28:15 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.20 2001/01/15 21:44:26 bsmith Exp balay $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
@@ -24,8 +24,8 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISDestroy_General,
                                ISView_General};
 
-#undef __FUNC__  
-#define __FUNC__ "ISStrideToGeneral" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISStrideToGeneral" 
 /*@C
    ISStrideToGeneral - Converts a stride index set to a general index set.
 

@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.201 2001/02/19 21:52:24 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.202 2001/03/22 20:31:20 bsmith Exp balay $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -7,8 +7,8 @@
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
-#undef __FUNC__  
-#define __FUNC__ "KSPView"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPView"
 /*@C 
    KSPView - Prints the KSP data structure.
 
@@ -80,8 +80,8 @@ int KSPView(KSP ksp,PetscViewer viewer)
 */
 PetscFList KSPList = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetAvoidNorms"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetAvoidNorms"
 /*@C
    KSPSetAvoidNorms - Sets the KSP solver to avoid computing the residual norm
    when possible.  This, for example, reduces the number of collective operations
@@ -116,8 +116,8 @@ int KSPSetAvoidNorms(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPPublish_Petsc"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPPublish_Petsc"
 static int KSPPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -153,8 +153,8 @@ static int KSPPublish_Petsc(PetscObject obj)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate"
 /*@C
    KSPCreate - Creates the default KSP context.
 
@@ -234,8 +234,8 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscFunctionReturn(0);
 }
  
-#undef __FUNC__  
-#define __FUNC__ "KSPSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetType"
 /*@C
    KSPSetType - Builds KSP for a particular solver. 
 
@@ -303,8 +303,8 @@ int KSPSetType(KSP ksp,KSPType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPRegisterDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPRegisterDestroy"
 /*@C
    KSPRegisterDestroy - Frees the list of KSP methods that were
    registered by KSPRegisterDynamic().
@@ -330,8 +330,8 @@ int KSPRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPGetType"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetType"
 /*@C
    KSPGetType - Gets the KSP type as a string from the KSP object.
 
@@ -357,8 +357,8 @@ int KSPGetType(KSP ksp,KSPType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetFromOptions"
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
    This routine must be called before KSPSetUp() if the user is to be 
@@ -555,8 +555,8 @@ $     -ksp_type my_solver
 
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "KSPRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPRegister"
 int KSPRegister(char *sname,char *path,char *name,int (*function)(KSP))
 {
   int  ierr;

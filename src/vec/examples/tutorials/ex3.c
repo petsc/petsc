@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.51 2001/01/23 18:45:52 balay Exp balay $*/
+/*$Id: ex3.c,v 1.52 2001/01/23 20:54:12 balay Exp balay $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
@@ -17,8 +17,8 @@ T*/
 */
 #include "petscvec.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int        i,istart,iend,n = 6,ierr,rank,nlocal;

@@ -1,11 +1,11 @@
-/*$Id: aijfact.c,v 1.157 2000/10/24 20:25:32 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.158 2001/01/15 21:45:34 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/dot.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatOrdering_Flow_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatOrdering_Flow_SeqAIJ"
 int MatOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
@@ -24,8 +24,8 @@ EXTERN int SPARSEKIT2dperm(int*,Scalar*,int*,int*,Scalar*,int*,int*,int*,int*,in
 EXTERN int SPARSEKIT2ilutp(int*,Scalar*,int*,int*,int*,PetscReal*,PetscReal*,int*,Scalar*,int*,int*,int*,Scalar*,int*,int*,int*);
 EXTERN int SPARSEKIT2msrcsr(int*,Scalar*,int*,Scalar*,int*,int*,Scalar*,int*);
 
-#undef __FUNC__  
-#define __FUNC__ "MatILUDTFactor_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUDTFactor_SeqAIJ"
   /* ------------------------------------------------------------
 
           This interface was contribed by Tony Caola
@@ -263,8 +263,8 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 /*
     Factorization code for AIJ format. 
 */
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqAIJ""></a>*/"MatLUFactorSymbolic_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatLUFactorSymbolic_SeqAIJ""></a>*/"MatLUFactorSymbolic_SeqAIJ"
 int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
@@ -436,8 +436,8 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 /* ----------------------------------------------------------- */
 EXTERN int Mat_AIJ_CheckInode(Mat);
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
 int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 {
   Mat        C = *B;
@@ -530,8 +530,8 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactor_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactor_SeqAIJ"
 int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatLUInfo *info)
 {
   int ierr;
@@ -544,8 +544,8 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatLUInfo *info)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatSolve_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqAIJ"
 int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -595,8 +595,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 }
 
 /* ----------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatSolve_SeqAIJ_NaturalOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
 int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -649,8 +649,8 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSolveAdd_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveAdd_SeqAIJ"
 int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -700,8 +700,8 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "MatSolveTranspose_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTranspose_SeqAIJ"
 int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -757,8 +757,8 @@ int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSolveTransposeAdd_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolveTransposeAdd_SeqAIJ"
 int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
@@ -815,8 +815,8 @@ int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 /* ----------------------------------------------------------------*/
 EXTERN int MatMissingDiagonal_SeqAIJ(Mat);
 
-#undef __FUNC__  
-#define __FUNC__ "MatILUFactorSymbolic_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ"
 int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fact)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;

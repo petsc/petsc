@@ -1,10 +1,10 @@
-/*$Id: tsfd.c,v 1.20 2000/05/05 22:18:49 balay Exp bsmith $*/
+/*$Id: tsfd.c,v 1.21 2001/01/15 21:48:25 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "TSDefaultComputeJacobianColor"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDefaultComputeJacobianColor"
 /*@C
     TSDefaultComputeJacobianColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.  
@@ -60,8 +60,8 @@ int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSDefaultComputeJacobian"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSDefaultComputeJacobian"
 /*
    TSDefaultComputeJacobian - Computes the Jacobian using finite differences.
 

@@ -1,4 +1,4 @@
-/*$Id: baijfact14.c,v 1.2 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: baijfact14.c,v 1.3 2001/01/16 18:17:47 balay Exp balay $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -8,8 +8,8 @@
 /*
       Version for when blocks are 3 by 3 Using natural ordering
 */
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;

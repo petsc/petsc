@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.40 2000/09/28 21:12:55 bsmith Exp bsmith $*/
+/*$Id: composite.c,v 1.41 2001/01/15 21:46:59 bsmith Exp balay $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -20,8 +20,8 @@ typedef struct {
   PetscTruth       use_true_matrix;
 } PC_Composite;
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_Composite_Multiplicative"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_Composite_Multiplicative"
 static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
   int              ierr;
@@ -55,8 +55,8 @@ static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 where first preconditioner is built from alpha I + S and second from
 alpha I + R
 */
-#undef __FUNC__  
-#define __FUNC__ "PCApply_Composite_Special"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_Composite_Special"
 static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
 {
   int              ierr;
@@ -76,8 +76,8 @@ static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_Composite_Additive"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_Composite_Additive"
 static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
   int              ierr;
@@ -98,8 +98,8 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_Composite"
 static int PCSetUp_Composite(PC pc)
 {
   int              ierr;
@@ -119,8 +119,8 @@ static int PCSetUp_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Composite"
 static int PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -139,8 +139,8 @@ static int PCDestroy_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_Composite"
 static int PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -187,8 +187,8 @@ static int PCSetFromOptions_Composite(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_Composite"
 static int PCView_Composite(PC pc,PetscViewer viewer)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -221,8 +221,8 @@ static int PCView_Composite(PC pc,PetscViewer viewer)
 /* ------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeSpecialSetAlpha_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeSpecialSetAlpha_Composite"
 int PCCompositeSpecialSetAlpha_Composite(PC pc,Scalar alpha)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
@@ -233,8 +233,8 @@ int PCCompositeSpecialSetAlpha_Composite(PC pc,Scalar alpha)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeSetType_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeSetType_Composite"
 int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PetscFunctionBegin;
@@ -252,8 +252,8 @@ int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeAddPC_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeAddPC_Composite"
 int PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
@@ -290,8 +290,8 @@ int PCCompositeAddPC_Composite(PC pc,PCType type)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeGetPC_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeGetPC_Composite"
 int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
 {
   PC_Composite     *jac;
@@ -313,8 +313,8 @@ int PCCompositeGetPC_Composite(PC pc,int n,PC *subpc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeSetUseTrue_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeSetUseTrue_Composite"
 int PCCompositeSetUseTrue_Composite(PC pc)
 {
   PC_Composite   *jac;
@@ -327,8 +327,8 @@ int PCCompositeSetUseTrue_Composite(PC pc)
 EXTERN_C_END
 
 /* -------------------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeSetType"
 /*@C
    PCCompositeSetType - Sets the type of composite preconditioner.
    
@@ -358,8 +358,8 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeSpecialSetAlpha"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeSpecialSetAlpha"
 /*@C
    PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner
      for alphaI + R + S
@@ -387,8 +387,8 @@ int PCCompositeSpecialSetAlpha(PC pc,Scalar alpha)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeAddPC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeAddPC"
 /*@C
    PCCompositeAddPC - Adds another PC to the composite PC.
    
@@ -415,8 +415,8 @@ int PCCompositeAddPC(PC pc,PCType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeGetPC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeGetPC"
 /*@C
    PCCompositeGetPC - Gets one of the PC objects in the composite PC.
    
@@ -450,8 +450,8 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCCompositeSetUseTrue"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCompositeSetUseTrue"
 /*@
    PCCompositeSetUseTrue - Sets a flag to indicate that the true matrix (rather than
                       the matrix used to define the preconditioner) is used to compute
@@ -491,8 +491,8 @@ int PCCompositeSetUseTrue(PC pc)
 /* -------------------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_Composite"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_Composite"
 int PCCreate_Composite(PC pc)
 {
   int            ierr;

@@ -1,12 +1,12 @@
-/*$Id: ex7.c,v 1.44 2001/01/22 23:03:19 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.45 2001/01/23 20:54:05 balay Exp balay $*/
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
 
 #include "petscvec.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int           n = 6,ierr,idx1[3] = {0,1,2},loc[6] = {0,1,2,3,4,5};

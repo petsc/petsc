@@ -1,4 +1,4 @@
-/*$Id: baijfact5.c,v 1.2 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: baijfact5.c,v 1.3 2001/01/16 18:17:47 balay Exp balay $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -8,8 +8,8 @@
 /*
       Version for when blocks are 7 by 7
 */
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatLUFactorNumeric_SeqBAIJ_7"></a>*/"MatLUFactorNumeric_SeqBAIJ_7"
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name="MatLUFactorNumeric_SeqBAIJ_7"></a>*/"MatLUFactorNumeric_SeqBAIJ_7"
 int MatLUFactorNumeric_SeqBAIJ_7(Mat A,Mat *B)
 {
   Mat         C = *B;

@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.12 2001/01/15 21:44:09 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.13 2001/02/09 18:58:45 bsmith Exp balay $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -10,8 +10,8 @@ struct  _p_PetscMatlabEngine {
   char     buffer[1024];
 };
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEngineCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEngineCreate"
 /*@C
     PetscMatlabEngineCreate - Creates a Matlab engine object 
 
@@ -56,8 +56,8 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *engin
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEngineDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEngineDestroy"
 /*@C
    PetscMatlabEngineDestroy - Destroys a vector.
 
@@ -84,8 +84,8 @@ int PetscMatlabEngineDestroy(PetscMatlabEngine v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEngineEvaluate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEngineEvaluate"
 /*@C
     PetscMatlabEngineEvaluate - Evaluates a string in Matlab
 
@@ -151,8 +151,8 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEngineGetOutput"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEngineGetOutput"
 /*@C
     PetscMatlabEngineGetOutput - Gets a string buffer where the Matlab output is 
           printed
@@ -178,8 +178,8 @@ int PetscMatlabEngineGetOutput(PetscMatlabEngine engine,char **string)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEnginePrintOutput"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEnginePrintOutput"
 /*@C
     PetscMatlabEnginePrintOutput - prints the output from Matlab
 
@@ -205,8 +205,8 @@ int PetscMatlabEnginePrintOutput(PetscMatlabEngine engine,FILE *fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEnginePut"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEnginePut"
 /*@C
     PetscMatlabEnginePut - Puts a Petsc object into the Matlab space. For parallel objects,
       each processors part is put in a seperate  Matlab process.
@@ -238,8 +238,8 @@ int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEngineGet"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEngineGet"
 /*@C
     PetscMatlabEngineGet - Gets a variable from Matlab into a PETSc object.
 
@@ -279,8 +279,8 @@ int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
 */
 static int Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNC__  
-#define __FUNC__ "MATLAB_ENGINE_"  
+#undef __FUNCT__  
+#define __FUNCT__ "MATLAB_ENGINE_"  
 /*@C
    MATLAB_ENGINE_ - Creates a matlab engine shared by all processors 
                     in a communicator.
@@ -331,8 +331,8 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
   PetscFunctionReturn(engine);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEnginePutArray"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEnginePutArray"
 /*@C
     PetscMatlabEnginePutArray - Puts a Petsc object into the Matlab space. For parallel objects,
       each processors part is put in a seperate  Matlab process.
@@ -371,8 +371,8 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,Scalar *array
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMatlabEngineGetArray"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMatlabEngineGetArray"
 /*@C
     PetscMatlabEngineGetArray - Gets a variable from Matlab into an array
 

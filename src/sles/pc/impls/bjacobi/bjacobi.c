@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.155 2001/02/05 16:51:57 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.156 2001/03/22 20:31:04 bsmith Exp balay $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -9,8 +9,8 @@
 static int PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
 static int PCSetUp_BJacobi_Multiblock(PC,Mat,Mat);
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_BJacobi"
 static int PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi      *jac = (PC_BJacobi*)pc->data;
@@ -176,8 +176,8 @@ static int PCSetUp_BJacobi(PC pc)
 }
 
 /* Default destroy, if it has never been setup */
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_BJacobi"
 static int PCDestroy_BJacobi(PC pc)
 {
   PC_BJacobi *jac = (PC_BJacobi*)pc->data;
@@ -190,8 +190,8 @@ static int PCDestroy_BJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_BJacobi"
 static int PCSetFromOptions_BJacobi(PC pc)
 {
   PC_BJacobi *jac = (PC_BJacobi*)pc->data;
@@ -212,8 +212,8 @@ static int PCSetFromOptions_BJacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_BJacobi"
 static int PCView_BJacobi(PC pc,PetscViewer viewer)
 {
   PC_BJacobi *jac = (PC_BJacobi*)pc->data;
@@ -271,8 +271,8 @@ static int PCView_BJacobi(PC pc,PetscViewer viewer)
 /* -------------------------------------------------------------------------------------*/  
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetUseTrueLocal_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiSetUseTrueLocal_BJacobi"
 int PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
 {
   PC_BJacobi   *jac;
@@ -285,8 +285,8 @@ int PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiGetSubSLES_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiGetSubSLES_BJacobi"
 int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
 {
   PC_BJacobi   *jac = (PC_BJacobi*)pc->data;;
@@ -305,8 +305,8 @@ int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetTotalBlocks_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiSetTotalBlocks_BJacobi"
 int PCBJacobiSetTotalBlocks_BJacobi(PC pc,int blocks,int *lens)
 {
   PC_BJacobi *jac = (PC_BJacobi*)pc->data; 
@@ -327,8 +327,8 @@ int PCBJacobiSetTotalBlocks_BJacobi(PC pc,int blocks,int *lens)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetLocalBlocks_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiSetLocalBlocks_BJacobi"
 int PCBJacobiSetLocalBlocks_BJacobi(PC pc,int blocks,int *lens)
 {
   PC_BJacobi *jac;
@@ -351,8 +351,8 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------*/  
 
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetUseTrueLocal"
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiSetUseTrueLocal"
 /*@
    PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block 
    problem is associated with the linear system matrix instead of the
@@ -393,8 +393,8 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiGetSubSLES"
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiGetSubSLES"
 /*@C
    PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -438,8 +438,8 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetTotalBlocks"
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiSetTotalBlocks"
 /*@
    PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
    Jacobi preconditioner.
@@ -478,8 +478,8 @@ int PCBJacobiSetTotalBlocks(PC pc,int blocks,int *lens)
   PetscFunctionReturn(0);
 }
   
-#undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetLocalBlocks"
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiSetLocalBlocks"
 /*@
    PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
    Jacobi preconditioner.
@@ -517,8 +517,8 @@ int PCBJacobiSetLocalBlocks(PC pc,int blocks,int *lens)
 /* -----------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_BJacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_BJacobi"
 int PCCreate_BJacobi(PC pc)
 {
   int          rank,ierr;
@@ -566,8 +566,8 @@ EXTERN_C_END
 /*
         These are for a single block per processor; works for AIJ, BAIJ; Seq and MPI
 */
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_BJacobi_Singleblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_BJacobi_Singleblock"
 int PCDestroy_BJacobi_Singleblock(PC pc)
 {
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
@@ -597,8 +597,8 @@ int PCDestroy_BJacobi_Singleblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUpOnBlocks_BJacobi_Singleblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Singleblock"
 int PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
 {
   int                    ierr;
@@ -610,8 +610,8 @@ int PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_BJacobi_Singleblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_BJacobi_Singleblock"
 int PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   int                    ierr,its;
@@ -636,8 +636,8 @@ int PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricLeft_BJacobi_Singleblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricLeft_BJacobi_Singleblock"
 int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   int                    ierr;
@@ -669,8 +669,8 @@ int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricRight_BJacobi_Singleblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricRight_BJacobi_Singleblock"
 int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   int                    ierr;
@@ -702,8 +702,8 @@ int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyTranspose_BJacobi_Singleblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_BJacobi_Singleblock"
 int PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
   int                    ierr,its;
@@ -728,8 +728,8 @@ int PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_BJacobi_Singleblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_BJacobi_Singleblock"
 static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
@@ -797,8 +797,8 @@ static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 
 /* ---------------------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_BJacobi_Multiblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_BJacobi_Multiblock"
 int PCDestroy_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
@@ -839,8 +839,8 @@ int PCDestroy_BJacobi_Multiblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUpOnBlocks_BJacobi_Multiblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUpOnBlocks_BJacobi_Multiblock"
 int PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
@@ -857,8 +857,8 @@ int PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
 /*
       Preconditioner for block Jacobi 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCApply_BJacobi_Multiblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_BJacobi_Multiblock"
 int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
@@ -896,8 +896,8 @@ int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 /*
       Preconditioner for block Jacobi 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCApplyTranspose_BJacobi_Multiblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_BJacobi_Multiblock"
 int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
@@ -932,8 +932,8 @@ int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_BJacobi_Multiblock"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_BJacobi_Multiblock"
 static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;

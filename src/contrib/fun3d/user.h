@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.15 2000/09/15 20:08:12 kaushik Exp kaushik $*/
+/*$Id: user.h,v 1.16 2000/10/30 18:40:10 kaushik Exp balay $*/
 #include "petsc.h" 
                   
 #define max_colors  200
@@ -285,16 +285,17 @@ extern int  write_fine_grid(GRID *);
 #define f77RREAD    f77name(RREAD,rread,rread_)
 
 EXTERN_C_BEGIN
-extern void f77FORLINK(void);
-extern void f77OPENM(int*);
-extern void f77FILLA(int*,int*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
-                     int*,int*,int*,int*,Scalar*,Mat*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
-extern void f77READR1(int*,int*);
-extern void f77SUMGS(int*,int*,int*,Scalar*,Scalar*,int*,int*);
-extern void f77INIT(int*,Scalar*,Scalar*,Scalar*,int*,int*,int*);
-extern void f77LSTGS(int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
-extern void f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+extern void PETSC_STDCALL f77FORLINK(void);
+extern void PETSC_STDCALL f77OPENM(int*);
+extern void PETSC_STDCALL f77FILLA(int*,int*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                     Scalar*,int*,int*,int*,int*,int*,int*,Scalar*,Mat*,Scalar*,Scalar*,Scalar*,
+                     Scalar*,int*,int*);
+extern void PETSC_STDCALL f77READR1(int*,int*);
+extern void PETSC_STDCALL f77SUMGS(int*,int*,int*,Scalar*,Scalar*,int*,int*);
+extern void PETSC_STDCALL f77INIT(int*,Scalar*,Scalar*,Scalar*,int*,int*,int*);
+extern void PETSC_STDCALL f77LSTGS(int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
+extern void PETSC_STDCALL f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*, 
                       Scalar*,Scalar*,Scalar*,int*,int*,
@@ -311,8 +312,8 @@ extern void f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int
 #endif
 #endif  
                       int*,int*,int*);
-extern void f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,Scalar*,Scalar*,int*,int*,
-                     Scalar*,Scalar*,Scalar*,int*,int*);
-extern void f77GETIA(int*,int*,int*,int*,int*,int*);
-extern void f77GETJA(int*,int*,int*,int*,int*,int*,int*);
+extern void PETSC_STDCALL f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,Scalar*,
+                     Scalar*,int*,int*,Scalar*,Scalar*,Scalar*,int*,int*);
+extern void PETSC_STDCALL f77GETIA(int*,int*,int*,int*,int*,int*);
+extern void PETSC_STDCALL f77GETJA(int*,int*,int*,int*,int*,int*,int*);
 EXTERN_C_END

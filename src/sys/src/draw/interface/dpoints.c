@@ -1,11 +1,11 @@
-/*$Id: dpoints.c,v 1.35 2001/01/15 21:43:22 bsmith Exp balay $*/
+/*$Id: dpoints.c,v 1.36 2001/01/17 19:44:01 balay Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawPointSetSize" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawPointSetSize" 
 /*@
    PetscDrawPointSetSize - Sets the point size for future draws.  The size is
    relative to the user coordinates of the window; 0.0 denotes the natural

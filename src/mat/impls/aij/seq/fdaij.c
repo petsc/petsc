@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.35 2000/10/24 20:25:32 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.36 2001/01/15 21:45:34 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -6,8 +6,8 @@
 EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringCreate_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringCreate_SeqAIJ"
 int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,ierr,*ci,*cj,ncols,col;
@@ -156,8 +156,8 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatColoringPatch_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatColoringPatch_SeqAIJ"
 int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscoloring)
 {
   int        n = mat->n,*sizes,i,**ii,ierr,tag;
@@ -197,8 +197,8 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
 /*
      Makes a longer coloring[] array and calls the usual code with that
 */
-#undef __FUNC__  
-#define __FUNC__ "MatColoringPatch_SeqAIJ_Inode"
+#undef __FUNCT__  
+#define __FUNCT__ "MatColoringPatch_SeqAIJ_Inode"
 int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *iscoloring)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)mat->data;

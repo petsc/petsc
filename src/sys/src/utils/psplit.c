@@ -1,9 +1,9 @@
-/*$Id: psplit.c,v 1.14 2001/01/15 21:44:00 bsmith Exp bsmith $*/
+/*$Id: psplit.c,v 1.15 2001/02/07 15:48:54 bsmith Exp balay $*/
 
 #include "petsc.h"           /*I    "petsc.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSplitOwnershipBlock"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSplitOwnershipBlock"
 /*@C
     PetscSplitOwnershipBlock - Given a global (or local) length determines a local 
         (or global) length via a simple formula. Splits so each processors local size
@@ -48,8 +48,8 @@ int PetscSplitOwnershipBlock(MPI_Comm comm,int bs,int *n,int *N)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSplitOwnership"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSplitOwnership"
 /*@C
     PetscSplitOwnership - Given a global (or local) length determines a local 
         (or global) length via a simple formula

@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.113 2001/02/22 22:58:34 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.114 2001/03/22 20:30:56 bsmith Exp balay $*/
 /*
     Routines to set PC methods and options.
 */
@@ -12,8 +12,8 @@ PetscTruth PCRegisterAllCalled = PETSC_FALSE;
 */
 PetscFList PCList = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetType"
 /*@C
    PCSetType - Builds PC for a particular preconditioner.
 
@@ -101,8 +101,8 @@ int PCSetType(PC pc,PCType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCRegisterDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRegisterDestroy"
 /*@C
    PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegisterDynamic().
@@ -129,8 +129,8 @@ int PCRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetType"
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC
    context.
@@ -157,8 +157,8 @@ int PCGetType(PC pc,PCType *meth)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions"
 /*@
    PCSetFromOptions - Sets PC options from the options database.
    This routine must be called before PCSetUp() if the user is to be

@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.23 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex5s.c,v 1.24 2001/03/23 01:20:21 bsmith Exp balay $*/
 
 static char help[] = "2d Bratur problem in shared memory parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -95,8 +95,8 @@ typedef struct {
 extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec);
 extern int FormFunctionFortran(SNES,Vec,Vec,void*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 /* 
     The main program is written in C while the user provided function
  is given in both Fortran and C. The main program could also be written 
@@ -271,8 +271,8 @@ int main(int argc,char **argv)
 }
 /* ------------------------------------------------------------------- */
 
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 /* 
    FormInitialGuess - Forms initial approximation.
 
@@ -345,8 +345,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
   return 0;
 } 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -434,8 +434,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 #endif
 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunctionFortran"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionFortran"
 /* 
    FormFunctionFortran - Evaluates nonlinear function, F(x) in Fortran.
 

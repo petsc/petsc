@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.353 2001/03/13 04:25:07 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.354 2001/03/19 23:25:02 balay Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -6190,15 +6190,15 @@ and codes, any error will by default generate a clean traceback of
 the location \findex{SETERRQ()} \findex{CHKERRQ()}
 of the error. 
 
-Note that the macro \url{__FUNC__} is used to keep track of
+Note that the macro \url{__FUNCT__} is used to keep track of
 routine names during error tracebacks.  Users need not worry about this
 macro in their application codes; however, users can take advantage of this feature
 if desired by setting this macro before each user-defined routine
 that may call \url{SETERRQ()}, \url{CHKERRQ()},
 or \url{CHKERRQ()}.  A simple example of usage is given below.
 \begin{verbatim}
-    #undef __FUNC__  
-    #define __FUNC__ "MyRoutine1"
+    #undef __FUNCT__  
+    #define __FUNCT__ "MyRoutine1"
     int MyRoutine1() { 
         /* code here */
         return 0;

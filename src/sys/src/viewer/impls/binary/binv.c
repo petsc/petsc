@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.96 2001/01/19 23:19:31 balay Exp bsmith $*/
+/*$Id: binv.c,v 1.97 2001/01/22 23:01:24 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -18,8 +18,8 @@ typedef struct  {
   char                  *filename;
 } PetscViewer_Binary;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerGetSingleton_Binary" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerGetSingleton_Binary" 
 int PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
   int                rank,ierr;
@@ -38,8 +38,8 @@ int PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerRestoreSingleton_Binary" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerRestoreSingleton_Binary" 
 int PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
   int           ierr,rank;
@@ -54,8 +54,8 @@ int PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerBinaryGetDescriptor" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryGetDescriptor" 
 /*@C
     PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a PetscViewer.
 
@@ -89,8 +89,8 @@ int PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerBinaryGetInfoPointer" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryGetInfoPointer" 
 /*@C
     PetscViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
           info file associated with a binary file.
@@ -122,8 +122,8 @@ int PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDestroy_Binary" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_Binary" 
 int PetscViewerDestroy_Binary(PetscViewer v)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
@@ -152,8 +152,8 @@ int PetscViewerDestroy_Binary(PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerBinaryOpen" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryOpen" 
 /*@C
    PetscViewerBinaryOpen - Opens a file for binary input/output.
 
@@ -208,8 +208,8 @@ int PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerBinaryType 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerBinarySetType" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinarySetType" 
 /*@C
      PetscViewerBinarySetType - Sets the type of binary file to be open
 
@@ -242,8 +242,8 @@ int PetscViewerBinarySetType(PetscViewer viewer,PetscViewerBinaryType type)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerBinarySetType_Binary" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinarySetType_Binary" 
 int PetscViewerBinarySetType_Binary(PetscViewer viewer,PetscViewerBinaryType type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
@@ -254,8 +254,8 @@ int PetscViewerBinarySetType_Binary(PetscViewer viewer,PetscViewerBinaryType typ
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerBinaryLoadInfo" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryLoadInfo" 
 /*
     PetscViewerBinaryLoadInfo options from the name.info file
     if it exists.
@@ -315,8 +315,8 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
         Actually opens the file 
 */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSetFilename_Binary" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSetFilename_Binary" 
 int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 {
   int                   rank,ierr,len;
@@ -446,8 +446,8 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerCreate_Binary" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate_Binary" 
 int PetscViewerCreate_Binary(PetscViewer v)
 {  
   int                ierr;
@@ -485,8 +485,8 @@ EXTERN_C_END
 */
 static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNC__  
-#define __FUNC__ "VIEWER_BINARY_"  
+#undef __FUNCT__  
+#define __FUNCT__ "VIEWER_BINARY_"  
 /*@C
      PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors 
                      in a communicator.

@@ -1,4 +1,4 @@
-/*$Id: qmdupd.c,v 1.17 2000/05/10 16:41:27 bsmith Exp bsmith $*/
+/*$Id: qmdupd.c,v 1.18 2001/01/15 21:46:34 bsmith Exp balay $*/
 /* qmdupd.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"
@@ -29,8 +29,8 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       QMDMRG.*/
 /******************************************************************/
-#undef __FUNC__  
-#define __FUNC__ "SPARSEPACKqmdupd"
+#undef __FUNCT__  
+#define __FUNCT__ "SPARSEPACKqmdupd"
 int SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist, 
 	int *list, int *deg, int *qsize, int *qlink, int *
 	marker, int *rchset, int *nbrhd)

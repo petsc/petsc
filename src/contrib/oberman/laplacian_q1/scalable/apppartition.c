@@ -1,10 +1,10 @@
-/*$Id: apppartition.c,v 1.4 2001/01/15 21:49:25 bsmith Exp balay $*/
+/*$Id: apppartition.c,v 1.5 2001/01/16 18:21:37 balay Exp balay $*/
 #include "appctx.h"
 
 int AppPartitionGetOwnedSize(AppPartition *part, int *m);
 
-#undef  __FUNC__
-#define __FUNC__ "AppPartitionSetUp"
+#undef  __FUNCT__
+#define __FUNCT__ "AppPartitionSetUp"
 int AppPartitionSetUp(AppPartition *part, MPI_Comm comm, int Nelx, int Nely, int nsdx, int nsdy,
                       double xmin, double xmax, double ymin, double ymax)
 {
@@ -51,8 +51,8 @@ int AppPartitionSetUp(AppPartition *part, MPI_Comm comm, int Nelx, int Nely, int
 .  nodes - points to the indices (in local numbering) of the vertices of el
 
 */
-#undef  __FUNC__
-#define __FUNC__ "AppPartitionGetNodes"
+#undef  __FUNCT__
+#define __FUNCT__ "AppPartitionGetNodes"
 int AppPartitionGetNodes(AppPartition *part, int el, int **nodes)
 {
   int i, j;
@@ -83,8 +83,8 @@ int AppPartitionGetNodes(AppPartition *part, int el, int **nodes)
 .  nodes - points to the coordinates of the vertices of el
 
 */
-#undef  __FUNC__
-#define __FUNC__ "AppPartitionGetCoords"
+#undef  __FUNCT__
+#define __FUNCT__ "AppPartitionGetCoords"
 int AppPartitionGetCoords(AppPartition *part, int el, double **coords)
 {
   int i, j;
@@ -118,8 +118,8 @@ int AppPartitionGetCoords(AppPartition *part, int el, double **coords)
 .  m - number of nodes owned by the processor
 
 */
-#undef  __FUNC__
-#define __FUNC__ "AppPartitionGetOwnedSize"
+#undef  __FUNCT__
+#define __FUNCT__ "AppPartitionGetOwnedSize"
 int AppPartitionGetOwnedSize(AppPartition *part, int *m)
 {
   int I, J;
@@ -156,8 +156,8 @@ int AppPartitionGetOwnedSize(AppPartition *part, int *m)
 .  mapping - mapping from local to global numbering
 
 */
-#undef  __FUNC__
-#define __FUNC__ "AppPartitionCreateLocalToGlobalMapping"
+#undef  __FUNCT__
+#define __FUNCT__ "AppPartitionCreateLocalToGlobalMapping"
 #define offset(I,J) ((I)*typ_col+(J)*typ_sd+(((I)==(part->nsdx-1))?((J)*(part->nely)):0))
 int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMapping *mapping)
 {
@@ -246,8 +246,8 @@ int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMa
 .  coords -
 
 */
-#undef  __FUNC__
-#define __FUNC__ "AppPartitionGetBoundaryNodesAndCoords"
+#undef  __FUNCT__
+#define __FUNCT__ "AppPartitionGetBoundaryNodesAndCoords"
 int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boundary, double **coords)
 {
   int i, j, I, J, ierr, *pb;

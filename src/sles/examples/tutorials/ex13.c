@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.24 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex13.c,v 1.25 2001/01/23 20:56:41 balay Exp balay $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -35,8 +35,8 @@ extern int UserInitializeLinearSolver(int,int,UserCtx *);
 extern int UserFinalizeLinearSolver(UserCtx *);
 extern int UserDoLinearSolver(Scalar *,UserCtx *userctx,Scalar *b,Scalar *x);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   UserCtx userctx;
@@ -139,8 +139,8 @@ int main(int argc,char **args)
 }
 
 /* ------------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "UserInitializedLinearSolve"
+#undef __FUNCT__
+#define __FUNCT__ "UserInitializedLinearSolve"
 int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
 {
   int N,ierr;
@@ -179,8 +179,8 @@ int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "UserDoLinearSolve"
+#undef __FUNCT__
+#define __FUNCT__ "UserDoLinearSolve"
 /*
    Solves -div (rho grad psi) = F using finite differences.
    rho is a 2-dimensional array of size m by n, stored in Fortran
@@ -295,8 +295,8 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
 }
 
 /* ------------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "UserFinalizeLinearSolve"
+#undef __FUNCT__
+#define __FUNCT__ "UserFinalizeLinearSolve"
 int UserFinalizeLinearSolver(UserCtx *userctx)
 {
   int ierr;

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.31 2001/01/22 23:07:42 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.32 2001/01/23 20:57:36 balay Exp balay $*/
 /*
        Formatted test for TS routines.
 
@@ -28,8 +28,8 @@ extern double solx(double);
 extern double soly(double);
 extern double solz(double);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int           ierr,time_steps = 100,steps,size;
@@ -86,8 +86,8 @@ int main(int argc,char **argv)
 }
 
 /* -------------------------------------------------------------------*/
-#undef __FUNC__
-#define __FUNC__ "Initial"
+#undef __FUNCT__
+#define __FUNCT__ "Initial"
 /* this test problem has initial values (1,1,1).                      */
 int Initial(Vec global,void *ctx)
 {
@@ -110,8 +110,8 @@ int Initial(Vec global,void *ctx)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "Monitor"
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
 int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 {
   VecScatter scatter;
@@ -152,8 +152,8 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "RHSFunction"
+#undef __FUNCT__
+#define __FUNCT__ "RHSFunction"
 int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 {
   Scalar     *inptr,*outptr;
@@ -208,8 +208,8 @@ int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "RHSJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian"
 int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   Mat    A = *AA;

@@ -1,11 +1,11 @@
-/*$Id: dclear.c,v 1.31 2001/01/15 21:43:22 bsmith Exp balay $*/
+/*$Id: dclear.c,v 1.32 2001/01/17 19:44:01 balay Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawClear" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawClear" 
 /*@
    PetscDrawClear - Clears graphical output.
 
@@ -32,8 +32,8 @@ int PetscDrawClear(PetscDraw draw)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawBOP" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawBOP" 
 /*@
    PetscDrawBOP - Begins a new page or frame on the selected graphical device.
 
@@ -57,8 +57,8 @@ int PetscDrawBOP(PetscDraw draw)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawEOP" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawEOP" 
 /*@
    PetscDrawEOP - Ends a page or frame on the selected graphical device.
 

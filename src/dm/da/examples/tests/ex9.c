@@ -1,12 +1,12 @@
-/*$Id: ex9.c,v 1.17 2001/01/23 20:58:05 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.18 2001/03/22 20:32:50 bsmith Exp balay $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
 #include "petscmat.h"
 #include "petscda.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            i,M = 3,N = 5,P=3,s=1,w=2;

@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.43 2001/01/19 23:22:22 balay Exp bsmith $*/
+/*$Id: gr2.c,v 1.44 2001/01/20 03:36:52 bsmith Exp balay $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -21,8 +21,8 @@ typedef struct {
     in one particular set of coordinates. It is a callback
     called from PetscDrawZoom()
 */
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw_DA2d_Zoom"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Draw_DA2d_Zoom"
 int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
   ZoomCtx *zctx = (ZoomCtx*)ctx;
@@ -67,8 +67,8 @@ int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw_DA2d"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Draw_DA2d"
 int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DA                 da,dac,dag;
@@ -246,8 +246,8 @@ int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 EXTERN int VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "VecView_MPI_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_DA"
 int VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
   DA         da;
@@ -281,8 +281,8 @@ int VecView_MPI_DA(Vec xin,PetscViewer viewer)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "VecLoadIntoVector_Binary_DA"
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoadIntoVector_Binary_DA"
 int VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
 {
   DA             da;

@@ -1,10 +1,10 @@
-/*$Id: cookie.c,v 1.24 2000/10/24 20:24:36 bsmith Exp bsmith $*/
+/*$Id: cookie.c,v 1.25 2001/01/15 21:43:52 bsmith Exp balay $*/
 
 #include "petsc.h"  /*I "petsc.h" I*/
 int PETSC_LARGEST_COOKIE = PETSC_LARGEST_COOKIE_PREDEFINED;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscRegisterCookie"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRegisterCookie"
 /*@
     PetscRegisterCookie - Registers a new cookie for use with a
     newly created PETSc object class.  The user should pass in

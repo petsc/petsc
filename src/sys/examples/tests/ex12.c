@@ -1,12 +1,12 @@
-/*$Id: ex12.c,v 1.15 2001/01/17 22:20:33 bsmith Exp balay $*/
+/*$Id: ex12.c,v 1.16 2001/01/23 20:53:32 balay Exp balay $*/
 
 static char help[] = "Tests timing PetscSortInt().\n\n";
 
 #include "petsc.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int         ierr,i,n = 1000,*values,event;

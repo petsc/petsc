@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.33 2000/09/22 20:42:32 bsmith Exp bsmith $*/
+/*$Id: sortip.c,v 1.34 2001/01/15 21:44:00 bsmith Exp balay $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -11,8 +11,8 @@
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortIntWithPermutation_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortIntWithPermutation_Private"
 static int PetscSortIntWithPermutation_Private(const int v[],int vdx[],int right)
 {
   int ierr,tmp,i,vl,last;
@@ -36,8 +36,8 @@ static int PetscSortIntWithPermutation_Private(const int v[],int vdx[],int right
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortIntWithPermutation"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortIntWithPermutation"
 /*@
    PetscSortIntWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.
@@ -81,8 +81,8 @@ int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 
 /* ---------------------------------------------------------------------- */
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortDoubleWithPermutation_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortDoubleWithPermutation_Private"
 static int PetscSortDoubleWithPermutation_Private(const double v[],int vdx[],int right)
 {
   double vl;
@@ -107,8 +107,8 @@ static int PetscSortDoubleWithPermutation_Private(const double v[],int vdx[],int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSortDoubleWithPermutation"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortDoubleWithPermutation"
 /*@
    PetscSortDoubleWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.

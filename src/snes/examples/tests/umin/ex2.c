@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.65 2001/01/17 22:26:24 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.66 2001/01/23 20:57:08 balay Exp balay $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -48,8 +48,8 @@ extern int FormInitialGuess2(AppCtx*,Vec);
 extern int EvalFunctionGradient2(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 extern int BoundaryValues(AppCtx*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
@@ -153,8 +153,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormMinimzationFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormMinimzationFunction"
 /*
     FormMinimizationFunction - Evaluates function f(x).
 */
@@ -171,8 +171,8 @@ int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormGradient"
+#undef __FUNCT__
+#define __FUNCT__ "FormGradient"
 /*
     FormGradient - Evaluates gradient g(x).
 */
@@ -189,8 +189,8 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormHessian"
+#undef __FUNCT__
+#define __FUNCT__ "FormHessian"
 /*
    FormHessian - Forms Hessian matrix by computing a column at a time.
 */
@@ -235,8 +235,8 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "MatrxFreeHessian"
+#undef __FUNCT__
+#define __FUNCT__ "MatrxFreeHessian"
 /*
   MatrixFreeHessian
  */
@@ -259,8 +259,8 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void 
 
 /* --------------------  Form initial approximation ----------------- */
 
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess1"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int    ierr,i,j,k,nx = user->mx,ny = user->my;
@@ -284,8 +284,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 }
 /* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
 
-#undef __FUNC__
-#define __FUNC__ "EvalFunctionGradient1"
+#undef __FUNCT__
+#define __FUNCT__ "EvalFunctionGradient1"
 int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
   int    ierr,nx = user->mx,ny = user->my,ind,i,j,k;
@@ -380,8 +380,8 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppC
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "HessianProductMat1"
+#undef __FUNCT__
+#define __FUNCT__ "HessianProductMat1"
 int HessianProductMat1(Mat mat,Vec svec,Vec y)
 {
   void *ptr;
@@ -391,8 +391,8 @@ int HessianProductMat1(Mat mat,Vec svec,Vec y)
 }
   
 /* --------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "HessianProduct1"
+#undef __FUNCT__
+#define __FUNCT__ "HessianProduct1"
 /* 
    HessianProduct - Computes the matrix-vector product: y = f''(x)*s
  */
@@ -482,8 +482,8 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
 
 /* --------------------  Form initial approximation ----------------- */
 
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess1"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess2(AppCtx *user,Vec X)
 {
   int    ierr,i,j,k,nx = user->mx,ny = user->my;
@@ -515,8 +515,8 @@ int FormInitialGuess2(AppCtx *user,Vec X)
 
 /* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
 
-#undef __FUNC__
-#define __FUNC__ "EvalFunctionGradient2"
+#undef __FUNCT__
+#define __FUNCT__ "EvalFunctionGradient2"
 int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
   int    ierr,nx = user->mx,ny = user->my,ind,i,j,k;
@@ -650,8 +650,8 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppC
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "HessianProductMat2"
+#undef __FUNCT__
+#define __FUNCT__ "HessianProductMat2"
 int HessianProductMat2(Mat mat,Vec svec,Vec y)
 {
   void *ptr;
@@ -660,8 +660,8 @@ int HessianProductMat2(Mat mat,Vec svec,Vec y)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "HessianProduct2"
+#undef __FUNCT__
+#define __FUNCT__ "HessianProduct2"
 /* 
    HessianProduct2 - Computes the matrix-vector product: y = f''(x)*s
  */
@@ -814,8 +814,8 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "BoundaryValues"
+#undef __FUNCT__
+#define __FUNCT__ "BoundaryValues"
 /* 
    BoundaryValues - For Minimal Surface Area problem.  Computes Enneper's 
    boundary conditions (bottom, top, left, right) which are obtained by 

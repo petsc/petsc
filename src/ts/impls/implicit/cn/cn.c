@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.25 2001/01/15 21:48:31 bsmith Exp bsmith $*/
+/*$Id: cn.c,v 1.26 2001/02/13 19:00:01 bsmith Exp balay $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -12,8 +12,8 @@ typedef struct {
 } TS_CN;
 
 /*------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "TSComputeRHSFunctionEuler"
+#undef __FUNCT__  
+#define __FUNCT__ "TSComputeRHSFunctionEuler"
 /*
    TSComputeRHSFunctionEuler - Evaluates the right-hand-side function. 
 
@@ -58,8 +58,8 @@ int TSComputeRHSFunctionEuler(TS ts,double t,Vec x,Vec y)
     Version for linear PDE where RHS does not depend on time. Has built a
   single matrix that is to be used for all timesteps.
 */
-#undef __FUNC__  
-#define __FUNC__ "TSStep_CN_Linear_Constant_Matrix"
+#undef __FUNCT__  
+#define __FUNCT__ "TSStep_CN_Linear_Constant_Matrix"
 static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 {
   TS_CN     *cn = (TS_CN*)ts->data;
@@ -102,8 +102,8 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 /*
       Version where matrix depends on time 
 */
-#undef __FUNC__  
-#define __FUNC__ "TSStep_CN_Linear_Variable_Matrix"
+#undef __FUNCT__  
+#define __FUNCT__ "TSStep_CN_Linear_Variable_Matrix"
 static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 {
   TS_CN        *cn = (TS_CN*)ts->data;
@@ -160,8 +160,8 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 /*
     Version for nonlinear PDE.
 */
-#undef __FUNC__  
-#define __FUNC__ "TSStep_CN_Nonlinear"
+#undef __FUNCT__  
+#define __FUNCT__ "TSStep_CN_Nonlinear"
 static int TSStep_CN_Nonlinear(TS ts,int *steps,double *time)
 {
   Vec       sol = ts->vec_sol;
@@ -190,8 +190,8 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,double *time)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "TSDestroy_CN"
+#undef __FUNCT__  
+#define __FUNCT__ "TSDestroy_CN"
 static int TSDestroy_CN(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
@@ -212,8 +212,8 @@ static int TSDestroy_CN(TS ts)
     This matrix shell multiply where user provided Shell matrix
 */
 
-#undef __FUNC__  
-#define __FUNC__ "TSCnMatMult"
+#undef __FUNCT__  
+#define __FUNCT__ "TSCnMatMult"
 int TSCnMatMult(Mat mat,Vec x,Vec y)
 {
   TS     ts;
@@ -236,8 +236,8 @@ int TSCnMatMult(Mat mat,Vec x,Vec y)
 
               U^{n+1} - dt*F(U^{n+1}) - U^{n}
 */
-#undef __FUNC__  
-#define __FUNC__ "TSCnFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "TSCnFunction"
 int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS     ts = (TS) ctx;
@@ -267,8 +267,8 @@ int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 
              J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
 */
-#undef __FUNC__  
-#define __FUNC__ "TSCnJacobian"
+#undef __FUNCT__  
+#define __FUNCT__ "TSCnJacobian"
 int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   TS         ts = (TS) ctx;
@@ -296,8 +296,8 @@ int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 }
 
 /* ------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "TSSetUp_CN_Linear_Constant_Matrix"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetUp_CN_Linear_Constant_Matrix"
 static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN   *cn = (TS_CN*)ts->data;
@@ -327,8 +327,8 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetUp_CN_Linear_Variable_Matrix"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetUp_CN_Linear_Variable_Matrix"
 static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
@@ -346,8 +346,8 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetUp_CN_Nonlinear"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetUp_CN_Nonlinear"
 static int TSSetUp_CN_Nonlinear(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
@@ -368,8 +368,8 @@ static int TSSetUp_CN_Nonlinear(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetFromOptions_CN_Linear"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetFromOptions_CN_Linear"
 static int TSSetFromOptions_CN_Linear(TS ts)
 {
   int ierr;
@@ -380,8 +380,8 @@ static int TSSetFromOptions_CN_Linear(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSSetFromOptions_CN_Nonlinear"
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetFromOptions_CN_Nonlinear"
 static int TSSetFromOptions_CN_Nonlinear(TS ts)
 {
   int ierr;
@@ -392,8 +392,8 @@ static int TSSetFromOptions_CN_Nonlinear(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "TSView_CN"
+#undef __FUNCT__  
+#define __FUNCT__ "TSView_CN"
 static int TSView_CN(TS ts,PetscViewer viewer)
 {
   PetscFunctionBegin;
@@ -402,8 +402,8 @@ static int TSView_CN(TS ts,PetscViewer viewer)
 
 /* ------------------------------------------------------------ */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "TSCreate_CN"
+#undef __FUNCT__  
+#define __FUNCT__ "TSCreate_CN"
 int TSCreate_CN(TS ts)
 {
   TS_CN      *cn;

@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.113 2001/01/16 18:19:30 balay Exp bsmith $*/
+/*$Id: cg.c,v 1.114 2001/02/01 18:39:17 bsmith Exp balay $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -52,8 +52,8 @@ EXTERN int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
       This is called once, usually automatically by SLESSolve() or SLESSetUp()
      but can be called directly by KSPSetUp()
 */
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_CG"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_CG"
 int KSPSetUp_CG(KSP ksp)
 {
   KSP_CG *cgP = (KSP_CG*)ksp->data;
@@ -103,8 +103,8 @@ int KSPSetUp_CG(KSP ksp)
 .     its - number of iterations used
 
 */
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_CG"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_CG"
 int  KSPSolve_CG(KSP ksp,int *its)
 {
   int          ierr,i,maxit,eigs,pres;
@@ -213,8 +213,8 @@ int  KSPSolve_CG(KSP ksp,int *its)
        KSPDestroy_CG - Frees all memory space used by the Krylov method
 
 */
-#undef __FUNC__  
-#define __FUNC__ "KSPDestroy_CG" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_CG" 
 int KSPDestroy_CG(KSP ksp)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
@@ -242,8 +242,8 @@ int KSPDestroy_CG(KSP ksp)
       flags that information should be printed here.
 
 */
-#undef __FUNC__  
-#define __FUNC__ "KSPView_CG" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPView_CG" 
 int KSPView_CG(KSP ksp,PetscViewer viewer)
 {
 #if defined(PETSC_USE_COMPLEX)
@@ -272,8 +272,8 @@ int KSPView_CG(KSP ksp,PetscViewer viewer)
     KSPSetFromOptions_CG - Checks the options database for options related to the 
                            conjugate gradient method.
 */ 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetFromOptions_CG"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetFromOptions_CG"
 int KSPSetFromOptions_CG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
@@ -301,8 +301,8 @@ int KSPSetFromOptions_CG(KSP ksp)
         This must be wrapped in an EXTERN_C_BEGIN to be dynamically linkable in C++
 */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCGSetType_CG" 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCGSetType_CG" 
 int KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg;
@@ -321,8 +321,8 @@ EXTERN_C_END
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_CG"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_CG"
 int KSPCreate_CG(KSP ksp)
 {
   int    ierr;

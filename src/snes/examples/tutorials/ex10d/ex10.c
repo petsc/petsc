@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.22 2001/01/17 22:26:52 bsmith Exp balay $*/
+/*$Id: ex10.c,v 1.23 2001/01/23 20:57:24 balay Exp balay $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -83,8 +83,8 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
      FormInitialGuess(AppCtx*,Vec);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES     snes;                 /* SNES context */
@@ -459,8 +459,8 @@ int main(int argc,char **argv)
 
   return 0;
 }
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 /* --------------------  Form initial approximation ----------------- */
 
 /* 
@@ -514,8 +514,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   return 0;
 }
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 /* --------------------  Evaluate Function F(x) --------------------- */
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
@@ -594,8 +594,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0; 
 }
 
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*
    FormJacobian - Evaluates Jacobian matrix.

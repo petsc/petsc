@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.60 2001/01/19 23:22:18 balay Exp bsmith $*/
+/*$Id: aodatabasic.c,v 1.61 2001/01/20 03:36:46 bsmith Exp balay $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -17,8 +17,8 @@
 #include "src/dm/ao/aoimpl.h"          /*I  "petscao.h"  I*/
 #include "petscbt.h"
 
-#undef __FUNC__  
-#define __FUNC__ "AODataDestroy_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataDestroy_Basic"
 int AODataDestroy_Basic(AOData ao)
 {
   int           ierr;
@@ -53,8 +53,8 @@ int AODataDestroy_Basic(AOData ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataView_Basic_Binary"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataView_Basic_Binary"
 int AODataView_Basic_Binary(AOData ao,PetscViewer viewer)
 {
   int             ierr,N,fd;
@@ -108,8 +108,8 @@ int AODataView_Basic_Binary(AOData ao,PetscViewer viewer)
 /*
       All processors have the same data so processor 0 prints it
 */
-#undef __FUNC__  
-#define __FUNC__ "AODataView_Basic_ASCII"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataView_Basic_ASCII"
 int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
 {
   int               ierr,j,k,l,rank,size,nkeys,nsegs,i,N,bs,zero = 0;
@@ -219,8 +219,8 @@ int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataView_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataView_Basic"
 int AODataView_Basic(AOData ao,PetscViewer viewer)
 {
   int        rank,ierr;
@@ -243,8 +243,8 @@ int AODataView_Basic(AOData ao,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataKeyRemove_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataKeyRemove_Basic"
 int AODataKeyRemove_Basic(AOData aodata,char *name)
 {
   AODataSegment    *segment,*iseg;
@@ -284,8 +284,8 @@ int AODataKeyRemove_Basic(AOData aodata,char *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentRemove_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataSegmentRemove_Basic"
 int AODataSegmentRemove_Basic(AOData aodata,char *name,char *segname)
 {
   AODataSegment    *segment,*iseg;
@@ -318,8 +318,8 @@ int AODataSegmentRemove_Basic(AOData aodata,char *name,char *segname)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentAdd_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataSegmentAdd_Basic"
 int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,int *keys,void *data,PetscDataType dtype)
 {
   AODataSegment    *segment,*iseg;
@@ -471,8 +471,8 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentExtrema_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataSegmentExtrema_Basic"
 int AODataSegmentGetExtrema_Basic(AOData ao,char *name,char *segname,void *xmax,void *xmin)
 {
   AODataSegment    *segment; 
@@ -515,8 +515,8 @@ int AODataSegmentGetExtrema_Basic(AOData ao,char *name,char *segname,void *xmax,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentGet_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataSegmentGet_Basic"
 int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,void **data)
 {
   AODataSegment    *segment; 
@@ -542,8 +542,8 @@ int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentRestore_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataSegmentRestore_Basic"
 int AODataSegmentRestore_Basic(AOData aodata,char *name,char *segname,int n,int *keys,void **data)
 {
   int ierr;
@@ -553,8 +553,8 @@ int AODataSegmentRestore_Basic(AOData aodata,char *name,char *segname,int n,int 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentGetLocal_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataSegmentGetLocal_Basic"
 int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *keys,void **data)
 {
   int           ierr,*globals,*locals,bs;
@@ -583,8 +583,8 @@ int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *ke
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentRestoreLocal_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataSegmentRestoreLocal_Basic"
 int AODataSegmentRestoreLocal_Basic(AOData aodata,char *name,char *segname,int n,int *keys,void **data)
 {
   int ierr;
@@ -596,8 +596,8 @@ int AODataSegmentRestoreLocal_Basic(AOData aodata,char *name,char *segname,int n
 
 EXTERN int AOBasicGetIndices_Private(AO,int **,int **);
 
-#undef __FUNC__  
-#define __FUNC__ "AODataKeyRemap_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataKeyRemap_Basic"
 int AODataKeyRemap_Basic(AOData aodata,char *keyname,AO ao)
 {
   int           ierr,*inew,k,*ii,nk,dsize,bs,nkb;
@@ -653,8 +653,8 @@ int AODataKeyRemap_Basic(AOData aodata,char *keyname,AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataKeyGetAdjacency_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataKeyGetAdjacency_Basic"
 int AODataKeyGetAdjacency_Basic(AOData aodata,char *keyname,Mat *adj)
 {
   int           ierr,cnt,i,j,*jj,*ii,nlocal,n,*nb,bs,ls;
@@ -703,8 +703,8 @@ int AODataKeyGetAdjacency_Basic(AOData aodata,char *keyname,Mat *adj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "AODataSegmentPartition_Basic"
+#undef __FUNCT__
+#define __FUNCT__ "AODataSegmentPartition_Basic"
 int AODataSegmentPartition_Basic(AOData aodata,char *keyname,char *segname)
 {
   int             ierr,size,bs,i,j,*idx,nc,*isc;
@@ -747,8 +747,8 @@ int AODataSegmentPartition_Basic(AOData aodata,char *keyname,char *segname)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataKeyGetActive_Basic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AODataKeyGetActive_Basic" 
 int AODataKeyGetActive_Basic(AOData aodata,char *name,char *segname,int n,int *keys,int wl,IS *is)
 {
   int           ierr,i,cnt,*fnd,bs;
@@ -787,8 +787,8 @@ int AODataKeyGetActive_Basic(AOData aodata,char *name,char *segname,int n,int *k
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataKeyGetActiveLocal_Basic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AODataKeyGetActiveLocal_Basic" 
 int AODataKeyGetActiveLocal_Basic(AOData aodata,char *name,char *segname,int n,int *keys,int wl,IS *is)
 {
   int           ierr,i,cnt,*fnd,bs,*locals;
@@ -850,8 +850,8 @@ static struct _AODataOps myops = {AODataSegmentAdd_Basic,
                                   AODataDestroy_Basic,
                                   AODataView_Basic};
 
-#undef __FUNC__  
-#define __FUNC__ "AODataCreateBasic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AODataCreateBasic" 
 /*@C
    AODataCreateBasic - Creates an AO datastructure.
 
@@ -897,8 +897,8 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AODataLoadBasic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AODataLoadBasic" 
 /*@C
    AODataLoadBasic - Loads an AO database from a file.
 

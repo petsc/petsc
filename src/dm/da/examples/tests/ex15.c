@@ -1,12 +1,12 @@
-/*$Id: ex15.c,v 1.6 2001/01/22 23:08:13 bsmith Exp balay $*/
+/*$Id: ex15.c,v 1.7 2001/01/23 20:58:05 balay Exp balay $*/
 
 static char help[] = "Tests DA interpolation\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int            M1 = 3,M2,ierr,dof = 1,s = 1,ratio = 2,dim = 1;

@@ -1,4 +1,4 @@
-/*$Id: PetscViewers.c,v 1.13 2000/09/28 21:08:19 bsmith Exp bsmith $*/
+/*$Id: viewers.c,v 1.14 2001/01/15 21:43:19 bsmith Exp balay $*/
 
 #include "petscviewer.h"
 
@@ -8,8 +8,8 @@ struct _p_PetscViewers {
    int         n;
 } ;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewersDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewersDestroy" 
 /*@C
    PetscViewersDestroy - Destroys a set of PetscViewers created with PetscViewersCreate().
 
@@ -36,8 +36,8 @@ int PetscViewersDestroy(PetscViewers v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewersCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewersCreate" 
 /*@C
    PetscViewersCreate - Creates a container to hold a set of PetscViewers.
 
@@ -69,8 +69,8 @@ int PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewersGetViewer" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewersGetViewer" 
 /*@C
    PetscViewersGetViewer - Gets a PetscViewer from a PetscViewer collection
 

@@ -1,4 +1,4 @@
-/*$Id: spnd.c,v 1.39 2001/01/15 21:46:34 bsmith Exp balay $*/
+/*$Id: spnd.c,v 1.40 2001/01/16 18:18:38 balay Exp balay $*/
 
 #include "petscmat.h"
 #include "src/mat/order/order.h"
@@ -7,8 +7,8 @@ EXTERN_C_BEGIN
 /*
     MatOrdering_ND - Find the nested dissection ordering of a given matrix.
 */    
-#undef __FUNC__  
-#define __FUNC__ "MatOrdering_ND"
+#undef __FUNCT__  
+#define __FUNCT__ "MatOrdering_ND"
 int MatOrdering_ND(Mat mat,MatOrderingType type,IS *row,IS *col)
 {
   int        ierr,i, *mask,*xls,*ls,nrow,*ia,*ja,*perm;

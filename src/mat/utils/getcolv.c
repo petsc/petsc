@@ -1,9 +1,9 @@
-/*$Id: getcolv.c,v 1.18 2000/09/28 21:12:12 bsmith Exp bsmith $*/
+/*$Id: getcolv.c,v 1.19 2001/01/15 21:46:25 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetColumnVector"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetColumnVector"
 /*@
    MatGetColumnVector - Gets the values from a given column of a matrix.
 
@@ -26,7 +26,7 @@
 int MatGetColumnVector(Mat A,Vec yy,int col)
 {
   Scalar   *y,*v,zero = 0.0;
-  int      ierr,i,j,nz,*idx,N,Rs,Re,rs,re,size;
+  int      ierr,i,j,nz,*idx,N,Rs,Re,rs,re;
   MPI_Comm comm;
   
   PetscFunctionBegin;
@@ -40,7 +40,6 @@ int MatGetColumnVector(Mat A,Vec yy,int col)
   ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)yy,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);
   if (Rs != rs || Re != re) SETERRQ4(1,"Matrix %d %d does not have same ownership range (size) as vector %d %d",Rs,Re,rs,re);
 

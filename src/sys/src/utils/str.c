@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.47 2000/09/28 21:09:22 bsmith Exp bsmith $*/
+/*$Id: str.c,v 1.48 2001/01/15 21:44:00 bsmith Exp balay $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -15,8 +15,8 @@
 #endif
 #include "petscfix.h"
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrlen"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrlen"
 int PetscStrlen(const char s[],int *len)
 {
   PetscFunctionBegin;
@@ -28,8 +28,8 @@ int PetscStrlen(const char s[],int *len)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrallocpy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrallocpy"
 int PetscStrallocpy(const char s[],char **t)
 {
   int ierr,len;
@@ -45,8 +45,8 @@ int PetscStrallocpy(const char s[],char **t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrcpy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrcpy"
 /*
     Handles copying null string correctly
 */
@@ -61,8 +61,8 @@ int PetscStrcpy(char s[],const char t[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrncpy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrncpy"
 int PetscStrncpy(char s[],const char t[],int n)
 {
   PetscFunctionBegin;
@@ -70,8 +70,8 @@ int PetscStrncpy(char s[],const char t[],int n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrcat"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrcat"
 int PetscStrcat(char s[],const char t[])
 {
   PetscFunctionBegin;
@@ -79,8 +79,8 @@ int PetscStrcat(char s[],const char t[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrncat"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrncat"
 int PetscStrncat(char s[],const char t[],int n)
 {
   PetscFunctionBegin;
@@ -88,8 +88,8 @@ int PetscStrncat(char s[],const char t[],int n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrcmp"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrcmp"
 int PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
 {
   int c;
@@ -107,8 +107,8 @@ int PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrgrt"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrgrt"
 int PetscStrgrt(const char a[],const char b[],PetscTruth *t)
 {
   int c;
@@ -128,8 +128,8 @@ int PetscStrgrt(const char a[],const char b[],PetscTruth *t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrcasecmp"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrcasecmp"
 /*
     Note: This is different from system strncmp() this returns PETSC_TRUE
     if the strings are the same!
@@ -151,8 +151,8 @@ int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrncmp"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrncmp"
 /*
     Note: This is different from system strncmp() this returns PETSC_TRUE
     if the strings are the same!
@@ -168,8 +168,8 @@ int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrchr"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrchr"
 int PetscStrchr(const char a[],char b,char **c)
 {
   PetscFunctionBegin;
@@ -182,8 +182,8 @@ int PetscStrchr(const char a[],char b,char **c)
    It returns the position after the position of b and 
    if it does not find it then it returns the entire string.
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscStrrchr"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrrchr"
 int PetscStrrchr(const char a[],char b,char **tmp)
 {
   PetscFunctionBegin;
@@ -192,8 +192,8 @@ int PetscStrrchr(const char a[],char b,char **tmp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrtolower"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrtolower"
 int PetscStrtolower(char a[])
 {
   PetscFunctionBegin;
@@ -215,8 +215,8 @@ int PetscStrtolower(char a[])
   it will bleed memory.
 
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscStrtok"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrtok"
 int PetscStrtok(const char a[],const char b[],char **result)
 {
   static char init[1024];
@@ -238,8 +238,8 @@ int PetscStrtok(const char a[],const char b[],char **result)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrstr"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrstr"
 int PetscStrstr(const char a[],const char b[],char **tmp)
 {
   PetscFunctionBegin;
@@ -248,8 +248,8 @@ int PetscStrstr(const char a[],const char b[],char **tmp)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStrreplace"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStrreplace"
 /*
 
       No proper error checking yet

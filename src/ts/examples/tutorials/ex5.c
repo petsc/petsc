@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.19 2001/01/22 23:07:45 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.20 2001/01/23 20:57:37 balay Exp balay $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -81,8 +81,8 @@ extern int RHSMatrixHeat(TS,double,Mat*,Mat*,MatStructure*,void*);
 extern int Monitor(TS,int,double,Vec,void*);
 extern int ExactSolution(double,Vec,AppCtx*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   AppCtx        appctx;                 /* user-defined application context */
@@ -239,8 +239,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "InitialConditions"
+#undef __FUNCT__
+#define __FUNCT__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time. 
 
@@ -292,8 +292,8 @@ int InitialConditions(Vec u,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "ExactSolution"
+#undef __FUNCT__
+#define __FUNCT__ "ExactSolution"
 /*
    ExactSolution - Computes the exact solution at a given time.
 
@@ -332,8 +332,8 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "Monitor"
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
 /*
    Monitor - User-provided routine to monitor the solution computed at 
    each timestep.  This example plots the solution and computes the
@@ -406,8 +406,8 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "RHSMatrixHeat"
+#undef __FUNCT__
+#define __FUNCT__ "RHSMatrixHeat"
 /*
    RHSMatrixHeat - User-provided routine to compute the right-hand-side
    matrix for the heat equation.

@@ -1,12 +1,12 @@
-/*$Id: vector.c,v 1.190 1999/12/21 21:15:15 bsmith Exp bsmith $*/
+/*$Id: integrator.c,v 1.2 2000/01/06 20:43:21 bsmith Exp balay $*/
 
 #include "appctx.h"
 
 /* The following functions do the integration over one element to
  compute the  Jacobian,Stiffness,Rhs etc */
 
-#undef __FUNC__
-#define __FUNC__ "ComputeJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeJacobian"
 
 /* input is x, output the nonlinear part into f for a particulat element */
 /* Much of the code is dublicated from ComputeMatrix; the integral is different */
@@ -63,8 +63,8 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "ComputeNonlinear"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeNonlinear"
 /* input is x, output the nonlinear part into f for a particular element */
 int ComputeNonlinear(AppElement *phi,double *uvvals,double *result)
 { 

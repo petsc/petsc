@@ -1,4 +1,4 @@
-/*$Id: matnull.c,v 1.35 2001/01/15 21:45:27 bsmith Exp bsmith $*/
+/*$Id: matnull.c,v 1.36 2001/02/14 16:25:23 bsmith Exp balay $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -6,8 +6,8 @@
 #include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatNullSpaceCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNullSpaceCreate"
 /*@C
    MatNullSpaceCreate - Creates a data structure used to project vectors 
    out of null spaces.
@@ -48,8 +48,8 @@ int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatNullSpaceDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNullSpaceDestroy"
 /*@
    MatNullSpaceDestroy - Destroys a data structure used to project vectors 
    out of null spaces.
@@ -79,8 +79,8 @@ int MatNullSpaceDestroy(MatNullSpace sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatNullSpaceRemove"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNullSpaceRemove"
 /*@
    MatNullSpaceRemove - Removes all the components of a null space from a vector.
 
@@ -128,8 +128,8 @@ int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatNullSpaceTest"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNullSpaceTest"
 /*@
    MatNullSpaceTest  - Tests if the claimed null space is really a
      null space of a matrix

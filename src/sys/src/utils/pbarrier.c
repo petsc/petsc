@@ -1,9 +1,9 @@
-/*$Id: pbarrier.c,v 1.14 2000/09/22 20:42:32 bsmith Exp bsmith $*/
+/*$Id: pbarrier.c,v 1.15 2001/01/15 21:44:00 bsmith Exp balay $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscBarrier"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscBarrier"
 /*@C
     PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object A.

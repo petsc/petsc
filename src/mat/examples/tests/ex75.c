@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.24 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex75.c,v 1.25 2001/01/23 20:55:11 balay Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -6,8 +6,8 @@ static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 
 #include "petscmat.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int         bs=1, mbs=16, d_nz=3, o_nz=3, prob=2;

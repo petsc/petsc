@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.26 2001/01/22 23:03:19 bsmith Exp balay $*/
+/*$Id: ex18.c,v 1.27 2001/01/23 20:54:05 balay Exp balay $*/
 
 /* np = 1 */
 
@@ -9,8 +9,8 @@ arguments are\n\
 #include "petscvec.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int          n = 15,ierr,i;

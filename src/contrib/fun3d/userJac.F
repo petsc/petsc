@@ -1,4 +1,4 @@
-!  $Id: userJac.F,v 1.11 2000/09/20 15:16:47 kaushik Exp bsmith $
+!  $Id: userJac.F,v 1.12 2001/01/15 21:49:32 bsmith Exp balay $
 !---------------------------------------------------------------
 ! The following subroutines are from node6t.f in the original
 ! code.
@@ -12,8 +12,8 @@
 ! cfl is passed as a parameter
 !
 !=============================================================================
-#undef __FUNC__
-#define __FUNC__ "FILLA"
+#undef __FUNCT__
+#define __FUNCT__ "FILLA"
       subroutine FILLA(nnodes,nedge,evec,                               & 
      &                 nsface,isface,fxn,fyn,fzn,sxn,syn,szn,           &
      &                 nsnode,nvnode,nfnode,isnode,ivnode,ifnode,       &
@@ -823,8 +823,8 @@
 !
 !
 
-#undef __FUNC__
-#define __FUNC__ "CHK_ERR"
+#undef __FUNCT__
+#define __FUNCT__ "CHK_ERR"
       subroutine CHK_ERR(irank, ierr, irow, icol)
       implicit none
 #include "include/finclude/petscdef.h"

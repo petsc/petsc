@@ -1,10 +1,10 @@
-/*$Id: isltog.c,v 1.62 2001/01/26 05:04:04 bsmith Exp balay $*/
+/*$Id: isltog.c,v 1.63 2001/03/09 18:50:16 balay Exp balay $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingGetSize"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingGetSize"
 /*@C
     ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping.
 
@@ -30,8 +30,8 @@ int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingView"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingView"
 /*@C
     ISLocalToGlobalMappingView - View a local to global mapping
 
@@ -72,8 +72,8 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingCreateIS"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingCreateIS"
 /*@C
     ISLocalToGlobalMappingCreateIS - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
@@ -109,8 +109,8 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingCreate"
 /*@C
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
@@ -156,8 +156,8 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingBlock"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingBlock"
 /*@C
     ISLocalToGlobalMappingBlock - Creates a blocked index version of an 
        ISLocalToGlobalMapping that is appropriate for MatSetLocalToGlobalMappingBlock()
@@ -199,8 +199,8 @@ int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,int bs,ISLocalToGlo
   PetscFunctionReturn(0);
 }
   
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingDestroy"
 /*@
    ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
    ordering and a global parallel ordering.
@@ -231,8 +231,8 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
   PetscFunctionReturn(0);
 }
   
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingApplyIS"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingApplyIS"
 /*@
     ISLocalToGlobalMappingApplyIS - Creates from an IS in the local numbering
     a new index set using the global numbering defined in an ISLocalToGlobalMapping
@@ -310,8 +310,8 @@ M*/
 
 /* -----------------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "ISGlobalToLocalMappingSetUp_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "ISGlobalToLocalMappingSetUp_Private"
 /*
     Creates the global fields in the ISLocalToGlobalMapping structure
 */
@@ -346,8 +346,8 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGlobalToLocalMappingApply"
+#undef __FUNCT__  
+#define __FUNCT__ "ISGlobalToLocalMappingApply"
 /*@
     ISGlobalToLocalMappingApply - Provides the local numbering for a list of integers
     specified with a global numbering.
@@ -431,8 +431,8 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMa
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingGetInfo"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingGetInfo"
 /*@C
     ISLocalToGlobalMappingGetInfo - Gets the neighbor information for each processor and 
      each index shared by more than one processor 
@@ -844,8 +844,8 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingRestoreInfo"
+#undef __FUNCT__  
+#define __FUNCT__ "ISLocalToGlobalMappingRestoreInfo"
 /*@C
     ISLocalToGlobalMappingRestoreInfo - Frees the memory allocated by ISLocalToGlobalMappingGetInfo()
 

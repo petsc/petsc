@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.15 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex22.c,v 1.16 2001/03/12 22:34:22 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -45,8 +45,8 @@ extern int FormFunction(SNES,Vec,Vec,void*);
 extern int Monitor(SNES,int,PetscReal,void*);
 
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int     ierr,N = 5,i;

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.79 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.80 2001/03/22 20:32:01 bsmith Exp balay $*/
 
 static char help[] = "Newton method to solve u'' + u^{2} = f, sequentially.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -37,8 +37,8 @@ typedef struct {
    PetscViewer viewer;
 } MonitorCtx;
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES       snes;                   /* SNES context */
@@ -181,8 +181,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 /*
    FormInitialGuess - Computes initial guess.
 
@@ -197,8 +197,8 @@ int FormInitialGuess(Vec x)
    return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -254,8 +254,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 
@@ -319,8 +319,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "Monitor"
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
 /*
    Monitor - User-defined monitoring routine that views the
    current iterate with an x-window plot.

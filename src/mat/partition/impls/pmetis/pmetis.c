@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.43 2001/01/15 21:46:33 bsmith Exp balay $*/
+/*$Id: pmetis.c,v 1.44 2001/01/16 18:18:37 balay Exp balay $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -24,8 +24,8 @@ typedef struct {
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel
 */
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningApply_Parmetis" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningApply_Parmetis" 
 static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
   int                      ierr,*locals,size,rank;
@@ -83,8 +83,8 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningView_Parmetis" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningView_Parmetis" 
 int MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer viewer)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
@@ -110,8 +110,8 @@ int MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningParmetisSetCoarseSequential"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningParmetisSetCoarseSequential"
 /*@
      MatPartitioningParmetisSetCoarseSequential - Use the sequential code to 
          do the partitioning of the coarse grid.
@@ -132,8 +132,8 @@ int MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
   parmetis->parallel = 1;
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetFromOptions_Parmetis" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis" 
 int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 {
   int        ierr;
@@ -150,8 +150,8 @@ int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningDestroy_Parmetis" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningDestroy_Parmetis" 
 int MatPartitioningDestroy_Parmetis(MatPartitioning part)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
@@ -164,8 +164,8 @@ int MatPartitioningDestroy_Parmetis(MatPartitioning part)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningCreate_Parmetis" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningCreate_Parmetis" 
 int MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   int                      ierr;

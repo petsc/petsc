@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.52 2001/03/22 20:30:26 bsmith Exp bsmith $*/
+/*$Id: sbaij.c,v 1.53 2001/03/23 22:05:55 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -15,8 +15,8 @@
 /*
      Checks for missing diagonals
 */
-#undef __FUNC__  
-#define __FUNC__ "MatMissingDiagonal_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMissingDiagonal_SeqSBAIJ"
 int MatMissingDiagonal_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
@@ -33,8 +33,8 @@ int MatMissingDiagonal_SeqSBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMarkDiagonal_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMarkDiagonal_SeqSBAIJ"
 int MatMarkDiagonal_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
@@ -61,8 +61,8 @@ int MatMarkDiagonal_SeqSBAIJ(Mat A)
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRowIJ_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowIJ_SeqSBAIJ"
 static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -75,8 +75,8 @@ static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,in
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRowIJ_SeqSBAIJ" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRowIJ_SeqSBAIJ" 
 static int MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
   PetscFunctionBegin;
@@ -85,8 +85,8 @@ static int MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *n
   /* PetscFunctionReturn(0); */
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetBlockSize_SeqSBAIJ"
 int MatGetBlockSize_SeqSBAIJ(Mat mat,int *bs)
 {
   Mat_SeqSBAIJ *sbaij = (Mat_SeqSBAIJ*)mat->data;
@@ -96,8 +96,8 @@ int MatGetBlockSize_SeqSBAIJ(Mat mat,int *bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_SeqSBAIJ"
 int MatDestroy_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -131,8 +131,8 @@ int MatDestroy_SeqSBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetOption_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetOption_SeqSBAIJ"
 int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -161,8 +161,8 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRange_SeqSBAIJ"
 int MatGetOwnershipRange_SeqSBAIJ(Mat A,int *m,int *n)
 {
   PetscFunctionBegin;
@@ -171,8 +171,8 @@ int MatGetOwnershipRange_SeqSBAIJ(Mat A,int *m,int *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRow_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRow_SeqSBAIJ"
 int MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,Scalar **v)
 {
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
@@ -243,8 +243,8 @@ int MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,Scalar **v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRow_SeqSBAIJ"
 int MatRestoreRow_SeqSBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   int ierr;
@@ -255,8 +255,8 @@ int MatRestoreRow_SeqSBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatTranspose_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatTranspose_SeqSBAIJ"
 int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
 { 
   PetscFunctionBegin;
@@ -264,8 +264,8 @@ int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
   /* PetscFunctionReturn(0); */
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqSBAIJ_Binary"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqSBAIJ_Binary"
 static int MatView_SeqSBAIJ_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -329,8 +329,8 @@ static int MatView_SeqSBAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqSBAIJ_ASCII"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqSBAIJ_ASCII"
 static int MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
@@ -404,8 +404,8 @@ static int MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqSBAIJ_Draw_Zoom"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqSBAIJ_Draw_Zoom"
 static int MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   Mat          A = (Mat) Aa;
@@ -478,8 +478,8 @@ static int MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqSBAIJ_Draw"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqSBAIJ_Draw"
 static int MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
 {
   int          ierr;
@@ -501,8 +501,8 @@ static int MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_SeqSBAIJ"
 int MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
 {
   int        ierr;
@@ -528,8 +528,8 @@ int MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetValues_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetValues_SeqSBAIJ"
 int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -574,8 +574,8 @@ int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 } 
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValuesBlocked_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesBlocked_SeqSBAIJ"
 int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   PetscFunctionBegin;
@@ -583,8 +583,8 @@ int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
   /* PetscFunctionReturn(0); */
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ"
 int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -644,8 +644,8 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
    then the resulting sizes = [3,1,1,3,1] correspondig to sets [(0,1,2),(3),(5),(6,7,8),(9)]
    Assume: sizes should be long enough to hold all the values.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatZeroRows_SeqSBAIJ_Check_Blocks"
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRows_SeqSBAIJ_Check_Blocks"
 static int MatZeroRows_SeqSBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], int *bs_max)
 {
   int        i,j,k,row;
@@ -681,8 +681,8 @@ static int MatZeroRows_SeqSBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[],
   PetscFunctionReturn(0);
 }
   
-#undef __FUNC__  
-#define __FUNC__ "MatZeroRows_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRows_SeqSBAIJ"
 int MatZeroRows_SeqSBAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqSBAIJ *sbaij=(Mat_SeqSBAIJ*)A->data;
@@ -754,8 +754,8 @@ int MatZeroRows_SeqSBAIJ(Mat A,IS is,Scalar *diag)
    Any a(i,j) with i>j input by user is ingored. 
 */
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValues_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValues_SeqSBAIJ"
 int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -956,8 +956,8 @@ extern int MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
 #ifdef HAVE_MatIncompleteCholeskyFactor
 /* modefied from MatILUFactor_SeqSBAIJ, needs further work!  */
-#undef __FUNC__  
-#define __FUNC__ "MatIncompleteCholeskyFactor_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatIncompleteCholeskyFactor_SeqSBAIJ"
 int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,PetscReal fill,int level)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
@@ -1048,8 +1048,8 @@ int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,PetscReal fill,int level
 }
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPrintHelp_SeqSBAIJ"
 int MatPrintHelp_SeqSBAIJ(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
@@ -1064,8 +1064,8 @@ int MatPrintHelp_SeqSBAIJ(Mat A)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatSeqSBAIJSetColumnIndices_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqSBAIJSetColumnIndices_SeqSBAIJ"
 int MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,int *indices)
 {
   Mat_SeqSBAIJ *baij = (Mat_SeqSBAIJ *)mat->data;
@@ -1086,8 +1086,8 @@ int MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,int *indices)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatSeqSBAIJSetColumnIndices"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqSBAIJSetColumnIndices"
 /*@
     MatSeqSBAIJSetColumnIndices - Set the column indices for all the rows
        in the matrix.
@@ -1125,8 +1125,8 @@ int MatSeqSBAIJSetColumnIndices(Mat mat,int *indices)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetUpPreallocation_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUpPreallocation_SeqSBAIJ"
 int MatSetUpPreallocation_SeqSBAIJ(Mat A)
 {
   int        ierr;
@@ -1212,8 +1212,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetRowMax_SeqSBAIJ};
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatStoreValues_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStoreValues_SeqSBAIJ"
 int MatStoreValues_SeqSBAIJ(Mat mat)
 {
   Mat_SeqSBAIJ *aij = (Mat_SeqSBAIJ *)mat->data;
@@ -1237,8 +1237,8 @@ int MatStoreValues_SeqSBAIJ(Mat mat)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatRetrieveValues_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRetrieveValues_SeqSBAIJ"
 int MatRetrieveValues_SeqSBAIJ(Mat mat)
 {
   Mat_SeqSBAIJ *aij = (Mat_SeqSBAIJ *)mat->data;
@@ -1259,8 +1259,8 @@ int MatRetrieveValues_SeqSBAIJ(Mat mat)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatCreate_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_SeqSBAIJ"
 int MatCreate_SeqSBAIJ(Mat B)
 {
   Mat_SeqSBAIJ *b;
@@ -1317,8 +1317,8 @@ int MatCreate_SeqSBAIJ(Mat B)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatSeqSBAIJSetPreallocation"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqSBAIJSetPreallocation"
 /*@C
    MatSeqSBAIJSetPreallocation - Creates a sparse symmetric matrix in block AIJ (block
    compressed row) format.  For good matrix assembly performance the
@@ -1485,8 +1485,8 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatCreateSeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateSeqSBAIJ"
 /*@C
    MatCreateSeqSBAIJ - Creates a sparse symmetric matrix in block AIJ (block
    compressed row) format.  For good matrix assembly performance the
@@ -1537,8 +1537,8 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDuplicate_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDuplicate_SeqSBAIJ"
 int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   Mat         C;
@@ -1613,8 +1613,8 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatLoad_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLoad_SeqSBAIJ"
 int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
 {
   Mat_SeqSBAIJ  *a;

@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.83 2001/01/15 21:44:37 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.84 2001/03/22 20:29:29 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -7,8 +7,8 @@
 
 
 #include "src/vec/vecimpl.h"
-#undef __FUNC__  
-#define __FUNC__ "VecGetType"
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetType"
 /*@C
    VecGetType - Gets the vector type name (as a string) from the vector.
 
@@ -37,8 +37,8 @@ int VecGetType(Vec vec,VecType *type)
 PetscFList      VecList = 0;
 PetscTruth VecRegisterAllCalled = PETSC_FALSE;
  
-#undef __FUNC__  
-#define __FUNC__ "VecRegisterDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "VecRegisterDestroy"
 /*@C
    VecRegisterDestroy - Frees the list of Vec methods that were
    registered by VecRegisterDynamic().
@@ -109,8 +109,8 @@ int VecRegisterDestroy(void)
 .seealso: VecRegisterAll(), VecRegisterDestroy()
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "VecRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "VecRegister"
 int VecRegister(const char sname[],const char path[],const char name[],int (*function)(Vec))
 {
   int  ierr;
@@ -122,8 +122,8 @@ int VecRegister(const char sname[],const char path[],const char name[],int (*fun
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetType"
 /*@C
     VecSetType - Builds a vector, for a particular vector implementation.
 
@@ -180,8 +180,8 @@ int VecSetType(Vec vec,VecType type_name)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "VecMatlabEnginePut_Default"
+#undef __FUNCT__  
+#define __FUNCT__ "VecMatlabEnginePut_Default"
 int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
 {
   int     ierr,n;
@@ -208,8 +208,8 @@ int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "VecMatlabEngineGet_Default"
+#undef __FUNCT__  
+#define __FUNCT__ "VecMatlabEngineGet_Default"
 int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
 {
   int     ierr,n;

@@ -1,11 +1,11 @@
-/*$Id: dsetpause.c,v 1.24 2001/01/15 21:43:22 bsmith Exp balay $*/
+/*$Id: dsetpause.c,v 1.25 2001/01/17 19:44:01 balay Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSetPause" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetPause" 
 /*@
    PetscDrawSetPause - Sets the amount of time that program pauses after 
    a PetscDrawPause() is called. 

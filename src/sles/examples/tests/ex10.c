@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.90 2001/01/19 23:21:41 balay Exp balay $*/
+/*$Id: ex10.c,v 1.91 2001/01/23 20:56:37 balay Exp balay $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -21,8 +21,8 @@ extern int AddElement(Mat,int,int,double**,int,int);
 extern int paulsetup20(void);
 extern int paulintegrate20(double K[60][60]);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat     mat;
@@ -85,8 +85,8 @@ int main(int argc,char **args)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "GetElasticityMatrix"
+#undef __FUNCT__
+#define __FUNCT__ "GetElasticityMatrix"
 /* 
   GetElasticityMatrix - Forms 3D linear elasticity matrix.
  */
@@ -179,8 +179,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "AddElment"
+#undef __FUNCT__
+#define __FUNCT__ "AddElment"
 int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
 {
   Scalar val;
@@ -222,8 +222,8 @@ double	t2[20] =  {-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,
                  1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
 int     rmap[20] = {0,1,2,3,5,6,7,8,9,11,15,17,18,19,20,21,23,24,25,26};
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "Elastic20Stiff"
+#undef __FUNCT__
+#define __FUNCT__ "Elastic20Stiff"
 /* 
   Elastic20Stiff - Forms 20 node elastic stiffness for element.
  */
@@ -294,8 +294,8 @@ int Elastic20Stiff(double **Ke)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "paulsetup20"
+#undef __FUNCT__
+#define __FUNCT__ "paulsetup20"
 /* 
   paulsetup20 - Sets up data structure for forming local elastic stiffness.
  */
@@ -414,8 +414,8 @@ int paulsetup20(void)
   return 0;
 }
 /* -------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "paulintegrate20"
+#undef __FUNCT__
+#define __FUNCT__ "paulintegrate20"
 /* 
    paulintegrate20 - Does actual numerical integration on 20 node element.
  */

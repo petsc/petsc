@@ -1,4 +1,4 @@
-/*$Id: ex77.c,v 1.6 2001/01/19 21:15:16 bsmith Exp balay $*/
+/*$Id: ex77.c,v 1.7 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format. Same as ex74.c except diagonal entries of the matrices are zeros.\n";
 
@@ -6,8 +6,8 @@ static char help[] = "Tests the various sequential routines in MatSBAIJ format. 
 
 /* extern int MatReorderingSeqSBAIJ(Mat,IS); */
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec     x,y,b,s1,s2;      

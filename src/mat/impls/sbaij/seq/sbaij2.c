@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.27 2001/01/16 18:18:03 balay Exp bsmith $*/
+/*$Id: sbaij2.c,v 1.28 2001/01/17 22:22:55 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -8,8 +8,8 @@
 #include "petscbt.h"
 #include "sbaij.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatIncreaseOverlap_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatIncreaseOverlap_SeqSBAIJ"
 int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS *is,int ov)
 {
   PetscFunctionBegin;
@@ -17,8 +17,8 @@ int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS *is,int ov)
   /* PetscFunctionReturn(0); */
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetSubMatrix_SeqSBAIJ_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrix_SeqSBAIJ_Private"
 int MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data,*c;
@@ -99,8 +99,8 @@ int MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse sca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetSubMatrix_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrix_SeqSBAIJ"
 int MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -135,8 +135,8 @@ int MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetSubMatrices_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrices_SeqSBAIJ"
 int MatGetSubMatrices_SeqSBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   int ierr,i;
@@ -157,8 +157,8 @@ int MatGetSubMatrices_SeqSBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat 
 /* -------------------------------------------------------*/
 #include "petscblaslapack.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqSBAIJ_1"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_1"
 int MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
@@ -197,8 +197,8 @@ int MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqSBAIJ_2"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_2"
 int MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -244,8 +244,8 @@ int MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqSBAIJ_3"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_3"
 int MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
@@ -294,8 +294,8 @@ int MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqSBAIJ_4"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_4"
 int MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -346,8 +346,8 @@ int MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqSBAIJ_5"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_5"
 int MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -402,8 +402,8 @@ int MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqSBAIJ_6"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_6"
 int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -459,8 +459,8 @@ int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
   PetscLogFlops(72*(a->s_nz*2 - A->m) - A->m);
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqSBAIJ_7"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_7"
 int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -522,8 +522,8 @@ int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
 /*
     This will not work with MatScalar == float because it calls the BLAS
 */
-#undef __FUNC__  
-#define __FUNC__ "MatMult_SeqSBAIJ_N"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_SeqSBAIJ_N"
 int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -584,8 +584,8 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_SeqSBAIJ_1"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqSBAIJ_1"
 int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
@@ -634,8 +634,8 @@ int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_SeqSBAIJ_2"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqSBAIJ_2"
 int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -691,8 +691,8 @@ int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_SeqSBAIJ_3"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqSBAIJ_3"
 int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
@@ -751,8 +751,8 @@ int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_SeqSBAIJ_4"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqSBAIJ_4"
 int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -814,8 +814,8 @@ int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_SeqSBAIJ_5"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqSBAIJ_5"
 int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -879,8 +879,8 @@ int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   PetscLogFlops(50*(a->s_nz*2 - A->m));
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_SeqSBAIJ_6"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqSBAIJ_6"
 int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -948,8 +948,8 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_SeqSBAIJ_7"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqSBAIJ_7"
 int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -1020,8 +1020,8 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_SeqSBAIJ_N"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_SeqSBAIJ_N"
 int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
@@ -1095,8 +1095,8 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultTranspose_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTranspose_SeqSBAIJ"
 int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
 {
   PetscFunctionBegin;
@@ -1104,8 +1104,8 @@ int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
   /* PetscFunctionReturn(0); */
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultTransposeAdd_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransposeAdd_SeqSBAIJ"
 int MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
@@ -1114,8 +1114,8 @@ int MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   /* PetscFunctionReturn(0); */
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatScale_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_SeqSBAIJ"
 int MatScale_SeqSBAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
@@ -1127,8 +1127,8 @@ int MatScale_SeqSBAIJ(Scalar *alpha,Mat inA)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatNorm_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNorm_SeqSBAIJ"
 int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -1232,8 +1232,8 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatEqual_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatEqual_SeqSBAIJ"
 int MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data,*b = (Mat_SeqSBAIJ *)B->data;
@@ -1267,8 +1267,8 @@ int MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
   
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetDiagonal_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetDiagonal_SeqSBAIJ"
 int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -1301,8 +1301,8 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDiagonalScale_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalScale_SeqSBAIJ"
 int MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -1370,8 +1370,8 @@ int MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetInfo_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInfo_SeqSBAIJ"
 int MatGetInfo_SeqSBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -1401,8 +1401,8 @@ int MatGetInfo_SeqSBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatZeroEntries_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroEntries_SeqSBAIJ"
 int MatZeroEntries_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
@@ -1413,8 +1413,8 @@ int MatZeroEntries_SeqSBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRowMax_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMax_SeqSBAIJ"
 int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;

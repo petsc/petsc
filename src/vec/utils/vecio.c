@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.69 2001/01/15 21:44:37 bsmith Exp balay $*/
+/*$Id: vecio.c,v 1.70 2001/01/19 23:20:08 balay Exp balay $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -10,8 +10,8 @@
 #include "petscsys.h"
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "VecLoad"
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoad"
 /*@C 
   VecLoad - Loads a vector that has been stored in binary format
   with VecView().
@@ -132,8 +132,8 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecLoadIntoVector_Default"
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoadIntoVector_Default"
 int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;

@@ -1,4 +1,4 @@
-/*$Id: lg.c,v 1.73 2001/01/15 21:43:37 bsmith Exp balay $*/
+/*$Id: lg.c,v 1.74 2001/01/17 19:44:18 balay Exp balay $*/
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 
@@ -22,8 +22,8 @@ struct _p_DrawLG {
 
 #define CHUNCKSIZE 100
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGCreate" 
 /*@C
     PetscDrawLGCreate - Creates a line graph data structure.
 
@@ -79,8 +79,8 @@ int PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGSetDimension" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGSetDimension" 
 /*@
    PetscDrawLGSetDimension - Change the number of lines that are to be drawn.
 
@@ -113,8 +113,8 @@ int PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGReset" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGReset" 
 /*@
    PetscDrawLGReset - Clears line graph to allow for reuse with new data.
 
@@ -142,8 +142,8 @@ int PetscDrawLGReset(PetscDrawLG lg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGDestroy" 
 /*@C
    PetscDrawLGDestroy - Frees all space taken up by line graph data structure.
 
@@ -177,8 +177,8 @@ int PetscDrawLGDestroy(PetscDrawLG lg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGAddPoint" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGAddPoint" 
 /*@
    PetscDrawLGAddPoint - Adds another point to each of the line graphs. 
    The new point must have an X coordinate larger than the old points.
@@ -228,8 +228,8 @@ int PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGIndicateDataPoints" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGIndicateDataPoints" 
 /*@
    PetscDrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
 
@@ -252,8 +252,8 @@ int PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGAddPoints" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGAddPoints" 
 /*@C
    PetscDrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
@@ -314,8 +314,8 @@ int PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGDraw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGDraw" 
 /*@
    PetscDrawLGDraw - Redraws a line graph.
 
@@ -359,8 +359,8 @@ int PetscDrawLGDraw(PetscDrawLG lg)
   PetscFunctionReturn(0);
 } 
  
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGSetLimits" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGSetLimits" 
 /*@
    PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -389,8 +389,8 @@ int PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscRea
   PetscFunctionReturn(0);
 }
  
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGGetAxis" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGGetAxis" 
 /*@C
    PetscDrawLGGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -420,8 +420,8 @@ int PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawLGGetDraw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGGetDraw" 
 /*@C
    PetscDrawLGGetDraw - Gets the draw context associated with a line graph.
 

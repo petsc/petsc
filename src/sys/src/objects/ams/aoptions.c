@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.25 2001/01/15 21:43:57 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.26 2001/03/09 04:13:10 bsmith Exp balay $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -49,8 +49,8 @@ typedef struct {
 static PetscOptionsPublishObject amspub;
 int PetscOptionsPublishCount;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsBegin_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsBegin_Private"
 int PetscOptionsBegin_Private(MPI_Comm comm,char *prefix,char *title,char *mansec)
 {
   int        ierr;
@@ -84,8 +84,8 @@ int PetscOptionsBegin_Private(MPI_Comm comm,char *prefix,char *title,char *manse
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsEnd_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsEnd_Private"
 int PetscOptionsEnd_Private(void)
 {
   int ierr;
@@ -172,8 +172,8 @@ int PetscOptionsEnd_Private(void)
      Publishes the "lock" for an option; with a name that is the command line
    option name. This is the first item that is always published for an option
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsCreate_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsCreate_Private"
 static int PetscOptionsCreate_Private(char *opt,char *text,char *man,PetscOptionsAMS *amsopt)
 {
   int             ierr;
@@ -211,8 +211,8 @@ static int PetscOptionsCreate_Private(char *opt,char *text,char *man,PetscOption
      Publishes an AMS int field (with the default value in it) and with a name
    given by the text string
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsInt"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsInt"
 int PetscOptionsInt(char *opt,char *text,char *man,int defaultv,int *value,PetscTruth *set)
 {
   int             ierr;
@@ -237,8 +237,8 @@ int PetscOptionsInt(char *opt,char *text,char *man,int defaultv,int *value,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsString"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsString"
 int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value,int len,PetscTruth *set)
 {
   int             ierr;
@@ -267,8 +267,8 @@ int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value
      Publishes an AMS double field (with the default value in it) and with a name
    given by the text string
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsDouble"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsDouble"
 int PetscOptionsDouble(char *opt,char *text,char *man,double defaultv,double *value,PetscTruth *set)
 {
   int             ierr;
@@ -293,8 +293,8 @@ int PetscOptionsDouble(char *opt,char *text,char *man,double defaultv,double *va
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsScalar"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsScalar"
 int PetscOptionsScalar(char *opt,char *text,char *man,Scalar defaultv,Scalar *value,PetscTruth *set)
 {
   int ierr;
@@ -312,8 +312,8 @@ int PetscOptionsScalar(char *opt,char *text,char *man,Scalar defaultv,Scalar *va
      Publishes an AMS logical field (with the default value in it) and with a name
    given by the text string
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsName"
 int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
 {
   int             ierr;
@@ -344,8 +344,8 @@ int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
   and an AMS array of strings which are to be ed from with a name given by the text
 
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsList"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsList"
 int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defaultv,char *value,int len,PetscTruth *set)
 {
   int   ierr;
@@ -388,8 +388,8 @@ int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defau
   and an AMS array of strings which are to be ed from with a name given by the text
 
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsList"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsList"
 int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char *defaultv,char *value,int len,PetscTruth *set)
 {
   int i,ierr;
@@ -430,8 +430,8 @@ int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char
 /*
      Publishes an AMS logical field, only one in a group can be on
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsLogicalGroup"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsLogicalGroup"
 int PetscOptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg)
 {
   int             ierr;
@@ -458,8 +458,8 @@ int PetscOptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsLogicalGroup"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsLogicalGroup"
 int PetscOptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
 {
   int             ierr;
@@ -485,8 +485,8 @@ int PetscOptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsLogicalGroup"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsLogicalGroup"
 int PetscOptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
 {
   int             ierr;
@@ -512,8 +512,8 @@ int PetscOptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsLogical"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsLogical"
 int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTruth *flg,PetscTruth *set)
 {
   int             ierr;
@@ -544,8 +544,8 @@ int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTru
      Publishes an AMS double field (with the default value in it) and with a name
    given by the text string
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsDoubleArray"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsDoubleArray"
 int PetscOptionsDoubleArray(char *opt,char *text,char *man,double *value,int *n,PetscTruth *set)
 {
   int             ierr,i;
@@ -575,8 +575,8 @@ int PetscOptionsDoubleArray(char *opt,char *text,char *man,double *value,int *n,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsStringArray"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsStringArray"
 int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nmax,PetscTruth *set)
 {
   int             ierr;
@@ -604,8 +604,8 @@ int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nma
 /*
     Put a subheading into the GUI list of PetscOptions
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscOptionsHead"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsHead"
 int PetscOptionsHead(char *head)
 {
   int             ierr;

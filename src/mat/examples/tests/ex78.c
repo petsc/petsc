@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.8 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex78.c,v 1.9 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] =
 "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
@@ -11,8 +11,8 @@ Run this program: ex33h -Ain Ain -bin bin -uin uin\n\n";
 
 #include "petscmat.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat         A;

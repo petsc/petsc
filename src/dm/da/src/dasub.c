@@ -1,4 +1,4 @@
-/*$Id: dasub.c,v 1.31 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: dasub.c,v 1.32 2001/01/16 18:21:11 balay Exp balay $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -6,8 +6,8 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
-#undef __FUNC__  
-#define __FUNC__ "DAGetProcessorSubset"
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetProcessorSubset"
 /*@C
    DAGetProcessorSubset - Returns a communicator consisting only of the
    processors in a DA that own a particular global x, y, or z grid point

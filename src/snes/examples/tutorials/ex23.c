@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.4 2001/02/26 18:16:14 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.5 2001/03/22 20:32:01 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -30,8 +30,8 @@ typedef struct {
 
 extern int FormFunction(SNES,Vec,Vec,void*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int     ierr,N = 5;

@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.20 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex12.c,v 1.21 2001/01/23 20:56:41 balay Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
@@ -44,8 +44,8 @@ EXTERN_C_BEGIN
 extern int PCCreate_Jacobi(PC);
 EXTERN_C_END
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec         x,b,u;  /* approx solution, RHS, exact solution */

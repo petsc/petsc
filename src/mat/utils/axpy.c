@@ -1,9 +1,9 @@
-/*$Id: axpy.c,v 1.51 2001/01/16 18:18:31 balay Exp balay $*/
+/*$Id: axpy.c,v 1.52 2001/03/09 19:38:01 balay Exp balay $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "MatAXPY"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY"
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
@@ -67,8 +67,8 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatShift"
+#undef __FUNCT__  
+#define __FUNCT__ "MatShift"
 /*@
    MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity matrix.
 
@@ -104,8 +104,8 @@ int MatShift(Scalar *a,Mat Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDiagonalSet"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalSet"
 /*@
    MatDiagonalSet - Computes Y = Y + D, where D is a diagonal matrix
    that is represented as a vector. Or Y[i,i] = D[i] if InsertMode is
@@ -152,8 +152,8 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatAYPX"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAYPX"
 /*@
    MatAYPX - Computes Y = X + a*Y.
 
@@ -193,8 +193,8 @@ int MatAYPX(Scalar *a,Mat X,Mat Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatComputeExplicitOperator"
+#undef __FUNCT__  
+#define __FUNCT__ "MatComputeExplicitOperator"
 /*@
     MatComputeExplicitOperator - Computes the explicit matrix
 

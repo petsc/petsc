@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.27 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex14.c,v 1.28 2001/01/23 20:56:41 balay Exp balay $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -80,8 +80,8 @@ typedef struct {
 extern int ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
 extern int ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   /* -------------- Data to define application problem ---------------- */
@@ -291,8 +291,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 /* 
    FormInitialGuess - Forms initial approximation.
 
@@ -360,8 +360,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
   return 0;
 } 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "ComputeFunction"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeFunction"
 /* 
    ComputeFunction - Evaluates nonlinear function, F(x).
 
@@ -436,8 +436,8 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
   return 0; 
 } 
 /* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "ComputeJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "ComputeJacobian"
 /*
    ComputeJacobian - Evaluates Jacobian matrix.
 

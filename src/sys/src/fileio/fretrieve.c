@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.36 2000/09/28 21:09:02 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.37 2001/01/15 21:43:46 bsmith Exp balay $*/
 /*
       Code for opening and closing files.
 */
@@ -39,8 +39,8 @@ EXTERN_C_BEGIN
 EXTERN int Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscGetTmp"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetTmp"
 /*@C
    PetscGetTmp - Gets the name of the tmp directory
 
@@ -83,8 +83,8 @@ int PetscGetTmp(MPI_Comm comm,char *dir,int len)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSharedTmp"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSharedTmp"
 /*@C
    PetscSharedTmp - Determines if all processors in a communicator share a
          /tmp or have different ones.
@@ -216,8 +216,8 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSharedWorkingDirectory"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSharedWorkingDirectory"
 /*@C
    PetscSharedWorkingDirectory - Determines if all processors in a communicator share a
          working directory or have different ones.
@@ -338,8 +338,8 @@ int PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscFileRetrieve"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFileRetrieve"
 /*@C
     PetscFileRetrieve - Obtains a library from a URL or compressed 
         and copies into local disk space as uncompressed.

@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.150 2001/01/17 19:44:23 balay Exp balay $*/
+/*$Id: mtr.c,v 1.151 2001/03/09 15:46:03 balay Exp balay $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -32,8 +32,8 @@ void *PetscLow = (void*)0x0 ,*PetscHigh = (void*)0xEEEEEEEEEEEEEEEE;
 void *PetscLow  = (void*)0x0,*PetscHigh = (void*)0xEEEEEEEE;  
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSetUseTrMalloc_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSetUseTrMalloc_Private"
 int PetscSetUseTrMalloc_Private(void)
 {
   int ierr;
@@ -115,8 +115,8 @@ static long    TRMaxMem     = 0;
 static int  PetscLogMallocMax = 10000,PetscLogMalloc = -1,*PetscLogMallocLength;
 static char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunction;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTrValid"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTrValid"
 /*@C
    PetscTrValid - Test the memory for corruption.  This can be used to
    check for memory overwrites.
@@ -140,7 +140,7 @@ static char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallocFunct
     routine.
 
     The line, function, file and dir are given by the C preprocessor as 
-    __LINE__, __FUNC__, __FILE__, and __DIR__
+    __LINE__, __FUNCT__, __FILE__, and __DIR__
 
     The Fortran calling sequence is simply PetscTrValid(ierr)
 
@@ -190,15 +190,15 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTrMallocDefault"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTrMallocDefault"
 /*
     PetscTrMallocDefault - Malloc with tracing.
 
     Input Parameters:
 +   a   - number of bytes to allocate
 .   lineno - line number where used.  Use __LINE__ for this
-.   function - function calling routine. Use __FUNC__ for this
+.   function - function calling routine. Use __FUNCT__ for this
 .   filename  - file name where used.  Use __FILE__ for this
 -   dir - directory where file is. Use __SDIR__ for this
 
@@ -293,15 +293,15 @@ int PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *di
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTrFreeDefault"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTrFreeDefault"
 /*
    PetscTrFreeDefault - Free with tracing.
 
    Input Parameters:
 .   a    - pointer to a block allocated with PetscTrMalloc
 .   lineno - line number where used.  Use __LINE__ for this
-.   function - function calling routine. Use __FUNC__ for this
+.   function - function calling routine. Use __FUNCT__ for this
 .   file  - file name where used.  Use __FILE__ for this
 .   dir - directory where file is. Use __SDIR__ for this
  */
@@ -389,8 +389,8 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscShowMemoryUsage"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscShowMemoryUsage"
 /*@
     PetscShowMemoryUsage - Shows the amount of memory currently being used 
         in a communicator.
@@ -424,8 +424,8 @@ int PetscShowMemoryUsage(PetscViewer viewer,char *message)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTrSpace"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTrSpace"
 /*@
     PetscTrSpace - Returns space statistics.
    
@@ -452,8 +452,8 @@ int PetscTrSpace(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTrDump"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTrDump"
 /*@C
    PetscTrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
@@ -508,8 +508,8 @@ int PetscTrDump(FILE *fp)
 
 /* ---------------------------------------------------------------------------- */
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTrLog"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTrLog"
 /*@C
     PetscTrLog - Activates logging of all calls to malloc.
 
@@ -530,8 +530,8 @@ int PetscTrLog(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTrLogDump"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTrLogDump"
 /*@C
     PetscTrLogDump - Dumps the log of all calls to malloc; also calls 
     PetscGetResidentSetSize().
@@ -612,8 +612,8 @@ int PetscTrLogDump(FILE *fp)
 
 /* ---------------------------------------------------------------------------- */
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTrDebugLevel"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTrDebugLevel"
 /*
     PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.

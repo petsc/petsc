@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.88 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: baijfact.c,v 1.89 2001/01/16 18:17:47 balay Exp balay $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -10,8 +10,8 @@
 /*
       Version for when blocks are 2 by 2
 */
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_2"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2"
 int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -97,8 +97,8 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 /*
       Version for when blocks are 2 by 2 Using natural ordering
 */
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -182,8 +182,8 @@ int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 /*
      Version for when blocks are 1 by 1.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_1"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_1"
 int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -249,8 +249,8 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 
 
 /* ----------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactor_SeqBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactor_SeqBAIJ"
 int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatLUInfo *info)
 {
   int         ierr;

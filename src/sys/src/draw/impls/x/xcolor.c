@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.70 2001/01/16 18:15:31 balay Exp balay $*/
+/*$Id: xcolor.c,v 1.71 2001/01/17 19:44:09 balay Exp balay $*/
 
 /*
     Code for managing color the X implementation of the PetscDraw routines.
@@ -70,8 +70,8 @@ static Colormap  gColormap  = 0;
 static PixVal    gCmapping[256];
        int       gNumcolors = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSetUpColormap_Shared" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetUpColormap_Shared" 
 int PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   XColor        colordef,ecolordef;
@@ -123,8 +123,8 @@ int PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Col
 static PetscTruth cmap_pixvalues_used[256];
 static int        cmap_base = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSetUpColormap_Private" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetUpColormap_Private" 
 int PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   Colormap      defaultmap = DefaultColormap(display,screen); 
@@ -195,8 +195,8 @@ int PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Co
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSetUpColormap_X" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetUpColormap_X" 
 int PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   int         ierr;
@@ -232,8 +232,8 @@ int PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSetColormap_X" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetColormap_X" 
 int PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap colormap)
 {
   int ierr;
@@ -279,8 +279,8 @@ int PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap colormap)
 	GrayScale
 	StaticGray
  */
-#undef __FUNC__  
-#define __FUNC__ "XiSetVisualClass" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiSetVisualClass" 
 int XiSetVisualClass(PetscDraw_X* XiWin)
 {
   XVisualInfo vinfo;
@@ -303,8 +303,8 @@ int XiSetVisualClass(PetscDraw_X* XiWin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "XiGetVisualClass" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiGetVisualClass" 
 int XiGetVisualClass(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
@@ -316,8 +316,8 @@ int XiGetVisualClass(PetscDraw_X* XiWin)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "XiSetColormap" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiSetColormap" 
 int XiSetColormap(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
@@ -325,8 +325,8 @@ int XiSetColormap(PetscDraw_X* XiWin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "XiGetBaseColor" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiGetBaseColor" 
 int XiGetBaseColor(PetscDraw_X* XiWin,PixVal* white_pix,PixVal* black_pix)
 {
   PetscFunctionBegin;
@@ -341,8 +341,8 @@ int XiGetBaseColor(PetscDraw_X* XiWin,PixVal* white_pix,PixVal* black_pix)
     This routine returns the pixel value for the specified color
     Returns 0 on failure,<>0 otherwise.
  */
-#undef __FUNC__  
-#define __FUNC__ "XiFindColor" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiFindColor" 
 int XiFindColor(PetscDraw_X *XiWin,char *name,PixVal *pixval)
 {
   XColor   colordef;
@@ -365,8 +365,8 @@ int XiFindColor(PetscDraw_X *XiWin,char *name,PixVal *pixval)
     In the monchrome case (or if the color is otherwise unavailable),
     the "background" or "foreground" colors will be chosen
  */
-#undef __FUNC__  
-#define __FUNC__ "XiGetColor" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiGetColor" 
 PixVal XiGetColor(PetscDraw_X* XiWin,char *name,int is_fore)
 {
   PixVal pixval;
@@ -382,8 +382,8 @@ PixVal XiGetColor(PetscDraw_X* XiWin,char *name,int is_fore)
    This routine takes a named color and returns a color that is either
    lighter or darker
  */
-#undef __FUNC__  
-#define __FUNC__ "XiSimColor" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiSimColor" 
 PixVal XiSimColor(PetscDraw_X *XiWin,PixVal pixel,int intensity,int is_fore)
 {
   XColor   colordef,colorsdef;
@@ -420,8 +420,8 @@ PixVal XiSimColor(PetscDraw_X *XiWin,PixVal pixel,int intensity,int is_fore)
   
   The initial color is (red[0],green[0],blue[0]).
 */
-#undef __FUNC__  
-#define __FUNC__ "XiSetCmapLight" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiSetCmapLight" 
 int XiSetCmapLight(unsigned char *red,unsigned char *green,unsigned char *blue,int mapsize)
 {
   int     i ;

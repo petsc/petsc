@@ -1,12 +1,12 @@
-/*$Id: index.c,v 1.80 2000/11/28 17:28:13 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.81 2001/01/15 21:44:25 bsmith Exp balay $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
 #include "src/vec/is/isimpl.h" 
      /*I "petscis.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "ISIdentity" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISIdentity" 
 /*@C
    ISIdentity - Determines whether index set is the identity mapping.
 
@@ -40,8 +40,8 @@ int ISIdentity(IS is,PetscTruth *ident)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISSetIdentity" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSetIdentity" 
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
@@ -65,8 +65,8 @@ int ISSetIdentity(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISPermutation" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISPermutation" 
 /*@C
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
    index set has been declared to be a permutation.
@@ -95,8 +95,8 @@ int ISPermutation(IS is,PetscTruth *perm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISSetPermutation" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSetPermutation" 
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
@@ -120,8 +120,8 @@ int ISSetPermutation(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISDestroy" 
 /*@C
    ISDestroy - Destroys an index set.
 
@@ -149,8 +149,8 @@ int ISDestroy(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISInvertPermutation" 
 /*@C
    ISInvertPermutation - Creates a new permutation that is the inverse of 
                          a given permutation.
@@ -185,8 +185,8 @@ int ISInvertPermutation(IS is,int nlocal,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGetSize" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetSize" 
 /*@
    ISGetSize - Returns the global length of an index set. 
 
@@ -215,8 +215,8 @@ int ISGetSize(IS is,int *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGetLocalSize" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetLocalSize" 
 /*@
    ISGetLocalSize - Returns the local (processor) length of an index set. 
 
@@ -246,8 +246,8 @@ int ISGetLocalSize(IS is,int *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGetIndices" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetIndices" 
 /*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call 
    ISRestoreIndices() after having looked at the indices.  The user should 
@@ -296,8 +296,8 @@ int ISGetIndices(IS is,int *ptr[])
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISRestoreIndices" 
 /*@C
    ISRestoreIndices - Restores an index set to a usable state after a call 
                       to ISGetIndices().
@@ -342,8 +342,8 @@ int ISRestoreIndices(IS is,int *ptr[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISView" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISView" 
 /*@C
    ISView - Displays an index set.
 
@@ -371,8 +371,8 @@ int ISView(IS is,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISSort" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSort" 
 /*@
    ISSort - Sorts the indices of an index set.
 
@@ -398,8 +398,8 @@ int ISSort(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISSorted" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSorted" 
 /*@C
    ISSorted - Checks the indices to determine whether they have been sorted.
 
@@ -427,8 +427,8 @@ int ISSorted(IS is,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISDuplicate" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISDuplicate" 
 /*@C
    ISDuplicate - Creates a duplicate copy of an index set.
 

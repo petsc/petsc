@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.50 2001/01/22 23:03:19 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.51 2001/01/23 20:54:05 balay Exp balay $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";
@@ -6,8 +6,8 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 #include "petscvec.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int          n = 5,ierr,size,rank;

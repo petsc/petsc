@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.7 2001/01/16 18:21:39 balay Exp bsmith $*/
+/*$Id: appload.c,v 1.8 2001/01/17 22:28:17 bsmith Exp balay $*/
 
 /*
      Loads the qquadrilateral grid database from a file  and sets up the local 
@@ -7,8 +7,8 @@
 
 #include "appctx.h"
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreate"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreate"
 int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 {
   int    ierr;
@@ -48,8 +48,8 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtSetLocal"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSetLocal"
 /*
      AppCtxSetLocal - Sets the local numbering data structures for the grid.
 
@@ -145,8 +145,8 @@ int AppCtxSetLocal(AppCtx *appctx)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtGraphics"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtGraphics"
 int AppCtxGraphics(AppCtx *appctx)
 {
   int    ierr;
@@ -191,8 +191,8 @@ int AppCtxGraphics(AppCtx *appctx)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtDestroy"
 int AppCtxDestroy(AppCtx *appctx)
 {
   int        ierr;

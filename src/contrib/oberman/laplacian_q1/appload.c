@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.9 2001/01/16 18:21:35 balay Exp bsmith $*/
+/*$Id: appload.c,v 1.10 2001/01/17 22:28:12 bsmith Exp balay $*/
 #include "appctx.h"
 
 /*
@@ -6,8 +6,8 @@
      data structures. 
 */
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreate"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreate"
 /*
     AppCtxCreate - Fills in the data structures using the grid information from 
   a AOData file.
@@ -57,8 +57,8 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 }
 
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtSetLocal"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtSetLocal"
 /*
      AppCtxSetLocal - Sets the local numbering data structures for the grid.
 
@@ -185,8 +185,8 @@ int AppCtxSetLocal(AppCtx *appctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtDestroy"
 /*
           Frees the all the data structures in the program
 */

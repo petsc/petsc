@@ -1,4 +1,4 @@
-/*$Id: readinvecs.c,v 1.6 2000/05/10 16:38:39 bsmith Exp bsmith $*/
+/*$Id: readinvecs.c,v 1.7 2001/01/15 21:43:08 bsmith Exp balay $*/
 
 /*    Reads in PETSc vectors from a PETSc binary file into matlab
 
@@ -22,8 +22,8 @@
 /*
        Reads in a single vector
 */
-#undef __FUNC__  
-#define __FUNC__ "ReadInVecs"
+#undef __FUNCT__  
+#define __FUNCT__ "ReadInVecs"
 int ReadInVecs(Matrix *plhs[],int t,int dim,int *dims)
 {
   int    cookie = 0,M,compx = 0,i;
@@ -61,8 +61,8 @@ int ReadInVecs(Matrix *plhs[],int t,int dim,int *dims)
 #define ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return;}
 /*-----------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "mexFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
   static int fd = -1,dims[4],dim = 1,dof;

@@ -1,4 +1,4 @@
-/*$Id: pams.c,v 1.7 2000/09/28 21:09:19 bsmith Exp bsmith $*/
+/*$Id: pams.c,v 1.8 2001/01/15 21:43:57 bsmith Exp balay $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -7,8 +7,8 @@
 /*
     Publishes the common header part of any PETSc object. 
 */
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectPublishBaseBegin"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectPublishBaseBegin"
 int PetscObjectPublishBaseBegin(PetscObject obj)
 {
   AMS_Memory amem;
@@ -36,8 +36,8 @@ int PetscObjectPublishBaseBegin(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectPublishBaseEnd"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectPublishBaseEnd"
 int PetscObjectPublishBaseEnd(PetscObject obj)
 {
   AMS_Memory amem = (AMS_Memory) obj->amem;
@@ -53,8 +53,8 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
 
 #else
 
-#undef __FUNC__  
-#define __FUNC__ "mydummy"
+#undef __FUNCT__  
+#define __FUNCT__ "mydummy"
 int mydummy(void)
 {
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.2 2000/04/24 04:04:01 bsmith Exp balay $*/
+/*$Id: ex15.c,v 1.3 2001/01/23 20:53:32 balay Exp balay $*/
 
 /* 
    Demonstrates PetscPopUpSelect()
@@ -7,8 +7,8 @@
 #include "petsc.h"
 
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int  ierr,choice;

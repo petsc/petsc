@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.8 2001/03/09 19:26:41 balay Exp balay $*/
+/*$Id: nn.c,v 1.9 2001/03/09 19:27:51 balay Exp balay $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -16,8 +16,8 @@
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_NN"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_NN"
 static int PCSetUp_NN(PC pc)
 {
   int ierr;
@@ -47,8 +47,8 @@ static int PCSetUp_NN(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNC__  
-#define __FUNC__ "PCApply_NN"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_NN"
 static int PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
@@ -116,8 +116,8 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_NN"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_NN"
 static int PCDestroy_NN(PC pc)
 {
   PC_NN *pcnn = (PC_NN*)pc->data;
@@ -155,8 +155,8 @@ static int PCDestroy_NN(PC pc)
    Application Interface Routine: PCCreate()
 */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_NN"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_NN"
 int PCCreate_NN(PC pc)
 {
   int ierr;
@@ -209,8 +209,8 @@ EXTERN_C_END
 /*
    PCNNCreateCoarseMatrix - 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCNNCreateCoarseMatrix"
+#undef __FUNCT__  
+#define __FUNCT__ "PCNNCreateCoarseMatrix"
 int PCNNCreateCoarseMatrix (PC pc)
 {
   MPI_Request *send_request, *recv_request;
@@ -417,8 +417,8 @@ int PCNNCreateCoarseMatrix (PC pc)
 .  vec2_D  - garbage (used as work space)
 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCNNApplySchurToChunk"
+#undef __FUNCT__  
+#define __FUNCT__ "PCNNApplySchurToChunk"
 int PCNNApplySchurToChunk(PC pc, int n, int* idx, Scalar *chunk, Scalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   int i, ierr;
@@ -458,8 +458,8 @@ int PCNNApplySchurToChunk(PC pc, int n, int* idx, Scalar *chunk, Scalar* array_N
 .  vec2_N - vector of local nodes (interior and interface, including ghosts); returns garbage (used as work space)
 
 */
-#undef __FUNC__
-#define __FUNC__ "PCNNApplyInterfacePreconditioner"
+#undef __FUNCT__
+#define __FUNCT__ "PCNNApplyInterfacePreconditioner"
 int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,
                                       Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
@@ -535,8 +535,8 @@ int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, Scalar* work_N, Vec v
 .  work_N - Array of all local nodes (interior and interface). Workspace.
 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCNNBalancing"
+#undef __FUNCT__  
+#define __FUNCT__ "PCNNBalancing"
 int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
                    Vec vec1_D, Vec vec2_D, Scalar *work_N)
 {
@@ -605,7 +605,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
+#undef __FUNCT__
 
 
 

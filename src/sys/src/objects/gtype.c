@@ -1,11 +1,11 @@
-/*$Id: gtype.c,v 1.22 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: gtype.c,v 1.23 2001/01/15 21:43:52 bsmith Exp balay $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectGetType"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectGetType"
 /*@C
    PetscObjectGetType - Gets the object type of any PetscObject.
 

@@ -1,4 +1,4 @@
-/*$Id: text.c,v 1.38 2000/09/22 20:42:03 bsmith Exp bsmith $*/
+/*$Id: text.c,v 1.39 2001/01/15 21:43:29 bsmith Exp balay $*/
 
 /*
    This file contains simple code to manage access to fonts, insuring that
@@ -18,8 +18,8 @@ int XiLoadFont(PetscDraw_X*,XiFont*);
    ok because there will never be many windows and the graphics
    are not intended to be high performance.
 */
-#undef __FUNC__  
-#define __FUNC__ "XiFontFixed" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiFontFixed" 
 int XiFontFixed(PetscDraw_X *XBWin,int w,int h,XiFont **outfont)
 {
   static XiFont *curfont = 0,*font;
@@ -47,8 +47,8 @@ static int act_nfonts = 0;
   and load it if necessary
 */
 
-#undef __FUNC__  
-#define __FUNC__ "XiLoadFont" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiLoadFont" 
 int XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
 {
   char        font_name[100];
@@ -74,8 +74,8 @@ int XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
 }
 
 /* Code to find fonts and their characteristics */
-#undef __FUNC__  
-#define __FUNC__ "XiInitFonts" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiInitFonts" 
 int XiInitFonts(PetscDraw_X *XBWin)
 {
   char         **names;
@@ -125,8 +125,8 @@ int XiInitFonts(PetscDraw_X *XBWin)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "XiMatchFontSize" 
+#undef __FUNCT__  
+#define __FUNCT__ "XiMatchFontSize" 
 int XiMatchFontSize(XiFont *font,int w,int h)
 {
   int i,max,imax,tmp;

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.49 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.50 2001/01/23 20:56:41 balay Exp balay $*/
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
 linear system matrix in the SLES solvers.  Note that different storage formats\n\
@@ -19,8 +19,8 @@ T*/
 */
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   SLES        sles;      /* linear solver context */

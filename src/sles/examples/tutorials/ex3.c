@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.27 2001/01/23 20:56:41 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.28 2001/03/23 01:39:24 bsmith Exp balay $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
@@ -26,8 +26,8 @@ T*/
 extern int FormElementStiffness(double,Scalar*);
 extern int FormElementRhs(double,double,double,Scalar*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Vec     u,b,ustar; /* approx solution, RHS, exact solution */
@@ -194,8 +194,8 @@ int main(int argc,char **args)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormElementStiffness"
+#undef __FUNCT__
+#define __FUNCT__ "FormElementStiffness"
    /* element stiffness for Laplacian */
 int FormElementStiffness(double H,Scalar *Ke)
 {
@@ -207,8 +207,8 @@ int FormElementStiffness(double H,Scalar *Ke)
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormElementRhs"
+#undef __FUNCT__
+#define __FUNCT__ "FormElementRhs"
 int FormElementRhs(double x,double y,double H,Scalar *r)
 {
   PetscFunctionBegin;

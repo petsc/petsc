@@ -1,4 +1,4 @@
-/*$Id: psleep.c,v 1.28 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: psleep.c,v 1.29 2001/03/22 18:45:57 balay Exp balay $*/
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)
@@ -12,8 +12,8 @@
 #endif
 #include "petscfix.h"
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSleep"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSleep"
 /*@
    PetscSleep - Sleeps some number of seconds.
 

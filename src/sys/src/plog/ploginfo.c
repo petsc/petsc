@@ -1,4 +1,4 @@
-/*$Id: ploginfo.c,v 1.20 2000/11/28 17:27:57 bsmith Exp bsmith $*/
+/*$Id: ploginfo.c,v 1.21 2001/01/15 21:44:04 bsmith Exp balay $*/
 /*
       PetscLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
@@ -26,8 +26,8 @@ extern FILE       *PetscLogInfoFile;
 */
 extern FILE *petsc_history;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogInfo"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogInfo"
 /*@C
     PetscLogInfo - Logs informative data, which is printed to standard output
     or a file when the option -log_info <file> is specified.

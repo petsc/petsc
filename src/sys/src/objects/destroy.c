@@ -1,11 +1,11 @@
-/*$Id: destroy.c,v 1.57 2001/01/20 03:34:02 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.58 2001/03/22 20:29:03 bsmith Exp balay $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectDestroy"
 /*@C
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
 
@@ -38,8 +38,8 @@ int PetscObjectDestroy(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectView" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectView" 
 /*@C
    PetscObjectView - Views any PetscObject, regardless of the type. 
 
@@ -71,8 +71,8 @@ int PetscObjectView(PetscObject obj,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscTypeCompare"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTypeCompare"
 /*@C
    PetscTypeCompare - Determines whether a PETSc object is of a particular type.
 
@@ -116,8 +116,8 @@ int PetscTypeCompare(PetscObject obj,char *type_name,PetscTruth *same)
 static int         PetscObjectRegisterDestroy_Count = 0;
 static PetscObject PetscObjectRegisterDestroy_Objects[128];
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectRegisterDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectRegisterDestroy"
 /*@C
    PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
      PetscFinalize() is called.
@@ -145,8 +145,8 @@ int PetscObjectRegisterDestroy(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscObjectRegisterDestroyAll"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectRegisterDestroyAll"
 /*@C
    PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
      with PetscObjectRegisterDestroy(). Called by PetscFinalize()

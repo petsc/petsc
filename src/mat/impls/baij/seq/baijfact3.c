@@ -1,4 +1,4 @@
-/*$Id: baijfact3.c,v 1.2 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: baijfact3.c,v 1.3 2001/01/16 18:17:47 balay Exp balay $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -11,8 +11,8 @@
   except for very small changes since this is now a SeqBAIJ datastructure.
   NOT good code reuse.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_SeqBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"
 int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;

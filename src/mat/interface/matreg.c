@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.12 2000/11/28 17:28:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.13 2001/01/15 21:45:27 bsmith Exp balay $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -14,8 +14,8 @@ PetscTruth MatRegisterAllCalled = PETSC_FALSE;
 */
 PetscFList MatList = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetType"
 /*@C
    MatSetType - Builds matrix object for a particular matrix type
 
@@ -77,8 +77,8 @@ int MatSetType(Mat mat,MatType matype)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatRegisterDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRegisterDestroy"
 /*@C
    MatRegisterDestroy - Frees the list of matrix types that were
    registered by MatRegister().
@@ -104,8 +104,8 @@ int MatRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetType"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetType"
 /*@C
    MatGetType - Gets the matrx type as a string from the matrix object.
 
@@ -171,8 +171,8 @@ $     -mat_type my_mat
 
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "MatRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRegister"
 int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
 {
   int  ierr;

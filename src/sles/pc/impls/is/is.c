@@ -1,12 +1,12 @@
-/*$Id: is.c,v 1.5 2001/02/19 18:32:06 bsmith Exp balay $*/
+/*$Id: is.c,v 1.6 2001/03/09 19:28:07 balay Exp balay $*/
 #include "src/sles/pc/impls/is/is.h"
 
 /* -------------------------------------------------------------------------- */
 /*
    PCISSetUp - 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCISSetUp"
+#undef __FUNCT__  
+#define __FUNCT__ "PCISSetUp"
 int PCISSetUp(PC pc)
 {
   PC_IS  *pcis = (PC_IS*)(pc->data);
@@ -207,8 +207,8 @@ int PCISSetUp(PC pc)
 /*
    PCISDestroy -
 */
-#undef __FUNC__  
-#define __FUNC__ "PCISDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PCISDestroy"
 int PCISDestroy(PC pc)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
@@ -251,8 +251,8 @@ int PCISDestroy(PC pc)
 /*
    PCISCreate - 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCISCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "PCISCreate"
 int PCISCreate(PC pc)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
@@ -303,8 +303,8 @@ int PCISCreate(PC pc)
 .  vec2_D - garbage (used as work space)
 
 */
-#undef __FUNC__  
-#define __FUNC__ "PCIterSuApplySchur"
+#undef __FUNCT__  
+#define __FUNCT__ "PCIterSuApplySchur"
 int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   int    ierr, its;
@@ -342,8 +342,8 @@ int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
    Notes:
    The entries in the array that do not correspond to interface nodes remain unaltered.
 */
-#undef __FUNC__
-#define __FUNC__ "PCISScatterArrayNToVecB"
+#undef __FUNCT__
+#define __FUNCT__ "PCISScatterArrayNToVecB"
 int PCISScatterArrayNToVecB (Scalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
   int    i, ierr, *index;
@@ -394,8 +394,8 @@ int PCISScatterArrayNToVecB (Scalar *array_N, Vec v_B, InsertMode imode, Scatter
 .  vec2_N - vector of local nodes (interior and interface, including ghosts); returns garbage (used as work space)
 
 */
-#undef __FUNC__
-#define __FUNC__ "PCISApplyInvSchur"
+#undef __FUNCT__
+#define __FUNCT__ "PCISApplyInvSchur"
 int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
   int    ierr, its;

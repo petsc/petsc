@@ -1,11 +1,11 @@
-/*$Id: ptype.c,v 1.3 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: ptype.c,v 1.4 2001/01/15 21:43:52 bsmith Exp balay $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDataTypeToMPIDataType"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDataTypeToMPIDataType"
 int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 {
   PetscFunctionBegin;
@@ -33,8 +33,8 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDataTypeGetSize"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDataTypeGetSize"
 int PetscDataTypeGetSize(PetscDataType ptype,int *size)
 {
   PetscFunctionBegin;
@@ -62,8 +62,8 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDataTypeGetName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDataTypeGetName"
 int PetscDataTypeGetName(PetscDataType ptype,char *name[])
 {
   PetscFunctionBegin;

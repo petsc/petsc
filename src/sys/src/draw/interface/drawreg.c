@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.41 2001/01/17 19:44:01 balay Exp bsmith $*/
+/*$Id: drawreg.c,v 1.42 2001/03/22 20:28:46 bsmith Exp balay $*/
 /*
        Provides the registration process for PETSc PetscDraw routines
 */
@@ -9,8 +9,8 @@
 */
 PetscFList PetscDrawList              = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawCreate" 
 /*@C
    PetscDrawCreate - Creates a graphics context.
 
@@ -66,8 +66,8 @@ int PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,
   PetscFunctionReturn(0);
 }
  
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSetType" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetType" 
 /*@C
    PetscDrawSetType - Builds graphics object for a particular implementation 
 
@@ -146,8 +146,8 @@ int PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawRegisterDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawRegisterDestroy" 
 /*@C
    PetscDrawRegisterDestroy - Frees the list of PetscDraw methods that were
    registered by PetscDrawRegisterDynamic().
@@ -170,8 +170,8 @@ int PetscDrawRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawGetType" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawGetType" 
 /*@C
    PetscDrawGetType - Gets the PetscDraw type as a string from the PetscDraw object.
 
@@ -232,8 +232,8 @@ $     -draw_type my_draw_type
 .seealso: PetscDrawRegisterAll(), PetscDrawRegisterDestroy()
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawRegister" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawRegister" 
 int PetscDrawRegister(char *sname,char *path,char *name,int (*function)(PetscDraw))
 {
   int ierr;
@@ -245,8 +245,8 @@ int PetscDrawRegister(char *sname,char *path,char *name,int (*function)(PetscDra
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSetFromOptions" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetFromOptions" 
 /*@C
    PetscDrawSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X windows graphics.

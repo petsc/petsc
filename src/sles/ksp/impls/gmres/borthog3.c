@@ -1,4 +1,4 @@
-/*$Id: borthog3.c,v 1.21 2001/01/15 21:47:19 bsmith Exp balay $*/
+/*$Id: borthog3.c,v 1.22 2001/01/16 18:19:33 balay Exp balay $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -16,8 +16,8 @@
 
   Care is taken to accumulate the updated HH/HES values.
  */
-#undef __FUNC__  
-#define __FUNC__ "KSPGMRESIROrthogonalization"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGMRESIROrthogonalization"
 int KSPGMRESIROrthogonalization(KSP  ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);

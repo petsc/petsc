@@ -1,11 +1,11 @@
-/*$Id: vnake.c,v 1.22 2000/10/24 20:25:11 bsmith Exp bsmith $*/
+/*$Id: vnake.c,v 1.23 2001/01/15 21:44:52 bsmith Exp balay $*/
 
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 extern PetscFList VecList;
 
-#undef __FUNC__  
-#define __FUNC__ "VecCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "VecCreate"
 /*@C
    VecCreate - Creates an empty vector object. The type can then
    be set with VecSetType().
@@ -59,8 +59,8 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetFromOptions"
 /*@C
    VecSetFromOptions - Sets the vector type from the options database.
    Defaults to a PETSc sequential vector on one processor and a

@@ -1,10 +1,10 @@
-/*$Id: mpimesg.c,v 1.10 2001/03/09 20:05:36 balay Exp bsmith $*/
+/*$Id: mpimesg.c,v 1.11 2001/03/13 15:50:51 bsmith Exp balay $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscGatherNumberOfMessages"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGatherNumberOfMessages"
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
 
@@ -71,8 +71,8 @@ int PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nre
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscGatherMessageLengths"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGatherMessageLengths"
 /*@C
   PetscGatherMessageLengths - Computes info about messages that a MPI-node will receive, 
   including (from-id,length) pairs for each message.
@@ -156,8 +156,8 @@ int PetscGatherMessageLengths(MPI_Comm comm,int nsends,int nrecvs,int *ilengths,
   And post Irecvs on these buffers using node info from onodes
   
  */
-#undef __FUNC__  
-#define __FUNC__ "PetscPostIrecvInt"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscPostIrecvInt"
 int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,int ***rbuf,MPI_Request **r_waits)
 {
   int         len=0,**rbuf_t,i,ierr;
@@ -186,8 +186,8 @@ int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscPostIrecvScalar"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscPostIrecvScalar"
 int PetscPostIrecvScalar(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,Scalar ***rbuf,MPI_Request **r_waits)
 {
   int         len=0,i,ierr;

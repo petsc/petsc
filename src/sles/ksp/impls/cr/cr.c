@@ -1,12 +1,12 @@
-/*$Id: cr.c,v 1.61 2001/01/28 21:46:57 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.62 2001/03/22 20:31:22 bsmith Exp balay $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
 */
 #include "src/sles/ksp/kspimpl.h"
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_CR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_CR"
 static int KSPSetUp_CR(KSP ksp)
 {
   int ierr;
@@ -18,8 +18,8 @@ static int KSPSetUp_CR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_CR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
   int          i,maxit,pres,ierr;
@@ -124,8 +124,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_CR"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_CR"
 int KSPCreate_CR(KSP ksp)
 {
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.25 2001/01/17 22:27:13 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.26 2001/01/23 20:57:37 balay Exp balay $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 
@@ -51,8 +51,8 @@ extern int  FormJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(TS,double,Vec,Vec,void*),
      FormInitialGuess(Vec,AppCtx*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   TS     ts;                 /* timestepping context */
@@ -181,8 +181,8 @@ int main(int argc,char **argv)
 
 /* --------------------  Form initial approximation ----------------- */
 
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(Vec X,AppCtx *user)
 {
   int     i,j,row,mx,my,ierr;
@@ -215,8 +215,8 @@ int FormInitialGuess(Vec X,AppCtx *user)
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx*)ptr;
@@ -260,8 +260,8 @@ int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx*)ptr;

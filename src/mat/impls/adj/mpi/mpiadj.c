@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.58 2001/01/20 03:34:58 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.59 2001/01/22 23:04:29 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -6,8 +6,8 @@
 #include "petscsys.h"
 #include "src/mat/impls/adj/mpi/mpiadj.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_MPIAdj_ASCII"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIAdj_ASCII"
 int MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_MPIAdj        *a = (Mat_MPIAdj*)A->data;
@@ -37,8 +37,8 @@ int MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIAdj"
 int MatView_MPIAdj(Mat A,PetscViewer viewer)
 {
   int        ierr;
@@ -54,8 +54,8 @@ int MatView_MPIAdj(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPIAdj"
 int MatDestroy_MPIAdj(Mat mat)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)mat->data;
@@ -76,8 +76,8 @@ int MatDestroy_MPIAdj(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetOption_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetOption_MPIAdj"
 int MatSetOption_MPIAdj(Mat A,MatOption op)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
@@ -96,8 +96,8 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
      Adds diagonal pointers to sparse matrix structure.
 */
 
-#undef __FUNC__  
-#define __FUNC__ "MatMarkDiagonal_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMarkDiagonal_MPIAdj"
 int MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data; 
@@ -118,8 +118,8 @@ int MatMarkDiagonal_MPIAdj(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRange_MPIAdj"
 int MatGetOwnershipRange_MPIAdj(Mat A,int *m,int *n)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
@@ -129,8 +129,8 @@ int MatGetOwnershipRange_MPIAdj(Mat A,int *m,int *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRow_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRow_MPIAdj"
 int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
@@ -153,16 +153,16 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRow_MPIAdj"
 int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetBlockSize_MPIAdj"
 int MatGetBlockSize_MPIAdj(Mat A,int *bs)
 {
   PetscFunctionBegin;
@@ -171,8 +171,8 @@ int MatGetBlockSize_MPIAdj(Mat A,int *bs)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatEqual_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatEqual_MPIAdj"
 int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data,*b = (Mat_MPIAdj *)B->data;
@@ -198,8 +198,8 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRowIJ_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowIJ_MPIAdj"
 int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
 {
   int        ierr,size,i;
@@ -221,8 +221,8 @@ int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRowIJ_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRowIJ_MPIAdj"
 int MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
 {
   int        i;
@@ -310,8 +310,8 @@ static struct _MatOps MatOps_Values = {0,
 
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatCreate_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_MPIAdj"
 int MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj *b;
@@ -353,8 +353,8 @@ int MatCreate_MPIAdj(Mat B)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatMPIAdjSetPreallocation"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIAdjSetPreallocation"
 int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
 {
   Mat_MPIAdj *b = (Mat_MPIAdj *)B->data;
@@ -393,8 +393,8 @@ int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCreateMPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMPIAdj"
 /*@C
    MatCreateMPIAdj - Creates a sparse matrix representing an adjacency list.
    The matrix does not have numerical values associated with it, but is
@@ -439,8 +439,8 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatConvertTo_MPIAdj"
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvertTo_MPIAdj"
 int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
 {
   int      i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;

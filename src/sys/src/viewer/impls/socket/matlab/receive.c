@@ -1,4 +1,4 @@
-/*$Id: receive.c,v 1.16 2000/05/05 22:13:07 balay Exp bsmith $*/
+/*$Id: receive.c,v 1.17 2000/05/10 16:38:39 bsmith Exp balay $*/
 /*
  
   This is a MATLAB Mex program which waits at a particular 
@@ -23,8 +23,8 @@ EXTERN int ReceiveIntDenseMatrix(Matrix **,int);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "mexFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
  int    type,t;

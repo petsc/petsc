@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.87 2001/01/17 22:25:35 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.88 2001/01/23 20:56:41 balay Exp balay $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -23,8 +23,8 @@ T*/
 */
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   SLES       sles;             /* linear solver context */

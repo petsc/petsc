@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.11 2000/09/02 02:50:42 bsmith Exp bsmith $*/
+/*$Id: cstring.c,v 1.12 2001/01/15 21:49:45 bsmith Exp balay $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -6,8 +6,8 @@
    program.
 */
 
-#undef __FUNC__  
-#define __FUNC__ "PFView_String"
+#undef __FUNCT__  
+#define __FUNCT__ "PFView_String"
 int PFView_String(void *value,PetscViewer viewer)
 {
   int        ierr;
@@ -21,8 +21,8 @@ int PFView_String(void *value,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFDestroy_String"
+#undef __FUNCT__  
+#define __FUNCT__ "PFDestroy_String"
 int PFDestroy_String(void *value)
 {
   int       ierr;
@@ -32,8 +32,8 @@ int PFDestroy_String(void *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFStringCreateFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "PFStringCreateFunction"
 int PFStringCreateFunction(PF pf,char *string,void **f)
 {
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
@@ -81,8 +81,8 @@ int PFStringCreateFunction(PF pf,char *string,void **f)
   PetscFunctionReturn(0);    
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFSetFromOptions_String"
+#undef __FUNCT__  
+#define __FUNCT__ "PFSetFromOptions_String"
 int PFSetFromOptions_String(PF pf)
 {
   int        ierr;
@@ -103,8 +103,8 @@ int PFSetFromOptions_String(PF pf)
 
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PFCreate_String"
+#undef __FUNCT__  
+#define __FUNCT__ "PFCreate_String"
 int PFCreate_String(PF pf,void *value)
 {
   int        ierr;

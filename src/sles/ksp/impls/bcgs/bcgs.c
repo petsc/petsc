@@ -1,4 +1,4 @@
-/*$Id: bcgs.c,v 1.75 2001/01/15 21:47:15 bsmith Exp bsmith $*/
+/*$Id: bcgs.c,v 1.76 2001/03/22 20:31:23 bsmith Exp balay $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
@@ -10,8 +10,8 @@
 */
 #include "src/sles/ksp/kspimpl.h"
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_BCGS"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_BCGS"
 static int KSPSetUp_BCGS(KSP ksp)
 {
   int ierr;
@@ -24,8 +24,8 @@ static int KSPSetUp_BCGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_BCGS"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_BCGS"
 static int  KSPSolve_BCGS(KSP ksp,int *its)
 {
   int       i,maxit,ierr;
@@ -132,8 +132,8 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_BCGS"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_BCGS"
 int KSPCreate_BCGS(KSP ksp)
 {
   PetscFunctionBegin;

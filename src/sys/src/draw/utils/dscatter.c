@@ -1,4 +1,4 @@
-/*$Id: dscatter.c,v 1.35 2001/01/15 21:43:37 bsmith Exp balay $*/
+/*$Id: dscatter.c,v 1.36 2001/01/17 19:44:18 balay Exp balay $*/
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter
@@ -20,8 +20,8 @@ struct _p_DrawSP {
 
 #define CHUNCKSIZE 100
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPCreate" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPCreate" 
 /*@C
     PetscDrawSPCreate - Creates a scatter plot data structure.
 
@@ -76,8 +76,8 @@ int PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPSetDimension" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPSetDimension" 
 /*@
    PetscDrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
@@ -110,8 +110,8 @@ int PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPReset" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPReset" 
 /*@
    PetscDrawSPReset - Clears line graph to allow for reuse with new data.
 
@@ -139,8 +139,8 @@ int PetscDrawSPReset(PetscDrawSP sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPDestroy" 
 /*@C
    PetscDrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
@@ -172,8 +172,8 @@ int PetscDrawSPDestroy(PetscDrawSP sp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPAddPoint" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPAddPoint" 
 /*@
    PetscDrawSPAddPoint - Adds another point to each of the scatter plots.
 
@@ -223,8 +223,8 @@ int PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPAddPoints" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPAddPoints" 
 /*@C
    PetscDrawSPAddPoints - Adds several points to each of the scatter plots.
 
@@ -282,8 +282,8 @@ int PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPDraw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPDraw" 
 /*@
    PetscDrawSPDraw - Redraws a scatter plot.
 
@@ -323,8 +323,8 @@ int PetscDrawSPDraw(PetscDrawSP sp)
   PetscFunctionReturn(0);
 } 
  
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPSetLimits" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPSetLimits" 
 /*@
    PetscDrawSPSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -353,8 +353,8 @@ int PetscDrawSPSetLimits(PetscDrawSP sp,PetscReal x_min,PetscReal x_max,PetscRea
   PetscFunctionReturn(0);
 }
  
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPGetAxis" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPGetAxis" 
 /*@C
    PetscDrawSPGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -384,8 +384,8 @@ int PetscDrawSPGetAxis(PetscDrawSP sp,PetscDrawAxis *axis)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscDrawSPGetDraw" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSPGetDraw" 
 /*@C
    PetscDrawSPGetDraw - Gets the draw context associated with a line graph.
 

@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.76 2000/09/28 21:12:52 bsmith Exp bsmith $*/
+/*$Id: icc.c,v 1.77 2001/01/15 21:46:56 bsmith Exp balay $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -7,8 +7,8 @@
 #include "src/sles/pc/impls/icc/icc.h"   /*I "petscpc.h" I*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCICCSetMatOrdering_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCICCSetMatOrdering_ICC"
 int PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
 {
   PC_ICC *dir = (PC_ICC*)pc->data;
@@ -22,8 +22,8 @@ int PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCICCSetFill_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCICCSetFill_ICC"
 int PCICCSetFill_ICC(PC pc,PetscReal fill)
 {
   PC_ICC *dir;
@@ -36,8 +36,8 @@ int PCICCSetFill_ICC(PC pc,PetscReal fill)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCICCSetLevels_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCICCSetLevels_ICC"
 int PCICCSetLevels_ICC(PC pc,int levels)
 {
   PC_ICC *icc;
@@ -49,8 +49,8 @@ int PCICCSetLevels_ICC(PC pc,int levels)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCICCSetMatOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "PCICCSetMatOrdering"
 /*@
     PCICCSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used it the ICC factorization.
@@ -84,8 +84,8 @@ int PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCICCSetLevels"
+#undef __FUNCT__  
+#define __FUNCT__ "PCICCSetLevels"
 /*@
    PCICCSetLevels - Sets the number of levels of fill to use.
 
@@ -117,8 +117,8 @@ int PCICCSetLevels(PC pc,int levels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCICCSetFill"
+#undef __FUNCT__  
+#define __FUNCT__ "PCICCSetFill"
 /*@
    PCICCSetFill - Indicate the amount of fill you expect in the factored matrix,
    where fill = number nonzeros in factor/number nonzeros in original matrix.
@@ -158,8 +158,8 @@ int PCICCSetFill(PC pc,PetscReal fill)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetup_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetup_ICC"
 static int PCSetup_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -181,8 +181,8 @@ static int PCSetup_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_ICC"
 static int PCDestroy_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -195,8 +195,8 @@ static int PCDestroy_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_ICC"
 static int PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -207,8 +207,8 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);  
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricLeft_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricLeft_ICC"
 static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   int    ierr;
@@ -219,8 +219,8 @@ static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricRight_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricRight_ICC"
 static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
   int    ierr;
@@ -231,8 +231,8 @@ static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetFactoredMatrix_ICC"
 static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -242,8 +242,8 @@ static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_ICC"
 static int PCSetFromOptions_ICC(PC pc)
 {
   PC_ICC     *icc = (PC_ICC*)pc->data;
@@ -267,8 +267,8 @@ static int PCSetFromOptions_ICC(PC pc)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_ICC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_ICC"
 int PCCreate_ICC(PC pc)
 {
   int    ierr;

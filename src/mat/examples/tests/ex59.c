@@ -1,11 +1,11 @@
-/*$Id: ex59.c,v 1.16 2001/01/19 23:20:49 balay Exp balay $*/
+/*$Id: ex59.c,v 1.17 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
 
 #include "petscmat.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat         C,A;

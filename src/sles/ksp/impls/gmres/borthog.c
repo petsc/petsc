@@ -1,4 +1,4 @@
-/*$Id: borthog.c,v 1.55 2000/09/07 15:18:15 balay Exp bsmith $*/
+/*$Id: borthog.c,v 1.56 2001/01/15 21:47:19 bsmith Exp balay $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -11,8 +11,8 @@
 /*
     This is the basic orthogonalization routine using modified Gram-Schmidt.
  */
-#undef __FUNC__  
-#define __FUNC__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
 int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);

@@ -1,12 +1,12 @@
-/*$Id: ex28.c,v 1.14 2001/01/22 23:03:19 bsmith Exp balay $*/
+/*$Id: ex28.c,v 1.15 2001/01/23 20:54:05 balay Exp balay $*/
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd()\n\n";
 
 #include "petscvec.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int           ierr,n = 25,i,row0 = 0;

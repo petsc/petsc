@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.167 2001/01/15 21:47:55 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.168 2001/02/11 04:55:25 bsmith Exp balay $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -8,8 +8,8 @@
     0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More 
     for this trick.
 */ 
-#undef __FUNC__  
-#define __FUNC__ "SNESLSCheckLocalMin_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLSCheckLocalMin_Private"
 int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *ismin)
 {
   PetscReal  a1;
@@ -46,8 +46,8 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
 /*
      Checks if J^T(F - AX) = 0 
 */ 
-#undef __FUNC__  
-#define __FUNC__ "SNESLSCheckResidual_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLSCheckResidual_Private"
 int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 {
   PetscReal  a1,a2;
@@ -128,8 +128,8 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
    Unconstrained Optimization and Nonlinear Equations" by Dennis 
    and Schnabel.
 */
-#undef __FUNC__  
-#define __FUNC__ "SNESSolve_EQ_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSolve_EQ_LS"
 int SNESSolve_EQ_LS(SNES snes,int *outits)
 {
   SNES_EQ_LS          *neP = (SNES_EQ_LS*)snes->data;
@@ -250,8 +250,8 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
-#undef __FUNC__  
-#define __FUNC__ "SNESSetUp_EQ_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetUp_EQ_LS"
 int SNESSetUp_EQ_LS(SNES snes)
 {
   int ierr;
@@ -273,8 +273,8 @@ int SNESSetUp_EQ_LS(SNES snes)
 
    Application Interface Routine: SNESDestroy()
  */
-#undef __FUNC__  
-#define __FUNC__ "SNESDestroy_EQ_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDestroy_EQ_LS"
 int SNESDestroy_EQ_LS(SNES snes)
 {
   int  ierr;
@@ -287,8 +287,8 @@ int SNESDestroy_EQ_LS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESNoLineSearch"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESNoLineSearch"
 
 /*@C
    SNESNoLineSearch - This routine is not a line search at all; 
@@ -344,8 +344,8 @@ int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscRe
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESNoLineSearchNoNorms"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESNoLineSearchNoNorms"
 
 /*@C
    SNESNoLineSearchNoNorms - This routine is not a line search at 
@@ -421,8 +421,8 @@ int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESCubicLineSearch"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESCubicLineSearch"
 /*@C
    SNESCubicLineSearch - Performs a cubic line search (default line search method).
 
@@ -605,8 +605,8 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESQuadraticLineSearch"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESQuadraticLineSearch"
 /*@C
    SNESQuadraticLineSearch - Performs a quadratic line search.
 
@@ -744,8 +744,8 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESSetLineSearch"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetLineSearch"
 /*@C
    SNESSetLineSearch - Sets the line search routine to be used
    by the method SNESEQLS.
@@ -812,8 +812,8 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,Petsc
 }
 /* -------------------------------------------------------------------------- */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "SNESSetLineSearch_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetLineSearch_LS"
 int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,
                          double,double*,double*,int*),void *lsctx)
 {
@@ -824,8 +824,8 @@ int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,
 }
 EXTERN_C_END
 /* -------------------------------------------------------------------------- */
-#undef __FUNC__  
-#define __FUNC__ "SNESSetLineSearchCheck"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetLineSearchCheck"
 /*@C
    SNESSetLineSearchCheck - Sets a routine to check the validity of new iterate computed
    by the line search routine in the Newton-based method SNESEQLS.
@@ -889,8 +889,8 @@ int SNESSetLineSearchCheck(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),voi
 }
 /* -------------------------------------------------------------------------- */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "SNESSetLineSearchCheck_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetLineSearchCheck_LS"
 int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),void *checkctx)
 {
   PetscFunctionBegin;
@@ -909,8 +909,8 @@ EXTERN_C_END
 
    Application Interface Routine: SNESView()
 */
-#undef __FUNC__  
-#define __FUNC__ "SNESView_EQ_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESView_EQ_LS"
 static int SNESView_EQ_LS(SNES snes,PetscViewer viewer)
 {
   SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
@@ -941,8 +941,8 @@ static int SNESView_EQ_LS(SNES snes,PetscViewer viewer)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNC__  
-#define __FUNC__ "SNESSetFromOptions_EQ_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetFromOptions_EQ_LS"
 static int SNESSetFromOptions_EQ_LS(SNES snes)
 {
   SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
@@ -992,8 +992,8 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
    Application Interface Routine: SNESCreate()
  */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "SNESCreate_EQ_LS"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESCreate_EQ_LS"
 int SNESCreate_EQ_LS(SNES snes)
 {
   int        ierr;

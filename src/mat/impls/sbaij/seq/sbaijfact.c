@@ -1,4 +1,4 @@
-/*$Id: sbaijfact.c,v 1.56 2001/01/31 19:06:52 balay Exp bsmith $*/
+/*$Id: sbaijfact.c,v 1.57 2001/02/01 17:01:40 bsmith Exp balay $*/
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
@@ -11,8 +11,8 @@ See page 85, "Iterative Methods ..." by Saad. */
 #include "src/inline/ilu.h"
 #include "include/petscis.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
 int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
@@ -230,8 +230,8 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_N"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_N"
 int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -393,8 +393,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering"
 int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -521,8 +521,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
     Numeric U^T*D*U factorization for SBAIJ format. Modified from SNF of YSMP.
     Version for blocks 2 by 2.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_2"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_2"
 int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -694,8 +694,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
 /*
       Version for when blocks are 2 by 2 Using natural ordering
 */
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering"
 int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -831,8 +831,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
     Numeric U^T*D*U factorization for SBAIJ format. Modified from SNF of YSMP.
     Version for blocks are 1 by 1.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_1"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_1"
 int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -959,8 +959,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 /*
   Version for when blocks are 1 by 1 Using natural ordering
 */
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering"
 int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
@@ -1060,8 +1060,8 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactor_SeqSBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactor_SeqSBAIJ"
 int MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,PetscReal f)
 {
   int ierr;

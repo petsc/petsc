@@ -1,4 +1,4 @@
-/*$Id: sda2.c,v 1.20 2000/04/12 04:26:38 bsmith Exp bsmith $*/
+/*$Id: sda2.c,v 1.21 2001/01/15 21:49:21 bsmith Exp balay $*/
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).
@@ -11,8 +11,8 @@ struct _SDA {
   Vec gvec,lvec;
 };
 
-#undef __FUNC__  
-#define __FUNC__ "SDACreate1d"
+#undef __FUNCT__  
+#define __FUNCT__ "SDACreate1d"
 /*@C
     SDACreate1d - Creates a one-dimensional regular array that is
     distributed across some processors. This is the simplified 
@@ -73,8 +73,8 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SDACreate2d"
+#undef __FUNCT__  
+#define __FUNCT__ "SDACreate2d"
 /*@C
     SDACreate2d - Creates a two-dimensional regular array that is
     distributed across some processors. This is the simplified 
@@ -146,8 +146,8 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SDACreate3d"
+#undef __FUNCT__  
+#define __FUNCT__ "SDACreate3d"
 /*@C
     SDACreate3d - Creates a three-dimensional regular array that is
     distributed across some processors. This is the simplified 
@@ -219,8 +219,8 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SDADestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "SDADestroy"
 /*@C
     SDADestroy - Destroys simple distributed array.
 
@@ -244,8 +244,8 @@ int SDADestroy(SDA sda)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SDALocalToLocalBegin"
+#undef __FUNCT__  
+#define __FUNCT__ "SDALocalToLocalBegin"
 /*@C
    SDALocalToLocalBegin - Maps from a local representation (including 
        ghostpoints) to another where the ghostpoints in the second are
@@ -276,8 +276,8 @@ int SDALocalToLocalBegin(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SDALocalToLocalEnd"
+#undef __FUNCT__  
+#define __FUNCT__ "SDALocalToLocalEnd"
 /*@C
    SDALocalToLocalEnd - Maps from a local representation (including 
        ghostpoints) to another where the ghostpoints in the second are
@@ -308,8 +308,8 @@ int SDALocalToLocalEnd(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
   PetscFunctionReturn(0);
 }
  
-#undef __FUNC__  
-#define __FUNC__ "SDAGetCorners"
+#undef __FUNCT__  
+#define __FUNCT__ "SDAGetCorners"
 /*@C
    SDAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner of the local region, excluding ghost points.
@@ -339,8 +339,8 @@ int SDAGetCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SDAGetGhostCorners"
+#undef __FUNCT__  
+#define __FUNCT__ "SDAGetGhostCorners"
 /*@C
     SDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
     corner of the local region, including ghost points.

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.8 2001/01/17 22:20:33 bsmith Exp balay $*/
+/*$Id: ex14.c,v 1.9 2001/01/23 20:53:32 balay Exp balay $*/
 
 /* 
    Tests PetscOptionsGetScalar() for complex numbers
@@ -7,8 +7,8 @@
 #include "petsc.h"
 
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int    ierr;

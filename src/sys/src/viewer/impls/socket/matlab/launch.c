@@ -1,4 +1,4 @@
-/*$Id: launch.c,v 1.13 2000/05/10 16:38:39 bsmith Exp bsmith $*/
+/*$Id: launch.c,v 1.14 2001/01/15 21:43:08 bsmith Exp balay $*/
 /* 
   Usage: A = launch(programname,number processors); 
  
@@ -14,8 +14,8 @@ extern int system(const char *);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "mexFunction"
+#undef __FUNCT__  
+#define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
 {
   int  np,child;

@@ -1,4 +1,4 @@
-/*$Id: iccbs.c,v 1.41 2000/04/12 04:23:21 bsmith Exp bsmith $*/
+/*$Id: iccbs.c,v 1.42 2001/01/15 21:45:43 bsmith Exp balay $*/
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
 
@@ -23,8 +23,8 @@
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MatScaleSystem_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatScaleSystem_MPIRowbs"
 int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
@@ -54,8 +54,8 @@ int MatScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatUnScaleSystem_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUnScaleSystem_MPIRowbs"
 int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;
@@ -84,8 +84,8 @@ int MatUnScaleSystem_MPIRowbs(Mat mat,Vec x,Vec rhs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseScaledForm_MPIRowbs"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseScaledForm_MPIRowbs"
 int MatUseScaledForm_MPIRowbs(Mat mat,PetscTruth scale)
 {
   Mat_MPIRowbs *bsif  = (Mat_MPIRowbs*)mat->data;

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.45 2001/01/17 22:26:15 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.46 2001/01/23 20:57:06 balay Exp balay $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
@@ -38,8 +38,8 @@ typedef struct {
 
 extern int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES          snes;                 /* nonlinear solver */
@@ -110,8 +110,8 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }/* --------------------  Form initial approximation ----------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess1"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i,j,k,loc,mx,my,mz,ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
@@ -147,8 +147,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
 }/* --------------------  Evaluate Function F(x) --------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction1"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx*)ptr;

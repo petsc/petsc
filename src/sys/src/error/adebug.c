@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.111 2001/01/15 21:43:39 bsmith Exp balay $*/
+/*$Id: adebug.c,v 1.112 2001/03/09 15:49:43 balay Exp balay $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -20,8 +20,8 @@
 static char       Debugger[256];
 static PetscTruth Xterm = PETSC_TRUE;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSetDebugger" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSetDebugger" 
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
@@ -59,8 +59,8 @@ int PetscSetDebugger(const char debugger[],PetscTruth xterm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSetDefaultDebugger" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSetDefaultDebugger" 
 int PetscSetDefaultDebugger(void)
 {
   int ierr;
@@ -76,8 +76,8 @@ int PetscSetDefaultDebugger(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSetDebuggerFromString" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSetDebuggerFromString" 
 int PetscSetDebuggerFromString(char *string)
 {
   int        ierr;
@@ -108,8 +108,8 @@ int PetscSetDebuggerFromString(char *string)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscAttachDebugger" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscAttachDebugger" 
 /*@C
    PetscAttachDebugger - Attaches the debugger to the running process.
 
@@ -345,8 +345,8 @@ int PetscAttachDebugger(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscAttachDebuggerErrorHandler" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscAttachDebuggerErrorHandler" 
 /*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches
    a debugger to a running process when an error is detected.
@@ -356,7 +356,7 @@ int PetscAttachDebugger(void)
 
    Input Parameters:
 +  line - the line number of the error (indicated by __LINE__)
-.  fun - function where error occured (indicated by __FUNC__)
+.  fun - function where error occured (indicated by __FUNCT__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
 .  message - an error text string, usually just printed to the screen
@@ -413,8 +413,8 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscStopForDebugger" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscStopForDebugger" 
 /*@C
    PetscStopForDebugger - Prints a message to the screen indicating how to
          attach to the process with the debugger and then waits for the 

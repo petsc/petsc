@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.52 2000/11/28 17:28:17 bsmith Exp bsmith $*/
+/*$Id: block.c,v 1.53 2001/01/15 21:44:30 bsmith Exp balay $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -13,8 +13,8 @@ typedef struct {
   int        bs;           /* blocksize */
 } IS_Block;
 
-#undef __FUNC__  
-#define __FUNC__ "ISDestroy_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISDestroy_Block" 
 int ISDestroy_Block(IS is)
 {
   IS_Block *is_block = (IS_Block*)is->data;
@@ -27,8 +27,8 @@ int ISDestroy_Block(IS is)
   PetscHeaderDestroy(is); PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGetIndices_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetIndices_Block" 
 int ISGetIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
@@ -51,8 +51,8 @@ int ISGetIndices_Block(IS in,int **idx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISRestoreIndices_Block" 
 int ISRestoreIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
@@ -69,8 +69,8 @@ int ISRestoreIndices_Block(IS in,int **idx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGetSize_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetSize_Block" 
 int ISGetSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -80,8 +80,8 @@ int ISGetSize_Block(IS is,int *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGetLocalSize_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetLocalSize_Block" 
 int ISGetLocalSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -91,8 +91,8 @@ int ISGetLocalSize_Block(IS is,int *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISInvertPermutation_Block" 
 int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -114,8 +114,8 @@ int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISView_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISView_Block" 
 int ISView_Block(IS is, PetscViewer viewer)
 {
   IS_Block    *sub = (IS_Block *)is->data;
@@ -141,8 +141,8 @@ int ISView_Block(IS is, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISSort_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSort_Block" 
 int ISSort_Block(IS is)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -155,8 +155,8 @@ int ISSort_Block(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISSorted_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSorted_Block" 
 int ISSorted_Block(IS is,PetscTruth *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -166,8 +166,8 @@ int ISSorted_Block(IS is,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISDuplicate_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISDuplicate_Block" 
 int ISDuplicate_Block(IS is,IS *newIS)
 {
   int      ierr;
@@ -178,8 +178,8 @@ int ISDuplicate_Block(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISIdentity_Block" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISIdentity_Block" 
 int ISIdentity_Block(IS is,PetscTruth *ident)
 {
   IS_Block *is_block = (IS_Block*)is->data;
@@ -209,8 +209,8 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISDestroy_Block,
                                ISView_Block,
                                ISIdentity_Block };
-#undef __FUNC__  
-#define __FUNC__ "ISCreateBlock" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISCreateBlock" 
 /*@C
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks. 
@@ -280,8 +280,8 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "ISBlockGetIndices" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetIndices" 
 /*@C
    ISBlockGetIndices - Gets the indices associated with each block.
 
@@ -315,8 +315,8 @@ int ISBlockGetIndices(IS in,int *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISBlockRestoreIndices" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockRestoreIndices" 
 /*@C
    ISBlockRestoreIndices - Restores the indices associated with each block.
 
@@ -345,8 +345,8 @@ int ISBlockRestoreIndices(IS is,int *idx[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISBlockGetBlockSize" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetBlockSize" 
 /*@
    ISBlockGetBlockSize - Returns the number of elements in a block.
 
@@ -379,8 +379,8 @@ int ISBlockGetBlockSize(IS is,int *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISBlock" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlock" 
 /*@C
    ISBlock - Checks whether an index set is blocked.
 
@@ -409,8 +409,8 @@ int ISBlock(IS is,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISBlockGetSize" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetSize" 
 /*@
    ISBlockGetSize - Returns the number of blocks in the index set.
 

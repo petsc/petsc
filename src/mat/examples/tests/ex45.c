@@ -1,4 +1,4 @@
-/*$Id: ex45.c,v 1.8 2000/05/10 16:41:02 bsmith Exp bsmith $*/
+/*$Id: ex45.c,v 1.9 2000/11/28 17:29:48 bsmith Exp balay $*/
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -14,8 +14,8 @@ PETSc files on Paragon/Dec Alpha.
 EXTERN void Store2DArray(int,int,double*,char*,int *);
 EXTERN void Store1DArray(int,double*,char*,int *);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   double a[100],v[10];
@@ -33,8 +33,8 @@ int main(int argc,char **args)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "Store2DArray"
+#undef __FUNCT__
+#define __FUNCT__ "Store2DArray"
 void Store2DArray(int m,int n,double *a,char *filename,int *fdd)
 {
   int     fd = *fdd;
@@ -73,8 +73,8 @@ void Store2DArray(int m,int n,double *a,char *filename,int *fdd)
 
 }
 
-#undef __FUNC__
-#define __FUNC__ "Store1DArray"
+#undef __FUNCT__
+#define __FUNCT__ "Store1DArray"
 void Store1DArray(int m,double *a,char *filename,int *fdd)
 {
   int  fd = *fdd;

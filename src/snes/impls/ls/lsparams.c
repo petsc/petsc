@@ -1,9 +1,9 @@
-/*$Id: lsparams.c,v 1.8 2000/04/12 04:25:33 bsmith Exp bsmith $*/
+/*$Id: lsparams.c,v 1.9 2001/01/15 21:47:55 bsmith Exp balay $*/
 
 #include "src/snes/impls/ls/ls.h"
 
-#undef __FUNC__  
-#define __FUNC__ "SNESSetLineSeachParams"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetLineSeachParams"
 /*@C
    SNESSetLineSearchParams - Sets the parameters associated with the line search
    routine in the Newton-based method SNESEQLS.
@@ -41,8 +41,8 @@ int SNESSetLineSearchParams(SNES snes,double alpha,double maxstep,double steptol
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESGetLineSeachParams"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetLineSeachParams"
 /*@C
    SNESGetLineSearchParams - Gets the parameters associated with the line search
      routine in the Newton-based method SNESEQLS.

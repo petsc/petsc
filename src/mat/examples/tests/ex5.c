@@ -1,12 +1,12 @@
-/*$Id: ex5.c,v 1.22 2001/01/19 23:20:49 balay Exp balay $*/
+/*$Id: ex5.c,v 1.23 2001/01/23 20:55:11 balay Exp balay $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
 MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
 
 #include "petscmat.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat        C; 

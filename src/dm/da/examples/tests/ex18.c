@@ -1,12 +1,12 @@
-/*$Id: ex18.c,v 1.1 2001/01/26 04:56:59 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.2 2001/03/22 20:32:50 bsmith Exp balay $*/
 
 static char help[] = "Tests DAGetISLocalToGlobalMappingBlck().\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int      rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;

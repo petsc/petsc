@@ -1,11 +1,11 @@
-/*$Id: ex6.c,v 1.15 2001/01/22 23:07:58 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.16 2001/01/23 20:57:50 balay Exp balay $*/
 
 static char help[] = "Tests removing entries from an AOData \n\n";
 
 #include "petscao.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int         n,nglobal,bs = 2,*keys,*data,ierr,rank,size,i,start;

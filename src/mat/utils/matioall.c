@@ -1,4 +1,4 @@
-/*$Id: matioall.c,v 1.21 2000/11/10 16:34:13 bsmith Exp bsmith $*/
+/*$Id: matioall.c,v 1.22 2001/01/15 21:46:25 bsmith Exp balay $*/
 
 #include "petscmat.h"
 
@@ -19,8 +19,8 @@ EXTERN int MatLoad_MPIRowbs(PetscViewer,MatType,Mat*);
 EXTERN_C_END
 extern PetscTruth MatLoadRegisterAllCalled;
 
-#undef __FUNC__  
-#define __FUNC__ "MatLoadRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLoadRegisterAll"
 /*@C
     MatLoadRegisterAll - Registers all standard matrix type routines to load
         matrices from a binary file.
@@ -61,8 +61,8 @@ EXTERN_C_BEGIN
 EXTERN int MatConvertTo_MPIAdj(Mat,MatType,Mat*);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatConvertRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvertRegisterAll"
 /*@C
     MatConvertRegisterAll - Registers all standard matrix type routines to convert to
 

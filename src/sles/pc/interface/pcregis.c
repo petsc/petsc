@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.62 2001/01/15 21:46:45 bsmith Exp bsmith $*/
+/*$Id: pcregis.c,v 1.63 2001/03/13 16:00:48 bsmith Exp balay $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
@@ -28,8 +28,8 @@ EXTERN int PCCreate_RAMG(PC);
 EXTERN int PCCreate_mILU(PC);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRegisterAll"
 /*@C
    PCRegisterAll - Registers all of the preconditioners in the PC package.
 

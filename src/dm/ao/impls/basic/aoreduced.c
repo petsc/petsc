@@ -1,11 +1,11 @@
-/*$Id: aoreduced.c,v 1.26 2001/01/15 21:48:44 bsmith Exp balay $*/
+/*$Id: aoreduced.c,v 1.27 2001/01/16 18:21:03 balay Exp balay $*/
 
 #include "src/dm/ao/aoimpl.h"     /*I   "petscao.h"  I*/
 #include "petscsys.h"
 #include "petscbt.h"
 
-#undef __FUNC__  
-#define __FUNC__ "AODataSegmentGetReduced_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AODataSegmentGetReduced_Basic"
 int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
 {
   AODataSegment *segment; 

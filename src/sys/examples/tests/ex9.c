@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.10 2001/01/17 22:20:33 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.11 2001/01/23 20:53:32 balay Exp balay $*/
 
 /*
      Tests PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd()
@@ -6,8 +6,8 @@
 */
 #include "petsc.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args){
   int ierr;
 

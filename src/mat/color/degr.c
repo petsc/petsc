@@ -1,12 +1,12 @@
-/*$Id: degr.c,v 1.9 1999/10/24 14:02:33 bsmith Exp bsmith $*/
+/*$Id: degr.c,v 1.10 1999/11/05 14:46:11 bsmith Exp balay $*/
 
 /* degr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
 
 #include "petsc.h"
 #include "src/mat/color/color.h"
 
-#undef __FUNC__  
-#define __FUNC__ "MINPACKdegr" 
+#undef __FUNCT__  
+#define __FUNCT__ "MINPACKdegr" 
 int MINPACKdegr(int *n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,int * iwa)
 {
     /* System generated locals */

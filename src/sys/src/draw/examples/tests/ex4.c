@@ -1,11 +1,11 @@
-/*$Id: ex4.c,v 1.9 2001/01/22 23:01:52 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.10 2001/01/23 20:52:52 balay Exp balay $*/
 
 static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
 #include "petsc.h"
 
-#undef __FUNC__
-#define __FUNC__ "zoomfunction"
+#undef __FUNCT__
+#define __FUNCT__ "zoomfunction"
 int zoomfunction(PetscDraw draw,void *dummy)
 {
   int  ierr,i; 
@@ -16,8 +16,8 @@ int zoomfunction(PetscDraw draw,void *dummy)
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscDraw draw;

@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.26 2000/09/28 21:12:56 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.27 2001/01/15 21:46:59 bsmith Exp balay $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -14,8 +14,8 @@ typedef struct {
   PetscTruth useparallelmat;
 } PC_Redundant;
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_Redundant"
 static int PCView_Redundant(PC pc,PetscViewer viewer)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -49,8 +49,8 @@ static int PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_Redundant"
 static int PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red  = (PC_Redundant*)pc->data;
@@ -127,8 +127,8 @@ static int PCSetUp_Redundant(PC pc)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_Redundant"
 static int PCApply_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant      *red = (PC_Redundant*)pc->data;
@@ -149,8 +149,8 @@ static int PCApply_Redundant(PC pc,Vec x,Vec y)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Redundant"
 static int PCDestroy_Redundant(PC pc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -172,8 +172,8 @@ static int PCDestroy_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_Redundant"
 static int PCSetFromOptions_Redundant(PC pc)
 {
   PetscFunctionBegin;
@@ -181,8 +181,8 @@ static int PCSetFromOptions_Redundant(PC pc)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCRedundantSetScatter_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantSetScatter_Redundant"
 int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -197,8 +197,8 @@ int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCRedundantSetScatter"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantSetScatter"
 /*@
    PCRedundantSetScatter - Sets the scatter used to copy values into the
      redundant local solve and the scatter to move them back into the global
@@ -229,8 +229,8 @@ int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 }  
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCRedundantGetPC_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantGetPC_Redundant"
 int PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -241,8 +241,8 @@ int PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCRedundantGetPC"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantGetPC"
 /*@
    PCRedundantGetPC - Gets the sequential PC created by the redundant PC.
 
@@ -272,8 +272,8 @@ int PCRedundantGetPC(PC pc,PC *innerpc)
 }  
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCRedundantGetOperators_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantGetOperators_Redundant"
 int PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
@@ -285,8 +285,8 @@ int PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCRedundantGetOperators"
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantGetOperators"
 /*@
    PCRedundantGetOperators - gets the sequential matrix and preconditioner matrix
 
@@ -318,8 +318,8 @@ int PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 
 /* -------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_Redundant"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_Redundant"
 int PCCreate_Redundant(PC pc)
 {
   int          ierr;

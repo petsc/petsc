@@ -1,10 +1,10 @@
-/*$Id: iscoloring.c,v 1.65 2001/01/15 21:44:35 bsmith Exp balay $*/
+/*$Id: iscoloring.c,v 1.66 2001/03/07 18:37:44 balay Exp balay $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "ISColoringDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "ISColoringDestroy"
 /*@C
    ISColoringDestroy - Destroys a coloring context.
 
@@ -33,8 +33,8 @@ int ISColoringDestroy(ISColoring iscoloring)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISColoringView"
+#undef __FUNCT__  
+#define __FUNCT__ "ISColoringView"
 /*@C
    ISColoringView - Views a coloring context.
 
@@ -76,8 +76,8 @@ int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISColoringGetIS"
+#undef __FUNCT__  
+#define __FUNCT__ "ISColoringGetIS"
 /*@C
    ISColoringGetIS - Extracts index sets from the coloring context
 
@@ -105,8 +105,8 @@ int ISColoringGetIS(ISColoring iscoloring,int *n,IS *is[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISColoringRestoreIS"
+#undef __FUNCT__  
+#define __FUNCT__ "ISColoringRestoreIS"
 /*@C
    ISColoringGetIS - Restores the index sets extracted from the coloring context
 
@@ -131,8 +131,8 @@ int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "ISColoringCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "ISColoringCreate"
 /*@C
     ISColoringCreate - Generates an ISColoring context from lists (provided 
     by each processor) of colors for each node.
@@ -228,8 +228,8 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISPartitioningToNumbering"
+#undef __FUNCT__  
+#define __FUNCT__ "ISPartitioningToNumbering"
 /*@C
     ISPartitioningToNumbering - Takes an ISPartitioning and on each processor
     generates an IS that contains a new global node number for each index based
@@ -308,8 +308,8 @@ int ISPartitioningToNumbering(IS part,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISPartitioningCount"
+#undef __FUNCT__  
+#define __FUNCT__ "ISPartitioningCount"
 /*@C
     ISPartitioningCount - Takes a ISPartitioning and determines the number of 
     resulting elements on each processor
@@ -365,8 +365,8 @@ int ISPartitioningCount(IS part,int count[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISAllGather"
+#undef __FUNCT__  
+#define __FUNCT__ "ISAllGather"
 /*@C
     ISAllGather - Given an index set (IS) on each processor, generates a large 
     index set (same on each processor) by concatenating together each

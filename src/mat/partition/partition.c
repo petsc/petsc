@@ -1,12 +1,12 @@
-/*$Id: partition.c,v 1.56 2001/01/15 21:46:32 bsmith Exp balay $*/
+/*$Id: partition.c,v 1.57 2001/01/16 18:18:35 balay Exp balay $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
 /*
    Simplest partitioning, keeps the current partitioning.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningApply_Current" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningApply_Current" 
 static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
   int   ierr,m,rank,size;
@@ -23,8 +23,8 @@ static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningApply_Square" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningApply_Square" 
 static int MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
 {
   int   cell,ierr,n,N,p,rstart,rend,*color,size;
@@ -59,8 +59,8 @@ static int MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
 }
 
 EXTERN_C_BEGIN  
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningCreate_Current" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningCreate_Current" 
 int MatPartitioningCreate_Current(MatPartitioning part)
 {
   PetscFunctionBegin;
@@ -72,8 +72,8 @@ int MatPartitioningCreate_Current(MatPartitioning part)
 EXTERN_C_END
 
 EXTERN_C_BEGIN  
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningCreate_Square" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningCreate_Square" 
 int MatPartitioningCreate_Square(MatPartitioning part)
 {
   PetscFunctionBegin;
@@ -129,8 +129,8 @@ $     -mat_partitioning_type my_part
 .seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningRegister" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningRegister" 
 int MatPartitioningRegister(char *sname,char *path,char *name,int (*function)(MatPartitioning))
 {
   int  ierr;
@@ -142,8 +142,8 @@ int MatPartitioningRegister(char *sname,char *path,char *name,int (*function)(Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningRegisterDestroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningRegisterDestroy" 
 /*@C
    MatPartitioningRegisterDestroy - Frees the list of partitioning routines.
 
@@ -167,8 +167,8 @@ int MatPartitioningRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningGetType"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningGetType"
 /*@C
    MatPartitioningGetType - Gets the Partitioning method type and name (as a string) 
         from the partitioning context.
@@ -194,8 +194,8 @@ int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *typ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningApply" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningApply" 
 /*@C
    MatPartitioningApply - Gets a partitioning for a matrix.
 
@@ -247,8 +247,8 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscFunctionReturn(0);
 }
  
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetAdjacency"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningSetAdjacency"
 /*@C
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
       partitioned.
@@ -274,8 +274,8 @@ int MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningDestroy"
 /*@C
    MatPartitioningDestroy - Destroys the partitioning context.
 
@@ -309,8 +309,8 @@ int MatPartitioningDestroy(MatPartitioning part)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetVertexWeights"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningSetVertexWeights"
 /*@C
    MatPartitioningSetVertexWeights - Sets the weights for vertices for a partitioning.
 
@@ -344,8 +344,8 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningCreate"
 /*@C
    MatPartitioningCreate - Creates a partitioning context.
 
@@ -384,8 +384,8 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningView"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningView"
 /*@C 
    MatPartitioningView - Prints the partitioning data structure.
 
@@ -444,8 +444,8 @@ int MatPartitioningView(MatPartitioning part,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetType"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningSetType"
 /*@C
    MatPartitioningSetType - Sets the type of partitioner to use
 
@@ -500,8 +500,8 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPartitioningSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningSetFromOptions"
 /*@
    MatPartitioningSetFromOptions - Sets various partitioning options from the 
         options database.

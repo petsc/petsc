@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.44 2001/01/15 21:43:14 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.45 2001/03/08 17:07:44 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -13,8 +13,8 @@ typedef struct {
 } PetscViewer_AMS;
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerAMSSetCommName_AMS" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerAMSSetCommName_AMS" 
 int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)v->data;
@@ -74,8 +74,8 @@ int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerAMSGetAMSComm_AMS" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerAMSGetAMSComm_AMS" 
 int PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS *)lab->data;
@@ -87,8 +87,8 @@ int PetscViewerAMSGetAMSComm_AMS(PetscViewer lab,AMS_Comm *ams_comm)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerAMSSetCommName" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerAMSSetCommName" 
 int PetscViewerAMSSetCommName(PetscViewer v,const char name[])
 {
   int ierr,(*f)(PetscViewer,const char[]);
@@ -102,8 +102,8 @@ int PetscViewerAMSSetCommName(PetscViewer v,const char name[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerAMSGetAMSComm" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerAMSGetAMSComm" 
 /*@C
     PetscViewerAMSGetAMSComm - Gets the AMS communicator associated with the PetscViewer.
 
@@ -146,8 +146,8 @@ int PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
 */
 static int Petsc_Viewer_Ams_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNC__  
-#define __FUNC__ "VIEWER_AMS_" 
+#undef __FUNCT__  
+#define __FUNCT__ "VIEWER_AMS_" 
 /*@C
      PetscViewer_AMS_ - Creates an AMS memory snooper PetscViewer shared by all processors 
                    in a communicator.
@@ -206,8 +206,8 @@ PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
 /*
        If there is a PetscViewer associated with this communicator, it is destroyed.
 */
-#undef __FUNC__  
-#define __FUNC__ "VIEWER_AMS_Destroy" 
+#undef __FUNCT__  
+#define __FUNCT__ "VIEWER_AMS_Destroy" 
 int PetscViewer_AMS_Destroy(MPI_Comm comm)
 {
   int         ierr,flag;
@@ -225,8 +225,8 @@ int PetscViewer_AMS_Destroy(MPI_Comm comm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name=ViewerDestroy_AMS""></a>*/"PetscViewerDestroy_AMS" 
+#undef __FUNCT__  
+#define __FUNCT__ /*<a name=ViewerDestroy_AMS""></a>*/"PetscViewerDestroy_AMS" 
 static int PetscViewerDestroy_AMS(PetscViewer viewer)
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)viewer->data;
@@ -252,8 +252,8 @@ static int PetscViewerDestroy_AMS(PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerCreate_AMS" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate_AMS" 
 int PetscViewerCreate_AMS(PetscViewer v)
 {
   PetscViewer_AMS *vams;

@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.141 2001/01/15 21:46:49 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.142 2001/02/01 22:11:20 bsmith Exp balay $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -19,8 +19,8 @@ typedef struct {
 
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetReuseOrdering_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetReuseOrdering_LU"
 int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
@@ -33,8 +33,8 @@ int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetReuseFill_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetReuseFill_LU"
 int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
 {
   PC_LU *lu;
@@ -46,8 +46,8 @@ int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_LU"
 static int PCSetFromOptions_LU(PC pc)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
@@ -92,8 +92,8 @@ static int PCSetFromOptions_LU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_LU"
 static int PCView_LU(PC pc,PetscViewer viewer)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
@@ -123,8 +123,8 @@ static int PCView_LU(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetFactoredMatrix_LU"
 static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -135,8 +135,8 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_LU"
 static int PCSetUp_LU(PC pc)
 {
   int        ierr;
@@ -192,8 +192,8 @@ static int PCSetUp_LU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_LU"
 static int PCDestroy_LU(PC pc)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -208,8 +208,8 @@ static int PCDestroy_LU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApply_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_LU"
 static int PCApply_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -221,8 +221,8 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCApplyTranspose_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_LU"
 static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -237,8 +237,8 @@ static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 /* -----------------------------------------------------------------------------------*/
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetFill_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetFill_LU"
 int PCLUSetFill_LU(PC pc,PetscReal fill)
 {
   PC_LU *dir;
@@ -251,8 +251,8 @@ int PCLUSetFill_LU(PC pc,PetscReal fill)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetDamping_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetDamping_LU"
 int PCLUSetDamping_LU(PC pc,PetscReal damping)
 {
   PC_LU *dir;
@@ -266,8 +266,8 @@ int PCLUSetDamping_LU(PC pc,PetscReal damping)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetUseInPlace_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetUseInPlace_LU"
 int PCLUSetUseInPlace_LU(PC pc)
 {
   PC_LU *dir;
@@ -280,8 +280,8 @@ int PCLUSetUseInPlace_LU(PC pc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetMatOrdering_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetMatOrdering_LU"
 int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -295,8 +295,8 @@ int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetColumnPivoting_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetColumnPivoting_LU"
 int PCLUSetColumnPivoting_LU(PC pc,PetscReal dtcol)
 {
   PC_LU *dir = (PC_LU*)pc->data;
@@ -310,8 +310,8 @@ EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetReuseOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetReuseOrdering"
 /*@
    PCLUSetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -345,8 +345,8 @@ int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetReuseFill"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetReuseFill"
 /*@
    PCLUSetReuseFill - When matrices with same nonzero structure are LU factored,
    this causes later ones to use the fill computed in the initial factorization.
@@ -379,8 +379,8 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetFill"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetFill"
 /*@
    PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
@@ -420,8 +420,8 @@ int PCLUSetFill(PC pc,PetscReal fill)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetDamping"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetDamping"
 /*@
    PCLUSetDamping - adds this quantity to the diagonal of the matrix during the 
      LU numerical factorization
@@ -454,8 +454,8 @@ int PCLUSetDamping(PC pc,PetscReal damping)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetUseInPlace"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetUseInPlace"
 /*@
    PCLUSetUseInPlace - Tells the system to do an in-place factorization.
    For dense matrices, this enables the solution of much larger problems. 
@@ -499,8 +499,8 @@ int PCLUSetUseInPlace(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetMatOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetMatOrdering"
 /*@
     PCLUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used in the LU factorization.
@@ -532,8 +532,8 @@ int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCLUSetColumnPivoting"
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetColumnPivoting"
 /*@
     PCLUSetColumnPivoting - Determines when column pivoting is done during LU. 
       For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
@@ -567,8 +567,8 @@ int PCLUSetColumnPivoting(PC pc,PetscReal dtcol)
 /* ------------------------------------------------------------------------ */
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_LU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_LU"
 int PCCreate_LU(PC pc)
 {
   int   ierr;

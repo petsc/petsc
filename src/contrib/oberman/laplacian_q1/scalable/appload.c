@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.2 2001/01/15 21:49:25 bsmith Exp balay $*/
+/*$Id: appload.c,v 1.3 2001/01/16 18:21:37 balay Exp balay $*/
 #include "appctx.h"
 
 /*
@@ -6,8 +6,8 @@
      data structures. 
 */
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtCreate"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtCreate"
 /*
     AppCtxCreate - Fills in the data structures using the grid information from 
   a AOData file.
@@ -37,8 +37,8 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "AppCxtDestroy"
+#undef __FUNCT__
+#define __FUNCT__ "AppCxtDestroy"
 /*
           Frees the all the data structures in the program
 */

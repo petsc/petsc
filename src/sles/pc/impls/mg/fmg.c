@@ -1,4 +1,4 @@
-/*$Id: fmg.c,v 1.22 2000/05/10 16:41:46 bsmith Exp bsmith $*/
+/*$Id: fmg.c,v 1.23 2001/01/15 21:46:52 bsmith Exp balay $*/
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
@@ -19,8 +19,8 @@ EXTERN int MGMCycle_Private(MG *);
           initial guess for the next level. This provides an
           improved preconditioner but not a great improvement.
 */
-#undef __FUNC__  
-#define __FUNC__ "MGFCycle_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MGFCycle_Private"
 int MGFCycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,ierr;
@@ -51,8 +51,8 @@ int MGFCycle_Private(MG *mg)
 
     Note: This may not be what others call Kascadic MG.
 */
-#undef __FUNC__  
-#define __FUNC__ "MGKCycle_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MGKCycle_Private"
 int MGKCycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,its,ierr;

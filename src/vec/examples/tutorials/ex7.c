@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.31 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex7.c,v 1.32 2001/03/06 20:24:04 balay Exp balay $*/
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\
@@ -21,8 +21,8 @@ EXTERN_C_BEGIN
 EXTERN void PETSC_STDCALL ex7f_(Vec *,int*);
 EXTERN_C_END
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int              ierr,m = 10;
@@ -55,8 +55,8 @@ int main(int argc,char **args)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "ex7c_"
+#undef __FUNCT__
+#define __FUNCT__ "ex7c_"
 void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,int* ierr)
 {
   MPI_Comm comm;

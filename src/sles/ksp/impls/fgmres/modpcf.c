@@ -1,8 +1,8 @@
-/* $Id: modpcf.c,v 1.11 2000/05/05 22:17:51 balay Exp bsmith $*/
+/* $Id: modpcf.c,v 1.12 2001/01/15 21:47:28 bsmith Exp balay $*/
 
 #include "petscsles.h" 
-#undef __FUNC__  
-#define __FUNC__ "KSPFGMRESSetModifyPC"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPFGMRESSetModifyPC"
 /*@C
    KSPFGMRESSetModifyPC - Sets the routine used by FGMRES to modify the preconditioner.
 
@@ -56,8 +56,8 @@ int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* c
 
 /* The following are different routines used to modify the preconditioner */
 
-#undef __FUNC__  
-#define __FUNC__ "KSPFGMRESModifyPCNoChange"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPFGMRESModifyPCNoChange"
 /*@C
 
   KSPFGMRESModifyPCNoChange - this is the default used by fgmres - it doesn't change the preconditioner. 
@@ -86,8 +86,8 @@ int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_no
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPFGMRESModifyPCSLES"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPFGMRESModifyPCSLES"
 /*@C
 
  KSPFGMRESModifyPCSLES - modifies the attributes of the

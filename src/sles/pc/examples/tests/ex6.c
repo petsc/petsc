@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.13 2001/01/17 22:24:44 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.14 2001/01/23 20:56:10 balay Exp balay $*/
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
 test  MatIncreaseOverlap (needed for aditive schwarts preconditioner \n\
@@ -7,8 +7,8 @@ test  MatIncreaseOverlap (needed for aditive schwarts preconditioner \n\
 
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "FormElementStiffness"
+#undef __FUNCT__
+#define __FUNCT__ "FormElementStiffness"
 int FormElementStiffness(double H,Scalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -17,16 +17,16 @@ int FormElementStiffness(double H,Scalar *Ke)
   Ke[12] = -.125*H;  Ke[13] = H/12.0;  Ke[14] = -.125*H;  Ke[15] = H/6.0;
   return 0;
 }
-#undef __FUNC__
-#define __FUNC__ "FormElementRhs"
+#undef __FUNCT__
+#define __FUNCT__ "FormElementRhs"
 int FormElementRhs(double x,double y,double H,Scalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
   return 0;
 }
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   Mat         C; 

@@ -1,10 +1,10 @@
-/*$Id: gcreate.c,v 1.125 2000/11/28 17:29:54 bsmith Exp bsmith $*/
+/*$Id: gcreate.c,v 1.126 2001/01/15 21:46:25 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
 
-#undef __FUNC__  
-#define __FUNC__ "MatPublish_Base"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPublish_Base"
 static int MatPublish_Base(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
@@ -29,8 +29,8 @@ static int MatPublish_Base(PetscObject obj)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate"
 /*@C
    MatCreate - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
@@ -103,8 +103,8 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetFromOptions"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetFromOptions"
 /*@C
    MatSetFromOptions - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
@@ -164,8 +164,8 @@ int MatSetFromOptions(Mat B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetUpPreallocation"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUpPreallocation"
 /*@C
    MatSetUpPreallocation
 
@@ -202,8 +202,8 @@ int MatSetUpPreallocation(Mat B)
 /*
         Copies from Cs header to A
 */
-#undef __FUNC__  
-#define __FUNC__ "MatHeaderCopy"
+#undef __FUNCT__  
+#define __FUNCT__ "MatHeaderCopy"
 int MatHeaderCopy(Mat A,Mat C)
 {
   int         ierr,refct;

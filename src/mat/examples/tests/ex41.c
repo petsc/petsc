@@ -1,4 +1,4 @@
-/*$Id: ex41.c,v 1.21 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex41.c,v 1.22 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
 is similar to ex40.c; here the index sets used are random. Input arguments are:\n\
@@ -9,8 +9,8 @@ is similar to ex40.c; here the index sets used are random. Input arguments are:\
 
 #include "petscsles.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **args)
 {
   int         ierr,nd = 2,ov=1,i,j,size,m,n,rank,*idx;
@@ -70,8 +70,13 @@ int main(int argc,char **args)
   
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
+    int sz1,sz2;
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);CHKERRQ(ierr);
+    ierr = ISGetSize(is1[i],&sz1);CHKERRQ(ierr);
+    ierr = ISGetSize(is2[i],&sz2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d sz1 = %d sz2 = %d\n",rank,i,flg,sz1,sz2);CHKERRQ(ierr);
+    /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);
+    ISView(is2[i],PETSC_VIEWER_STDOUT_SELF); */
   }
 
   /* Free Allocated Memory */

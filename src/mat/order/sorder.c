@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.86 2001/01/19 23:21:02 balay Exp bsmith $*/
+/*$Id: sorder.c,v 1.87 2001/03/15 17:01:06 bsmith Exp balay $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -11,8 +11,8 @@ PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;
 
 EXTERN int MatOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
 
-#undef __FUNC__  
-#define __FUNC__ "MatOrdering_Flow"
+#undef __FUNCT__  
+#define __FUNCT__ "MatOrdering_Flow"
 int MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
@@ -23,8 +23,8 @@ int MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatOrdering_Natural"
+#undef __FUNCT__  
+#define __FUNCT__ "MatOrdering_Natural"
 int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   int        n,ierr,i,*ii;
@@ -66,8 +66,8 @@ EXTERN_C_BEGIN
    This produces a symmetric Ordering but does not require a 
    matrix with symmetric non-zero structure.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatOrdering_RowLength"
+#undef __FUNCT__  
+#define __FUNCT__ "MatOrdering_RowLength"
 int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   int        ierr,n,*ia,*ja,*permr,*lens,i;
@@ -133,8 +133,8 @@ $     -pc_lu_mat_ordering_type my_order
 .seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
 M*/
 
-#undef __FUNC__  
-#define __FUNC__ "MatOrderingRegister" 
+#undef __FUNCT__  
+#define __FUNCT__ "MatOrderingRegister" 
 int MatOrderingRegister(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   int  ierr;
@@ -146,8 +146,8 @@ int MatOrderingRegister(char *sname,char *path,char *name,int (*function)(Mat,Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatOrderingRegisterDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "MatOrderingRegisterDestroy"
 /*@C
    MatOrderingRegisterDestroy - Frees the list of ordering routines.
 
@@ -174,8 +174,8 @@ int MatOrderingRegisterDestroy(void)
 EXTERN int MatAdjustForInodes(Mat,IS *,IS *);
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-#undef __FUNC__  
-#define __FUNC__ "MatGetOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOrdering"
 /*@C
    MatGetOrdering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
@@ -294,8 +294,8 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetOrderingList"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOrderingList"
 int MatGetOrderingList(PetscFList *list)
 {
   PetscFunctionBegin;

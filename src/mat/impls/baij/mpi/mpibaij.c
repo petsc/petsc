@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.217 2001/03/22 20:30:21 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.218 2001/03/23 22:05:43 bsmith Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -36,8 +36,8 @@ EXTERN int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatSca
 #define MatSetValuesBlocked_MPIBAIJ_HT_MatScalar   MatSetValuesBlocked_MPIBAIJ_HT
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRowMax_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMax_MPIBAIJ"
 int MatGetRowMax_MPIBAIJ(Mat A,Vec v)
 {
   Mat_MPIBAIJ  *a = (Mat_MPIBAIJ*)A->data;
@@ -66,8 +66,8 @@ int MatGetRowMax_MPIBAIJ(Mat A,Vec v)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatStoreValues_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatStoreValues_MPIBAIJ"
 int MatStoreValues_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *)mat->data;
@@ -81,8 +81,8 @@ int MatStoreValues_MPIBAIJ(Mat mat)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatRetrieveValues_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRetrieveValues_MPIBAIJ"
 int MatRetrieveValues_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *)mat->data;
@@ -101,8 +101,8 @@ EXTERN_C_END
    storage of the matrix.  This is done in a non scable way since the 
    length of colmap equals the global matrix length. 
 */
-#undef __FUNC__  
-#define __FUNC__ "CreateColmap_MPIBAIJ_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "CreateColmap_MPIBAIJ_Private"
 static int CreateColmap_MPIBAIJ_Private(Mat mat)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -280,8 +280,8 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
 } 
 
 #if defined(PETSC_USE_MAT_SINGLE)
-#undef __FUNC__  
-#define __FUNC__ "MatSetValues_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValues_MPIBAIJ"
 int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
@@ -303,8 +303,8 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValuesBlocked_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesBlocked_MPIBAIJ"
 int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
@@ -325,8 +325,8 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValues_MPIBAIJ_HT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValues_MPIBAIJ_HT"
 int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
@@ -347,8 +347,8 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValuesBlocked_MPIBAIJ_HT"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesBlocked_MPIBAIJ_HT"
 int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
@@ -370,8 +370,8 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
 } 
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValues_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValues_MPIBAIJ"
 int MatSetValues_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -454,8 +454,8 @@ int MatSetValues_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValuesBlocked_MPIBAIJ_MatScalar"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesBlocked_MPIBAIJ_MatScalar"
 int MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -559,8 +559,8 @@ int MatSetValuesBlocked_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,Ma
 #define HASH(size,key,tmp) (tmp = (key)*HASH_KEY,(int)((size)*(tmp-(int)tmp)))
 /* #define HASH(size,key) ((int)((size)*fmod(((key)*HASH_KEY),1))) */
 /* #define HASH(size,key,tmp) ((int)((size)*fmod(((key)*HASH_KEY),1))) */
-#undef __FUNC__  
-#define __FUNC__ "MatSetValues_MPIBAIJ_HT_MatScalar"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValues_MPIBAIJ_HT_MatScalar"
 int MatSetValues_MPIBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -637,8 +637,8 @@ int MatSetValues_MPIBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatSca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetValuesBlocked_MPIBAIJ_HT_MatScalar"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesBlocked_MPIBAIJ_HT_MatScalar"
 int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -753,8 +753,8 @@ int MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetValues_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetValues_MPIBAIJ"
 int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -797,8 +797,8 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
  PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatNorm_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatNorm_MPIBAIJ"
 int MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -845,8 +845,8 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *norm)
   then the hash table has to be destroyed and
   recreated.
 */
-#undef __FUNC__  
-#define __FUNC__ "MatCreateHashTable_MPIBAIJ_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateHashTable_MPIBAIJ_Private"
 int MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -938,8 +938,8 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,PetscReal factor)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyBegin_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyBegin_MPIBAIJ"
 int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -967,8 +967,8 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatAssemblyEnd_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_MPIBAIJ"
 int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBAIJ *baij=(Mat_MPIBAIJ*)mat->data;
@@ -1066,8 +1066,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_MPIBAIJ_ASCIIorDraworSocket"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIBAIJ_ASCIIorDraworSocket"
 static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIBAIJ       *baij = (Mat_MPIBAIJ*)mat->data;
@@ -1171,8 +1171,8 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatView_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatView_MPIBAIJ"
 int MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
 {
   int        ierr;
@@ -1191,8 +1191,8 @@ int MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPIBAIJ"
 int MatDestroy_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -1225,8 +1225,8 @@ int MatDestroy_MPIBAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMult_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_MPIBAIJ"
 int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
@@ -1249,8 +1249,8 @@ int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultAdd_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_MPIBAIJ"
 int MatMultAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
@@ -1264,8 +1264,8 @@ int MatMultAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultTranspose_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTranspose_MPIBAIJ"
 int MatMultTranspose_MPIBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
@@ -1285,8 +1285,8 @@ int MatMultTranspose_MPIBAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultTransposeAdd_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransposeAdd_MPIBAIJ"
 int MatMultTransposeAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
@@ -1310,8 +1310,8 @@ int MatMultTransposeAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   This only works correctly for square matrices where the subblock A->A is the 
    diagonal block
 */
-#undef __FUNC__  
-#define __FUNC__ "MatGetDiagonal_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetDiagonal_MPIBAIJ"
 int MatGetDiagonal_MPIBAIJ(Mat A,Vec v)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
@@ -1323,8 +1323,8 @@ int MatGetDiagonal_MPIBAIJ(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatScale_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_MPIBAIJ"
 int MatScale_MPIBAIJ(Scalar *aa,Mat A)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
@@ -1336,8 +1336,8 @@ int MatScale_MPIBAIJ(Scalar *aa,Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRange_MPIBAIJ"
 int MatGetOwnershipRange_MPIBAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ*)matin->data;
@@ -1348,8 +1348,8 @@ int MatGetOwnershipRange_MPIBAIJ(Mat matin,int *m,int *n)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetRow_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRow_MPIBAIJ"
 int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ*)matin->data;
@@ -1429,8 +1429,8 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRestoreRow_MPIBAIJ"
 int MatRestoreRow_MPIBAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -1443,8 +1443,8 @@ int MatRestoreRow_MPIBAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetBlockSize_MPIBAIJ"
 int MatGetBlockSize_MPIBAIJ(Mat mat,int *bs)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -1454,8 +1454,8 @@ int MatGetBlockSize_MPIBAIJ(Mat mat,int *bs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatZeroEntries_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroEntries_MPIBAIJ"
 int MatZeroEntries_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *l = (Mat_MPIBAIJ*)A->data;
@@ -1467,8 +1467,8 @@ int MatZeroEntries_MPIBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetInfo_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInfo_MPIBAIJ"
 int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)matin->data;
@@ -1517,8 +1517,8 @@ int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetOption_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetOption_MPIBAIJ"
 int MatSetOption_MPIBAIJ(Mat A,MatOption op)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
@@ -1559,8 +1559,8 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatTranspose_MPIBAIJ("
+#undef __FUNCT__  
+#define __FUNCT__ "MatTranspose_MPIBAIJ("
 int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
 { 
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)A->data;
@@ -1616,8 +1616,8 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDiagonalScale_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalScale_MPIBAIJ"
 int MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
@@ -1649,8 +1649,8 @@ int MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatZeroRows_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatZeroRows_MPIBAIJ"
 int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIBAIJ    *l = (Mat_MPIBAIJ*)A->data;
@@ -1802,8 +1802,8 @@ MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCA
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPrintHelp_MPIBAIJ"
 int MatPrintHelp_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*)A->data;
@@ -1821,8 +1821,8 @@ int MatPrintHelp_MPIBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetUnfactored_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUnfactored_MPIBAIJ"
 int MatSetUnfactored_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*)A->data;
@@ -1835,8 +1835,8 @@ int MatSetUnfactored_MPIBAIJ(Mat A)
 
 static int MatDuplicate_MPIBAIJ(Mat,MatDuplicateOption,Mat *);
 
-#undef __FUNC__  
-#define __FUNC__ "MatEqual_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatEqual_MPIBAIJ"
 int MatEqual_MPIBAIJ(Mat A,Mat B,PetscTruth *flag)
 {
   Mat_MPIBAIJ *matB = (Mat_MPIBAIJ*)B->data,*matA = (Mat_MPIBAIJ*)A->data;
@@ -1859,8 +1859,8 @@ int MatEqual_MPIBAIJ(Mat A,Mat B,PetscTruth *flag)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatSetUpPreallocation_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetUpPreallocation_MPIBAIJ"
 int MatSetUpPreallocation_MPIBAIJ(Mat A)
 {
   int        ierr;
@@ -1948,8 +1948,8 @@ static struct _MatOps MatOps_Values = {
 
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatGetDiagonalBlock_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetDiagonalBlock_MPIBAIJ"
 int MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 {
   PetscFunctionBegin;
@@ -1960,8 +1960,8 @@ int MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatCreate_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_MPIBAIJ"
 int MatCreate_MPIBAIJ(Mat B)
 {
   Mat_MPIBAIJ  *b;
@@ -2045,8 +2045,8 @@ int MatCreate_MPIBAIJ(Mat B)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatMPIBAIJSetPreallocation"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIBAIJSetPreallocation"
 /*@C
    MatMPIBAIJSetPreallocation - Creates a sparse parallel matrix in block AIJ format
    (block compressed row).  For good matrix assembly performance
@@ -2199,8 +2199,8 @@ int MatMPIBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCreateMPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMPIBAIJ"
 /*@C
    MatCreateMPIBAIJ - Creates a sparse parallel matrix in block AIJ format
    (block compressed row).  For good matrix assembly performance
@@ -2308,8 +2308,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,int *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatDuplicate_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDuplicate_MPIBAIJ"
 static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat         mat;
@@ -2391,8 +2391,8 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
 #include "petscsys.h"
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "MatLoad_MPIBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLoad_MPIBAIJ"
 int MatLoad_MPIBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
@@ -2620,8 +2620,8 @@ int MatLoad_MPIBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatMPIBAIJSetHashTableFactor"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIBAIJSetHashTableFactor"
 /*@
    MatMPIBAIJSetHashTableFactor - Sets the factor required to compute the size of the HashTable.
 
@@ -2657,8 +2657,8 @@ int MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMPIBAIJGetSeqBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIBAIJGetSeqBAIJ"
 int MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,int **colmap)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;

@@ -1,11 +1,11 @@
-/*$Id: isdiff.c,v 1.22 2000/10/24 20:24:56 bsmith Exp bsmith $*/
+/*$Id: isdiff.c,v 1.23 2001/01/15 21:44:35 bsmith Exp balay $*/
 
 #include "petscis.h"                    /*I "petscis.h"  I*/
 #include "petsc.h"
 #include "petscbt.h"
 
-#undef __FUNC__  
-#define __FUNC__ "ISDifference"
+#undef __FUNCT__  
+#define __FUNCT__ "ISDifference"
 /*@
    ISDifference - Computes the difference between two index sets.
 
@@ -93,8 +93,8 @@ int ISDifference(IS is1,IS is2,IS *isout)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISSum"
+#undef __FUNCT__  
+#define __FUNCT__ "ISSum"
 /*@
    ISSum - Computes the sum (union) of two index sets.
 

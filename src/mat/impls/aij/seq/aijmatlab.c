@@ -1,4 +1,4 @@
-/*$Id: aijmatlab.c,v 1.9 2001/01/15 21:45:34 bsmith Exp bsmith $*/
+/*$Id: aijmatlab.c,v 1.10 2001/03/22 20:29:53 bsmith Exp balay $*/
 
 /* 
         Provides an interface for the Matlab engine sparse solver
@@ -10,8 +10,8 @@
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 
-#undef __FUNC__  
-#define __FUNC__ "MatSolve_SeqAIJ_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqAIJ_Matlab"
 int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
@@ -33,8 +33,8 @@ int MatSolve_SeqAIJ_Matlab(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqAIJ_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Matlab"
 int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *f = (Mat_SeqAIJ*)(*F)->data;
@@ -55,8 +55,8 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Matlab"
 int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*f;
@@ -74,8 +74,8 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatILUDTFactor_SeqAIJ_Matlab"
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUDTFactor_SeqAIJ_Matlab"
 int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
@@ -102,8 +102,8 @@ int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseMatlab_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseMatlab_SeqAIJ"
 int MatUseMatlab_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
@@ -115,8 +115,8 @@ int MatUseMatlab_SeqAIJ(Mat A)
 
 #else
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseMatlab_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseMatlab_SeqAIJ"
 int MatUseMatlab_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;

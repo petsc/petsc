@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.26 2001/01/16 18:19:12 balay Exp bsmith $*/
+/*$Id: milu.c,v 1.27 2001/01/17 22:24:36 bsmith Exp balay $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -28,8 +28,8 @@
 /****************************************************************
   User interface routines
 ****************************************************************/
-#undef __FUNC__
-#define __FUNC__ "PCmILUSetLevels"
+#undef __FUNCT__
+#define __FUNCT__ "PCmILUSetLevels"
 int PCmILUSetLevels(PC pc,int levels)
 {
   PC  base_pc = (PC) pc->data;
@@ -41,8 +41,8 @@ int PCmILUSetLevels(PC pc,int levels)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "PCmILUSetBaseType"
+#undef __FUNCT__
+#define __FUNCT__ "PCmILUSetBaseType"
 int PCmILUSetBaseType(PC pc,PCType type)
 {
   PC  base_pc = (PC) pc->data;
@@ -58,8 +58,8 @@ int PCmILUSetBaseType(PC pc,PCType type)
   Implementation
 ****************************************************************/
 
-#undef __FUNC__
-#define __FUNC__ "PCSetup_mILU"
+#undef __FUNCT__
+#define __FUNCT__ "PCSetup_mILU"
 static int PCSetup_mILU(PC pc)
 {
   PC     base_pc = (PC) pc->data;
@@ -132,8 +132,8 @@ static int PCSetup_mILU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "PCApply_mILU"
+#undef __FUNCT__
+#define __FUNCT__ "PCApply_mILU"
 static int PCApply_mILU(PC pc,Vec x,Vec y)
 {
   PC  base_pc = (PC) pc->data;
@@ -145,8 +145,8 @@ static int PCApply_mILU(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "PCDestroy_mILU"
+#undef __FUNCT__
+#define __FUNCT__ "PCDestroy_mILU"
 static int PCDestroy_mILU(PC pc)
 {
   PC  base_pc = (PC) pc->data;
@@ -159,8 +159,8 @@ static int PCDestroy_mILU(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCView_mILU"
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_mILU"
 static int PCView_mILU(PC pc,PetscViewer viewer)
 {
   PC         base_pc = (PC) pc->data;
@@ -181,8 +181,8 @@ static int PCView_mILU(PC pc,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__
-#define __FUNC__ "PCCreate_mILU"
+#undef __FUNCT__
+#define __FUNCT__ "PCCreate_mILU"
 int PCCreate_mILU(PC pc)
 {
   PC  base_pc;

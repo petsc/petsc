@@ -1,4 +1,4 @@
-/*$Id: lusol.c,v 1.6 2000/11/28 17:28:56 bsmith Exp bsmith $*/
+/*$Id: lusol.c,v 1.7 2001/01/15 21:45:34 bsmith Exp balay $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -179,8 +179,8 @@ typedef struct
 #define Factorization_Small_Tolerance 1e-15 /* pow(DBL_EPSILON, 0.8) */
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_SeqAIJ_LUSOL"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_SeqAIJ_LUSOL"
 int MatDestroy_SeqAIJ_LUSOL(Mat A)
 {
      Mat_SeqAIJ *a;
@@ -212,8 +212,8 @@ int MatDestroy_SeqAIJ_LUSOL(Mat A)
      PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__  "MatSolve_SeqAIJ_LUSOL"
+#undef __FUNCT__  
+#define __FUNCT__  "MatSolve_SeqAIJ_LUSOL"
 int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
 {
      Mat_SeqAIJ_LUSOL *lusol = 
@@ -249,8 +249,8 @@ int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
      PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqAIJ_LUSOL"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_LUSOL"
 int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 {
      Mat_SeqAIJ       *a;
@@ -376,8 +376,8 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
      PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_LUSOL"
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_LUSOL"
 int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
 {
      /************************************************************************/
@@ -476,8 +476,8 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseLUSOL_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseLUSOL_SeqAIJ"
 int MatUseLUSOL_SeqAIJ(Mat A)
 {
   MatType    type;
@@ -502,8 +502,8 @@ int MatUseLUSOL_SeqAIJ(Mat A)
 
 #else
 
-#undef __FUNC__  
-#define __FUNC__ "MatUseLUSOL_SeqAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatUseLUSOL_SeqAIJ"
 int MatUseLUSOL_SeqAIJ(Mat A)
 {
      PetscFunctionBegin;

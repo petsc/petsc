@@ -1,4 +1,4 @@
-/*$Id: cgs.c,v 1.61 2001/01/15 21:47:18 bsmith Exp bsmith $*/
+/*$Id: cgs.c,v 1.62 2001/03/22 20:31:25 bsmith Exp balay $*/
 
 /*                       
     This code implements the CGS (Conjugate Gradient Squared) method. 
@@ -10,8 +10,8 @@
 */
 #include "src/sles/ksp/kspimpl.h"
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSetUp_CGS"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUp_CGS"
 static int KSPSetUp_CGS(KSP ksp)
 {
   int ierr;
@@ -22,8 +22,8 @@ static int KSPSetUp_CGS(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPSolve_CGS"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSolve_CGS"
 static int  KSPSolve_CGS(KSP ksp,int *its)
 {
   int        i,maxit,ierr;
@@ -116,8 +116,8 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "KSPCreate_CGS"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPCreate_CGS"
 int KSPCreate_CGS(KSP ksp)
 {
   PetscFunctionBegin;

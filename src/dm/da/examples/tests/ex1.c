@@ -1,12 +1,12 @@
-/*$Id: ex1.c,v 1.45 2001/01/22 23:08:13 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.46 2001/01/23 20:58:05 balay Exp balay $*/
 
 static char help[] = "Tests various DA routines.\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   int      rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;

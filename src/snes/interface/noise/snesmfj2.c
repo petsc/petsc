@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.29 2001/01/15 21:47:51 bsmith Exp balay $*/
+/*$Id: snesmfj2.c,v 1.30 2001/01/16 18:20:08 balay Exp balay $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -23,8 +23,8 @@ typedef struct {  /* default context for matrix-free SNES */
   void         *data;            /* implementation-specific data */
 } MFCtx_Private;
 
-#undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeDestroy2_Private" /* ADIC Ignore */
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMatrixFreeDestroy2_Private" /* ADIC Ignore */
 int SNESMatrixFreeDestroy2_Private(Mat mat)
 {
   int           ierr;
@@ -39,8 +39,8 @@ int SNESMatrixFreeDestroy2_Private(Mat mat)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeView2_Private" /* ADIC Ignore */
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMatrixFreeView2_Private" /* ADIC Ignore */
 /*
    SNESMatrixFreeView2_Private - Views matrix-free parameters.
  */
@@ -69,8 +69,8 @@ int SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeMult2_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMatrixFreeMult2_Private"
 /*
   SNESMatrixFreeMult2_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
@@ -172,8 +172,8 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeMatCreate2"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMatrixFreeMatCreate2"
 /*@C
    SNESMatrixFreeMatCreate2 - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
@@ -282,8 +282,8 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultMatrixFreeSetParameters2"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultMatrixFreeSetParameters2"
 /*@
    SNESDefaultMatrixFreeSetParameters2 - Sets the parameters for the approximation of
    matrix-vector products using finite differences.

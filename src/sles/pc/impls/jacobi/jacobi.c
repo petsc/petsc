@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.71 2000/10/26 14:21:56 bsmith Exp bsmith $*/
+/*$Id: jacobi.c,v 1.72 2001/01/15 21:46:47 bsmith Exp balay $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -64,8 +64,8 @@ typedef struct {
 } PC_Jacobi;
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCJacobiSetUseRowMax_Jacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCJacobiSetUseRowMax_Jacobi"
 int PCJacobiSetUseRowMax_Jacobi(PC pc)
 {
   PC_Jacobi *j;
@@ -91,8 +91,8 @@ EXTERN_C_END
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_Jacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_Jacobi"
 static int PCSetUp_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
@@ -175,8 +175,8 @@ static int PCSetUp_Jacobi(PC pc)
    Input Parameter:
 .  pc - the preconditioner context
 */
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_Jacobi_Symmetric"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_Jacobi_Symmetric"
 static int PCSetUp_Jacobi_Symmetric(PC pc)
 {
   int        ierr;
@@ -198,8 +198,8 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
    Input Parameter:
 .  pc - the preconditioner context
 */
-#undef __FUNC__  
-#define __FUNC__ "PCSetUp_Jacobi_NonSymmetric"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_Jacobi_NonSymmetric"
 static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
   int        ierr;
@@ -225,8 +225,8 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
 
    Application Interface Routine: PCApply()
  */
-#undef __FUNC__  
-#define __FUNC__ "PCApply_Jacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_Jacobi"
 static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
@@ -253,8 +253,8 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 
    Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
 */
-#undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricLeftOrRight_Jacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplySymmetricLeftOrRight_Jacobi"
 static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   int       ierr;
@@ -277,8 +277,8 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 
    Application Interface Routine: PCDestroy()
 */
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_Jacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Jacobi"
 static int PCDestroy_Jacobi(PC pc)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
@@ -295,8 +295,8 @@ static int PCDestroy_Jacobi(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PCSetFromOptions_Jacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_Jacobi"
 static int PCSetFromOptions_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
@@ -322,8 +322,8 @@ static int PCSetFromOptions_Jacobi(PC pc)
    Application Interface Routine: PCCreate()
 */
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PCCreate_Jacobi"
+#undef __FUNCT__  
+#define __FUNCT__ "PCCreate_Jacobi"
 int PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi *jac;
@@ -374,8 +374,8 @@ int PCCreate_Jacobi(PC pc)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PCJacobiSetUseRowMax"
+#undef __FUNCT__  
+#define __FUNCT__ "PCJacobiSetUseRowMax"
 /*@
    PCJacobiSetUseRowMax - Causes the Jacobi preconditioner to use the 
       maximum entry in each row as the diagonal preconditioner, instead of

@@ -1,4 +1,4 @@
-/*$Id: dgefa7.c,v 1.7 2000/09/28 21:11:23 bsmith Exp bsmith $*/
+/*$Id: dgefa7.c,v 1.8 2001/01/15 21:45:50 bsmith Exp balay $*/
 /*
       Inverts 7 by 7 matrix using partial pivoting.
 
@@ -13,8 +13,8 @@
 */
 #include "petsc.h"
 
-#undef __FUNC__  
-#define __FUNC__ "Kernel_A_gets_inverse_A_7"
+#undef __FUNCT__  
+#define __FUNCT__ "Kernel_A_gets_inverse_A_7"
 int Kernel_A_gets_inverse_A_7(MatScalar *a)
 {
     int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[7],*ipvt = ipvt_l-1,kb,k3;

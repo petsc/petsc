@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.14 2001/03/16 21:05:33 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.15 2001/03/22 20:32:01 bsmith Exp balay $ */
 
 
 static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 3d.\n\
@@ -58,8 +58,8 @@ extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   DMMG    *dmmg;
@@ -124,8 +124,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess"
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
 int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
   DMMG    dmmg = (DMMG)ptr;
@@ -152,8 +152,8 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   PetscFunctionReturn(0);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
+#undef __FUNCT__
+#define __FUNCT__ "FormFunction"
 int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 {
   DMMG    dmmg = (DMMG)ptr;
@@ -467,8 +467,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   PetscFunctionReturn(0);
 } 
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#undef __FUNCT__
+#define __FUNCT__ "FormJacobian"
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
   DMMG       dmmg = (DMMG)ptr;

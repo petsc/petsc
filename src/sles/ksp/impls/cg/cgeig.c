@@ -1,4 +1,4 @@
-/*$Id: cgeig.c,v 1.50 2000/09/28 21:13:18 bsmith Exp bsmith $*/
+/*$Id: cgeig.c,v 1.51 2001/01/15 21:47:16 bsmith Exp balay $*/
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian
@@ -7,8 +7,8 @@
 #include "src/sles/ksp/impls/cg/cgctx.h"
 static int LINPACKcgtql1(int *,PetscReal *,PetscReal *,int *);
 
-#undef __FUNC__  
-#define __FUNC__ "KSPComputeEigenvalues_CG"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPComputeEigenvalues_CG"
 int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *neig)
 {
   KSP_CG    *cgP = (KSP_CG*)ksp->data;
@@ -39,8 +39,8 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *nei
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "KSPComputeExtremeSingularValues_CG"
+#undef __FUNCT__  
+#define __FUNCT__ "KSPComputeExtremeSingularValues_CG"
 int KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
   KSP_CG    *cgP = (KSP_CG*)ksp->data;
@@ -79,8 +79,8 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,PetscReal *emax,PetscReal *emin)
 
 static PetscReal LINPACKcgpthy(PetscReal*,PetscReal*);
 
-#undef __FUNC__  
-#define __FUNC__ "LINPACKcgtql1"
+#undef __FUNCT__  
+#define __FUNCT__ "LINPACKcgtql1"
 static int LINPACKcgtql1(int *n,PetscReal *d,PetscReal *e,int *ierr)
 {
     /* System generated locals */
@@ -269,8 +269,8 @@ L1001:
     PetscFunctionReturn(0);
 } /* cgtql1_ */
 
-#undef __FUNC__  
-#define __FUNC__ "LINPACKcgpthy"
+#undef __FUNCT__  
+#define __FUNCT__ "LINPACKcgpthy"
 static PetscReal LINPACKcgpthy(PetscReal *a,PetscReal *b)
 {
     /* System generated locals */

@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.120 2001/02/09 00:41:29 bsmith Exp balay $ */
+/* $Id: send.c,v 1.121 2001/02/14 22:40:36 balay Exp balay $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -57,8 +57,8 @@ extern int connect(int,struct sockaddr *,int);
 EXTERN_C_END
 
 /*--------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDestroy_Socket" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_Socket" 
 static int PetscViewerDestroy_Socket(PetscViewer viewer)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
@@ -76,8 +76,8 @@ static int PetscViewerDestroy_Socket(PetscViewer viewer)
 }
 
 /*--------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "SOCKCall_Private" 
+#undef __FUNCT__  
+#define __FUNCT__ "SOCKCall_Private" 
 int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
 #if !defined(PETSC_MISSING_SOCKETS)
@@ -132,8 +132,8 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSocketOpen" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSocketOpen" 
 /*@C
    PetscViewerSocketOpen - Opens a connection to a Matlab or other socket
         based server.
@@ -192,8 +192,8 @@ int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSetFromOptions_Socket" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSetFromOptions_Socket" 
 int PetscViewerSetFromOptions_Socket(PetscViewer v)
 {
   int           ierr,def = -1;
@@ -224,8 +224,8 @@ int PetscViewerSetFromOptions_Socket(PetscViewer v)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerCreate_Socket" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate_Socket" 
 int PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
@@ -242,8 +242,8 @@ int PetscViewerCreate_Socket(PetscViewer v)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSocketSetConnection" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSocketSetConnection" 
 int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 {
   int           ierr,rank;
@@ -285,8 +285,8 @@ int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 */
 static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
-#undef __FUNC__  
-#define __FUNC__ "VIEWER_SOCKET_"  
+#undef __FUNCT__  
+#define __FUNCT__ "VIEWER_SOCKET_"  
 /*@C
      PetscViewer_SOCKET_ - Creates a socket PetscViewer shared by all processors 
                      in a communicator.
@@ -348,23 +348,23 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 #else /* defined (PARCH_win32) */
  
 #include "petscviewer.h"
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSocketOpen" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSocketOpen" 
 int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PETSC_VIEWER_SOCKET_" 
+#undef __FUNCT__  
+#define __FUNCT__ "PETSC_VIEWER_SOCKET_" 
 PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerCreate_Socket" 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate_Socket" 
 int PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscFunctionBegin;

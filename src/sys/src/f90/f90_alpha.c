@@ -1,9 +1,9 @@
-/*$Id: f90_alpha.c,v 1.8 2000/09/28 21:09:38 bsmith Exp bsmith $*/
+/*$Id: f90_alpha.c,v 1.9 2001/01/15 21:44:12 bsmith Exp balay $*/
 
 /*-------------------------------------------------------------*/
 
-#undef __FUNC__  
-#define __FUNC__ "F90GetID"
+#undef __FUNCT__  
+#define __FUNCT__ "F90GetID"
 int F90GetID(PetscDataType type,int *id)
 {
   PetscFunctionBegin;
@@ -25,8 +25,8 @@ int F90GetID(PetscDataType type,int *id)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "F90Array1dCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "F90Array1dCreate"
 int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,size_int,ierr,id;
@@ -50,8 +50,8 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "F90Array2dCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "F90Array2dCreate"
 int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
 

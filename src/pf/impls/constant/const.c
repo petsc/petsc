@@ -1,8 +1,8 @@
-/*$Id: const.c,v 1.13 2001/01/15 21:49:44 bsmith Exp balay $*/
+/*$Id: const.c,v 1.14 2001/01/16 18:21:58 balay Exp balay $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "PFApply_Constant"
+#undef __FUNCT__  
+#define __FUNCT__ "PFApply_Constant"
 int PFApply_Constant(void *value,int n,Scalar *x,Scalar *y)
 {
   int    i;
@@ -16,8 +16,8 @@ int PFApply_Constant(void *value,int n,Scalar *x,Scalar *y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFApplyVec_Constant"
+#undef __FUNCT__  
+#define __FUNCT__ "PFApplyVec_Constant"
 int PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   int ierr;
@@ -25,8 +25,8 @@ int PFApplyVec_Constant(void *value,Vec x,Vec y)
   ierr = VecSet((Scalar*)value,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PFView_Constant"
+#undef __FUNCT__  
+#define __FUNCT__ "PFView_Constant"
 int PFView_Constant(void *value,PetscViewer viewer)
 {
   int        ierr;
@@ -43,8 +43,8 @@ int PFView_Constant(void *value,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PFDestroy_Constant"
+#undef __FUNCT__  
+#define __FUNCT__ "PFDestroy_Constant"
 int PFDestroy_Constant(void *value)
 {
   int ierr;
@@ -53,8 +53,8 @@ int PFDestroy_Constant(void *value)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFSetFromOptions_Constant"
+#undef __FUNCT__  
+#define __FUNCT__ "PFSetFromOptions_Constant"
 int PFSetFromOptions_Constant(PF pf)
 {
   int        ierr;
@@ -68,8 +68,8 @@ int PFSetFromOptions_Constant(PF pf)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PFCreate_Constant"
+#undef __FUNCT__  
+#define __FUNCT__ "PFCreate_Constant"
 int PFCreate_Constant(PF pf,void *value)
 {
   int    ierr;
@@ -87,8 +87,8 @@ int PFCreate_Constant(PF pf,void *value)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PFCreate_Quick"
+#undef __FUNCT__  
+#define __FUNCT__ "PFCreate_Quick"
 int PFCreate_Quick(PF pf,void* function)
 {
   int  ierr;
@@ -101,8 +101,8 @@ int PFCreate_Quick(PF pf,void* function)
 EXTERN_C_END
 
 /* -------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PFApply_Identity"
+#undef __FUNCT__  
+#define __FUNCT__ "PFApply_Identity"
 int PFApply_Identity(void *value,int n,Scalar *x,Scalar *y)
 {
   int    i;
@@ -115,8 +115,8 @@ int PFApply_Identity(void *value,int n,Scalar *x,Scalar *y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PFApplyVec_Identity"
+#undef __FUNCT__  
+#define __FUNCT__ "PFApplyVec_Identity"
 int PFApplyVec_Identity(void *value,Vec x,Vec y)
 {
   int ierr;
@@ -124,8 +124,8 @@ int PFApplyVec_Identity(void *value,Vec x,Vec y)
   ierr = VecCopy(x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PFView_Identity"
+#undef __FUNCT__  
+#define __FUNCT__ "PFView_Identity"
 int PFView_Identity(void *value,PetscViewer viewer)
 {
   int        ierr;
@@ -138,8 +138,8 @@ int PFView_Identity(void *value,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "PFDestroy_Identity"
+#undef __FUNCT__  
+#define __FUNCT__ "PFDestroy_Identity"
 int PFDestroy_Identity(void *value)
 {
   int ierr;
@@ -149,8 +149,8 @@ int PFDestroy_Identity(void *value)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PFCreate_Identity"
+#undef __FUNCT__  
+#define __FUNCT__ "PFCreate_Identity"
 int PFCreate_Identity(PF pf,void *value)
 {
   int    ierr,*loc;

@@ -1,4 +1,4 @@
-/*$Id: dsc.c,v 1.3 2001/01/15 21:45:34 bsmith Exp balay $*/
+/*$Id: dsc.c,v 1.4 2001/01/16 18:17:28 balay Exp balay $*/
 /* 
         Provides an interface to the DSCPACK-S
 */
@@ -17,8 +17,8 @@ extern int MatDestroy_SeqAIJ(Mat);
 int dsc_s_nz = 0;      /* num of nonzeros in lower/upper half of the matrix */
 int dsc_pass = 0;      /* num of numeric factorizations for a single symbolic factorization */
 
-#undef __FUNC__  
-#define __FUNC__ "MatDestroy_SeqAIJ_DSC_Fac"
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_SeqAIJ_DSC_Fac"
 int MatDestroy_SeqAIJ_DSC_Fac(Mat A)
 {
   int ierr;
@@ -32,8 +32,8 @@ int MatDestroy_SeqAIJ_DSC_Fac(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__  "MatSolve_SeqAIJ_DSC"
+#undef __FUNCT__  
+#define __FUNCT__  "MatSolve_SeqAIJ_DSC"
 int MatSolve_SeqAIJ_DSC(Mat A,Vec b,Vec x)
 {
   double *rhs_vec, *solution_vec;
@@ -62,8 +62,8 @@ ERROR_HANDLE:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_SeqAIJ_DSC"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ_DSC"
 int MatCholeskyFactorNumeric_SeqAIJ_DSC(Mat A, Mat *F)
 {
   Mat_SeqAIJ       *a=(Mat_SeqAIJ*)A->data, *fac=(Mat_SeqAIJ*)(*F)->data;
@@ -99,8 +99,8 @@ int MatCholeskyFactorNumeric_SeqAIJ_DSC(Mat A, Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorSymbolic_SeqAIJ_DSC"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJ_DSC"
 int MatCholeskyFactorSymbolic_SeqAIJ_DSC(Mat A,IS perm,PetscReal f,Mat *F)
 {
   /************************************************************************/
@@ -151,8 +151,8 @@ ERROR_HANDLE:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatSeqAIJUseDSC"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqAIJUseDSC"
 int MatSeqAIJUseDSC(Mat A)
 {
   int        ierr; 
@@ -172,8 +172,8 @@ int MatSeqAIJUseDSC(Mat A)
 
 #else
 
-#undef __FUNC__  
-#define __FUNC__ "MatSeqAIJUseDSC"
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqAIJUseDSC"
 int MatSeqAIJUseDSC(Mat A)
 {
      PetscFunctionBegin;

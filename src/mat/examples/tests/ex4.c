@@ -1,12 +1,12 @@
-/*$Id: ex4.c,v 1.18 2001/01/19 23:20:49 balay Exp balay $*/
+/*$Id: ex4.c,v 1.19 2001/01/23 20:55:11 balay Exp balay $*/
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
 MatGetSubMatrices and MatZeroEntries.\n\n";
 
 #include "petscmat.h"
 
-#undef __FUNC__
-#define __FUNC__ "main"
+#undef __FUNCT__
+#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   Mat       mat,submat,*submatrices;

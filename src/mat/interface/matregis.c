@@ -1,4 +1,4 @@
-/*$Id: matregis.c,v 1.6 2000/11/10 16:32:16 bsmith Exp bsmith $*/
+/*$Id: matregis.c,v 1.7 2001/01/15 21:45:27 bsmith Exp balay $*/
 
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
@@ -27,8 +27,8 @@ EXTERN_C_END
 */
 EXTERN PetscTruth MatRegisterAllCalled;
 
-#undef __FUNC__  
-#define __FUNC__ "MatRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "MatRegisterAll"
 /*@C
   MatRegisterAll - Registers all of the matrix types in PETSc
 

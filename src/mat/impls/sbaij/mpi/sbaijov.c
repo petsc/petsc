@@ -1,4 +1,4 @@
-/*$Id: sbaijov.c,v 1.7 2001/03/06 20:15:14 balay Exp balay $*/
+/*$Id: sbaijov.c,v 1.8 2001/03/09 20:05:29 balay Exp balay $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -13,8 +13,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Receive(Mat,int,int **,int**,int*);
 extern int MatGetRow_MPISBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatRestoreRow_MPISBAIJ(Mat,int,int*,int**,Scalar**);
  
-#undef __FUNC__  
-#define __FUNC__ "MatCompressIndicesGeneral_MPISBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCompressIndicesGeneral_MPISBAIJ"
 static int MatCompressIndicesGeneral_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)C->data;
@@ -44,8 +44,8 @@ static int MatCompressIndicesGeneral_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_ou
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatCompressIndicesSorted_MPISBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCompressIndicesSorted_MPISBAIJ"
 static int MatCompressIndicesSorted_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)C->data;
@@ -82,8 +82,8 @@ static int MatCompressIndicesSorted_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_out
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatExpandIndices_MPISBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatExpandIndices_MPISBAIJ"
 static int MatExpandIndices_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)C->data;
@@ -109,8 +109,8 @@ static int MatExpandIndices_MPISBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
 }
 
 
-#undef __FUNC__  
-#define __FUNC__ "MatIncreaseOverlap_MPISBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ"
 int MatIncreaseOverlap_MPISBAIJ(Mat C,int imax,IS *is,int ov)
 {
   int i,ierr;
@@ -154,8 +154,8 @@ int MatIncreaseOverlap_MPISBAIJ(Mat C,int imax,IS *is,int ov)
   nrqs - no of requests sent (or to be sent out)
   nrqr - no of requests recieved (which have to be or which have been processed
 */
-#undef __FUNC__  
-#define __FUNC__ "MatIncreaseOverlap_MPISBAIJ_Once"
+#undef __FUNCT__  
+#define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Once"
 static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
 {
   Mat_MPIBAIJ  *c = (Mat_MPIBAIJ*)C->data;
@@ -451,8 +451,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatIncreaseOverlap_MPISBAIJ_Local"
+#undef __FUNCT__  
+#define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Local"
 /*  
    MatIncreaseOverlap_MPIBAIJ_Local - Called by MatincreaseOverlap, to do 
        the work on the local processor.
@@ -509,8 +509,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int imax,PetscBT *table,int *
   }
   PetscFunctionReturn(0);
 }
-#undef __FUNC__  
-#define __FUNC__ "MatIncreaseOverlap_MPISBAIJ_Receive"
+#undef __FUNCT__  
+#define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Receive"
 /*     
       MatIncreaseOverlap_MPIBAIJ_Receive - Process the recieved messages,
          and return the output
@@ -649,8 +649,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **x
 
 static int MatGetSubMatrices_MPISBAIJ_local(Mat,int,IS *,IS *,MatReuse,Mat *);
 
-#undef __FUNC__  
-#define __FUNC__ "MatGetSubMatrices_MPISBAIJ"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrices_MPISBAIJ"
 int MatGetSubMatrices_MPISBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
 { 
   IS          *isrow_new,*iscol_new;
@@ -695,8 +695,8 @@ int MatGetSubMatrices_MPISBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scal
 }
 
 /* -------------------------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "MatGetSubMatrices_MPISBAIJ_local"
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrices_MPISBAIJ_local"
 static int MatGetSubMatrices_MPISBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
 { 
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)C->data;

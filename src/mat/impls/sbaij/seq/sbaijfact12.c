@@ -1,12 +1,12 @@
-/*$Id: sbaijfact.c,v 1.56 2001/01/31 19:06:52 balay Exp bsmith $*/
+/*$Id: sbaijfact12.c,v 1.3 2001/02/14 16:42:32 bsmith Exp balay $*/
 #include "sbaij.h"
 #include "src/inline/ilu.h"
 
 /*
       Version for when blocks are 7 by 7 Using natural ordering
 */
-#undef __FUNC__  
-#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering"
 int MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;

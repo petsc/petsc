@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.54 2000/11/28 17:27:57 bsmith Exp bsmith $*/
+/*$Id: plogmpe.c,v 1.55 2001/01/15 21:44:04 bsmith Exp balay $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -287,8 +287,8 @@ PetscTruth UseMPE = PETSC_FALSE;
 PetscTruth PetscBeganMPE = PETSC_FALSE;
 extern char *PetscLogEventName[];
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogMPEBegin"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogMPEBegin"
 /*@C
    PetscLogMPEBegin - Turns on MPE logging of events. This creates large log files 
    and slows the program down.
@@ -349,8 +349,8 @@ int PetscLogMPEBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogEventMPEDeactivate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventMPEDeactivate"
 /*@
     PetscLogEventMPEDeactivate - Indicates that a particular event should not be
        logged using MPE. Note: the event may be either a pre-defined
@@ -381,8 +381,8 @@ int PetscLogEventMPEDeactivate(int event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogEventMPEActivate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventMPEActivate"
 /*@
     PetscLogEventMPEActivate - Indicates that a particular event should be
        logged using MPE. Note: the event may be either a pre-defined
@@ -413,8 +413,8 @@ int PetscLogEventMPEActivate(int event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogMPEDump"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogMPEDump"
 /*@C
    PetscLogMPEDump - Dumps the MPE logging info to file for later use with Upshot.
 

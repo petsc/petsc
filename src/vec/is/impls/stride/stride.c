@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.101 2000/11/28 17:28:16 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.102 2001/01/15 21:44:28 bsmith Exp balay $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -9,8 +9,8 @@ typedef struct {
   int N,n,first,step;
 } IS_Stride;
 
-#undef __FUNC__  
-#define __FUNC__ "ISIdentity_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISIdentity_Stride" 
 int ISIdentity_Stride(IS is,PetscTruth *ident)
 {
   IS_Stride *is_stride = (IS_Stride*)is->data;
@@ -25,8 +25,8 @@ int ISIdentity_Stride(IS is,PetscTruth *ident)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISDuplicate_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISDuplicate_Stride" 
 int ISDuplicate_Stride(IS is,IS *newIS)
 {
   int       ierr;
@@ -37,8 +37,8 @@ int ISDuplicate_Stride(IS is,IS *newIS)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISInvertPermutation_Stride" 
 int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
 {
   IS_Stride *isstride = (IS_Stride*)is->data;
@@ -60,8 +60,8 @@ int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
   PetscFunctionReturn(0);
 }
     
-#undef __FUNC__  
-#define __FUNC__ "ISStrideGetInfo" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISStrideGetInfo" 
 /*@
    ISStrideGetInfo - Returns the first index in a stride index set and 
    the stride width.
@@ -102,8 +102,8 @@ int ISStrideGetInfo(IS is,int *first,int *step)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISStride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISStride" 
 /*@C
    ISStride - Determines if an IS is based on a stride.
 
@@ -134,8 +134,8 @@ int ISStride(IS is,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISDestroy_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISDestroy_Stride" 
 int ISDestroy_Stride(IS is)
 {
   int ierr;
@@ -150,8 +150,8 @@ int ISDestroy_Stride(IS is)
      Returns a legitimate index memory even if 
    the stride index set is empty.
 */
-#undef __FUNC__  
-#define __FUNC__ "ISGetIndices_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetIndices_Stride" 
 int ISGetIndices_Stride(IS in,int **idx)
 {
   IS_Stride *sub = (IS_Stride*)in->data;
@@ -164,8 +164,8 @@ int ISGetIndices_Stride(IS in,int **idx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISRestoreIndices_Stride" 
 int ISRestoreIndices_Stride(IS in,int **idx)
 {
   int ierr;
@@ -175,8 +175,8 @@ int ISRestoreIndices_Stride(IS in,int **idx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGetSize_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetSize_Stride" 
 int ISGetSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
@@ -186,8 +186,8 @@ int ISGetSize_Stride(IS is,int *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISGetLocalSize_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISGetLocalSize_Stride" 
 int ISGetLocalSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
@@ -197,8 +197,8 @@ int ISGetLocalSize_Stride(IS is,int *size)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISView_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISView_Stride" 
 int ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
@@ -234,8 +234,8 @@ int ISView_Stride(IS is,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
   
-#undef __FUNC__  
-#define __FUNC__ "ISSort_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSort_Stride" 
 int ISSort_Stride(IS is)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
@@ -247,8 +247,8 @@ int ISSort_Stride(IS is)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ISSorted_Stride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISSorted_Stride" 
 int ISSorted_Stride(IS is,PetscTruth* flg)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
@@ -271,8 +271,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISView_Stride,
                                ISIdentity_Stride };
 
-#undef __FUNC__  
-#define __FUNC__ "ISCreateStride" 
+#undef __FUNCT__  
+#define __FUNCT__ "ISCreateStride" 
 /*@C
    ISCreateStride - Creates a data structure for an index set 
    containing a list of evenly spaced integers.

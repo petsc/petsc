@@ -1,4 +1,4 @@
-/*$Id: grpath.c,v 1.38 2000/10/24 20:24:33 bsmith Exp bsmith $*/
+/*$Id: grpath.c,v 1.39 2001/01/15 21:43:46 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -35,8 +35,8 @@
 #endif
 
 
-#undef __FUNC__  
-#define __FUNC__ "PetscGetRealPath"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetRealPath"
 /*@C
    PetscGetRealPath - Get the path without symbolic links etc. and in absolute form.
 
