@@ -262,12 +262,15 @@ EXTERN int PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
 EXTERN int PetscDrawHGDestroy(PetscDrawHG);
 EXTERN int PetscDrawHGAddValue(PetscDrawHG,PetscReal);
 EXTERN int PetscDrawHGDraw(PetscDrawHG);
+EXTERN int PetscDrawHGPrint(PetscDrawHG);
 EXTERN int PetscDrawHGReset(PetscDrawHG);
 EXTERN int PetscDrawHGGetAxis(PetscDrawHG,PetscDrawAxis *);
 EXTERN int PetscDrawHGGetDraw(PetscDrawHG,PetscDraw *);
 EXTERN int PetscDrawHGSetLimits(PetscDrawHG,PetscReal,PetscReal,int,int);
 EXTERN int PetscDrawHGSetNumberBins(PetscDrawHG,int);
 EXTERN int PetscDrawHGSetColor(PetscDrawHG,int);
+EXTERN int PetscDrawHGCalcStats(PetscDrawHG, PetscTruth);
+EXTERN int PetscDrawHGIntegerBins(PetscDrawHG, PetscTruth);
 
 /*
     PetscViewer routines that allow you to access underlying PetscDraw objects
