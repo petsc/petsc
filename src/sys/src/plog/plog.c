@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.145 1997/01/22 18:45:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.146 1997/02/04 21:27:01 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1289,7 +1289,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   MPI_Allreduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,comm);
   avet = (tott)/((double) size);
 
-  PetscFPrintf(comm,fd,"\n                         Max         Min        Avg        Total \n");
+  PetscFPrintf(comm,fd,"\n                         Max       Max/Min    Avg      Total \n");
   if (mint) ratio = maxt/mint; else ratio = 0.0;
   PetscFPrintf(comm,fd,"Time (sec):           %5.3e   %6.1f   %5.3e\n",maxt,ratio,avet);
   if (mino) ratio = maxo/mino; else ratio = 0.0;
