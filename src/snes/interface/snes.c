@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.64 1996/03/23 18:29:58 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.65 1996/03/23 19:23:11 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1031,6 +1031,7 @@ int SNESDestroy(SNES snes)
   if (snes->kspconvctx) PetscFree(snes->kspconvctx);
   if (snes->mfshell) MatDestroy(snes->mfshell);
   ierr = SLESDestroy(snes->sles); CHKERRQ(ierr);
+  if (snes->xmonitor) SNESLGMonitorDestroy(snes->xmonitor);
   PLogObjectDestroy((PetscObject)snes);
   PetscHeaderDestroy((PetscObject)snes);
   return 0;
