@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.31 1996/09/28 14:10:26 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.32 1997/03/14 03:17:15 curfman Exp curfman $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -182,13 +182,12 @@ int main(int argc,char **args)
   ierr = MatDestroy(B); CHKERRA(ierr);     ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = MatDestroy(A); CHKERRA(ierr);     ierr = VecDestroy(b); CHKERRA(ierr);
 
-  PetscFinalize();
-
   /*
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary). 
   */
+  PetscFinalize();
   return 0;
 }

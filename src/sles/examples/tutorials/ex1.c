@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.59 1997/02/06 15:19:31 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.60 1997/03/14 03:16:08 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -155,8 +155,7 @@ int main(int argc,char **args)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).  See PetscFinalize()
-         manpage for more information.
+         options are chosen (e.g., -log_summary).
   */
   PetscFinalize();
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.61 1997/02/06 15:19:35 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.62 1997/03/14 03:16:03 curfman Exp curfman $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -212,8 +212,7 @@ int main(int argc,char **args)
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI
        - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary).  See PetscFinalize()
-         manpage for more information.
+         options are chosen (e.g., -log_summary). 
   */
   PetscFinalize();
   return 0;
