@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.18 1999/01/31 16:08:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres2.c,v 1.19 1999/01/31 21:30:00 curfman Exp bsmith $";
 #endif
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
@@ -52,10 +52,15 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 +  ksp - iterative context obtained from KSPCreate
 -  fcn - orthogonalization function
 
+   Calling Sequence of function:
+$   errorcode = int fcn(KSP ksp,int it);
+$   it is one minus the number of GMRES iterations since last restart;
+$    i.e. the size of Krylov space minus one
+
    Notes:
    Several orthogonalization routines are predefined, including
 
-   KSPGMRESModifiedGramSchmidtOrthogonalization() - default.
+   KSPGMRESModifiedGramSchmidtOrthogonalization()
 
    KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - 
        NOT recommended; however, for some problems, particularly
@@ -64,7 +69,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 
    KSPGMRESIROrthogonalization() - iterative refinement
        version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization(),
-       which may be more numerically stable.
+       which may be more numerically stable. Default
 
    Options Database Keys:
 +  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization()
