@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.309 2000/01/11 21:00:41 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.310 2000/02/02 20:09:00 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -55,7 +55,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
       if (rp[t] > col) high = t; \
       else             low  = t; \
     } \
-      for (_i=0; _i<nrow; _i++) { \
+      for (_i=low; _i<high; _i++) { \
         if (rp[_i] > col1) break; \
         if (rp[_i] == col1) { \
           if (addv == ADD_VALUES) ap[_i] += value;   \
@@ -129,7 +129,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
       if (rp[t] > col) high = t; \
       else             low  = t; \
     } \
-       for (_i=0; _i<nrow; _i++) { \
+       for (_i=low; _i<high; _i++) { \
         if (rp[_i] > col1) break; \
         if (rp[_i] == col1) { \
           if (addv == ADD_VALUES) ap[_i] += value;   \
