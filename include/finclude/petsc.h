@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.68 1998/04/07 00:54:59 balay Exp balay $;
+!  $Id: petsc.h,v 1.69 1998/04/07 03:30:38 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -108,30 +108,33 @@
 !    floating point numbers as well as complex and integers.
 !
 !
-! Nag f90 compiler chokes on double complex
-!
-#if !defined (HAVE_NAGF90)
 !     Representation of complex i
 !
+#if defined (HAVE_NAGF90)
+      complex (KIND=SELECTED_REAL_KIND(14)) PETSC_i
+#else
       double complex PETSC_i
-      parameter (PETSC_i = (0,1.0))
 #endif
+      parameter (PETSC_i = (0.0d0,1.0d0))
 !
 !     Macro for templating between real and complex
 !
 #if defined(USE_PETSC_COMPLEX)
-!
-! Some Antique IRIX- f90 Compilers require explicit
-! prototype for  dconjg() 
-!
-#if defined(PARCH_IRIX) || defined (PARCH_IRIX5)
-      external dconjg
-      double complex dconjg
+#if defined (HAVE_NAGF90)
+#define Scalar       complex (KIND=SELECTED_REAL_KIND(14))
+#else
+#define Scalar       double complex
 #endif
-
-#define PetscReal(a)  real(a)
-#define PetscConj(a)  dconjg(a)
-#define Scalar        double complex
+!
+! F90 uses real(), conjg() when KIND parameter is used.
+!
+#if defined (HAVE_NAGF90) || defined (HAVE_IRIXF90)
+#define PetscReal(a) real(a)
+#define PetscConj(a) conjg(a)
+#else
+#define PetscReal(a) dreal(a)
+#define PetscConj(a) dconjg(a)
+#endif
 #define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
 #else
 #define PetscReal(a) a
@@ -143,7 +146,7 @@
 ! ----------------------------------------------------------------------------
 !
 !     Basic constants
-!
+! 
       double precision PETSC_PI,PETSC_DEGREES_TO_RADIANS
       double precision PETSC_MAX,PETSC_MIN
 
