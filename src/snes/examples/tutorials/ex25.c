@@ -37,6 +37,7 @@ T*/
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormMinFunction(Vec,DMMG,PetscScalar*);
 extern int FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
+extern int FormFunctionMinpackLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -70,7 +71,7 @@ int main(int argc,char **argv)
      Create the nonlinear solver, and tell the DMMG structure to use it
   */
   /*  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr); */
-  ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(dmmg,FormFunctionMinpackLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
 
   /*
       PreLoadBegin() means that the following section of code is run twice. The first time
@@ -201,6 +202,65 @@ int FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *pt
   PetscFunctionReturn(0);
 } 
 
+int FormFunctionMinpackLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
+{
+  int          i,j;
+  PetscScalar  hx,hy;
+  PetscScalar  v,vb,vl,vr,vt,dvdx,dvdy,fl,fu;
+
+  PetscFunctionBegin;
+  hx    = 1.0/(PetscReal)(info->mx-1);  hy    = 1.0/(PetscReal)(info->my-1);
+
+  /* zero function */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+        f[j][i] = 0.0;
+    }
+  }
+
+  /* loop over local elements */ 
+  for (j=info->ys; j<info->ys+info->ym-1; j++) {
+    for (i=info->xs; i<info->xs+info->xm-1; i++) {
+
+      /* handle lower left element */
+      v  = t[j][i];
+      vr = t[j][i+1];
+      vt = t[j+1][i];
+      dvdx = (vr-v)/hx;
+      dvdy = (vt-v)/hy;
+      fl = PetscSqrtScalar(1.0+dvdx*dvdx+dvdy*dvdy);
+      f[j][i]   -= (dvdx/hx+dvdy/hy)/fl;
+      f[j][i+1] += (dvdx/hx)/fl;
+      f[j+1][i] += (dvdy/hy)/fl;
+
+      /* handle upper right element */
+      v  = t[j+1][i+1];
+      vl = t[j+1][i];
+      vb = t[j][i+1];
+      dvdx = (v-vl)/hx;
+      dvdy = (v-vb)/hy;
+      fu = PetscSqrtScalar(1.0+dvdx*dvdx+dvdy*dvdy);
+      f[j+1][i+1]   += (dvdx/hx+dvdy/hy)/fu;
+      f[j+1][i]     -= (dvdx/hx)/fu;
+      f[j][i+1]     -= (dvdy/hy)/fu;
+ 
+    }
+  }
+
+  /* Fix the boundary part */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+
+      if (i == 0 || i == info->mx-1 || j == 0 || j == info->my-1) {
+
+        f[j][i] = t[j][i] - (1.0 - (2.0*hx*(PetscReal)i - 1.0)*(2.0*hx*(PetscReal)i - 1.0));
+      
+      } 
+    }
+  }
+  PetscFunctionReturn(0);
+} 
+
 /* --------------------------------------------------------------------------------*/
 /*
           Evaluates the function we are computing the minimum of 
@@ -274,6 +334,6 @@ int FormMinFunction(Vec T,DMMG dmmg,PetscScalar *result)
   }
   ierr = DAVecRestoreArray((DA)dmmg->dm,localT,(void**)&t);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&sum,result,1,MPIU_SCALAR,MPI_SUM,dmmg->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&sum,result,1,MPIU_SCALAR,PetscSum_Op,dmmg->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

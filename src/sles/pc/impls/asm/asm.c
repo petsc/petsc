@@ -340,8 +340,10 @@ static int PCDestroy_ASM(PC pc)
   if (osm->n_local_true > 0 && !osm->inplace && osm->pmat) {
     ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
   }
-  for (i=0; i<osm->n_local_true; i++) {
-    ierr = SLESDestroy(osm->sles[i]);CHKERRQ(ierr);
+  if (osm->sles) {
+    for (i=0; i<osm->n_local_true; i++) {
+      ierr = SLESDestroy(osm->sles[i]);CHKERRQ(ierr);
+    }
   }
   if (osm->is_flg) {
     for (i=0; i<osm->n_local_true; i++) {ierr = ISDestroy(osm->is[i]);CHKERRQ(ierr);}
