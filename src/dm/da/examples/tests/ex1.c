@@ -26,22 +26,22 @@ int main(int argc,char **argv)
   OptionsGetInt(0,"-n",&n);
 
   ierr = DACreate2d(MPI_COMM_WORLD,M,N,m,n,1,1,&da); CHKERRA(ierr);
-  ierr = DAGetDistributedVector(da,&global); CHKERR(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERR(ierr);
+  ierr = DAGetDistributedVector(da,&global); CHKERA(ierr);
+  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
   value = -3.0;
-  ierr = VecSet(&value,global); CHKERR(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERR(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERR(ierr);
+  ierr = VecSet(&value,global); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
 
-  /* ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERR(ierr); */
+  /* ierr = VecView(local,SYNC_STDOUT_VIEWER); CHKERRA(ierr); */
 
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   value = mytid+1;
-  ierr = VecScale(&value,local); CHKERR(ierr);
-  ierr = DALocalToGlobal(da,local,ADDVALUES,global); CHKERR(ierr);
+  ierr = VecScale(&value,local); CHKERRA(ierr);
+  ierr = DALocalToGlobal(da,local,ADDVALUES,global); CHKERRA(ierr);
 
-  ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERR(ierr);
+  ierr = VecView(global,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
   
 
 

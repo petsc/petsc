@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.18 1995/05/25 22:48:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.19 1995/05/29 16:03:21 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -227,7 +227,7 @@ int DrawDestroy_X(PetscObject obj)
 {
   DrawCtx  ctx = (DrawCtx) obj;
   DrawCtx_X *win = (DrawCtx_X *) ctx->data;
-  FREE(win);
+  PETSCFREE(win);
   PLogObjectDestroy(ctx);
   PETSCHEADERDESTROY(ctx);
   return 0;
@@ -275,8 +275,8 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   OptionsGetInt(0,"-pause",&ctx->pause);
 
   /* actually create and open the window */
-  Xwin         = (DrawCtx_X *) MALLOC( sizeof(DrawCtx_X) ); CHKPTR(Xwin);
-  MEMSET(Xwin,0,sizeof(DrawCtx_X));
+  Xwin         = (DrawCtx_X *) PETSCMALLOC( sizeof(DrawCtx_X) ); CHKPTRQ(Xwin);
+  PETSCMEMSET(Xwin,0,sizeof(DrawCtx_X));
   MPI_Comm_size(comm,&numtid);
   MPI_Comm_rank(comm,&mytid);
   if (mytid == 0) {
@@ -284,11 +284,11 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
       display = string;
     }
     if (!display) {
-      display = (char *) MALLOC( 128*sizeof(char) ); CHKPTR(display);
+      display = (char *) PETSCMALLOC( 128*sizeof(char) ); CHKPTRQ(display);
       MPIU_Set_display(comm,display,128);
     }
-    ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERR(ierr);
-    if (display != string) FREE(display);
+    ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERRQ(ierr);
+    if (display != string) PETSCFREE(display);
     MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);
   }
   else {
@@ -297,12 +297,12 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
       display = string;
     }
     if (!display) {
-      display = (char *) MALLOC( 128*sizeof(char) ); CHKPTR(display);
+      display = (char *) PETSCMALLOC( 128*sizeof(char) ); CHKPTRQ(display);
       MPIU_Set_display(comm,display,128);
     }
     MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
-    ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERR(ierr);
-    if (display != string) FREE(display);
+    ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);
+    if (display != string) PETSCFREE(display);
   }
  
   ctx->data    = (void *) Xwin;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.22 1995/05/03 13:15:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.23 1995/05/18 22:44:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -21,7 +21,7 @@ int KSPSetUp(KSP itP)
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->setupcalled) return 0;
   if (itP->type == -1) {
-    SETERR(1,"Method must be set before calling KSPSetUp");
+    SETERRQ(1,"Method must be set before calling KSPSetUp");
   }
   itP->setupcalled = 1;
   return (*(itP)->setup)(itP);
@@ -51,7 +51,7 @@ int KSPSolve(KSP itP, int *its)
   int    ierr;
   Scalar zero = 0.0;
   VALIDHEADER(itP,KSP_COOKIE);
-  if (!itP->setupcalled){ ierr = KSPSetUp(itP); CHKERR(ierr);}
+  if (!itP->setupcalled){ ierr = KSPSetUp(itP); CHKERRQ(ierr);}
   if (itP->guess_zero) { VecSet(&zero,itP->vec_sol);}
   return (*(itP)->solver)(itP,its);
 }
@@ -663,15 +663,15 @@ int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
   Vec w = v, tt = t;
   VALIDHEADER(ctx,KSP_COOKIE);
   if (!w) {
-    ierr = VecDuplicate(ctx->vec_rhs,&w); CHKERR(ierr);
+    ierr = VecDuplicate(ctx->vec_rhs,&w); CHKERRQ(ierr);
     PLogObjectParent((PetscObject)ctx,w);
   }
   if (!tt) {
-    ierr = VecDuplicate(ctx->vec_rhs,&tt); CHKERR(ierr); flag = 1;
+    ierr = VecDuplicate(ctx->vec_rhs,&tt); CHKERRQ(ierr); flag = 1;
     PLogObjectParent((PetscObject)ctx,tt);
   }
-  ierr = (*ctx->buildresidual)(ctx,tt,w,V); CHKERR(ierr);
-  if (flag) ierr = VecDestroy(tt); CHKERR(ierr);
+  ierr = (*ctx->buildresidual)(ctx,tt,w,V); CHKERRQ(ierr);
+  if (flag) ierr = VecDestroy(tt); CHKERRQ(ierr);
   return ierr;
 }
 

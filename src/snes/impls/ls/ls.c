@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.20 1995/05/30 22:52:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.21 1995/06/03 04:25:44 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -43,9 +43,9 @@ int SNESSolve_LS( SNES snes, int *outits )
   G		= snes->work[1];
   W		= snes->work[2];
 
-  ierr = SNESComputeInitialGuess(snes,X); CHKERR(ierr);  /* X <- X_0 */
+  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);  /* X <- X_0 */
   VecNorm( X, &xnorm );		       /* xnorm = || X || */
-  ierr = SNESComputeFunction(snes,X,F); CHKERR(ierr); /* (+/-) F(X) */
+  ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr); /* (+/-) F(X) */
   VecNorm(F, &fnorm );	        	/* fnorm <- || F || */  
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
@@ -56,11 +56,11 @@ int SNESSolve_LS( SNES snes, int *outits )
 
        /* Solve J Y = -F, where J is Jacobian matrix */
        ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                &flg,snes->jacP); CHKERR(ierr);
+                                &flg,snes->jacP); CHKERRQ(ierr);
        ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
-       ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERR(ierr);
+       ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERRQ(ierr);
        ierr = (*neP->LineSearch)(snes, X, F, G, Y, W, fnorm, &ynorm, &gnorm );
-       CHKERR(ierr);
+       CHKERRQ(ierr);
 
        TMP = F; F = G; snes->vec_func_always = F; G = TMP;
        TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
@@ -90,7 +90,7 @@ int SNESSetUp_LS(SNES snes )
 {
   int ierr;
   snes->nwork = 3;
-  ierr = VecGetVecs( snes->vec_sol, snes->nwork,&snes->work ); CHKERR(ierr);
+  ierr = VecGetVecs( snes->vec_sol, snes->nwork,&snes->work ); CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work ); 
   return 0;
 }
@@ -99,7 +99,7 @@ int SNESDestroy_LS(PetscObject obj)
 {
   SNES snes = (SNES) obj;
   VecFreeVecs(snes->work, snes->nwork );
-  FREE(snes->data);
+  PETSCFREE(snes->data);
   return 0;
 }
 /*@ 
@@ -233,7 +233,7 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
   VecNorm(y, ynorm );	/* ynorm = || y ||    */
   VecAXPY(&one, x, y );	/* y <- x + y         */
-  ierr = SNESComputeFunction(snes,y,g); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr);
   VecNorm( g, gnorm ); 	/* gnorm = || g ||    */
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 1;
@@ -313,7 +313,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
   VecCopy(y, w );
   VecAXPY(&one, x, w );
-  ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
   VecNorm(g, gnorm ); 
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
       VecCopy(w, y );
@@ -336,7 +336,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 #else
   VecAXPY(&lambda, y, w );
 #endif
-  ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
   VecNorm(g, gnorm ); 
   if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       VecCopy(w, y );
@@ -384,7 +384,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 #else
       VecAXPY(&lambda, y, w );
 #endif
-      ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
+      ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
       VecNorm(g, gnorm ); 
       if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough */
          VecCopy(w, y );
@@ -464,7 +464,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
   VecCopy(y, w );
   VecAXPY(&one, x, w );
-  ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
   VecNorm(g, gnorm ); 
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
       VecCopy(w, y );
@@ -497,7 +497,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 #else
     VecAXPY(&lambda, y, w );
 #endif
-    ierr = SNESComputeFunction(snes,w,g); CHKERR(ierr);
+    ierr = SNESComputeFunction(snes,w,g); CHKERRQ(ierr);
     VecNorm(g, gnorm ); 
     if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       VecCopy(w, y );
@@ -596,7 +596,7 @@ static int SNESSetFromOptions_LS(SNES snes)
     else if (!strcmp(ver,"cubic")) {
       SNESSetLineSearchRoutine(snes,SNESCubicLineSearch);
     }
-    else {SETERR(1,"Unknown line search?");}
+    else {SETERRQ(1,"Unknown line search?");}
   }
   return 0;
 }
@@ -614,7 +614,7 @@ int SNESCreate_LS(SNES  snes )
   snes->printhelp       = SNESPrintHelp_LS;
   snes->setfromoptions  = SNESSetFromOptions_LS;
 
-  neP			= NEW(SNES_LS);   CHKPTR(neP);
+  neP			= PETSCNEW(SNES_LS);   CHKPTRQ(neP);
   snes->data    	= (void *) neP;
   neP->alpha		= 1.e-4;
   neP->maxstep		= 1.e8;

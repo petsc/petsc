@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.10 1995/04/05 20:31:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.11 1995/05/03 13:17:07 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -16,14 +16,14 @@ int PCSetUp_Jacobi(PC pc)
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   Vec       diag;
   if (pc->setupcalled == 0) {
-    if ((ierr = VecDuplicate(pc->vec,&diag))) SETERR(ierr,0);
+    if ((ierr = VecDuplicate(pc->vec,&diag))) SETERRQ(ierr,0);
     PLogObjectParent(pc,diag);
   }
   else {
     diag = jac->diag;
   }
-  if ((ierr = MatGetDiagonal(pc->pmat,diag))) SETERR(ierr,0);
-  if ((ierr = VecReciprocal(diag))) SETERR(ierr,0);
+  if ((ierr = MatGetDiagonal(pc->pmat,diag))) SETERRQ(ierr,0);
+  if ((ierr = VecReciprocal(diag))) SETERRQ(ierr,0);
   jac->diag = diag;
   return 0;
 }
@@ -41,7 +41,7 @@ int PCDestroy_Jacobi(PetscObject obj)
   PC pc = (PC) obj;
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   if (jac->diag) VecDestroy(jac->diag);
-  FREE(jac);
+  PETSCFREE(jac);
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
@@ -49,7 +49,7 @@ int PCDestroy_Jacobi(PetscObject obj)
 
 int PCCreate_Jacobi(PC pc)
 {
-  PC_Jacobi *jac = NEW(PC_Jacobi); CHKPTR(jac);
+  PC_Jacobi *jac = PETSCNEW(PC_Jacobi); CHKPTRQ(jac);
   jac->diag   = 0;
   pc->apply   = PCApply_Jacobi;
   pc->setup   = PCSetUp_Jacobi;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.7 1995/03/25 01:27:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.8 1995/05/29 16:02:02 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -219,8 +219,8 @@ int XiQuickWindow(DrawCtx_X* mywindow,char* host,char* name,int x,int y,
   XiSetPixVal(mywindow, mywindow->background );
   XFillRectangle(mywindow->disp,mywindow->win,mywindow->gc.set, 0, 0, 
                                              mywindow->w,mywindow->h);
-  ierr = XiUniformHues(mywindow,nc-36); CHKERR(ierr);
-  ierr = XiFontFixed( mywindow,6, 10,&mywindow->font ); CHKERR(ierr);
+  ierr = XiUniformHues(mywindow,nc-36); CHKERRQ(ierr);
+  ierr = XiFontFixed( mywindow,6, 10,&mywindow->font ); CHKERRQ(ierr);
   return 0;
 }
 
@@ -232,9 +232,9 @@ int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
   Window       root;
   int          d,ierr;
   unsigned int ud;
-  if (XiOpenDisplay( mywindow, host )) {SETERR(1,"Cannot open display");}
+  if (XiOpenDisplay( mywindow, host )) {SETERRQ(1,"Cannot open display");}
   if (XiSetVisual( mywindow, 1, (Colormap)0, 0 )) {
-    SETERR(1,"Cannot set visual in display");
+    SETERRQ(1,"Cannot set visual in display");
   }
 
   mywindow->win = win;
@@ -245,8 +245,8 @@ int XiQuickWindowFromWindow(DrawCtx_X* mywindow,char *host,Window win,int nc)
 
   XiSetGC( mywindow, mywindow->cmapping[1] );
   XiSetPixVal(mywindow, mywindow->background );
-  ierr = XiUniformHues(mywindow,nc-36); CHKERR(ierr);
-  ierr = XiFontFixed( mywindow,6, 10,&mywindow->font ); CHKERR(ierr);
+  ierr = XiUniformHues(mywindow,nc-36); CHKERRQ(ierr);
+  ierr = XiFontFixed( mywindow,6, 10,&mywindow->font ); CHKERRQ(ierr);
   return 0;
 }
 

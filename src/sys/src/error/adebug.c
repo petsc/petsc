@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.11 1995/05/02 23:37:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.12 1995/05/14 16:32:37 bsmith Exp bsmith $";
 #endif/*
 */
 #include "petsc.h"
@@ -30,10 +30,10 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
 {
   if (debugger) Debugger = debugger;
   Xterm    = xterm;
-  if (Display) {FREE(Display); Display = 0;}
+  if (Display) {PETSCFREE(Display); Display = 0;}
   if (display) {
     int len = strlen(display)+1;
-    Display = (char *) MALLOC(len*sizeof(char)); if (!Display) return 1;
+    Display = (char *) PETSCMALLOC(len*sizeof(char)); if (!Display) return 1;
     strcpy(Display,display);
   }
   return 0;
@@ -137,7 +137,7 @@ $       [-display name]
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERR, which has 
    the calling sequence
-$     SETERR(number,message)
+$     SETERRQ(number,message)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The

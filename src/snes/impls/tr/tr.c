@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.10 1995/05/18 22:48:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.11 1995/06/03 04:25:46 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -27,8 +27,8 @@ int TRConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   if ( rnorm >= dtol*neP->rnorm0 || rnorm != rnorm) return -1;
 
   /* determine norm of solution */
-  ierr = KSPBuildSolution(ksp,0,&x); CHKERR(ierr);
-  ierr = VecNorm(x,&norm); CHKERR(ierr);
+  ierr = KSPBuildSolution(ksp,0,&x); CHKERRQ(ierr);
+  ierr = VecNorm(x,&norm); CHKERRQ(ierr);
   if (norm >= neP->delta) {
     PLogInfo((PetscObject)snes,"Ending linear iteration early, delta %g length %g\n",neP->delta,norm);
     return 1; 
@@ -76,10 +76,10 @@ static int SNESSolve_TR(SNES snes, int *its )
   G		= snes->work[1];
   Ytmp          = snes->work[2];
 
-  ierr = SNESComputeInitialGuess(snes,X); CHKERR(ierr);  /* X <- X_0 */
+  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);  /* X <- X_0 */
   VecNorm(X, &xnorm ); 		/* xnorm = || X || */
    
-  ierr = SNESComputeFunction(snes,X,F); CHKERR(ierr); /* (+/-) F(X) */
+  ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr); /* (+/-) F(X) */
   VecNorm(F, &fnorm );		/* fnorm <- || F || */ 
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
@@ -88,18 +88,18 @@ static int SNESSolve_TR(SNES snes, int *its )
   if (snes->Monitor)(*snes->Monitor)(snes,0,fnorm,snes->monP);
 
   /* et the stopping criteria to use the More' trick. */
-  ierr = SNESGetSLES(snes,&sles); CHKERR(ierr);
-  ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
+  ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
   ierr = KSPSetConvergenceTest(ksp,TRConverged_Private,(void *) snes);
-  CHKERR(ierr);
+  CHKERRQ(ierr);
  
   for ( i=0; i<maxits; i++ ) {
      snes->iter = i+1;
 
      ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
-                                             &flg,snes->jacP); CHKERR(ierr);
+                                             &flg,snes->jacP); CHKERRQ(ierr);
      ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
-     ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERR(ierr);
+     ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
      VecNorm( Ytmp, &norm );
      while(1) {
        VecCopy(Ytmp,Y);
@@ -119,7 +119,7 @@ static int SNESSolve_TR(SNES snes, int *its )
          ynorm = norm;
        }
        VecAXPY(&one, X, Y );	/* Y <- X + Y */
-       ierr = SNESComputeFunction(snes,Y,G); CHKERR(ierr); /* (+/-) F(X) */
+       ierr = SNESComputeFunction(snes,Y,G); CHKERRQ(ierr); /* (+/-) F(X) */
        VecNorm( G, &gnorm );	/* gnorm <- || g || */ 
        if (fnorm == gpnorm) rho = 0.0;
        else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
@@ -169,7 +169,7 @@ static int SNESSetUp_TR( SNES snes )
 {
   int ierr;
   snes->nwork = 3;
-  ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work ); CHKERR(ierr);
+  ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work ); CHKERRQ(ierr);
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -177,7 +177,7 @@ static int SNESDestroy_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
   VecFreeVecs(snes->work, snes->nwork );
-  FREE(snes->data);
+  PETSCFREE(snes->data);
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -224,7 +224,7 @@ int SNESCreate_TR(SNES snes )
   snes->printhelp       = SNESPrintHelp_TR;
   snes->setfromoptions  = SNESSetFromOptions_TR;
 
-  neP			= NEW(SNES_TR); CHKPTR(neP);
+  neP			= PETSCNEW(SNES_TR); CHKPTRQ(neP);
   snes->data	        = (void *) neP;
   neP->mu		= 0.25;
   neP->eta		= 0.75;

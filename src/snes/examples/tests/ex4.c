@@ -75,7 +75,7 @@ int main( int argc, char **argv )
   OptionsGetDouble(0,"-param",&user.param);
   if (!OptionsHasName(0,"-cavity") && 
       (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
-    SETERR(1,"Lambda is out of range");
+    SETERRQ(1,"Lambda is out of range");
   }
   N          = user.mx*user.my;
   
@@ -150,7 +150,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArray(X,&x); CHKERR(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
   for (j=0; j<my; j++) {
     temp = (double)(MIN(j,my-j-1))*hy;
@@ -163,7 +163,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
       x[row] = temp1*sqrt( MIN( (double)(MIN(i,mx-i-1))*hx,temp) ); 
     }
   }
-  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -186,8 +186,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArray(X,&x); CHKERR(ierr);
-  ierr = VecGetArray(F,&f); CHKERR(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f); CHKERRQ(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
@@ -205,8 +205,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
       f[row] = uxx + uyy - sc*lambda*exp(u);
     }
   }
-  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
-  ierr = VecRestoreArray(F,&f); CHKERR(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
   return 0; 
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -230,29 +230,29 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  ierr = VecGetArray(X,&x); CHKERR(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERTVALUES); CHKERR(ierr);
+        ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERTVALUES); CHKERRQ(ierr);
         continue;
       }
       v = -hxdhy; col = row - mx;
-      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERR(ierr);
+      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
       v = -hydhx; col = row - 1;
-      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERR(ierr);
+      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
       v = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]);
-      ierr = MatSetValues(jac,1,&row,1,&row,&v,INSERTVALUES); CHKERR(ierr);
+      ierr = MatSetValues(jac,1,&row,1,&row,&v,INSERTVALUES); CHKERRQ(ierr);
       v = -hydhx; col = row + 1;
-      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERR(ierr);
+      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
       v = -hxdhy; col = row + mx;
-      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERR(ierr);
+      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
-  ierr = MatAssemblyEnd(jac,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag = ALLMAT_SAME_NONZERO_PATTERN;
   return 0;
 }
@@ -273,12 +273,12 @@ int FormInitialGuess2(SNES snes,Vec X,void *ptr)
   my	 = user->my;
 
   /* Test for invalid input parameters */
-  if ((mx <= 0) || (my <= 0)) SETERR(1,0);
+  if ((mx <= 0) || (my <= 0)) SETERRQ(1,0);
 
   hx    = one / (double)(mx-1);
   hy    = one / (double)(my-1);
 
-  ierr = VecGetArray(X,&x); CHKERR(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   yy = 0.0;
   for (j=0; j<my; j++) {
     xx = 0.0;
@@ -294,7 +294,7 @@ int FormInitialGuess2(SNES snes,Vec X,void *ptr)
     }
     yy = yy + hy;
   }
-  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -317,8 +317,8 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
   hxhy2  = hx2*hy2;
   rey    = user->param;
 
-  ierr = VecGetArray(X,&x); CHKERR(ierr);
-  ierr = VecGetArray(F,&f); CHKERR(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f); CHKERRQ(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
@@ -416,8 +416,8 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
                         - dpdx*(ptlap - pblap)/(two*hy)));
     }
   }
-  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
-  ierr = VecRestoreArray(F,&f); CHKERR(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
   return 0; 
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -446,7 +446,7 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
     for (i=0; i<mx; i++) {
       row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        ierr = MatSetValues(*J,1,&row,1,&row,&one,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&row,&one,ADDVALUES); CHKERRQ(ierr);
         continue;
       }
       if (i == 1 || j == 1) {
@@ -536,94 +536,94 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
       if (j > 2) {
         val = hxhy2*(one/hy2/hy2 - rey*dpdx/hy2/(two*hy));
         col = row - 2*mx;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i > 2) {
         val = hxhy2*(one/hx2/hx2 + rey*dpdy/hx2/(two*hx));
         col = row - 2;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i < mx-3) {
         val = hxhy2*(one/hx2/hx2 - rey*dpdy/hx2/(two*hx));
         col = row + 2;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (j < my-3) {
         val = hxhy2*(one/hy2/hy2 + rey*dpdx/hy2/(two*hy));
         col = row + 2*mx;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != 1 && j != 1) {
         val = hxhy2*(two/hy2/hx2 + rey*(dpdy/hy2/(two*hx) - dpdx/hx2/(two*hy)));
         col = row - mx - 1;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (j != 1 && i != mx-2) {
         val = hxhy2*(two/hy2/hx2 - rey*(dpdy/hy2/(two*hx) + dpdx/hx2/(two*hy)));
         col = row - mx + 1;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (j != my-2 && i != 1) {
         val = hxhy2*(two/hy2/hx2 + rey*(dpdy/hy2/(two*hx) + dpdx/hx2/(two*hy)));
         col = row + mx - 1;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (j != my-2 && i != mx-2) {
         val = hxhy2*(two/hy2/hx2 - rey*(dpdy/hy2/(two*hx) - dpdx/hx2/(two*hy)));
         col = row + mx + 1;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (j != 1) {
         val = hxhy2*(-four*(one/hy2/hx2 + one/hy2/hy2) 
                      + rey*((prlap - pllap)/(two*hx)/(two*hy) 
                      + dpdx*(one/hx2 + one/hy2)/hy));
         col = row - mx;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != 1) {
         val = hxhy2*(-four*(one/hy2/hx2 + one/hx2/hx2) 
                      - rey*((ptlap - pblap)/(two*hx)/(two*hy) 
                      + dpdy*(one/hx2 + one/hy2)/hx));
         col = row - 1;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i != mx-2) {
         val = hxhy2*(-four*(one/hy2/hx2 + one/hx2/hx2) 
                      + rey*((ptlap - pblap)/(two*hx)/(two*hy) 
                      + dpdy*(one/hx2 + one/hy2)/hx));
         col = row + 1;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (j != my-2) {
         val = hxhy2*(-four*(one/hy2/hx2 + one/hy2/hy2) 
                      - rey*((prlap - pllap)/(two*hx)/(two*hy) 
                      + dpdx*(one/hx2 + one/hy2)/hy));
         col = row + mx;
-        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
       val = hxhy2*(two*(four/hx2/hy2 + three/hx2/hx2 + three/hy2/hy2));
-      ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
+      ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERRQ(ierr);
       if (j == 1) {
         val = hxhy2*(one/hy2/hy2 - rey*(dpdx/hy2/(two*hy)));
-        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i == 1) {
         val = hxhy2*(one/hx2/hx2 + rey*(dpdy/hx2/(two*hx)));
-        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (i == mx-2) {
         val = hxhy2*(one/hx2/hx2 - rey*(dpdy/hx2/(two*hx)));
-        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERRQ(ierr);
       }
       if (j == my-2) {
         val = hxhy2*(one/hy2/hy2 + rey*(dpdx/hy2/(two*hy)));
-        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERRQ(ierr);
       }
     }
   }
-  ierr = MatAssemblyBegin(*J,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
-  ierr = MatAssemblyEnd(*J,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(*J,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag = ALLMAT_SAME_NONZERO_PATTERN;
   return 0;
 }

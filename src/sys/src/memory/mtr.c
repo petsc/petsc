@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.18 1995/05/29 20:28:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.19 1995/06/03 04:24:19 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -266,7 +266,7 @@ int TrFree( void *aa, int line, char *file )
     /* Damaged header */
     fprintf( stderr, "Block at address %p is corrupted; cannot free;\n\
 may be block not allocated with TrMalloc or MALLOC\n", a );
-    SETERR(1,0);
+    SETERRQ(1,0);
   }
   nend = (unsigned long *)(ahead + head->size);
   if (*nend != COOKIE_VALUE) {
@@ -281,7 +281,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 	else
 	    fprintf( stderr, 
 	         "Block allocated at %s[%d]\n", head->fname, - head->lineno );
-	SETERR(1,0);
+	SETERRQ(1,0);
     }
     else {
 	/* Damaged tail */
@@ -291,7 +291,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	fprintf( stderr, 
 		"Block allocated in %s[%d]\n", head->fname, head->lineno );
-	SETERR(1,0);
+	SETERRQ(1,0);
     }
   }
   /* Mark the location freed */
@@ -495,7 +495,7 @@ void *Trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
 
   p = TrMalloc( (unsigned)(nelem*elsize), lineno, fname );
   if (!p) {
-    MEMSET(p,0,nelem*elsize);
+    PETSCMEMSET(p,0,nelem*elsize);
   }
   return p;
 }
@@ -535,8 +535,8 @@ may be block not allocated with TrMalloc or MALLOC\n", pa );
   }
   nsize = size;
   if (head->size < nsize) nsize = head->size;
-  MEMCPY( pnew, p, nsize );
-  FREE( p );
+  PETSCMEMCPY( pnew, p, nsize );
+  PETSCFREE( p );
   return pnew;
 }
 

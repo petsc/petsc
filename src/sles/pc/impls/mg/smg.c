@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: smg.c,v 1.3 1995/03/06 04:16:23 bsmith Exp bsmith $";
 #endif
 /*
      Additive Multigrid V Cycle routine    
@@ -28,7 +28,7 @@ int MGACycle(MG *mg)
     SLESSolve(mg[i]->smoothd, mg[i]->b, mg[i]->x,&its); 
   }
   VecSet(&zero,mg[l]->x); 
-  ierr = SLESSolve(mg[l]->csles, mg[l]->b, mg[l]->x,&its); CHKERR(ierr);
+  ierr = SLESSolve(mg[l]->csles, mg[l]->b, mg[l]->x,&its); CHKERRQ(ierr);
   for ( i=l-1; i>-1; i-- ) {  
     MatMultTransAdd(mg[i]->interpolate,mg[i+1]->x,mg[i]->x,mg[i]->x); 
   }

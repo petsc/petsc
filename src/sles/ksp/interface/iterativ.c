@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.19 1995/05/18 22:44:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.20 1995/05/25 22:46:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -40,13 +40,13 @@ int KSPCheckDef( KSP itP )
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if (!itP->vec_sol) {
-    SETERR(1,"Solution vector not specified for iterative method"); 
+    SETERRQ(1,"Solution vector not specified for iterative method"); 
   }
   if (!itP->vec_rhs) {
-    SETERR(2,"RHS vector not specified for iterative method"); 
+    SETERRQ(2,"RHS vector not specified for iterative method"); 
   }
   if (!itP->B)   {
-    SETERR(4,"Preconditioner routine not specified"); 
+    SETERRQ(4,"Preconditioner routine not specified"); 
   }
   return 0;
 }
@@ -121,16 +121,16 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
   int ierr;
   if (itP->right_pre) {
     if (itP->B) {
-      if (v) { ierr = PCApply(itP->B, itP->vec_sol, v ); CHKERR(ierr); *V = v;}
-      else {SETERR(1,"KSPDefaultBuildSolution: Not working with right pre");}
+      if (v) { ierr = PCApply(itP->B, itP->vec_sol, v ); CHKERRQ(ierr); *V = v;}
+      else {SETERRQ(1,"KSPDefaultBuildSolution: Not working with right pre");}
     }
     else        {
-      if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERR(ierr); *V = v;}
+      if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERRQ(ierr); *V = v;}
       else { *V = itP->vec_sol;}
     }
   }
   else {
-    if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERR(ierr); *V = v;}
+    if (v) {ierr = VecCopy(itP->vec_sol, v ); CHKERRQ(ierr); *V = v;}
     else { *V = itP->vec_sol; }
   }
   return 0;
@@ -160,9 +160,9 @@ int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
   Mat          Amat, Pmat;
 
   PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
-  ierr = KSPBuildSolution(itP,t,&T); CHKERR(ierr);
-  ierr = MatMult(Amat, t, v ); CHKERR(ierr);
-  ierr = VecAYPX(&mone, itP->vec_rhs, v ); CHKERR(ierr);
+  ierr = KSPBuildSolution(itP,t,&T); CHKERRQ(ierr);
+  ierr = MatMult(Amat, t, v ); CHKERRQ(ierr);
+  ierr = VecAYPX(&mone, itP->vec_rhs, v ); CHKERRQ(ierr);
   *V = v; return 0;
 }
 
@@ -181,7 +181,7 @@ int  KSPiDefaultGetWork( KSP itP, int nw )
   int ierr;
   if (itP->work) KSPiDefaultFreeWork( itP );
   itP->nwork = nw;
-  ierr = VecGetVecs(itP->vec_rhs,nw,&itP->work); CHKERR(ierr);
+  ierr = VecGetVecs(itP->vec_rhs,nw,&itP->work); CHKERRQ(ierr);
   PLogObjectParents(itP,nw,itP->work);
   return 0;
 }
@@ -211,7 +211,7 @@ int KSPiDefaultDestroy(PetscObject obj)
 {
   KSP itP = (KSP) obj;
   VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->MethodPrivate) FREE(itP->MethodPrivate);
+  if (itP->MethodPrivate) PETSCFREE(itP->MethodPrivate);
 
   /* free work vectors */
   KSPiDefaultFreeWork( itP );

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.6 1995/05/18 22:48:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.7 1995/05/25 22:48:50 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -29,7 +29,7 @@ int SNESSolve_Test(SNES snes,int *its)
   double       norm,gnorm;
   SNES_Test    *neP = (SNES_Test*) snes->data;
 
-  if (A != snes->jacobian_pre) SETERR(1,"Cannot test with alternative pre");
+  if (A != snes->jacobian_pre) SETERRQ(1,"Cannot test with alternative pre");
 
   MPIU_printf(snes->comm,"Testing handcoded Jacobian, if the ratio is\n");
   MPIU_printf(snes->comm,"O(1.e-8) it is probably correct.\n");
@@ -39,15 +39,15 @@ int SNESSolve_Test(SNES snes,int *its)
   }
 
   for ( i=0; i<3; i++ ) {
-    if (i == 0) {ierr = SNESComputeInitialGuess(snes,x); CHKERR(ierr);}
+    if (i == 0) {ierr = SNESComputeInitialGuess(snes,x); CHKERRQ(ierr);}
     else if (i == 1) {VecSet(&mone,x);}
     else {VecSet(&one,x);}
  
     /* compute both versions of Jacobian */
-    ierr = (*snes->ComputeJacobian)(snes,x,&A,&A,&flg,snes->jacP);CHKERR(ierr);
+    ierr = (*snes->ComputeJacobian)(snes,x,&A,&A,&flg,snes->jacP);CHKERRQ(ierr);
     if (i == 0) MatConvert(A,MATSAME,&B); 
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);
-    CHKERR(ierr);
+    CHKERRQ(ierr);
     if (neP->complete_print) {
       MPIU_printf(snes->comm,"Finite difference Jacobian\n");
       MatView(B,SYNC_STDOUT_VIEWER);
@@ -105,7 +105,7 @@ int SNESCreate_Test(SNES  snes )
   snes->printhelp       = SNESPrintHelp_Test;
   snes->setfromoptions  = SNESSetFromOptions_Test;
 
-  neP			= NEW(SNES_Test);   CHKPTR(neP);
+  neP			= PETSCNEW(SNES_Test);   CHKPTRQ(neP);
   snes->data    	= (void *) neP;
   neP->complete_print   = 0;
   return 0;

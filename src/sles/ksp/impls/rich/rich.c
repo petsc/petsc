@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.16 1995/05/12 21:42:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.17 1995/05/18 22:44:26 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -14,11 +14,11 @@ int KSPSetUp_Richardson(KSP itP)
 {
   int ierr;
   if (itP->type != KSPRICHARDSON) {
-    SETERR(1,"Attempt to use Richardson Setup on wrong context"); 
+    SETERRQ(1,"Attempt to use Richardson Setup on wrong context"); 
   }
   /* check user parameters and functions */
   if (itP->right_pre) {
-    SETERR(2,"Right-inverse preconditioning not supported for Richardson"); 
+    SETERRQ(2,"Right-inverse preconditioning not supported for Richardson"); 
   }
   if ((ierr = KSPCheckDef( itP ))) return ierr;
   /* get work vectors from user code */
@@ -113,7 +113,7 @@ int  KSPSolve_Richardson(KSP itP,int *its)
 int KSPCreate_Richardson(KSP itP)
 {
   KSP_Richardson *richardsonP;
-  richardsonP = NEW(KSP_Richardson); CHKPTR(richardsonP);
+  richardsonP = PETSCNEW(KSP_Richardson); CHKPTRQ(richardsonP);
   itP->MethodPrivate = (void *) richardsonP;
   itP->type                 = KSPRICHARDSON;
   richardsonP->scale        = 1.0;

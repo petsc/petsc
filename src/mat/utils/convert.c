@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.17 1995/05/18 22:46:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.18 1995/05/23 14:28:24 curfman Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -35,22 +35,22 @@ int MatDetermineDiagonals_Private(Mat mat,int nb,int newr,int newc,
   Scalar *v;
 
   VALIDHEADER(mat,MAT_COOKIE);
-  if ((newr%nb) || (newc%nb)) SETERR(1,"Invalid block size.");
+  if ((newr%nb) || (newc%nb)) SETERRQ(1,"Invalid block size.");
   cfirst = colrange[0];
   clast  = colrange[newc-1];
   nnc    = clast - cfirst + 1;
-  cwork  = (int *) MALLOC( nnc * sizeof(int) );	CHKPTR(cwork);
+  cwork  = (int *) PETSCMALLOC( nnc * sizeof(int) );	CHKPTRQ(cwork);
   for (i=0; i<nnc; i++)  cwork[i] = -1;
   for (i=0; i<newc; i++) cwork[colrange[i]-cfirst] = i;
 
   /* Determine which diagonals exist:  compute nd, diag[]: */
   /* Temporarily ssume diag[0] = 0 (main diagonal) */
   maxd = newr + newc - 1;	/* maximum possible diagonals */
-  diag = (int *)MALLOC( maxd * sizeof(int) );	CHKPTR(diag);
+  diag = (int *)PETSCMALLOC( maxd * sizeof(int) );	CHKPTRQ(diag);
   nd = 1;
   for (i=0; i<maxd; i++) diag[i] = 0; 
   for (i=0; i<newr; i++) {
-    ierr = MatGetRow( mat, rowrange[i], &nz, &col, &v ); CHKERR(ierr);
+    ierr = MatGetRow( mat, rowrange[i], &nz, &col, &v ); CHKERRQ(ierr);
     row = i;
     j   = 0;
     /* Skip values until we reach the first column */
@@ -76,7 +76,7 @@ int MatDetermineDiagonals_Private(Mat mat,int nb,int newr,int newc,
       }
       j++;
     }
-    ierr = MatRestoreRow( mat, rowrange[i], &nz, &col, &v ); CHKERR(ierr);
+    ierr = MatRestoreRow( mat, rowrange[i], &nz, &col, &v ); CHKERRQ(ierr);
   }
   /* Sort diagonals in decreasing order. */
   for (k=0; k<nd; k++) {
@@ -88,7 +88,7 @@ int MatDetermineDiagonals_Private(Mat mat,int nb,int newr,int newc,
       }
     }
   }
-  FREE( cwork );  
+  PETSCFREE( cwork );  
   *ndiag = nd;
   *diagonals = diag;
   return 0;
@@ -104,64 +104,64 @@ int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
   Scalar  *vwork;
   int     i, ierr, nz, m = aij->m, n = aij->n, *cwork, rstart, rend;
 
-  if (mat->type != MATAIJ) SETERR(1,"Input matrix must be MATAIJ.");
+  if (mat->type != MATAIJ) SETERRQ(1,"Input matrix must be MATAIJ.");
   switch (newtype) {
     case MATROW:
       ierr = MatCreateSequentialRow(mat->comm,m,n,0,aij->ilen,newmat);
-      CHKERR(ierr); break;
+      CHKERRQ(ierr); break;
     case MATMPIROW:
       ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
              m,n,0,0,0,0,newmat); /* Could do smarter memory allocation */
-      CHKERR(ierr); break;
+      CHKERRQ(ierr); break;
     case MATMPIAIJ:
       ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
              m,n,0,0,0,0,newmat); /* Could do smarter memory allocation */
-      CHKERR(ierr); break;
+      CHKERRQ(ierr); break;
     case MATDENSE:
       ierr = MatCreateSequentialDense(mat->comm,m,n,newmat);
-      CHKERR(ierr); break;
+      CHKERRQ(ierr); break;
     case MATBDIAG:
     { int nb = 1; /* Default block size = 1 */
       int ndiag, *diag, *rr, *cr;
-      rr = (int *) MALLOC( (m+n) * sizeof(int) ); CHKPTR(rr);
+      rr = (int *) PETSCMALLOC( (m+n) * sizeof(int) ); CHKPTRQ(rr);
       cr = rr + m;
       for (i=0; i<m; i++) rr[i] = i;
       for (i=0; i<n; i++) cr[i] = i;
       OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
       ierr = MatDetermineDiagonals_Private(mat,nb,m,n,rr,cr,&ndiag,&diag);
-      CHKERR(ierr); 
+      CHKERRQ(ierr); 
       ierr = MatCreateSequentialBDiag(mat->comm,m,n,ndiag,nb,diag,0,newmat);
-      CHKERR(ierr); 
-      FREE(rr), FREE(diag);
+      CHKERRQ(ierr); 
+      PETSCFREE(rr), PETSCFREE(diag);
       break;
     }
     case MATMPIBDIAG:
     { int nb = 1; /* Default block size = 1 */
       int ndiag, *diag, *rr, *cr;
-      rr = (int *) MALLOC( (m+n) * sizeof(int) ); CHKPTR(rr);
+      rr = (int *) PETSCMALLOC( (m+n) * sizeof(int) ); CHKPTRQ(rr);
       cr = rr + m;
       for (i=0; i<m; i++) rr[i] = i;
       for (i=0; i<n; i++) cr[i] = i;
       OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
       ierr = MatDetermineDiagonals_Private(mat,nb,m,n,rr,cr,&ndiag,&diag);
-      CHKERR(ierr); 
+      CHKERRQ(ierr); 
       ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,ndiag,nb,
-             diag,0,newmat); CHKERR(ierr); 
-      FREE(rr), FREE(diag);
-      CHKERR(ierr); break;
+             diag,0,newmat); CHKERRQ(ierr); 
+      PETSCFREE(rr), PETSCFREE(diag);
+      CHKERRQ(ierr); break;
     }
     default:
-      SETERR(1,"Matrix type is not currently supported.");
+      SETERRQ(1,"Matrix type is not currently supported.");
   }
-  ierr = MatGetOwnershipRange(*newmat,&rstart,&rend); CHKERR(ierr);
+  ierr = MatGetOwnershipRange(*newmat,&rstart,&rend); CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
+    ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
     ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,INSERTVALUES); 
-           CHKERR(ierr);
-    ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
+           CHKERRQ(ierr);
+    ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------------ */
@@ -176,25 +176,25 @@ int MatConvert_MPIAIJ(Mat mat, MatType newtype, Mat *newmat)
   int        ierr, nz, i, ig,rstart = aij->rstart, m = aij->m, *cwork;
   Scalar     *vwork;
 
-  if (mat->type != MATMPIAIJ) SETERR(1,"Input matrix must be MATMPIAIJ.");
+  if (mat->type != MATMPIAIJ) SETERRQ(1,"Input matrix must be MATMPIAIJ.");
   switch (newtype) {
     case MATMPIROW:
       for (i=0; i<m; i++)
         {ierr = MatCreateMPIRow(mat->comm,m,aij->n,aij->M,aij->N,0,Ad->ilen,
-			0,Bd->ilen,newmat); CHKERR(ierr); }
+			0,Bd->ilen,newmat); CHKERRQ(ierr); }
       break;
     default:
-      SETERR(1,"Only MATMPIROW is currently suported.");
+      SETERRQ(1,"Only MATMPIROW is currently suported.");
   }
   /* Each processor converts its local rows */
   for (i=0; i<m; i++) {
     ig   = i + rstart;
-    ierr = MatGetRow(mat,ig,&nz,&cwork,&vwork);	CHKERR(ierr);
+    ierr = MatGetRow(mat,ig,&nz,&cwork,&vwork);	CHKERRQ(ierr);
     ierr = MatSetValues(*newmat,1,&ig,nz,cwork,vwork,
-		INSERTVALUES); CHKERR(ierr);
-    ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork); CHKERR(ierr);
+		INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }

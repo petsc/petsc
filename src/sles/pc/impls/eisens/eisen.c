@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.18 1995/05/16 00:39:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.19 1995/05/18 22:45:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -39,7 +39,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   int     ierr;
 
   if (pc->mat != pc->pmat) {
-    SETERR(1,"Eisenstat preconditioner cannot have different mat from pmat"); 
+    SETERRQ(1,"Eisenstat preconditioner cannot have different mat from pmat"); 
   }
  
   /* swap shell matrix and true matrix */
@@ -48,23 +48,23 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
 
   KSPGetRhs(ksp,&b);
   if (!jac->b) {
-    ierr = VecDuplicate(b,&jac->b); CHKERR(ierr);
+    ierr = VecDuplicate(b,&jac->b); CHKERRQ(ierr);
     PLogObjectParent(pc,jac->b);
   }
   
   /* save true b, other option is to swap pointers */
-  ierr = VecCopy(b,jac->b); CHKERR(ierr);
+  ierr = VecCopy(b,jac->b); CHKERRQ(ierr);
 
   /* if nonzero initial guess, modify x */
   if (!ksp->guess_zero) {
     KSPGetSolution(ksp,&x);
-    ierr = MatRelax(jac->A,x,jac->omega,SOR_APPLY_UPPER,0.0,1,x); CHKERR(ierr);
+    ierr = MatRelax(jac->A,x,jac->omega,SOR_APPLY_UPPER,0.0,1,x); CHKERRQ(ierr);
   }
 
   /* modify b by (L + D)^{-1} */
   ierr =   MatRelax(jac->A,b,jac->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
                                         SOR_FORWARD_SWEEP),0.0,1,b); 
-  CHKERR(ierr);  
+  CHKERRQ(ierr);  
   return 0;
 }
 
@@ -75,7 +75,7 @@ static int PCPost_Eisenstat(PC pc,KSP ksp)
   int     ierr;
   KSPGetSolution(ksp,&x);
   ierr =   MatRelax(jac->A,x,jac->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                 SOR_BACKWARD_SWEEP),0.0,1,x); CHKERR(ierr);
+                                 SOR_BACKWARD_SWEEP),0.0,1,x); CHKERRQ(ierr);
   pc->mat = jac->A;
   /* get back true b */
   KSPGetRhs(ksp,&b);
@@ -89,7 +89,7 @@ int PCDestroy_Eisenstat(PetscObject obj)
   PC_Eisenstat  *jac = ( PC_Eisenstat  *) pc->data; 
   if (jac->b) VecDestroy(jac->b);
   if (jac->shell) MatDestroy(jac->shell);
-  FREE(jac);
+  PETSCFREE(jac);
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
@@ -116,7 +116,7 @@ int PCCreate_Eisenstat(PC pc)
 {
   int      ierr;
   PC_Eisenstat  *jac;
-  jac           = NEW(PC_Eisenstat); CHKPTR(jac);
+  jac           = PETSCNEW(PC_Eisenstat); CHKPTRQ(jac);
   pc->apply     = PCApply_Eisenstat;
   pc->presolve  = PCPre_Eisenstat;
   pc->postsolve = PCPost_Eisenstat;
@@ -129,8 +129,8 @@ int PCCreate_Eisenstat(PC pc)
   pc->setup     = 0;
   jac->omega    = 1.0;
   jac->b        = 0;
-  ierr = MatShellCreate(pc->comm,0,0,(void*) pc,&jac->shell); CHKERR(ierr);
-  ierr = MatShellSetMult(jac->shell, PCMult_Eisenstat); CHKERR(ierr);
+  ierr = MatShellCreate(pc->comm,0,0,(void*) pc,&jac->shell); CHKERRQ(ierr);
+  ierr = MatShellSetMult(jac->shell, PCMult_Eisenstat); CHKERRQ(ierr);
   return 0;
 }
 

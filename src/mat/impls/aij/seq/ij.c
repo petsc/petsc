@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.5 1995/03/23 22:01:19 curfman Exp curfman $";
+static char vcid[] = "$Id: ij.c,v 1.6 1995/05/21 19:55:41 curfman Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -37,9 +37,9 @@ int SpToSymmetricIJ_AIJ( Mat_AIJ *Matrix, int **iia, int **jja )
   n  = Matrix->m;
 
   /* allocate space for row pointers */
-  *iia = ia = (int *) MALLOC( (n+1)*sizeof(int) ); CHKPTR(ia);
-  MEMSET(ia,0,(n+1)*sizeof(int));
-  work = (int *) MALLOC( (n+1)*sizeof(int) ); CHKPTR(work);
+  *iia = ia = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(ia);
+  PETSCMEMSET(ia,0,(n+1)*sizeof(int));
+  work = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */
   ia[0] = 1;
@@ -65,7 +65,7 @@ int SpToSymmetricIJ_AIJ( Mat_AIJ *Matrix, int **iia, int **jja )
 
  /* allocate space for column pointers */
  nz = ia[n];
- *jja = ja = (int *) MALLOC( nz*sizeof(int) ); CHKPTR(ja);
+ *jja = ja = (int *) PETSCMALLOC( nz*sizeof(int) ); CHKPTRQ(ja);
 
  /* loop over lower triangular part putting into ja */ 
  for (row = 0; row < n; row++) {
@@ -83,7 +83,7 @@ int SpToSymmetricIJ_AIJ( Mat_AIJ *Matrix, int **iia, int **jja )
     }
 
   }
-  FREE(work);
+  PETSCFREE(work);
   return 0;
 }
 

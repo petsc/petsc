@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.16 1995/05/12 21:29:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.17 1995/05/18 22:44:15 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -18,11 +18,11 @@ int KSPSetUp_CG(KSP itP)
   maxit = itP->max_it;
 
   if (itP->type != KSPCG) {
-      SETERR(1,"Attempt to use CG Setup on wrong context");}
+      SETERRQ(1,"Attempt to use CG Setup on wrong context");}
 
   /* check user parameters and functions */
   if ( itP->right_pre ) {
-      SETERR(2,"Right-inverse preconditioning not supported for CG");}
+      SETERRQ(2,"Right-inverse preconditioning not supported for CG");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
 
   /* get work vectors from user code */
@@ -30,7 +30,7 @@ int KSPSetUp_CG(KSP itP)
 
   if (itP->calc_eigs) {
     /* get space to store tridiagonal matrix for Lanczo */
-    cgP->e = (Scalar *) MALLOC(4*(maxit+1)*sizeof(Scalar)); CHKPTR(cgP->e);
+    cgP->e = (Scalar *) PETSCMALLOC(4*(maxit+1)*sizeof(Scalar)); CHKPTRQ(cgP->e);
     cgP->d  = cgP->e + maxit + 1; 
     cgP->ee = cgP->d + maxit + 1;
     cgP->dd = cgP->ee + maxit + 1;
@@ -65,7 +65,7 @@ int  KSPSolve_CG(KSP itP,int *its)
 
   if (!itP->guess_zero) {
     MatMult(Amat,X,R);              /*   r <- b - Ax      */
-    ierr = VecAYPX(&mone,B,R); CHKERR(ierr);
+    ierr = VecAYPX(&mone,B,R); CHKERRQ(ierr);
   }
   else { 
     VecCopy(B,R);                            /*     r <- b (x is 0)*/
@@ -93,11 +93,11 @@ int  KSPSolve_CG(KSP itP,int *its)
          b = beta/betaold;
          if (eigs) {
 #if !defined(PETSC_COMPLEX)
-           if (b<0.0) SETERR(1,"Nonsymmetric or bad preconditioner");
+           if (b<0.0) SETERRQ(1,"Nonsymmetric or bad preconditioner");
 #endif
            e[i] = sqrt(b)/a;  
          }
-         ierr = VecAYPX(&b,Z,P); CHKERR(ierr) /*     p <- z + b* p   */
+         ierr = VecAYPX(&b,Z,P); CHKERRQ(ierr) /*     p <- z + b* p   */
      }
      betaold = beta;
      MatMult(Amat,P,Z);                        /*     z <- Kp         */
@@ -105,7 +105,7 @@ int  KSPSolve_CG(KSP itP,int *its)
      a = beta/dpi;                             /*     a = beta/p'z    */
      if (eigs) {
 #if !defined(PETSC_COMPLEX)
-       if (b<0.0) SETERR(1,"Nonsymmetric or bad preconditioner");
+       if (b<0.0) SETERRQ(1,"Nonsymmetric or bad preconditioner");
 #endif
        d[i] = sqrt(b)*e[i] + 1.0/a;
      }
@@ -136,13 +136,13 @@ int KSPDestroy_CG(PetscObject obj)
 
   /* free space used for eigenvalue calculations */
   if ( itP->calc_eigs ) {
-    FREE(cgP->e);
+    PETSCFREE(cgP->e);
   }
 
   KSPiDefaultFreeWork( itP );
   
   /* free the context variables */
-  FREE(cgP); 
+  PETSCFREE(cgP); 
   PLogObjectDestroy(itP);
   PETSCHEADERDESTROY(itP);
   return 0;
@@ -151,7 +151,7 @@ int KSPDestroy_CG(PetscObject obj)
 int KSPCreate_CG(KSP itP)
 {
   KSP_CG *cgP;
-  cgP = NEW(KSP_CG);  CHKPTR(cgP);
+  cgP = (KSP_CG*) PETSCMALLOC(sizeof(KSP_CG));  CHKPTRQ(cgP);
   itP->MethodPrivate = (void *) cgP;
   itP->type                 = KSPCG;
   itP->right_pre            = 0;

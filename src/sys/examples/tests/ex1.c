@@ -8,8 +8,8 @@
 int CreateError(int n)
 {
   int ierr;
-  if (!n) SETERR(1,"Error Created");
-  ierr = CreateError(n-1); CHKERR(ierr);
+  if (!n) SETERRQ(1,"Error Created");
+  ierr = CreateError(n-1); CHKERRQ(ierr);
   return 0;
 }
 

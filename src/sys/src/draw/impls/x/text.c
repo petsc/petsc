@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.6 1995/03/25 01:27:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.7 1995/05/29 15:59:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,7 +24,7 @@ int XiFontFixed( DrawCtx_X *XBWin,int w, int h,XiFont **outfont )
   static int    fw = 0, fh = 0;
   if (!curfont) { XiInitFonts( XBWin );}
   if (w != fw || h != fh) {
-    if (!font)	font = NEW(XiFont); CHKPTR(font);
+    if (!font)	font = (XiFont*) PETSCMALLOC(sizeof(XiFont)); CHKPTRQ(font);
     XiMatchFontSize( font, w, h );
     fw = w;
     fh = h;

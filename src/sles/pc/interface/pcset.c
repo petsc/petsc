@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.14 1995/05/18 22:44:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.15 1995/05/20 19:42:33 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -33,16 +33,16 @@ int PCSetMethod(PC ctx,PCMethod method)
   int (*r)(PC);
   VALIDHEADER(ctx,PC_COOKIE);
   if (ctx->setupcalled) {
-    SETERR(1,"Method cannot be called after PCSetUp");
+    SETERRQ(1,"Method cannot be called after PCSetUp");
   }
   /* Get the function pointers for the method requested */
   if (!__PCList) {PCRegisterAll();}
   if (!__PCList) {
-    SETERR(1,"Could not acquire list of preconditioner methods"); 
+    SETERRQ(1,"Could not acquire list of preconditioner methods"); 
   }
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)method, (char *)0 );
-  if (!r) {SETERR(1,"Unknown preconditioner method");}
-  if (ctx->data) FREE(ctx->data);
+  if (!r) {SETERRQ(1,"Unknown preconditioner method");}
+  if (ctx->data) PETSCFREE(ctx->data);
   ctx->setfrom     = ( int (*)(PC) ) 0;
   ctx->printhelp   = ( int (*)(PC) ) 0;
   ctx->setup       = ( int (*)(PC) ) 0;
@@ -62,7 +62,7 @@ int PCSetMethod(PC ctx,PCMethod method)
 int  PCRegister(PCMethod name,char *sname,int (*create)(PC))
 {
   int ierr;
-  if (!__PCList) {ierr = NRCreate(&__PCList); CHKERR(ierr);}
+  if (!__PCList) {ierr = NRCreate(&__PCList); CHKERRQ(ierr);}
   return NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.23 1995/05/16 00:39:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.24 1995/05/18 22:45:08 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -111,25 +111,25 @@ static int PCSetUp_LU(PC pc)
   int       ierr;
   PC_LU *dir = (PC_LU *) pc->data;
   if (dir->inplace) {
-    ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
+    ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERRQ(ierr);
     if (row) {PLogObjectParent(pc,row);PLogObjectParent(pc,col);}
-    if ((ierr = MatLUFactor(pc->pmat,row,col))) SETERR(ierr,0);
+    if ((ierr = MatLUFactor(pc->pmat,row,col))) SETERRQ(ierr,0);
   }
   else {
     if (!pc->setupcalled) {
-      ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
+      ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERRQ(ierr);
       if (row) {PLogObjectParent(pc,row);PLogObjectParent(pc,col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERR(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
-      ierr = MatDestroy(dir->fact); CHKERR(ierr);
-      ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
+      ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
+      ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERRQ(ierr);
       if (row) {PLogObjectParent(pc,row);PLogObjectParent(pc,col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERR(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
-    ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERR(ierr);
+    ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -140,7 +140,7 @@ static int PCDestroy_LU(PetscObject obj)
   PC_LU *dir = (PC_LU*) pc->data;
 
   if (!dir->inplace) MatDestroy(dir->fact);
-  FREE(dir); 
+  PETSCFREE(dir); 
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
@@ -155,7 +155,7 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 
 int PCCreate_LU(PC pc)
 {
-  PC_LU *dir = NEW(PC_LU); CHKPTR(dir);
+  PC_LU *dir = PETSCNEW(PC_LU); CHKPTRQ(dir);
   dir->fact     = 0;
   dir->ordering = ORDER_ND;
   dir->inplace  = 0;

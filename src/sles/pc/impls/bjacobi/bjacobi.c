@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.19 1995/05/23 14:24:08 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.20 1995/05/25 23:04:05 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -23,7 +23,7 @@ static int PCSetUp_BJacobi(PC pc)
   if (mat->type == MATMPIAIJ)        return PCSetUp_BJacobiMPIAIJ(pc);
   else if (mat->type == MATMPIROW)   return PCSetUp_BJacobiMPIRow(pc);
   else if (mat->type == MATMPIBDIAG) return PCSetUp_BJacobiMPIBDiag(pc);
-  SETERR(1,"Cannot use block Jacobi on this matrix type\n");
+  SETERRQ(1,"Cannot use block Jacobi on this matrix type\n");
 }
 
 /* Default destroy, if it has never been setup */
@@ -31,7 +31,7 @@ static int PCDestroy_BJacobi(PetscObject obj)
 {
   PC pc = (PC) obj;
   PC_BJacobi *jac = (PC_BJacobi *) pc->data;
-  FREE(jac);
+  PETSCFREE(jac);
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
@@ -94,7 +94,7 @@ int PCPrintHelp_BJacobi(PC pc)
 
 int PCCreate_BJacobi(PC pc)
 {
-  PC_BJacobi   *jac = NEW(PC_BJacobi); CHKPTR(jac);
+  PC_BJacobi   *jac = PETSCNEW(PC_BJacobi); CHKPTRQ(jac);
   pc->apply         = 0;
   pc->setup         = PCSetUp_BJacobi;
   pc->destroy       = PCDestroy_BJacobi;

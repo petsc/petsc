@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.35 1995/05/18 22:44:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.36 1995/05/20 19:42:42 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -125,16 +125,16 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
   int (*r)(KSP);
   VALIDHEADER(ctx,KSP_COOKIE);
   if (ctx->setupcalled) {
-    SETERR(1,"Method cannot be called after KSPSetUp");
+    SETERRQ(1,"Method cannot be called after KSPSetUp");
   }
   /* Get the function pointers for the iterative method requested */
   if (!__ITList) {KSPRegisterAll();}
   if (!__ITList) {
-    SETERR(1,"Could not acquire list of KSP methods"); 
+    SETERRQ(1,"Could not acquire list of KSP methods"); 
   }
   r =  (int (*)(KSP))NRFindRoutine( __ITList, (int)itmethod, (char *)0 );
-  if (!r) {SETERR(1,"Unknown KSP method");}
-  if (ctx->MethodPrivate) FREE(ctx->MethodPrivate);
+  if (!r) {SETERRQ(1,"Unknown KSP method");}
+  if (ctx->MethodPrivate) PETSCFREE(ctx->MethodPrivate);
   ctx->MethodPrivate = 0;
   return (*r)(ctx);
 }
@@ -156,7 +156,7 @@ int  KSPRegister(KSPMethod name, char *sname, int  (*create)(KSP))
 {
   int ierr;
   int (*dummy)(void *) = (int (*)(void *)) create;
-  if (!__ITList) {ierr = NRCreate(&__ITList); CHKERR(ierr);}
+  if (!__ITList) {ierr = NRCreate(&__ITList); CHKERRQ(ierr);}
   return NRRegister( __ITList, (int) name, sname, dummy );
 }
 

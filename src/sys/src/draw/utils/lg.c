@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.10 1995/05/14 16:34:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.11 1995/05/29 16:10:37 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -41,7 +41,7 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
      return DrawOpenNull(vobj->comm,(DrawCtx*)outctx);
   }
-  lg = (DrawLGCtx) MALLOC(sizeof(struct _DrawLGCtx));CHKPTR(lg);
+  lg = (DrawLGCtx) PETSCMALLOC(sizeof(struct _DrawLGCtx));CHKPTRQ(lg);
   lg->cookie  = LG_COOKIE;
   lg->view    = 0;
   lg->destroy = 0;
@@ -52,12 +52,12 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
   lg->ymin    = 1.e20;
   lg->xmax    = -1.e20;
   lg->ymax    = -1.e20;
-  lg->x       = (double *)MALLOC(2*dim*CHUNCKSIZE*sizeof(double));
-                CHKPTR(lg->x);
+  lg->x       = (double *)PETSCMALLOC(2*dim*CHUNCKSIZE*sizeof(double));
+                CHKPTRQ(lg->x);
   lg->y       = lg->x + dim*CHUNCKSIZE;
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
-  ierr = DrawAxisCreate(win,&lg->axis); CHKERR(ierr);
+  ierr = DrawAxisCreate(win,&lg->axis); CHKERRQ(ierr);
   *outctx = lg;
   return 0;
 }
@@ -94,8 +94,8 @@ int DrawLGDestroy(DrawLGCtx lg)
   }
   VALIDHEADER(lg,LG_COOKIE);
   DrawAxisDestroy(lg->axis);
-  FREE(lg->x);
-  FREE(lg);
+  PETSCFREE(lg->x);
+  PETSCFREE(lg);
   return 0;
 }
 
@@ -116,12 +116,12 @@ int DrawLGAddPoint(DrawLGCtx lg,double *x,double *y)
   VALIDHEADER(lg,LG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     double *tmpx,*tmpy;
-    tmpx = (double *) MALLOC((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(double));
-    CHKPTR(tmpx);
+    tmpx = (double *) PETSCMALLOC((2*lg->len+2*lg->dim*CHUNCKSIZE)*sizeof(double));
+    CHKPTRQ(tmpx);
     tmpy = tmpx + lg->len + lg->dim*CHUNCKSIZE;
-    MEMCPY(tmpx,lg->x,lg->len*sizeof(double));
-    MEMCPY(tmpy,lg->y,lg->len*sizeof(double));
-    FREE(lg->x);
+    PETSCMEMCPY(tmpx,lg->x,lg->len*sizeof(double));
+    PETSCMEMCPY(tmpy,lg->y,lg->len*sizeof(double));
+    PETSCFREE(lg->x);
     lg->x = tmpx; lg->y = tmpy;
     lg->len += lg->dim*CHUNCKSIZE;
   }
@@ -158,12 +158,12 @@ int DrawLGAddPoints(DrawLGCtx lg,int n,double **xx,double **yy)
     double *tmpx,*tmpy;
     int    chunk = CHUNCKSIZE;
     if (n > chunk) chunk = n;
-    tmpx = (double *) MALLOC((2*lg->len+2*lg->dim*chunk)*sizeof(double));
-    CHKPTR(tmpx);
+    tmpx = (double *) PETSCMALLOC((2*lg->len+2*lg->dim*chunk)*sizeof(double));
+    CHKPTRQ(tmpx);
     tmpy = tmpx + lg->len + lg->dim*chunk;
-    MEMCPY(tmpx,lg->x,lg->len*sizeof(double));
-    MEMCPY(tmpy,lg->y,lg->len*sizeof(double));
-    FREE(lg->x);
+    PETSCMEMCPY(tmpx,lg->x,lg->len*sizeof(double));
+    PETSCMEMCPY(tmpy,lg->y,lg->len*sizeof(double));
+    PETSCFREE(lg->x);
     lg->x = tmpx; lg->y = tmpy;
     lg->len += lg->dim*CHUNCKSIZE;
   }

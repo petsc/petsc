@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.10 1995/05/06 17:54:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.11 1995/05/18 22:44:17 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -51,12 +51,12 @@ MONITOR(itP,dp,0);
 if (history) history[0] = dp;
 
 /* Make the initial Rp == R */
-if ((ierr = VecCopy(R,RP))) SETERR(ierr,0);
+if ((ierr = VecCopy(R,RP))) SETERRQ(ierr,0);
 
 /* Set the initial conditions */
 VecDot(RP,R,&rhoold);
-if ((ierr = VecCopy(R,U))) SETERR(ierr,0);
-if ((ierr = VecCopy(R,P))) SETERR(ierr,0);
+if ((ierr = VecCopy(R,U))) SETERRQ(ierr,0);
+if ((ierr = VecCopy(R,P))) SETERRQ(ierr,0);
 PCApplyBAorAB(itP->B,itP->right_pre,P,V,T);
 
 for (i=0; i<maxit; i++) {
@@ -64,9 +64,9 @@ for (i=0; i<maxit; i++) {
     a = rhoold / s;                        /* a <- rho / s        */
     tmp = -a;VecWAXPY(&tmp,V,U,Q);          /* q <- u - a v        */
     VecWAXPY(&one,U,Q,T);                   /* t <- u + q          */
-    if ((ierr = VecAXPY(&a,T,X))) SETERR(ierr,0);  /* x <- x + a (u + q)  */
+    if ((ierr = VecAXPY(&a,T,X))) SETERRQ(ierr,0);  /* x <- x + a (u + q)  */
     PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,U);
-    if ((ierr = VecAXPY(&tmp,AUQ,R))) SETERR(ierr,0);/* r <- r - a K (u + q) */
+    if ((ierr = VecAXPY(&tmp,AUQ,R))) SETERRQ(ierr,0);/* r <- r - a K (u + q) */
     VecNorm(R,&dp);
 
     if (history && hist_len > i + 1) history[i+1] = dp;
@@ -76,7 +76,7 @@ for (i=0; i<maxit; i++) {
     VecDot(RP,R,&rho);                      /* newrho <- rp' r       */
     b = rho / rhoold;                      /* b <- rho / rhoold     */
     VecWAXPY(&b,Q,R,U);                     /* u <- r + b q          */
-    if ((ierr = VecAXPY(&b,P,Q))) SETERR(ierr,0);
+    if ((ierr = VecAXPY(&b,P,Q))) SETERRQ(ierr,0);
     VecWAXPY(&b,Q,U,P);                     /* p <- u + b(q + b p)   */
     PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q);    /* v <- K p              */
     rhoold = rho;

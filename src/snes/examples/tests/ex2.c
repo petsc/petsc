@@ -55,8 +55,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
 {
    int    ierr;
    Scalar *xx, *ff;
-   ierr = VecGetArray(x,&xx); CHKERR(ierr);
-   ierr = VecGetArray(f,&ff); CHKERR(ierr);
+   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
    ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
    ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
    return 0;
@@ -66,7 +66,7 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
    int    ierr;
    Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERR(ierr);
+   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
    return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -74,10 +74,10 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B, int *flag,void *dummy)
 {
   Scalar *xx, A[4];
   int    ierr, idx[2] = {0,1};
-  ierr = VecGetArray(x,&xx); CHKERR(ierr);
+  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
-  ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERTVALUES); CHKERR(ierr);
+  ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERTVALUES); CHKERRQ(ierr);
   *flag = 0;
   return 0;
 }
@@ -87,7 +87,7 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   int ierr;
   Vec x;
   fprintf( stdout, "iter = %d, Function norm %g \n",its,fnorm);
-  ierr = SNESGetSolution(snes,&x); CHKERR(ierr);
-  ierr = VecView(x,STDOUT_VIEWER); CHKERR(ierr);
+  ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
+  ierr = VecView(x,STDOUT_VIEWER); CHKERRQ(ierr);
   return 0;
 }

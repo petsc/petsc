@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.25 1995/05/26 19:24:11 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.26 1995/05/31 15:17:14 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -59,19 +59,19 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     int nb = 1, ndiag = 0, ndiag2,  *d, ierr;
     OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
     OptionsGetInt(0,"-mat_bdiag_ndiag",&ndiag);
-    if (!ndiag) SETERR(1,"Must set diagonals before creating matrix.");
-    d = (int *)MALLOC( ndiag * sizeof(int) ); CHKPTR(d);
+    if (!ndiag) SETERRQ(1,"Must set diagonals before creating matrix.");
+    d = (int *)PETSCMALLOC( ndiag * sizeof(int) ); CHKPTRQ(d);
     ndiag2 = ndiag;
     OptionsGetIntArray(0,"-mat_bdiag_dvals",d,&ndiag2);
     if (ndiag2 != ndiag) { 
-      SETERR(1,"Incompatible number of diagonals and diagonal values.");
+      SETERRQ(1,"Incompatible number of diagonals and diagonal values.");
     }
     if (numtid > 1 || OptionsHasName(0,"-mpi_objects"))
       ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,0,V); 
     else
       ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); 
-    CHKERR(ierr);
-    if (d) FREE(d);
+    CHKERRQ(ierr);
+    if (d) PETSCFREE(d);
     return ierr;
   }
   if (numtid > 1 || OptionsHasName(0,"-mpi_objects")) {

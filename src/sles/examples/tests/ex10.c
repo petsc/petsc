@@ -43,10 +43,10 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   for (i=rstart; i<rend; i++) {
     v = (Scalar)(i-rstart + 100*mytid); 
-    ierr = VecSetValues(u,1,&i,&v,INSERTVALUES); CHKERR(ierr);
+    ierr = VecSetValues(u,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
   } 
-  ierr = VecAssemblyBegin(u); CHKERR(ierr);
-  ierr = VecAssemblyEnd(u); CHKERR(ierr);
+  ierr = VecAssemblyBegin(u); CHKERRA(ierr);
+  ierr = VecAssemblyEnd(u); CHKERRA(ierr);
   
   /* Compute right-hand-side */
   ierr = MatMult(mat,u,b); CHKERRA(ierr);
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,mat,mat,MAT_SAME_NONZERO_PATTERN);
           CHKERRA(ierr);
-  ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
+  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
 
   { Scalar val;
     KSPSetInitialGuessNonzero(ksp);
@@ -67,9 +67,9 @@ int main(int argc,char **args)
     ierr = VecAssemblyEnd(x); CHKERRA(ierr);
   }
 
-  ierr = KSPGMRESSetRestart(ksp,2*m); CHKERR(ierr);
-  ierr = KSPSetRelativeTolerance(ksp,1.e-12); CHKERR(ierr);
-  ierr = KSPSetMethod(ksp,KSPCG); CHKERR(ierr);
+  ierr = KSPGMRESSetRestart(ksp,2*m); CHKERRA(ierr);
+  ierr = KSPSetRelativeTolerance(ksp,1.e-12); CHKERRA(ierr);
+  ierr = KSPSetMethod(ksp,KSPCG); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
  
@@ -103,14 +103,14 @@ int GetElasticityMatrix(int m,Mat *newmat)
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
   printf("m = %d, N=%d\n", m, N );
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERR(ierr); 
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERRQ(ierr); 
 
   /* Form stiffness for element */
-  K = (double **) MALLOC(81*sizeof(double *)); CHKPTR(K);
+  K = (double **) PETSCMALLOC(81*sizeof(double *)); CHKPTRQ(K);
   for ( i=0; i<81; i++ ) {
-    K[i] = (double *) MALLOC(81*sizeof(double)); CHKPTR(K[i]);
+    K[i] = (double *) PETSCMALLOC(81*sizeof(double)); CHKPTRQ(K[i]);
   }
-  ierr = Elastic20Stiff(K); CHKERR(ierr);
+  ierr = Elastic20Stiff(K); CHKERRQ(ierr);
 
   /* Loop over elements and add contribution to stiffness */
   shiftx = 3; shifty = 3*(2*m+1); shiftz = 3*(2*m+1)*(2*m+1);
@@ -128,7 +128,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 	        for ( j2=0; j2<3; j2++ ) {
 	          for ( i2=0; i2<3; i2++ ) {
 	            r2 = base + i2*shiftx + j2*shifty + k2*shiftz;
-		    ierr = AddElement( mat, r1, r2, K, h1, h2 ); CHKERR(ierr);
+		    ierr = AddElement( mat, r1, r2, K, h1, h2 ); CHKERRA(ierr);
 		    h2 += 3;
 	          }
                 }
@@ -142,26 +142,26 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
 
   for ( i=0; i<81; i++ ) {
-    FREE(K[i]);
+    PETSCFREE(K[i]);
   }
-  FREE(K);
+  PETSCFREE(K);
 
-  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict = 0;
-  rowkeep = (int *) MALLOC((N-nstart)*sizeof(int)); CHKPTR(rowkeep);
+  rowkeep = (int *) PETSCMALLOC((N-nstart)*sizeof(int)); CHKPTRQ(rowkeep);
   for (i=nstart; i<N; i++) {
-    ierr = MatGetRow(mat,i,&nz,0,0); CHKERR(ierr);
+    ierr = MatGetRow(mat,i,&nz,0,0); CHKERRA(ierr);
     if (nz) rowkeep[ict++] = i;
-    ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERR(ierr);
+    ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERRA(ierr);
   }
-  ierr = ISCreateSequential(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERR(ierr);
-  ierr = MatGetSubMatrix(mat,iskeep,iskeep,&submat); CHKERR(ierr);
-  FREE(rowkeep);
-  ierr = MatDestroy(mat); CHKERR(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRA(ierr);
+  ierr = MatGetSubMatrix(mat,iskeep,iskeep,&submat); CHKERRA(ierr);
+  PETSCFREE(rowkeep);
+  ierr = MatDestroy(mat); CHKERRA(ierr);
 
   /* Convert storage formats -- just to demonstrate block diagonal format */
   { MatType type = MATBDIAG;
@@ -172,8 +172,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   if (OptionsHasName(0,"-mat_mpirow")) type = MATMPIROW;
   if (OptionsHasName(0,"-mat_mpirowbs")) type = MATMPIROW_BS;
   if (OptionsHasName(0,"-mat_mpibdiag")) type = MATMPIBDIAG;
-  ierr = MatConvert(submat,type,newmat); CHKERR(ierr);
-  ierr = MatDestroy(submat); CHKERR(ierr);
+  ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
+  ierr = MatDestroy(submat); CHKERRQ(ierr);
   }
 
   /* Display matrix information and nonzero structure */
@@ -195,9 +195,9 @@ int AddElement(Mat mat,int r1,int r2,Scalar **K,int h1,int h2)
     for ( l2=0; l2<3; l2++ ) {
       if (ABS(K[h1+l1][h2+l2]) != 0.0) {
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
-	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
         row = r2+l2; col = r1+l1;
-	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
+	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
       }
     }
   }
@@ -334,7 +334,7 @@ int paulsetup20()
 		w[3] = 0.347854845137454;
   }
   else {
-    SETERR(1,"Unknown value for n_int"); return -1;
+    SETERRQ(1,"Unknown value for n_int"); return -1;
   }
 
   /* rst[][i] contains the location of the i-th integration point

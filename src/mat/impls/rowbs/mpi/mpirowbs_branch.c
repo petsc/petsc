@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.33 1995/05/31 00:05:49 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.34 1995/05/31 23:51:16 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: mpirowbs.c,v 1.33 1995/05/31 00:05:49 curfman Exp cur
 /* Same as MatRow format ... should share these! */
 static int MatFreeRowbs_Private(Mat matin,int n,int *i,Scalar *v)
 {
-  if (v) PFREE(v);
+  if (v) PPETSCFREE(v);
   return 0;
 }
 
@@ -26,7 +26,7 @@ static int MatMallocRowbs_Private(Mat matin,int n,int **i,Scalar **v)
     *i = 0; *v = 0;
   } else {
     len = n*(sizeof(int) + sizeof(Scalar));
-    *v = (Scalar *) PMALLOC( len ); PCHKPTR(*v);
+    *v = (Scalar *) PETSCMALLOC( len ); CHKPTRQ(*v);
     *i = (int *)(*v + n);
   }
   return 0;
@@ -43,7 +43,7 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
   if (!nnz) {
     if (nz <= 0) nz = 1;
     nzalloc = 1;
-    nnz = (int *) PMALLOC( (m+1)*sizeof(int) ); PCHKPTR(nnz);
+    nnz = (int *) PETSCMALLOC( (m+1)*sizeof(int) ); CHKPTRQ(nnz);
     for ( i=0; i<m; i++ ) nnz[i] = nz;
     nz = nz*m;
   }
@@ -53,9 +53,9 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
   }
 
   /* Allocate BlockSolve matrix context */
-  bsif->A = bsmat = PNEW(BSspmat); PCHKPTR(bsmat);
+  bsif->A = bsmat = PETSCNEW(BSspmat); CHKPTRQ(bsmat);
   len = m*(sizeof(BSsprow *) + sizeof(BSsprow)) + 1;
-  bsmat->rows = (BSsprow **) PMALLOC( len ); PCHKPTR(bsmat->rows);
+  bsmat->rows = (BSsprow **) PETSCMALLOC( len ); CHKPTRQ(bsmat->rows);
   bsmat->num_rows = m;
   bsmat->global_num_rows = bsif->M;
   bsmat->map = bsif->bsmap;
@@ -67,7 +67,7 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
     vs->diag_ind    = -1;
     if (nnz[i] > 0) {
       ierr = MatMallocRowbs_Private(mat,nnz[i],&(vs->col),&(vs->nz)); 
-      PCHKERR(ierr);
+      CHKERRQ(ierr);
     } else {
       vs->col = 0; vs->nz = 0;
     }
@@ -97,15 +97,15 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row = idxm[k];
-    if (row < 0) PSETERR(1,"Negative row index");
-    if (row >= mat->m) PSETERR(1,"Row index too large");
+    if (row < 0) SETERRQ(1,"Negative row index");
+    if (row >= mat->m) SETERRQ(1,"Row index too large");
     vs = A->rows[row];
     ap = vs->nz; rp = vs->col;
     rmax = imax[row]; nrow = vs->length;
     a = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
-      if (idxn[l] < 0) PSETERR(1,"Negative column index");
-      if (idxn[l] >= mat->N) PSETERR(1,"Column index too large");
+      if (idxn[l] < 0) SETERRQ(1,"Negative column index");
+      if (idxn[l] >= mat->N) SETERRQ(1,"Column index too large");
       col = idxn[l]; value = *v++;
       if (!sorted) a = 0; b = nrow;
       while (b-a > 5) {
@@ -132,7 +132,8 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
         /* malloc new storage space */
 
         imax[row] += CHUNCKSIZE_LOCAL;
-        ierr = MatMallocRowbs_Private(matin,imax[row],&itemp,&vtemp); PCHKERR(ierr);
+        ierr = MatMallocRowbs_Private(matin,imax[row],&itemp,&vtemp); 
+        CHKERRQ(ierr);
         vout = vtemp; iout = itemp;
         for (ii=0; ii<i; ii++) {
           vout[ii] = vin[ii];
@@ -146,7 +147,8 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
         }
        /* free old row storage */
         if (rmax > 0)
-          {ierr = MatFreeRowbs_Private(matin,rmax,vs->col,vs->nz); PCHKERR(ierr);}
+          {ierr = MatFreeRowbs_Private(matin,rmax,vs->col,vs->nz); 
+           CHKERRQ(ierr);}
         vs->col = iout; vs->nz = vout;
         rmax = imax[row];
         mat->singlemalloc = 0;
@@ -219,7 +221,7 @@ static int MatAssemblyEnd_MPIRowbs_local(Mat mat,MatAssemblyType mode)
       }
     }
     if (vs->diag_ind == -1) 
-       PSETERR(1,"No diagonal term!  Must set diagonal entry, even if zero.");
+       SETERRQ(1,"No diagonal term!  Must set diagonal entry, even if zero.");
   }
   return 0;
 }
@@ -230,11 +232,11 @@ static int MatZeroRows_MPIRowbs_local(Mat mat,IS is,Scalar *diag)
   BSspmat      *l = mrow->A;
   int          i, ierr, N, *rz, m = mrow->m - 1;
 
-  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
-  ierr = ISGetIndices(is,&rz); CHKERR(ierr);
+  ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&rz); CHKERRQ(ierr);
   if (diag) {
     for ( i=0; i<N; i++ ) {
-      if (rz[i] < 0 || rz[i] > m) SETERR(1,"Index out of range.");
+      if (rz[i] < 0 || rz[i] > m) SETERRQ(1,"Index out of range.");
       if (l->rows[rz[i]]->length > 0) { /* in case row was completely empty */
         l->rows[rz[i]]->length = 1;
         l->rows[rz[i]]->nz[0] = *diag;
@@ -242,19 +244,19 @@ static int MatZeroRows_MPIRowbs_local(Mat mat,IS is,Scalar *diag)
       }
       else {
         ierr = MatSetValues(mat,1,&rz[i],1,&rz[i],diag,INSERTVALUES);
-        CHKERR(ierr);
+        CHKERRQ(ierr);
       }
     }
   }
   else {
     for ( i=0; i<N; i++ ) {
-      if (rz[i] < 0 || rz[i] > m) SETERR(1,"Index out of range.");
+      if (rz[i] < 0 || rz[i] > m) SETERRQ(1,"Index out of range.");
       l->rows[rz[i]]->length = 0;
     }
   }
   ISRestoreIndices(is,&rz);
-  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
@@ -267,7 +269,7 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
   int          ierr, i, j, row, col, rstart = mrow->rstart, rend = mrow->rend;
 
   if (mrow->insertmode != NOTSETVALUES && mrow->insertmode != addv) {
-    PSETERR(1,"You cannot mix inserts and adds");
+    SETERRQ(1,"You cannot mix inserts and adds");
   }
   mrow->insertmode = addv;
   if ((mrow->assembled) && (!mrow->reassemble_begun)) {
@@ -276,19 +278,19 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
     mrow->reassemble_begun = 1;
   }
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) PSETERR(1,"Negative row index");
-    if (idxm[i] >= mrow->M) PSETERR(1,"Row index too large");
+    if (idxm[i] < 0) SETERRQ(1,"Negative row index");
+    if (idxm[i] >= mrow->M) SETERRQ(1,"Row index too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) PSETERR(1,"Negative column index");
-        if (idxn[j] >= mrow->N) PSETERR(1,"Column index too large");
+        if (idxn[j] < 0) SETERRQ(1,"Negative column index");
+        if (idxn[j] >= mrow->N) SETERRQ(1,"Column index too large");
         if (idxn[j] >= 0 && idxn[j] < mrow->N){
           col = idxn[j];
           ierr = MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,
                                              v+i*n+j,addv);PCHKERR(ierr);
         }
-        else {PSETERR(1,"Invalid column index.");}
+        else {SETERRQ(1,"Invalid column index.");}
       }
     } 
     else {
@@ -327,14 +329,14 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   MPI_Allreduce((void *) &mrow->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (ADDVALUES|INSERTVALUES)) {
-    PSETERR(1,"Some processors have inserted while others have added");
+    SETERRQ(1,"Some processors have inserted while others have added");
   }
   mrow->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) PMALLOC( 2*numtids*sizeof(int) ); PCHKPTR(nprocs);
-  MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
-  owner = (int *) PMALLOC( (mrow->stash.n+1)*sizeof(int) ); PCHKPTR(owner);
+  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); PCHKPTR(nprocs);
+  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  owner = (int *) PETSCMALLOC( (mrow->stash.n+1)*sizeof(int) ); PCHKPTR(owner);
   for ( i=0; i<mrow->stash.n; i++ ) {
     idx = mrow->stash.idx[i];
     for ( j=0; j<numtids; j++ ) {
@@ -346,7 +348,7 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PMALLOC( numtids*sizeof(int) ); PCHKPTR(work);
+  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); PCHKPTR(work);
   MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
   nreceives = work[mytid]; 
   MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
@@ -364,9 +366,9 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 
        This could be done better.
   */
-  rvalues = (Scalar *) PMALLOC(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));
+  rvalues = (Scalar *) PETSCMALLOC(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));
   PCHKPTR(rvalues);
-  recv_waits = (MPI_Request *) PMALLOC((nreceives+1)*sizeof(MPI_Request));
+  recv_waits = (MPI_Request *) PETSCMALLOC((nreceives+1)*sizeof(MPI_Request));
   PCHKPTR(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
     MPI_Irecv((void *)(rvalues+3*nmax*i),3*nmax,MPI_SCALAR,MPI_ANY_SOURCE,tag,
@@ -377,11 +379,11 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (Scalar *) PMALLOC( 3*(mrow->stash.n+1)*sizeof(Scalar) );
+  svalues = (Scalar *) PETSCMALLOC( 3*(mrow->stash.n+1)*sizeof(Scalar) );
   PCHKPTR(svalues);
-  send_waits = (MPI_Request *) PMALLOC( (nsends+1)*sizeof(MPI_Request));
+  send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
   PCHKPTR(send_waits);
-  starts = (int *) PMALLOC( numtids*sizeof(int) ); PCHKPTR(starts);
+  starts = (int *) PETSCMALLOC( numtids*sizeof(int) ); PCHKPTR(starts);
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<mrow->stash.n; i++ ) {
@@ -420,7 +422,7 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
   PetscObject  vobj = (PetscObject) viewer;
 
   if (!mrow->assembled)
-    PSETERR(1,"MatView_MPIRow: Must assemble matrix first.");
+    SETERRQ(1,"MatView_MPIRow: Must assemble matrix first.");
   if (!viewer) { /* so that viewers may be used from debuggers */
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
@@ -463,7 +465,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
       if (col >= 0 && col < mrow->N) {
         MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,&val,addv);
       } 
-      else {PSETERR(1,"Invalid column index.");}
+      else {SETERRQ(1,"Invalid column index.");}
     }
     count--;
   }
@@ -471,7 +473,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
  
   /* wait on sends */
   if (mrow->nsends) {
-    send_status = (MPI_Status *) PMALLOC( mrow->nsends*sizeof(MPI_Status) );
+    send_status = (MPI_Status *) PETSCMALLOC( mrow->nsends*sizeof(MPI_Status) );
     PCHKPTR(send_status);
     MPI_Waitall(mrow->nsends,mrow->send_waits,send_status);
     PFREE(send_status);
@@ -557,14 +559,14 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
   IS             istmp;
 
   if (!l->assembled) 
-    SETERR(1,"MatZeroRows_MPIRowbs: Must assemble matrix first");
-  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
-  ierr = ISGetIndices(is,&rows); CHKERR(ierr);
+    SETERRQ(1,"MatZeroRows_MPIRowbs: Must assemble matrix first");
+  ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
-  MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
-  owner = (int *) MALLOC((N+1)*sizeof(int)); CHKPTR(owner); /* see note*/
+  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
+  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
     found = 0;
@@ -573,23 +575,23 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERR(1,"Index out of range.");
+    if (!found) SETERRQ(1,"Index out of range.");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) {nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(work);
+  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
   MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
   nrecvs = work[mytid]; 
   MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
   nmax = work[mytid];
-  FREE(work);
+  PETSCFREE(work);
 
   /* post receives:   */
-  rvalues = (int *) MALLOC((nrecvs+1)*(nmax+1)*sizeof(int)); /*see note */
-  CHKPTR(rvalues);
-  recv_waits = (MPI_Request *) MALLOC((nrecvs+1)*sizeof(MPI_Request));
-  CHKPTR(recv_waits);
+  rvalues = (int *) PETSCMALLOC((nrecvs+1)*(nmax+1)*sizeof(int)); /*see note */
+  CHKPTRQ(rvalues);
+  recv_waits = (MPI_Request *) PETSCMALLOC((nrecvs+1)*sizeof(MPI_Request));
+  CHKPTRQ(recv_waits);
   for ( i=0; i<nrecvs; i++ ) {
     MPI_Irecv((void *)(rvalues+nmax*i),nmax,MPI_INT,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
@@ -599,10 +601,10 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (int *) MALLOC( (N+1)*sizeof(int) ); CHKPTR(svalues);
-  send_waits = (MPI_Request *) MALLOC( (nsends+1)*sizeof(MPI_Request));
-  CHKPTR(send_waits);
-  starts = (int *) MALLOC( (numtids+1)*sizeof(int) ); CHKPTR(starts);
+  svalues = (int *) PETSCMALLOC( (N+1)*sizeof(int) ); CHKPTRQ(svalues);
+  send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
+  CHKPTRQ(send_waits);
+  starts = (int *) PETSCMALLOC( (numtids+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<N; i++ ) {
@@ -619,12 +621,12 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
                 comm,send_waits+count++);
     }
   }
-  FREE(starts);
+  PETSCFREE(starts);
 
   base = owners[mytid];
 
   /*  wait on receives */
-  lens = (int *) MALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTR(lens);
+  lens = (int *) PETSCMALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTRQ(lens);
   source = lens + nrecvs;
   count = nrecvs; slen = 0;
   while (count) {
@@ -636,10 +638,10 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
     slen += n;
     count--;
   }
-  FREE(recv_waits); 
+  PETSCFREE(recv_waits); 
   
   /* move the data into the send scatter */
-  lrows = (int *) MALLOC( (slen+1)*sizeof(int) ); CHKPTR(lrows);
+  lrows = (int *) PETSCMALLOC( (slen+1)*sizeof(int) ); CHKPTRQ(lrows);
   count = 0;
   for ( i=0; i<nrecvs; i++ ) {
     values = rvalues + i*nmax;
@@ -647,23 +649,23 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
       lrows[count++] = values[j] - base;
     }
   }
-  FREE(rvalues); FREE(lens);
-  FREE(owner); FREE(nprocs);
+  PETSCFREE(rvalues); PETSCFREE(lens);
+  PETSCFREE(owner); PETSCFREE(nprocs);
     
   /* actually zap the local rows */
   ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
-  CHKERR(ierr);  FREE(lrows);
-  ierr = MatZeroRows_MPIRowbs_local(A,istmp,diag); CHKERR(ierr);
-  ierr = ISDestroy(istmp); CHKERR(ierr);
+  CHKERRQ(ierr);  PETSCFREE(lrows);
+  ierr = MatZeroRows_MPIRowbs_local(A,istmp,diag); CHKERRQ(ierr);
+  ierr = ISDestroy(istmp); CHKERRQ(ierr);
 
   /* wait on sends */
   if (nsends) {
-    send_status = (MPI_Status *) MALLOC( nsends*sizeof(MPI_Status) );
-    CHKPTR(send_status);
+    send_status = (MPI_Status *) PETSCMALLOC( nsends*sizeof(MPI_Status) );
+    CHKPTRQ(send_status);
     MPI_Waitall(nsends,send_waits,send_status);
-    FREE(send_status);
+    PETSCFREE(send_status);
   }
-  FREE(send_waits); FREE(svalues);
+  PETSCFREE(send_waits); PETSCFREE(svalues);
 
   return 0;
 }
@@ -676,7 +678,7 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   int          ierr;
 
   if (!bsif->assembled) 
-    PSETERR(1,"MatMult_MPIRowbs: Must assemble matrix first.");
+    SETERRQ(1,"MatMult_MPIRowbs: Must assemble matrix first.");
   ierr = VecGetArray(yy,&yya); PCHKERR(ierr);
   ierr = VecGetArray(xx,&xxa); PCHKERR(ierr);
 
@@ -728,35 +730,35 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,MatSORType flag,
   int ierr;
 
 /* None of the relaxation code is finished now! */
-  PSETERR(1,"Not done yet");
+  SETERRQ(1,"Not done yet");
 
   if (!bsif->assembled) 
-    PSETERR(1,"MatRelax_MPIRowbs: Must assemble matrix first");
+    SETERRQ(1,"MatRelax_MPIRowbs: Must assemble matrix first");
   VecGetArray(bb,&b);
   if (flag & SOR_ZERO_INITIAL_GUESS) {
       /* do nothing */ 
-  } else PSETERR(1,"Not done yet.");
-  if (shift) PSETERR(1,"shift != 0 : Not yet done.")
-  if (omega != 1.0) PSETERR(1,"omega != 1.0 : Not yet done.")
-  if (its != 1) PSETERR(1,"its != 1 : Not yet done.")
+  } else SETERRQ(1,"Not done yet.");
+  if (shift) SETERRQ(1,"shift != 0 : Not yet done.");
+  if (omega != 1.0) SETERRQ(1,"omega != 1.0 : Not yet done.");
+  if (its != 1) SETERRQ(1,"its != 1 : Not yet done.");
 
   if (flag == SOR_APPLY_UPPER) {
-    PSETERR(1,"Not done yet");
+    SETERRQ(1,"Not done yet");
   }
   if (flag == SOR_APPLY_LOWER) {
-    PSETERR(1,"Not done yet");
+    SETERRQ(1,"Not done yet");
   }
   if (flag & SOR_EISENSTAT) {
-    PSETERR(1,"Not done yet");
+    SETERRQ(1,"Not done yet");
   }
   if (flag & SOR_LOCAL_FORWARD_SWEEP) {
-    PSETERR(1,"Not done yet");
+    SETERRQ(1,"Not done yet");
   }
   if (flag & SOR_LOCAL_BACKWARD_SWEEP) {
-    PSETERR(1,"Not done yet");
+    SETERRQ(1,"Not done yet");
   }
   if (flag & SOR_LOCAL_SYMMETRIC_SWEEP) {
-    PSETERR(1,"Not done yet");
+    SETERRQ(1,"Not done yet");
   }
   if (flag & SOR_FORWARD_SWEEP) {
     MLOG_ELM(bsif->procinfo->procset);
@@ -807,10 +809,10 @@ static int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   Scalar       *x, zero = 0.0, *scale = mrow->pA->scale_diag;
 
   if (!mrow->assembled) 
-    PSETERR(1,"MatGetDiag_MPIRowbs: Must assemble matrix first.");
+    SETERRQ(1,"MatGetDiag_MPIRowbs: Must assemble matrix first.");
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
-  if (n != mrow->m) PSETERR(1,"Nonconforming matrix and vector.");
+  if (n != mrow->m) SETERRQ(1,"Nonconforming matrix and vector.");
   if (mrow->vecs_permscale) {
     for ( i=0; i<mrow->m; i++ ) {
       x[i] = rs[i]->nz[rs[i]->diag_ind];
@@ -883,7 +885,7 @@ static int MatSetOption_MPIRowbs(Mat mat,MatOption op)
   if      (op == NO_NEW_NONZERO_LOCATIONS)  mrow->nonew       = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) mrow->nonew       = 0;
 
-  else if (op == COLUMN_ORIENTED) PSETERR(1,"Column oriented not supported");
+  else if (op == COLUMN_ORIENTED) SETERRQ(1,"Column oriented not supported");
   return 0;
 }
 
@@ -915,9 +917,9 @@ static int MatGetRow_MPIRowbs(Mat matin,int row,int *nz,int **idx,Scalar **v)
   BSsprow      *rs;
    
   if (!mat->assembled) 
-    PSETERR(1,"MatGetRow_MPIRowbs: Must assemble matrix first.");
+    SETERRQ(1,"MatGetRow_MPIRowbs: Must assemble matrix first.");
   if (row < mat->rstart || row >= mat->rend) 
-    PSETERR(1,"MatGetRow_MPIRowbs: Currently you can get only local rows.");
+    SETERRQ(1,"MatGetRow_MPIRowbs: Currently you can get only local rows.");
 
   rs  = A->rows[row - mat->rstart];
   *nz = rs->length;
@@ -1000,7 +1002,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
   PLogObjectCreate(mat);
-  mat->data	= (void *) (mrow = PNEW(Mat_MPIRowbs)); PCHKPTR(mrow);
+  mat->data	= (void *) (mrow = PETSCNEW(Mat_MPIRowbs)); PCHKPTRQ(mrow);
   mat->ops	= &MatOps;
   mat->destroy	= MatDestroy_MPIRowbs;
   mat->view	= MatView_MPIRowbs;
@@ -1019,11 +1021,11 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->M    = M;
   mrow->m    = m;
   mrow->n    = mrow->N; /* each row stores all columns */
-  mrow->imax = (int *) PMALLOC( (mrow->m+1)*sizeof(int) ); PCHKPTR(mrow->imax);
+  mrow->imax = (int *) PETSCMALLOC( (mrow->m+1)*sizeof(int) ); PCHKPTRQ(mrow->imax);
 
   /* build local table of row ownerships */
-  mrow->rowners = (int *) PMALLOC((mrow->numtids+2)*sizeof(int)); 
-  PCHKPTR(mrow->rowners);
+  mrow->rowners = (int *) PETSCMALLOC((mrow->numtids+2)*sizeof(int)); 
+  PCHKPTRQ(mrow->rowners);
   MPI_Allgather(&m,1,MPI_INT,mrow->rowners+1,1,MPI_INT,comm);
   mrow->rowners[0] = 0;
   for ( i=2; i<=mrow->numtids; i++ ) {
@@ -1048,7 +1050,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                             &(mrow->diag)); PCHKERR(ierr);}
   if (!mrow->xwork) {ierr = VecDuplicate(mrow->diag,&(mrow->xwork)); 
                             PCHKERR(ierr);}
-  mrow->inv_diag = (Scalar *) PMALLOC( (mrow->m+1)*sizeof(Scalar) );
+  mrow->inv_diag = (Scalar *) PETSCMALLOC( (mrow->m+1)*sizeof(Scalar) );
   PCHKPTR(mrow->inv_diag);
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
   mrow->procinfo = bspinfo;
@@ -1074,15 +1076,15 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   ierr = MatGetOwnershipRange(mat,&low,&high); PCHKERR(ierr);
   offset = &low;
 
-  if (!mrow->bsmap) {mrow->bsmap = (void *) PNEW(BSmapping); 
+  if (!mrow->bsmap) {mrow->bsmap = (void *) PETSCNEW(BSmapping); 
                      PCHKPTR(mrow->bsmap);}
   bsmap = mrow->bsmap;
-  bsmap->vlocal2global	= (int *) PMALLOC(sizeof(int)); 
+  bsmap->vlocal2global	= (int *) PETSCMALLOC(sizeof(int)); 
 	PCHKPTR(bsmap->vlocal2global);
 	*((int *)bsmap->vlocal2global) = (*offset);
   bsmap->flocal2global	= BSloc2glob;
   bsmap->free_l2g	= 0;
-  bsmap->vglobal2local	= (int *) PMALLOC(sizeof(int)); 
+  bsmap->vglobal2local	= (int *) PETSCMALLOC(sizeof(int)); 
 	PCHKPTR(bsmap->vglobal2local);
 	*((int *)bsmap->vglobal2local) = (*offset);
   bsmap->fglobal2local	= BSglob2loc;
@@ -1169,7 +1171,7 @@ int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   if (mat->type != MATMPIROW_BS) 
-    PSETERR(1,"Valid only for MATMPIROW_BS matrix type.");
+    SETERRQ(1,"Valid only for MATMPIROW_BS matrix type.");
   procinfo = mrow->procinfo;
   return 0;
 }
@@ -1179,7 +1181,7 @@ int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 #include "mat.h"
 int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                        void *bspinfo,Mat *newmat)
-{SETERR(1,"This matrix format requires BlockSolve.");}
+{SETERRQ(1,"This matrix format requires BlockSolve.");}
 #endif
 
 

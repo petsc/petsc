@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.9 1995/04/15 03:28:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.10 1995/05/27 20:23:15 bsmith Exp bsmith $";
 #endif
 
 
@@ -21,8 +21,8 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
-  indices = (int *) MALLOC( N*sizeof(int) ); CHKPTR(indices);
-  MEMSET(indices,0,N*sizeof(int));
+  indices = (int *) PETSCMALLOC( N*sizeof(int) ); CHKPTRQ(indices);
+  PETSCMEMSET(indices,0,N*sizeof(int));
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
      if (!indices[aj[B->i[i] - 1 + j]-1]) ec++; 
@@ -30,7 +30,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int *) MALLOC( (ec+1)*sizeof(int) ); CHKPTR(garray);
+  garray = (int *) PETSCMALLOC( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
   ec = 0;
   for ( i=0; i<N; i++ ) {
     if (indices[i]) garray[ec++] = i;
@@ -48,28 +48,28 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   B->n = ec;
-  FREE(indices);
+  PETSCFREE(indices);
   
   /* create local vector that is used to scatter into */
-  ierr = VecCreateSequential(MPI_COMM_SELF,ec,&aij->lvec); CHKERR(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,ec,&aij->lvec); CHKERRQ(ierr);
 
   /* create two temporary Index sets for build scatter gather */
-  ierr = ISCreateSequential(MPI_COMM_SELF,ec,garray,&from); CHKERR(ierr);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,ec,0,1,&to); CHKERR(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,ec,garray,&from); CHKERRQ(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,ec,0,1,&to); CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,aij->n,aij->N,&gvec); CHKERR(ierr);
+  ierr = VecCreateMPI(mat->comm,aij->n,aij->N,&gvec); CHKERRQ(ierr);
 
   /* gnerate the scatter context */
-  ierr = VecScatterCtxCreate(gvec,from,aij->lvec,to,&aij->Mvctx); CHKERR(ierr);
+  ierr = VecScatterCtxCreate(gvec,from,aij->lvec,to,&aij->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,aij->Mvctx);
   PLogObjectParent(mat,aij->lvec);
   aij->garray = garray;
-  ierr = ISDestroy(from); CHKERR(ierr);
-  ierr = ISDestroy(to); CHKERR(ierr);
+  ierr = ISDestroy(from); CHKERRQ(ierr);
+  ierr = ISDestroy(to); CHKERRQ(ierr);
   ierr = VecDestroy(gvec);
   return 0;
 }

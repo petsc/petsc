@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.8 1995/05/09 23:59:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.9 1995/05/12 21:16:35 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -36,11 +36,11 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
   VALIDHEADER(mat,MAT_COOKIE);
-  if (mat != *factp) SETERR(1,"factored matrix must be same context as mat.");
+  if (mat != *factp) SETERRQ(1,"factored matrix must be same context as mat.");
 
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mat->factor == FACTOR_CHOLESKY) {
-    if (!mbs->nonew) SETERR(1,
+    if (!mbs->nonew) SETERRQ(1,
       "Must call MatSetOption(mat,NO_NEW_NONZERO_LOCATIONS) for re-solve.");
     /* Copy only the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
@@ -69,12 +69,12 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   /* Permute and apply diagonal scaling to vector, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
-    ierr = VecGetArray(x,&xa); CHKERR(ierr);
-    ierr = VecGetArray(mbs->xwork,&xworka); CHKERR(ierr);
+    ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
-    ierr = VecPMult( mbs->diag, mbs->xwork, y ); CHKERR(ierr);
+    ierr = VecPMult( mbs->diag, mbs->xwork, y ); CHKERRQ(ierr);
   } else {
-    ierr = VecCopy( x, y ); CHKERR(ierr);
+    ierr = VecCopy( x, y ); CHKERRQ(ierr);
   }
   VecGetArray(y,&ya);  
 
@@ -103,7 +103,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
-    ierr = VecPMult( y, mbs->diag, mbs->xwork );  CHKERR(ierr);
+    ierr = VecPMult( y, mbs->diag, mbs->xwork );  CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.19 1995/05/16 00:39:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.20 1995/05/18 22:45:14 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -22,17 +22,17 @@ int MGMCycle(MG *mglevels)
   Scalar zero = 0.0;
 
   if (mg->level == 0) {
-    ierr = SLESSolve(mg->csles,mg->b,mg->x,&its); CHKERR(ierr);
+    ierr = SLESSolve(mg->csles,mg->b,mg->x,&its); CHKERRQ(ierr);
   }
   else {
     while (cycles--) {
-      ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its); CHKERR(ierr);
-      ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r ); CHKERR(ierr);
-      ierr = MatMult(mg->restrict,  mg->r, mgc->b ); CHKERR(ierr);
-      ierr = VecSet(&zero,mgc->x); CHKERR(ierr);
-      ierr = MGMCycle(mglevels + 1); CHKERR(ierr); 
-      ierr = MatMultTransAdd(mg->interpolate,mgc->x,mg->x,mg->x); CHKERR(ierr);
-      ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERR(ierr); 
+      ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its); CHKERRQ(ierr);
+      ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r ); CHKERRQ(ierr);
+      ierr = MatMult(mg->restrict,  mg->r, mgc->b ); CHKERRQ(ierr);
+      ierr = VecSet(&zero,mgc->x); CHKERRQ(ierr);
+      ierr = MGMCycle(mglevels + 1); CHKERRQ(ierr); 
+      ierr = MatMultTransAdd(mg->interpolate,mgc->x,mg->x,mg->x); CHKERRQ(ierr);
+      ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
     }
   }
   return 0;
@@ -58,18 +58,18 @@ static int MGCreate(MPI_Comm comm,int levels,MG **result)
   MG  *mg;
   int i,ierr;
 
-  mg = (MG *) MALLOC( levels*sizeof(MG) ); CHKPTR(mg);
+  mg = (MG *) PETSCMALLOC( levels*sizeof(MG) ); CHKPTRQ(mg);
   
   for ( i=0; i<levels; i++ ) {
-    mg[i]         = (MG) MALLOC( sizeof(struct _MG) ); CHKPTR(mg[i]);
-    MEMSET(mg[i],0,sizeof(MG));
+    mg[i]         = (MG) PETSCMALLOC( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
+    PETSCMEMSET(mg[i],0,sizeof(MG));
     mg[i]->level  = levels - i - 1;
     mg[i]->cycles = 1;
     if ( i==levels-1) {
-      ierr = SLESCreate(comm,&mg[i]->csles); CHKERR(ierr);
+      ierr = SLESCreate(comm,&mg[i]->csles); CHKERRQ(ierr);
     }
     else {
-      ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERR(ierr);
+      ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERRQ(ierr);
       mg[i]->smoothu = mg[i]->smoothd;
     }
   }
@@ -98,9 +98,9 @@ static int MGDestroy(PetscObject obj)
       if (mg[i]->smoothd != mg[i]->smoothu) SLESDestroy(mg[i]->smoothd);
       SLESDestroy(mg[i]->smoothu);
     }
-     FREE(mg[i]);
+     PETSCFREE(mg[i]);
   }
-  FREE(mg);
+  PETSCFREE(mg);
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
@@ -279,7 +279,7 @@ static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
   MG  *mg = (MG*) pc->data;
   mg[0]->b = b; mg[0]->x = x;
   while (its--) {
-    ierr = MGMCycle(mg); CHKERR(ierr);
+    ierr = MGMCycle(mg); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -291,7 +291,7 @@ static int PCSetFromOptions_MG(PC pc)
 
   if (pc->type != PCMG) return 0;
   if (!pc->data) {
-    SETERR(1,"For multigrid PCSetFromOptions() must be after MGSetLevels");
+    SETERRQ(1,"For multigrid PCSetFromOptions() must be after MGSetLevels");
   }
   if (OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m)) {
     MGSetCycles(pc,m);
@@ -308,7 +308,7 @@ static int PCSetFromOptions_MG(PC pc)
     else if (!strcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;
     else if (!strcmp(buff,"full")) mg = MGFULL;
     else if (!strcmp(buff,"kaskade")) mg = MGKASKADE;
-    else SETERR(1,"Unknown MG method");
+    else SETERRQ(1,"Unknown MG method");
     MGSetMethod(pc,mg);
   }
   return 0;
@@ -355,7 +355,7 @@ int MGSetLevels(PC pc,int levels)
   int ierr;
   MG  *mg;
   if (pc->type != PCMG) return 0;
-  ierr          = MGCreate(pc->comm,levels,&mg); CHKERR(ierr);
+  ierr          = MGCreate(pc->comm,levels,&mg); CHKERRQ(ierr);
   mg[0]->am     = MGMULTIPLICATIVE;
   pc->data      = (void *) mg;
   pc->applyrich = MGCycleRichardson;

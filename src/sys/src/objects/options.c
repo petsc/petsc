@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.11 1995/05/29 03:46:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.12 1995/06/03 04:24:19 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -76,12 +76,12 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
 
   MPI_Initialized(&flag);
   if (!flag) {
-    ierr = MPI_Init(argc,args); CHKERR(ierr);
+    ierr = MPI_Init(argc,args); CHKERRQ(ierr);
     PetscBeganMPI = 1;
   }
-  ierr = ViewerInitialize_Private(); CHKERR(ierr);
-  ierr = OptionsCreate_Private(argc,args,file,env); CHKERR(ierr);
-  ierr = OptionsCheckInitial_Private(); CHKERR(ierr);
+  ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
+  ierr = OptionsCreate_Private(argc,args,file,env); CHKERRQ(ierr);
+  ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
   return 0;
 }
 
@@ -150,7 +150,7 @@ int PetscFinalize()
     OptionsDestroy_Private();
     NRDestroyAll();
     MPIU_Seq_begin(MPI_COMM_WORLD,1);
-      ierr = Trdump(stderr); CHKERR(ierr);
+      ierr = Trdump(stderr); CHKERRQ(ierr);
     MPIU_Seq_end(MPI_COMM_WORLD,1);
   }
   else {
@@ -158,7 +158,7 @@ int PetscFinalize()
     NRDestroyAll(); 
   }
   if (PetscBeganMPI) {
-      ierr = MPI_Finalize(); CHKERR(ierr);
+      ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -235,7 +235,7 @@ static int OptionsCheckInitial_Private()
       display = string;
     }
     if (!display) {
-      display = (char *) malloc( 128*sizeof(char)); CHKPTR(display);
+      display = (char *) malloc( 128*sizeof(char)); CHKPTRQ(display);
       MPIU_Set_display(comm,display,128); sfree = 1;
     } 
     PetscSetDebugger(debugger,xterm,display);
@@ -270,7 +270,7 @@ static int OptionsCheckInitial_Private()
       display = string;
     }
     if (!display) {
-      display = (char *) malloc( 128*sizeof(char) ); CHKPTR(display);
+      display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
       MPIU_Set_display(comm,display,128);
       sfree = 1;
     } 
@@ -353,8 +353,8 @@ static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
   int  ierr;
   char pfile[128];
   if (!options) {
-    options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTR(options);
-    MEMSET(options->used,0,MAXOPTIONS*sizeof(int));
+    options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
+    PETSCMEMSET(options->used,0,MAXOPTIONS*sizeof(int));
   }
   if (!env) env = "PETSC_OPTIONS";
   if (!file) {
@@ -384,9 +384,9 @@ static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
         }
         else if (first && !strcmp(first,"alias")) {
           third = strtok(0," ");
-          if (!third) SETERR(1,"Error in options file after alias");
+          if (!third) SETERRQ(1,"Error in options file after alias");
           len = strlen(third); third[len-1] = 0;
-          ierr = OptionsSetAlias_Private(second,third); CHKERR(ierr);
+          ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
         }
       }
       fclose(fd);
@@ -527,7 +527,7 @@ int OptionsSetValue(char *name,char *value)
       len = strlen(value);
       if (len) {
         options->values[i] = (char *) malloc( len ); 
-        CHKPTR(options->values[i]);
+        CHKPTRQ(options->values[i]);
         strcpy(options->values[i],value);
       }
       else { options->values[i] = 0;}
@@ -551,11 +551,11 @@ int OptionsSetValue(char *name,char *value)
   }
   /* insert new name and value */
   len = (strlen(name)+1)*sizeof(char);
-  names[n] = (char *) malloc( len ); CHKPTR(names[n]);
+  names[n] = (char *) malloc( len ); CHKPTRQ(names[n]);
   strcpy(names[n],name);
   if (value) {
     len = (strlen(value)+1)*sizeof(char);
-    options->values[n] = (char *) malloc( len ); CHKPTR(options->values[n]);
+    options->values[n] = (char *) malloc( len ); CHKPTRQ(options->values[n]);
     strcpy(options->values[n],value);
   }
   else {options->values[n] = 0;}
@@ -568,13 +568,13 @@ static int OptionsSetAlias_Private(char *newname,char *oldname)
   int len,n = options->Naliases;
 
   if (n >= MAXALIASES) {
-    SETERR(1,"You have to many option aliases defined");
+    SETERRQ(1,"You have to many option aliases defined");
   }
   len = (strlen(newname)+1)*sizeof(char);
-  options->aliases1[n] = (char *) malloc( len ); CHKPTR(options->aliases1[n]);
+  options->aliases1[n] = (char *) malloc( len ); CHKPTRQ(options->aliases1[n]);
   strcpy(options->aliases1[n],newname);
   len = (strlen(oldname)+1)*sizeof(char);
-  options->aliases2[n] = (char *) malloc( len );CHKPTR(options->aliases2[n]);
+  options->aliases2[n] = (char *) malloc( len );CHKPTRQ(options->aliases2[n]);
   strcpy(options->aliases2[n],oldname);
   options->Naliases++;
   return 0;
@@ -646,7 +646,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (!value) SETERR(1,"Missing value for option");
+  if (!value) SETERRQ(1,"Missing value for option");
   *ivalue = atoi(value);
   return 1; 
 } 
@@ -767,7 +767,7 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (!value) SETERR(1,"Missing value for option");
+  if (!value) SETERRQ(1,"Missing value for option");
   *dvalue = atof(value);
   return 1; 
 } 
@@ -795,7 +795,7 @@ int OptionsGetString(char *pre,char *name,char *string,int len)
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
   if (value) strncpy(string,value,len);
-  else MEMSET(string,0,len);
+  else PETSCMEMSET(string,0,len);
   return 1; 
 }
 

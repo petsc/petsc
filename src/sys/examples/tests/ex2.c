@@ -9,7 +9,7 @@ int CreateError(int n)
   int    ierr;
   double *x = 0;
   if (!n) x[0] = 100.; 
-  ierr = CreateError(n-1); CHKERR(ierr);
+  ierr = CreateError(n-1); CHKERRQ(ierr);
   return 0;
 }
 

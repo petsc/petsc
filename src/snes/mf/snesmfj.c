@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.7 1995/05/14 16:35:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.8 1995/05/16 00:37:02 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -25,8 +25,8 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   Vec           w = ctx->w,U,F;
   int           ierr;
 
-  ierr = SNESGetSolution(snes,&U); CHKERR(ierr);
-  ierr = SNESGetFunction(snes,&F); CHKERR(ierr);
+  ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
   /* determine a "good" step size */
   VecDot(U,dx,&dot); VecASum(dx,&sum); VecNorm(dx,&norm);
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}
@@ -36,7 +36,7 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   
   /* evaluate function at F(x + dx) */
   VecWAXPY(&h,dx,U,w); 
-  ierr = SNESComputeFunction(snes,w,y); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,w,y); CHKERRQ(ierr);
   VecAXPY(&mone,F,y);
   h = -1.0/h;
   VecScale(&h,y);
@@ -74,11 +74,11 @@ int SNESDefaultMatrixFreeComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,
     MPI_Comm    comm;
     MFCtx_Private *mfctx;
     /* first time in, therefore build datastructures */
-    mfctx = NEW(MFCtx_Private); CHKPTR(mfctx);
+    mfctx = (MFCtx_Private *) PETSCMALLOC(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
     mfctx->snes = snes;
-    ierr = VecDuplicate(x1,&mfctx->w); CHKERR(ierr);
+    ierr = VecDuplicate(x1,&mfctx->w); CHKERRQ(ierr);
     PetscObjectGetComm((PetscObject)x1,&comm);
-    ierr = MatShellCreate(comm,n,n,(void*)mfctx,J); CHKERR(ierr);
+    ierr = MatShellCreate(comm,n,n,(void*)mfctx,J); CHKERRQ(ierr);
     MatShellSetMult(*J,SNESMatrixFreeMult_Private);
     *B = *J;
   }

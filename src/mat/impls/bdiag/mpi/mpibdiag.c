@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.8 1995/05/28 16:08:28 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.9 1995/05/31 23:51:25 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -13,24 +13,24 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
   int        ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
   if (mbd->insertmode != NOTSETVALUES && mbd->insertmode != addv) {
-    SETERR(1,"You cannot mix inserts and adds");
+    SETERRQ(1,"You cannot mix inserts and adds");
   }
   mbd->insertmode = addv;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERR(1,"Negative row index");
-    if (idxm[i] >= mbd->M) SETERR(1,"Row index too large");
+    if (idxm[i] < 0) SETERRQ(1,"Negative row index");
+    if (idxm[i] >= mbd->M) SETERRQ(1,"Row index too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERR(1,"Negative column index");
-        if (idxn[j] >= mbd->N) SETERR(1,"Column index too large");
+        if (idxn[j] < 0) SETERRQ(1,"Negative column index");
+        if (idxn[j] >= mbd->N) SETERRQ(1,"Column index too large");
         ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv);
-        CHKERR(ierr);
+        CHKERRQ(ierr);
       }
     } 
     else {
       ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n,addv);
-      CHKERR(ierr);
+      CHKERRQ(ierr);
     }
   }
   return 0;
@@ -52,14 +52,14 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   MPI_Allreduce((void *) &mbd->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (ADDVALUES|INSERTVALUES)) {
-    SETERR(1,"Some processors have inserted while others have added");
+    SETERRQ(1,"Some processors have inserted while others have added");
   }
   mbd->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
-  MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
-  owner = (int *) MALLOC( (mbd->stash.n+1)*sizeof(int) ); CHKPTR(owner);
+  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
+  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  owner = (int *) PETSCMALLOC( (mbd->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<mbd->stash.n; i++ ) {
     idx = mbd->stash.idx[i];
     for ( j=0; j<numtids; j++ ) {
@@ -71,12 +71,12 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(work);
+  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
   MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
   nreceives = work[mytid]; 
   MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
   nmax = work[mytid];
-  FREE(work);
+  PETSCFREE(work);
 
   /* post receives: 
        1) each message will consist of ordered pairs 
@@ -88,10 +88,10 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 
        This could be done better.
   */
-  rvalues = (Scalar *) MALLOC(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));
-  CHKPTR(rvalues);
-  recv_waits = (MPI_Request *) MALLOC((nreceives+1)*sizeof(MPI_Request));
-  CHKPTR(recv_waits);
+  rvalues = (Scalar *) PETSCMALLOC(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));
+  CHKPTRQ(rvalues);
+  recv_waits = (MPI_Request *) PETSCMALLOC((nreceives+1)*sizeof(MPI_Request));
+  CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
     MPI_Irecv((void *)(rvalues+3*nmax*i),3*nmax,MPI_SCALAR,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
@@ -101,11 +101,11 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (Scalar *) MALLOC( 3*(mbd->stash.n+1)*sizeof(Scalar) );
-  CHKPTR(svalues);
-  send_waits = (MPI_Request *) MALLOC( (nsends+1)*sizeof(MPI_Request));
-  CHKPTR(send_waits);
-  starts = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(starts);
+  svalues = (Scalar *) PETSCMALLOC( 3*(mbd->stash.n+1)*sizeof(Scalar) );
+  CHKPTRQ(svalues);
+  send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
+  CHKPTRQ(send_waits);
+  starts = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<mbd->stash.n; i++ ) {
@@ -113,7 +113,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
     svalues[3*starts[owner[i]]+1]     = (Scalar)  mbd->stash.idy[i];
     svalues[3*(starts[owner[i]]++)+2] =  mbd->stash.array[i];
   }
-  FREE(owner);
+  PETSCFREE(owner);
   starts[0] = 0;
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
@@ -123,10 +123,10 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
                 comm,send_waits+count++);
     }
   }
-  FREE(starts); FREE(nprocs);
+  PETSCFREE(starts); PETSCFREE(nprocs);
 
   /* Free cache space */
-  ierr = StashDestroy_Private(&mbd->stash); CHKERR(ierr);
+  ierr = StashDestroy_Private(&mbd->stash); CHKERRQ(ierr);
 
   mbd->svalues    = svalues;    mbd->rvalues = rvalues;
   mbd->nsends     = nsends;     mbd->nrecvs = nreceives;
@@ -162,27 +162,27 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
       if (col >= 0 && col < mbd->N) {
         MatSetValues(mbd->A,1,&row,1,&col,&val,addv);
       } 
-      else {SETERR(1,"Invalid column index.");}
+      else {SETERRQ(1,"Invalid column index.");}
     }
     count--;
   }
-  FREE(mbd->recv_waits); FREE(mbd->rvalues);
+  PETSCFREE(mbd->recv_waits); PETSCFREE(mbd->rvalues);
  
   /* wait on sends */
   if (mbd->nsends) {
-    send_status = (MPI_Status *) MALLOC( mbd->nsends*sizeof(MPI_Status) );
-    CHKPTR(send_status);
+    send_status = (MPI_Status *) PETSCMALLOC( mbd->nsends*sizeof(MPI_Status) );
+    CHKPTRQ(send_status);
     MPI_Waitall(mbd->nsends,mbd->send_waits,send_status);
-    FREE(send_status);
+    PETSCFREE(send_status);
   }
-  FREE(mbd->send_waits); FREE(mbd->svalues);
+  PETSCFREE(mbd->send_waits); PETSCFREE(mbd->svalues);
 
   mbd->insertmode = NOTSETVALUES;
-  ierr = MatAssemblyBegin(mbd->A,mode); CHKERR(ierr);
-  ierr = MatAssemblyEnd(mbd->A,mode); CHKERR(ierr);
+  ierr = MatAssemblyBegin(mbd->A,mode); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mbd->A,mode); CHKERRQ(ierr);
 
   if (!mbd->assembled && mode == FINAL_ASSEMBLY) {
-    ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERR(ierr);
+    ierr = MatSetUpMultiply_MPIBDiag(mat); CHKERRQ(ierr);
   }
   mbd->assembled = 1;
   return 0;
@@ -219,14 +219,14 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   IS             istmp;
 
   if (!l->assembled) 
-    SETERR(1,"MatZeroRows_MPIRowbs: Must assemble matrix first");
-  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
-  ierr = ISGetIndices(is,&rows); CHKERR(ierr);
+    SETERRQ(1,"MatZeroRows_MPIRowbs: Must assemble matrix first");
+  ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
-  MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
-  owner = (int *) MALLOC((N+1)*sizeof(int)); CHKPTR(owner); /* see note*/
+  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
+  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  owner = (int *) PETSCMALLOC((N+1)*sizeof(int)); CHKPTRQ(owner); /* see note*/
   for ( i=0; i<N; i++ ) {
     idx = rows[i];
     found = 0;
@@ -235,23 +235,23 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERR(1,"Index out of range.");
+    if (!found) SETERRQ(1,"Index out of range.");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) {nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(work);
+  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
   MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
   nrecvs = work[mytid]; 
   MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
   nmax = work[mytid];
-  FREE(work);
+  PETSCFREE(work);
 
   /* post receives:   */
-  rvalues = (int *) MALLOC((nrecvs+1)*(nmax+1)*sizeof(int)); /*see note */
-  CHKPTR(rvalues);
-  recv_waits = (MPI_Request *) MALLOC((nrecvs+1)*sizeof(MPI_Request));
-  CHKPTR(recv_waits);
+  rvalues = (int *) PETSCMALLOC((nrecvs+1)*(nmax+1)*sizeof(int)); /*see note */
+  CHKPTRQ(rvalues);
+  recv_waits = (MPI_Request *) PETSCMALLOC((nrecvs+1)*sizeof(MPI_Request));
+  CHKPTRQ(recv_waits);
   for ( i=0; i<nrecvs; i++ ) {
     MPI_Irecv((void *)(rvalues+nmax*i),nmax,MPI_INT,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
@@ -261,10 +261,10 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (int *) MALLOC( (N+1)*sizeof(int) ); CHKPTR(svalues);
-  send_waits = (MPI_Request *) MALLOC( (nsends+1)*sizeof(MPI_Request));
-  CHKPTR(send_waits);
-  starts = (int *) MALLOC( (numtids+1)*sizeof(int) ); CHKPTR(starts);
+  svalues = (int *) PETSCMALLOC( (N+1)*sizeof(int) ); CHKPTRQ(svalues);
+  send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
+  CHKPTRQ(send_waits);
+  starts = (int *) PETSCMALLOC( (numtids+1)*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<N; i++ ) {
@@ -281,12 +281,12 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
                 comm,send_waits+count++);
     }
   }
-  FREE(starts);
+  PETSCFREE(starts);
 
   base = owners[mytid];
 
   /*  wait on receives */
-  lens = (int *) MALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTR(lens);
+  lens = (int *) PETSCMALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTRQ(lens);
   source = lens + nrecvs;
   count = nrecvs; slen = 0;
   while (count) {
@@ -298,10 +298,10 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
     slen += n;
     count--;
   }
-  FREE(recv_waits); 
+  PETSCFREE(recv_waits); 
   
   /* move the data into the send scatter */
-  lrows = (int *) MALLOC( (slen+1)*sizeof(int) ); CHKPTR(lrows);
+  lrows = (int *) PETSCMALLOC( (slen+1)*sizeof(int) ); CHKPTRQ(lrows);
   count = 0;
   for ( i=0; i<nrecvs; i++ ) {
     values = rvalues + i*nmax;
@@ -309,23 +309,23 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
       lrows[count++] = values[j] - base;
     }
   }
-  FREE(rvalues); FREE(lens);
-  FREE(owner); FREE(nprocs);
+  PETSCFREE(rvalues); PETSCFREE(lens);
+  PETSCFREE(owner); PETSCFREE(nprocs);
     
   /* actually zap the local rows */
   ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
-  CHKERR(ierr);  FREE(lrows);
-  ierr = MatZeroRows(l->A,istmp,diag); CHKERR(ierr);
-  ierr = ISDestroy(istmp); CHKERR(ierr);
+  CHKERRQ(ierr);  PETSCFREE(lrows);
+  ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
+  ierr = ISDestroy(istmp); CHKERRQ(ierr);
 
   /* wait on sends */
   if (nsends) {
-    send_status = (MPI_Status *) MALLOC( nsends*sizeof(MPI_Status) );
-    CHKPTR(send_status);
+    send_status = (MPI_Status *) PETSCMALLOC( nsends*sizeof(MPI_Status) );
+    CHKPTRQ(send_status);
     MPI_Waitall(nsends,send_waits,send_status);
-    FREE(send_status);
+    PETSCFREE(send_status);
   }
-  FREE(send_waits); FREE(svalues);
+  PETSCFREE(send_waits); PETSCFREE(svalues);
 
   return 0;
 }
@@ -334,12 +334,12 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int        ierr;
-  if (!mbd->assembled) SETERR(1,"MatMult_MPIBDiag: Must assemble matrix first.");
+  if (!mbd->assembled) SETERRQ(1,"MatMult_MPIBDiag: Must assemble matrix first.");
   ierr = VecScatterBegin(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
-  CHKERR(ierr);
+  CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
-  CHKERR(ierr);
-  ierr = MatMult(mbd->A,mbd->lvec,yy); CHKERR(ierr);
+  CHKERRQ(ierr);
+  ierr = MatMult(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
   return 0;
 }
 
@@ -348,12 +348,12 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int        ierr;
   if (!mbd->assembled) 
-    SETERR(1,"MatMultAdd_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatMultAdd_MPIBDiag: Must assemble matrix first.");
   ierr = VecScatterBegin(xx,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
-  CHKERR(ierr);
+  CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
-  CHKERR(ierr);
-  ierr = MatMultAdd(mbd->A,mbd->lvec,yy,zz); CHKERR(ierr);
+  CHKERRQ(ierr);
+  ierr = MatMultAdd(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
 }
 
@@ -364,7 +364,7 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
   int          ierr, isend[3], irecv[3];
 
   ierr = MatGetInfo(mat->A,MAT_LOCAL,&isend[0],&isend[1],&isend[2]); 
-  CHKERR(ierr);
+  CHKERRQ(ierr);
   if (flag == MAT_LOCAL) {
     *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
   } else if (flag == MAT_GLOBAL_MAX) {
@@ -381,7 +381,7 @@ static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
   if (!A->assembled) 
-    SETERR(1,"MatGetDiag_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatGetDiag_MPIBDiag: Must assemble matrix first.");
   return MatGetDiagonal(A->A,v);
 }
 
@@ -393,12 +393,12 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",mbd->M,mbd->N);
 #endif
-  FREE(mbd->rowners); 
-  FREE(mbd->gdiag); 
-  ierr = MatDestroy(mbd->A); CHKERR(ierr);
+  PETSCFREE(mbd->rowners); 
+  PETSCFREE(mbd->gdiag); 
+  ierr = MatDestroy(mbd->A); CHKERRQ(ierr);
   if (mbd->lvec) VecDestroy(mbd->lvec);
   if (mbd->Mvctx) VecScatterCtxDestroy(mbd->Mvctx);
-  FREE(mbd); 
+  PETSCFREE(mbd); 
   PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
   return 0;
@@ -414,7 +414,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
   PetscObject  vobj = (PetscObject) viewer;
 
   if (!mbd->assembled)
-    SETERR(1,"MatView_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatView_MPIBDiag: Must assemble matrix first.");
   if (!viewer) { /* so that viewers may be used from debuggers */
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
@@ -424,7 +424,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d\n",
              mbd->mytid,mbd->m,mbd->rstart,mbd->rend,mbd->n);
-    ierr = MatView(mbd->A,viewer); CHKERR(ierr);
+    ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
     fflush(fd);
     MPIU_Seq_end(mat->comm,1);
   }
@@ -432,7 +432,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
             vobj->cookie == DRAW_COOKIE) {
     int numtids = mbd->numtids, mytid = mbd->mytid; 
     if (numtids == 1) { 
-      ierr = MatView(mbd->A,viewer); CHKERR(ierr);
+      ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
     }
     else {
       /* assemble the entire matrix onto first processor. */
@@ -450,24 +450,24 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
       else {
         ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,0,0,&A);
       }
-      CHKERR(ierr);
+      CHKERRQ(ierr);
 
       /* Copy the matrix ... This isn't the most efficient means,
          but it's quick for now */
       row = mbd->rstart; m = Ambd->m;
       for ( i=0; i<m; i++ ) {
-        ierr = MatGetRow(mat,row,&nz,&cols,&vals); CHKERR(ierr);
-        ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERTVALUES); CHKERR(ierr);
-        ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); CHKERR(ierr);
+        ierr = MatGetRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
+        ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERTVALUES); CHKERRQ(ierr);
+        ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
         row++;
       } 
 
-      ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERR(ierr);
-      ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERR(ierr);
+      ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
       if (!mytid) {
-        ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,viewer); CHKERR(ierr);
+        ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,viewer); CHKERRQ(ierr);
       }
-      ierr = MatDestroy(A); CHKERR(ierr);
+      ierr = MatDestroy(A); CHKERRQ(ierr);
     }
   }
   return 0;
@@ -479,7 +479,7 @@ static int MatSetOption_MPIBDiag(Mat mat,MatOption op)
 
   if      (op == NO_NEW_NONZERO_LOCATIONS)  MatSetOption(mbd->A,op);
   else if (op == YES_NEW_NONZERO_LOCATIONS) MatSetOption(mbd->A,op);
-  else if (op == COLUMN_ORIENTED) SETERR(1,"Column-oriented not supported");
+  else if (op == COLUMN_ORIENTED) SETERRQ(1,"Column-oriented not supported");
   return 0;
 }
 
@@ -509,9 +509,9 @@ static int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   int          lrow;
   if (!mat->assembled) 
-    SETERR(1,"MatGetRow_MPIBDiag: Must assemble matrix first.");
+    SETERRQ(1,"MatGetRow_MPIBDiag: Must assemble matrix first.");
   if (row < mat->rstart || row >= mat->rend) 
-    SETERR(1,"MatGetRow_MPIBDiag: Currently you can get only local rows.")
+    SETERRQ(1,"MatGetRow_MPIBDiag: Currently you can get only local rows.")
   lrow = row - mat->rstart;
   return MatGetRow(mat->A,lrow,nz,idx,v);
 }
@@ -594,10 +594,10 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   int          ierr, i, k, *ldiag;
 
   *newmat       = 0;
-  if ((N%nb)) SETERR(1,"Invalid block size.  Bad column number.");
+  if ((N%nb)) SETERRQ(1,"Invalid block size.  Bad column number.");
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
   PLogObjectCreate(mat);
-  mat->data	= (void *) (mbd = NEW(Mat_MPIBDiag)); CHKPTR(mbd);
+  mat->data	= (void *) (mbd = PETSCNEW(Mat_MPIBDiag)); CHKPTRQ(mbd);
   mat->ops	= &MatOps;
   mat->destroy	= MatDestroy_MPIBDiag;
   mat->view	= MatView_MPIBDiag;
@@ -608,11 +608,11 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   MPI_Comm_size(comm,&mbd->numtids);
 
   if (M == PETSC_DECIDE) {
-    if ((m%nb)) SETERR(1,"Invalid block size.  Bad local row number.");
+    if ((m%nb)) SETERRQ(1,"Invalid block size.  Bad local row number.");
     MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);
   }
   if (m == PETSC_DECIDE) {
-    if ((M%nb)) SETERR(1,"Invalid block size.  Bad global row number.");
+    if ((M%nb)) SETERRQ(1,"Invalid block size.  Bad global row number.");
     m = M/mbd->numtids + ((M % mbd->numtids) > mbd->mytid);
   }
   mbd->N   = N;
@@ -622,8 +622,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mbd->gnd = nd;
 
   /* build local table of row ownerships */
-  mbd->rowners = (int *) MALLOC((mbd->numtids+2)*sizeof(int)); 
-  CHKPTR(mbd->rowners);
+  mbd->rowners = (int *) PETSCMALLOC((mbd->numtids+2)*sizeof(int)); 
+  CHKPTRQ(mbd->rowners);
   MPI_Allgather(&m,1,MPI_INT,mbd->rowners+1,1,MPI_INT,comm);
   mbd->rowners[0] = 0;
   for ( i=2; i<=mbd->numtids; i++ ) {
@@ -641,8 +641,8 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
            mbd->rstart,mbd->rend,mbd->brstart, mbd->brend);
 
   /* Determine local diagonals; for now, assume global rows = global cols */
-  ldiag = (int *) MALLOC((nd+1)*sizeof(int)); CHKPTR(ldiag); /* local diags */
-  mbd->gdiag = (int *) MALLOC((nd+1)*sizeof(int)); CHKPTR(mbd->gdiag);
+  ldiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(ldiag); /* local diags */
+  mbd->gdiag = (int *) PETSCMALLOC((nd+1)*sizeof(int)); CHKPTRQ(mbd->gdiag);
   k = 0;
   for (i=0; i<nd; i++) {
     mbd->gdiag[i] = diag[i];
@@ -662,14 +662,14 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   for (i=0; i<nd; i++) printf("[%d] i=%d, diag[i]=%d, ldiag[i]=%d\n", 
          mbd->mytid,i,diag[i],ldiag[i]);
   ierr = MatCreateSequentialBDiag(MPI_COMM_SELF,mbd->m,mbd->n,k,nb,
-                                  ldiag,diagv,&mbd->A); CHKERR(ierr); 
+                                  ldiag,diagv,&mbd->A); CHKERRQ(ierr); 
   mlocal = (Mat_BDiag *) mbd->A->data;
   mlocal->mainbd += mbd->brstart; /* fix main diagonal location */
   PLogObjectParent(mat,mbd->A);
-  FREE(ldiag);
+  PETSCFREE(ldiag);
 
   /* build cache for off array entries formed */
-  ierr = StashBuild_Private(&mbd->stash); CHKERR(ierr);
+  ierr = StashBuild_Private(&mbd->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix vector multiply */
   mbd->lvec      = 0;

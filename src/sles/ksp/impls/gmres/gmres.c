@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.23 1995/05/14 16:32:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.24 1995/05/18 22:44:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -78,8 +78,8 @@ static int KSPSetUp_GMRES(KSP itP )
   cc            = (max_k + 1);
   size          = (hh + hes + rs + 2*cc) * sizeof(Scalar);
 
-  gmresP->hh_origin  = (Scalar *) MALLOC( size );
-  CHKPTR(gmresP->hh_origin);
+  gmresP->hh_origin  = (Scalar *) PETSCMALLOC( size );
+  CHKPTRQ(gmresP->hh_origin);
   gmresP->hes_origin = gmresP->hh_origin + hh;
   gmresP->rs_origin  = gmresP->hes_origin + hes;
   gmresP->cc_origin  = gmresP->rs_origin + rs;
@@ -87,18 +87,18 @@ static int KSPSetUp_GMRES(KSP itP )
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  gmresP->vecs = (Vec *) MALLOC((VEC_OFFSET+2+max_k)*sizeof(void *));
-  CHKPTR(gmresP->vecs);
+  gmresP->vecs = (Vec *) PETSCMALLOC((VEC_OFFSET+2+max_k)*sizeof(void *));
+  CHKPTRQ(gmresP->vecs);
   gmresP->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  gmresP->user_work = (Vec **)MALLOC((VEC_OFFSET+2+max_k)*sizeof(void *));
-  CHKPTR(gmresP->user_work);
-  gmresP->mwork_alloc = (int *) MALLOC( (VEC_OFFSET+2+max_k)*sizeof(int) );
-  CHKPTR(gmresP->mwork_alloc);
+  gmresP->user_work = (Vec **)PETSCMALLOC((VEC_OFFSET+2+max_k)*sizeof(void *));
+  CHKPTRQ(gmresP->user_work);
+  gmresP->mwork_alloc = (int *) PETSCMALLOC( (VEC_OFFSET+2+max_k)*sizeof(int) );
+  CHKPTRQ(gmresP->mwork_alloc);
 
   if (gmresP->q_preallocate) {
     gmresP->vv_allocated   = VEC_OFFSET + 2 + max_k;
  ierr = VecGetVecs(itP->vec_rhs, gmresP->vv_allocated,&gmresP->user_work[0]);
-    CHKERR(ierr);
+    CHKERRQ(ierr);
     PLogObjectParents(itP,gmresP->vv_allocated,gmresP->user_work[0]);
     gmresP->mwork_alloc[0] = gmresP->vv_allocated;
     gmresP->nwork_alloc    = 1;
@@ -107,7 +107,7 @@ static int KSPSetUp_GMRES(KSP itP )
   }
   else {
     gmresP->vv_allocated    = 5;
-    ierr = VecGetVecs(itP->vec_rhs, 5,    &gmresP->user_work[0]); CHKERR(ierr);
+    ierr = VecGetVecs(itP->vec_rhs, 5,    &gmresP->user_work[0]); CHKERRQ(ierr);
     PLogObjectParents(itP,5,gmresP->user_work[0]);
     gmresP->mwork_alloc[0]  = 5;
     gmresP->nwork_alloc     = 1;
@@ -311,7 +311,7 @@ static int KSPAdjustWork_GMRES(KSP itP )
    for (i=0; i<gmresP->vv_allocated; i++) 
        if ( (*itP->adjust_work_vectors)(itP,gmresP->user_work[i],
 					     gmresP->mwork_alloc[i] ) ) 
-	   SETERR(1,"Could not allocate work vectors in GMRES");
+	   SETERRQ(1,"Could not allocate work vectors in GMRES");
  }
   return 0;
 }
@@ -323,19 +323,19 @@ static int KSPDestroy_GMRES(PetscObject obj)
   int          i;
 
   /* Free the matrix */
-  FREE( gmresP->hh_origin );
+  PETSCFREE( gmresP->hh_origin );
 
   /* Free the pointer to user variables */
-  FREE( gmresP->vecs );
+  PETSCFREE( gmresP->vecs );
 
   /* free work vectors */
   for (i=0; i<gmresP->nwork_alloc; i++) 
     VecFreeVecs(gmresP->user_work[i], gmresP->mwork_alloc[i] );
-  FREE( gmresP->user_work );
-  FREE( gmresP->mwork_alloc );
-  if (gmresP->nrs) FREE( gmresP->nrs );
+  PETSCFREE( gmresP->user_work );
+  PETSCFREE( gmresP->mwork_alloc );
+  if (gmresP->nrs) PETSCFREE( gmresP->nrs );
   if (gmresP->sol_temp) VecDestroy(gmresP->sol_temp);
-  FREE( gmresP ); 
+  PETSCFREE( gmresP ); 
   PLogObjectDestroy(itP);
   PETSCHEADERDESTROY( itP );
   return 0;
@@ -432,7 +432,7 @@ static double GMRESUpdateHessenberg( KSP itP, int it )
   */
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
   if (tt == 0.0) {
-    SETERR(1,"KSPSolve_GMRES: bad A or B operator, are you sure it is !0?");
+    SETERRQ(1,"KSPSolve_GMRES: bad A or B operator, are you sure it is !0?");
   }
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;
@@ -459,13 +459,13 @@ static int GMRESGetNewVectors( KSP itP,int it )
     number of available slots */
   if (it + VEC_OFFSET + nalloc >= gmresP->vecs_allocated)
       nalloc = gmresP->vecs_allocated - it - VEC_OFFSET;
-  /* CHKPTR(nalloc); */
+  /* CHKPTRQ(nalloc); */
   if (nalloc == 0) return 0;
 
   gmresP->vv_allocated += nalloc;
   VecGetVecs(itP->vec_rhs, nalloc,&gmresP->user_work[nwork] );
   PLogObjectParents(itP,nalloc,gmresP->user_work[nwork]);
-  CHKPTR(gmresP->user_work[nwork]);
+  CHKPTRQ(gmresP->user_work[nwork]);
   gmresP->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++)
     gmresP->vecs[it+VEC_OFFSET+k] = gmresP->user_work[nwork][k];
@@ -510,13 +510,13 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
 
   if (ptr == 0) {
     if (!gmresP->sol_temp) {
-      ierr = VecDuplicate(itP->vec_sol,&gmresP->sol_temp); CHKERR(ierr);
+      ierr = VecDuplicate(itP->vec_sol,&gmresP->sol_temp); CHKERRQ(ierr);
     }
     ptr = gmresP->sol_temp;
   }
   if (!gmresP->nrs) {
     /* allocate the work area */
-    gmresP->nrs = (Scalar *)MALLOC((unsigned)(gmresP->max_k*sizeof(Scalar)));
+    gmresP->nrs = (Scalar *)PETSCMALLOC((unsigned)(gmresP->max_k*sizeof(Scalar)));
   }
 
   BuildGmresSoln(  gmresP->nrs, VEC_SOLN, ptr, itP, gmresP->it );
@@ -576,7 +576,7 @@ int KSPCreate_GMRES(KSP itP)
   KSP_GMRES *gmresP;
   int         GMRESBasicOrthog(KSP,int);
 
-  gmresP = NEW(KSP_GMRES); CHKPTR(gmresP);
+  gmresP = (KSP_GMRES*) PETSCMALLOC(sizeof(KSP_GMRES)); CHKPTRQ(gmresP);
 
   itP->MethodPrivate = (void *) gmresP;
   itP->type        = KSPGMRES;

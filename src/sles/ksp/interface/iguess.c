@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.6 1995/04/12 23:51:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.7 1995/05/12 21:27:16 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -21,11 +21,10 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
   KSPIGUESS *itg;
   *ITG = 0;
   VALIDHEADER(itctx,KSP_COOKIE);
-  itg  = NEW(KSPIGUESS);    
-  CHKPTR(itg);
+  itg  = (KSPIGUESS* ) PETSCMALLOC(sizeof(KSPIGUESS)); CHKPTRQ(itg);
   itg->curl = 0;
   itg->maxl = maxl;
-  itg->alpha = (Scalar *)MALLOC( maxl * sizeof(Scalar) );  CHKPTR(itg->alpha);
+  itg->alpha = (Scalar *)PETSCMALLOC( maxl * sizeof(Scalar) );  CHKPTRQ(itg->alpha);
   VecGetVecs(itctx->vec_rhs,maxl,&itg->xtilde);
   PLogObjectParents(itctx,maxl,itg->xtilde);
   VecGetVecs(itctx->vec_rhs,maxl,&itg->btilde);
@@ -37,10 +36,10 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
   VALIDHEADER(itctx,KSP_COOKIE);
-  FREE( itg->alpha );
+  PETSCFREE( itg->alpha );
   VecFreeVecs( itg->btilde, itg->maxl );
   VecFreeVecs( itg->xtilde, itg->maxl );
-  FREE( itg );
+  PETSCFREE( itg );
   return 0;
 }
 

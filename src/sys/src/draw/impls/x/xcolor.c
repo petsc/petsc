@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.8 1995/05/14 16:34:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.9 1995/05/29 15:59:17 bsmith Exp bsmith $";
 #endif
 #include "ximpl.h"
 
@@ -462,13 +462,13 @@ int XiUniformHues( DrawCtx_X *Xiwin, int ncolors )
 {
   unsigned char *red, *green, *blue;
 
-  red   = (unsigned char *)MALLOC( 3 * ncolors * sizeof(unsigned char) );   
-  CHKPTR(red);
+  red   = (unsigned char *)PETSCMALLOC( 3 * ncolors * sizeof(unsigned char) );   
+  CHKPTRQ(red);
   green = red + ncolors;
   blue  = green + ncolors;
   XiSetCmapHue( red, green, blue, ncolors );
   XiCmap( red, green, blue, ncolors, Xiwin );
-  FREE( red );
+  PETSCFREE( red );
   return 0;
 }
 

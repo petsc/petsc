@@ -26,8 +26,8 @@ int main(int argc,char **argv)
   }
   ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
   CHKERRA(ierr);
-  ierr = DrawLGCreate(draw,1,&lg); CHKERR(ierr);
-  ierr = DrawLGGetAxisCtx(lg,&axis); CHKERR(ierr);
+  ierr = DrawLGCreate(draw,1,&lg); CHKERRA(ierr);
+  ierr = DrawLGGetAxisCtx(lg,&axis); CHKERRA(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);
   ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel);
 
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
     DrawLGAddPoint(lg,&xd,&yd);
   }
 
-  ierr = DrawLG(lg); CHKERR(ierr);
+  ierr = DrawLG(lg); CHKERRA(ierr);
   ierr = DrawFlush(draw); sleep(2);
 
   DrawLGDestroy(lg);

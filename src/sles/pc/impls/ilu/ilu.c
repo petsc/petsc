@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.15 1995/05/16 00:39:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.16 1995/05/18 22:45:18 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -32,7 +32,7 @@ int PCILUSetLevels(PC pc,int levels)
 {
   PC_ILU *dir;
   VALIDHEADER(pc,PC_COOKIE);
-  if (levels < 0) SETERR(1,"Number of levels cannot be negative");
+  if (levels < 0) SETERRQ(1,"Number of levels cannot be negative");
   dir = (PC_ILU *) pc->data;
   if (pc->type != PCILU) return 0;
   dir->levels = levels;
@@ -104,16 +104,16 @@ static int PCSetUp_ILU(PC pc)
   IS     row,col;
   int    ierr;
   PC_ILU *dir = (PC_ILU *) pc->data;
-  ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
+  ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERRQ(ierr);
   if (!pc->setupcalled) {
-    ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERR(ierr);
+    ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERRQ(ierr);
     PLogObjectParent(pc,dir->fact);
   }
   else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
-    ierr = MatDestroy(dir->fact); CHKERR(ierr);
-    ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERR(ierr);
+    ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
+    ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERRQ(ierr);
   }
-  ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERR(ierr);
+  ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
   return 0;
 }
 
@@ -123,7 +123,7 @@ static int PCDestroy_ILU(PetscObject obj)
   PC_ILU *dir = (PC_ILU*) pc->data;
 
   MatDestroy(dir->fact);
-  FREE(dir); 
+  PETSCFREE(dir); 
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
@@ -137,7 +137,7 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
 
 int PCCreate_ILU(PC pc)
 {
-  PC_ILU *dir = NEW(PC_ILU); CHKPTR(dir);
+  PC_ILU *dir = PETSCNEW(PC_ILU); CHKPTRQ(dir);
   dir->fact     = 0;
   dir->ordering = ORDER_ND;
   dir->levels   = 0;

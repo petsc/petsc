@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.23 1995/05/12 20:52:20 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.24 1995/05/12 21:16:16 curfman Exp bsmith $";
 #endif
 
 /*  
@@ -46,7 +46,7 @@ int PCDestroy(PC pc)
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->destroy) ierr =  (*pc->destroy)((PetscObject)pc);
   else {
-    if (pc->data) FREE(pc->data);
+    if (pc->data) PETSCFREE(pc->data);
     PLogObjectDestroy(pc);
     PETSCHEADERDESTROY(pc);
   }
@@ -128,7 +128,7 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 {
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->applytrans) return (*pc->applytrans)(pc,x,y);
-  SETERR(1,"No transpose for this precondition");
+  SETERRQ(1,"No transpose for this precondition");
 }
 
 /*@
@@ -153,10 +153,10 @@ int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->applyBA)  return (*pc->applyBA)(pc,right,x,y,work);
   if (right) {
-    ierr = PCApply(pc,x,work); CHKERR(ierr);
+    ierr = PCApply(pc,x,work); CHKERRQ(ierr);
     return MatMult(pc->mat,work,y); 
   }
-  ierr = MatMult(pc->mat,x,work); CHKERR(ierr);
+  ierr = MatMult(pc->mat,x,work); CHKERRQ(ierr);
   return PCApply(pc,work,y);
 }
 /*@ 
@@ -182,10 +182,10 @@ int PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work)
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,right,x,y,work);
   if (right) {
-    ierr = MatMultTrans(pc->mat,x,work); CHKERR(ierr);
+    ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
     return PCApplyTrans(pc,work,y);
   }
-  ierr = PCApplyTrans(pc,x,work); CHKERR(ierr);
+  ierr = PCApplyTrans(pc,x,work); CHKERRQ(ierr);
   return MatMultTrans(pc->mat,work,y); 
 }
 
@@ -253,9 +253,9 @@ int PCSetUp(PC pc)
   int ierr;
   if (pc->setupcalled > 1) return 0;
   PLogEventBegin(PC_SetUp,pc,0,0,0);
-  if (!pc->vec) {SETERR(1,"Vector must be set before calling PCSetUp");}
-  if (!pc->mat) {SETERR(1,"Matrix must be set before calling PCSetUp");}
-  if (pc->setup) { ierr = (*pc->setup)(pc); CHKERR(ierr);}
+  if (!pc->vec) {SETERRQ(1,"Vector must be set before calling PCSetUp");}
+  if (!pc->mat) {SETERRQ(1,"Matrix must be set before calling PCSetUp");}
+  if (pc->setup) { ierr = (*pc->setup)(pc); CHKERRQ(ierr);}
   pc->setupcalled = 2;
   PLogEventEnd(PC_SetUp,pc,0,0,0);
   return 0;
@@ -297,7 +297,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   VALIDHEADER(pc,PC_COOKIE);
   pc->mat         = Amat;
-  if (pc->setupcalled == 0 && !Pmat) SETERR(1,"Must set preconditioner");
+  if (pc->setupcalled == 0 && !Pmat) SETERRQ(1,"Must set preconditioner");
   if (pc->setupcalled && Pmat) {
     pc->pmat        = Pmat;
     pc->setupcalled = 1;  

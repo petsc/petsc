@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.19 1995/05/02 19:02:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.20 1995/05/10 21:14:06 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -15,7 +15,7 @@ typedef struct {
 static int ISDestroy_General(PetscObject obj)
 {
   IS is = (IS) obj;
-  FREE(is->data); 
+  PETSCFREE(is->data); 
   PLogObjectDestroy(is);
   PETSCHEADERDESTROY(is); return 0;
 }
@@ -37,13 +37,13 @@ static int ISInvertPermutation_General(IS is, IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
   int           i,ierr, *ii,n = sub->n,*idx = sub->idx;
-  ii = (int *) MALLOC( n*sizeof(int) ); CHKPTR(ii);
+  ii = (int *) PETSCMALLOC( n*sizeof(int) ); CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  if ((ierr = ISCreateSequential(MPI_COMM_SELF,n,ii,isout))) SETERR(ierr,0);
+  if ((ierr = ISCreateSequential(MPI_COMM_SELF,n,ii,isout))) SETERRQ(ierr,0);
   ISSetPermutation(*isout);
-  FREE(ii);
+  PETSCFREE(ii);
   return 0;
 }
 
@@ -101,7 +101,7 @@ int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
   *is = 0;
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,comm); 
   PLogObjectCreate(Nindex);
-  sub            = (IS_General *) MALLOC(size); CHKPTR(sub);
+  sub            = (IS_General *) PETSCMALLOC(size); CHKPTRQ(sub);
   sub->idx       = (int *) (sub+1);
   sub->n         = n;
   for ( i=1; i<n; i++ ) {
@@ -112,7 +112,7 @@ int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];
   }
-  MEMCPY(sub->idx,idx,n*sizeof(int));
+  PETSCMEMCPY(sub->idx,idx,n*sizeof(int));
   sub->sorted     = sorted;
   Nindex->min     = min;
   Nindex->max     = max;
@@ -157,11 +157,11 @@ int ISAddStrideSequential(IS *is,int n,int first,int step)
   PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
   PLogObjectCreate(Newis);
   size = sizeof(IS_General) + n*sizeof(int) + N*sizeof(int);
-  sub            = (IS_General *) MALLOC(size); CHKPTR(sub);
+  sub            = (IS_General *) PETSCMALLOC(size); CHKPTRQ(sub);
   sub->idx = idx = (int *) (sub+1);
   sub->sorted    = 1;
 
-  MEMCPY(sub->idx,old,N*sizeof(int));
+  PETSCMEMCPY(sub->idx,old,N*sizeof(int));
   if (*is) {ISRestoreIndices(*is,&old); ISDestroy(*is);}
   for ( i=0; i<n; i++ ) {idx[N+i] = first + i*step;}
 

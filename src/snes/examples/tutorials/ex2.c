@@ -84,10 +84,10 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
    Scalar *xx, *ff,*FF,d;
    int    i, ierr, n;
-   ierr = VecGetArray(x,&xx); CHKERR(ierr);
-   ierr = VecGetArray(f,&ff); CHKERR(ierr);
-   ierr = VecGetArray((Vec) dummy,&FF); CHKERR(ierr);
-   ierr = VecGetSize(x,&n); CHKERR(ierr);
+   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
+   ierr = VecGetArray((Vec) dummy,&FF); CHKERRQ(ierr);
+   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
    d = (double) (n - 1); d = d*d;
    ff[0]   = -xx[0];
    for ( i=1; i<n-1; i++ ) {
@@ -102,7 +102,7 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
    int    ierr;
    Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERR(ierr);
+   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
    return 0;
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
@@ -111,25 +111,25 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
   Scalar *xx, A, d;
   int    i, n, j, ierr;
-  ierr = VecGetArray(x,&xx); CHKERR(ierr);
-  ierr =  VecGetSize(x,&n); CHKERR(ierr);
+  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+  ierr =  VecGetSize(x,&n); CHKERRQ(ierr);
   d = (double)(n - 1); d = d*d;
   i = 0; A = 1.0; 
-  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
   for ( i=1; i<n-1; i++ ) {
     A = d; 
     j = i - 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES); CHKERR(ierr);
+    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES); CHKERRQ(ierr);
     j = i + 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES); CHKERR(ierr);
+    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES); CHKERRQ(ierr);
     A = -2.0*d + 2.0*xx[i];
     j = i + 1; 
-    ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
+    ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
   }
   i = n-1; A = 1.0; 
-  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
-  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
 /*  *flag = MAT_SAME_NONZERO_PATTERN; */
   return 0;
 }
@@ -141,7 +141,7 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   MonitorCtx *monP = (MonitorCtx*) dummy;
   Vec        x;
   fprintf(stdout, "iter = %d, Function norm %g \n",its,fnorm);
-  ierr = SNESGetSolution(snes,&x); CHKERR(ierr);
-  ierr = VecView(x,(Viewer)monP->win1); CHKERR(ierr);
+  ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
+  ierr = VecView(x,(Viewer)monP->win1); CHKERRQ(ierr);
   return 0;
 }

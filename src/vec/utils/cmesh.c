@@ -36,21 +36,21 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
   /* move entire vector to first processor */
   if (mytid == 0) {
     VecGetSize(V,&N);
-    ierr = VecCreateSequential(MPI_COMM_SELF,N,&W); CHKERR(ierr);
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,N,0,1,&from); CHKERR(ierr);
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,N,0,1,&to); CHKERR(ierr);
+    ierr = VecCreateSequential(MPI_COMM_SELF,N,&W); CHKERRQ(ierr);
+    ierr = ISCreateStrideSequential(MPI_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
+    ierr = ISCreateStrideSequential(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
   }
   else {
-    ierr = VecCreateSequential(MPI_COMM_SELF,0,&W); CHKERR(ierr);
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,0,0,1,&from); CHKERR(ierr);
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,0,0,1,&to); CHKERR(ierr);
+    ierr = VecCreateSequential(MPI_COMM_SELF,0,&W); CHKERRQ(ierr);
+    ierr = ISCreateStrideSequential(MPI_COMM_SELF,0,0,1,&from); CHKERRQ(ierr);
+    ierr = ISCreateStrideSequential(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
   }
   PLogObjectParent(win,W);PLogObjectParent(win,from);PLogObjectParent(win,to);
-  ierr = VecScatterCtxCreate(V,from,W,to,&ctx); CHKERR(ierr);
+  ierr = VecScatterCtxCreate(V,from,W,to,&ctx); CHKERRQ(ierr);
   PLogObjectParent(win,ctx);
   ierr = VecScatterBegin(V,W,INSERTVALUES,SCATTERALL,ctx); 
-  CHKERR(ierr);
-  ierr = VecScatterEnd(V,W,INSERTVALUES,SCATTERALL,ctx); CHKERR(ierr);
+  CHKERRQ(ierr);
+  ierr = VecScatterEnd(V,W,INSERTVALUES,SCATTERALL,ctx); CHKERRQ(ierr);
   ISDestroy(from); ISDestroy(to); VecScatterCtxDestroy(ctx);
 
   if (mytid == 0) {
@@ -63,14 +63,14 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
 
     if (!x) {
       xin = 0; 
-      x = (double *) MALLOC( m*sizeof(double) ); CHKPTR(x);
+      x = (double *) PETSCMALLOC( m*sizeof(double) ); CHKPTRQ(x);
       h = 1.0/(m-1);
       x[0] = 0.0;
       for ( i=1; i<m; i++ ) x[i] = x[i-1] + h;
     }
     if (!y) {
       yin = 0; 
-      y = (double *) MALLOC( n*sizeof(double) ); CHKPTR(y);
+      y = (double *) PETSCMALLOC( n*sizeof(double) ); CHKPTRQ(y);
       h = 1.0/(n-1);
       y[0] = 0.0;
       for ( i=1; i<n; i++ ) y[i] = y[i-1] + h;
@@ -89,8 +89,8 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
       DrawTriangle(win,x1,y1,x3,y3,x4,y4,c1,c3,c4);
     }
     VecRestoreArray(W,&v);
-    if (!xin) FREE(x); 
-    if (!yin) FREE(y);
+    if (!xin) PETSCFREE(x); 
+    if (!yin) PETSCFREE(y);
   }
   VecDestroy(W);
   return 0;

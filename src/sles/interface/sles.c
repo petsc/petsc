@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.21 1995/05/16 00:35:26 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.22 1995/05/20 21:16:03 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"
@@ -84,8 +84,8 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   *outsles = 0;
   PETSCHEADERCREATE(sles,_SLES,SLES_COOKIE,0,comm);
   PLogObjectCreate(sles);
-  if ((ierr = KSPCreate(comm,&sles->ksp))) SETERR(ierr,0);
-  if ((ierr = PCCreate(comm,&sles->pc))) SETERR(ierr,0);
+  if ((ierr = KSPCreate(comm,&sles->ksp))) SETERRQ(ierr,0);
+  if ((ierr = PCCreate(comm,&sles->pc))) SETERRQ(ierr,0);
   PLogObjectParent(sles,sles->ksp);
   PLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;
@@ -107,8 +107,8 @@ int SLESDestroy(SLES sles)
 {
   int ierr;
   VALIDHEADER(sles,SLES_COOKIE);
-  ierr = KSPDestroy(sles->ksp); CHKERR(ierr);
-  ierr = PCDestroy(sles->pc); CHKERR(ierr);
+  ierr = KSPDestroy(sles->ksp); CHKERRQ(ierr);
+  ierr = PCDestroy(sles->pc); CHKERRQ(ierr);
   PLogObjectDestroy(sles);
   PETSCHEADERDESTROY(sles);
   return 0;
@@ -141,14 +141,14 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   KSPSetSolution(ksp,x);
   KSPSetBinv(ksp,pc);
   if (!sles->setupcalled) {
-    if ((ierr = PCSetVector(pc,b))) SETERR(ierr,0);
-    if ((ierr = KSPSetUp(sles->ksp))) SETERR(ierr,0);
-    if ((ierr = PCSetUp(sles->pc))) SETERR(ierr,0);
+    if ((ierr = PCSetVector(pc,b))) SETERRQ(ierr,0);
+    if ((ierr = KSPSetUp(sles->ksp))) SETERRQ(ierr,0);
+    if ((ierr = PCSetUp(sles->pc))) SETERRQ(ierr,0);
     sles->setupcalled = 1;
   }
-  ierr = PCPreSolve(pc,ksp); CHKERR(ierr);
-  ierr = KSPSolve(ksp,its); CHKERR(ierr);
-  ierr = PCPostSolve(pc,ksp); CHKERR(ierr);
+  ierr = PCPreSolve(pc,ksp); CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
+  ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
   PLogEventEnd(SLES_Solve,sles,b,x,0);
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.27 1995/05/28 17:36:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.28 1995/05/29 20:28:08 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -64,7 +64,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
   size           = sizeof(Vec_MPI)+(numtids+1)*sizeof(int);
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,MPIVECTOR,comm);
   PLogObjectCreate(v);
-  s              = (Vec_MPI *) MALLOC(size); CHKPTR(s);
+  s              = (Vec_MPI *) PETSCMALLOC(size); CHKPTRQ(s);
   v->ops         = &DvOps;
   v->data        = (void *) s;
   v->destroy     = VecDestroy_MPI;
@@ -73,11 +73,11 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
   s->N           = N;
   s->numtids     = numtids;
   s->mytid       = mytid;
-  s->array       = (Scalar *) MALLOC((n+1)*sizeof(Scalar));CHKPTR(s->array);
+  s->array       = (Scalar *) PETSCMALLOC((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
   s->ownership   = (int *) (s + 1);
   s->insertmode  = NOTSETVALUES;
   if (owners) {
-    MEMCPY(s->ownership,owners,(numtids+1)*sizeof(int));
+    PETSCMEMCPY(s->ownership,owners,(numtids+1)*sizeof(int));
   }
   else {
     MPI_Allgather(&n,1,MPI_INT,s->ownership+1,1,MPI_INT,comm);
@@ -87,8 +87,8 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
     }
   }
   s->stash.nmax = 10; s->stash.n = 0;
-  s->stash.array = (Scalar *) MALLOC( 10*sizeof(Scalar) + 10 *sizeof(int) );
-  CHKPTR(s->stash.array);
+  s->stash.array = (Scalar *) PETSCMALLOC( 10*sizeof(Scalar) + 10 *sizeof(int) );
+  CHKPTRQ(s->stash.array);
   s->stash.idx = (int *) (s->stash.array + 10);
   *vv = v;
   return 0;

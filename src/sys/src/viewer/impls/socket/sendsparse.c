@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sendsparse.c,v 1.7 1995/04/28 02:33:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sendsparse.c,v 1.8 1995/05/14 16:34:44 bsmith Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a sparse matrix to Matlab.
@@ -39,21 +39,21 @@ int ViewerMatlabPutSparse_Private(Viewer viewer,int m,int n,int nnz,Scalar *v,in
                         int *c)
 {
   int t = viewer->port,type = SPARSEREAL,value;
-  if (write_int(t,&type,1))       SETERR(1,"writing type");
-  if (write_int(t,&m,1))          SETERR(1,"writing number rows");
-  if (write_int(t,&n,1))          SETERR(1,"writing number columns");
-  if (write_int(t,&nnz,1))        SETERR(1,"writing number nonzeros");
+  if (write_int(t,&type,1))       SETERRQ(1,"writing type");
+  if (write_int(t,&m,1))          SETERRQ(1,"writing number rows");
+  if (write_int(t,&n,1))          SETERRQ(1,"writing number columns");
+  if (write_int(t,&nnz,1))        SETERRQ(1,"writing number nonzeros");
 #if !defined(PETSC_COMPLEX)
   value = 0;
-  if (write_int(t,&value,1))        SETERR(1,"writing complex        ");
-  if (write_double(t,v,nnz))      SETERR(1,"writing elements");
+  if (write_int(t,&value,1))        SETERRQ(1,"writing complex        ");
+  if (write_double(t,v,nnz))      SETERRQ(1,"writing elements");
 #else
   value = 1;
-  if (write_int(t,&value,1))        SETERR(1,"writing complex        ");  
-  if (write_double(t,(double*)v,2*nnz))      SETERR(1,"writing elements");
+  if (write_int(t,&value,1))        SETERRQ(1,"writing complex        ");  
+  if (write_double(t,(double*)v,2*nnz))      SETERRQ(1,"writing elements");
 #endif
-  if (write_int(t,r,m+1))         SETERR(1,"writing column pointers");
-  if (write_int(t,c,nnz))         SETERR(1,"writing row pointers");
+  if (write_int(t,r,m+1))         SETERRQ(1,"writing column pointers");
+  if (write_int(t,c,nnz))         SETERRQ(1,"writing row pointers");
   return 0;
 }
 

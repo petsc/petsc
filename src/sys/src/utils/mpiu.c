@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: try.c,v 1.9 1995/05/25 22:47:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: try.c,v 1.10 1995/05/28 17:37:27 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>
@@ -114,9 +114,9 @@ int MPIU_Set_display(MPI_Comm comm,char *display,int n)
   if (!mytid) {
     str = getenv("DISPLAY");
     if (!str || str[0] == ':') {
-      string = (char *) MALLOC( 256*sizeof(char) ); CHKPTR(string);
+      string = (char *) PETSCMALLOC( 256*sizeof(char) ); CHKPTRQ(string);
       MPI_Get_processor_name(string,&len);
-      strncpy(display,string,n-4); FREE(string);
+      strncpy(display,string,n-4); PETSCFREE(string);
       strcat(display,":0.0");
     }
     else {

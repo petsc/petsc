@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: petsc.h,v 1.29 1995/06/07 16:30:52 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -33,15 +33,15 @@ int fclose(FILE*);
 
 extern void *(*PetscMalloc)(unsigned int,int,char*);
 extern int  (*PetscFree)(void *,int,char*);
-#define MALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
-#define FREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
+#define PETSCMALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
+#define PETSCFREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),
                            int (*)(void *,int,char*));
 extern int  Trdump(FILE *);
 
-#define NEW(a)          (a *) MALLOC(sizeof(a))
-#define MEMCPY(a,b,n)   memcpy((char*)(a),(char*)(b),n)
-#define MEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
+#define PETSCNEW(A)         (A*) PETSCMALLOC(sizeof(A))
+#define PETSCMEMCPY(a,b,n)   memcpy((char*)(a),(char*)(b),n)
+#define PETSCMEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
 #include <memory.h>
 
 /*  Macros for error checking */
@@ -49,22 +49,22 @@ extern int  Trdump(FILE *);
 #define __DIR__ 0
 #endif
 #if defined(PETSC_DEBUG)
-#define SETERR(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
+#define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
 #define SETERRA(n,s)    \
                 {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
                  MPI_Abort(MPI_COMM_WORLD,_ierr);}
-#define CHKERR(n)       {if (n) SETERR(n,(char *)0);}
+#define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
-#define CHKPTR(p)       if (!p) SETERR(1,"No memory");
+#define CHKPTRQ(p)       if (!p) SETERRQ(1,"No memory");
 #define CHKPTRA(p)      if (!p) SETERRA(1,"No memory");
 #else
-#define SETERR(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
+#define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
 #define SETERRA(n,s)    \
                 {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,s,n);\
                  MPI_Abort(MPI_COMM_WORLD,_ierr);}
-#define CHKERR(n)       {if (n) SETERR(n,(char *)0);}
+#define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
-#define CHKPTR(p)       if (!p) SETERR(1,"No memory");
+#define CHKPTRQ(p)       if (!p) SETERRQ(1,"No memory");
 #define CHKPTRA(p)      if (!p) SETERRA(1,"No memory");
 #endif
 

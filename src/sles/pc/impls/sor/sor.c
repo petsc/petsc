@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.19 1995/05/16 00:40:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.20 1995/05/18 22:45:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
   PC_SOR *jac = (PC_SOR *) pc->data;
   int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
   ierr = MatRelax(pc->mat,x,jac->omega,(MatSORType)flag,0.0,jac->its,y);
-  CHKERR(ierr);
+  CHKERRQ(ierr);
   return 0;
 }
 
@@ -28,7 +28,7 @@ static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
   int    ierr, flag;
   flag = jac->sym;
   ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)flag,0.0,its,y);
-  CHKERR(ierr);
+  CHKERRQ(ierr);
   return 0;
 }
 
@@ -77,7 +77,7 @@ int PCPrintHelp_SOR(PC pc)
 }
 int PCCreate_SOR(PC pc)
 {
-  PC_SOR *jac   = NEW(PC_SOR); CHKPTR(jac);
+  PC_SOR *jac   = PETSCNEW(PC_SOR); CHKPTRQ(jac);
   pc->apply     = PCApply_SOR;
   pc->applyrich = PCApplyRichardson_SOR;
   pc->setfrom   = PCSetFromOptions_SOR;
@@ -148,7 +148,7 @@ int PCSORSetOmega(PC pc, double omega)
 {
   PC_SOR *jac = (PC_SOR *) pc->data; 
   VALIDHEADER(pc,PC_COOKIE);
-  if (omega >= 2.0 || omega <= 0.0) { SETERR(1,"Relaxation out of range");}
+  if (omega >= 2.0 || omega <= 0.0) { SETERRQ(1,"Relaxation out of range");}
   jac->omega = omega;
   return 0;
 }

@@ -78,7 +78,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(b); CHKERRA(ierr);
 
   /* modify matrix and rhs for Dirichlet boundary conditions */
-  rows = (int *) MALLOC( 4*m*sizeof(int) ); CHKPTR(rows);
+  rows = (int *) PETSCMALLOC( 4*m*sizeof(int) ); CHKPTRQ(rows);
   for ( i=0; i<m+1; i++ ) {
     rows[i] = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */
@@ -98,7 +98,7 @@ int main(int argc,char **args)
      ierr = VecSetValues(u,1,&rows[i],&val,INSERTVALUES); CHKERRA(ierr);
      ierr = VecSetValues(b,1,&rows[i],&val,INSERTVALUES); CHKERRA(ierr);
   }    
-  FREE(rows);
+  PETSCFREE(rows);
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
   ierr = VecAssemblyEnd(u); CHKERRA(ierr);
   ierr = VecAssemblyBegin(b); CHKERRA(ierr);

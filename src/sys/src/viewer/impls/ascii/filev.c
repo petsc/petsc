@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.9 1995/04/27 23:19:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.10 1995/05/02 23:39:33 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -78,7 +78,7 @@ int ViewerFileOpen(char *name,Viewer *lab)
   if (!strcmp(name,"stderr")) v->fd = stderr;
   else if (!strcmp(name,"stdout")) v->fd = stdout;
   else {
-    v->fd          = fopen(name,"w"); if (!v->fd) SETERR(1,0);
+    v->fd          = fopen(name,"w"); if (!v->fd) SETERRQ(1,0);
   }
   v->format        = FILE_FORMAT_DEFAULT;
   v->outputname    = 0;
@@ -121,7 +121,7 @@ int ViewerFileOpenSync(char *name,MPI_Comm comm,Viewer *lab)
   if (!strcmp(name,"stderr")) v->fd = stderr;
   else if (!strcmp(name,"stdout")) v->fd = stdout;
   else {
-    v->fd        = fopen(name,"w"); if (!v->fd) SETERR(1,0);
+    v->fd        = fopen(name,"w"); if (!v->fd) SETERRQ(1,0);
   }
   v->format        = FILE_FORMAT_DEFAULT;
   v->outputname    = 0;

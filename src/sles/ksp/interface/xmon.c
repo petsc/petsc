@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.8 1995/04/13 21:08:06 curfman Exp curfman $";
+static char vcid[] = "$Id: xmon.c,v 1.9 1995/04/16 00:49:54 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -31,8 +31,8 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
 {
   DrawCtx win;
   int     ierr;
-  ierr = DrawOpenX(MPI_COMM_SELF,host,label,x,y,m,n,&win); CHKERR(ierr);
-  ierr = DrawLGCreate(win,1,ctx); CHKERR(ierr);
+  ierr = DrawOpenX(MPI_COMM_SELF,host,label,x,y,m,n,&win); CHKERRQ(ierr);
+  ierr = DrawLGCreate(win,1,ctx); CHKERRQ(ierr);
   return 0;
 }
 

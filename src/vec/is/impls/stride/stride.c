@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.17 1995/05/10 21:14:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.18 1995/06/01 13:56:03 curfman Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -40,7 +40,7 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 static int ISDestroy_Stride(PetscObject obj)
 {
   IS is = (IS) obj;
-  FREE(is->data); 
+  PETSCFREE(is->data); 
   PLogObjectDestroy(is);
   PETSCHEADERDESTROY(is); return 0;
 }
@@ -51,7 +51,7 @@ static int ISGetIndices_Stride(IS in,int **idx)
   int          i;
 
   if (sub->n) {
-    *idx = (int *) MALLOC(sub->n*sizeof(int)); CHKPTR(idx);
+    *idx = (int *) PETSCMALLOC(sub->n*sizeof(int)); CHKPTRQ(idx);
     (*idx)[0] = sub->first;
     for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
   }
@@ -61,7 +61,7 @@ static int ISGetIndices_Stride(IS in,int **idx)
 
 static int ISRestoreIndices_Stride(IS in,int **idx)
 {
-  if (*idx) FREE(*idx);
+  if (*idx) PETSCFREE(*idx);
   return 0;
 }
 
@@ -127,12 +127,12 @@ int ISCreateStrideSequential(MPI_Comm comm,int n,int first,int step,IS *is)
 
   *is = 0;
  
-  if (n < 0) SETERR(1,"Number of indices must be non-negative");
-  if (step == 0) SETERR(1,"Step must be nonzero");
+  if (n < 0) SETERRQ(1,"Number of indices must be non-negative");
+  if (step == 0) SETERRQ(1,"Step must be nonzero");
 
   PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISSTRIDESEQUENTIAL,comm); 
   PLogObjectCreate(Nindex);
-  sub            = (IS_Stride *) MALLOC(size); CHKPTR(sub);
+  sub            = (IS_Stride *) PETSCMALLOC(size); CHKPTRQ(sub);
   sub->n         = n;
   sub->first     = first;
   sub->step      = step;

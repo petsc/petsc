@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.7 1995/04/15 03:27:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: mgfunc.c,v 1.8 1995/04/16 03:43:00 curfman Exp bsmith $";
 #endif
 
 #include "mgimpl.h"
@@ -42,8 +42,8 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
   int    ierr;
   Scalar mone = -1.0;
-  ierr = MatMult(mat,x,r); CHKERR(ierr);
-  ierr = VecAYPX(&mone,b,r); CHKERR(ierr);
+  ierr = MatMult(mat,x,r); CHKERRQ(ierr);
+  ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
   return 0;
 }
 
@@ -180,7 +180,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
      if not we allocate it.
   */
   if (mg[mg[0]->level - 1]->smoothd == mg[mg[0]->level -1]->smoothu) {
-    ierr = SLESCreate(pc->comm,&mg[mg[0]->level - 1]->smoothd); CHKERR(ierr);
+    ierr = SLESCreate(pc->comm,&mg[mg[0]->level - 1]->smoothd); CHKERRQ(ierr);
   }
   *sles = mg[mg[0]->level - l]->smoothd;
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: ptscimpl.h,v 1.10 1995/06/07 16:33:54 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -37,48 +37,48 @@
 #define  FREEDHEADER -1
 
 #define PETSCHEADERCREATE(h,tp,cook,t,com)                         \
-      {h = (struct tp *) NEW(struct tp);                           \
-       CHKPTR((h));                                                \
-       MEMSET(h,0,sizeof(struct tp));                              \
+      {h = (struct tp *) PETSCNEW(struct tp);                           \
+       CHKPTRQ((h));                                                \
+       PETSCMEMSET(h,0,sizeof(struct tp));                              \
        (h)->cookie = cook;                                         \
        (h)->type = t;                                              \
        MPI_Comm_dup(com,&(h)->comm);}
 #define PETSCHEADERDESTROY(h)                                      \
        {MPI_Comm_free(&(h)->comm);                                 \
         (h)->cookie = FREEDHEADER;                                 \
-        FREE(h);          }
+        PETSCFREE(h);          }
 
 extern void *PetscLow,*PetscHigh;
 
 #if defined(PETSC_MALLOC) && !defined(PETSC_INSIGHT)
 #define VALIDHEADER(h,ck)                             \
-  {if (!h) {SETERR(1,"Null Object");}                 \
+  {if (!h) {SETERRQ(1,"Null Object");}                 \
   if (PetscLow > (void *) h || PetscHigh < (void *)h){\
-    SETERR(3,"Invalid Pointer to Object");            \
+    SETERRQ(3,"Invalid Pointer to Object");            \
   }                                                   \
   if ((h)->cookie != ck) {                            \
     if ((h)->cookie == FREEDHEADER) {                 \
-      SETERR(1,"Object already free");                \
+      SETERRQ(1,"Object already free");                \
     }                                                 \
     else {                                            \
-      SETERR(2,"Invalid or Wrong Object");            \
+      SETERRQ(2,"Invalid or Wrong Object");            \
     }                                                 \
   }}
 #else
 #define VALIDHEADER(h,ck)                             \
-  {if (!h) {SETERR(1,"Null Object");}                 \
+  {if (!h) {SETERRQ(1,"Null Object");}                 \
   if ((h)->cookie != ck) {                            \
     if ((h)->cookie == FREEDHEADER) {                 \
-      SETERR(1,"Object already free");                \
+      SETERRQ(1,"Object already free");                \
     }                                                 \
     else {                                            \
-      SETERR(2,"Invalid or Wrong Object");            \
+      SETERRQ(2,"Invalid or Wrong Object");            \
     }                                                 \
   }}
 #endif
 
 #define CHKSAME(a,b) \
-  if ((a)->type != (b)->type) SETERR(3,"Objects not of same type");
+  if ((a)->type != (b)->type) SETERRQ(3,"Objects not of same type");
 
 #define CHKTYPE(a,b) (((a)->type & (b)) ? 1 : 0)
 

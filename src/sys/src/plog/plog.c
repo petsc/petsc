@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: header.c,v 1.11 1995/05/05 03:51:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.1 1995/05/13 17:06:25 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -39,7 +39,7 @@ static char vcid[] = "$Id: header.c,v 1.11 1995/05/05 03:51:26 bsmith Exp bsmith
 @*/
 int PetscObjectSetName(PetscObject obj,char *name)
 {
-  if (!obj) SETERR(1,"Null object");
+  if (!obj) SETERRQ(1,"Null object");
   obj->name = name;
   return 0;
 }
@@ -57,8 +57,8 @@ int PetscObjectSetName(PetscObject obj,char *name)
 @*/
 int PetscObjectGetName(PetscObject obj,char **name)
 {
-  if (!obj) SETERR(1,"Null object");
-  if (!name) SETERR(1,"Void location for name");
+  if (!obj) SETERRQ(1,"Null object");
+  if (!name) SETERRQ(1,"Void location for name");
   *name = obj->name;
   return 0;
 }
@@ -130,18 +130,18 @@ int phc(PetscObject obj)
 {
   if (nevents >= eventsspace) {
     Events *tmp;
-    tmp = (Events *) MALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
-    CHKPTR(tmp);
-    MEMCPY(tmp,events,eventsspace*sizeof(Events));
-    FREE(events);
+    tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
+    CHKPTRQ(tmp);
+    PETSCMEMCPY(tmp,events,eventsspace*sizeof(Events));
+    PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
   if (nobjects >= objectsspace) {
     Objects *tmp;
-    tmp = (Objects *) MALLOC( (objectsspace+CHUNCK)*sizeof(Objects) );
-    CHKPTR(tmp);
-    MEMCPY(tmp,objects,objectsspace*sizeof(Objects));
-    FREE(objects);
+    tmp = (Objects *) PETSCMALLOC( (objectsspace+CHUNCK)*sizeof(Objects) );
+    CHKPTRQ(tmp);
+    PETSCMEMCPY(tmp,objects,objectsspace*sizeof(Objects));
+    PETSCFREE(objects);
     objects = tmp; objectsspace += CHUNCK;
   }
   PetscTime(events[nevents].time); events[nevents].time -= BaseTime;
@@ -152,8 +152,8 @@ int phc(PetscObject obj)
   events[nevents].id3     = -1;
   events[nevents++].event = CREATE;
   objects[nobjects].parent= -1;
-  MEMSET(objects[nobjects].string,0,64*sizeof(char));
-  MEMSET(objects[nobjects].name,0,16*sizeof(char));
+  PETSCMEMSET(objects[nobjects].string,0,64*sizeof(char));
+  PETSCMEMSET(objects[nobjects].name,0,16*sizeof(char));
   obj->id = nobjects++;
   return 0;
 }
@@ -164,10 +164,10 @@ int phd(PetscObject obj)
 {
   if (nevents >= eventsspace) {
     Events *tmp;
-    tmp = (Events *) MALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
-    CHKPTR(tmp);
-    MEMCPY(tmp,events,eventsspace*sizeof(Events));
-    FREE(events);
+    tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
+    CHKPTRQ(tmp);
+    PETSCMEMCPY(tmp,events,eventsspace*sizeof(Events));
+    PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
   PetscTime(events[nevents].time); events[nevents].time -= BaseTime;
@@ -192,10 +192,10 @@ int plball(int event,PetscObject o1,PetscObject o2,PetscObject o3,
  double time;
  if (nevents >= eventsspace) {
     Events *tmp;
-    tmp = (Events *) MALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
-    CHKPTR(tmp);
-    MEMCPY(tmp,events,eventsspace*sizeof(Events));
-    FREE(events);
+    tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
+    CHKPTRQ(tmp);
+    PETSCMEMCPY(tmp,events,eventsspace*sizeof(Events));
+    PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
   PetscTime(time);
@@ -220,10 +220,10 @@ int pleall(int event,PetscObject o1,PetscObject o2,PetscObject o3,
  double time;
  if (nevents >= eventsspace) {
     Events *tmp;
-    tmp = (Events *) MALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
-    CHKPTR(tmp);
-    MEMCPY(tmp,events,eventsspace*sizeof(Events));
-    FREE(events);
+    tmp = (Events *) PETSCMALLOC( (eventsspace+CHUNCK)*sizeof(Events) );
+    CHKPTRQ(tmp);
+    PETSCMEMCPY(tmp,events,eventsspace*sizeof(Events));
+    PETSCFREE(events);
     events = tmp; eventsspace += CHUNCK;
   }
   PetscTime(time);
@@ -276,8 +276,8 @@ int PLogObjectState(PetscObject obj,char *format,...)
 int PLogAllBegin()
 {
   PetscTime(BaseTime);
-  events = (Events*) MALLOC( CHUNCK*sizeof(Events) ); CHKPTR(events);
-  objects = (Objects*) MALLOC( CHUNCK*sizeof(Objects) ); CHKPTR(objects);
+  events = (Events*) PETSCMALLOC( CHUNCK*sizeof(Events) ); CHKPTRQ(events);
+  objects = (Objects*) PETSCMALLOC( CHUNCK*sizeof(Objects) ); CHKPTRQ(objects);
   _PHC = phc;
   _PHD = phd;
   _PLB = plball;
@@ -295,8 +295,8 @@ int PLogAllBegin()
 int PLogBegin()
 {
   PetscTime(BaseTime);
-  events = (Events*) MALLOC( CHUNCK*sizeof(Events) ); CHKPTR(events);
-  objects = (Objects*) MALLOC( CHUNCK*sizeof(Objects) ); CHKPTR(objects);
+  events = (Events*) PETSCMALLOC( CHUNCK*sizeof(Events) ); CHKPTRQ(events);
+  objects = (Objects*) PETSCMALLOC( CHUNCK*sizeof(Objects) ); CHKPTRQ(objects);
   _PHC = phc;
   _PHD = phd;
   _PLB = plb;
@@ -333,7 +333,7 @@ int PLogDump(char* name)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   if (name) sprintf(file,"%s.%d",name,mytid);
   else  sprintf(file,"Log.%d",mytid);
-  fd = fopen(file,"w"); if (!fd) SETERR(1,0);
+  fd = fopen(file,"w"); if (!fd) SETERRQ(1,0);
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
                                                  ObjectsDestroyed);

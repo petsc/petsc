@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp $ */
+/* $Id: pdvec.c,v 1.10 1995/06/07 17:30:43 bsmith Exp bsmith $ */
 
 #include "pviewer.h"
 
@@ -17,9 +17,9 @@ static int VecDestroy_MPI(PetscObject obj )
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d",x->N);
 #endif  
-  if (x->stash.array) FREE(x->stash.array);
-  FREE(x->array);
-  FREE(v->data);
+  if (x->stash.array) PETSCFREE(x->stash.array);
+  PETSCFREE(x->array);
+  PETSCFREE(v->data);
   PLogObjectDestroy(v);
   PETSCHEADERDESTROY(v);
   return 0;
@@ -64,7 +64,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
       MPI_Comm_size(xin->comm,&numtids);
 
       if (!mytid) {
-        values = (Scalar *) MALLOC( len*sizeof(Scalar) ); CHKPTR(values);
+        values = (Scalar *) PETSCMALLOC( len*sizeof(Scalar) ); CHKPTRQ(values);
         fprintf(fd,"Processor [%d]\n",mytid);
         for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -86,7 +86,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
 #endif
           }          
         }
-        FREE(values);
+        PETSCFREE(values);
       }
       else {
         /* send values */
@@ -117,9 +117,9 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
     if (!mytid) {
       DrawAxisCtx axis;
       DrawClear(win); DrawFlush(win);
-      ierr = DrawAxisCreate(win,&axis); CHKERR(ierr);
-      ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERR(ierr);
-      ierr = DrawAxis(axis); CHKERR(ierr);
+      ierr = DrawAxisCreate(win,&axis); CHKERRQ(ierr);
+      ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERRQ(ierr);
+      ierr = DrawAxis(axis); CHKERRQ(ierr);
       DrawAxisDestroy(axis);
       DrawGetCoordinates(win,coors,coors+1,coors+2,coors+3);
     }
@@ -160,10 +160,10 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
     MPI_Comm_size(xin->comm,&numtid);
     if (!mytid) {
       DrawLGReset(lg);
-      xx = (double *) MALLOC( 2*N*sizeof(double) ); CHKPTR(xx);
+      xx = (double *) PETSCMALLOC( 2*N*sizeof(double) ); CHKPTRQ(xx);
       for ( i=0; i<N; i++ ) {xx[i] = (double) i;}
       yy = xx + N;
-      lens = (int *) MALLOC(numtid*sizeof(int)); CHKPTR(lens);
+      lens = (int *) PETSCMALLOC(numtid*sizeof(int)); CHKPTRQ(lens);
       for (i=0; i<numtid; i++ ) {
         lens[i] = x->ownership[i+1] - x->ownership[i];
       }
@@ -171,9 +171,9 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
          real part of x->array and Gatherv that */
       MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,
                   0,xin->comm);
-      FREE(lens);
+      PETSCFREE(lens);
       DrawLGAddPoints(lg,N,&xx,&yy);
-      FREE(xx);
+      PETSCFREE(xx);
       DrawLG(lg);
     }
     else {
@@ -207,10 +207,10 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
 
 #if defined(PETSC_DEBUG)
   if (x->insertmode == INSERTVALUES && addv == ADDVALUES) {
-    SETERR(1,"You have already inserted vector values, you cannot now add");
+    SETERRQ(1,"You have already inserted vector values, you cannot now add");
   }
   else if (x->insertmode == ADDVALUES && addv == INSERTVALUES) {
-    SETERR(1,"You have already added vector values, you cannot now insert");
+    SETERRQ(1,"You have already added vector values, you cannot now insert");
   }
 #endif
   x->insertmode = addv;
@@ -222,7 +222,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
     }
     else {
 #if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] > x->N) SETERR(1,"Index out of range");
+      if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"Index out of range");
 #endif
       /* check if this index has already been cached */
       alreadycached = 0;
@@ -238,12 +238,12 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
         if (x->stash.n == x->stash.nmax) {/* cache is full */
           int    *idx, nmax = x->stash.nmax;
           Scalar *array;
-          array = (Scalar *) MALLOC( (nmax+10)*sizeof(Scalar) + 
-                                     (nmax+10)*sizeof(int) ); CHKPTR(array);
+          array = (Scalar *) PETSCMALLOC( (nmax+10)*sizeof(Scalar) + 
+                                     (nmax+10)*sizeof(int) ); CHKPTRQ(array);
           idx = (int *) (array + nmax + 10);
-          MEMCPY(array,x->stash.array,nmax*sizeof(Scalar));
-          MEMCPY(idx,x->stash.idx,nmax*sizeof(int));
-          if (x->stash.array) FREE(x->stash.array);
+          PETSCMEMCPY(array,x->stash.array,nmax*sizeof(Scalar));
+          PETSCMEMCPY(idx,x->stash.idx,nmax*sizeof(int));
+          if (x->stash.array) PETSCFREE(x->stash.array);
           x->stash.array = array; x->stash.idx = idx;
           x->stash.nmax += 10;
         }
@@ -274,14 +274,14 @@ static int VecAssemblyBegin_MPI(Vec xin)
   MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
   if (addv == (ADDVALUES|INSERTVALUES)) {
-    SETERR(1,"Some processors have inserted while others have added");
+    SETERRQ(1,"Some processors have inserted while others have added");
   }
   x->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
-  nprocs = (int *) MALLOC( 2*numtids*sizeof(int) ); CHKPTR(nprocs);
-  MEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
-  owner = (int *) MALLOC( (x->stash.n+1)*sizeof(int) ); CHKPTR(owner);
+  nprocs = (int *) PETSCMALLOC( 2*numtids*sizeof(int) ); CHKPTRQ(nprocs);
+  PETSCMEMSET(nprocs,0,2*numtids*sizeof(int)); procs = nprocs + numtids;
+  owner = (int *) PETSCMALLOC( (x->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
   for ( i=0; i<x->stash.n; i++ ) {
     idx = x->stash.idx[i];
     for ( j=0; j<numtids; j++ ) {
@@ -293,12 +293,12 @@ static int VecAssemblyBegin_MPI(Vec xin)
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(work);
+  work = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(work);
   MPI_Allreduce((void *) procs,(void *) work,numtids,MPI_INT,MPI_SUM,comm);
   nreceives = work[mytid]; 
   MPI_Allreduce((void *) nprocs,(void *) work,numtids,MPI_INT,MPI_MAX,comm);
   nmax = work[mytid];
-  FREE(work);
+  PETSCFREE(work);
 
   /* post receives: 
        1) each message will consist of ordered pairs 
@@ -309,10 +309,10 @@ static int VecAssemblyBegin_MPI(Vec xin)
      this is a lot of wasted space.
        This could be done better.
   */
-  rvalues = (Scalar *) MALLOC(2*(nreceives+1)*(nmax+1)*sizeof(Scalar));
-  CHKPTR(rvalues);
-  recv_waits = (MPI_Request *) MALLOC((nreceives+1)*sizeof(MPI_Request));
-  CHKPTR(recv_waits);
+  rvalues = (Scalar *) PETSCMALLOC(2*(nreceives+1)*(nmax+1)*sizeof(Scalar));
+  CHKPTRQ(rvalues);
+  recv_waits = (MPI_Request *) PETSCMALLOC((nreceives+1)*sizeof(MPI_Request));
+  CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
     MPI_Irecv((void *)(rvalues+2*nmax*i),2*nmax,MPI_SCALAR,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
@@ -322,18 +322,18 @@ static int VecAssemblyBegin_MPI(Vec xin)
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  svalues = (Scalar *) MALLOC( 2*(x->stash.n+1)*sizeof(Scalar) );
-  CHKPTR(svalues);
-  send_waits = (MPI_Request *) MALLOC( (nsends+1)*sizeof(MPI_Request));
-  CHKPTR(send_waits);
-  starts = (int *) MALLOC( numtids*sizeof(int) ); CHKPTR(starts);
+  svalues = (Scalar *) PETSCMALLOC( 2*(x->stash.n+1)*sizeof(Scalar) );
+  CHKPTRQ(svalues);
+  send_waits = (MPI_Request *) PETSCMALLOC( (nsends+1)*sizeof(MPI_Request));
+  CHKPTRQ(send_waits);
+  starts = (int *) PETSCMALLOC( numtids*sizeof(int) ); CHKPTRQ(starts);
   starts[0] = 0; 
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   for ( i=0; i<x->stash.n; i++ ) {
     svalues[2*starts[owner[i]]]       = (Scalar)  x->stash.idx[i];
     svalues[2*(starts[owner[i]]++)+1] =  x->stash.array[i];
   }
-  FREE(owner);
+  PETSCFREE(owner);
   starts[0] = 0;
   for ( i=1; i<numtids; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
@@ -343,11 +343,11 @@ static int VecAssemblyBegin_MPI(Vec xin)
                 comm,send_waits+count++);
     }
   }
-  FREE(starts); FREE(nprocs);
+  PETSCFREE(starts); PETSCFREE(nprocs);
 
   /* Free cache space */
   x->stash.nmax = x->stash.n = 0;
-  if (x->stash.array){ FREE(x->stash.array); x->stash.array = 0;}
+  if (x->stash.array){ PETSCFREE(x->stash.array); x->stash.array = 0;}
 
   x->svalues    = svalues;       x->rvalues = rvalues;
   x->nsends     = nsends;         x->nrecvs = nreceives;
@@ -384,20 +384,20 @@ static int VecAssemblyEnd_MPI(Vec vec)
       }
     }
     else {
-        SETERR(1,"Insert mode is not set correct; corrupt vector");
+        SETERRQ(1,"Insert mode is not set correct; corrupt vector");
     }
     count--;
   }
-  FREE(x->recv_waits); FREE(x->rvalues);
+  PETSCFREE(x->recv_waits); PETSCFREE(x->rvalues);
  
   /* wait on sends */
   if (x->nsends) {
-    send_status = (MPI_Status *) MALLOC( x->nsends*sizeof(MPI_Status) );
-    CHKPTR(send_status);
+    send_status = (MPI_Status *) PETSCMALLOC( x->nsends*sizeof(MPI_Status) );
+    CHKPTRQ(send_status);
     MPI_Waitall(x->nsends,x->send_waits,send_status);
-    FREE(send_status);
+    PETSCFREE(send_status);
   }
-  FREE(x->send_waits); FREE(x->svalues);
+  PETSCFREE(x->send_waits); PETSCFREE(x->svalues);
 
   x->insertmode = NOTSETVALUES;
   return 0;

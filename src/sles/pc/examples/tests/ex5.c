@@ -56,11 +56,11 @@ int main(int Argc, char **Args)
   if (OptionsHasName(0,"-f")) {am = MGFULL;}
   if (OptionsHasName(0,"-j")) {use_jacobi = 1;}
          
-  N = (int *) MALLOC(levels*sizeof(int)); CHKPTR(N);
+  N = (int *) PETSCMALLOC(levels*sizeof(int)); CHKPTRQ(N);
   N[0] = x_mesh;
   for ( i=1; i<levels; i++ ) {
     N[i] = N[i-1]/2;
-    if (N[i] < 1) {SETERR(1,"Too many levels");}
+    if (N[i] < 1) {SETERRQ(1,"Too many levels");}
   }
 
   Create1dLaplacian(N[levels-1],&cmat);
@@ -124,7 +124,7 @@ int main(int Argc, char **Args)
   CalculateRhs(B[levels-1]);
   VecSet(&zero,X[levels-1]);
 
-  if (MGCheck(pcmg)) {SETERR(1,0);}
+  if (MGCheck(pcmg)) {SETERRQ(1,0);}
      
   residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
   CalculateError(solution,X[levels-1],R[levels-1],e);
@@ -135,7 +135,7 @@ int main(int Argc, char **Args)
   CalculateError(solution,X[levels-1],R[levels-1],e); 
   printf("its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
 
-  FREE(N);
+  PETSCFREE(N);
   VecDestroy(solution);
 
   /* note we have to keep a list of all vectors allocated, this is 
@@ -261,7 +261,7 @@ int Create1dLaplacian(int n,Mat *mat)
 {
   Scalar mone = -1.0, two = 2.0;
   int    ierr,i,idx;
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERR(ierr);
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERRQ(ierr);
   
   idx= n-1;
   MatSetValues(*mat,1,&idx,1,&idx,&two,INSERTVALUES);
@@ -271,8 +271,8 @@ int Create1dLaplacian(int n,Mat *mat)
     MatSetValues(*mat,1,&idx,1,&i,&mone,INSERTVALUES);
     MatSetValues(*mat,1,&i,1,&idx,&mone,INSERTVALUES);
   }
-  ierr = MatAssemblyBegin(*mat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatAssemblyEnd(*mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(*mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
@@ -284,7 +284,7 @@ int CalculateRhs(Vec u)
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = 2.0*h*h; 
-    ierr = VecSetValues(u,1,&i,&uu,INSERTVALUES); CHKERR(ierr);
+    ierr = VecSetValues(u,1,&i,&uu,INSERTVALUES); CHKERRQ(ierr);
   }
 
   return 0;
@@ -298,7 +298,7 @@ int CalculateSolution(int n,Vec *solution)
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = x*(1.-x); 
-    ierr = VecSetValues(*solution,1,&i,&uu,INSERTVALUES); CHKERR(ierr);
+    ierr = VecSetValues(*solution,1,&i,&uu,INSERTVALUES); CHKERRQ(ierr);
   }
 
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.9 1995/05/29 16:08:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.10 1995/05/29 16:49:41 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -56,8 +56,8 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
      return DrawOpenNull(vobj->comm,(DrawCtx*)ctx);
   }
-  ad            = (DrawAxisCtx) MALLOC(sizeof(struct _DrawAxisCtx)); 
-  CHKPTR(ad);
+  ad            = (DrawAxisCtx) PETSCMALLOC(sizeof(struct _DrawAxisCtx)); 
+  CHKPTRQ(ad);
   ad->xticks    = XiADefTicks;
   ad->yticks    = XiADefTicks;
   ad->xlabelstr = XiADefLabel;
@@ -82,7 +82,7 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
 @*/
 int DrawAxisDestroy(DrawAxisCtx axis)
 {
-  FREE(axis);
+  PETSCFREE(axis);
   return 0;
 }
 

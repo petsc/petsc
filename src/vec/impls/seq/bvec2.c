@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.24 1995/05/18 22:43:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.25 1995/05/29 20:28:04 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -65,20 +65,20 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
     double    *xx;
     DrawLGGetDrawCtx(lg,&win);
     DrawLGReset(lg);
-    xx = (double *) MALLOC( (n+1)*sizeof(double) ); CHKPTR(xx);
+    xx = (double *) PETSCMALLOC( (n+1)*sizeof(double) ); CHKPTRQ(xx);
     for ( i=0; i<n; i++ ) {
       xx[i] = (double) i;
     }
     DrawLGAddPoints(lg,n,&xx,&x->array);
-    FREE(xx);
+    PETSCFREE(xx);
     DrawLG(lg);
     DrawSyncFlush(win);
   }
   else if (vobj->cookie == DRAW_COOKIE) {
     DrawCtx   win = (DrawCtx) ptr;
     DrawLGCtx lg;
-    ierr = DrawLGCreate(win,1,&lg); CHKERR(ierr);
-    ierr = VecView(xin,(Viewer) lg); CHKERR(ierr);
+    ierr = DrawLGCreate(win,1,&lg); CHKERRQ(ierr);
+    ierr = VecView(xin,(Viewer) lg); CHKERRQ(ierr);
     DrawLGDestroy(lg);
   }
   else if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
@@ -97,7 +97,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   if (m == INSERTVALUES) {
     for ( i=0; i<ni; i++ ) {
 #if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] >= x->n) SETERR(1,"Index out of range");
+      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"Index out of range");
 #endif
       xx[ix[i]] = y[i];
     }
@@ -105,7 +105,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   else {
     for ( i=0; i<ni; i++ ) {
 #if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] >= x->n) SETERR(1,"Index out of range");
+      if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"Index out of range");
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -119,7 +119,7 @@ static int VecDestroy_Seq(PetscObject obj )
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d",((Vec_Seq *)v->data)->n);
 #endif
-  FREE(v->data);
+  PETSCFREE(v->data);
   PLogObjectDestroy(v);
   PETSCHEADERDESTROY(v); 
   return 0;
@@ -163,12 +163,12 @@ int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
   Vec_Seq *s;
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
-  if (flag == MPI_UNEQUAL) SETERR(1,"Must call with MPI_COMM_SELF");
+  if (flag == MPI_UNEQUAL) SETERRQ(1,"Must call with MPI_COMM_SELF");
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,SEQVECTOR,comm);
   PLogObjectCreate(v);
   v->destroy     = VecDestroy_Seq;
   v->view        = VecView_Seq;
-  s              = (Vec_Seq *) MALLOC(size); CHKPTR(s);
+  s              = (Vec_Seq *) PETSCMALLOC(size); CHKPTRQ(s);
   v->ops         = &DvOps;
   v->data        = (void *) s;
   s->n           = n;

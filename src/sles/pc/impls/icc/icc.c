@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.9 1995/05/16 00:39:14 curfman Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.10 1995/05/18 22:45:20 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -19,7 +19,7 @@ static int PCSetup_ICC(PC pc)
   int    ierr;
 
   /* Currently no reorderings are supported!
-  ierr = MatGetReordering(pc->pmat,icc->ordering,&perm,&perm); CHKERR(ierr); */
+  ierr = MatGetReordering(pc->pmat,icc->ordering,&perm,&perm); CHKERRQ(ierr); */
   perm = 0;
 
   if (!pc->setupcalled) {
@@ -28,16 +28,16 @@ static int PCSetup_ICC(PC pc)
       icc->ImplCreate = PCImplCreate_ICC_MPIRowbs;
     }
 #endif
-    if (icc->ImplCreate) {ierr = (*icc->ImplCreate)(pc); CHKERR(ierr);}
+    if (icc->ImplCreate) {ierr = (*icc->ImplCreate)(pc); CHKERRQ(ierr);}
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,
-				icc->levels,&icc->fact); CHKERR(ierr);
+				icc->levels,&icc->fact); CHKERRQ(ierr);
   }
   else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) {
-    ierr = MatDestroy(icc->fact); CHKERR(ierr);
+    ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,
-				icc->levels,&icc->fact); CHKERR(ierr);
+				icc->levels,&icc->fact); CHKERRQ(ierr);
   }
-  ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact); CHKERR(ierr);
+  ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->fact); CHKERRQ(ierr);
   return 0;
 }
 
@@ -47,9 +47,9 @@ static int PCDestroy_ICC(PetscObject obj)
   PC_ICC *icc = (PC_ICC *) pc->data;
   int    ierr;
 
-  if (icc->ImplDestroy) {ierr = (*icc->ImplDestroy)(pc); CHKERR(ierr);}
+  if (icc->ImplDestroy) {ierr = (*icc->ImplDestroy)(pc); CHKERRQ(ierr);}
   MatDestroy(icc->fact);
-  FREE(icc);
+  PETSCFREE(icc);
   PLogObjectDestroy(pc);
   PETSCHEADERDESTROY(pc);
   return 0;
@@ -80,7 +80,7 @@ static int PCSetFromOptions_ICC(PC pc)
 
 int PCCreate_ICC(PC pc)
 {
-  PC_ICC *icc = NEW(PC_ICC); CHKPTR(icc);
+  PC_ICC *icc = PETSCNEW(PC_ICC); CHKPTRQ(icc);
   icc->fact	   = 0;
   icc->ordering    = ORDER_ND;
   icc->levels	   = 0;

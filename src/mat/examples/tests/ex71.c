@@ -21,32 +21,32 @@ int main(int argc,char **args)
   OptionsGetInt(0,"-m",&m);
   OptionsGetInt(0,"-n",&n);
 
-  ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERR(ierr);
+  ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERRA(ierr);
 
   if ((ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A)))
-                                                           SETERR(ierr,0);
+                                                           SETERRA(ierr,0);
   ierr = GridCreateUniform2d(MPI_COMM_WORLD,m,0.0,1.0,n,0.0,1.0,&grid);
-  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uxx,&stencil); CHKERR(ierr);
-  StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
+  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uxx,&stencil); CHKERRA(ierr);
+  StencilAddStage(stencil,grid,0,0,0,A); CHKERRA(ierr);
   StencilDestroy(stencil);
-  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uyy,&stencil); CHKERR(ierr);
-  StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
+  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uyy,&stencil); CHKERRA(ierr);
+  StencilAddStage(stencil,grid,0,0,0,A); CHKERRA(ierr);
   StencilDestroy(stencil);
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_DIRICHLET,&stencil); 
-  CHKERR(ierr);  
-  ierr = StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
+  CHKERRA(ierr);  
+  ierr = StencilAddStage(stencil,grid,0,0,0,A); CHKERRA(ierr);
   StencilDestroy(stencil);
 
-  ierr = MatView(A,viewer); CHKERR(ierr);
+  ierr = MatView(A,viewer); CHKERRA(ierr);
 
-  ierr = VecCreateSequential(MPI_COMM_SELF,m,&x); CHKERR(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,m,&x); CHKERRA(ierr);
   VecSet(&one,x);
-  ierr = VecView(x,viewer); CHKERR(ierr);
+  ierr = VecView(x,viewer); CHKERRA(ierr);
   
   sleep(30);
-  ierr = PetscDestroy((PetscObject) viewer); CHKERR(ierr);
+  ierr = PetscDestroy((PetscObject) viewer); CHKERRA(ierr);
 
   VecDestroy(x); 
   MatDestroy(A);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: error.c,v 1.13 1995/04/21 20:33:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.14 1995/05/14 16:32:37 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>  /*I <stdio.h> I*/
@@ -38,7 +38,7 @@ $       debugger is gdb; alternatives are dbx and xxgdb.
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERR, which has 
    the calling sequence
-$     SETERR(number,message)
+$     SETERRQ(number,message)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -73,7 +73,7 @@ int PetscAbortErrorHandler(int line,char* dir,char *file,char *message,
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERR, which has 
    the calling sequence
-$     SETERR(number,message)
+$     SETERRQ(number,message)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -116,7 +116,7 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
 int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,void*),
                           void *ctx )
 {
-  struct  EH *neweh = NEW(struct EH); CHKPTR(neweh);
+  struct  EH *neweh = (struct EH*) PETSCMALLOC(sizeof(struct EH)); CHKPTRQ(neweh);
   if (eh) {neweh->previous = eh;} 
   else {neweh->previous = 0;}
   neweh->handler = handler;
@@ -138,13 +138,13 @@ int PetscPopErrorHandler()
   if (!eh) return 0;
   tmp = eh;
   eh = eh->previous;
-  FREE(tmp);
+  PETSCFREE(tmp);
 
   return 0;
 }
 /*@
    PetscError - Routine that is called when an error has been detected, 
-   usually called through the macro SETERR().
+   usually called through the macro SETERRQ().
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
@@ -157,7 +157,7 @@ int PetscPopErrorHandler()
    Most users need not directly use this routine and the error handlers, but
    can instead use the simplified interface SETERR, which has the calling 
    sequence
-$     SETERR(number,message)
+$     SETERRQ(number,message)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 

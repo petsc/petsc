@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.10 1995/05/14 16:34:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.11 1995/05/28 17:39:02 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -83,8 +83,8 @@ static int MatlabDestroy(PetscObject obj)
   linger.time  = 0;
 
   if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) 
-    SETERR(1,"Setting linger");
-  if (close(viewer->port)) SETERR(1,"closing socket");
+    SETERRQ(1,"Setting linger");
+  if (close(viewer->port)) SETERRQ(1,"closing socket");
 #if !defined(PARCH_IRIX) && !defined(PARCH_hpux)
   usleep((unsigned) 100);
 #endif
@@ -115,7 +115,7 @@ int write_data(int t,void *buff,int n)
 {
   if ( n <= 0 ) return 0;
   if ( write(t,(char *)buff,n) < 0 ) {
-    SETERR(1,"SEND: error writing "); 
+    SETERRQ(1,"SEND: error writing "); 
   }
   return 0; 
 }
@@ -128,7 +128,7 @@ int call_socket(char *hostname,int portnum)
   
   if ( (hp=gethostbyname(hostname)) == NULL ) {
     perror("SEND: error gethostbyname: ");   
-    SETERR(1,0);
+    SETERRQ(1,0);
   }
   bzero((char*)&sa,sizeof(sa));
   bcopy(hp->h_addr,(char*)&sa.sin_addr,hp->h_length);
@@ -136,7 +136,7 @@ int call_socket(char *hostname,int portnum)
   sa.sin_port = htons((u_short) portnum);
   while (flag) {
     if ( (s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0 ) {
-      perror("SEND: error socket");  SETERR(-1,0);
+      perror("SEND: error socket");  SETERRQ(-1,0);
     }
     if ( connect(s,(struct sockaddr *)&sa,sizeof(sa)) < 0 ) {
       if ( errno == EALREADY ) {
@@ -156,7 +156,7 @@ int call_socket(char *hostname,int portnum)
         sleep((unsigned) 1);
       }
       else {
-        perror(NULL); SETERR(-1,0);
+        perror(NULL); SETERRQ(-1,0);
       }
       flag = 1; close(s);
     } 

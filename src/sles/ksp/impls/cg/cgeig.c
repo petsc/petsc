@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.7 1995/03/27 22:56:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.8 1995/03/30 21:17:30 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -29,7 +29,7 @@ static int eig(int i,Scalar *d,Scalar *e,Scalar *dd,Scalar *ee,
    for ( j=0; j<ii ; j++) { dd[j] = d[j]; ee[j] = e[j]; }
 
    ccgtql1(&ii,dd,ee,&j);
-   if (j != 0) SETERR(1,"Error return from tql1 in CG code");  
+   if (j != 0) SETERRQ(1,"Error return from tql1 in CG code");  
 
    *mine = dd[0]; *maxe = dd[ii-1];
   return 0;
@@ -58,9 +58,9 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
   KSP_CG *cgP;
 
   VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->type != KSPCG) {SETERR(3,"Method not CG");}
+  if (itP->type != KSPCG) {SETERRQ(3,"Method not CG");}
   if (!itP->calc_eigs) {
-      SETERR(4,"Eigenvalue calculation not requested in CG Setup");}
+      SETERRQ(4,"Eigenvalue calculation not requested in CG Setup");}
 
   cgP = (KSP_CG *) itP->MethodPrivate;
   if (n == 0) {
@@ -95,7 +95,7 @@ int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
   }
   else {
     cgP = (KSP_CG *) itP->MethodPrivate;
-    ierr = KSPCGGetEigenvalues(itP,n,&cgP->emax,&cgP->emin); CHKERR(ierr);
+    ierr = KSPCGGetEigenvalues(itP,n,&cgP->emax,&cgP->emin); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
     c = real(cgP->emax)/real(cgP->emin);
     printf("%d %14.12e %% %g %g %g \n",n,rnorm,real(cgP->emax),

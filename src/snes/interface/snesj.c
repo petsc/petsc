@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.13 1995/05/12 21:02:24 curfman Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.14 1995/05/16 00:36:51 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -42,16 +42,16 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
   double epsilon = 1.e-8,amax; /* assumes double precision */
 
   MatZeroEntries(*J);
-  ierr = VecDuplicate(x1,&j1); CHKERR(ierr);
-  ierr = VecDuplicate(x1,&j2); CHKERR(ierr);
-  ierr = VecDuplicate(x1,&x2); CHKERR(ierr);
+  ierr = VecDuplicate(x1,&j1); CHKERRQ(ierr);
+  ierr = VecDuplicate(x1,&j2); CHKERRQ(ierr);
+  ierr = VecDuplicate(x1,&x2); CHKERRQ(ierr);
 
-  ierr = VecGetSize(x1,&N); CHKERR(ierr);
-  ierr = VecGetOwnershipRange(x1,&start,&end); CHKERR(ierr);
+  ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
   VecGetArray(x1,&xx);
-  ierr = SNESComputeFunction(snes,x1,j1); CHKERR(ierr);
+  ierr = SNESComputeFunction(snes,x1,j1); CHKERRQ(ierr);
   for ( i=0; i<N; i++ ) {
-    ierr = VecCopy(x1,x2); CHKERR(ierr);
+    ierr = VecCopy(x1,x2); CHKERRQ(ierr);
     if ( i>= start && i<end) {
       dx = xx[i-start];
       if (dx < 1.e-16 && dx >= 0.0) dx = 1.e-1;
@@ -60,14 +60,14 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
       scale = -1.0/dx;
       VecSetValues(x2,1,&i,&dx,ADDVALUES); 
     } 
-    ierr = SNESComputeFunction(snes,x2,j2); CHKERR(ierr);
-    ierr = VecAXPY(&mone,j1,j2); CHKERR(ierr);
+    ierr = SNESComputeFunction(snes,x2,j2); CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,j1,j2); CHKERRQ(ierr);
     VecScale(&scale,j2);
     VecGetArray(j2,&y);
     VecAMax(j2,0,&amax); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
       if (y[j-start] > amax || y[j-start] < -amax) {
-        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERTVALUES); CHKERR(ierr);
+        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERTVALUES); CHKERRQ(ierr);
       }
     }
     VecRestoreArray(j2,&y);

@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.11 1995/06/07 17:27:28 bsmith Exp $ */
+/* $Id: pvec2.c,v 1.5 1995/06/07 17:29:56 bsmith Exp bsmith $ */
 
 #include <math.h>
 #include "pvecimpl.h" 
@@ -7,10 +7,10 @@
 static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
   Scalar *work;
-  work = (Scalar *)MALLOC( nv * sizeof(Scalar) );  CHKPTR(work);
+  work = (Scalar *)PETSCMALLOC( nv * sizeof(Scalar) );  CHKPTRQ(work);
   VecMDot_Seq(  nv, xin, y, work );
   MPI_Allreduce((void *) work,(void *)z,nv,MPI_SCALAR,MPI_SUM,xin->comm );
-  FREE(work);
+  PETSCFREE(work);
   return 0;
 }
 
@@ -46,7 +46,7 @@ static int VecAMax_MPI( Vec xin, int *idx, double *z )
   }
   else {
     /* Need to use special linked max */
-    SETERR( 1, "Parallel max with index not yet supported" );
+    SETERRQ( 1, "Parallel max with index not yet supported" );
   }
   return 0;
 }
@@ -63,7 +63,7 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
   }
   else {
     /* Need to use special linked max */
-    SETERR( 1, "Parallel max with index not yet supported" );
+    SETERRQ( 1, "Parallel max with index not yet supported" );
   }
   return 0;
 }
@@ -80,7 +80,7 @@ static int VecMin_MPI( Vec xin, int *idx, double *z )
   }
   else {
     /* Need to use special linked Min */
-    SETERR( 1, "Parallel Min with index not yet supported" );
+    SETERRQ( 1, "Parallel Min with index not yet supported" );
   }
   return 0;
 }

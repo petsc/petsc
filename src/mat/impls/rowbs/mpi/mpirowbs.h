@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.10 1995/06/07 17:30:43 bsmith Exp $ */
+/* $Id: mpirowbs.h,v 1.10 1995/06/07 17:33:34 bsmith Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -8,17 +8,7 @@
 #if !defined(__MPIROW_BS_H)
 #define __MPIROW_BS_H
 
-/* temporary redefinitions to avoid problems with BlockSolve */
-#define PMALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
-#define PFREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
-#define PNEW(a)          (a *) PMALLOC(sizeof(a))
-#define PMEMCPY(a,b,n)   memcpy((char*)(a),(char*)(b),n)
-#define PMEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
-#define PSETERR(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
-#define PCHKERR(n)       {if (n) PSETERR(n,(char *)0);}
-#define PCHKPTR(a)       if (!a) PSETERR(1,"No memory"); 
-
-/* 
+/*
    Mat_MPIRowbs - Parallel, compressed row storage format that's the
    interface to BlockSolve.
  */
