@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.32 1996/11/20 20:00:11 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.33 1996/11/26 20:17:11 curfman Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -32,12 +32,12 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Mat_SeqBAIJ *B = (Mat_SeqBAIJ*) baij->B->data;
-  int         nbs = B->nbs,i;
+  int         nbs = B->nbs,i,bs=B->bs;;
 
   baij->colmap = (int *) PetscMalloc(baij->Nbs*sizeof(int));CHKPTRQ(baij->colmap);
   PLogObjectMemory(mat,baij->Nbs*sizeof(int));
   PetscMemzero(baij->colmap,baij->Nbs*sizeof(int));
-  for ( i=0; i<nbs; i++ ) baij->colmap[baij->garray[i]] = i + 1;
+  for ( i=0; i<nbs; i++ ) baij->colmap[baij->garray[i]] = i*bs+1;
   return 0;
 }
 
