@@ -842,6 +842,9 @@ EXTERN int MatComputeExplicitOperator(Mat,Mat*);
 EXTERN int MatESISetType(Mat,char*);
 EXTERN int MatESISetFromOptions(Mat);
 
+EXTERN int MatMPIBAIJDiagonalScaleLocalSetUp(Mat,Vec);
+EXTERN int MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
+
 #endif
 
 

@@ -613,6 +613,34 @@ void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,int *ierr
   *ierr = MatZeroRowsLocal(*mat,*is,diag);
 }
 
+/*        Patch added for Glenn */
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matmpibaijdiagonalscalelocal_    MATMPIBAIJDIAGONALSCALELOCAL
+#define matdiagonalscalelocal_           MATDIAGONALSCALELOCAL
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matmpibaijdiagonalscalelocal_    matmpibaijdiagonalscalelocal
+#define matdiagonalscalelocal_           matdiagonalscalelocal
+#endif
+
+extern int *uglyrmapd,*uglyrmapo;
+
+void matmpibaijdiagonalscalelocal_(Mat *A,Vec *scale,int *ierr)
+{
+  if (!uglyrmapd) {
+    *ierr = MatMPIBAIJDiagonalScaleLocalSetUp(*A,*scale);
+    if (*ierr) return;
+  }
+  *ierr = MatMPIBAIJDiagonalScaleLocal(*A,*scale);
+}
+
+void PETSC_STDCALL matdiagonalscalelocal_(Mat *A,Vec *scale, int *__ierr ){
+  if (!uglyrmapd) {
+    *__ierr = MatMPIBAIJDiagonalScaleLocalSetUp(*A,*scale);
+    if (*__ierr) return;
+  }
+  *__ierr = MatMPIBAIJDiagonalScaleLocal(*A,*scale);
+}
+
 EXTERN_C_END
 
 
