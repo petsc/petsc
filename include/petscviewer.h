@@ -149,7 +149,7 @@ EXTERN int PetscViewerMathematicaGetName(PetscViewer, const char **);
 EXTERN int PetscViewerMathematicaSetName(PetscViewer, const char []);
 EXTERN int PetscViewerMathematicaClearName(PetscViewer);
 EXTERN int PetscViewerMathematicaSkipPackets(PetscViewer, int);
-#ifdef PETSC_HAVE_MATHEMATICA
+#if defined(PETSC_HAVE_MATHEMATICA)
 EXTERN int PetscViewerMathematicaGetLink(PetscViewer, MLINK *);
 #endif
 

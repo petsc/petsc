@@ -4,8 +4,8 @@
     Defines the basic header of all PETSc objects.
 */
 
-#if !defined(_PHEAD_H)
-#define _PHEAD_H
+#if !defined(_PETSCHEAD_H)
+#define _PETSCHEAD_H
 #include "petsc.h"  
 
 EXTERN int PetscCommDuplicate_Private(MPI_Comm,MPI_Comm*,int*);
@@ -262,9 +262,4 @@ struct _p_PetscObject {
 EXTERN int PetscObjectPublishBaseBegin(PetscObject);
 EXTERN int PetscObjectPublishBaseEnd(PetscObject);
 
-#endif
-
-
-
-
-
+#endif /* _PETSCHEAD_H */
