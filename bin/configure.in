@@ -536,6 +536,10 @@ dnl To work around this, we use the output:input file name options
 dnl
 AC_OUTPUT(bmake/config/base.site:../bmake/config/base.site.in bmake/config/base:../bmake/config/base.in bmake/config/base_variables:../bmake/config/base_variables.in)
 dnl
+dnl Change all DEFINE to PETSC_DEFINE
+dnl
+cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' > bmake/config/petscconf.tmp
+dnl
 dnl If the user asked us, move the files into the bmake area in their own
 dnl directory
 dnl
@@ -560,8 +564,6 @@ if test $install_sitefiles = 1 ; then
     mv bmake/config/base.site $PETSC_DIR/bmake/$PETSC_ARCH/base.site
     mv bmake/config/base_variables $PETSC_DIR/bmake/$PETSC_ARCH/base_variables
     mv bmake/config/base     $PETSC_DIR/bmake/$PETSC_ARCH/base
-    # Change all DEFINE to PETSC_DEFINE
-    cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' > bmake/config/petscconf.tmp
     mv -f bmake/config/petscconf.tmp $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h    
     mv -f bmake/config/petscconf.h $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.unmodified
     touch $PETSC_DIR/bmake/$PETSC_ARCH/petscfix.h    
