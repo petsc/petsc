@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.49 1995/08/17 13:29:40 curfman Exp $";
+static char vcid[] = "$Id: dense.c,v 1.48 1995/08/17 13:36:24 curfman Exp bsmith $";
 #endif
 
 /*
@@ -192,13 +192,35 @@ static int MatRelax_Dense(Mat matin,Vec bb,double omega,MatSORType flag,
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP){
       for ( i=0; i<m; i++ ) {
+#if defined(PETSC_COMPLEX)
+        /* cannot use BLAS dot for complex because compiler/linker is 
+           not happy about returning a double complex */
+        int    _i;
+        Scalar sum = b[i];
+        for ( _i=0; _i<m; _i++ ) {
+          sum -= conj(v[i+_i*m])*x[_i];
+        }
+        xt = sum;
+#else
         xt = b[i]-BLdot_(&m,v+i,&m,x,&o);
+#endif
         x[i] = (1. - omega)*x[i] + omega*(xt/(v[i + i*m]+shift) + x[i]);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP) {
       for ( i=m-1; i>=0; i-- ) {
+#if defined(PETSC_COMPLEX)
+        /* cannot use BLAS dot for complex because compiler/linker is 
+           not happy about returning a double complex */
+        int    _i;
+        Scalar sum = b[i];
+        for ( _i=0; _i<m; _i++ ) {
+          sum -= conj(v[i+_i*m])*x[_i];
+        }
+        xt = sum;
+#else
         xt = b[i]-BLdot_(&m,v+i,&m,x,&o);
+#endif
         x[i] = (1. - omega)*x[i] + omega*(xt/(v[i + i*m]+shift) + x[i]);
       }
     }
