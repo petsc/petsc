@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.228 1998/09/28 00:25:11 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.229 1998/10/07 17:33:49 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -29,7 +29,9 @@
    The PETSc configuration file.  Contains various definitions that
    handle portability issues and the presence of machine features. 
 
-   petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h  
+   petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h it is 
+   found automatically by the compiler due to the -I${PETSC_DIR}/bmake/${PETSC_ARCH}
+   in the bmake/common definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
 
@@ -82,7 +84,10 @@ extern int   PetscTrLog(void);
 extern int   PetscTrLogDump(FILE *);
 extern int   PetscGetResidentSetSize(PLogDouble *);
 
-
+/*
+     Constants and functions used for handling different basic data types.
+     These are used, for example, in binary IO routines
+*/
 typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
               PETSC_COMPLEX = 4, PETSC_CHAR = 5, PETSC_LOGICAL = 6} PetscDataType;
 #if defined(USE_PETSC_COMPLEX)
@@ -90,7 +95,6 @@ typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
-
 typedef enum {PETSC_INT_SIZE = sizeof(int), PETSC_DOUBLE_SIZE = sizeof(double),
               PETSC_SCALAR_SIZE = sizeof(Scalar), PETSC_COMPLEX_SIZE = sizeof(double),
               PETSC_CHAR_SIZE = sizeof(char), PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
@@ -99,7 +103,9 @@ extern int PetscDataTypeGetSize(PetscDataType,int*);
 extern int PetscDataTypeGetName(PetscDataType,char*[]);
 
 /*
-    Basic memory and string operations
+    Basic memory and string operations. These are usually simple wrappers
+   around the basic Unix system calls, but a few of them have additional
+   functionality and/or error checking.
 */
 extern int   PetscMemcpy(void *,const void *,int);
 extern int   PetscBitMemcpy(void*,int,const void*,int,int,PetscDataType);
@@ -244,6 +250,9 @@ typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
 extern int PetscObjectComposeLanguage(PetscObject,PetscLanguage,void *);
 extern int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
 
+/*
+    Defines the base data structures for all PETSc objects
+*/
 #include "petschead.h"
 
 /*
@@ -289,7 +298,6 @@ extern int PetscObjectContainerGetPointer(PetscObjectContainer,void **);
 extern int PetscObjectContainerSetPointer(PetscObjectContainer,void *);
 extern int PetscObjectContainerDestroy(PetscObjectContainer);
 extern int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
-
 
 /*
    For incremental debugging
@@ -355,6 +363,20 @@ extern int PetscDoubleView(int,double[],Viewer);
 #define USE_FORTRAN_KERNEL_MDOT
 #endif
 
+#endif
+
+/*
+    Macros for indicating code that should be compiled with a C interface,
+   rather than a C++ interface. Any routines that are dynamically loaded
+   (such as the PCCreate_XXX() routines) must be wrapped so that the name
+   mangler does not change the functions symbol name
+*/
+#if defined(__cplusplus)
+#define EXTERN_C_BEGIN extern "C" {
+#define EXTERN_C_END }
+#else
+#define EXTERN_C_BEGIN 
+#define EXTERN_C_END 
 #endif
 
 #endif

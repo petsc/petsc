@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.82 1998/07/23 20:31:43 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.83 1998/09/19 02:39:02 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -8,9 +8,16 @@
 #include "petsc.h"
 #include "mat.h"
 
+/*
+    PCList contains the list of preconditioners currently registered
+   These are added with the PCRegister() macro
+*/
 extern FList PCList;
 typedef char *PCType;
 
+/*
+    Standard PETSc preconditioners
+*/
 #define PCNONE      "none"
 #define PCJACOBI    "jacobi"
 #define PCSOR       "sor"

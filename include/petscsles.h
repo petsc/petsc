@@ -1,6 +1,6 @@
-/* $Id: sles.h,v 1.23 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: sles.h,v 1.24 1998/07/28 02:43:58 bsmith Exp bsmith $ */
 /*
-   Defines interface to the linear solvers.
+   Defines PETSc interface to the linear solvers.
 */
 #if !defined(__SLES_H)
 #define __SLES_H

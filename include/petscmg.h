@@ -1,6 +1,6 @@
-/* $Id: mg.h,v 1.11 1996/11/07 15:12:51 bsmith Exp bsmith $ */
+/* $Id: mg.h,v 1.12 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 /*
-      Structure used for Multigrid code 
+      Structure used for Multigrid preconditioners 
 */
 #if !defined(__MG_H)
 #define __MG_H

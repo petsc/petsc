@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.47 1998/06/11 19:59:10 bsmith Exp balay $ */
+/* $Id: is.h,v 1.48 1998/07/22 20:18:43 balay Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -60,7 +60,7 @@ extern int   ISAllGather(IS, IS*);
   used by a vector or matrix.
 
    Note: mapping from Local to Global is scalable; but Global
-  to local may not be if the range of global values represented locally
+  to Local may not be if the range of global values represented locally
   is very large.
 */
 #define IS_LTOGM_COOKIE PETSC_COOKIE+12
