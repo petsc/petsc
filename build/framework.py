@@ -594,7 +594,7 @@ class Framework(base.Base):
   def main(self, target = None):
     '''Execute the build operation and handle any exceptions'''
     try:
-      return mainBuild(target)
+      return self.mainBuild(target)
     except Exception, e:
       print str(e)
       if not self.argDB['noStackTrace']:
