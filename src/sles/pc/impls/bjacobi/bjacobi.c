@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.153 2001/02/01 20:47:55 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.154 2001/02/05 16:36:50 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -279,7 +279,7 @@ int PCBJacobiSetUseTrueLocal_BJacobi(PC pc)
 
   PetscFunctionBegin;
   jac                 = (PC_BJacobi*)pc->data;
-  jac->use_true_local = 1;
+  jac->use_true_local = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -297,9 +297,9 @@ int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
   if (n_local)     *n_local     = jac->n_local;
   if (first_local) *first_local = jac->first_local;
   *sles                         = jac->sles;
-  jac->same_local_solves        = 0; /* Assume that local solves are now different;
-                                     not necessarily true though!  This flag is 
-                                     used only for PCView_BJacobi() */
+  jac->same_local_solves        = PETSC_FALSE; /* Assume that local solves are now different;
+                                                  not necessarily true though!  This flag is 
+                                                  used only for PCView_BJacobi() */
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -541,8 +541,8 @@ int PCCreate_BJacobi(PC pc)
   jac->n_local           = -1;
   jac->first_local       = rank;
   jac->sles              = 0;
-  jac->use_true_local    = 0;
-  jac->same_local_solves = 1;
+  jac->use_true_local    = PETSC_FALSE;
+  jac->same_local_solves = PETSC_TRUE;
   jac->g_lens            = 0;
   jac->l_lens            = 0;
   jac->tp_mat            = 0;
@@ -637,6 +637,72 @@ int PCApply_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PCApplySymmetricLeft_BJacobi_Singleblock"
+int PCApplySymmetricLeft_BJacobi_Singleblock(PC pc,Vec x,Vec y)
+{
+  int                    ierr,its;
+  PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
+  Scalar                 *x_array,*y_array;
+  PC                     subpc;
+
+  PetscFunctionBegin;
+  /* 
+      The VecPlaceArray() is to avoid having to copy the 
+    y vector into the bjac->x vector. The reason for 
+    the bjac->x vector is that we need a sequential vector
+    for the sequential solve.
+  */
+  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr); 
+  ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
+
+  /* apply the symmetric left portion of the inner PC operator */
+  /* note this by-passes the inner SLES and its options completely */
+
+  ierr = SLESGetPC(jac->sles[0],&subpc);CHKERRQ(ierr);
+  ierr = PCApplySymmetricLeft(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCApplySymmetricRight_BJacobi_Singleblock"
+int PCApplySymmetricRight_BJacobi_Singleblock(PC pc,Vec x,Vec y)
+{
+  int                    ierr,its;
+  PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
+  Scalar                 *x_array,*y_array;
+  PC                     subpc;
+
+  PetscFunctionBegin;
+  /* 
+      The VecPlaceArray() is to avoid having to copy the 
+    y vector into the bjac->x vector. The reason for 
+    the bjac->x vector is that we need a sequential vector
+    for the sequential solve.
+  */
+  ierr = VecGetArray(x,&x_array);CHKERRQ(ierr); 
+  ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
+  ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
+
+  /* apply the symmetric right portion of the inner PC operator */
+  /* note this by-passes the inner SLES and its options completely */
+
+  ierr = SLESGetPC(jac->sles[0],&subpc);CHKERRQ(ierr);
+  ierr = PCApplySymmetricRight(subpc,bjac->x,bjac->y);CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PCApplyTranspose_BJacobi_Singleblock"
 int PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 {
@@ -702,10 +768,12 @@ static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     PetscLogObjectParent(pc,x);
     PetscLogObjectParent(pc,y);
 
-    pc->ops->destroy       = PCDestroy_BJacobi_Singleblock;
-    pc->ops->apply         = PCApply_BJacobi_Singleblock;
-    pc->ops->applytranspose= PCApplyTranspose_BJacobi_Singleblock;
-    pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Singleblock;
+    pc->ops->destroy             = PCDestroy_BJacobi_Singleblock;
+    pc->ops->apply               = PCApply_BJacobi_Singleblock;
+    pc->ops->applysymmetricleft  = PCApplySymmetricLeft_BJacobi_Singleblock;
+    pc->ops->applysymmetricright = PCApplySymmetricRight_BJacobi_Singleblock;
+    pc->ops->applytranspose      = PCApplyTranspose_BJacobi_Singleblock;
+    pc->ops->setuponblocks       = PCSetUpOnBlocks_BJacobi_Singleblock;
 
     ierr = PetscMalloc(sizeof(PC_BJacobi_Singleblock),&bjac);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,sizeof(PC_BJacobi_Singleblock));
