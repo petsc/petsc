@@ -6,7 +6,7 @@ configure_options = [
   '--with-fc=pgf90',
   '--with-cxx=0',
   '--download-mpich=1',
-  '--download-mpich-pm=forker',
+  '--download-mpich-pm=gforker',
   '--download-f-blas-lapack=1'
   ]
 

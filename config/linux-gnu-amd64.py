@@ -2,7 +2,7 @@
 
 configure_options = [
   '--download-mpich=1',
-  '--download-mpich-pm=forker',
+  '--download-mpich-pm=gforker',
   '--download-f-blas-lapack=1'
   ]
 

@@ -4,7 +4,7 @@ configure_options = [
   '--with-cc=gcc -std=c89',
   '--with-fc=f77',
   '--download-mpich=1',
-  '--download-mpich-pm=forker',
+  '--download-mpich-pm=gforker',
   '--download-hypre=1',
   '--download-superlu-dist=1'
   ]
