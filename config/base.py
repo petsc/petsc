@@ -268,7 +268,13 @@ class Configure(script.Script):
     (output, error, status)        = self.outputCompile(includes, body)
     output  += error
     valid    = 1
-    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0:
+    # Please comment each entry and provide an example line
+    if status:
+      valid = 0
+    # Lahaye F95
+    if output.find('Invalid suboption') >= 0:
+      valid = 0
+    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0:
       valid = 0
     self.framework.argDB[flagsArg] = oldFlags
     return valid

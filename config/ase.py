@@ -30,7 +30,8 @@ class Configure(config.base.Configure):
   def configureASELibraries(self):
     import os
 
-    self.lib = [os.path.join(self.argDB['ASE_DIR'], 'lib', 'lib'+self.baseName+'.so')]
+    self.dir = self.argDB['ASE_DIR']
+    self.lib = [os.path.join(self.argDB['ASE_DIR'], 'lib', 'lib-python-'+self.baseName+'.so')]
     if not os.path.isdir(self.argDB['ASE_DIR']):
       raise RuntimeError('Invalid ASE directory: '+str(self.argDB['ASE_DIR']))
     if not os.getcwd() == self.argDB['ASE_DIR']:

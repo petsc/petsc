@@ -23,7 +23,7 @@ class Configure(config.base.Configure):
 
   def checkCRestrict(self):
     '''Check for the C restrict keyword'''
-    keyword = 'unsupported'
+    self.restrictKeyword = ''
     self.pushLanguage('C')
     # Try the official restrict keyword, then gcc's __restrict__, then
     # SGI's __restrict.  __restrict has slightly different semantics than
@@ -32,20 +32,17 @@ class Configure(config.base.Configure):
     # okay under the circumstances where restrict is normally used.
     for kw in ['restrict', ' __restrict__', '__restrict']:
       if self.checkCompile('', 'float * '+kw+' x;'):
-        keyword = kw
+        self.restrictKeyword = kw
         break
     self.popLanguage()
-    # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
-    if not keyword == 'restrict':
-      if keyword == 'unsupported':
-        keyword = ''
-      self.framework.addDefine('restrict', keyword)
     return
 
   def checkCFormatting(self):
     '''Activate format string checking if using the GNU compilers'''
     if self.isGCC:
-      self.addDefine('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
+      self.gccFormatChecking = ('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
+    else:
+      self.gccFormatChecking = None
     return
 
   def checkCxxOptionalExtensions(self):
@@ -76,9 +73,10 @@ class Configure(config.base.Configure):
   def checkCxxNamespace(self):
     '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
     self.pushLanguage('C++')
+    self.cxxNamespace = 0
     if self.checkCompile('namespace petsc {int dummy;}'):
       if self.checkCompile('template <class dummy> struct a {};\nnamespace trouble{\ntemplate <class dummy> struct a : public ::a<dummy> {};\n}\ntrouble::a<int> uugh;\n'):
-        self.addDefine('HAVE_CXX_NAMESPACE', 1)
+        self.cxxNamespace = 1
     self.popLanguage()
     return
 
@@ -121,10 +119,9 @@ class Configure(config.base.Configure):
     cobjs     = ['confc0.o','confc1.o','confc2.o','confc3.o']
     cfuncs    = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void D1CHK(void){return;}\n','void __stdcall D1CHK(void){return;}\n']
     manglers  = ['underscore','unchanged','capitalize','stdcall']
-    manglDEFs = ['HAVE_FORTRAN_UNDERSCORE','HAVE_FORTRAN_NOUNDERSCORE','HAVE_FORTRAN_CAPS','HAVE_FORTRAN_STDCALL']
     found     = 0
 
-    for cfunc, cobj, mangler, manglDEF in zip(cfuncs, cobjs, manglers, manglDEFs):
+    for cfunc, cobj, mangler in zip(cfuncs, cobjs, manglers):
       # Compile each of the C test objects
       self.pushLanguage('C')
       if not self.checkCompile(cfunc,None,cleanup = 0):
@@ -141,12 +138,7 @@ class Configure(config.base.Configure):
       self.framework.argDB['LIBS'] += ' '+cobj
       if self.checkLink(None,'       call d1chk()\n'):
         self.fortranMangling = mangler
-        self.addDefine(manglDEF, 1)
         self.framework.argDB['LIBS'] = oldLIBS
-        if mangler == 'stdcall':
-          self.addDefine('STDCALL', '__stdcall')
-          self.addDefine('HAVE_FORTRAN_CAPS', 1)
-          self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
         found = 1
       self.framework.argDB['LIBS'] = oldLIBS
       self.popLanguage()
@@ -175,7 +167,6 @@ class Configure(config.base.Configure):
     self.pushLanguage('F77')
     if self.checkLink(None,'       call d1_chk()\n'):
       self.fortranManglingDoubleUnderscore = 1
-      self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
     else:
       self.fortranManglingDoubleUnderscore = 0
 
@@ -231,10 +222,6 @@ class Configure(config.base.Configure):
     for writing this extremely useful macro.'''
     if not 'CC' in self.framework.argDB or not 'FC' in self.framework.argDB: 
       self.flibs = ''
-      self.addSubstitution('FLIBS', '')
-      # this is not the correct place for the next 2 lines, but I'm to lazy to figure out where to put them
-      self.addSubstitution('FC', '')
-      self.addSubstitution('FC_SHARED_OPT', '')
       return
     oldFlags = self.framework.argDB['LDFLAGS']
     self.framework.argDB['LDFLAGS'] += ' -v'
@@ -417,7 +404,6 @@ class Configure(config.base.Configure):
           raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
 
     self.framework.argDB['LIBS'] = oldLibs
-    self.addSubstitution('FLIBS', self.flibs)
     return
 
   def checkFortran90Interface(self):
@@ -428,28 +414,87 @@ class Configure(config.base.Configure):
         headerPath = os.path.abspath(os.path.join('include', self.framework.argDB['with-f90-header'].strip('"')))
         if not os.path.isfile(headerPath):
           raise RuntimeError('Invalid F90 header: '+str(self.framework.argDB['with-f90-header'].strip('"')))
-      self.addDefine('HAVE_F90_H', '"'+headerPath+'"')
+      self.f90HeaderPath = headerPath
     if self.framework.argDB.has_key('with-f90-source'):
       sourcePath = os.path.abspath(self.framework.argDB['with-f90-source'].strip('"'))
       if not os.path.isfile(sourcePath):
         raise RuntimeError('Invalid F90 source: '+str(sourcePath))
-      self.addDefine('HAVE_F90_C', '"'+sourcePath+'"')
+      self.f90SourcePath = sourcePath
+    return
+
+  def output(self):
+    '''Output module data as defines and substitutions'''
+    if 'CC' in self.framework.argDB:
+      self.pushLanguage('C')
+      setattr(self, 'CC', self.argDB['CC'])
+      if 'CPP' in self.framework.argDB:
+        setattr(self, 'CPP', self.argDB['CPP'])
+      setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
+      setattr(self, 'CPPFLAGS', self.argDB['CPPFLAGS'])
+      self.popLanguage()
+      # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
+      if not self.restrictKeyword == 'restrict':
+        self.framework.addDefine('restrict', self.restrictKeyword)
+      if self.gccFormatChecking:
+        self.addDefine(self.gccFormatChecking[0], self.gccFormatChecking[1])
+    if 'CXX' in self.framework.argDB:
+      self.pushLanguage('C++')
+      setattr(self, 'CXX', self.argDB['CXX'])
+      if 'CXXCPP' in self.framework.argDB:
+        setattr(self, 'CXXCPP', self.argDB['CXXCPP'])
+      setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
+      setattr(self, self.getCompilerFlagsArg(1), self.argDB[self.getCompilerFlagsArg(1)])
+      self.popLanguage()
+      if self.cxxNamespace:
+        self.addDefine('HAVE_CXX_NAMESPACE', 1)
+    if 'FC' in self.framework.argDB:
+      self.pushLanguage('F77')
+      setattr(self, 'FC', self.argDB['FC'])
+      setattr(self, self.getCompilerFlagsArg(), self.argDB[self.getCompilerFlagsArg()])
+      self.popLanguage()
+      if self.fortranMangling == 'underscore':
+        self.addDefine('HAVE_FORTRAN_UNDERSCORE', 1)
+      elif self.fortranMangling == 'unchanged':
+        self.addDefine('HAVE_FORTRAN_NOUNDERSCORE', 1)
+      elif self.fortranMangling == 'capitalize':
+        self.addDefine('HAVE_FORTRAN_CAPS', 1)
+      elif self.fortranMangling == 'stdcall':
+        self.addDefine('HAVE_FORTRAN_STDCALL', 1)
+        self.addDefine('STDCALL', '__stdcall')
+        self.addDefine('HAVE_FORTRAN_CAPS', 1)
+        self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
+      if self.fortranManglingDoubleUnderscore:
+        self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
+    else:
+      self.addSubstitution('FC', '')
+      self.addSubstitution('FC_SHARED_OPT', '')
+    self.addSubstitution('FLIBS', self.flibs)
+    if hasattr(self, 'f90HeaderPath'):
+      self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')
+    if hasattr(self, 'f90SourcePath'):
+      self.addDefine('HAVE_F90_C', '"'+self.f90SourcePath+'"')
     return
 
   def configure(self):
     if 'CC' in self.framework.argDB:
       import config.setCompilers
 
-      self.isGCC = config.setCompilers.Configure.isGNU(self.framework.argDB['CC'])
+      self.isGCC  = config.setCompilers.Configure.isGNU(self.framework.argDB['CC'])
       self.executeTest(self.checkCRestrict)
       self.executeTest(self.checkCFormatting)
+    else:
+      self.isGCC  = 0
     if 'CXX' in self.framework.argDB:
+      self.isGCXX = config.setCompilers.Configure.isGNU(self.framework.argDB['CXX'])
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
+    else:
+      self.isGCXX = 0
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranTypeSizes)
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranPreprocessor)
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Interface)
+    self.executeTest(self.output)
     return

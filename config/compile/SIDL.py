@@ -20,11 +20,7 @@ class Compiler(script.Script):
       del d['scandal']
     return d
 
-  def __call__(self, source, target = None):
-    '''This will compile the SIDL source'''
-    outputFiles             = {}
-    self.scandal.includes   = self.includes
-    self.scandal.targets    = source
+  def createClient(self, outputFiles):
     self.scandal.clients    = self.clients
     self.scandal.clientDirs = self.clientDirs
     self.scandal.servers    = []
@@ -32,6 +28,9 @@ class Compiler(script.Script):
     self.scandal.run()
     for lang in self.scandal.outputFiles:
       outputFiles['Client '+lang] = self.scandal.outputFiles[lang]
+    return
+
+  def createServer(self, outputFiles):
     self.scandal.clients    = []
     self.scandal.clientDirs = {}
     self.scandal.servers    = self.servers
@@ -39,6 +38,15 @@ class Compiler(script.Script):
     self.scandal.run()
     for lang in self.scandal.outputFiles:
       outputFiles['Server '+lang] = self.scandal.outputFiles[lang]
+    return
+
+  def __call__(self, source, target = None):
+    '''This will compile the SIDL source'''
+    outputFiles             = {}
+    self.scandal.includes   = self.includes
+    self.scandal.targets    = source
+    self.createServer(outputFiles)
+    self.createClient(outputFiles)
     return ('', '', 0, outputFiles)
 
   def checkSetup(self):

@@ -34,13 +34,11 @@ class Compiler(config.compile.processor.Processor):
 class Linker(config.compile.processor.Processor):
   '''The Fortran linker'''
   def __init__(self, argDB):
-    compiler           = Compiler(argDB)
+    self.compiler      = Compiler(argDB)
     self.configLibrary = config.libraries.Configure(config.framework.Framework(argDB = argDB))
-    config.compile.processor.Processor.__init__(self, argDB, ['FC_LD', 'LD', compiler.name], 'LDFLAGS', '.o', '.a')
+    config.compile.processor.Processor.__init__(self, argDB, ['FC_LD', 'LD', self.compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
-    if self.name == compiler.name:
-      self.flagsName.extend(compiler.flagsName)
     return
 
   def setArgDB(self, argDB):
@@ -49,6 +47,16 @@ class Linker(config.compile.processor.Processor):
     self.configLibrary.framework.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
+
+  def getFlags(self):
+    '''Returns a string with the flags specified for running this processor.'''
+    if not hasattr(self, '_flags'):
+      flagsName = self.flagsName
+      if self.name == self.compiler.name:
+        flagsName.extend(self.compiler.flagsName)
+      return ' '.join([self.argDB[name] for name in flagsName])
+    return self._flags
+  flags = property(getFlags, config.compile.processor.Processor.setFlags, doc = 'The flags for the executable')
 
   def getExtraArguments(self):
     if not hasattr(self, '_extraArguments'):

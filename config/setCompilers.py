@@ -175,10 +175,7 @@ class Configure(config.base.Configure):
           self.framework.log.write(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
         del self.framework.argDB['CC']
-    if 'CC' in self.framework.argDB:
-      self.addArgumentSubstitution('CC', 'CC')
-      self.addArgumentSubstitution('CFLAGS', 'CFLAGS')
-    else:
+    if not 'CC' in self.framework.argDB:
       raise RuntimeError('Could not locate a functional C compiler')
     return
 
@@ -208,9 +205,6 @@ class Configure(config.base.Configure):
 
         self.popLanguage()
         del self.framework.argDB['CPP']
-    if 'CPP' in self.framework.argDB:
-      self.addArgumentSubstitution('CPP', 'CPP')
-      self.addArgumentSubstitution('CPPFLAGS', 'CPPFLAGS')
     return
 
   def generateCxxCompilerGuesses(self):
@@ -316,14 +310,6 @@ class Configure(config.base.Configure):
           del self.framework.argDB['CXX']
       if 'CXX' in self.framework.argDB:
         break
-    if 'CXX' in self.framework.argDB:
-      self.addArgumentSubstitution('CXX', 'CXX')
-      self.addArgumentSubstitution('CXX_CXXFLAGS', 'CXX_CXXFLAGS')
-      self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
-      self.isGCXX = Configure.isGNU(self.framework.argDB['CXX'])
-    else:
-      self.addSubstitution('CXX', '')
-      self.isGCXX = 0
     return
 
   def generateCxxPreprocessorGuesses(self):
@@ -356,9 +342,7 @@ class Configure(config.base.Configure):
         if os.path.basename(self.framework.argDB['CXXCPP']) in ['mpicxx', 'mpiCC']:
           self.framework.log.write('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI\n')
         self.popLanguage()
-        self.framework.argDB['CXXCPP'] = None
-    if 'CXXCPP' in self.framework.argDB and not self.framework.argDB['CXXCPP'] is None:
-      self.addArgumentSubstitution('CXXCPP', 'CXXCPP')
+        del self.framework.argDB['CXXCPP']
     return
 
   def generateFortranCompilerGuesses(self):
@@ -402,6 +386,8 @@ class Configure(config.base.Configure):
       if not vendor == '0':
         if not vendor:
           yield 'f90'
+        if vendor == 'lahaye' or not vendor:
+          yield 'lf95'
         if vendor == 'ibm' or not vendor:
           yield 'xlf90'
           yield 'xlf'
@@ -446,16 +432,10 @@ class Configure(config.base.Configure):
          self.framework.log.write(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
         del self.framework.argDB['FC']
-    if 'FC' in self.framework.argDB:
-      self.addArgumentSubstitution('FC', 'FC')
-      self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
-    else:
-      self.addSubstitution('FC', '')
     return
 
   def checkLinkerFlags(self):
     '''Just substitutes the flags right now'''
-    self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
     return
 
   def checkSharedLinkerFlag(self):
@@ -466,7 +446,6 @@ class Configure(config.base.Configure):
       if not self.checkLinkerFlag(flag):
         flag = ''
     self.sharedLibraryFlag = flag
-    self.addSubstitution('SHARED_LIBRARY_FLAG', flag)
     return
 
   def checkSharedLinkerPaths(self):
@@ -491,10 +470,38 @@ class Configure(config.base.Configure):
         else:
           self.framework.log.write('Rejected '+language+' linker flag '+testFlag+'\n')
       self.popLanguage()
-      if not flag is None:
-        flagName = language.replace('+', 'x').upper()+'_LINKER_SLFLAG'
-        self.framework.argDB[flagName] = flag
-        self.addSubstitution(flagName, flag)
+      setattr(self, language.replace('+', 'x')+'SharedLinkerFlag', flag)
+    return
+
+  def output(self):
+    '''Output module data as defines and substitutions'''
+    if 'CC' in self.framework.argDB:
+      self.addArgumentSubstitution('CC', 'CC')
+      self.addArgumentSubstitution('CFLAGS', 'CFLAGS')
+      if not self.CSharedLinkerFlag is None:
+        self.addSubstitution('C_LINKER_SLFLAG', self.CSharedLinkerFlag)
+    if 'CPP' in self.framework.argDB:
+      self.addArgumentSubstitution('CPP', 'CPP')
+      self.addArgumentSubstitution('CPPFLAGS', 'CPPFLAGS')
+    if 'CXX' in self.framework.argDB:
+      self.addArgumentSubstitution('CXX', 'CXX')
+      self.addArgumentSubstitution('CXX_CXXFLAGS', 'CXX_CXXFLAGS')
+      self.addArgumentSubstitution('CXXFLAGS', 'CXXFLAGS')
+      if not self.CxxSharedLinkerFlag is None:
+        self.addSubstitution('CXX_LINKER_SLFLAG', self.CxxSharedLinkerFlag)
+    else:
+      self.addSubstitution('CXX', '')
+    if 'CXXCPP' in self.framework.argDB:
+      self.addArgumentSubstitution('CXXCPP', 'CXXCPP')
+    if 'FC' in self.framework.argDB:
+      self.addArgumentSubstitution('FC', 'FC')
+      self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
+      if not self.F77SharedLinkerFlag is None:
+        self.addSubstitution('F77_LINKER_SLFLAG', self.F77SharedLinkerFlag)
+    else:
+      self.addSubstitution('FC', '')
+    self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
+    self.addSubstitution('SHARED_LIBRARY_FLAG', self.sharedLibraryFlag)
     return
 
   def configure(self):
@@ -506,4 +513,5 @@ class Configure(config.base.Configure):
     # In the future, we will check that shared and dyanmic linking works here
     self.executeTest(self.checkSharedLinkerFlag)
     self.executeTest(self.checkSharedLinkerPaths)
+    self.executeTest(self.output)
     return

@@ -5,13 +5,7 @@ class Processor(args.ArgumentProcessor):
   def __init__(self, argDB, name, flagsName, sourceExtension, targetExtension):
     args.ArgumentProcessor.__init__(self, None, argDB)
     self.language        = 'C'
-    if isinstance(name, list):
-      for n in name:
-        if n in self.argDB:
-          self.name      = n
-          break
-    else:
-      self.name          = name
+    self.name            = name
     if isinstance(flagsName, list):
       self.flagsName     = flagsName
     else:
@@ -24,10 +18,35 @@ class Processor(args.ArgumentProcessor):
 
   def setArgDB(self, argDB):
     args.ArgumentProcessor.setArgDB(self, argDB)
+    if hasattr(self, 'configCompilers'):
+      self.configCompilers.argDB = argDB
     if hasattr(self, 'configLibrary'):
       self.configLibrary.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
+
+  def getName(self):
+    if not hasattr(self, '_name'):
+      raise RuntimeError('No valid argument name set for '+self.language+' '+self.__class__.__name__.lower())
+    if isinstance(self._name, list):
+      for n in self._name:
+        if hasattr(self, 'configCompilers') and hasattr(self.configCompilers, n):
+          self._name = n
+          break
+        if n in self.argDB:
+          self._name = n
+          break
+      if isinstance(self._name, list):
+        if hasattr(self, 'configCompilers'):
+          raise RuntimeError('Name '+str(self._name)+' was not found in RDict or configure data')
+        else:
+          raise RuntimeError('Name '+str(self._name)+' was not found in RDict')
+    return self._name
+
+  def setName(self, name):
+    self._name = name
+    return
+  name = property(getName, setName, doc = 'The name of the processor in RDict')
 
   def pushRequiredFlags(self, flags):
     self.requiredFlags.append(flags)
@@ -38,9 +57,9 @@ class Processor(args.ArgumentProcessor):
 
   def checkSetup(self):
     '''Check that this program has been specified. We assume that configure has checked its viability.'''
-    if not hasattr(self, 'name'):
-      raise RuntimeError('No valid argument name set for '+self.language+' '+self.__class__.__name__.lower())
-    if not self.name in self.argDB:
+    if hasattr(self, 'configCompilers') and hasattr(self.configCompilers, self.name):
+      pass
+    elif not self.name in self.argDB:
       raise RuntimeError('Could not find a '+self.language+' '+self.__class__.__name__.lower()+'. Please set with the option --with-'+self.name.lower()+' or -'+self.name+' and load the config.compilers module.')
     return
 
@@ -72,16 +91,20 @@ class Processor(args.ArgumentProcessor):
     '''Returns a shell command as a string which will invoke the processor on sourceFiles, producing outputFile if given'''
     if isinstance(sourceFiles, str):
       sourceFiles = [sourceFiles]
-    cmd = [self.argDB[self.name], self.requiredFlags[-1]]
+    if hasattr(self, 'configCompilers'):
+      cmd = [getattr(self.configCompilers, self.name)]
+    else:
+      cmd = [self.argDB[self.name]]
+    cmd.append(self.requiredFlags[-1])
     if not outputFile is None:
       cmd.extend([self.outputFlag, outputFile])
     if hasattr(self, 'includeDirectories'):
       cmd.extend(['-I'+inc for inc in self.includeDirectories])
+    cmd.append(self.flags)
+    cmd.extend(sourceFiles)
+    cmd.append(self.extraArguments)
     if hasattr(self, 'libraries') and hasattr(self, 'configLibrary'):
       self.configLibrary.pushLanguage(self.language)
       cmd.extend([self.configLibrary.getLibArgument(lib) for lib in self.libraries])
       self.configLibrary.popLanguage()
-    cmd.append(self.flags)
-    cmd.extend(sourceFiles)
-    cmd.append(self.extraArguments)
     return ' '.join(cmd)
