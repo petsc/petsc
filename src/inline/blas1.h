@@ -69,39 +69,39 @@ daxpy_(&(n),&(_v),x,&_One,y,&_One);}
         _x[_j] = _y[_j]; _x[_j+1] = _y[_j+1]; _x[_j+2] = _y[_j+2];\
 	_x[_j+3] = _y[_j+3];\
 	_y[_j]=_y1;_y[_j+1]=_y2;_y[_j+2]=_y3;_y[_j+3]=_y4;}\
-    for (; _j<n; _j++){_y1=_x[_j];_x[_j]=_y[_j];_y[_j]=_y1;}}
+    for (_j=0; _j<n; _j++){_y1=_x[_j];_x[_j]=_y[_j];_y[_j]=_y1;}}
 #define DSCALIL(n,a,x) { register int _j; register double _a=a,*_x=x;\
     register double _x1, _x2, _x3, _x4;\
     for (_j=0; _j<n-3; _j+=4) {_x1 = _x[_j]*_a;_x2 = _x[_j+1]*_a;\
 	_x3 = _x[_j+2]*_a; _x4 = _x[_j+3]*_a;\
         _x[_j]=_x1;_x[_j+1]=_x2;_x[_j+2]=_x3;_x[_j+3]=_x4;}\
-    for (; _j<n; _j++){_x[_j]=_x[_j]*_a;}}
+    for (_j=0; _j<n; _j++){_x[_j]=_x[_j]*_a;}}
 #define DCOPYIL(n,x,y) { register int _j; register double *_x=x,*_y=y;\
     register double _y1, _y2, _y3, _y4;\
     for (_j=0; _j<n-3; _j+=4) {_y1 = _x[_j];_y2 = _x[_j+1];\
 	_y3 = _x[_j+2]; _y4 = _x[_j+3];\
         _y[_j]=_y1;_y[_j+1]=_y2;_y[_j+2]=_y3;_y[_j+3]=_y4;}\
-    for (; _j<n; _j++){_y[_j]=_x[_j];}}
+    for (_j=0; _j<n; _j++){_y[_j]=_x[_j];}}
 #define DAXPYIL(n,a,x,y) { register int _j; register double _a=a,*_x=x,*_y=y;\
     register double _y1, _y2, _y3, _y4;\
     for (_j=0; _j<n-3; _j+=4) {_y1 = _x[_j]*_a;_y2 = _x[_j+1]*_a;\
 	_y3 = _x[_j+2]*_a; _y4 = _x[_j+3]*_a;\
         _y1+=_y[_j];_y2+=_y[_j+1];_y3+=_y[_j+2];_y4+=_y[_j+3];\
         _y[_j]=_y1;_y[_j+1]=_y2;_y[_j+2]=_y3;_y[_j+3]=_y4;}\
-    for (; _j<n; _j++){_y1=_x[_j]*_a;_y1+=_y[_j];_y[_j]=_y1;}}
+    for (_j=0; _j<n; _j++){_y1=_x[_j]*_a;_y1+=_y[_j];_y[_j]=_y1;}}
 #define DDOTIL(n,x,y,sum) { register int _j; register double _sum,*_x=x,*_y=y;\
     register double _x1, _x2, _x3, _x4; _sum=0.0;\
     for (_j=0; _j<n-3; _j+=4) {_x1 = _x[_j];_x2 = _x[_j+1];\
 	_x3 = _x[_j+2]; _x4 = _x[_j+3];\
         _sum += _y[_j]*_x1+_y[_j+1]*_x2+_y[_j+2]*_x3+_y[_j+3]*_x4;}\
-    for (; _j<n; _j++){_sum+=_x[_j]*_y[_j];}sum=_sum;}
+    for (_j=0; _j<n; _j++){_sum+=_x[_j]*_y[_j];}sum=_sum;}
 #define DAYPXIL(n,a,x,y) { register int _j; register double _a=a,*_x=x,*_y=y;\
     register double _y1, _y2, _y3, _y4;\
     for (_j=0; _j<n-3; _j+=4) {_y1 = _y[_j]*_a;_y2 = _y[_j+1]*_a;\
 	_y3 = _y[_j+2]*_a; _y4 = _y[_j+3]*_a;\
         _y1+=_x[_j];_y2+=_x[_j+1];_y3+=_x[_j+2];_y4+=_x[_j+3];\
         _y[_j]=_y1;_y[_j+1]=_y2;_y[_j+2]=_y3;_y[_j+3]=_y4;}\
-    for (; _j<n; _j++){_y1=_y[_j]*_a;_y1+=_x[_j];_y[_j]=_y1;}\
+    for (_j=0; _j<n; _j++){_y1=_y[_j]*_a;_y1+=_x[_j];_y[_j]=_y1;}}
 
 /* Finally, choice of the default meaning.  For now, that means the
    routines unless inline is selected */
