@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.68 2000/05/08 15:09:59 balay Exp bsmith $ */
+/* $Id: ptime.h,v 1.69 2000/05/10 16:44:31 bsmith Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -140,7 +140,7 @@ EXTERN_C_END
 #elif defined (PETSC_USE_DCLOCK)
 EXTERN_C_BEGIN
 EXTERN PLogDouble dclock();
-EXTERN_C_BEGIN
+EXTERN_C_END
 
 #define PetscTime(v)         (v)=dclock();
 
