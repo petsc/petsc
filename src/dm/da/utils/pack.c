@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.3 2000/06/13 03:57:17 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.4 2000/06/17 03:49:50 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -116,6 +116,25 @@ int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar 
 }
 
 #undef __FUNC__  
+#define __FUNC__ /*<a name="VecPackScatter_DA"></a>*/"VecPackScatter_DA"
+int VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
+{
+  int    ierr;
+  Scalar *array;
+
+  PetscFunctionBegin;
+
+  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+  array += mine->rstart;
+  ierr = VecPlaceArray(mine->globalholder,array);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(mine->da,mine->globalholder,INSERT_VALUES,local);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(mine->da,mine->globalholder,INSERT_VALUES,local);CHKERRQ(ierr);
+  array -= mine->rstart;
+  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ /*<a name="VecPackGather_Array"></a>*/"VecPackGather_Array"
 int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *array)
 {
@@ -155,7 +174,6 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
   va_list            Argp;
   int                ierr;
   struct VecPackLink *next = packer->next;
-  Scalar             *array;
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
@@ -166,8 +184,14 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
   va_start(Argp,gvec);
   while (next) {
     if (next->type == VECPACK_ARRAY) {
+      Scalar *array;
       array = va_arg(Argp, Scalar*);
       ierr = VecPackScatter_Array(packer,next,gvec,array);CHKERRQ(ierr);
+    } else if (next->type == VECPACK_DA) {
+      Vec vec;
+      vec = va_arg(Argp, Vec);
+      PetscValidHeaderSpecific(vec,VEC_COOKIE);
+      ierr = VecPackScatter_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(1,1,"Cannot handle that object type yet");
     }
@@ -251,6 +275,41 @@ int VecPackAddArray(VecPack packer,int n)
 }
 
 #undef __FUNC__  
+#define __FUNC__ /*<a name="VecPackAddDA"></a>*/"VecPackAddDA"
+int VecPackAddDA(VecPack packer,DA da)
+{
+  int                ierr,n;
+  struct VecPackLink *mine,*next = packer->next;
+  Vec                local;
+
+  PetscFunctionBegin;
+  if (packer->globalvector) {
+    SETERRQ(1,1,"Cannot add a DA once you have called VecPackCreateGlobalVector()");
+  }
+
+  /* create new link */
+  mine               = PetscNew(struct VecPackLink);CHKPTRQ(mine);
+  ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&mine->globalholder);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(local,&n);CHKERRQ(ierr);
+  ierr = VecDestroy(local);CHKERRQ(ierr);
+  mine->n      = n;
+  mine->da     = da;  
+  mine->type   = VECPACK_DA;
+  packer->n   += n;
+
+  /* add to end of list */
+  if (!next) {
+    packer->next = mine;
+  } else {
+    while (next->next) next = next->next;
+    next->next = mine;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ /*<a name="VecPackCreateGlobalVector"></a>*/"VecPackCreateGlobalVector"
 /*@C
     VecPackCreateGlobalVector - Creates a vector of the correct size to be gathered into 
@@ -292,8 +351,7 @@ int VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
     ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
     while (next) {
       next->rstart = packer->rstart + nprev; 
-      nprev        = next->n;
-      if (rank && next->type == VECPACK_ARRAY) nprev = 0;
+      if (!rank || next->type != VECPACK_ARRAY) nprev += next->n;
       next         = next->next;
     }
   }
