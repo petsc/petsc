@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.182 1996/08/15 12:47:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.183 1996/08/22 19:52:29 curfman Exp bsmith $";
 #endif
 
 /*
@@ -24,83 +25,57 @@ int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
   SETERRQ(ierr,"MatILUDTFactor_SeqAIJ:Not implemented");
 }
 
-/*
-     Basic flow based reordering routine for AIJ storage format
-*/
-int MatGetReordering_SeqAIJ_Flow(Mat A,IS *rperm,IS *cperm)
-{
-  /* Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; */
-  int        ierr = 1;
-
-  SETERRQ(ierr,"MatGetReordering_SeqAIJ_Flow:Not implemented");
-}
-
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
-static int MatGetReordering_SeqAIJ(Mat A,MatReordering type,IS *rperm, IS *cperm)
+static int MatGetIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+                           PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        ierr, *ia, *ja,n,*idx,i,oshift,ishift;
-
-  /*
-     This is tacky. The problem is we cannot use the registered ordering 
-    routines since they only work on nozero patterns. To have general
-    registration means you register a particular ordering method for a 
-    particular data structure; hence something like a two dimensional 
-    look up table.
-  */
-  if (type == ORDER_FLOW) {
-     return MatGetReordering_SeqAIJ_Flow(A,rperm,cperm);
-  }
+  int        ierr,i,ishift;
  
-  /* 
-     this is tacky: In the future when we have written special factorization
-     and solve routines for the identity permutation we should use a 
-     stride index set instead of the general one.
-  */
-  if (type  == ORDER_NATURAL) {
-    n = a->n;
-    idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
-    for ( i=0; i<n; i++ ) idx[i] = i;
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
-    PetscFree(idx);
-    ISSetPermutation(*rperm);
-    ISSetPermutation(*cperm);
-    ISSetIdentity(*rperm);
-    ISSetIdentity(*cperm);
-    return 0;
-  }
-
-  MatReorderingRegisterAll();
+  *n     = A->n;
+  if (!ia) return 0;
   ishift = a->indexshift;
-  oshift = -MatReorderingIndexShift[(int)type];
-  if (MatReorderingRequiresSymmetric[(int)type]) {
-    ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,&ia,&ja);
-    CHKERRQ(ierr);
-    ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
-    PetscFree(ia); PetscFree(ja);
+  if (symmetric) {
+    ierr = MatToSymmetricIJ_SeqAIJ(a->n,a->i,a->j,ishift,oshift,ia,ja); CHKERRQ(ierr);
+  } else if (oshift == 0 && ishift == -1) {
+    /* temporarily subtract 1 from i and j indices */
+    int nz = a->i[a->n]; 
+    for ( i=0; i<nz; i++ ) a->j[i]--;
+    for ( i=0; i<a->n+1; i++ ) a->i[i]--;
+    *ia = a->i; *ja = a->j;
+  } else if (oshift == 1 && ishift == 0) {
+    /* temporarily add 1 to i and j indices */
+    int nz = a->i[a->n] + 1; 
+    for ( i=0; i<nz; i++ ) a->j[i]++;
+    for ( i=0; i<a->n+1; i++ ) a->i[i]++;
+    *ia = a->i; *ja = a->j;
   } else {
-    if (ishift == oshift) {
-      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm); CHKERRQ(ierr);
-    }
-    else if (ishift == -1) {
-      /* temporarily subtract 1 from i and j indices */
-      int nz = a->i[a->n] - 1; 
-      for ( i=0; i<nz; i++ ) a->j[i]--;
-      for ( i=0; i<a->n+1; i++ ) a->i[i]--;
-      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm); CHKERRQ(ierr);
-      for ( i=0; i<nz; i++ ) a->j[i]++;
-      for ( i=0; i<a->n+1; i++ ) a->i[i]++;
-    } else {
-      /* temporarily add 1 to i and j indices */
-      int nz = a->i[a->n] - 1; 
-      for ( i=0; i<nz; i++ ) a->j[i]++;
-      for ( i=0; i<a->n+1; i++ ) a->i[i]++;
-      ierr = MatGetReordering_IJ(a->n,a->i,a->j,type,rperm,cperm); CHKERRQ(ierr);
-      for ( i=0; i<nz; i++ ) a->j[i]--;
-      for ( i=0; i<a->n+1; i++ ) a->i[i]--;
-    }
+    *ia = a->i; *ja = a->j;
+  }
+  
+  return 0; 
+}
+
+static int MatRestoreIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
+                               PetscTruth *done)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        i,ishift;
+ 
+  if (!ia) return 0;
+  ishift = a->indexshift;
+  if (symmetric) {
+    PetscFree(*ia);
+    PetscFree(*ja);
+  } else if (oshift == 0 && ishift == -1) {
+    int nz = a->i[a->n] + 1; 
+    for ( i=0; i<nz; i++ ) a->j[i]++;
+    for ( i=0; i<a->n+1; i++ ) a->i[i]++;
+  } else if (oshift == 1 && ishift == 0) {
+    int nz = a->i[a->n] - 1; 
+    for ( i=0; i<nz; i++ ) a->j[i]--;
+    for ( i=0; i<a->n+1; i++ ) a->i[i]--;
   }
   return 0; 
 }
@@ -300,7 +275,7 @@ static int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for (i=0; i<m; i++) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(PETSC_COMPLEX)
-        fprintf(fd,"%d %d  %18.16e  %18.16e \n",i+1,a->j[j]+!shift,real(a->a[j]),
+        fprintf(fd,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,real(a->a[j]),
                    imag(a->a[j]));
 #else
         fprintf(fd,"%d %d  %18.16e\n", i+1, a->j[j]+!shift, a->a[j]);
@@ -403,6 +378,7 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
   if (pause >= 0) { PetscSleep(pause); return 0;}
 
   /* allow the matrix to zoom or shrink */
+  ierr = DrawCheckResizedWindow(draw);
   ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
   while (button != BUTTON_RIGHT) {
     DrawClear(draw);
@@ -449,6 +425,7 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
         DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
       } 
     }
+    ierr = DrawCheckResizedWindow(draw);
     ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
   }
   return 0;
@@ -1362,7 +1339,6 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        0,MatAssemblyEnd_SeqAIJ,
        MatCompress_SeqAIJ,
        MatSetOption_SeqAIJ,MatZeroEntries_SeqAIJ,MatZeroRows_SeqAIJ,
-       MatGetReordering_SeqAIJ,
        MatLUFactorSymbolic_SeqAIJ,MatLUFactorNumeric_SeqAIJ,0,0,
        MatGetSize_SeqAIJ,MatGetSize_SeqAIJ,MatGetOwnershipRange_SeqAIJ,
        MatILUFactorSymbolic_SeqAIJ,0,
@@ -1373,7 +1349,10 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetValues_SeqAIJ,0,
        MatPrintHelp_SeqAIJ,
        MatScale_SeqAIJ,0,0,
-       MatILUDTFactor_SeqAIJ,MatGetBlockSize_SeqAIJ};
+       MatILUDTFactor_SeqAIJ,
+       MatGetBlockSize_SeqAIJ,
+       MatGetIJ_SeqAIJ,
+       MatRestoreIJ_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
@@ -1428,7 +1407,10 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
 {
   Mat        B;
   Mat_SeqAIJ *b;
-  int        i, len, ierr, flg;
+  int        i, len, ierr, flg,size;
+
+  MPI_Comm_size(comm,&size);
+  if (size > 1) SETERRQ(1,"MatCreateSeqAIJ:Comm must be of size 1");
 
   *A                  = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQAIJ,comm);
