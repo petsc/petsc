@@ -1,5 +1,4 @@
-
-/*$Id: aij.c,v 1.382 2001/08/24 15:26:27 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.383 2001/08/28 20:01:22 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -854,7 +853,7 @@ int MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultTranspose_SeqAIJ"
 int MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
-  PetscScalar  zero = 0.0;;
+  PetscScalar  zero = 0.0;
   int          ierr;
 
   PetscFunctionBegin; 
