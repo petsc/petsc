@@ -1,0 +1,29 @@
+# $Id: packages,v 1.63 2001/10/10 18:50:03 balay Exp $ 
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
+# for information on retrieving them.
+#
+BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_def -lpthread
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_HOME       = /soft/apps/packages/mpich-gm-1.2.1..7
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich -L/soft/apps/packages/gm-1.5pre3b/binary/lib/ -L/soft/apps/packages/gm-1.5pre3b/lib/ -lgm -lpthread
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${PETSC_DIR}/bin/mpirun.chiba
+
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# SuperLU-DIST
+#
+SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
+SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux_gm.a
+PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
