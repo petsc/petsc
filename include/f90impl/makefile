@@ -10,7 +10,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
-LOCDIR   = include/f90impl
+LOCDIR   = include/f90impl/
 MANSEC   = Sys
 
 include ${PETSC_DIR}/bmake/common/base

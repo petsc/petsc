@@ -12,7 +12,7 @@ OBJSC    = ad_grad.o ad_grad_daxpy.o ad_utils.o
 OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 
-LOCDIR   = src/contrib/adic/adic
+LOCDIR   = src/contrib/adic/adic/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -45,8 +45,8 @@ int MatDestroy_IS(Mat A)
 #define __FUNCT__ "MatMult_IS" 
 int MatMult_IS(Mat A,Vec x,Vec y)
 {
-  int    ierr;
-  Mat_IS *is = (Mat_IS*)A->data;
+  int         ierr;
+  Mat_IS      *is = (Mat_IS*)A->data;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
@@ -116,8 +116,8 @@ int MatSetValuesLocal_IS(Mat A,int m,int *rows,int n,int *cols,PetscScalar *valu
 #define __FUNCT__ "MatZeroRowsLocal_IS" 
 int MatZeroRowsLocal_IS(Mat A,IS isrows,PetscScalar *diag)
 {
-  Mat_IS *is = (Mat_IS*)A->data;
-  int    ierr,i,n,*rows;
+  Mat_IS      *is = (Mat_IS*)A->data;
+  int         ierr,i,n,*rows;
   PetscScalar *array;
 
   PetscFunctionBegin;
@@ -127,7 +127,7 @@ int MatZeroRowsLocal_IS(Mat A,IS isrows,PetscScalar *diag)
        Set up is->x as a "counting vector". This is in order to MatMult_IS
        work properly in the interface nodes.
     */
-    Vec    counter;
+    Vec         counter;
     PetscScalar one=1.0, zero=0.0;
     ierr = VecCreateMPI(A->comm,A->n,A->N,&counter);CHKERRQ(ierr);
     ierr = VecSet(&zero,counter);CHKERRQ(ierr);
@@ -164,6 +164,7 @@ int MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS *is = (Mat_IS*)A->data;
   int    ierr;
+
   PetscFunctionBegin;
   ierr = MatAssemblyBegin(is->A,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -175,6 +176,7 @@ int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS *is = (Mat_IS*)A->data;
   int    ierr;
+
   PetscFunctionBegin;
   ierr = MatAssemblyEnd(is->A,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);

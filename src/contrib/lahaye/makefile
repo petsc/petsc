@@ -15,7 +15,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = PC
-LOCDIR   = src/contrib/lahaye
+LOCDIR   = src/contrib/lahaye/
 DIRS     = ramg samg
 
 include ${PETSC_DIR}/bmake/common/base

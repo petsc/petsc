@@ -17,7 +17,7 @@ OBJSF    = samgtools1.o
 DOCS     = readme
 LIBBASE  = libpetscsles
 MANSEC   = PC
-LOCDIR   = src/contrib/lahaye/samg
+LOCDIR   = src/contrib/lahaye/samg/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

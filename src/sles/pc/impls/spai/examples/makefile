@@ -2,7 +2,7 @@
 
 ALL:
 
-LOCDIR	 = src/contrib/pc/spai/examples
+LOCDIR	 = src/contrib/pc/spai/examples/
 DIRS	 = tutorials
 
 include ${PETSC_DIR}/bmake/common/base

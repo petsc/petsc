@@ -15,7 +15,7 @@ OBJSF    =
 DIRS     = 
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-LOCDIR   = src/snes/interface/noise
+LOCDIR   = src/snes/interface/noise/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

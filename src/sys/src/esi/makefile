@@ -14,7 +14,7 @@ OBJSC    = eobject.o
 SOURCEH  = ../../../../include/esi/petsc/object.h
 LIBBASE  = libpetsc
 MANSEC   = 
-LOCDIR   = src/sys/src/esi
+LOCDIR   = src/sys/src/esi/
 
 
 include ${PETSC_DIR}/bmake/common/base

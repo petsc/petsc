@@ -15,7 +15,7 @@ OBJSF    =
 LIBBASE  = libpetscsnes
 DIRS     = 
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/adic
+LOCDIR   = src/mat/impls/adic/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

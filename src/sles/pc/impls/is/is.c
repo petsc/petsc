@@ -9,11 +9,16 @@
 #define __FUNCT__ "PCISSetUp"
 int PCISSetUp(PC pc)
 {
-  PC_IS  *pcis = (PC_IS*)(pc->data);
-  Mat_IS *matis = (Mat_IS*)pc->mat->data; 
-  int    i, ierr;
+  PC_IS      *pcis = (PC_IS*)(pc->data);
+  Mat_IS     *matis = (Mat_IS*)pc->mat->data; 
+  int        i, ierr;
+  PetscTruth flg;
   
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)pc->mat,MATIS,&flg);CHKERRQ(ierr);
+  if (!flg){
+    SETERRQ(1,"Preconditioner type of Neumann Neumman requires matrix of type MATIS");
+  }
 
   pcis->pure_neumann = matis->pure_neumann;
 

@@ -26,7 +26,7 @@ OBJSC    = adintr_acos.o adintr_exp.o adintr_max.o adintr_acosh.o \
 OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 
-LOCDIR   = src/contrib/adic/adintrinsics
+LOCDIR   = src/contrib/adic/adintrinsics/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -8,7 +8,7 @@ EXAMPLESC  = ex1.c test_IRIX.c
 EXAMPLESF  = ex1f90.F test_IRIXf90.F
 OBJSF      = 
 LIBBASE    = libpetscfortran
-LOCDIR     = src/fortran/f90/tests
+LOCDIR     = src/fortran/f90/tests/
 TESTS      = test_IRIX
 CLEANFILES =
 include ${PETSC_DIR}/bmake/common/base

@@ -23,14 +23,12 @@ static int PCSetUp_NN(PC pc)
   int ierr;
   
   PetscFunctionBegin;
-
-  if (pc->setupcalled == 0) {
+  if (!pc->setupcalled) {
     /* Set up all the "iterative substructuring" common block */
     ierr = PCISSetUp(pc);CHKERRQ(ierr);
     /* Create the coarse matrix. */
     ierr = PCNNCreateCoarseMatrix(pc);CHKERRQ(ierr);
   } 
-
   PetscFunctionReturn(0);
 }
 
@@ -51,10 +49,10 @@ static int PCSetUp_NN(PC pc)
 #define __FUNCT__ "PCApply_NN"
 static int PCApply_NN(PC pc,Vec r,Vec z)
 {
-  PC_IS *pcis = (PC_IS*)(pc->data);
-  int ierr,its;
+  PC_IS       *pcis = (PC_IS*)(pc->data);
+  int         ierr,its;
   PetscScalar m_one = -1.0;
-  Vec w = pcis->vec1_global;
+  Vec         w = pcis->vec1_global;
 
   PetscFunctionBegin;
 
@@ -159,7 +157,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_NN"
 int PCCreate_NN(PC pc)
 {
-  int ierr;
+  int   ierr;
   PC_NN *pcnn;
 
   PetscFunctionBegin;
@@ -213,20 +211,20 @@ EXTERN_C_END
 #define __FUNCT__ "PCNNCreateCoarseMatrix"
 int PCNNCreateCoarseMatrix (PC pc)
 {
-  MPI_Request *send_request, *recv_request;
-  int i, j, k, ierr;
+  MPI_Request    *send_request, *recv_request;
+  int            i, j, k, ierr;
 
   PetscScalar*   mat;    /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
   PetscScalar**  DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
 
   /* aliasing some names */
-  PC_IS*  pcis     = (PC_IS*)(pc->data);
-  PC_NN*       pcnn     = (PC_NN*)pc->data;
-  int          n_neigh  = pcis->n_neigh;
-  int*         neigh    = pcis->neigh;
-  int*         n_shared = pcis->n_shared;
-  int**        shared   = pcis->shared;  
-  PetscScalar**     DZ_IN;   /* Must be initialized after memory allocation. */
+  PC_IS*         pcis     = (PC_IS*)(pc->data);
+  PC_NN*         pcnn     = (PC_NN*)pc->data;
+  int            n_neigh  = pcis->n_neigh;
+  int*           neigh    = pcis->neigh;
+  int*           n_shared = pcis->n_shared;
+  int**          shared   = pcis->shared;  
+  PetscScalar**  DZ_IN;   /* Must be initialized after memory allocation. */
 
   PetscFunctionBegin;
 
@@ -342,9 +340,9 @@ int PCNNCreateCoarseMatrix (PC pc)
   }
 
   {
-    int rank;
+    int         rank;
     PetscScalar one = 1.0; 
-    IS is;
+    IS          is;
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
@@ -358,7 +356,7 @@ int PCNNCreateCoarseMatrix (PC pc)
 
   /* Create the coarse linear solver context */
   {
-    PC pc_ctx, inner_pc;
+    PC  pc_ctx, inner_pc;
     KSP ksp_ctx;
     ierr = SLESCreate(pc->comm,&pcnn->sles_coarse);CHKERRQ(ierr);
     ierr = SLESSetOperators(pcnn->sles_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
@@ -420,8 +418,7 @@ int PCNNCreateCoarseMatrix (PC pc)
 #define __FUNCT__ "PCNNApplySchurToChunk"
 int PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
-  int i, ierr;
-
+  int   i, ierr;
   PC_IS *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
@@ -462,9 +459,8 @@ int PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScala
 int PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScalar* work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D,
                                       Vec vec2_D, Vec vec1_N, Vec vec2_N)
 {
-  int ierr;
-
-  PC_IS*  pcis = (PC_IS*)(pc->data);
+  int    ierr;
+  PC_IS* pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
 

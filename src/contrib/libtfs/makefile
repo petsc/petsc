@@ -14,7 +14,7 @@ OBJSC    = bit_mask.o bss_malloc.o comm.o error.o gs.o ivec.o queue.o stack.o xx
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-LOCDIR   = src/contrib/libtfs
+LOCDIR   = src/contrib/libtfs/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

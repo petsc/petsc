@@ -3,7 +3,7 @@
 ALL: lib
 
 DIRS   = pmetis
-LOCDIR = src/mat/partition/impls
+LOCDIR = src/mat/partition/impls/
  
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
