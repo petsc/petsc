@@ -24,7 +24,7 @@ X11_LIB        =
 # Location of MPI (Message Passing Interface) software
 #
 MPI_LIB        = /mpp/lib/libmpi.a
-MPI_INCLUDE    = -I/usr/include -I/usr/include/mpp
+MPI_INCLUDE    = -I/usr/include/mpp
 MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 # the -I/usr/include above is to insure that the C++ compiler with 
