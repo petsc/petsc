@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.10 1995/05/10 00:22:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.11 1995/05/12 20:33:20 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -240,7 +240,13 @@ static int MatGetInfo_BDiag(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
   return 0;
 }
 
-/* -----------------------------------------------------------------*/
+static int MatGetOwnershipRange_BDiag(Mat matin,int *m,int *n)
+{
+  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  *m = 0; *n = mat->m;
+  return 0;
+}
+
 static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
 {
   Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
@@ -573,7 +579,7 @@ static int MatGetSize_BDiag(Mat matin,int *m,int *n)
   return 0;
 }
 
-/* static int MatCopy_BDiag(Mat,Mat *); */
+static int MatCopy_BDiag_Private(Mat,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_BDiag,
@@ -587,9 +593,12 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        0,MatAssemblyEnd_BDiag,
        0, 0, MatZero_BDiag,MatZeroRows_BDiag,0,
        0, 0, 0, 0,
-       MatGetSize_BDiag,MatGetSize_BDiag,0,
-       0, 0, 0
-};
+       MatGetSize_BDiag,MatGetSize_BDiag,MatGetOwnershipRange_BDiag,
+       0, 0,
+       0, 0, 0,
+       0, 0,
+       MatCopy_BDiag_Private};
+
 /*@
    MatCreateSequentialBDiag - Creates a sequential block diagonal matrix.
 
@@ -714,8 +723,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   return 0;
 }
 
-/*
-static int MatCopy_BDiag(Mat matin,Mat *newmat)
+static int MatCopy_BDiag_Private(Mat matin,Mat *newmat)
 { 
   Mat_BDiag *old = (Mat_BDiag *) matin->data;
   int       ierr;
@@ -725,7 +733,6 @@ static int MatCopy_BDiag(Mat matin,Mat *newmat)
   if (!old->assembled) SETERR(1,"Cannot copy unassembled matrix");
   ierr = MatCreateSequentialBDiag(matin->comm,old->m,old->n,old->nd,
          old->nb,old->diag,0,newmat); CHKERR(ierr);
-   Copy contents of diagonals 
+/*   Copy contents of diagonals */
   return 0;
 }
-*/
