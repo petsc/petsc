@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.27 1995/11/23 14:12:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.28 1995/11/27 22:24:55 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -163,7 +163,7 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 
    Input Parameters:
 .   lg - the LineGraph data structure
-.   x,y -  points to two arrays of pointers that point to arrays 
+.   xx,yy -  points to two arrays of pointers that point to arrays 
 .          containing the new x and y points for each curve.
 .   n - number of points being added
 

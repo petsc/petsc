@@ -109,7 +109,6 @@ homepage:
 	-/usr/bin/cp ../manual.html /mcs/www/petsc
 	-/usr/bin/cp onepager.html /mcs/www/petsc
 	-/usr/bin/cp summaries.html /mcs/www/petsc
-	-/usr/bin/cp ../www.html /mcs/www/petsc
 	-chmod ug+w /home/ftp/pub/petsc/FAQ /mcs/www/petsc/*
 	-chmod ug+w /home/ftp/pub/petsc/Installation /home/ftp/pub/petsc/README
 	-chmod ug+w /home/ftp/pub/petsc/Machines /home/ftp/pub/petsc/manual.ps
