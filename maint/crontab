@@ -18,3 +18,4 @@
 05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/balay/petsc > /dev/null
 05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc > /dev/null
 05 0 * * * /home/bsmith/petsc/maint/buildlinks /home/petsc/petsc > /dev/null
+05 0 * * * /home/bsmith/petsc/maint/buildlinks /tmp/petsc > /dev/null
