@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.1 1995/03/20 00:36:30 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.2 1995/04/17 03:16:20 bsmith Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -52,7 +52,8 @@ struct _SNES {
 
   int      max_its;            /* Max number of iterations */
   int      max_funcs;          /* Max number of function evals (NLM only) */
-  int      max_resids;
+  int      max_resids;         /* Max number of residual evaluations */
+  int      nresids;            /* Number of residual evaluations */
   int      iter;               /* Global iteration number */
   double   norm;               /* Residual norm of current iterate (NLE)
 				  or gradient norm of current iterate (NLM) */

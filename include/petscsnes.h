@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.4 1995/04/16 20:19:40 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.5 1995/04/16 22:13:48 curfman Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -50,6 +50,7 @@ extern int SNESGetResidual(SNES,Vec*);
 
 extern int SNESPrintHelp(SNES);
 extern int SNESSetFromOptions(SNES);
+extern int SNESGetMethodName(SNESMETHOD,char **);
 extern int SNESDefaultMonitor(SNES,int, Vec,Vec,double,void *);
 extern int SNESDefaultConverged(SNES,double,double,double,void*);
 

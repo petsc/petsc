@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.4 1995/04/15 03:29:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.5 1995/04/16 22:12:25 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -114,6 +114,10 @@ int SNESDestroy_LS(PetscObject obj)
    Notes:
    f is either the residual or its negative, depending on the user's
    preference, as set with SNESSetResidual().
+
+.keywords: SNES, nonlinear, default, monitor, residual, norm
+
+.seealso: SNESSetMonitor()
 @*/
 int SNESDefaultMonitor(SNES snes,int its, Vec x,Vec f,double fnorm,void *dummy)
 {
@@ -155,15 +159,22 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
                          void *dummy)
 {
   if (fnorm < snes->atol) {
-    PLogInfo((PetscObject)snes,"Converged due to absolute residual norm %g < %g\n",
-                   fnorm,snes->atol);
+    PLogInfo((PetscObject)snes,
+      "Converged due to absolute residual norm %g < %g\n",fnorm,snes->atol);
     return 2;
   }
   if (pnorm < snes->xtol*(xnorm)) {
-    PLogInfo((PetscObject)snes,"Converged due to small update length  %g < %g*%g\n",
-                   pnorm,snes->xtol,xnorm);
+    PLogInfo((PetscObject)snes,
+      "Converged due to small update length  %g < %g*%g\n",
+       pnorm,snes->xtol,xnorm);
     return 3;
   }
+  if (snes->nresids > snes->max_resids) {
+    PLogInfo((PetscObject)snes,
+      "Exceeded maximum number of residual evaluations: %d > %d\n",
+       snes->nresids, snes->max_resids );
+    return -2;
+  }  
   return 0;
 }
 
