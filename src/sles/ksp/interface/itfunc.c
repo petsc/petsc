@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.120 1999/03/07 17:28:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.121 1999/03/30 03:43:08 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -1097,6 +1097,9 @@ $     converge (KSP ksp, int it, double rnorm, void *mctx)
    converged, and -1 for abort or failure to converge.  
 
    Notes:
+   Must be called after the KSP type has been set so put this after
+   a call to KSPSetType(), KSPSetTypeFromOptions() or KSPSetFromOptions().
+
    The default convergence test, KSPDefaultConverged(), aborts if the 
    residual grows to more than 10000 times the initial residual.
 
