@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.67 2000/05/05 22:17:02 balay Exp bsmith $*/
+/*$Id: jacobi.c,v 1.68 2000/09/02 02:48:46 bsmith Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -55,12 +55,27 @@
    Private context (data structure) for the Jacobi preconditioner.  
 */
 typedef struct {
-  Vec diag;      /* vector containing the reciprocals of the diagonal elements
-                    of the preconditioner matrix */
-  Vec diagsqrt;  /* vector containing the reciprocals of the square roots of
-                    the diagonal elements of the preconditioner matrix (used 
-                    only for symmetric preconditioner application) */
+  Vec        diag;               /* vector containing the reciprocals of the diagonal elements
+                                    of the preconditioner matrix */
+  Vec        diagsqrt;           /* vector containing the reciprocals of the square roots of
+                                    the diagonal elements of the preconditioner matrix (used 
+                                    only for symmetric preconditioner application) */
+  PetscTruth userowmax;
 } PC_Jacobi;
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCJacobiSetUseRowMax_Jacobi"
+int PCJacobiSetRowMax_Jacobi(PC pc)
+{
+  PC_Jacobi *j;
+
+  PetscFunctionBegin;
+  j            = (PC_Jacobi*)pc->data;
+  j->userowmax = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -112,7 +127,11 @@ static int PCSetUp_Jacobi(PC pc)
   diagsqrt = jac->diagsqrt;
 
   if (diag) {
-    ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
+    if (jac->userowmax) {
+      ierr = MatGetRowMax(pc->pmat,diag);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
+    }
     ierr = VecReciprocal(diag);CHKERRQ(ierr);
     ierr = VecGetLocalSize(diag,&n);CHKERRQ(ierr);
     ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
@@ -125,7 +144,11 @@ static int PCSetUp_Jacobi(PC pc)
     ierr = VecRestoreArray(diag,&x);CHKERRQ(ierr);
   }
   if (diagsqrt) {
-    ierr = MatGetDiagonal(pc->pmat,diagsqrt);CHKERRQ(ierr);
+    if (jac->userowmax) {
+      ierr = MatGetRowMax(pc->pmat,diagsqrt);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetDiagonal(pc->pmat,diagsqrt);CHKERRQ(ierr);
+    }
     ierr = VecGetLocalSize(diagsqrt,&n);CHKERRQ(ierr);
     ierr = VecGetArray(diagsqrt,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -271,6 +294,23 @@ static int PCDestroy_Jacobi(PC pc)
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_Jacobi"
+static int PCSetFromOptions_Jacobi(PC pc)
+{
+  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
+  int        ierr;
+  PetscTruth flg;
+
+  PetscFunctionBegin;
+  ierr = OptionsHead("Jacobi options");CHKERRQ(ierr);
+    ierr = OptionsLogical("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
+                          &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    PCCreate_Jacobi - Creates a Jacobi preconditioner context, PC_Jacobi, 
@@ -288,6 +328,7 @@ EXTERN_C_BEGIN
 int PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi *jac;
+  int       ierr;
 
   PetscFunctionBegin;
 
@@ -310,6 +351,7 @@ int PCCreate_Jacobi(PC pc)
   */
   jac->diag          = 0;
   jac->diagsqrt      = 0;
+  jac->userowmax     = PETSC_NULL;
 
   /*
       Set the pointers for the functions that are provided above.
@@ -322,11 +364,48 @@ int PCCreate_Jacobi(PC pc)
   pc->ops->applytranspose      = PCApply_Jacobi;
   pc->ops->setup               = PCSetUp_Jacobi;
   pc->ops->destroy             = PCDestroy_Jacobi;
+  pc->ops->setfromoptions      = PCSetFromOptions_Jacobi;
   pc->ops->view                = 0;
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",
+                    PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCJacobiSetUseRowMax"
+/*@
+   PCJacobiSetUseRowMax - Causes the Jacobi preconditioner to use the 
+      maximum entry in each row as the diagonal preconditioner, instead of
+      the diagonal entry
+
+   Collective on PC
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+
+   Options Database Key:
+.  -pc_jacobi_rowmax 
+
+   Level: intermediate
+
+   Concepts: Jacobi preconditioner
+
+@*/
+int PCJacobiSetUseRowMax(PC pc)
+{
+  int ierr,(*f)(PC);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetRowMax_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
 
