@@ -24,10 +24,10 @@ else if ($day == Tue) then
   set JOBS=(1 2 3 6 8)
 else if ($day == Wed) then
   set BOPT=g_c++
-  set JOBS=(1 2 3 6 8 13)
+  set JOBS=(1 2 3 6 8 13 18)
 else if ($day == Thu) then
   set BOPT=O_c++
-  set JOBS=(1 2 3 6 8 13)
+  set JOBS=(1 2 3 6 8 13 18)
 else if ($day == Fri) then
   set BOPT=O        
   set JOBS=(1 2 3 6 8)        

@@ -466,6 +466,7 @@ TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_14  = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
+TESTEXAMPLES_18  = ex2.PETSc runex2_6 ex2.rm
 TESTEXAMPLES_SPAI  = ex10.PETSc runex10_14 ex10.rm
 
 include ${PETSC_DIR}/bmake/common/test

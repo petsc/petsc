@@ -41,6 +41,11 @@
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
 #endif
+/*
+   Contains the list of registered CCA components
+*/
+PetscFList CCAList = 0;
+
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -189,10 +194,6 @@ int PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int ll
   PetscFunctionReturn(0);
 }
 
-/*
-   Contains the list of registered CCA components
-*/
-PetscFList CCAList = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryOpen"

@@ -16,6 +16,7 @@
 #   13 - Examples that should only be compiled.
 #   14 - requires Matlab - src/dm/da/examples/tests
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
+#   18 - requires C++ and dynamic libraries
 
 testexamples_1: ${TESTEXAMPLES_1} clean
 testexamples_2: ${TESTEXAMPLES_2} clean
@@ -32,6 +33,7 @@ testexamples_12: ${TESTEXAMPLES_12} clean
 testexamples_13: ${TESTEXAMPLES_13} clean
 testexamples_14: ${TESTEXAMPLES_14} clean
 testexamples_17: ${TESTEXAMPLES_17} clean
+testexamples_18: ${TESTEXAMPLES_18} clean
 testexamples_AMS: ${TESTEXAMPLES_AMS} clean
 testexamples_PARMETIS: ${TESTEXAMPLES_PARMETIS} clean
 testexamples_SPAI: ${TESTEXAMPLES_SPAI} clean
@@ -69,6 +71,8 @@ buildexamples_13:
 	-@${OMAKE} testexamples_13 TESTEXAMPLES_13=`echo ${TESTEXAMPLES_13} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_14:
 	-@${OMAKE} testexamples_14 TESTEXAMPLES_14=`echo ${TESTEXAMPLES_14} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_18:
+	-@${OMAKE} testexamples_18 TESTEXAMPLES_18=`echo ${TESTEXAMPLES_18} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_17:
 	-@${OMAKE} testexamples_17 TESTEXAMPLES_17=`echo ${TESTEXAMPLES_17} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_AMS:
