@@ -1,4 +1,4 @@
-/*$Id: zpetsc.h,v 1.57 2001/01/15 21:49:49 bsmith Exp balay $*/
+/*$Id: zpetsc.h,v 1.58 2001/01/16 18:22:02 balay Exp balay $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
@@ -111,7 +111,7 @@ Fortran.
   } else {  \
     while((n > 0) && (b[n-1] == ' ')) n--; \
     *ierr = PetscMalloc((n+1)*sizeof(char),&b); \
-    if (!b) {*ierr = PETSC_ERR_MEM; return; } \
+    if(*ierr) return; \
     *ierr = PetscStrncpy(b,_fcdtocp(a),n); \
     if(*ierr) return; \
     b[n] = 0; \
@@ -130,7 +130,7 @@ Fortran.
     while((n > 0) && (a[n-1] == ' ')) n--; \
     if (a[n] != 0) { \
       *ierr = PetscMalloc((n+1)*sizeof(char),&b); \
-      if (!b) {*ierr = PETSC_ERR_MEM; return; } \
+      if(*ierr) return; \
       *ierr = PetscStrncpy(b,a,n); \
       if(*ierr) return; \
       b[n] = 0; \

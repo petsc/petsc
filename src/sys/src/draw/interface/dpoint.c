@@ -1,11 +1,11 @@
-/*$Id: dpoint.c,v 1.28 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: dpoint.c,v 1.29 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawPoint" 
+#define __FUNC__ "PetscDrawPoint" 
 /*@
    PetscDrawPoint - PetscDraws a point onto a drawable.
 

@@ -1,4 +1,4 @@
-/*$Id: axis.c,v 1.70 2000/09/22 20:42:13 bsmith Exp bsmith $*/
+/*$Id: axis.c,v 1.71 2001/01/15 21:43:37 bsmith Exp balay $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
@@ -36,7 +36,7 @@ static int PetscRint(PetscReal x,PetscReal *result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisCreate" 
+#define __FUNC__ "PetscDrawAxisCreate" 
 /*@C
    PetscDrawAxisCreate - Generate the axis data structure.
 
@@ -67,7 +67,7 @@ int PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
     (*axis)->win = draw;
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"DrawAxis",obj->comm,PetscDrawAxisDestroy,0);
+  PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"PetscDrawAxis",obj->comm,PetscDrawAxisDestroy,0);
   PetscLogObjectCreate(ad);
   PetscLogObjectParent(draw,ad);
   ad->xticks    = PetscADefTicks;
@@ -87,7 +87,7 @@ int PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisDestroy" 
+#define __FUNC__ "PetscDrawAxisDestroy" 
 /*@C
     PetscDrawAxisDestroy - Frees the space used by an axis structure.
 
@@ -111,7 +111,7 @@ int PetscDrawAxisDestroy(PetscDrawAxis axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetColors" 
+#define __FUNC__ "PetscDrawAxisSetColors" 
 /*@
     PetscDrawAxisSetColors -  Sets the colors to be used for the axis,       
                          tickmarks, and text.
@@ -136,7 +136,7 @@ int PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetLabels" 
+#define __FUNC__ "PetscDrawAxisSetLabels" 
 /*@C
     PetscDrawAxisSetLabels -  Sets the x and y axis labels.
 
@@ -161,7 +161,7 @@ int PetscDrawAxisSetLabels(PetscDrawAxis axis,char* top,char *xlabel,char *ylabe
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetLimits" 
+#define __FUNC__ "PetscDrawAxisSetLimits" 
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
     
@@ -187,7 +187,7 @@ int PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,Pets
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisDraw" 
+#define __FUNC__ "PetscDrawAxisDraw" 
 /*@
     PetscDrawAxisDraw - PetscDraws an axis.
 

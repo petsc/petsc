@@ -1,11 +1,11 @@
-/*$Id: dsclear.c,v 1.25 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: dsclear.c,v 1.26 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSynchronizedClear" 
+#define __FUNC__ "PetscDrawSynchronizedClear" 
 /*@
    PetscDrawSynchronizedClear - Clears graphical output. All processors must call this routine.
    Does not return until the draw in context is clear.

@@ -1,11 +1,11 @@
-/*$Id: dtexts.c,v 1.32 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: dtexts.c,v 1.33 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringSetSize" 
+#define __FUNC__ "PetscDrawStringSetSize" 
 /*@
    PetscDrawStringSetSize - Sets the size for charactor text.
 

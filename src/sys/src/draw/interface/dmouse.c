@@ -1,11 +1,11 @@
-/*$Id: dmouse.c,v 1.32 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dmouse.c,v 1.33 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawGetMouseButton" 
+#define __FUNC__ "PetscDrawGetMouseButton" 
 /*@
     PetscDrawGetMouseButton - Returns location of mouse and which button was
     pressed. Waits for button to be pressed.
@@ -43,7 +43,7 @@ int PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSynchronizedGetMouseButton" 
+#define __FUNC__ "PetscDrawSynchronizedGetMouseButton" 
 /*@
     PetscDrawSynchronizedGetMouseButton - Returns location of mouse and which button was
     pressed. Waits for button to be pressed.

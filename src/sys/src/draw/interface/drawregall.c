@@ -1,4 +1,4 @@
-/*$Id: drawregall.c,v 1.17 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: drawregall.c,v 1.18 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -12,7 +12,7 @@ EXTERN int PetscDrawCreate_Win32(PetscDraw);
 EXTERN_C_END
   
 #undef __FUNC__  
-#define __FUNC__ "DrawRegisterAll" 
+#define __FUNC__ "PetscDrawRegisterAll" 
 /*@C
   PetscDrawRegisterAll - Registers all of the graphics methods in the PetscDraw package.
 
@@ -29,12 +29,12 @@ int PetscDrawRegisterAll(char *path)
   PetscFunctionBegin;
   
 #if defined(PETSC_HAVE_X11)
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_X,     path,"DrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);
+  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_X,     path,"PetscDrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);
 #elif defined (PARCH_win32)
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_WIN32, path,"DrawCreate_Win32", PetscDrawCreate_Win32);CHKERRQ(ierr);
+  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_WIN32, path,"PetscDrawCreate_Win32", PetscDrawCreate_Win32);CHKERRQ(ierr);
 #endif
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_NULL,  path,"DrawCreate_Null",  PetscDrawCreate_Null);CHKERRQ(ierr);
-  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_PS,    path,"DrawCreate_PS",    PetscDrawCreate_PS);CHKERRQ(ierr);
+  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_NULL,  path,"PetscDrawCreate_Null",  PetscDrawCreate_Null);CHKERRQ(ierr);
+  ierr = PetscDrawRegisterDynamic(PETSC_DRAW_PS,    path,"PetscDrawCreate_PS",    PetscDrawCreate_PS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

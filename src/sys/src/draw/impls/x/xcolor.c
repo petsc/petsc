@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.69 2001/01/15 21:43:29 bsmith Exp balay $*/
+/*$Id: xcolor.c,v 1.70 2001/01/16 18:15:31 balay Exp balay $*/
 
 /*
     Code for managing color the X implementation of the PetscDraw routines.
@@ -71,7 +71,7 @@ static PixVal    gCmapping[256];
        int       gNumcolors = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetUpColormap_Shared" 
+#define __FUNC__ "PetscDrawSetUpColormap_Shared" 
 int PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   XColor        colordef,ecolordef;
@@ -110,7 +110,7 @@ int PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Col
     }
   }
   ierr = PetscFree(red);CHKERRQ(ierr);
-  PetscLogInfo(0,"DrawSetUpColormap_Shared:Successfully allocated colors\n");
+  PetscLogInfo(0,"PetscDrawSetUpColormap_Shared:Successfully allocated colors\n");
 
   PetscFunctionReturn(0);
 }
@@ -124,7 +124,7 @@ static PetscTruth cmap_pixvalues_used[256];
 static int        cmap_base = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetUpColormap_Private" 
+#define __FUNC__ "PetscDrawSetUpColormap_Private" 
 int PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   Colormap      defaultmap = DefaultColormap(display,screen); 
@@ -191,12 +191,12 @@ int PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Co
     }
   }
   ierr = PetscFree(red);CHKERRQ(ierr);
-  PetscLogInfo(0,"DrawSetUpColormap_Private:Successfully allocated colors\n");
+  PetscLogInfo(0,"PetscDrawSetUpColormap_Private:Successfully allocated colors\n");
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetUpColormap_X" 
+#define __FUNC__ "PetscDrawSetUpColormap_X" 
 int PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   int         ierr;
@@ -233,7 +233,7 @@ int PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetColormap_X" 
+#define __FUNC__ "PetscDrawSetColormap_X" 
 int PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap colormap)
 {
   int ierr;

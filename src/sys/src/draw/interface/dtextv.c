@@ -1,11 +1,11 @@
-/*$Id: dtextv.c,v 1.29 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: dtextv.c,v 1.30 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringVertical" 
+#define __FUNC__ "PetscDrawStringVertical" 
 /*@C
    PetscDrawStringVertical - PetscDraws text onto a drawable.
 

@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.241 2000/11/28 17:27:49 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.242 2001/01/15 21:43:52 bsmith Exp balay $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -508,7 +508,7 @@ int PetscOptionsSetValue(const char iname[],const char value[])
       if (options->values[i]) free(options->values[i]);
       ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
       if (len) {
-        options->values[i] = (char*)malloc((len+1)*sizeof(char));CHKERRQ(ierr);
+        options->values[i] = (char*)malloc((len+1)*sizeof(char));
         ierr = PetscStrcpy(options->values[i],value);CHKERRQ(ierr);
       } else { options->values[i] = 0;}
       PetscFunctionReturn(0);
@@ -528,11 +528,11 @@ int PetscOptionsSetValue(const char iname[],const char value[])
   }
   /* insert new name and value */
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  names[n] = (char*)malloc((len+1)*sizeof(char));CHKERRQ(ierr);
+  names[n] = (char*)malloc((len+1)*sizeof(char));
   ierr = PetscStrcpy(names[n],name);CHKERRQ(ierr);
   if (value) {
     ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
-    options->values[n] = (char*)malloc((len+1)*sizeof(char));CHKERRQ(ierr);
+    options->values[n] = (char*)malloc((len+1)*sizeof(char));
     ierr = PetscStrcpy(options->values[n],value);CHKERRQ(ierr);
   } else {options->values[n] = 0;}
   options->used[n] = 0;
@@ -608,10 +608,10 @@ int PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 
   newname++; oldname++;
   ierr = PetscStrlen(newname,&len);CHKERRQ(ierr);
-  options->aliases1[n] = (char*)malloc((len+1)*sizeof(char));CHKERRQ(ierr);
+  options->aliases1[n] = (char*)malloc((len+1)*sizeof(char));
   ierr = PetscStrcpy(options->aliases1[n],newname);CHKERRQ(ierr);
   ierr = PetscStrlen(oldname,&len);CHKERRQ(ierr);
-  options->aliases2[n] = (char*)malloc((len+1)*sizeof(char));CHKERRQ(ierr);
+  options->aliases2[n] = (char*)malloc((len+1)*sizeof(char));
   ierr = PetscStrcpy(options->aliases2[n],oldname);CHKERRQ(ierr);
   options->Naliases++;
   PetscFunctionReturn(0);
@@ -1256,7 +1256,7 @@ int PetscOptionsCreate(void)
   int ierr;
 
   PetscFunctionBegin;
-  options = (PetscOptionsTable*) malloc(sizeof(PetscOptionsTable));CHKERRQ(ierr);
+  options = (PetscOptionsTable*)malloc(sizeof(PetscOptionsTable));
   ierr    = PetscMemzero(options->used,MAXOPTIONS*sizeof(int));CHKERRQ(ierr);
   options->namegiven = PETSC_FALSE;
   options->N         = 0;

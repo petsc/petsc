@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.323 2000/11/28 17:29:00 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.324 2001/01/15 21:45:38 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1102,7 +1102,7 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
       if (max < tmp) { max = tmp; }
     }
-    ierr = PetscMalloc(max*(sizeof(int)+sizeof(Scalar)),mat->rowvalues);CHKERRQ(ierr);
+    ierr = PetscMalloc(max*(sizeof(int)+sizeof(Scalar)),&mat->rowvalues);CHKERRQ(ierr);
     mat->rowindices = (int*)(mat->rowvalues + max);
   }
 

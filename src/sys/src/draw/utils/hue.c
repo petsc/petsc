@@ -1,4 +1,4 @@
-/*$Id: hue.c,v 1.7 2000/10/24 20:24:28 bsmith Exp bsmith $*/
+/*$Id: hue.c,v 1.8 2001/01/15 21:43:37 bsmith Exp balay $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -15,7 +15,7 @@
 static PetscReal Gamma = 2.0;
 
 #undef __FUNC__  
-#define __FUNC__ "DrawUtilitySetGamma"  
+#define __FUNC__ "PetscDrawUtilitySetGamma"  
 int PetscDrawUtilitySetGamma(PetscReal g)
 {
   PetscFunctionBegin;
@@ -34,7 +34,7 @@ int PetscDrawUtilitySetGamma(PetscReal g)
  *      r       g      b
  */
 #undef __FUNC__  
-#define __FUNC__ "DrawUtilityHlsHelper" 
+#define __FUNC__ "PetscDrawUtilityHlsHelper" 
 static int PetscDrawUtilityHlsHelper(int h,int n1,int n2)
 {
   PetscFunctionBegin;
@@ -47,7 +47,7 @@ static int PetscDrawUtilityHlsHelper(int h,int n1,int n2)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawUtilityHlsToRgb" 
+#define __FUNC__ "PetscDrawUtilityHlsToRgb" 
 static int PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
 {
   int m1,m2;         /* in 0 to 100 */
@@ -71,7 +71,7 @@ static int PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawUtilitySetCmapHue" 
+#define __FUNC__ "PetscDrawUtilitySetCmapHue" 
 int PetscDrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
 {
   int        ierr,i,hue,lightness,saturation;

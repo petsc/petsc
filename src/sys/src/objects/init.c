@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.68 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.69 2001/01/15 21:43:52 bsmith Exp balay $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -249,7 +249,7 @@ int PetscCompareInitialize(double tol)
   /* determine what processors belong to my group */
   ierr = PetscStrcmp(pname,basename,&work);CHKERRQ(ierr);
 
-  gflag = (int*)malloc(size*sizeof(int));CHKERRQ(ierr);
+  gflag = (int*)malloc(size*sizeof(int));
   ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
   mysize = 0;
   for (i=0; i<size; i++) {

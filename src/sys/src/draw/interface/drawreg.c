@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.39 2000/10/04 18:45:36 balay Exp bsmith $*/
+/*$Id: drawreg.c,v 1.40 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the registration process for PETSc PetscDraw routines
 */
@@ -10,7 +10,7 @@
 PetscFList PetscDrawList              = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "DrawCreate" 
+#define __FUNC__ "PetscDrawCreate" 
 /*@C
    PetscDrawCreate - Creates a graphics context.
 
@@ -67,7 +67,7 @@ int PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,
 }
  
 #undef __FUNC__  
-#define __FUNC__ "DrawSetType" 
+#define __FUNC__ "PetscDrawSetType" 
 /*@C
    PetscDrawSetType - Builds graphics object for a particular implementation 
 
@@ -147,7 +147,7 @@ int PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawRegisterDestroy" 
+#define __FUNC__ "PetscDrawRegisterDestroy" 
 /*@C
    PetscDrawRegisterDestroy - Frees the list of PetscDraw methods that were
    registered by PetscDrawRegisterDynamic().
@@ -171,7 +171,7 @@ int PetscDrawRegisterDestroy(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawGetType" 
+#define __FUNC__ "PetscDrawGetType" 
 /*@C
    PetscDrawGetType - Gets the PetscDraw type as a string from the PetscDraw object.
 
@@ -233,7 +233,7 @@ $     -draw_type my_draw_type
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawRegister" 
+#define __FUNC__ "PetscDrawRegister" 
 int PetscDrawRegister(char *sname,char *path,char *name,int (*function)(PetscDraw))
 {
   int ierr;
@@ -246,7 +246,7 @@ int PetscDrawRegister(char *sname,char *path,char *name,int (*function)(PetscDra
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetFromOptions" 
+#define __FUNC__ "PetscDrawSetFromOptions" 
 /*@C
    PetscDrawSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X windows graphics.
@@ -302,7 +302,7 @@ int PetscDrawSetFromOptions(PetscDraw draw)
 #endif
   }
   ierr = PetscOptionsBegin(draw->comm,draw->prefix,"Graphics (PetscDraw) Options","Draw");CHKERRQ(ierr);
-    ierr = PetscOptionsList("-draw_type","Type of graphical output","DrawSetType",PetscDrawList,def,vtype,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-draw_type","Type of graphical output","PetscDrawSetType",PetscDrawList,def,vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscDrawSetType(draw,vtype);CHKERRQ(ierr);
     } else if (!draw->type_name) {

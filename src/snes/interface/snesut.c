@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.60 2000/09/28 21:14:05 bsmith Exp bsmith $*/
+/*$Id: snesut.c,v 1.61 2001/01/15 21:47:49 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
@@ -113,9 +113,9 @@ int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm);
 
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%d SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%d SNES Function value %14.12e, Gradient norm %14.12e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function value %14.12e, Gradient norm %14.12e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown method class");
   PetscFunctionReturn(0);
 }
@@ -137,19 +137,19 @@ int SNESDefaultSMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     if (fgnorm > 1.e-9) {
-      ierr = PetscPrintf(snes->comm,"%d SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%3d SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
     } else if (fgnorm > 1.e-11){
-      ierr = PetscPrintf(snes->comm,"%d SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%3d SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(snes->comm,"%d SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%3d SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
     }
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     if (fgnorm > 1.e-9) {
-      ierr = PetscPrintf(snes->comm,"%d SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%3d SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
     } else if (fgnorm > 1.e-11) {
-      ierr = PetscPrintf(snes->comm,"%d SNES Function value %g, Gradient norm %5.3e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%3d SNES Function value %g, Gradient norm %5.3e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(snes->comm,"%d SNES Function value %g, Gradient norm < 1.e-11\n",its,snes->fc);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->comm,"%3d SNES Function value %g, Gradient norm < 1.e-11\n",its,snes->fc);CHKERRQ(ierr);
     }
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown method class");
   PetscFunctionReturn(0);

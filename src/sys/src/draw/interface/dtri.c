@@ -1,11 +1,11 @@
-/*$Id: dtri.c,v 1.46 2000/09/28 21:08:23 bsmith Exp bsmith $*/
+/*$Id: dtri.c,v 1.47 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTriangle" 
+#define __FUNC__ "PetscDrawTriangle" 
 /*@
    PetscDrawTriangle - PetscDraws a triangle  onto a drawable.
 
@@ -39,7 +39,7 @@ int PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,Pet
 
 
 #undef __FUNC__  
-#define __FUNC__ "DrawScalePopup" 
+#define __FUNC__ "PetscDrawScalePopup" 
 /*@
        PetscDrawScalePopup - PetscDraws a contour scale window. 
 
@@ -93,7 +93,7 @@ typedef struct {
 } ZoomCtx;
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTensorContour_Zoom" 
+#define __FUNC__ "PetscDrawTensorContour_Zoom" 
 static int PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 {
   int     i,ierr;
@@ -113,7 +113,7 @@ static int PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTensorContour" 
+#define __FUNC__ "PetscDrawTensorContour" 
 /*@C
    PetscDrawTensorContour - PetscDraws a contour plot for a two-dimensional array
    that is stored as a PETSc vector.
@@ -207,7 +207,7 @@ int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTensorContourPatch" 
+#define __FUNC__ "PetscDrawTensorContourPatch" 
 /*@
    PetscDrawTensorContourPatch - PetscDraws a rectangular patch of a contour plot 
    for a two-dimensional array.

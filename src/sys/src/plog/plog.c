@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.250 2000/11/28 17:27:57 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.251 2001/01/15 21:44:04 bsmith Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -664,7 +664,7 @@ int PetscLogDefaultPHC(PetscObject obj)
     Events *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
-    tmp = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));CHKERRQ(ierr);
+    tmp = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));
     ierr = PetscMemcpy(tmp,events,eventsspace*sizeof(Events));CHKERRQ(ierr);
     free(events);
     events = tmp; eventsspace += CHUNCK;
@@ -674,7 +674,7 @@ int PetscLogDefaultPHC(PetscObject obj)
     Objects *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
-    tmp = (Objects*)malloc((objectsspace+CHUNCK)*sizeof(Objects));CHKERRQ(ierr);
+    tmp = (Objects*)malloc((objectsspace+CHUNCK)*sizeof(Objects));
     ierr = PetscMemcpy(tmp,objects,objectsspace*sizeof(Objects));CHKERRQ(ierr);
     free(objects);
     objects = tmp; objectsspace += CHUNCK;
@@ -713,7 +713,7 @@ int PetscLogDefaultPHD(PetscObject obj)
     Events *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
-    tmp = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));CHKERRQ(ierr);
+    tmp = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));
     ierr = PetscMemcpy(tmp,events,eventsspace*sizeof(Events));CHKERRQ(ierr);
     free(events);
     events = tmp; eventsspace += CHUNCK;
@@ -771,7 +771,7 @@ int PetscLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObj
     Events *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
-    tmp  = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));CHKERRQ(ierr);
+    tmp  = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));
     ierr = PetscMemcpy(tmp,events,eventsspace*sizeof(Events));CHKERRQ(ierr);
     free(events);
     events = tmp; eventsspace += CHUNCK;
@@ -810,7 +810,7 @@ int PetscLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObj
     Events *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
-    tmp  = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));CHKERRQ(ierr);
+    tmp  = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));
     ierr = PetscMemcpy(tmp,events,eventsspace*sizeof(Events));CHKERRQ(ierr);
     free(events);
     events = tmp; eventsspace += CHUNCK;
@@ -998,8 +998,8 @@ int PetscLogAllBegin(void)
   int ierr;
 
   PetscFunctionBegin;
-  objects  = (Objects*)malloc(CHUNCK*sizeof(Objects));CHKERRQ(ierr);
-  events   = (Events*)malloc(CHUNCK*sizeof(Events));CHKERRQ(ierr);
+  objects  = (Objects*)malloc(CHUNCK*sizeof(Objects));
+  events   = (Events*)malloc(CHUNCK*sizeof(Events));
   _PetscLogPHC = PetscLogDefaultPHC;
   _PetscLogPHD = PetscLogDefaultPHD;
   ierr     = PetscLogSet(PetscLogDefaultPLBAll,PetscLogDefaultPLEAll);CHKERRQ(ierr);
@@ -1083,8 +1083,8 @@ int PetscLogBegin(void)
   int ierr;
 
   PetscFunctionBegin;
-  objects  = (Objects*)malloc(CHUNCK*sizeof(Objects));CHKERRQ(ierr);
-  events   = (Events*)malloc(CHUNCK*sizeof(Events));CHKERRQ(ierr);
+  objects  = (Objects*)malloc(CHUNCK*sizeof(Objects));
+  events   = (Events*)malloc(CHUNCK*sizeof(Events));
   _PetscLogPHC = PetscLogDefaultPHC;
   _PetscLogPHD = PetscLogDefaultPHD;
   ierr     = PetscLogSet(PetscLogDefaultPLB,PetscLogDefaultPLE);CHKERRQ(ierr);

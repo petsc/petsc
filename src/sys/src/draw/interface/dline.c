@@ -1,11 +1,11 @@
-/*$Id: dline.c,v 1.29 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: dline.c,v 1.30 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
   
 #undef __FUNC__  
-#define __FUNC__ "DrawLine" 
+#define __FUNC__ "PetscDrawLine" 
 /*@
    PetscDrawLine - PetscDraws a line onto a drawable.
 
@@ -36,7 +36,7 @@ int PetscDrawLine(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscRea
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawIsNull" 
+#define __FUNC__ "PetscDrawIsNull" 
 /*@
    PetscDrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
 

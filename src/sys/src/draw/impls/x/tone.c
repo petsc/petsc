@@ -1,4 +1,4 @@
-/*$Id: tone.c,v 1.33 2000/09/22 20:42:03 bsmith Exp bsmith $*/
+/*$Id: tone.c,v 1.34 2001/01/15 21:43:29 bsmith Exp balay $*/
 
 /*
     Code for drawing color interpolated triangles using X-windows.
@@ -8,7 +8,7 @@
 #define SHIFT_VAL 6
 
 #undef __FUNC__  
-#define __FUNC__ "DrawInterpolatedTriangle_X" 
+#define __FUNC__ "PetscDrawInterpolatedTriangle_X" 
 int PetscDrawInterpolatedTriangle_X(PetscDraw_X* win,int x1,int y_1,int t1,int x2,int y2,int t2,int x3,int y3,int t3)
 {
   PetscReal rfrac,lfrac;

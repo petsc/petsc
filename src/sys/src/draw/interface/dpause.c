@@ -1,11 +1,11 @@
-/*$Id: dpause.c,v 1.25 2000/10/24 20:24:21 bsmith Exp bsmith $*/
+/*$Id: dpause.c,v 1.26 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawPause" 
+#define __FUNC__ "PetscDrawPause" 
 /*@
    PetscDrawPause - Waits n seconds or until user input, depending on input 
                to PetscDrawSetPause().

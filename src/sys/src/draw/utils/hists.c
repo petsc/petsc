@@ -1,4 +1,4 @@
-/*$Id: hists.c,v 1.22 2000/09/22 20:42:13 bsmith Exp bsmith $*/
+/*$Id: hists.c,v 1.23 2001/01/15 21:43:37 bsmith Exp balay $*/
 
 /*
   Contains the data structure for plotting a histogram in a window with an axis.
@@ -25,7 +25,7 @@ struct _p_DrawHG {
 #define CHUNKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ "DrawHGCreate" 
+#define __FUNC__ "PetscDrawHGCreate" 
 /*@C
    PetscDrawHGCreate - Creates a histogram data structure.
 
@@ -62,7 +62,7 @@ int PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
     ierr = PetscDrawOpenNull(obj->comm,(PetscDraw*)hist);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(h,_p_DrawHG,int,DRAWHG_COOKIE,0,"DrawHG",obj->comm,PetscDrawHGDestroy,0);
+  PetscHeaderCreate(h,_p_DrawHG,int,DRAWHG_COOKIE,0,"PetscDrawHG",obj->comm,PetscDrawHGDestroy,0);
   h->view      = 0;
   h->destroy   = 0;
   h->win       = draw;
@@ -84,7 +84,7 @@ int PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawHGSetNumberBins" 
+#define __FUNC__ "PetscDrawHGSetNumberBins" 
 /*@
    PetscDrawHGSetNumberBins - Change the number of bins that are to be drawn.
 
@@ -119,7 +119,7 @@ int PetscDrawHGSetNumberBins(PetscDrawHG hist,int bins)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawHGReset" 
+#define __FUNC__ "PetscDrawHGReset" 
 /*@
   PetscDrawHGReset - Clears histogram to allow for reuse with new data.
 
@@ -149,7 +149,7 @@ int PetscDrawHGReset(PetscDrawHG hist)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawHGDestroy" 
+#define __FUNC__ "PetscDrawHGDestroy" 
 /*@C
   PetscDrawHGDestroy - Frees all space taken up by histogram data structure.
 
@@ -186,7 +186,7 @@ int PetscDrawHGDestroy(PetscDrawHG hist)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawHGAddValue" 
+#define __FUNC__ "PetscDrawHGAddValue" 
 /*@
   PetscDrawHGAddValue - Adds another value to the histogram.
 
@@ -249,7 +249,7 @@ int PetscDrawHGAddValue(PetscDrawHG hist,PetscReal value)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawHGDraw" 
+#define __FUNC__ "PetscDrawHGDraw" 
 /*@
   PetscDrawHGDraw - Redraws a histogram.
 
@@ -322,7 +322,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
 } 
  
 #undef __FUNC__  
-#define __FUNC__ "DrawHGSetColor" 
+#define __FUNC__ "PetscDrawHGSetColor" 
 /*@
   PetscDrawHGSetColor - Sets the color the bars will be drawn with.
 
@@ -346,7 +346,7 @@ int PetscDrawHGSetColor(PetscDrawHG hist,int color)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawHGSetLimits" 
+#define __FUNC__ "PetscDrawHGSetLimits" 
 /*@
   PetscDrawHGSetLimits - Sets the axis limits for a histogram. If more
   points are added after this call, the limits will be adjusted to
@@ -378,7 +378,7 @@ int PetscDrawHGSetLimits(PetscDrawHG hist,PetscReal x_min,PetscReal x_max,int y_
 }
  
 #undef __FUNC__  
-#define __FUNC__ "DrawHGGetAxis" 
+#define __FUNC__ "PetscDrawHGGetAxis" 
 /*@C
   PetscDrawHGGetAxis - Gets the axis context associated with a histogram.
   This is useful if one wants to change some axis property, such as
@@ -411,7 +411,7 @@ int PetscDrawHGGetAxis(PetscDrawHG hist,PetscDrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawHGGetDraw" 
+#define __FUNC__ "PetscDrawHGGetDraw" 
 /*@C
   PetscDrawHGGetDraw - Gets the draw context associated with a histogram.
 

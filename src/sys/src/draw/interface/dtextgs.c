@@ -1,11 +1,11 @@
-/*$Id: dtextgs.c,v 1.32 2000/09/28 21:08:23 bsmith Exp bsmith $*/
+/*$Id: dtextgs.c,v 1.33 2001/01/15 21:43:22 bsmith Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringGetSize" 
+#define __FUNC__ "PetscDrawStringGetSize" 
 /*@
    PetscDrawStringGetSize - Gets the size for charactor text.  The width is 
    relative to the user coordinates of the window; 0.0 denotes the natural
