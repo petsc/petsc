@@ -40,8 +40,11 @@ in order to declare the type of that option.'''
       if len(arg) > 2:
         for item in arg[1:-1].split(','):
           entry = item.split(':')
-          value[entry[0]] = entry[1]
-    else:
+          if len(entry) > 1:
+            value[entry[0]] = entry[1]
+          else:
+            value[entry[0]] = None
+          else:
       value = arg
     return value
   parseValue = staticmethod(parseValue)
