@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 2001/03/29 17:16:13 buschelm Exp $ 
+# $Id: base.site,v 1.1 2001/05/10 00:59:14 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -8,7 +8,7 @@
 #
 # Location of BLAS and LAPACK
 #
-BLASLAPACK_LIB = -L'"C:/Program Files/Intel/plsuite/lib32/dll"' mkl_c.lib
+BLASLAPACK_LIB = -L'"C:/Program Files/Intel/plsuite/lib64/dll"' mkl_c.lib
 PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL64_ONLY
 
 #
