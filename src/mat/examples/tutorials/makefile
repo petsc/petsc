@@ -7,7 +7,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c
+EXAMPLESC       = ex1.c ex2.c ex3.c
 EXAMPLESF       =
 MANSEC          = Mat
 

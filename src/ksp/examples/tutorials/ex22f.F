@@ -27,7 +27,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscksp.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscda.h"
       DMMG             dmmg
       integer          ierr
@@ -47,7 +46,7 @@
       call DADestroy(da,ierr)
 
 
-      call DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian,ierr)
+      call DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian,ierr)
 
       call DMMGSolve(dmmg,ierr)
 

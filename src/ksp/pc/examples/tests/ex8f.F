@@ -34,7 +34,6 @@
 !     rctx     - random number context
 !
 
-      KSP             ksp
       Mat              A 
       Vec              x,b,u
       PC               pc

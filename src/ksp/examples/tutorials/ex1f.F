@@ -66,7 +66,6 @@
       Mat              A 
       KSP              ksp
       PC               pc
-      KSP             ksp
       double precision norm,tol
       integer          ierr,i,n,col(3),its,flg,size,rank
       PetscScalar      none,one,value(3)

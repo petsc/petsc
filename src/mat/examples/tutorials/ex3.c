@@ -5,13 +5,13 @@
  */
 #include <stdlib.h>
 #include "petscmat.h"
-#include "petscsles.h"
+#include "petscksp.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SLES solver; KSP itmeth; PC pc;
+  KSP solver; PC pc;
   Mat A,B;
   Vec X,Y,Z;
   PetscScalar *a,*b,*x,*y,*z,one=1,mone=-1;
@@ -64,15 +64,17 @@ int main(int argc,char **argv)
   /*
    * Solve with A and B
    */
-  ierr = SLESCreate(MPI_COMM_SELF,&solver); CHKERRQ(ierr);
-  ierr = SLESGetKSP(solver,&itmeth); CHKERRQ(ierr);
-  ierr = KSPSetType(itmeth,KSPPREONLY); CHKERRQ(ierr);
-  ierr = KSPGetPC(itmeth,&pc); CHKERRQ(ierr);
+  ierr = KSPCreate(MPI_COMM_SELF,&solver); CHKERRQ(ierr);
+  ierr = KSPSetType(solver,KSPPREONLY); CHKERRQ(ierr);
+  ierr = KSPGetPC(solver,&pc); CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
-  ierr = SLESSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-  ierr = SLESSolve(solver,X,Y); CHKERRQ(ierr);
-  ierr = SLESSetOperators(solver,B,B,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
-  ierr = SLESSolve(solver,X,Z); CHKERRQ(ierr);
+  ierr = KSPSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
+  ierr = KSPSetRhs(solver,X); CHKERRQ(ierr);
+  ierr = KSPSetSolution(solver,Y); CHKERRQ(ierr);
+  ierr = KSPSolve(solver); CHKERRQ(ierr);
+  ierr = KSPSetOperators(solver,B,B,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
+  ierr = KSPSetSolution(solver,Z); CHKERRQ(ierr);
+  ierr = KSPSolve(solver); CHKERRQ(ierr);
   ierr = VecAXPY(&mone,Y,Z); CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test1; error norm=%e\n",nrm);

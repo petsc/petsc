@@ -67,7 +67,6 @@
 #include "include/finclude/petscda.h"
 
       MPI_Comm comm
-      KSP     ksp
       Vec      X,Y,F,localX,localF
       Mat      J,B
       DA       da

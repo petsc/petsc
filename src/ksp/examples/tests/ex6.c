@@ -19,7 +19,6 @@ int main(int argc,char **args)
   PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;
-  KSP           ksp;
   char           file[128];
   PetscViewer    fd;
   PetscTruth     table,flg;

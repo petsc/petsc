@@ -46,7 +46,6 @@
 
       Vec              x,b,u
       Mat              A      
-      KSP             ksp   
       PC               pc     
       KSP              ksp   
       PetscScalar      v,one,neg_one

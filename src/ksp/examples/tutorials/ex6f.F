@@ -163,7 +163,6 @@
       PetscScalar  v,val
       integer II,ierr,Istart,Iend,count,nsteps
       Mat     A
-      KSP    ksp
       KSP     ksp
       Vec     x,b,u
 

@@ -9,7 +9,7 @@ NOADIC    = true
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex10.c \
 		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex24.c
 EXAMPLESCH      = 
-EXAMPLESF       = ex5f.F ex12.F ex16.F
+EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
 include ${PETSC_DIR}/bmake/common/base
 
@@ -57,9 +57,9 @@ ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_KSP_LIB}
 	${RM} ex11.o
 
-ex12: ex12.o  chkopts
-	-${FLINKER} -o ex12 ex12.o  ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
-	${RM} ex12.o
+ex12f: ex12f.o  chkopts
+	-${FLINKER} -o ex12f ex12f.o  ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
+	${RM} ex12f.o
 
 ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o  ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
@@ -77,9 +77,9 @@ ex15: ex15.o  chkopts
 	-${CLINKER} -o ex15 ex15.o  ${PETSC_KSP_LIB}
 	${RM} ex15.o
 
-ex16: ex16.o  chkopts
-	-${FLINKER} -o ex16 ex16.o  ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
-	${RM} ex16.o
+ex16f: ex16f.o  chkopts
+	-${FLINKER} -o ex16f ex16f.o  ${PETSC_FORTRAN_LIB} ${PETSC_KSP_LIB}
+	${RM} ex16f.o
 
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_KSP_LIB}
@@ -267,8 +267,8 @@ runex11:
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
-runex12:
-	-@${MPIRUN} -np 3  ex12 -ksp_gmres_cgs_refinement_type always -f ../../../mat/examples/matbinary.ex
+runex12f:
+	-@${MPIRUN} -np 3  ex12f -ksp_gmres_cgs_refinement_type always -f ../../../mat/examples/matbinary.ex
 runex13:
 	-@${MPIRUN} -np 2  ex13 -ksp_gmres_cgs_refinement_type always -ksp_smonitor > ex13_1.tmp 2>&1; \
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
@@ -344,8 +344,8 @@ TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
 		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm \
                   ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
 TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
-TESTEXAMPLES_3  = ex12.PETSc ex12.rm
-TESTEXAMPLES_9  = ex12.PETSc ex12.rm
+TESTEXAMPLES_3  = ex12f.PETSc ex12f.rm
+TESTEXAMPLES_9  = ex12f.PETSc ex12f.rm
 TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm ex4.PETSc \
 		  runex4 ex4.rm
 TESTEXAMPLES_5  = ex17.PETSc runex17 ex17.rm
@@ -353,7 +353,7 @@ TESTEXAMPLES_11 = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
 		  ex6.rm
 TESTEXAMPLES_BLOCKSOLVE  = ex6.PETSc runex6_6 ex6.rm
-TESTEXAMPLES_8  = ex16.PETSc ex16.rm
+TESTEXAMPLES_8  = ex16f.PETSc ex16f.rm
 TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 
 include ${PETSC_DIR}/bmake/common/test

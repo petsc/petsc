@@ -43,7 +43,7 @@ typedef struct _p_PF* PF;
 extern int PF_COOKIE;
 
 EXTERN int PFCreate(MPI_Comm,int,int,PF*);
-EXTERN int PFSetType(PF,PFType,void*);
+EXTERN int PFSetType(PF,const PFType,void*);
 EXTERN int PFSet(PF,int(*)(void*,int,PetscScalar*,PetscScalar*),int(*)(void*,Vec,Vec),int(*)(void*,PetscViewer),int(*)(void*),void*);
 EXTERN int PFApply(PF,int,PetscScalar*,PetscScalar*);
 EXTERN int PFApplyVec(PF,Vec,Vec);

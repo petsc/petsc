@@ -51,7 +51,6 @@
 !     its         - iterations for convergence
 !
       SNES     snes
-      KSP     ksp
       PC       pc
       KSP      ksp
       Vec      x,r

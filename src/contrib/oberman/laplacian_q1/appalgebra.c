@@ -104,7 +104,6 @@ int AppCtxSolve(AppCtx* appctx)
       ierr = PetscOptionsHasName(PETSC_NULL,"-save_global_preconditioner",&flg);CHKERRQ(ierr);
       if (flg) {
 	PC          pc;
-	KSP         ksp;
 	Mat         mat,mat2;
 	PetscViewer viewer;
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);

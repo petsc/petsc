@@ -21,7 +21,6 @@
       PetscScalar      norm,none
       Vec              x,b,u
       Mat              A
-      KSP             ksp
       character*(128)  f 
       PetscViewer      fd
       MatInfo          info(MAT_INFO_SIZE)

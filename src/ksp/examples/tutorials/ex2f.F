@@ -85,7 +85,6 @@
       PetscScalar v,one,neg_one
       Vec         x,b,u
       Mat         A 
-      KSP        ksp
       KSP         ksp
       PetscRandom rctx
 !  These variables are not currently used.
