@@ -1,4 +1,4 @@
-/*$Id: iscomp.c,v 1.29 2000/05/25 22:33:06 bsmith Exp bsmith $*/
+/*$Id: iscomp.c,v 1.30 2000/07/03 19:10:12 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -70,8 +70,8 @@ int ISEqual(IS is1,IS is2,PetscTruth *flg)
     ierr = PetscFree(a2);CHKERRQ(ierr);
 
     ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);  
+    ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
