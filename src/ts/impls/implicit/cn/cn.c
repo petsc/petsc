@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.27 2001/03/23 23:24:40 balay Exp balay $*/
+/*$Id: cn.c,v 1.28 2001/03/28 19:42:32 balay Exp balay $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -60,7 +60,7 @@ int TSComputeRHSFunctionEuler(TS ts,double t,Vec x,Vec y)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Linear_Constant_Matrix"
-static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
+static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *ptime)
 {
   TS_CN     *cn = (TS_CN*)ts->data;
   Vec       sol = ts->vec_sol,update = cn->update;
@@ -96,7 +96,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   }
 
   *steps += ts->steps;
-  *time  = ts->ptime;
+  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 /*
@@ -104,7 +104,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Linear_Variable_Matrix"
-static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
+static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *ptime)
 {
   TS_CN        *cn = (TS_CN*)ts->data;
   Vec          sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
@@ -154,7 +154,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
   }
 
   *steps += ts->steps;
-  *time  = ts->ptime;
+  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 /*
@@ -162,7 +162,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Nonlinear"
-static int TSStep_CN_Nonlinear(TS ts,int *steps,double *time)
+static int TSStep_CN_Nonlinear(TS ts,int *steps,double *ptime)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,lits;
@@ -185,7 +185,7 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,double *time)
   }
 
   *steps += ts->steps;
-  *time  = ts->ptime;
+  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 

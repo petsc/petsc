@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.54 2001/03/23 23:24:39 balay Exp balay $*/
+/*$Id: beuler.c,v 1.55 2001/03/28 19:42:31 balay Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -18,7 +18,7 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Linear_Constant_Matrix"
-static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
+static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *ptime)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
   Vec       sol = ts->vec_sol,update = beuler->update;
@@ -49,7 +49,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
   }
 
   *steps += ts->steps;
-  *time  = ts->ptime;
+  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 /*
@@ -57,7 +57,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Linear_Variable_Matrix"
-static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
+static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *ptime)
 {
   TS_BEuler    *beuler = (TS_BEuler*)ts->data;
   Vec          sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
@@ -101,7 +101,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
   }
 
   *steps += ts->steps;
-  *time  = ts->ptime;
+  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 /*
@@ -109,7 +109,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Nonlinear"
-static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
+static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *ptime)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,lits;
@@ -132,7 +132,7 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
   }
 
   *steps += ts->steps;
-  *time  = ts->ptime;
+  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 
