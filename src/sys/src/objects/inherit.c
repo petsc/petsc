@@ -249,7 +249,7 @@ int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const cha
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListAddDynamic(&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

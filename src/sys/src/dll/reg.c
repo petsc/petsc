@@ -472,7 +472,7 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)(void
   ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
   ierr = PetscStrfree(path);CHKERRQ(ierr);
   if (*r) {
-    ierr = PetscFListAddDynamic(&fl,name,name,r);CHKERRQ(ierr);
+    ierr = PetscFListAdd(&fl,name,name,r);CHKERRQ(ierr);
   }
 #endif
 
@@ -647,7 +647,7 @@ int PetscFListDuplicate(PetscFList fl,PetscFList *nl)
     } else {
       ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
     }       
-    ierr = PetscFListAddDynamic(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
+    ierr = PetscFListAdd(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
     fl   = fl->next;
   }
   PetscFunctionReturn(0);
