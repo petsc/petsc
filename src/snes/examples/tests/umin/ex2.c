@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.23 1996/01/29 21:46:33 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.24 1996/02/04 21:38:26 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -196,7 +196,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
                 void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
-  int        i, j, ierr, ndim, iter;
+  int        i, j, ierr, ndim;
   Scalar     *y, zero = 0.0, one = 1.0;
   double     gamma1;
   SNESType   method;
@@ -205,9 +205,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
   user->xvec = X; /* Set location of vector */
 
-  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
   ierr = MatZeroEntries(*H); CHKERRQ(ierr);
-
   for (j=0; j<ndim; j++) {   /* loop over columns */
 
     ierr = VecSetValues(user->s,1,&j,&one,INSERT_VALUES); CHKERRQ(ierr);

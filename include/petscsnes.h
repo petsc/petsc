@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.42 1996/01/23 00:21:00 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.43 1996/01/29 21:45:47 curfman Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -77,6 +77,7 @@ extern int SNES_KSP_SetConvergenceTestEW(SNES);
 #endif
 
 extern int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int SNESDefaultComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 
 extern int SNESComputeFunction(SNES,Vec,Vec);

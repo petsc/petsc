@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.23 1996/01/24 21:10:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.24 1996/01/29 21:46:33 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -10,8 +10,9 @@ Elastic-Plastic Torsion (dept) problem from the MINPACK-2 test suite.\n\
 The command line options are:\n\
   -mx xg, where xg = number of grid points in the 1st coordinate direction\n\
   -my yg, where yg = number of grid points in the 2nd coordinate direction\n\
+  -par param, where param = angle of twist per unit length\n\
   -snes_mf: use matrix-free methods\n\
-  -par param, where param = angle of twist per unit length\n\n";
+  -defaultH: use default finite difference approximation of Hessian\n\n";
 
 #if !defined(PETSC_COMPLEX)
 
@@ -100,7 +101,7 @@ int main(int argc,char **argv)
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
-    ierr = MatCreateShell(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H); CHKERRA(ierr);
     ierr = MatShellSetMult(H,HessianProduct); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
 
@@ -112,7 +113,9 @@ int main(int argc,char **argv)
   } else {
     ierr = MatCreate(MPI_COMM_WORLD,user.ndim,user.ndim,&H); CHKERRA(ierr);
     ierr = MatSetOption(H,SYMMETRIC_MATRIX); CHKERRA(ierr);
-    ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-defaultH",&flg); CHKERRA(ierr);
+    if (flg) ierr = SNESSetHessian(snes,H,H,SNESDefaultComputeHessian,(void *)&user);
+    else     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
   }
 
   /* Set options; then solve minimization problem */
@@ -167,12 +170,11 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 {
   AppCtx     *user = (AppCtx *) ptr;
   int        i, j, ierr, ndim, xs, xe, ys, ye, xm, ym;
-  int        rstart, rend, ldim, iglob, iter;
+  int        rstart, rend, ldim, iglob;
   Scalar     *y, zero = 0.0, one = 1.0;
   double     gamma1;
   SNESType   method;
 
-  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
   ierr = MatZeroEntries(*H); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   xe = xs+xm;
@@ -213,7 +215,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
     MPIU_printf(MPI_COMM_SELF,"  gamma1 = %g\n",gamma1);
     for (i=0; i<ndim; i++) {
       iglob = i+rstart;
-      ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(*H,1,&iglob,1,&iglob,(Scalar*)&gamma1,ADD_VALUES); CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
