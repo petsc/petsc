@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+   In mat/impls/ordering prefix the names of all SPARSEPAK routines with 
+SPARSEPAK, as was done with MINPACK coloring to prevent name space pollution.
+
 I have been running out of memory in the setup phase of aij and baij matrices 
 and so I have hacked my PETSc to use a hash table instead of an order B->N 
 vector.  I wanted to see if you would be interested in incorporating this code 
