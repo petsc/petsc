@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.11 1998/10/07 20:05:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.12 1998/10/08 17:55:25 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -336,16 +336,17 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
-  int             i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
-  int             ierr,*diag = a->diag,jdx;
-  Scalar          *aa=a->a,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
-  Scalar          *x,*b,*v;
+  int             n=a->mbs,*ai=a->i,*aj=a->j;
+  int             ierr,*diag = a->diag;
+  Scalar          *aa=a->a;
+  Scalar          *x,*b;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
 
-#undef USE_FORTRAN_KERNEL_SOLVEBAIJ
+  /*#undef USE_FORTRAN_KERNEL_SOLVEBAIJ
+    #define USE_FORTRAN_KERNEL_SOLVEBAIJ */
 
 #if defined(USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
   {
@@ -360,6 +361,9 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 #elif defined(USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
   fortransolvebaij4unroll_(&n,x,ai,aj,diag,aa,b);
 #else
+  {
+    Scalar sum1,sum2,sum3,sum4,x1,x2,x3,x4,*v;
+    int    jdx,idt,idx,nz,*vi,i;
 
   /* forward solve the lower triangular */
   idx    = 0;
@@ -406,6 +410,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[1+idt] = v[1]*sum1 + v[5]*sum2 + v[9]*sum3  + v[13]*sum4;
     x[2+idt] = v[2]*sum1 + v[6]*sum2 + v[10]*sum3 + v[14]*sum4;
     x[3+idt] = v[3]*sum1 + v[7]*sum2 + v[11]*sum3 + v[15]*sum4;
+  }
   }
 #endif
 
