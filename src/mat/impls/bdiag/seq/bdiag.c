@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.66 1995/10/25 22:42:59 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.67 1995/10/27 01:06:37 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -952,7 +952,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   FILE         *fd;
   char         *outputname;
   int          ierr, *col, i, j, len, diag, nr = a->m, nb = a->nb;
-  int          format, nz, nzalloc, mem;
+  int          format, nz, nzalloc, mem, iprint;
   Scalar       *val, *dv, zero = 0.0;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
@@ -991,7 +991,6 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
     fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
   } 
   else if (format == FILE_FORMAT_IMPL) {
-#if !defined(PETSC_COMPLEX)
     if (nb == 1) { /* diagonal format */
       for (i=0; i< a->nd; i++) {
         dv   = a->diagv[i];
@@ -1000,13 +999,32 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
         /* diag[i] is (row-col)/nb */
         if (diag > 0) {  /* lower triangle */
           len = nr - diag;
-          for (j=0; j<len; j++)
-             if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j+diag, j, dv[j]);
+          for (j=0; j<len; j++) {
+            if (dv[j] != zero) {
+#if defined(PETSC_COMPLEX)
+              if (imag(dv[j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
+                                         j+diag,j,real(dv[j]),imag(dv[j]));
+              else fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,real(dv[j]));
+#else
+              fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,dv[j]);
+
+#endif
+            }
+          }
         }
         else {         /* upper triangle, including main diagonal */
           len = nr + diag;
-          for (j=0; j<len; j++)
-            if (dv[j]) fprintf(fd,"A[ %d , %d ] = %e\n", j, j-diag, dv[j]);
+          for (j=0; j<len; j++) {
+            if (dv[j] != zero) {
+#if defined(PETSC_COMPLEX)
+              if (imag(dv[j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
+                                         j,j-diag,real(dv[j]),imag(dv[j]));
+              else fprintf(fd,"A[ %d , %d ] = %e\n",j,j-diag,real(dv[j]));
+#else
+              fprintf(fd,"A[ %d , %d ] = %e\n",j,j-diag,dv[j]);
+#endif
+            }
+          }
         }
       }
     } else {  /* Block diagonals */
@@ -1020,46 +1038,67 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 	  for (k=0; k<len; k++) {
 	    kshift = k*nb*nb;
 	    for (i=0; i<nb; i++) {
+              iprint = 0;
 	      for (j=0; j<nb; j++) {
-		if (dv[kshift + j*nb + i])
-		  fprintf(fd,"A[%d,%d]=%5.2e   ", (k+diag)*nb + i, 
-			  k*nb + j, dv[kshift + j*nb + i] );
-	      }
-	      fprintf(fd,"\n");
-	    }
-	  }
-	} else {		/* upper triangle, including main diagonal */
+		if (dv[kshift + j*nb + i] != zero) {
+                  iprint = 1;
+#if defined(PETSC_COMPLEX)
+                  if (imag(dv[kshift + j*nb + i]))
+                    fprintf(fd,"A[%d,%d]=%5.2e + %5.2e i  ",(k+diag)*nb+i,k*nb+j,
+                      real(dv[kshift + j*nb + i]),imag(dv[kshift + j*nb + i]));
+                  else
+                    fprintf(fd,"A[%d,%d]=%5.2e   ",(k+diag)*nb+i,k*nb+j,
+                      real(dv[kshift + j*nb + i]));
+#else
+		  fprintf(fd,"A[%d,%d]=%5.2e   ", (k+diag)*nb+i,k*nb+j,
+                      dv[kshift + j*nb + i]);
+#endif
+                }
+              }
+              if (iprint) fprintf(fd,"\n");
+            }
+          }
+        } else {		/* upper triangle, including main diagonal */
 	  for (k=0; k<len; k++) {
 	    kshift = k*nb*nb;
-	    for (i=0; i<nb; i++) {
-	      for (j=0; j<nb; j++) {
-		if (dv[kshift + j*nb + i])
-		  fprintf(fd,"A[%d,%d]=%5.2e   ", k*nb + i, 
-                          (k-diag)*nb + j, dv[kshift + j*nb + i] );
-	      }
-	      fprintf(fd,"\n");
-	    }
-	  }
-	}
+            for (i=0; i<nb; i++) {
+              iprint = 0;
+              for (j=0; j<nb; j++) {
+                if (dv[kshift + j*nb + i] != zero) {
+                  iprint = 1;
+#if defined(PETSC_COMPLEX)
+                  if (imag(dv[kshift + j*nb + i]))
+                    fprintf(fd,"A[%d,%d]=%5.2e + 5.2e i  ", k*nb+i,(k-diag)*nb+j,
+                       real(dv[kshift + j*nb + i]),imag(dv[kshift + j*nb + i]));
+                  else
+                    fprintf(fd,"A[%d,%d]=%5.2e   ", k*nb+i,(k-diag)*nb+j,
+                       real(dv[kshift + j*nb + i]));
+#else
+                  fprintf(fd,"A[%d,%d]=%5.2e   ", k*nb+i,(k-diag)*nb+j,
+                     dv[kshift + j*nb + i]);
+#endif
+                }
+              }
+              if (iprint) fprintf(fd,"\n");
+            }
+          }
+        }
       }
     }
-#endif
   } else {
     for (i=0; i<a->m; i++) { /* the usual row format */
       fprintf(fd,"row %d:",i);
       ierr = MatGetRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
       for (j=0; j<nz; j++) {
-	if (val[j] != zero)
+	if (val[j] != zero) {
 #if defined(PETSC_COMPLEX)
-	  if (imag(val[j]) != 0.0) {
-	    fprintf(fd," %d %g ", col[j], real(val[j]), imag(val[j]) );
-	  }
-	  else {
-	    fprintf(fd," %d %g ", col[j], real(val[j]) );
-	  }
+	  if (imag(val[j]) != 0.0)
+	    fprintf(fd," %d %g + %g i ",col[j],real(val[j]),imag(val[j]));
+	  else fprintf(fd," %d %g ",col[j],real(val[j]));
 #else
-	fprintf(fd," %d %g ", col[j], val[j] );
+          fprintf(fd," %d %g ",col[j],val[j]);
 #endif
+        }
       }
       fprintf(fd,"\n");
       ierr = MatRestoreRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
