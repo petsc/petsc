@@ -17,14 +17,17 @@ Local Users:
 
 canfield@mcs.anl.gov - Tom Canfield, needs parallel, symmetric linear solvers
 maa@mcs.anl.gov (maayj@eden.eecs.nwu.edu) - Yann Maa, needs nonlinear solvers
-mell - Peter Mell
-hille - Matt Hille
-wan   - Justin
-anitescu - direct lu
 freitag - Lori, needs makefile infrastructure
 diachin - Darin, working with Lori, makefiles
 herzog - Jim, working with Lori, makefiles
+plassman - ILU, BlockSolve
+cooper - Cameron Cooper
 
+Not currently active local users:
+mell - Peter Mell
+hille - Matt Hille
+wan   - Justin Wan
+anitescu - Mihai Anitescu, direct LU
 
 Potential users:
 Sandra Carney carney@appsdiv.cray.com
