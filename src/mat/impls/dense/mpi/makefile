@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq $(PCONF)\
            $(CONF) -D__DIR__='"mat/impls/dense/mpi/"'
-SOURCEC  = mpidense.c mmdense.c
+SOURCEC  = mpidense.c mmdense.c mdnfact.c
 SOURCEF  =
 SOURCEH  = mpidense.h
-OBJSC    = mpidense.o mmdense.o
+OBJSC    = mpidense.o mmdense.o mdnfact.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
