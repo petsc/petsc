@@ -39,7 +39,7 @@ EXTERN int MatSetUpMultiply_MPIDense(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIDense"
-int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMode addv)
+int MatSetValues_MPIDense(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIDense *A = (Mat_MPIDense*)mat->data;
   int          ierr,i,j,rstart = A->rstart,rend = A->rend,row;
@@ -75,7 +75,7 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPIDense"
-int MatGetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
+int MatGetValues_MPIDense(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
   Mat_MPIDense *mdn = (Mat_MPIDense*)mat->data;
   int          ierr,i,j,rstart = mdn->rstart,rend = mdn->rend,row;

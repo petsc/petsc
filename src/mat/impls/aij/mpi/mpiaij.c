@@ -191,7 +191,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIAIJ"
-int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
+int MatSetValues_MPIAIJ(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIAIJ   *aij = (Mat_MPIAIJ*)mat->data;
   PetscScalar  value;
@@ -277,7 +277,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,Inser
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPIAIJ"
-int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
+int MatGetValues_MPIAIJ(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
   int        ierr,i,j,rstart = aij->rstart,rend = aij->rend;

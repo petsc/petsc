@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_SeqBDiag_1"
-int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertMode is)
+int MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          kk,ldiag,row,newnz,*bdlen_new;
@@ -97,7 +97,7 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,PetscScalar *v,Ins
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_SeqBDiag_N"
-int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertMode is)
+int MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          kk,ldiag,shift,row,newnz,*bdlen_new,ierr;
@@ -183,7 +183,7 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,PetscScalar *v,Ins
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqBDiag_1"
-int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
+int MatGetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const int in[],PetscScalar v[])
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          kk,ldiag,row,j,k;
@@ -215,7 +215,7 @@ int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqBDiag_N"
-int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
+int MatGetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const int in[],PetscScalar v[])
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          kk,ldiag,shift,row,j,k,bs = a->bs;

@@ -8,9 +8,9 @@
 extern int MatSetUpMultiply_MPISBAIJ(Mat); 
 extern int MatSetUpMultiply_MPISBAIJ_2comm(Mat); 
 extern int DisAssemble_MPISBAIJ(Mat);
-extern int MatGetValues_SeqSBAIJ(Mat,int,int *,int,int *,PetscScalar *);
-extern int MatSetValues_SeqSBAIJ(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
-extern int MatSetValuesBlocked_SeqSBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+extern int MatGetValues_SeqSBAIJ(Mat,int,const int[],int,const int[],PetscScalar []);
+extern int MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+extern int MatSetValuesBlocked_SeqSBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 extern int MatGetRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
 extern int MatRestoreRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
 extern int MatPrintHelp_SeqSBAIJ(Mat);
@@ -27,11 +27,11 @@ extern int MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec)
    into the single precision data structures.
 */
 #if defined(PETSC_USE_MAT_SINGLE)
-extern int MatSetValuesBlocked_SeqSBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValues_MPISBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValues_MPISBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
-extern int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatScalar*,InsertMode);
+extern int MatSetValuesBlocked_SeqSBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+extern int MatSetValues_MPISBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+extern int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+extern int MatSetValues_MPISBAIJ_HT_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+extern int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
 #else
 #define MatSetValuesBlocked_SeqSBAIJ_MatScalar      MatSetValuesBlocked_SeqSBAIJ
 #define MatSetValues_MPISBAIJ_MatScalar             MatSetValues_MPISBAIJ
@@ -244,7 +244,7 @@ static int CreateColmap_MPISBAIJ_Private(Mat mat)
 #if defined(PETSC_USE_MAT_SINGLE)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPISBAIJ"
-int MatSetValues_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
+int MatSetValues_MPISBAIJ(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPISBAIJ *b = (Mat_MPISBAIJ*)mat->data;
   int          ierr,i,N = m*n;
@@ -267,7 +267,7 @@ int MatSetValues_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,Ins
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ"
-int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
+int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
   int         ierr,i,N = m*n*b->bs2;
@@ -289,7 +289,7 @@ int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPISBAIJ_HT"
-int MatSetValues_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
+int MatSetValues_MPISBAIJ_HT(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
   int         ierr,i,N = m*n;
@@ -302,7 +302,7 @@ int MatSetValues_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_HT"
-int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
+int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
   int         ierr,i,N = m*n*b->bs2;
@@ -319,7 +319,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,PetscSca
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIBAIJ_MatScalar"
-int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
+int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   MatScalar    value;
@@ -428,14 +428,15 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_MatScalar"
-int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
+int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
 {
-  Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
-  MatScalar    *value,*barray=baij->barray;
-  PetscTruth   roworiented = baij->roworiented;
-  int          ierr,i,j,ii,jj,row,col,rstart=baij->rstart;
-  int          rend=baij->rend,cstart=baij->cstart,stepval;
-  int          cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
+  Mat_MPISBAIJ    *baij = (Mat_MPISBAIJ*)mat->data;
+  const MatScalar *value;
+  MatScalar       *barray=baij->barray;
+  PetscTruth      roworiented = baij->roworiented;
+  int             ierr,i,j,ii,jj,row,col,rstart=baij->rstart;
+  int             rend=baij->rend,cstart=baij->cstart,stepval;
+  int             cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
 
   PetscFunctionBegin;  
   if(!barray) {
@@ -458,9 +459,9 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,M
       for (j=0; j<n; j++) {
         /* If NumCol = 1 then a copy is not required */
         if ((roworiented) && (n == 1)) {
-          barray = v + i*bs2;
+          barray = (MatScalar*) v + i*bs2;
         } else if((!roworiented) && (m == 1)) {
-          barray = v + j*bs2;
+          barray = (MatScalar*) v + j*bs2;
         } else { /* Here a copy is required */
           if (roworiented) { 
             value = v + i*(stepval+bs)*bs + j*bs;
@@ -533,7 +534,7 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,M
 /* #define HASH(size,key,tmp) ((int)((size)*fmod(((key)*HASH_KEY),1))) */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPISBAIJ_HT_MatScalar"
-int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
+int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not yet written for SBAIJ format"); 
@@ -542,7 +543,7 @@ int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatSc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_HT_MatScalar"
-int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
+int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
 { 
   PetscFunctionBegin;
   SETERRQ(1,"Function not yet written for SBAIJ format"); 
@@ -551,7 +552,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *i
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPISBAIJ"
-int MatGetValues_MPISBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
+int MatGetValues_MPISBAIJ(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   int          bs=baij->bs,ierr,i,j,bsrstart = baij->rstart*bs,bsrend = baij->rend*bs;

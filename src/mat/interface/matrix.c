@@ -81,7 +81,7 @@ int MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
 
 .seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubmatrices(), MatGetDiagonal()
 @*/
-int MatGetRow(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
+int MatGetRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
 {
   int   incols,ierr;
 
@@ -134,7 +134,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
 
 .seealso:  MatGetRow()
 @*/
-int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
+int MatRestoreRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
 {
   int ierr;
 
@@ -507,7 +507,7 @@ int MatValid(Mat m,PetscTruth *flg)
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
 @*/
-int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMode addv)
+int MatSetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
 {
   int ierr;
 
@@ -605,7 +605,7 @@ $    idxm(MatStencil_c,1) = c
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray()
 @*/
-int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,PetscScalar *v,InsertMode addv)
+int MatSetValuesStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
   int j,i,ierr,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
@@ -672,7 +672,7 @@ int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,Pe
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesBlockedStencil(), MatSetValuesStencil()
 @*/
-int MatSetStencil(Mat mat,int dim,int *dims,int *starts,int dof)
+int MatSetStencil(Mat mat,int dim,const int dims[],const int starts[],int dof)
 {
   int i;
 
@@ -741,7 +741,7 @@ int MatSetStencil(Mat mat,int dim,int *dims,int *starts,int dof)
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal()
 @*/
-int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMode addv)
+int MatSetValuesBlocked(Mat mat,int m,const int idxm[],int n,const int idxn[],const PetscScalar v[],InsertMode addv)
 {
   int ierr;
 
@@ -806,7 +806,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,I
 
 .seealso: MatGetRow(), MatGetSubmatrices(), MatSetValues()
 @*/
-int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
+int MatGetValues(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
   int ierr;
 
@@ -943,7 +943,7 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
            MatSetValueLocal()
 @*/
-int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,PetscScalar *y,InsertMode addv) 
+int MatSetValuesLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
 {
   int ierr,irowm[2048],icolm[2048];
 
@@ -1019,7 +1019,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,PetscScalar 
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
 @*/
-int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,PetscScalar *y,InsertMode addv) 
+int MatSetValuesBlockedLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
 {
   int ierr,irowm[2048],icolm[2048];
 

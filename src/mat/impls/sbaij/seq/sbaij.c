@@ -545,7 +545,7 @@ int MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqSBAIJ"
-int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
+int MatGetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int in[],PetscScalar v[])
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int        *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
@@ -591,14 +591,15 @@ int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_SeqSBAIJ"
-int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertMode is)
+int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
-  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
-  int         *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=a->bs,stepval,ierr;
-  PetscTruth  roworiented=a->roworiented; 
-  MatScalar   *value = v,*ap,*aa = a->a,*bap;
+  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
+  int             *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
+  int             *imax=a->imax,*ai=a->i,*ailen=a->ilen;
+  int             *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=a->bs,stepval,ierr;
+  PetscTruth      roworiented=a->roworiented; 
+  const MatScalar *value = v;
+  MatScalar       *ap,*aa = a->a,*bap;
   
   PetscFunctionBegin;
   if (roworiented) { 
@@ -865,7 +866,7 @@ int MatZeroRows_SeqSBAIJ(Mat A,IS is,PetscScalar *diag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_SeqSBAIJ"
-int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertMode is)
+int MatSetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;

@@ -130,7 +130,7 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIRowbs_local"
-static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
+static int MatSetValues_MPIRowbs_local(Mat AA,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)AA->data;
   BSspmat      *A = mat->A;
@@ -365,7 +365,7 @@ static int MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIRowbs"
-int MatSetValues_MPIRowbs(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode av)
+int MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode av)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   int          ierr,i,j,row,col,rstart = a->rstart,rend = a->rend;
