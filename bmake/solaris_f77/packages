@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 1998/12/11 19:41:30 balay Exp balay $ 
+# $Id: base.site,v 1.6 1998/12/11 21:00:11 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -28,9 +28,15 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #
 # Note: if ch_shmem version of mpich is used, replace -lsocket by -lthread
 #
-MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lnsl -lsocket -lgen
-MPI_INCLUDE    = -I/home/petsc/mpich/include 
-MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
+#MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpi -lnsl -lsocket -lgen
+#MPI_INCLUDE    = -I/home/petsc/mpich/include 
+#MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
+MPI_HOME       = /home/MPI/releases/mpich-1.1.2
+MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_p4
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich -lsocket -lnsl -lnsl -laio
+MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
+
 #
 # For the Berkeley am2 device for MPICH use
 #
@@ -46,8 +52,10 @@ MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun
 #
 # Optional location of MPE
 #
-MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
-MPE_INCLUDE   = -I/home/petsc/mpich/mpe
+#MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
+#MPE_INCLUDE   = -I/home/petsc/mpich/mpe
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+MPE_INCLUDE   = -I${MPI_HOME}/include 
 #
 # Optional location of BlockSolve (MPI version)
 #
