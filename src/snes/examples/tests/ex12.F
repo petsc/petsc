@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.27 1996/02/08 18:28:30 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.28 1996/02/13 23:30:46 bsmith Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -8,6 +8,9 @@ C    "$Id: ex12.F,v 1.27 1996/02/08 18:28:30 bsmith Exp bsmith $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  In this example the application context is a Fortran integer array:
+C  
+C  Note:  The program ex10.f is the same as this example, except that it
+C         uses the Fortran .f suffix rather than the .F suffix.
 C
 C      ctx(1) = da    - the distributed array
 C          2  = F     - the global vector where the evaluated function is stored
