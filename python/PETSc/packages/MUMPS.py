@@ -46,7 +46,15 @@ class Configure(PETSc.package.Package):
     g.write('FC = '+self.setcompilers.getCompiler()+'\n')
     g.write('FL = '+self.setcompilers.getCompiler()+'\n')
     self.setcompilers.popLanguage()
-    
+
+    # set fortran name mangling
+    if self.compiler.fortranManglingDoubleUnderscore:
+      g.write('CDEFS   = -DAdd__\n')
+    elif self.compiler.fortranMangling == 'underscore':
+      g.write('CDEFS   = -DAdd_\n')
+    elif self.compiler.fortranMangling == 'capitalize':
+      g.write('CDEFS   = -DUPPPER\n')
+
     g.write('AR      = ar vr\n')
     g.write('RANLIB  = '+self.setcompilers.RANLIB+'\n') 
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
@@ -55,7 +63,6 @@ class Configure(PETSc.package.Package):
     g.write('INCSEQ  = -I../libseq\n')
     g.write('LIBSEQ  =  $(LAPACK) -L../libseq -lmpiseq\n')
     g.write('LIBBLAS = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
-    g.write('CDEFS   = -DAdd_\n')
     g.write('OPTF    = -O\n')
     g.write('OPTL    = -O\n')
     g.write('OPTC    = -O -I.\n')
