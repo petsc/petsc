@@ -1,4 +1,4 @@
-/*$Id: PETScRund.java,v 1.1 2000/10/24 21:12:45 bsmith Exp bsmith $*/
+/*$Id: PETScRund.java,v 1.2 2000/10/25 19:03:11 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -38,10 +38,11 @@ public class PETScRund
  
         System.out.println("petscrsh make fire solaris /sandbox/bsmith/petsc/ src/vec/examples/tutorials ex1");
 
-        Process make = rtime.exec("petscrsh make fire solaris /sandbox/bsmith/petsc/ src/vec/examples/tutorials ex1");
+        Process make = rtime.exec("ls");
         PumpStream pump = new PumpStream(make.getInputStream(),out);
-        pump.Pump();
-      } catch (java.io.IOException ex) {;}
+        int len = pump.Pump();
+        System.out.println("done pump, length = "+len);
+      } catch (java.io.IOException ex) {System.out.println("bad");}
     }
   }
 
