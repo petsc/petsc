@@ -98,9 +98,9 @@ class Configure(config.base.Configure):
     if not 'with-blas-lib' in self.framework.argDB and 'with-lapack-lib' in self.framework.argDB:
       raise RuntimeError('If you use the --with-lapack-lib=<lib> you must also use --with-blas-lib=<lib> option')
     if 'with-blas-lib' in self.framework.argDB and 'with-blas-lapack-dir' in self.framework.argDB:
-      raise RuntimeError('You cannot set both the library location of BLAS with --with-blas-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
+      raise RuntimeError('You cannot set both the library containing BLAS with --with-blas-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
     if 'with-blas-lapack-lib' in self.framework.argDB and 'with-blas-lapack-dir' in self.framework.argDB:
-      raise RuntimeError('You cannot set both the library location of BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
+      raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
     
     # Try specified BLASLAPACK library
     if 'with-blas-lapack-lib' in self.framework.argDB:
@@ -261,9 +261,9 @@ class Configure(config.base.Configure):
 
     else:
       if not self.foundBlas:
-        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate location of BLAS.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
+        raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
       if not self.foundLapack:
-        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate location of LAPACK.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
+        raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
     return
 
   def configureESSL(self):
