@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.138 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.139 1997/09/08 16:16:20 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -564,6 +564,19 @@ int PetscFinalize()
     PLogInfo(0,"PETSc successfully ended!\n");
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
+
+/*
+
+     Note: In certain cases PETSC_COMM_WORLD is never MPI_Comm_free()ed because 
+   the communicator has some outstanding requests on it. Specifically if the 
+   flag HAVE_BROKEN_REQUEST_FREE is set (for IBM MPI implementation). See 
+   src/vec/utils/vpscat.c. Due to this the memory allocated in PetscCommDup_Private()
+   is never freed as it should be. Thus one may obtain messages of the form
+   [ 1] 8 bytes PetscCommDup_Private() line 645 in src/sys/src/mpiu.c indicating the
+   memory was not freed.
+
+*/
+
   return 0;
 }
  
