@@ -38,15 +38,15 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = -L/usr/local/mpi/lib/IRIX/ch_shmem/ -lmpi
-MPI_INCLUDE    = -I/usr/local/mpi/include
+MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
+MPI_INCLUDE    = -I/home/petsc/mpich/include -I/home/petsc/mpich/mpe 
+MPIRUN         = //home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
 #MPIRUN         = /usr/local/mpi/lib/IRIX/ch_shmem/mpirun.ch_shmem
-MPIRUN         = /usr/local/mpi/bin/mpirun.ch_shmem
 #
 # PCONF - indicates which external packages are available at your site
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below
 #
-PCONF         =   -DHAVE_BLOCKSOLVE
+PCONF         =   -DHAVE_BLOCKSOLVE -DHAVE_MPE
 #
 #  If you are using dynamic libraries you must make this
 # point to the directories where all your shared libraries are stored.
