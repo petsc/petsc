@@ -1,6 +1,8 @@
-/* $Id: mat.h,v 1.137 1997/07/01 22:18:03 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.138 1997/07/02 22:28:35 bsmith Exp gropp $ */
 /*
      Include file for the matrix component of PETSc
+
+     Any change to this file must also be made to FINCLUDE/mat.h
 */
 #ifndef __MAT_PACKAGE
 #define __MAT_PACKAGE
@@ -10,13 +12,20 @@
 
 typedef struct _p_Mat*           Mat;
 
-#define MAX_MATRIX_TYPES 12
+#define MAX_MATRIX_TYPES 14
 /*
    The default matrix data storage formats and routines to create them.
+  
+   MATLASTTYPE is "end-of-list" marker that can be used to check that
+   MAX_MATRIX_TYPES is large enough.  The rule is 
+   MAX_MATRIX_TYPES >= MATLASTTYPE .  
+
+   To do: add a test program that checks the consistency of these values.
 */
 typedef enum { MATSAME=-1,  MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,   MATSHELL, 
                MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG, MATMPIDENSE, MATSEQBAIJ,
-               MATMPIBAIJ,  MATMPICSN,   MATSEQCSN,   MATSEQADJ,   MATMPIADJ} MatType;
+               MATMPIBAIJ,  MATMPICSN,   MATSEQCSN,   MATSEQADJ,   MATMPIADJ, 
+               MATLASTTYPE } MatType;
 
 extern int MatCreate(MPI_Comm,int,int,Mat*);
 extern int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
