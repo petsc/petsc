@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.74 1997/01/10 23:40:08 balay Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.75 1997/01/10 23:53:44 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -159,7 +159,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   IS         iscol = b->col, isrow = b->row, isicol;
   int        *r,*ic, ierr, i, j, n = a->m, *ai = b->i, *aj = b->j;
   int        *ajtmpold, *ajtmp, nz, row, *ics, shift = a->indexshift;
-  int        *diag_offset = b->diag,diag,k,nzo;
+  int        *diag_offset = b->diag,diag,k;
   int        preserve_row_sums = (int) a->ilu_preserve_row_sums;
   Scalar     *rtmp,*v, *pc, multiplier,sum,inner_sum,*rowsums = 0;
   double     ssum; 
@@ -203,21 +203,18 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     for ( j=0; j<nz; j++ ) rtmp[ics[ajtmpold[j]]] =  v[j];
 
     row = *ajtmp++ + shift;
-    
-    /* Handle case when nz=0 and the upperdiag = 0 */
-    while ((row < i) && nz > 0) {
+      while  (row < i ) {
       pc = rtmp + row;
       if (*pc != 0.0) {
         pv         = b->a + diag_offset[row] + shift;
         pj         = b->j + diag_offset[row] + (!shift);
         multiplier = *pc / *pv++;
         *pc        = multiplier;
-        nzo         = ai[row+1] - diag_offset[row] - 1;
-        for (j=0; j<nzo; j++) rtmps[pj[j]] -= multiplier * pv[j];
-        PLogFlops(2*nzo);
+        nz         = ai[row+1] - diag_offset[row] - 1;
+        for (j=0; j<nz; j++) rtmps[pj[j]] -= multiplier * pv[j];
+        PLogFlops(2*nz);
       }
       row = *ajtmp++ + shift;
-      nz --;
     }
     /* finished row so stick it into b->a */
     pv = b->a + ai[i] + shift;
@@ -281,8 +278,8 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   int        ierr;
   Mat        C;
 
-  ierr = MatLUFactorSymbolic_SeqAIJ(A,row,col,f,&C); CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric_SeqAIJ(A,&C); CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(A,&C); CHKERRQ(ierr);
 
   /* free all the data structures from mat */
   PetscFree(mat->a); 

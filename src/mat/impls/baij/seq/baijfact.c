@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.36 1997/01/10 23:39:32 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.37 1997/01/10 23:54:46 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -843,7 +843,7 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   int         ierr;
   Mat         C;
 
-  ierr = MatLUFactorSymbolic_SeqBAIJ(A,row,col,f,&C); CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&C); CHKERRQ(ierr);
 
   /* free all the data structures from mat */
