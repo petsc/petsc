@@ -165,6 +165,7 @@ Machine: mss.ncsa.uiuc.edu
 Userid: barrys,balay
 password: petsc-passwd
 useful commands: msscmd
+Acccess to unitree is through ftp
 
 
 Batch Jobs: batch jobs on SGIs ( Challange/Origin2000) can be submitted
