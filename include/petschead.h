@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.48 1997/07/10 03:47:21 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.49 1997/07/29 14:13:39 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -18,35 +18,44 @@ extern int PetscRegisterCookie(int *);
    is defined below by PETSCHEADER. 
 
    PetscHeaderCreate() should be used whenever you create a PETSc structure.
+
+      destroypublic() is the destroy routine for the entire PETSc object;
+                      for example, for matrices it is MatDestroy().
+      destroy() is the private routine that is specific for a particular 
+                subclass; for example, MatDestroy_SeqAIJ();
 */
 
-#define PETSCHEADER                         \
-  PLogDouble  flops,time,mem;               \
-  int         cookie;                       \
-  int         type;                         \
-  int         id;                           \
-  int         refct;                        \
-  int         tag;                          \
-  int         (*destroy)(PetscObject);      \
-  int         (*view)(PetscObject,Viewer);  \
-  MPI_Comm    comm;                         \
-  PetscObject parent;                       \
-  char*       name;                         \
-  char        *prefix;                      \
-  void*       child;                        \
-  int         (*childcopy)(void *,void**);  \
-  int         (*childdestroy)(void *);      \
+#define PETSCHEADER                                    \
+  PLogDouble  flops,time,mem;                          \
+  int         cookie;                                  \
+  int         type;                                    \
+  int         id;                                      \
+  int         refct;                                   \
+  int         tag;                                     \
+  int         (*destroy)(PetscObject);                 \
+  int         (*destroypublic)(PetscObject);           \
+  int         (*copypublic)(PetscObject,PetscObject*); \
+  int         (*view)(PetscObject,Viewer);             \
+  MPI_Comm    comm;                                    \
+  PetscObject parent;                                  \
+  char*       name;                                    \
+  char        *prefix;                                 \
+  void*       child;                                   \
+  int         (*childcopy)(void *,void**);             \
+  int         (*childdestroy)(void *);                 \
   void**      fortran_func_pointers;
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
 
-#define PetscHeaderCreate(h,tp,cook,t,com)                                        \
+#define PetscHeaderCreate(h,tp,cook,t,com,des)                                    \
       {h = (struct tp *) PetscNew(struct tp);CHKPTRQ((h));                        \
        PetscMemzero(h,sizeof(struct tp));                                         \
        (h)->cookie = cook;                                                        \
        (h)->type   = t;                                                           \
        (h)->prefix = 0;                                                           \
+       (h)->refct  = 0;                                                           \
+       (h)->destroypublic  = (int (*)(PetscObject)) des;                          \
        PetscCommDup_Private(com,&(h)->comm,&(h)->tag);}
 #define PetscHeaderDestroy(h)                                                     \
        {PetscCommFree_Private(&(h)->comm);                                        \
