@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.7 2000/01/11 20:57:57 bsmith Exp balay $ 
+# $Id: base_variables,v 1.8 2000/02/10 16:30:44 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -12,7 +12,7 @@ SHELL		   = /bin/sh
 RANLIB		   = true
 OMAKE		   = make
 SHELL		   = /bin/sh
-
+SED		   = /bin/sed
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc -32 -woff 3262,3666
