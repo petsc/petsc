@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.36 1996/05/02 22:19:18 curfman Exp curfman $";
+static char vcid[] = "$Id: da1.c,v 1.37 1996/05/19 15:54:17 curfman Exp balay $";
 #endif
 
 /* 
@@ -136,15 +136,26 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   if (M < m)     SETERRQ(1,"DACreate1d:More processors than data points!");
   if ((M-1) < s) SETERRQ(1,"DACreate1d:Array is too small for stencil!");
 
-  /* determine locally owned region */
-  x = M/m + ((M % m) > (rank));
 
-  if (rank >= (M % m)) {xs = (rank * (int) (M/m) + M % m);}
+  ierr = OptionsHasName(PETSC_NULL,"-da_blockcomm",&flg); CHKERRQ(ierr);
+  if (flg) { /* Block Comm type Distribution */
+    x = (M + rank)/m;
+    
+    if (M/m==x) { xs = rank*x; }
+    else { xs = rank*(x-1) + (M+rank)%(x*m); }
+  }
+  else { /* Regular PETSc Distribution */
+    /* determine locally owned region */
+    x = M/m + ((M % m) > (rank));
+
+    if (rank >= (M % m)) {xs = (rank * (int) (M/m) + M % m);}
     else {xs = rank * (int)(M/m) + rank;}
+  }
 
   /* From now on x,s,xs,xe,Xs,Xe are the exact location in the array */
 
   x  *= w;
+
   s  *= w;  /* NOTE: I change s to be absolute stencil distance */
   xs *= w;
   xe = xs + x;
