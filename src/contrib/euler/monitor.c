@@ -654,7 +654,7 @@ int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *
       return 2;
     }
     if (iter >= 990) {
-      /* Computer average fnorm over the past 6 iterations */
+      /* Compute average fnorm over the past 6 iterations */
       last_k = 5;
       tmp = 0.0;
       for (i=iter-last_k; i<iter+1; i++) tmp += farray[i];
