@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.93 1996/02/19 03:51:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.94 1996/03/06 03:13:55 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -501,12 +501,11 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 #include "viewer.h"
 #include "sysio.h"
 
-static int MatView_MPIRowbs_ASCII_Base_Private(Mat_MPIRowbs *a)
+static int MatView_MPIRowbs_ASCII_Base_Private(Mat_MPIRowbs *a,FILE *fd)
 {
   BSspmat *A = a->A;
   BSsprow **rs = A->rows;
   int     i, j;
-  FILE    *fd;
 
   fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
           a->rank,a->m,a->rstart,a->rend,a->n,0,a->N);
@@ -548,19 +547,19 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
   else {
     if (vobj->type == ASCII_FILE_VIEWER) {
       MPIU_Seq_begin(mat->comm,1);
-      ierr = MatView_MPIRowbs_ASCII_Base_Private(a); CHKERRQ(ierr);
+      ierr = MatView_MPIRowbs_ASCII_Base_Private(a,fd); CHKERRQ(ierr);
       MPIU_Seq_end(mat->comm,1);
     }
     else {
       size = a->size; rank = a->rank;
       if (size == 1) {
-        ierr = MatView_MPIRowbs_ASCII_Base_Private(a); CHKERRQ(ierr);
+        ierr = MatView_MPIRowbs_ASCII_Base_Private(a,fd); CHKERRQ(ierr);
       }
       else { /* Assemble the entire matrix onto first processor */
         Mat mat2;
         BSspmat *A = a->A;
         BSsprow **rs = A->rows;
-        int     M = a->M, m;
+        int     M = a->M, m = a->m;
         if (!rank) {
           ierr = MatCreateMPIRowbs(mat->comm,M,M,0,PETSC_NULL,PETSC_NULL,&mat2); CHKERRQ(ierr);
         }
@@ -569,11 +568,25 @@ static int MatView_MPIRowbs_ASCII(Mat mat,Viewer viewer)
         }
         PLogObjectParent(mat,mat2);
         A = a->A; rs = A->rows;
+        if (a->mat_is_symmetric) {
+          ierr = MatSetOption(mat2,SYMMETRIC_MATRIX); CHKERRQ(ierr);
+        }
+        else if (a->mat_is_structurally_symmetric) {
+          ierr = MatSetOption(mat2,STRUCTURALLY_SYMMETRIC_MATRIX); CHKERRQ(ierr);
+        }
         row = a->rstart;
         for ( i=0; i<m; i++ ) {
 	  ierr = MatSetValues(mat2,1,&row,rs[i]->length,rs[i]->col,rs[i]->nz,
                  INSERT_VALUES); CHKERRQ(ierr);
           row++;
+        }
+        /* Note that we do only flush assembly since otherwise BlockSolve chokes,
+           as it doesn't support matrices of dimension 0 */
+        ierr = MatAssemblyBegin(mat2,FLUSH_ASSEMBLY); CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(mat2,FLUSH_ASSEMBLY); CHKERRQ(ierr);
+        if (!rank) {
+          ierr = MatView_MPIRowbs_ASCII_Base_Private((Mat_MPIRowbs*)(mat2->data),
+                 fd); CHKERRQ(ierr);
         }
         ierr = MatDestroy(mat2); CHKERRQ(ierr);
       }
