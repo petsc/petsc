@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.14 1996/02/06 15:32:00 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.15 1996/02/06 22:45:36 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -115,6 +115,31 @@ static int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
     w1[j] += w2[j] + 2* w3[j];   
     msz   += w1[j];  
   }
+  
+  
+  /* Do a global reduction to determine how many messages to expect*/
+  {
+    int *rw1, *rw2;
+    rw1 = (int *)PetscMalloc(2*size*sizeof(int)); CHKPTRQ(rw1);
+    rw2 = rw1+size;
+    MPI_Allreduce((void *)w1, rw1, size, MPI_INT, MPI_MAX, comm);
+    bsz   = rw1[rank];
+    MPI_Allreduce((void *)w2, rw2, size, MPI_INT, MPI_SUM, comm);
+    nmsg  = rw2[rank];
+    PetscFree(rw1);
+  }
+
+  /* Allocate memory for recv buffers . Prob none if nmsg = 0 ???? */ 
+  rbuf    = (int**) PetscMalloc((nmsg+1) *sizeof(int*));  CHKPTRQ(rbuf);
+  rbuf[0] = (int *) PetscMalloc((nmsg *bsz+1) * sizeof(int));  CHKPTRQ(rbuf[0]);
+  for (i=1; i<nmsg ; ++i) rbuf[i] = rbuf[i-1] + bsz;
+  
+  /* Now post the receives */
+  recv_waits = (MPI_Request *) PetscMalloc((nmsg+1)*sizeof(MPI_Request)); 
+  CHKPTRQ(recv_waits);
+  for ( i=0; i<nmsg; ++i){
+    MPI_Irecv((void *)rbuf[i], bsz, MPI_INT, MPI_ANY_SOURCE, tag, comm, recv_waits+i);
+  }
 
   /* Allocate Memory for outgoing messages */
   outdat    = (int **)PetscMalloc( 2*size*sizeof(int*)); CHKPTRQ(outdat);
@@ -192,31 +217,6 @@ static int MatIncreaseOverlap_MPIAIJ_private(Mat C, int is_max, IS *is)
   PetscFree(rtable);
   for( i=0; i< is_max; ++i) {
     ierr = ISDestroy(is[i]); CHKERRQ(ierr);
-  }
-  
-  
-  /* Do a global reduction to determine how many messages to expect*/
-  {
-    int *rw1, *rw2;
-    rw1 = (int *)PetscMalloc(2*size*sizeof(int)); CHKPTRQ(rw1);
-    rw2 = rw1+size;
-    MPI_Allreduce((void *)w1, rw1, size, MPI_INT, MPI_MAX, comm);
-    bsz   = rw1[rank];
-    MPI_Allreduce((void *)w2, rw2, size, MPI_INT, MPI_SUM, comm);
-    nmsg  = rw2[rank];
-    PetscFree(rw1);
-  }
-
-  /* Allocate memory for recv buffers . Prob none if nmsg = 0 ???? */ 
-  rbuf    = (int**) PetscMalloc((nmsg+1) *sizeof(int*));  CHKPTRQ(rbuf);
-  rbuf[0] = (int *) PetscMalloc((nmsg *bsz+1) * sizeof(int));  CHKPTRQ(rbuf[0]);
-  for (i=1; i<nmsg ; ++i) rbuf[i] = rbuf[i-1] + bsz;
-  
-  /* Now post the receives */
-  recv_waits = (MPI_Request *) PetscMalloc((nmsg+1)*sizeof(MPI_Request)); 
-  CHKPTRQ(recv_waits);
-  for ( i=0; i<nmsg; ++i){
-    MPI_Irecv((void *)rbuf[i], bsz, MPI_INT, MPI_ANY_SOURCE, tag, comm, recv_waits+i);
   }
 
   /*  Now  post the sends */
