@@ -74,6 +74,11 @@
     title  = "Debian package for PETSc",
     url   = "http://lyre.mit.edu/\~{ }powell/petsc.html"
 }
+@Unpublished{cactus,
+    title  = "Cactus Website",
+    url   = "http://www.cactuscode.org/",
+    note = "Provides two interface to the PETSc solvers"
+}
 %
 %  <a name="optimization"><H3><center>Optimization</center></H3>
 %
@@ -114,10 +119,12 @@
   title = "Using Automatic Differentiation for Second-order Matrix-free Methods
           in PDE-constrained Optimization",
   author = "P. D. Hovland and D. E. Keyes and L. C. McInnes and W. Samyono",
-  booktitle = "Proceedings of AD2000",
   url = "http://www.icase.edu/\~{ }keyes/papers/ad2000.ps",
-  origin = mcs,
-  note = "(to appear)"
+   booktitle = "Automatic Differentiation of Algorithms: From Simulation to Optimization",
+   editor = "George Corliss, Christ\`{e}le Faure, Andreas Griewank, Laurent Hasco\"{e}t, and Uwe Naumann",
+   publisher = "Springer",
+   year = "2002",
+  origin = mcs
 }
 @techreport{bg011,
    author = "George Biros and Omar Ghattas",
@@ -282,15 +289,14 @@
   annote =	 {to appear in IJHPCA},
   origin = petsc
 }
-@techreport{hm99,
+@journal{hm99,
  AUTHOR=    "P. D. Hovland and L. C. McInnes",
  TITLE=     "Parallel Simulation of Compressible Flow Using Automatic
              Differentiation and {PETSc}",
  year      = 2000,
- institution = "Mathematics and Computer Science Division, Argonne National Laboratory",
- number      = "ANL/MCS-P796-0200",
- url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P796.ps.Z",
- note        = "to appear in  a special issue of Parallel Computing on 
+ journal =  "Parallel Computing",
+  url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P796.ps.Z",
+ note        = "special issue of Parallel Computing on 
                ``Parallel Computing in Aerospace''",
  origin = petsc
 }
@@ -420,6 +426,32 @@
 %
 %  <a name="software"><H3><center>Software Engineering</center></H3>
 %
+@article{p1,
+   title = "Parallel Components for PDEs and Optimization: Some Issues and Experiences",
+   author = "B. Norris and S. Balay and S. Benson and L. Freitag and P. Hovland and L. McInnes and B. Smith",
+   journal= "Parallel Computing",
+   note = "to appear",
+   origin = mcs
+}
+@techreport{Automatic-AD,
+  AUTHOR=   "Paul Hovland and Boyana Norris and Barry Smith",
+  TITLE=    "Making Automatic Differentiation Truly Automatic: Coupling {PETSc} with {ADIC}",
+  NUMBER=   "ANL/MCS-P922-0102",
+  INSTITUTION= "Mathematics and Computer Science Division, Argonne National Laboratory",
+  YEAR=      2002,
+  NOTE=     "To appear in Proceedings of ICCS2002, Amsterdam",
+  origin = petsc
+}
+@techreport{remote-math,
+   author= "Elizabeth Dolan and Paul Hovland and Jorge Mor\'e and Boyana Norris and Barry Smith",
+   title=  "Remote Access to Mathematical Software",
+   number= "ANL/MCS-P889-0601",
+   institution="Mathematics and Computer Science Division, Argonne National Laboratory",
+   month= "June",
+   year = "2001",
+   url = "http://icm.mcs.kent.edu/research/iamc01proceedings.html",
+   origin = mcs
+}
 @INPROCEEDINGS{ gropp98,
  AUTHOR=    "William D. Gropp",
  TITLE=     "Exploiting Existing Software in Libraries: Successes, Failures, and Reasons Why",
@@ -496,9 +528,11 @@
             Toolkits for High-Performance Scientific Computing",
    author = "J. Abate and S. Benson and L. Grignon and P. Hovland and
              L. C. McInnes and B. Norris",
-   booktitle = "Proceedings of AD2000",
    url       = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P820.ps.Z",
-   note = "to appear, also available as Argonne preprint ANL/MCS-P820-0500",
+   booktitle = "Automatic Differentiation of Algorithms: From Simulation to Optimization",
+   editor = "George Corliss, Christ\`{e}le Faure, Andreas Griewank, Laurent Hasco\"{e}t, and Uwe Naumann",
+   publisher = "Springer",
+   year = "2002",
    origin = mcs
 }
 @Unpublished{petsc-mpi-paper,
@@ -579,12 +613,32 @@
  year      = 1999,
  origin = mcs
 }
+
+@inproceedings{bbh:com,
+   author    ="C. H. Bischof and H. M. B{\"u}cker 
+               and P. D. Hovland",
+   title     ="{On Combining Computational Differentiation and
+                Toolkits for Parallel Scientific Computing}",
+   booktitle ="Euro-Par 2000 -- Parallel Processing, 
+               Proceedings of the 6th International Euro-Par 
+               Conference, Munich, Germany, August/September 2000",
+   year      = 2000,
+   editor    ="A. Bode and T. Ludwig and W. Karl 
+               and R. Wism{\"u}ller", 
+   volume    ="1900",
+   series    ="Lecture Notes in Computer Science",
+   pages     ="86--94",
+   address   ="Berlin",
+   publisher ="Springer",
+  url   = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P797.ps.Z",
+   origin = mcs
+}
+
 @TechReport{bischof00,
   author="C. H. Bischof and H. M. Bücker and P. D. Hovland",
   title =  "On Combining Computational Differentiation and Toolkits for Parallel Scientific Computing",
   institution= "Argonne National Laboratory",
   number = "ANL/MCS-P797-0200",
-  url   = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P797.ps.Z",
   year="2000",
   origin = mcs
 }
@@ -629,6 +683,14 @@
   }
 %  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 %
+@Article{Lahaye02,
+  author =       "Domenico Lahaye and S. Vandewalle and K. Hameyer",
+  title  =       "An Algebraic Multilevel Preconditioner for Field-Circuit
+                  Coupled Problems",
+  journal =      @IEEEMAGN, 
+  year =         "2002",
+  notes = "to appear"
+}
 @article{ckm01,
   author =  "X.-C. Cai and D. E. Keyes and L. Marcinkowski",
   url="http://www.cs.colorado.edu/homes/cai/public_html/papers/10page.ps",

@@ -809,7 +809,9 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 +   -snes_eq_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
 .   -snes_eq_ls_alpha <alpha> - Sets alpha
 .   -snes_eq_ls_maxstep <max> - Sets maxstep
--   -snes_eq_ls_steptol <steptol> - Sets steptol
+-   -snes_eq_ls_steptol <steptol> - Sets steptol, this is the minimum step size that the line search code
+                   will accept; min p[i]/x[i] < steptol. The -snes_stol <stol> is the minimum step length
+                   the default convergence test will use and is based on 2-norm(p) < stol*2-norm(x)
 
    Calling sequence of func:
 .vb

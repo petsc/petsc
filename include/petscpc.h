@@ -251,4 +251,17 @@ EXTERN int PCMultiLevelGetMultiplier(PC, Vec, Vec);
 EXTERN int PCSchurSetGradientOperator(PC, int, int);
 EXTERN int PCSchurGetIterationNumber(PC, int *, int *);
 
+EXTERN int PCSPAISetEpsilon(PC,double);
+EXTERN int PCSPAISetNBSteps(PC,int);
+EXTERN int PCSPAISetMax(PC,int);
+EXTERN int PCSPAISetMaxNew(PC,int);
+EXTERN int PCSPAISetBlockSize(PC,int);
+EXTERN int PCSPAISetCacheSize(PC,int);
+EXTERN int PCSPAISetVerbose(PC,int);
+EXTERN int PCSPAISetSp(PC,int);
+
+
+
+
+
 #endif /* __PETSCPC_H */
