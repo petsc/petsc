@@ -8,6 +8,16 @@ import types
 echo = 2
 
 class Maker:
+  def __init__(self):
+    self.tmpDir = os.path.join(os.environ['TMPDIR'], 'bs')
+
+  def setupTmpDir(self):
+    if not os.path.exists(self.tmpDir): os.makedirs(self.tmpDir)
+    oldDir = os.getcwd()
+    os.chdir(self.tmpDir)
+    map(os.remove, os.listdir(self.tmpDir))
+    os.chdir(oldDir)
+
   def executeShellCommand(self, command):
     if echo: print command
     (status, output) = commands.getstatusoutput(command)
@@ -16,6 +26,7 @@ class Maker:
 
 class FileGroup (Maker):
   def __init__(self, data = [], func = None, children = []):
+    Maker.__init__(self)
     self.data     = data[:]
     self.func     = func
     self.children = children[:]
@@ -78,8 +89,14 @@ class ExtensionFileGroup (TreeFileGroup):
 class Transform (Maker):
   "Transforms map one FileGroup into another. By default, this map is the identity"
   def __init__(self, sources = FileGroup()):
+    Maker.__init__(self)
     self.sources  = sources
     self.products = self.sources
+
+  def getObjectName(self, source):
+    (dir, file) = os.path.split(source)
+    (base, ext) = os.path.splitext(file)
+    return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+'.o')
 
   def execute(self):
     return self.products
@@ -162,11 +179,9 @@ class NewerThanLibraryObject (FileCompare):
     return objectTime
 
   def compare(self, target, source):
-    (dir, file) = os.path.split(source)
-    (base, ext) = os.path.splitext(file)
-    object      = base+'.o'
-    objectTime  = self.getObjectTimestamp(object, target)
-    sourceTime  = os.path.getmtime(source)
+    object     = self.getObjectName(source)
+    objectTime = self.getObjectTimestamp(object, target)
+    sourceTime = os.path.getmtime(source)
     if (string.find(source, 'Error') >= 0): print 'sourceTime: '+str(sourceTime)+' objectTime: '+str(objectTime)
     if (objectTime < sourceTime):
       return 1
@@ -231,8 +246,12 @@ class ArchiveObjects (Action):
     return Action.execute(self)
 
 class BKEditFiles (Action):
-  def __init__(self, sources = TreeFileGroup(), flags = '', filter = lambda file: 1):
+  def __init__(self, sources = FileGroup(), extraSources = None, flags = '', filter = lambda file: 1):
     Action.__init__(self, 'bk', sources, 'edit '+flags, filter, 1)
+
+  def execute(self):
+    if self.sources: self.sources.extend(self.extraSources)
+    return Action.execute(self)
 
 class BKCloseFiles (Action):
   def __init__(self, sources = TreeFileGroup(), flags = '', filter = lambda file: 1):
@@ -273,25 +292,12 @@ class CompileFiles (Action):
     self.compilerFlags = compilerFlags
     self.archiver      = archiver
     self.archiverFlags = archiverFlags
-    self.tmpDir        = os.path.join(os.environ['TMPDIR'], 'bs')
     self.includeDirs   = []
-
-  def setupTmpDir(self):
-    if not os.path.exists(self.tmpDir): os.makedirs(self.tmpDir)
-    oldDir = os.getcwd()
-    os.chdir(self.tmpDir)
-    map(os.remove, os.listdir(self.tmpDir))
-    os.chdir(oldDir)
 
   def getIncludeFlags(self):
     flags = ''
     for dir in self.includeDirs: flags += ' -I'+dir
     return flags
-
-  def getObjectName(self, source):
-    (dir, file) = os.path.split(source)
-    (base, ext) = os.path.splitext(file)
-    return os.path.join(self.tmpDir, base+'.o')
 
   def compile(self, source):
     command  = self.compiler
@@ -378,7 +384,8 @@ class Target (Transform):
 
   def executeTransform(self, sources, transform):
     if isinstance(transform, Transform):
-      if echo > 1: print 'Executing transform '+str(transform)+' with '+str(sources.getFiles())
+      files = sources.getFiles()
+      if echo > 1: print 'Executing transform '+str(transform)+' with '+str(files)
       transform.sources.extend(sources)
       products = transform.execute()
     elif isinstance(transform, types.ListType):
