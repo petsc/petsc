@@ -1,20 +1,38 @@
-#! /bin/csh
+#!/bin/csh
 # 
 #  Makes a complete backup of PETSc src incase the PETSc disk is lost
 #
 #
+set BACKUPFILE=/ccsthome/petsc/userbackups/PetscBackup-`date '+%a'`.tar
+set LOGFILE=/ccsthome/petsc/userbackups/PetscBackup-`date '+%a'`.log
+set XCLUDEFILE=/home/bsmith/petsc/maint/xcludebackup
+set ZIPFILE=PetscBackup-`date '+%a'`.tar.gz
+#
+date  >& $LOGFILE
 cd /home/bsmith/petsc
 #make ACTION=clean tree
 cd /home/bsmith/petsc/docs/tex
 #make clean
 #
+# Delete the old backup files
 #
-set name=`date +%y%m%d`
+find /ccsthome/petsc/userbackups -type f -name "PetscBackup-*" -mtime +2 -exec rm -f {} \;
+#
+# Create a new backup file
+#
 cd /home/bsmith
-tar cFFXf /home/bsmith/petsc/maint/xcludebackup /ccsthome/petsc/userbackups/petsc_$name.tar petsc >& /ccsthome/petsc/userbackups/petsc_$name.out 
+tar cFFXf $XCLUDEFILE $BACKUPFILE petsc >& $LOGFILE
 cd /ccsthome/petsc/userbackups
-gzip petsc_$name.tar
-cp petsc_$name.tar.gz /hsm/mcs/petsc/userbackups
-
+gzip $BACKUPFILE
+#
+# Now Copy the backup file over to hsm
+#
+cp $BACKUPFILE.gz /hsm/mcs/petsc/userbackups
+#
+# Now Copy the backup file over to a remote site
+#
+cd /ccsthome/petsc/userbackups
+autoftp  mss.ncsa.uiuc.edu barrys  put $ZIPFILE.gz >& $LOGFILE
+date  >& $LOGFILE
 #
 
