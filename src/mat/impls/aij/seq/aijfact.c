@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.37 1995/09/12 03:25:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.38 1995/09/21 20:10:16 bsmith Exp bsmith $";
 #endif
 
 
@@ -146,43 +146,44 @@ int MatLUFactorSymbolic_SeqAIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
 /* ----------------------------------------------------------- */
 int MatLUFactorNumeric_SeqAIJ(Mat mat,Mat *infact)
 {
-  Mat         fact = *infact;
+  Mat        fact = *infact;
   Mat_SeqAIJ *aij = (Mat_SeqAIJ *) mat->data, *aijnew = (Mat_SeqAIJ *)fact->data;
-  IS      iscol = aijnew->col, isrow = aijnew->row, isicol;
-  int     *r,*ic, ierr, i, j, n = aij->m, *ai = aijnew->i, *aj = aijnew->j;
-  int     *ajtmpold, *ajtmp, nz, row,*pj;
-  Scalar  *rtmp,*v, *pv, *pc, multiplier; 
-  int     shift = aij->indexshift;
+  IS         iscol = aijnew->col, isrow = aijnew->row, isicol;
+  int        *r,*ic, ierr, i, j, n = aij->m, *ai = aijnew->i, *aj = aijnew->j;
+  int        *ajtmpold, *ajtmp, nz, row,*pj, *ics;
+  Scalar     *rtmp,*v, *pv, *pc, multiplier, *rtmps; 
+  int        shift = aij->indexshift;
 
-  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*infact,isicol);
-  ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
-  rtmp = (Scalar *) PETSCMALLOC( (n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp);
+  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  rtmp  = (Scalar *) PETSCMALLOC( (n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp);
+  rtmps = rtmp + shift; ics = ic + shift;
 
   for ( i=0; i<n; i++ ) {
-    nz = ai[i+1] - ai[i];
+    nz    = ai[i+1] - ai[i];
     ajtmp = aj + ai[i] + shift;
-    for  ( j=0; j<nz; j++ ) rtmp[ajtmp[j]+shift] = 0.0;
+    for  ( j=0; j<nz; j++ ) rtmps[ajtmp[j]] = 0.0;
 
     /* load in initial (unfactored row) */
-    nz = aij->i[r[i]+1] - aij->i[r[i]];
+    nz       = aij->i[r[i]+1] - aij->i[r[i]];
     ajtmpold = aij->j + aij->i[r[i]] + shift;
-    v  = aij->a + aij->i[r[i]] + shift;
-    for ( j=0; j<nz; j++ ) rtmp[ic[ajtmpold[j]+shift]] =  v[j];
+    v        = aij->a + aij->i[r[i]] + shift;
+    for ( j=0; j<nz; j++ ) rtmp[ics[ajtmpold[j]]] =  v[j];
 
     row = *ajtmp++ + shift;
     while (row < i) {
       pc = rtmp + row;
       if (*pc != 0.0) {
-        nz = aijnew->diag[row] - ai[row];
-        pv = aijnew->a + aijnew->diag[row] + shift;
-        pj = aijnew->j + aijnew->diag[row] + (!shift);
+        nz         = aijnew->diag[row] - ai[row];
+        pv         = aijnew->a + aijnew->diag[row] + shift;
+        pj         = aijnew->j + aijnew->diag[row] + (!shift);
         multiplier = *pc * *pv++;
-        *pc = multiplier;
-        nz = ai[row+1] - ai[row] - 1 - nz;
+        *pc        = multiplier;
+        nz         = ai[row+1] - ai[row] - 1 - nz;
         PLogFlops(2*nz);
-        while (nz-->0) rtmp[*pj++ + shift] -= multiplier* *pv++; 
+        while (nz-->0) rtmps[*pj++] -= multiplier* *pv++; 
       }      
       row = *ajtmp++ + shift;
     }
@@ -232,7 +233,7 @@ int MatSolve_SeqAIJ(Mat mat,Vec bb, Vec xx)
   IS      iscol = aij->col, isrow = aij->row;
   int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
-  Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
+  Scalar  *x,*b,*tmp, *tmps, *aa = aij->a, sum, *v;
   int     shift = aij->indexshift;
 
   if (mat->factor != FACTOR_LU) 
@@ -247,12 +248,13 @@ int MatSolve_SeqAIJ(Mat mat,Vec bb, Vec xx)
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
+  tmps   = tmp + shift;
   for ( i=1; i<n; i++ ) {
     v   = aa + ai[i] + shift;
     vi  = aj + ai[i] + shift;
     nz  = aij->diag[i] - ai[i];
     sum = b[*r++];
-    while (nz--) sum -= *v++ * tmp[*vi++ + shift];
+    while (nz--) sum -= *v++ * tmps[*vi++];
     tmp[i] = sum;
   }
 
@@ -262,7 +264,7 @@ int MatSolve_SeqAIJ(Mat mat,Vec bb, Vec xx)
     vi  = aj + aij->diag[i] + (!shift);
     nz  = ai[i+1] - aij->diag[i] - 1;
     sum = tmp[i];
-    while (nz--) sum -= *v++ * tmp[*vi++ + shift];
+    while (nz--) sum -= *v++ * tmps[*vi++];
     x[*c--] = tmp[i] = sum*aa[aij->diag[i]+shift];
   }
 
