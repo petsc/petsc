@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 2001/03/22 20:27:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.17 2001/03/23 22:01:51 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -119,12 +119,6 @@ PETSC_HAVE_LUSOL = -DPETSC_HAVE_LUSOL
 #
 RAMG_LIB        = /home/petsc/software/ramg/libramg_linux_pgf90.a
 PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
-#
-# Location of Tufo-Fischer parallel direct solver
-#
-TFS_LIB        = /home/petsc/software/libtfs/libtfsO.a
-TFS_INCLUDE    = -I/home/petsc/software/libtfs/
-PETSC_HAVE_TFS = -DPETSC_HAVE_TFS
 #
 # Location of SPAI;
 #
