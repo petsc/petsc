@@ -301,6 +301,7 @@ class LanguageProcessor(args.ArgumentProcessor):
     for obj in self.preprocessorObject.values(): obj.argDB = argDB
     for obj in self.compilerObject.values():     obj.argDB = argDB
     for obj in self.linkerObject.values():       obj.argDB = argDB
+    for obj in self.sharedLinkerObject.values(): obj.argDB = argDB
     if not self.compilers is None:
       self.compilers.argDB = argDB
       for obj in self.preprocessorObject.values():
@@ -312,9 +313,15 @@ class LanguageProcessor(args.ArgumentProcessor):
       for obj in self.linkerObject.values():
         if hasattr(obj, 'configCompilers'):
           obj.configCompilers.argDB = argDB
+      for obj in self.sharedLinkerObject.values():
+        if hasattr(obj, 'configCompilers'):
+          obj.configCompilers.argDB = argDB
     if not self.libraries is None:
       self.libraries.argDB = argDB
       for obj in self.linkerObject.values():
+        if hasattr(obj, 'configLibraries'):
+          obj.configLibraries.argDB = argDB
+      for obj in self.sharedLinkerObject.values():
         if hasattr(obj, 'configLibraries'):
           obj.configLibraries.argDB = argDB
     return

@@ -398,9 +398,7 @@ class Builder(logging.Logger):
     obj = self.getLanguageProcessor().getSharedLinkerObject(self.language[-1])
     if target is None:
       target = self.getLinkerTarget(source[0], shared = 1)
-    obj.pushRequiredFlags(self.setCompilers.sharedLibraryFlag)
     command = obj.getCommand(source, target)
-    obj.popRequiredFlags()
     return command
 
   def link(self, source, target = None, shared = 0):
