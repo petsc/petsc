@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+   add support for .m files beginning with http: scp: ftp: in petscMatlabEngineEvaluate()
+
    add support for pseudo timestepping to kick out when fnorm < tol
 
   optimize FDMatColoringApply() by having it be matrix specific and avoiding
