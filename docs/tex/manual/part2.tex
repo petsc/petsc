@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.320 1999/04/01 23:15:35 balay Exp balay $ 
+% $Id: part2.tex,v 1.321 1999/04/02 14:35:52 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2675,19 +2675,19 @@ of equations with the command \findex{-mat_order} \sindex{orderings}
 \end{verbatim}
 The possible orderings are
 \begin{itemize}
-\item {\tt ORDER\_NATURAL} - Natural
-\item {\tt ORDER\_ND} - Nested Dissection
-\item {\tt ORDER\_1WD} - One-way Dissection
-\item {\tt ORDER\_RCM} - Reverse Cuthill-McKee
-\item {\tt ORDER\_QMD} - Quotient Minimum Degree
+\item {\tt MATORDERING\_NATURAL} - Natural
+\item {\tt MATORDERING\_ND} - Nested Dissection
+\item {\tt MATORDERING\_1WD} - One-way Dissection
+\item {\tt MATORDERING\_RCM} - Reverse Cuthill-McKee
+\item {\tt MATORDERING\_QMD} - Quotient Minimum Degree
 \end{itemize}
-\findex{ORDER_NATURAL} \findex{ORDER_ND} \findex{ORDER_1WD}
-\findex{ORDER_RCM} \findex{ORDER_QMD} \sindex{nested dissection}
+\findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
+\findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-mat_order}
+\sindex{quotient minimum degree} \findex{-mat_ordering_type}
 These orderings can also be set through the options database by specifying 
-one of the following:  {\tt -mat\_order natural, -mat\_order nd, 
--mat\_order 1wd, -mat\_order rcm, -mat\_order qmd}.
+one of the following:  {\tt -mat\_ordering\_type natural, -mat\_ordering\_type nd, 
+-mat\_ordering\_type 1wd, -mat\_ordering\_type rcm, -mat\_ordering\_type qmd}.
 In addition, see 
 \break {\tt MatGetOrdering()}, discussed in Section~\ref{sec:matfactor}.
 
@@ -6581,8 +6581,8 @@ The currently available alternatives for the ordering {\tt type} are
 \item {\tt ORDER\_QMD} - Quotient Minimum Degree
 \end{itemize}
 These orderings can also be set through the options database by specifying 
-one of the following:  {\tt -mat\_order natural, -mat\_order nd, 
--mat\_order 1wd, -mat\_order rcm, -mat\_order qmd}.
+one of the following:  {\tt -mat\_ordering\_type natural, -mat\_ordering\_type nd, 
+-mat\_ordering\_type 1wd, -mat\_ordering\_type rcm, -mat\_ordering\_type qmd}.
 \findex{ORDER_NATURAL} \findex{ORDER_ND} \findex{ORDER_1WD}
 \findex{ORDER_RCM} \findex{ORDER_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
@@ -6617,7 +6617,7 @@ directory for examples on how the reordering routines may be written.
 
 Once the reordering routine has been registered,
 it can be selected for use at runtime with the
-command line option {\tt -mat\_order sname}.  If reordering directly,
+command line option {\tt -mat\_ordering\_type sname}.  If reordering directly,
 the user should provide the {\tt name} as the second input argument of
 {\tt MatGetOrdering()}.
 
