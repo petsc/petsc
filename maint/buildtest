@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.160 1999/05/13 19:32:31 bsmith Exp bsmith $ 
+# $Id: buildtest,v 1.161 1999/05/25 19:40:25 bsmith Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -161,14 +161,14 @@ foreach job ($*)
   rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all >>& maint/build_$arch.$bopt.$mach.log"
 
   if ( $arch == solaris || $arch == IRIX64 || $arch == linux || $arch == rs6000_sp ) then
-    rsh $mach -n "cd $hme ; echo 'Build matlabcodes on $mach $arch $bopt `date` ' > maint/build_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; echo 'Build matlabcodes on $mach $arch $bopt `date` ' >> maint/build_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt matlabcodes >>& maint/build_$arch.$bopt.$mach.log"
   endif
 
   rsh $mach -n "cd $hme ; echo '****************************************************' >> maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme; chmod -R g+w lib" >& /dev/null
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach  $arch $bopt `date`' >> maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme ;echo 'Build on $mach $arch  $bopt `date` ' > maint/examples_$arch.$bopt.$mach.log"
+  rsh $mach -n "cd $hme ;echo 'Build on $mach $arch  $bopt `date` ' >> maint/examples_$arch.$bopt.$mach.log"
   if ( $job1 != 0 ) then 
     rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job1 tree >>& maint/examples_$arch.$bopt.$mach.log"
     rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
