@@ -172,25 +172,28 @@ class ArgDict (RDict.RArgs):
 
   def __delitem__(self,key):
     if self.local.has_key(key): del self.local[key]
-    else:  RDict.RArgs.__delitem__(self,key)
+    elif not self.purelocal: RDict.RArgs.__delitem__(self,key)
     
   def has_key(self,key):
     if self.local.has_key(key):
       return hasattr(self.local[key],'value')
-    else:
+    elif not self.purelocal:
       if RDict.RArgs.has_key(self, key):
         # get the remote object
         rval = RDict.RArgs.__getitem__(self, key)
         return hasattr(rval, 'value')
       else:
         return 0
+    return 0
   
   def keys(self):
     return self.local.keys()+RDict.RArgs.keys(self)
 
   def setType(self,key,arg):
     # sets properties of the option that will be requested later
-    if not RDict.RArgs.has_key(self,key): RDict.RArgs.__setitem__(self,key,arg)
+    if not self.purelocal:
+      if not RDict.RArgs.has_key(self,key): RDict.RArgs.__setitem__(self,key,arg)
+    else: self.setLocalType(key,arg)
 
   def setLocalType(self,key,arg):
     # sets properties of the option that will be requested later
