@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.10 1995/03/17 04:56:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.11 1995/03/23 22:01:28 curfman Exp bsmith $";
 #endif
 
 
@@ -22,6 +22,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   if (!iscol) {SETERR(1,"Must have column permutation");}
 
   if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
+  PLogObjectParent(mat,isicol);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
   /* get new row pointers */
@@ -125,6 +126,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
   Scalar  *rtmp,*v, *pv, *pc, multiplier; 
 
   if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
+  PLogObjectParent(mat,isicol);
   ierr = ISGetIndices(isrow,&r); CHKERR(ierr);
   ierr = ISGetIndices(isicol,&ic); CHKERR(ierr);
   rtmp = (Scalar *) MALLOC( (n+1)*sizeof(Scalar) ); CHKPTR(rtmp);
