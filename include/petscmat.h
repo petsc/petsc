@@ -18,7 +18,7 @@ extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);
 extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
 extern int MatCreateSequentialRow(int,int,int,int *,Mat*);
 extern int MatCreateMPIRow(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
-extern int MatCreateMPIRowbs(MPI_Comm,int,int,int,int,int,int*,Mat*); 
+extern int MatCreateMPIRowbs(MPI_Comm,int,int,int,int,int*,Mat*); 
 
 extern int MatShellCreate(int,int,void *,Mat*);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
