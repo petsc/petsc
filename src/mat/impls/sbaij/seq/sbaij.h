@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.9 2000/09/12 14:03:46 hzhang Exp hzhang $ */
+/* $Id: sbaij.h,v 1.10 2000/09/14 15:06:28 hzhang Exp hzhang $ */
 
 #include "src/mat/matimpl.h"
 
@@ -36,7 +36,7 @@ typedef struct {
   Scalar           *saved_values; 
 
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
-  /* IS               a2anew; */        /* map used for symm permutation */
+  /* IS               a2anew;*/         /* map used for symm permutation */
 } Mat_SeqSBAIJ;
 
 extern int MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat *);
