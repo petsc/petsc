@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.26 2001/06/13 03:06:02 bsmith Exp bsmith $ 
+# $Id: urlget.py,v 1.27 2001/06/13 15:29:45 bsmith Exp bsmith $ 
 #
 # change python1.5 to whatever is needed on your system to invoke python
 #
@@ -227,6 +227,7 @@ class http_object(url_object):
 class urlget:
 
     def __init__(self,url,filename ='',tmpdir='/tmp'):
+        from urlparse import *
         from string   import *
         self.url                                = urlunparse(urlparse(url))
         self.protocol,self.machine,self.urlpath = urlparse(self.url)[0:3]
