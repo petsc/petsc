@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.50 1997/02/22 02:28:23 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.51 1997/03/03 18:04:02 balay Exp bsmith $";
 #endif
 
 /* 
@@ -68,7 +68,11 @@ extern int socket(int,int,int);
     Some IBM rs6000 machines running 4.1 remove the prototype 
    below for connect()
 */
+#if defined(PARCH_rs6000)
+extern int connect(int,const struct sockaddr *,size_t);
+#else
 extern int connect(int,struct sockaddr *,int);
+#endif
 #endif
 #endif
 #if !defined(PARCH_alpha)
@@ -76,7 +80,11 @@ extern int connect(int,struct sockaddr *,int);
    Some IBM rs6000 machines have the sleep prototype already declared
    in unistd.h, so just remove it below.
  */
+#if defined(PARCH_rs6000)
+extern unsigned int sleep(unsigned int);
+#else
 extern int sleep(unsigned);
+#endif
 #endif
 #if defined(__cplusplus)
 };
