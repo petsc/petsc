@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.37 1998/10/27 22:44:24 balay Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.38 1998/11/04 16:54:40 balay Exp curfman $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -293,7 +293,7 @@ extern char *PLogEventName[];
 #define __FUNC__ "PLogMPEBegin"
 /*@C
    PLogMPEBegin - Turns on MPE logging of events. This creates large log files 
-     and slows the program down.
+   and slows the program down.
 
    Collective over PETSC_COMM_WORLD
 
@@ -305,6 +305,8 @@ extern char *PLogEventName[];
    A related routine is PLogBegin (with the options key -log), which is 
    intended for production runs since it logs only flop rates and object
    creation (and shouldn't significantly slow the programs).
+
+   Level: advanced
 
 .keywords: log, all, begin
 
@@ -357,21 +359,22 @@ int PLogMPEBegin(void)
 
    Not Collective
 
-  Input Parameter:
-.   event - integer indicating event
+   Input Parameter:
+.  event - integer indicating event
 
    Example of Usage:
-$
-$     PetscInitialize(int *argc,char ***args,0,0);
-$     PLogEventMPEDeactivate(VEC_SetValues);
-$      code where you do not want to log VecSetValues() 
-$     PLogEventMPEActivate(VEC_SetValues);
-$      code where you do want to log VecSetValues() 
-$     .......
-$     PetscFinalize();
-$
+.vb
+     PLogEventMPEDeactivate(VEC_SetValues);
+        [code where you do not want to log VecSetValues()]
+     PLogEventMPEActivate(VEC_SetValues);
+        [code where you do want to log VecSetValues()]
+.ve
 
-.seealso: PLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
+   Level: advanced
+
+.keywords: log, MPE, begin
+
+.seealso: PLogEventMPEActivate(), PlogEventActivate(), PlogEventDeactivate()
 @*/
 int PLogEventMPEDeactivate(int event)
 {
@@ -390,21 +393,22 @@ int PLogEventMPEDeactivate(int event)
 
    Not Collective
 
-  Input Parameter:
-.   event - integer indicating event
+   Input Parameter:
+.  event - integer indicating event
 
    Example of Usage:
-$
-$     PetscInitialize(int *argc,char ***args,0,0);
-$     PLogEventMPEDeactivate(VEC_SetValues);
-$      code where you do not want to log VecSetValues() 
-$     PLogEventMPEActivate(VEC_SetValues);
-$      code where you do want to log VecSetValues() 
-$     .......
-$     PetscFinalize();
-$
+.vb
+     PLogEventMPEDeactivate(VEC_SetValues);
+        [code where you do not want to log VecSetValues()]
+     PLogEventMPEActivate(VEC_SetValues);
+        [code where you do want to log VecSetValues()]
+.ve
 
-.seealso: PLogEventMPEDeactivate(),PLogEventActivate(),PLogEventDeactivate()
+   Level: advanced
+
+.keywords: log, MPE, begin
+
+.seealso: PLogEventMPEDeactivate(), PLogEventActivate(), PLogEventDeactivate()
 @*/
 int PLogEventMPEActivate(int event)
 {
@@ -418,7 +422,9 @@ int PLogEventMPEActivate(int event)
 /*@C
    PLogMPEDump - Dumps the MPE logging info to file for later use with Upshot.
 
-  Collective over PETSC_COMM_WORLD
+   Collective over PETSC_COMM_WORLD
+
+   Level: advanced
 
 .keywords: log, destroy
 
