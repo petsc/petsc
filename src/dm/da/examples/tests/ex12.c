@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.25 1999/06/30 22:52:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.26 1999/09/12 16:04:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -62,7 +62,6 @@ int main(int argc,char **argv)
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRA(ierr);
 
   /* Assign Parameters */
-  a=1;
   h= 1.0/M; 
   k= h*h/2.2;
 
