@@ -8,15 +8,24 @@
 <H3>
 Patches for PETSc (Release 2.0.24)</H3>
 
-<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.6.tar.gz">petsc-patches-2.0.24.6.tar.gz</A>
+<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.7.tar.gz">petsc-patches-2.0.24.7.tar.gz</A>
 and extracting it with
-<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.6.tar.gz | tar xf -</PRE>
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.7.tar.gz | tar xf -</PRE>
 Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.24)
 before you run the tar command.
 <BR><BR>
-For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.6.exe">petsc-patches-2.0.24.6.exe</A> and rebuild the libraries.
+For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.7.exe">petsc-patches-2.0.24.7.exe</A> and rebuild the libraries.
 <HR>
 <BR>The patch file fixes the following:<BR><BR>
+
+<H3> 2.0.24.7 (May 5)</H3>
+<LI>Eliminate VecPipline routines form PETSc - to aviod conflicts when using PARPRE</LI>
+<pre>
+<!#repeat>src/include/vec.h
+<!#repeat>src/include/finclude/vec.h
+<!#repeat>src/include/foldinclude/vec.h
+<!##>src/vec/utils/makefile
+</pre>
 
 
 <H3> 2.0.24.6 (May 3)</H3>
