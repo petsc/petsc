@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.56 1997/05/03 15:31:51 bsmith Exp balay $";
+static char vcid[] = "$Id: da3.c,v 1.57 1997/05/07 01:46:08 balay Exp bsmith $";
 #endif
 
 /*
@@ -1724,8 +1724,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     int *lidx,lict = 0;
     int Nlocal = (da->xe-da->xs)*(da->ye-da->ys)*(da->ze-da->zs);
 
-    ierr = ISCreateStride(MPI_COMM_SELF,Nlocal,da->base,1,&ispetsc);
-           CHKERRQ(ierr);
+    ierr = ISCreateStride(MPI_COMM_SELF,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
 
     lidx = (int *) PetscMalloc(Nlocal*sizeof(int)); CHKPTRQ(lidx);
     for (k=zs; k<ze; k++) {
