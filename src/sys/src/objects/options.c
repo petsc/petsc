@@ -646,6 +646,7 @@ int PetscOptionsClearValue(const char iname[])
   PetscTruth gt,match;
 
   PetscFunctionBegin;
+  if (name[0] != '-') SETERRQ1(PETSC_ERR_ARG_WRONG,"Name must begin with -: Instead %s",name);
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
 
   name++;

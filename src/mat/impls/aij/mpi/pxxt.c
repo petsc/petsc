@@ -96,6 +96,7 @@ int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   B->ops->destroy         = MatDestroy_MPIAIJ_XXT;
   B->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_XXT;
   B->factor               = FACTOR_LU;
+  B->assembled            = PETSC_TRUE;
   ierr                    = PetscNew(Mat_MPIAIJ_XXT,&xxt);CHKERRQ(ierr);
   B->spptr = A->spptr     = (void*)xxt;
 
@@ -219,6 +220,7 @@ int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   B->ops->destroy         = MatDestroy_MPIAIJ_XYT;
   B->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_XYT;
   B->factor               = FACTOR_LU;
+  B->assembled            = PETSC_TRUE;
   ierr                    = PetscNew(Mat_MPIAIJ_XYT,&xyt);CHKERRQ(ierr);
   B->spptr = A->spptr     = (void*)xyt;
 
