@@ -1,21 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: tone.c,v 1.5 1995/06/23 12:41:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.6 1995/11/09 22:31:34 bsmith Exp bsmith $";
 #endif
-
+/*
+    Code for drawing color interpolated triangles using X-windows.
+*/
 #if defined(HAVE_X11)
 #include "ximpl.h"
 
 #define SHIFT_VAL 6
 
-/*
-    XiDrawInterpolatedTriangle 
-
-    input parameters:
-.       win - the XiWindow to draw in 
-.       x1,y1,x2,y2,x3,y3 - coordinates of corners
-.       t1,t2,t3 - colors of corners
-
- */
 int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1, 
                                 int x2,int y2,int t2,int x3,int y3,int t3)
 {

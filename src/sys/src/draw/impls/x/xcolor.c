@@ -1,7 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.15 1995/11/09 22:31:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.16 1995/12/08 04:54:42 bsmith Exp bsmith $";
 #endif
-
+/*
+    Code for managing color the X implementation of the Draw routines.
+*/
 #if defined(HAVE_X11)
 #include "ximpl.h"
 
@@ -16,11 +18,6 @@ extern int XiGetVisualClass( Draw_X * );
 extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
 Colormap XiCreateColormap(Display*,int,Visual *);
 
-/*
-    This file contains routines to provide color support where available.
-    This is made difficult by the wide variety of color implementations
-    that X11 supports.
-*/
 #include <X11/Xatom.h>
 
 int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )

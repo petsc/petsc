@@ -1,14 +1,6 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.13 1995/10/01 21:53:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.14 1995/11/09 22:31:34 bsmith Exp bsmith $";
 #endif
-#include <stdio.h>
-#if defined(HAVE_X11)
-#include "ximpl.h"
-
-extern int  XiUniformHues(Draw_X *,int);
-extern int  Xi_wait_map( Draw_X*);
-extern int XiInitColors(Draw_X*,Colormap,int);
-extern int XiFontFixed(Draw_X*,int,int,XiFont** );
 
 /* 
    This file contains routines to open an X window display and window
@@ -21,6 +13,15 @@ extern int XiFontFixed(Draw_X*,int,int,XiFont** );
    Window id of the window that it is managing.  Use that instead of the
    call to XiCreateWindow .  Similarly for the Display.
 */
+
+#include <stdio.h>
+#if defined(HAVE_X11)
+#include "ximpl.h"
+
+extern int XiUniformHues(Draw_X *,int);
+extern int Xi_wait_map( Draw_X*);
+extern int XiInitColors(Draw_X*,Colormap,int);
+extern int XiFontFixed(Draw_X*,int,int,XiFont** );
 
 /*
   XiOpenDisplay - Open a display
@@ -231,6 +232,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
   Window       root;
   int          d,ierr;
   unsigned int ud;
+
   if (XiOpenDisplay( w, host )) {
     SETERRQ(1,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the [-display name] option and xhost + has been\n\
