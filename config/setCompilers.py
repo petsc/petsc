@@ -466,7 +466,7 @@ class Configure(config.base.Configure):
       for testFlag in ['-PIC', '-fPIC', '-KPIC']:
         try:
           self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
-          self.addCompilerFlag(testFlag)
+          self.addCompilerFlag(testFlag, compilerOnly = 1)
           break
         except RuntimeError:
           self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
