@@ -106,7 +106,7 @@ int MatNullSpaceDestroy(MatNullSpace sp)
    Input Parameters:
 +  sp - the null space context
 .  vec - the vector from which the null space is to be removed 
--  out - if this is supplied (not PETSC_NULL) then this is vec with the null space removed otherwise
+-  out - if this is requested (not PETSC_NULL) then this is a vector with the null space removed otherwise
          the removal is done in-place (in vec)
 
 

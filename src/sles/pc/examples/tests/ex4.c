@@ -47,7 +47,7 @@ int main(int argc,char **args)
   for (i=0; i<n; i++) {
     ierr = VecSet(&zero,u);CHKERRQ(ierr);
     ierr = VecSetValues(u,1,&i,value,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = PCApply(pc,u,b);CHKERRQ(ierr);
+    ierr = PCApply(pc,u,b,PC_LEFT);CHKERRQ(ierr);
     ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 

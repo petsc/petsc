@@ -216,7 +216,7 @@ int KSPSolve(KSP ksp,int *its)
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
-    ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol);
+    ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol,PC_LEFT);
     ksp->guess_zero = PETSC_FALSE;
   }
 
