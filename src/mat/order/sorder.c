@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.26 1996/09/21 22:54:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.27 1996/09/21 23:00:10 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -240,9 +240,7 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,"MatGetReordering:Not for unassembled matrix");
   if (mat->factor) SETERRQ(1,"MatGetReordering:Not for factored matrix"); 
-  if (mat->type == MATSEQDENSE) {  /* No support for sequential dense reorderings */
-    *rperm = *cperm = 0; return 0;
-  }
+
   if (!__MatReorderingList) {
     ierr = MatReorderingRegisterAll();CHKERRQ(ierr);
   }
