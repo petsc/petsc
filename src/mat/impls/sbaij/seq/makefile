@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 1999/04/01 17:10:02 balay Exp $ 
+# $Id: makefile,v 1.1 2000/06/21 15:47:00 balay Exp hzhang $ 
 
 ALL: lib
 
@@ -6,10 +6,10 @@ CFLAGS	 =
 FFLAGS	 = 
 CPPFLAGS = 
 FPPFLAGS = 
-SOURCEC	 = sbaij.c sbaij2.c sbaijfact.c sbaijfact2.c sro.c ss.c
+SOURCEC	 = sbaij.c sbaij2.c sbaijfact.c sbaijfact2.c sro.c
 SOURCEF	 = 
 SOURCEH	 = sbaij.h
-OBJSC	 = sbaij.o sbaij2.o sbaijfact.o sbaijfact2.o sro.o ss.o
+OBJSC	 = sbaij.o sbaij2.o sbaijfact.o sbaijfact2.o sro.o
 OBJSF	 = 
 LIBBASE	 = libpetscmat
 DIRS     =
