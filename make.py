@@ -40,7 +40,8 @@ class PetscMake(build.framework.Framework):
   def t_updateWebsite(self):
     self.executeShellCommand('scp docs/website/index.html petsc@terra.mcs.anl.gov://mcs/www-unix/petsc/petsc-3/index.html')
     self.executeShellCommand('scp install/bootstrap.py petsc@terra.mcs.anl.gov://mcs/www-unix/petsc/petsc-3/bootstrap.sh')
-        
+    self.executeShellCommand('scp docs/tutorials/GettingStartedwithSIDL.ppt petsc@terra.mcs.anl.gov://mcs/www-unix/petsc/petsc-3/GettingStartedwithSIDL.ppt')
+       
 if __name__ ==  '__main__':
   import sys
   pm = PetscMake(sys.argv[1:])
