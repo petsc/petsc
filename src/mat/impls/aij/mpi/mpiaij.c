@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.92 1995/10/20 01:59:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.93 1995/10/23 17:21:45 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1150,7 +1150,7 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
       PETSCFREE(tmp); PETSCFREE(tmp2);
     }
     else if (type == NORM_INFINITY) { /* max row norm */
-      double normtemp = 0.0;
+      double ntemp = 0.0;
       for ( j=0; j<amat->m; j++ ) {
         v = amat->a + amat->i[j] + shift;
         sum = 0.0;
@@ -1169,12 +1169,12 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
           sum += fabs(*v); v++;
 #endif
         }
-        if (sum > normtemp) normtemp = sum;
-        MPI_Allreduce((void*)&normtemp,(void*)norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);
+        if (sum > ntemp) ntemp = sum;
       }
+      MPI_Allreduce((void*)&ntemp,(void*)norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);
     }
     else {
-      SETERRQ(1,"MatNorm_MPIRow:No support for two norm");
+      SETERRQ(1,"MatNorm_MPIAIJ:No support for two norm");
     }
   }
   return 0; 
