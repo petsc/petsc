@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.3 1995/06/07 16:34:20 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.4 1995/06/14 17:25:19 bsmith Exp bsmith $ */
 /*
    This is to provide some name space protection from Lapack and Blas 
 allow the appropriate single or double precision version to be used.
@@ -185,7 +185,10 @@ Cray T3D. Yet another reason to hate ...
 extern "C" {
 #endif
 
-extern Scalar BLdot_(int*,Scalar*,int*,Scalar*,int*);
+/* note that BLdot cannot be used with COMPLEX because it cannot 
+   handle returing a double complex!!
+*/
+extern double BLdot_(int*,Scalar*,int*,Scalar*,int*);
 extern double BLnrm2_(int*,Scalar*,int*),BLasum_(int*,Scalar*,int*);
 extern void   BLscal_(int*,Scalar*,Scalar*,int*);
 extern void   BLcopy_(int*,Scalar*,int*,Scalar*,int*);

@@ -4,7 +4,8 @@ CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
-SOURCEH  = Changes Machines readme maint/addlinks maint/buildtest maint/builddist \
+SOURCEH  = Changes Machines readme maint/addlinks maint/buildtest 
+           maint/builddist faq\
            maint/buildlinks maint/wwwman maint/xclude maint/crontab
 OBJSC    =
 WOBJS    = 
@@ -35,6 +36,12 @@ deletewwwpages:
 
 deletelatexpages:
 	$(RM) -f $(PETSC_DIR)/docs/tex/rsum/*sum*.tex
+
+allmanpages: deletemanpages deletewwwpages deletelatexpages
+	-make ACTION=manpages tree
+	-make ACTION=wwwpages tree
+	-make ACTION=latexpages tree
+	-maint/wwwman
 
 #  To access the tags in emacs, type M-x visit-tags-table and specify
 #  the file petsc/TAGS.  Then, to move to where a PETSc function is
