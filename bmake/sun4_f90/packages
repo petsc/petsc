@@ -54,6 +54,6 @@ CMEX           = /usr/local/bin/cmex
 PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE
 #
 #
-
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
 
 

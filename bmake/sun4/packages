@@ -66,5 +66,6 @@ ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
 # 
 CVODE_INCLUDE = -I/home/bsmith/CVODE/include
 CVODE_LIB     = /home/bsmith/CVODE/lib/libcvode.a
-
+#
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
 

@@ -57,7 +57,7 @@ CMEX           = /usr/local/matlab/bin/cmex
 # 
 PCONF          =    -DHAVE_ESSL -DHAVE_BLOCKSOLVE -DHAVE_MPE
 #
-
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
 
 
 

@@ -77,4 +77,4 @@ CMEX           =
 #
 PCONF          =  -DHAVE_ESSL
 #
-
+EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
