@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.56 1995/07/07 17:14:32 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.57 1995/07/12 03:04:20 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -24,12 +24,12 @@ static int CreateColmap_Private(Mat mat)
 
 extern int DisAssemble_MPIAIJ(Mat);
 
-static int MatGetReordering_MPIAIJ(Mat mat,int type,IS *rperm, IS *cperm)
+static int MatGetReordering_MPIAIJ(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int ierr;
   if (aij->numtids == 1) {
-    ierr = MatGetReordering(mat,type,rperm,cperm); CHKERRQ(ierr);
+    ierr = MatGetReordering(aij->A,type,rperm,cperm); CHKERRQ(ierr);
   } else 
     SETERRQ(1,"MatGetReordering_MPIAIJ:  not yet supported in parallel.");
   return 0;
