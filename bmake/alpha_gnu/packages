@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.8 1999/06/30 22:48:03 bsmith Exp balay $ 
+# $Id: base.site,v 1.9 1999/09/14 18:30:43 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -29,17 +29,17 @@ X11_LIB        = -lX11
 # Location of MPI (Message Passing Interface) software
 #
 # If you are using the MPICH 1.1 (or higher) implementation of MPI, 
-# or if you are using MPIUNI for MPI, add -DUSES_INT_MPI_COMM 
+# or if you are using MPIUNI for MPI, add -DPETSC_HAVE_INT_MPI_COMM 
 # to the line MPI_INCLUDE below.
 #
 MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_shmem/libmpi.a 
-MPI_INCLUDE    = -I/home/petsc/mpich/include -DUSES_INT_MPI_COMM
+MPI_INCLUDE    = -I/home/petsc/mpich/include -DPETSC_HAVE_INT_MPI_COMM
 MPIRUN         = /home/petsc/mpich/lib/alpha/ch_shmem/mpirun
 #
 # The following lines can be used with MPIUNI
 #
 #MPI_LIB         = ${LDIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  

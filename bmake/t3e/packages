@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.20 1999/05/12 03:24:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.21 1999/06/30 22:48:03 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -21,13 +21,13 @@ X11_LIB        = -lX11
 # Location of MPI (Message Passing Interface) software
 #
 #  If you are using the MPICH implementation of MPI with version number
-#  less then 1.1, you should remove the -DUSES_INT_MPI_COMM below.
+#  less then 1.1, you should remove the -DPETSC_HAVE_INT_MPI_COMM below.
 #
 #  We recommend using Cray's implementation of MPI, rather than MPICH, 
 #  for Cray's MPI you can leave MPI_LIB and MPI_INCLUDE as is.
 #
 MPI_LIB        = 
-MPI_INCLUDE    =  -DUSES_INT_MPI_COMM 
+MPI_INCLUDE    =  -DPETSC_HAVE_INT_MPI_COMM 
 MPIRUN         = /opt/ctl/mpt/mpt/bin/mpirun
 #
 #

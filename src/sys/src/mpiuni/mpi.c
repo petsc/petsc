@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.51 1999/03/28 23:00:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.52 1999/04/16 16:03:54 bsmith Exp balay $";
 #endif
 
 /*
@@ -7,6 +7,13 @@ static char vcid[] = "$Id: mpi.c,v 1.51 1999/03/28 23:00:25 bsmith Exp bsmith $"
     with C macros
 */
 #include "mpi.h"
+
+#if defined (MPIUNI_USE_STDCALL)
+#define MPIUNI_STDCALL __stdcall
+#else
+#define MPIUNI_STDCALL
+#endif
+
 
 /*
      The system call exit() is not properly prototyped on all systems
@@ -159,145 +166,145 @@ extern "C" {
 #endif
 
 /******mpi_init*******/
-void  mpi_init(int *ierr)
+void MPIUNI_STCALL  mpi_init(int *ierr)
 {
   MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 
-void  mpi_init_(int *ierr)
+void MPIUNI_STCALL  mpi_init_(int *ierr)
 {
   MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 
-void  mpi_init__(int *ierr)
+void MPIUNI_STCALL  mpi_init__(int *ierr)
 {
   MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 
-void  MPI_INIT(int *ierr)
+void MPIUNI_STCALL  MPI_INIT(int *ierr)
 {
   MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 
 /******mpi_finalize*******/
-void  mpi_finalize(int *ierr)
+void MPIUNI_STCALL  mpi_finalize(int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void  mpi_finalize_(int *ierr)
+void MPIUNI_STCALL  mpi_finalize_(int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void  mpi_finalize__(int *ierr)
+void MPIUNI_STCALL  mpi_finalize__(int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void  MPI_FINALIZE(int *ierr)
+void MPIUNI_STCALL  MPI_FINALIZE(int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
 /******mpi_comm_size*******/
-void mpi_comm_size(MPI_Comm *comm,int *size,int *ierr) 
+void MPIUNI_STCALL mpi_comm_size(MPI_Comm *comm,int *size,int *ierr) 
 {
   *size = 1;
   *ierr = 0;
 }
 
-void mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr) 
+void MPIUNI_STCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr) 
 {
   *size = 1;
   *ierr = 0;
 }
 
-void mpi_comm_size__(MPI_Comm *comm,int *size,int *ierr) 
+void MPIUNI_STCALL mpi_comm_size__(MPI_Comm *comm,int *size,int *ierr) 
 {
   *size = 1;
   *ierr = 0;
 }
 
-void MPI_COMM_SIZE(MPI_Comm *comm,int *size,int *ierr) 
+void MPIUNI_STCALL MPI_COMM_SIZE(MPI_Comm *comm,int *size,int *ierr) 
 {
   *size = 1;
   *ierr = 0;
 }
 
 /******mpi_comm_rank*******/
-void mpi_comm_rank(MPI_Comm *comm,int *rank,int *ierr)
+void MPIUNI_STCALL mpi_comm_rank(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
 }
 
-void mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
+void MPIUNI_STCALL mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
 }
 
-void mpi_comm_rank__(MPI_Comm *comm,int *rank,int *ierr)
+void MPIUNI_STCALL mpi_comm_rank__(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
 }
 
-void MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
+void MPIUNI_STCALL MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
 }
 
 /*******mpi_abort******/
-void mpi_abort(MPI_Comm *comm,int *errorcode,int *ierr) 
+void MPIUNI_STCALL mpi_abort(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
   exit(*errorcode); 
   *ierr = MPI_SUCCESS;
 }
 
-void mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
+void MPIUNI_STCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
-void mpi_abort__(MPI_Comm *comm,int *errorcode,int *ierr) 
+void MPIUNI_STCALL mpi_abort__(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
-void MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr) 
+void MPIUNI_STCALL MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 /*******mpi_allreduce******/
-void mpi_allreduce(void *sendbuf,void *recvbuf,int *count,int *datatype,
+void MPIUNI_STCALL mpi_allreduce(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
-void mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,
+void MPIUNI_STCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
-void mpi_allreduce__(void *sendbuf,void *recvbuf,int *count,int *datatype,
+void MPIUNI_STCALL mpi_allreduce__(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
-void MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *datatype,
+void MPIUNI_STCALL MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);

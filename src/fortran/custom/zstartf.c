@@ -19,7 +19,7 @@
 #endif
 
 EXTERN_C_BEGIN
-extern void petscsetcommonblock_(Viewer*,Viewer*,Viewer*,int*,int*);
+extern void PETSC_STDCALL petscsetcommonblock_(Viewer*,Viewer*,Viewer*,int*,int*);
 EXTERN_C_END
 
 /*@C
@@ -58,13 +58,13 @@ void PetscInitializeFortran(void)
   
 EXTERN_C_BEGIN
 
-void petscinitializefortran_(void)
+void PETSC_STDCALL petscinitializefortran_(void)
 {
   PetscInitializeFortran();
 }
 
 #if defined(USES_CPTOFCD)
-void petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
+void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
                                   void *fnull_scalar,void * fnull_double,
                                   void *fnull_function)
 {
@@ -75,9 +75,9 @@ void petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
   PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
 #else
-void petscsetfortranbasepointers_(char *fnull_character,void *fnull_integer,
-                                  void *fnull_scalar,void * fnull_double,
-                                  void *fnull_function)
+void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
+                                  void *fnull_integer,void *fnull_scalar,void * fnull_double,
+                                  void *fnull_function PETSC_END_LEN(len))
 {
   PETSC_NULL_CHARACTER_Fortran  = fnull_character;
   PETSC_NULL_INTEGER_Fortran    = fnull_integer;
@@ -88,7 +88,7 @@ void petscsetfortranbasepointers_(char *fnull_character,void *fnull_integer,
 #endif 
 
 /*
-      Dummy function so this file is never empty
+  A valid address for the fortran variable PETSC_NULL_FUNCTION
 */
 void petsc_null_function_(void)
 {

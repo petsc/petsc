@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.2 1999/05/12 03:24:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.3 1999/06/30 22:48:03 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -18,7 +18,7 @@ LAPACK_LIB     = -lessl /usr/local/64/lib64/liblapack.a
 # Location of MPI (Message Passing Interface) software
 #
 MPI_LIB         = /usr/local/64/mpich64/build/rs6000/ch_p4/lib/libmpich.a
-MPI_INCLUDE     = -I/usr/local/64/mpich64/include  -DUSES_INT_MPI_COMM
+MPI_INCLUDE     = -I/usr/local/64/mpich64/include  -DPETSC_HAVE_INT_MPI_COMM
 MPIRUN          = /usr/local/64/mpich64/build/rs6000/ch_p4/bin/mpirun
 #
 # Location of X-windows software

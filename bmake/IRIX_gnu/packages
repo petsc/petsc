@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 1999/09/27 16:04:19 balay Exp balay $ 
+# $Id: base.site,v 1.2 1999/09/27 22:31:43 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -33,7 +33,7 @@ X11_LIB        = -lX11
 # Location of MPI (Message Passing Interface) software  
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.32 1999/05/12 03:24:58 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.33 1999/06/30 22:48:03 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -19,7 +19,7 @@ LAPACK_LIB     = -lessl /home/petsc/software/blaslapack/lapack_rs6000_p4.a
 # Location of MPI (Message Passing Interface) software
 #
 #MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-#MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+#MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 #MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
 #MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/rs6000/ch_p4 -lmpich

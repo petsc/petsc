@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1999/04/24 00:21:18 balay Exp bsmith $ 
+# $Id: base.site,v 1.18 1999/05/12 03:24:58 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -34,7 +34,7 @@ X11_LIB        = -lX11
 #MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # PCONF - indicates which external packages are available at your site

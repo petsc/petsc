@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1999/06/30 22:48:03 bsmith Exp balay $ 
+# $Id: base.site,v 1.18 1999/09/14 18:30:37 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -25,19 +25,19 @@ X11_LIB        = -lX11
 # Powerchallenge.
 #
 # If you are using the MPICH implementation of MPI with version BELOW 1.1,
-# you should remove the -DUSES_INT_MPI_COMM. If you are using MPICH Version 1.1
+# you should remove the -DPETSC_HAVE_INT_MPI_COMM. If you are using MPICH Version 1.1
 # or SGI's version of MPI you MUST retain it.
 #
 # Location of MPI (Message Passing Interface) software  
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # The following lines can be used with MPICH
 #
 #MPI_LIB        = -L/home/petsc/mpich/lib/IRIX64/ch_p4 -lmpi
-#MPI_INCLUDE    = -DUSES_INT_MPI_COMM -I/home/petsc/mpich/include
+#MPI_INCLUDE    = -DPETSC_HAVE_INT_MPI_COMM -I/home/petsc/mpich/include
 #MPIRUN         =  /home/petsc/mpich/lib/IRIX64/ch_p4/mpirun
 #
 # ----------------------------------------------------------------------------------------  

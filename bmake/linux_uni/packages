@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.2 1999/06/30 22:48:03 bsmith Exp balay $ 
+# $Id: base.site,v 1.3 1999/09/14 18:30:58 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -23,7 +23,7 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 #
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DUSES_INT_MPI_COMM
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
 #MPI_HOME       = /sandbox/petsc/mpich-1.1.2
