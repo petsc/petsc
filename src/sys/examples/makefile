@@ -11,7 +11,7 @@ OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscsys
 RUNEXAMPLES_2 = runex1 runex2 runex3 runex4
-EXAMPLES_2    = ex1 ex2 ex3 ex4
+EXAMPLES_2    = ex1 ex2 ex3 ex4 ex6
 RUNEXAMPLES_3 = 
 EXAMPLES_3    = ex5
 RUNEXAMPLES_4 = 
@@ -60,5 +60,8 @@ ex4: ex4.o
 ex5: ex5.o 
 	-$(FLINKER) -o ex5 ex5.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) -f ex5.o
+ex6: ex6.o 
+	-$(FLINKER) -o ex6 ex6.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) -f ex6.o
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

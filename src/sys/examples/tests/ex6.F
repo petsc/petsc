@@ -1,6 +1,6 @@
-C    "$Id: ex6.F,v 1.1 1996/04/15 20:35:31 balay Exp balay $";
+C    "$Id: ex6.F,v 1.2 1996/04/15 20:50:10 balay Exp balay $";
 C
-C  Simple PETSc Program written in Fortran 77.
+C  Progran to test random number generation routines from fortran.
 C
 #include "include/FINCLUDE/petsc.h"
       integer         ierr

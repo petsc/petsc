@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.17 1996/03/23 19:22:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.18 1996/04/13 20:53:08 bsmith Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -39,12 +39,12 @@ static char vcid[] = "$Id: zsys.c,v 1.17 1996/03/23 19:22:54 curfman Exp bsmith 
 extern "C" {
 #endif
 
-void petscrandomgetvalue_(PetscRandom *r,Scalar *val, int *__ierr )
+void petscrandomgetvalue_(PetscRandom r,Scalar *val, int *__ierr )
 {
   *__ierr = PetscRandomGetValue((PetscRandom)MPIR_ToPointer(*(int*)(r)),val);
 }
 
-void vecsetrandom_(PetscRandom *r,Vec x, int *__ierr )
+void vecsetrandom_(PetscRandom r,Vec x, int *__ierr )
 {
   *__ierr = VecSetRandom((PetscRandom)MPIR_ToPointer(*(int*)(r)),
                          (Vec)MPIR_ToPointer( *(int*)(x) ));
@@ -117,7 +117,7 @@ void petscrandomcreate_(MPI_Comm comm,PetscRandomType *type,PetscRandom *r,
   *(int*)r = MPIR_FromPointer(rr);
 }
 
-void petscrandomdestroy_(PetscRandom *r, int *__ierr ){
+void petscrandomdestroy_(PetscRandom r, int *__ierr ){
   *__ierr = PetscRandomDestroy((PetscRandom )MPIR_ToPointer( *(int*)(r) ));
    MPIR_RmPointer(*(int*)(r)); 
 }
@@ -136,7 +136,7 @@ void petscrandomdestroy_(PetscRandom *r, int *__ierr ){
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: zsys.c,v 1.17 1996/03/23 19:22:54 curfman Exp bsmith $
+ *  $Id: zsys.c,v 1.18 1996/04/13 20:53:08 bsmith Exp balay $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.
