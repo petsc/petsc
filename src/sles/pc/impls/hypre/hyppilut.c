@@ -293,7 +293,8 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   jac->gridsweeps[3] = 1;
 
   jac->relaxtype     = (int*)malloc(4*sizeof(int));
-  jac->relaxtype[0]  = jac->relaxtype[1] = jac->relaxtype[2] = jac->relaxtype[3] = 3;
+  jac->relaxtype[0]  = jac->relaxtype[1] = jac->relaxtype[2] = 3;
+  jac->relaxtype[3]  = 9;
 
   ierr = PetscOptionsHead("HYPRE BoomerAMG Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg);CHKERRQ(ierr);
@@ -365,9 +366,9 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     if(jac->gridsweeps[1] == 1) jac->gridrelaxpoints[1][0] = 0;
     else if(jac->gridsweeps[1] == 2) { 
       if (flg) {
-        jac->gridrelaxpoints[1][0] = 0; jac->gridrelaxpoints[1][1] = 0;
+        jac->gridrelaxpoints[1][0] = 0;  jac->gridrelaxpoints[1][1] = 0;
       } else {
-        jac->gridrelaxpoints[1][0] = 1; jac->gridrelaxpoints[1][1] = -1;
+        jac->gridrelaxpoints[1][0] = -1; jac->gridrelaxpoints[1][1] = 1;
       }
     } else if (jac->gridsweeps[1] > 2) { 
       SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");

@@ -14,46 +14,64 @@ EXTERN int PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
 #define __FUNCT__ "VecNorm_Seq"
 int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
-  PetscScalar *xa;
+  PetscScalar *xx;
   int         ierr,one = 1;
 
   PetscFunctionBegin;
   if (type == NORM_2) {
-    ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
     /*
       This is because the Fortran BLAS 1 Norm is very slow! 
     */
 #if defined(PETSC_HAVE_SLOW_NRM2)
+#if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
+    fortrannormsqr_(xx,&n,z);
+    z = sqrt(z);
+#elif defined(PETSC_USE_UNROLLED_NORM)
+    PetscReal work = 0.0;
+    switch (n & 0x3) {
+      case 3: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
+      case 2: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
+      case 1: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++; n -= 4;
+    }
+    while (n>0) {
+      work += PetscRealPart(xx[0]*PetscConj(xx[0])+xx[1]*PetscConj(xx[1])+
+                        xx[2]*PetscConj(xx[2])+xx[3]*PetscConj(xx[3]));
+      xx += 4; n -= 4;
+    } 
+    *z = sqrt(work);
+#else
     {
       int         i;
       PetscScalar sum=0.0;
       for (i=0; i<xin->n; i++) {
-        sum += (xa[i])*(PetscConj(xa[i]));
+        sum += (xx[i])*(PetscConj(xx[i]));
       }
       *z = sqrt(PetscRealPart(sum));
     }
-#else
-    *z = BLnrm2_(&xin->n,xa,&one);
 #endif
-    ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
+#else
+    *z = BLnrm2_(&xin->n,xx,&one);
+#endif
+    ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(2*xin->n-1);
   } else if (type == NORM_INFINITY) {
     int          i,n = xin->n;
     PetscReal    max = 0.0,tmp;
 
-    ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      if ((tmp = PetscAbsScalar(*xa)) > max) max = tmp;
+      if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
       /* check special case of tmp == NaN */
       if (tmp != tmp) {max = tmp; break;}
-      xa++;
+      xx++;
     }
-    ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
     *z   = max;
   } else if (type == NORM_1) {
-    ierr = VecGetArrayFast(xin,&xa);CHKERRQ(ierr);
-    *z = BLasum_(&xin->n,xa,&one);
-    ierr = VecRestoreArrayFast(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(xin,&xx);CHKERRQ(ierr);
+    *z = BLasum_(&xin->n,xx,&one);
+    ierr = VecRestoreArrayFast(xin,&xx);CHKERRQ(ierr);
     PetscLogFlops(xin->n-1);
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);

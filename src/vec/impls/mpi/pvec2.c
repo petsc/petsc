@@ -5,6 +5,7 @@
 */
 #include "src/vec/impls/mpi/pvecimpl.h" 
 #include "src/inline/dot.h"
+#include "petscblaslapack.h"
 
 #define do_not_use_ethernet
 int Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_Op op,MPI_Comm comm)
@@ -85,10 +86,10 @@ int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   PetscFunctionBegin;
   if (type == NORM_2) {
 
-#if defined(PETSC_USE_FORTRAN_KERNEL_NORMSQR)
+#if defined(PETSC_HAVE_SLOW_NRM2)
+#if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
     fortrannormsqr_(xx,&n,&work);
-#else
-    /* int i; for (i=0; i<n; i++) work += xx[i]*xx[i];   */
+#elif defined(PETSC_USE_UNROLLED_NORM)
     switch (n & 0x3) {
       case 3: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
       case 2: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
@@ -99,28 +100,14 @@ int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
                         xx[2]*PetscConj(xx[2])+xx[3]*PetscConj(xx[3]));
       xx += 4; n -= 4;
     } 
-    /*
-         On the IBM Power2 Super with four memory cards unrolling to 4
-         worked better than unrolling to 8.
-    */
-    /*
-    switch (n & 0x7) {
-      case 7: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 6: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 5: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 4: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 3: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 2: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++;
-      case 1: work += PetscRealPart(xx[0]*PetscConj(xx[0])); xx++; n -= 8;
+#else
+    {int i; for (i=0; i<n; i++) work += PetscRealPart((xx[i])*(PetscConj(xx[i])));}
+#endif
+#else
+    {int one = 1;
+      work  = BLnrm2_(&n,xx,&one);
+      work *= work;
     }
-    while (n>0) {
-      work += PetscRealPart(xx[0]*PetscConj(xx[0])+xx[1]*PetscConj(xx[1])+
-                        xx[2]*PetscConj(xx[2])+xx[3]*PetscConj(xx[3])+
-                        xx[4]*PetscConj(xx[4])+xx[5]*PetscConj(xx[5])+
-                        xx[6]*PetscConj(xx[6])+xx[7]*PetscConj(xx[7]));
-      xx += 8; n -= 8;
-    } 
-    */
 #endif
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
