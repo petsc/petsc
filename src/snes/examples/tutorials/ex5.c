@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.21 1995/08/26 20:30:17 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.22 1995/08/30 01:45:23 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -76,7 +76,7 @@ int main( int argc, char **argv )
     SETERRQ(1,"Incompatible number of processors: Nx * Ny != numtids");
   
   /* Set up distributed array */
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
+  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
          user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
