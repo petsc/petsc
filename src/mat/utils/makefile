@@ -7,7 +7,7 @@ CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR)/pinclude\
            -I../impls/row/seq -I../impls/row/mpi \
            -I../impls/bdiag/seq -I../impls/bdiag/mpi \
            -I../impls/rowbs/mpi \
-           $(CONF) -D__DIR__='"mat/utils"'
+           $(CONF) -D__DIR__='"mat/utils/"'
 SOURCEC  = gcreate.c convert.c stash.c axpy.c
 SOURCEF  =
 WSOURCEC = 
