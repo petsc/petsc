@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.11 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.12 1997/10/28 14:21:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -63,6 +63,15 @@ PLogDouble PetscGetCPUTime()
 #if defined(__cplusplus)
 extern "C" {
 #endif
+/*
+   On later versions of Linux you should remove the next line:
+ if you the error message 
+   cputime.c:13: declaration of C function 'int getrusage(int, struct
+             rusage*)' conflicts with
+  /usr/include/sys/resource.h:45: previous declaration 'int
+  getrusage(enum_rusage_who, struct rusage*)' here
+
+*/
 extern int getrusage(int,struct rusage*);
 #if defined(__cplusplus)
 }
