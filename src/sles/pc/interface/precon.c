@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.57 1996/01/09 01:25:53 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.58 1996/01/09 03:12:46 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -198,10 +198,8 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 
    Input Parameters:
 .  pc - the preconditioner context
-.  side - indicates preconditioner side, one of
-$    KSP_RIGHT_PC,
-$    KSP_LEFT_PC,
-$    KSP_SYMMETRIC_PC
+.  side - indicates the preconditioner side, one of
+$   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 .  x - input vector
 .  work - work vector
 
@@ -212,20 +210,20 @@ $    KSP_SYMMETRIC_PC
 
 .seealso: PCApply(), PCApplyTrans(), PCApplyBAorABTrans()
 @*/
-int PCApplyBAorAB(PC pc,KSPPrecondSide side,Vec x,Vec y,Vec work)
+int PCApplyBAorAB(PC pc,PrecondSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->applyBA)  return (*pc->applyBA)(pc,side,x,y,work);
-  if (side == KSP_RIGHT_PC) {
+  if (side == PC_RIGHT) {
     ierr = PCApply(pc,x,work); CHKERRQ(ierr);
     return MatMult(pc->mat,work,y); 
   }
-  else if (side == KSP_LEFT_PC) {
+  else if (side == PC_LEFT) {
     ierr = MatMult(pc->mat,x,work); CHKERRQ(ierr);
     return PCApply(pc,work,y);
   }
-  else if (side == KSP_SYMMETRIC_PC) {
+  else if (side == PC_SYMMETRIC) {
     /* There's an extra copy here; maybe should provide 2 work vectors instead? */
     ierr = PCApplySymmRight(pc,x,work); CHKERRQ(ierr);
     ierr = MatMult(pc->mat,work,y); CHKERRQ(ierr);
@@ -240,7 +238,8 @@ int PCApplyBAorAB(PC pc,KSPPrecondSide side,Vec x,Vec y,Vec work)
 
    Input Parameters:
 .  pc - the preconditioner context
-.  right - indicates right or left preconditioner
+.  side - indicates the preconditioner side, one of
+$   PC_LEFT, PC_RIGHT, or PC_SYMMETRIC
 .  x - input vector
 .  work - work vector
 
@@ -251,17 +250,22 @@ int PCApplyBAorAB(PC pc,KSPPrecondSide side,Vec x,Vec y,Vec work)
 
 .seealso: PCApply(), PCApplyTrans(), PCApplyBAorAB()
 @*/
-int PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work)
+int PCApplyBAorABTrans(PC pc,PrecondSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,right,x,y,work);
-  if (right) {
+  if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,side,x,y,work);
+  if (side == PC_RIGHT) {
     ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
     return PCApplyTrans(pc,work,y);
   }
-  ierr = PCApplyTrans(pc,x,work); CHKERRQ(ierr);
-  return MatMultTrans(pc->mat,work,y); 
+  else if (side == PC_LEFT) {
+    ierr = PCApplyTrans(pc,x,work); CHKERRQ(ierr);
+    return MatMultTrans(pc->mat,work,y); 
+  }
+  /* add support for PC_SYMMETRIC */
+  else 
+   SETERRQ(1,"PCApplyBAorABTrans: Only right and left preconditioning are currently supported");
 }
 
 /*@

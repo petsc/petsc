@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.45 1996/01/09 01:25:57 curfman Exp curfman $ */
+/* $Id: pc.h,v 1.46 1996/01/09 14:30:54 curfman Exp curfman $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -27,7 +27,7 @@ extern int    PCApplySymmLeft(PC,Vec,Vec);
 extern int    PCApplySymmRight(PC,Vec,Vec);
 extern int    PCApplyBAorAB(PC,PrecondSide,Vec,Vec,Vec);
 extern int    PCApplyTrans(PC,Vec,Vec);
-extern int    PCApplyBAorABTrans(PC,int,Vec,Vec,Vec);
+extern int    PCApplyBAorABTrans(PC,PrecondSide,Vec,Vec,Vec);
 extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);
 extern int    PCApplyRichardsonExists(PC);
 extern int    PCRegisterAll();
