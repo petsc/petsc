@@ -1,4 +1,4 @@
-/* $Id: blaslapack.h,v 1.32 1997/11/12 19:44:37 bsmith Exp bsmith $ */
+/* $Id: blaslapack.h,v 1.33 1998/10/19 22:20:57 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -9,8 +9,8 @@ on some machines in C and Fortran 77. This problem comes up on the
 Cray T3D/T3E.
 
 */
-#if !defined(_PLAPACK_H)
-#define _PLAPACK_H
+#if !defined(_BLASLAPACK_H)
+#define _BLASLAPACK_H
 
 #include "petsc.h"
 
