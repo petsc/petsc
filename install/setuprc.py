@@ -41,7 +41,7 @@ def setupASESection(lines, path):
       top.append(line)
 
   ase.append(aseMarker)
-  ase.extend(['# Code added by BuildSystem/install/setuprc.py', 'import sys', 'sys.path.insert(0,"'+path+'")'])
+  ase.extend(['# Code added by sidl/BuildSystem/install/setuprc.py', 'import sys', 'sys.path.insert(0,"'+path+'")'])
   ase.extend(setupHostname())
   ase.append(aseMarker)
 
