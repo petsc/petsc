@@ -1,13 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.42 1996/03/19 21:27:49 bsmith Exp $";
+static char vcid[] = "$Id: flow.c,v 1.1 2000/01/11 19:43:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 
-#include <stdio.h>
-#include <math.h>
 #include <assert.h>
 #include "snes.h"
 #include "draw.h"
@@ -88,7 +86,7 @@ int main(int argc,char **args)
   GRID 		f_pntr;
   TstepCtx      tsCtx ;
   SNES          snes;                  /* SNES context */
-  SNESType      method = SNES_EQ_LS;   /* default nonlinear solution method */
+  SNESType      method = SNESEQLS;     /* default nonlinear solution method */
   SLES          sles;                  /* SLES context */
   Vec           q, res, f ;            /* Unknown Vector, Residual,
                                           forcing function on RHS of pde */
@@ -102,13 +100,13 @@ int main(int argc,char **args)
   double        ubar, num=0.0, den, rjac;
   double        tiny = 1.0e-10, big = 1.0e+10;
   char          str[256];
-  int     	ierr, in, n, its, flg, ix[200];
+  int     	ierr, in, n, its, ix[200];
   int    	igrid = 0;
   int 		solIt;
   Scalar	totMem;
   int		*iwork;
   FILE          *fptr, *fptr1;
-
+  PetscTruth    flg;
 
   int *miterj;
   int *nsrchj, *icyclej, *ilu0j;
@@ -152,10 +150,10 @@ int main(int argc,char **args)
   tsCtx.fnorm_ini = 0.0; tsCtx.cfl_ini = 50.0; tsCtx.cfl_max = 1.0e+05;
   tsCtx.max_steps = 50;  tsCtx.max_time = 1.0e+12; tsCtx.iramp = -50;
   tsCtx.dt = -5.0; tsCtx.fnorm_ratio = 1.0e+10;
-  ierr = OptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,&flg); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL); CHKERRA(ierr);
   /*======================================================================*/
 
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
@@ -244,8 +242,7 @@ int main(int argc,char **args)
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
  
   /* Set various routines and options */
-  ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);
-  CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg); CHKERRA(ierr);
   if (flg) {
     /* Use matrix-free Jacobian to define Newton system; use explicit (approx)
@@ -695,7 +692,7 @@ int Update(SNES snes, void *ctx)
  int 		max_steps;
  Scalar	 	max_time;
  int		vecSize;
- int		print_flag = 0, flg;
+ PetscTruth     print_flag = 0, flg;
  FILE 		*fptr;
  static int     PreLoadFlag = 1;
  int		nfailsCum = 0, nfails = 0;
@@ -913,7 +910,7 @@ int GetLocalOrdering(GRID *grid)
   int	   nsnode, nvnode, nfnode;
   int	   nsnodeLoc, nvnodeLoc, nfnodeLoc;
   int	   nnbound, nvbound, nfbound;
-  int      flg = 0, fdes, currentPos = 0, newPos = 0;
+  int      fdes, currentPos = 0, newPos = 0;
   int      one = 1, two = 2, three = 3, four = 4, unit = 20, grid_param = 13;
   int      *edge_bit, *pordering, *vertices, *verticesmask, *svertices;
   int	   *l2p, *l2a, *p2a, *p2l, *a2l, *v2p, *eperm;
@@ -926,7 +923,8 @@ int GetLocalOrdering(GRID *grid)
   IS       isglobal,islocal, isrow, iscol;
   Mat      Adj;
   FILE     *fptr, *fptr1;
-  
+  PetscTruth flg;
+
   /* Read the integer grid parameters */ 
   icalloc(grid_param, &tmp);
   if (rank == 0) {
@@ -1976,13 +1974,14 @@ int GetLocalOrdering(GRID *grid)
 int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 /*---------------------------------------------------------------------*/
 {
-   int      flg = 0, ierr, i, j, k, row, bs;
+   int      ierr, i, j, k, row, bs;
    int      nnodes, nnz, jstart, jend, nbrs_diag, nbrs_offd;
    int      nnodesLoc, nedgeLoc, nvertices;
    int      *val_diag, *val_offd, *svertices, *loc2pet, *loc2glo;
    IS      isglobal,islocal;
    ISLocalToGlobalMapping isl2g;
- 
+   PetscTruth flg;
+
    nnodes = grid->nnodes;
    nnodesLoc = grid->nnodesLoc;
    nedgeLoc = grid->nedgeLoc;

@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.15 1998/10/28 20:51:11 curfman Exp bsmith $ 
+# $Id: makefile,v 1.16 1999/11/05 14:48:03 bsmith Exp bsmith $ 
 
-DIRS     = sda pc oberman
+DIRS     = sda pc oberman fun3d
 LOCDIR   = src/contrib/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,14 +1,7 @@
-# PETSC_DIR = /tmp/petsc
-#PETSC_DIR = /ccsthome/bsmith/petsc
-#PETSC_DIR = /sandbox/petsc/petsc-2.0.21
-#PETSC_DIR = /sandbox/petsc/petsc
-#PETSC_DIR = Z:\PETSc\petsc-2.0.22
-#BOPT=O
+
 ALL: flow
 
-USERCPPFLAGS  =  /DCFL3D_AXIS \
-                 /DINTERLACING \
-                 /DBLOCKING 
+USERCPPFLAGS  =  -DCFL3D_AXIS -DINTERLACING -DBLOCKING 
 # 
 CFLAGS	      =
 FFLAGS	      =	 
@@ -19,16 +12,14 @@ SOURCEC	      =
 SOURCEF	      =
 SOURCEH	      =
 OBJSC	      = 
-OBJSF	      = user.obj userJac.obj
+OBJSF	      = user.o userJac.o
 LIBBASE	      = libpetscsnes
-#LOCDIR        = /kaushik/Incomp/BigSample/
 CLEANFILES    = flow.exe
 #
-!include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
-flow: flow.obj $(OBJSF) chkopts
-	-$(FLINKER) flow.obj $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-#$(RM) flow.o
+flow: flow.o $(OBJSF) chkopts
+	-$(FLINKER) flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 
 user.o:
 #f77 -c -r8 -i4 -O4 -xs user.f
