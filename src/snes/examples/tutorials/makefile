@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.94 2001/03/23 01:14:53 bsmith Exp balay $ 
+# $Id: makefile,v 1.95 2001/03/29 16:36:33 balay Exp balay $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  Examples of unconstrained minimization problems
@@ -37,12 +37,6 @@ ex2: ex2.o  chkopts
 ex3: ex3.o  chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
 	${RM} ex3.o
-ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o ${PETSC_SNES_LIB}
-	${RM} ex4.o
-ex4f: ex4f.o  chkopts
-	-${FLINKER} -o ex4f ex4f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
-	${RM} ex4f.o
 ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
