@@ -11,6 +11,7 @@ DIRS   = src include docs
 # Configuration Variables
 #
 # Read configure options from a file if CONFIGURE_OPTIONSis not defined
+AUTOMAKE               = ${PETSC_DIR}/bin/automake
 CONFIGURE_ARCH         = `config/configarch`
 CONFIGURE_OPTIONS_FILE = ./config/configure_options.${CONFIGURE_ARCH}
 CONFIGURE_OPTIONS      = $(shell cat $(CONFIGURE_OPTIONS_FILE))
@@ -38,14 +39,14 @@ bmake/config/petscconf.h.in: config/acconfig.h config/acsite.m4 configure.in
 $(AUTOMAKE_ADD_FILES):
 	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
 	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@automake --foreign --add-missing --copy Makefile >> $(CONFIGURE_LOG_FILE)
+	@${AUTOMAKE} --foreign --add-missing --copy Makefile >> $(CONFIGURE_LOG_FILE)
 
 Makefile.am: $(AUTOMAKE_ADD_FILES)
 
 Makefile.in: Makefile.am
 	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
 	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@automake --foreign Makefile >> $(CONFIGURE_LOG_FILE)
+	@${AUTOMAKE} --foreign Makefile >> $(CONFIGURE_LOG_FILE)
 
 configure: configure.in config/acsite.m4 aclocal.m4 bmake/config/petscconf.h.in $(AUTOMAKE_ADD_FILES)
 	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
