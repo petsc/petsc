@@ -68,15 +68,21 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
 
   PetscFunctionBegin;
   /* Get the number of supplementary group IDs */
+#if !defined(PETSC_MISSING_GETGROUPS)
   numGroups = getgroups(0, gid); if (numGroups < 0) {SETERRQ(numGroups, "Unable to count supplementary group IDs");}
   ierr = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid);                                                CHKERRQ(ierr);
+#else
+  numGroups = 0
+#endif
 
   /* Get the (effective) user and group of the caller */
   uid    = geteuid();
   gid[0] = getegid();
 
   /* Get supplementary group IDs */
+#if !defined(PETSC_MISSING_GETGROUPS)
   ierr = getgroups(numGroups, gid+1); if (ierr < 0) {SETERRQ(ierr, "Unable to obtain supplementary group IDs");}
+#endif
 
   /* Test for accessibility */
   if (fuid == uid) {
