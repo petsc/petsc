@@ -48,7 +48,6 @@ int MatSetType(Mat mat,MatType matype)
 
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (!sametype) {
-    MatPreallocated(mat);
     /* Get the function pointers for the matrix requested */
     if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     ierr =  PetscFListFind(mat->comm,MatList,matype,(void(**)(void))&r);CHKERRQ(ierr);
@@ -56,9 +55,12 @@ int MatSetType(Mat mat,MatType matype)
 
     /* free the old data structure if it existed */
     if (mat->ops->destroy) {
+      MatPreallocated(mat);
       ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
       mat->ops->destroy = PETSC_NULL;
+      mat->preallocated = PETSC_FALSE;
     }
+
     if (mat->rmap) {
       ierr = PetscMapDestroy(mat->rmap);CHKERRQ(ierr);
       mat->rmap = 0;
