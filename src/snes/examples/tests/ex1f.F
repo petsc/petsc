@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.7 1997/01/04 18:14:26 bsmith Exp bsmith $";
+C "$Id: ex4f.F,v 1.8 1997/03/30 17:38:56 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -91,7 +91,7 @@ C     draw        - drawing context
 C
       SNES     snes
       Vec      x, r
-C     Draw     draw
+      Draw     draw
       Mat      J
       integer  its, matrix_free, flg, N, ierr
       integer  user(2), mx, my, size, rank
@@ -232,11 +232,11 @@ C  this vector to zero by calling VecSet().
 
 C  Draw contour plot of solution
 
-c      call DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,
-c     &               draw,ierr)
-c      call DrawTensorContour(draw,mx,my,0,0,x,ierr)
-c      call DrawSyncFlush(draw,ierr)
-c      call DrawPause(draw,ierr)
+      call DrawOpenX(MPI_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',
+     &               300,0,300,300,draw,ierr)
+      call DrawTensorContour(draw,mx,my,PETSC_NULL,PETSC_NULL,x,ierr)
+      call DrawSyncFlush(draw,ierr)
+      call DrawPause(draw,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Free work space.  All PETSc objects should be destroyed when they
@@ -247,7 +247,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call SNESDestroy(snes,ierr)
-c      call DrawDestroy(draw,ierr)
+      call DrawDestroy(draw,ierr)
       call PetscFinalize(ierr)
 
       stop
