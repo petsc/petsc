@@ -243,13 +243,13 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
     args[0] = (char*)"-level"; args[1] = levels;
     ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
   } 
-  ierr = PetscOptionsLogical("-pc_hypre_euclid_bj","Use block Jacobi ILU(k)","None",jac->bjilu,&jac->bjilu,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_hypre_euclid_bj","Use block Jacobi ILU(k)","None",jac->bjilu,&jac->bjilu,PETSC_NULL);CHKERRQ(ierr);
   if (jac->bjilu) {
     args[0] =(char*) "-bj"; args[1] = (char*)"1";
     ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
   } 
     
-  ierr = PetscOptionsLogical("-pc_hypre_euclid_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_hypre_euclid_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
   if (jac->printstatistics) {
     args[0] = (char*)"-eu_stats"; args[1] = (char*)"1";
     ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
@@ -446,7 +446,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 
   /* the Relax Order */ 
   /* ierr = PetscOptionsName("-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", &flg);CHKERRQ(ierr); */
-  ierr = PetscOptionsLogical( "-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth( "-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
 
   if (flg) {
     jac->relaxorder = 0;
@@ -462,7 +462,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     jac->coarsentype = indx;
   }
   ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
-  ierr = PetscOptionsLogical("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
   if (jac->printstatistics) {
     ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,3);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetDebugFlag(jac->hsolver,3);CHKERRQ(ierr);
@@ -568,10 +568,10 @@ static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc)
   ierr = PetscOptionsReal("-pc_hypre_parasails_loadbal","Load balance","None",jac->loadbal,&jac->loadbal,0);CHKERRQ(ierr);
   ierr = HYPRE_ParaSailsSetLoadbal(jac->hsolver,jac->loadbal);CHKERRQ(ierr);
 
-  ierr = PetscOptionsLogical("-pc_hypre_parasails_logging","Print info to screen","None",(PetscTruth)jac->logging,(PetscTruth*)&jac->logging,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_hypre_parasails_logging","Print info to screen","None",(PetscTruth)jac->logging,(PetscTruth*)&jac->logging,0);CHKERRQ(ierr);
   ierr = HYPRE_ParaSailsSetLogging(jac->hsolver,jac->logging);CHKERRQ(ierr);
 
-  ierr = PetscOptionsLogical("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscTruth)jac->ruse,(PetscTruth*)&jac->ruse,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_hypre_parasails_reuse","Reuse nonzero pattern in preconditioner","None",(PetscTruth)jac->ruse,(PetscTruth*)&jac->ruse,0);CHKERRQ(ierr);
   ierr = HYPRE_ParaSailsSetReuse(jac->hsolver,jac->ruse);CHKERRQ(ierr);
 
   ierr = PetscOptionsEList("-pc_hypre_parasails_sym","Symmetry of matrix and preconditioner","None",symtlist,3,symtlist[0],&indx,&flag);CHKERRQ(ierr);

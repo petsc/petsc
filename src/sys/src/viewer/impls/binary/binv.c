@@ -593,8 +593,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFilename_Binary(PetscViewer viewer,
   if (type == (PetscViewerFileType) -1) {
     SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerBinarySetType() before PetscViewerSetFilename()");
   }
-  ierr = PetscOptionsGetLogical(viewer->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetLogical(viewer->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(viewer->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(viewer->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
 

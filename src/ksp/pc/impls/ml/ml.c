@@ -355,7 +355,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   ierr = PetscOptionsReal("-pc_ml_Threshold","Smoother drop tol","ML_Aggregate_Set_Threshold",Threshold,&Threshold,PETSC_NULL);CHKERRQ(ierr);
   pc_ml->Threshold = Threshold;
 
-  ierr = PetscOptionsLogical("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Aggregate_Set_SpectralNormScheme_Anorm",PETSC_FALSE,&pc_ml->SpectralNormScheme_Anorm,PETSC_FALSE);
+  ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Aggregate_Set_SpectralNormScheme_Anorm",PETSC_FALSE,&pc_ml->SpectralNormScheme_Anorm,PETSC_FALSE);
   
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

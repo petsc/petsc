@@ -74,7 +74,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscTruth        flg = PETSC_FALSE,*fields;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetLogical(pc->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(pc->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!ilink || flg) { 
     ierr = PetscLogInfo((pc,"PCFieldSplitSetDefaults: Using default splitting of fields\n"));CHKERRQ(ierr);
     if (jac->bs <= 0) {

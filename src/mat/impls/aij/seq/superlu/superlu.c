@@ -394,25 +394,25 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 
   ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
   /* 
-  ierr = PetscOptionsLogical("-mat_superlu_equil","Equil","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
   if (flg) lu->options.Equil = YES; -- not supported by the interface !!!
   */
   ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
   if (flg) {lu->options.ColPerm = (colperm_t)indx;}
   ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) { lu->options.IterRefine = (IterRefine_t)indx;}
-  ierr = PetscOptionsLogical("-mat_superlu_symmetricmode","SymmetricMode","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-mat_superlu_symmetricmode","SymmetricMode","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
   if (flg) lu->options.SymmetricMode = YES; 
   ierr = PetscOptionsReal("-mat_superlu_diagpivotthresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&lu->options.DiagPivotThresh,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsLogical("-mat_superlu_pivotgrowth","PivotGrowth","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-mat_superlu_pivotgrowth","PivotGrowth","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
   if (flg) lu->options.PivotGrowth = YES;
-  ierr = PetscOptionsLogical("-mat_superlu_conditionnumber","ConditionNumber","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-mat_superlu_conditionnumber","ConditionNumber","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
   if (flg) lu->options.ConditionNumber = YES;
   ierr = PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {lu->options.RowPerm = (rowperm_t)indx;}
-  ierr = PetscOptionsLogical("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
   if (flg) lu->options.ReplaceTinyPivot = YES; 
-  ierr = PetscOptionsLogical("-mat_superlu_printstat","PrintStat","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-mat_superlu_printstat","PrintStat","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
   if (flg) lu->options.PrintStat = YES; 
   ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr); 
   if (lu->lwork > 0 ){

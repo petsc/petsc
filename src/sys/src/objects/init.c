@@ -230,7 +230,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg3);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
-  ierr = PetscOptionsGetLogical(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-malloc",&flg1,&flg2);CHKERRQ(ierr);
   if ((!flg2 || flg1) && !petscsetmallocvisited) {
     ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); 
   }

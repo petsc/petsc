@@ -33,7 +33,7 @@ int PCCreate_Feti(PC pc)
     PetscObjectChangeTypeName((PetscObject)pc,"pcfeti"); /* PCSetUp checks this; sets it to BJacobi if 0 */
 
     pcfeti->lumped=PETSC_FALSE;
-    PetscOptionsGetLogical("pcfeti_","-lumped",&pcfeti->lumped,&flag);   /* -pcfeti_lumped "" yes true 1 on */
+    PetscOptionsGetTruth("pcfeti_","-lumped",&pcfeti->lumped,&flag);   /* -pcfeti_lumped "" yes true 1 on */
 
     PetscFunctionReturn(0);
 } 

@@ -311,7 +311,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm comm,PetscInt n
 PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec g,Vec *l)
 {
   PetscErrorCode ierr;
-  PetscTruth isseq,ismpi;
+  PetscTruth     isseq,ismpi;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE,1);
@@ -403,7 +403,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostRestoreLocalForm(Vec g,Vec *l)
 @*/ 
 PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateBegin(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
-  Vec_MPI *v;
+  Vec_MPI        *v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -465,7 +465,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateBegin(Vec g,InsertMode insertmod
 @*/ 
 PetscErrorCode PETSCVEC_DLLEXPORT VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 {
-  Vec_MPI *v;
+  Vec_MPI        *v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

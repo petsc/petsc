@@ -40,7 +40,7 @@ PetscFList MatList = 0;
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
-  PetscTruth sametype;
+  PetscTruth     sametype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -141,7 +141,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat mat,MatType *type)
 PetscErrorCode PETSCMAT_DLLEXPORT MatRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);

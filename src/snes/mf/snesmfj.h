@@ -19,7 +19,7 @@
     of the parameter for finite difference based matrix-free computations
 */
 struct _MFOps {
-  PetscErrorCode (*compute)(MatSNESMFCtx,Vec,Vec,PetscScalar *);
+  PetscErrorCode (*compute)(MatSNESMFCtx,Vec,Vec,PetscScalar *,PetscTruth* zeroa);
   PetscErrorCode (*view)(MatSNESMFCtx,PetscViewer);
   PetscErrorCode (*destroy)(MatSNESMFCtx);
   PetscErrorCode (*setfromoptions)(MatSNESMFCtx);

@@ -68,7 +68,7 @@ typedef struct {
 .   h - the scale computed
 
 */
-static PetscErrorCode MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
+static PetscErrorCode MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
 {
   MatSNESMFWP    *hctx = (MatSNESMFWP*)ctx->hctx;
   PetscReal      normU,norma = 1.0;
@@ -89,6 +89,11 @@ static PetscErrorCode MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScal
     } else if (hctx->computenorma) {
       ierr = VecNorm(a,NORM_2,&norma);CHKERRQ(ierr);
     }
+    if (norma == 0.0) {
+      *zeroa = PETSC_TRUE;
+      PetscFunctionReturn(0);
+    }
+    *zeroa = PETSC_FALSE;
     *h = ctx->error_rel*hctx->normUfact/norma;
   } else {
     *h = ctx->currenth;
@@ -145,9 +150,9 @@ static PetscErrorCode MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
-    ierr = PetscOptionsLogical("-snes_mf_compute_norma","Compute the norm of a","MatSNESMFWPSetComputeNormA",
+    ierr = PetscOptionsTruth("-snes_mf_compute_norma","Compute the norm of a","MatSNESMFWPSetComputeNormA",
                           hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
-    ierr = PetscOptionsLogical("-snes_mf_compute_normu","Compute the norm of u","MatSNESMFWPSetComputeNormU",
+    ierr = PetscOptionsTruth("-snes_mf_compute_normu","Compute the norm of u","MatSNESMFWPSetComputeNormU",
                           hctx->computenorma,&hctx->computenorma,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
