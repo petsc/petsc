@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.128 1998/05/13 16:50:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.129 1998/05/13 16:58:15 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -88,7 +88,7 @@ DLList KSPList = 0;
      One cannot use the default convergence test routines when this is set, since they
      are based on decreases in the residual norms.
 
-     Currently only works with the CG method.
+     Currently only works with the CG, Richardson, Bi-CG-stab, and CGS methods.
 
 .keywords: KSP, create, context, norms
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.68 1998/04/13 17:32:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.69 1998/04/24 21:21:12 curfman Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -69,6 +69,7 @@ int PCSetType(PC ctx,PCType type)
   /* Get the function pointers for the method requested */
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0); CHKERRQ(ierr);}
   ierr =  DLRegisterFind(ctx->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  if (!r) SETERRQ(1,1,"Unable to find requested PC type");
   if (ctx->data) PetscFree(ctx->data);
 
   ctx->destroy         = ( int (*)(PC )) 0;
