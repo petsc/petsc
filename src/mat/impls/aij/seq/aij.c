@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.110 1995/11/06 19:21:06 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.111 1995/11/06 19:49:26 balay Exp balay $";
 #endif
 
 /*
@@ -390,6 +390,8 @@ static int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
+  /* check out for identical nodes. If found,use inode functions*/
+  ierr = Mat_SeqAIJ_CheckInode(A); CHKERRQ(ierr);
   a->assembled = 1;
   return 0;
 }
@@ -415,6 +417,7 @@ int MatDestroy_SeqAIJ(PetscObject obj)
   if (a->ilen) PetscFree(a->ilen);
   if (a->imax) PetscFree(a->imax);
   if (a->solve_work) PetscFree(a->solve_work);
+  if (a->inode.size) PetscFree(a->inode.size);
   PetscFree(a); 
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
@@ -1301,7 +1304,7 @@ int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
   c->nz               = a->nz;
   c->maxnz            = a->maxnz;
   c->solve_work       = 0;
-  c->spptr            = 0;
+  c->spptr            = 0;      /* Dangerous -I'm throwing away a->spptr */
   b->inode.node_count = 0;
   b->inode.size       = 0;
 
