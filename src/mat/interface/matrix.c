@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.181 1996/07/21 16:39:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.182 1996/08/06 04:02:07 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1740,14 +1740,17 @@ int MatRestoreArray(Mat mat,Scalar **v)
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
-.  submat - the submatrices
+.  submat - the array of submatrices
 
+   Notes:
+   The when finished using the submatrices, the user should
+   destroy them with MatDestroySubMatrices().
 
 .keywords: matrix, get, submatrix, submatrices
 
 .seealso: MatDestroyMatrices()
 @*/
-int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
+int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
                       Mat **submat)
 {
   int ierr;
@@ -1762,17 +1765,17 @@ int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall
 }
 
 /*@C
-   MatDestroyMatrices - Destroys a set of matrices obtained with MatGetSubMatrices()
+   MatDestroyMatrices - Destroys a set of matrices obtained with MatGetSubMatrices().
 
    Input Parameters:
 .  n - the number of local matrices
 .  mat - the matrices
 
-.keywords: matrix, get, submatrix, submatrices
+.keywords: matrix, destroy, submatrix, submatrices
 
 .seealso: MatGetSubMatrices()
 @*/
-int MatDestroyMatrices(int n,  Mat **mat)
+int MatDestroyMatrices(int n,Mat **mat)
 {
   int ierr,i;
 
