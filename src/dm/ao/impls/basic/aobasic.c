@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.35 1998/04/13 18:02:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.36 1998/04/28 03:01:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -114,7 +114,8 @@ static struct _AOOps myops = {AOPetscToApplication_Basic,
 +  comm - MPI communicator that is to share AO
 .  napp - size of integer arrays
 .  myapp - integer array that defines an ordering
--  mypetsc - integer array that defines another ordering
+-  mypetsc - integer array that defines another ordering (may be PETSC_NULL to 
+             indicate the natural ordering)
 
    Output Parameter:
 .  aoout - the new application ordering
