@@ -22,7 +22,7 @@ extern char   *PETSC_NULL_CHARACTER_Fortran;
        C pointer       = PetscToPointerComm(Fortran integer)
        Fortran integer = PetscFromPointerComm(C pointer)
 */
-#ifdef HAVE_64BITS
+#if defined(HAVE_64BITS) && !defined(PETSC_USING_MPIUNI)
 #if defined(__cplusplus)
 extern "C" {
 #endif
