@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.56 1996/03/04 05:17:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.57 1996/03/04 16:44:34 curfman Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: snes.c,v 1.56 1996/03/04 05:17:03 bsmith Exp curfman 
 #include <math.h>
 
 extern int SNESGetTypeFromOptions_Private(SNES,SNESType*,int*);
-extern int SNESPrintTypes_Private(char*,char*);
+extern int SNESPrintTypes_Private(MPI_Comm,char*,char*);
 
 /*@ 
    SNESView - Prints the SNES data structure.
@@ -213,7 +213,7 @@ int SNESPrintHelp(SNES snes)
   kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
 
   MPIU_printf(snes->comm,"SNES options ----------------------------\n");
-  SNESPrintTypes_Private(p,"snes_type");
+  SNESPrintTypes_Private(snes->comm,p,"snes_type");
   MPIU_printf(snes->comm," %ssnes_monitor: use default SNES monitor\n",p);
   MPIU_printf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
   MPIU_printf(snes->comm," %ssnes_max_it its (default %d)\n",p,snes->max_its);
@@ -1513,20 +1513,20 @@ int SNESGetType(SNES snes, SNESType *method,char **name)
    options database.
 
    Input Parameters:
+.  comm   - communicator (usually MPI_COMM_WORLD)
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "snes_type") 
+.  name   - the options database name (by default "snes_type") 
 */
-int SNESPrintTypes_Private(char* prefix,char *name)
+int SNESPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 {
   FuncList *entry;
   if (!__SNESList) {SNESRegisterAll();}
   entry = __SNESList->head;
-  fprintf(stderr," %s%s (one of)",prefix,name);
+  MPIU_printf(comm," %s%s (one of)",prefix,name);
   while (entry) {
-    fprintf(stderr," %s",entry->name);
+    MPIU_printf(comm," %s",entry->name);
     entry = entry->next;
   }
-  fprintf(stderr,"\n");
   return 0;
 }
 

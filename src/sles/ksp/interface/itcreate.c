@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.74 1996/01/26 04:32:35 bsmith Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.75 1996/03/07 18:16:42 balay Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -259,20 +259,20 @@ int KSPGetType(KSP ksp,KSPType *itmeth,char **name)
    database.
 
    Input Parameters:
+.  comm   - The communicator ( usually MPI_COMM_WORLD)
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "ksp_type") 
+.  name   - the options database name (by default "ksp_type") 
 */
-int KSPPrintTypes_Private(char* prefix,char *name)
+int KSPPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 {
   FuncList *entry;
   if (!__KSPList) {KSPRegisterAll();}
   entry = __KSPList->head;
-  fprintf(stdout," %s%s (one of)",prefix,name);
+  MPIU_printf(comm," %s%s (one of)",prefix,name);
   while (entry) {
-    fprintf(stdout," %s",entry->name);
+    MPIU_printf(comm," %s",entry->name);
     entry = entry->next;
   }
-  fprintf(stdout,"\n");
-  fflush(stdout);
+  MPIU_printf(comm,"\n");
   return 1;
 }

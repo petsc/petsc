@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.56 1996/02/08 18:25:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.57 1996/03/05 00:26:07 curfman Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -96,7 +96,7 @@ int KSPSetFromOptions(KSP ctx)
   return 0;
 }
   
-extern int KSPPrintTypes_Private(char *,char *);
+extern int KSPPrintTypes_Private(MPI_Comm,char *,char *);
 
 /*@ 
    KSPPrintHelp - Prints all options for the KSP component.
@@ -123,7 +123,7 @@ int KSPPrintHelp(KSP ctx)
     if (ctx->prefix)  PetscStrcat(p,ctx->prefix);
     PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
     MPIU_printf(ctx->comm,"KSP Options -------------------------------------\n");
-    KSPPrintTypes_Private(p,"ksp_type");
+    KSPPrintTypes_Private(ctx->comm,p,"ksp_type");
     MPIU_printf(ctx->comm," %sksp_rtol tol: relative tolerance, defaults to %g\n",
                      p,ctx->rtol);
     MPIU_printf(ctx->comm," %sksp_atol tol: absolute tolerance, defaults to %g\n",

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.73 1996/02/19 03:50:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.74 1996/03/04 05:15:19 bsmith Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: precon.c,v 1.73 1996/02/19 03:50:33 bsmith Exp bsmith
 #include "pcimpl.h"            /*I "pc.h" I*/
 #include "pinclude/pviewer.h"
 
-extern int PCPrintTypes_Private(char*,char*);
+extern int PCPrintTypes_Private(MPI_Comm,char*,char*);
 /*@
    PCPrintHelp - Prints all the options for the PC component.
 
@@ -27,7 +27,7 @@ int PCPrintHelp(PC pc)
   PetscStrcpy(p,"-");
   if (pc->prefix) PetscStrcat(p,pc->prefix);
   MPIU_printf(pc->comm,"PC options ----------------------------------------\n");
-  PCPrintTypes_Private(p,"pc_type");
+  PCPrintTypes_Private(pc->comm,p,"pc_type");
   MPIU_printf(pc->comm,"Run program with %spc_type method -help for help on ",p);
   MPIU_printf(pc->comm,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc,p);

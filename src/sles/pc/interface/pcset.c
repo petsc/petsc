@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.36 1996/01/12 22:06:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.37 1996/03/04 05:15:19 bsmith Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -151,18 +151,19 @@ int PCGetType(PC pc,PCType *meth,char **name)
    database.
 
    Input Parameters:
+.  comm   - The communicator ( usually MPI_COMM_WORLD)
 .  prefix - prefix (usually "-")
-.  name - the options database name (by default "pc_type") 
+.  name   - the options database name (by default "pc_type") 
 */
-int PCPrintTypes_Private(char *prefix,char *name)
+int PCPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
 {
   FuncList *entry;
   int      ierr;
   if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
   entry = __PCList->head;
-  MPIU_printf(MPI_COMM_WORLD," %s%s (one of)",prefix,name);
+  MPIU_printf(comm," %s%s (one of)",prefix,name);
   while (entry) {
-    MPIU_printf(MPI_COMM_WORLD," %s",entry->name);
+    MPIU_printf(comm," %s",entry->name);
     entry = entry->next;
   }
   MPIU_printf(MPI_COMM_WORLD,"\n");
