@@ -1,41 +1,41 @@
 
 # Build the entire manual as well as the intro part
-manual.dvi: intro.tex manual.tex part1.tex routines.red
+manual.dvi: intro.tex manual_tex.tex part1.tex routines.red part2.tex
 # First build the manual
-	latex manual
-	bibtex manual
-	latex manual
-	makeindex manual
+	latex manual_tex
+	bibtex manual_tex
+	latex manual_tex
+	makeindex manual_tex
 	echo  \\begin{theindex} > findex.tex
 	echo \\indexspace >> findex.tex
-	grep FUNCTION manual.ind | sed "s/FUNCTION/ /g"  | \
+	grep FUNCTION manual_tex.ind | sed "s/FUNCTION/ /g"  | \
              sed 's/_/\\_/g' >> findex.tex
 	echo \\end{theindex} >> findex.tex
-	grep -v FUNCTION manual.ind | sed 's/_/\\_/g' > sindex.tex
-	latex manual
+	grep -v FUNCTION manual_tex.ind | sed 's/_/\\_/g' > sindex.tex
+	latex manual_tex
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx findex.tex sindex.tex
 # Now make the intro part ... note that this depends on latexing the manual
-	cp manual.aux intro.aux
+	cp manual_tex.aux intro.aux
 	latex intro
 	-@chmod g+w intro.dvi intro.aux intro.log
 
 manual.ps: 
-	dvips manual
-	mv manual.ps ..
+	dvips manual_tex
+	mv manual_tex.ps ../manual.ps
 	-@chmod g+w ../manual.ps
 # Now make the intro part
 	dvips intro
 	-@chmod g+w intro.ps
 
-manual.html: manual.tex part1.tex
+manual.html: manual.tex part1.tex part2.tex
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
 	       -mapref../www/petsc.cit -nobottomnav
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
 	       -mapref../www/petsc.cit -nobottomnav
 	-@chmod g+w manual.hux latex.err manual.html
-	-mv manual.html tmp.html
-	cat tmp.html | sed 's/H1/H2/g' | sed 's/H0/H1/g'> manual.html
+	-mv manual.html manual_html.html
+	cat manual_html.html | grep -v Up: | grep -v Next: | grep -v Previous: |sed 's/H1/H2/g' | sed 's/H0/H1/g'> manual.html
 	-mv manual.html ..
 	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html
 
