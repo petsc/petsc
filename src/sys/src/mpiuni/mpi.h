@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.66 1998/05/14 22:03:57 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.67 1998/07/12 03:42:59 bsmith Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -37,8 +37,10 @@ typedef void   *MPI_Group;
 typedef struct {int MPI_TAG, MPI_SOURCE, MPI_ERROR;} MPI_Status;
 typedef char*   MPI_Errhandler;
 
+extern int MPIUNI_Memcpy(void*,void*,int);
+
 /* In order to handle datatypes, we make them into "sizeof(raw-type)";
-    this allows us to do the PetscMemcpy's easily */
+    this allows us to do the MPIUNI_Memcpy's easily */
 #define MPI_Datatype      int
 #define MPI_FLOAT         sizeof(float)
 #define MPI_DOUBLE        sizeof(double)
@@ -301,7 +303,7 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
      dest, sendtag, recvbuf, recvcount, \
      recvtype, source, recvtag, \
      comm, status) \
-     PetscMemcpy( recvbuf, sendbuf, (sendcount) * (sendtype) )
+     MPIUNI_Memcpy( recvbuf, sendbuf, (sendcount) * (sendtype) )
 #define MPI_Sendrecv_replace( buf, count,  datatype, dest, sendtag, \
      source, recvtag, comm, status) MPI_SUCCESS
 #define MPI_Type_contiguous(count,  oldtype, newtype) \
@@ -357,7 +359,7 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
      MPIUNI_TMP = (void *) (long) (root), \
      MPIUNI_TMP = (void *) (long) (recvtype), \
      MPIUNI_TMP = (void *) (long) (comm), \
-     PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
+     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
      MPI_SUCCESS)
 #define MPI_Gatherv( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcounts, displs, \
@@ -367,7 +369,7 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
      MPIUNI_TMP = (void *) (long) (recvtype), \
      MPIUNI_TMP = (void *) (long) (root), \
      MPIUNI_TMP = (void *) (long) (comm), \
-     PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
+     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
      MPI_SUCCESS)
 #define MPI_Scatter( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcount,  recvtype, \
@@ -397,7 +399,7 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
      (MPIUNI_TMP = (void *) (long) (recvcount), \
      MPIUNI_TMP = (void *) (long) (recvtype), \
      MPIUNI_TMP = (void *) (long) (comm), \
-     PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
+     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
      MPI_SUCCESS)
 #define MPI_Allgatherv( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcounts, displs, recvtype, comm) \
@@ -405,7 +407,7 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
      MPIUNI_TMP = (void *) (long) (displs), \
      MPIUNI_TMP = (void *) (long) (recvtype), \
      MPIUNI_TMP = (void *) (long) (comm), \
-     PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
+     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
      MPI_SUCCESS)
 #define MPI_Alltoall( sendbuf, sendcount,  sendtype, \
      recvbuf, recvcount,  recvtype, \
@@ -415,15 +417,15 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
      rdispls,  recvtype, comm) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Reduce( sendbuf,  recvbuf, count, \
      datatype, op, root, comm) \
-     (PetscMemcpy(recvbuf,sendbuf,(count)*( datatype)), \
+     (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*( datatype)), \
      MPIUNI_TMP = (void *) (long) (comm), MPI_SUCCESS)
 #define MPI_Op_create(function, commute, op) MPI_SUCCESS
 #define MPI_Op_free( op) MPI_SUCCESS
 #define MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
-     (PetscMemcpy( recvbuf, sendbuf, (count)*(datatype)), \
+     (MPIUNI_Memcpy( recvbuf, sendbuf, (count)*(datatype)), \
      MPIUNI_TMP = (void *) (long) (comm), MPI_SUCCESS)
 #define MPI_Scan( sendbuf,  recvbuf, count, datatype, op, comm) \
-     (PetscMemcpy( recvbuf, sendbuf, (count)*(datatype)), \
+     (MPIUNI_Memcpy( recvbuf, sendbuf, (count)*(datatype)), \
      MPIUNI_TMP = (void *) (long) (comm), MPI_SUCCESS)
 #define MPI_Reduce_scatter( sendbuf,  recvbuf, recvcounts, \
      datatype, op, comm) \
