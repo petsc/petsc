@@ -320,6 +320,7 @@ class Configure(script.Script):
     f.write(self.getCode(includes, body, codeBegin, codeEnd))
     f.close()
     (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
+    if not os.path.isfile(self.compilerObj): ret = 1
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerFixes): os.remove(self.compilerFixes)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
