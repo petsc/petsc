@@ -1,7 +1,6 @@
 /*$Id: cookie.c,v 1.26 2001/03/23 23:20:38 balay Exp $*/
 
 #include "petsc.h"  /*I "petsc.h" I*/
-int PETSC_LARGEST_COOKIE = PETSC_LARGEST_COOKIE_PREDEFINED;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRegisterCookie"
@@ -28,10 +27,5 @@ int PETSC_LARGEST_COOKIE = PETSC_LARGEST_COOKIE_PREDEFINED;
 @*/
 int PetscRegisterCookie(int *cookie)
 {
-  PetscFunctionBegin;
-  if (PETSC_LARGEST_COOKIE >= PETSC_LARGEST_COOKIE_ALLOWED) { 
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"You have used too many PETSc cookies");
-  }
-  if (!*cookie) *cookie = PETSC_LARGEST_COOKIE++;
-  PetscFunctionReturn(0);
+  SETERRQ(PETSC_ERR_SUP, "This function is now obsolete. Please use PetscLogClassRegister().");
 }

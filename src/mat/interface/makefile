@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = matrix.c mhas.c matreg.c matregis.c matnull.c
+SOURCEC  = matrix.c mhas.c matreg.c matregis.c matnull.c dlregis.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = matrix.o mhas.o matreg.o matregis.o matnull.o
+OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = Mat

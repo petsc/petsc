@@ -2,8 +2,10 @@
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
-#include "src/vec/is/isimpl.h" 
-     /*I "petscis.h" I*/
+#include "src/vec/is/isimpl.h"      /*I "petscis.h" I*/
+
+/* Logging support */
+int IS_COOKIE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity" 

@@ -8,7 +8,7 @@
 #define __PETSCIS_H
 #include "petsc.h"
 
-#define IS_COOKIE PETSC_COOKIE+2
+extern int IS_COOKIE;
 
 /*S
      IS - Abstract PETSc object that indexing.

@@ -73,7 +73,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
-  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = VecLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   *newvec = vec;
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = VecLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -150,7 +150,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
-  ierr = PetscLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
+  ierr = VecLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
   }
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
+  ierr = VecLogEventEnd(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

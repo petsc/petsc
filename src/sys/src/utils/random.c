@@ -16,6 +16,8 @@
 #include "petscsys.h"        /*I "petscsys.h" I*/
 #include <stdlib.h>
 
+int PETSC_RANDOM_COOKIE;
+
 /* Private data */
 struct _p_PetscRandom {
   PETSCHEADER(int)
@@ -44,7 +46,7 @@ struct _p_PetscRandom {
 int PetscRandomDestroy(PetscRandom r)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
   if (--r->refct > 0) PetscFunctionReturn(0);
 
   PetscLogObjectDestroy((PetscObject)r);
@@ -81,7 +83,7 @@ int PetscRandomDestroy(PetscRandom r)
 int PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
 #if defined(PETSC_USE_COMPLEX)
   if (PetscRealPart(low) >= PetscRealPart(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
   if (PetscImaginaryPart(low) >= PetscImaginaryPart(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
@@ -158,7 +160,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL && type != RANDOM_DEFAULT_IMAGINARY){
     SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
   }
-  PetscHeaderCreate(rr,_p_PetscRandom,int,PETSCRANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
+  PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
   PetscLogObjectCreate(rr);
   rr->low   = 0.0;
   rr->width = 1.0;
@@ -205,7 +207,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE) {
@@ -244,7 +246,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL && type != RANDOM_DEFAULT_IMAGINARY) {
     SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
   }
-  PetscHeaderCreate(rr,_p_PetscRandom,int,PETSCRANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
+  PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
   PetscLogObjectCreate(rr);
   rr->low   = 0.0;
   rr->width = 1.0;
@@ -262,7 +264,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE)
@@ -299,7 +301,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscFunctionBegin;
   *r = 0;
   if (type != RANDOM_DEFAULT) SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
-  PetscHeaderCreate(rr,_p_PetscRandom,int,PETSCRANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
+  PetscHeaderCreate(rr,_p_PetscRandom,int,PETSC_RANDOM_COOKIE,type,"random",comm,PetscRandomDestroy,0);
   PetscLogObjectCreate(rr);
   *r = rr;
   ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
@@ -312,7 +314,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
 #if defined(PETSC_USE_COMPLEX)
   *val = (0.5,0.5);
 #else

@@ -9,8 +9,6 @@
 #include "petscvec.h"
 #include "petscao.h"
 
-#define DA_COOKIE PETSC_COOKIE+14
-
 /*S
      DA - Abstract PETSc object that manages distributed field data for a single structured grid
 
@@ -60,6 +58,13 @@ EXTERN int DASetInterpolationType(DA,DAInterpolationType);
 #define DAZPeriodic(pt) ((pt)==DA_ZPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
 
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
+
+/* Logging support */
+extern int DA_COOKIE;
+enum {DA_GlobalToLocal, DA_LocalToGlobal, DA_MAX_EVENTS};
+extern int DAEvents[DA_MAX_EVENTS];
+#define DALogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(DAEvents[e],o1,o2,o3,o4)
+#define DALogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(DAEvents[e],o1,o2,o3,o4)
 
 EXTERN int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
 EXTERN int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);

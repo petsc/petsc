@@ -227,17 +227,6 @@ EXTERN MPI_Op PetscSum_Op;
 #define PetscSum_Op MPI_SUM
 #endif
 
-/*
-  Each PETSc object class has it's own cookie (internal integer in the 
-  data structure used for error checking). These are all defined by an offset 
-  from the lowest one, PETSC_COOKIE.
-*/
-#define PETSC_COOKIE                    1211211
-#define PETSC_MAX_COOKIES               60
-#define PETSC_LARGEST_COOKIE_PREDEFINED PETSC_COOKIE + 30
-#define PETSC_LARGEST_COOKIE_ALLOWED    PETSC_COOKIE + PETSC_MAX_COOKIES
-extern int PETSC_LARGEST_COOKIE;
-
 /*S
      PetscObject - any PETSc object, PetscViewer, Mat, Vec, SLES etc
 

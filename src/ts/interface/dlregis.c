@@ -2,6 +2,60 @@
 
 #include "petscts.h"
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSInitializePackage"
+/*@C
+  TSInitializePackage - This function initializes everything in the TS package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: TS, initialize, package
+.seealso: PetscInitialize()
+@*/
+int TSInitializePackage(char *path) {
+  static int initialized = 0;
+  char       logList[256];
+  char      *className;
+  PetscTruth opt;
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = 1;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&TS_COOKIE, "TS");                                                         CHKERRQ(ierr);
+  /* Register Constructors and Serializers */
+  ierr = TSRegisterAll(path);                                                                             CHKERRQ(ierr);
+  /* Register Events */
+  ierr = PetscLogEventRegister(&TSEvents[TS_Step],                  "TSStep",           PETSC_NULL, TS_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&TSEvents[TS_PseudoComputeTimeStep], "TSPseudoCmptTStp", PETSC_NULL, TS_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&TSEvents[TS_FunctionEval],          "TSFunctionEval",   PETSC_NULL, TS_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&TSEvents[TS_JacobianEval],          "TSJacobianEval",   PETSC_NULL, TS_COOKIE);CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "ts", &className);                                                        CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogInfoDeactivateClass(TS_COOKIE);                                                      CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "ts", &className);                                                        CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(TS_COOKIE);                                                     CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryRegister"
@@ -23,7 +77,7 @@ int PetscDLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = TSRegisterAll(path);CHKERRQ(ierr);
+  ierr = TSInitializePackage(path);                                                                       CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -36,3 +90,4 @@ static char *contents = "PETSc timestepping library. \n\
 
 #include "src/sys/src/utils/dlregis.h"
 
+#endif /* PETSC_USE_DYNAMIC_LIBRARIES */

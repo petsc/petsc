@@ -6,6 +6,10 @@
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
+/* Logging support */
+int DA_COOKIE;
+int DAEvents[DA_MAX_EVENTS];
+
 #undef __FUNCT__  
 #define __FUNCT__ "DADestroy"
 /*@C

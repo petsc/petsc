@@ -15,9 +15,123 @@
 #endif
 #include "petscfix.h"
 
-extern PetscTruth PetscLogPrintInfo,PetscLogPrintInfoNull;
-extern int        PetscLogInfoFlags[];
-extern FILE       *PetscLogInfoFile;
+/*
+  The next three variables determine which, if any, PetscLogInfo() calls are used.
+  If PetscLogPrintInfo is zero, no info messages are printed. 
+  If PetscLogPrintInfoNull is zero, no info messages associated with a null object are printed.
+
+  If PetscLogInfoFlags[OBJECT_COOKIE - PETSC_COOKIE] is zero, no messages related
+  to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
+*/
+PetscTruth PetscLogPrintInfo     = 0;
+PetscTruth PetscLogPrintInfoNull = 0;
+int        PetscLogInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                                    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                                    1,1,1,1,1,1,1,1,1,1,1,1};
+FILE      *PetscLogInfoFile      = PETSC_NULL;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogInfoAllow"
+/*@C
+    PetscLogInfoAllow - Causes PetscLogInfo() messages to be printed to standard output.
+
+    Not Collective, each processor may call this seperately, but printing is only
+    turned on if the lowest processor number associated with the PetscObject associated
+    with the call to PetscLogInfo() has called this routine.
+
+    Input Parameter:
++   flag - PETSC_TRUE or PETSC_FALSE
+-   filename - optional name of file to write output to (defaults to stdout)
+
+    Options Database Key:
+.   -log_info - Activates PetscLogInfoAllow()
+
+    Level: advanced
+
+   Concepts: debugging^detailed runtime information
+   Concepts: dumping detailed runtime information
+
+.seealso: PetscLogInfo()
+@*/
+int PetscLogInfoAllow(PetscTruth flag, char *filename)
+{
+  char fname[256], tname[5];
+  int  rank;
+  int  ierr;
+
+  PetscFunctionBegin;
+  PetscLogPrintInfo     = flag;
+  PetscLogPrintInfoNull = flag;
+  if (flag && filename) {
+    ierr = PetscFixFilename(filename, fname);                                                             CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);                                                        CHKERRQ(ierr);
+    sprintf(tname, ".%d", rank);
+    ierr = PetscStrcat(fname, tname);                                                                     CHKERRQ(ierr);
+    ierr = PetscFOpen(PETSC_COMM_SELF, fname, "w", &PetscLogInfoFile);                                    CHKERRQ(ierr);
+    if (PetscLogInfoFile == PETSC_NULL) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
+  } else if (flag) {
+    PetscLogInfoFile = stdout;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogInfoDeactivateClass"
+/*@
+  PetscLogInfoDeactivateClass - Deactivates PlogInfo() messages for a PETSc object class.
+
+  Not Collective
+
+  Input Parameter:
+. objclass - The object class,  e.g., MAT_COOKIE, SNES_COOKIE, etc.
+
+  Notes:
+  One can pass 0 to deactivate all messages that are not associated with an object.
+
+  Level: developer
+
+.keywords: allow, information, printing, monitoring
+.seealso: PetscLogInfoActivateClass(), PetscLogInfo(), PetscLogInfoAllow()
+@*/
+int PetscLogInfoDeactivateClass(int objclass)
+{
+  PetscFunctionBegin;
+  if (objclass == 0) {
+    PetscLogPrintInfoNull = PETSC_FALSE;
+    PetscFunctionReturn(0); 
+  }
+  PetscLogInfoFlags[objclass - PETSC_COOKIE - 1] = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogInfoActivateClass"
+/*@
+  PetscLogInfoActivateClass - Activates PlogInfo() messages for a PETSc object class.
+
+  Not Collective
+
+  Input Parameter:
+. objclass - The object class, e.g., MAT_COOKIE, SNES_COOKIE, etc.
+
+  Notes:
+  One can pass 0 to activate all messages that are not associated with an object.
+
+  Level: developer
+
+.keywords: allow, information, printing, monitoring
+.seealso: PetscLogInfoDeactivateClass(), PetscLogInfo(), PetscLogInfoAllow()
+@*/
+int PetscLogInfoActivateClass(int objclass)
+{
+  PetscFunctionBegin;
+  if (objclass == 0) {
+    PetscLogPrintInfoNull = PETSC_TRUE;
+  } else {
+    PetscLogInfoFlags[objclass - PETSC_COOKIE - 1] = 1;
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
    If the option -log_history was used, then all printed PetscLogInfo() 
@@ -57,41 +171,44 @@ $
 
 .seealso: PetscLogInfoAllow()
 @*/
-int PetscLogInfo(void *vobj,const char message[],...)  
+int PetscLogInfo(void *vobj, const char message[], ...)  
 {
   va_list     Argp;
-  int         rank,urank,len,ierr;
+  int         rank,urank,len;
   PetscObject obj = (PetscObject)vobj;
   char        string[8*1024];
+  int         ierr;
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj);
-  if (!PetscLogPrintInfo) PetscFunctionReturn(0);
-  if (!PetscLogPrintInfoNull && !vobj) PetscFunctionReturn(0);
+  if (PetscLogPrintInfo == PETSC_FALSE) PetscFunctionReturn(0);
+  if ((PetscLogPrintInfoNull == PETSC_FALSE) && !vobj) PetscFunctionReturn(0);
   if (obj && !PetscLogInfoFlags[obj->cookie - PETSC_COOKIE - 1]) PetscFunctionReturn(0);
-  if (!obj) rank = 0;
-  else      {ierr = MPI_Comm_rank(obj->comm,&rank);CHKERRQ(ierr);} 
+  if (!obj) {
+    rank = 0;
+  } else {
+    ierr = MPI_Comm_rank(obj->comm, &rank);                                                               CHKERRQ(ierr);
+  }
   if (rank) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&urank);CHKERRQ(ierr);
-  va_start(Argp,message);
-  sprintf(string,"[%d]",urank); 
-  ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);                                                           CHKERRQ(ierr);
+  va_start(Argp, message);
+  sprintf(string, "[%d]", urank); 
+  ierr = PetscStrlen(string, &len);                                                                       CHKERRQ(ierr);
 #if defined(HAVE_VPRINTF_CHAR)
-  vsprintf(string+len,message,(char *)Argp);
+  vsprintf(string+len, message, (char *) Argp);
 #else
-  vsprintf(string+len,message,Argp);
+  vsprintf(string+len, message, Argp);
 #endif
-  fprintf(PetscLogInfoFile,"%s",string);
+  fprintf(PetscLogInfoFile, "%s", string);
   fflush(PetscLogInfoFile);
   if (petsc_history) {
 #if defined(HAVE_VPRINTF_CHAR)
-    vfprintf(petsc_history,message,(char *)Argp);
+    vfprintf(petsc_history, message, (char *) Argp);
 #else
-    vfprintf(petsc_history,message,Argp);
+    vfprintf(petsc_history, message, Argp);
 #endif
   }
   va_end(Argp);
   PetscFunctionReturn(0);
 }
-

@@ -4,12 +4,12 @@ static char vcid[] = "$Id: vecregall.c,v 1.5 1999/06/07 17:17:56 knepley Exp $";
 
 #include "src/vec/vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
-extern int VecCreate_Seq(Vec, ParameterDict);
-extern int VecCreate_MPI(Vec, ParameterDict);
-extern int VecCreate_Shared(Vec, ParameterDict);
-extern int VecCreate_FETI(Vec, ParameterDict);
-extern int VecCreate_ESI(Vec, ParameterDict);
-extern int VecCreate_PetscESI(Vec, ParameterDict);
+extern int VecCreate_Seq(Vec);
+extern int VecCreate_MPI(Vec);
+extern int VecCreate_Shared(Vec);
+extern int VecCreate_FETI(Vec);
+extern int VecCreate_ESI(Vec);
+extern int VecCreate_PetscESI(Vec);
 
 extern int VecSerialize_Seq(MPI_Comm, Vec *, PetscViewer, PetscTruth);
 extern int VecSerialize_MPI(MPI_Comm, Vec *, PetscViewer, PetscTruth);

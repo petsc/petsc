@@ -1,6 +1,7 @@
 /* $Id: ts.c,v 1.43 2001/09/07 20:12:01 bsmith Exp $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
+int TS_COOKIE;
 int TSEvents[TS_MAX_EVENTS];
 
 #undef __FUNCT__  
@@ -48,12 +49,12 @@ int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg
     SETERRQ(PETSC_ERR_ARG_WRONG,"For TS_NONLINEAR only");
   }
   if (ts->ops->rhsjacobian) {
-    ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
+    ierr = TSLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
     *flg = DIFFERENT_NONZERO_PATTERN;
     PetscStackPush("TS user Jacobian function");
     ierr = (*ts->ops->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
     PetscStackPop;
-    ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
+    ierr = TSLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
     /* make sure user returned a correct Jacobian and preconditioner */
     PetscValidHeaderSpecific(*A,MAT_COOKIE);
     PetscValidHeaderSpecific(*B,MAT_COOKIE);  
@@ -85,7 +86,7 @@ int TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
   PetscValidHeader(x);
   PetscValidHeader(y);
 
-  ierr = PetscLogEventBegin(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
+  ierr = TSLogEventBegin(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
   if (ts->ops->rhsfunction) {
     PetscStackPush("TS user right-hand-side function");
     ierr = (*ts->ops->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
@@ -102,7 +103,7 @@ int TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 
   /* apply user-provided boundary conditions (only needed if these are time dependent) */
   ierr = TSComputeRHSBoundaryConditions(ts,t,y);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
+  ierr = TSLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -674,8 +675,12 @@ int TSCreate(MPI_Comm comm, TSProblemType problemtype, TS *ts)
   int ierr;
 
   PetscFunctionBegin;
-  *ts = PETSC_NULL;
   PetscValidPointer(ts);
+  *ts = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = TSInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+#endif
+
   PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_COOKIE, -1, "TS", comm, TSDestroy, TSView);
   PetscLogObjectCreate(t);
   PetscLogObjectMemory(t, sizeof(struct _p_TS));
@@ -1364,11 +1369,11 @@ int TSStep(TS ts,int *steps,PetscReal *ptime)
     ierr = TSSetUp(ts);                                                                                   CHKERRQ(ierr);
   }
 
-  TSLogEventBegin(TS_Step, ts, 0, 0, 0);
+  ierr = TSLogEventBegin(TS_Step, ts, 0, 0, 0);                                                           CHKERRQ(ierr);
   ierr = (*ts->ops->prestep)(ts);                                                                         CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts, steps, ptime);                                                              CHKERRQ(ierr);
   ierr = (*ts->ops->poststep)(ts);                                                                        CHKERRQ(ierr);
-  TSLogEventEnd(TS_Step, ts, 0, 0, 0);
+  ierr = TSLogEventEnd(TS_Step, ts, 0, 0, 0);                                                             CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);                                               CHKERRQ(ierr);
   if ((opt == PETSC_TRUE) && !PetscPreLoadingOn) {

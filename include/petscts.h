@@ -18,8 +18,6 @@
 S*/
 typedef struct _p_TS* TS;
 
-#define TS_COOKIE PETSC_COOKIE+18
-
 /*E
     TSType - String with the name of a PETSc TS method or the creation function
        with an optional dynamic library name, for example
@@ -49,15 +47,13 @@ E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 /* Logging support */
-#if PETSC_USE_NEW_LOGGING
 extern int TS_COOKIE;
-enum {TS_Step, TS_PseudoComputeTimeStep, TS_MAX_EVENTS};
-#else
-enum {Crap_TS_Step, Crap_TS_PseudoComputeTimeStep, TS_MAX_EVENTS};
-#endif
+enum {TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval, TS_MAX_EVENTS};
 extern int TSEvents[TS_MAX_EVENTS];
 #define TSLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(TSEvents[e],o1,o2,o3,o4)
 #define TSLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(TSEvents[e],o1,o2,o3,o4)
+
+EXTERN int TSInitializePackage(char *);
 
 EXTERN int TSCreate(MPI_Comm,TSProblemType,TS*);
 EXTERN int TSSetType(TS,TSType);

@@ -6,7 +6,7 @@
 #define __PETSCDRAW_H
 #include "petsc.h"
 
-#define PETSC_DRAW_COOKIE PETSC_COOKIE+6
+extern int PETSC_DRAW_COOKIE;
 
 /*E
     PetscDrawType - String with the name of a PetscDraw 
@@ -191,7 +191,8 @@ EXTERN int PetscDrawViewPortsSet(PetscDrawViewPorts*,int);
 S*/
 typedef struct _p_DrawAxis* PetscDrawAxis;
 
-#define DRAWAXIS_COOKIE PETSC_COOKIE+16
+extern int DRAWAXIS_COOKIE;
+
 EXTERN int PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
 EXTERN int PetscDrawAxisDestroy(PetscDrawAxis);
 EXTERN int PetscDrawAxisDraw(PetscDrawAxis);
@@ -210,7 +211,8 @@ EXTERN int PetscDrawAxisSetLabels(PetscDrawAxis,char*,char*,char*);
 S*/
 typedef struct _p_DrawLG*   PetscDrawLG;
 
-#define DRAWLG_COOKIE PETSC_COOKIE+7
+extern int DRAWLG_COOKIE;
+
 EXTERN int PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
 EXTERN int PetscDrawLGDestroy(PetscDrawLG);
 EXTERN int PetscDrawLGAddPoint(PetscDrawLG,PetscReal*,PetscReal*);
@@ -235,7 +237,8 @@ EXTERN int PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscR
 S*/
 typedef struct _p_DrawSP*   PetscDrawSP;
 
-#define DRAWSP_COOKIE PETSC_COOKIE+27
+extern int DRAWSP_COOKIE;
+
 EXTERN int PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
 EXTERN int PetscDrawSPDestroy(PetscDrawSP);
 EXTERN int PetscDrawSPAddPoint(PetscDrawSP,PetscReal*,PetscReal*);
@@ -258,7 +261,8 @@ EXTERN int PetscDrawSPSetLimits(PetscDrawSP,PetscReal,PetscReal,PetscReal,PetscR
 S*/
 typedef struct _p_DrawHG*   PetscDrawHG;
 
-#define DRAWHG_COOKIE PETSC_COOKIE+15
+extern int DRAWHG_COOKIE;
+
 EXTERN int PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
 EXTERN int PetscDrawHGDestroy(PetscDrawHG);
 EXTERN int PetscDrawHGAddValue(PetscDrawHG,PetscReal);

@@ -6,8 +6,6 @@
 #define __PETSCMAT_H
 #include "petscvec.h"
 
-#define MAT_COOKIE         PETSC_COOKIE+5
-
 /*S
      Mat - Abstract PETSc matrix object
 
@@ -55,28 +53,24 @@ typedef char* MatType;
 #define MAT_SER_MPIAIJ_BINARY "mpiaij_binary"
 typedef char *MatSerializeType;
 
-#ifdef PETSC_USE_NEW_LOGGING
 /* Logging support */
 extern int MAT_COOKIE;
 extern int MAT_FDCOLORING_COOKIE;
-extern int MATPARTITIONING_COOKIE;
-enum {MAT_Mult, MAT_MultMultiple, MAT_MultConstrained, MAT_MultTrans, MAT_MultAdd, MAT_MultTransAdd, MAT_MultMatrixFree,
-      MAT_Solve, MAT_SolveMultiple, MAT_SolveAdd, MAT_SolveTrans, MAT_SolveTransAdd, MAT_Relax, MAT_ForwardSolve,
-      MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic, MAT_LUFactorNumeric, MAT_CholeskyFactor,
-      MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor, MAT_ILUFactorSymbolic,
-      MAT_IncompleteCholeskyFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin, MAT_AssemblyEnd,
-      MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_IncreaseOverlap,
-      MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_MAX_EVENTS};
+extern int MAT_PARTITIONING_COOKIE;
+extern int MAT_NULLSPACE_COOKIE;
+enum {MAT_Mult, MAT_MultMatrixFree, MAT_MultMultiple, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose,
+      MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_SolveMultiple, MAT_SolveAdd, MAT_SolveTranspose,
+      MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic,
+      MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor,
+      MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin,
+      MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering,
+      MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate,
+      MAT_FDColoringApply, MAT_MAX_EVENTS};
 extern int MatEvents[MAT_MAX_EVENTS];
 #define MatLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(MatEvents[e],o1,o2,o3,o4)
 #define MatLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(MatEvents[e],o1,o2,o3,o4)
 
-#else
-
-enum {MAT_MultConstrained};
-#define MatLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(e,o1,o2,o3,o4)
-#define MatLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(e,o1,o2,o3,o4)
-#endif
+EXTERN int MatInitializePackage(char *);
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 EXTERN int MatSetType(Mat,MatType);
@@ -604,7 +598,6 @@ extern PetscTruth MatColoringRegisterAllCalled;
 EXTERN int        MatColoringRegisterDestroy(void);
 EXTERN int        MatColoringPatch(Mat,int,int,int *,ISColoring*);
 
-#define MAT_FDCOLORING_COOKIE PETSC_COOKIE + 23
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences
         and coloring
@@ -634,7 +627,6 @@ EXTERN int MatFDColoringSetF(MatFDColoring,Vec);
     These routines are for partitioning matrices: currently used only 
   for adjacency matrix, MatCreateMPIAdj().
 */
-#define MATPARTITIONING_COOKIE PETSC_COOKIE + 25
 
 /*S
      MatPartitioning - Object for managing the partitioning of a matrix or graph
@@ -657,8 +649,8 @@ typedef struct _p_MatPartitioning *MatPartitioning;
 .seealso: MatPartitioingCreate(), MatPartitioning
 E*/
 typedef char* MatPartitioningType;
-#define MATPARTITIONING_CURRENT  "current"
-#define MATPARTITIONING_PARMETIS "parmetis"
+#define MAT_PARTITIONING_CURRENT  "current"
+#define MAT_PARTITIONING_PARMETIS "parmetis"
 
 EXTERN int MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 EXTERN int MatPartitioningSetType(MatPartitioning,MatPartitioningType);
@@ -829,8 +821,6 @@ EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
 .seealso:  MatNullSpaceCreate()
 S*/
 typedef struct _p_MatNullSpace* MatNullSpace;
-
-#define MATNULLSPACE_COOKIE    PETSC_COOKIE+17
 
 EXTERN int MatNullSpaceCreate(MPI_Comm,int,int,Vec *,MatNullSpace*);
 EXTERN int MatNullSpaceDestroy(MatNullSpace);

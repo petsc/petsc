@@ -2,6 +2,9 @@
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
+/* Logging support */
+int MAT_PARTITIONING_COOKIE;
+
 /*
    Simplest partitioning, keeps the current partitioning.
 */
@@ -101,7 +104,7 @@ PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;
    Not Collective
 
    Input Parameters:
-+  sname - name of partitioning (for example MATPARTITIONING_CURRENT) or parmetis
++  sname - name of partitioning (for example MAT_PARTITIONING_CURRENT) or parmetis
 .  path - location of library where creation routine is 
 .  name - name of function that creates the partitioning type, a string
 -  function - function pointer that creates the partitioning type
@@ -231,13 +234,13 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(matp,MATPARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(matp,MAT_PARTITIONING_COOKIE);
   if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (matp->adj->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!matp->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
-  ierr = PetscLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
+  ierr = MatLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
+  ierr = MatLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_partitioning_view",&flag);CHKERRQ(ierr);
   if (flag) {
@@ -268,7 +271,7 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 int MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
   PetscValidHeaderSpecific(adj,MAT_COOKIE);
   part->adj = adj;
   PetscFunctionReturn(0);
@@ -295,7 +298,7 @@ int MatPartitioningDestroy(MatPartitioning part)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
   if (--part->refct > 0) PetscFunctionReturn(0);
 
   if (part->ops->destroy) {
@@ -335,7 +338,7 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
 
   if (part->vertex_weights){
     ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
@@ -373,7 +376,7 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   PetscFunctionBegin;
   *newp          = 0;
 
-  PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MATPARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
+  PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
                     MatPartitioningView);
   PetscLogObjectCreate(part);
   part->type           = -1;
@@ -419,7 +422,7 @@ int MatPartitioningView(MatPartitioning part,PetscViewer viewer)
   MatPartitioningType name;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(part->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   PetscCheckSameComm(part,viewer);
@@ -473,7 +476,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
   PetscTruth match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE);
   PetscValidCharPointer(type);
 
   ierr = PetscTypeCompare((PetscObject)part,type,&match);CHKERRQ(ierr);
@@ -531,9 +534,9 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
   ierr = PetscOptionsBegin(part->comm,part->prefix,"Partitioning options","MatOrderings");CHKERRQ(ierr);
     if (!part->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)
-      def = MATPARTITIONING_PARMETIS;
+      def = MAT_PARTITIONING_PARMETIS;
 #else
-      def = MATPARTITIONING_CURRENT;
+      def = MAT_PARTITIONING_CURRENT;
 #endif
     } else {
       def = part->type_name;

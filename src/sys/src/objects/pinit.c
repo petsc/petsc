@@ -6,6 +6,8 @@
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
 
+EXTERN int PetscLogBegin_Private(void);
+
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
@@ -13,13 +15,9 @@ extern FILE *petsc_history;
 EXTERN int PetscInitialize_DynamicLibraries(void);
 EXTERN int PetscFinalize_DynamicLibraries(void);
 EXTERN int PetscFListDestroyAll(void);
-EXTERN int PetscLogEventRegisterDestroy_Private(void);
-EXTERN int PetscLogStageDestroy_Private(void);
 EXTERN int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 EXTERN int PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 EXTERN int PetscLogCloseHistoryFile(FILE **);
-
-#include "petscsnes.h" /* so that cookies are defined */
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 int __gierr = 0;
@@ -35,7 +33,6 @@ int PetscOptionsCheckInitial_Components(void)
   MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1;
   int        ierr;
-  char       *f,mname[256];
 
   PetscFunctionBegin;
   /*
@@ -51,54 +48,6 @@ int PetscOptionsCheckInitial_Components(void)
     ierr = PetscStackPublish();CHKERRQ(ierr);
   }
 #endif
-
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStrstr(mname,"vec",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscLogInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(mname,"mat",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscLogInfoDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(mname,"sles",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscLogInfoDeactivateClass(SLES_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(mname,"snes",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscLogInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscOptionsGetString(PETSC_NULL,"-log_summary_exclude",mname,256,&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscStrstr(mname,"vec",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscLogEventDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(mname,"mat",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscLogEventDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(mname,"sles",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscLogEventDeactivateClass(SLES_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(mname,"snes",&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = PetscLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
-    }
-  }
-    
-  ierr = PetscOptionsHasName(PETSC_NULL,"-log_sync",&flg1);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscLogEventActivate(VEC_ScatterBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_NormBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_DotBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_MDotBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_ReduceBarrier);CHKERRQ(ierr);
-  }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
   if (flg1) {
@@ -372,17 +321,17 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 #endif
 
   /*
-       Create the PETSc MPI reduction operator that sums of the first
+     Create the PETSc MPI reduction operator that sums of the first
      half of the entries and maxes the second half.
   */
   ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);CHKERRQ(ierr);
-
   /*
-        Build the options database and check for user setup requests
+     Build the options database and check for user setup requests
   */
   ierr = PetscOptionsInsert(argc,args,file);CHKERRQ(ierr);
+
   /*
-      Print main application help message
+     Print main application help message
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (help && flg) {
@@ -390,23 +339,26 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   }
   ierr = PetscOptionsCheckInitial();CHKERRQ(ierr); 
 
+  /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we od not print it out */
+  ierr = PetscLogBegin_Private();CHKERRQ(ierr);
+
   /*
-       Initialize PETSC_COMM_SELF and WORLD as a MPI_Comm with the PETSc attribute.
+     Initialize PETSC_COMM_SELF and WORLD as a MPI_Comm with the PETSc attribute.
     
-       We delay until here to do it, since PetscMalloc() may not have been
+     We delay until here to do it, since PetscMalloc() may not have been
      setup before this.
   */
   ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
   ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);CHKERRQ(ierr);
 
   /*
-      Load the dynamic libraries (on machines that support them), this registers all
-    the solvers etc. (On non-dynamic machines this initializes the PetscDraw and PetscViewer classes)
+     Load the dynamic libraries (on machines that support them), this registers all
+     the solvers etc. (On non-dynamic machines this initializes the PetscDraw and PetscViewer classes)
   */
   ierr = PetscInitialize_DynamicLibraries();CHKERRQ(ierr);
 
   /*
-      Initialize all the default viewers
+     Initialize all the default viewers
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   PetscLogInfo(0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size);
@@ -592,11 +544,6 @@ int PetscFinalize(void)
        Free all the registered create functions, such as KSPList, VecList, SNESList, etc
   */
   ierr = PetscFListDestroyAll();CHKERRQ(ierr); 
-
-#if defined(PETSC_USE_LOG)
-  ierr = PetscLogEventRegisterDestroy_Private();CHKERRQ(ierr);
-  ierr = PetscLogStageDestroy_Private();CHKERRQ(ierr);
-#endif
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-trdump",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-trinfo",&flg2);CHKERRQ(ierr);

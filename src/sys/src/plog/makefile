@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-SOURCEC	  = plog.c plogmpe.c ploginfo.c mpitr.c
+SOURCEC	  = plog.c plogmpe.c ploginfo.c mpitr.c classLog.c stageLog.c eventLog.c
 SOURCEF	  =
 SOURCEH	  = ptime.h ../../../../include/petsclog.h
-OBJSC	  = plog.o plogmpe.o ploginfo.o mpitr.o
+OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetsc

@@ -6,8 +6,6 @@
 #define __PETSCKSP_H
 #include "petscpc.h"
 
-#define KSP_COOKIE  PETSC_COOKIE+8
-
 /*S
      KSP - Abstract PETSc object that manages all Krylov methods
 
@@ -45,6 +43,13 @@ E*/
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
 typedef char * KSPType;
+
+/* Logging support */
+extern int KSP_COOKIE;
+enum {KSP_GMRESOrthogonalization, KSP_MAX_EVENTS};
+extern int KSPEvents[KSP_MAX_EVENTS];
+#define KSPLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(KSPEvents[e],o1,o2,o3,o4)
+#define KSPLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(KSPEvents[e],o1,o2,o3,o4)
 
 EXTERN int KSPCreate(MPI_Comm,KSP *);
 EXTERN int KSPSetType(KSP,KSPType);

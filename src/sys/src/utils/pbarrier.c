@@ -2,6 +2,8 @@
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
+int PetscEvents[PETSC_MAX_EVENTS];
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBarrier"
 /*@C
@@ -27,14 +29,14 @@ int PetscBarrier(PetscObject obj)
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj); 
-  ierr = PetscLogEventBegin(Petsc_Barrier,obj,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PetscEvents[PETSC_Barrier],obj,0,0,0);CHKERRQ(ierr);
   if (obj) {
     ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   } else {
     comm = PETSC_COMM_WORLD;
   }
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Petsc_Barrier,obj,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PetscEvents[PETSC_Barrier],obj,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

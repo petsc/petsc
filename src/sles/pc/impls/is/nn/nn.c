@@ -549,7 +549,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   PC_IS*         pcis     = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
+  ierr = PCLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
 
   if (u) { 
     if (!vec3_B) { vec3_B = u; }
@@ -600,7 +600,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   }
   ierr = VecScatterBegin(vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
+  ierr = PCLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

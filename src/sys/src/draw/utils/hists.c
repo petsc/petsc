@@ -6,6 +6,8 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
+int DRAWHG_COOKIE;
+
 struct _p_DrawHG {
   PETSCHEADER(int) 
   int           (*destroy)(PetscDrawSP);
@@ -285,7 +287,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
   PetscReal xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
   char      title[256];
   char      xlabel[256];
-  int       numBins,numBinsOld,numValues,initSize,i,p,ierr,bcolor,color,rank;
+  int       numBins,numBinsOld,numValues,initSize,i,p,ierr,bcolor,color;
 
   PetscFunctionBegin;
   if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);

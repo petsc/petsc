@@ -3,7 +3,12 @@
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
 PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
-PetscFList      SNESList = 0;
+PetscFList SNESList              = PETSC_NULL;
+
+/* Logging support */
+int SNES_COOKIE;
+int MATSNESMFCTX_COOKIE;
+int SNESEvents[SNES_MAX_EVENTS];
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetProblemType"
@@ -622,7 +627,12 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   SNES_KSP_EW_ConvCtx *kctx;
 
   PetscFunctionBegin;
-  *outsnes = 0;
+  PetscValidPointer(outsnes);
+  *outsnes = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = SNESInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
+#endif
+
   if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS){
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"incorrect method type"); 
   }
@@ -788,12 +798,12 @@ int SNESComputeFunction(SNES snes,Vec x,Vec y)
     SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
   }
 
-  ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
+  ierr = SNESLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscStackPush("SNES user function");
   ierr = (*snes->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
   PetscStackPop;
   snes->nfuncs++;
-  ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
+  ierr = SNESLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -885,12 +895,12 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,PetscReal *y)
     SETERRQ(PETSC_ERR_ARG_WRONG,"Only for SNES_UNCONSTRAINED_MINIMIZATION");
   }
 
-  ierr = PetscLogEventBegin(SNES_MinimizationFunctionEval,snes,x,y,0);CHKERRQ(ierr);
+  ierr = SNESLogEventBegin(SNES_MinimizationFunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscStackPush("SNES user minimzation function");
   ierr = (*snes->computeumfunction)(snes,x,y,snes->umfunP);CHKERRQ(ierr);
   PetscStackPop;
   snes->nfuncs++;
-  ierr = PetscLogEventEnd(SNES_MinimizationFunctionEval,snes,x,y,0);CHKERRQ(ierr);
+  ierr = SNESLogEventEnd(SNES_MinimizationFunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -987,11 +997,11 @@ int SNESComputeGradient(SNES snes,Vec x,Vec y)
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
-  ierr = PetscLogEventBegin(SNES_GradientEval,snes,x,y,0);CHKERRQ(ierr);
+  ierr = SNESLogEventBegin(SNES_GradientEval,snes,x,y,0);CHKERRQ(ierr);
   PetscStackPush("SNES user gradient function");
   ierr = (*snes->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
   PetscStackPop;
-  ierr = PetscLogEventEnd(SNES_GradientEval,snes,x,y,0);CHKERRQ(ierr);
+  ierr = SNESLogEventEnd(SNES_GradientEval,snes,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1041,12 +1051,12 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
     SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
   }
   if (!snes->computejacobian) PetscFunctionReturn(0);
-  ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
+  ierr = SNESLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   *flg = DIFFERENT_NONZERO_PATTERN;
   PetscStackPush("SNES user Jacobian function");
   ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP);CHKERRQ(ierr);
   PetscStackPop;
-  ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
+  ierr = SNESLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
   PetscValidHeaderSpecific(*A,MAT_COOKIE);
   PetscValidHeaderSpecific(*B,MAT_COOKIE);  
@@ -1104,12 +1114,12 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
     SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
   if (!snes->computejacobian) PetscFunctionReturn(0);
-  ierr = PetscLogEventBegin(SNES_HessianEval,snes,x,*A,*B);CHKERRQ(ierr);
+  ierr = SNESLogEventBegin(SNES_HessianEval,snes,x,*A,*B);CHKERRQ(ierr);
   *flag = DIFFERENT_NONZERO_PATTERN;
   PetscStackPush("SNES user Hessian function");
   ierr = (*snes->computejacobian)(snes,x,A,B,flag,snes->jacP);CHKERRQ(ierr);
   PetscStackPop;
-  ierr = PetscLogEventEnd(SNES_HessianEval,snes,x,*A,*B);CHKERRQ(ierr);
+  ierr = SNESLogEventEnd(SNES_HessianEval,snes,x,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
   PetscValidHeaderSpecific(*A,MAT_COOKIE);
   PetscValidHeaderSpecific(*B,MAT_COOKIE);  
@@ -2171,10 +2181,10 @@ int SNESSolve(SNES snes,Vec x,int *its)
   if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
   if (snes->conv_hist_reset == PETSC_TRUE) snes->conv_hist_len = 0;
-  ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
+  ierr = SNESLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->nfailures = 0;
   ierr = (*(snes)->solve)(snes,its);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
+  ierr = SNESLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);

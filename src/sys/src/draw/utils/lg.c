@@ -8,6 +8,8 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
+int DRAWLG_COOKIE;
+
 struct _p_DrawLG {
   PETSCHEADER(int) 
   int           (*destroy)(PetscDrawLG);
