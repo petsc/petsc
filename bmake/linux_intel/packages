@@ -37,9 +37,8 @@ PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 # MUMPS (requires SCALAPACK & BLACS)
 # Note: BLACS has cross links between libraries - so hast to be listed twice.
 #
-MUMPS_INCLUDE    = -I/home/petsc/soft/linux-rh73-intel/MUMPS_4.3/include
-#MUMPS_INCLUDE    = -I/home/petsc/soft/linux-rh73-intel/MUMPS_4.2_beta/include
-MUMPS_LIB        = -L/home/petsc/soft/linux-rh73-intel/MUMPS_4.3/lib -lzmumps -ldmumps -lpord -L/home/petsc/soft/linux-rh73-intel/SCALAPACK -lscalapack  -L/home/petsc/soft/linux-rh73-intel/BLACS/LIB -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0 -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0
+MUMPS_INCLUDE    = -I/home/petsc/soft/linux-rh73-intel/MUMPS_4.3.1/include
+MUMPS_LIB        = -L/home/petsc/soft/linux-rh73-intel/MUMPS_4.3.1/lib -lzmumps -ldmumps -lpord -L/home/petsc/soft/linux-rh73-intel/SCALAPACK -lscalapack  -L/home/petsc/soft/linux-rh73-intel/BLACS/LIB -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0 -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0
 PETSC_HAVE_MUMPS = -DPETSC_HAVE_MUMPS 
 #
 # SuperLU_DIST
@@ -49,3 +48,8 @@ SUPERLU_DIST_INCLUDE    = -I/home/petsc/soft/linux-rh73-intel/SuperLU_DIST_2.0/S
 SUPERLU_DIST_LIB        = /home/petsc/soft/linux-rh73-intel/SuperLU_DIST_2.0/superlu_linux-intel-g.a
 PETSC_HAVE_SUPERLU_DIST = -DPETSC_HAVE_SUPERLU_DIST
 #
+# SPOOLES, SPOOLES_MPI
+#
+SPOOLES_INCLUDE       = -I/home/petsc/soft/linux-rh73-intel/spooles-2.2
+SPOOLES_LIB           = /home/petsc/soft/linux-rh73-intel/spooles-2.2/MPI/src/spoolesMPI.a /home/petsc/soft/linux-rh73-intel/spooles-2.2/spooles.a
+PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
