@@ -1,12 +1,12 @@
-
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.8 1995/10/12 20:05:46 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.9 1995/10/12 21:19:42 curfman Exp curfman $";
 #endif
 
 static char help[] = 
-"Reads a PETSc matrix in from a file and solves linear system with it.\n\
+"Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\
-  -f <input_file> : file to load.  Use mat.ex.binary for 5X5 5-pt. stencil\n\n";
+  -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
+                    use the file petsc/src/mat/examples/mat.ex.binary\n\n";
 
 #include "draw.h"
 #include "mat.h"
@@ -27,7 +27,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,0,help);
 
-/*   Read in matrix and RHS   */
+  /* Read matrix and RHS */
   OptionsGetString(0,"-f",file,127);
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
@@ -36,21 +36,20 @@ int main(int argc,char **args)
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
 
-/*   Set up solution   */
+  /* Set up solution */
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecSet(&zero,x); CHKERRA(ierr);
 
-/*   Solve system    */
+  /* Solve system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   time = MPI_Wtime();
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   time = MPI_Wtime()-time;
 
-
-/*   Show result   */
+  /* Show result */
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u); CHKERRA(ierr);
   ierr = VecNorm(u,&norm); CHKERRA(ierr);
@@ -58,7 +57,7 @@ int main(int argc,char **args)
   MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
   MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f\n",time);
 
-/*   cleanup   */
+  /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);
