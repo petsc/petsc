@@ -255,8 +255,37 @@ extern  PetscErrorCode __gierr;
 #define ___  CHKERRQ(__gierr);
 #endif
 
+#define               PETSC_EXCEPTIONS_MAX  256
+extern PetscErrorCode PetscErrorUncatchable[PETSC_EXCEPTIONS_MAX];
+extern PetscInt       PetscErrorUncatchableCount;
+extern PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX];
+extern PetscInt       PetscExceptionsCount;
+
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
-EXTERN void PETSC_DLLEXPORT PetscExceptionPop();
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
+EXTERN void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
+
+static inline PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr) {
+                           PetscInt i;
+                           if (xierr != zierr) return PETSC_FALSE;
+                           for (i=0; i<PetscErrorUncatchableCount; i++) {
+                             if (PetscErrorUncatchable[i] == zierr) {
+                               return PETSC_FALSE;
+                             }
+                           }
+                           return PETSC_TRUE;
+                         }          
+
+
+static inline PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
+                           PetscInt i;
+                           for (i=0; i<PetscExceptionsCount; i++) {
+                             if (PetscExceptions[i] == zierr) {
+                               return PETSC_TRUE;
+                             }
+                           }
+                           return PETSC_FALSE;
+                         }
 
 /*MC
    PetscExceptionTry1 - Runs the routine, causing a particular error code to be treated as an exception,
@@ -280,7 +309,7 @@ EXTERN void PETSC_DLLEXPORT PetscExceptionPop();
           CHKERRQ()
 M*/
 extern PetscErrorCode PetscExceptionTmp;
-#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(),PetscExceptionTmp)
+#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTmp)
 
 #else
 #define SETERRQ(n,s) ;

@@ -767,10 +767,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscStackPush("SNES user function");
   ierr = (*snes->computefunction)(snes,x,y,snes->funP);
   PetscStackPop;
-  if (ierr) {
+  if (PetscExceptionValue(ierr)) {
     PetscErrorCode pierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(pierr);
-    CHKERRQ(ierr);
   }
+  CHKERRQ(ierr);
   if (snes->afine) {
     PetscScalar mone = -1.0;
     ierr = VecAXPY(&mone,snes->afine,y);CHKERRQ(ierr);
@@ -1699,9 +1699,9 @@ static const char *convergedreasons[] = {"appears to located a local minimum ins
                                          "function norm became NaN (not a number)",              
                                          "not currently used",                                   
                                          "number of function computations exceeded",             
-                                         "not currently used",                                   
+                                         "arguments to user function are not in domain",
                                          "still iterating",
-                                         "not currently used",
+                                         "not currently used",                                   
                                          "absolute size of function norm",
                                          "relative decrease in function norm",
                                          "step size is small",
@@ -1749,11 +1749,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec x)
   if (snes->conv_hist_reset) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
-  ierr = (*(snes)->solve)(snes);
-  if (ierr) {
+
+  ierr = PetscExceptionTry1((*(snes)->solve)(snes),PETSC_ERR_ARG_DOMAIN);
+  if (PetscExceptionValue(ierr)) {
+    /* this means that a caller above me has also tryed this exception so I don't handle it here */
     PetscErrorCode pierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(pierr);
-    CHKERRQ(ierr);
-  }
+  } else if (PetscExceptionCaught(ierr,PETSC_ERR_ARG_DOMAIN)) {
+    /* translate exception into SNES not converged reason */
+    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+  } else CHKERRQ(ierr);
+
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_(snes->comm));CHKERRQ(ierr); }

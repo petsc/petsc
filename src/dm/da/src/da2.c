@@ -1304,11 +1304,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
   ierr = DAVecGetArray(da,vfu,&fu);CHKERRQ(ierr);
 
   ierr = (*da->lf)(&info,u,fu,w);
-  if (ierr) {
+  if (PetscExceptionValue(ierr)) {
     PetscErrorCode pierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(pierr);
     pierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(pierr);
-    CHKERRQ(ierr);
   }
+  CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);

@@ -106,7 +106,7 @@ int main(int argc,char **args)
     ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
 
     ierr = PetscExceptionTry1(VecLoad(fd,PETSC_NULL,&b),PETSC_ERR_FILE_READ);
-    if (ierr == PETSC_ERR_FILE_READ) { /* if file contains no RHS, then use a vector of all ones */
+    if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_READ)) { /* if file contains no RHS, then use a vector of all ones */
       PetscInt    m;
       PetscScalar one = 1.0;
       ierr = PetscLogInfo((0,"Using vector of ones for RHS\n"));CHKERRQ(ierr);

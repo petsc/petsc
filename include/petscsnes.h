@@ -251,6 +251,7 @@ typedef enum {/* converged */
               SNES_CONVERGED_PNORM_RELATIVE    =  4, /* step size small */
               SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */
+              SNES_DIVERGED_FUNCTION_DOMAIN    = -1,  
               SNES_DIVERGED_FUNCTION_COUNT     = -2,  
               SNES_DIVERGED_FNORM_NAN          = -4, 
               SNES_DIVERGED_MAX_IT             = -5,

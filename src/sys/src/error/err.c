@@ -229,11 +229,45 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],c
   PetscFunctionReturn(0);
 }
 
-#define        PETSC_EXCEPTIONS_MAX                    256
-PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX] = {0};
-PetscInt       PetscExceptionsCount                  = 0;
-PetscErrorCode PetscExceptionTmp                     = 0;
+PetscErrorCode PetscErrorUncatchable[PETSC_EXCEPTIONS_MAX] = {0};
+PetscInt       PetscErrorUncatchableCount                  = 0;
+PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX]       = {0};
+PetscInt       PetscExceptionsCount                        = 0;
+PetscErrorCode PetscExceptionTmp                           = 0;
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorIsCatchable" 
+static PetscTruth PetscErrorIsCatchable(PetscErrorCode err)
+{
+  PetscInt i;
+  for (i=0; i<PetscErrorUncatchableCount; i++) {
+    if (err == PetscErrorUncatchable[i]) return PETSC_FALSE;
+  }
+  return PETSC_TRUE;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorSetCatchable" 
+PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTruth flg)
+{
+  PetscFunctionBegin;
+  if (!flg && PetscErrorIsCatchable(err)) {
+    /* add to list of uncatchable */
+    if (PetscErrorUncatchableCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_ERR_PLIB,"Stack for PetscErrorUncatchable is overflowed, recompile \nsrc/sys/srcd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
+    PetscErrorUncatchable[PetscErrorUncatchableCount++] = err;
+  } else if (flg && !PetscErrorIsCatchable(err)) {
+    /* remove from list of uncatchable */
+    PetscInt i;
+    for (i=0; i<PetscErrorUncatchableCount; i++) {
+      if (PetscErrorUncatchable[i] == err) break;
+    }
+    for (;i<PetscErrorUncatchableCount; i++) {
+      PetscErrorUncatchable[i] = PetscErrorUncatchable[i+1];
+    }
+    PetscErrorUncatchableCount--;
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscExceptionPush" 
@@ -241,16 +275,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err)
 {
   PetscFunctionBegin;
   if (PetscExceptionsCount >= PETSC_EXCEPTIONS_MAX) SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is overflowed, recompile \nsrc/sys/srcd/error/err.c with a larger value for PETSC_EXCEPTIONS_MAX");
-  PetscExceptions[PetscExceptionsCount++] = err;
+  if (PetscErrorIsCatchable(err)) PetscExceptions[PetscExceptionsCount++] = err;
   PetscFunctionReturn(0);   
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscExceptionPop" 
-void PETSC_DLLEXPORT PetscExceptionPop()
+void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
 {
   /* if (PetscExceptionsCount <= 0)SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is empty"); */
-  PetscExceptionsCount--;
+  if (PetscErrorIsCatchable(err)) PetscExceptionsCount--;
 }
 
 #undef __FUNCT__  
