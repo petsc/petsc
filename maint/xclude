@@ -1,3 +1,4 @@
+petsc/bmake/IRIX64_uni
 petsc/bin/petscopt
 petsc/bin/petscoptsinfo.text
 petsc/bin/petscconf.h.in.sav
