@@ -1,5 +1,5 @@
 #!/usr/local/bin/expect -f
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: autopetsc,v 1.23 1997/09/10 19:38:58 balay Exp bsmith $ 
 
 #
 #  Simple PETSc MUD demon
@@ -7,16 +7,16 @@
 proc mud_biff {swho gety} {
   puts $gety
   if {[string compare $gety "Barry"] == 0 || [string compare $gety "barry"] == 0} {
-    exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "eagle.mcs.anl.gov:0.0" &
+    catch { exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "eagle.mcs.anl.gov:0.0" & }
   }
   if {[string compare $gety "BillG"] == 0 || [string compare $gety "billg"] == 0} {
-    exec /home/bsmith/petsc/maint/mudbiff $gety $swho -geometry +200+200 -display "godzilla.mcs.anl.gov:0.0" &
+    catch { exec /home/bsmith/petsc/maint/mudbiff $gety $swho -geometry +200+200 -display "godzilla.mcs.anl.gov:0.0" & }
   }
   if {[string compare $gety "Lois"] == 0 || [string compare $gety "lois"] == 0} {
-    exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "elvis.mcs.anl.gov:0.0" &
+    catch { exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "elvis.mcs.anl.gov:0.0" & }
   }
   if {[string compare $gety "Satish"] == 0 || [string compare $gety "satish"] == 0} {
-    exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "maverick.mcs.anl.gov:0.0" &
+    catch { exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "maverick.mcs.anl.gov:0.0" & }
   }
 }
 
