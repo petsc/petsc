@@ -18,7 +18,7 @@ int innerMap(esi::Map<int> *map)
 
   lmap->getLocalSize(localsize,msg);
   lmap->getLocalPartitionOffset(offset,msg);
-  PetscSynchronizedPrintf(*comm,"[%d]My size %d\n",rank,localsize);
+  PetscSynchronizedPrintf(*comm,"[%d]My size %d my offset %d\n",rank,localsize,offset);
   PetscSynchronizedFlush(*comm);
   return 0;
 }
@@ -54,12 +54,13 @@ int main(int argc,char **args)
   innerMap((esi::Map<int> *)map);
 
 
-  int globalsize,*globaloffsets;
+  int globalsize;
   map->getGlobalSize(globalsize,msg);
-  map->getGlobalPartitionOffsets(globaloffsets,msg);
   int size; MPI_Comm_size(*comm,&size);
+  int *globaloffsets = new int [size+1];
+  map->getGlobalPartitionOffsets(globaloffsets,msg);
   for (int i=0; i<size+1; i++ ) {
-    PetscSynchronizedPrintf(*comm,"[%d]Global size %d offset %d\n",rank,globalsize,globaloffsets[i]);
+    PetscSynchronizedPrintf(*comm,"[%d]Global i [%d] size %d offset %d\n",rank,i,globalsize,globaloffsets[i]);
   }
   PetscSynchronizedFlush(*comm);
 
