@@ -86,7 +86,8 @@ class Configure(config.base.Configure):
       found = 1
       for lib in libName:
         self.framework.argDB['LIBS'] = oldLibs+' '+self.getLibArgument(lib)
-        self.addDefine(self.getDefineName(lib), 1)
+        strippedlib = os.path.splitext(os.path.basename(lib))[0]
+        self.addDefine(self.getDefineName(strippedlib), 1)
     else:
       found = 0
       self.framework.argDB['LIBS'] = oldLibs
