@@ -53,7 +53,7 @@ libf: $(LIBNAME)($(OBJSF))
 #
 # 2. Add the following target to "base"
 #SLSUFFIX = so.1.0
-#shared: chkopts
+#shared: chkopts_basic
 #	-@echo making shared libraries in $(LDIR) ;\
 #	cd $(LDIR); \
 #	for LIBNAME in $(SHLIBS) ; \

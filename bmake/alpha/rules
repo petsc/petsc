@@ -36,7 +36,7 @@ libf: $(OBJSF)
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) -f $*.o
 
-shared: chkopts
+shared: chkopts_basic
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \
 	for LIBNAME in $(SHLIBS) ; \

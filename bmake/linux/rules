@@ -33,7 +33,7 @@ libf: $(OBJSF)
 	$(RM) $*.f $*.c
 
 SLSUFFIX = so.1.0
-shared: chkopts
+shared: chkopts_basic
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \
 	for LIBNAME in $(SHLIBS) ; \

@@ -46,7 +46,7 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
-shared: chkopts
+shared: chkopts_basic
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \
 	for LIBNAME in $(SHLIBS) ; \
