@@ -158,7 +158,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
     s->array           = (PetscScalar *)array;
     s->array_allocated = 0;
   } else {
-    PetscInt n              = ((v->n+nghost) > 0) ? v->n+nghost : 1;
+    PetscInt n         = v->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
     s->array_allocated = s->array;
     ierr               = PetscMemzero(s->array,v->n*sizeof(PetscScalar));CHKERRQ(ierr);

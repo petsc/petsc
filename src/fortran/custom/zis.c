@@ -142,7 +142,7 @@ void PETSC_STDCALL isstride_(IS *is,PetscTruth *flag,PetscErrorCode *ierr)
   *ierr = ISStride(*is,flag);
 }
 
-void PETSC_STDCALL isblockgetindices_(IS *x,PetscInt *fa,long *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL isblockgetindices_(IS *x,PetscInt *fa,PetscInt *ia,PetscErrorCode *ierr)
 {
   PetscInt   *lx;
 
@@ -150,7 +150,7 @@ void PETSC_STDCALL isblockgetindices_(IS *x,PetscInt *fa,long *ia,PetscErrorCode
   *ia      = PetscIntAddressToFortran(fa,lx);
 }
 
-void PETSC_STDCALL isblockrestoreindices_(IS *x,PetscInt *fa,long *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL isblockrestoreindices_(IS *x,PetscInt *fa,PetscInt *ia,PetscErrorCode *ierr)
 {
   PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
 
@@ -162,7 +162,7 @@ void PETSC_STDCALL isblock_(IS *is,PetscTruth *flag,PetscErrorCode *ierr)
   *ierr = ISBlock(*is,flag);
 }
 
-void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,long *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,PetscInt *ia,PetscErrorCode *ierr)
 {
   PetscInt   *lx;
 
@@ -170,7 +170,7 @@ void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,long *ia,PetscErrorCode *ier
   *ia      = PetscIntAddressToFortran(fa,lx);
 }
 
-void PETSC_STDCALL isrestoreindices_(IS *x,PetscInt *fa,long *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL isrestoreindices_(IS *x,PetscInt *fa,PetscInt *ia,PetscErrorCode *ierr)
 {
   PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
 

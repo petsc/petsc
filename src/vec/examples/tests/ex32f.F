@@ -15,7 +15,8 @@
 
       PetscScalar  v_v1(1),v_v2(1)
       Vec     v
-      PetscInt i,i_v1,i_v2
+      PetscInt i
+      PetscOffset i_v1,i_v2
       
       n=8
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)

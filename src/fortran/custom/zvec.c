@@ -196,7 +196,7 @@ void PETSC_STDCALL vecload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,long *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,PetscInt *ia,PetscErrorCode *ierr)
 {
   PetscInt    m;
   PetscScalar *lx;
@@ -206,7 +206,7 @@ void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,long *ia,PetscErrorCo
   *ierr = VecRestoreArray(*x,&lx);if (*ierr) return;
 }
 
-void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,long *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,PetscInt *ia,PetscErrorCode *ierr)
 {
   PetscScalar *lx;
   PetscInt    m;
@@ -289,11 +289,11 @@ void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv,PetscErrorCode
 {
   Vec *lV;
   PetscInt i;
-  *ierr = VecDuplicateVecs(*v,*m,&lV);
+  *ierr = VecDuplicateVecs(*v,*m,&lV); if (*ierr) return;
   for (i=0; i<*m; i++) {
     newv[i] = lV[i];
   }
-  PetscFree(lV); 
+  *ierr = PetscFree(lV); 
 }
 
 void PETSC_STDCALL vecdestroyvecs_(Vec *vecs,PetscInt *m,PetscErrorCode *ierr)

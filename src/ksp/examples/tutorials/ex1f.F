@@ -65,7 +65,10 @@
       KSP              ksp
       PC               pc
       double precision norm,tol
-      integer          ierr,i,n,col(3),its,flg,size,rank
+      PetscErrorCode   ierr
+      PetscInt i,n,col(3),its,i1,i2,i3
+      PetscTruth flg
+      PetscMPIInt size,rank
       PetscScalar      none,one,value(3)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,6 +87,9 @@
       none = -1.0
       one  = 1.0
       n    = 10
+      i1 = 1
+      i2 = 2
+      i3 = 3
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -109,18 +115,18 @@
          col(1) = i-1
          col(2) = i
          col(3) = i+1
-         call MatSetValues(A,1,i,3,col,value,INSERT_VALUES,ierr)
+         call MatSetValues(A,i1,i,i3,col,value,INSERT_VALUES,ierr)
   50  continue
       i = n - 1
       col(1) = n - 2
       col(2) = n - 1
-      call MatSetValues(A,1,i,2,col,value,INSERT_VALUES,ierr)
+      call MatSetValues(A,i1,i,i2,col,value,INSERT_VALUES,ierr)
       i = 0
       col(1) = 0
       col(2) = 1
       value(1) = 2.0
       value(2) = -1.0
-      call MatSetValues(A,1,i,2,col,value,INSERT_VALUES,ierr)
+      call MatSetValues(A,i1,i,i2,col,value,INSERT_VALUES,ierr)
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 

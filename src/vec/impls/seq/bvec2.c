@@ -603,8 +603,8 @@ PetscErrorCode VecCreate_Seq(Vec V)
   if (size > 1) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   }
-  ierr = PetscMalloc( ( n > 0 ? n : 1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-  ierr = PetscMemzero(array,( n > 0 ? n : 1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc( n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
   s    = (Vec_Seq*)V->data;
   s->array_allocated = array;

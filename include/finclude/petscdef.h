@@ -31,17 +31,23 @@
 ! compiler options like -r4,-r8, sometimes invoked 
 ! by the user. NAG compiler does not like integer*4,real*8
 !
-! ???? All integers should also be changed to PetscInt ?????
 !
 
+/*M
+     PetscFortranAddr - a variable type in Fortran that can hold a
+         regular C pointer.
+
+   Notes: Used, for example, as the file argument in PetscFOpen()
+
+.seealso:  PetscOffset, PetscInt
+M*/
+
+
 #if (PETSC_SIZEOF_VOID_P == 8)
-#define PetscOffset integer*8
 #define PetscFortranAddr integer*8
 #elif defined (PETSC_MISSING_FORTRANSTAR)
-#define PetscOffset integer
 #define PetscFortranAddr integer
 #else
-#define PetscOffset integer*4
 #define PetscFortranAddr integer*4
 #endif
 
@@ -52,6 +58,15 @@
 #else
 #define PetscInt integer*4
 #endif
+
+/*M
+     PetscOffset - a variable type in Fortran used with VecGetArray()
+        and ISGetIndices()
+
+
+.seealso:  PetscFortranAddr, PetscInt
+M*/
+#define PetscOffset PetscInt
 
 #if defined (PETSC_MISSING_FORTRANSTAR)
 #define PetscFortranFloat real
