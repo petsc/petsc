@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.2 2000/06/09 21:09:05 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.3 2000/06/13 03:57:17 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -109,8 +109,26 @@ int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar 
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
     varray += mine->rstart;
     ierr    = PetscMemcpy(array,varray,mine->n*sizeof(Scalar));CHKERRQ(ierr);
+    ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
   ierr    = MPI_Bcast(array,mine->n,MPIU_SCALAR,0,packer->comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecPackGather_Array"></a>*/"VecPackGather_Array"
+int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *array)
+{
+  int    ierr;
+  Scalar *varray;
+
+  PetscFunctionBegin;
+  if (!packer->rank) {
+    ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
+    varray += mine->rstart;
+    ierr    = PetscMemcpy(varray,array,mine->n*sizeof(Scalar));CHKERRQ(ierr);
+    ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -135,7 +153,7 @@ int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar 
 int VecPackScatter(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
-  int                ierr,nprev = 0,rank;
+  int                ierr;
   struct VecPackLink *next = packer->next;
   Scalar             *array;
 
@@ -147,9 +165,52 @@ int VecPackScatter(VecPack packer,Vec gvec,...)
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
   while (next) {
-    if (next->type = VECPACK_ARRAY) {
+    if (next->type == VECPACK_ARRAY) {
       array = va_arg(Argp, Scalar*);
       ierr = VecPackScatter_Array(packer,next,gvec,array);CHKERRQ(ierr);
+    } else {
+      SETERRQ(1,1,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  va_end(Argp);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecPackGather"></a>*/"VecPackGather"
+/*@C
+    VecPackGather - Gathers into a global packed vector from its individual local vectors
+
+    Collective on VecPack
+
+    Input Parameter:
++    packer - the packer object
+.    gvec - the global vector
+-    ... - the individual sequential objects (arrays or vectors)
+ 
+.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
+         VecPackScatter(), VecPackCreate()
+
+@*/
+int VecPackGather(VecPack packer,Vec gvec,...)
+{
+  va_list            Argp;
+  int                ierr;
+  struct VecPackLink *next = packer->next;
+  Scalar             *array;
+
+  PetscFunctionBegin;
+  if (!packer->globalvector) {
+    SETERRQ(1,1,"Must first create global vector with VecPackCreateGlobalVector()");
+  }
+
+  /* loop over packed objects, handling one at at time */
+  va_start(Argp,gvec);
+  while (next) {
+    if (next->type == VECPACK_ARRAY) {
+      array = va_arg(Argp, Scalar*);
+      ierr = VecPackGather_Array(packer,next,gvec,array);CHKERRQ(ierr);
     } else {
       SETERRQ(1,1,"Cannot handle that object type yet");
     }

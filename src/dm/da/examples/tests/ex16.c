@@ -1,54 +1,52 @@
-/*$Id: ex1.c,v 1.41 2000/05/05 22:19:31 balay Exp $*/
+/*$Id: ex16.c,v 1.1 2000/06/09 21:02:00 bsmith Exp bsmith $*/
 
-static char help[] = "Tests various DA routines.\n\n";
+static char help[] = "Tests VecPack routines.\n\n";
 
 #include "petscda.h"
-#include "petscsys.h"
+#include "petscpf.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int      rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
-  DA       da;
-  Viewer   viewer;
-  Vec      local,global;
-  Scalar   value;
+  int     ierr,nredundant1 = 5,nredundant2 = 2,rank,i;
+  Scalar  *redundant1,*redundant2;
+  VecPack packer;
+  Vec     global;
+  PF      pf;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  redundant1 = (Scalar*)PetscMalloc(nredundant1*sizeof(Scalar));CHKPTRQ(redundant1);
+  redundant2 = (Scalar*)PetscMalloc(nredundant2*sizeof(Scalar));CHKPTRQ(redundant2);
 
-  /* Read options */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
+  ierr = VecPackAddArray(packer,nredundant1);CHKERRQ(ierr);
+  ierr = VecPackAddArray(packer,nredundant2);CHKERRQ(ierr);
 
-  /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
-                    M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRA(ierr);
-  ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
-  ierr = DACreateLocalVector(da,&local);CHKERRA(ierr);
+  ierr = VecPackCreateGlobalVector(packer,&global);CHKERRQ(ierr);
+  ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);
+  ierr = PFSetType(pf,PFIDENTITY,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PFApplyVec(pf,PETSC_NULL,global);CHKERRQ(ierr);
+  ierr = PFDestroy(pf);CHKERRQ(ierr);
+  ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  value = -3.0;
-  ierr = VecSet(&value,global);CHKERRA(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
+  ierr = VecPackScatter(packer,global,redundant1,redundant2);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] My part of redundant1 array\n",rank);CHKERRQ(ierr);
+  ierr = PetscScalarView(nredundant1,redundant1,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] My part of redundant2 array\n",rank);CHKERRQ(ierr);
+  ierr = PetscScalarView(nredundant2,redundant2,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
-  value = rank+1;
-  ierr = VecScale(&value,local);CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRA(ierr);
+  for (i=0; i<nredundant1; i++) redundant1[i] = (rank+2)*i;
+  for (i=0; i<nredundant2; i++) redundant2[i] = (rank+10)*i;
 
-  ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_NATIVE,0);CHKERRA(ierr);
-  ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = DAView(da,viewer);CHKERRA(ierr);
+  ierr = VecPackGather(packer,global,redundant1,redundant2);CHKERRQ(ierr);
+  ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  /* Free memory */
-  ierr = ViewerDestroy(viewer);CHKERRA(ierr);
-  ierr = VecDestroy(local);CHKERRA(ierr);
-  ierr = VecDestroy(global);CHKERRA(ierr);
-  ierr = DADestroy(da);CHKERRA(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = VecPackDestroy(packer);CHKERRQ(ierr);
+  ierr = PetscFree(redundant1);CHKERRQ(ierr);
+  ierr = PetscFree(redundant2);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
