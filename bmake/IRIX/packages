@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.18 1999/03/24 19:08:48 balay Exp balay $ 
+# $Id: base.site,v 1.19 1999/03/24 19:09:53 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -35,7 +35,7 @@ X11_LIB        = -lX11
 #MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
 #MPI_INCLUDE    = -I/home/petsc/mpich/include
 #MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
-MPI_HOME       = /home/petsc/mpich-1.1.2
+MPI_HOME       = /home/petsc/software/mpich-1.1.2
 MPI_BUILD_HOME = ${MPI_HOME}/build/IRIX/ch_shmem
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
@@ -56,8 +56,8 @@ MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE    = -I/home/petsc/BlockSolve95/include
-BS_LIB        = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+BS_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
+BS_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
