@@ -1,4 +1,4 @@
-/*$Id: mpirowbs.c,v 2.1 2001/06/28 17:39:57 balay Exp balay $*/
+/*$Id: mpirowbs.c,v 2.2 2001/06/28 18:11:45 balay Exp balay $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 #include "src/vec/vecimpl.h"
@@ -123,7 +123,6 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
   bsif->roworiented      = PETSC_TRUE;
   bsif->nonew            = 0;
   bsif->bs_color_single  = 0;
-  bsif->mat_is_symmetric = 0;
 
   if (nzalloc) {ierr = PetscFree(nnz);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -922,7 +921,7 @@ int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   rstart = a->rstart;
   nzcount = a->nz; /* This is the number of nonzeros entered by the user */
   /* BlockSolve requires that the matrix is structurally symmetric */
-  if (mode == MAT_FINAL_ASSEMBLY && !a->mat_is_structurally_symmetric) {
+  if (mode == MAT_FINAL_ASSEMBLY && !mat->structurally_symmetric) {
     ierr = MatAssemblyEnd_MPIRowbs_MakeSymmetric(mat);CHKERRQ(ierr);
   }
   
@@ -1196,7 +1195,7 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   }
   
   /* Do upper triangular multiplication:  [ y = y + L^{T} * xwork ] */
-  if (bsif->mat_is_symmetric) {
+  if (mat->symmetric) {
     if (bspinfo->single){
       BSbackward1(bsif->pA,xxa,yya,bsif->comm_pA,bspinfo);CHKERRBS(0);
     } else {
@@ -1388,9 +1387,6 @@ int MatSetOption_MPIRowbs(Mat A,MatOption op)
   case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"MatSetOption_MPIRowbs:Option ignored\n");
     break;
-  case MAT_COLUMN_ORIENTED:
-    SETERRQ(PETSC_ERR_SUP,"MAT_COLUMN_ORIENTED");
-    break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = PETSC_TRUE;
     break;
@@ -1559,7 +1555,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="MatCreate_MPIRowbs""></a>*/"MatCreate_MPIRowbs"
+#define __FUNCT__ "MatCreate_MPIRowbs"
 int MatCreate_MPIRowbs(Mat A)
 {
   Mat_MPIRowbs *a;
@@ -1593,8 +1589,6 @@ int MatCreate_MPIRowbs(Mat A)
   A->m = m;
   A->n = A->N;  /* each row stores all columns */
   ierr                             = PetscMalloc((A->m+1)*sizeof(int),&a->imax);CHKERRQ(ierr);
-  a->mat_is_symmetric              = 0;
-  a->mat_is_structurally_symmetric = 0;
   a->reallocs                      = 0;
 
   /* the information in the maps duplicates the information computed below, eventually 
@@ -1954,12 +1948,13 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,PetscReal f,in
         symmetric using the option MatSetOption(A,MAT_SYMMETRIC)");
   }
 
+  /* some bug in here.. ??? 
   if (!mbs->blocksolveassembly) {
     BSset_mat_icc_storage(bsmat,PETSC_TRUE);
     BSset_mat_symmetric(bsmat,PETSC_TRUE);
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
   }
-
+  */
 
   /* Copy permuted matrix */
   if (mbs->fpA) {BSfree_copy_par_mat(mbs->fpA);CHKERRBS(0);}
