@@ -17,10 +17,10 @@ SLES_LIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(SYS_LIB) $(FC_LIB) -lm
 
-include $(IPETSCDIR)/bmake/common.$(COMPLEX) 
+include $(IPETSCDIR)/bmake/common.$(PETSC_VERSION) 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(COMPLEX)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(PETSC_VERSION)
 
 # next line cause trouble with gnumake when OBJS is empty
 #$(LIBNAME)($(OBJS)): $(LINCLUDE)
@@ -38,16 +38,17 @@ chkpetsc_dir:
 examples: 
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
-          $(OMAKE) -f makefile PARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex; done;) fi
+          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex;\
+          done;) fi
 
 foo:
 
 lib: $(SOURCE)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
-           $(OMAKE) -f makefile PARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
-                               COMPLEX=$(COMPLEX) libc; fi
+           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
+                               PETSC_VERSION=$(PETSC_VERSION) libc; fi
 	@-if [ "$(SOURCEF)" != "" ] ; then \
-                $(OMAKE) -f makefile PARCH=$(PETSC_ARCH) BOPT=$(BOPT) libf; fi
+                $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) libf; fi
 	@-if [ "$(OBJS)" != " " ] ; then \
         	$(RANLIB)  $(LIBNAME); \
 	        $(RM) -f $(OBJS); \
@@ -81,7 +82,7 @@ co:
 #  true is to prevent make error message from empty grep
 lint:
 	@-if [ "$(SOURCEC)" != "" ] ; then \
-           lint -cvhu -DLINT -DPARCH_$(PETSC_ARCH) $(CFLAGS) $(SOURCEC)\
+           lint -cvhu -DLINT -DPETSC_ARCH_$(PETSC_ARCH) $(CFLAGS) $(SOURCEC)\
                 | grep -v "never defined"\
                 | grep -v "pointer alignment problem" | grep -v\
                 "function prototype not in scope"; true ;\
@@ -133,7 +134,7 @@ tree: $(ACTION)
         for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
         (cd $$dir ; echo $(ACTION) in: `pwd`  ; \
         $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
-        PARCH=$(PETSC_ARCH) COMPLEX=$(COMPLEX) ) ;fi; \
+        PETSC_ARCH=$(PETSC_ARCH) PETSC_VERSION=$(PETSC_VERSION) ) ;fi; \
         done ; fi
 
 
