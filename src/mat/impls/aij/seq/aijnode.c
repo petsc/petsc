@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.13 1995/11/27 18:06:55 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.14 1995/11/27 19:19:47 balay Exp balay $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -97,8 +97,10 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   }
   ns = a->inode.size;
   m  = a->inode.node_count;
-
+  PLogEventRegister(125,"MatToSymIJ");
+  PLogEventBegin(125,0,0,0,0);
   ierr  = MatToSymmetricIJ_SeqAIJ_Inode( a, &ia, &ja ); CHKERRQ(ierr);
+  PLogEventEnd(125,0,0,0,0);
   ierr  = MatGetReordering_IJ(m,ia,ja,type,&ris,&cis); CHKERRQ(ierr);
 
   tns   = (int *) PetscMalloc((m +1 )*sizeof(int)); CHKPTRQ(tns);
@@ -748,11 +750,12 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   Mat        C = *B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b = (Mat_SeqAIJ *)C->data;
   IS         iscol = b->col, isrow = b->row, isicol;
-  int        *r,*ic,*c, ierr, n = a->m, *bi = b->i, *bj = b->j, *ai = a->i, *aj = a->j;
-  int        *ajtmp, *bjtmp, nz, row, prow, *ics, shift = a->indexshift, i, j, idx;
-  int        *bd = b->diag, node_max, nsz, *ns, *nsa, *tmp_vec, *pj;
+  int        shift = a->indexshift, *r,*ic,*c, ierr, n = a->m, *bi = b->i; 
+  int        *bj = b->j+shift, *nbj=b->j +(!shift), *ajtmp, *bjtmp, nz, row, prow;
+  int        *ics,i,j, idx, *ai = a->i, *aj = a->j+shift, *bd = b->diag, node_max, nsz;
+  int        *ns, *nsa, *tmp_vec, *pj;
   Scalar     *rtmp1, *rtmp2, *rtmp3,*v1, *v2, *v3, *pc1, *pc2, *pc3, mul1, mul2, mul3;
-  Scalar     tmp, *ba = b->a, *aa = a->a, *pv, *rtmps1, *rtmps2, *rtmps3;
+  Scalar     tmp, *ba = b->a+shift, *aa = a->a+shift, *pv, *rtmps1, *rtmps2, *rtmps3;
 
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
@@ -799,7 +802,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   for ( i=0,row=0; i<node_max; i++ ) { 
     nsz   = ns[i];
     nz    = bi[row+1] - bi[row];
-    bjtmp = bj + bi[row] + shift;
+    bjtmp = bj + bi[row];
     
     switch (nsz){
     case 1:
@@ -811,8 +814,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       /* load in initial (unfactored row) */
       idx   = r[row];
       nz    = ai[idx+1] - ai[idx];
-      ajtmp = aj + ai[idx] + shift;
-      v1    = aa + ai[idx] + shift;
+      ajtmp = aj + ai[idx];
+      v1    = aa + ai[idx];
 
       for ( j=0; j<nz; j++ ) {
         idx        = ics[ajtmp[j]];
@@ -822,8 +825,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       while (prow < row) {
         pc1 = rtmp1 + prow;
         if (*pc1 != 0.0){
-          pv   = ba + bd[prow] + shift;
-          pj   = bj + bd[prow] + (!shift);
+          pv   = ba + bd[prow];
+          pj   = nbj + bd[prow];
           mul1 = *pc1 * *pv++;
           *pc1 = mul1;
           nz   = bi[prow+1] - bd[prow] - 1;
@@ -833,8 +836,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         prow = *bjtmp++ + shift;
       }
       nz  = bi[row+1] - bi[row];
-      pj  = bj + bi[row] + shift;
-      pc1 = ba + bi[row] + shift;
+      pj  = bj + bi[row];
+      pc1 = ba + bi[row];
       if (rtmp1[row] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
       rtmp1[row] = 1.0/rtmp1[row];
       for ( j=0; j<nz; j++ ) {
@@ -853,9 +856,9 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       /* load in initial (unfactored row) */
       idx   = r[row];
       nz    = ai[idx+1] - ai[idx];
-      ajtmp = aj + ai[idx] + shift;
-      v1    = aa + ai[idx] + shift;
-      v2    = aa + ai[idx+1] + shift;
+      ajtmp = aj + ai[idx];
+      v1    = aa + ai[idx];
+      v2    = aa + ai[idx+1];
       
       for ( j=0; j<nz; j++ ) {
         idx        = ics[ajtmp[j]];
@@ -867,8 +870,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         pc1 = rtmp1 + prow;
         pc2 = rtmp2 + prow;
         if (*pc1 != 0.0 || *pc2 != 0.0){
-          pv   = ba + bd[prow] + shift;
-          pj   = bj + bd[prow] + (!shift);
+          pv   = ba + bd[prow];
+          pj   = nbj + bd[prow];
           mul1 = *pc1 * *pv;
           mul2 = *pc2 * *pv; ++pv;
           *pc1 = mul1;
@@ -889,7 +892,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc1 = rtmp1 + prow;
       pc2 = rtmp2 + prow;
       if (*pc2 != 0.0){
-        pj   = bj + bd[prow] + (!shift);
+        pj   = nbj + bd[prow];
         if(*pc1 ==0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
         mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
         *pc2 = mul2;
@@ -903,9 +906,9 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       }
  
       nz  = bi[row+1] - bi[row];
-      pj  = bj + bi[row] + shift;
-      pc1 = ba + bi[row] + shift;
-      pc2 = ba + bi[row+1] + shift;
+      pj  = bj + bi[row];
+      pc1 = ba + bi[row];
+      pc2 = ba + bi[row+1];
       if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
       rtmp1[row]   = 1.0/rtmp1[row];
       rtmp2[row+1] = 1.0/rtmp2[row+1];
@@ -924,10 +927,10 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       }
       idx   = r[row];
       nz    = ai[idx+1] - ai[idx];
-      ajtmp = aj + ai[idx] + shift;
-      v1    = aa + ai[idx] + shift;
-      v2    = aa + ai[idx+1] + shift;
-      v3    = aa + ai[idx+2] + shift;
+      ajtmp = aj + ai[idx];
+      v1    = aa + ai[idx];
+      v2    = aa + ai[idx+1];
+      v3    = aa + ai[idx+2];
       for ( j=0; j<nz; j++ ) {
         idx        = ics[ajtmp[j]];
         rtmp1[idx] = v1[j];
@@ -940,8 +943,8 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         pc2 = rtmp2 + prow;
         pc3 = rtmp3 + prow;
         if (*pc1 != 0.0 || *pc2 != 0.0 || *pc3 !=0.0 ){
-          pv   = ba + bd[prow] + shift;
-          pj   = bj + bd[prow] + (!shift);
+          pv   = ba + bd[prow];
+          pj   = nbj + bd[prow];
           mul1 = *pc1 * *pv;
           mul2 = *pc2 * *pv; 
           mul3 = *pc3 * *pv; ++pv;
@@ -966,7 +969,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc2 = rtmp2 + prow;
       pc3 = rtmp3 + prow;
       if (*pc2 != 0.0 || *pc3 != 0){
-        pj   = bj + bd[prow] + (!shift);
+        pj   = nbj + bd[prow];
         if(*pc1 ==0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
         mul2 = (*pc2)/(*pc1);
         mul3 = (*pc3)/(*pc1);
@@ -985,7 +988,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc2 = rtmp2 + prow;
       pc3 = rtmp3 + prow;
       if (*pc3 != 0.0){
-        pj   = bj + bd[prow] + (!shift);
+        pj   = nbj + bd[prow];
         if(*pc2 ==0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
         mul3 = (*pc3)/(*pc2);
         *pc3 = mul3;
@@ -998,10 +1001,10 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         }
       }
       nz  = bi[row+1] - bi[row];
-      pj  = bj + bi[row] + shift;
-      pc1 = ba + bi[row] + shift;
-      pc2 = ba + bi[row+1] + shift;
-      pc3 = ba + bi[row+2] + shift;
+      pj  = bj + bi[row];
+      pc1 = ba + bi[row];
+      pc2 = ba + bi[row+1];
+      pc3 = ba + bi[row+2];
       if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0 || rtmp3[row+2]==0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
       rtmp1[row]   = 1.0/rtmp1[row];
       rtmp2[row+1] = 1.0/rtmp2[row+1];
