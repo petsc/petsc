@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.34 2001/04/30 03:49:39 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.35 2001/04/30 15:12:02 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -450,6 +450,7 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
+  
   /*
      Get pointers to vector data
   */
@@ -460,7 +461,7 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
      Compute function over the locally owned part of the grid
   */
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = (*dmmg->computefunctionlocal)(x,f,&info,dmmg->user);CHKERRQ(ierr); 
+  ierr = (*dmmg->computefunctionlocal)(&info,x,f,dmmg->user);CHKERRQ(ierr); 
 
   /*
      Restore vectors
@@ -523,7 +524,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   /* 
      Compute entries for the locally owned part of the Jacobian.
   */
-  ierr = (*dmmg->ad_computefunctionlocal)(ad_x,ad_f,&info,dmmg->user);CHKERRQ(ierr); 
+  ierr = (*dmmg->ad_computefunctionlocal)(&info,ad_x,ad_f,dmmg->user);CHKERRQ(ierr); 
 
   /* stick the values into the matrix */
   ierr = MatSetValuesAD(*B,(Scalar**)ad_fstart);CHKERRQ(ierr);
@@ -576,7 +577,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
-int DMMGSetSNESLocal_Private(DMMG *dmmg,int (*function)(void*,void*,DALocalInfo*,void*),int (*jacobian)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),int (*ad_function)(void*,void*,DALocalInfo*,void*))
+int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,int (*jacobian)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),DALocalFunction1 ad_function)
 {
   int ierr,i,nlevels = dmmg[0]->nlevels;
 
