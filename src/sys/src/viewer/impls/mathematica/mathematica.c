@@ -21,8 +21,8 @@ static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $"
 
 PetscViewer VIEWER_MATHEMATICA_WORLD_PRIVATE = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerInitializeMathematicaWorld_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerInitializeMathematicaWorld_Private"
 int PetscViewerInitializeMathematicaWorld_Private()
 {
   int ierr;
@@ -35,8 +35,8 @@ int PetscViewerInitializeMathematicaWorld_Private()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDestroy_Mathematica"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_Mathematica"
 static int PetscViewerDestroy_Mathematica(PetscViewer viewer)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data; 
@@ -50,8 +50,8 @@ static int PetscViewerDestroy_Mathematica(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDestroyMathematica_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroyMathematica_Private"
 int PetscViewerDestroyMathematica_Private(void)
 {
   int ierr;
@@ -64,8 +64,8 @@ int PetscViewerDestroyMathematica_Private(void)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerCreate_Mathematica"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerCreate_Mathematica"
 int PetscViewerCreate_Mathematica(PetscViewer v)
 {
   PetscViewer_Mathematica *vmath;
@@ -119,8 +119,8 @@ int PetscViewerCreate_Mathematica(PetscViewer v)
 }
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaSetConnection"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaSetConnection"
 int PetscViewerMathematicaSetConnection(PetscViewer v, int port, const char machine[], const char mode[])
 {
 #ifdef HAVE_MATHEMATICA
@@ -219,8 +219,8 @@ int PetscViewerMathematicaSetConnection(PetscViewer v, int port, const char mach
 }
 
 /*----------------------------------------- Public Functions --------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaOpen"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaOpen"
 /*@C
   PetscViewerMathematicaOpen - Communicates with Mathemtica using MathLink.
 
@@ -272,8 +272,8 @@ int PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char machine[], co
 }
 
 #ifdef HAVE_MATHEMATICA
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaGetLink"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaGetLink"
 /*@C
   PetscViewerMathematicaGetLink - Returns the link to Mathematica
 
@@ -295,8 +295,8 @@ int PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
 }
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaSkipPackets"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaSkipPackets"
 /*@C
   PetscViewerMathematicaSkipPackets - Discard packets sent by Mathematica until a certain packet type is received
 
@@ -327,8 +327,8 @@ int PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaLoadGraphics"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaLoadGraphics"
 /*@C
   PetscViewerMathematicaLoadGraphics - Change the type of graphics output for Mathematica
 
@@ -428,8 +428,8 @@ int PetscViewerMathematicaLoadGraphics(PetscViewer viewer, GraphicsType type)
 #endif
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaGetName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaGetName"
 /*@C
   PetscViewerMathematicaGetName - Retrieve the default name for objects communicated to Mathematica
 
@@ -453,8 +453,8 @@ int PetscViewerMathematicaGetName(PetscViewer viewer, char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaSetName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaSetName"
 /*@C
   PetscViewerMathematicaSetName - Override the default name for objects communicated to Mathematica
 
@@ -476,8 +476,8 @@ int PetscViewerMathematicaSetName(PetscViewer viewer, char *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaClearName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaClearName"
 /*@C
   PetscViewerMathematicaClearName - Use the default name for objects communicated to Mathematica
 
@@ -497,8 +497,8 @@ int PetscViewerMathematicaClearName(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaGetVector"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaGetVector"
 /*@C
   PetscViewerMathematicaGetVector - Retrieve a vector from Mathematica
 
@@ -690,8 +690,8 @@ int PetscViewerMathematicaPutSparse_Private(PetscViewer viewer, int m, int n, in
 }
 
 /*------------------------------------------- ML Functions ----------------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaPartitionMesh"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaPartitionMesh"
 int PetscViewerMathematicaPartitionMesh(PetscViewer viewer, int numElements, int numVertices, double *vertices, int **mesh,
                                    int *numParts, int *colPartition)
 {
@@ -771,8 +771,8 @@ int PetscViewerMathematicaPartitionMesh(PetscViewer viewer, int numElements, int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaReduce"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaReduce"
 int PetscViewerMathematicaReduce(PetscViewer viewer, PC pc, int thresh)
 {
 #ifdef HAVE_MATHEMATICA
@@ -934,8 +934,8 @@ int PetscViewerMathematicaReduce(PetscViewer viewer, PC pc, int thresh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaMultiLevelConvert"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaMultiLevelConvert"
 int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
 {
 #ifdef HAVE_MATHEMATICA
@@ -1417,8 +1417,8 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
 
 /*------------------------------ Functions for Triangular 2d Meshes -------------------------------------------------*/
 #ifdef GVEC_IS_WORKING
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaCreateSamplePoints_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaCreateSamplePoints_Triangular_2D"
 int PetscViewerMathematicaCreateSamplePoints_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
@@ -1469,8 +1469,8 @@ int PetscViewerMathematicaCreateSamplePoints_Triangular_2D(PetscViewer viewer, G
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaCreateVectorSamplePoints_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaCreateVectorSamplePoints_Triangular_2D"
 int PetscViewerMathematicaCreateVectorSamplePoints_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
@@ -1533,8 +1533,8 @@ int PetscViewerMathematicaCreateVectorSamplePoints_Triangular_2D(PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D"
 int PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(PetscViewer viewer, GVec v, int vComp)
 {
 #ifdef HAVE_MATHEMATICA
@@ -1650,8 +1650,8 @@ int PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(PetscView
 }
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematica_Mesh_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematica_Mesh_Triangular_2D"
 int PetscViewerMathematica_Mesh_Triangular_2D(PetscViewer viewer, Mesh mesh)
 {
 #ifdef HAVE_MATHEMATICA
@@ -1709,8 +1709,8 @@ int PetscViewerMathematica_Mesh_Triangular_2D(PetscViewer viewer, Mesh mesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaCheckMesh_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaCheckMesh_Triangular_2D"
 int PetscViewerMathematicaCheckMesh_Triangular_2D(PetscViewer viewer, Mesh mesh)
 {
 #ifdef HAVE_MATHEMATICA
@@ -1844,8 +1844,8 @@ int PetscViewerMathematicaCheckMesh_Triangular_2D(PetscViewer viewer, Mesh mesh)
 }
 
 #ifdef GVEC_IS_WORKING
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaTriangulationPlot_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaTriangulationPlot_Triangular_2D"
 int PetscViewerMathematicaTriangulationPlot_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
@@ -1952,8 +1952,8 @@ int PetscViewerMathematicaTriangulationPlot_Triangular_2D(PetscViewer viewer, GV
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaVectorPlot_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaVectorPlot_Triangular_2D"
 int PetscViewerMathematicaVectorPlot_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
@@ -1988,8 +1988,8 @@ int PetscViewerMathematicaVectorPlot_Triangular_2D(PetscViewer viewer, GVec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematicaSurfacePlot_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaSurfacePlot_Triangular_2D"
 int PetscViewerMathematicaSurfacePlot_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
@@ -2041,8 +2041,8 @@ int PetscViewerMathematicaSurfacePlot_Triangular_2D(PetscViewer viewer, GVec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerMathematica_GVec_Triangular_2D"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematica_GVec_Triangular_2D"
 int PetscViewerMathematica_GVec_Triangular_2D(PetscViewer viewer, GVec v)
 {
   PetscViewer_Mathematica  *vmath = (PetscViewer_Mathematica *) viewer->data;

@@ -98,8 +98,8 @@ int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOPetscToApplicationPermuteInt_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AOPetscToApplicationPermuteInt_Basic"
 int AOPetscToApplicationPermuteInt_Basic(AO ao, int block, int *array)
 {
   AO_Basic *aodebug = (AO_Basic *) ao->data;
@@ -117,8 +117,8 @@ int AOPetscToApplicationPermuteInt_Basic(AO ao, int block, int *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetscPermuteInt_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AOApplicationToPetscPermuteInt_Basic"
 int AOApplicationToPetscPermuteInt_Basic(AO ao, int block, int *array)
 {
   AO_Basic *aodebug = (AO_Basic *) ao->data;
@@ -136,8 +136,8 @@ int AOApplicationToPetscPermuteInt_Basic(AO ao, int block, int *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOPetscToApplicationPermuteReal_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AOPetscToApplicationPermuteReal_Basic"
 int AOPetscToApplicationPermuteReal_Basic(AO ao, int block, double *array)
 {
   AO_Basic *aodebug = (AO_Basic *) ao->data;
@@ -155,8 +155,8 @@ int AOPetscToApplicationPermuteReal_Basic(AO ao, int block, double *array)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetscPermuteReal_Basic"
+#undef __FUNCT__  
+#define __FUNCT__ "AOApplicationToPetscPermuteReal_Basic"
 int AOApplicationToPetscPermuteReal_Basic(AO ao, int block, double *array)
 {
   AO_Basic *aodebug = (AO_Basic *) ao->data;
@@ -184,8 +184,8 @@ static struct _AOOps AOops = {AOView_Basic,
                               AOPetscToApplicationPermuteReal_Basic,
                               AOApplicationToPetscPermuteReal_Basic};
 
-#undef __FUNC__  
-#define __FUNC__ "AOSerialize_Basic" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOSerialize_Basic" 
 int AOSerialize_Basic(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth store)
 {
   AO        a;

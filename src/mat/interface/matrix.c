@@ -1260,8 +1260,8 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatMultConstrained"
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultConstrained"
 /*@
    MatMultConstrained - The inner multiplication routine for a
    constrained matrix P^T A P.
@@ -2635,8 +2635,8 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MatPermuteSparsify"
+#undef __FUNCT__  
+#define __FUNCT__ "MatPermuteSparsify"
 /*@C
   MatPermuteSparsify - Creates a new matrix with rows and columns permuted from the 
   original and sparsified to the prescribed tolerance.

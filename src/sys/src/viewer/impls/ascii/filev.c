@@ -118,8 +118,8 @@ int PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerASCIISetMode"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIISetMode"
 /*@C
     PetscViewerASCIISetMode - Sets the mode in which to open the file.
 

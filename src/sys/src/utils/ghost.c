@@ -4,8 +4,8 @@ static char vcid[] = "$Id: ghost.c,v 1.3 2000/01/10 03:27:01 knepley Exp $";
 
 #include "petscsys.h"
 
-#undef  __FUNC__
-#define __FUNC__ "PetscGhostExchange"
+#undef  __FUNCT__
+#define __FUNCT__ "PetscGhostExchange"
 /*@C
   PetscGhostExchange - This functions transfers data between local and ghost storage without a predefined mapping.
 

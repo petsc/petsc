@@ -16,8 +16,8 @@ static char vcid[] = "$Id: vsilo.c,v 1.4 2000/01/10 03:27:03 knepley Exp $";
 
 #ifdef PETSC_HAVE_SILO
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerDestroy_Silo"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_Silo"
 static int PetscViewerDestroy_Silo(PetscViewer viewer)
 {
   Viewer_Silo *silo = (Viewer_Silo *) viewer->data;
@@ -32,8 +32,8 @@ static int PetscViewerDestroy_Silo(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerFlush_Silo"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerFlush_Silo"
 int PetscViewerFlush_Silo(PetscViewer viewer)
 {
   int rank;
@@ -46,8 +46,8 @@ int PetscViewerFlush_Silo(PetscViewer viewer)
 
 /*-----------------------------------------Public Functions-----------------------------------------------------------*/
 #ifdef HAVE_SILO
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSiloGetFilePointer"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSiloGetFilePointer"
 /*@C
   PetscViewerSiloGetFilePointer - Extracts the file pointer from a Silo viewer.
 
@@ -73,8 +73,8 @@ int PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
 }
 #endif
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSiloOpen"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSiloOpen"
 /*@C
   PetscViewerSiloOpen - This routine writes the mesh and the partition in the 
   SILO format used by MeshTv, which can be used to create plots and
@@ -133,8 +133,8 @@ int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__  "PetscViewerSiloCheckMesh"
+#undef __FUNCT__
+#define __FUNCT__  "PetscViewerSiloCheckMesh"
 /*@C
   PetscViewerSiloCheckMesh - This routine checks a Silo viewer to determine whether the
                         mesh has already been put in the .silo file. It also checks for type,
@@ -173,8 +173,8 @@ int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSiloGetName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSiloGetName"
 /*@C
   PetscViewerSiloGetName - Retrieve the default name for objects communicated to Silo
 
@@ -198,8 +198,8 @@ int PetscViewerSiloGetName(PetscViewer viewer, char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSiloSetName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSiloSetName"
 /*@C
   PetscViewerSiloSetName - Override the default name for objects communicated to Silo
 
@@ -221,8 +221,8 @@ int PetscViewerSiloSetName(PetscViewer viewer, char *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSiloClearName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSiloClearName"
 /*@C
   PetscViewerSiloClearName - Use the default name for objects communicated to Silo
 
@@ -242,8 +242,8 @@ int PetscViewerSiloClearName(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSiloGetMeshName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSiloGetMeshName"
 /*@C
   PetscViewerSiloGetMeshName - Retrieve the default name for the mesh in Silo
 
@@ -267,8 +267,8 @@ int PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSiloSetMeshName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSiloSetMeshName"
 /*@C
   PetscViewerSiloSetMeshName - Override the default name for the mesh in Silo
 
@@ -290,8 +290,8 @@ int PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerSiloClearMeshName"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerSiloClearMeshName"
 /*@C
   PetscViewerSiloClearMeshName - Use the default name for the mesh in Silo
 

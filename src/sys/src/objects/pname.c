@@ -112,8 +112,8 @@ int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__
-#define __FUNC__ "PetscObjectChangeSerializeName"
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectChangeSerializeName"
 /*@C
   PetscObjectChangeSerializeName - Changes the serializer name.
 

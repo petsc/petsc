@@ -132,8 +132,8 @@ int SNESView(SNES snes,PetscViewer viewer)
 static int numberofsetfromoptions;
 static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
-#undef __FUNC__  
-#define __FUNC__ "SNESAddOptionsChecker"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESAddOptionsChecker"
 /*@
   SNESAddOptionsChecker - Adds an additional function to check for SNES options.
 
@@ -1921,8 +1921,8 @@ int SNESGetConvergenceHistory(SNES snes,PetscReal **a,int **its,int *na)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESSetRhsBC"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetRhsBC"
 /*@
   SNESSetRhsBC - Sets the function which applies boundary conditions
   to the Rhs of each system.
@@ -1952,8 +1952,8 @@ int SNESSetRhsBC(SNES snes, int (*func)(SNES, Vec, void *))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultRhsBC"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultRhsBC"
 /*@
   SNESDefaultRhsBC - The default boundary condition function which does nothing.
 
@@ -1975,8 +1975,8 @@ int SNESDefaultRhsBC(SNES snes, Vec rhs, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESSetSolutionBC"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetSolutionBC"
 /*@
   SNESSetSolutionBC - Sets the function which applies boundary conditions
   to the solution of each system.
@@ -2006,8 +2006,8 @@ int SNESSetSolutionBC(SNES snes, int (*func)(SNES, Vec, void *))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultSolutionBC"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultSolutionBC"
 /*@
   SNESDefaultSolutionBC - The default boundary condition function which does nothing.
 
@@ -2029,8 +2029,8 @@ int SNESDefaultSolutionBC(SNES snes, Vec sol, void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESSetUpdate"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetUpdate"
 /*@
   SNESSetUpdate - Sets the general-purpose update function called
   at the beginning of every step of the iteration.
@@ -2059,8 +2059,8 @@ int SNESSetUpdate(SNES snes, int (*func)(SNES, int))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "SNESDefaultUpdate"
+#undef __FUNCT__  
+#define __FUNCT__ "SNESDefaultUpdate"
 /*@
   SNESDefaultUpdate - The default update function which does nothing.
 

@@ -21,8 +21,8 @@ typedef struct {
 
 int AOSerialize_Mapping(MPI_Comm, AO *, PetscViewer, PetscTruth);
 
-#undef __FUNC__  
-#define __FUNC__ "AODestroy_Mapping"
+#undef __FUNCT__  
+#define __FUNCT__ "AODestroy_Mapping"
 int AODestroy_Mapping(AO ao)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
@@ -34,8 +34,8 @@ int AODestroy_Mapping(AO ao)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOView_Mapping"
+#undef __FUNCT__  
+#define __FUNCT__ "AOView_Mapping"
 int AOView_Mapping(AO ao, PetscViewer viewer)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
@@ -62,8 +62,8 @@ int AOView_Mapping(AO ao, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication_Mapping"
+#undef __FUNCT__  
+#define __FUNCT__ "AOPetscToApplication_Mapping"
 int AOPetscToApplication_Mapping(AO ao, int n, int *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
@@ -103,8 +103,8 @@ int AOPetscToApplication_Mapping(AO ao, int n, int *ia)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc_Mapping"
+#undef __FUNCT__  
+#define __FUNCT__ "AOApplicationToPetsc_Mapping"
 int AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
@@ -154,8 +154,8 @@ static struct _AOOps AOps = {AOView_Mapping,
                              PETSC_NULL,
                              PETSC_NULL};
 
-#undef __FUNC__  
-#define __FUNC__ "AOSerialize_Mapping" 
+#undef __FUNCT__  
+#define __FUNCT__ "AOSerialize_Mapping" 
 int AOSerialize_Mapping(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth store)
 {
   AO          a;
@@ -201,8 +201,8 @@ int AOSerialize_Mapping(MPI_Comm comm, AO *ao, PetscViewer viewer, PetscTruth st
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOMappingHasApplicationIndex"
+#undef __FUNCT__  
+#define __FUNCT__ "AOMappingHasApplicationIndex"
 /*@C
   AOMappingHasApplicationIndex - Searches for the supplied application index.
 
@@ -249,8 +249,8 @@ int AOMappingHasApplicationIndex(AO ao, int index, PetscTruth *hasIndex)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOMappingHasPetscIndex"
+#undef __FUNCT__  
+#define __FUNCT__ "AOMappingHasPetscIndex"
 /*@C
   AOMappingHasPetscIndex - Searches for the supplied petsc index.
 
@@ -297,8 +297,8 @@ int AOMappingHasPetscIndex(AO ao, int index, PetscTruth *hasIndex)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOCreateMapping"
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreateMapping"
 /*@C
    AOCreateMapping - Creates a basic application mapping using two integer arrays.
 
@@ -430,8 +430,8 @@ int AOCreateMapping(MPI_Comm comm, int napp, int *myapp, int *mypetsc, AO *aoout
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "AOCreateMappingIS"
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreateMappingIS"
 /*@C
    AOCreateMappingIS - Creates a basic application ordering using two index sets.
 
