@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.260 1997/09/30 00:06:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.261 1997/10/01 22:31:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -533,7 +533,7 @@ $     INSERT_VALUES - replaces existing entries with new values
 @*/
 int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,InsertMode addv) 
 {
-  int ierr,irowm[128],icolm[128];
+  int ierr,irowm[2048],icolm[2048];
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidIntPointer(irow);
@@ -550,8 +550,8 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
   if (!mat->mapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping");
   }
-  if (nrow > 128 || ncol > 128) {
-    SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 128");
+  if (nrow > 2048 || ncol > 2048) {
+    SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 2048");
   }
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 #endif
@@ -601,7 +601,7 @@ $     INSERT_VALUES - replaces existing entries with new values
 @*/
 int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,InsertMode addv) 
 {
-  int ierr,irowm[128],icolm[128];
+  int ierr,irowm[2048],icolm[2048];
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidIntPointer(irow);
@@ -617,8 +617,8 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
   if (!mat->bmapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMappingBlocked");
   }
-  if (nrow > 128 || ncol > 128) {
-    SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 128");
+  if (nrow > 2048 || ncol > 2048) {
+    SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 2048");
   }
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 #endif
