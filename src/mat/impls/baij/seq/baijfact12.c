@@ -169,10 +169,10 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   PetscFunctionBegin;
   SSE_SCOPE_BEGIN;
 
-  if (aa%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
-  if (ba%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
+  if ((unsigned long)aa%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
+  if ((unsigned long)ba%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
   ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  if (rtmp%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
+  if ((unsigned long)rtmp%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];

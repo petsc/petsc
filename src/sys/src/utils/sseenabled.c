@@ -81,6 +81,7 @@ int PetscSSEOSEnabledTest_Linux(PetscTruth *flag) {
    Windows ME/2000 doesn't disable SSE Hardware 
 */
 #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_TRUE(arg)
+#endif 
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEOSEnabledTest_TRUE"
@@ -92,7 +93,6 @@ int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
   PetscFunctionReturn(0);
 }
 
-#endif 
 #else  /* Not defined PETSC_HAVE_SSE */
 
 #define PetscSSEHardwareTest(arg) PetscSSEEnabledTest_FALSE(arg)
@@ -130,32 +130,60 @@ int PetscSSEEnabledTest_FALSE(PetscTruth *flag) {
      PETSC_NULL can be specified for lflag or gflag if either of these values are not desired.
 
      Options Database Keys:
-.    -disable_sse - Disable use of SSE hardware
+.    -disable_sse - Disable use of hand tuned Intel SSE implementations
+.    -enable_sse  - Enable use of hand tuned Intel SSE implementations
 
      Level: developer
 @*/
+static PetscTruth petsc_sse_local_is_untested  = PETSC_TRUE;
+static PetscTruth petsc_sse_enabled_local      = PETSC_FALSE;
+static PetscTruth petsc_sse_global_is_untested = PETSC_TRUE;
+static PetscTruth petsc_sse_enabled_global     = PETSC_FALSE;
 int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   int ierr;
-  PetscTruth disabled,local_flag,global_flag;
+  PetscTruth disabled_option,enabled_option;
 
   PetscFunctionBegin;
-  local_flag  = PETSC_FALSE;
-  global_flag = PETSC_FALSE;
-  ierr = PetscOptionsName("-disable_sse","Disable use of Intel SSE instructions.","PetscSSEIsEnabled",&disabled);CHKERRQ(ierr);
-  if (!disabled) {
-    ierr = PetscSSEHardwareTest(&local_flag);CHKERRQ(ierr);
-    if (local_flag) {
-      ierr = PetscSSEOSEnabledTest(&local_flag);CHKERRQ(ierr);
+
+  if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
+    disabled_option = PETSC_FALSE;
+    enabled_option  = PETSC_FALSE;
+
+    ierr = PetscOptionsName("-disable_sse",
+                            "Disable use of hand tuned Intel SSE implementations.","PetscSSEIsEnabled",&disabled_option);CHKERRQ(ierr);
+    if (disabled_option) {
+      petsc_sse_local_is_untested  = PETSC_FALSE;
+      petsc_sse_global_is_untested = PETSC_FALSE;
     }
-    if (gflag) {
-      ierr = MPI_Allreduce(&local_flag,&global_flag,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
+
+    ierr = PetscOptionsName("-enable_sse",
+                            "Enable use of hand tuned Intel SSE implementations.","PetscSSEIsEnabled",&enabled_option);CHKERRQ(ierr);
+    if (enabled_option) {
+      petsc_sse_local_is_untested  = PETSC_FALSE;
+      petsc_sse_enabled_local      = PETSC_TRUE;
+      petsc_sse_global_is_untested = PETSC_FALSE;
+      petsc_sse_enabled_global     = PETSC_TRUE;
+    }
+
+    if (petsc_sse_local_is_untested) {
+      ierr = PetscSSEHardwareTest(&petsc_sse_enabled_local);CHKERRQ(ierr);
+      if (petsc_sse_enabled_local) {
+        ierr = PetscSSEOSEnabledTest(&petsc_sse_enabled_local);CHKERRQ(ierr);
+      }
+      petsc_sse_local_is_untested = PETSC_FALSE;
+    }
+
+    if (gflag && petsc_sse_global_is_untested) {
+      ierr = MPI_Allreduce(&petsc_sse_enabled_local,&petsc_sse_enabled_global,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
+      petsc_sse_global_is_untested = PETSC_FALSE;
     }
   }
+
   if (lflag) {
-    *lflag = local_flag;
+    *lflag = petsc_sse_enabled_local;
   }
   if (gflag) {
-    *gflag = global_flag;
+    *gflag = petsc_sse_enabled_global;
   }
   PetscFunctionReturn(0);
 }

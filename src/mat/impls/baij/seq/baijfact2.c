@@ -3078,7 +3078,7 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
     PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=3\n");
     break; 
   case 4:
-    ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,&sse_enabled_global);CHKERRQ(ierr);
+    ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
     if (sse_enabled_local) {
 #if defined(PETSC_HAVE_SSE)
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
@@ -3175,7 +3175,7 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
       PetscTruth single_prec, flg;
       single_prec = flg = PETSC_FALSE;
       
-      ierr = PetscSSEIsEnabled(A->comm,&sse_enabled_local,&sse_enabled_global);CHKERRQ(ierr);
+      ierr = PetscSSEIsEnabled(A->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
       if (flg) {
         a->single_precision_solves = single_prec;
