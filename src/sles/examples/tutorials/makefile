@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.55 1998/08/29 14:50:15 bsmith Exp balay $ 
+# $Id: makefile,v 1.56 1998/12/03 20:22:45 balay Exp balay $ 
 
 ALL: ex1
 
@@ -315,7 +315,7 @@ runex10_5:
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
 	   ${RM} -f ex10_5.tmp
 runex10_6:
-	-@${MPIRUN} -np 1 ex10 -pc_ilu_levels 2 -pc_ilu_fill 1.73 -ksp_monitor \
+	-@${MPIRUN} -np 1 ex10 -pc_ilu_levels 2 -pc_ilu_fill 1.73 \
 	   -f0 ../../../mat/examples/matrices/fem1 > ex10_6.tmp 2>&1; \
 	   if (diff output/ex10_6.out ex10_6.tmp) then true; \
 	   else echo "Possible problem with ex10_6, diffs above"; fi; \
