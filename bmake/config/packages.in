@@ -15,80 +15,91 @@
 BLAS_LIB       =  @BLAS_LIB@
 LAPACK_LIB     =  @LAPACK_LIB@
 #
-# Location of X-windows software
-#
-X11_INCLUDE    = @CPP_X_INCLUDE@
-X11_LIB        = @X_LIBRARIES@
-#
 # Location of MPI (Message Passing Interface) software  
-# Note that version 1.1 of MPICH now requires linking pmpi when using mpe;
-# make sure to remove the -lmpe and -lpmpi below if you are not using mpe or any 
-# MPI profiling libraries. And remove the -DPETSC_HAVE_MPE from the bottom of the file.
 #
 MPI_LIB        = @MPI_LIB@
 MPI_INCLUDE    = @MPI_INCLUDE@	
 MPIRUN         = @MPIRUN@
 #
-# --------------------------------------------------------------------------  
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = @CPP_X_INCLUDE@
+X11_LIB	       = @X_LIBRARIES@
+PETSC_HAVE_X11 = @PETSC_HAVE_X11@
+#
 #
 # Optional location of MPE
 #
-MPE_LIB       = @MPE_LIB@
-MPE_INCLUDE   = @MPE_INCLUDE@
+MPE_LIB	       = @MPE_LIB@
+MPE_INCLUDE    = @MPE_INCLUDE@
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE = @BS_INCLUDE@
-BS_LIB     = @BS_LIB@
+BLOCKSOLVE_INCLUDE    = @BLOCKSOLVE_INCLUDE@
+BLOCKSOLVE_LIB	      = @BLOCKSOLVE_LIB@
+PETSC_HAVE_BLOCKSOLVE = @PETSC_HAVE_BLOCKSOLVE@
 #
 # Optional Matlab location
 #
-CMEX           = @CMEX@
-MCC            = @MCC@
-MATLABCOMMAND  = @MATLABCOMMAND@
+CMEX		  = @CMEX@
+MCC		  = @MCC@
+MATLABCOMMAND	  = @MATLABCOMMAND@
+PETSC_HAVE_MATLAB = 
+
 #
 # Option location where adiC is installed
 #
-ADIC_INCLUDE = @ADIC_INCLUDE@
-ADIC_LIB     = @ADIC_LIB@
-ADIC_CC      = @ADIC_CC@
+ADIC_INCLUDE	= @ADIC_INCLUDE@
+ADIC_LIB	= @ADIC_LIB@
+ADIC_CC		= @ADIC_CC@
+PETSC_HAVE_ADIC	= @PETSC_HAVE_ADIC@
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = @PVODE_INCLUDE@
-PVODE_LIB     = @PVODE_LIB@
+PVODE_INCLUDE	 = @PVODE_INCLUDE@
+PVODE_LIB	 = @PVODE_LIB@
+PETSC_HAVE_PVODE = @PETSC_HAVE_PVODE@
+
 #
 #
 # Optional location of ParMetis
 #
-PARMETIS_INCLUDE = 
-PARMETIS_LIB     = 
+PARMETIS_INCLUDE    = 
+PARMETIS_LIB	    = 
+PETSC_HAVE_PARMETIS = 
+
 #
 #  Optional location for ALICE Memory Snooper
 #
-AMS_DIR     = 
-AMS_INCLUDE = 
-AMS_LIB     =  
+AMS_DIR	       = 
+AMS_INCLUDE    = 
+AMS_LIB	       = 
+PETSC_HAVE_AMS = 
+
 #
 # Optional location of SPAI;
 #
-SPAI_INCLUDE = 
-SPAI_LIB     = 
-# ---------------------------------------------------------------------------------------
+SPAI_INCLUDE	= 
+SPAI_LIB	= 
+PETSC_HAVE_SPAI	=
+# Location of JAVA
+# 
+JAVAC           =
+JAVA            =
+PETSC_HAVE_JAVA =
 #
-# PCONF - indicates which OPTIONAL external packages are available at your site
+# Location/name of Python
 #
-# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
-# the locations are appropriately indicated above. If you do not have the package then
-# comment out the locations indicated for that package.
-#
-PCONF         = @PCONF@
-EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${MPE_LIB} ${ADIC_LIB}
-
+PETSC_PYTHON    =
 #
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = 
+C_DYLIBPATH     = 
+F_DYLIBPATH     = 

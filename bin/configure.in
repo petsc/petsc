@@ -110,12 +110,12 @@ AC_SUBST(BLAS_LIB)
 AC_ARG_WITH(lapack, lapack=library - Use system-provide LAPACK,LAPACK_LIB=$withval)
 AC_SUBST(LAPACK_LIB)
 dnl
-AC_ARG_WITH(blocksolve, blocksolve=library - Use BlockSolve95,BS_LIB=$withval)
-AC_ARG_WITH(blocksolve-inc, blocksolve-inc=dir - Use BlockSolve95 (include path),BS_INCLUDE=$withval)
+AC_ARG_WITH(blocksolve, blocksolve=library - Use BlockSolve95,BLOCKSOLVE_LIB=$withval)
+AC_ARG_WITH(blocksolve-inc, blocksolve-inc=dir - Use BlockSolve95 (include path),BLOCKSOLVE_INCLUDE=$withval)
 dnl
 dnl convert the BlockSolve include into a CPP command
-if test -n "$BS_INCLUDE" ; then
-    BS_INCLUDE="-I$BS_INCLUDE"
+if test -n "$BLOCKSOLVE_INCLUDE" ; then
+    BLOCKSOLVE_INCLUDE="-I$BLOCKSOLVE_INCLUDE"
 fi
 dnl
 dnl Set default optname
@@ -126,18 +126,16 @@ if test -z "$BOPTNAME" ; then
 fi
 dnl
 dnl Determine if HAVE_BLOCKSOLVE should be defined.  
-if test -n "$BS_INCLUDE" -a -n "$BS_LIB" ; then 
+if test -n "$BLOCKSOLVE_INCLUDE" -a -n "$BLOCKSOLVE_LIB" ; then 
     dnl
     dnl Add information on this CPP variable to acconfig.h as well (this 
     dnl is used to generate petscconf.h.in automatically with the autoheader
     dnl command)
-    dnl Previously, this was put into the PCONF variable; it should be
-    dnl in the definitions file instead.
-    dnl AC_DEFINE(HAVE_BLOCKSOLVE)
-    PCONF="$PCONF -DPETSC_HAVE_BLOCKSOLVE"
+    PETSC_HAVE_BLOCKSOLVE="-DPETSC_HAVE_BLOCKSOLVE"
 fi
-AC_SUBST(BS_LIB)
-AC_SUBST(BS_INCLUDE)
+AC_SUBST(BLOCKSOLVE_LIB)
+AC_SUBST(BLOCKSOLVE_INCLUDE)
+AC_SUBST(PETSC_HAVE_BLOCKSOLVE)
 dnl
 AC_ARG_WITH(pvode, pvode=library - Use PVODE,PVODE_LIB=$withval)
 AC_ARG_WITH(pvode-inc, pvode-inc=dir - Use PVODE (include path),PVODE_INCLUDE=$withval)
@@ -147,11 +145,11 @@ if test -n "$PVODE_INCLUDE" ; then
     PVODE_INCLUDE="-I$PVODE_INCLUDE"
 fi
 if test -n "$PVODE_INCLUDE" -a -n "$PVODE_LIB" ; then 
-    dnl AC_DEFINE(HAVE_PVODE)
-    PCONF="$PCONF -DPETSC_HAVE_PVODE"
+    PETSC_HAVE_PVODE="-DPETSC_HAVE_PVODE"
 fi
 AC_SUBST(PVODE_LIB)
 AC_SUBST(PVODE_INCLUDE)
+AC_SUBST(PETSC_HAVE_PVODE)
 dnl
 AC_ARG_WITH(adic-inc, adic-inc=dir - Specify ADIC include directories,
             ADIC_INCLUDE="$withval")
@@ -159,9 +157,13 @@ AC_ARG_WITH(adic-lib, adic-lib=liblist - Specify ADIC library list,
             ADIC_LIB="$withval")
 AC_ARG_WITH(adic-cc, adic-cc=program - Specify ADIC compiler,
             ADIC_CC="$withval")
+if test -n "$ADIC_INCLUDE" -a -n "$ADIC_LIB" ; then 
+    PETSC_HAVE_ADIC="-DPETSC_HAVE_ADIC"
+fi
 AC_SUBST(ADIC_INCLUDE)
 AC_SUBST(ADIC_LIB)
 AC_SUBST(ADIC_CC)
+AC_SUBST(PETSC_HAVE_ADIC)
 dnl
 AC_ARG_WITH(sitefile, sitefile=file - Specify sitefile,sitefile=$withval)
 dnl
@@ -334,13 +336,12 @@ AC_SUBST(MPI_INCLUDE)
 dnl
 dnl MPICH MPE libraries
 if test -n "$MPE_LIB" -a -n "$MPE_INCLUDE" ; then 
-    dnl AC_DEFINE(HAVE_MPE)
-    PCONF="$PCONF -DPETSC_HAVE_MPE"
+    PETSC_HAVE_MPE="-DPETSC_HAVE_MPE"
 fi
 AC_SUBST(MPE_LIB)
 AC_SUBST(MPE_INCLUDE)
+AC_SUBST(PETSC_HAVE_MPE)
 dnl
-AC_SUBST(PCONF)
 dnl
 dnl Fortran support
 export CC
@@ -421,9 +422,9 @@ dnl
 dnl Convert results into values that we can use.  no_x is yes or empty
 dnl (yes if x is turned off with --without-x, or could not find)
 if test -z "$no_x" ; then
-    dnl AC_DEFINE(HAVE_X11)
-    PCONF="$PCONF -DPETSC_HAVE_X11"
+    PETSC_HAVE_X11="-DPETSC_HAVE_X11"
 fi
+AC_SUBST(PETSC_HAVE_X11)
 if test -n "$x_includes" ; then
      CPP_X_INCLUDE="-I$x_includes"
      AC_SUBST(CPP_X_INCLUDE)
