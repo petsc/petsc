@@ -1,4 +1,4 @@
-# $Id: variables,v 1.1 2001/08/22 20:52:11 balay Exp balay $ 
+# $Id: variables,v 1.2 2001/08/22 21:47:12 balay Exp balay $ 
 #
 #     See the file bmake/variables.defs for a complete explanation of all these fields
 #
@@ -40,7 +40,8 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = pgf90
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB        = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lstdc++ -lpgc -lgcc -lc -lgcc
+CXX_SYS_LIB        = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lstdc++ -lpgc \
+-lgcc -lc -lgcc /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/libg2c.a
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
