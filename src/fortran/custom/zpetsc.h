@@ -18,7 +18,7 @@ extern char   *PETSC_NULL_CHARACTER_Fortran;
        Fortran integer = PetscFromPointer(C pointer)
 
 */
-#if defined(HAVE_64BITS)
+#if defined(USE_POINTER_CONVERSION)
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -29,8 +29,8 @@ extern void PetscRmPointer(int);
 }
 #endif
 #else
-#define PetscToPointer(a)            (a)
-#define PetscFromPointer(a)     (int)(a)
+#define PetscToPointer(a)             (a)
+#define PetscFromPointer(a)     (long)(a)
 #define PetscRmPointer(a)
 #endif
 
@@ -64,12 +64,7 @@ Fortran.
      PetscFromPointerComm - From C to Fortran
 
 */
-#if defined(HAVE_64BITS)
-
-#if defined(USES_INT_MPI_COMM)
-#define PetscToPointerComm(a)        (a)
-#define PetscFromPointerComm(a) (int)(a)
-#else
+#if defined(HAVE_64BITS) && !defined(USES_INT_MPI_COMM)
 /*
     Here we assume that only MPICH uses pointers for 
   MPI_Comms on 64 bit machines.
@@ -84,7 +79,6 @@ extern int   MPIR_FromPointer(void*);
 #endif
 #define PetscToPointerComm(a)    MPIR_ToPointer(a)
 #define PetscFromPointerComm(a)  MPIR_FromPointer(a)
-#endif
 
 #else
 #define PetscToPointerComm(a)        (a)
