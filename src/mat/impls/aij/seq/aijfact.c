@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.48 1995/11/22 01:25:25 balay Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.49 1995/11/29 20:49:28 balay Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -230,6 +230,7 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   if (mat->ilen) PetscFree(mat->ilen);
   if (mat->imax) PetscFree(mat->imax);
   if (mat->solve_work) PetscFree(mat->solve_work);
+  if (mat->inode.size) PetscFree(mat->inode.size);
   PetscFree(mat);
 
   PetscMemcpy(A,C,sizeof(struct _Mat));
@@ -581,7 +582,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
                              realloc,f,((double)ainew[n])/((double)ai[prow]));
 
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJ(A->comm,n, n, 0, 0, fact); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(A->comm,n, n, 0, PetscNull, fact); CHKERRQ(ierr);
   b = (Mat_SeqAIJ *) (*fact)->data;
   PetscFree(b->imax);
   b->singlemalloc = 0;

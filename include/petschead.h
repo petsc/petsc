@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.21 1995/12/11 22:14:14 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.22 1995/12/12 05:21:07 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -31,7 +31,7 @@
   PetscObject parent;                      \
   char*       name;                        \
   void *      child;                       \
-  int         childcopy(void *,void*);     
+  int         (*childcopy)(void *,void*);     
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
