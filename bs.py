@@ -114,7 +114,7 @@ class BS (maker.Maker):
       sourceDB = sourceDatabase.SourceDB()
     atexit.register(self.cleanup)
     sourceDB.setFromArgs(argDB)
-    if not int(argDB['restart']):
+    if not argDB.has_key('restart') or not int(argDB['restart']):
       for source in sourceDB:
         sourceDB.clearUpdateFlag(source)
     return
@@ -127,6 +127,11 @@ class BS (maker.Maker):
         self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'], bootstrapPackages = self.filesets['bootstrap'])
       else:
         self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'])
+      # Add dependencies
+      for url in maker.executeTarget('getDependencies'):
+        project = self.getInstalledProject(url)
+        if not project is None:
+          self.sidlDefaults.usingSIDL.repositoryDirs.append(project.getRoot())
     return self.sidlDefaults
 
   def getCompileDefaults(self):
