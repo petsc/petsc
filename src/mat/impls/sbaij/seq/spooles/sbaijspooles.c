@@ -108,7 +108,6 @@ int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
 
   lu->basetype                   = MATSEQSBAIJ;
   lu->CleanUpSpooles             = PETSC_FALSE;
-  lu->isAIJ                      = PETSC_FALSE;
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 

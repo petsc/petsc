@@ -5532,6 +5532,8 @@ int MatIsHermitian(Mat A,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashGetInfo"
 extern int MatStashGetInfo_Private(MatStash*,int*,int*);
 /*@ 
    MatStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
@@ -5553,8 +5555,6 @@ extern int MatStashGetInfo_Private(MatStash*,int*,int*);
 .seealso: MatAssemblyBegin(), MatAssemblyEnd(), Mat, MatStashSetInitialSize()
   
 @*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatStashGetInfo"
 int MatStashGetInfo(Mat mat,int *nstash,int *reallocs,int *bnstash,int *brealloc)
 {
   int ierr;

@@ -8,11 +8,28 @@
 */
 #include "src/ksp/ksp/impls/gmres/gmresp.h"
 
-/*
-  This version uses classical UNMODIFIED Gram-Schmidt.  It has options for using
-  iterative refinement to improve stability.
+/*@C
+     KSPGMRESClassicalGramSchmidtOrthogonalization -  This is the basic orthogonalization routine 
+                using classical Gram-Schmidt with possible iterative refinement to improve the stability
 
- */
+     Collective on KSP
+
+  Input Parameters:
++   ksp - KSP object, must be associated with GMRES, FGMRES, or LGMRES Krylov method
+-   its - one less then the current GMRES restart iteration, i.e. the size of the Krylov space
+
+   Options Database Keys:
++   -ksp_gmres_classicalgramschmidt - Activates KSPGMRESClassicalGramSchmidtOrthogonalization()
+-   -ksp_gmres_cgs_refinement_type <never,ifneeded,always> - determine if iterative refinement is used to increase the 
+                                   stability of the classical Gram-Schmidt  orthogonalization.
+
+    Notes: Use KSPGMRESSetCGSRefinementType() to determine if iterative refinement is to be used
+
+   Level: intermediate
+
+.seelaso:  KSPGMRESSetOrthogonalization(), KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESSetCGSRefinementType()
+
+@*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESClassicalGramSchmidtOrthogonalization"
 int KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,int it)

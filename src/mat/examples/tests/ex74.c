@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Vec          x,y,b,s1,s2;      
   Mat          A;             /* linear system matrix */ 
-  Mat          sA,sC;         /* symmetric part of the matrices */ 
+  Mat          sA,sB,sC;         /* symmetric part of the matrices */ 
   int          n,mbs=16,bs=1,nz=3,prob=1;
   int          ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr,inc; 
   int          lf;           /* level of fill for icc */
@@ -33,15 +33,15 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-testMatGetRow",&getrow);CHKERRQ(ierr);
 
   n = mbs*bs;
-  ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,PETSC_NULL,PETSC_NULL,&sA);CHKERRQ(ierr);
+  ierr=MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,n,n,PETSC_NULL,PETSC_NULL,&sA);CHKERRQ(ierr);
   ierr = MatSetType(sA,MATSBAIJ);CHKERRQ(ierr);
   /* -mat_type <seqsbaij_derived type>, e.g., seqsbaijspooles, sbaijmumps */
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
-  if (type != MATSEQSBAIJ) doIcc = PETSC_FALSE;
+  ierr = PetscTypeCompare((PetscObject)sA,MATSEQSBAIJ,&doIcc);CHKERRQ(ierr);
   /* printf(" mattype: %s\n",type); */
-  ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);;
+  ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&I,&J);CHKERRQ(ierr);
@@ -148,15 +148,14 @@ int main(int argc,char **args)
 
   /* Test MatNorm(), MatDuplicate() */
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr); 
-  ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sC);CHKERRQ(ierr);
-  ierr = MatNorm(sC,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
-  ierr = MatDestroy(sC);CHKERRQ(ierr);
+  ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
+  ierr = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);CHKERRQ(ierr);
   }
   ierr = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
-  ierr = MatNorm(sA,NORM_INFINITY,&norm2);CHKERRQ(ierr);
+  ierr = MatNorm(sB,NORM_INFINITY,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);CHKERRQ(ierr);
@@ -164,7 +163,7 @@ int main(int argc,char **args)
 
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
   ierr = MatGetInfo(A,MAT_LOCAL,&minfo1);CHKERRQ(ierr);
-  ierr = MatGetInfo(sA,MAT_LOCAL,&minfo2);CHKERRQ(ierr);
+  ierr = MatGetInfo(sB,MAT_LOCAL,&minfo2);CHKERRQ(ierr);
   /*
   printf("matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated); 
   printf("matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated); 
@@ -176,13 +175,13 @@ int main(int argc,char **args)
   }
 
   ierr = MatGetSize(A,&I,&J);CHKERRQ(ierr);
-  ierr = MatGetSize(sA,&i,&j);CHKERRQ(ierr); 
+  ierr = MatGetSize(sB,&i,&j);CHKERRQ(ierr); 
   if (i-I || j-J) {
     PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");CHKERRQ(ierr);
   }
  
   ierr = MatGetBlockSize(A, &I);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(sA, &i);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(sB, &i);CHKERRQ(ierr);
   if (i-I){
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");CHKERRQ(ierr);
   }
@@ -196,7 +195,7 @@ int main(int argc,char **args)
     vr2_wk = vr2;
     ierr = MatGetRow(A,row,&J,&cols1,&vr1);CHKERRQ(ierr); 
     vr1_wk += J-1;
-    ierr = MatGetRow(sA,row,&j,&cols2,&vr2);CHKERRQ(ierr); 
+    ierr = MatGetRow(sB,row,&j,&cols2,&vr2);CHKERRQ(ierr); 
     vr2_wk += j-1;
     ierr = VecCreateSeq(PETSC_COMM_SELF,j,&x);CHKERRQ(ierr);
  
@@ -210,7 +209,7 @@ int main(int argc,char **args)
     } 
     ierr = VecDestroy(x);CHKERRQ(ierr);  
     ierr = MatRestoreRow(A,row,&J,&cols1,&vr1);CHKERRQ(ierr);
-    ierr = MatRestoreRow(sA,row,&j,&cols2,&vr2);CHKERRQ(ierr);
+    ierr = MatRestoreRow(sB,row,&j,&cols2,&vr2);CHKERRQ(ierr);
     ierr = PetscFree(vr1);CHKERRQ(ierr); 
     ierr = PetscFree(vr2);CHKERRQ(ierr);
 
@@ -226,12 +225,12 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF, j, ip_ptr, &isrow);CHKERRQ(ierr);
     /* ISView(isrow, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
     
-    ierr = MatGetSubMatrix(sA,isrow,isrow,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(sB,isrow,isrow,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);CHKERRQ(ierr);
     ierr = ISDestroy(isrow);CHKERRQ(ierr);
     ierr = PetscFree(ip_ptr);CHKERRQ(ierr);
-    printf("sA =\n");
-    ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    printf("submatrix of sA =\n");
+    printf("sB =\n");
+    ierr = MatView(sB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    printf("submatrix of sB =\n");
     ierr = MatView(sC,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = MatDestroy(sC);CHKERRQ(ierr);
   }  
@@ -246,10 +245,10 @@ int main(int argc,char **args)
   ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
 
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr);
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
-  ierr = MatGetDiagonal(sA,s2);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);
   
   ierr = VecAXPY(&neg_one,s1,s2);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm1);CHKERRQ(ierr);
@@ -266,11 +265,11 @@ int main(int argc,char **args)
   */
 
   ierr = MatScale(&alpha,A);CHKERRQ(ierr);
-  ierr = MatScale(&alpha,sA);CHKERRQ(ierr);
+  ierr = MatScale(&alpha,sB);CHKERRQ(ierr);
 
   /* Test MatGetRowMax() */
   ierr = MatGetRowMax(A,s1);CHKERRQ(ierr);
-  ierr = MatGetRowMax(sA,s2);CHKERRQ(ierr); 
+  ierr = MatGetRowMax(sB,s2);CHKERRQ(ierr); 
   ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
@@ -282,7 +281,7 @@ int main(int argc,char **args)
   for (i=0; i<40; i++) { 
     ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
     ierr = MatMult(A,x,s1);CHKERRQ(ierr);
-    ierr = MatMult(sA,x,s2);CHKERRQ(ierr);
+    ierr = MatMult(sB,x,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
@@ -296,7 +295,7 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
     ierr = VecSetRandom(rand,y);CHKERRQ(ierr);
     ierr = MatMultAdd(A,x,y,s1);CHKERRQ(ierr);
-    ierr = MatMultAdd(sA,x,y,s2);CHKERRQ(ierr);
+    ierr = MatMultAdd(sB,x,y,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
@@ -315,17 +314,17 @@ int main(int argc,char **args)
   ierr = PetscMemzero(&factinfo,sizeof(MatFactorInfo));CHKERRQ(ierr);
 
   for (lf=-1; lf<10; lf += inc){   
-    if (lf==-1) {  /* Cholesky factor */
+    if (lf==-1) {  /* Cholesky factor of sB (duplicate sA) */
       factinfo.fill = 5.0;   
-      ierr = MatCholeskyFactorSymbolic(sA,perm,&factinfo,&sC);CHKERRQ(ierr); 
+      ierr = MatCholeskyFactorSymbolic(sB,perm,&factinfo,&sC);CHKERRQ(ierr); 
     } else if (!doIcc){
       break;
     } else {       /* incomplete Cholesky factor */
       factinfo.fill   = 5.0;
       factinfo.levels = lf;
-      ierr = MatICCFactorSymbolic(sA,perm,&factinfo,&sC);CHKERRQ(ierr);
+      ierr = MatICCFactorSymbolic(sB,perm,&factinfo,&sC);CHKERRQ(ierr);
     }
-    ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(sB,&sC);CHKERRQ(ierr);
     /* MatView(sC, PETSC_VIEWER_DRAW_WORLD); */
 
     /* test MatGetDiagonal on numeric factor */
@@ -337,7 +336,7 @@ int main(int argc,char **args)
     }
     */
 
-    ierr = MatMult(sA,x,b);CHKERRQ(ierr);
+    ierr = MatMult(sB,x,b);CHKERRQ(ierr);
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
     ierr = MatDestroy(sC);CHKERRQ(ierr);
       
@@ -355,6 +354,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(perm);CHKERRQ(ierr);
 
   ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(sB);CHKERRQ(ierr); 
   ierr = MatDestroy(sA);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
