@@ -1,5 +1,5 @@
 !
-!  "$Id: petscksp.h,v 1.26 2000/08/18 20:02:55 balay Exp bsmith $";
+!  "$Id: petscksp.h,v 1.27 2000/09/22 20:47:55 bsmith Exp buschelm $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
@@ -43,7 +43,7 @@
       integer KSP_CONVERGED_RTOL,KSP_CONVERGED_ATOL
       integer KSP_DIVERGED_ITS,KSP_DIVERGED_DTOL
       integer KSP_DIVERGED_BREAKDOWN,KSP_CONVERGED_ITERATING
-      integer KSP_CONVERGED_QCG_NEG_CURVE
+      integer KSP_CONVERGED_QCG_NEGATIVE_CURVE
       integer KSP_CONVERGED_QCG_CONSTRAINED
       integer KSP_CONVERGED_STEP_LENGTH
       integer KSP_DIVERGED_BREAKDOWN_BICG
@@ -52,7 +52,7 @@
 
       parameter (KSP_CONVERGED_RTOL      = 2)
       parameter (KSP_CONVERGED_ATOL      = 3)
-      parameter (KSP_CONVERGED_QCG_NEG_CURVE = 5)
+      parameter (KSP_CONVERGED_QCG_NEGATIVE_CURVE = 5)
       parameter (KSP_CONVERGED_QCG_CONSTRAINED = 6)
       parameter (KSP_CONVERGED_STEP_LENGTH = 7)
 
