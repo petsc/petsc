@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.22 1998/04/07 18:48:45 balay Exp bsmith $ 
+# $Id: base.site,v 1.23 1998/04/20 19:27:19 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -12,8 +12,8 @@
 #
 FC_LIB         = -L/opt/SUNWspro/SC4.0/lib -lF77 -lM77 -lsunmath 
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${PETSC_DIR}/docs/installation.html for information on retrieving them.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# for information on retrieving them.
 #
 # If your machine has the file /opt/SUNWspro/SC4.0/lib/libsunperf.a you 
 # can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of

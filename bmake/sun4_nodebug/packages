@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base.site,v 1.6 1998/04/07 18:49:49 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -15,8 +15,8 @@
 FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/libm.a
 #FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${PETSC_DIR}/readme for information on retrieving a subset.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
+# for information on retrieving them.
 #
 BLAS_LIB       =  /usr/local/lapack/lib/blas.a
 LAPACK_LIB     =  /usr/local/lapack/lib/lapack.a

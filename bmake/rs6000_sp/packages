@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 1998/04/07 18:47:40 balay Exp balay $ 
+# $Id: base.site,v 1.17 1998/04/13 20:30:38 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -24,8 +24,8 @@
 #
 FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a 
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${PETSC_DIR}/docs/instllation.html for information on retrieving them.
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/instllation.html
+# for information on retrieving them.
 #
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.

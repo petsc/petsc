@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 1998/04/08 18:31:35 balay Exp balay $ 
+# $Id: base.site,v 1.6 1998/04/08 20:30:52 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,8 +13,8 @@
 FC_LIB         = /ccsthome/balay/egcs/solaris/lib/libf2c.a -lm
 #FC_LIB          = -lf2c -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath 
 #
-# Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see ${PETSC_DIR}/docs/intallation.html for information on retrieving them.
+# Location of BLAS and LAPACK. See ${PETSC_DIR}/docs/intallation.html for
+# information on retrieving them.
 #
 BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_solaris_gnu.a  ${FC_LIB}
 LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_solaris_gnu.a
