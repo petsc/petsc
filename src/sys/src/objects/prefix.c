@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: prefix.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: prefix.c,v 1.7 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -10,12 +10,16 @@ static char vcid[] = "$Id: prefix.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $
 #define __FUNC__ "PetscObjectSetOptionsPrefix" /* ADIC Ignore */
 /*
    PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all 
-   options of PetscObjectType in the database. You must NOT include the - at the beginning of 
-   the prefix name.
+   options of PetscObjectType in the database. 
 
    Input Parameters:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
 .  prefix - the prefix string to prepend to option requests of the object.
+
+   Notes: 
+   The first character of all runtime options is automatically the
+   hyphen (-);  thus, the hyphen must NOT be given at the beginning
+   of the prefix name.
 
 .keywords: object, set, options, prefix, database
 */
@@ -33,12 +37,16 @@ int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
 #define __FUNC__ "PetscObjectAppendOptionsPrefix" /* ADIC Ignore */
 /*
    PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all 
-   options of PetscObjectType in the database. You must NOT include the - at the beginning of 
-   the prefix name.
+   options of PetscObjectType in the database. 
 
    Input Parameters:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
 .  prefix - the prefix string to prepend to option requests of the object.
+
+   Notes: 
+   The first character of all runtime options is automatically the
+   hyphen (-);  thus, the hyphen must NOT be given at the beginning
+   of the prefix name.
 
 .keywords: object, append, options, prefix, database
 */
