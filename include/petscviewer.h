@@ -144,6 +144,8 @@ EXTERN int PetscViewerGetFilename(PetscViewer,char**);
 EXTERN int PetscPLAPACKInitializePackage(char *);
 EXTERN int PetscPLAPACKFinalizePackage();
 
+EXTERN int PetscViewerVUGetPointer(PetscViewer, FILE**);
+
 EXTERN int PetscViewerMathematicaInitializePackage(char *);
 EXTERN int PetscViewerMathematicaFinalizePackage(void);
 EXTERN int PetscViewerMathematicaGetName(PetscViewer, const char **);
@@ -223,7 +225,3 @@ EXTERN int PetscViewersDestroy(PetscViewers);
 EXTERN int PetscViewersGetViewer(PetscViewers,int,PetscViewer*);
 
 #endif
-
-
-
-
