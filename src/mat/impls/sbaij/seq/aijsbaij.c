@@ -1,6 +1,7 @@
 /*$Id: aijsbaij.c,v 1.9 2001/08/07 03:02:55 balay Exp $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -8,9 +9,10 @@ EXTERN_C_BEGIN
 int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat *B)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
-  int          ierr,*ai=a->i,*aj,m=A->M,n=A->N,i;
-  int          *rowlengths;
-  PetscScalar  *av;
+  Mat_SeqSBAIJ *b;
+  int          ierr,*ai=a->i,*aj,m=A->M,n=A->N,i,j,
+               *bi=b->i,*bj=b->j,*rowlengths;
+  PetscScalar  *av,*bv;
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_SUP,"Matrix must be a square matrix");
@@ -28,10 +30,21 @@ int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat *B)
   ierr = MatSetOption(*B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(*B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
+  b  = (Mat_SeqSBAIJ*)(*B)->data;
+  bi = b->i;
+  bj = b->j;
+  bv = b->a;
+
+  bi[0] = 0;
   for (i=0; i<m; i++) {
-    aj   = a->j + a->diag[i];
-    av   = a->a + a->diag[i];
-    ierr = MatSetValues(*B,1,&i,rowlengths[i],aj,av,INSERT_VALUES);CHKERRQ(ierr);
+    aj = a->j + a->diag[i];
+    av = a->a + a->diag[i];    
+    for (j=0; j<rowlengths[i]; j++){
+      *bj = *aj; bj++; aj++;
+      *bv = *av; bv++; av++;
+    }
+    bi[i+1]    = bi[i] + rowlengths[i];
+    b->ilen[i] = rowlengths[i];
   }
  
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
