@@ -999,7 +999,7 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
    matrix assembly.  See the routine MatZeroEntries() if desiring to
    zero all elements of a matrix.
 
-   Level: developer
+   Level: intermediate
 
 .keywords: PC, set, operators, matrix, linear system
 
@@ -1054,7 +1054,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 -  flag - flag indicating information about the preconditioner
           matrix structure.  See PCSetOperators() for details.
 
-   Level: developer
+   Level: intermediate
 
 .keywords: PC, get, operators, matrix, linear system
 
@@ -1085,7 +1085,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
    The vector must be set so that the preconditioner knows what type
    of vector to allocate if necessary.
 
-   Level: developer
+   Level: intermediate
 
 .keywords: PC, set, vector
 
@@ -1116,7 +1116,7 @@ int PCSetVector(PC pc,Vec vec)
    Output Parameter:
 .  vec - the vector
 
-   Level: developer
+   Level: intermediate
 
 .keywords: PC, get, vector
 
