@@ -1,7 +1,7 @@
-/*$Id: ex1.c,v 1.3 2000/08/23 18:42:50 balay Exp balay $*/
+/*$Id: ex1.c,v 1.4 2000/08/23 18:56:04 balay Exp balay $*/
 
 #include <stdio.h>
-#include "src/fortran/f90/zf90.h"
+#include "petscf90.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define fortran_routine_ FORTRAN_ROUTINE
@@ -13,24 +13,32 @@
 
 typedef struct {
   int a;
-  array1d b;
+  void *b;
+} part1;
+
+typedef struct {
   int c;
-} abc;
+} part2;
 
 EXTERN_C_BEGIN
 
-extern void fortran_routine_(abc *x);
+extern void fortran_routine_(void *x);
 
-void c_routine_(abc *x)
+void c_routine_(void *in)
 {
-  double *data = (double*)x->b.addr;
+  double     *data;
+  part2      *y;
+  part1      *x  = (part1 *)in;
+  F90Array1d ptr = (F90Array1d)&(x->b);
 
-  printf("From C: %d %5.2e %d\n",x->a,data[0],x->c);
+  F90Array1dAccess(ptr,(void **)&data);
+  F90Array1dGetNextRecord(ptr,(void**)&y);
+  printf("From C: %d %5.2e %d\n",x->a,data[0],y->c);
   fflush(stdout);
   x->a = 2;
 
   data[0] = 22.0;
-  x->c = 222;
+  y->c = 222;
   fortran_routine_(x); 
 }
 
