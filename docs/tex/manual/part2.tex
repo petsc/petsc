@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.279 1998/06/07 19:18:06 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.280 1998/06/30 21:53:57 bsmith Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1595,6 +1595,7 @@ MatCopy(Mat A,Mat B); &  $ B = A $ \\
 MatGetDiagonal(Mat A,Vec x); & $ x = \hbox{diag}(A)$ \\
 MatTranspose(Mat A,Mat* B); & $ B = A^{T} $ \\
 MatZeroEntries(Mat A); & $ A = 0 $ \\
+MatShift(Scalar *a,Mat Y); & $ Y =  Y + a*I $ \\
 \hline 
 \end{tabular}
 \end{center}
