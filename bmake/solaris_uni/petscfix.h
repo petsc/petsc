@@ -39,6 +39,7 @@ extern double atof(const char *);
 extern void    free(void *);
 extern void   *malloc(long unsigned int );
 extern int    getrusage(int,s_rusage);
+extern void   *memalign(int,int);
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern void   exit(int);
@@ -284,13 +285,14 @@ extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
 extern void   *memalign (size_t, size_t);
-extern int    getpagesize();
+extern unsigned int getpagesize();
 }
 
 #else
 extern char   *getenv( char *);
 extern double atof(char *);
 extern int    atoi(char*);
+extern unsigned int getpagesize();
 #endif
 #endif
 
