@@ -401,14 +401,14 @@ class SharedLinker(Linker):
       outputTag = inputTag[0]+' shared library'
     Linker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
     if self.libExt is None:
-      if 'HAVE_CYGWIN' in self.argDB:
+      if self.argDB['HAVE_CYGWIN']:
         self.libExt = 'dll'
       else:
         self.libExt = 'so'
     return
 
   def __str__(self):
-    if 'HAVE_CYGWIN' in self.argDB:
+    if self.argDB['HAVE_CYGWIN']:
       return 'Cygwin Shared linker('+self.processor+') for '+str(self.inputTag)
     return 'Shared linker('+self.processor+') for '+str(self.inputTag)
 
@@ -437,7 +437,7 @@ class SharedLinker(Linker):
 
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the library'''
-    if 'HAVE_CYGWIN' in self.argDB:
+    if self.argDB['HAVE_CYGWIN']:
       output_library_name = self.getLibrary(source)
       return ['-o '+output_library_name+' -Wl,--out-implib='+output_library_name+'.a']
     return super(SharedLinker, self).getOutputFlags(source)

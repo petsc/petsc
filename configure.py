@@ -15,6 +15,8 @@ class Configure(config.base.Configure):
     if self.libraries.haveLib('cygwin'):
       self.framework.addDefine('HAVE_CYGWIN', 1)
       self.framework.addSubstitution('HAVE_CYGWIN', 1)
+    else:
+      self.framework.addSubstitution('HAVE_CYGWIN', 0)
     return
 
   def checkCompiler(self):
