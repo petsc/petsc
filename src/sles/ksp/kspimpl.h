@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.24 1996/09/12 16:25:08 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.25 1996/11/07 15:07:59 bsmith Exp curfman $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -37,8 +37,7 @@ struct _KSP {
                                       passed back to the user */ 
   double *residual_history;        /* If !0 stores residual at iterations*/
   int    res_hist_size;            /* Size of residual history array */
-  int    res_act_size;             /* actual amount of data in residual_history
-				      */
+  int    res_act_size;             /* actual amount of data in residual_history */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
   int  (*monitor[MAXKSPMONITORS])(KSP,int,double,void*); /* returns control to user after */
