@@ -44,6 +44,7 @@ class BuildChecker(script.Script):
                'linux-gnu-ia64-intel': ['intel', 'intelF90'],
                'linux-gnu-uni':        ['gcc'],
                'linux-gnu-valgrind':   ['gcc'],
+               'linux-mcs':            ['gcc'],
                'macosx-gnu':           ['gcc'],
                'macosx-ibm':           ['ibm'],
                'osf5.0':               ['mipsUltrix'],
