@@ -134,7 +134,9 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   Vec                     x_seq;
   IS                      iden;
   VecScatter              scat;
-
+  PetscLogDouble time0,time,time_min,time_max; /* to be removed later */
+  int            rank;                         /* to be removed later */
+  
   PetscFunctionBegin;
   if (size > 1) {  /* convert mpi vector b to seq vector x_seq */
     VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);
@@ -151,10 +153,13 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   }
  
   options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only.*/
-  
+
   PStatInit(&stat);        /* Initialize the statistics variables. */
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr); /* to be removed */
+  ierr = PetscGetTime(&time0);CHKERRQ(ierr);  /* to be removed */
   pdgssvx_ABglobal(&options, &lu->A_sup, &lu->ScalePermstruct, bptr, m, nrhs, 
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);
+  ierr = PetscGetTime(&time);CHKERRQ(ierr);  /* to be removed */
   if (lu->StatPrint) PStatPrint(&stat, &lu->grid);     /* Print the statistics. */
   PStatFree(&stat);
  
@@ -166,6 +171,15 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecDestroy(x_seq);CHKERRQ(ierr);
   } else {
     ierr = VecRestoreArray(x,&bptr);CHKERRQ(ierr); 
+  }
+  time0 = time - time0;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,PETSC_COMM_WORLD);
+  ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,PETSC_COMM_WORLD);
+  ierr = MPI_Reduce(&time0,&time,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);
+  time = time/size; /* average time */
+  if (!rank) {
+    PetscPrintf(PETSC_COMM_SELF, "  Time for superlu_dist solve (max/min/avg): %g / %g / %g\n\n",time_max,time_min,time);
   }
 
   PetscFunctionReturn(0);
@@ -186,8 +200,12 @@ extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   double                  *a; 
   SuperMatrix             A_sup;
   IS                      isrow,iscol;
+  PetscLogDouble time0[2],time[2],time_min[2],time_max[2]; /* to be removed later */
+  int            i,rank;                         /* to be removed later */
 
   PetscFunctionBegin;
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscGetTime(&time0[0]);CHKERRQ(ierr);  
   if (size > 1) { /* convert mpi A to seq mat A */
     ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow); CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol); CHKERRQ(ierr);
@@ -210,13 +228,22 @@ extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   /* Convert Petsc NR matrix storage to SuperLU_DIST NC storage */
   dCompRow_to_CompCol(M,N,aa->nz,aa->a,aa->j,aa->i,&a, &asub, &xa);
 
+  ierr = PetscGetTime(&time[0]);CHKERRQ(ierr);  /* to be removed */
+  time0[0] = time[0] - time0[0];
+
   /* Create compressed column matrix A_sup. */
   dCreate_CompCol_Matrix_dist(&A_sup, M, N, aa->nz, a, asub, xa, NC, D, GE);  
 
   /* Factor the matrix. */
   PStatInit(&stat);                /* Initialize the statistics variables. */
+
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = PetscGetTime(&time0[1]);CHKERRQ(ierr);  
   pdgssvx_ABglobal(&lu->options, &A_sup, &lu->ScalePermstruct, bptr, M, 0, 
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);  
+  ierr = PetscGetTime(&time[1]);CHKERRQ(ierr);  /* to be removed */
+  time0[1] = time[1] - time0[1];
+
   if (lu->StatPrint) PStatPrint(&stat, &lu->grid);        /* Print the statistics. */
   PStatFree(&stat);  
 
@@ -225,7 +252,17 @@ extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   if (size > 1){
     ierr = MatDestroy(A_seq);CHKERRQ(ierr);
   }
- 
+
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Reduce(time0,time_max,2,MPI_DOUBLE,MPI_MAX,0,PETSC_COMM_WORLD);
+  ierr = MPI_Reduce(time0,time_min,2,MPI_DOUBLE,MPI_MIN,0,PETSC_COMM_WORLD);
+  ierr = MPI_Reduce(time0,time,2,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);
+  for (i=0; i<2; i++) time[i] = time[i]/size; /* average time */
+  if (!rank) {
+    PetscPrintf(PETSC_COMM_SELF, "  Time for mat conversion (max/min/avg):    %g / %g / %g\n",time_max[0],time_min[0],time[0]);
+    PetscPrintf(PETSC_COMM_SELF, "  Time for superlu_dist fact (max/min/avg): %g / %g / %g\n\n",time_max[1],time_min[1],time[1]);
+  }
+
   PetscFunctionReturn(0);
 }
 
