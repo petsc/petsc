@@ -37,3 +37,13 @@ Location of email sent to petsc-maint:
 
 FTP log file.
 charlotte  /usr/adm/xferlog
+
+Paragon account 
+   telnet paragate.sdsc.edu 7577
+   user id u12461
+   cannot ftp to 
+   use /usr/local/bin/rftp to get out, you must use numerical
+       IP address with rftp
+   you must run make with the -e option and have the environmental
+   argument IPETSCDIR properly set.
+
