@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.1 1995/11/23 00:33:54 bsmith Exp bsmith $";
+C      "$Id: ex36.F,v 1.2 1995/11/23 03:52:15 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -8,15 +8,15 @@ C      "$Id: ex36.F,v 1.1 1995/11/23 00:33:54 bsmith Exp bsmith $";
 #include "include/finclude/sles.h"
 #include "include/finclude/viewer.h"
 C
-C  Demonstrates how a Fortran user can access the array storing a PETSc dense matrix
+C Demonstrates how a Fortran user can access the array storing a PETSc dense matrix.
 C The "global" varable PetscDouble() is indexed by the integer obtained from
-C MatGetArray(). This index indicates the position in PetscDouble() that 
-C is were the Matrix array storage begins. Note also the use of PetscNull to 
-C indicate no storage is being provided (do not pass a zero in that location).
+C MatGetArray().  This index indicates the position in PetscDouble() where the
+C matrix array storage begins.  Note also the use of PetscNull to indicate that no
+C storage is being provided (do NOT pass a zero in that location).
 C
 
-      integer          ierr,idx,n,m
-      Mat              A
+      integer ierr,idx,n,m
+      Mat     A
 
       call PetscInitialize(ierr)
       m = 5
@@ -32,7 +32,7 @@ C
       call PetscFinalize(ierr)
       stop
       end
-
+C -----------------------------------------------------------------
       subroutine FillUpMatrix(m,n,X)
       integer          m,n,i,j
       double precision X(m,n)
