@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.2 2000/09/23 14:56:18 balay Exp balay $*/
+/*$Id: ex24.c,v 1.3 2000/09/23 14:58:28 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests CG, MINRES and SYMMLQ on symmetric matrice with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   /* a shift can make C indefinite. Preconditioners LU, ILU (for BAIJ format) and ICC may fail */
-  /* ierr = MatShift(&alpha, C); CHKERRA(ierr); */
+  /* ierr = MatShift(&alpha, C);CHKERRA(ierr); */
   /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
 
   /* PART 3: Setup and solve for system */
@@ -58,7 +58,7 @@ int main(int argc,char **args)
   /* Set exact solution u; then compute right-hand-side vector b. */   
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
   ierr = VecSetRandom(r,u);CHKERRA(ierr);
-  ierr = PetscRandomDestroy(r); CHKERRA(ierr); 
+  ierr = PetscRandomDestroy(r);CHKERRA(ierr); 
   
   ierr = MatMult(C,u,b);CHKERRA(ierr); 
 
@@ -101,7 +101,7 @@ int main(int argc,char **args)
     ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
    
   /* Check error */
-    ierr = VecCopy(u,u_tmp); CHKERRA(ierr); 
+    ierr = VecCopy(u,u_tmp);CHKERRA(ierr); 
     ierr = VecAXPY(&none,x,u_tmp);CHKERRA(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&err_norm);CHKERRA(ierr);
     ierr = MatMult(C,x,u_tmp);CHKERRA(ierr);  

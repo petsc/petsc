@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.6 2000/09/14 14:40:54 bsmith Exp bsmith $*/
+/*$Id: minres.c,v 1.7 2000/09/21 19:44:28 bsmith Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -83,7 +83,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
   if (PetscAbsScalar(dp) < minres->haptol) {
     PLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
-    dp = 0.0;
+    dp = PetscAbsScalar(dp); /* tiny number, can't use 0.0, cause divided by below */
   }
 
 #if !defined(PETSC_USE_COMPLEX)
@@ -128,7 +128,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
      ierr = VecDot(R,Z,&dp);CHKERRQ(ierr); 
      if (PetscAbsScalar(dp) < minres->haptol) {
        PLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
-       dp = 0.0;
+       dp = PetscAbsScalar(dp); /* tiny number, can we use 0.0? */
      }
 
 #if !defined(PETSC_USE_COMPLEX)

@@ -1,4 +1,4 @@
-/*$Id: lusol.c,v 1.2 2000/09/22 20:43:38 bsmith Exp bsmith $*/
+/*$Id: lusol.c,v 1.3 2000/09/24 18:16:57 bsmith Exp bsmith $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -474,7 +474,7 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      {
 	  lusol->elbowroom = PetscMax(lusol->elbowroom, info->fill);
      }
-     nnz = PetscMax(lusol->elbowroom*nz, 5*n);
+     nnz = PetscMax((int)(lusol->elbowroom*nz), 5*n);
      
      lusol->n = n;
      lusol->nz = nz;
