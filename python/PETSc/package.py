@@ -37,7 +37,10 @@ class Package(config.base.Configure):
     # include files we wish to check for
     self.includes     = []
     # list of libraries we wish to check for (can be overwritten by providing your own generateLibraryList()
-    self.liblist      = [] 
+    self.liblist      = []
+    # location of libraries and includes in packages directory tree
+    self.libdir       = 'lib'
+    self.includedir   = 'include'
     
   def __str__(self):
     '''Prints the location of the packages includes and libraries'''
@@ -74,7 +77,7 @@ class Package(config.base.Configure):
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
       dir = os.path.abspath(self.framework.argDB['with-'+self.package+'-dir'])
-      yield('User specified '+self.PACKAGE+' root directory',self.generateLibList(os.path.join(dir,'lib')),os.path.join(dir,'include'))
+      yield('User specified '+self.PACKAGE+' root directory',self.generateLibList(os.path.join(dir,self.libdir)),os.path.join(dir,self.includedir))
     if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
       dir1 = os.path.abspath(self.framework.argDB['with-'+self.package+'-lib'])
       if os.path.isdir(dir1): libs = self.generateLibList(dir1)
