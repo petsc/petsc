@@ -169,6 +169,10 @@ int main(int argc,char **argv)
   ierr = UserCreateEuler(comm,solve_with_julianne,log_stage_0,&app); CHKERRA(ierr);
   PLogEventEnd(init1,0,0,0,0);
 
+  ierr = PLogEventRegister(&(app->event_pack),"PackWork        ","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&(app->event_unpack),"UnpackWork      ","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&(app->event_localf),"Local fct eval  ","Red:"); CHKERRA(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Read mesh and convert to parallel version
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -283,6 +287,8 @@ int main(int argc,char **argv)
   ierr = KSPSetTolerances(app->ksp,app->ksp_rtol_max,PETSC_DEFAULT,
          PETSC_DEFAULT,app->ksp_max_it); CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(app->ksp,app->ksp_max_it+1); CHKERRA(ierr);
+  /* ierr = KSPGMRESSetOrthogonalization(app->ksp,
+         KSPGMRESUnmodifiedGramSchmidtOrthogonalization); CHKERRA(ierr); */
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
                                 1.e-13,1000,100000); CHKERRA(ierr);
 
@@ -385,7 +391,7 @@ int main(int argc,char **argv)
     }
   }
   if (app->rank == 0) {
-    fprintf(app->fp," ];\nTotal SLES iterations = %d, Total time = %g sec\n",app->sles_tot,app->ftime[its]);
+    fprintf(app->fp," ];\n\% Total SLES iterations = %d, Total time = %g sec\n",app->sles_tot,app->ftime[its]);
     fclose(app->fp);
   }
 
@@ -1037,6 +1043,9 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     }
   }
 
+  /* Not quite right because we should be timing the jpressure call too */
+  PLogEventBegin(app->event_localf,0,0,0,0);
+
   /* Flag for controlling "frozen" limiters:
         matrix_free_mult = 0: not in the midst of a matrix-free multiply
         matrix_free_mult = 1: matrix-free mult: using frozen limiter
@@ -1133,6 +1142,7 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
          app->aiz,app->ajz,app->akz,&app->ts_type); */
   }
+  PLogEventEnd(app->event_localf,0,0,0,0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Assemble vector F(X) by converting from Julianne work arrays 
@@ -1341,7 +1351,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       ni1 = 98; nj1 = 18; nk1 = 18;
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
       app->eps_jac        = 1.0e-7;
-      app->eps_mf_default = 5.0e-4;
+      app->eps_mf_default = 1.52e-5;
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 50; 
       app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
@@ -1351,7 +1361,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       ni1 = 194; nj1 = 34; nk1 = 34;
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
       app->eps_jac        = 1.0e-7;
-      app->eps_mf_default = 5.0e-3;
+      app->eps_mf_default = 1.42e-5;
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 100; 
       app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
@@ -1710,24 +1720,37 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   /* Fortran work arrays for vectors */
   llen = (app->gxefp1 - app->gxsf1+1) * (app->gyefp1 - app->gysf1+1) 
             * (app->gzefp1 - app->gzsf1+1);
-  app->dr = (Scalar *)PetscMalloc(17*llen*sizeof(Scalar)); CHKPTRQ(app->dr);
-
-  app->dru   = app->dr    + llen; /* components of F vector */
-  app->drv   = app->dru   + llen;
-  app->drw   = app->drv   + llen;
-  app->de    = app->drw   + llen;
-  app->r     = app->de    + llen; /* components of X vector */
-  app->ru    = app->r     + llen;
-  app->rv    = app->ru    + llen;
-  app->rw    = app->rv    + llen;
-  app->e     = app->rw    + llen;
-  app->p     = app->e     + llen; /* pressure */
+  app->p = (Scalar *)PetscMalloc(7*llen*sizeof(Scalar)); CHKPTRQ(app->p);
   app->p_bc  = app->p     + llen; /* parallel bc work space */
   app->r_bc  = app->p_bc  + llen;
   app->ru_bc = app->r_bc  + llen;
   app->rv_bc = app->ru_bc + llen;
   app->rw_bc = app->rv_bc + llen;
   app->e_bc  = app->rw_bc + llen;
+
+  if (app->reorder) {
+    app->dr = (Scalar *)PetscMalloc(17*llen*sizeof(Scalar)); CHKPTRQ(app->dr);
+    app->dru   = app->dr    + llen; /* components of F vector */
+    app->drv   = app->dru   + llen;
+    app->drw   = app->drv   + llen;
+    app->de    = app->drw   + llen;
+    app->r     = app->de    + llen; /* components of X vector */
+    app->ru    = app->r     + llen;
+    app->rv    = app->ru    + llen;
+    app->rw    = app->rv    + llen;
+    app->e     = app->rw    + llen;
+  } else {
+    app->dr    = 0;
+    app->dru   = 0;
+    app->drv   = 0;
+    app->drw   = 0;
+    app->de    = 0;
+    app->r     = 0;
+    app->ru    = 0;
+    app->rv    = 0;
+    app->rw    = 0;
+    app->e     = 0;
+  }
 
   /* Fortran work arrays for matrix (diagonal) blocks */
   llen = (app->xefp1 - app->gxsf1 + 1) * (app->yefp1 - app->gysf1 + 1) 
