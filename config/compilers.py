@@ -112,6 +112,8 @@ class Configure(config.base.Configure):
           yield 'mpicc'
         if not Configure.isGNU('mpicc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpicc'
+        if not Configure.isGNU('mpxlc') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpxlc'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -244,6 +246,8 @@ class Configure(config.base.Configure):
           yield 'mpic++'
         if not Configure.isGNU('mpic++') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpic++'
+        if not Configure.isGNU('mpCC') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpCC'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
       vendor = self.framework.argDB['with-vendor-compilers']
@@ -379,6 +383,8 @@ class Configure(config.base.Configure):
           yield 'mpif7'
         if not Configure.isGNU('mpif77') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpif77'
+        if not Configure.isGNU('mpxlf') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
+          yield 'mpxlf'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g77'
       vendor = self.framework.argDB['with-vendor-compilers']
