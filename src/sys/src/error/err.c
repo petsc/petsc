@@ -10,10 +10,10 @@
 
 typedef struct _EH *EH;
 struct _EH {
-  int    cookie;
+  int            cookie;
   PetscErrorCode (*handler)(int,const char*,const char*,const char *,int,int,const char*,void *);
-  void   *ctx;
-  EH     previous;
+  void           *ctx;
+  EH             previous;
 };
 
 static EH eh = 0;

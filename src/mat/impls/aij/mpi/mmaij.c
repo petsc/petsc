@@ -137,12 +137,11 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 */
 PetscErrorCode DisAssemble_MPIAIJ(Mat A)
 {
-  Mat_MPIAIJ   *aij = (Mat_MPIAIJ*)A->data;
-  Mat          B = aij->B,Bnew;
-  Mat_SeqAIJ   *Baij = (Mat_SeqAIJ*)B->data;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)A->data;
+  Mat            B = aij->B,Bnew;
+  Mat_SeqAIJ     *Baij = (Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
-  int          i,j,m = B->m,n = A->N,col,ct = 0,*garray = aij->garray;
-  int          *nz,ec;
+  PetscInt       i,j,m = B->m,n = A->N,col,ct = 0,*garray = aij->garray,*nz,ec;
   PetscScalar  v;
 
   PetscFunctionBegin;

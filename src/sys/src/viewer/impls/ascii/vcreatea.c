@@ -6,8 +6,7 @@
     The variable Petsc_Viewer_Stdout_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
 */
-static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
-
+static PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_STDOUT_"  
@@ -100,7 +99,7 @@ PetscViewer PETSC_VIEWER_STDERR_(MPI_Comm comm)
     ierr = PetscViewerASCIIOpen(comm,"stderr",&viewer);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Stderr_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
   } 

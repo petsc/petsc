@@ -18,8 +18,8 @@ EXTERN_C_END
 PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int            rank;
-  int            dim,m,n,p,dof,swidth;
+  PetscMPIInt    rank;
+  PetscInt       dim,m,n,p,dof,swidth;
   DAStencilType  stencil;
   DAPeriodicType periodic;
   mxArray        *mx;
@@ -27,23 +27,21 @@ PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
-
-  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
-
-  mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
-  if (!mx) SETERRQ(1,"Unable to generate Matlab struct array to hold DA informations");
-  mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
-  mxSetFieldByNumber(mx,0,1,mxCreateDoubleScalar((double)m));
-  mxSetFieldByNumber(mx,0,2,mxCreateDoubleScalar((double)n));
-  mxSetFieldByNumber(mx,0,3,mxCreateDoubleScalar((double)p));
-  mxSetFieldByNumber(mx,0,4,mxCreateDoubleScalar((double)dof));
-  mxSetFieldByNumber(mx,0,5,mxCreateDoubleScalar((double)swidth));
-  mxSetFieldByNumber(mx,0,6,mxCreateDoubleScalar((double)periodic));
-  mxSetFieldByNumber(mx,0,7,mxCreateDoubleScalar((double)stencil));
-
-  ierr = PetscObjectName((PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscViewerMatlabPutVariable(viewer,da->name,mx);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+    mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
+    if (!mx) SETERRQ(1,"Unable to generate Matlab struct array to hold DA informations");
+    mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
+    mxSetFieldByNumber(mx,0,1,mxCreateDoubleScalar((double)m));
+    mxSetFieldByNumber(mx,0,2,mxCreateDoubleScalar((double)n));
+    mxSetFieldByNumber(mx,0,3,mxCreateDoubleScalar((double)p));
+    mxSetFieldByNumber(mx,0,4,mxCreateDoubleScalar((double)dof));
+    mxSetFieldByNumber(mx,0,5,mxCreateDoubleScalar((double)swidth));
+    mxSetFieldByNumber(mx,0,6,mxCreateDoubleScalar((double)periodic));
+    mxSetFieldByNumber(mx,0,7,mxCreateDoubleScalar((double)stencil));
+    ierr = PetscObjectName((PetscObject)da);CHKERRQ(ierr);
+    ierr = PetscViewerMatlabPutVariable(viewer,da->name,mx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 #endif

@@ -39,7 +39,7 @@ M*/
 
 typedef struct {
   MATFile             *ep;
-  int                 rank;
+  PetscMPIInt         rank;
   PetscViewerFileType btype;
 } PetscViewer_Matlab;
 
@@ -68,17 +68,18 @@ PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,PetscScal
   mxArray            *mat;
   
   PetscFunctionBegin;  
-  if (ml->rank) PetscFunctionReturn(0);
-  PetscLogInfo(0,"Putting Matlab array %s\n",name);
+  if (!ml->rank) {
+    PetscLogInfo(0,"Putting Matlab array %s\n",name);
 #if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(m,n,mxREAL);
+    mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
-  mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
+    mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
-  ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-  matPutVariable(ml->ep,name,mat);
+    ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    matPutVariable(ml->ep,name,mat);
 
-  PetscLogInfo(0,"Put Matlab array %s\n",name);
+    PetscLogInfo(0,"Put Matlab array %s\n",name);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -118,12 +119,13 @@ PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScal
   mxArray            *mat;
   
   PetscFunctionBegin;  
-  if (ml->rank) PetscFunctionReturn(0);
-  PetscLogInfo(0,"Getting Matlab array %s\n",name);
-  mat  = matGetVariable(ml->ep,name);
-  if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
-  ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-  PetscLogInfo(0,"Got Matlab array %s\n",name);
+  if (!ml->rank) {
+    PetscLogInfo(0,"Getting Matlab array %s\n",name);
+    mat  = matGetVariable(ml->ep,name);
+    if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
+    ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
+    PetscLogInfo(0,"Got Matlab array %s\n",name);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -193,15 +195,13 @@ PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscViewer_Matlab *e;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PetscViewer_Matlab,&e);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(viewer->comm,&e->rank);CHKERRQ(ierr);
-  e->btype = (PetscViewerFileType)-1;
+  ierr         = PetscNew(PetscViewer_Matlab,&e);CHKERRQ(ierr);
+  ierr         = MPI_Comm_rank(viewer->comm,&e->rank);CHKERRQ(ierr);
+  e->btype     = (PetscViewerFileType)-1;
   viewer->data = (void*) e;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerSetFilename_C",
-                                    "PetscViewerSetFilename_Matlab",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerSetFilename_C","PetscViewerSetFilename_Matlab",
                                      PetscViewerSetFilename_Matlab);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerSetFileType_C",
-                                    "PetscViewerSetFileType_Matlab",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerSetFileType_C","PetscViewerSetFileType_Matlab",
                                      PetscViewerSetFileType_Matlab);CHKERRQ(ierr);
   viewer->ops->destroy = PetscViewerDestroy_Matlab;
   PetscFunctionReturn(0);
@@ -254,8 +254,7 @@ PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscViewer
   PetscFunctionReturn(0);
 }
 
-
-static int Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
+static PetscMPIInt Petsc_Viewer_Matlab_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_MATLAB_"  
@@ -308,7 +307,7 @@ PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm)
     ierr = PetscViewerMatlabOpen(comm,fname,PETSC_FILE_CREATE,&viewer); 
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Matlab_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_MATLAB_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   } 

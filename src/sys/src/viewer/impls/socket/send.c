@@ -356,7 +356,7 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
     ierr = PetscViewerSocketOpen(comm,0,0,&viewer); 
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Socket_keyval,(void*)viewer);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   } 

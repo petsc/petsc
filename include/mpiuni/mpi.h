@@ -173,6 +173,7 @@ extern int    Petsc_MPI_Finalize(void);
 #define MPI_Comm_dup      Petsc_MPI_Comm_dup
 #define MPI_Finalize      Petsc_MPI_Finalize
 
+#define MPI_Aint int
 /* 
     Routines we have replace with macros that do nothing 
     Some return error codes others return success

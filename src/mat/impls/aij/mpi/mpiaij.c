@@ -185,27 +185,27 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
 #define __FUNCT__ "MatSetValues_MPIAIJ"
 PetscErrorCode MatSetValues_MPIAIJ(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
-  Mat_MPIAIJ   *aij = (Mat_MPIAIJ*)mat->data;
-  PetscScalar  value;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
+  PetscScalar    value;
   PetscErrorCode ierr;
-  int          i,j,rstart = aij->rstart,rend = aij->rend;
-  int          cstart = aij->cstart,cend = aij->cend,row,col;
-  PetscTruth   roworiented = aij->roworiented;
+  PetscInt       i,j,rstart = aij->rstart,rend = aij->rend;
+  PetscInt       cstart = aij->cstart,cend = aij->cend,row,col;
+  PetscTruth     roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
-  Mat          A = aij->A;
-  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
-  int          *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
-  PetscScalar  *aa = a->a;
-  PetscTruth   ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
-  Mat          B = aij->B;
-  Mat_SeqAIJ   *b = (Mat_SeqAIJ*)B->data; 
-  int          *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->m,am = aij->A->m;
-  PetscScalar  *ba = b->a;
+  Mat            A = aij->A;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
+  PetscInt       *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
+  PetscScalar    *aa = a->a;
+  PetscTruth     ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
+  Mat            B = aij->B;
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data; 
+  PetscInt       *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->m,am = aij->A->m;
+  PetscScalar    *ba = b->a;
 
-  int          *rp,ii,nrow,_i,rmax,N,col1,low,high,t; 
-  int          nonew = a->nonew,shift=0; 
-  PetscScalar  *ap;
+  PetscInt       *rp,ii,nrow,_i,rmax,N,col1,low,high,t; 
+  PetscInt       nonew = a->nonew,shift=0; 
+  PetscScalar    *ap;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
