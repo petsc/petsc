@@ -22,7 +22,7 @@ manual.ps:
 manual.html: manual.tex
 	tohtml -mapman ../www/www.cit manual.tex -notopnames
 	tohtml -mapman ../www/www.cit manual.tex -notopnames
-	-chmod g+w manual.hux latex.err 
+	-@chmod g+w manual.hux latex.err manual.html
 	-mv *.html ..
 	rm -f *.html *.xbm
 
