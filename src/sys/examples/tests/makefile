@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.24 1998/05/19 15:42:27 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.25 1998/05/19 16:25:14 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -81,7 +81,7 @@ ex13: ex13.o chkopts
 	${RM} -f ex13.o
 
 ex13f: ex13f.o chkopts
-	-${CLINKER} -o ex13f ex13f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex13f ex13f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
 	${RM} -f ex13f.o
 
 runex1:
