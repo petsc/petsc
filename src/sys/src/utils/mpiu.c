@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.65 1997/01/01 03:36:26 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.66 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -165,7 +165,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 
 .keywords: parallel, fprintf
 
-.seealso: PetscPrintf()
+.seealso: PetscPrintf(), PetscSynchronizedPrintf()
 @*/
 int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 {
@@ -208,7 +208,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 
 .keywords: parallel, printf
 
-.seealso: PetscFPrintf()
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
 int PetscPrintf(MPI_Comm comm,char *format,...)
 {
