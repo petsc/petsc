@@ -9,8 +9,10 @@
 #
 1  0 * * * /home/bsmith/petsc/maint/buildremotetest
 15 0 * * * /home/bsmith/petsc/maint/buildtest 1
+15 0 * * * /home/bsmith/petsc/maint/buildtest 2
 15 0 * * * /home/bsmith/petsc/maint/buildtest 3
+15 0 * * * /home/bsmith/petsc/maint/buildtest 4
+15 0 * * * /home/bsmith/petsc/maint/buildtest 5
 15 0 * * * /home/bsmith/petsc/maint/buildtest 6
-15 0 * * * /home/bsmith/petsc/maint/buildtest 2 4 5
-15 0 * * * /home/bsmith/petsc/maint/buildtest 6
+15 0 * * * /home/bsmith/petsc/maint/buildtest 7
 #
