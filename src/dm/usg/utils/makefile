@@ -1,9 +1,17 @@
-# $Id: makefile,v 1.1 1997/09/22 21:58:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1998/06/12 22:12:29 bsmith Exp balay $ 
+
+ALL: input
 
 # -----------------------------------------------------------------------
-# Specify PETSc installation and user-defined compiler flags
+# Additional compiler/preprocessor flags
+# CFLAGS/FFLAGS    -  Additional compiler flags if required by the application
+# CPPFLAGS/FPPFLAGS - Additional preprocessor flags for c/fortran
 # -----------------------------------------------------------------------
-CFLAGS    = ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
+CFLAGS    = 
+FFLAGS    =
+CPPFLAGS  =
+FPPFLAGS  =
+LOCDIR     = src/contrib/flash/
 # -----------------------------------------------------------------------
 # Define application source and examples
 # -----------------------------------------------------------------------
@@ -13,14 +21,11 @@ CFLAGS    = ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
 #    CLEANFILES - variable to specify other files to delete via "make clean"
 #    
 
-ALL: input
-
 SOURCEC    = input.c
 SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
 CLEANFILES = 
-LOCDIR     = src/contrib/flash/
 
 input: chkopts input.o
 	-${CLINKER} -o input input.o ${PETSC_LIB}

@@ -1,16 +1,16 @@
-# $Id: makefile,v 1.184 1997/09/10 16:23:37 bsmith Exp $ 
+# $Id: makefile,v 1.2 1998/06/15 16:31:37 balay Exp balay $ 
 
 ALL:
 
-CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-FFLAGS	        = 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        = 
-LIBBASE	        = libpetscmat
-LOCDIR          = src/mat/examples/
-DIRS            = tests tutorials
+CFLAGS   = 
+FFLAGS	 = 
+SOURCEC	 = 
+SOURCEF	 = 
+SOURCEH	 = 
+OBJSC	 = 
+OBJSF	 = 
+LIBBASE	 = libpetscmat
+LOCDIR	 = src/mat/examples/
+DIRS	 = tests tutorials
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
