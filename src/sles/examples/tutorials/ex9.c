@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.14 1996/08/17 17:12:34 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.15 1996/08/18 19:35:55 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -9,7 +9,7 @@ structures throughout the process.  Note the various stages of event logging.\n\
 
 /*T
    Concepts: SLES, repeatedly solving linear equations, multiple profiling stages
-   Routines: SLESCreate(), SLESSetOperators(), SLESSetFromOptions()
+   Routines: SLESCreate(), SLESSetOperators(), SLESSetFromOptions(), SLESSetUp()
    Routines: SLESSolve(), SLESView(), SLESGetKSP(), SLESAppendOptionsPrefix()
    Routines: PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
    Routines: PLogStageRegister(), PLogStagePush(), PLogStagePop(), PLogFlops()

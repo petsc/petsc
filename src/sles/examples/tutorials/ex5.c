@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.58 1996/08/17 15:13:45 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.59 1996/08/17 17:12:42 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -12,7 +12,7 @@ also uses multiple profiling stages.  Input arguments are\n\
 /*T
    Concepts: SLES, repeatedly solving linear equations, multiple profiling stages
    Routines: SLESCreate(), SLESSetFromOptions(), SLESSetUp(), SLESSolve()
-   Rotuines: SLESSetOperators(A,A,SAME_NONZERO_PATTERN), SLESView()
+   Rotuines: SLESSetOperators(A,A,SAME_NONZERO_PATTERN)
    Routines: MatZeroEntries(), MatSetOption(A,MAT_SYMMETRIC)
    Routines: PLogStagePush(), PLogStagePop(), PLogStageRegister()
    Multiprocessor code
@@ -80,7 +80,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
 
   /* 
-     Assemble matrix in parallel.
+     Set matrix entries matrix in parallel.
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
         appropriate processor during matrix assembly). 
@@ -179,16 +179,13 @@ int main(int argc,char **args)
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
   /* 
-     Explicitly call SLESSetUp() for more detailed performance monitoring
-     of certain preconditioners, such as ICC and ILU.  This call is
-     optional, ase SLESSetUp() will automatically be called within
-     SLESSolve() if it hasn't been called already.
+     Solve linear system.  Here we explicitly call SLESSetUp() for more
+     detailed performance monitoring of certain preconditioners, such
+     as ICC and ILU.  This call is optional, as SLESSetUp() will
+     automatically be called within SLESSolve() if it hasn't been
+     called already.
   */
   ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
-
-  /* 
-     Solve linear system
-  */
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
  
   /* 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.120 1996/08/08 19:06:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.121 1996/08/08 22:29:58 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -395,14 +395,15 @@ static double  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 
 
 /*@C
-    PLogStageRegister - Attach a charactor string name to a logging stage.
+    PLogStageRegister - Attaches a charactor string name to a logging stage.
 
- Input Parameters:
-.  stage - the stage from 0 to 9 inclusive
-.  sname - the name to associate with that stage
+    Input Parameters:
+.   stage - the stage from 0 to 9 inclusive
+.   sname - the name to associate with that stage
 
-  Note: the string information is not copied, so you should not change the
-        strings you pass in.
+    Notes:
+    The string information (for stage names) is not copied, so the user
+    should NOT change any strings specified here.
 
 .seealso: PLogStagePush(), PLogStagePop()
 @*/
