@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.21 1998/12/04 23:25:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.22 1998/12/09 20:15:00 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -561,7 +561,7 @@ int OptionsCheckInitial_Alice(void)
     (*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");
     (*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n");
     (*PetscHelpPrintf)(comm,"           note on IBM RS6000 this slows run greatly\n");
-    (*PetscHelpPrintf)(comm," -trdump: dump list of unfreed memory at conclusion\n");
+    (*PetscHelpPrintf)(comm," -trdump <optional filename>: dump list of unfreed memory at conclusion\n");
     (*PetscHelpPrintf)(comm," -trmalloc: use our error checking malloc\n");
     (*PetscHelpPrintf)(comm," -trmalloc_off: don't use error checking malloc\n");
     (*PetscHelpPrintf)(comm," -trinfo: prints total memory usage\n");
@@ -787,7 +787,7 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
 +  -optionstable - Calls OptionsPrint()
 .  -optionsleft - Prints unused options that remain in the database
 .  -mpidump - Calls PetscMPIDump()
-.  -trdump - Calls PetscTrDump()
+.  -trdump <optional filename> - Calls PetscTrDump()
 .  -trinfo - Prints total memory usage
 .  -trdebug - Calls malloc_debug(2) to activate memory
         allocation diagnostics (used by PETSC_ARCH=sun4, 
@@ -942,15 +942,29 @@ int AliceFinalize(void)
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
   if (flg1) {
-    MPI_Comm local_comm;
+    char fname[256];
+    FILE *fd;
+    
+    fname[0] = 0;
+    ierr = OptionsGetString(PETSC_NULL,"-trdump",fname,250,&flg1);CHKERRQ(ierr);
+    if (flg1 && fname[0]) {
+      char sname[256];
 
-    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
-    PetscSequentialPhaseBegin_Private(local_comm,1);
-      ierr = PetscTrDump(stderr); CHKERRQ(ierr);
-    PetscSequentialPhaseEnd_Private(local_comm,1);
-    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+      sprintf(sname,"%s_%d",fname,rank);
+      fd   = fopen(sname,"w"); if (!fd) SETERRQ(1,1,"Cannot open log file");
+      ierr = PetscTrDump(fd); CHKERRQ(ierr);
+      fclose(fd);
+    } else {
+      MPI_Comm local_comm;
+
+      ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
+      PetscSequentialPhaseBegin_Private(local_comm,1);
+        ierr = PetscTrDump(stderr); CHKERRQ(ierr);
+      PetscSequentialPhaseEnd_Private(local_comm,1);
+      ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
+    }
   } else if (flg2) {
-    MPI_Comm local_comm;
+    MPI_Comm   local_comm;
     PLogDouble maxm;
 
     ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
@@ -960,14 +974,15 @@ int AliceFinalize(void)
     PetscSequentialPhaseEnd_Private(local_comm,1);
     ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
-  /* Can be dumped only after all the Objects are destroyed */
   if (flg3) {
-    char fname[256],sname[256];
+    char fname[256];
     FILE *fd;
     
     fname[0] = 0;
     ierr = OptionsGetString(PETSC_NULL,"-trmalloc_log",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
+      char sname[256];
+
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ(1,1,"Cannot open log file");
       ierr = PetscTrLogDump(fd);CHKERRQ(ierr); 
