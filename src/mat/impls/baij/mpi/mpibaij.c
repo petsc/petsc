@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.6 1996/06/27 23:03:55 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.7 1996/07/01 23:20:26 balay Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -641,8 +641,8 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         allocate enough space to hold information from the longest row.
     */
     Mat_SeqBAIJ *Aa = (Mat_SeqBAIJ *) mat->A->data,*Ba = (Mat_SeqBAIJ *) mat->B->data; 
-    int     max = 1,nbs = mat->nbs,tmp;
-    for ( i=0; i<nbs; i++ ) {
+    int     max = 1,mbs = mat->mbs,tmp;
+    for ( i=0; i<mbs; i++ ) {
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
       if (max < tmp) { max = tmp; }
     }
@@ -681,7 +681,7 @@ int MatGetRow_MPIBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         *idx = idx_p = mat->rowindices;
         if (imark > -1) {
           for ( i=0; i<imark; i++ ) {
-            idx_p[i] = cmap[cworkB[i]];
+            idx_p[i] = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs;
           }
         } else {
           for ( i=0; i<nzB; i++ ) {
@@ -715,7 +715,7 @@ int MatRestoreRow_MPIBAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {
-  MatSetValues_MPIBAIJ,0,0,MatMult_MPIBAIJ,
+  MatSetValues_MPIBAIJ,MatGetRow_MPIBAIJ,MatRestoreRow_MPIBAIJ,MatMult_MPIBAIJ,
   MatMultAdd_MPIBAIJ,MatMultTrans_MPIBAIJ,MatMultTransAdd_MPIBAIJ,0,
   0,0,0,0,
   0,0,0,0,
