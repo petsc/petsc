@@ -17,24 +17,24 @@
 #define MAXTSMONITORS 5 
 
 struct _TSOps {
-  PetscErrorCode (*rhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *),
-      (*rhsfunction)(TS, PetscReal, Vec, Vec, void *),
-      (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *),
-      (*applymatrixbc)(TS, Mat, Mat, void *),
-      (*rhsbc)(TS, PetscReal, Vec, void *),
-      (*applyrhsbc)(TS, Vec, void *),
-      (*applysolbc)(TS, Vec, void *),
-      (*prestep)(TS),
-      (*update)(TS, PetscReal, PetscReal *),
-      (*poststep)(TS),
-      (*reform)(TS),
-      (*reallocate)(TS),
-      (*setup)(TS),
-      (*step)(TS,PetscInt *, PetscReal *),
-      (*setfromoptions)(TS),
-      (*printhelp)(TS, char *),
-      (*destroy)(TS),
-      (*view)(TS, PetscViewer);
+  PetscErrorCode (*rhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *);
+  PetscErrorCode (*rhsfunction)(TS, PetscReal, Vec, Vec, void *);
+  PetscErrorCode (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *);
+  PetscErrorCode (*applymatrixbc)(TS, Mat, Mat, void *);
+  PetscErrorCode (*rhsbc)(TS, PetscReal, Vec, void *);
+  PetscErrorCode (*applyrhsbc)(TS, Vec, void *);
+  PetscErrorCode (*applysolbc)(TS, Vec, void *);
+  PetscErrorCode (*prestep)(TS);
+  PetscErrorCode (*update)(TS, PetscReal, PetscReal *);
+  PetscErrorCode (*poststep)(TS);
+  PetscErrorCode (*reform)(TS);
+  PetscErrorCode (*reallocate)(TS);
+  PetscErrorCode (*setup)(TS);
+  PetscErrorCode (*step)(TS,PetscInt *, PetscReal *);
+  PetscErrorCode (*setfromoptions)(TS);
+  PetscErrorCode (*printhelp)(TS, char *);
+  PetscErrorCode (*destroy)(TS);
+  PetscErrorCode (*view)(TS, PetscViewer);
 };
 
 struct _p_TS {

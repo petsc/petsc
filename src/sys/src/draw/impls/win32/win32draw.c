@@ -334,7 +334,7 @@ static PetscErrorCode PetscDrawPoint_Win32(PetscDraw draw,PetscReal x,PetscReal 
     SetPixelV(hdc,x1,yone,windraw->currentcolor);
   } else {
     /* draw point around position determined */
-    radius = (int)floor(windraw->pointdiameter/2);
+    radius = windraw->pointdiameter/2; /* integer division */
     hrgn   = CreateEllipticRgn(x1-radius,yone-radius,x1+radius,yone+radius);
     FillRgn(hdc,hrgn,hbrush);
   }

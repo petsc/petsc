@@ -10,8 +10,10 @@
 #include "petscvec.h"
 
 struct _PetscMapOps {
-  PetscErrorCode (*setfromoptions)(PetscMap),
-                 (*destroy)(PetscMap);
+  PetscErrorCode (*setfromoptions)(PetscMap);
+  PetscErrorCode (*destroy)(PetscMap);
+  PetscErrorCode (*setfromoptions)(PetscMap);
+  PetscErrorCode (*destroy)(PetscMap);
 };
 
 struct _p_PetscMap {
@@ -73,11 +75,7 @@ struct _VecOps {
        (*resetarray)(Vec),      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
        (*setfromoptions)(Vec),
        (*maxpointwisedivide)(Vec,Vec,PetscReal*),      /* m = max abs(x ./ y) */
-       (*load)(PetscViewer,const VecType,Vec*),
-       (*pointwisemax)(Vec,Vec,Vec),                 /* w = max(x , y) */
-       (*pointwisemaxabs)(Vec,Vec,Vec),                 /* w = max(abs(x) , abs(y)) */
-       (*pointwisemin)(Vec,Vec,Vec),                 /* w = min(x , y) */
-       (*getvalues)(Vec,PetscInt n,const PetscInt[],PetscScalar[]);
+       (*load)(PetscViewer,const VecType,Vec*);
 };
 
 /* 
@@ -281,6 +279,7 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
 
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);
 
+#if defined(PETSC_HAVE_MATLAB)
 #if defined(PETSC_HAVE_MATLAB)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
