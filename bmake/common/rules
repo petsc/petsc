@@ -368,7 +368,7 @@ fortranstubs:
 	        ${ADIC_CC} -t -h -i ${PETSC_DIR}/bmake/adicmf.init   $<.tmp ; \
 	        egrep "main\(" $< > /dev/null ; \
                 if [ "$$?" = 0 ]; then \
-          	      echo "#include \"${PETSC_DIR}/src/contrib/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
+		      echo "#include \"${PETSC_DIR}/src/contrib/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
 	  	      echo "#include \"${PETSC_DIR}/src/contrib/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
                 fi;\
                 echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
@@ -721,7 +721,7 @@ html:
 	-@${RM} /tmp/$$USER.htmlmap tmp
 
 cleanhtml:
-	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html inex.html *.m.html
+	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html index.html *.m.html
 
 # -------------------------------------------------------------------------------
 #

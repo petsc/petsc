@@ -24,7 +24,7 @@
 # 
 # 
 # Output filename
-# A good default output filename is $concept =~ s/ /_/; with .htm added.
+# A good default output filename is $concept =~ s/ /_/; with .html added.
 #
 # A good plan is to create a separate file for each top-level concept;
 # the regular help pages can then link to a page giving more detail
@@ -298,7 +298,7 @@ foreach $name (sort {uc($a) cmp uc($b)} keys(%Concepts)) {
     if ($file_by_concept) {
 	$concept_file = $name;
 	$concept_file =~ s/ /_/g;
-	$concept_file .= ".htm";
+	$concept_file .= ".html";
 	$concept_file = $destdir . $concept_file;
 	$concept_file = lc($concept_file);
 	open($OUTFILE, ">$concept_file") || 
