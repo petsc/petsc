@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.69 1996/01/29 23:50:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.70 1996/02/13 23:30:02 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -132,7 +132,7 @@ $  -mat_bdiag    : block diagonal type,
 $                  (Seq or MPI depending on comm)
 $  -mat_mpirowbs : rowbs type, uses MatCreateMPIRowbs()
 $  -mat_dense    : dense type, (Seq or MPI depending on comm)
-$  -mat_mpidense : dense type, uses MatCreateSeqDense()
+$  -mat_seqdense : dense type, uses MatCreateSeqDense()
 $  -mat_mpidense : dense type, uses MatCreateMPIDense()
 
    Notes:
