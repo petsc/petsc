@@ -50,7 +50,7 @@ class Installer(install.base.Base):
     root = self.retriever.retrieve(url, force = self.force);
     # This is for purging the sidl after the build
     self.argDB['fileset'] = 'sidl'
-    self.builder.build(root, target = ['default', 'purge'], setupTarget = 'setupBootstrap')
+    self.builder.build(root, target = ['default', 'purge'])
     # Fixup install arguments
     argDB['installedprojects']  = self.argDB['installedprojects']
     argDB['installedLanguages'] = self.argDB['installedLanguages']

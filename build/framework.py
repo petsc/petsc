@@ -285,6 +285,7 @@ class Framework(base.Base):
 
   def t_default(self):
     '''Configure, build, and install this project'''
+    self.executeTarget('activate')
     self.executeTarget('configure')
     self.executeTarget('compile')
     return self.executeTarget('install')
