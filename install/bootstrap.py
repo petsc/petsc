@@ -518,7 +518,7 @@ class CursesInstall (BootstrapInstall):
 if __name__ ==  '__main__':
   try:
 
-    if len(sys.argv) > 1 and sys.argv[1] == '-batch':
+    if len(sys.argv) > 1 and (sys.argv[1] == '-batch' or sys.argv[1] == '--batch'):
       installer = BootstrapInstall()
     else:
       installer = CursesInstall()
