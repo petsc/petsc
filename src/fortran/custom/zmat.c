@@ -752,6 +752,7 @@ void PETSC_STDCALL matmpirowbssetpreallocation_(Mat *mat,int *nz,int *nnz,int *i
 }
 #endif
 
+#if defined(PETSC_HAVE_PARTY)
 void PETSC_STDCALL matpartitioningpartysetglobal_(MatPartitioning *part,CHAR method PETSC_MIXED_LEN(len),
                                            int *ierr PETSC_END_LEN(len))
 {
@@ -769,7 +770,9 @@ void PETSC_STDCALL matpartitioningpartysetlocal_(MatPartitioning *part,CHAR meth
   *ierr = MatPartitioningPartySetLocal(*part,t);
   FREECHAR(method,t);
 }
+#endif
 
+#if defined(PETSC_HAVE_SCOTCH)
 void PETSC_STDCALL matpartitioningscotchsetstrategy_(MatPartitioning *part,CHAR strategy PETSC_MIXED_LEN(len),
                                            int *ierr PETSC_END_LEN(len))
 {
@@ -787,7 +790,9 @@ void PETSC_STDCALL matpartitioningscotchsetarch_(MatPartitioning *part,CHAR file
   *ierr = MatPartitioningScotchSetArch(*part,t);
   FREECHAR(filename,t);
 }
+#endif
 
+#if defined(PETSC_HAVE_SCOTCH)
 void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR filename PETSC_MIXED_LEN(len),
                                            int *ierr PETSC_END_LEN(len))
 {
@@ -796,5 +801,6 @@ void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR 
   *ierr = MatPartitioningScotchSetHostList(*part,t);
   FREECHAR(filename,t);
 }
+#endif
 
 EXTERN_C_END
