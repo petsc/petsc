@@ -1,6 +1,6 @@
-/*$Id: ex8.c,v 1.32 2000/06/14 20:42:11 bsmith Exp $*/
+/*$Id: ex19.c,v 1.1 2000/07/13 16:04:36 bsmith Exp bsmith $*/
 
-static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
+static char help[] = "Solves a nonlinear system in parallel with SNES and multigrid.\n\
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
 The flow can be driven with the lid or with bouyancy or both:\n\
@@ -34,14 +34,10 @@ T*/
 
 /* ------------------------------------------------------------------------
 
+    This code is the same as ex8.c except it uses a multigrid preconditioner
+
     We thank David E. Keyes for contributing the driven cavity discretization
     within this example code.
-
-    This example solves the problem for a single grid; mesh sequencing
-    is incorporated for the same problem in ex9.c; additional files needed:
-        common8and9.c - initial guess and nonlinear function evaluation 
-                        routines (used by both ex8.c and ex9.c)
-        ex8and9.h     - include file used by ex8.c and ex9.c
 
     This problem is modeled by the partial differential equation system
   
@@ -86,86 +82,87 @@ T*/
 */
 #include "petscsnes.h"
 #include "petscda.h"
-#include "ex8and9.h"
 
 /* 
    User-defined routines
 */
-extern int FormInitialGuess(AppCtx*,Vec);
+extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int InitializeProblem(int,AppCtx*,Vec*);
+
+typedef struct {
+   double     lidvelocity,prandtl,grashof;  /* physical parameters */
+   PetscTruth draw_contours;                /* flag - 1 indicates drawing contours */
+} AppCtx;
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
+  DAMG          *damg;               /* multilevel grid structure */
   SNES          snes;                /* nonlinear solver */
-  Vec           x,r;                /* solution, residual vectors */
-  Mat           J;                   /* Jacobian matrix */
   AppCtx        user;                /* user-defined work context */
-  int           its;                 /* iterations for convergence */
-  MatFDColoring fdcoloring;          /* matrix coloring context */
-  int           dim,k = 0,ierr;
+  DA            cda;                 /* coarse grid DA grid data structure */
+  int           mx,my,its,Nx,Ny;     /* iterations for convergence */
+  int           ierr,nlevels = 2;
+  MPI_Comm      comm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&user.size);CHKERRA(ierr);
-  user.comm = PETSC_COMM_WORLD;
+  comm = PETSC_COMM_WORLD;
+
+  mx = 4; 
+  my = 4; 
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&nlevels,PETSC_NULL);CHKERRQ(ierr);
+
+  /* 
+     Problem parameters (velocity of lid, prandtl, and grashof numbers)
+  */
+  user.lidvelocity = 1.0/(mx*my);
+  user.prandtl     = 1.0;
+  user.grashof     = 1.0;
+  ierr = OptionsGetDouble(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+
+  PreLoadBegin(PETSC_TRUE,"SetUp");
+  ierr = DAMGCreate(comm,nlevels,&user,&damg);CHKERRQ(ierr);
+
+  /*
+     Create distributed array (DA) to manage parallel grid and vectors
+     for principal unknowns (x) and governing residuals (f)
+  */
+  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
+                    my,Nx,Ny,4,1,PETSC_NULL,PETSC_NULL,&cda);CHKERRQ(ierr);
+  ierr = DASetFieldName(cda,0,"x-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(cda,1,"y-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(cda,2,"Omega");CHKERRQ(ierr);
+  ierr = DASetFieldName(cda,3,"temperature");CHKERRQ(ierr);
+  ierr = DAMGSetCoarseDA(damg,cda);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create user context, set problem data, create vector data structures.
     Also, compute the initial guess.
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = InitializeProblem(k,&user,&x);CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRA(ierr);
-  ierr = VecDuplicate(user.localX,&user.localF);CHKERRA(ierr);
-
  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = VecGetSize(x,&dim);CHKERRA(ierr);
-  ierr = PetscPrintf(user.comm,"global size = %d, lid velocity = %g, prandtl # = %g, grashof # = %g\n",
-     dim,user.lidvelocity,user.prandtl,user.grashof);CHKERRA(ierr);
+  ierr = SNESCreate(comm,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
+                     user.lidvelocity,user.prandtl,user.grashof);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set function evaluation routine and vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    ierr = SNESSetFunction(snes,r,FormFunction,&user);CHKERRA(ierr);
-
-   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create matrix data structure; set Jacobian evaluation routine
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* 
-     Set up coloring information needed for sparse finite difference
-     approximation of the Jacobian
-   */
-  {
-  ISColoring iscoloring;
-  ierr = DAGetColoring(user.da,&iscoloring,&J);CHKERRQ(ierr);
-
-  ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr); 
-  ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr); 
-  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-  }
-
-  /* 
-     Set Jacobian matrix data structure and default Jacobian evaluation
-     routine. User can override with:
-
-     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-     -snes_mf_operator : form preconditioning matrix as set by the user,
-                         but use matrix-free approx for Jacobian-vector
-                         products within Newton-Krylov method
-
-  */
-
-  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,DAMGGetb(damg),FormFunction,DAMGGetFine(damg));CHKERRA(ierr);
+  ierr = DAMGSetSNES(damg,snes);CHKERRQ(ierr);
 
  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -179,6 +176,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = FormInitialGuess(snes,DAMGGetx(damg),DAMGGetFine(damg));CHKERRQ(ierr);
+
   /*
      Note: The user should initialize the vector, x, with the initial guess
      for the nonlinear solver prior to calling SNESSolve().  In particular,
@@ -186,16 +185,17 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet(). [Here we set the initial 
      guess in the routine InitializeProblem().]
   */
-  ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
+  PreLoadStage("Solve");
+  ierr = SNESSolve(snes,DAMGGetx(damg),&its);CHKERRA(ierr); 
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its);CHKERRA(ierr);
+  ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n", its);CHKERRA(ierr);
 
   /*
      Visualize solution
   */
 
   if (user.draw_contours) {
-    ierr = VecView(x,VIEWER_DRAW_WORLD);CHKERRA(ierr);
+    ierr = VecView(DAMGGetx(damg),VIEWER_DRAW_WORLD);CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -203,94 +203,291 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatDestroy(J);CHKERRA(ierr);
-  ierr = MatFDColoringDestroy(fdcoloring);CHKERRA(ierr);  
-  ierr = VecDestroy(user.localX);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(user.localF);CHKERRA(ierr); ierr = VecDestroy(r);CHKERRA(ierr);      
+
   ierr = SNESDestroy(snes);CHKERRA(ierr);  
-  ierr = DADestroy(user.da);CHKERRA(ierr);
+  ierr = DAMGDestroy(damg);CHKERRA(ierr);
+  PreLoadEnd();
 
   PetscFinalize();
   return 0;
 }
+
+/* ------------------------------------------------------------------- */
+
+/*
+   Define macros to allow us to easily access the components of the PDE
+   solution and nonlinear residual vectors.
+      Note: the "4" below is a hardcoding of "user.mc" 
+*/
+#define U(i)     4*(i)
+#define V(i)     4*(i)+1
+#define Omega(i) 4*(i)+2
+#define Temp(i)  4*(i)+3
+
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
-#define __FUNC__ "InitializeProblem"
+#define __FUNC__ "FormInitialGuess"
 /* 
-   InitializeProblem - Initializes the problem.  This routine forms the
-   DA and vector data structures, and also computes the starting solution
-   guess for the nonlinear solver.
+   FormInitialGuess - Forms initial approximation.
 
    Input Parameters:
    user - user-defined application context
+   X - vector
 
    Output Parameter:
-   xvec - solution vector
+   X - vector
  */
-int InitializeProblem(int icycle,AppCtx *user,Vec *xvec)
+int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
-  int    Nx,Ny;              /* number of processors in x- and y- directions */
-  int    xs,xm,ys,ym,Nlocal,ierr;
-  Vec    xv;
-
-  /*
-     Initialize problem parameters
-  */
-  user->mx = 4; user->my = 4; 
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user->mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user->my,PETSC_NULL);CHKERRQ(ierr);
-  /*
-     Number of components in the unknown vector and auxiliary vector
-  */
-  user->mc = 4;
-  /* 
-     Problem parameters (velocity of lid, prandtl, and grashof numbers)
-  */
-  user->lidvelocity = 1.0/(user->mx*user->my);
-  ierr = OptionsGetDouble(PETSC_NULL,"-lidvelocity",&user->lidvelocity,PETSC_NULL);CHKERRQ(ierr);
-  user->prandtl = 1.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-prandtl",&user->prandtl,PETSC_NULL);CHKERRQ(ierr);
-  user->grashof = 1.0;
-  ierr = OptionsGetDouble(PETSC_NULL,"-grashof",&user->grashof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-printv",&user->print_vecs);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-printg",&user->print_grid);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-contours",&user->draw_contours);CHKERRQ(ierr);
-
-  /*
-     Create distributed array (DA) to manage parallel grid and vectors
-     for principal unknowns (x) and governing residuals (f)
-  */
-  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user->mx,
-                    user->my,Nx,Ny,user->mc,1,PETSC_NULL,PETSC_NULL,&user->da);CHKERRQ(ierr);
-  ierr = DASetFieldName(user->da,0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(user->da,1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(user->da,2,"Omega");CHKERRQ(ierr);
-  ierr = DASetFieldName(user->da,3,"temperature");CHKERRQ(ierr);
-
-  /*
-     Create global and local vectors from DA
-  */
-  ierr = DACreateGlobalVector(user->da,&xv);CHKERRQ(ierr);
-  ierr = DACreateLocalVector(user->da,&user->localX);CHKERRQ(ierr);
-
-  /* Print grid info */
-  if (user->print_grid) {
-    ierr = DAView(user->da,VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"global grid: %d X %d with %d components per node ==> global vector dimension %d\n",
-      user->mx,user->my,user->mc,user->mc*user->mx*user->my);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(xv,&Nlocal);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] local grid %d X %d with %d components per node ==> local vector dimension %d\n",
-      user->rank,xm,ym,user->mc,Nlocal);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  }  
-
-  /* Compute initial guess */
-  FormInitialGuess(user,xv);CHKERRQ(ierr);
+  DAMG    damg = (DAMG)ptr;
+  AppCtx  *user = (AppCtx*)damg->user;
+  DA      da = damg->da;
+  int     i,j,row,mx,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
+  double  grashof,dx;
+  Scalar  *x;
+  Vec     localX = damg->localX;
   
-  *xvec = xv;
+  grashof = user->grashof;
+
+  ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  dx  = 1.0/(mx-1);
+
+  /*
+     Get local grid boundaries (for 2-dimensional DA):
+       xs, ys   - starting grid indices (no ghost points)
+       xm, ym   - widths of local grid (no ghost points)
+       gxs, gys - starting grid indices (including ghost points)
+       gxm, gym - widths of local grid (including ghost points)
+  */
+  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+
+  /*
+     Get a pointer to vector data.
+       - For default PETSc vectors, VecGetArray() returns a pointer to
+         the data array.  Otherwise, the routine is implementation dependent.
+       - You MUST call VecRestoreArray() when you no longer need access to
+         the array.
+  */
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+
+  /*
+     Compute initial guess over the locally owned part of the grid
+     Initial condition is motionless fluid and equilibrium temperature
+  */
+  for (j=ys; j<ys+ym; j++) {
+    for (i=xs; i<xs+xm; i++) {
+      row = i - gxs + (j - gys)*gxm; 
+      x[U(row)]     = 0.0;
+      x[V(row)]     = 0.0;
+      x[Omega(row)] = 0.0;
+      x[Temp(row)]  = (grashof>0)*i*dx;
+    }
+  }
+
+  /*
+     Restore vector
+  */
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+
+  /*
+     Insert values into global vector
+  */
+  ierr = DALocalToGlobal(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   return 0;
-}
+} 
+/* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
+/* 
+   FormFunction - Evaluates the nonlinear function, F(x).
+
+   Input Parameters:
+.  snes - the SNES context
+.  X - input vector
+.  ptr - optional user-defined context, as set by SNESSetFunction()
+
+   Output Parameter:
+.  F - function vector
+
+   Notes:
+   We process the boundary nodes before handling the interior
+   nodes, so that no conditional statements are needed within the
+   double loop over the local grid indices. 
+ */
+int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
+{
+  DAMG    damg = (DAMG)ptr;
+  AppCtx  *user = (AppCtx*)damg->user;
+  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
+  int     xints,xinte,yints,yinte;
+  double  two = 2.0,one = 1.0,p5 = 0.5,hx,hy,dhx,dhy,hxdhy,hydhx;
+  double  grashof,prandtl,lid;
+  Scalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  Scalar  *x,*f;
+  Vec     localX = damg->localX,localF = damg->localF; 
+  DA      da = damg->da;
+
+  ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+
+  grashof = user->grashof;  
+  prandtl = user->prandtl;
+  lid     = user->lidvelocity;
+
+  /* 
+     Define mesh intervals ratios for uniform grid.
+     [Note: FD formulae below are normalized by multiplying through by
+     local volume element to obtain coefficients O(1) in two dimensions.]
+  */
+  dhx = (double)(mx-1);     dhy = (double)(my-1);
+  hx = one/dhx;             hy = one/dhy;
+  hxdhy = hx*dhy;           hydhx = hy*dhx;
+
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+
+  /*
+     Get pointers to vector data
+  */
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
+
+  /*
+     Get local grid boundaries
+  */
+  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+
+  /*
+     Compute function over the locally owned part of the grid
+     (physical corner points are set twice to avoid more conditionals).
+  */
+  xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
+
+  /* Test whether we are on the bottom edge of the global array */
+  if (yints == 0) {
+    yints = yints + 1;
+    /* bottom edge */
+    row = xs - gxs - 1; 
+    for (i=xs; i<xs+xm; i++) {
+      row++;
+        f[U(row)]     = x[U(row)];
+        f[V(row)]     = x[V(row)];
+        f[Omega(row)] = x[Omega(row)] + (x[U(row+gxm)] - x[U(row)])*dhy; 
+	f[Temp(row)]  = x[Temp(row)]-x[Temp(row+gxm)];
+    }
+  }
+
+  /* Test whether we are on the top edge of the global array */
+  if (yinte == my) {
+    yinte = yinte - 1;
+    /* top edge */
+    row = (ys + ym - 1 - gys)*gxm + xs - gxs - 1; 
+    for (i=xs; i<xs+xm; i++) {
+      row++;
+        f[U(row)]     = x[U(row)] - lid;
+        f[V(row)]     = x[V(row)];
+        f[Omega(row)] = x[Omega(row)] + (x[U(row)] - x[U(row-gxm)])*dhy; 
+	f[Temp(row)]  = x[Temp(row)]-x[Temp(row-gxm)];
+    }
+  }
+
+  /* Test whether we are on the left edge of the global array */
+  if (xints == 0) {
+    xints = xints + 1;
+    /* left edge */
+    for (j=ys; j<ys+ym; j++) {
+      row = (j - gys)*gxm + xs - gxs; 
+      f[U(row)]     = x[U(row)];
+      f[V(row)]     = x[V(row)];
+      f[Omega(row)] = x[Omega(row)] - (x[V(row+1)] - x[V(row)])*dhx; 
+      f[Temp(row)]  = x[Temp(row)];
+    }
+  }
+
+  /* Test whether we are on the right edge of the global array */
+  if (xinte == mx) {
+    xinte = xinte - 1;
+    /* right edge */ 
+    for (j=ys; j<ys+ym; j++) {
+      row = (j - gys)*gxm + xs + xm - gxs - 1; 
+      f[U(row)]     = x[U(row)];
+      f[V(row)]     = x[V(row)];
+      f[Omega(row)] = x[Omega(row)] - (x[V(row)] - x[V(row-1)])*dhx; 
+      f[Temp(row)]  = x[Temp(row)] - (double)(grashof>0);
+    }
+  }
+
+  /* Compute over the interior points */
+  for (j=yints; j<yinte; j++) {
+    row = (j - gys)*gxm + xints - gxs - 1; 
+    for (i=xints; i<xinte; i++) {
+      row++;
+
+	/*
+	  convective coefficients for upwinding
+        */
+	vx = x[U(row)]; avx = PetscAbsScalar(vx);
+        vxp = p5*(vx+avx); vxm = p5*(vx-avx);
+	vy = x[V(row)]; avy = PetscAbsScalar(vy);
+        vyp = p5*(vy+avy); vym = p5*(vy-avy);
+
+	/* U velocity */
+        u          = x[U(row)];
+        uxx        = (two*u - x[U(row-1)] - x[U(row+1)])*hydhx;
+        uyy        = (two*u - x[U(row-gxm)] - x[U(row+gxm)])*hxdhy;
+        f[U(row)]  = uxx + uyy - p5*(x[Omega(row+gxm)]-x[Omega(row-gxm)])*hx;
+
+	/* V velocity */
+        u          = x[V(row)];
+        uxx        = (two*u - x[V(row-1)] - x[V(row+1)])*hydhx;
+        uyy        = (two*u - x[V(row-gxm)] - x[V(row+gxm)])*hxdhy;
+        f[V(row)]  = uxx + uyy + p5*(x[Omega(row+1)]-x[Omega(row-1)])*hy;
+
+	/* Omega */
+        u          = x[Omega(row)];
+        uxx        = (two*u - x[Omega(row-1)] - x[Omega(row+1)])*hydhx;
+        uyy        = (two*u - x[Omega(row-gxm)] - x[Omega(row+gxm)])*hxdhy;
+	f[Omega(row)] = uxx + uyy + 
+			(vxp*(u - x[Omega(row-1)]) +
+			  vxm*(x[Omega(row+1)] - u)) * hy +
+			(vyp*(u - x[Omega(row-gxm)]) +
+			  vym*(x[Omega(row+gxm)] - u)) * hx -
+			p5 * grashof * (x[Temp(row+1)] - x[Temp(row-1)]) * hy;
+
+        /* Temperature */
+        u             = x[Temp(row)];
+        uxx           = (two*u - x[Temp(row-1)] - x[Temp(row+1)])*hydhx;
+        uyy           = (two*u - x[Temp(row-gxm)] - x[Temp(row+gxm)])*hxdhy;
+	f[Temp(row)] =  uxx + uyy  + prandtl * (
+			(vxp*(u - x[Temp(row-1)]) +
+			  vxm*(x[Temp(row+1)] - u)) * hy +
+		        (vyp*(u - x[Temp(row-gxm)]) +
+		       	  vym*(x[Temp(row+gxm)] - u)) * hx);
+    }
+  }
+
+  /*
+     Restore vectors
+  */
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
+
+  /*
+     Insert values into global vector
+  */
+  ierr = DALocalToGlobal(da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+
+  /*
+     Flop count (multiply-adds are counted as 2 operations)
+  */
+  PLogFlops(84*ym*xm);
+
+  return 0; 
+} 
