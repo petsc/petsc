@@ -9,6 +9,7 @@ OBJSC    = preonly.o
 OBJSF    =
 LIBBASE  = libpetscksp
 LOCDIR   = src/ksp/ksp/impls/preonly/
+MANSEC   = KSP
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
