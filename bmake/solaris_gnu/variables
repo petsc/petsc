@@ -1,4 +1,4 @@
-# $Id: base,v 1.28 1999/01/27 22:33:12 balay Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:53:09 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -61,38 +61,4 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
 
 PARCH  =  solaris
 
-include ${PETSC_DIR}/bmake/common
-
-libc: ${LIBNAME}(${OBJSC})
-libf: ${OBJSF}
-	ar crl ${LIBNAME} ${OBJSF}
-
-#############
-shared: chkopts_basic
-	-@ if [ "${BOPT}" != "Opg" ] && [ "${BOPT}" != "Opg_c++" ] \
-	&&  [ "${BOPT}" != "Opg_complex" ] ; then \
-	echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-            if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${AR} x ../$$LIBNAME.a ;\
-	      ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	      ${RM} -f * ; \
-	    fi; \
-	  fi; \
-	done ;\
-	cd ../ ; \
-	${RM} -rf tmp; \
-	fi
+include ${PETSC_DIR}/bmake/common_variables
