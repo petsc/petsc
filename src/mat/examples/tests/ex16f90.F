@@ -1,5 +1,5 @@
 
-C  "$Id: ex16f90.F,v 1.1 1997/01/16 22:41:02 bsmith Exp bsmith $";
+C  "$Id: ex16f90.F,v 1.2 1997/01/22 18:43:55 bsmith Exp curfman $";
 
 C
 C  Tests MatGetArray() on a dense matrix
@@ -18,7 +18,7 @@ C  that use PETSc vectors:
 C     petsc.h  - base PETSc routines
 C     vec.h - defines (INSERT_VALUES)
 C     mat.h    - matrices
-C     mat.h90  - to allow access to Fortran 90 features of PETSc
+C     mat.h90  - to allow access to Fortran 90 features of matrices
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -40,7 +40,6 @@ C      Create a parallel dense matrix shared by all processors
 C
       call MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,
      &                        PETSC_DECIDE,m,n,PETSC_NULL,A,ierr)
-         
 
 C
 C     Set values into the matrix. All processors set all values.
