@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.191 1996/08/22 19:52:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.192 1996/08/29 17:32:19 bsmith Exp curfman $";
 #endif
 
 /*
@@ -76,21 +76,21 @@ $      COLORING_IF
 .  is - index sets for each color
 
    Options Database Keys:
-   To specify the ordering through the options database, use one of
+   To specify the coloring through the options database, use one of
    the following 
 $    -mat_color natural, -mat_color sl, -mat_color ld
 $    -mat_color if
 
-.keywords: matrix, set, coloring
+.keywords: matrix, get, coloring
 
-.seealso:  MatGetReordering()
+.seealso: MatGetReordering()
 @*/
 int MatGetColoring(Mat mat,MatColoring type,int *nc,IS **is)
 {
   int         ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,"MatGetReordering:Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,"MatGetReordering:Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(1,"MatGetColoring:Not for unassembled matrix");
+  if (mat->factor) SETERRQ(1,"MatGetColoring:Not for factored matrix"); 
 
   if (!mat->ops.getcoloring) {*is = 0; return 0;}
   PLogEventBegin(MAT_GetColoring,mat,0,0,0);
@@ -504,9 +504,7 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 $    flag = MAT_LOCAL: local matrix
 $    flag = MAT_GLOBAL_MAX: maximum over all processors
 $    flag = MAT_GLOBAL_SUM: sum over all processors
-.   nz - the number of nonzeros [or PETSC_NULL]
-.   nzalloc - the number of allocated nonzeros [or PETSC_NULL]
-.   mem - the memory used (in bytes)  [or PETSC_NULL]
+.  info - information context
 
 .keywords: matrix, get, info, storage, nonzeros, memory
 @*/
