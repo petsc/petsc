@@ -668,7 +668,7 @@ int MatLoad_SeqDense(PetscViewer viewer,MatType type,Mat *A)
     v    = a->v;
     /* Allocate some temp space to read in the values and then flip them
        from row major to column major */
-    ierr = PetscMalloc((M*N+1)*sizeof(PetscScalar),&w);CHKERRQ(ierr);
+    ierr = PetscMalloc((M*N > 0 ? M*N : 1)*sizeof(PetscScalar),&w);CHKERRQ(ierr);
     /* read in nonzero values */
     ierr = PetscBinaryRead(fd,w,M*N,PETSC_SCALAR);CHKERRQ(ierr);
     /* now flip the values and store them in the matrix*/
