@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: solid.make,v 1.16 1998/09/30 00:05:30 balay Exp balay $ 
+# $Id: solid.make,v 1.17 1998/10/02 14:53:16 balay Exp balay $ 
 
 # Defaults
-hme="/home/petsc/petsc-2.0.23"
+hme="/home/petsc/petsc-2.0.24"
 src_dir=""
 action="lib"
 
@@ -26,9 +26,9 @@ for arg in "$@" ; do
         echo " "
         echo "Example Usage:"
         echo "  - To update the libraries with changes in src/sles/interface"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.23 SRC_DIR=src/sles/interface ACTION=lib"
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.24 SRC_DIR=src/sles/interface ACTION=lib"
         echo "  - To rebuild a new version of PETSC on all the machines"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.23 SRC_DIR=\"\" ACTION=\"all\" "
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.24 SRC_DIR=\"\" ACTION=\"all\" "
         echo " "
         echo "Defaults:"
         echo "  PETSC_DIR=$hme SRC_DIR=$src_dir ACTION=$action"
