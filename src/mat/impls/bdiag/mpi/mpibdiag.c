@@ -1,6 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.55 1995/11/01 19:10:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.56 1995/11/01 23:19:03 bsmith Exp bsmith $";
 #endif
+/*
+   The basic matrix operations for the Block diagonal parallel 
+  matrices.
+*/
 
 #include "mpibdiag.h"
 #include "vec/vecimpl.h"
@@ -23,8 +27,7 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
         if (idxn[j] < 0) SETERRQ(1,"MatSetValues_MPIBDiag:Negative column");
-        if (idxn[j] >= mbd->N) 
-          SETERRQ(1,"MatSetValues_MPIBDiag:Column too large");
+        if (idxn[j] >= mbd->N) SETERRQ(1,"MatSetValues_MPIBDiag:Column too large");
         ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv);
         CHKERRQ(ierr);
       }
@@ -49,11 +52,10 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   Scalar       *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce((void *) &mbd->insertmode,(void *) &addv,1,MPI_INT,
-                MPI_BOR,comm);
+  MPI_Allreduce((void *) &mbd->insertmode,(void *) &addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
     "MatAssemblyBegin_MPIBDiag:Cannot mix adds/inserts on different procs");
-    }
+  }
   mbd->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
@@ -240,8 +242,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
-  if (!l->assembled) 
-    SETERRQ(1,"MatZeroRows_MPIRowBDiag:Must assemble matrix");
+  if (!l->assembled) SETERRQ(1,"MatZeroRows_MPIRowBDiag:Must assemble matrix");
   ierr = ISGetLocalSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
 
@@ -335,9 +336,9 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   PetscFree(owner); PetscFree(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp); 
+  ierr = ISCreateSeq(MPI_COMM_SELF,slen,lrows,&istmp); CHKERRQ(ierr);  
   PLogObjectParent(A,istmp);
-  CHKERRQ(ierr);  PetscFree(lrows);
+  PetscFree(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
   ierr = ISDestroy(istmp); CHKERRQ(ierr);
 
@@ -357,8 +358,7 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
-  if (!mbd->assembled) 
-    SETERRQ(1,"MatMult_MPIBDiag:Must assemble matrix first");
+  if (!mbd->assembled) SETERRQ(1,"MatMult_MPIBDiag:Must assemble matrix first");
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
@@ -371,8 +371,8 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
-  if (!mbd->assembled) 
-    SETERRQ(1,"MatMultAdd_MPIBDiag:Must assemble matrix first");
+
+  if (!mbd->assembled) SETERRQ(1,"MatMultAdd_MPIBDiag:Must assemble matrix first");
   ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTER_ALL,mbd->Mvctx);
@@ -445,6 +445,7 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *ms = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr;
+
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",
                   mbd->M,mbd->N,ms->nb,ms->nd);
@@ -467,6 +468,7 @@ static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   int          ierr;
+
   if (mbd->size == 1) {
     ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
   }
@@ -636,9 +638,9 @@ static int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   int          lrow;
+
   if (!mat->assembled) SETERRQ(1,"MatGetRow_MPIBDiag:Must assemble matrix first");
-  if (row < mat->rstart || row >= mat->rend) 
-    SETERRQ(1,"MatGetRow_MPIBDiag:only for local rows")
+  if (row < mat->rstart || row >= mat->rend)SETERRQ(1,"MatGetRow_MPIBDiag:only for local rows")
   lrow = row - mat->rstart;
   return MatGetRow(mat->A,lrow,nz,idx,v);
 }
@@ -1060,3 +1062,10 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
+
+
+
+
+
+
+

@@ -1,12 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.12 1995/11/01 19:08:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.13 1995/11/01 23:15:25 bsmith Exp bsmith $";
 #endif
-
-#define RERROR  gmres_error
+/*
+       Routines used for the orthogonalization of the Hessianburg matrix.
+*/
 #include "gmresp.h"
 
 /*
-  This is the basic version and does not assume anything. 
+  This is the basic version using modified Gram-Schmidt.
  */
 int KSPGMRESBasicOrthog( KSP itP,int it )
 {
@@ -134,3 +135,4 @@ int KSPGMRESIROrthog(KSP  itP,int it )
   PLogEventEnd(KSP_GMRESOrthogonalization,itP,0,0,0);
   return 0;
 }
+

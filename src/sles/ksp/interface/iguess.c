@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.11 1995/11/01 19:08:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.12 1995/11/01 23:15:09 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -19,6 +19,7 @@ typedef struct {
 int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 {
   KSPIGUESS *itg;
+
   *ITG = 0;
   PETSCVALIDHEADERSPECIFIC(itctx,KSP_COOKIE);
   itg  = (KSPIGUESS* ) PetscMalloc(sizeof(KSPIGUESS)); CHKPTRQ(itg);
@@ -26,9 +27,9 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
   itg->maxl = maxl;
   itg->alpha = (Scalar *)PetscMalloc( maxl * sizeof(Scalar) );  CHKPTRQ(itg->alpha);
   PLogObjectMemory(itctx,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
-  VecGetVecs(itctx->vec_rhs,maxl,&itg->xtilde);
+  VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->xtilde);
   PLogObjectParents(itctx,maxl,itg->xtilde);
-  VecGetVecs(itctx->vec_rhs,maxl,&itg->btilde);
+  VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->btilde);
   PLogObjectParents(itctx,maxl,itg->btilde);
   *ITG = (void *)itg;
   return 0;
@@ -46,8 +47,9 @@ int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 
 int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 {
-  int i;
+  int    i;
   Scalar tmp;
+
   PETSCVALIDHEADERSPECIFIC(itctx,KSP_COOKIE);
   for (i=1; i<=itg->curl; i++) {
     VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));

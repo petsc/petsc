@@ -1,12 +1,11 @@
-/* $Id: kspimpl.h,v 1.11 1995/08/07 21:57:55 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.12 1995/10/17 21:40:53 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
 
 #include "ksp.h"
-
 /*
-   Iterative method context.
+   Defines the KSP data structure.
 */
 struct _KSP {
   PETSCHEADER
@@ -25,7 +24,7 @@ struct _KSP {
   double rnorm0;                   /* initial residual norm 
 				      (used for divergence testing) */
 
-  Vec vec_sol, vec_rhs;         /* pointer to where user has stashed 
+  Vec vec_sol, vec_rhs   ;         /* pointer to where user has stashed 
                                       the solution and rhs, these are 
                                       never touched by the code, only 
                                       passed back to the user */ 
@@ -52,7 +51,7 @@ struct _KSP {
   int  (*solver)(KSP,int*);      /* actual solver */
   int  (*setup)(KSP);
   int  (*adjustwork)(KSP);
-  void *data;          /* holder for misc stuff associated 
+  void *data;                      /* holder for misc stuff associated 
                                    with a particular iterative solver */
 
   /* ----------------Default work-area management -------------------- */
@@ -71,27 +70,27 @@ struct _KSP {
                                 (*itP->monitor)(itP,it,rnorm,itP->monP);\
                               }
 
-int KSPCreate_Richardson(KSP);
-int KSPCreate_Chebychev(KSP);
-int KSPCreate_CG(KSP);
-int KSPCreate_GMRES(KSP);
-int KSPCreate_TCQMR(KSP);
-int KSPCreate_BCGS(KSP);
-int KSPCreate_CGS(KSP);
-int KSPCreate_TFQMR(KSP);
-int KSPCreate_LSQR(KSP);
-int KSPCreate_PREONLY(KSP);
-int KSPCreate_CR(KSP);
-int KSPCreate_QCG(KSP);
+extern int KSPCreate_Richardson(KSP);
+extern int KSPCreate_Chebychev(KSP);
+extern int KSPCreate_CG(KSP);
+extern int KSPCreate_GMRES(KSP);
+extern int KSPCreate_TCQMR(KSP);
+extern int KSPCreate_BCGS(KSP);
+extern int KSPCreate_CGS(KSP);
+extern int KSPCreate_TFQMR(KSP);
+extern int KSPCreate_LSQR(KSP);
+extern int KSPCreate_PREONLY(KSP);
+extern int KSPCreate_CR(KSP);
+extern int KSPCreate_QCG(KSP);
 
-int KSPiDefaultAdjustWork(KSP);
-int KSPDefaultBuildSolution(KSP,Vec,Vec*);
-int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
-int KSPiDefaultDestroy(PetscObject);
-int KSPCheckDef(KSP);
-int KSPiDefaultGetWork(KSP,int);
-int KSPiDefaultFreeWork(KSP);
-int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
-int KSPUnwindPre(KSP,Vec,Vec);
+extern int KSPiDefaultAdjustWork(KSP);
+extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
+extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
+extern int KSPiDefaultDestroy(PetscObject);
+extern int KSPCheckDef(KSP);
+extern int KSPiDefaultGetWork(KSP,int);
+extern int KSPiDefaultFreeWork(KSP);
+extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
+extern int KSPUnwindPre(KSP,Vec,Vec);
 
 #endif

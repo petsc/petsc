@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.31 1995/11/01 19:08:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.32 1995/11/01 23:15:21 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -42,8 +42,8 @@ int  KSPSolve_CG(KSP itP,int *its)
   KSP_CG       *cgP;
   Mat          Amat, Pmat;
   MatStructure pflag;
-  cgP = (KSP_CG *) itP->data;
 
+  cgP = (KSP_CG *) itP->data;
   eigs    = itP->calc_eigs;
   pres    = itP->use_pres;
   maxit   = itP->max_it;
@@ -125,9 +125,8 @@ int  KSPSolve_CG(KSP itP,int *its)
 
 int KSPDestroy_CG(PetscObject obj)
 {
-  KSP itP = (KSP) obj;
-  KSP_CG *cgP;
-  cgP = (KSP_CG *) itP->data;
+  KSP    itP = (KSP) obj;
+  KSP_CG *cgP = (KSP_CG *) itP->data;
 
   /* free space used for eigenvalue calculations */
   if ( itP->calc_eigs ) {
@@ -143,10 +142,10 @@ int KSPDestroy_CG(PetscObject obj)
 
 int KSPCreate_CG(KSP itP)
 {
-  KSP_CG *cgP;
-  cgP = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));  CHKPTRQ(cgP);
+  KSP_CG *cgP = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));  CHKPTRQ(cgP);
+
   PLogObjectMemory(itP,sizeof(KSP_CG));
-  itP->data = (void *) cgP;
+  itP->data                 = (void *) cgP;
   itP->type                 = KSPCG;
   itP->right_pre            = 0;
   itP->calc_res             = 1;
@@ -160,3 +159,7 @@ int KSPCreate_CG(KSP itP)
   itP->view                 = 0;
   return 0;
 }
+
+
+
+

@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.40 1995/10/24 21:42:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.41 1995/11/01 19:08:47 bsmith Exp bsmith $";
 #endif
 /*
-    Command line interface for KSP
+    Code for setting KSP options from the options database.
 */
 
 #include "draw.h"     /*I "draw.h" I*/
@@ -111,6 +111,7 @@ int KSPPrintHelp(KSP ctx)
 {
   char *p;
   int  rank = 0;
+
   MPI_Comm_rank(ctx->comm,&rank);
     
   if (!rank) {
@@ -153,3 +154,4 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
   ksp->prefix = prefix;
   return 0;
 }
+

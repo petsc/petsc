@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.32 1995/10/17 21:40:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.33 1995/11/01 23:15:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -209,7 +209,7 @@ int  KSPiDefaultGetWork( KSP itP, int nw )
   int ierr;
   if (itP->work) KSPiDefaultFreeWork( itP );
   itP->nwork = nw;
-  ierr = VecGetVecs(itP->vec_rhs,nw,&itP->work); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(itP->vec_rhs,nw,&itP->work); CHKERRQ(ierr);
   PLogObjectParents(itP,nw,itP->work);
   return 0;
 }

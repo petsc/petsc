@@ -1,7 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.65 1995/10/17 21:40:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.66 1995/11/01 23:15:09 bsmith Exp bsmith $";
 #endif
-
+/*
+     The basic KSP routines, Create, View etc. are here.
+*/
 #include "petsc.h"
 #include "kspimpl.h"      /*I "ksp.h" I*/
 #include <stdio.h>
@@ -38,6 +40,7 @@ int KSPView(KSP ksp,Viewer viewer)
   FILE        *fd;
   char        *method;
   int         ierr;
+
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == ASCII_FILE_VIEWER ||
                                         vobj->type == ASCII_FILES_VIEWER)) {
     ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
@@ -57,7 +60,7 @@ int KSPView(KSP ksp,Viewer viewer)
   return 0;
 }
 
-static NRList *__ITList = 0;
+static NRList *__KSPList = 0;
 /*@C
    KSPCreate - Creates the default KSP context.
 
@@ -75,6 +78,7 @@ static NRList *__ITList = 0;
 int KSPCreate(MPI_Comm comm,KSP *ksp)
 {
   KSP ctx;
+
   *ksp = 0;
   PetscHeaderCreate(ctx,_KSP,KSP_COOKIE,KSPGMRES,comm);
   PLogObjectCreate(ctx);
@@ -90,17 +94,17 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->atol          = 1.e-50;
   ctx->divtol        = 1.e4;
 
-  ctx->guess_zero    = 1;
-  ctx->calc_eigs     = 0;
-  ctx->calc_res      = 0;
-  ctx->residual_history = 0;
-  ctx->res_hist_size    = 0;
-  ctx->res_act_size     = 0;
-  ctx->monitor          = 0;
+  ctx->guess_zero          = 1;
+  ctx->calc_eigs           = 0;
+  ctx->calc_res            = 0;
+  ctx->residual_history    = 0;
+  ctx->res_hist_size       = 0;
+  ctx->res_act_size        = 0;
+  ctx->monitor             = 0;
   ctx->adjust_work_vectors = 0;
-  ctx->converged     = KSPDefaultConverged;
-  ctx->buildsolution = KSPDefaultBuildSolution;
-  ctx->buildresidual = KSPDefaultBuildResidual;
+  ctx->converged           = KSPDefaultConverged;
+  ctx->buildsolution       = KSPDefaultBuildSolution;
+  ctx->buildresidual       = KSPDefaultBuildResidual;
 
   ctx->vec_sol   = 0;
   ctx->vec_rhs   = 0;
@@ -144,6 +148,7 @@ $      (for instance, cg or gmres)
 int KSPSetMethod(KSP ctx,KSPMethod itmethod)
 {
   int ierr,(*r)(KSP);
+
   PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
   if (ctx->setupcalled) {
     /* destroy the old private KSP context */
@@ -151,9 +156,9 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
     ctx->data = 0;
   }
   /* Get the function pointers for the iterative method requested */
-  if (!__ITList) {KSPRegisterAll();}
-  if (!__ITList) SETERRQ(1,"KSPSetMethod:Could not get list of KSP methods"); 
-  r =  (int (*)(KSP))NRFindRoutine( __ITList, (int)itmethod, (char *)0 );
+  if (!__KSPList) {KSPRegisterAll();}
+  if (!__KSPList) SETERRQ(1,"KSPSetMethod:Could not get list of KSP methods"); 
+  r =  (int (*)(KSP))NRFindRoutine( __KSPList, (int)itmethod, (char *)0 );
   if (!r) {SETERRQ(1,"KSPSetMethod:Unknown method");}
   if (ctx->data) PetscFree(ctx->data);
   ctx->data = 0;
@@ -177,8 +182,8 @@ int  KSPRegister(KSPMethod name, char *sname, int  (*create)(KSP))
 {
   int ierr;
   int (*dummy)(void *) = (int (*)(void *)) create;
-  if (!__ITList) {ierr = NRCreate(&__ITList); CHKERRQ(ierr);}
-  return NRRegister( __ITList, (int) name, sname, dummy );
+  if (!__KSPList) {ierr = NRCreate(&__KSPList); CHKERRQ(ierr);}
+  return NRRegister( __KSPList, (int) name, sname, dummy );
 }
 
 /*@C
@@ -191,13 +196,12 @@ int  KSPRegister(KSPMethod name, char *sname, int  (*create)(KSP))
 @*/
 int KSPRegisterDestroy()
 {
-  if (__ITList) {
-    NRDestroy( __ITList );
-    __ITList = 0;
+  if (__KSPList) {
+    NRDestroy( __KSPList );
+    __KSPList = 0;
   }
   return 0;
 }
-
 
 /*
    KSPGetMethodFromOptions_Private - Sets the selected KSP method from 
@@ -216,8 +220,8 @@ int KSPGetMethodFromOptions_Private(KSP ctx,KSPMethod *itmethod)
 {
   char sbuf[50];
   if (OptionsGetString(ctx->prefix,"-ksp_method", sbuf, 50 )) {
-    if (!__ITList) KSPRegisterAll();
-    *itmethod = (KSPMethod)NRFindID( __ITList, sbuf );
+    if (!__KSPList) KSPRegisterAll();
+    *itmethod = (KSPMethod)NRFindID( __KSPList, sbuf );
     return 1;
   }
   return 0;
@@ -238,8 +242,8 @@ int KSPGetMethodFromOptions_Private(KSP ctx,KSPMethod *itmethod)
 int KSPGetMethodName(KSPMethod  itmeth,char **name )
 {
   int ierr;
-  if (!__ITList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
-  *name = NRFindName( __ITList, (int) itmeth );
+  if (!__KSPList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
+  *name = NRFindName( __KSPList, (int) itmeth );
   return 0;
 }
 
@@ -255,8 +259,8 @@ int KSPGetMethodName(KSPMethod  itmeth,char **name )
 int KSPPrintMethods_Private(char* prefix,char *name)
 {
   FuncList *entry;
-  if (!__ITList) {KSPRegisterAll();}
-  entry = __ITList->head;
+  if (!__KSPList) {KSPRegisterAll();}
+  entry = __KSPList->head;
   fprintf(stdout," %s%s (one of)",prefix,name);
   while (entry) {
     fprintf(stdout," %s",entry->name);

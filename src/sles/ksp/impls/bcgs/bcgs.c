@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.22 1995/10/17 21:40:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.23 1995/11/01 19:08:52 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -20,8 +20,7 @@ static int KSPSetUp_BCGS(KSP itP)
 static int  KSPSolve_BCGS(KSP itP,int *its)
 {
   int       i = 0, maxit, hist_len, cerr = 0,ierr;
-  Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2;
-  Scalar    zero = 0.0, tmp;
+  Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2,zero = 0.0, tmp;
   Vec       X,B,V,P,R,RP,T,S, BINVF;
   double    dp, *history;
 

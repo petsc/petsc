@@ -1,7 +1,7 @@
-/* $Id: gmresp.h,v 1.2 1995/05/05 03:58:34 bsmith Exp bsmith $
-
-   Private include for gmres package
- */
+/* $Id: gmresp.h,v 1.3 1995/10/30 03:50:33 bsmith Exp bsmith $ */
+/*
+   Private data structure used by the GMRES method.
+*/
 #if !defined(__GMRES)
 #define __GMRES
 

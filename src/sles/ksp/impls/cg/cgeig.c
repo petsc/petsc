@@ -1,8 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.20 1995/11/01 19:08:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.21 1995/11/01 23:15:21 bsmith Exp bsmith $";
 #endif
 /*                       
-
+      Code for calculating extreme eigenvalues via the Lanczo method
+   running with CG.
 */
 #include <stdio.h>
 #include <math.h>
@@ -10,11 +11,6 @@ static char vcid[] = "$Id: cgeig.c,v 1.20 1995/11/01 19:08:53 bsmith Exp bsmith 
 #include "cgctx.h"
 static int ccgtql1_private(int *, Scalar *, Scalar *, int *);
 
-/* ------------------------------------------------------------------
-*      calculates eigenvalues of symmetric tridiagonal
-*    matrix stored in vectors d and e. i gives size of system
-*    Uses f2c version of Eispack routine tql1
-* -----------------------------------------------------------------*/
 #if !defined(PETSC_COMPLEX)
 
 /*@
@@ -44,6 +40,7 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
   KSP_CG *cgP;
   double *d, *e, *dd, *ee;
   int    ii,j;
+
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->type != KSPCG) {SETERRQ(3,"KSPCGGetEigenvalues:Method not CG");}
   if (!itP->calc_eigs) {
@@ -89,8 +86,9 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
 int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 {
   KSP_CG *cgP;
-  double    c;
-  int ierr;
+  double c;
+  int    ierr;
+
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (!itP->calc_eigs) {
     MPIU_printf(itP->comm,"%d %14.12e \n",n,rnorm);
