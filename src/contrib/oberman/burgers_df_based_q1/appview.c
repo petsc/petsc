@@ -151,11 +151,11 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
   double                 *vertex_value;
 
 
-  int                    ierr,i;
+  int                    ierr,i,c0,c1,c2;
 
   Draw                   drawglobal = appctx->view.drawglobal;
   Draw                   drawlocal = appctx->view.drawlocal,popup;
-  double                 x0,x1,x2,y0,y1,y2,c0,c1,c2,vmin,vmax;
+  double                 x0,x1,x2,y0,y1,y2,vmin,vmax;
 
   Scalar                 *values;
 
@@ -175,7 +175,7 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
   ierr = VecCopy(algebra->w_local,appctx->algebra.x_local);CHKERRQ(ierr);
   ierr = VecContourScale(algebra->x_local,vmin,vmax);CHKERRQ(ierr);
   ierr = DrawGetPopup(drawglobal,&popup);CHKERRQ(ierr);
-  ierr = DrawScalePopup(popup,vmin,vmax);CHKERRQ(ierr);
+  if (popup) {ierr = DrawScalePopup(popup,vmin,vmax);CHKERRQ(ierr);}
 
   ierr = VecGetArray(algebra->x_local,&values);CHKERRQ(ierr);
 
@@ -183,16 +183,16 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
     x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
     x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
     x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-    c0 = values[cell_vertex[ncell*i]];
-    c1 = values[cell_vertex[ncell*i+1]];
-    c2 = values[cell_vertex[ncell*i+2]];
+    c0 = (int) values[cell_vertex[ncell*i]];
+    c1 = (int) values[cell_vertex[ncell*i+1]];
+    c2 = (int) values[cell_vertex[ncell*i+2]];
     ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
     x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
     x1 = vertex_value[2*cell_vertex[ncell*i+3]]; y1 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
     x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-    c0 = values[cell_vertex[ncell*i]];
-    c1 = values[cell_vertex[ncell*i+3]];
-    c2 = values[cell_vertex[ncell*i+2]];
+    c0 = (int) values[cell_vertex[ncell*i]];
+    c1 = (int) values[cell_vertex[ncell*i+3]];
+    c2 = (int) values[cell_vertex[ncell*i+2]];
     ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
   }
 

@@ -44,7 +44,6 @@ int main( int argc, char **argv )
 #define __FUNC__ "AppCxtSolve"
 int AppCtxSolve(AppCtx* appctx)
 {
-  AppGrid                *grid = &appctx->grid;
   AppAlgebra             *algebra = &appctx->algebra;
   SNES                   snes;
   int ierr, its;
@@ -208,6 +207,7 @@ int SetNonlinearFunction(Vec g, AppCtx *appctx, Vec f)
     /* put result in */
     ierr = VecSetValuesLocal(f, 8, df_ptr, result, ADD_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray( algebra->f_local, &uvvals); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -294,6 +294,7 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
     /*  Set the values in the matrix */
     ierr  = MatSetValuesLocal(*jac,8,df_ptr,8,df_ptr,values,ADD_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecRestoreArray(algebra->f_local, &uvvals);
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

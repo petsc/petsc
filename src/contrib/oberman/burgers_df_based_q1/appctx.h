@@ -172,20 +172,20 @@ int AppCtxSetRhs(AppCtx*);
 int AppCtxCreateVector(AppCtx*);
 int AppCtxSetMatrix(AppCtx*);
 int AppCtxCreateMatrix(AppCtx*);
-int FormStationaryFunction(SNES snes, Vec x, Vec f, void *appctx);
-int FormStationaryJacobian(SNES snes, Vec x, Mat *jac, Mat *B, MatStructure *flag, void *dappctx);
-int FormDynamicFunction(SNES snes, Vec x, Vec f, void *appctx);
-int FormDynamicJacobian(SNES snes, Vec x, Mat *jac, Mat *B, MatStructure *flag, void *dappctx);
+int FormStationaryFunction(SNES, Vec, Vec, void *);
+int FormStationaryJacobian(SNES, Vec, Mat *, Mat *, MatStructure *, void *);
+int FormDynamicFunction(SNES, Vec, Vec, void *);
+int FormDynamicJacobian(SNES, Vec, Mat *, Mat *, MatStructure *, void *);
 
-int SetNonlinearFunction(Vec x, AppCtx *appctx, Vec f);
+int SetNonlinearFunction(Vec, AppCtx *, Vec);
 
 extern int AppCtxSetReferenceElement(AppCtx*);
 extern int AppCtxSetFunctions(AppCtx*);
-extern int SetLocalElement(AppElement *phi, double *coords);
-extern int ComputeRHS( DFP f, DFP g, AppElement *phi, double *integrals);
-extern int ComputeMatrix( AppElement *phi, double *result);
-extern int ComputeNonlinear(AppElement *phi, double *uvvals, double *result);
-extern int ComputeJacobian(AppElement *phi, double *uvvals, double *result);
+extern int SetLocalElement(AppElement *, double *);
+extern int ComputeRHS( DFP , DFP , AppElement *, double *);
+extern int ComputeMatrix( AppElement *, double *);
+extern int ComputeNonlinear(AppElement *, double *, double* );
+extern int ComputeJacobian(AppElement *, double *, double *);
 
 #define NSTEPS 4
 #define DF 2

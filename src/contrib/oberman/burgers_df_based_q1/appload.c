@@ -94,7 +94,7 @@ int AppCtxSetLocal(AppCtx *appctx)
 
  /*       Get the list of Degrees of Freedom associated with those cells  (global numbering) */
  ierr = AODataSegmentGetReducedIS(ao,"cell","df",grid->cell_global,&grid->df_global);CHKERRQ(ierr);
- if( 1 ){  printf("df_global \n");  ISView(grid->df_global, VIEWER_STDOUT_SELF);}
+ if( 1 ){  printf("df_global \n");  ISView(grid->df_global, VIEWER_STDOUT_WORLD);}
 
  /*    Get the coords corresponding to each cell */
  ierr = AODataSegmentGetIS(ao, "cell", "coords", grid->cell_global , (void **)&grid->cell_coords);CHKERRQ(ierr);
@@ -187,10 +187,12 @@ int AppCtxGraphics(AppCtx *appctx)
   ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&appctx->view.show_griddata);CHKERRQ(ierr);
 
   if ((appctx)->view.show_grid) {
-    ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
+    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawglobal); CHKERRQ(ierr);
-    ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
+    ierr = DrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
+    ierr = DrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
     ierr = DrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
