@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.37 1995/11/04 23:27:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.38 1995/11/15 01:18:16 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -572,7 +572,7 @@ int KSPGetConvergenceContext(KSP itP, void **ctx)
   return 0;
 }
 
-/*@
+/*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
 
    Input Parameter:
@@ -598,7 +598,7 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
   return (*ctx->buildsolution)(ctx,v,V);
 }
 
-/*@
+/*@C
    KSPBuildResidual - Builds the residual in a vector provided.
 
    Input Parameter:

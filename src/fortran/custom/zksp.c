@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.5 1995/12/14 14:30:39 curfman Exp curfman $";
+static char vcid[] = "$Id: zksp.c,v 1.6 1995/12/14 14:31:15 curfman Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -143,7 +143,6 @@ void kspregisterdestroy_(int* MPIR_ierr)
 {
   *MPIR_ierr = KSPRegisterDestroy();
 }
-
 
 void kspregisterall_(int* MPIR_ierr)
 {
