@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.17 1995/07/20 15:32:28 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.18 1995/07/27 03:34:33 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -59,7 +59,6 @@ struct _SNES {
   int      iter;               /* Global iteration number */
   double   norm;               /* Residual norm of current iterate (NLE)
 				  or gradient norm of current iterate (NLM) */
-  double   norm_last;
   double   rtol;               /* Relative tolerance */
   double   atol;               /* Absolute tolerance */
   double   xtol;               /* Relative tolerance in solution */
@@ -90,11 +89,22 @@ struct _SNES {
   int      set_method_called; /* flag indicating set_method has been called */
   int      ksp_ewconv;        /* flag indicating Eisenstat-Walker KSP 
                                  convergence test */
+  void     *kspconvctx;
 };
 
-#if !defined(MAX)
-#define MAX(a,b)     ((a) > (b) ? (a) : (b))
-#define MIN(a,b)     ((a) < (b) ? (a) : (b))
-#endif
+typedef struct {
+  int    version;             /* flag indicating version 1 or 2 of test */
+  double rtol_0;              /* initial rtol */
+  double rtol_max;            /* maximum rtol */
+  double gamma;               /* mult. factor for version 2 rtol computation */
+  double alpha;               /* power for version 2 rtol computation */
+  double alpha2;              /* power for safeguard */
+  double threshold;           /* threshold for imposing safeguard */
+  double lresid_last;         /* relative tolerance from last iteration */
+  double norm_last;           /* function norm from last iteration */
+} SNES_KSP_EW_ConvCtx;
+
+int SNES_KSP_EW_Converged_Private(KSP,int,double,void*);
+int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES,KSP);
 
 #endif

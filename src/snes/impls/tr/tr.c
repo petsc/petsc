@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.19 1995/07/27 03:00:58 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.20 1995/07/29 02:11:02 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -13,19 +13,20 @@ static char vcid[] = "$Id: tr.c,v 1.19 1995/07/27 03:00:58 curfman Exp curfman $
 int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
 {
   SNES    snes = (SNES) ctx;
+  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   SNES_TR *neP = (SNES_TR*)snes->data;
-  double  rtol,atol,dtol,norm;
   Vec     x;
-  int     ierr, mkit;
+  double  norm;
+  int     ierr, convinfo;
 
-  KSPGetTolerances(ksp,&rtol,&atol,&dtol,&mkit);
-
-  if ( n == 0 ) {
-    neP->ttol   = PETSCMAX(rtol*rnorm,atol);
-    neP->rnorm0 = rnorm;
+  if (snes->ksp_ewconv) {
+    if (!kctx) SETERRQ(1,
+      "SNES_KSP_EW_Converged_Private: Convergence context does not exist");
+    if (n == 0) SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);
+    kctx->lresid_last = rnorm;
   }
-  if ( rnorm <= neP->ttol )      return 1;
-  if ( rnorm >= dtol*neP->rnorm0 || rnorm != rnorm) return -1;
+  convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
+  if (convinfo) return convinfo;
 
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x); CHKERRQ(ierr);
