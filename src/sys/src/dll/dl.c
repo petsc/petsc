@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.16 1998/04/22 19:11:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.17 1998/04/26 00:49:12 bsmith Exp curfman $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -91,15 +91,14 @@ int DLLibrarySharedTmp(MPI_Comm comm,int *shared)
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryObtain"
 /*
-   DLLibraryObtain - Obtains a library from a URL and copies into local
-        disk space.
+    DLLibraryObtain - Obtains a library from a URL and copies into local disk space.
 
-  Input Parameter:
-.   comm - processors accessing the library
+    Input Parameter:
++   comm - processors accessing the library
 .   libname - name of library, including entire URL
-.   llen     - length of llibname
+-   llen     - length of llibname
 
-  Output Paramter:
+    Output Parameter:
 .   llibname - name of local copy of library
 
 */

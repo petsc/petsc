@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.288 1998/04/24 22:11:37 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.289 1998/04/27 03:54:32 curfman Exp curfman $";
 #endif
 
 /*
@@ -3120,7 +3120,7 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 
    Collective on Mat
 
-   Input Paramter:
+   Input Parameter:
 .  mat - the factored matrix to be reset
 
    Notes: 

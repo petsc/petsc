@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.18 1998/04/09 23:21:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: ao.c,v 1.19 1998/04/27 13:30:05 curfman Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -15,9 +15,20 @@ static char vcid[] = "$Id: ao.c,v 1.18 1998/04/09 23:21:17 bsmith Exp curfman $"
 
    Input Parameters:
 +  ao - the application ordering context
--  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
+-  viewer - viewer used for display
 
-.keywords:application ordering
+   Note:
+   The available visualization contexts include
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
+
+   The user can open an alternative visualization context with
+   ViewerFileOpenASCII() - output to a specified file.
+
+.keywords: application ordering
 
 .seealso: ViewerFileOpenASCII()
 @*/
@@ -194,8 +205,4 @@ int AOApplicationToPetsc(AO ao,int n,int *ia)
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
 

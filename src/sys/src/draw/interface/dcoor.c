@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dcoor.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dcoor.c,v 1.13 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -12,12 +12,12 @@ static char vcid[] = "$Id: dcoor.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsmith 
    DrawSetCoordinates - Sets the application coordinates of the corners of
    the window (or page).
 
-   Input Paramters:
-.  draw - the drawing object
-.  xl,yl,xr,yr - the coordinates of the lower left corner and upper
-                 right corner of the drawing region.
+   Not collective
 
-   Note collective
+   Input Parameters:
++  draw - the drawing object
+-  xl,yl,xr,yr - the coordinates of the lower left corner and upper
+                 right corner of the drawing region.
 
 .keywords:  draw, set, coordinates
 

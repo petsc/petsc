@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsetpause.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dsetpause.c,v 1.13 1998/04/13 17:46:34 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -12,15 +12,15 @@ static char vcid[] = "$Id: dsetpause.c,v 1.12 1997/10/19 03:27:39 bsmith Exp bsm
    DrawSetPause - Sets the amount of time that program pauses after 
    a DrawPause() is called. 
 
-   Input Paramters:
-.  draw - the drawing object
-.  pause - number of seconds to pause, -1 implies until user input
+   Collective on Draw
+
+   Input Parameters:
++  draw - the drawing object
+-  pause - number of seconds to pause, -1 implies until user input
 
    Note:
    By default the pause time is zero unless the -draw_pause option is given 
    during DrawOpenX().
-
-   Collective on Draw
 
 .keywords: draw, set, pause
 

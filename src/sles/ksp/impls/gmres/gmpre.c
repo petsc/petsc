@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.10 1998/04/13 17:29:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmpre.c,v 1.11 1998/04/24 22:10:15 curfman Exp curfman $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: gmpre.c,v 1.10 1998/04/13 17:29:07 bsmith Exp curfman
 
     Collective on KSP
 
-    Input Paramter:
+    Input Parameter:
 .   ksp   - iterative context obtained from KSPCreate
 
     Options Database Key:
