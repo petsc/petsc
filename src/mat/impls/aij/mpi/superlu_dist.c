@@ -93,7 +93,6 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr;
   int                     ierr, size=aa->size;
   int                     m=A->M, N=A->N; 
-  superlu_options_t       options=lu->options;
   SuperLUStat_t           stat;  
   double                  berr[1];
   PetscScalar             *bptr;  
@@ -188,7 +187,7 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   Mat_SeqAIJ              *aa,*bb;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)(*F)->spptr;
   int                     M=A->M,N=A->N,info,ierr,size=fac->size,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
-                          m=A->m, jj,irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
+                          m=A->m, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
   SuperLUStat_t           stat;
   double                  *berr=0;
   IS                      isrow;
