@@ -8,6 +8,9 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
+#if defined(PETSC_HAVE_SPOOLES)
+EXTERN int MatUseSpooles_SeqSBAIJ(Mat); 
+#endif
 
 #define CHUNKSIZE  10
 
@@ -589,6 +592,9 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   int        m = A->m,*ip,N,*ailen = a->ilen;
   int        mbs = a->mbs,bs2 = a->bs2,rmax = 0,ierr;
   MatScalar  *aa = a->a,*ap;
+#if defined(PETSC_HAVE_SPOOLES) 
+  PetscTruth   flag;
+#endif
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -629,6 +635,11 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Most nonzeros blocks in any row is %d\n",rmax);
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
+  
+#if defined(PETSC_HAVE_SPOOLES) 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSpooles_SeqSBAIJ(A);CHKERRQ(ierr); }
+#endif   
 
   PetscFunctionReturn(0);
 }
