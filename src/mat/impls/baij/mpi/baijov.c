@@ -1338,7 +1338,10 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
     }
   } else {
     for (i=0; i<ismax; i++) {
-      ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,a->bs,nrow[i]*bs,ncol[i]*bs,0,lens[i],submats+i);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_SELF,nrow[i]*bs,ncol[i]*bs,nrow[i]*bs,ncol[i]*bs,submats+i);CHKERRQ(ierr);
+      ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
+      ierr = MatSeqBAIJSetPreallocation(submats[i],a->bs,0,lens[i]);CHKERRQ(ierr);
+      ierr = MatSeqSBAIJSetPreallocation(submats[i],a->bs,0,lens[i]);CHKERRQ(ierr);
     }
   }
 
