@@ -387,10 +387,10 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...
     else       {queuebase   = queue = next;}
     queuelength++;
     string = next->string;
+    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     tab = ascii->tab;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-ascii->tab,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
@@ -713,9 +713,9 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char 
     else       {queuebase   = queue = next;}
     queuelength++;
     string = next->string;
+    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-vascii->tab,format,Argp);
     va_end(Argp);
   }
