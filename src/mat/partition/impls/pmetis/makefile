@@ -11,7 +11,7 @@ SOURCEC  = pmetis.c
 SOURCEH  = 
 OBJSC    = pmetis.o
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/partition/impls/pmetis/partition/
+LOCDIR   = src/mat/partition/impls/pmetis/
 MANSEC   = MatOrderings
 
 
