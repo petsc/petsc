@@ -1,4 +1,4 @@
-/*$Id: ebvec1.c,v 1.6 2001/09/12 03:25:43 bsmith Exp bsmith $*/
+/*$Id: ebvec1.c,v 1.7 2001/09/19 16:08:04 bsmith Exp bsmith $*/
 
 
 #include "src/vec/vecimpl.h" 
@@ -523,7 +523,13 @@ int VecESISetType(Vec V,char *name)
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to load esi::VectorFactory constructor %s",name);
+#if defined(PETSC_HAVE_CCA)
+  gov::cca::Component *component = (gov::cca::Component *)(*r)();
+  gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
+  f    = dynamic_cast<esi::petsc::VectorFactory<double,int>*>(port);
+#else
   f    = (esi::petsc::VectorFactory<double,int> *)(*r)();
+#endif
   map  = static_cast<esi::MapPartition<int>* >(new esi::petsc::Map<int>(V->comm,V->n,V->N));
   ierr = f->getVector(*map,ve);CHKERRQ(ierr);
   ierr = map->deleteReference();CHKERRQ(ierr);
