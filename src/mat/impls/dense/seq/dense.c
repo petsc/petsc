@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.27 1995/04/27 20:15:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.28 1995/04/28 02:32:44 bsmith Exp curfman $";
 #endif
 
 /*
@@ -55,17 +55,17 @@ static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
 {
   return MatLUFactor(*fact,0,0);
 }
-static int MatChFactorSymbolic_Dense(Mat matin,IS row,Mat *fact)
+static int MatCholeskyFactorSymbolic_Dense(Mat matin,IS row,Mat *fact)
 {
   int ierr;
   if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
   return 0;
 }
-static int MatChFactorNumeric_Dense(Mat matin,Mat *fact)
+static int MatCholeskyFactorNumeric_Dense(Mat matin,Mat *fact)
 {
   return MatCholeskyFactor(*fact,0);
 }
-static int MatChFactor_Dense(Mat matin,IS perm)
+static int MatCholeskyFactor_Dense(Mat matin,IS perm)
 {
   Mat_Dense    *mat = (Mat_Dense *) matin->data;
   int       info;
@@ -411,7 +411,7 @@ static int MatEqual_Dense(Mat matin1,Mat matin2)
   return 1;
 }
 
-static int MatGetDiag_Dense(Mat matin,Vec v)
+static int MatGetDiagonal_Dense(Mat matin,Vec v)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    i, n;
@@ -612,16 +612,16 @@ static struct _MatOps MatOps = {MatInsert_Dense,
        MatMultTrans_Dense, MatMultTransAdd_Dense, 
        MatSolve_Dense,MatSolveAdd_Dense,
        MatSolveTrans_Dense,MatSolveTransAdd_Dense,
-       MatLUFactor_Dense,MatChFactor_Dense,
+       MatLUFactor_Dense,MatCholeskyFactor_Dense,
        MatRelax_Dense,
        MatTrans_Dense,
        MatGetInfo_Dense,MatEqual_Dense,
        MatCopy_Dense,
-       MatGetDiag_Dense,MatScale_Dense,MatNorm_Dense,
+       MatGetDiagonal_Dense,MatScale_Dense,MatNorm_Dense,
        0,0,
        0, MatSetOption_Dense,MatZero_Dense,MatZeroRows_Dense,0,
        MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
-       MatChFactorSymbolic_Dense,MatChFactorNumeric_Dense,
+       MatCholeskyFactorSymbolic_Dense,MatCholeskyFactorNumeric_Dense,
        MatGetSize_Dense,MatGetSize_Dense,0,
        0,0,MatGetArray_Dense,0,
        MatGetSubMatrix_Dense,MatGetSubMatrixInPlace_Dense};
