@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.7 1998/04/29 02:50:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.8 1998/04/29 14:32:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -150,7 +150,6 @@ int main(int argc,char **args)
   ierr = DataDestroy(&gdata); CHKERRA(ierr);
 
   PetscFinalize();
-  PetscFunctionReturn(0);
 }
 
 
@@ -705,9 +704,6 @@ int DataMoveVertices(GridData *gdata)
   ierr = VecScatterEnd(overt,vert,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
   ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");
-  ierr = VecView(vert,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
   ierr = VecDestroy(overt);CHKERRQ(ierr);
   PetscFree(gdata->vert);
  
@@ -720,6 +716,13 @@ int DataMoveVertices(GridData *gdata)
   ierr = VecRestoreArray(vert,&avert);CHKERRQ(ierr);
   gdata->mlocal_vert = gdata->nlocal;
   ierr = VecDestroy(vert);CHKERRQ(ierr);
+
+  PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");
+  for ( i=0; i<2*gdata->mlocal_vert; i++ ) {
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%g\n",gdata->vert[i]);
+  }
+  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+
   PetscFunctionReturn(0);
 }  
 
