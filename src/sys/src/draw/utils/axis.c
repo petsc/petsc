@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.15 1995/07/28 17:49:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.16 1995/07/28 17:49:45 bsmith Exp curfman $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -13,6 +13,13 @@ static char vcid[] = "$Id: axis.c,v 1.15 1995/07/28 17:49:13 bsmith Exp bsmith $
 #include <string.h>
 #endif
 #include "petscfix.h"
+
+#if defined(PARCH_alpha) && defined(__cplusplus)
+extern "C" {
+extern double   rint(double);
+};
+#endif
+
 
 struct _DrawAxisCtx {
     double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
