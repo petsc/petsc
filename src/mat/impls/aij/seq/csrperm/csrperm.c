@@ -159,7 +159,7 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
   maxnz = 0;
   for(i=0; i<m; i++) {
 	  nz_in_row[i] = ia[i+1]-ia[i];
-    if(nz_in_row[i] > maxnz) maxnz = nz;
+    if(nz_in_row[i] > maxnz) maxnz = nz_in_row[i];
   }
 
   for(i=0; i<=maxnz; i++) {
