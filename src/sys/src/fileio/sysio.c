@@ -469,7 +469,7 @@ PetscErrorCode PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t
 #elif defined(PETSC_HAVE__LSEEK)
   *offset = _lseek(fd,(long)off,iwhence);
 #else
-  SETERRQ(PETSC_ERR_SUP,"Compiler runtime's file seek routine (lseek or _lseek) not present");
+  SETERRQ(PETSC_ERR_SUP_SYS,"System does not have a way of seeking on a file");
 #endif
 
   PetscFunctionReturn(0);
