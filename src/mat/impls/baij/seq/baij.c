@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.39 1996/04/16 13:48:15 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.40 1996/04/30 17:25:58 bsmith Exp balay $";
 #endif
 
 /*
@@ -911,6 +911,7 @@ static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
 
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
+extern int MAtIncreaseOverlap_SeqBAIJ(Mat,int,IS,int);
 
 extern int MatSolve_SeqBAIJ_N(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
@@ -1049,7 +1050,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        0,0,
        MatConvertSameType_SeqBAIJ,0,0,
        MatILUFactor_SeqBAIJ,0,0,
-       0,0,
+       0,MatIncreaseOverlap_SeqBAIJ,
        MatGetValues_SeqBAIJ,0,
        0,MatScale_SeqBAIJ,
        0};
