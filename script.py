@@ -265,23 +265,28 @@ class LanguageProcessor(args.ArgumentProcessor):
     [self.getLanguageModule(language, moduleName) for language,moduleName in self.languageModule.items()]
     return
 
+  def normalizeLanguage(self, language):
+    '''Canonicalize the language name'''
+    return language.replace('+', 'x')
+
   def getLanguageModule(self, language, moduleName = None):
     '''Return the module associated with operations for a given language
        - Giving a moduleName explicitly forces a reimport'''
+    language = self.normalizeLanguage(language)
     if not language in self.languageModule or not moduleName is None:
       try:
         if moduleName is None:
-          moduleName = self.modulePath+'.'+language.replace('+', 'x')
+          moduleName = self.modulePath+'.'+language
         module     = __import__(moduleName)
       except ImportError, e:
         if not moduleName is None:
           self.logPrint('Failure to find language module: '+str(e))
         try:
-          moduleName = self.modulePath+'.'+language.replace('+', 'x')
+          moduleName = self.modulePath+'.'+language
           module     = __import__(moduleName)
         except ImportError, e:
           self.logPrint('Failure to find language module: '+str(e))
-          moduleName = 'config.compile.'+language.replace('+', 'x')
+          moduleName = 'config.compile.'+language
           module     = __import__(moduleName)
       components = moduleName.split('.')
       for component in components[1:]:
@@ -291,16 +296,19 @@ class LanguageProcessor(args.ArgumentProcessor):
     return self.languageModule[language]
 
   def getPreprocessorObject(self, language):
+    language = self.normalizeLanguage(language)
     if not language in self.preprocessorObject:
       self.preprocessorObject[language] = self.getLanguageModule(language).Preprocessor(self.argDB)
     return self.preprocessorObject[language]
 
   def getCompilerObject(self, language):
+    language = self.normalizeLanguage(language)
     if not language in self.compilerObject:
       self.compilerObject[language] = self.getLanguageModule(language).Compiler(self.argDB)
     return self.compilerObject[language]
 
   def getLinkerObject(self, language):
+    language = self.normalizeLanguage(language)
     if not language in self.linkerObject:
       self.linkerObject[language] = self.getLanguageModule(language).Linker(self.argDB)
     return self.linkerObject[language]
