@@ -15,8 +15,8 @@ class Configure(config.base.Configure):
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
                                             'WindowsX'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
-                 'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
-                 'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
+                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
+                 'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlopen','dlsym','erf']
     libraries1 = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers',   self)
@@ -374,14 +374,6 @@ class Configure(config.base.Configure):
         self.addDefine('MISSING_SIG'+signal, 1)
     return
 
-  def configureMemorySize(self):
-    '''Try to determine how to measure the memory usage'''
-    # Should also check for using procfs and kbytes for size
-    if self.functions.haveFunction('sbreak'):
-      self.addDefine('USE_SBREAK_FOR_SIZE', 1)
-    elif not (self.headers.haveHeader('sys/resource.h') and self.functions.haveFunction('getrusage')):
-        self.addDefine('HAVE_NO_GETRUSAGE', 1)
-    return
 
   def configureMissingErrnos(self):
     '''Check for missing errno values, and define MISSING_<errno value> if necessary'''
@@ -423,12 +415,6 @@ class Configure(config.base.Configure):
       self.popLanguage()  
     return
  
-  def configureIRIX(self):
-    '''IRIX specific stuff'''
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('irix'):
-      self.addDefine('USE_KBYTES_FOR_SIZE', 1)
-    return
-
   def configureSolaris(self):
     '''Solaris specific stuff'''
     if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
@@ -656,10 +642,8 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureMissingDefines)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
-    self.executeTest(self.configureMemorySize)
     self.executeTest(self.configureFPTrap)
     self.executeTest(self.configureGetDomainName)
-    self.executeTest(self.configureIRIX)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)

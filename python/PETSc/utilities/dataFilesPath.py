@@ -25,9 +25,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-DATAFILESPATH=directory',                 nargs.Arg(None, None, 'Specifiy location of PETSc datafiles, e.g. test matrices'))    
     return
 
-  def configureArchitecture(self):
-    '''Setup a default architecture; so one need not set PETSC_ARCH'''
-
   def getDatafilespath(self):
     '''Checks what DATAFILESPATH should be'''
     self.datafilespath = None
