@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.52 1998/08/05 18:08:10 balay Exp curfman $ 
+# $Id: makefile,v 1.53 1998/08/11 02:22:11 curfman Exp bsmith $ 
 
 ALL: ex1
 
@@ -288,27 +288,27 @@ runex10:
 	   ${RM} -f ex10_1.tmp
 
 runex10_2:
-	-@${MPIRUN} -np 2 ex10 -ksp_type bicg -f0 ../../../mat/examples/matrices/medium > ex10_2.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg -f0 ../../../mat/examples/matrices/medium > ex10_2.tmp 2>&1; \
 	   if (diff output/ex10_2.out ex10_2.tmp) then true; \
 	   else echo "Possible problem with ex10_2, diffs above"; fi; \
 	   ${RM} -f ex10_2.tmp
 
 runex10_3:
-	-@${MPIRUN} -np 2 ex10 -ksp_type bicg -pc_type asm -f0 ../../../mat/examples/matrices/medium \
+	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg -pc_type asm -f0 ../../../mat/examples/matrices/medium \
            > ex10_3.tmp 2>&1; \
 	   if (diff output/ex10_3.out ex10_3.tmp) then true; \
 	   else echo "Possible problem with ex10_3, diffs above"; fi; \
 	   ${RM} -f ex10_3.tmp
 
 runex10_4:
-	-@${MPIRUN} ex10 -ksp_type bicg -pc_type lu -f0 ../../../mat/examples/matrices/medium \
+	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg -pc_type lu -f0 ../../../mat/examples/matrices/medium \
            > ex10_4.tmp 2>&1; \
 	   if (diff output/ex10_4.out ex10_4.tmp) then true; \
 	   else echo "Possible problem with ex10_4, diffs above"; fi; \
 	   ${RM} -f ex10_4.tmp
 
 runex10_5:
-	-@${MPIRUN} ex10 -ksp_type bicg -f0 ../../../mat/examples/matrices/medium \
+	-@${MPIRUN} -np 1 ex10 -ksp_type bicg -f0 ../../../mat/examples/matrices/medium \
            > ex10_5.tmp 2>&1; \
 	   if (diff output/ex10_5.out ex10_5.tmp) then true; \
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
