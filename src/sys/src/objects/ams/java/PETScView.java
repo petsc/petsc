@@ -1,4 +1,4 @@
-/*$Id: PETScView.java,v 1.5 2001/02/19 21:04:35 bsmith Exp bsmith $*/
+/*$Id: PETScView.java,v 1.6 2001/02/19 21:09:01 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published objects
 */
@@ -315,9 +315,6 @@ public class PETScView extends JApplet {
         jp.getContentPane().validate(); 
         jp.getContentPane().repaint();
 	jp.getContentPane().add(new JLabel("hi"));
-        jp.setVisible(true);
-        jp.validate(); 
-        jp.repaint();
         rpanel.add(jp);
         jp.setSize(100,100);
 	/*        jp.setLocation(50,50); */
