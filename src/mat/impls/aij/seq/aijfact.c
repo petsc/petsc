@@ -50,7 +50,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
 {
 #if defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
   PetscFunctionBegin;
-  SETERRQ(1,"This distribution does not include GNU Copyright code\n\
+  SETERRQ(PETSC_ERR_SUP_SYS,"This distribution does not include GNU Copyright code\n\
   You can obtain the drop tolerance routines by installing PETSc from\n\
   www.mcs.anl.gov/petsc\n");
 #else
@@ -147,12 +147,12 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&sierr); 
   if (sierr) {
     switch (sierr) {
-      case -3: SETERRQ2(1,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
-      case -2: SETERRQ2(1,"ilutp(), matrix L overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
-      case -5: SETERRQ(1,"ilutp(), zero row encountered");
-      case -1: SETERRQ(1,"ilutp(), input matrix may be wrong");
-      case -4: SETERRQ1(1,"ilutp(), illegal info->fill value %d",jmax);
-      default: SETERRQ1(1,"ilutp(), zero pivot detected on row %d",sierr);
+      case -3: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
+      case -2: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix L overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
+      case -5: SETERRQ(PETSC_ERR_LIB,"ilutp(), zero row encountered");
+      case -1: SETERRQ(PETSC_ERR_LIB,"ilutp(), input matrix may be wrong");
+      case -4: SETERRQ1(PETSC_ERR_LIB,"ilutp(), illegal info->fill value %d",jmax);
+      default: SETERRQ1(PETSC_ERR_LIB,"ilutp(), zero pivot detected on row %d",sierr);
     }
   }
 
@@ -517,7 +517,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 #define MAX_NSHIFT 5
       if (PetscRealPart(pv[diag]) <= zeropivot*rs && b->lu_shift) {
 	if (nshift>MAX_NSHIFT) {
-	  SETERRQ(1,"Unable to determine shift to enforce positive definite preconditioner");
+	  SETERRQ(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner");
 	} else if (nshift==MAX_NSHIFT) {
 	  shift_fraction = shift_hi;
 	  lushift      = PETSC_FALSE;
@@ -1130,7 +1130,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   PetscFunctionBegin;   
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   if (!perm_identity){
-    SETERRQ(1,"Non-identity permutation is not supported yet");
+    SETERRQ(PETSC_ERR_SUP,"Non-identity permutation is not supported yet");
   }
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
@@ -1153,7 +1153,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   PetscFunctionBegin;   
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   if (!perm_identity){
-    SETERRQ(1,"Non-identity permutation is not supported yet");
+    SETERRQ(PETSC_ERR_SUP,"Non-identity permutation is not supported yet");
   }
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);

@@ -107,7 +107,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
           m  = qm; qm = q[m];
         } while(qm < vj);
         if (qm == vj) {
-          SETERRQ(1," error: duplicate entry in A\n"); 
+          SETERRQ(PETSC_ERR_PLIB,"Duplicate entry in A\n"); 
         }     
         nzk++;
         q[m]  = vj;
@@ -234,6 +234,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
 
   (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
   (*B)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+  (*B)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
   
   PetscFunctionReturn(0); 
@@ -281,7 +282,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
           m  = qm; qm = q[m];
         } while(qm < vj);
         if (qm == vj) {
-          SETERRQ(1," error: duplicate entry in A\n"); 
+          SETERRQ(PETSC_ERR_PLIB,"Duplicate entry in A\n"); 
         }     
         nzk++;
         q[m]  = vj;

@@ -440,7 +440,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   
     ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
-    if (size != lu->nprow * lu->npcol) SETERRQ(1,"Number of processes should be equal to nprow*npcol");
+    if (size != lu->nprow * lu->npcol) SETERRQ(PETSC_ERR_ARG_SIZ,"Number of processes should be equal to nprow*npcol");
   
     ierr = PetscOptionsInt("-mat_superlu_dist_matinput","Matrix input mode (0: GLOBAL; 1: DISTRIBUTED)","None",lu->MatInputMode,&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
     if(lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
@@ -557,7 +557,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
   } else if (options.ColPerm == COLAMD) {
     colperm = "COLAMD";
   } else {
-    SETERRQ(1,"Unknown column permutation");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown column permutation");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation %s \n",colperm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -3017,7 +3017,7 @@ PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
   ISColoringValue *color;
 
   PetscFunctionBegin;
-  if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
+  if (!a->coloring) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Coloring not set for matrix");
   nlen  = PetscADGetDerivTypeSize()/sizeof(PetscScalar);
   color = a->coloring->colors;
   /* loop over rows */
@@ -3039,7 +3039,7 @@ PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
 {
   PetscFunctionBegin;
-  SETERRQ(1,"PETSc installed without ADIC");
+  SETERRQ(PETSC_ERR_SUP_SYS,"PETSc installed without ADIC");
 }
 
 #endif
@@ -3054,7 +3054,7 @@ PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
   ISColoringValue *color;
 
   PetscFunctionBegin;
-  if (!a->coloring) SETERRQ(1,"Coloring not set for matrix");
+  if (!a->coloring) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Coloring not set for matrix");
   color = a->coloring->colors;
   /* loop over rows */
   for (i=0; i<m; i++) {

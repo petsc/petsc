@@ -254,7 +254,7 @@ PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
     ierr = DSC_Solve(lu->My_DSC_Solver);
     if (ierr !=  DSC_NO_ERROR) {
       DSC_ErrorDisplay(lu->My_DSC_Solver);
-      SETERRQ(1,"Error in calling DSC_Solve");
+      SETERRQ(PETSC_ERR_LIB,"Error in calling DSC_Solve");
     }
 
     /* get the permuted local solution */
@@ -325,14 +325,14 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
                    &lu->local_struc_old_num);
       if (ierr !=  DSC_NO_ERROR) {
         DSC_ErrorDisplay(lu->My_DSC_Solver);
-        SETERRQ(1,"Error when use DSC_Order()");
+        SETERRQ(PETSC_ERR_LIB,"Error when use DSC_Order()");
       }
 
       ierr = DSC_SFactor(lu->My_DSC_Solver,&max_mem_estimate,&max_single_malloc_blk,
                      lu->max_mem_allowed, lu->LBLASLevel, lu->DBLASLevel);
       if (ierr !=  DSC_NO_ERROR) {
         DSC_ErrorDisplay(lu->My_DSC_Solver);
-        SETERRQ(1,"Error when use DSC_Order"); 
+        SETERRQ(PETSC_ERR_LIB,"Error when use DSC_Order"); 
       }
 
       ierr = BAIJtoMyANonz(a_seq->i, a_seq->j, lu->bs, a_seq->a,
@@ -592,7 +592,7 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   } else if ( lu->factor_type == DSC_LDLT){
     s = "LDLT";
   } else {
-    SETERRQ(1,"Unknown factor type");
+    SETERRQ(PETSC_ERR_PLIB,"Unknown factor type");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  factor type: %s \n",s);CHKERRQ(ierr);
 
@@ -603,7 +603,7 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   } else if ( lu->LBLASLevel == DSC_LBLAS3){
     s = "BLAS3";
   } else {
-    SETERRQ(1,"Unknown local phase BLAS level");
+    SETERRQ(PETSC_ERR_PLIB,"Unknown local phase BLAS level");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  local phase BLAS level: %s \n",s);CHKERRQ(ierr);
   
@@ -612,7 +612,7 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   } else if ( lu->DBLASLevel == DSC_DBLAS2){
     s = "BLAS2";
   } else {
-    SETERRQ(1,"Unknown distributed phase BLAS level");
+    SETERRQ(PETSC_ERR_PLIB,"Unknown distributed phase BLAS level");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  distributed phase BLAS level: %s \n",s);CHKERRQ(ierr);
   PetscFunctionReturn(0);

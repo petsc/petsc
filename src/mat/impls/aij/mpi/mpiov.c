@@ -106,7 +106,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
     for (j=0; j<len; j++) {
       row  = idx_i[j];
       if (row < 0) {
-        SETERRQ(1,"Index set cannot have negative entries");
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
       }
       proc = rtable[row];
       w4[proc]++;
@@ -274,7 +274,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
     for (i=0; i<nrqr; ++i) {
       proc      = recv_status[i].MPI_SOURCE;
-      if (proc != onodes1[i]) SETERRQ(1,"MPI_SOURCE mismatch");
+      if (proc != onodes1[i]) SETERRQ(PETSC_ERR_PLIB,"MPI_SOURCE mismatch");
       rw1[proc] = isz1[i];
     }
     ierr = PetscFree(onodes1);CHKERRQ(ierr);

@@ -944,8 +944,6 @@ EXTERN PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS[],int);
 EXTERN PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 EXTERN PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat,int,const IS[],const IS[],MatReuse,Mat*[]);
-EXTERN PetscErrorCode MatMultTranspose_SeqSBAIJ(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatMultTransposeAdd_SeqSBAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatScale_SeqSBAIJ(const PetscScalar*,Mat);
 EXTERN PetscErrorCode MatNorm_SeqSBAIJ(Mat,NormType,PetscReal *);
 EXTERN PetscErrorCode MatEqual_SeqSBAIJ(Mat,Mat,PetscTruth*);
@@ -963,13 +961,6 @@ EXTERN PetscErrorCode MatSolve_SeqSBAIJ_4(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_5(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_6(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqSBAIJ_7(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatSolveTranspose_SeqSBAIJ_7(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatSolveTranspose_SeqSBAIJ_6(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatSolveTranspose_SeqSBAIJ_5(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatSolveTranspose_SeqSBAIJ_4(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatSolveTranspose_SeqSBAIJ_3(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatSolveTranspose_SeqSBAIJ_2(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatSolveTranspose_SeqSBAIJ_1(Mat,Vec,Vec);
 
 EXTERN PetscErrorCode MatSolves_SeqSBAIJ_1(Mat,Vecs,Vecs);
 
@@ -1022,15 +1013,6 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
   PetscTruth  row_identity,col_identity;
 
   PetscFunctionBegin;
-  /*
-  if (level != 0) SETERRQ(PETSC_ERR_SUP,"Only levels = 0 supported for in-place ILU"); 
-  ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
-  ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
-  if (!row_identity || !col_identity) {
-    SETERRQ(1,"Row and column permutations must be identity for in-place ICC");
-  }
-  */
-
   outA          = inA; 
   inA->factor   = FACTOR_CHOLESKY;
 
@@ -1178,7 +1160,7 @@ PetscErrorCode MatSeqSBAIJSetColumnIndices(Mat mat,int *indices)
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Wrong type of matrix to set column indices");
+    SETERRQ(PETSC_ERR_SUP,"Wrong type of matrix to set column indices");
   }
   PetscFunctionReturn(0);
 }
@@ -1282,8 +1264,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatRestoreRow_SeqSBAIJ,
        MatMult_SeqSBAIJ_N,
 /* 4*/ MatMultAdd_SeqSBAIJ_N,
-       MatMultTranspose_SeqSBAIJ,
-       MatMultTransposeAdd_SeqSBAIJ,
+       MatMult_SeqSBAIJ_N,
+       MatMultAdd_SeqSBAIJ_N,
        MatSolve_SeqSBAIJ_N,
        0,
        0,
@@ -1392,7 +1374,7 @@ PetscErrorCode MatStoreValues_SeqSBAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
   }
 
   /* allocate space for values if not already there */
@@ -1417,10 +1399,10 @@ PetscErrorCode MatRetrieveValues_SeqSBAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
   }
   if (!aij->saved_values) {
-    SETERRQ(1,"Must call MatStoreValues(A);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
   }
 
   /* copy values over */
@@ -1465,49 +1447,49 @@ PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,int bs,int nz,int *nnz
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1;
       B->ops->solve           = MatSolve_SeqSBAIJ_1;
       B->ops->solves          = MatSolves_SeqSBAIJ_1;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_1;
+      B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1;
       B->ops->mult            = MatMult_SeqSBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_1;
       break;
     case 2:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2;  
       B->ops->solve           = MatSolve_SeqSBAIJ_2;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_2;
+      B->ops->solvetranspose  = MatSolve_SeqSBAIJ_2;
       B->ops->mult            = MatMult_SeqSBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_2;
       break;
     case 3:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3;  
       B->ops->solve           = MatSolve_SeqSBAIJ_3;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_3;
+      B->ops->solvetranspose  = MatSolve_SeqSBAIJ_3;
       B->ops->mult            = MatMult_SeqSBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_3;
       break;
     case 4:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4;  
       B->ops->solve           = MatSolve_SeqSBAIJ_4;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_4;
+      B->ops->solvetranspose  = MatSolve_SeqSBAIJ_4;
       B->ops->mult            = MatMult_SeqSBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_4;
       break;
     case 5:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5;  
       B->ops->solve           = MatSolve_SeqSBAIJ_5; 
-      B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_5;
+      B->ops->solvetranspose  = MatSolve_SeqSBAIJ_5;
       B->ops->mult            = MatMult_SeqSBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_5;
       break;
     case 6:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6;  
       B->ops->solve           = MatSolve_SeqSBAIJ_6; 
-      B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_6;
+      B->ops->solvetranspose  = MatSolve_SeqSBAIJ_6;
       B->ops->mult            = MatMult_SeqSBAIJ_6;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_6;
       break;
     case 7:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7;
       B->ops->solve           = MatSolve_SeqSBAIJ_7;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_7;
+      B->ops->solvetranspose  = MatSolve_SeqSBAIJ_7;
       B->ops->mult            = MatMult_SeqSBAIJ_7; 
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_7;
       break;

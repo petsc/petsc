@@ -294,7 +294,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
       lu->frontETree = orderViaND(lu->graph, lu->options.maxdomainsize, 
                      lu->options.seed,lu->options.msglvl,lu->options.msgFile); break;
     default:
-      SETERRQ(1,"Unknown Spooles's ordering");
+      SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown Spooles's ordering");
     }
 
     if ( lu->options.msglvl > 0 ) {
