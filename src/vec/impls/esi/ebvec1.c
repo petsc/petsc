@@ -1,5 +1,5 @@
 
-/*$Id: ebvec1.c,v 1.2 2001/08/31 20:54:08 bsmith Exp bsmith $*/
+/*$Id: ebvec1.c,v 1.3 2001/09/07 20:09:03 bsmith Exp bsmith $*/
 
 
 #include "src/vec/vecimpl.h" 
@@ -379,7 +379,9 @@ int VecCreate_PetscESI(Vec V)
 
   PetscFunctionBegin;
   ierr = VecSetType(V,VEC_ESI);CHKERRQ(ierr);
-  ierr = VecCreateMPI(V->comm,V->n,V->N,&v);CHKERRQ(ierr);
+  ierr = VecCreate(V->comm,V->n,V->N,&v);CHKERRQ(ierr);
+  if (V->bs > 1) {ierr = VecSetBlockSize(v,V->bs);CHKERRQ(ierr);}
+  ierr = VecSetType(v,VEC_MPI);CHKERRQ(ierr);
   ve   = new esi::petsc::Vector<double,int>(v);
   ierr = VecESISetVector(V,ve);CHKERRQ(ierr);
   ierr = ve->deleteReference();CHKERRQ(ierr);
