@@ -22,6 +22,7 @@
 #define dagetlocalvector_            DAGETLOCALVECTOR
 #define dagetglobalvector_           DAGETGLOBALVECTOR
 #define darestorelocalvector_        DARESTORELOCALVECTOR
+#define darestoreglobalvector_       DARESTOREGLOBALVECTOR
 #define dagetscatter_                DAGETSCATTER
 #define dagetglobalindices_          DAGETGLOBALINDICES
 #define daview_                      DAVIEW
@@ -41,6 +42,7 @@
 #define dagetlocalvector_            dagetlocalvector
 #define dagetglobalvector_           dagetglobalvector
 #define darestorelocalvector_        darestorelocalvector
+#define darestoreglobalvector_       darestoreglobalvector
 #define dagetinterpolation_          dagetinterpolation
 #define daload_                      daload
 #define dacreateglobalvector_        dacreateglobalvector
@@ -287,6 +289,11 @@ void PETSC_STDCALL dagetglobalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
 void PETSC_STDCALL darestorelocalvector_(DA *da,Vec* l,PetscErrorCode *ierr)
 {
   *ierr = DARestoreLocalVector(*da,l);
+}
+
+void PETSC_STDCALL darestoreglobalvector_(DA *da,Vec* g,PetscErrorCode *ierr)
+{
+  *ierr = DARestoreGlobalVector(*da,g);
 }
 
 void PETSC_STDCALL dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,PetscErrorCode *ierr)
