@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.245 1997/12/12 22:30:21 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.246 1998/01/06 20:10:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1646,13 +1646,13 @@ int MatPrintHelp_SeqAIJ(Mat A)
 
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = 1;
-  PetscPrintf(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");
-  PetscPrintf(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");
-  PetscPrintf(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");
-  PetscPrintf(comm,"  -mat_aij_no_inode: Do not use inodes\n");
-  PetscPrintf(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");
+  (*PetscHelpPrintf)(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");
+  (*PetscHelpPrintf)(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");
+  (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");
+  (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");
+  (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");
 #if defined(HAVE_ESSL)
-  PetscPrintf(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");
+  (*PetscHelpPrintf)(comm,"  -mat_aij_essl: Use IBM sparse LU factorization and solve.\n");
 #endif
   PetscFunctionReturn(0);
 }

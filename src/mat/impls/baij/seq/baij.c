@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.121 1997/12/06 00:08:29 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.122 1998/01/06 20:10:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1099,8 +1099,8 @@ int MatPrintHelp_SeqBAIJ(Mat A)
 
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = 1;
-  PetscPrintf(comm," Options for MATSEQBAIJ and MATMPIBAIJ matrix formats (the defaults):\n");
-  PetscPrintf(comm,"  -mat_block_size <block_size>\n");
+  (*PetscHelpPrintf)(comm," Options for MATSEQBAIJ and MATMPIBAIJ matrix formats (the defaults):\n");
+  (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");
   PetscFunctionReturn(0);
 }
 

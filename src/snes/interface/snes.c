@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.135 1997/12/01 01:56:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.136 1998/01/06 20:12:19 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1975,54 +1975,54 @@ int SNESPrintHelp(SNES snes)
 
   kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
 
-  PetscPrintf(snes->comm,"SNES options ------------------------------------------------\n");
+  (*PetscHelpPrintf)(snes->comm,"SNES options ------------------------------------------------\n");
   ierr = NRPrintTypes(snes->comm,stdout,snes->prefix,"snes_type",__SNESList);CHKERRQ(ierr);
-  PetscPrintf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
-  PetscPrintf(snes->comm," %ssnes_max_it <its>: max iterations (default %d)\n",p,snes->max_its);
-  PetscPrintf(snes->comm," %ssnes_max_funcs <maxf>: max function evals (default %d)\n",p,snes->max_funcs);
-  PetscPrintf(snes->comm," %ssnes_stol <stol>: successive step tolerance (default %g)\n",p,snes->xtol);
-  PetscPrintf(snes->comm," %ssnes_atol <atol>: absolute tolerance (default %g)\n",p,snes->atol);
-  PetscPrintf(snes->comm," %ssnes_rtol <rtol>: relative tolerance (default %g)\n",p,snes->rtol);
-  PetscPrintf(snes->comm," %ssnes_trtol <trtol>: trust region parameter tolerance (default %g)\n",p,snes->deltatol);
-  PetscPrintf(snes->comm," SNES Monitoring Options: Choose any of the following\n");
-  PetscPrintf(snes->comm,"   %ssnes_cancelmonitors: cancels all monitors hardwired in code\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_monitor: use default SNES convergence monitor, prints\n\
+  (*PetscHelpPrintf)(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
+  (*PetscHelpPrintf)(snes->comm," %ssnes_max_it <its>: max iterations (default %d)\n",p,snes->max_its);
+  (*PetscHelpPrintf)(snes->comm," %ssnes_max_funcs <maxf>: max function evals (default %d)\n",p,snes->max_funcs);
+  (*PetscHelpPrintf)(snes->comm," %ssnes_stol <stol>: successive step tolerance (default %g)\n",p,snes->xtol);
+  (*PetscHelpPrintf)(snes->comm," %ssnes_atol <atol>: absolute tolerance (default %g)\n",p,snes->atol);
+  (*PetscHelpPrintf)(snes->comm," %ssnes_rtol <rtol>: relative tolerance (default %g)\n",p,snes->rtol);
+  (*PetscHelpPrintf)(snes->comm," %ssnes_trtol <trtol>: trust region parameter tolerance (default %g)\n",p,snes->deltatol);
+  (*PetscHelpPrintf)(snes->comm," SNES Monitoring Options: Choose any of the following\n");
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_cancelmonitors: cancels all monitors hardwired in code\n",p);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_monitor: use default SNES convergence monitor, prints\n\
     residual norm at each iteration.\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_smonitor: same as the above, but prints fewer digits of the\n\
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_smonitor: same as the above, but prints fewer digits of the\n\
     residual norm for small residual norms. This is useful to conceal\n\
     meaningless digits that may be different on different machines.\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_xmonitor [x,y,w,h]: use X graphics convergence monitor\n",p);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_xmonitor [x,y,w,h]: use X graphics convergence monitor\n",p);
   if (snes->type == SNES_NONLINEAR_EQUATIONS) {
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,
      " Options for solving systems of nonlinear equations only:\n");
-    PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian and user-provided preconditioning matrix\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_no_convergence_test: Do not test for convergence, always run to SNES max its\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian and user-provided preconditioning matrix\n",p);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_no_convergence_test: Do not test for convergence, always run to SNES max its\n",p);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
+    (*PetscHelpPrintf)(snes->comm,
      "     %ssnes_ksp_ew_version <version> (1 or 2, default is %d)\n",p,kctx->version);
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,
      "     %ssnes_ksp_ew_rtol0 <rtol0> (0 <= rtol0 < 1, default %g)\n",p,kctx->rtol_0);
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,
      "     %ssnes_ksp_ew_rtolmax <rtolmax> (0 <= rtolmax < 1, default %g)\n",p,kctx->rtol_max);
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,
      "     %ssnes_ksp_ew_gamma <gamma> (0 <= gamma <= 1, default %g)\n",p,kctx->gamma);
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,
      "     %ssnes_ksp_ew_alpha <alpha> (1 < alpha <= 2, default %g)\n",p,kctx->alpha);
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,
      "     %ssnes_ksp_ew_alpha2 <alpha2> (default %g)\n",p,kctx->alpha2);
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,
      "     %ssnes_ksp_ew_threshold <threshold> (0 < threshold < 1, default %g)\n",p,kctx->threshold);
   } else if (snes->type == SNES_UNCONSTRAINED_MINIMIZATION) {
-    PetscPrintf(snes->comm,
+    (*PetscHelpPrintf)(snes->comm,
      " Options for solving unconstrained minimization problems only:\n");
-    PetscPrintf(snes->comm,"   %ssnes_fmin <ftol>: minimum function tolerance (default %g)\n",p,snes->fmin);
-    PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_fmin <ftol>: minimum function tolerance (default %g)\n",p,snes->fmin);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
   }
-  PetscPrintf(snes->comm," Run program with -help %ssnes_type <method> for help on ",p);
-  PetscPrintf(snes->comm,"a particular method\n");
+  (*PetscHelpPrintf)(snes->comm," Run program with -help %ssnes_type <method> for help on ",p);
+  (*PetscHelpPrintf)(snes->comm,"a particular method\n");
   if (snes->printhelp) {
     ierr = (*snes->printhelp)(snes,p);CHKERRQ(ierr);
   }

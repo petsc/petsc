@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.194 1997/12/20 04:39:32 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.195 1998/01/04 20:54:50 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -256,6 +256,7 @@ extern int  PetscFClose(MPI_Comm,FILE*);
 extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscPrintf(MPI_Comm,char *,...);
 extern int  (*PetscErrorPrintf)(char *,...);
+extern int  (*PetscHelpPrintf)(MPI_Comm,char *,...);
 
 extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);

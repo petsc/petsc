@@ -1,7 +1,5 @@
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.158 1997/12/29 23:31:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.159 1998/01/06 20:09:29 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -119,7 +117,9 @@ static int PLogCloseHistoryFile(FILE **fd)
        Function that is called to display all error messages
 */
 extern int  PetscErrorPrintfDefault(char *,...);
+extern int  PetscHelpPrintfDefault(MPI_Comm,char *,...);
 int (*PetscErrorPrintf)(char *,...) = PetscErrorPrintfDefault;
+int (*PetscHelpPrintf)(MPI_Comm,char *,...)  = PetscHelpPrintfDefault;
 
 int      PetscInitializedCalled = 0;
 int      PetscGlobalRank = -1, PetscGlobalSize = -1;
@@ -712,19 +712,19 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-version",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg3); CHKERRQ(ierr);
   if (flg1 || flg2 || flg3 ){
-    PetscPrintf(comm,"--------------------------------------------\
+    (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");
-    PetscPrintf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
-    PetscPrintf(comm,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
-    PetscPrintf(comm,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
-    PetscPrintf(comm,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
-    PetscPrintf(comm,"See docs/copyright.html for copyright information\n");
-    PetscPrintf(comm,"See docs/changes.html for recent updates.\n");
-    PetscPrintf(comm,"See docs/troubleshooting.html hints for problems.\n");
-    PetscPrintf(comm,"See docs/manualpages/manualpages.html or \n");
-    PetscPrintf(comm,"   bin/petscman for help.\n");
-    PetscPrintf(comm,"Libraries linked from %s\n",PETSC_LDIR);
-    PetscPrintf(comm,"--------------------------------------------\
+    (*PetscHelpPrintf)(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
+    (*PetscHelpPrintf)(comm,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
+    (*PetscHelpPrintf)(comm,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
+    (*PetscHelpPrintf)(comm,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
+    (*PetscHelpPrintf)(comm,"See docs/copyright.html for copyright information\n");
+    (*PetscHelpPrintf)(comm,"See docs/changes.html for recent updates.\n");
+    (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html hints for problems.\n");
+    (*PetscHelpPrintf)(comm,"See docs/manualpages/manualpages.html or \n");
+    (*PetscHelpPrintf)(comm,"   bin/petscman for help.\n");
+    (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LDIR);
+    (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ---------------------------\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-fp_trap",&flg1); CHKERRQ(ierr);
@@ -905,40 +905,40 @@ int OptionsCheckInitial_Private()
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {
-    PetscPrintf(comm,"Options for all PETSc programs:\n");
-    PetscPrintf(comm," -on_error_abort: cause an abort when an error is");
-    PetscPrintf(comm," detected. Useful \n       only when run in the debugger\n");
-    PetscPrintf(comm," -on_error_attach_debugger [dbx,xxgdb,ups,noxterm]\n"); 
-    PetscPrintf(comm,"       start the debugger (gdb by default) in new xterm\n");
-    PetscPrintf(comm,"       unless noxterm is given\n");
-    PetscPrintf(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]\n");
-    PetscPrintf(comm,"       start all processes in the debugger\n");
-    PetscPrintf(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");
-    PetscPrintf(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");
-    PetscPrintf(comm," -display display: Location where graphics and debuggers are displayed\n");
-    PetscPrintf(comm," -no_signal_handler: do not trap error signals\n");
-    PetscPrintf(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");
-    PetscPrintf(comm," -fp_trap: stop on floating point exceptions\n");
-    PetscPrintf(comm,"           note on IBM RS6000 this slows run greatly\n");
-    PetscPrintf(comm," -trdump: dump list of unfreed memory at conclusion\n");
-    PetscPrintf(comm," -trmalloc: use our error checking malloc\n");
-    PetscPrintf(comm," -trmalloc_off: don't use error checking malloc\n");
-    PetscPrintf(comm," -trmalloc_nan: initialize memory locations with NaNs\n");
-    PetscPrintf(comm," -trinfo: prints total memory usage\n");
-    PetscPrintf(comm," -trdebug: enables extended checking for memory corruption\n");
-    PetscPrintf(comm," -optionstable: dump list of options inputted\n");
-    PetscPrintf(comm," -optionsleft: dump list of unused options\n");
+    (*PetscHelpPrintf)(comm,"Options for all PETSc programs:\n");
+    (*PetscHelpPrintf)(comm," -on_error_abort: cause an abort when an error is");
+    (*PetscHelpPrintf)(comm," detected. Useful \n       only when run in the debugger\n");
+    (*PetscHelpPrintf)(comm," -on_error_attach_debugger [dbx,xxgdb,ups,noxterm]\n"); 
+    (*PetscHelpPrintf)(comm,"       start the debugger (gdb by default) in new xterm\n");
+    (*PetscHelpPrintf)(comm,"       unless noxterm is given\n");
+    (*PetscHelpPrintf)(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]\n");
+    (*PetscHelpPrintf)(comm,"       start all processes in the debugger\n");
+    (*PetscHelpPrintf)(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");
+    (*PetscHelpPrintf)(comm," -debugger_pause [m] : delay (in seconds) to attach debugger\n");
+    (*PetscHelpPrintf)(comm," -display display: Location where graphics and debuggers are displayed\n");
+    (*PetscHelpPrintf)(comm," -no_signal_handler: do not trap error signals\n");
+    (*PetscHelpPrintf)(comm," -mpi_return_on_error: MPI returns error code, rather than abort on internal error\n");
+    (*PetscHelpPrintf)(comm," -fp_trap: stop on floating point exceptions\n");
+    (*PetscHelpPrintf)(comm,"           note on IBM RS6000 this slows run greatly\n");
+    (*PetscHelpPrintf)(comm," -trdump: dump list of unfreed memory at conclusion\n");
+    (*PetscHelpPrintf)(comm," -trmalloc: use our error checking malloc\n");
+    (*PetscHelpPrintf)(comm," -trmalloc_off: don't use error checking malloc\n");
+    (*PetscHelpPrintf)(comm," -trmalloc_nan: initialize memory locations with NaNs\n");
+    (*PetscHelpPrintf)(comm," -trinfo: prints total memory usage\n");
+    (*PetscHelpPrintf)(comm," -trdebug: enables extended checking for memory corruption\n");
+    (*PetscHelpPrintf)(comm," -optionstable: dump list of options inputted\n");
+    (*PetscHelpPrintf)(comm," -optionsleft: dump list of unused options\n");
 #if defined (USE_PETSC_LOG)
-    PetscPrintf(comm," -log[_all _summary]: logging objects and events\n");
-    PetscPrintf(comm," -log_trace [filename]: prints trace of all PETSc calls\n");
+    (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");
+    (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");
 #if defined (HAVE_MPE)
-    PetscPrintf(comm," -log_mpe: Also create logfile viewable through upshot\n");
+    (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");
 #endif
-    PetscPrintf(comm," -log_info: print informative messages about the calculations\n");
+    (*PetscHelpPrintf)(comm," -log_info: print informative messages about the calculations\n");
 #endif
-    PetscPrintf(comm," -v: prints PETSc version number and release date\n");
-    PetscPrintf(comm," -options_file <file>: reads options from file\n");
-    PetscPrintf(comm,"-----------------------------------------------\n");
+    (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");
+    (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");
+    (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-compare",&flg1); CHKERRQ(ierr);
   if (flg1) {
@@ -1388,8 +1388,8 @@ int OptionsReject(char* name,char *mess)
   PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,name,&flag); CHKERRQ(ierr);
   if (flag) {
-    PetscPrintf(PETSC_COMM_WORLD,"Cannot run program with option %s\n",name);
-    PetscPrintf(PETSC_COMM_WORLD,"  %s",mess);
+    (*PetscErrorPrintf)("Cannot run program with option %s\n",name);
+    (*PetscErrorPrintf)("  %s",mess);
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option");
   }
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.14 1997/12/03 14:04:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.15 1997/12/03 14:06:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -53,8 +53,8 @@ void daview_(DA da,Viewer v, int *__ierr )
 void dagetglobalindices_(DA da,int *n, int *indices, int *ia,int *__ierr )
 {
 #if defined(PARCH_IRIX64)
-  PetscErrorPrintf("PETSC ERROR: Cannot use DAGetGlobalIndices() from Fortran under IRIX\n");
-  PetscErrorPrintf("PETSC ERROR: Refer to troubleshooting.html for more details\n");
+  (*PetscErrorPrintf)("PETSC ERROR: Cannot use DAGetGlobalIndices() from Fortran under IRIX\n");
+  (*PetscErrorPrintf)("PETSC ERROR: Refer to troubleshooting.html for more details\n");
   MPI_Abort(PETSC_COMM_WORLD,1);
 #else
   int *idx;

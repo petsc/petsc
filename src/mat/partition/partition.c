@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.6 1997/11/03 18:23:16 balay Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.7 1997/12/01 01:55:19 bsmith Exp bsmith $";
 #endif
  
 
@@ -334,7 +334,7 @@ int PartitioningPrintHelp(Partitioning  part)
   PetscValidHeaderSpecific(part,PARTITIONING_COOKIE);
   if (!PartitioningRegisterAllCalled) {ierr = PartitioningRegisterAll(); CHKERRQ(ierr);}
 
-  PetscPrintf(part->comm,"Partitioning options ----------------------------------------------\n");
+  (*PetscHelpPrintf)(part->comm,"Partitioning options ----------------------------------------------\n");
   NRPrintTypes(part->comm,stdout,part->prefix,"partitioning_type",__PartitioningList);
 
   if (part->printhelp) {

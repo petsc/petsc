@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.h,v 1.3 1997/10/14 20:33:25 bsmith Exp bsmith $"; 
+static char vcid[] = "$Id: petscpvode.h,v 1.4 1997/11/09 04:00:01 bsmith Exp bsmith $"; 
 #endif
 
 /*
@@ -41,7 +41,9 @@ typedef struct {
   Mat  pmat;          /* preconditioner Jacobian */
   PC   pc;            /* the PC context */
   int  cvode_type;    /* the PVODE method, BDF  or ADAMS   */
- 
+
+  TSPVodeGramSchmidtType gtype; 
+  int                    restart;
 
   /*
      Variables used by PVode 

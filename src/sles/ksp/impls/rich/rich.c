@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.56 1997/10/19 03:23:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.57 1997/11/28 16:18:54 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -121,6 +121,33 @@ extern int KSPView_Richardson(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPPrintHelp_Richardson"
+static int KSPPrintHelp_Richardson(KSP ksp,char *p)
+{
+  PetscFunctionBegin;
+
+  (*PetscHelpPrintf)(ksp->comm," Options for Richardson method:\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_richardson_scale <scale> : damping factor\n");
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPSetFromOptions_Richardson"
+int KSPSetFromOptions_Richardson(KSP ksp)
+{
+  int       ierr,flg;
+  double    tmp;
+
+  PetscFunctionBegin;
+
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_richardson_scale",&tmp,&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp); CHKERRQ(ierr); }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPCreate_Richardson"
 int KSPCreate_Richardson(KSP ksp)
 {
@@ -140,6 +167,8 @@ int KSPCreate_Richardson(KSP ksp)
   ksp->buildsolution          = KSPDefaultBuildSolution;
   ksp->buildresidual          = KSPDefaultBuildResidual;
   ksp->view                   = KSPView_Richardson;
+  ksp->printhelp              = KSPPrintHelp_Richardson;
+  ksp->setfromoptions         = KSPSetFromOptions_Richardson;
   PetscFunctionReturn(0);
 }
 

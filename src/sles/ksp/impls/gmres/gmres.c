@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.88 1997/11/28 16:18:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.89 1997/12/01 01:53:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -556,17 +556,53 @@ int KSPView_GMRES(PetscObject obj,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
-    if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) 
+    if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
       cstr = "Unmodified Gram-Schmidt Orthogonalization";
-    else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) 
+    } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
       cstr = "Modified Gram-Schmidt Orthogonalization";
-    else if (gmres->orthog == KSPGMRESIROrthogonalization) 
+    } else if (gmres->orthog == KSPGMRESIROrthogonalization) {
       cstr = "Unmodified Gram-Schmidt + Iterative Refinement Orthogonalization";
-    else 
+    } else {
       cstr = "unknown orthogonalization";
+    }
     PetscFPrintf(ksp->comm,fd,"    GMRES: restart=%d, using %s\n",
                gmres->max_k,cstr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPPrintHelp_GMRES"
+static int KSPPrintHelp_GMRES(KSP ksp,char *p)
+{
+  PetscFunctionBegin;
+  (*PetscHelpPrintf)(ksp->comm," Options for GMRES method:\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: use iterative refinement in orthogonalization\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPSetFromOptions_GMRES"
+int KSPSetFromOptions_GMRES(KSP ksp)
+{
+  int       ierr,flg,restart;
+
+  PetscFunctionBegin;
+  ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg); CHKERRQ(ierr);
+  if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_preallocate", &flg); CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp); CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
+  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_dgksorthog",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESDGKSOrthogonalization);CHKERRQ(ierr);}
+
   PetscFunctionReturn(0);
 }
 
@@ -594,6 +630,8 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->adjustwork        = KSPAdjustWork_GMRES;
   ksp->destroy           = KSPDestroy_GMRES;
   ksp->view              = KSPView_GMRES;
+  ksp->printhelp         = KSPPrintHelp_GMRES;
+  ksp->setfromoptions    = KSPSetFromOptions_GMRES;
   ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.15 1997/11/14 18:25:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.16 1997/12/01 01:56:08 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -166,7 +166,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   /* call CVSpgmr to use GMRES as the linear solver. */
   
   /* setup the ode integrator with the given preconditioner */
-  CVSpgmr(cvode->mem, LEFT, MODIFIED_GS, 0, 0.0, TSPrecond_PVode,TSPSolve_PVode, ts);
+  CVSpgmr(cvode->mem, LEFT, cvode->gtype, cvode->restart, 0.0, TSPrecond_PVode,TSPSolve_PVode, ts);
 
   tout = ts->max_time;
   for ( i=0; i<max_steps; i++) {
@@ -282,7 +282,7 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
 static int TSSetFromOptions_PVode_Nonlinear(TS ts)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
-  int      ierr, flag;
+  int      ierr, flag,restart;
   char     method[128];
   double   aabs = PETSC_DECIDE,rel = PETSC_DECIDE;
 
@@ -295,12 +295,25 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
     } else if (PetscStrcmp(method,"adams") == 0) {
       ierr = TSPVodeSetType(ts, PVODE_ADAMS); CHKERRQ(ierr);
     } else {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknow PVode method. \n");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode type.\n");
+    }
+  }
+  ierr = OptionsGetString(PETSC_NULL,"-ts_pvode_gramschmidt_type",method,127,&flag);CHKERRQ(ierr);
+  if (flag) {
+    if (PetscStrcmp(method,"modified") == 0) {
+      ierr = TSPVodeSetGramSchmidtType(ts, PVODE_MODIFIED_GS); CHKERRQ(ierr);
+    } else if (PetscStrcmp(method,"unmodified") == 0) {
+      ierr = TSPVodeSetGramSchmidtType(ts, PVODE_UNMODIFIED_GS); CHKERRQ(ierr);
+    } else {
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown PVode Gram-Schmidt orthogonalization type \n");
     }
   }
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_atol",&aabs,&flag);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_rtol",&rel,&flag);CHKERRQ(ierr);
-  ierr = TSPVodeSetTolerance(ts,aabs,rel);
+  ierr = TSPVodeSetTolerance(ts,aabs,rel);CHKERRQ(ierr);
+
+  ierr = OptionsGetInt(PETSC_NULL,"-ts_pvode_gramschmidt_restart",&restart,&flag);CHKERRQ(ierr);
+  ierr = TSPVodeSetGMRESRestart(ts,restart);CHKERRQ(ierr);
 
   ierr = PCSetFromOptions(cvode->pc); CHKERRQ(ierr);
   
@@ -319,10 +332,12 @@ static int TSPrintHelp_PVode(TS ts,char *p)
   TS_PVode *cvode = (TS_PVode*) ts->data;
 
   PetscFunctionBegin;
-  PetscPrintf(ts->comm," Options for TSPVODE integrater:\n");
-  PetscPrintf(ts->comm," -ts_pvode_type <bdf,adams>: integration approach\n",p);
-  PetscPrintf(ts->comm," -ts_pvode_atol aabs: absolute tolerance\n",p);
-  PetscPrintf(ts->comm," -ts_pvode_rtol rel: relative tolerance\n",p);
+  (*PetscHelpPrintf)(ts->comm," Options for TSPVODE integrater:\n");
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_type <bdf,adams>: integration approach\n",p);
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_atol aabs: absolute tolerance\n",p);
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_rtol rel: relative tolerance\n",p);
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>"); 
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size>"); 
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -355,6 +370,12 @@ static int TSView_PVode(PetscObject obj,Viewer viewer)
     PetscFPrintf(comm,fd,"PVode integrater does not use SNES!\n"); 
     PetscFPrintf(comm,fd,"PVode integrater type %s\n",type);
     PetscFPrintf(comm,fd,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);
+    if (cvode->gtype == PVODE_MODIFIED_GS) {
+      PetscFPrintf(comm,fd,"PVode using modified Gram-Schmidt for orthogonalization in GMRES");
+    } else {
+      PetscFPrintf(comm,fd,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES");
+    }
+    PetscFPrintf(comm,fd,"PVode GMRES restart size\n",cvode->restart);
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer,"Pvode type %s",type);
   } 
@@ -393,6 +414,8 @@ int TSCreate_PVode(TS ts )
   PLogObjectParent(ts,cvode->pc);
   ts->data          = (void *) cvode;
   cvode->cvode_type = BDF;
+  cvode->gtype      = PVODE_MODIFIED_GS;
+  cvode->restart    = 5;
 
   /* set tolerance for PVode */
   cvode->abstol = 1e-6;
@@ -422,6 +445,54 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
   PetscFunctionBegin;
   if (ts->type != TS_PVODE) PetscFunctionReturn(0);
   cvode->cvode_type = type;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetGMRESRestart"
+/*@
+   TSPVodeSetGMRESRestart - Sets the dimension of the Krylov space used by 
+       GMRES in the linear solver in PVODE. The restart size.
+
+   Input parameters:
+    ts     - the time-step context
+    restart - number of direction vectors (the restart size).
+
+
+.keywords: GMRES, restart
+
+@*/
+int TSPVodeSetGMRESRestart(TS ts, int restart)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
+  cvode->restart = restart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetGramSchmidtType"
+/*@
+   TSPVodeSetGramSchmidtType - Sets type of orthogonalization used
+        in GMRES method by PVODE linear solver.
+
+   Input parameters:
+.    ts  - the time-step context
+.    type - either PVODE_MODIFIED_GS or PVODE_CLASSICAL_GS
+
+.keywords: PVode, orthogonalization
+
+@*/
+int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
+  cvode->gtype = type;
+
   PetscFunctionReturn(0);
 }
 

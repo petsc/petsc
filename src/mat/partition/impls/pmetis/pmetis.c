@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.3 1997/11/09 03:58:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.4 1997/12/01 01:55:19 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -112,8 +112,8 @@ int PartitioningParmetisSetCoarseSequential(Partitioning part)
 int PartitioningPrintHelp_Parmetis(Partitioning part)
 {
   PetscFunctionBegin;
-  PetscPrintf(part->comm,"ParMETIS options\n");
-  PetscPrintf(part->comm,"  -partitioning_parmetis_coarse_sequential\n");
+  (*PetscHelpPrintf)(part->comm,"ParMETIS options\n");
+  (*PetscHelpPrintf)(part->comm,"  -partitioning_parmetis_coarse_sequential\n");
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.72 1997/12/12 19:37:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.73 1998/01/12 15:55:21 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -361,7 +361,7 @@ static int PCSetFromOptions_MG(PC pc)
 static int PCPrintHelp_MG(PC pc,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCMG preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," Options for PCMG preconditioner:\n");
   PetscFPrintf(pc->comm,stdout," %spc_mg_type [additive,multiplicative,fullmultigrid,kaskade]\n",p);
   PetscFPrintf(pc->comm,stdout,"              type of multigrid method\n");
   PetscFPrintf(pc->comm,stdout," %spc_mg_smoothdown m: number of pre-smooths\n",p);

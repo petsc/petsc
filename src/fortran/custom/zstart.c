@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.32 1997/12/09 20:20:04 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.33 1997/12/09 21:13:09 balay Exp bsmith $";
 #endif
 
 /*
@@ -243,7 +243,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     int size;
 
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
-    PLogInfo(0,"PETSc successfully started: procs %d\n",size);
+    PLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
   }
 
   *__ierr = 0;

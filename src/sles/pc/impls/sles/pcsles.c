@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.2 1998/01/06 20:10:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.3 1998/01/12 15:55:33 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -147,8 +147,8 @@ int PCSLESGetSLES(PC pc,SLES *sles)
 static int PCPrintHelp_SLES(PC pc,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCSLES preconditioner:\n");
-  PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
+  (*PetscHelpPrintf)(pc->comm," Options for PCSLES preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
  <kspmethod>)\n",p,p);
   PetscFunctionReturn(0);

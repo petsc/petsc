@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.64 1997/11/28 16:18:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.65 1997/12/01 01:53:08 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -193,14 +193,44 @@ int KSPView_CG(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (cg->type == KSP_CG_HERMITIAN)
+    if (cg->type == KSP_CG_HERMITIAN) {
       PetscFPrintf(ksp->comm,fd,"    CG: variant for complex, Hermitian system\n");
-    else if (cg->type == KSP_CG_SYMMETRIC)
+    } else if (cg->type == KSP_CG_SYMMETRIC) {
       PetscFPrintf(ksp->comm,fd,"    CG: variant for complex, symmetric system\n");
-    else
+    } else {
       PetscFPrintf(ksp->comm,fd,"    CG: unknown variant\n");
+    }
   }
 #endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPPrintHelp_CG"
+static int KSPPrintHelp_CG(KSP ksp,char *p)
+{
+  PetscFunctionBegin;
+#if defined(USE_PETSC_COMPLEX)
+  (*PetscHelpPrintf)(ksp->comm," Options for CG method:\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
+#endif
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPSetFromOptions_CG"
+int KSPSetFromOptions_CG(KSP ksp)
+{
+  int       ierr,flg;
+
+  PetscFunctionBegin;
+  ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
+  ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
+
   PetscFunctionReturn(0);
 }
 
@@ -227,6 +257,8 @@ int KSPCreate_CG(KSP ksp)
   ksp->adjustwork           = KSPDefaultAdjustWork;
   ksp->destroy              = KSPDestroy_CG;
   ksp->view                 = KSPView_CG;
+  ksp->printhelp            = KSPPrintHelp_CG;
+  ksp->setfromoptions       = KSPSetFromOptions_CG;
   ksp->converged            = KSPDefaultConverged;
   ksp->buildsolution        = KSPDefaultBuildSolution;
   ksp->buildresidual        = KSPDefaultBuildResidual;

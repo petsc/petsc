@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.90 1997/11/08 21:23:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.91 1997/12/01 01:57:12 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -900,9 +900,9 @@ int DAPrintHelp(DA da)
 
   comm = da->comm;
   if (!called) {
-    PetscPrintf(comm,"General Distributed Array (DA) options:\n");
-    PetscPrintf(comm,"  -da_view: print DA distribution to screen\n");
-    PetscPrintf(comm,"  -da_view_draw: display DA in window\n");
+    (*PetscHelpPrintf)(comm,"General Distributed Array (DA) options:\n");
+    (*PetscHelpPrintf)(comm,"  -da_view: print DA distribution to screen\n");
+    (*PetscHelpPrintf)(comm,"  -da_view_draw: display DA in window\n");
     called = 1;
   }
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.84 1997/11/03 04:44:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.85 1998/01/12 15:55:15 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -112,14 +112,14 @@ static int PCSetFromOptions_LU(PC pc)
 static int PCPrintHelp_LU(PC pc,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCLU preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
-  PetscPrintf(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);
-  PetscPrintf(pc->comm," -mat_order <name>: ordering to reduce fill",p);
-  PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
-  PetscPrintf(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);
-  PetscPrintf(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");
-  PetscPrintf(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");
+  (*PetscHelpPrintf)(pc->comm," Options for PCLU preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);
+  (*PetscHelpPrintf)(pc->comm," -mat_order <name>: ordering to reduce fill",p);
+  (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);
+  (*PetscHelpPrintf)(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");
+  (*PetscHelpPrintf)(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");
   PetscFunctionReturn(0);
 }
 

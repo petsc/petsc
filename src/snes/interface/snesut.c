@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.34 1997/12/01 01:56:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.35 1998/01/06 20:12:19 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -30,11 +30,11 @@ static char vcid[] = "$Id: snesut.c,v 1.34 1997/12/01 01:56:46 bsmith Exp bsmith
 int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
   PetscFunctionBegin;
-  if (snes->method_class == SNES_NONLINEAR_EQUATIONS)
+  if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
-  else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
+  } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
-  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */

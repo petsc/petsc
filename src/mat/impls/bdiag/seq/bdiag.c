@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.144 1997/12/01 01:54:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.145 1998/01/06 20:10:37 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1868,10 +1868,10 @@ int MatPrintHelp_SeqBDiag(Mat A)
 
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = 1;
-  PetscPrintf(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
-  PetscPrintf(comm,"  -mat_block_size <block_size>\n");
-  PetscPrintf(comm,"  -mat_bdiag_diags <d1,d2,d3,...> (diagonal numbers)\n"); 
-  PetscPrintf(comm,"   (for example) -mat_bdiag_diags -5,-1,0,1,5\n"); 
+  (*PetscHelpPrintf)(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
+  (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");
+  (*PetscHelpPrintf)(comm,"  -mat_bdiag_diags <d1,d2,d3,...> (diagonal numbers)\n"); 
+  (*PetscHelpPrintf)(comm,"   (for example) -mat_bdiag_diags -5,-1,0,1,5\n"); 
   PetscFunctionReturn(0);
 }
 

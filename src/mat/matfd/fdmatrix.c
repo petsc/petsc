@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.26 1997/10/28 14:22:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.27 1997/11/03 04:45:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -313,12 +313,12 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fd,MAT_FDCOLORING_COOKIE);
 
-  PetscPrintf(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to %g\n",fd->error_rel);
-  PetscPrintf(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to %d\n",fd->umin);
-  PetscPrintf(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults to %d\n",fd->freq);
-  PetscPrintf(fd->comm,"-mat_fd_coloring_view\n");
-  PetscPrintf(fd->comm,"-mat_fd_coloring_view_draw\n");
-  PetscPrintf(fd->comm,"-mat_fd_coloring_view_info\n");
+  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_err <err>: set sqrt rel tol in function, defaults to %g\n",fd->error_rel);
+  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_umin <umin>: see users manual, defaults to %d\n",fd->umin);
+  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults to %d\n",fd->freq);
+  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view\n");
+  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view_draw\n");
+  (*PetscHelpPrintf)(fd->comm,"-mat_fd_coloring_view_info\n");
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.40 1997/11/26 21:04:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.41 1997/11/28 16:17:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -317,8 +317,8 @@ void *PetscToPointer(int idx )
   if (idx < 0 || idx >= MAX_PTRS) {
     int rank;
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-    PetscErrorPrintf( "[%d]PETSC ERROR: Could not convert index %d into a pointer\n",rank, idx );
-    PetscErrorPrintf( "[%d]PETSC ERROR: The index may be an incorrect argument.\n\
+    (*PetscErrorPrintf)( "[%d]PETSC ERROR: Could not convert index %d into a pointer\n",rank, idx );
+    (*PetscErrorPrintf)( "[%d]PETSC ERROR: The index may be an incorrect argument.\n\
 PETSC ERROR:Possible sources of this problem are a missing include file,\n\
 PETSC ERROR:a misspelled PETSC object (e.g., VIEWER_STOUT_WORLD instead of VIEWER_STDOUT_WORLD)\n\
 PETSC ERROR:or a misspelled user variable for an PETSc object (e.g., \n\
@@ -349,8 +349,8 @@ int PetscFromPointer(void *ptr )
   }
   MPI_Comm_rank( MPI_COMM_WORLD, &rank );
   /* This isn't the right thing to do, but it isn't too bad */
-  PetscErrorPrintf( "[%d]PETSC ERROR:Pointer conversions exhausted\n",rank );
-  PetscErrorPrintf( "[%d]PETSC ERROR:Too many PETSc objects may have been passed to/from Fortran\n\
+  (*PetscErrorPrintf)( "[%d]PETSC ERROR:Pointer conversions exhausted\n",rank );
+  (*PetscErrorPrintf)( "[%d]PETSC ERROR:Too many PETSc objects may have been passed to/from Fortran\n\
   without being freed\n",rank );
   return MPI_Abort(PETSC_COMM_WORLD,1);
 }
@@ -364,8 +364,8 @@ void PetscRmPointer(int idx )
   if (idx < 0 || idx >= MAX_PTRS) {
     int rank;
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-    PetscErrorPrintf( "[%d]PETSC ERROR:Could not convert index %d into a pointer\n",rank, idx );
-    PetscErrorPrintf( "[%d]PETSC ERROR:The index may be an incorrect argument.\n\
+    (*PetscErrorPrintf)( "[%d]PETSC ERROR:Could not convert index %d into a pointer\n",rank, idx );
+    (*PetscErrorPrintf)( "[%d]PETSC ERROR:The index may be an incorrect argument.\n\
 PETSC ERROR:Possible sources of this problem are a missing include file,\n\
 PETSC ERROR:a misspelled PETSC object (e.g., VIEWER_STOUT_WORLD instead of VIEWER_STDOUT_WORLD)\n\
 PETSC ERROR:or a misspelled user variable for an PETSc object (e.g., \n\
@@ -376,7 +376,7 @@ PETSC ERROR:com instead of comm).\n",rank );
   if (PtrArray[idx].next) {
     int rank;
     MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-    PetscErrorPrintf("[%d] Error in recovering Fortran pointer; already freed\n",rank);
+    (*PetscErrorPrintf)("[%d] Error in recovering Fortran pointer; already freed\n",rank);
     MPI_Abort(PETSC_COMM_WORLD,1);
   }
   PtrArray[idx].next = avail;

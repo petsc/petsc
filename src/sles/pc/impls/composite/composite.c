@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.3 1998/01/12 00:40:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.4 1998/01/12 15:55:34 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -288,17 +288,17 @@ static int PCPrintHelp_Composite(PC pc,char *p)
   int              ierr;
 
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCComposite preconditioner:\n"); 
-  PetscPrintf(pc->comm," %spc_composite_type [additive,multiplicative]\n",p);
-  PetscPrintf(pc->comm," %spc_composite_true\n",p);
-  PetscPrintf(pc->comm," %spc_composite_pcs pc1,[pc2,pc3] preconditioner types to compose\n",p);
+  (*PetscHelpPrintf)(pc->comm," Options for PCComposite preconditioner:\n"); 
+  (*PetscHelpPrintf)(pc->comm," %spc_composite_type [additive,multiplicative]\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_composite_true\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_composite_pcs pc1,[pc2,pc3] preconditioner types to compose\n",p);
 
-  PetscPrintf(pc->comm," ---------------------------------\n");
+  (*PetscHelpPrintf)(pc->comm," ---------------------------------\n");
   while (next) {
     ierr = PCPrintHelp(next->pc); CHKERRQ(ierr);
     next = next->next;
   }
-  PetscPrintf(pc->comm," ---------------------------------\n");
+  (*PetscHelpPrintf)(pc->comm," ---------------------------------\n");
 
   PetscFunctionReturn(0);
 }

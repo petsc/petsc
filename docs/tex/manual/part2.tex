@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.246 1998/01/12 00:37:50 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.247 1998/01/13 15:58:44 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3838,6 +3838,26 @@ Finally, one can set the PVODE tolerances via
 \end{verbatim}
 where {\tt abs} denotes the absolute tolerance and {\tt rel}
 the relative tolerance. \findex{TSPvodeSetTolerance()}
+
+Other PETSc-PVode options include
+\begin{verbatim}
+   ierr = TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type);
+\end{verbatim}
+where {\tt type} is either {\tt PVODE\_MODIFIED\_GS} or 
+{\tt PVODE\_UNMODIFIED\_GS}. \findex{TSPVodeSetGramSchmidtType()}
+\findex{TSPVodeGramSchmidtType} \findex{PVODE_MODIFIED_GS}
+\findex{PVODE_UNMODIFIED_GS} This may be set via the options data base
+with {\tt -ts\_pvode\_gramschmidt\_type <modifed,unmodified>}.
+\findex{-ts_pvode_gramschmidt_type}
+
+The routine 
+\begin{verbatim}
+   ierr = TSPVodeSetGMRESRestart(TS ts,int restart);
+\end{verbatim}
+sets the number of vectors in the Krylov subpspace used by GMRES.
+\findex{TSPVodeSetGMRESRestart()} This may be set in the options 
+database with {\tt -ts\_pvode\_gmres\_restart restart}. \findex{-ts_pvode_gmres_restart}
+
 
 \subsection{Solving Steady-State Problems with Pseudo-Timestepping}
 

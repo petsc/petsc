@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.37 1997/10/19 03:22:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.38 1997/11/28 16:18:15 bsmith Exp bsmith $";
 #endif
 
 
@@ -43,8 +43,8 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
   MPI_Comm_size(comm,&size);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg) {
-    PetscPrintf(comm,"VecCreate() option: -vec_mpi\n");
-    PetscPrintf(comm,"                    -vec_shared\n");
+    (*PetscHelpPrintf)(comm,"VecCreate() option: -vec_mpi\n");
+    (*PetscHelpPrintf)(comm,"                    -vec_shared\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-vec_mpi",&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-vec_shared",&flgs); CHKERRQ(ierr);

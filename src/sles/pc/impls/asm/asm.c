@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.68 1997/12/01 01:54:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.69 1998/01/12 15:55:31 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -293,11 +293,11 @@ static int PCDestroy_ASM(PetscObject obj)
 static int PCPrintHelp_ASM(PC pc,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCASM preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_asm_blocks <blks>: total subdomain blocks\n",p);
-  PetscPrintf(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains, defaults to 1\n",p); 
-  PetscPrintf(pc->comm, " %spc_asm_type <basic,restrict,interpolate,none>: type of restriction/interpolation\n",p); 
-  PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
+  (*PetscHelpPrintf)(pc->comm," Options for PCASM preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_asm_blocks <blks>: total subdomain blocks\n",p);
+  (*PetscHelpPrintf)(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains, defaults to 1\n",p); 
+  (*PetscHelpPrintf)(pc->comm, " %spc_asm_type <basic,restrict,interpolate,none>: type of restriction/interpolation\n",p); 
+  (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
  <method>)\n",p,p);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.58 1997/11/03 04:49:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.59 1997/12/01 01:56:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -235,8 +235,8 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   PetscStrcpy(p,"-");
   if (snes->prefix) PetscStrcat(p,snes->prefix);
   if (flg) {
-    PetscPrintf(snes->comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);
-    PetscPrintf(snes->comm,"   %ssnes_mf_umin <umin> see users manual (default %g)\n",p,mfctx->umin);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf_err <err>: set sqrt rel error in function (default %g)\n",p,mfctx->error_rel);
+    (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf_umin <umin> see users manual (default %g)\n",p,mfctx->umin);
   }
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);

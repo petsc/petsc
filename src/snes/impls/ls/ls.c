@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.97 1997/12/01 01:56:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.98 1998/01/06 20:12:26 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -591,11 +591,11 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
   SNES_LS *ls = (SNES_LS *)snes->data;
 
   PetscFunctionBegin;
-  PetscPrintf(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");
-  PetscPrintf(snes->comm,"   %ssnes_eq_ls [basic,quadratic,cubic]\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);
-  PetscPrintf(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);
-  PetscPrintf(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);
+  (*PetscHelpPrintf)(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls [basic,quadratic,cubic]\n",p);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------ */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snestest.c,v 1.37 1997/10/19 03:29:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.38 1997/12/01 01:56:55 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -31,11 +31,11 @@ int SNESSolve_Test(SNES snes,int *its)
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Cannot test with alternative preconditioner");
   }
 
-  PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");
+  PetscHelpPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");
   PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");
   if (!neP->complete_print) {
-    PetscPrintf(snes->comm,"Run with -snes_test_display to show difference\n");
-    PetscPrintf(snes->comm,"of hand-coded and finite difference Jacobian.\n");
+    (*PetscHelpPrintf)(snes->comm,"Run with -snes_test_display to show difference\n");
+    (*PetscHelpPrintf)(snes->comm,"of hand-coded and finite difference Jacobian.\n");
   }
 
   for ( i=0; i<3; i++ ) {
@@ -77,8 +77,8 @@ int SNESDestroy_Test(PetscObject obj)
 static int SNESPrintHelp_Test(SNES snes,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(snes->comm,"Test code to compute Jacobian\n");
-  PetscPrintf(snes->comm,"-snes_test_display - display difference between\n");
+  (*PetscHelpPrintf)(snes->comm,"Test code to compute Jacobian\n");
+  (*PetscHelpPrintf)(snes->comm,"-snes_test_display - display difference between\n");
   PetscFunctionReturn(0);
 }
 

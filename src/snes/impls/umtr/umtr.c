@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.62 1997/12/01 01:56:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.63 1998/01/06 20:12:30 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -327,20 +327,20 @@ static int SNESPrintHelp_UM_TR(SNES snes,char *p)
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
 
   PetscFunctionBegin;
-  PetscPrintf(snes->comm," method SNES_UM_TR (umtr) for unconstrained minimization:\n");
-  PetscPrintf(snes->comm,"   %ssnes_um_tr_eta1 <eta1> (default %g)\n",p,ctx->eta1);
-  PetscPrintf(snes->comm,"   %ssnes_um_tr_eta2 <eta2> (default %g)\n",p,ctx->eta2);
-  PetscPrintf(snes->comm,"   %ssnes_um_tr_eta3 <eta3> (default %g)\n",p,ctx->eta3);
-  PetscPrintf(snes->comm,"   %ssnes_um_tr_eta4 <eta4> (default %g)\n",p,ctx->eta4);
-  PetscPrintf(snes->comm,"   %ssnes_um_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);
-  PetscPrintf(snes->comm,"   %ssnes_um_tr_factor1 <factor1> (default %g)\n",p,ctx->factor1);
-  PetscPrintf(snes->comm,
+  (*PetscHelpPrintf)(snes->comm," method SNES_UM_TR (umtr) for unconstrained minimization:\n");
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta1 <eta1> (default %g)\n",p,ctx->eta1);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta2 <eta2> (default %g)\n",p,ctx->eta2);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta3 <eta3> (default %g)\n",p,ctx->eta3);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta4 <eta4> (default %g)\n",p,ctx->eta4);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_factor1 <factor1> (default %g)\n",p,ctx->factor1);
+  (*PetscHelpPrintf)(snes->comm,
     "   delta0, factor1: used to initialize trust region parameter\n");
-  PetscPrintf(snes->comm,
+  (*PetscHelpPrintf)(snes->comm,
     "   eta2, eta3, eta4: used to compute trust region parameter\n");
-  PetscPrintf(snes->comm,
+  (*PetscHelpPrintf)(snes->comm,
     "   eta1: step is unsuccessful if actred < eta1 * prered, where\n"); 
-  PetscPrintf(snes->comm,
+  (*PetscHelpPrintf)(snes->comm,
     "         pred = predicted reduction, actred = actual reduction\n");
   PetscFunctionReturn(0);
 }

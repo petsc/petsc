@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.47 1997/10/19 03:27:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.48 1997/12/01 01:55:30 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -47,9 +47,9 @@ static int MatLoadPrintHelp_Private(Mat A)
   
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = 1;
-  PetscPrintf(comm," Options for MatLoad:\n");
-  PetscPrintf(comm,"  -matload_block_size <block_size> :Used for MATBAIJ, MATBDIAG\n");
-  PetscPrintf(comm,"  -matload_bdiag_diags <s1,s2,s3,...> : Used for MATBDIAG\n");
+  (*PetscHelpPrintf)(comm," Options for MatLoad:\n");
+  (*PetscHelpPrintf)(comm,"  -matload_block_size <block_size> :Used for MATBAIJ, MATBDIAG\n");
+  (*PetscHelpPrintf)(comm,"  -matload_bdiag_diags <s1,s2,s3,...> : Used for MATBDIAG\n");
   PetscFunctionReturn(0);
 }
 

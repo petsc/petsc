@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.96 1997/12/01 01:54:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.97 1998/01/12 15:55:26 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -283,19 +283,19 @@ static int PCSetFromOptions_ILU(PC pc)
 static int PCPrintHelp_ILU(PC pc,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCILU preconditioner:\n");
-  PetscPrintf(pc->comm," -mat_order <name>: ordering to reduce fill",p);
-  PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
-  PetscPrintf(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);
-  PetscPrintf(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);
-  PetscPrintf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
-  PetscPrintf(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);
-  PetscPrintf(pc->comm," %spc_ilu_use_drop_tolerance <dt,maxrowcount>: \n",p);
-  PetscPrintf(pc->comm," %spc_ilu_reuse_reordering:                          \n",p);
-  PetscPrintf(pc->comm," %spc_ilu_reuse_fill:                             \n",p);
-  PetscPrintf(pc->comm," %spc_ilu_nonzeros_along_diagonal: <tol> changes column ordering\n",p);
-  PetscPrintf(pc->comm,"    to reduce the chance of obtaining zero pivot during ILU.\n");
-  PetscPrintf(pc->comm,"    If <tol> not given, defaults to 1.e-10.\n"); 
+  (*PetscHelpPrintf)(pc->comm," Options for PCILU preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," -mat_order <name>: ordering to reduce fill",p);
+  (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_ilu_use_drop_tolerance <dt,maxrowcount>: \n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_reordering:                          \n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_ilu_reuse_fill:                             \n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_ilu_nonzeros_along_diagonal: <tol> changes column ordering\n",p);
+  (*PetscHelpPrintf)(pc->comm,"    to reduce the chance of obtaining zero pivot during ILU.\n");
+  (*PetscHelpPrintf)(pc->comm,"    If <tol> not given, defaults to 1.e-10.\n"); 
   PetscFunctionReturn(0);
 }
 

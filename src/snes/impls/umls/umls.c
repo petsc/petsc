@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.61 1997/12/01 01:56:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.62 1998/01/06 20:12:32 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -183,16 +183,16 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
 
   PetscFunctionBegin;
-  PetscPrintf(snes->comm," method SNES_UM_LS (umls) for unconstrained minimization:\n");
-  PetscPrintf(snes->comm,"   %ssnes_um_ls_gamma_f gamma_f (default %g) damping parameter\n",
+  (*PetscHelpPrintf)(snes->comm," method SNES_UM_LS (umls) for unconstrained minimization:\n");
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gamma_f gamma_f (default %g) damping parameter\n",
     p,ctx->gamma_factor);
-  PetscPrintf(snes->comm,"   %ssnes_um_ls_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);
-  PetscPrintf(snes->comm,"   %ssnes_um_ls_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);
-  PetscPrintf(snes->comm,"   %ssnes_um_ls_ftol <ftol> (default %g) tol for sufficient decrease\n",p,ctx->ftol);
-  PetscPrintf(snes->comm,"   %ssnes_um_ls_rtol <rtol> (default %g) relative tol for acceptable step\n",p,ctx->rtol);
-  PetscPrintf(snes->comm,"   %ssnes_um_ls_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);
-  PetscPrintf(snes->comm,"   %ssnes_um_ls_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);
-  PetscPrintf(snes->comm,"   %ssnes_um_ls_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_ftol <ftol> (default %g) tol for sufficient decrease\n",p,ctx->ftol);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_rtol <rtol> (default %g) relative tol for acceptable step\n",p,ctx->rtol);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

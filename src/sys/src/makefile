@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.60 1997/12/12 19:37:06 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.61 1998/01/06 20:09:29 bsmith Exp bsmith $ 
 
 ALL: lib 
 CFLAGS	  = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' -DPETSC_BOPT='"$(BOPT)"' \
             -DPETSC_DEFAULT_DYNAMIC_LIBRARY='"$(LDIR)/libpetscsles"' \
-            -DPETSC_LDIR='"$(LDIR)"'
+            -DPETSC_LDIR='"$(LDIR)"' -DPETSC_DIR='"$(PETSC_DIR)"'
 
 SOURCEC	  = adebug.c err.c signal.c fp.c mtr.c arch.c nreg.c \
 	    mpiu.c sorti.c destroy.c options.c mal.c \
@@ -12,7 +12,7 @@ SOURCEC	  = adebug.c err.c signal.c fp.c mtr.c arch.c nreg.c \
             ffpath.c fwd.c  grpath.c ghome.c pcomm.c \
             mpiuopen.c pname.c pgname.c \
             gcomm.c gtype.c inherit.c prefix.c psleep.c gcookie.c \
-            cookie.c mpitr.c nt_time.c mem.c cputime.c stack.c mprint.c reg.c
+            cookie.c mpitr.c nt_time.c mem.c cputime.c stack.c mprint.c reg.c dl.c
 SOURCEF	  =
 SOURCEH	  = files.h
 OBJSC	  = adebug.o err.o signal.o fp.o mtr.o arch.o nreg.o \
@@ -22,7 +22,7 @@ OBJSC	  = adebug.o err.o signal.o fp.o mtr.o arch.o nreg.o \
             ffpath.o fwd.o grpath.o ghome.o pcomm.o \
             mpiuopen.o pname.o pgname.o \
             gcomm.o gtype.o inherit.o prefix.o psleep.o gcookie.o \
-            cookie.o mpitr.o nt_time.o mem.o cputime.o stack.o mprint.o reg.o
+            cookie.o mpitr.o nt_time.o mem.o cputime.o stack.o mprint.o reg.o dl.o
 OBJSF	  =
 MANSEC	  = 7
 LIBBASE	  = libpetscsys

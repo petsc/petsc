@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.99 1997/12/01 01:53:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.100 1998/01/12 15:55:18 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -277,11 +277,11 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCBJACOBI preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_bjacobi_blocks <blks>: total blocks in preconditioner\n",p);
-  PetscPrintf(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
+  (*PetscHelpPrintf)(pc->comm," Options for PCBJACOBI preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_bjacobi_blocks <blks>: total blocks in preconditioner\n",p);
+  (*PetscHelpPrintf)(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
-  PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
+  (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
  <kspmethod>)\n",p,p);
   PetscFunctionReturn(0);
@@ -292,12 +292,12 @@ static int PCPrintHelp_BJacobi(PC pc,char *p)
 static int PCPrintHelp_BGS(PC pc,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCBGS preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_bgs_blocks <blks>: total blocks in preconditioner\n",p);
-  PetscPrintf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
+  (*PetscHelpPrintf)(pc->comm," Options for PCBGS preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_bgs_blocks <blks>: total blocks in preconditioner\n",p);
+  (*PetscHelpPrintf)(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
-  PetscPrintf(pc->comm, " %spc_bgs_symmetric: use both a forward and backward sweep\n",p);
-  PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
+  (*PetscHelpPrintf)(pc->comm, " %spc_bgs_symmetric: use both a forward and backward sweep\n",p);
+  (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
  <kspmethod>)\n",p,p);
   PetscFunctionReturn(0);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.107 1997/12/01 01:53:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.108 1997/12/20 04:35:57 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -124,6 +124,9 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->converged           = KSPDefaultConverged;
   ctx->buildsolution       = KSPDefaultBuildSolution;
   ctx->buildresidual       = KSPDefaultBuildResidual;
+
+  ctx->setfromoptions      = 0;
+  ctx->printhelp           = 0;
 
   ctx->vec_sol   = 0;
   ctx->vec_rhs   = 0;
@@ -314,47 +317,42 @@ int KSPPrintHelp(KSP ksp)
   PetscStrcpy(p,"-");
   if (ksp->prefix)  PetscStrcat(p,ksp->prefix);
 
-  PetscPrintf(ksp->comm,"KSP options -------------------------------------------------\n");
+  (*PetscHelpPrintf)(ksp->comm,"KSP options -------------------------------------------------\n");
   ierr = DLPrintTypes(ksp->comm,stdout,ksp->prefix,"ksp_type",__KSPList);CHKERRQ(ierr);
-  PetscPrintf(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
+  (*PetscHelpPrintf)(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
                    p,ksp->rtol);
-  PetscPrintf(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
+  (*PetscHelpPrintf)(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
                    p,ksp->atol);
-  PetscPrintf(ksp->comm," %sksp_divtol <tol>: divergence tolerance, defaults to %g\n",
+  (*PetscHelpPrintf)(ksp->comm," %sksp_divtol <tol>: divergence tolerance, defaults to %g\n",
                      p,ksp->divtol);
-  PetscPrintf(ksp->comm," %sksp_max_it <maxit>: maximum iterations, defaults to %d\n",
+  (*PetscHelpPrintf)(ksp->comm," %sksp_max_it <maxit>: maximum iterations, defaults to %d\n",
                      p,ksp->max_it);
-  PetscPrintf(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);
-  PetscPrintf(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
-  PetscPrintf(ksp->comm," KSP Monitoring Options: Choose any of the following\n");
-  PetscPrintf(ksp->comm,"   %sksp_cancelmonitors: cancel all monitors hardwired in code\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
+  (*PetscHelpPrintf)(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);
+  (*PetscHelpPrintf)(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
+
+  (*PetscHelpPrintf)(ksp->comm," KSP Monitoring Options: Choose any of the following\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_cancelmonitors: cancel all monitors hardwired in code\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
   residual norm to stdout\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_smonitor: same as the above, but prints fewer digits of the\n\
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_smonitor: same as the above, but prints fewer digits of the\n\
     residual norm for small residual norms. This is useful to conceal\n\
     meaningless digits that may be different on different machines.\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\
     preconditioned) residual norm\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n",p);
-  PetscPrintf(ksp->comm,"                      residual norms to stdout\n");
-  PetscPrintf(ksp->comm,"   %sksp_xtruemonitor [x,y,w,h]: use X graphics monitor of true\n",p);
-  PetscPrintf(ksp->comm,"                                 residual norm\n");
-  PetscPrintf(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n",p);
-  PetscPrintf(ksp->comm,"       (only for CG and GMRES)\n");
-  PetscPrintf(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and \n",p);
-  PetscPrintf(ksp->comm,"       (only for ICC and ILU in BlockSolve95)\n");
-  PetscPrintf(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_plot_eigenvalues\n",p);
-  PetscPrintf(ksp->comm," GMRES Options:\n");
-  PetscPrintf(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_gmres_irorthog: use iterative refinement in orthogonalization\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);
-#if defined(USE_PETSC_COMPLEX)
-  PetscPrintf(ksp->comm," CG Options:\n");
-  PetscPrintf(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
-  PetscPrintf(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
-#endif
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"                      residual norms to stdout\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_xtruemonitor [x,y,w,h]: use X graphics monitor of true\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"                                 residual norm\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"       (only for CG and GMRES)\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and \n",p);
+  (*PetscHelpPrintf)(ksp->comm,"       (only for ICC and ILU in BlockSolve95)\n");
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues\n",p);
+
+  if (ksp->printhelp) {
+    ierr = (*ksp->printhelp)(ksp,p);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -384,8 +382,7 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 int KSPSetFromOptions(KSP ksp)
 {
   KSPType   method;
-  int       restart, flg, ierr,loc[4], nmax = 4,i;
-  double    tmp;
+  int       flg, ierr,loc[4], nmax = 4,i;
   char      fname[256];
 
   PetscFunctionBegin;
@@ -410,10 +407,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, &flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_divtol",&ksp->divtol, &flg); CHKERRQ(ierr);
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_preallocate", &flg); CHKERRQ(ierr);
-  if (flg) {
-    ierr = KSPGMRESSetPreAllocateVectors(ksp); CHKERRQ(ierr);
-  }
+
   /* -----------------------------------------------------------------------*/
   /*
      Cancels all monitors hardwired into code before call to KSPSetFromOptions()
@@ -510,16 +504,6 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_symmetric_pc",&flg); CHKERRQ(ierr);
   if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_SYMMETRIC); CHKERRQ(ierr);}
 
-  ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg); CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
-
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESUnmodifiedGramSchmidtOrthogonalization);CHKERRQ(ierr); }
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);CHKERRQ(ierr);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_dgksorthog",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPGMRESSetOrthogonalization(ksp, KSPGMRESDGKSOrthogonalization);CHKERRQ(ierr);}
-
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_singularvalues",&flg); CHKERRQ(ierr);
   if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flg);CHKERRQ(ierr);
@@ -527,16 +511,13 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
 
-  ierr = OptionsHasName(ksp->prefix,"-ksp_cg_Hermitian",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_HERMITIAN);CHKERRQ(ierr); }
-  ierr = OptionsHasName(ksp->prefix,"-ksp_cg_symmetric",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPCGSetType(ksp,KSP_CG_SYMMETRIC);CHKERRQ(ierr); }
-
-  ierr = OptionsGetDouble(ksp->prefix,"-ksp_richardson_scale",&tmp,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp); CHKERRQ(ierr); }
-
   for ( i=0; i<numberofsetfromoptions; i++ ) {
     ierr = (*othersetfromoptions[i])(ksp); CHKERRQ(ierr);
   }
+
+  if (ksp->setfromoptions) {
+    ierr = (*ksp->setfromoptions)(ksp);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }

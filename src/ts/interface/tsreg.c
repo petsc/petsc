@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.26 1997/11/03 04:48:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.27 1997/12/01 01:56:01 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -169,13 +169,13 @@ int TSPrintHelp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->prefix) prefix = ts->prefix;
-  PetscPrintf(ts->comm,"TS options --------------------------------------------------\n");
+  (*PetscHelpPrintf)(ts->comm,"TS options --------------------------------------------------\n");
   ierr = NRPrintTypes(ts->comm,stdout,ts->prefix,"ts_type",__TSList);CHKERRQ(ierr);
-  PetscPrintf(ts->comm," %sts_monitor: use default TS monitor\n",prefix);
-  PetscPrintf(ts->comm," %sts_view: view TS info after each solve\n",prefix);
+  (*PetscHelpPrintf)(ts->comm," %sts_monitor: use default TS monitor\n",prefix);
+  (*PetscHelpPrintf)(ts->comm," %sts_view: view TS info after each solve\n",prefix);
 
-  PetscPrintf(ts->comm," %sts_max_steps <steps>: maximum steps, defaults to %d\n",prefix,ts->max_steps);
-  PetscPrintf(ts->comm," %sts_max_time <steps>: maximum time, defaults to %g\n",prefix,ts->max_time);
+  (*PetscHelpPrintf)(ts->comm," %sts_max_steps <steps>: maximum steps, defaults to %d\n",prefix,ts->max_steps);
+  (*PetscHelpPrintf)(ts->comm," %sts_max_time <steps>: maximum time, defaults to %g\n",prefix,ts->max_time);
   if (ts->printhelp) {ierr = (*ts->printhelp)(ts,prefix);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

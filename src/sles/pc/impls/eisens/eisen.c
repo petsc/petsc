@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.65 1997/12/07 03:24:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.66 1998/01/12 15:55:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -173,9 +173,9 @@ static int PCSetFromOptions_Eisenstat(PC pc)
 static int PCPrintHelp_Eisenstat(PC pc,char *p)
 {
   PetscFunctionBegin;
-  PetscPrintf(pc->comm," Options for PCEisenstat preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
-  PetscPrintf(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);
+  (*PetscHelpPrintf)(pc->comm," Options for PCEisenstat preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);
   PetscFunctionReturn(0);
 }
 

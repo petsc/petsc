@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.64 1997/10/19 03:24:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.65 1998/01/12 15:55:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -64,14 +64,14 @@ static int PCSetFromOptions_SOR(PC pc)
 #define __FUNC__ "PCPrintHelp_SOR" 
 static int PCPrintHelp_SOR(PC pc,char *p)
 {
-  PetscPrintf(pc->comm," Options for PCSOR preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_sor_omega <omega>: relaxation factor (0 < omega < 2)\n",p);
-  PetscPrintf(pc->comm," %spc_sor_symmetric: use SSOR\n",p);
-  PetscPrintf(pc->comm," %spc_sor_backward: use backward sweep instead of forward\n",p);
-  PetscPrintf(pc->comm," %spc_sor_local_symmetric: use SSOR on each processor\n",p);
-  PetscPrintf(pc->comm," %spc_sor_local_backward: use backward sweep locally\n",p);
-  PetscPrintf(pc->comm," %spc_sor_local_forward: use forward sweep locally\n",p);
-  PetscPrintf(pc->comm," %spc_sor_its <its>: number of inner SOR iterations to use\n",p);
+  (*PetscHelpPrintf)(pc->comm," Options for PCSOR preconditioner:\n");
+  (*PetscHelpPrintf)(pc->comm," %spc_sor_omega <omega>: relaxation factor (0 < omega < 2)\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_sor_symmetric: use SSOR\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_sor_backward: use backward sweep instead of forward\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_sor_local_symmetric: use SSOR on each processor\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_sor_local_backward: use backward sweep locally\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_sor_local_forward: use forward sweep locally\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_sor_its <its>: number of inner SOR iterations to use\n",p);
   PetscFunctionReturn(0);
 }
 

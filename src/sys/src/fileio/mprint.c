@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.6 1997/12/12 19:37:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.7 1998/01/06 20:09:29 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -324,6 +324,54 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
   PetscFunctionReturn(0);
 }
 
+/* ---------------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ "PetscHelpPrintfDefault" 
+/*@C
+    PetscPrintf - Prints to standard out, only from the first
+    processor in the communicator.
+
+   Input Parameters:
+.  comm - the communicator
+.  format - the usual printf() format string 
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: parallel, printf
+
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf()
+@*/
+int PetscHelpPrintfDefault(MPI_Comm comm,char *format,...)
+{
+  int rank;
+
+  PetscFunctionBegin;
+  if (!comm) comm = PETSC_COMM_WORLD;
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
+    va_list Argp;
+    va_start( Argp, format );
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+    vfprintf(stdout,format,(char *)Argp);
+#else
+    vfprintf(stdout,format,Argp);
+#endif
+    fflush(stdout);
+    if (petsc_history) {
+#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+      vfprintf(petsc_history,format,(char *)Argp);
+#else
+      vfprintf(petsc_history,format,Argp);
+#endif
+      fflush(petsc_history);
+    }
+    va_end( Argp );
+  }
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "PetscErrorPrintfDefault" 
 /*@C
