@@ -67,10 +67,10 @@ class Transform (Maker):
   "Transforms map one FileGroup into another. By default, this map is the identity"
   def __init__(self, sources = FileGroup()):
     self.sources  = sources
-    self.products = FileGroup()
+    self.products = self.sources
 
   def execute(self):
-    return self.sources
+    return self.products
 
 class FileCompare (Transform):
   "This class maps sources into the set of files for which self.compare(target, source) returns true"
@@ -97,6 +97,7 @@ class FileCompare (Transform):
 
   def execute(self):
     if echo > 1: print 'FileCompare: Comparing '+str(self.targets.getFiles())+' to '+str(self.sources.getFiles())
+    self.products = FileGroup()
     files = self.targets.getFiles()
     for target in files:
       if (not os.path.exists(target)): return self.sources
@@ -174,7 +175,9 @@ class Action (Transform):
     commandBase = self.program+' '+self.flags
     if (self.allAtOnce):
       command = commandBase
-      for file in self.sources.getFiles():
+      files   = self.sources.getFiles()
+      if (not files): return ''
+      for file in files:
         command += ' '+file
       return self.executeShellCommand(command)
     else:
