@@ -2046,17 +2046,41 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
 }
 
 #include "petscblaslapack.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqAIJ"
 int MatAXPY_SeqAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int        ierr,one=1;
+  int        ierr,one=1,i;
   Mat_SeqAIJ *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
+  int        *xtoy,nz,row,xcol,ycol,jx,jy,*xi=x->i,*xj=x->j,*yi=y->i,*yj=y->j;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
     BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+  } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
+
+    ierr = PetscMalloc(x->nz*sizeof(int),&xtoy);CHKERRQ(ierr);
+    i = 0;    
+    for (row=0; row<X->m; row++){
+      nz = xi[1] - xi[0];
+      jy = 0;
+      for (jx=0; jx<nz; jx++,jy++){
+        xcol = xj[*xi + jx];
+        ycol = yj[*yi + jy];  /* col index for y */
+        while ( ycol < xcol ) {
+          jy++; 
+          ycol = yj[*yi + jy]; 
+        }
+        if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
+        xtoy[i++] = *yi + jy;
+      }
+      xi++; yi++;
+    }
+
+    for (i=0; i<x->nz; i++) {
+      y->a[xtoy[i]] += (*a)*(x->a[i]);
+    }
+    ierr =  PetscFree(xtoy);CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }

@@ -1446,12 +1446,37 @@ int MatRestoreArray_SeqBAIJ(Mat A,PetscScalar **array)
 #define __FUNCT__ "MatAXPY_SeqBAIJ"
 int MatAXPY_SeqBAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int          ierr,one=1;
+  int          ierr,one=1,i;
   Mat_SeqBAIJ  *x  = (Mat_SeqBAIJ *)X->data,*y = (Mat_SeqBAIJ *)Y->data;
+  int          *xtoy,nz,row,xcol,ycol,jx,jy,*xi=x->i,*xj=x->j,*yi=y->i,*yj=y->j;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {   
     BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+  } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
+    if (x->bs > 1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not support for bs>1"); 
+    ierr = PetscMalloc(x->nz*sizeof(int),&xtoy);CHKERRQ(ierr);
+    i = 0;    
+    for (row=0; row<x->mbs; row++){
+      nz = xi[1] - xi[0];
+      jy = 0;
+      for (jx=0; jx<nz; jx++,jy++){
+        xcol = xj[*xi + jx];
+        ycol = yj[*yi + jy];  /* col index for y */
+        while ( ycol < xcol ) {
+          jy++; 
+          ycol = yj[*yi + jy]; 
+        }
+        if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
+        xtoy[i++] = *yi + jy;
+      }
+      xi++; yi++;
+    }
+
+    for (i=0; i<x->nz; i++) {
+      y->a[xtoy[i]] += (*a)*(x->a[i]);
+    }
+    ierr = PetscFree(xtoy);CHKERRQ(ierr);
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }
