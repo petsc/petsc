@@ -1,3 +1,11 @@
+##########################################################################
+BitKeeper:
+
+setenv BK_HOST asterix.mcs.anl.gov
+       Useful for machines(laptops)  that change name. BitKeeper requires
+       the hostname to identify the repository.
+
+##########################################################################
 Test machines:
 
 Local:
@@ -673,3 +681,6 @@ now located on mcshsm.mcs.anl.gov in ~bsmith/petscsurplus/surplus
 https://www.mpi-softtech.com/
 email-address: balay@mcs.anl.gov
 passwd: F15ds25
+
+
+
