@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.216 1998/05/13 18:49:57 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.217 1998/05/15 15:22:59 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -228,6 +228,8 @@ extern int DLLibraryAppend(MPI_Comm,DLLibraryList *,char *);
 extern int DLLibraryPrepend(MPI_Comm,DLLibraryList *,char *);
 extern int DLLibraryClose(DLLibraryList);
 
+typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
+#define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
 
 #include "petschead.h"
 
@@ -297,6 +299,7 @@ extern int PetscObjectContainerGetPointer(PetscObjectContainer,void **);
 extern int PetscObjectContainerSetPointer(PetscObjectContainer,void *);
 extern int PetscObjectContainerDestroy(PetscObjectContainer);
 extern int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
+
 
 /*
     C code optimization is often enhanced by telling the compiler 

@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.60 1998/05/08 00:19:17 bsmith Exp curfman $ */
+/* $Id: petschead.h,v 1.61 1998/05/14 00:36:04 curfman Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -47,6 +47,7 @@ typedef struct {
    int (*reference)(PetscObject);
    int (*composefunction)(PetscObject,char *,char *,void *);
    int (*queryfunction)(PetscObject,char *, void **);
+   int (*querylanguage)(PetscObject,PetscLanguage,void **);
 } PetscOps;
 
 #define PETSCHEADER(ObjectOps)                         \
