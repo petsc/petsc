@@ -5,9 +5,56 @@
 <HR>
 <H3>Patches for PETSc (Release 2.1.0)</H3>
 
+Latest Patch: <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.1.0.1.tar.gz">petsc-patches-2.1.0.1.tar.gz</A>
 
-<H4> Compiler error when processing gs.c on windows machines</H4>
-Use updated <A HREF="ftp://ftp.mcs.anl.gov/pub/petsc/gs.c"> src/contrib/libtfs/gs.c </A>
+<H4>To Apply patches:</H4>
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.1.0.1.tar.gz | tar xf -</PRE>
+
+<HR>
+<BR>The patch file fixes the following:<BR><BR>
+
+<!---------------------------------------------------------------------------------------------------->
+
+<H3> 2.1.0.1 (Apr 18, 2001 )</H3>
+<LI> Compile Problems on Windows 95/97/Me machines</LI>
+<pre>
+<!##>bin/win32fe/win32fe.exe
+<!##>bin/win32fe/makefile
+<!##>bin/win32fe/petscarchiverfe.cpp
+<!##>bin/win32fe/petscbccfe.cpp
+<!##>bin/win32fe/petscclfe.cpp
+<!##>bin/win32fe/petsccompilerfe.cpp
+<!##>bin/win32fe/petsccreate.cpp
+<!##>bin/win32fe/petscfe.cpp
+<!##>bin/win32fe/petsclibfe.cpp
+<!##>bin/win32fe/petsctlibfe.cpp
+<!##>bin/win32fe/include/petscarchiverfe.h
+<!##>bin/win32fe/include/petscbccfe.h
+<!##>bin/win32fe/include/petscclfe.h
+<!##>bin/win32fe/include/petsccompilerfe.h
+<!##>bin/win32fe/include/petscfe.h
+<!##>bin/win32fe/include/petsclibfe.h
+<!##>bin/win32fe/include/petsctlibfe.h
+<!##>bin/win32fe/include/petsctoolfe.h
+
+</pre>
+<LI>Compile error in src/contrib/libtfs on Windows</LI>
+<pre>
+<!##>src/contrib/libtfs/gs.c
+</pre>
+<LI>Updated PVODE interface</LI>
+<pre>
+<!##>src/ts/impls/implicit/pvode/petscpvode.c
+</pre>
+<LI>Bug in DAGetColoring() fortran interface </LI>
+<pre>
+<!##>src/fortran/custom/zda.c
+</pre>
+<LI>bug fixes</LI>
+<pre>
+<!##>include/finclude/petscmat.h
+<!##>include/petscversion.h
+</pre>
 
 
 <!*************************************************************************************************>
