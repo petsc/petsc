@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.11 1995/03/17 04:56:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.13 1995/03/24 16:00:49 curfman Exp $";
 #endif
 
 /*  
@@ -26,7 +26,7 @@ int PCPrintHelp(PC pc)
 }
 
 /*@
-    PCDestroy - Destroy an preconditioner context.
+    PCDestroy - Destroys a preconditioner context.
 
   Input Parameters:
 .  pc - the preconditioner context.
@@ -46,11 +46,13 @@ int PCDestroy(PC pc)
 }
 
 /*@
-    PCCreate - Create a preconditioner context.
+    PCCreate - Creates a preconditioner context.
 
   Output Parameters:
 .  pc - the preconditioner context.
 
+  Note:
+  The default preconditioner is PCJACOBI.
 @*/
 int PCCreate(PC *newpc)
 {
@@ -187,8 +189,13 @@ int PCSetUp(PC pc)
 .  pc - the preconditioner context
 .  mat - the matrix
 .  pre - matrix to be used in constructing preconditioner, usually the same
-.  flags - use either 0 or MAT_SAME_NONZERO_PATTERN
+.  flag - use either 0 or MAT_SAME_NONZERO_PATTERN
 
+  Notes:
+  The flag can be used to eliminate unnecessary repeated work in the 
+  repeated solution of linear systems of the same size using the same 
+  preconditioner.  This flag indicates whether the preconditioning matrix 
+  has the same nonzero pattern during successive solves.
 @*/
 int PCSetOperators(PC pc,Mat mat,Mat pmat,int flag)
 {
