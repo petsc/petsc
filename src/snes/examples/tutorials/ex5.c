@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.68 1996/09/30 20:11:04 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.69 1996/10/01 01:19:58 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -381,7 +381,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 */
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  AppCtx  *user = (AppCtx *) ptr;  /* user-defined applicatin context */
+  AppCtx  *user = (AppCtx *) ptr;  /* user-defined application context */
   Mat     jac = *J;                /* Jacobian matrix */
   Vec     localX = user->localX;   /* local vector */
   int     *ltog;                   /* local-to-global mapping */
