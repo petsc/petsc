@@ -453,6 +453,12 @@ class Configure(config.base.Configure):
     #
     #if self.framework.argDB['PETSC_ARCH'].startswith('hpux') and not self.setCompilers.isGNU(self.framework.argDB['CC']):
     #  return
+    #
+    # Borland compiler accepts -PIC as -P, which means compile as C++ code,
+    # Using this will force compilation, not linking when used as a link flag!!!
+    # Since this is not what we intend with -PIC, just kick out if using borland.
+    if self.CC == 'win32fe bcc32':
+      return
     if 'with-shared' in self.framework.argDB and not self.framework.argDB['with-shared']:
       self.framework.log.write("Skipping checking PIC options since shared libraries are turned off")
       return
