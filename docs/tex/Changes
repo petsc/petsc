@@ -8,10 +8,7 @@ add to it).
 
   VEC
 
-
      All VecGetArray() must now be matched with a VecRestoreArray()   
-
-  
 
   MAT
 
@@ -45,6 +42,20 @@ add to it).
     Remove the gvec directory from the distribution. If you are using this
  please let us and know and we can provide it or provide alternative code
 to do what you need.
+
+    Moved all the compiler/optimization information for each PETSC_ARCH
+    from the various base.g, base.O_c++ etc files all into the single file
+    base. Now configuration for your system should require only editing
+    ${PETSC_ARCH}/base and ${PETSC_ARCH}/base.site
+
+    The PETSC_ARCH rs6000 is now for IBM rs6000 workstations running MPICH or LAM
+    while rs6000_sp is for IBM SPs.
+
+    We now included PETSC_ARCH of solaris_gnu, rs6000_gnu for those systems
+    when using the gnu compilers
+
+    Thanks to the generosity of the FreeBSD organization we are now supporting
+    freebsd again
 
     Added optional filename to -log_info <filename> option. PETSc will open
   a seperate file, called filename.rank for each processor and print the 
