@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dtext.c,v 1.7 1996/12/16 18:25:03 balay Exp balay $";
+static char vcid[] = "$Id: dtext.c,v 1.8 1997/01/06 20:26:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dtext.c,v 1.7 1996/12/16 18:25:03 balay Exp balay $";
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawText"
+#define __FUNC__ "DrawText" /* ADIC Ignore */
 /*@C
    DrawText - Draws text onto a drawable.
 

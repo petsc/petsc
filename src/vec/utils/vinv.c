@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.29 1997/01/06 20:21:47 balay Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.30 1997/01/12 04:32:40 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -122,7 +122,7 @@ int VecAbs(Vec v)
 
 #include "src/vec/impls/dvecimpl.h"
 #undef __FUNC__  
-#define __FUNC__ "VecPlaceArray"
+#define __FUNC__ "VecPlaceArray" /* ADIC Ignore */
 /*@
     VecPlaceArray - Allows one to replace the array in a vector with 
          a user provided one. This is useful to avoid copying an 

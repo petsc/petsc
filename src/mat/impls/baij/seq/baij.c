@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.90 1997/02/07 16:33:49 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.91 1997/02/21 14:52:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -69,7 +69,7 @@ static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRowIJ_SeqBAIJ"
+#define __FUNC__ "MatRestoreRowIJ_SeqBAIJ" /* ADIC Ignore */
 static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
                                 PetscTruth *done)
 {
@@ -90,7 +90,7 @@ static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn
 
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ_Binary"
+#define __FUNC__ "MatView_SeqBAIJ_Binary" /* ADIC Ignore */
 static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -148,7 +148,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ_ASCII"
+#define __FUNC__ "MatView_SeqBAIJ_ASCII" /* ADIC Ignore */
 static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -215,7 +215,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ_Draw"
+#define __FUNC__ "MatView_SeqBAIJ_Draw" /* ADIC Ignore */
 static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
@@ -342,7 +342,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ"
+#define __FUNC__ "MatView_SeqBAIJ" /* ADIC Ignore */
 static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
@@ -606,7 +606,7 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_SeqBAIJ"
+#define __FUNC__ "MatGetSize_SeqBAIJ" /* ADIC Ignore */
 static int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -615,7 +615,7 @@ static int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_SeqBAIJ"
+#define __FUNC__ "MatGetOwnershipRange_SeqBAIJ" /* ADIC Ignore */
 static int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -671,7 +671,7 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_SeqBAIJ"
+#define __FUNC__ "MatRestoreRow_SeqBAIJ" /* ADIC Ignore */
 int MatRestoreRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   if (idx) {if (*idx) PetscFree(*idx);}
@@ -797,7 +797,7 @@ static int MatZeroEntries_SeqBAIJ(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_SeqBAIJ"
+#define __FUNC__ "MatDestroy_SeqBAIJ" /* ADIC Ignore */
 int MatDestroy_SeqBAIJ(PetscObject obj)
 {
   Mat         A  = (Mat) obj;
@@ -824,7 +824,7 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetOption_SeqBAIJ"
+#define __FUNC__ "MatSetOption_SeqBAIJ" /* ADIC Ignore */
 static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1624,7 +1624,7 @@ static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetInfo_SeqBAIJ"
+#define __FUNC__ "MatGetInfo_SeqBAIJ" /* ADIC Ignore */
 static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1899,7 +1899,7 @@ static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_SeqBAIJ"
+#define __FUNC__ "MatGetBlockSize_SeqBAIJ" /* ADIC Ignore */
 static int MatGetBlockSize_SeqBAIJ(Mat mat, int *bs)
 {
   Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *) mat->data;
@@ -1972,7 +1972,7 @@ static int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_SeqBAIJ"
+#define __FUNC__ "MatPrintHelp_SeqBAIJ" /* ADIC Ignore */
 int MatPrintHelp_SeqBAIJ(Mat A)
 {
   static int called = 0; 

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.17 1997/02/03 15:55:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.18 1997/02/04 21:25:36 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -13,7 +13,7 @@ static NRList *__TSList = 0;
 int TSRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "TSSetType"
+#define __FUNC__ "TSSetType" /* ADIC Ignore */
 /*@
    TSSetType - Sets the method for the timestepping solver.  
 
@@ -62,7 +62,7 @@ int TSSetType(TS ts,TSType method)
 
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "TSRegister"
+#define __FUNC__ "TSRegister" /* ADIC Ignore */
 /*@C
    TSRegister - Adds the method to the timestepping package, given 
    a function pointer and a solver name of the type TSType.
@@ -100,7 +100,7 @@ int TSRegister(TSType name,TSType *oname, char *sname, int (*create)(TS))
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "TSRegisterDestroy"
+#define __FUNC__ "TSRegisterDestroy" /* ADIC Ignore */
 /*@C
    TSRegisterDestroy - Frees the list of timesteppers that were
    registered by TSRegister().
@@ -120,7 +120,7 @@ int TSRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSGetType"
+#define __FUNC__ "TSGetType" /* ADIC Ignore */
 /*@C
    TSGetType - Gets the TS method type and name (as a string).
 
@@ -144,7 +144,7 @@ int TSGetType(TS ts, TSType *method,char **name)
 
 #include <stdio.h>
 #undef __FUNC__  
-#define __FUNC__ "TSPrintTypes_Private"
+#define __FUNC__ "TSPrintTypes_Private" /* ADIC Ignore */
 /*
    TSPrintTypes_Private - Prints the TS methods available from the 
    options database.
@@ -170,7 +170,7 @@ int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 
 
 #undef __FUNC__  
-#define __FUNC__ "TSGetTypeFromOptions_Private"
+#define __FUNC__ "TSGetTypeFromOptions_Private" /* ADIC Ignore */
 /*
    TSGetTypeFromOptions_Private - Sets the selected method from the 
    options database.

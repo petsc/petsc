@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tone.c,v 1.9 1996/12/17 16:06:17 balay Exp balay $";
+static char vcid[] = "$Id: tone.c,v 1.10 1997/01/06 20:27:07 balay Exp bsmith $";
 #endif
 /*
     Code for drawing color interpolated triangles using X-windows.
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: tone.c,v 1.9 1996/12/17 16:06:17 balay Exp balay $";
 #define SHIFT_VAL 6
 
 #undef __FUNC__  
-#define __FUNC__ "XiDrawInterpolatedTriangle"
+#define __FUNC__ "XiDrawInterpolatedTriangle" /* ADIC Ignore */
 int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1, 
                                 int x2,int y2,int t2,int x3,int y3,int t3)
 {

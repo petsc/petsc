@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.34 1996/12/16 22:14:34 balay Exp balay $";
+static char vcid[] = "$Id: axis.c,v 1.35 1997/01/06 20:27:51 balay Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -31,7 +31,7 @@ static double PetscAGetNice(double,double,int );
 static int    PetscAGetBase(double,double,int,double*,int*);
 
 #undef __FUNC__  
-#define __FUNC__ "PetscRint"
+#define __FUNC__ "PetscRint" /* ADIC Ignore */
 static double PetscRint(double x )
 {
   if (x > 0) return floor( x + 0.5 );
@@ -39,7 +39,7 @@ static double PetscRint(double x )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisCreate"
+#define __FUNC__ "DrawAxisCreate" /* ADIC Ignore */
 /*@C
    DrawAxisCreate - Generate the axis data structure.
 
@@ -77,7 +77,7 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisDestroy"
+#define __FUNC__ "DrawAxisDestroy" /* ADIC Ignore */
 /*@C
       DrawAxisDestroy - Frees the space used by an axis structure.
 
@@ -93,7 +93,7 @@ int DrawAxisDestroy(DrawAxis ad)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetColors"
+#define __FUNC__ "DrawAxisSetColors" /* ADIC Ignore */
 /*@
     DrawAxisSetColors -  Sets the colors to be used for the axis,       
                          tickmarks, and text.
@@ -112,7 +112,7 @@ int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetLabels"
+#define __FUNC__ "DrawAxisSetLabels" /* ADIC Ignore */
 /*@C
     DrawAxisSetLabels -  Sets the x and y axis labels.
 
@@ -132,7 +132,7 @@ int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetLimits"
+#define __FUNC__ "DrawAxisSetLimits" /* ADIC Ignore */
 /*@
     DrawAxisSetLimits -  Sets the limits (in user coords) of the axis
     
@@ -152,7 +152,7 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double yma
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisDraw"
+#define __FUNC__ "DrawAxisDraw" /* ADIC Ignore */
 /*@
     DrawAxisDraw - Draws an axis.
 
@@ -251,7 +251,7 @@ int DrawAxisDraw(DrawAxis ad)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripAllZeros"
+#define __FUNC__ "PetscStripAllZeros" /* ADIC Ignore */
 /*
     Removes all zeros but one from .0000 
 */
@@ -268,7 +268,7 @@ static int PetscStripAllZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripTrailingZeros"
+#define __FUNC__ "PetscStripTrailingZeros" /* ADIC Ignore */
 /*
     Removes trailing zeros
 */
@@ -291,7 +291,7 @@ static int PetscStripTrailingZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripInitialZero"
+#define __FUNC__ "PetscStripInitialZero" /* ADIC Ignore */
 /*
     Removes leading 0 from 0.22 or -0.22
 */
@@ -311,7 +311,7 @@ static int PetscStripInitialZero(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripZeros"
+#define __FUNC__ "PetscStripZeros" /* ADIC Ignore */
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
@@ -330,7 +330,7 @@ static int PetscStripZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripZerosPlus"
+#define __FUNC__ "PetscStripZerosPlus" /* ADIC Ignore */
 /*
       Removes the plus in something like 1.1e+2
 */
@@ -359,7 +359,7 @@ static int PetscStripZerosPlus(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscADefLabel"
+#define __FUNC__ "PetscADefLabel" /* ADIC Ignore */
 /*
    val is the label value.  sep is the separation to the next (or previous)
    label; this is useful in determining how many significant figures to   
@@ -425,7 +425,7 @@ static char *PetscADefLabel(double val,double sep )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscADefTicks"
+#define __FUNC__ "PetscADefTicks" /* ADIC Ignore */
 /* Finds "nice" locations for the ticks */
 static int PetscADefTicks( double low, double high, int num, int *ntick,
                            double * tickloc,int  maxtick )
@@ -489,7 +489,7 @@ static double PetscCopysign(double a,double b )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscAGetNice"
+#define __FUNC__ "PetscAGetNice" /* ADIC Ignore */
 /*
     Given a value "in" and a "base", return a nice value.
     based on "sgn", extend up (+1) or down (-1)
@@ -505,7 +505,7 @@ static double PetscAGetNice(double in,double base,int sgn )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscAGetBase"
+#define __FUNC__ "PetscAGetBase" /* ADIC Ignore */
 static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
 {
   double  base, ftemp;

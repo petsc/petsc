@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.28 1996/12/17 17:05:20 balay Exp balay $";
+static char vcid[] = "$Id: jacobi.c,v 1.29 1997/01/06 20:23:31 balay Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -67,7 +67,7 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_Jacobi"
+#define __FUNC__ "PCDestroy_Jacobi" /* ADIC Ignore */
 static int PCDestroy_Jacobi(PetscObject obj)
 {
   PC pc = (PC) obj;

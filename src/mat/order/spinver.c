@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spinver.c,v 1.8 1996/12/17 16:51:43 balay Exp balay $";
+static char vcid[] = "$Id: spinver.c,v 1.9 1997/01/06 20:25:07 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: spinver.c,v 1.8 1996/12/17 16:51:43 balay Exp balay $
   MatInvertPermutation_Private - Compute the inverse ordering of a permutation
  */
 #undef __FUNC__  
-#define __FUNC__ "MatInvertPermutation_Private"
+#define __FUNC__ "MatInvertPermutation_Private" /* ADIC Ignore */
 void MatInvertPermutation_Private( int n, int *perm, int *iperm )
 {
   int i;

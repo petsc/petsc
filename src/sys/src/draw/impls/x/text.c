@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.19 1996/12/17 16:05:59 balay Exp balay $";
+static char vcid[] = "$Id: text.c,v 1.20 1997/01/06 20:27:07 balay Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -22,7 +22,7 @@ int XiLoadFont(Draw_X*,XiFont*);
    are not intended to be high performance.
 */
 #undef __FUNC__  
-#define __FUNC__ "XiFontFixed"
+#define __FUNC__ "XiFontFixed" /* ADIC Ignore */
 int XiFontFixed( Draw_X *XBWin,int w, int h,XiFont **outfont )
 {
   static XiFont *curfont = 0,*font;
@@ -48,7 +48,7 @@ static int act_nfonts = 0;
 */
 
 #undef __FUNC__  
-#define __FUNC__ "XiLoadFont"
+#define __FUNC__ "XiLoadFont" /* ADIC Ignore */
 int XiLoadFont( Draw_X *XBWin, XiFont *font )
 {
   char        font_name[100];
@@ -74,7 +74,7 @@ int XiLoadFont( Draw_X *XBWin, XiFont *font )
 
 /* Code to find fonts and their characteristics */
 #undef __FUNC__  
-#define __FUNC__ "XiInitFonts"
+#define __FUNC__ "XiInitFonts" /* ADIC Ignore */
 int XiInitFonts( Draw_X *XBWin )
 {
   char         **names;
@@ -121,7 +121,7 @@ int XiInitFonts( Draw_X *XBWin )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiMatchFontSize"
+#define __FUNC__ "XiMatchFontSize" /* ADIC Ignore */
 int XiMatchFontSize( XiFont *font, int w, int h )
 {
   int i,max,imax,tmp;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.44 1997/01/22 01:42:26 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.45 1997/01/28 03:01:04 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -16,7 +16,7 @@ typedef struct {  /* default context for matrix-free SNES */
 } MFCtx_Private;
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeDestroy_Private"
+#define __FUNC__ "SNESMatrixFreeDestroy_Private" /* ADIC Ignore */
 int SNESMatrixFreeDestroy_Private(PetscObject obj)
 {
   int           ierr;
@@ -31,7 +31,7 @@ int SNESMatrixFreeDestroy_Private(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeView_Private"
+#define __FUNC__ "SNESMatrixFreeView_Private" /* ADIC Ignore */
 /*
    SNESMatrixFreeView_Private - Views matrix-free parameters.
  */

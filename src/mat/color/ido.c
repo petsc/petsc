@@ -6,7 +6,7 @@
 static int c_n1 = -1;
 
 #undef __FUNC__  
-#define __FUNC__ "MINPACKido"
+#define __FUNC__ "MINPACKido" /* ADIC Ignore */
 int MINPACKido(int *m,int * n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,
                int *list,int *maxclq, int *iwa1, int *iwa2, int *iwa3, int *iwa4)
 {

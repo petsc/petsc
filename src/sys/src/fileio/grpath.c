@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: grpath.c,v 1.6 1996/12/16 21:34:24 balay Exp balay $";
+static char vcid[] = "$Id: grpath.c,v 1.7 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: grpath.c,v 1.6 1996/12/16 21:34:24 balay Exp balay $"
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetRealPath"
+#define __FUNC__ "PetscGetRealPath" /* ADIC Ignore */
 /*@C
    PetscGetRealPath - Get the path without symbolic links etc. and in absolute
    form.

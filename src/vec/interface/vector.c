@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.100 1997/01/12 04:32:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.101 1997/01/16 04:30:04 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: vector.c,v 1.100 1997/01/12 04:32:41 bsmith Exp bsmit
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecValid"
+#define __FUNC__ "VecValid" /* ADIC Ignore */
 /*@
    VecValid - Checks whether a vector object is valid.
 
@@ -585,7 +585,7 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroyVecs"
+#define __FUNC__ "VecDestroyVecs" /* ADIC Ignore */
 /*@C
    VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
 
@@ -670,7 +670,7 @@ several or many values simultaneously.
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetLocalToGlobalMapping"
+#define __FUNC__ "VecSetLocalToGlobalMapping" /* ADIC Ignore */
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
    by the routine VecSetValuesLocal() to allow users to insert vector entries
@@ -939,7 +939,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetArray"
+#define __FUNC__ "VecGetArray" /* ADIC Ignore */
 /*@C
    VecGetArray - Returns a pointer to vector data. For default PETSc
    vectors, VecGetArray() returns a pointer to the local data array. Otherwise,
@@ -969,7 +969,7 @@ int VecGetArray(Vec x,Scalar **a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetArrays"
+#define __FUNC__ "VecGetArrays" /* ADIC Ignore */
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
    that were created by a call to VecDuplicateVecs().  You MUST call
@@ -1005,7 +1005,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecRestoreArrays"
+#define __FUNC__ "VecRestoreArrays" /* ADIC Ignore */
 /*@C
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
@@ -1037,7 +1037,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecRestoreArray"
+#define __FUNC__ "VecRestoreArray" /* ADIC Ignore */
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
@@ -1062,7 +1062,7 @@ int VecRestoreArray(Vec x,Scalar **a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView"
+#define __FUNC__ "VecView" /* ADIC Ignore */
 /*@C
    VecView - Views a vector object. 
 
@@ -1100,7 +1100,7 @@ int VecView(Vec v,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetSize"
+#define __FUNC__ "VecGetSize" /* ADIC Ignore */
 /*@
    VecGetSize - Returns the global number of elements of the vector.
 
@@ -1122,7 +1122,7 @@ int VecGetSize(Vec x,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetLocalSize"
+#define __FUNC__ "VecGetLocalSize" /* ADIC Ignore */
 /*@
    VecGetLocalSize - Returns the number of elements of the vector stored 
    in local memory. This routine may be implementation dependent, so use 
@@ -1146,7 +1146,7 @@ int VecGetLocalSize(Vec x,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetOwnershipRange"
+#define __FUNC__ "VecGetOwnershipRange" /* ADIC Ignore */
 /*@
    VecGetOwnershipRange - Returns the range of indices owned by 
    this processor, assuming that the vectors are laid out with the
@@ -1174,7 +1174,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetOption"
+#define __FUNC__ "VecSetOption" /* ADIC Ignore */
 /*@
    VecSetOption - Allows one to set options for a vectors behavior.
 
@@ -1200,7 +1200,7 @@ int VecSetOption(Vec x,VecOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDuplicateVecs_Default"
+#define __FUNC__ "VecDuplicateVecs_Default" /* ADIC Ignore */
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
 int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
@@ -1216,7 +1216,7 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroyVecs_Default"
+#define __FUNC__ "VecDestroyVecs_Default" /* ADIC Ignore */
 int VecDestroyVecs_Default( Vec *v, int m )
 {
   int i,ierr;

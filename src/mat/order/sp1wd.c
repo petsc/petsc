@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sp1wd.c,v 1.17 1997/01/01 03:38:11 bsmith Exp balay $";
+static char vcid[] = "$Id: sp1wd.c,v 1.18 1997/01/06 20:25:07 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: sp1wd.c,v 1.17 1997/01/01 03:38:11 bsmith Exp balay $
     MatOrder_1WD - Find the 1-way dissection ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_1WD"
+#define __FUNC__ "MatOrder_1WD" /* ADIC Ignore */
 int MatOrder_1WD( Mat mat, MatReordering type, IS *row, IS *col)
 {
   int i,   *mask, *xls, nblks, *xblk, *ls, nrow, *perm, ierr,*ia,*ja;

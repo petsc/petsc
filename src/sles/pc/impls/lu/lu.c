@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.75 1997/01/12 04:33:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.76 1997/02/04 21:24:15 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -17,7 +17,7 @@ typedef struct {
 } PC_LU;
 
 #undef __FUNC__  
-#define __FUNC__ "PCLUSetUseInPlace"
+#define __FUNC__ "PCLUSetUseInPlace" /* ADIC Ignore */
 /*@
    PCLUSetUseInPlace - Tells the system to do an in-place factorization.
    For some implementations, for instance, dense matrices, this enables the 
@@ -63,7 +63,7 @@ static int PCSetFromOptions_LU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_LU"
+#define __FUNC__ "PCPrintHelp_LU" /* ADIC Ignore */
 static int PCPrintHelp_LU(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCLU preconditioner:\n");
@@ -76,7 +76,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_LU"
+#define __FUNC__ "PCView_LU" /* ADIC Ignore */
 static int PCView_LU(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -106,7 +106,7 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix_LU"
+#define __FUNC__ "PCGetFactoredMatrix_LU" /* ADIC Ignore */
 static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU *) pc->data;
@@ -164,7 +164,7 @@ static int PCSetUp_LU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_LU"
+#define __FUNC__ "PCDestroy_LU" /* ADIC Ignore */
 static int PCDestroy_LU(PetscObject obj)
 {
   PC    pc   = (PC) obj;

@@ -30,7 +30,7 @@
 /*       FNROOT.                                                 */
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "fn1wd"
+#define __FUNC__ "fn1wd" /* ADIC Ignore */
 int fn1wd(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *nlvl, int *
 	xls, int *ls)

@@ -3,7 +3,7 @@
 #include "petsc.h"
 
 #undef __FUNC__  
-#define __FUNC__ "revrse"
+#define __FUNC__ "revrse" /* ADIC Ignore */
 int revrse(int *n, int *perm)
 {
     /* System generated locals */
@@ -53,7 +53,7 @@ int revrse(int *n, int *perm)
 /*****************************************************************/
 
 #undef __FUNC__  
-#define __FUNC__ "gennd"
+#define __FUNC__ "gennd" /* ADIC Ignore */
 int gennd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *xls, int *ls)
 {

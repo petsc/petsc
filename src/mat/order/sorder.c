@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.40 1997/02/04 21:55:36 balay Exp balay $";
+static char vcid[] = "$Id: sorder.c,v 1.41 1997/02/20 18:24:44 balay Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -15,7 +15,7 @@ int  MatReorderingRegisterAllCalled = 0;
 extern int MatOrder_Flow_SeqAIJ(Mat,MatReordering,IS *,IS *);
 
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_Flow"
+#define __FUNC__ "MatOrder_Flow" /* ADIC Ignore */
 int MatOrder_Flow(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
   if (mat->type == MATSEQAIJ) {
@@ -25,7 +25,7 @@ int MatOrder_Flow(Mat mat,MatReordering type,IS *irow,IS *icol)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_Natural"
+#define __FUNC__ "MatOrder_Natural" /* ADIC Ignore */
 int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
   int        n, size,ierr,i,*ii;
@@ -79,7 +79,7 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
    matrix with symmetric non-zero structure.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_RowLength"
+#define __FUNC__ "MatOrder_RowLength" /* ADIC Ignore */
 int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
   int        ierr,n,*ia,*ja,*permr,*lens,i;
@@ -105,7 +105,7 @@ int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatReorderingRegister"
+#define __FUNC__ "MatReorderingRegister" /* ADIC Ignore */
 /*@C
    MatReorderingRegister - Adds a new sparse matrix reordering to the 
    matrix package. 
@@ -140,7 +140,7 @@ int  MatReorderingRegister(MatReordering name,MatReordering *out,char *sname,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatReorderingRegisterDestroy"
+#define __FUNC__ "MatReorderingRegisterDestroy" /* ADIC Ignore */
 /*@C
    MatReorderingRegisterDestroy - Frees the list of ordering routines.
 
@@ -159,7 +159,7 @@ int MatReorderingRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetReorderingTypeFromOptions"
+#define __FUNC__ "MatGetReorderingTypeFromOptions" /* ADIC Ignore */
 /*@C
    MatGetReorderingTypeFromOptions - Gets matrix reordering method from the
    options database.
@@ -197,7 +197,7 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatReorderingGetName"
+#define __FUNC__ "MatReorderingGetName" /* ADIC Ignore */
 /*@C
    MatReorderingGetName - Gets the name associated with a reordering.
 
@@ -221,7 +221,7 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNC__  
-#define __FUNC__ "MatGetReordering"
+#define __FUNC__ "MatGetReordering" /* ADIC Ignore */
 /*@C
    MatGetReordering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.

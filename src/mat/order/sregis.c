@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sregis.c,v 1.16 1997/01/06 20:25:07 balay Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.17 1997/02/03 05:58:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
@@ -13,7 +13,7 @@ extern int MatOrder_RowLength(Mat,MatReordering,IS*,IS*);
 extern int MatOrder_Flow(Mat,MatReordering,IS*,IS*);
 
 #undef __FUNC__  
-#define __FUNC__ "MatReorderingRegisterAll"
+#define __FUNC__ "MatReorderingRegisterAll" /* ADIC Ignore */
 /*@C
   MatReorderingRegisterAll - Registers all of the matrix 
   reordering routines in PETSc.

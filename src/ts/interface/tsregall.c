@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tsregall.c,v 1.5 1997/02/03 06:00:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: tsregall.c,v 1.6 1997/02/03 15:55:18 curfman Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
@@ -9,7 +9,7 @@ extern int TSCreate_BEuler(TS);
 extern int TSCreate_Pseudo(TS);
 
 #undef __FUNC__  
-#define __FUNC__ "TSRegisterAll"
+#define __FUNC__ "TSRegisterAll" /* ADIC Ignore */
 /*@C
   TSRegisterAll - Registers all of the timesteppers in the TS 
   package. 

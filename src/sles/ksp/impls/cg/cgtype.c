@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: cgtype.c,v 1.1 1997/01/25 04:17:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgtype.c,v 1.2 1997/01/27 18:15:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPCGSetType"
+#define __FUNC__ "KSPCGSetType" /* ADIC Ignore */
 /*@
     KSPCGSetType - Sets the variant of the conjugate gradient method to
     use for solving a linear system with a complex coefficient matrix.

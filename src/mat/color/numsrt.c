@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: numsrt.c,v 1.3 1996/12/18 20:58:49 balay Exp balay $";
+static char vcid[] = "$Id: numsrt.c,v 1.4 1997/01/06 20:25:36 balay Exp bsmith $";
 #endif
 
 /* numsrt.f -- translated by f2c (version of 25 March 1992  12:58:56). */
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: numsrt.c,v 1.3 1996/12/18 20:58:49 balay Exp balay $"
 #include "src/mat/impls/color/color.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MINPACKnumsrt"
+#define __FUNC__ "MINPACKnumsrt" /* ADIC Ignore */
 int MINPACKnumsrt(int *n,int *nmax,int *num,int *mode,int *index,int *last,int *next)
 {
     /* System generated locals */

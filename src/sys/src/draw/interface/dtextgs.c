@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dtextgs.c,v 1.8 1996/12/16 18:25:22 balay Exp balay $";
+static char vcid[] = "$Id: dtextgs.c,v 1.9 1997/01/06 20:26:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dtextgs.c,v 1.8 1996/12/16 18:25:22 balay Exp balay $
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTextGetSize"
+#define __FUNC__ "DrawTextGetSize" /* ADIC Ignore */
 /*@
    DrawTextGetSize - Gets the size for charactor text.  The width is 
    relative to the user coordinates of the window; 0.0 denotes the natural

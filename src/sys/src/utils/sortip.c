@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortip.c,v 1.15 1996/12/16 22:09:34 balay Exp balay $";
+static char vcid[] = "$Id: sortip.c,v 1.16 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: sortip.c,v 1.15 1996/12/16 22:09:34 balay Exp balay $
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
 #undef __FUNC__  
-#define __FUNC__ "PetsciIqsortPerm"
+#define __FUNC__ "PetsciIqsortPerm" /* ADIC Ignore */
 static int PetsciIqsortPerm(int *v,int *vdx,int right)
 {
   int          tmp;
@@ -42,7 +42,7 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSortIntWithPermutation"
+#define __FUNC__ "PetscSortIntWithPermutation" /* ADIC Ignore */
 /*@
    PetscSortIntWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.

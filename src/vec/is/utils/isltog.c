@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: isltog.c,v 1.5 1997/01/06 20:21:40 balay Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.6 1997/02/05 21:56:30 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingCreate"
+#define __FUNC__ "ISLocalToGlobalMappingCreate" /* ADIC Ignore */
 /*@
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
       ordering and a global parallel ordering.
@@ -35,7 +35,7 @@ int ISLocalToGlobalMappingCreate(int n, int *indices,ISLocalToGlobalMapping *map
 }
   
 #undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingDestroy"
+#define __FUNC__ "ISLocalToGlobalMappingDestroy" /* ADIC Ignore */
 /*@
     ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
       ordering and a global parallel ordering.
@@ -58,7 +58,7 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 }
   
 #undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingApplyIS"
+#define __FUNC__ "ISLocalToGlobalMappingApplyIS" /* ADIC Ignore */
 /*@
     ISLocalToGlobalMappingApplyIS - Creates a new IS using the global numbering
       defined in an ISLocalToGlobalMapping from an IS in the local numbering.
@@ -95,7 +95,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISLocalToGlobalMappingApply"
+#define __FUNC__ "ISLocalToGlobalMappingApply" /* ADIC Ignore */
 /*MC
        ISLocalToGlobalMappingApply - Takes a list of integers in local numbering
               and converts them to global numbering.

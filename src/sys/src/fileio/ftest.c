@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ftest.c,v 1.5 1996/12/16 21:32:25 balay Exp balay $";
+static char vcid[] = "$Id: ftest.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: ftest.c,v 1.5 1996/12/16 21:32:25 balay Exp balay $";
 #include "src/sys/src/files.h"
 
 #undef __FUNC__  
-#define __FUNC__ "SYiTestFile"
+#define __FUNC__ "PetscTestFile" /* ADIC Ignore */
 /*+
-  SYiTestFile - Test for a file existing with a specified mode.
+  PetscTestFile - Test for a file existing with a specified mode.
 
   Input Parameters:
 . fname - name of file
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: ftest.c,v 1.5 1996/12/16 21:32:25 balay Exp balay $";
   Returns:
   1 if file exists with given mode, 0 otherwise.
 +*/
-int SYiTestFile( char *fname, char mode,uid_t uid, gid_t gid )
+int PetscTestFile( char *fname, char mode,uid_t uid, gid_t gid )
 {
   int         err;
   struct stat statbuf;

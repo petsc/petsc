@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiuopen.c,v 1.7 1996/12/16 21:44:10 balay Exp balay $";
+static char vcid[] = "$Id: mpiuopen.c,v 1.8 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: mpiuopen.c,v 1.7 1996/12/16 21:44:10 balay Exp balay 
 #include "pinclude/petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ "PetscFOpen"
+#define __FUNC__ "PetscFOpen" /* ADIC Ignore */
 /*@C
     PetscFOpen - Has the first process in the communicator open a file;
     all others do nothing.
@@ -42,7 +42,7 @@ FILE *PetscFOpen(MPI_Comm comm,char *name,char *mode)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscFClose"
+#define __FUNC__ "PetscFClose" /* ADIC Ignore */
 /*@C
     PetscFClose - Has the first processor in the communicator close a 
     file; all others do nothing.

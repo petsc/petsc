@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.41 1997/02/04 21:23:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.42 1997/02/15 04:55:58 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: index.c,v 1.41 1997/02/04 21:23:14 bsmith Exp bsmith 
      /*I "is.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ISIdentity"
+#define __FUNC__ "ISIdentity" /* ADIC Ignore */
 /*@C
    ISIdentity - Determines whether index set is the identity mapping.
 
@@ -31,7 +31,7 @@ int ISIdentity(IS is,PetscTruth *ident)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSetIdentity"
+#define __FUNC__ "ISSetIdentity" /* ADIC Ignore */
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
@@ -50,7 +50,7 @@ int ISSetIdentity(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISPermutation"
+#define __FUNC__ "ISPermutation" /* ADIC Ignore */
 /*@C
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
    index set has been declared to be a permutation.
@@ -74,7 +74,7 @@ int ISPermutation(IS is,PetscTruth *perm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSetPermutation"
+#define __FUNC__ "ISSetPermutation" /* ADIC Ignore */
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
@@ -93,7 +93,7 @@ int ISSetPermutation(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISDestroy"
+#define __FUNC__ "ISDestroy" /* ADIC Ignore */
 /*@C
    ISDestroy - Destroys an index set.
 
@@ -111,7 +111,7 @@ int ISDestroy(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation"
+#define __FUNC__ "ISInvertPermutation" /* ADIC Ignore */
 /*@C
    ISInvertPermutation - Creates a new permutation that is the inverse of 
                          a given permutation.
@@ -132,7 +132,7 @@ int ISInvertPermutation(IS is,IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetSize"
+#define __FUNC__ "ISGetSize" /* ADIC Ignore */
 /*@
    ISGetSize - Returns the global length of an index set. 
 
@@ -153,7 +153,7 @@ int ISGetSize(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetIndices"
+#define __FUNC__ "ISGetIndices" /* ADIC Ignore */
 /*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call 
    ISRestoreIndices() after having looked at the indices.  The user should 
@@ -183,7 +183,7 @@ int ISGetIndices(IS is,int **ptr)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices"
+#define __FUNC__ "ISRestoreIndices" /* ADIC Ignore */
 /*@C
    ISRestoreIndices - Restores an index set to a usable state after a call 
                       to ISGetIndices().
@@ -209,7 +209,7 @@ int ISRestoreIndices(IS is,int **ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISView"
+#define __FUNC__ "ISView" /* ADIC Ignore */
 /*@C
    ISView - Displays an index set.
 
@@ -230,7 +230,7 @@ int ISView(IS is, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSort"
+#define __FUNC__ "ISSort" /* ADIC Ignore */
 /*@
    ISSort - Sorts the indices of an index set.
 
@@ -248,7 +248,7 @@ int ISSort(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSorted"
+#define __FUNC__ "ISSorted" /* ADIC Ignore */
 /*@C
    ISSorted - Checks the indices to determine whether they have been sorted.
 

@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdda.c,v 1.5 1997/01/01 03:41:48 bsmith Exp balay $";
+static char vcid[] = "$Id: fdda.c,v 1.6 1997/01/06 20:30:50 balay Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
 #include "mat.h"    /*I      "mat.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring2dBox"
+#define __FUNC__ "DAGetColoring2dBox" /* ADIC Ignore */
 /*@C
       DAGetColoring2dBox - Gets the coloring required for computing the Jacobian via
           finite differences on a function defined using the nine point stencil

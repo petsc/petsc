@@ -33,7 +33,7 @@
 /*                                                               */
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "fndsep"
+#define __FUNC__ "fndsep" /* ADIC Ignore */
 int fndsep(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *xls, int *ls)
 {

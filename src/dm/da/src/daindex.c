@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daindex.c,v 1.9 1997/01/06 20:30:32 balay Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.10 1997/02/05 22:04:53 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: daindex.c,v 1.9 1997/01/06 20:30:32 balay Exp bsmith 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetGlobalIndices"
+#define __FUNC__ "DAGetGlobalIndices" /* ADIC Ignore */
 /*@C
    DAGetGlobalIndices - Returns the global node number of all local nodes,
    including ghost nodes.
@@ -40,7 +40,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetAO"
+#define __FUNC__ "DAGetAO" /* ADIC Ignore */
 /*@C
    DAGetAO - Gets the application ordering context for a distributed array.
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ao.c,v 1.7 1996/12/16 17:50:48 balay Exp balay $";
+static char vcid[] = "$Id: ao.c,v 1.8 1997/01/06 20:31:22 balay Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: ao.c,v 1.7 1996/12/16 17:50:48 balay Exp balay $";
 #include "src/ao/aoimpl.h"      /*I "ao.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "AOView"
+#define __FUNC__ "AOView" /* ADIC Ignore */
 /*@
    AOView - Displays an application ordering.
 
@@ -26,7 +26,7 @@ int AOView(AO ao, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODestroy"
+#define __FUNC__ "AODestroy" /* ADIC Ignore */
 /*@
    AODestroy - Destroys an application ordering set.
 
@@ -47,7 +47,7 @@ int AODestroy(AO ao)
 
 /* ---------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplicationIS"
+#define __FUNC__ "AOPetscToApplicationIS" /* ADIC Ignore */
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
    the application-defined ordering.
@@ -73,7 +73,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetscIS"
+#define __FUNC__ "AOApplicationToPetscIS" /* ADIC Ignore */
 /*@
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
@@ -99,7 +99,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication"
+#define __FUNC__ "AOPetscToApplication" /* ADIC Ignore */
 /*@
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
    the application-defined ordering.
@@ -121,7 +121,7 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc"
+#define __FUNC__ "AOApplicationToPetsc" /* ADIC Ignore */
 /*@
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.35 1996/12/16 18:22:03 balay Exp balay $";
+static char vcid[] = "$Id: draw.c,v 1.36 1997/01/06 20:26:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: draw.c,v 1.35 1996/12/16 18:22:03 balay Exp balay $";
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawCheckResizedWindow"
+#define __FUNC__ "DrawCheckResizedWindow" /* ADIC Ignore */
 /*@
    DrawCheckResizedWindow - Checks if the user has resized the window.
 
@@ -22,7 +22,7 @@ int DrawCheckResizedWindow(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawGetTitle"
+#define __FUNC__ "DrawGetTitle" /* ADIC Ignore */
 /*@
    DrawGetTitle - Gets pointer to title of a Draw context.
 
@@ -40,7 +40,7 @@ int DrawGetTitle(Draw draw,char **title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetTitle"
+#define __FUNC__ "DrawSetTitle" /* ADIC Ignore */
 /*@
    DrawSetTitle - Sets the title of a Draw context.
 
@@ -67,7 +67,7 @@ int DrawSetTitle(Draw draw,char *title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAppendTitle"
+#define __FUNC__ "DrawAppendTitle" /* ADIC Ignore */
 /*@
    DrawAppendTitle - Appends to the title of a Draw context.
 
@@ -101,7 +101,7 @@ int DrawAppendTitle(Draw draw,char *title)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawDestroy"
+#define __FUNC__ "DrawDestroy" /* ADIC Ignore */
 /*@C
    DrawDestroy - Deletes a draw context.
 
@@ -118,7 +118,7 @@ int DrawDestroy(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawCreatePopUp"
+#define __FUNC__ "DrawCreatePopUp" /* ADIC Ignore */
 /*@
    DrawCreatePopUp - Creates a popup window associated with 
       a Draw window.
@@ -140,7 +140,7 @@ int DrawCreatePopUp(Draw draw,Draw *popup)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawDestroy_Null"
+#define __FUNC__ "DrawDestroy_Null" /* ADIC Ignore */
 int DrawDestroy_Null(PetscObject obj)
 {
   PLogObjectDestroy(obj);
@@ -149,7 +149,7 @@ int DrawDestroy_Null(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawOpenNull"
+#define __FUNC__ "DrawOpenNull" /* ADIC Ignore */
 /*
   DrawOpenNull - Opens a null drawing context. All draw commands to 
   it are ignored.

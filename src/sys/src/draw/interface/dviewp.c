@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dviewp.c,v 1.9 1997/01/01 03:39:24 bsmith Exp balay $";
+static char vcid[] = "$Id: dviewp.c,v 1.10 1997/01/06 20:26:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dviewp.c,v 1.9 1997/01/01 03:39:24 bsmith Exp balay $
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetViewPort"
+#define __FUNC__ "DrawSetViewPort" /* ADIC Ignore */
 /*@
    DrawSetViewPort - Sets the portion of the window (page) to which draw
    routines will write.

@@ -1,15 +1,17 @@
 
-/* $Id: pdvec.c,v 1.70 1997/02/15 21:34:19 curfman Exp curfman $ */
+/* $Id: pdvec.c,v 1.71 1997/02/21 18:27:16 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
 */
+#include "draw.h"
 #include "pinclude/pviewer.h"
-#include "sys.h"
+#include "pvecimpl.h"   /*I  "vec.h"   I*/
+
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetOwnershipRange_MPI"
-static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
+#define __FUNC__ "VecGetOwnershipRange_MPI" /* ADIC Ignore */
+int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
   Vec_MPI *x = (Vec_MPI *) v->data;
   *low  = x->ownership[x->rank];
@@ -18,8 +20,8 @@ static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroy_MPI"
-static int VecDestroy_MPI(PetscObject obj )
+#define __FUNC__ "VecDestroy_MPI" /* ADIC Ignore */
+int VecDestroy_MPI(PetscObject obj )
 {
   Vec     v = (Vec ) obj;
   Vec_MPI *x = (Vec_MPI *) v->data;
@@ -40,8 +42,8 @@ static int VecDestroy_MPI(PetscObject obj )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_File"
-static int VecView_MPI_File(Vec xin, Viewer ptr )
+#define __FUNC__ "VecView_MPI_File" /* ADIC Ignore */
+int VecView_MPI_File(Vec xin, Viewer ptr )
 {
   Vec_MPI *x = (Vec_MPI *) xin->data;
   int     i, rank, ierr, format;
@@ -73,8 +75,8 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Files"
-static int VecView_MPI_Files(Vec xin, Viewer viewer )
+#define __FUNC__ "VecView_MPI_Files" /* ADIC Ignore */
+int VecView_MPI_Files(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,len, work = x->n,n,j,size,ierr,format;
@@ -147,8 +149,8 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Binary"
-static int VecView_MPI_Binary(Vec xin, Viewer viewer )
+#define __FUNC__ "VecView_MPI_Binary" /* ADIC Ignore */
+int VecView_MPI_Binary(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         rank,ierr,len, work = x->n,n,j,size, fdes;
@@ -185,8 +187,8 @@ static int VecView_MPI_Binary(Vec xin, Viewer viewer )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw_LG"
-static int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
+#define __FUNC__ "VecView_MPI_Draw_LG" /* ADIC Ignore */
+int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size, N = x->N,*lens,ierr;
@@ -247,8 +249,8 @@ static int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw"
-static int VecView_MPI_Draw(Vec xin, Viewer v )
+#define __FUNC__ "VecView_MPI_Draw" /* ADIC Ignore */
+int VecView_MPI_Draw(Vec xin, Viewer v )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size,ierr,start,end,format;
@@ -326,8 +328,8 @@ static int VecView_MPI_Draw(Vec xin, Viewer v )
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Matlab"
-static int VecView_MPI_Matlab(Vec xin, Viewer viewer )
+#define __FUNC__ "VecView_MPI_Matlab" /* ADIC Ignore */
+int VecView_MPI_Matlab(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size, N = x->N,*lens;
@@ -357,8 +359,8 @@ static int VecView_MPI_Matlab(Vec xin, Viewer viewer )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI"
-static int VecView_MPI(PetscObject obj,Viewer viewer)
+#define __FUNC__ "VecView_MPI" /* ADIC Ignore */
+int VecView_MPI(PetscObject obj,Viewer viewer)
 {
   Vec         xin = (Vec) obj;
   ViewerType  vtype;
@@ -383,7 +385,7 @@ static int VecView_MPI(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-static int VecGetSize_MPI(Vec xin,int *N)
+int VecGetSize_MPI(Vec xin,int *N)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   *N = x->N;
@@ -392,7 +394,7 @@ static int VecGetSize_MPI(Vec xin,int *N)
 
 #undef __FUNC__  
 #define __FUNC__ "VecSetValues_MPI"
-static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
+int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   int      rank = x->rank, *owners = x->ownership, start = owners[rank];
@@ -471,7 +473,7 @@ to make sure we never malloc an empty one.
 */
 #undef __FUNC__  
 #define __FUNC__ "VecAssemblyBegin_MPI"
-static int VecAssemblyBegin_MPI(Vec xin)
+int VecAssemblyBegin_MPI(Vec xin)
 {
   Vec_MPI    *x = (Vec_MPI *)xin->data;
   int         rank = x->rank, *owners = x->ownership, size = x->size;
@@ -570,7 +572,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
 
 #undef __FUNC__  
 #define __FUNC__ "VecAssemblyEnd_MPI"
-static int VecAssemblyEnd_MPI(Vec vec)
+int VecAssemblyEnd_MPI(Vec vec)
 {
   Vec_MPI     *x = (Vec_MPI *)vec->data;
   MPI_Status  *send_status,recv_status;

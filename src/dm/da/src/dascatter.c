@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dascatter.c,v 1.7 1997/01/06 20:30:32 balay Exp gropp $";
+static char vcid[] = "$Id: dascatter.c,v 1.8 1997/01/08 19:19:54 gropp Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dascatter.c,v 1.7 1997/01/06 20:30:32 balay Exp gropp
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetScatter"
+#define __FUNC__ "DAGetScatter" /* ADIC Ignore */
 /*@C
    DAGetScatter - Gets the local-to-global, local-to-global, and 
    local-to-local vector scatter contexts for a distributed array.

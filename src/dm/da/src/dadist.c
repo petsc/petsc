@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dadist.c,v 1.6 1996/12/16 21:08:52 balay Exp balay $";
+static char vcid[] = "$Id: dadist.c,v 1.7 1997/01/06 20:30:32 balay Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dadist.c,v 1.6 1996/12/16 21:08:52 balay Exp balay $"
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetDistributedVector"
+#define __FUNC__ "DAGetDistributedVector" /* ADIC Ignore */
 /*@C
    DAGetDistributedVector - Gets a distributed vector for a 
    distributed array.  Additional vectors of the same type can be 

@@ -1,13 +1,13 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: pgname.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: pgname.c,v 1.7 1997/02/04 21:24:05 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetName"
+#define __FUNC__ "PetscObjectGetName" /* ADIC Ignore */
 /*@C
    PetscObjectGetName - Gets a string name associated with a PETSc object.
 

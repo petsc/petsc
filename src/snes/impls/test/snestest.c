@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.30 1997/01/01 03:41:02 bsmith Exp balay $";
+static char vcid[] = "$Id: snestest.c,v 1.31 1997/01/06 20:30:02 balay Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -65,14 +65,14 @@ int SNESSolve_Test(SNES snes,int *its)
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy_Test"
+#define __FUNC__ "SNESDestroy_Test" /* ADIC Ignore */
 int SNESDestroy_Test(PetscObject obj)
 {
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_Test"
+#define __FUNC__ "SNESPrintHelp_Test" /* ADIC Ignore */
 static int SNESPrintHelp_Test(SNES snes,char *p)
 {
   PetscPrintf(snes->comm,"Test code to compute Jacobian\n");
@@ -81,7 +81,7 @@ static int SNESPrintHelp_Test(SNES snes,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetFromOptions_Test"
+#define __FUNC__ "SNESSetFromOptions_Test" /* ADIC Ignore */
 static int SNESSetFromOptions_Test(SNES snes)
 {
   SNES_Test *ls = (SNES_Test *)snes->data;
@@ -96,7 +96,7 @@ static int SNESSetFromOptions_Test(SNES snes)
 
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESCreate_Test"
+#define __FUNC__ "SNESCreate_Test" /* ADIC Ignore */
 int SNESCreate_Test(SNES  snes )
 {
   SNES_Test *neP;

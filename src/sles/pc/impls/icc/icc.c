@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.40 1997/01/06 20:23:53 balay Exp curfman $ ";
+static char vcid[] = "$Id: icc.c,v 1.41 1997/02/11 19:38:56 curfman Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -57,7 +57,7 @@ static int PCSetup_ICC(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_ICC"
+#define __FUNC__ "PCDestroy_ICC" /* ADIC Ignore */
 static int PCDestroy_ICC(PetscObject obj)
 {
   PC     pc = (PC) obj;
@@ -96,7 +96,7 @@ static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_ICC"
+#define __FUNC__ "PCPrintHelp_ICC" /* ADIC Ignore */
 static int PCPrintHelp_ICC(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCICC preconditioner:\n");
@@ -107,7 +107,7 @@ static int PCPrintHelp_ICC(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix_ICC"
+#define __FUNC__ "PCGetFactoredMatrix_ICC" /* ADIC Ignore */
 static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.18 1997/02/03 05:55:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.19 1997/02/03 15:46:39 curfman Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -19,7 +19,7 @@ extern int KSPCreate_CR(KSP);
 extern int KSPCreate_QCG(KSP);
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegisterAll"
+#define __FUNC__ "KSPRegisterAll" /* ADIC Ignore */
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.17 1996/12/16 19:32:01 balay Exp balay $";
+static char vcid[] = "$Id: iguess.c,v 1.18 1997/01/06 20:22:18 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -17,7 +17,7 @@ typedef struct {
 } KSPIGUESS;
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGuessCreate"
+#define __FUNC__ "KSPGuessCreate" /* ADIC Ignore */
 int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 {
   KSPIGUESS *itg;
@@ -38,7 +38,7 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGuessDestroy"
+#define __FUNC__ "KSPGuessDestroy" /* ADIC Ignore */
 int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);

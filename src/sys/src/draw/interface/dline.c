@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dline.c,v 1.8 1996/12/16 18:15:19 balay Exp balay $";
+static char vcid[] = "$Id: dline.c,v 1.9 1997/01/06 20:26:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dline.c,v 1.8 1996/12/16 18:15:19 balay Exp balay $";
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
   
 #undef __FUNC__  
-#define __FUNC__ "DrawLine"
+#define __FUNC__ "DrawLine" /* ADIC Ignore */
 /*@
    DrawLine - Draws a line onto a drawable.
 
@@ -26,7 +26,7 @@ int DrawLine(Draw draw,double xl,double yl,double xr,double yr,int cl)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawIsNull"
+#define __FUNC__ "DrawIsNull" /* ADIC Ignore */
 /*@
     DrawIsNull - Returns PETSC_TRUE if draw is a null draw object.
 

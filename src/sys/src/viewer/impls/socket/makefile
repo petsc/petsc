@@ -2,6 +2,15 @@
 
 
 ALL: lib 
+
+#
+#   matlabcodes makes the Matlab mex files for receiving PETSc objects
+# in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If cmex fails 
+# in compiling these files and you are using the gcc compiler then try 
+# removing the -fPIC from the CC declaration in $(PETSC_DIR)/bmake/$*(PETSC_ARCH)/base
+#
+matlabcodes: receive openport closeport launch
+
 CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' $(MATLAB_INCLUDE)
 SOURCEC   = senddense.c send.c  sendsparse.c
 SOURCEF   =
@@ -13,7 +22,7 @@ LIBBASE   = libpetscsys
 DIRS      = 
 LOCDIR    = src/viewer/impls/matlab/
 
-receive: chkopts openport closeport receive.o receivesparse.o receivedense.o
+receive: chkopts receive.o receivesparse.o receivedense.o
 	$(CMEX) receive.o receivesparse.o  receivedense.o 
 	$(RM) -f receive.o receivesparse.o  receivedense.o 
 

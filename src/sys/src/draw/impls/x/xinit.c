@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.24 1997/01/06 20:27:07 balay Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.25 1997/02/07 23:29:04 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -27,7 +27,7 @@ extern int XiFontFixed(Draw_X*,int,int,XiFont** );
   XiOpenDisplay - Open a display
 */
 #undef __FUNC__  
-#define __FUNC__ "XiOpenDisplay"
+#define __FUNC__ "XiOpenDisplay" /* ADIC Ignore */
 int XiOpenDisplay(Draw_X* XiWin,char *display_name )
 {
   XiWin->disp = XOpenDisplay( display_name );
@@ -43,7 +43,7 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
     XiSetVisual - set the visual class for a window and colormap
 */
 #undef __FUNC__  
-#define __FUNC__ "XiSetVisual"
+#define __FUNC__ "XiSetVisual" /* ADIC Ignore */
 int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
 {
   if (q_default_visual) {
@@ -86,7 +86,7 @@ int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
    XiSetGC - set the GC structure in the base window
 */
 #undef __FUNC__  
-#define __FUNC__ "XiSetGC"
+#define __FUNC__ "XiSetGC" /* ADIC Ignore */
 int XiSetGC(Draw_X* XiWin,PixVal fg )
 {
   XGCValues       gcvalues;       /* window graphics context values */
@@ -213,7 +213,7 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiQuickWindow"
+#define __FUNC__ "XiQuickWindow" /* ADIC Ignore */
 int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
                    int nx,int ny,int nc )
 {
@@ -241,7 +241,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
    A version from an already defined window 
 */
 #undef __FUNC__  
-#define __FUNC__ "XiQuickWindowFromWindow"
+#define __FUNC__ "XiQuickWindowFromWindow" /* ADIC Ignore */
 int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
 {
   Window       root;
@@ -272,7 +272,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
       XiSetWindowLabel - Sets new label in open window.
 */
 #undef __FUNC__  
-#define __FUNC__ "XiSetWindowLabel"
+#define __FUNC__ "XiSetWindowLabel" /* ADIC Ignore */
 int XiSetWindowLabel(Draw_X* Xiwin, char *label )
 {
   XTextProperty prop;
@@ -283,7 +283,7 @@ int XiSetWindowLabel(Draw_X* Xiwin, char *label )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiSetToBackground"
+#define __FUNC__ "XiSetToBackground" /* ADIC Ignore */
 int XiSetToBackground(Draw_X* XiWin )
 {
   if (XiWin->gc.cur_pix != XiWin->background) { 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: elapack.c,v 1.1 1997/01/08 00:19:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: elapack.c,v 1.2 1997/01/22 18:46:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -34,7 +34,7 @@ static int    ECSetUp_Lapack(EC ec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECDestroy_Lapack"
+#define __FUNC__ "ECDestroy_Lapack" /* ADIC Ignore */
 static int ECDestroy_Lapack(PetscObject obj)
 {
   EC        ec = (EC) obj;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.107 1997/01/06 20:25:01 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.108 1997/01/27 18:17:02 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -254,7 +254,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_MPIBDiag"
+#define __FUNC__ "MatGetBlockSize_MPIBDiag" /* ADIC Ignore */
 static int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -463,7 +463,7 @@ static int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetInfo_MPIBDiag"
+#define __FUNC__ "MatGetInfo_MPIBDiag" /* ADIC Ignore */
 static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
@@ -512,7 +512,7 @@ static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIBDiag"
+#define __FUNC__ "MatDestroy_MPIBDiag" /* ADIC Ignore */
 static int MatDestroy_MPIBDiag(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
@@ -542,7 +542,7 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIBDiag_Binary"
+#define __FUNC__ "MatView_MPIBDiag_Binary" /* ADIC Ignore */
 static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -556,7 +556,7 @@ static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIBDiag_ASCIIorDraw"
+#define __FUNC__ "MatView_MPIBDiag_ASCIIorDraw" /* ADIC Ignore */
 static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -655,7 +655,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIBDiag"
+#define __FUNC__ "MatView_MPIBDiag" /* ADIC Ignore */
 static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
@@ -674,7 +674,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetOption_MPIBDiag"
+#define __FUNC__ "MatSetOption_MPIBDiag" /* ADIC Ignore */
 static int MatSetOption_MPIBDiag(Mat A,MatOption op)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
@@ -707,7 +707,7 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_MPIBDiag"
+#define __FUNC__ "MatGetSize_MPIBDiag" /* ADIC Ignore */
 static int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -716,7 +716,7 @@ static int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetLocalSize_MPIBDiag"
+#define __FUNC__ "MatGetLocalSize_MPIBDiag" /* ADIC Ignore */
 static int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -725,7 +725,7 @@ static int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_MPIBDiag"
+#define __FUNC__ "MatGetOwnershipRange_MPIBDiag" /* ADIC Ignore */
 static int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
@@ -746,7 +746,7 @@ static int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_MPIBDiag"
+#define __FUNC__ "MatRestoreRow_MPIBDiag" /* ADIC Ignore */
 static int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
                                   Scalar **v)
 {
@@ -806,7 +806,7 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
 
 extern int MatPrintHelp_SeqBDiag(Mat);
 #undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_MPIBDiag"
+#define __FUNC__ "MatPrintHelp_MPIBDiag" /* ADIC Ignore */
 static int MatPrintHelp_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.71 1997/02/11 19:45:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.72 1997/02/17 04:08:29 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: da2.c,v 1.71 1997/02/11 19:45:15 curfman Exp bsmith $
 #include <math.h>
 
 #undef __FUNC__  
-#define __FUNC__ "DAView_2d"
+#define __FUNC__ "DAView_2d" /* ADIC Ignore */
 static int DAView_2d(PetscObject dain,Viewer viewer)
 {
   DA          da = (DA) dain;
@@ -105,7 +105,7 @@ static int DAView_2d(PetscObject dain,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DACreate2d"
+#define __FUNC__ "DACreate2d" /* ADIC Ignore */
 /*@C
     DACreate2d - Creates a two-dimensional regular array that is
     distributed across some processors.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.70 1997/01/06 20:24:23 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.71 1997/01/27 18:16:37 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -13,7 +13,7 @@ static int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 static int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 
 #undef __FUNC__  
-#define __FUNC__ "Mat_AIJ_CreateColInode"
+#define __FUNC__ "Mat_AIJ_CreateColInode" /* ADIC Ignore */
 static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A, int* size, int ** ns)
 {
   int i,count,m,n,min_mn,*ns_row,*ns_col,limit;
@@ -62,7 +62,7 @@ static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A, int* size, int ** ns)
       This builds symmetric version of nonzero structure, 
 */
 #undef __FUNC__  
-#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode_Symmetric"
+#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode_Symmetric" /* ADIC Ignore */
 static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                int ishift,int oshift)
 {
@@ -150,7 +150,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
       This builds nonsymmetric version of nonzero structure, 
 */
 #undef __FUNC__  
-#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric"
+#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric" /* ADIC Ignore */
 static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                   int ishift,int oshift)
 {
@@ -227,7 +227,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode"
+#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode" /* ADIC Ignore */
 static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                  PetscTruth *done)
 {
@@ -247,7 +247,7 @@ static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRowIJ_SeqAIJ_Inode"
+#define __FUNC__ "MatRestoreRowIJ_SeqAIJ_Inode" /* ADIC Ignore */
 static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                      PetscTruth *done)
 {
@@ -260,7 +260,7 @@ static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,in
 /* ----------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric"
+#define __FUNC__ "MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric" /* ADIC Ignore */
 static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                int ishift,int oshift)
 {
@@ -339,7 +339,7 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, i
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetColumnIJ_SeqAIJ_Inode"
+#define __FUNC__ "MatGetColumnIJ_SeqAIJ_Inode" /* ADIC Ignore */
 static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                  PetscTruth *done)
 {
@@ -360,7 +360,7 @@ static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreColumnIJ_SeqAIJ_Inode"
+#define __FUNC__ "MatRestoreColumnIJ_SeqAIJ_Inode" /* ADIC Ignore */
 static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                      PetscTruth *done)
 {
@@ -373,7 +373,7 @@ static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric
 /* ----------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ "MatMult_SeqAIJ_Inode"
+#define __FUNC__ "MatMult_SeqAIJ_Inode" /* ADIC Ignore */
 static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
@@ -734,7 +734,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 extern int MatColoringPatch_SeqAIJ_Inode(Mat,int,int *,ISColoring *);
 
 #undef __FUNC__  
-#define __FUNC__ "Mat_AIJ_CheckInode"
+#define __FUNC__ "Mat_AIJ_CheckInode" /* ADIC Ignore */
 int Mat_AIJ_CheckInode(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;

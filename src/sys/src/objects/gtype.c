@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gtype.c,v 1.6 1997/01/01 03:36:26 bsmith Exp balay $";
+static char vcid[] = "$Id: gtype.c,v 1.7 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: gtype.c,v 1.6 1997/01/01 03:36:26 bsmith Exp balay $"
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetType"
+#define __FUNC__ "PetscObjectGetType" /* ADIC Ignore */
 /*@C
    PetscObjectGetType - Gets the object type of any PetscObject.
 

@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.71 1997/01/06 20:21:47 balay Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.72 1997/02/04 21:23:24 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -13,7 +13,7 @@
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterView_MPI"
+#define __FUNC__ "VecScatterView_MPI" /* ADIC Ignore */
 int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 {
   VecScatter             ctx = (VecScatter) obj;
@@ -63,7 +63,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   then know that we need not perform that portion of the scatter.
 */
 #undef __FUNC__  
-#define __FUNC__ "VecScatterLocalOptimize_Private"
+#define __FUNC__ "VecScatterLocalOptimize_Private" /* ADIC Ignore */
 int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
                                      VecScatter_Seq_General *gen_from)
 {
@@ -513,7 +513,7 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterDestroy_PtoP_5"
+#define __FUNC__ "VecScatterDestroy_PtoP_5" /* ADIC Ignore */
 int VecScatterDestroy_PtoP_5(PetscObject obj)
 {
   VecScatter             ctx = (VecScatter) obj;
@@ -568,7 +568,7 @@ int VecScatterDestroy_PtoP_5(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterDestroy_PtoP"
+#define __FUNC__ "VecScatterDestroy_PtoP" /* ADIC Ignore */
 int VecScatterDestroy_PtoP(PetscObject obj)
 {
   VecScatter             ctx = (VecScatter) obj;
@@ -594,7 +594,7 @@ int VecScatterDestroy_PtoP(PetscObject obj)
    this would be 1.
 */
 #undef __FUNC__  
-#define __FUNC__ "VecScatterCreate_PtoS"
+#define __FUNC__ "VecScatterCreate_PtoS" /* ADIC Ignore */
 int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,VecScatter ctx)
 {
   Vec_MPI                *x = (Vec_MPI *)xin->data;

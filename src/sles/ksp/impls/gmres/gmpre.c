@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmpre.c,v 1.1 1997/01/25 16:58:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmpre.c,v 1.2 1997/01/27 18:15:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetPreAllocateVectors"
+#define __FUNC__ "KSPGMRESSetPreAllocateVectors" /* ADIC Ignore */
 /*@
     KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
     needed work vectors at initial setup rather than the default, which 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.9 1997/02/04 21:26:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1997/02/05 22:03:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 
 int main(int argc,char **argv)
 {
-  int       rank, size, M = 14, ierr, time_steps = 1000, w=1, s=1, a=1, flg;
+  int       rank, size, M = 14, ierr, time_steps = 20, w=1, s=1, a=1, flg;
   DA        da;
   Viewer    viewer;
   Vec       local, global, copy;
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray (copy,&copyptr); CHKERRA(ierr);
 
   /* Set Up Display to Show Heat Graph */
-  ierr = ViewerMatlabOpen(MPI_COMM_WORLD,"eagle",0,&viewer); CHKERRA(ierr);
+  viewer = VIEWER_MATLAB_WORLD; 
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);

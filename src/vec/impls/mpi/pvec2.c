@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.19 1997/01/01 03:35:33 bsmith Exp balay $ */
+/* $Id: pvec2.c,v 1.20 1997/01/06 20:21:59 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -10,9 +10,9 @@
 
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_MPI"
-static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
+int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
-  static Scalar awork[128];
+  Scalar awork[128];
   Scalar        *work = awork;
 
   if (nv > 128) {
@@ -33,7 +33,7 @@ static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecNorm_MPI"
-static int VecNorm_MPI(  Vec xin,NormType type, double *z )
+int VecNorm_MPI(  Vec xin,NormType type, double *z )
 {
   Vec_MPI      *x = (Vec_MPI *) xin->data;
   double       sum, work = 0.0;
@@ -74,7 +74,7 @@ static int VecNorm_MPI(  Vec xin,NormType type, double *z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecMax_MPI"
-static int VecMax_MPI( Vec xin, int *idx, double *z )
+int VecMax_MPI( Vec xin, int *idx, double *z )
 {
   double work;
 
@@ -94,7 +94,7 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
 
 #undef __FUNC__  
 #define __FUNC__ "VecMin_MPI"
-static int VecMin_MPI( Vec xin, int *idx, double *z )
+int VecMin_MPI( Vec xin, int *idx, double *z )
 {
   double work;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij2.c,v 1.11 1997/01/01 03:38:19 bsmith Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.12 1997/01/06 20:25:20 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/seq/baij.h"
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: baij2.c,v 1.11 1997/01/01 03:38:19 bsmith Exp balay $
 #include "src/inline/bitarray.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatIncreaseOverlap_SeqBAIJ"
+#define __FUNC__ "MatIncreaseOverlap_SeqBAIJ" /* ADIC Ignore */
 int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;

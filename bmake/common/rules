@@ -7,6 +7,7 @@
 # OBJS          - object files
 # PETSC_INCLUDE - locations of include files
 # CPPFLAGS      - preprocessor flags for *.c, *.F preprocessing
+# DOCS          - files that contain PETSc documentation
 #
 LDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 PDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
@@ -136,7 +137,7 @@ clean:
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
-	       ex[0-9].exe ex[0-9][0-9].exe 
+	       ex[0-9].exe ex[0-9][0-9].exe *.ad.c ad_deriv.h .adic*
 
 #
 #  testexamples_X - Runs various PETSc test suites
@@ -189,12 +190,12 @@ tree: $(ACTION)
 
 # RCS file check-in
 ci: 
-	@-/usr/local/bin/ci -u -q -mAutoCheckin $(SOURCEH) $(SOURCE) \
+	@-/usr/local/bin/ci -u -q -mAutoCheckin $(SOURCEH) $(DOCS) $(SOURCE) \
 	  $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) makefile
 
 # RCS file check-out
 co:
-	@-/usr/local/bin/co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
+	@-/usr/local/bin/co -l -q $(SOURCEH) $(DOCS) $(SOURCE) makefile $(EXAMPLESC)\
 	  $(EXAMPLESF) $(TESTSC) $(TESTSF)
 
 # Uses lint; true is to prevent make error message from empty grep
@@ -293,12 +294,44 @@ wwwpages:
 	egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	if [ "$$?" != 1 ]; then \
 	cat trashz ; fi; $(RM) trashz;
-
+# -------------------------------------------------------------------------------
 #
 #   Rule for generating ADIC derivatives from PETSc .c files
 #
 adic:
-	for i in $(SOURCE); do adiC.new -avud gradient.new $(CFLAGS) $$i ; done
+	@-if [ "$(SOURCEC)" != "" ]; then \
+          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
+          adiC.new -avud gradient.new $(CFLAGS) $$i ; \
+          fi; done ; \
+        fi
+	@-if [ "$(SOURCECH)" != "" ]; then \
+          for i in $(SOURCECH) foo; do if [ -f $$i ]; then \
+          adiC.new -avud gradient.new $(CFLAGS) $$i ; \
+          fi; done ; \
+        fi
+
+#
+#     Functions that need not be differentiated with ADIC are listed with a
+#   /* ADIC Ignore */ comment. The rule below generates a master list of all
+#   functions to be ignored.
+#
+adicignore: chkpetsc_dir
+	-@if [ ! -f $(PDIR)/adicignore ]; then \
+	  echo "PetscDummyFunction" > $(PDIR)/adicignore ; fi
+	@-if [ "$(SOURCEC)" != "" ]; then \
+          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
+           grep "ADIC Ignore" $$i | cut -f2 -d\" >> $(PDIR)/adicignore ; \
+          fi; done ; \
+        fi
+countfunctions: chkpetsc_dir
+	-@if [ ! -f $(PDIR)/countfunctions ]; then \
+	  echo "PetscDummyFunction" > $(PDIR)/countfunctions ; fi
+	@-if [ "$(SOURCEC)" != "" ]; then \
+          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
+           grep "define __FUNC__" $$i | cut -f2 -d\" >> $(PDIR)/countfunctions ; \
+          fi; done ; \
+        fi
+# -------------------------------------------------------------------------------
 
 SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
 	libpetscsnes libpetscsys libpetscts libpetscvec libpetscts libpetscgvec

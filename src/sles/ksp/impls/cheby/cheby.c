@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.45 1997/01/01 03:36:11 bsmith Exp balay $";
+static char vcid[] = "$Id: cheby.c,v 1.46 1997/01/06 20:22:39 balay Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -148,7 +148,7 @@ int  KSPSolve_Chebychev(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPView_Chebychev"
+#define __FUNC__ "KSPView_Chebychev" /* ADIC Ignore */
 static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 {
   KSP           ksp = (KSP)obj;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ecall.c,v 1.1 1997/01/08 03:29:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ecall.c,v 1.2 1997/01/22 18:46:10 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: ecall.c,v 1.1 1997/01/08 03:29:06 bsmith Exp bsmith $
 extern int ECCreate_Lapack(EC);
 
 #undef __FUNC__  
-#define __FUNC__ "ECRegisterAll"
+#define __FUNC__ "ECRegisterAll" /* ADIC Ignore */
 /*@C
   ECRegisterAll - Registers all of the preconditioners in the EC package.
 

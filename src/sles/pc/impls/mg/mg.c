@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.64 1997/01/22 18:42:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.65 1997/02/04 19:10:21 curfman Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -75,7 +75,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_MG"
+#define __FUNC__ "PCDestroy_MG" /* ADIC Ignore */
 static int PCDestroy_MG(PetscObject obj)
 {
   PC  pc = (PC) obj;
@@ -95,7 +95,7 @@ static int PCDestroy_MG(PetscObject obj)
 
 #include <stdio.h>
 #undef __FUNC__  
-#define __FUNC__ "MGCheck"
+#define __FUNC__ "MGCheck" /* ADIC Ignore */
 /*@
    MGCheck - Checks that all components of the MG structure have 
    been set.
@@ -147,7 +147,7 @@ int MGCheck(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetNumberSmoothDown"
+#define __FUNC__ "MGSetNumberSmoothDown" /* ADIC Ignore */
 /*@
    MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels. Use MGGetSmootherDown() to set different 
@@ -182,7 +182,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetNumberSmoothUp"
+#define __FUNC__ "MGSetNumberSmoothUp" /* ADIC Ignore */
 /*@
    MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
    on all levels. Use MGGetSmootherUp() to set different numbers of 
@@ -217,7 +217,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetCycles"
+#define __FUNC__ "MGSetCycles" /* ADIC Ignore */
 /*@
    MGSetCycles - Sets the number of cycles to use. 1 denotes a
    V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
@@ -339,7 +339,7 @@ static int PCSetFromOptions_MG(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_MG"
+#define __FUNC__ "PCPrintHelp_MG" /* ADIC Ignore */
 static int PCPrintHelp_MG(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCMG preconditioner:\n");
@@ -352,7 +352,7 @@ static int PCPrintHelp_MG(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_MG"
+#define __FUNC__ "PCView_MG" /* ADIC Ignore */
 static int PCView_MG(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -451,7 +451,7 @@ int PCCreate_MG(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetLevels"
+#define __FUNC__ "MGSetLevels" /* ADIC Ignore */
 /*@
    MGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
@@ -479,7 +479,7 @@ int MGSetLevels(PC pc,int levels)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGGetLevels"
+#define __FUNC__ "MGGetLevels" /* ADIC Ignore */
 /*@
    MGGetLevels - Gets the number of levels to use with MG.
 
@@ -505,7 +505,7 @@ int MGGetLevels(PC pc,int *levels)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetType"
+#define __FUNC__ "MGSetType" /* ADIC Ignore */
 /*@
    MGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdaij.c,v 1.7 1997/01/01 03:37:37 bsmith Exp balay $";
+static char vcid[] = "$Id: fdaij.c,v 1.8 1997/01/06 20:24:23 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -11,7 +11,7 @@ extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*
 extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringCreate_SeqAIJ"
+#define __FUNC__ "MatFDColoringCreate_SeqAIJ" /* ADIC Ignore */
 int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,ierr,*ci,*cj,ncols,col,flg;
@@ -140,7 +140,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringPatch_SeqAIJ"
+#define __FUNC__ "MatColoringPatch_SeqAIJ" /* ADIC Ignore */
 int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscoloring)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) mat->data;
@@ -181,7 +181,7 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
      Makes a longer coloring[] array and calls the usual code with that
 */
 #undef __FUNC__  
-#define __FUNC__ "MatColoringPatch_SeqAIJ_Inode"
+#define __FUNC__ "MatColoringPatch_SeqAIJ_Inode" /* ADIC Ignore */
 int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *iscoloring)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) mat->data;

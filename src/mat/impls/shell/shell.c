@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.43 1997/01/12 04:33:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.44 1997/01/27 18:16:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,7 +20,7 @@ typedef struct {
 } Mat_Shell;      
 
 #undef __FUNC__  
-#define __FUNC__ "MatShellGetContext"
+#define __FUNC__ "MatShellGetContext" /* ADIC Ignore */
 /*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
@@ -47,7 +47,7 @@ int MatShellGetContext(Mat mat,void **ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_Shell"
+#define __FUNC__ "MatGetSize_Shell" /* ADIC Ignore */
 static int MatGetSize_Shell(Mat mat,int *M,int *N)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
@@ -56,7 +56,7 @@ static int MatGetSize_Shell(Mat mat,int *M,int *N)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetLocalSize_Shell"
+#define __FUNC__ "MatGetLocalSize_Shell" /* ADIC Ignore */
 static int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
@@ -65,7 +65,7 @@ static int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_Shell"
+#define __FUNC__ "MatDestroy_Shell" /* ADIC Ignore */
 static int MatDestroy_Shell(PetscObject obj)
 {
   int       ierr;
@@ -130,7 +130,7 @@ static struct _MatOps MatOps = {0,
        0 };
 
 #undef __FUNC__  
-#define __FUNC__ "MatCreateShell"
+#define __FUNC__ "MatCreateShell" /* ADIC Ignore */
 /*@C
    MatCreateShell - Creates a new matrix class for use with a user-defined
    private data storage format. 
@@ -210,7 +210,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatShellSetOperation"
+#define __FUNC__ "MatShellSetOperation" /* ADIC Ignore */
 /*@C
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.

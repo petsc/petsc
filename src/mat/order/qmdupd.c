@@ -29,7 +29,7 @@
 /*       QMDMRG.*/
 /******************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "qmdupd"
+#define __FUNC__ "qmdupd" /* ADIC Ignore */
 int qmdupd(int *xadj, int *adjncy, int *nlist, 
 	int *list, int *deg, int *qsize, int *qlink, int *
 	marker, int *rchset, int *nbrhd)

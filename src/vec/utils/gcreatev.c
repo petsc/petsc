@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.32 1996/12/16 22:41:35 balay Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.33 1997/01/06 20:21:47 balay Exp bsmith $";
 #endif
 
 
@@ -49,7 +49,7 @@ int VecCreate(MPI_Comm comm,int n,Vec *V)
 
 #include "src/vec/vecimpl.h"
 #undef __FUNC__  
-#define __FUNC__ "VecGetType"
+#define __FUNC__ "VecGetType" /* ADIC Ignore */
 /*@C
    VecGetType - Gets the vector type and name (as a string) from the vector.
 

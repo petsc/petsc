@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.68 1997/01/06 20:21:59 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.69 1997/01/12 04:32:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -10,11 +10,6 @@ static char vcid[] = "$Id: pbvec.c,v 1.68 1997/01/06 20:21:59 balay Exp bsmith $
 #include "petsc.h"
 #include <math.h>
 #include "pvecimpl.h"   /*I  "vec.h"   I*/
-
-#include "src/vec/impls/bvec1.c"
-#include "src/vec/impls/dvec2.c"
-#include "pdvec.c"
-#include "pvec2.c"
 
 #undef __FUNC__  
 #define __FUNC__ "VecDot_MPI"
@@ -35,7 +30,7 @@ static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetOption_MPI"
+#define __FUNC__ "VecSetOption_MPI" /* ADIC Ignore */
 static int VecSetOption_MPI(Vec v,VecOption op)
 {
   Vec_MPI *w = (Vec_MPI *) v->data;

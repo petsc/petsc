@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.33 1997/01/06 20:21:47 balay Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.34 1997/01/22 18:41:25 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
 #include "vec.h"        /*I "vec.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawScalePopup"
+#define __FUNC__ "DrawScalePopup" /* ADIC Ignore */
 int DrawScalePopup(Draw popup,double min,double max)
 {
   double xl = 0.0, yl = 0.0, xr = 1.0, yr = 1.0;
@@ -27,7 +27,7 @@ int DrawScalePopup(Draw popup,double min,double max)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTensorContour"
+#define __FUNC__ "DrawTensorContour" /* ADIC Ignore */
 /*@
    DrawTensorContour - Draws a contour plot for a two-dimensional array
    that is stored as a PETSc vector.

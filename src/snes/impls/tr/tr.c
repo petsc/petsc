@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.72 1997/01/21 21:50:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.73 1997/02/04 21:26:19 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -195,7 +195,7 @@ static int SNESSetUp_EQ_TR( SNES snes )
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy_EQ_TR"
+#define __FUNC__ "SNESDestroy_EQ_TR" /* ADIC Ignore */
 static int SNESDestroy_EQ_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
@@ -235,7 +235,7 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_EQ_TR"
+#define __FUNC__ "SNESPrintHelp_EQ_TR" /* ADIC Ignore */
 static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
@@ -252,7 +252,7 @@ static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESView_EQ_TR"
+#define __FUNC__ "SNESView_EQ_TR" /* ADIC Ignore */
 static int SNESView_EQ_TR(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;

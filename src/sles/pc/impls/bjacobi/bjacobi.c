@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.91 1997/01/06 20:23:43 balay Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.92 1997/01/12 04:33:31 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -37,7 +37,7 @@ static int PCSetUp_BJacobi(PC pc)
 
 /* Default destroy, if it has never been setup */
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_BJacobi"
+#define __FUNC__ "PCDestroy_BJacobi" /* ADIC Ignore */
 static int PCDestroy_BJacobi(PetscObject obj)
 {
   PC         pc = (PC) obj;
@@ -89,7 +89,7 @@ static int PCSetFromOptions_BGS(PC pc)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PCBGSSetSymmetric"
+#define __FUNC__ "PCBGSSetSymmetric" /* ADIC Ignore */
 /*@
    PCBGSSetSymmetric - Sets the BGS preconditioner to use symmetric, 
    backward, or forward relaxation. By default, forward relaxation is used.
@@ -118,7 +118,7 @@ int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetUseTrueLocal"
+#define __FUNC__ "PCBJacobiSetUseTrueLocal" /* ADIC Ignore */
 /*@
    PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block 
    problem is associated with the linear system matrix instead of the
@@ -152,7 +152,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCBGSSetUseTrueLocal"
+#define __FUNC__ "PCBGSSetUseTrueLocal" /* ADIC Ignore */
 /*@
    PCBGSSetUseTrueLocal - Sets a flag to indicate that the block 
    problem is associated with the linear system matrix instead of the
@@ -181,7 +181,7 @@ int PCBGSSetUseTrueLocal(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCBJacobiGetSubSLES"
+#define __FUNC__ "PCBJacobiGetSubSLES" /* ADIC Ignore */
 /*@C
    PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -224,7 +224,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCBGSGetSubSLES"
+#define __FUNC__ "PCBGSGetSubSLES" /* ADIC Ignore */
 /*@C
    PCBGSGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -253,7 +253,7 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_BJacobi"
+#define __FUNC__ "PCPrintHelp_BJacobi" /* ADIC Ignore */
 static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCBJACOBI preconditioner:\n");
@@ -267,7 +267,7 @@ static int PCPrintHelp_BJacobi(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_BGS"
+#define __FUNC__ "PCPrintHelp_BGS" /* ADIC Ignore */
 static int PCPrintHelp_BGS(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCBGS preconditioner:\n");
@@ -282,7 +282,7 @@ static int PCPrintHelp_BGS(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_BJacobi"
+#define __FUNC__ "PCView_BJacobi" /* ADIC Ignore */
 static int PCView_BJacobi(PetscObject obj,Viewer viewer)
 {
   PC               pc = (PC)obj;
@@ -380,7 +380,7 @@ int PCCreate_BGS(PC pc)
 }
   
 #undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetTotalBlocks"
+#define __FUNC__ "PCBJacobiSetTotalBlocks" /* ADIC Ignore */
 /*@
    PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
    Jacobi preconditioner.
@@ -421,7 +421,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 }
   
 #undef __FUNC__  
-#define __FUNC__ "PCBGSSetTotalBlocks"
+#define __FUNC__ "PCBGSSetTotalBlocks" /* ADIC Ignore */
 /*@
    PCBGSSetTotalBlocks - Sets the global number of blocks for the block Gauss-Seidel
    (BGS) preconditioner.
@@ -448,7 +448,7 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCBJacobiSetLocalBlocks"
+#define __FUNC__ "PCBJacobiSetLocalBlocks" /* ADIC Ignore */
 /*@
    PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
    Jacobi preconditioner.
@@ -485,7 +485,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCBGSSetLocalBlocks"
+#define __FUNC__ "PCBGSSetLocalBlocks" /* ADIC Ignore */
 /*@
    PCBGSSetLocalBlocks - Sets the local number of blocks for the block
    Gauss-Seidel (BGS) preconditioner.

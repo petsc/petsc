@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.33 1997/01/01 03:36:22 bsmith Exp balay $";
+static char vcid[] = "$Id: qcg.c,v 1.34 1997/01/06 20:22:51 balay Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -285,7 +285,7 @@ static int KSPSetUp_QCG(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDestroy_QCG"
+#define __FUNC__ "KSPDestroy_QCG" /* ADIC Ignore */
 static int KSPDestroy_QCG(PetscObject obj)
 {
   KSP ksp = (KSP) obj;

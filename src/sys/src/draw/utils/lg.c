@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.38 1996/12/16 22:18:03 balay Exp balay $";
+static char vcid[] = "$Id: lg.c,v 1.39 1997/01/06 20:27:51 balay Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -24,7 +24,7 @@ struct _DrawLG {
 #define CHUNCKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGCreate"
+#define __FUNC__ "DrawLGCreate" /* ADIC Ignore */
 /*@C
     DrawLGCreate - Creates a line graph data structure.
 
@@ -73,7 +73,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGSetDimension"
+#define __FUNC__ "DrawLGSetDimension" /* ADIC Ignore */
 /*@
    DrawLGSetDimension - Change the number of lines that are to be drawn.
 
@@ -99,7 +99,7 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGReset"
+#define __FUNC__ "DrawLGReset" /* ADIC Ignore */
 /*@
    DrawLGReset - Clears line graph to allow for reuse with new data.
 
@@ -122,7 +122,7 @@ int DrawLGReset(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGDestroy"
+#define __FUNC__ "DrawLGDestroy" /* ADIC Ignore */
 /*@C
    DrawLGDestroy - Frees all space taken up by line graph data structure.
 
@@ -147,7 +147,7 @@ int DrawLGDestroy(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGAddPoint"
+#define __FUNC__ "DrawLGAddPoint" /* ADIC Ignore */
 /*@
    DrawLGAddPoint - Adds another point to each of the line graphs. 
    The new point must have an X coordinate larger than the old points.
@@ -192,7 +192,7 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGIndicateDataPoints"
+#define __FUNC__ "DrawLGIndicateDataPoints" /* ADIC Ignore */
 /*@
    DrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
 
@@ -210,7 +210,7 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGAddPoints"
+#define __FUNC__ "DrawLGAddPoints" /* ADIC Ignore */
 /*@C
    DrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
@@ -265,7 +265,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGDraw"
+#define __FUNC__ "DrawLGDraw" /* ADIC Ignore */
 /*@
    DrawLGDraw - Redraws a line graph.
 
@@ -302,7 +302,7 @@ int DrawLGDraw(DrawLG lg)
 } 
  
 #undef __FUNC__  
-#define __FUNC__ "DrawLGSetLimits"
+#define __FUNC__ "DrawLGSetLimits" /* ADIC Ignore */
 /*@
    DrawLGSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -327,7 +327,7 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
 }
  
 #undef __FUNC__  
-#define __FUNC__ "DrawLGGetAxis"
+#define __FUNC__ "DrawLGGetAxis" /* ADIC Ignore */
 /*@C
    DrawLGGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -354,7 +354,7 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGGetDraw"
+#define __FUNC__ "DrawLGGetDraw" /* ADIC Ignore */
 /*@C
     DrawLGGetDraw - Gets the draw context associated with a line graph.
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matioall.c,v 1.1 1997/01/24 20:13:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matioall.c,v 1.2 1997/01/27 18:17:25 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -16,7 +16,7 @@ extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
 extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoadRegisterAll"
+#define __FUNC__ "MatLoadRegisterAll" /* ADIC Ignore */
 /*@C
     MatLoadRegisterAll - Registers all standard matrix type routines to load
         matrices from a binary file.

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.78 1997/02/06 22:53:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.79 1997/02/06 23:00:14 curfman Exp bsmith $";
 #endif
 
 /*
@@ -318,7 +318,7 @@ static int KSPSolve_GMRES(KSP ksp,int *outits )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPAdjustWork_GMRES"
+#define __FUNC__ "KSPAdjustWork_GMRES" /* ADIC Ignore */
 static int KSPAdjustWork_GMRES(KSP ksp )
 {
   KSP_GMRES *gmres;
@@ -335,7 +335,7 @@ static int KSPAdjustWork_GMRES(KSP ksp )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDestroy_GMRES"
+#define __FUNC__ "KSPDestroy_GMRES" /* ADIC Ignore */
 static int KSPDestroy_GMRES(PetscObject obj)
 {
   KSP       ksp = (KSP) obj;
@@ -482,7 +482,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
    This routine allocates more work vectors, starting from VEC_VV(it).
  */
 #undef __FUNC__  
-#define __FUNC__ "GMRESGetNewVectors"
+#define __FUNC__ "GMRESGetNewVectors" /* ADIC Ignore */
 static int GMRESGetNewVectors( KSP ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
@@ -532,7 +532,7 @@ static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPView_GMRES"
+#define __FUNC__ "KSPView_GMRES" /* ADIC Ignore */
 static int KSPView_GMRES(PetscObject obj,Viewer viewer)
 {
   KSP         ksp = (KSP)obj;

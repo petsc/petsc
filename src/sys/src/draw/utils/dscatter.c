@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dscatter.c,v 1.4 1997/01/06 20:27:51 balay Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.5 1997/01/22 18:44:30 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -22,7 +22,7 @@ struct _DrawSP {
 #define CHUNCKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPCreate"
+#define __FUNC__ "DrawSPCreate" /* ADIC Ignore */
 /*@C
     DrawSPCreate - Creates a scatter plot data structure.
 
@@ -69,7 +69,7 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPSetDimension"
+#define __FUNC__ "DrawSPSetDimension" /* ADIC Ignore */
 /*@
    DrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
@@ -94,7 +94,7 @@ int DrawSPSetDimension(DrawSP sp,int dim)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPReset"
+#define __FUNC__ "DrawSPReset" /* ADIC Ignore */
 /*@
    DrawSPReset - Clears line graph to allow for reuse with new data.
 
@@ -117,7 +117,7 @@ int DrawSPReset(DrawSP sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPDestroy"
+#define __FUNC__ "DrawSPDestroy" /* ADIC Ignore */
 /*@C
    DrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
@@ -142,7 +142,7 @@ int DrawSPDestroy(DrawSP sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPAddPoint"
+#define __FUNC__ "DrawSPAddPoint" /* ADIC Ignore */
 /*@
    DrawSPAddPoint - Adds another point to each of the scatter plots.
 
@@ -186,7 +186,7 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPAddPoints"
+#define __FUNC__ "DrawSPAddPoints" /* ADIC Ignore */
 /*@C
    DrawSPAddPoints - Adds several points to each of the scatter plots.
 
@@ -241,7 +241,7 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPDraw"
+#define __FUNC__ "DrawSPDraw" /* ADIC Ignore */
 /*@
    DrawSPDraw - Redraws a scatter plot.
 
@@ -274,7 +274,7 @@ int DrawSPDraw(DrawSP sp)
 } 
  
 #undef __FUNC__  
-#define __FUNC__ "DrawSPSetLimits"
+#define __FUNC__ "DrawSPSetLimits" /* ADIC Ignore */
 /*@
    DrawSPSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -299,7 +299,7 @@ int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
 }
  
 #undef __FUNC__  
-#define __FUNC__ "DrawSPGetAxis"
+#define __FUNC__ "DrawSPGetAxis" /* ADIC Ignore */
 /*@C
    DrawSPGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -326,7 +326,7 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPGetDraw"
+#define __FUNC__ "DrawSPGetDraw" /* ADIC Ignore */
 /*@C
     DrawSPGetDraw - Gets the draw context associated with a line graph.
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.66 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.67 1997/01/16 22:22:01 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -31,7 +31,7 @@ static PrintfQueue queue       = 0,queuebase = 0;
 static int         queuelength = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSynchronizedPrintf"
+#define __FUNC__ "PetscSynchronizedPrintf" /* ADIC Ignore */
 /*@C
     PetscSynchronizedPrintf - Prints output from several processors that
         is synchronized so that printed by first processor is followed by 
@@ -94,7 +94,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
 }
  
 #undef __FUNC__  
-#define __FUNC__ "PetscSynchronizedFlush"
+#define __FUNC__ "PetscSynchronizedFlush" /* ADIC Ignore */
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors 
         involved in previous PetscSynchronizedPrintf() calls.
@@ -150,7 +150,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 /* ---------------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscFPrintf"
+#define __FUNC__ "PetscFPrintf" /* ADIC Ignore */
 /*@C
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
@@ -194,7 +194,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscPrintf"
+#define __FUNC__ "PetscPrintf" /* ADIC Ignore */
 /*@C
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator.
@@ -245,7 +245,7 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
 static char PetscDisplay[128]; 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetDisplay"
+#define __FUNC__ "PetscSetDisplay" /* ADIC Ignore */
 int PetscSetDisplay()
 {
   int  size,rank,len,ierr,flag;
@@ -278,7 +278,7 @@ int PetscSetDisplay()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetDisplay"
+#define __FUNC__ "PetscGetDisplay" /* ADIC Ignore */
 /*
      PetscGetDisplay - Gets the display variable for all processors.
 
@@ -303,7 +303,7 @@ int PetscGetDisplay(char *display,int n)
 static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSequentialPhaseBegin"
+#define __FUNC__ "PetscSequentialPhaseBegin" /* ADIC Ignore */
 /*@C
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
@@ -364,7 +364,7 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSequentialPhaseEnd"
+#define __FUNC__ "PetscSequentialPhaseEnd" /* ADIC Ignore */
 /*@C
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 
@@ -417,7 +417,7 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
 static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ "Petsc_DelTag"
+#define __FUNC__ "Petsc_DelTag" /* ADIC Ignore */
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -432,7 +432,7 @@ static int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_stat
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetNewTag"
+#define __FUNC__ "PetscObjectGetNewTag" /* ADIC Ignore */
 /*@
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
@@ -465,7 +465,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectRestoreNewTag"
+#define __FUNC__ "PetscObjectRestoreNewTag" /* ADIC Ignore */
 /*@
     PetscObjectRestoreNewTag - Restores a new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
@@ -498,7 +498,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCommDup_Private"
+#define __FUNC__ "PetscCommDup_Private" /* ADIC Ignore */
 /*
   PetscCommDup_Private - Duplicates the communicator only if it is not already PETSc 
                          communicator.
@@ -564,7 +564,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCommFree_Private"
+#define __FUNC__ "PetscCommFree_Private" /* ADIC Ignore */
 /*
   PetscCommFree_Private - Frees communicator.  Use in conjunction with PetscCommDup_Private().
 */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.85 1997/01/06 20:22:18 balay Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.86 1997/02/11 19:35:00 curfman Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -21,7 +21,7 @@ static int numberofsetfromoptions;
 static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
 #undef __FUNC__  
-#define __FUNC__ "KSPAddOptionsChecker"
+#define __FUNC__ "KSPAddOptionsChecker" /* ADIC Ignore */
 /*@
     KSPAddOptionsChecker - Adds an additional function to check for KSP options.
 
@@ -41,7 +41,7 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetFromOptions"
+#define __FUNC__ "KSPSetFromOptions" /* ADIC Ignore */
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
    This routine must be called before KSPSetUp() if the user is to be 
@@ -200,7 +200,7 @@ int KSPSetFromOptions(KSP ksp)
 extern int KSPPrintTypes_Private(MPI_Comm,char *,char *);
 
 #undef __FUNC__  
-#define __FUNC__ "KSPPrintHelp"
+#define __FUNC__ "KSPPrintHelp" /* ADIC Ignore */
 /*@ 
    KSPPrintHelp - Prints all options for the KSP component.
 
@@ -268,7 +268,7 @@ int KSPPrintHelp(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetOptionsPrefix"
+#define __FUNC__ "KSPSetOptionsPrefix" /* ADIC Ignore */
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
    KSP options in the database. You must not include the - at the beginning of 
@@ -287,7 +287,7 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 }
  
 #undef __FUNC__  
-#define __FUNC__ "KSPAppendOptionsPrefix"
+#define __FUNC__ "KSPAppendOptionsPrefix" /* ADIC Ignore */
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
    KSP options in the database. You must NOT include the - at the beginning of 
@@ -306,7 +306,7 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetOptionsPrefix"
+#define __FUNC__ "KSPGetOptionsPrefix" /* ADIC Ignore */
 /*@
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
    KSP options in the database.

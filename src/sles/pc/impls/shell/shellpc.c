@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.29 1997/01/06 20:23:41 balay Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.30 1997/02/03 05:57:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -39,7 +39,7 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_Shell"
+#define __FUNC__ "PCDestroy_Shell" /* ADIC Ignore */
 static int PCDestroy_Shell(PetscObject obj)
 {
   PC       pc = (PC) obj;
@@ -49,7 +49,7 @@ static int PCDestroy_Shell(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_Shell"
+#define __FUNC__ "PCView_Shell" /* ADIC Ignore */
 static int PCView_Shell(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -130,7 +130,7 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCShellSetName"
+#define __FUNC__ "PCShellSetName" /* ADIC Ignore */
 /*@C
    PCShellSetName - Sets an optional name to associate with a shell
    preconditioner.
@@ -153,7 +153,7 @@ int PCShellSetName(PC pc,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCShellGetName"
+#define __FUNC__ "PCShellGetName" /* ADIC Ignore */
 /*@C
    PCShellGetName - Gets an optional name that the user has set for a shell
    preconditioner.
@@ -178,7 +178,7 @@ int PCShellGetName(PC pc,char **name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCShellSetApplyRichardson"
+#define __FUNC__ "PCShellSetApplyRichardson" /* ADIC Ignore */
 /*@C
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
    in Richardson iteration.

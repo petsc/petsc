@@ -27,7 +27,7 @@
 /*              OTHERS IN THE QUOTIENT OR IT IS IN NBRHD SET.*/
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "qmdrch"
+#define __FUNC__ "qmdrch" /* ADIC Ignore */
 int qmdrch(int *root, int *xadj, int *adjncy, 
 	int *deg, int *marker, int *rchsze, int *rchset, 
 	int *nhdsze, int *nbrhd)

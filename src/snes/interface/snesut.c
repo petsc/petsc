@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.27 1997/02/04 21:26:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesut.c,v 1.28 1997/02/06 22:38:21 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultMonitor"
+#define __FUNC__ "SNESDefaultMonitor" /* ADIC Ignore */
 /*@C
    SNESDefaultMonitor - Monitoring progress of the SNES solvers (default).
 
@@ -39,7 +39,7 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 }
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultSMonitor"
+#define __FUNC__ "SNESDefaultSMonitor" /* ADIC Ignore */
 int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 {
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {

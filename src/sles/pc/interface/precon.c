@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.117 1997/01/13 15:23:46 balay Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.118 1997/01/25 20:30:36 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: precon.c,v 1.117 1997/01/13 15:23:46 balay Exp curfma
 extern int PCPrintTypes_Private(MPI_Comm,char*,char*);
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp"
+#define __FUNC__ "PCPrintHelp" /* ADIC Ignore */
 /*@
    PCPrintHelp - Prints all the options for the PC component.
 
@@ -40,7 +40,7 @@ int PCPrintHelp(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy"
+#define __FUNC__ "PCDestroy" /* ADIC Ignore */
 /*@C
    PCDestroy - Destroys PC context that was created with PCCreate().
 
@@ -641,7 +641,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetOperators"
+#define __FUNC__ "PCGetOperators" /* ADIC Ignore */
 /*@C
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
@@ -670,7 +670,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetVector"
+#define __FUNC__ "PCSetVector" /* ADIC Ignore */
 /*@
    PCSetVector - Sets a vector associated with the preconditioner.
 
@@ -693,7 +693,7 @@ int PCSetVector(PC pc,Vec vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix"
+#define __FUNC__ "PCGetFactoredMatrix" /* ADIC Ignore */
 /*@C 
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
@@ -715,7 +715,7 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetOptionsPrefix"
+#define __FUNC__ "PCSetOptionsPrefix" /* ADIC Ignore */
 /*@C
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
    PC options in the database. You must NOT include the - at the beginning of 
@@ -734,7 +734,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCAppendOptionsPrefix"
+#define __FUNC__ "PCAppendOptionsPrefix" /* ADIC Ignore */
 /*@C
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
    PC options in the database. You must NOT include the - at the beginning of 
@@ -753,7 +753,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetOptionsPrefix"
+#define __FUNC__ "PCGetOptionsPrefix" /* ADIC Ignore */
 /*@
    PCGetOptionsPrefix - Gets the prefix used for searching for all 
    PC options in the database.
@@ -830,7 +830,7 @@ int PCPostSolve(PC pc,KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView"
+#define __FUNC__ "PCView" /* ADIC Ignore */
 /*@ 
    PCView - Prints the PC data structure.
 

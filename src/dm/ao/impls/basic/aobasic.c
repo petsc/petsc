@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.11 1997/01/01 03:42:16 bsmith Exp balay $";
+static char vcid[] = "$Id: aodebug.c,v 1.12 1997/01/06 20:31:25 balay Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ typedef struct {
 } AO_Debug;
 
 #undef __FUNC__  
-#define __FUNC__ "AODestroy_Debug"
+#define __FUNC__ "AODestroy_Debug" /* ADIC Ignore */
 static int AODestroy_Debug(PetscObject obj)
 {
   AO       ao = (AO) obj;
@@ -31,7 +31,7 @@ static int AODestroy_Debug(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOView_Debug"
+#define __FUNC__ "AOView_Debug" /* ADIC Ignore */
 static int AOView_Debug(PetscObject obj,Viewer viewer)
 {
   AO          ao = (AO) obj;
@@ -59,7 +59,7 @@ static int AOView_Debug(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication_Debug"
+#define __FUNC__ "AOPetscToApplication_Debug"  /* ADIC Ignore */
 static int AOPetscToApplication_Debug(AO ao,int n,int *ia)
 {
   int      i;
@@ -72,7 +72,7 @@ static int AOPetscToApplication_Debug(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc_Debug"
+#define __FUNC__ "AOApplicationToPetsc_Debug" /* ADIC Ignore */
 static int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
 {
   int      i;
@@ -88,7 +88,7 @@ static struct _AOOps myops = {AOPetscToApplication_Debug,
                               AOApplicationToPetsc_Debug};
 
 #undef __FUNC__  
-#define __FUNC__ "AOCreateDebug"
+#define __FUNC__ "AOCreateDebug" /* ADIC Ignore */
 /*@C
    AOCreateDebug - Creates a basic application ordering.
 
@@ -171,7 +171,7 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOCreateDebugIS"
+#define __FUNC__ "AOCreateDebugIS" /* ADIC Ignore */
 /*@C
    AOCreateDebugIS - Creates a basic application ordering.
 

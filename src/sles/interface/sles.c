@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.76 1997/01/12 20:21:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.77 1997/02/04 21:25:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
-#define __FUNC__ "SLESView"
+#define __FUNC__ "SLESView" /* ADIC Ignore */
 /*@ 
    SLESView - Prints the SLES data structure.
 
@@ -48,7 +48,7 @@ int SLESView(SLES sles,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESPrintHelp"
+#define __FUNC__ "SLESPrintHelp" /* ADIC Ignore */
 /*@
    SLESPrintHelp - Prints SLES options.
 
@@ -72,7 +72,7 @@ int SLESPrintHelp(SLES sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESSetOptionsPrefix"
+#define __FUNC__ "SLESSetOptionsPrefix" /* ADIC Ignore */
 /*@C
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
    SLES options in the database. You must include the - at the beginning of 
@@ -100,7 +100,7 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESAppendOptionsPrefix"
+#define __FUNC__ "SLESAppendOptionsPrefix" /* ADIC Ignore */
 /*@C
    SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SLES options in the database. You must include the - at the beginning of 
@@ -128,7 +128,7 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESGetOptionsPrefix"
+#define __FUNC__ "SLESGetOptionsPrefix" /* ADIC Ignore */
 /*@
    SLESGetOptionsPrefix - Gets the prefix used for searching for all 
    SLES options in the database.
@@ -208,7 +208,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESDestroy"
+#define __FUNC__ "SLESDestroy" /* ADIC Ignore */
 /*@C
    SLESDestroy - Destroys the SLES context.
 
@@ -352,7 +352,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESSetOperators"
+#define __FUNC__ "SLESSetOperators" /* ADIC Ignore */
 /*@C
    SLESGetKSP - Returns the KSP context for a SLES solver.
 
@@ -378,7 +378,7 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESSetOperators"
+#define __FUNC__ "SLESSetOperators" /* ADIC Ignore */
 /*@C
    SLESGetPC - Returns the preconditioner (PC) context for a SLES solver.
 

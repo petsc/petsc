@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.84 1997/02/04 21:24:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.85 1997/02/11 19:44:27 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -27,7 +27,7 @@ static int (*setups[])(PC) = {0,
                               0,0,0,0,0};
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetUseDropTolerance"
+#define __FUNC__ "PCILUSetUseDropTolerance" /* ADIC Ignore */
 /*@
    PCILUSetUseDropTolerance - The preconditioner will use an ILU 
    based on a drop tolerance.
@@ -55,7 +55,7 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetReuseReordering"
+#define __FUNC__ "PCILUSetReuseReordering" /* ADIC Ignore */
 /*@
    PCILUSetReuseReordering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -83,7 +83,7 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetReuseFill"
+#define __FUNC__ "PCILUSetReuseFill" /* ADIC Ignore */
 /*@
    PCILUSetReuseFill - When matrices with same nonzero structure are ILUDT factored,
      this causes later ones to use the fill computed in the initial factorization.
@@ -110,7 +110,7 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetLevels"
+#define __FUNC__ "PCILUSetLevels" /* ADIC Ignore */
 /*@
    PCILUSetLevels - Sets the number of levels of fill to use.
 
@@ -136,7 +136,7 @@ int PCILUSetLevels(PC pc,int levels)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCILUSetUseInPlace"
+#define __FUNC__ "PCILUSetUseInPlace" /* ADIC Ignore */
 /*@
    PCILUSetUseInPlace - Tells the system to do an in-place incomplete factorization.
 
@@ -201,7 +201,7 @@ static int PCSetFromOptions_ILU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_ILU"
+#define __FUNC__ "PCPrintHelp_ILU" /* ADIC Ignore */
 static int PCPrintHelp_ILU(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCILU preconditioner:\n");
@@ -219,7 +219,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_ILU"
+#define __FUNC__ "PCView_ILU" /* ADIC Ignore */
 static int PCView_ILU(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -347,7 +347,7 @@ static int PCSetUp_ILU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_ILU"
+#define __FUNC__ "PCDestroy_ILU" /* ADIC Ignore */
 static int PCDestroy_ILU(PetscObject obj)
 {
   PC     pc   = (PC) obj;
@@ -372,7 +372,7 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix_ILU"
+#define __FUNC__ "PCGetFactoredMatrix_ILU" /* ADIC Ignore */
 static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 {
   PC_ILU *ilu = (PC_ILU *) pc->data;

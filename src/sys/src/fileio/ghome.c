@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ghome.c,v 1.5 1996/12/16 21:34:09 balay Exp balay $";
+static char vcid[] = "$Id: ghome.c,v 1.6 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: ghome.c,v 1.5 1996/12/16 21:34:09 balay Exp balay $";
 #include "src/sys/src/files.h"
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetHomeDirectory"
+#define __FUNC__ "PetscGetHomeDirectory" /* ADIC Ignore */
 /*@C
    PetscGetHomeDirectory - Returns user's home directory name.
 

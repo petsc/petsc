@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.55 1997/02/05 22:04:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.56 1997/02/17 04:08:29 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: da1.c,v 1.55 1997/02/05 22:04:53 bsmith Exp bsmith $"
 #include "draw.h"      /*I  "draw.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAView_1d"
+#define __FUNC__ "DAView_1d" /* ADIC Ignore */
 static int DAView_1d(PetscObject pobj,Viewer viewer)
 {
   DA          da  = (DA) pobj;
@@ -92,7 +92,7 @@ static int DAView_1d(PetscObject pobj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DACreate1d"
+#define __FUNC__ "DACreate1d" /* ADIC Ignore */
 /*@C
     DACreate1d - Creates a one-dimensional regular array that is
     distributed across some processors.

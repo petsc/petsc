@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdmatrix.c,v 1.7 1997/01/06 20:24:04 balay Exp curfman $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.8 1997/02/11 19:46:13 curfman Exp bsmith $";
 #endif
 
 /*
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: fdmatrix.c,v 1.7 1997/01/06 20:24:04 balay Exp curfma
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringView"
+#define __FUNC__ "MatFDColoringView" /* ADIC Ignore */
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
@@ -85,7 +85,7 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringSetFromOptions"
+#define __FUNC__ "MatFDColoringSetFromOptions" /* ADIC Ignore */
 /*@
    MatFDColoringSetFromOptions - Set coloring finite difference parameters from 
          the options database.
@@ -122,7 +122,7 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringPrintHelp"
+#define __FUNC__ "MatFDColoringPrintHelp" /* ADIC Ignore */
 /*@
     MatFDColoringPrintHelp - Prints help message for matrix finite difference calculations 
          using coloring.
@@ -142,7 +142,7 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringCreate"
+#define __FUNC__ "MatFDColoringCreate" 
 /*@C
    MatFDColoringCreate - Creates a matrix coloring context for finite difference 
         computation of Jacobians.
@@ -185,7 +185,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringDestroy"
+#define __FUNC__ "MatFDColoringDestroy" /* ADIC Ignore */
 /*@C
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
          via MatFDColoringCreate().

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.75 1997/01/10 23:53:44 balay Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.76 1997/01/15 16:52:24 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_Flow_SeqAIJ"
+#define __FUNC__ "MatOrder_Flow_SeqAIJ" /* ADIC Ignore */
 int MatOrder_Flow_SeqAIJ(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
   SETERRQ(PETSC_ERR_SUP,0,"Code not written");

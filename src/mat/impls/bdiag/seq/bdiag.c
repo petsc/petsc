@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.124 1997/01/22 18:43:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.125 1997/01/27 18:16:56 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1115,7 +1115,7 @@ static int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_SeqBDiag"
+#define __FUNC__ "MatGetOwnershipRange_SeqBDiag" /* ADIC Ignore */
 static int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;

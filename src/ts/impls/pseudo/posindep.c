@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.14 1997/01/24 04:30:12 curfman Exp curfman $";
+static char vcid[] = "$Id: posindep.c,v 1.15 1997/01/25 19:45:28 curfman Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -283,7 +283,7 @@ static int TSStep_Pseudo(TS ts,int *steps,double *time)
 
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "TSDestroy_Pseudo"
+#define __FUNC__ "TSDestroy_Pseudo" /* ADIC Ignore */
 static int TSDestroy_Pseudo(PetscObject obj )
 {
   TS        ts = (TS) obj;
@@ -409,7 +409,7 @@ static int TSSetUp_Pseudo(TS ts)
 /*------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "TSPseudoDefaultMonitor"
+#define __FUNC__ "TSPseudoDefaultMonitor" /* ADIC Ignore */
 int TSPseudoDefaultMonitor(TS ts, int step, double time,Vec v, void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*) ts->data;
@@ -443,7 +443,7 @@ static int TSSetFromOptions_Pseudo(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSPrintHelp_Pseudo"
+#define __FUNC__ "TSPrintHelp_Pseudo" /* ADIC Ignore */
 static int TSPrintHelp_Pseudo(TS ts,char *p)
 {
   PetscPrintf(ts->comm," Options for TS Pseudo timestepper:\n");
@@ -455,7 +455,7 @@ static int TSPrintHelp_Pseudo(TS ts,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSView_Pseudo"
+#define __FUNC__ "TSView_Pseudo" /* ADIC Ignore */
 static int TSView_Pseudo(PetscObject obj,Viewer viewer)
 {
   return 0;

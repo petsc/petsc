@@ -37,7 +37,7 @@
 /*                                                              */
 /****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "rcm"
+#define __FUNC__ "rcm" /* ADIC Ignore */
 int rcm(int *root, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *ccsize, int *deg)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.87 1997/02/05 21:56:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.88 1997/02/21 18:27:43 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -8,9 +8,10 @@ static char vcid[] = "$Id: bvec2.c,v 1.87 1997/02/05 21:56:44 bsmith Exp curfman
 #include <math.h>
 #include "src/vec/vecimpl.h"          /*I  "vec.h"   I*/
 #include "src/vec/impls/dvecimpl.h" 
+#include "pinclude/plapack.h"
+#include "draw.h"          
+#include "pinclude/pviewer.h"
 
-#include "src/vec/impls/bvec1.c"
-#include "src/vec/impls/dvec2.c"
 
 #undef __FUNC__  
 #define __FUNC__ "VecNorm_Seq"
@@ -52,7 +53,7 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetOwnershipRange_Seq"
+#define __FUNC__ "VecGetOwnershipRange_Seq" /* ADIC Ignore */
 static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
@@ -63,7 +64,7 @@ static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 #include "sys.h"
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq_File"
+#define __FUNC__ "VecView_Seq_File" /* ADIC Ignore */
 static int VecView_Seq_File(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -110,7 +111,7 @@ static int VecView_Seq_File(Vec xin,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq_Draw_LG"
+#define __FUNC__ "VecView_Seq_Draw_LG" /* ADIC Ignore */
 static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -148,7 +149,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq_Draw"
+#define __FUNC__ "VecView_Seq_Draw" /* ADIC Ignore */
 static int VecView_Seq_Draw(Vec xin,Viewer v)
 {
   int        ierr;
@@ -174,7 +175,7 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq_Binary"
+#define __FUNC__ "VecView_Seq_Binary" /* ADIC Ignore */
 static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -193,7 +194,7 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq"
+#define __FUNC__ "VecView_Seq" /* ADIC Ignore */
 static int VecView_Seq(PetscObject obj,Viewer viewer)
 {
   Vec         xin = (Vec) obj;
@@ -245,7 +246,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroy_Seq"
+#define __FUNC__ "VecDestroy_Seq" /* ADIC Ignore */
 static int VecDestroy_Seq(PetscObject obj )
 {
   Vec      v  = (Vec ) obj;
@@ -329,7 +330,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDuplicate_Seq"
+#define __FUNC__ "VecDuplicate_Seq" /* ADIC Ignore */
 static int VecDuplicate_Seq(Vec win,Vec *V)
 {
   int     ierr;

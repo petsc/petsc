@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.79 1997/01/27 18:15:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.80 1997/02/04 21:23:39 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -227,7 +227,7 @@ int KSPSolve(KSP ksp, int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDestroy"
+#define __FUNC__ "KSPDestroy" /* ADIC Ignore */
 /*@C
    KSPDestroy - Destroys KSP context.
 
@@ -250,7 +250,7 @@ int KSPDestroy(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetPreconditionerSide"
+#define __FUNC__ "KSPSetPreconditionerSide" /* ADIC Ignore */
 /*@
     KSPSetPreconditionerSide - Sets the preconditioning side.
 
@@ -285,7 +285,7 @@ int KSPSetPreconditionerSide(KSP ksp,PCSide side)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetPreconditionerSide"
+#define __FUNC__ "KSPGetPreconditionerSide" /* ADIC Ignore */
 /*@C
     KSPGetPreconditionerSide - Gets the preconditioning side.
 
@@ -457,7 +457,7 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetComputeSingularValues"
+#define __FUNC__ "KSPSetComputeSingularValues" /* ADIC Ignore */
 /*@
    KSPSetComputeSingularValues - Sets a flag so that the extreme singular 
    values will be calculated via a Lanczos or Arnoldi process as the linear 
@@ -488,7 +488,7 @@ int KSPSetComputeSingularValues(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetComputeEigenvalues"
+#define __FUNC__ "KSPSetComputeEigenvalues" /* ADIC Ignore */
 /*@
    KSPSetComputeEigenvalues - Sets a flag so that the extreme eigenvalues
    values will be calculated via a Lanczos or Arnoldi process as the linear 
@@ -515,7 +515,7 @@ int KSPSetComputeEigenvalues(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetRhs"
+#define __FUNC__ "KSPSetRhs" /* ADIC Ignore */
 /*@
    KSPSetRhs - Sets the right-hand-side vector for the linear system to
    be solved.
@@ -537,7 +537,7 @@ int KSPSetRhs(KSP ksp,Vec b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetRhs"
+#define __FUNC__ "KSPGetRhs" /* ADIC Ignore */
 /*@C
    KSPGetRhs - Gets the right-hand-side vector for the linear system to
    be solved.
@@ -559,7 +559,7 @@ int KSPGetRhs(KSP ksp,Vec *r)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetSolution"
+#define __FUNC__ "KSPSetSolution" /* ADIC Ignore */
 /*@
    KSPSetSolution - Sets the location of the solution for the 
    linear system to be solved.
@@ -581,7 +581,7 @@ int KSPSetSolution(KSP ksp, Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetSolution"
+#define __FUNC__ "KSPGetSolution" 
 /*@C
    KSPGetSolution - Gets the location of the solution for the 
    linear system to be solved.  Note that this may not be where the solution
@@ -603,7 +603,7 @@ int KSPGetSolution(KSP ksp, Vec *v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetPC"
+#define __FUNC__ "KSPSetPC" /* ADIC Ignore */
 /*@
    KSPSetPC - Sets the preconditioner to be used to calculate the 
    application of the preconditioner on a vector. 
@@ -629,7 +629,7 @@ int KSPSetPC(KSP ksp,PC B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetPC"
+#define __FUNC__ "KSPGetPC" /* ADIC Ignore */
 /*@C
    KSPGetPC - Returns a pointer to the preconditioner context
    set with KSPSetPC().
@@ -651,7 +651,7 @@ int KSPGetPC(KSP ksp, PC *B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetMonitor"
+#define __FUNC__ "KSPSetMonitor" /* ADIC Ignore */
 /*@C
    KSPSetMonitor - Sets the function to be called at every iteration to monitor 
    the residual/error etc.
@@ -722,7 +722,7 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetMonitorContext"
+#define __FUNC__ "KSPGetMonitorContext" /* ADIC Ignore */
 /*@C
    KSPGetMonitorContext - Gets the monitoring context, as set by 
    KSPSetMonitor().
@@ -745,7 +745,7 @@ int KSPGetMonitorContext(KSP ksp, void **ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetResidualHistory"
+#define __FUNC__ "KSPSetResidualHistory" /* ADIC Ignore */
 /*@
    KSPSetResidualHistory - Sets the array used to hold the residual history.
    If set, this array will contain the residual norms computed at each
@@ -768,7 +768,7 @@ int KSPSetResidualHistory(KSP ksp, double *a, int na)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetConvergenceTest"
+#define __FUNC__ "KSPSetConvergenceTest" /* ADIC Ignore */
 /*@C
    KSPSetConvergenceTest - Sets the function to be used to determine
    convergence.  
@@ -812,7 +812,7 @@ int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,double,void*),void *cc
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetConvergenceContext"
+#define __FUNC__ "KSPGetConvergenceContext" /* ADIC Ignore */
 /*@C
    KSPGetConvergenceContext - Gets the convergence context set with 
    KSPSetConvergenceTest().  

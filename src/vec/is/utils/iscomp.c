@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: iscomp.c,v 1.8 1996/12/16 22:19:10 balay Exp balay $";
+static char vcid[] = "$Id: iscomp.c,v 1.9 1997/01/06 20:21:40 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ISEqual"
+#define __FUNC__ "ISEqual" /* ADIC Ignore */
 /*@C
   ISEqual  - Compares if two index sets have the same set of indices.
 

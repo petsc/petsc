@@ -9,7 +9,7 @@
 CFLAGS	 =
 SOURCEC	 =
 SOURCEF	 =
-SOURCEH	 = Changes Machines Readme maint/addlinks \
+DOCS	 = Changes Machines Readme maint/addlinks \
 	   maint/builddist FAQ Installation BugReporting\
 	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
 	   bmake/common bmake/*/base* maint/autoftp docs/www/sec/* \
@@ -273,6 +273,13 @@ allci:
 allco: 
 	-@cd src/fortran/custom ; $(OMAKE) BOPT=$(BOPT) co
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=co  tree 
+
+alladicignore:
+	-@$(RM) $(PDIR)/adicignore
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adicignore  tree 
+
+alladic:
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree 
 
 # 
 #  We no longer make Unix manpages

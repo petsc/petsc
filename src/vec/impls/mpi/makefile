@@ -7,10 +7,10 @@
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
-SOURCEC  = pbvec.c
+SOURCEC  = pbvec.c pdvec.c pvec2.c
 SOURCEF  =
-SOURCEH  = pvecimpl.h pdvec.c pvec2.c
-OBJSC    = pbvec.o 
+SOURCEH  = pvecimpl.h 
+OBJSC    = pbvec.o pdvec.o pvec2.o
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 1

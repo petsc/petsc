@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.73 1997/02/03 05:56:36 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.74 1997/02/13 00:22:48 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -30,7 +30,7 @@ static int TrMallocUsed = 0;
 static int TrUseNan;   /* unitialize Scalar arrays with Nans */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetUseTrMalloc_Private"
+#define __FUNC__ "PetscSetUseTrMalloc_Private" /* ADIC Ignore */
 int PetscSetUseTrMalloc_Private(int usenan)
 {
   int ierr;
@@ -138,7 +138,7 @@ int MPI_Corrupted()
 */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrValid"
+#define __FUNC__ "PetscTrValid" /* ADIC Ignore */
 /*
    PetscTrValid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
@@ -208,7 +208,7 @@ static char **PetscLogMallocDirectory, **PetscLogMallocFile,**PetscLogMallocFunc
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrMallocDefault"
+#define __FUNC__ "PetscTrMallocDefault" /* ADIC Ignore */
 /*
     PetscTrMallocDefault - Malloc with tracing.
 
@@ -321,7 +321,7 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrFreeDefault"
+#define __FUNC__ "PetscTrFreeDefault" /* ADIC Ignore */
 /*
    PetscTrFreeDefault - Free with tracing.
 
@@ -419,7 +419,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrSpace"
+#define __FUNC__ "PetscTrSpace" /* ADIC Ignore */
 /*@
     PetscTrSpace - Returns space statistics.
    
@@ -441,7 +441,7 @@ int PetscTrSpace( double *space, double *fr, double *maxs )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrDump"
+#define __FUNC__ "PetscTrDump" /* ADIC Ignore */
 /*@C
    PetscTrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
@@ -480,7 +480,7 @@ int PetscTrDump( FILE *fp )
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrLog"
+#define __FUNC__ "PetscTrLog" /* ADIC Ignore */
 /*@C
     PetscTrLog - Indicates that you wish all calls to malloc to be logged.
 
@@ -496,7 +496,7 @@ int PetscTrLog()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrLogDump"
+#define __FUNC__ "PetscTrLogDump" /* ADIC Ignore */
 /*@C
     PetscTrLogDump - Dumps the log of all calls to malloc.
 
@@ -551,7 +551,7 @@ int PetscTrLogDump(FILE *fp)
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrDebugLevel"
+#define __FUNC__ "PetscTrDebugLevel" /* ADIC Ignore */
 /*
     PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.26 1997/01/06 20:24:32 balay Exp balay $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.27 1997/01/28 22:38:05 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -18,7 +18,7 @@ typedef struct {
 } PC_BJacobi_MPIAIJ;
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_BJacobi_MPIAIJ"
+#define __FUNC__ "PCDestroy_BJacobi_MPIAIJ" /* ADIC Ignore */
 int PCDestroy_BJacobi_MPIAIJ(PetscObject obj)
 {
   PC                pc = (PC) obj;

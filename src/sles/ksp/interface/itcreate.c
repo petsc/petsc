@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.96 1997/02/03 15:55:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.97 1997/02/04 21:23:39 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.96 1997/02/03 15:55:27 curfman Exp bsm
 int KSPRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "KSPView"
+#define __FUNC__ "KSPView" /* ADIC Ignore */
 /*@ 
    KSPView - Prints the KSP data structure.
 
@@ -194,7 +194,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegister"
+#define __FUNC__ "KSPRegister" /* ADIC Ignore */
 /*@C
    KSPRegister - Adds the iterative method to the KSP package,  given
    an iterative name (KSPType) and a function pointer.
@@ -231,7 +231,7 @@ int  KSPRegister(KSPType name, KSPType *oname,char *sname, int  (*create)(KSP))
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegisterDestroy"
+#define __FUNC__ "KSPRegisterDestroy" /* ADIC Ignore */
 /*@C
    KSPRegisterDestroy - Frees the list of KSP methods that were
    registered by KSPRegister().
@@ -251,7 +251,7 @@ int KSPRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetTypeFromOptions_Private"
+#define __FUNC__ "KSPGetTypeFromOptions_Private" /* ADIC Ignore */
 /*
    KSPGetTypeFromOptions_Private - Sets the selected KSP type from 
    the options database.
@@ -280,7 +280,7 @@ int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetType"
+#define __FUNC__ "KSPGetType" /* ADIC Ignore */
 /*@C
    KSPGetType - Gets the KSP type and method name (as a string) from 
    the method type.
@@ -305,7 +305,7 @@ int KSPGetType(KSP ksp,KSPType *type,char **name)
 
 #include <stdio.h>
 #undef __FUNC__  
-#define __FUNC__ "KSPPrintTypes_Private"
+#define __FUNC__ "KSPPrintTypes_Private" /* ADIC Ignore */
 /*
    KSPPrintTypes_Private - Prints the KSP methods available from the options 
    database.

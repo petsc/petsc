@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.81 1997/01/06 20:21:47 balay Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.82 1997/02/04 21:23:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -91,7 +91,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterDestroy_MPI_ToAll"
+#define __FUNC__ "VecScatterDestroy_MPI_ToAll" /* ADIC Ignore */
 int VecScatterDestroy_MPI_ToAll(PetscObject obj)
 {
   VecScatter           ctx = (VecScatter) obj;
@@ -958,7 +958,7 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 
 /* ------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "VecScatterView"
+#define __FUNC__ "VecScatterView" /* ADIC Ignore */
 /*@
    VecScatterView - Views a vector scatter context.
 
@@ -978,7 +978,7 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterRemap"
+#define __FUNC__ "VecScatterRemap" /* ADIC Ignore */
 /*@
    VecScatterRemap - Remaps the "from" and "to" indices in a 
    vector scatter context. FOR EXPERTS ONLY!

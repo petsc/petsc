@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: fdmpiaij.c,v 1.6 1997/01/01 03:37:44 bsmith Exp balay $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.7 1997/01/06 20:24:32 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -13,7 +13,7 @@ extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*
 extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringCreate_MPIAIJ"
+#define __FUNC__ "MatFDColoringCreate_MPIAIJ" /* ADIC Ignore */
 int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;

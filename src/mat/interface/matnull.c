@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcnull.c,v 1.7 1996/12/16 20:10:56 balay Exp balay $";
+static char vcid[] = "$Id: pcnull.c,v 1.8 1997/01/06 20:23:25 balay Exp bsmith $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -48,7 +48,7 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCNullSpaceDestroy"
+#define __FUNC__ "PCNullSpaceDestroy" /* ADIC Ignore */
 /*@
   PCNullSpaceDestroy - Destroys a data-structure used to project vectors 
        out of null spaces.

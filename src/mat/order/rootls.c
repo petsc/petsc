@@ -21,7 +21,7 @@
 /*       (XLS, LS) - ARRAY PAIR FOR THE ROOTED LEVEL STRUCTURE.*/
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "rootls"
+#define __FUNC__ "rootls" /* ADIC Ignore */
 int rootls(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.11 1997/01/01 03:35:11 bsmith Exp balay $";
+static char vcid[] = "$Id: block.c,v 1.12 1997/01/06 20:21:32 balay Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -18,7 +18,7 @@ typedef struct {
 } IS_Block;
 
 #undef __FUNC__  
-#define __FUNC__ "ISDestroy_Block"
+#define __FUNC__ "ISDestroy_Block" /* ADIC Ignore */
 static int ISDestroy_Block(PetscObject obj)
 {
   IS       is = (IS) obj;
@@ -30,7 +30,7 @@ static int ISDestroy_Block(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetIndices_Block"
+#define __FUNC__ "ISGetIndices_Block" /* ADIC Ignore */
 static int ISGetIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block *) in->data;
@@ -53,7 +53,7 @@ static int ISGetIndices_Block(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISRestoreIndices_Block"
+#define __FUNC__ "ISRestoreIndices_Block" /* ADIC Ignore */
 static int ISRestoreIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block *) in->data;
@@ -69,7 +69,7 @@ static int ISRestoreIndices_Block(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISGetSize_Block"
+#define __FUNC__ "ISGetSize_Block" /* ADIC Ignore */
 static int ISGetSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -79,7 +79,7 @@ static int ISGetSize_Block(IS is,int *size)
 
 
 #undef __FUNC__  
-#define __FUNC__ "ISInvertPermutation_Block"
+#define __FUNC__ "ISInvertPermutation_Block" /* ADIC Ignore */
 static int ISInvertPermutation_Block(IS is, IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -96,7 +96,7 @@ static int ISInvertPermutation_Block(IS is, IS *isout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISView_Block"
+#define __FUNC__ "ISView_Block" /* ADIC Ignore */
 static int ISView_Block(PetscObject obj, Viewer viewer)
 {
   IS          is = (IS) obj;
@@ -122,7 +122,7 @@ static int ISView_Block(PetscObject obj, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSort_Block"
+#define __FUNC__ "ISSort_Block" /* ADIC Ignore */
 static int ISSort_Block(IS is)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -135,7 +135,7 @@ static int ISSort_Block(IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISSorted_Block"
+#define __FUNC__ "ISSorted_Block" /* ADIC Ignore */
 static int ISSorted_Block(IS is, PetscTruth *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
@@ -151,7 +151,7 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISSort_Block,
                                ISSorted_Block };
 #undef __FUNC__  
-#define __FUNC__ "ISCreateBlock"
+#define __FUNC__ "ISCreateBlock" /* ADIC Ignore */
 /*@C
    ISCreateBlock - Creates a data structure for an index set containing
    a list of integers. The indices are relative to entries, not blocks. 
@@ -209,7 +209,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlockGetIndices"
+#define __FUNC__ "ISBlockGetIndices" /* ADIC Ignore */
 /*@C
    ISBlockGetIndices - Gets the indices associated with each block.
 
@@ -236,7 +236,7 @@ int ISBlockGetIndices(IS in,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlockRestoreIndices"
+#define __FUNC__ "ISBlockRestoreIndices" /* ADIC Ignore */
 /*@C
    ISBlockRestoreIndices - Restores the indices associated with each block.
 
@@ -259,7 +259,7 @@ int ISBlockRestoreIndices(IS is,int **idx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlockGetBlockSize"
+#define __FUNC__ "ISBlockGetBlockSize" /* ADIC Ignore */
 /*@
    ISBlockGetBlockSize - Returns the number of elements in a block.
 
@@ -286,7 +286,7 @@ int ISBlockGetBlockSize(IS is,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlock"
+#define __FUNC__ "ISBlock" /* ADIC Ignore */
 /*@C
    ISBlock - Checks if an index set is blocked.
 
@@ -310,7 +310,7 @@ int ISBlock(IS is,PetscTruth *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISBlockGetSize"
+#define __FUNC__ "ISBlockGetSize" /* ADIC Ignore */
 /*@
    ISBlockGetSize - Returns the number of blocks in the index set.
 

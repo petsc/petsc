@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres2.c,v 1.1 1997/01/25 15:52:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres2.c,v 1.2 1997/01/27 18:15:31 bsmith Exp bsmith $";
 #endif
 #include <math.h>
 #include <stdio.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetRestart"
+#define __FUNC__ "KSPGMRESSetRestart" /* ADIC Ignore */
 /*@
     KSPGMRESSetRestart - Sets the number of search directions 
     for GMRES before restart.
@@ -37,7 +37,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetOrthogonalization"
+#define __FUNC__ "KSPGMRESSetOrthogonalization" /* ADIC Ignore */
 /*@C
   KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
 

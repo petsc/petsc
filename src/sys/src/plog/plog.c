@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.146 1997/02/04 21:27:01 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.147 1997/02/06 19:25:46 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -36,7 +36,7 @@ static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1};
 #undef __FUNC__  
-#define __FUNC__ "PLogInfoAllow"
+#define __FUNC__ "PLogInfoAllow" /* ADIC Ignore */
 /*@C
     PLogInfoAllow - Causes PLogInfo() messages to be printed to standard output.
 
@@ -57,7 +57,7 @@ int PLogInfoAllow(PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogInfoDeactivateClass"
+#define __FUNC__ "PLogInfoDeactivateClass" /* ADIC Ignore */
 /*@
     PLogInfoDeactivateClass - Deactivates PlogInfo() messages for a PETSc 
                               object class.
@@ -78,7 +78,7 @@ int PLogInfoDeactivateClass(int objclass)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogInfoActivateClass"
+#define __FUNC__ "PLogInfoActivateClass" /* ADIC Ignore */
 /*@
     PLogInfoActivateClass - Activates PlogInfo() messages for a PETSc 
                             object class.
@@ -106,7 +106,7 @@ int PLogInfoActivateClass(int objclass)
 extern FILE *petsc_history;
 
 #undef __FUNC__  
-#define __FUNC__ "PLogInfo"
+#define __FUNC__ "PLogInfo" /* ADIC Ignore */
 /*@C
     PLogInfo - Logs informative data, which is printed to standard output
     when the option -log_info is specified.
@@ -470,7 +470,7 @@ static double  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 
 
 #undef __FUNC__  
-#define __FUNC__ "PLogStageRegister"
+#define __FUNC__ "PLogStageRegister" /* ADIC Ignore */
 /*@C
     PLogStageRegister - Attaches a charactor string name to a logging stage.
 
@@ -492,7 +492,7 @@ int PLogStageRegister(int stage, char *sname)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogStagePush"
+#define __FUNC__ "PLogStagePush" /* ADIC Ignore */
 /*@C
    PLogStagePush - Users can log up to 10 stages within a code by using
    -log_summary in conjunction with PLogStagePush() and PLogStagePop().
@@ -549,7 +549,7 @@ int PLogStagePush(int stage)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogStagePop"
+#define __FUNC__ "PLogStagePop" /* ADIC Ignore */
 /*@C
    PLogStagePop - Users can log up to 10 stages within a code by using
    -log_summary in conjunction with PLogStagePush() and PLogStagePop().
@@ -606,7 +606,7 @@ int (*_PLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject) = 0;
       Default object create logger 
 */
 #undef __FUNC__  
-#define __FUNC__ "PLogDefaultPHC"
+#define __FUNC__ "PLogDefaultPHC" /* ADIC Ignore */
 int PLogDefaultPHC(PetscObject obj)
 {
   if (nevents >= eventsspace) {
@@ -650,7 +650,7 @@ int PLogDefaultPHC(PetscObject obj)
       Default object destroy logger 
 */
 #undef __FUNC__  
-#define __FUNC__ "PLogDefaultPHD"
+#define __FUNC__ "PLogDefaultPHD" /* ADIC Ignore */
 int PLogDefaultPHD(PetscObject obj)
 {
   PetscObject parent;
@@ -698,7 +698,7 @@ int PLogDefaultPHD(PetscObject obj)
     Event begin logger with complete logging
 */
 #undef __FUNC__  
-#define __FUNC__ "PLogDefaultPLBAll"
+#define __FUNC__ "PLogDefaultPLBAll" /* ADIC Ignore */
 int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
  double ltime;
@@ -735,7 +735,7 @@ int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
      Event end logger with complete logging
 */
 #undef __FUNC__  
-#define __FUNC__ "PLogDefaultPLEAll"
+#define __FUNC__ "PLogDefaultPLEAll" /* ADIC Ignore */
 int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
  double ltime;
@@ -771,7 +771,7 @@ int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
      Default event begin logger
 */
 #undef __FUNC__  
-#define __FUNC__ "PLogDefaultPLB"
+#define __FUNC__ "PLogDefaultPLB" /* ADIC Ignore */
 int PLogDefaultPLB(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   if (t != 1) return 0;
@@ -788,7 +788,7 @@ int PLogDefaultPLB(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
      Default event end logger
 */
 #undef __FUNC__  
-#define __FUNC__ "PLogDefaultPLE"
+#define __FUNC__ "PLogDefaultPLE" /* ADIC Ignore */
 int PLogDefaultPLE(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   if (t != 1) return 0;
@@ -810,7 +810,7 @@ char   tracespace[72];
 double tracetime = 0.0;
 
 #undef __FUNC__  
-#define __FUNC__ "PLogDefaultPLBTrace"
+#define __FUNC__ "PLogDefaultPLBTrace" /* ADIC Ignore */
 int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   int  rank;
@@ -831,7 +831,7 @@ int PLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
      Default trace event logging
 */
 #undef __FUNC__  
-#define __FUNC__ "PLogDefaultPLETrace"
+#define __FUNC__ "PLogDefaultPLETrace" /* ADIC Ignore */
 int PLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   int rank;
@@ -847,7 +847,7 @@ int PLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObjec
 
 /* -------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "PLogObjectState"
+#define __FUNC__ "PLogObjectState" /* ADIC Ignore */
 int PLogObjectState(PetscObject obj,char *format,...)
 {
   va_list Argp;
@@ -863,7 +863,7 @@ int PLogObjectState(PetscObject obj,char *format,...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogSet"
+#define __FUNC__ "PLogSet" /* ADIC Ignore */
 /*@C
     PLogSet - Sets the logging functions called at the beginning and ending 
               of every event.
@@ -884,7 +884,7 @@ int PLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogAllBegin"
+#define __FUNC__ "PLogAllBegin" /* ADIC Ignore */
 /*@C
    PLogAllBegin - Turns on extensive logging of objects and events. Logs 
    all events. This creates large log files and slows the program down.
@@ -918,7 +918,7 @@ int PLogAllBegin()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogDestroy"
+#define __FUNC__ "PLogDestroy" /* ADIC Ignore */
 /*@C
    PLogDestroy - Destroys the object and event logging data and resets the 
    global counters. 
@@ -950,7 +950,7 @@ int PLogDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogBegin"
+#define __FUNC__ "PLogBegin" /* ADIC Ignore */
 /*@C
     PLogBegin - Turns on logging of objects and events. This logs flop
     rates and object creation and should not slow programs down too much.
@@ -983,7 +983,7 @@ int PLogBegin()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogTraceBegin"
+#define __FUNC__ "PLogTraceBegin" /* ADIC Ignore */
 /*@
     PLogTraceBegin - Activates trace logging.  Every time a PETSc event
     begins or ends, the event name is printed.
@@ -1014,7 +1014,7 @@ int PLogTraceBegin(FILE *file)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogDump"
+#define __FUNC__ "PLogDump" /* ADIC Ignore */
 /*@C
    PLogDump - Dumps logs of objects to a file. This file is intended to 
    be read by petsc/bin/petscview.
@@ -1087,7 +1087,7 @@ extern char *PLogEventColor[];
 
 
 #undef __FUNC__  
-#define __FUNC__ "PLogEventRegister"
+#define __FUNC__ "PLogEventRegister" /* ADIC Ignore */
 /*@C
     PLogEventRegister - Registers an event name for logging operations in 
     an application code. 
@@ -1158,7 +1158,7 @@ int PLogEventRegister(int *e,char *string,char *color)
 }
   
 #undef __FUNC__  
-#define __FUNC__ "PLogEventDeactivate"
+#define __FUNC__ "PLogEventDeactivate" /* ADIC Ignore */
 /*@
     PLogEventDeactivate - Indicates that a particular event should not be
        logged. Note: the event may be either a pre-defined
@@ -1188,7 +1188,7 @@ int PLogEventDeactivate(int event)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogEventActivate"
+#define __FUNC__ "PLogEventActivate" /* ADIC Ignore */
 /*@
     PLogEventActivate - Indicates that a particular event should be
        logged. Note: the event may be either a pre-defined
@@ -1219,7 +1219,7 @@ int PLogEventActivate(int event)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PLogPrintSummary"
+#define __FUNC__ "PLogPrintSummary" /* ADIC Ignore */
 /*@C
    PLogPrintSummary - Prints a summary of the logging.
 
@@ -1469,7 +1469,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetFlops"
+#define __FUNC__ "PetscGetFlops" /* ADIC Ignore */
 /*@C
    PetscGetFlops - Returns the number of flops used on this processor 
    since the program began. 
@@ -1500,7 +1500,7 @@ double PetscGetFlops()
 /* --------- Activate version -------------  */
 
 #undef __FUNC__  
-#define __FUNC__ "PLogEventActivateClass"
+#define __FUNC__ "PLogEventActivateClass" /* ADIC Ignore */
 /*@
     PLogEventActivateClass - Activates event logging for a PETSc object
         class.
@@ -1598,7 +1598,7 @@ int PLogEventActivateClass(int cookie)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogEventDeactivateClass"
+#define __FUNC__ "PLogEventDeactivateClass" /* ADIC Ignore */
 /*@
     PLogEventDeactivateClass - Deactivates event logging for a PETSc object
         class.
@@ -1701,7 +1701,7 @@ int PLogEventDeactivateClass(int cookie)
 #else  /* -------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "PLogObjectState"
+#define __FUNC__ "PLogObjectState" /* ADIC Ignore */
 int PLogObjectState(PetscObject obj,char *format,...)
 {
   return 0;
@@ -1710,7 +1710,7 @@ int PLogObjectState(PetscObject obj,char *format,...)
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetTime"
+#define __FUNC__ "PetscGetTime" /* ADIC Ignore */
 /*@C
    PetscGetTime - Returns the current time of day in seconds. This 
      returns wall-clock time.  

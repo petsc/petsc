@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.58 1997/01/01 03:36:59 bsmith Exp balay $";
+static char vcid[] = "$Id: sor.c,v 1.59 1997/01/06 20:23:36 balay Exp bsmith $";
 #endif
 
 /*
@@ -61,7 +61,7 @@ static int PCSetFromOptions_SOR(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_SOR"
+#define __FUNC__ "PCPrintHelp_SOR" /* ADIC Ignore */
 static int PCPrintHelp_SOR(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCSOR preconditioner:\n");
@@ -76,7 +76,7 @@ static int PCPrintHelp_SOR(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_SOR"
+#define __FUNC__ "PCView_SOR" /* ADIC Ignore */
 static int PCView_SOR(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -131,7 +131,7 @@ int PCCreate_SOR(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSORSetSymmetric"
+#define __FUNC__ "PCSORSetSymmetric" /* ADIC Ignore */
 /*@
    PCSORSetSymmetric - Sets the SOR preconditioner to use symmetric (SSOR), 
    backward, or forward relaxation.  The local variants perform SOR on
@@ -202,7 +202,7 @@ int PCSORSetOmega(PC pc, double omega)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSORSetIterations"
+#define __FUNC__ "PCSORSetIterations" /* ADIC Ignore */
 /*@
    PCSORSetIterations - Sets the number of inner iterations to 
    be used by the SOR preconditioner. The default is 1.

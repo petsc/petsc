@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.57 1997/01/06 20:22:18 balay Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.58 1997/02/04 21:23:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: iterativ.c,v 1.57 1997/01/06 20:22:18 balay Exp bsmit
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultFreeWork"
+#define __FUNC__ "KSPDefaultFreeWork" /* ADIC Ignore */
 /*
   KSPDefaultFreeWork - Free work vectors
 
@@ -27,7 +27,7 @@ int KSPDefaultFreeWork( KSP ksp )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSingularValueMonitor"
+#define __FUNC__ "KSPSingularValueMonitor" /* ADIC Ignore */
 /*@C
     KSPSingularValueMonitor - Prints the two norm of the true residual and
     estimation of the extreme eigenvalues of the preconditioned problem
@@ -68,7 +68,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultMonitor"
+#define __FUNC__ "KSPDefaultMonitor" /* ADIC Ignore */
 /*ARGSUSED*/
 /*@C
    KSPDefaultMonitor - Print the residual norm at each iteration of an
@@ -90,7 +90,7 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPTrueMonitor"
+#define __FUNC__ "KSPTrueMonitor" /* ADIC Ignore */
 /*@C
    KSPTrueMonitor - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
@@ -133,7 +133,7 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultSMonitor"
+#define __FUNC__ "KSPDefaultSMonitor" /* ADIC Ignore */
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
   if (fnorm > 1.e-9) {
@@ -274,7 +274,7 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultGetWork"
+#define __FUNC__ "KSPDefaultGetWork" /* ADIC Ignore */
 /*
   KSPDefaultGetWork - Gets a number of work vectors.
 
@@ -296,7 +296,7 @@ int  KSPDefaultGetWork( KSP ksp, int nw )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultAdjustWork"
+#define __FUNC__ "KSPDefaultAdjustWork" /* ADIC Ignore */
 /*
   KSPDefaultAdjustWork - Adjusts work vectors.
 
@@ -312,7 +312,7 @@ int KSPDefaultAdjustWork( KSP ksp )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDefaultDestroy"
+#define __FUNC__ "KSPDefaultDestroy" /* ADIC Ignore */
 /*
   KSPDefaultDestroy - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().

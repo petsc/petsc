@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ec.c,v 1.2 1997/01/22 18:46:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: ec.c,v 1.3 1997/02/11 19:46:19 curfman Exp bsmith $";
 #endif
 
 /*
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: ec.c,v 1.2 1997/01/22 18:46:10 bsmith Exp curfman $";
 #include "draw.h"
 
 #undef __FUNC__  
-#define __FUNC__ "ECDestroy"
+#define __FUNC__ "ECDestroy" /* ADIC Ignore */
 /*@C
    ECDestroy - Destroys EC context that was created with ECCreate().
 
@@ -35,7 +35,7 @@ int ECDestroy(EC ec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECView"
+#define __FUNC__ "ECView" /* ADIC Ignore */
 /*@ 
    ECView - Prints the EC data structure.
 
@@ -303,7 +303,7 @@ int ECSetFromOptions(EC ec)
 extern int ECPrintTypes_Private(MPI_Comm,char *,char *);
 
 #undef __FUNC__  
-#define __FUNC__ "ECPrintHelp"
+#define __FUNC__ "ECPrintHelp" /* ADIC Ignore */
 /*@
    ECPrintHelp - Prints a help message about the eigenvalue computations.
 
@@ -341,7 +341,7 @@ int ECPrintHelp(EC ec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECSetOperators"
+#define __FUNC__ "ECSetOperators" /* ADIC Ignore */
 /*@
    ECSetOperators - Sets the operators for which eigenvalues are to be computed.
 
@@ -497,7 +497,7 @@ int ECSolveEigenvectors(EC ec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECSetType"
+#define __FUNC__ "ECSetType" /* ADIC Ignore */
 /*@
    ECSetType - Builds EC for a particular solver. 
 
@@ -553,7 +553,7 @@ int ECSetType(EC ec,ECType itmethod)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECRegister"
+#define __FUNC__ "ECRegister" /* ADIC Ignore */
 /*@C
    ECRegister - Adds the iterative method to the EC package,  given
    an iterative name (ECType) and a function pointer.
@@ -576,7 +576,7 @@ int  ECRegister(ECType name, char *sname, int  (*create)(EC))
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECRegisterDestroy"
+#define __FUNC__ "ECRegisterDestroy" /* ADIC Ignore */
 /*@C
    ECRegisterDestroy - Frees the list of EC methods that were
    registered by ECRegister().
@@ -595,7 +595,7 @@ int ECRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECGetTypeFromOptions_Private"
+#define __FUNC__ "ECGetTypeFromOptions_Private" /* ADIC Ignore */
 /*
    ECGetTypeFromOptions_Private - Sets the selected EC type from 
    the options database.
@@ -624,7 +624,7 @@ int ECGetTypeFromOptions_Private(EC ec,ECType *itmethod)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECGetType"
+#define __FUNC__ "ECGetType" /* ADIC Ignore */
 /*@C
    ECGetType - Gets the EC type and method name (as a string) from 
    the method type.
@@ -649,7 +649,7 @@ int ECGetType(EC ec,ECType *type,char **name)
 
 #include <stdio.h>
 #undef __FUNC__  
-#define __FUNC__ "ECPrintTypes_Private"
+#define __FUNC__ "ECPrintTypes_Private" /* ADIC Ignore */
 /*
    ECPrintTypes_Private - Prints the EC methods available from the options 
    database.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.51 1997/02/07 23:31:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.52 1997/02/17 04:08:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: da3.c,v 1.51 1997/02/07 23:31:02 bsmith Exp bsmith $"
 #include "draw.h"
 
 #undef __FUNC__  
-#define __FUNC__ "DAView_3d"
+#define __FUNC__ "DAView_3d" /* ADIC Ignore */
 int DAView_3d(PetscObject dain,Viewer viewer)
 {
   DA          da = (DA) dain;
@@ -148,7 +148,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DACreate3d"
+#define __FUNC__ "DACreate3d" /* ADIC Ignore */
 /*@C
     DACreate3d - Creates a three-dimensional regular array that is
     distributed across some processors.

@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.9 1996/08/08 14:40:25 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.10 1996/11/19 16:29:42 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -22,6 +22,23 @@ typedef struct {
 } Vec_MPI;
 
 extern int VecNorm_Seq(Vec, NormType, double *work );
+extern int VecMDot_MPI(int, Vec, Vec *, Scalar *);
+extern int VecNorm_MPI(Vec,NormType, double *);
+extern int VecMax_MPI(Vec, int *, double *);
+extern int VecMin_MPI(Vec, int *, double *);
+extern int VecGetOwnershipRange_MPI(Vec,int *,int*); 
+extern int VecDestroy_MPI(PetscObject);
+extern int VecView_MPI_File(Vec, Viewer);
+extern int VecView_MPI_Files(Vec, Viewer);
+extern int VecView_MPI_Binary(Vec , Viewer);
+extern int VecView_MPI_Draw_LG(Vec ,Viewer);
+extern int VecView_MPI_Draw(Vec , Viewer);
+extern int VecView_MPI_Matlab(Vec , Viewer);
+extern int VecView_MPI(PetscObject,Viewer);
+extern int VecGetSize_MPI(Vec,int *);
+extern int VecSetValues_MPI(Vec, int, int *, Scalar*,InsertMode);
+extern int VecAssemblyBegin_MPI(Vec);
+extern int VecAssemblyEnd_MPI(Vec);
 
 #endif
 

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.18 1996/12/17 17:11:05 balay Exp balay $";
+static char vcid[] = "$Id: mgfunc.c,v 1.19 1997/01/06 20:23:46 balay Exp bsmith $";
 #endif
 
 #include "src/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
                           /*I "mg.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "MGGetCoarseSolve"
+#define __FUNC__ "MGGetCoarseSolve" /* ADIC Ignore */
 /*@C
    MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
@@ -52,7 +52,7 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetResidual"
+#define __FUNC__ "MGSetResidual" /* ADIC Ignore */
 /*@
    MGSetResidual - Sets the function to be used to calculate the residual 
    on the lth level. 
@@ -76,7 +76,7 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetInterpolate"
+#define __FUNC__ "MGSetInterpolate" /* ADIC Ignore */
 /*@
    MGSetInterpolate - Sets the function to be used to calculate the 
    interpolation on the lth level. 
@@ -98,7 +98,7 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetRestriction"
+#define __FUNC__ "MGSetRestriction" /* ADIC Ignore */
 /*@
     MGSetRestriction - Sets the function to be used to restrict vector
     from level l to l-1. 
@@ -120,7 +120,7 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGGetSmoother"
+#define __FUNC__ "MGGetSmoother" /* ADIC Ignore */
 /*@C
    MGGetSmoother - Gets the SLES context to be used as smoother for 
    both pre- and post-smoothing.  Call both MGGetSmootherUp() and 
@@ -146,7 +146,7 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGGetSmootherUp"
+#define __FUNC__ "MGGetSmootherUp" /* ADIC Ignore */
 /*@C
    MGGetSmootherUp - Gets the SLES context to be used as smoother after 
    coarse grid correction (post-smoother). 
@@ -185,7 +185,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGGetSmootherDown"
+#define __FUNC__ "MGGetSmootherDown" /* ADIC Ignore */
 /*@C
    MGGetSmootherDown - Gets the SLES context to be used as smoother before 
    coarse grid correction (pre-smoother). 
@@ -209,7 +209,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetCyclesOnLevel"
+#define __FUNC__ "MGSetCyclesOnLevel" /* ADIC Ignore */
 /*@
    MGSetCyclesOnLevel - Sets the number of cycles to run on this level. 
 
@@ -230,7 +230,7 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetRhs"
+#define __FUNC__ "MGSetRhs" /* ADIC Ignore */
 /*@
    MGSetRhs - Sets the vector space to be used to store the right-hand side
    on a particular level.  The user should free this space at the conclusion 
@@ -253,7 +253,7 @@ int MGSetRhs(PC pc,int l,Vec c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetX"
+#define __FUNC__ "MGSetX" /* ADIC Ignore */
 /*@
    MGSetX - Sets the vector space to be used to store the solution on a 
    particular level.  The user should free this space at the conclusion 
@@ -276,7 +276,7 @@ int MGSetX(PC pc,int l,Vec c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MGSetR"
+#define __FUNC__ "MGSetR" /* ADIC Ignore */
 /*@
    MGSetR - Sets the vector space to be used to store the residual on a
    particular level.  The user should free this space at the conclusion of

@@ -29,7 +29,7 @@
 /*                                                              */
 /****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "fnroot"
+#define __FUNC__ "fnroot" /* ADIC Ignore */
 int fnroot(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {

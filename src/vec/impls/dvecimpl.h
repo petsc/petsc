@@ -1,4 +1,4 @@
-/* $Id: dvecimpl.h,v 1.5 1996/08/04 23:11:06 bsmith Exp bsmith $ */
+/* $Id: dvecimpl.h,v 1.6 1996/08/08 14:40:17 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 
@@ -17,5 +17,23 @@ typedef struct {
   VECHEADER
 } Vec_Seq;
 
+extern int VecMDot_Seq(int ,Vec ,Vec *, Scalar *);
+extern int VecMin_Seq(Vec ,int* ,double * );
+extern int VecSet_Seq(Scalar* ,Vec );
+extern int VecSetRandom_Seq(PetscRandom ,Vec );
+extern int VecMAXPY_Seq( int, Scalar *, Vec, Vec *);
+extern int VecAYPX_Seq(Scalar *, Vec , Vec);
+extern int VecWAXPY_Seq(Scalar*,Vec,Vec,Vec);
+extern int VecPointwiseMult_Seq( Vec, Vec, Vec);
+extern int VecPointwiseDivide_Seq(Vec,Vec,Vec);
+extern int VecGetArray_Seq(Vec,Scalar **);
+extern int VecGetSize_Seq(Vec,int *);
+extern int VecDot_Seq(Vec, Vec,Scalar *);
+extern int VecScale_Seq(Scalar *,Vec);
+extern int VecCopy_Seq(Vec, Vec);
+extern int VecSwap_Seq(Vec,Vec);
+extern int VecAXPY_Seq(Scalar *, Vec, Vec);
+extern int VecAXPBY_Seq(Scalar *, Scalar *,Vec, Vec);
+extern int VecMax_Seq(Vec,int*,double *);
 
 #endif

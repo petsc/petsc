@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.33 1997/01/06 20:40:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.34 1997/02/03 15:15:51 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -30,7 +30,7 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "CHLD" }; 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSignalHandler"
+#define __FUNC__ "PetscSignalHandler" /* ADIC Ignore */
 /*
     This is the signal handler called by the system. This calls 
   your signal handler.
@@ -53,7 +53,7 @@ static void PetscSignalHandler( int sig )
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscDefaultSignalHandler"
+#define __FUNC__ "PetscDefaultSignalHandler" /* ADIC Ignore */
 /*@
    PetscDefaultSignalHandler - Default signal handler.
 
@@ -81,7 +81,7 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscPushSignalHandler"
+#define __FUNC__ "PetscPushSignalHandler" /* ADIC Ignore */
 /*@C
    PetscPushSignalHandler - Catches the usual fatal errors and 
    calls a user-provided routine.
@@ -108,7 +108,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGFPE,  PetscSignalHandler );
     signal( SIGBUS,  PetscSignalHandler );
     signal( SIGSEGV, PetscSignalHandler );
-#if !defined(PARCH_linux)
+#if !defined(PARCH_linux) && !defined(PARCH_nt_gnu)
     signal( SIGSYS,  PetscSignalHandler );
 #endif
 #endif
@@ -122,7 +122,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGBUS,  0 );
 #endif
     signal( SIGSEGV, 0 );
-#if !defined(PARCH_linux)
+#if !defined(PARCH_linux)  && !defined(PARCH_nt_gnu)
     signal( SIGSYS,  0 );
 #endif
     SignalSet = 0;
@@ -137,7 +137,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscPopSignalHandler"
+#define __FUNC__ "PetscPopSignalHandler" /* ADIC Ignore */
 int PetscPopSignalHandler()
 {
   struct SH *tmp;
@@ -153,7 +153,7 @@ int PetscPopSignalHandler()
     signal( SIGBUS,  0 );
 #endif
     signal( SIGSEGV, 0 );
-#if !defined(PARCH_linux)
+#if !defined(PARCH_linux)  && !defined(PARCH_nt_gnu)
     signal( SIGSYS,  0 );
 #endif
     SignalSet = 0;

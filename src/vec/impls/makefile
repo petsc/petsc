@@ -5,7 +5,7 @@ ALL: lib
 CFLAGS   =
 SOURCEC  =  
 SOURCEF  =
-SOURCEH  = dvecimpl.h dvec2.c bvec1.c
+SOURCEH  = dvecimpl.h
 OBJSC    =  
 OBJSF    =
 LIBBASE  = libpetscvec

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.19 1996/12/16 21:41:02 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.20 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: memc.c,v 1.19 1996/12/16 21:41:02 balay Exp balay $";
 
 #if defined(PARCH_rs6000_test)
 #undef __FUNC__  
-#define __FUNC__ "PetscMemcpy"
+#define __FUNC__ "PetscMemcpy" /* ADIC Ignore */
 void PetscMemcpy(void *a,void *b,int n)
 {
   double *aa, *bb;
@@ -34,7 +34,7 @@ void PetscMemcpy(void *a,void *b,int n)
 }
 #else
 #undef __FUNC__  
-#define __FUNC__ "PetscMemcpy"
+#define __FUNC__ "PetscMemcpy" /* ADIC Ignore */
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a.
@@ -58,7 +58,7 @@ void PetscMemcpy(void *a,void *b,int n)
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "PetscMemzero"
+#define __FUNC__ "PetscMemzero" /* ADIC Ignore */
 /*@C
    PetscMemzero - Zeros the specified memory.
 
@@ -79,7 +79,7 @@ void PetscMemzero(void *a,int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscMemcmp"
+#define __FUNC__ "PetscMemcmp" /* ADIC Ignore */
 /*@C
    PetscMemcmp - Compares two byte streams in memory.
 
