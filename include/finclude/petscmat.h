@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.18 1996/08/04 23:14:49 bsmith Exp bsmith $;
+C  $Id: mat.h,v 1.19 1996/08/06 04:04:35 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -133,8 +133,7 @@ C
       integer MAT_GET_ARRAY
       integer MAT_RESTORE_ARRAY
       integer MAT_CONVERT
-      integer MAT_GET_SUBMATRIX
-      integer MAT_GET_SUBMATRIX_INPLACE
+
       integer MAT_CONVERT_SAME_TYPE
       integer MAT_FORWARD_SOLVE
       integer MAT_BACKWARD_SOLVE
@@ -208,8 +207,6 @@ C
       parameter(MAT_DIAGONAL_SHIFT=54)
       parameter(MAT_DESTROY=250)
       parameter(MAT_VIEW=251)
-
-
 C
 C  
 C
