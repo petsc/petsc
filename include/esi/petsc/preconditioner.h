@@ -38,7 +38,7 @@ class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
 
     //  Interface for esi::Preconditioner  ---------------
     /** Input control parameters. */
-    virtual esi::ErrorCode parameters( int numParams, char** paramStrings ){;};
+    virtual esi::ErrorCode parameters( int numParams, char** paramStrings ){return 1;};
 
     /** z = M1^(-1) y */
     virtual esi::ErrorCode solveLeft( esi::Vector<Scalar, Ordinal> & y,esi::Vector<Scalar, Ordinal> & z );
@@ -57,7 +57,7 @@ class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
     /** Set the preconditioning side. */
     virtual esi::ErrorCode setPreconditionerSide( PreconditionerSide side );
 
-    virtual esi::ErrorCode setOperator( esi::Operator<Scalar,Ordinal> &op) {};
+    virtual esi::ErrorCode setOperator( esi::Operator<Scalar,Ordinal> &op) {return 1;};
   private:
     PC                         pc;
     esi::IndexSpace<Ordinal>   *rmap,*cmap;

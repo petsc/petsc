@@ -70,12 +70,12 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     virtual esi::ErrorCode rowMax(Ordinal row, Scalar& result) ;
     virtual esi::ErrorCode rowMin(Ordinal row, Scalar& result) ;
 
-    virtual esi::ErrorCode getRowAllocatedLength(Ordinal row, int& result) {;};
-    virtual esi::ErrorCode setAllValues(Scalar) {;};
-    virtual esi::ErrorCode allocateRowsSameLength(Ordinal) {;};
+    virtual esi::ErrorCode getRowAllocatedLength(Ordinal row, int& result) {return 1;};
+    virtual esi::ErrorCode setAllValues(Scalar) {return 1;};
+    virtual esi::ErrorCode allocateRowsSameLength(Ordinal) {return 1;};
     virtual esi::ErrorCode copyOutRow(Ordinal, Scalar *,int *,int,int&) ;
-    virtual esi::ErrorCode copyOutRowIndices(Ordinal, int *,int,int&) {;};
-    virtual esi::ErrorCode copyOutRowCoefficients(Ordinal, Scalar *,int,int&) {;};
+    virtual esi::ErrorCode copyOutRowIndices(Ordinal, int *,int,int&) {return 1;};
+    virtual esi::ErrorCode copyOutRowCoefficients(Ordinal, Scalar *,int,int&) {return 1;};
 
   private:
     Mat                        mat;
