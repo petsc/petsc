@@ -8,7 +8,7 @@
 
 static char help[] = "XXXXX with multigrid and timestepping 2d.\n\
   \n\
--da_grid_x 6 -dammg_nlevels 3 -da_grid_y 6 -mg_coarse_pc_type lu -mg_coarse_pc_lu_damping -mat_aij_no_inode \n\
+-da_grid_x 6 -dmmg_nlevels 3 -da_grid_y 6 -mg_coarse_pc_type lu -mg_coarse_pc_lu_damping -mg_levels_pc_ilu_damping -mat_aij_no_inode \n\
   -viscosity <nu>\n\
   -skin_depth <d_e>\n\
   -larmor_radius <rho_s>\n\
@@ -375,7 +375,7 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
   int      ierr,i,j,mx,my,xs,ys,xm,ym;
   int      xints,xinte,yints,yinte;
   Field    **x;
-  double   norm[4] = { };
+  double   norm[4];
   double   gnorm[4];
   MPI_Comm comm;
 
@@ -644,11 +644,11 @@ int AttachNullSpace(PC pc,Vec model)
   ierr  = VecGetArray(v,&vx);CHKERRQ(ierr);
   ierr  = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    if (!(i % 4)) vx[i] = scale;
-    else          vx[i] = 0.0;
+    if (!(i % 4)) vx[i-rstart] = scale;
+    else          vx[i-rstart] = 0.0;
   }
   ierr  = VecRestoreArray(v,&vx);CHKERRQ(ierr);
-  ierr  = PetscMalloc(sizeof(Vec*),&vs);CHKERRQ(ierr);
+  ierr  = PetscMalloc(sizeof(Vec),&vs);CHKERRQ(ierr);
   vs[0] = v;
   ierr  = MatNullSpaceCreate(PETSC_COMM_WORLD,0,1,vs,&sp);CHKERRQ(ierr);
   ierr  = PCNullSpaceAttach(pc,sp);CHKERRQ(ierr);
