@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.113 1998/07/23 15:21:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.114 1998/08/31 14:34:44 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -180,7 +180,7 @@ int SNESSetUp_EQ_LS(SNES snes)
    Input Parameter:
 .  snes - the SNES context
 
-   Application Interface Routine: SNESSetDestroy()
+   Application Interface Routine: SNESDestroy()
  */
 #undef __FUNC__  
 #define __FUNC__ "SNESDestroy_EQ_LS"
@@ -677,7 +677,6 @@ int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
 
    Application Interface Routine: SNESPrintHelp()
 */
-
 #undef __FUNC__  
 #define __FUNC__ "SNESPrintHelp_EQ_LS"
 static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
@@ -694,7 +693,7 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESView_EQ_LS - Prints the SNES_EQ_LS data structure.
+   SNESView_EQ_LS - Prints info from the SNES_EQ_LS data structure.
 
    Input Parameters:
 .  SNES - the SNES context
