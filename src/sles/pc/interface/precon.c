@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.112 1997/01/01 03:36:49 bsmith Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.113 1997/01/06 20:23:25 balay Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -855,5 +855,4 @@ int PCView(PC pc,Viewer viewer)
   }
   return 0;
 }
-
 
