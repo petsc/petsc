@@ -1,4 +1,4 @@
-/* $Id: petscfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp balay $ */
+/* $Id: petscfe.cpp,v 1.2 2001/03/07 15:02:12 balay Exp buschelm $ */
 #include <iostream>
 #include "petscfe.h"
 
@@ -19,9 +19,10 @@ int main(int argc,char *argv[]) {
     cout << endl << "PETSc WIN32 Front End v1.0" << endl << endl;
     cout << "Usage: win32fe <tool> --<win32fe options> -<tool options> <files>" << endl;
     cout << "<tool> must follow win32fe.  Order of options and files is unimportant." << endl << endl;
-    cout << "<tool>: {cl,df,bcc32,lib,tlib}" << endl;
+    cout << "<tool>: {cl,df,f90,bcc32,lib,tlib}" << endl;
     cout << "cl:    Microsoft 32-bit C/C++ Optimizing Compiler" << endl;
     cout << "df:    Compaq Visual Fortran Optimizing Compiler" << endl;
+    cout << "f90:   Compaq Visual Fortran90 Optimizing Compiler" << endl;
     cout << "bcc32: Borland C++ for Win32" << endl;
     cout << "lib:   Microsoft Library Manager" << endl;
     cout << "tlib:  Borland Library Manager" << endl << endl;
