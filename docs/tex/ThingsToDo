@@ -10,12 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-
-
-  - Consider adding a utility routine that determines the d_nnz, and o_nnz
-    for preallocating matrix space for parallel matrices.  Create an empty
-    matrix; pass once through a series of MatSetValues() calls; instead of
-    adding elements, just get nonzero info.  Then allocate space.
+  - Fix matrix stats in PLogInfo() so they're corect for multiple matrix
+    assemblies (e.g., reset mat->reallocs).
 
   - Try using Isaac's trick for VecGetArray(), ISGetIndices(), etc:
       common /xxx/ v(1),i(1)
@@ -80,6 +76,12 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
   To do sometime soon:
 -----------------------------------------------------------------------
+
+
+  - Consider adding a utility routine that determines the d_nnz, and o_nnz
+    for preallocating matrix space for parallel matrices.  Create an empty
+    matrix; pass once through a series of MatSetValues() calls; instead of
+    adding elements, just get nonzero info.  Then allocate space.
 
   - change KSPSetMonitor()... to use functoids with function,context,destroy in
     one object????
