@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.49 1998/01/29 15:24:27 balay Exp balay $ 
+# $Id: makefile,v 1.50 1998/02/19 15:56:04 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS	 = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
+CFLAGS	 = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' 
 
 SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c \
         chebyf.c compositef.c cookief.c da2f.c dacornf.c daghostf.c dagtolf.c daltogf.c \
@@ -49,5 +49,5 @@ LIBBASE	 = libpetscfortran
 MANSEC	 = 1
 LOCDIR   = src/fortran/auto/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

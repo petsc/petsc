@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.2 1997/09/17 23:13:43 bsmith Exp balay $ 
+# $Id: makefile,v 1.3 1997/09/18 16:06:47 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS   = 
 SOURCEC  = 
 SOURCEF  = fmaxpy.F fmdot.F fnorm.F fmult.F fmultadd.F fsolve.F
@@ -13,6 +13,6 @@ LIBBASE  = libpetsckernels
 MANSEC   = 7
 LOCDIR   = src/fortran/kernels/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 
