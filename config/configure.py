@@ -22,6 +22,7 @@ def petsc_configure(configure_options):
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
+  framework.argDB['with-mpi'] = 1
   try:
     framework.configure()
   except Exception, e:
