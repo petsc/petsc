@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.269 1998/05/29 20:37:05 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.270 1998/05/29 22:49:34 balay Exp bsmith $";
 #endif
 
 /*
@@ -1267,8 +1267,8 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
   if (B != PETSC_NULL) {
     *B = C;
   } else {
-    PetscOps       *Abops;
-    struct _MatOps *Aops;
+    PetscOps *Abops;
+    MatOps   Aops;
 
     /* This isn't really an in-place transpose */
     PetscFree(a->a); 
@@ -1670,7 +1670,7 @@ extern int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
 extern int MatColoringPatch_SeqAIJ(Mat,int,int *,ISColoring *);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
+static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,MatRestoreRow_SeqAIJ,
        MatMult_SeqAIJ,MatMultAdd_SeqAIJ,
        MatMultTrans_SeqAIJ,MatMultTransAdd_SeqAIJ,
@@ -1831,7 +1831,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqAIJ));
-  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
   B->ops->destroy          = MatDestroy_SeqAIJ;
   B->ops->view             = MatView_SeqAIJ;
   B->factor           = 0;

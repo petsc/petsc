@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.100 1998/04/03 23:14:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.101 1998/05/13 14:12:10 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -294,7 +294,7 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   int            ierr;
   Mat            C;
   PetscOps       *Abops;
-  struct _MatOps *Aops;
+  MatOps         Aops;
 
   PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
