@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.88 1999/06/30 22:51:53 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.89 1999/06/30 23:54:09 balay Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -631,10 +631,9 @@ int MatSNESMFSetFunctionError(Mat mat,double error)
 
 .keywords: SNES, matrix-free, null space
 
-.seealso: MatSNESMFGetH(), MatCreateSNESMF(),
+.seealso: PCNullSpaceCreate(), MatSNESMFGetH(), MatCreateSNESMF(),
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor(), MatSNESMFErrorRel()
-
 @*/
 int MatSNESMFAddNullSpace(Mat J,PCNullSpace nullsp)
 {
