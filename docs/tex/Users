@@ -1,17 +1,7 @@
 
                          PETSc 2.0 Users
 
-
-Remote Users:
-
-eijkhout@math.ucla.edu - Victor Eijkhout, developing preconditioners
-stodghil@CS.Cornell.EDU - Paul Stodghill, high performance parallel cg
-keyes@cs.odu.edu - David Keyes, needs parallel nonlinear solvers for CFD
-zhang_k@cs.odu.edu - Jie Zhang, needs parallel nonlinear solvers
-jdm@cs.odu.edu - Jay Morris, needs extensible parallel linear solvers
-ozturanc@cs.rpi.edu - Can Ozturan, needs parallel linear solvers (now at ICASE)
-mday@opus.nersc.gov - Marcus Day, sequential nonlinear solvers
-
+See petsc.applications for summary of remote users.
 
 Local Users:
 
@@ -21,24 +11,28 @@ dstevens - Deb Stevens, needs Fortran interface to SLES
 canfield - Tom Canfield, needs parallel, symmetric linear solvers
 taylor (taylor@nile.eecs.nwu.edu) - Valerie Taylor, working with Tom Canfield
 jichen (jchen@nasser.eecs.nwu.edu) - student working with Valerie
-       (meena@nile.eecs.nwu.edu) - student working with Valerie
+meena  (meena@nile.eecs.nwu.edu) - student working with Valerie
 maa (maayj@eden.eecs.nwu.edu) - Yann Maa, needs nonlinear solvers
 freitag - Lori, needs makefile and system infrastructure
 diachin - Darin, working with Lori, makefiles and system stuff in C++
-dheath - Dan Heath, working with Lori, makefile and system stuff in C++
+herzog - Jim Herzog, working with Lori
+dheath - Dan Heath, working with Lori
 plassman - ILU, BlockSolve
+zwu - Zhijun Wu - working with Jorge, may use SNES to write new nonlinear solvers?
 kwong - Man Kwong, writing preprocessor
+
+/* local users with SP accounts only */
+madams@iris-2.ce.Berkeley.EDU - Mark Adams - UC Berkley grad student
+kaushik@cs.odu.edu - Dinesh Kaushik - ODU grad student
+
 
 
 Not currently active local users:
 
 bouarich - Ali Bouaricha, needs nonlinear solvers
-herzog - Jim, working with Lori, makefiles
 mell - Peter Mell
 hille - Matt Hille
 cooper - Cameron Cooper
 wan   - Justin Wan
 anitescu - Mihai Anitescu, direct LU
 
-Potential users:
-Sandra Carney carney@appsdiv.cray.com
