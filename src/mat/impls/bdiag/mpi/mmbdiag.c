@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.24 1996/12/18 00:02:12 balay Exp balay $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.25 1997/01/06 20:25:01 balay Exp balay $";
 #endif
 
 /*
@@ -21,7 +21,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
 
   /* We make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
-  indices = (int *) PetscMalloc( N*sizeof(int) ); CHKPTRQ(indices);
+  indices = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(indices);
   PetscMemzero(indices,N*sizeof(int));
 
   if (bs == 1) {

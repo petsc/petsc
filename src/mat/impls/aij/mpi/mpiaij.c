@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.197 1997/03/30 03:06:02 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.198 1997/04/03 17:07:55 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -20,7 +20,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
   Mat_SeqAIJ *B = (Mat_SeqAIJ*) aij->B->data;
   int        n = B->n,i;
 
-  aij->colmap = (int *) PetscMalloc(aij->N*sizeof(int));CHKPTRQ(aij->colmap);
+  aij->colmap = (int *) PetscMalloc((aij->N+1)*sizeof(int));CHKPTRQ(aij->colmap);
   PLogObjectMemory(mat,aij->N*sizeof(int));
   PetscMemzero(aij->colmap,aij->N*sizeof(int));
   for ( i=0; i<n; i++ ) aij->colmap[aij->garray[i]] = i+1;
@@ -1255,8 +1255,8 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
     else if (type == NORM_1) { /* max column norm */
       double *tmp, *tmp2;
       int    *jj, *garray = aij->garray;
-      tmp  = (double *) PetscMalloc( aij->N*sizeof(double) ); CHKPTRQ(tmp);
-      tmp2 = (double *) PetscMalloc( aij->N*sizeof(double) ); CHKPTRQ(tmp2);
+      tmp  = (double *) PetscMalloc( (aij->N+1)*sizeof(double) ); CHKPTRQ(tmp);
+      tmp2 = (double *) PetscMalloc( (aij->N+1)*sizeof(double) ); CHKPTRQ(tmp2);
       PetscMemzero(tmp,aij->N*sizeof(double));
       *norm = 0.0;
       v = amat->a; jj = amat->j;

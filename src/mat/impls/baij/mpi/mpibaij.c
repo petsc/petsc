@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.63 1997/04/01 14:34:09 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.64 1997/04/03 17:07:41 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -35,7 +35,7 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
   Mat_SeqBAIJ *B = (Mat_SeqBAIJ*) baij->B->data;
   int         nbs = B->nbs,i,bs=B->bs;;
 
-  baij->colmap = (int *) PetscMalloc(baij->Nbs*sizeof(int));CHKPTRQ(baij->colmap);
+  baij->colmap = (int *) PetscMalloc((baij->Nbs+1)*sizeof(int));CHKPTRQ(baij->colmap);
   PLogObjectMemory(mat,baij->Nbs*sizeof(int));
   PetscMemzero(baij->colmap,baij->Nbs*sizeof(int));
   for ( i=0; i<nbs; i++ ) baij->colmap[baij->garray[i]] = i*bs+1;
