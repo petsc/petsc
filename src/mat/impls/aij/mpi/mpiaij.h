@@ -55,11 +55,11 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ f
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscMap     rowmap;
-  PetscInt     *bi,*bj,**buf_ri,**buf_rj;
+  PetscInt     **buf_ri,**buf_rj;
   PetscMPIInt  *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
-  PetscMPIInt  nsend,nrecv;
-  Mat          C_seq;  
-  PetscInt     *ci,*cj; /* i and j array of C_seq=P_loc^T*A*P */
+  PetscMPIInt  nsend,nrecv;  
+  PetscInt     *bi,*bj; /* i and j array of the local portion of mpi C=P^T*A*P */
+  PetscInt     *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
 } Mat_Merge_SeqsToMPI; 
 
 EXTERN PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
