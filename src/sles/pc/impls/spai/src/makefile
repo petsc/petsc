@@ -4,6 +4,8 @@ ALL: lib
 #    The -I/home/bsmith/libraries/spai_1.1 should point the location you have installed
 #  SPAI.
 #
+CFLAGS   = 
+FFLAGS   = 
 CPPFLAGS = ${SPAI_INCLUDE}
 SOURCEC  = ispai.c dspai.c
 SOURCEF  =
