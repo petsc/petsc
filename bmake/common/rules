@@ -4,8 +4,8 @@ LDIR        = $(PETSCLIB)/lib/lib$(BOPT)/$(PARCH)
 LIBNAME     = $(LDIR)/$(LIBBASE).a
 SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
-INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(MPI_INCLUDE) \
-              $(X11_INCLUDE) $(BS_INCLUDE) -I$(ITOOLSDIR)/src
+INCLUDEDIRS = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
+              $(X11_INCLUDE) $(BS_INCLUDE) -I$(IPETSCDIR)/src
 
 PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
                 -lpetscsnes -lpetscsles -lpetscksp -lpetscmat \
@@ -17,10 +17,10 @@ SLES_LIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(SYS_LIB) $(FC_LIB)
 
-include $(ITOOLSDIR)/bmake/common.$(COMPLEX) 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).site
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(BOPT)
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(COMPLEX)
+include $(IPETSCDIR)/bmake/common.$(COMPLEX) 
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH).site
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH).$(BOPT)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH).$(COMPLEX)
 
 # next line cause trouble with gnumake when OBJS is empty
 #$(LIBNAME)($(OBJS)): $(LINCLUDE)
@@ -89,33 +89,35 @@ lint:
 
 C2f77:
 	@-if [ -n "$(WOBJS)" ] ; then \
-  	$(ITOOLSDIR)/c2f77/bfort -nomsgs -anyname -mapptr \
+  	$(IPETSCDIR)/c2f77/bfort -nomsgs -anyname -mapptr \
                          $(SOURCEC) $(SOURCEH); fi
 
 C2f77lib: 
 	@-if [ -n "$(WOBJS)" ] ; then \
 	echo "Compiling wrappers: " $(WSOURCEC); \
-	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(ITOOLSDIR) $(WSOURCEC); \
+	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(IPETSCDIR) $(WSOURCEC); \
 	$(AR) clr $(LDIR)/libpetscfort.a $(WOBJS) ; \
 	$(RM) -f $(WOBJS) $(WSOURCE); \
 	fi
 
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	$(ITOOLSDIR)/doc/doctext -jumpfile $(ITOOLSDIR)/docs/routine.list \
+	$(IPETSCDIR)/doc/doctext -jumpfile $(IPETSCDIR)/docs/routine.list \
                 -mpath $(PETSCLIB)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
-                 $(SOURCEC) $(SOURCEH); fi 
+                 $(SOURCEC) $(SOURCEH); \
+                chmod g+w $(PETSCLIB)/docs/man/man$(MANSEC)/*; fi 
 
 latexpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	$(ITOOLSDIR)/doc/doc2lt  \
+	$(IPETSCDIR)/doc/doc2lt  \
           $(SOURCEC) $(SOURCEH) >> \
                     $(PETSCLIB)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
 
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	$(ITOOLSDIR)/doc/doctext -html -index $(PETSCLIB)/docs/www/www.cit \
-                -mpath $(PETSCLIB)/docs/www/man$(MANSEC) -ext $(MANSEC)  \
+	$(IPETSCDIR)/doc/doctext -html -index $(PETSCLIB)/docs/www/www.cit \
+                -mpath $(PETSCLIB)/docs/www/man$(MANSEC) -ext $(MANSEC)\
+                -indexdir www/man$(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); fi 
 
 clean:
