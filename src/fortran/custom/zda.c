@@ -1,27 +1,31 @@
 #ifndef lint
-static char vcid[] = "$Id: zda.c,v 1.2 1995/09/04 17:18:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.3 1995/10/26 22:01:47 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "da.h"
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define dacreate1d_             DACREATE1D
 #define dacreate3d_             DACREATE3D
 #define dacreate2d_             DACREATE2D
 #define dadestroy_              DADESTROY
 #define dagetdistributedvector_ DAGETDISTRIBUTEDVECTOR
 #define dagetlocalvector_       DAGETLOCALVECTOR
-#define dagetscatterctx_        DAGETSCATTERCTX
+#define dagetscatter_           DAGETSCATTER
 #define dagetglobalindices_     DAGETGLOBALINDICES
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define dacreate1d_             dacreate1d
 #define dacreate3d_             dacreate3d
 #define dacreate2d_             dacreate2d
 #define dadestroy_              dadestroy
 #define dagetdistributedvector_ dagetdistributedvector
 #define dagetlocalvector_       dagetlocalvector
-#define dagetscatterctx_        dagetscatterctx
+#define dagetscatter_           dagetscatter
 #define dagetglobalindices_     dagetglobalindices
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 void dagetglobalindices_(DA da,int *n, int *indices, int *__ierr )
@@ -43,12 +47,14 @@ void dagetlocalvector_(DA da,Vec* l, int *__ierr )
   *__ierr = DAGetLocalVector((DA)MPIR_ToPointer(*(int*)(da)),&v);
   *(int*) l = MPIR_FromPointer(v);
 }
-void dagetscatterctx_(DA da,VecScatter *ltog,VecScatter *gtol,int *__ierr )
+void dagetscatter_(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
+                   int *__ierr )
 {
-  VecScatter l,g;
-  *__ierr = DAGetScatterCtx((DA)MPIR_ToPointer(*(int*)(da)),&l,&g);
-  *(int*) ltog = MPIR_FromPointer(l);
-  *(int*) gtol = MPIR_FromPointer(g);
+  VecScatter l,g,ll;
+  *__ierr = DAGetScatter((DA)MPIR_ToPointer(*(int*)(da)),&l,&g,&ll);
+  if (ltog != PETSC_NULL_Fortran) *(int*) ltog = MPIR_FromPointer(l);
+  if (gtol != PETSC_NULL_Fortran) *(int*) gtol = MPIR_FromPointer(g);
+  if (ltol != PETSC_NULL_Fortran) *(int*) ltol = MPIR_FromPointer(ll);
 }
 
 void dadestroy_(DA da, int *__ierr ){
@@ -87,3 +93,7 @@ void dacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
            *M,*N,*P,*m,*n,*p,*w,*s,&da);
   *(int*) inra = MPIR_FromPointer(da);
 }
+
+#if defined(__cplusplus)
+}
+#endif

@@ -1,21 +1,25 @@
 #ifndef lint
-static char vcid[] = "$Id: zis.c,v 1.4 1995/11/29 21:58:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.5 1995/11/30 15:40:14 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "is.h"
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define isdestroy_          ISDESTROY
 #define iscreatestrideseq_   ISCREATESTRIDESEQ
 #define iscreateseq_         ISCREATESEQ
 #define isgetindices_        ISGETINDICES
 #define isrestoreindices_    ISRESTOREINDICES
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define isdestroy_           isdestroy
 #define iscreatestrideseq_   iscreatestrideseq
 #define iscreateseq_         iscreateseq
 #define isgetindices_        isgetindices
 #define isrestoreindices_    isrestoreindices
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 void isgetindices_(IS x,int *fa,int *ia,int *__ierr)
@@ -55,3 +59,7 @@ void isdestroy_(IS is, int *__ierr ){
   *__ierr = ISDestroy((IS)MPIR_ToPointer( *(int*)(is) ));
   MPIR_RmPointer(*(int*)(is) );
 }
+
+#if defined(__cplusplus)
+}
+#endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsles.c,v 1.5 1996/01/15 21:51:08 balay Exp balay $";
+static char vcid[] = "$Id: zsles.c,v 1.6 1996/01/15 22:37:53 balay Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -7,20 +7,24 @@ static char vcid[] = "$Id: zsles.c,v 1.5 1996/01/15 21:51:08 balay Exp balay $";
 #include "draw.h"
 #include "pinclude/petscfix.h"
 
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define slesdestroy_             SLESDESTROY
 #define slescreate_              SLESCREATE
 #define slesgetpc_               SLESGETPC
 #define slessetoptionsprefix_    SLESSETOPTIONSPREFIX
 #define slesappendoptionsprefix_ SLESAPPENDOPTIONSPREFIX
 #define slesgetksp_              SLESGETKSP
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define slessetoptionsprefix_    slessetoptionsprefix
 #define slesappendoptionsprefix_ slesappendoptionsprefix
 #define slesdestroy_             slesdestroy
 #define slescreate_              slescreate
 #define slesgetpc_               slesgetpc
 #define slesgetksp_              slesgetksp
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 void slessetoptionsprefix_(SLES sles,char *prefix, int *__ierr,int len ){
@@ -69,3 +73,7 @@ void slescreate_(MPI_Comm comm,SLES *outsles, int *__ierr )
   *(int*) outsles = MPIR_FromPointer(sles);
 
 }
+
+#if defined(__cplusplus)
+}
+#endif

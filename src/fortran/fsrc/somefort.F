@@ -1,5 +1,6 @@
+
 C
-C  "$Id: somefort.F,v 1.6 1995/11/29 21:59:15 curfman Exp curfman $";
+C  "$Id: somefort.F,v 1.7 1995/12/29 22:31:07 curfman Exp bsmith $";
 C
 C  Utility routine used to set some values into a Fortran common block
 
@@ -16,4 +17,5 @@ C  Utility routine used to set some values into a Fortran common block
 
       return
       end
+
 

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.10 1996/01/16 23:12:00 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.11 1996/01/16 23:16:02 balay Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "petsc.h"
 #include "pinclude/petscfix.h"
 
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define petscattachdebugger_  PETSCATTACHDEBUGGER
 #define plogallbegin_         PLOGALLBEGIN
 #define plogdestroy_          PLOGDESTROY
@@ -22,7 +22,7 @@ static char vcid[] = "$Id: zsys.c,v 1.10 1996/01/16 23:12:00 balay Exp balay $";
 #define petscgetflops_        PETSCGETFLOPS
 #define petscerror_           PETSCERROR
 
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscattachdebugger_  petscattachdebugger
 #define plogallbegin_         plogallbegin
 #define plogdestroy_          plogdestroy
@@ -37,6 +37,10 @@ static char vcid[] = "$Id: zsys.c,v 1.10 1996/01/16 23:12:00 balay Exp balay $";
 #define petscgettime_         petscgettime  
 #define petscgetflops_        petscgetflops 
 #define petscerror_           petscerror
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 void plogdump_(char* name, int *__ierr,int len ){
@@ -140,3 +144,6 @@ double  petscgetflops_()
   return PetscGetFlops();
 }
 
+#if defined(__cplusplus)
+}
+#endif

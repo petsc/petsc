@@ -1,13 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zdraw.c,v 1.4 1995/10/26 22:01:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.5 1995/11/23 04:15:38 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "draw.h"
 #include "pinclude/petscfix.h"
 
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define drawaxisdestroy_   DRAWAXISDESTROY
 #define drawaxiscreate_    DRAWAXISCREATE
 #define drawaxissetlabels_ DRAWAXISSETLABELS
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: zdraw.c,v 1.4 1995/10/26 22:01:47 bsmith Exp bsmith $
 #define drawtext_          DRAWTEXT
 #define drawtextvertical_  DRAWTEXTVERTICAL
 #define drawdestroy_       DRAWDESTROY
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define drawaxisdestroy_   drawaxisdestroy
 #define drawaxiscreate_    drawaxiscreate
 #define drawaxissetlabels_ drawaxissetlabels
@@ -31,6 +31,10 @@ static char vcid[] = "$Id: zdraw.c,v 1.4 1995/10/26 22:01:47 bsmith Exp bsmith $
 #define drawtext_          drawtext
 #define drawtextvertical_  drawtextvertical
 #define drawdestroy_       drawdestroy
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 void drawtext_(Draw ctx,double* xl,double* yl,int* cl,char* text,
@@ -70,7 +74,9 @@ void drawopenx_(MPI_Comm comm,char* display,char *title,int *x,int *y,
 {
   Draw a;
   char    *t1,*t2;
-  if (display[0] == ' ') {t1 = 0; display = 0;}
+  if (display == PETSC_NULL_Fortran) {
+    t1 = 0; display = 0; len2 = len1;
+  }
   else {
     if (display[len1] != 0) {
       t1 = (char *) PetscMalloc( (len1+1)*sizeof(char) ); 
@@ -79,7 +85,7 @@ void drawopenx_(MPI_Comm comm,char* display,char *title,int *x,int *y,
     }
     else t1 = display;
   }
-  if (title[0] == ' ')   {title = 0; t2 = 0;}
+  if (title == PETSC_NULL_Fortran) {title = 0; t2 = 0;}
   else {
     if (title[len2] != 0) {
       t2 = (char *) PetscMalloc( (len2+1)*sizeof(char) ); 
@@ -166,3 +172,7 @@ void drawaxiscreate_(Draw win,DrawAxis *ctx, int *__ierr )
   *__ierr = DrawAxisCreate((Draw)MPIR_ToPointer( *(int*)(win) ),&tmp);
   *(int*)ctx = MPIR_FromPointer(tmp);
 }
+
+#if defined(__cplusplus)
+}
+#endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.9 1996/01/15 21:46:47 balay Exp balay $";
+static char vcid[] = "$Id: zksp.c,v 1.10 1996/01/15 22:35:12 balay Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: zksp.c,v 1.9 1996/01/15 21:46:47 balay Exp balay $";
 #include "ksp.h"
 #include "pinclude/petscfix.h"
 
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define kspregisterdestroy_       KSPREGISTERDESTROY
 #define kspregisterall_           KSPREGISTERALL
 #define kspdestroy_               KSPDESTROY
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: zksp.c,v 1.9 1996/01/15 21:46:47 balay Exp balay $";
 #define kspappendoptionsprefix_      KSPAPPENDOPTIONSPREFIX
 #define kspgettype_               KSPGETTYPE
 #define kspgetpreconditionerside_ KSPGETPRECONDITIONERSIDE
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define kspregisterdestroy_       kspregisterdestroy
 #define kspregisterall_           kspregisterall
 #define kspdestroy_               kspdestroy
@@ -39,6 +39,10 @@ static char vcid[] = "$Id: zksp.c,v 1.9 1996/01/15 21:46:47 balay Exp balay $";
 #define kspappendoptionsprefix_   kspappendoptionsprefix
 #define kspgettype_               kspgettype
 #define kspgetpreconditionerside_ kspgetpreconditionerside
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 void kspgettype_(KSP ksp,KSPType *type,char *name,int *__ierr,int len)
@@ -190,3 +194,7 @@ void kspbuildresidual_(KSP ctx,Vec t,Vec v,Vec *V, int *__ierr ){
     (Vec)MPIR_ToPointer( *(int*)(v) ),&vv);
   *(int*) V = MPIR_FromPointer(vv);
 }
+
+#if defined(__cplusplus)
+}
+#endif

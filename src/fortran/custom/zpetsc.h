@@ -1,8 +1,10 @@
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
-       int     PetscDoubleAddressToFortran(double*,double*);
-       double *PetscDoubleAddressFromFortran(double*,int);
+#include "petsc.h"
+
+       int     PetscScalarAddressToFortran(Scalar*,Scalar*);
+       Scalar* PetscScalarAddressFromFortran(Scalar*,int);
        int     PetscIntAddressToFortran(int*,int*);
        int    *PetscIntAddressFromFortran(int*,int); 
 extern void   *PETSC_NULL_Fortran;

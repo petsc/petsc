@@ -3,7 +3,7 @@ PETSC_DIR = ../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../..  $(PCONF)\
-           $(CONF) -D__DIR__='"fortran/custom"'
+           $(CONF) -D__DIR__='"fortran/custom/"'
 FFLAGS   = 
 SOURCEC  = zoptions.c zksp.c zpc.c zsnes.c zsys.c zmat.c zvec.c zsles.c \
            zdraw.c zda.c zviewer.c zis.c

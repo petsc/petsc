@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.8 1996/01/15 21:44:02 balay Exp balay $";
+static char vcid[] = "$Id: zpc.c,v 1.9 1996/01/15 22:36:05 balay Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: zpc.c,v 1.8 1996/01/15 21:44:02 balay Exp balay $";
 #include "mg.h"
 #include "pinclude/petscfix.h"
 
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define pcregisterall_             PCREGISTERALL
 #define pcregisterdestroy_         PCREGISTERDESTROY
 #define pcdestroy_                 PCDESTROY
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: zpc.c,v 1.8 1996/01/15 21:44:02 balay Exp balay $";
 #define pcshellsetapply_           PCSHELLSETAPPLY
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
 #define pcgettype_                 PCGETTYPE
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define pcregisterall_             pcregisterall
 #define pcregisterdestroy_         pcregisterdestroy
 #define pcdestroy_                 pcdestroy
@@ -41,6 +41,10 @@ static char vcid[] = "$Id: zpc.c,v 1.8 1996/01/15 21:44:02 balay Exp balay $";
 #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
 #define pcshellsetapply_           pcshellsetapply
 #define pcgettype_                 pcgettype
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 static void (*f1)(void *,int*,int*,int*);
@@ -178,3 +182,7 @@ void pcgettype_(PC pc,PCType *type,char *name,int *__ierr,int len)
   *__ierr = PCGetType((PC)MPIR_ToPointer(*(int*)pc),type,&tname);
   if (name != PETSC_NULL_Fortran) PetscStrncpy(name,tname,len);
 }
+
+#if defined(__cplusplus)
+}
+#endif

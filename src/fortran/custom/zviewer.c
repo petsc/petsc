@@ -1,23 +1,27 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zviewer.c,v 1.2 1995/10/26 22:01:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zviewer.c,v 1.3 1995/11/23 04:15:38 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "petsc.h"
 
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define viewerdestroy_        VIEWERDESTROY
 #define viewerfileopenascii_  VIEWERFILEOPENASCII
 #define viewerfilesetformat_  VIEWERFILESETFORMAT
 #define viewerfileopenbinary_ VIEWERFILEOPENBINARY
 #define viewermatlabopen_     VIEWERMATLABOPEN
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define viewerdestroy_        viewerdestroy
 #define viewerfileopenascii_  viewerfileopenascii
 #define viewerfilesetformat_  viewerfilesetformat
 #define viewerfileopenbinary_ viewerfileopenbinary
 #define viewermatlabopen_     viewermatlabopen
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
 void viewermatlabopen_(MPI_Comm comm,char *name,int *port,Viewer *lab, int *__ierr,
@@ -81,3 +85,7 @@ void viewerdestroy_(Viewer v, int *__ierr )
   *__ierr = ViewerDestroy((Viewer)MPIR_ToPointer( *(int*)(v) ));
   MPIR_RmPointer(*(int*)(v) );
 }
+
+#if defined(__cplusplus)
+}
+#endif

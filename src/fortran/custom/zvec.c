@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.6 1995/11/28 18:54:24 curfman Exp curfman $";
+static char vcid[] = "$Id: zvec.c,v 1.7 1995/11/28 19:56:03 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "vec.h"
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define veccreateseq_         VECCREATESEQ
 #define veccreate_            VECCREATE
 #define vecduplicate_         VECDUPLICATE
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: zvec.c,v 1.6 1995/11/28 18:54:24 curfman Exp curfman 
 #define vecrestorearray_      VECRESTOREARRAY
 #define vecgetarray_          VECGETARRAY
 #define vecload_              VECLOAD
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define veccreateseq_         veccreateseq
 #define veccreate_            veccreate
 #define vecduplicate_         vecduplicate
@@ -30,6 +30,10 @@ static char vcid[] = "$Id: zvec.c,v 1.6 1995/11/28 18:54:24 curfman Exp curfman 
 #define vecload_              vecload
 #endif
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 void vecload_(Viewer bview,Vec *newvec, int *__ierr )
 { 
   Vec vv;
@@ -38,21 +42,21 @@ void vecload_(Viewer bview,Vec *newvec, int *__ierr )
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-void vecrestorearray_(Vec x,double *fa,int *ia,int *__ierr)
+void vecrestorearray_(Vec x,Scalar *fa,int *ia,int *__ierr)
 {
   Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
-  Scalar *lx = PetscDoubleAddressFromFortran(fa,*ia);
+  Scalar *lx = PetscScalarAddressFromFortran(fa,*ia);
 
   *__ierr = VecRestoreArray(xin,&lx);
 }
 
-void vecgetarray_(Vec x,double *fa,int *ia,int *__ierr)
+void vecgetarray_(Vec x,Scalar *fa,int *ia,int *__ierr)
 {
   Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
   Scalar *lx;
 
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
-  *ia      = PetscDoubleAddressToFortran(fa,lx);
+  *ia      = PetscScalarAddressToFortran(fa,lx);
 }
 
 void VecScatterdestroy_(VecScatter ctx, int *__ierr )
@@ -91,6 +95,7 @@ void veccreatempi_(MPI_Comm comm,int *n,int *N,Vec *vv, int *__ierr )
   *__ierr = VecCreateMPI((MPI_Comm)MPIR_ToPointer( *(int*)(comm) ),*n,*N,&lV);
   *(int*)vv = MPIR_FromPointer(lV);
 }
+
 void veccreateseq_(MPI_Comm comm,int *n,Vec *V, int *__ierr )
 {
   Vec lV;
@@ -110,3 +115,7 @@ void vecduplicate_(Vec v,Vec *newv, int *__ierr )
   *__ierr = VecDuplicate((Vec)MPIR_ToPointer( *(int*)(v) ),&lV);
   *(int*)newv = MPIR_FromPointer(lV);
 }
+
+#if defined(__cplusplus)
+}
+#endif

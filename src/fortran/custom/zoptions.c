@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.12 1995/12/02 19:17:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.13 1996/01/15 21:58:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ extern int          PetscBeganMPI;
 extern MPI_Datatype  MPIU_COMPLEX;
 #endif
 
-#ifdef FORTRANCAPS
+#ifdef HAVE_FORTRAN_CAPS
 #define optionsgetintarray_           OPTIONSGETINTARRAY
 #define optionssetvalue_              OPTIONSSETVALUE
 #define optionshasname_               OPTIONSHASNAME
@@ -29,7 +29,7 @@ extern MPI_Datatype  MPIU_COMPLEX;
 #define petscsetcommonblock_          PETSCSETCOMMONBLOCK
 #define petscsetfortranbasepointers_  PETSCSETFORTRANBASEPOINTERS
 #define optionsgetstring_             OPTIONSGETSTRING
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define optionssetvalue_              optionssetvalue
 #define optionshasname_               optionshasname
 #define optionsgetint_                optionsgetint
@@ -56,12 +56,12 @@ int OptionsCheckInitial_Private(),
 #define petscinitialize petscinitialize_
 #define iargc           iargc_
 #define getarg          getarg_
-#elif defined(FORTRANCAPS)
+#elif defined(HAVE_FORTRAN_CAPS)
 #define petscinitialize PETSCINITIALIZE
 #define mpi_init        MPI_INIT
 #define iargc           IARGC
 #define getarg          GETARG
-#elif defined(FORTRANUNDERSCORE)
+#elif defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize petscinitialize_
 #define mpi_init        mpi_init_
 #define iargc           iargc_
@@ -72,6 +72,8 @@ extern "C" {
 #endif
 extern void mpi_init(int*);
 extern void petscsetcommonblock_(int*,int*,int*);
+extern int  iargc_();
+extern void getarg_(int*,char*,int);
 #if defined(__cplusplus)
 }
 #endif
@@ -80,14 +82,7 @@ extern void petscsetcommonblock_(int*,int*,int*);
     Reads in Fortran command line argments and sends them to 
   all processors and adds them to Options database.
 */
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern int iargc_();
-extern void getarg_(int*,char*,int);
-#if defined(__cplusplus)
-}
-#endif
+
 int PETScParseFortranArgs_Private(int *argc,char ***argv)
 {
   int  i, warg = 256,rank;
@@ -123,6 +118,10 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   } 
   return 0;   
 }
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 void petscinitialize(int *err)
 {
@@ -335,6 +334,15 @@ void optionsgetstring_(char *pre,char *name,char *string,int *flg,
   *err = ierr;
 }
 
+void petscsetfortranbasepointers_(void *fnull)
+{
+  PETSC_NULL_Fortran  = fnull;
+}
+#if defined(__cplusplus)
+}
+#endif
+
+
 /*
     This is code for translating PETSc memory addresses to integer offsets 
     for Fortran.
@@ -351,29 +359,17 @@ int *PetscIntAddressFromFortran(int *base,int addr)
   return base + addr;
 }
 
-int PetscDoubleAddressToFortran(double *base,double *addr)
+int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
 {
-  int tmp1 = (int) base,tmp2 = tmp1/sizeof(double);
-  if (tmp2*sizeof(double) != tmp1) {
-    fprintf(stderr,"PetscDoubleAddressToFortran: unaligned Fortran double\n");
+  int tmp1 = (int) base,tmp2 = tmp1/sizeof(Scalar);
+  if (tmp2*sizeof(Scalar) != tmp1) {
+    fprintf(stderr,"PetscScalarAddressToFortran: unaligned Fortran double\n");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
-  return (((int)addr) - (int)base)/sizeof(double);
+  return (((int)addr) - (int)base)/sizeof(Scalar);
 }
 
-double *PetscDoubleAddressFromFortran(double *base,int addr)
+Scalar *PetscScalarAddressFromFortran(Scalar *base,int addr)
 {
   return base + addr;
 }
-
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-void petscsetfortranbasepointers_(void *fnull)
-{
-  PETSC_NULL_Fortran  = fnull;
-}
-#if defined(__cplusplus)
-}
-#endif
