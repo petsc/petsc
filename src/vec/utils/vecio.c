@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.41 1998/05/19 02:11:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.42 1998/05/19 02:27:14 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -9,8 +9,8 @@ static char vcid[] = "$Id: vecio.c,v 1.41 1998/05/19 02:11:59 bsmith Exp bsmith 
  */
 
 #include "petsc.h"
-#include "src/vec/impls/mpi/pvecimpl.h"
 #include "sys.h"
+#include "vec.h"
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
@@ -61,14 +61,14 @@ and PetscWriteBinary() to see how this may be done.
 @*/  
 int VecLoad(Viewer viewer,Vec *newvec)
 {
-  int         i, rows, ierr, type, fd,rank,size,n;
+  int         i, rows, ierr, type, fd,rank,size,n,*range,tag;
   Vec         vec;
-  Vec_MPI     *v;
   Scalar      *avec;
   MPI_Comm    comm;
   MPI_Request *requests;
   MPI_Status  status,*statuses;
   ViewerType  vtype;
+  Map         map;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
@@ -95,18 +95,20 @@ int VecLoad(Viewer viewer,Vec *newvec)
     if (size > 1) {
       /* read in other chuncks and send to other processors */
       /* determine maximum chunck owned by other */
+      ierr = VecGetMap(vec,&map);CHKERRQ(ierr);
+      ierr = MapGetGlobalRange(map,&range);CHKERRQ(ierr);
       n = 1;
-      v = (Vec_MPI*) vec->data;
       for ( i=1; i<size; i++ ) {
-        n = PetscMax(n,v->ownership[i] - v->ownership[i-1]);
+        n = PetscMax(n,range[i] - range[i-1]);
       }
       avec     = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(avec);
       requests = (MPI_Request *) PetscMalloc((size-1)*sizeof(MPI_Request));CHKPTRQ(requests);
       statuses = (MPI_Status *) PetscMalloc((size-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
+      ierr     = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
       for ( i=1; i<size; i++ ) {
-        n    = v->ownership[i+1]-v->ownership[i];
+        n    = range[i+1] - range[i];
         ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
-        ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);CHKERRQ(ierr);
+        ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,tag,comm,requests+i-1);CHKERRQ(ierr);
       }
       ierr = MPI_Waitall(size-1,requests,statuses);CHKERRQ(ierr);
       PetscFree(avec); PetscFree(requests); PetscFree(statuses);
@@ -116,7 +118,8 @@ int VecLoad(Viewer viewer,Vec *newvec)
     ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec); CHKERRQ(ierr);
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
-    ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,vec->tag,vec->comm,&status);CHKERRQ(ierr);
+    ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
+    ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
   }
   *newvec = vec;
