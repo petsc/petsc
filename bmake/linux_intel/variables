@@ -1,4 +1,4 @@
-# $Id: variables,v 1.6 2001/07/27 14:41:13 buschelm Exp balay $ 
+# $Id: variables,v 1.7 2001/08/22 17:58:22 balay Exp balay $ 
 #
 #     See the file bmake/variables.defs for a complete explanation of all these fields
 #
@@ -14,8 +14,8 @@ LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = icc -FPIC
-C_FC		   = ifc -w90 -FPIC
+C_CC		   = icc -KPIC
+C_FC		   = ifc -w90 -KPIC 
 C_CLINKER_SLFLAG   = -Qoption,link,-rpath,
 C_FLINKER_SLFLAG   = -Qoption,link,-rpath,
 C_CLINKER	   = icc 
@@ -32,8 +32,8 @@ O_COPTFLAGS	   = -O2 -use_msasm -xK
 O_FOPTFLAGS	   = -O2 -xK
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = icc -Kc++ -Kc++eh -FPIC
-CXX_FC		   = ifc -w90 -FPIC
+CXX_CC		   = icc -Kc++ -Kc++eh -KPIC
+CXX_FC		   = ifc -w90 -KPIC
 CXX_CLINKER_SLFLAG = -Qoption,link,-rpath,
 CXX_FLINKER_SLFLAG = -Qoption,link,-rpath,
 CXX_CLINKER	   = icc -Kc++
