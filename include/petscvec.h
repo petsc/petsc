@@ -125,7 +125,7 @@ typedef char *VecSerializeType;
 extern int VEC_COOKIE;
 extern int VEC_SCATTER_COOKIE;
 extern int VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot, VEC_NormBarrier;
-extern int VEC_Norm, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin;
+extern int VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin;
 extern int VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
 extern int VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
 
@@ -160,6 +160,7 @@ typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_1_AND_2=5}
 #define NORM_MAX NORM_INFINITY
 
 EXTERN int VecNorm(Vec,NormType,PetscReal *);
+EXTERN int VecNormalize(Vec,PetscReal *);
 EXTERN int VecSum(Vec,PetscScalar*);
 EXTERN int VecMax(Vec,int*,PetscReal *);
 EXTERN int VecMin(Vec,int*,PetscReal *);

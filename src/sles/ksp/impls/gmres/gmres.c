@@ -132,7 +132,7 @@ int GMREScycle(int *itcount,KSP ksp)
   PetscTruth   hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr    = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
+  ierr    = VecNormalize(VEC_VV(0),&res_norm);CHKERRQ(ierr);
   res     = res_norm;
   *GRS(0) = res_norm;
 
@@ -143,9 +143,6 @@ int GMREScycle(int *itcount,KSP ksp)
     PetscLogInfo(ksp,"GMRESCycle: Converged due to zero residual norm on entry\n");
     PetscFunctionReturn(0);
   }
-
-  /* scale VEC_VV (the initial residual) */
-  tmp = 1.0/res_norm; ierr = VecScale(&tmp,VEC_VV(0));CHKERRQ(ierr);
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
@@ -165,7 +162,7 @@ int GMREScycle(int *itcount,KSP ksp)
     ierr = (*gmres->orthog)(ksp,it);CHKERRQ(ierr);
 
     /* vv(i+1) . vv(i+1) */
-    ierr = VecNorm(VEC_VV(it+1),NORM_2,&tt);CHKERRQ(ierr);
+    ierr = VecNormalize(VEC_VV(it+1),&tt);CHKERRQ(ierr);
     /* save the magnitude */
     *HH(it+1,it)    = tt;
     *HES(it+1,it)   = tt;
@@ -173,9 +170,7 @@ int GMREScycle(int *itcount,KSP ksp)
     /* check for the happy breakdown */
     hapbnd  = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
-    if (tt > hapbnd) {
-      tmp = 1.0/tt; ierr = VecScale(&tmp,VEC_VV(it+1));CHKERRQ(ierr);
-    } else {
+    if (tt < hapbnd) {
       PetscLogInfo(ksp,"Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt);
       hapend = PETSC_TRUE;
     }
