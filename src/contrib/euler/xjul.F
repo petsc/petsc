@@ -68,8 +68,8 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
       AREA  = AREA+ABS(AJY(I,1,K))*.5
       CN    = CN-CP2(I,K)*AJY(I,1,K)
    42 CC    = CC-CP2(I,K)*AJX(I,1,K)
-      CLS   = CN*DCOS(-BETA)-CC*DSIN(-BETA)
-      CDS   = CN*DSIN(-BETA)+CC*DCOS(-BETA)
+      CLS   = CN*COS(-BETA)-CC*SIN(-BETA)
+      CDS   = CN*SIN(-BETA)+CC*COS(-BETA)
       CL(K) = CLS/AREA
       CD(K) = CDS/AREA
       AREAS = AREAS+AREA
@@ -451,8 +451,8 @@ c Compute and tabulate norms and the number of supersonic points in flowfield
       PBODY=0.5*(P(I,1,K)+P(I,2,K))
       CN=CN-(PBODY-RGAM)*AJY(I,1,K)
    42 CC=CC-(PBODY-RGAM)*AJX(I,1,K)
-      CLS=CN*DCOS(-BETA)-CC*DSIN(-BETA)
-      CDS=CN*DSIN(-BETA)+CC*DCOS(-BETA)
+      CLS=CN*COS(-BETA)-CC*SIN(-BETA)
+      CDS=CN*SIN(-BETA)+CC*COS(-BETA)
       AREAS=AREAS+AREA
       TCL=TCL+CLS
    41 TCD=TCD+CDS

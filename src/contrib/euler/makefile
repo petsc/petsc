@@ -1,7 +1,7 @@
 #
 # PETSc makefile for the Euler application code
 #
-# Organization:
+# Organization for application makefiles using PETSc:
 #  - Specify PETSc installation and user-defined compiler flags
 #  - Define application source code, program tests, and utilities
 #  - Specify "include" statement for using PETSc portable makefiles
@@ -10,12 +10,18 @@
 # Specify PETSc installation and user-defined compiler flags
 # -----------------------------------------------------------------------
 
-#  We use various PETSc installations as we move among machines.
-
-# PETSC_DIR = /home/curfman/petsc
-  PETSC_DIR = /tmp/petsc
-# PETSC_DIR = /ump/hpcc/home3/mcinnes/petsc
-# PETSC_DIR = /ump/hpcc/home3/mcinnes/work/petsc
+# Argonne tmp directories
+#   PETSC_DIR = /tmp/petsc
+# Argonne network
+    PETSC_DIR = /home/curfman/petsc
+# Power Challenge - NCSA
+#    PETSC_DIR = /u/ac/barrys/petsc
+# Cray T3E - NERSC
+#    PETSC_DIR = /u3/bsmith/petsc
+# Cray T3D - NERSC
+#    PETSC_DIR = /u/ddscf/bsmith/petsc
+# SP2 - NASA
+#   PETSC_DIR = /ump/hpcc/home3/mcinnes/work/petsc
 
 # ACTIVATE_JULIANNE - Flag to indicate that we activate the original 
 #    Julianne solver and thus must compile _all_ Fortran source, even
@@ -177,6 +183,7 @@ install_contrib: tar_euler
 #
 tar_euler:
 	cp $(SOURCEC) $(SOURCEF) $(SOURCEH) makefile nd.in euler 
+	chmod 664 euler/*
 	tar -cf euler.tar euler
 	gzip euler.tar
 
@@ -196,9 +203,9 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 #
 # We temporarily redefine some of the default compilation rules keep the
 # Fortran *.f files (generated from the *.F files) for use with debuggers
-# on certain machines.  This is dangerous and not portable!  Beware!
+# on certain machines.  This is dangerous and not portable! 
 
-# Compilation rule for rs6000 only (using debugger)!
+# Compilation rule for rs6000 only (using debugger)
 # Use the compiler option -C for array bounds checking
 #.F.o:
 #	-$(RM) $*.f
@@ -207,14 +214,14 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 ##	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 ##	-$(RM) $*.f
 
-# Compilation rule for freebsd only (using debugger)!
+# Compilation rule for freebsd only (using debugger)
 #.F.o:
 #	$(RM) $*.f
 #	-cpp $(CFLAGS)  $*.F > $*.f 
 #	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 ##	$(RM) $*.f
 
-# Compilation rule for sun4 only (using array bounds checking)!
+# Compilation rule for sun4, IRIX64 (using array bounds checking)
 #.F.o: 
 #	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) -C $*.F
 ##	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
