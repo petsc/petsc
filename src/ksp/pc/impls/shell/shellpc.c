@@ -179,8 +179,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve_Shell(PC pc,PetscErrorCode 
   PC_Shell *shell;
 
   PetscFunctionBegin;
-  shell           = (PC_Shell*)pc->data;
-  shell->presolve = presolve;
+  shell             = (PC_Shell*)pc->data;
+  shell->presolve   = presolve;
+  if (presolve) {
+    pc->ops->presolve = PCPreSolve_Shell;
+  } else {
+    pc->ops->presolve = 0;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -195,6 +200,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve_Shell(PC pc,PetscErrorCode
   PetscFunctionBegin;
   shell           = (PC_Shell*)pc->data;
   shell->postsolve = postsolve;
+  if (postsolve) {
+    pc->ops->postsolve = PCPostSolve_Shell;
+  } else {
+    pc->ops->postsolve = 0;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -670,8 +680,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
   pc->ops->applytranspose  = PCApplyTranspose_Shell;
   pc->ops->applyrichardson = 0;
   pc->ops->setup           = PCSetUp_Shell;
-  pc->ops->presolve        = PCPreSolve_Shell;
-  pc->ops->postsolve       = PCPostSolve_Shell;
+  pc->ops->presolve        = 0;
+  pc->ops->postsolve       = 0;
   pc->ops->view            = PCView_Shell;
 
   shell->apply          = 0;
