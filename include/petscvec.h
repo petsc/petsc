@@ -43,10 +43,10 @@ EXTERN PetscErrorCode PetscMapDestroy(PetscMap);
 
 EXTERN PetscErrorCode PetscMapSetLocalSize(PetscMap,PetscInt);
 EXTERN PetscErrorCode PetscMapGetLocalSize(PetscMap,PetscInt *);
-PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap m),(m,&s),PetscInt,s);
+PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap m),(m,&s),PetscInt,s)
 EXTERN PetscErrorCode PetscMapSetSize(PetscMap,PetscInt);
 EXTERN PetscErrorCode PetscMapGetSize(PetscMap,PetscInt *);
-PetscPolymorphicFunction(PetscMapGetSize,(PetscMap m),(m,&s),PetscInt,s);
+PetscPolymorphicFunction(PetscMapGetSize,(PetscMap m),(m,&s),PetscInt,s)
 EXTERN PetscErrorCode PetscMapGetLocalRange(PetscMap,PetscInt *,PetscInt *);
 EXTERN PetscErrorCode PetscMapGetGlobalRange(PetscMap,PetscInt *[]);
 
@@ -55,7 +55,7 @@ extern PetscFList PetscMapList;
 extern PetscTruth PetscMapRegisterAllCalled;
 EXTERN PetscErrorCode PetscMapSetType(PetscMap, const PetscMapType);
 EXTERN PetscErrorCode PetscMapGetType(PetscMap, PetscMapType *);
-PetscPolymorphicFunction(PetscMapGetType,(PetscMap m),(m,&t),PetscMapType,t);
+PetscPolymorphicFunction(PetscMapGetType,(PetscMap m),(m,&t),PetscMapType,t)
 EXTERN PetscErrorCode PetscMapRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscMap));
 EXTERN PetscErrorCode PetscMapRegisterAll(const char []);
 EXTERN PetscErrorCode PetscMapRegisterDestroy(void);
