@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.17 1995/03/25 01:26:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.18 1995/03/25 03:11:56 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -556,6 +556,59 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
       ierr = MatView(aij->B,viewer); CHKERR(ierr);
       fflush(fd);
       MPE_Seq_end(mat->comm,1);
+    }
+    else if (vobj->type == FILES_VIEWER) {
+      int numtids = aij->numtids, mytid = aij->mytid;
+      if (numtids == 1) {
+        ierr = MatView(aij->A,viewer); CHKERR(ierr);
+      }
+      else {
+        /* assemble the entire matrix onto first processor. */
+        Mat     A;
+        Mat_AIJ *Aaij;
+        int     M = aij->M, N = aij->N,m,n,*ai,*aj,row,*cols,i,*ct;
+        Scalar  *a;
+        if (!mytid) {
+          ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,0,0,0,&A);
+        }
+        else {
+          ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,0,0,0,&A);
+        }
+        CHKERR(ierr);
+
+        /* copy over the A part */
+        Aaij = (Mat_AIJ*) aij->A->data;
+        m = Aaij->m; n = Aaij->n; ai = Aaij->i; aj = Aaij->j; a = Aaij->a;
+        row = aij->rstart;
+        for ( i=0; i<ai[m]; i++ ) {aj[i] += aij->cstart - 1;}
+        for ( i=0; i<m; i++ ) {
+          ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],aj,a,InsertValues);
+          CHKERR(ierr);
+          row++; a += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
+        } 
+        aj = Aaij->j;
+        for ( i=0; i<ai[m]; i++ ) {aj[i] -= aij->cstart - 1;}
+
+        /* copy over the B part */
+        Aaij = (Mat_AIJ*) aij->B->data;
+        m = Aaij->m; n = Aaij->n; ai = Aaij->i; aj = Aaij->j; a = Aaij->a;
+        row = aij->rstart;
+        ct = cols = (int *) MALLOC( (ai[m]+1)*sizeof(int) ); CHKPTR(cols);
+        for ( i=0; i<ai[m]; i++ ) {cols[i] = aij->garray[aj[i]-1];}
+        for ( i=0; i<m; i++ ) {
+          ierr = MatSetValues(A,1,&row,ai[i+1]-ai[i],cols,a,InsertValues);
+          CHKERR(ierr);
+          row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
+        } 
+        FREE(ct);
+
+        ierr = MatBeginAssembly(A); CHKERR(ierr);
+        ierr = MatEndAssembly(A); CHKERR(ierr);
+        if (!mytid) {
+          ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERR(ierr);
+        }
+        ierr = MatDestroy(A); CHKERR(ierr);
+      }
     }
   }
   return 0;

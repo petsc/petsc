@@ -23,19 +23,19 @@ int main(int argc,char **argv)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid); 
 
-  ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,-1,&x); CHKERR(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,mytid+1,-1,&x); CHKERRA(ierr);
   ierr = VecGetSize(x,&N);
-  ierr = VecSet(&one,x);CHKERR(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
 
   for ( i=0; i<N-mytid; i++ ) {
-    ierr = VecSetValues(x,1,&i,&one,AddValues); CHKERR(ierr);  
+    ierr = VecSetValues(x,1,&i,&one,AddValues); CHKERRA(ierr);  
   }
-  ierr = VecBeginAssembly(x); CHKERR(ierr);
-  ierr = VecEndAssembly(x); CHKERR(ierr);
+  ierr = VecBeginAssembly(x); CHKERRA(ierr);
+  ierr = VecEndAssembly(x); CHKERRA(ierr);
 
-  VecView(x,STDOUT_VIEWER);
+  VecView(x,SYNC_STDOUT_VIEWER);
 
-  ierr = VecDestroy(x);CHKERR(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

@@ -11,16 +11,17 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscmat
 EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14\
-           ex15 ex16 ex17 ex18 ex19 ex20
+           ex15 ex16 ex17 ex18 ex19 ex20 ex21 ex22
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
            ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c\
-           ex19.c ex20.c
+           ex19.c ex20.c ex21.c ex22.c
 SYSLIB   = -L$(LDIR) -lpetscvec -lpetscsys -lpetscdraw\
            $(LAPACK_LIB) $(BLAS_LIB) \
            $(MPI_LIB) $(SYS_LIB) $(FC_LIB) $(X11_LIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 runexamples:
+	-@echo "Examples in src/mat/examples -----------"
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
            if (diff ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \
@@ -93,6 +94,10 @@ runexamples:
            if (diff ex20_1.out ex20_1.tmp) then true; \
            else echo "Possible problem with ex20_1, diffs above"; fi; \
            $(RM) -f ex20_1.tmp
+	-@$(MPIRUN)  ex22 > ex22_1.tmp 2>&1;   \
+           if (diff ex22_1.out ex22_1.tmp) then true; \
+           else echo "Possible problem with ex22_1, diffs above"; fi; \
+           $(RM) -f ex22_1.tmp
 
 ex1: ex1.o
 	-$(CLINKER)  -o ex1 ex1.o $(LIBNAME) $(SYSLIB)
@@ -177,5 +182,9 @@ ex20: ex20.o
 ex21: ex21.o
 	-$(CLINKER) -o ex21 ex21.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex21.o
+
+ex22: ex22.o
+	-$(CLINKER) -o ex22 ex22.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex22.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

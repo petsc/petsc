@@ -10,8 +10,8 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscis
-TESTS    = 
-TESTSC   = 
+EXAMPLES = ex1 ex2
+EXAMPLESC= ex1.c ex2.c
 SYSLIB   = -L$(LDIR) -lpetscvec -lpetscsys \
            $(BLAS_LIB) $(MPI_LIB) $(SYS_LIB) -lm 
 LINCLUDE = $(SOURCEH)

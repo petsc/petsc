@@ -17,20 +17,20 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  ierr = PCCreate(&pc);				CHKERR(ierr);
-  ierr = PCSetMethod(pc,PCNONE);		CHKERR(ierr);
+  ierr = PCCreate(&pc);				CHKERRA(ierr);
+  ierr = PCSetMethod(pc,PCNONE);		CHKERRA(ierr);
 
   /* Vector and matrix must be set before PCSetUp */
-  ierr = VecCreateSequential(n,&u);		CHKERR(ierr);
-  ierr = PCSetVector(pc,u);			CHKERR(ierr);
-  ierr = MatCreateSequentialAIJ(n,n,3,0,&mat);	CHKERR(ierr);
-  ierr = PCSetOperators(pc,mat,mat,0);		CHKERR(ierr);
+  ierr = VecCreateSequential(n,&u);		CHKERRA(ierr);
+  ierr = PCSetVector(pc,u);			CHKERRA(ierr);
+  ierr = MatCreateSequentialAIJ(n,n,3,0,&mat);	CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat,0);		CHKERRA(ierr);
 
-  ierr = PCSetUp(pc);				CHKERR(ierr);
+  ierr = PCSetUp(pc);				CHKERRA(ierr);
 
-  ierr = VecDestroy(u);				CHKERR(ierr);
-  ierr = MatDestroy(mat);			CHKERR(ierr);
-  ierr = PCDestroy(pc);				CHKERR(ierr);
+  ierr = VecDestroy(u);				CHKERRA(ierr);
+  ierr = MatDestroy(mat);			CHKERRA(ierr);
+  ierr = PCDestroy(pc);				CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

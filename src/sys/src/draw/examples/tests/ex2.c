@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,help);
 
   ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
-  CHKERR(ierr);
+  CHKERRA(ierr);
   for ( i=0; i<256; i++) {
     ierr = DrawLine(draw,0.0,((double)i)/256.,1.0,((double)i)/256.,i,i);
   }

@@ -64,13 +64,13 @@ int main(int Argc, char **Args)
 
   Create1dLaplacian(N[levels-1],&cmat);
 
-  ierr = SLESCreate(&slesmg); CHKERR(ierr);
-  ierr = SLESGetPC(slesmg,&pcmg); CHKERR(ierr);
-  ierr = SLESGetKSP(slesmg,&kspmg); CHKERR(ierr);
-  ierr = SLESSetFromOptions(slesmg); CHKERR(ierr);
-  ierr = PCSetMethod(pcmg,PCMG); CHKERR(ierr);
-  ierr = MGSetLevels(pcmg,levels); CHKERR(ierr);
-  ierr = MGSetMethod(pcmg,am); CHKERR(ierr);
+  ierr = SLESCreate(&slesmg); CHKERRA(ierr);
+  ierr = SLESGetPC(slesmg,&pcmg); CHKERRA(ierr);
+  ierr = SLESGetKSP(slesmg,&kspmg); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(slesmg); CHKERRA(ierr);
+  ierr = PCSetMethod(pcmg,PCMG); CHKERRA(ierr);
+  ierr = MGSetLevels(pcmg,levels); CHKERRA(ierr);
+  ierr = MGSetMethod(pcmg,am); CHKERRA(ierr);
 
   MGGetCoarseSolve(pcmg,&csles);
   SLESSetOperators(csles,cmat,cmat,0);
@@ -126,7 +126,7 @@ int main(int Argc, char **Args)
   CalculateError(solution,X[levels-1],R[levels-1],e);
   printf("l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
 
-  ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its); CHKERR(ierr);
+  ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its); CHKERRA(ierr);
   residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
   CalculateError(solution,X[levels-1],R[levels-1],e); 
   printf("its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);

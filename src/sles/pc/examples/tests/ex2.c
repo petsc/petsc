@@ -23,43 +23,43 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
 
-  ierr = VecCreateSequential(n,&b);     CHKERR(ierr);
-  ierr = VecCreateSequential(n,&ustar); CHKERR(ierr);
-  ierr = VecCreateSequential(n,&u);     CHKERR(ierr);
-  ierr = VecSet(&one,ustar);            CHKERR(ierr);
-  ierr = VecSet(&zero,u);               CHKERR(ierr);
+  ierr = VecCreateSequential(n,&b);     CHKERRA(ierr);
+  ierr = VecCreateSequential(n,&ustar); CHKERRA(ierr);
+  ierr = VecCreateSequential(n,&u);     CHKERRA(ierr);
+  ierr = VecSet(&one,ustar);            CHKERRA(ierr);
+  ierr = VecSet(&zero,u);               CHKERRA(ierr);
 
-  ierr = MatCreateSequentialAIJ(n,n,3,0,&mat); CHKERR(ierr);
+  ierr = MatCreateSequentialAIJ(n,n,3,0,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(mat,1,&i,3,col,value,InsertValues); CHKERR(ierr);
+    ierr = MatSetValues(mat,1,&i,3,col,value,InsertValues); CHKERRA(ierr);
   }
   i = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERR(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERRA(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERR(ierr);
-  ierr = MatBeginAssembly(mat); CHKERR(ierr);
-  ierr = MatEndAssembly(mat); CHKERR(ierr);
+  ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERRA(ierr);
+  ierr = MatBeginAssembly(mat); CHKERRA(ierr);
+  ierr = MatEndAssembly(mat); CHKERRA(ierr);
 
 
-  ierr = MatMult(mat,ustar,b); CHKERR(ierr);
+  ierr = MatMult(mat,ustar,b); CHKERRA(ierr);
 
-  ierr = PCCreate(&pc); CHKERR(ierr);
-  ierr = PCSetMethod(pc,PCNONE); CHKERR(ierr);
+  ierr = PCCreate(&pc); CHKERRA(ierr);
+  ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
   PCSetFromOptions(pc);
-  ierr = PCSetOperators(pc,mat,mat,0); CHKERR(ierr);
-  ierr = PCSetVector(pc,u);   CHKERR(ierr);
-  ierr = PCSetUp(pc); CHKERR(ierr);
+  ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);
+  ierr = PCSetVector(pc,u);   CHKERRA(ierr);
+  ierr = PCSetUp(pc); CHKERRA(ierr);
 
-  ierr = KSPCreate(&ksp); CHKERR(ierr);
-  ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERR(ierr);
+  ierr = KSPCreate(&ksp); CHKERRA(ierr);
+  ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERRA(ierr);
   KSPSetFromOptions(ksp);
-  ierr = KSPSetSolution(ksp,u); CHKERR(ierr);
-  ierr = KSPSetRhs(ksp,b); CHKERR(ierr);
-  ierr = PCSetOperators(pc,mat,mat,0); CHKERR(ierr);
-  ierr = KSPSetBinv(ksp,pc); CHKERR(ierr);
-  ierr = KSPSetUp(ksp); CHKERR(ierr);
+  ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
+  ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
+  ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);
+  ierr = KSPSetBinv(ksp,pc); CHKERRA(ierr);
+  ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
   KSPGetMethodFromContext(ksp,&kspmethod);
   KSPGetMethodName(kspmethod,&kspname);
@@ -67,17 +67,17 @@ int main(int argc,char **args)
   PCGetMethodName(pcmethod,&pcname);
   
   printf("Running %s with %s preconditioning\n",kspname,pcname);
-  ierr = KSPSolve(ksp,&its); CHKERR(ierr);
-  ierr = VecAXPY(&mone,ustar,u); CHKERR(ierr);
+  ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
+  ierr = VecAXPY(&mone,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,&norm);
   fprintf(stdout,"Number of iterations %d 2 norm error %g\n",its,norm);
 
-  ierr = KSPDestroy(ksp); CHKERR(ierr);
-  ierr = VecDestroy(u); CHKERR(ierr);
-  ierr = VecDestroy(ustar); CHKERR(ierr);
-  ierr = VecDestroy(b); CHKERR(ierr);
-  ierr = MatDestroy(mat); CHKERR(ierr);
-  ierr = PCDestroy(pc); CHKERR(ierr);
+  ierr = KSPDestroy(ksp); CHKERRA(ierr);
+  ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(ustar); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr);
+  ierr = MatDestroy(mat); CHKERRA(ierr);
+  ierr = PCDestroy(pc); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

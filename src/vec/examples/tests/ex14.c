@@ -27,26 +27,26 @@ int main(int argc,char **argv)
 
   /* create two vectors */
   N = numtids*n;
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&y); CHKERR(ierr);
-  ierr = VecCreateSequential(N,&x); CHKERR(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&y); CHKERRA(ierr);
+  ierr = VecCreateSequential(N,&x); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(n,0,1,&is1); CHKERR(ierr);
-  ierr = ISCreateStrideSequential(n,mytid,1,&is2); CHKERR(ierr);
+  ierr = ISCreateStrideSequential(n,0,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(n,mytid,1,&is2); CHKERRA(ierr);
 
   value = mytid+1; VecSet(&value,x);
 
-  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERR(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERR(ierr);
+  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERRA(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(y,SYNC_STDOUT_VIEWER);
 
-  ierr = VecDestroy(x);CHKERR(ierr);
-  ierr = VecDestroy(y);CHKERR(ierr);
-  ierr = ISDestroy(is1);CHKERR(ierr);
-  ierr = ISDestroy(is2);CHKERR(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = ISDestroy(is1);CHKERRA(ierr);
+  ierr = ISDestroy(is2);CHKERRA(ierr);
 
   PetscFinalize(); 
   return 0;

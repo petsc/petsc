@@ -28,34 +28,34 @@ int main(int argc,char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,numtids*n,&x); CHKERR(ierr);
-  ierr = VecCreateSequential(n,&y); CHKERR(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,numtids*n,&x); CHKERRA(ierr);
+  ierr = VecCreateSequential(n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(n,n*mytid,1,&is1); CHKERR(ierr);
-  ierr = ISCreateStrideSequential(n,0,1,&is2); CHKERR(ierr);
+  ierr = ISCreateStrideSequential(n,n*mytid,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(n,0,1,&is2); CHKERRA(ierr);
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
   for ( i=0; i<n; i++ ) {
     value = (Scalar) (i + 10*mytid);
-    ierr = VecSetValues(y,1,&i,&value,InsertValues); CHKERR(ierr);
+    ierr = VecSetValues(y,1,&i,&value,InsertValues); CHKERRA(ierr);
   }
-  ierr = VecBeginAssembly(y); CHKERR(ierr);
-  ierr = VecEndAssembly(y); CHKERR(ierr);
+  ierr = VecBeginAssembly(y); CHKERRA(ierr);
+  ierr = VecEndAssembly(y); CHKERRA(ierr);
 
-  ierr = VecScatterCtxCreate(y,is2,x,is1,&ctx); CHKERR(ierr);
+  ierr = VecScatterCtxCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(y,is2,x,is1,InsertValues,ScatterAll,ctx);
-  CHKERR(ierr);
-  ierr = VecScatterEnd(y,is2,x,is1,InsertValues,ScatterAll,ctx); CHKERR(ierr);
+  CHKERRA(ierr);
+  ierr = VecScatterEnd(y,is2,x,is1,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(x,SYNC_STDOUT_VIEWER);
 
-  ierr = VecDestroy(x);CHKERR(ierr);
-  ierr = VecDestroy(y);CHKERR(ierr);
-  ierr = ISDestroy(is1);CHKERR(ierr);
-  ierr = ISDestroy(is2);CHKERR(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = ISDestroy(is1);CHKERRA(ierr);
+  ierr = ISDestroy(is2);CHKERRA(ierr);
 
   PetscFinalize(); 
   return 0;

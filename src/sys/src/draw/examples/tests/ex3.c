@@ -31,7 +31,7 @@ int main(int argc,char **argv)
     xlabel = (char *)0; toplabel = (char *)0;
   }
   ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
-  CHKERR(ierr);
+  CHKERRA(ierr);
   ierr = DrawLGCreate(draw,1,&lg); CHKERR(ierr);
   ierr = DrawLGGetAxisCtx(lg,&axis); CHKERR(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);

@@ -22,35 +22,35 @@ int main(int argc,char **argv)
   OptionsGetInt(0,0,"-n",&n);
 
   /* create two vector */
-  ierr = VecCreateSequential(n,&x); CHKERR(ierr);
-  ierr = VecCreate(x,&y); CHKERR(ierr);
+  ierr = VecCreateSequential(n,&x); CHKERRA(ierr);
+  ierr = VecCreate(x,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateSequential(2,idx1,&is1); CHKERR(ierr);
-  ierr = ISCreateSequential(2,idx2,&is2); CHKERR(ierr);
+  ierr = ISCreateSequential(2,idx1,&is1); CHKERRA(ierr);
+  ierr = ISCreateSequential(2,idx2,&is2); CHKERRA(ierr);
 
 
-  ierr = VecSet(&one,x);CHKERR(ierr);
-  ierr = VecSet(&two,y);CHKERR(ierr);
-  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
+  ierr = VecSet(&two,y);CHKERRA(ierr);
+  ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,InsertValues,ScatterAll,ctx);
-  CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERR(ierr);
+  CHKERRA(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
   
   VecView(y,STDOUT_VIEWER);
 
   ierr = VecScatterBegin(y,is1,x,is2,InsertValues,ScatterAll,ctx);
-  CHKERR(ierr);
-  ierr = VecScatterEnd(y,is1,x,is2,InsertValues,ScatterAll,ctx); CHKERR(ierr);
-  ierr = VecScatterCtxDestroy(ctx); CHKERR(ierr);
+  CHKERRA(ierr);
+  ierr = VecScatterEnd(y,is1,x,is2,InsertValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
 
   printf("-------\n");VecView(x,STDOUT_VIEWER);
 
-  ierr = ISDestroy(is1); CHKERR(ierr);
-  ierr = ISDestroy(is2); CHKERR(ierr);
+  ierr = ISDestroy(is1); CHKERRA(ierr);
+  ierr = ISDestroy(is2); CHKERRA(ierr);
 
-  ierr = VecDestroy(x);CHKERR(ierr);
-  ierr = VecDestroy(y);CHKERR(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

@@ -23,29 +23,29 @@ int main(int argc,char **argv)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid); 
 
-  if (numtids < 2) SETERR(1,"Must be run with at least two processors");
+  if (numtids < 2) SETERRA(1,"Must be run with at least two processors");
 
   /* create two vector */
-  ierr = VecCreateSequential(n,&x); CHKERR(ierr);
-  ierr = VecCreateMPI(MPI_COMM_WORLD,n,-1,&y); CHKERR(ierr);
-  ierr = VecSet(&one,x);CHKERR(ierr);
-  ierr = VecSet(&two,y);CHKERR(ierr);
+  ierr = VecCreateSequential(n,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(MPI_COMM_WORLD,n,-1,&y); CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
+  ierr = VecSet(&two,y);CHKERRA(ierr);
 
   if (mytid == 1) {
-    idx = 2; ierr = VecSetValues(y,1,&idx,&three,InsertValues); CHKERR(ierr);  
-    idx = 0; ierr = VecSetValues(y,1,&idx,&two,InsertValues); CHKERR(ierr); 
-    idx = 0; ierr = VecSetValues(y,1,&idx,&one,InsertValues); CHKERR(ierr); 
+    idx = 2; ierr = VecSetValues(y,1,&idx,&three,InsertValues); CHKERRA(ierr);  
+    idx = 0; ierr = VecSetValues(y,1,&idx,&two,InsertValues); CHKERRA(ierr); 
+    idx = 0; ierr = VecSetValues(y,1,&idx,&one,InsertValues); CHKERRA(ierr); 
   }
   else {
-    idx = 7; ierr = VecSetValues(y,1,&idx,&three,InsertValues);CHKERR(ierr); 
+    idx = 7; ierr = VecSetValues(y,1,&idx,&three,InsertValues);CHKERRA(ierr); 
   } 
-  ierr = VecBeginAssembly(y); CHKERR(ierr);
-  ierr = VecEndAssembly(y); CHKERR(ierr);
+  ierr = VecBeginAssembly(y); CHKERRA(ierr);
+  ierr = VecEndAssembly(y); CHKERRA(ierr);
 
   VecView(y,SYNC_STDOUT_VIEWER);
 
-  ierr = VecDestroy(x);CHKERR(ierr);
-  ierr = VecDestroy(y);CHKERR(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

@@ -19,10 +19,10 @@ LINCLUDE = $(SOURCEH)
 
 runexamples:
 	-@echo "Examples in src/draw/examples -----------------"
-	-$(MPIRUN) ex1
-	-$(MPIRUN) ex2
-	-$(MPIRUN) ex3
-	-$(MPIRUN) ex4
+	-@$(MPIRUN) ex1
+	-@$(MPIRUN) ex2
+	-@$(MPIRUN) ex3
+	-@$(MPIRUN) ex4
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)

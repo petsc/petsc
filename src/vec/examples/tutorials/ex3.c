@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   OptionsGetInt(0,0,"-n",&n);
 
   /* create vector */
-  ierr = VecCreateSequential(n,&x); CHKERR(ierr);
+  ierr = VecCreateSequential(n,&x); CHKERRA(ierr);
 
   for ( i=0; i<n; i++ ) {
     v = (double) i;
@@ -32,16 +32,16 @@ int main(int argc,char **argv)
   VecBeginAssembly(x);
   VecEndAssembly(x);
 
-  ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,300,300,&win); CHKERR(ierr);
-  ierr = DrawLGCreate(win,1,&lg); CHKERR(ierr);
+  ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,300,300,&win); CHKERRA(ierr);
+  ierr = DrawLGCreate(win,1,&lg); CHKERRA(ierr);
 
   VecView(x,(Viewer) lg);
   sleep(2);
 
-  ierr = DrawLGDestroy(lg); CHKERR(ierr);
+  ierr = DrawLGDestroy(lg); CHKERRA(ierr);
 
-  ierr = DrawDestroy(win); CHKERR(ierr);
-  ierr = VecDestroy(x);CHKERR(ierr);
+  ierr = DrawDestroy(win); CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

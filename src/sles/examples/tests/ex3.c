@@ -49,7 +49,7 @@ int main(int argc,char **args)
 
   /* create stiffness matrix */
   ierr = MatCreateInitialMatrix(N,N,&C); 
-  CHKERR(ierr);
+  CHKERRA(ierr);
 
   start = mytid*(M/numtids) + ((M%numtids) < mytid ? (M%numtids) : mytid);
   end   = start + M/numtids + ((M%numtids) > mytid); 
@@ -63,16 +63,16 @@ int main(int argc,char **args)
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      MatSetValues(C,4,idx,4,idx,Ke,AddValues); 
   }
-  ierr = MatBeginAssembly(C); CHKERR(ierr);
-  ierr = MatEndAssembly(C); CHKERR(ierr);
+  ierr = MatBeginAssembly(C); CHKERRA(ierr);
+  ierr = MatEndAssembly(C); CHKERRA(ierr);
 
   /* create right hand side and solution */
 
-  ierr = VecCreateInitialVector(N,&u); CHKERR(ierr); 
+  ierr = VecCreateInitialVector(N,&u); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)u,"Approx. Solution");
-  ierr = VecCreate(u,&b); CHKERR(ierr);
+  ierr = VecCreate(u,&b); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)b,"Right hand side");
-  ierr = VecCreate(b,&ustar); CHKERR(ierr);
+  ierr = VecCreate(b,&ustar); CHKERRA(ierr);
   VecSet(&zero,u); VecSet(&zero,b);
 
   for ( i=start; i<end; i++ ) {
@@ -101,7 +101,7 @@ int main(int argc,char **args)
   for ( i=2*m+1; i<m*(m+1); i+= m+1 ) {
     rows[count++] = i;
   }
-  ierr = ISCreateSequential(4*m,rows,&is); CHKERR(ierr);
+  ierr = ISCreateSequential(4*m,rows,&is); CHKERRA(ierr);
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
@@ -109,28 +109,28 @@ int main(int argc,char **args)
      VecSetValues(b,1,&rows[i],&val,InsertValues); 
   }    
   FREE(rows);
-  ierr = VecBeginAssembly(u);  CHKERR(ierr);
-  ierr = VecEndAssembly(u); CHKERR(ierr);
-  ierr = VecBeginAssembly(b); CHKERR(ierr); 
-  ierr = VecEndAssembly(b); CHKERR(ierr);
+  ierr = VecBeginAssembly(u);  CHKERRA(ierr);
+  ierr = VecEndAssembly(u); CHKERRA(ierr);
+  ierr = VecBeginAssembly(b); CHKERRA(ierr); 
+  ierr = VecEndAssembly(b); CHKERRA(ierr);
 
-  ierr = MatZeroRows(C,is,&one); CHKERR(ierr);
+  ierr = MatZeroRows(C,is,&one); CHKERRA(ierr);
   ISDestroy(is);
 
   { Mat A;
-  ierr = MatCopy(C,&A); CHKERR(ierr);
-  ierr = MatDestroy(C); CHKERR(ierr);
-  ierr = MatCopy(A,&C); CHKERR(ierr);
-  ierr = MatDestroy(A); CHKERR(ierr);
+  ierr = MatCopy(C,&A); CHKERRA(ierr);
+  ierr = MatDestroy(C); CHKERRA(ierr);
+  ierr = MatCopy(A,&C); CHKERRA(ierr);
+  ierr = MatDestroy(A); CHKERRA(ierr);
   }
 
   /* solve linear system */
-  if ((ierr = SLESCreate(&sles))) SETERR(ierr,0);
-  if ((ierr = SLESSetOperators(sles,C,C,0))) SETERR(ierr,0);
-  if ((ierr = SLESSetFromOptions(sles))) SETERR(ierr,0);
+  if ((ierr = SLESCreate(&sles))) SETERRA(ierr,0);
+  if ((ierr = SLESSetOperators(sles,C,C,0))) SETERRA(ierr,0);
+  if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
   SLESGetKSP(sles,&ksp);
   KSPSetInitialGuessNonZero(ksp);
-  if ((ierr = SLESSolve(sles,b,u,&its))) SETERR(ierr,0);
+  if ((ierr = SLESSolve(sles,b,u,&its))) SETERRA(ierr,0);
 
   /* check error */
   VecGetOwnershipRange(ustar,&start,&end);
@@ -141,16 +141,16 @@ int main(int argc,char **args)
   }
   VecBeginAssembly(ustar); VecEndAssembly(ustar);
 
-  if ((ierr = VecAXPY(&none,ustar,u))) SETERR(ierr,0);
-  if ((ierr = VecNorm(u,&norm))) SETERR(ierr,0);
+  if ((ierr = VecAXPY(&none,ustar,u))) SETERRA(ierr,0);
+  if ((ierr = VecNorm(u,&norm))) SETERRA(ierr,0);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",norm*h,its);
 
   sleep(2);
-  ierr = SLESDestroy(sles); CHKERR(ierr);
-  ierr = VecDestroy(ustar); CHKERR(ierr);
-  ierr = VecDestroy(u); CHKERR(ierr);
-  ierr = VecDestroy(b); CHKERR(ierr);
-  ierr = MatDestroy(C); CHKERR(ierr);
+  ierr = SLESDestroy(sles); CHKERRA(ierr);
+  ierr = VecDestroy(ustar); CHKERRA(ierr);
+  ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr);
+  ierr = MatDestroy(C); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

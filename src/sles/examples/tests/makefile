@@ -20,6 +20,7 @@ SYSLIB    = -L$(LDIR) -lpetscstencil -lpetscgrid \
 LINCLUDE  = $(SOURCEH)
 
 runexamples:
+	-@echo "Examples in src/sles/examples -----------------"
 	-@$(MPIRUN) ex1 -kspmonitor > ex1_1.tmp 2>&1;   \
            if (diff ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \

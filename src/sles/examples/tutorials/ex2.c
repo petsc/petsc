@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   ierr = MatCreateInitialMatrix(m*n,m*n,&C); 
-  CHKERR(ierr);
+  CHKERRA(ierr);
 
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
@@ -40,32 +40,32 @@ int main(int argc,char **args)
       v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
     }
   }
-  ierr = MatBeginAssembly(C); CHKERR(ierr);
-  ierr = MatEndAssembly(C); CHKERR(ierr);
+  ierr = MatBeginAssembly(C); CHKERRA(ierr);
+  ierr = MatEndAssembly(C); CHKERRA(ierr);
 
-  ierr = VecCreateInitialVector(m*n,&u); CHKERR(ierr);
-  ierr = VecCreate(u,&b); CHKERR(ierr);
-  ierr = VecCreate(b,&x); CHKERR(ierr);
+  ierr = VecCreateInitialVector(m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(u,&b); CHKERRA(ierr);
+  ierr = VecCreate(b,&x); CHKERRA(ierr);
   VecSet(&one,u); VecSet(&zero,x);
 
   /* compute right hand side */
-  ierr = MatMult(C,u,b); CHKERR(ierr);
+  ierr = MatMult(C,u,b); CHKERRA(ierr);
 
-  if ((ierr = SLESCreate(&sles))) SETERR(ierr,0);
-  if ((ierr = SLESSetOperators(sles,C,C,0))) SETERR(ierr,0);
-  if ((ierr = SLESSetFromOptions(sles))) SETERR(ierr,0);
-  if ((ierr = SLESSolve(sles,b,x,&its))) SETERR(ierr,0);
+  if ((ierr = SLESCreate(&sles))) SETERRA(ierr,0);
+  if ((ierr = SLESSetOperators(sles,C,C,0))) SETERRA(ierr,0);
+  if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
+  if ((ierr = SLESSolve(sles,b,x,&its))) SETERRA(ierr,0);
 
   /* check error */
-  if ((ierr = VecAXPY(&none,u,x))) SETERR(ierr,0);
-  if ((ierr = VecNorm(x,&norm))) SETERR(ierr,0);
+  if ((ierr = VecAXPY(&none,u,x))) SETERRA(ierr,0);
+  if ((ierr = VecNorm(x,&norm))) SETERRA(ierr,0);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number of iterations %d\n",norm,its);
 
-  ierr = SLESDestroy(sles); CHKERR(ierr);
-  ierr = VecDestroy(u); CHKERR(ierr);
-  ierr = VecDestroy(x); CHKERR(ierr);
-  ierr = VecDestroy(b); CHKERR(ierr);
-  ierr = MatDestroy(C); CHKERR(ierr);
+  ierr = SLESDestroy(sles); CHKERRA(ierr);
+  ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr);
+  ierr = MatDestroy(C); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

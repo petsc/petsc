@@ -24,18 +24,18 @@ int main(int argc,char **argv)
   OptionsGetInt(0,0,"-n",&n);
 
   /* create a vector */
-  ierr = VecCreateInitialVector(n,&x); CHKERR(ierr);
-  ierr = VecCreate(x,&y); CHKERR(ierr);
-  ierr = VecCreate(x,&w); CHKERR(ierr);
-  ierr = VecGetVecs(x,3,&z); CHKERR(ierr); 
-  ierr = VecSet(&one,x);CHKERR(ierr);
-  ierr = VecSet(&two,y);CHKERR(ierr);
-  ierr = VecSet(&one,z[0]); CHKERR(ierr);
-  ierr = VecSet(&two,z[1]); CHKERR(ierr);
-  ierr = VecSet(&three,z[2]);CHKERR(ierr);
+  ierr = VecCreateInitialVector(n,&x); CHKERRA(ierr);
+  ierr = VecCreate(x,&y); CHKERRA(ierr);
+  ierr = VecCreate(x,&w); CHKERRA(ierr);
+  ierr = VecGetVecs(x,3,&z); CHKERRA(ierr); 
+  ierr = VecSet(&one,x);CHKERRA(ierr);
+  ierr = VecSet(&two,y);CHKERRA(ierr);
+  ierr = VecSet(&one,z[0]); CHKERRA(ierr);
+  ierr = VecSet(&two,z[1]); CHKERRA(ierr);
+  ierr = VecSet(&three,z[2]);CHKERRA(ierr);
   
-  ierr = VecDot(x,x,&dot); CHKERR(ierr);
-  ierr = VecMDot(3,x,z,dots); CHKERR(ierr);
+  ierr = VecDot(x,x,&dot); CHKERRA(ierr);
+  ierr = VecMDot(3,x,z,dots); CHKERRA(ierr);
 #if defined(PETSC_COMPLEX)
   fprintf(fd,"Vector length %d\n",(int) real(dot));
   fprintf(fd,"Vector length %d %d %d\n",(int)real(dots[0]),(int)real(dots[1]),
@@ -47,44 +47,44 @@ int main(int argc,char **argv)
 #endif
 
   fprintf(fd,"All other values should be near zero\n");
-  ierr = VecScale(&two,x);CHKERR(ierr);
-  ierr = VecNorm(x,&norm); CHKERR(ierr);
+  ierr = VecScale(&two,x);CHKERRA(ierr);
+  ierr = VecNorm(x,&norm); CHKERRA(ierr);
   fprintf(fd,"VecScale %g\n",norm-2.0*sqrt((double) n));
 
-  ierr = VecCopy(x,w);CHKERR(ierr);
-  ierr = VecNorm(w,&norm); CHKERR(ierr);
+  ierr = VecCopy(x,w);CHKERRA(ierr);
+  ierr = VecNorm(w,&norm); CHKERRA(ierr);
   fprintf(fd,"VecCopy  %g\n",norm-2.0*sqrt((double) n));
 
-  ierr = VecAXPY(&three,x,y);CHKERR(ierr);
-  ierr = VecNorm(y,&norm); CHKERR(ierr);
+  ierr = VecAXPY(&three,x,y);CHKERRA(ierr);
+  ierr = VecNorm(y,&norm); CHKERRA(ierr);
   fprintf(fd,"VecAXPY %g\n",norm-8.0*sqrt((double) n));
 
-  ierr = VecAYPX(&two,x,y);CHKERR(ierr);
-  ierr = VecNorm(y,&norm); CHKERR(ierr);
+  ierr = VecAYPX(&two,x,y);CHKERRA(ierr);
+  ierr = VecNorm(y,&norm); CHKERRA(ierr);
   fprintf(fd,"VecAXPY %g\n",norm-18.0*sqrt((double) n));
 
-  ierr = VecSwap(x,y);CHKERR(ierr);
-  ierr = VecNorm(y,&norm); CHKERR(ierr);
+  ierr = VecSwap(x,y);CHKERRA(ierr);
+  ierr = VecNorm(y,&norm); CHKERRA(ierr);
   fprintf(fd,"VecSwap  %g\n",norm-2.0*sqrt((double) n));
-  ierr = VecNorm(x,&norm); CHKERR(ierr);
+  ierr = VecNorm(x,&norm); CHKERRA(ierr);
   fprintf(fd,"VecSwap  %g\n",norm-18.0*sqrt((double) n));
 
-  ierr = VecWAXPY(&two,x,y,w);CHKERR(ierr);
-  ierr = VecNorm(w,&norm); CHKERR(ierr);
+  ierr = VecWAXPY(&two,x,y,w);CHKERRA(ierr);
+  ierr = VecNorm(w,&norm); CHKERRA(ierr);
   fprintf(fd,"VecWAXPY %g\n",norm-38.*sqrt((double) n));
 
-  ierr = VecPMult(y,x,w);CHKERR(ierr);
-  ierr = VecNorm(w,&norm);CHKERR(ierr); 
+  ierr = VecPMult(y,x,w);CHKERRA(ierr);
+  ierr = VecNorm(w,&norm);CHKERRA(ierr); 
   fprintf(fd,"VecPMult %g\n",norm-36.0*sqrt((double) n));
 
-  ierr = VecPDiv(x,y,w);CHKERR(ierr);
-  ierr = VecNorm(w,&norm); CHKERR(ierr);
+  ierr = VecPDiv(x,y,w);CHKERRA(ierr);
+  ierr = VecNorm(w,&norm); CHKERRA(ierr);
   fprintf(fd,"VecPDiv  %g\n",norm-9.0*sqrt((double) n));
   
-  ierr = VecDestroy(x);CHKERR(ierr);
-  ierr = VecDestroy(y);CHKERR(ierr);
-  ierr = VecDestroy(w);CHKERR(ierr);
-  ierr = VecFreeVecs(z,3);CHKERR(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = VecDestroy(w);CHKERRA(ierr);
+  ierr = VecFreeVecs(z,3);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
