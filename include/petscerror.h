@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.28 1998/12/04 23:31:39 bsmith Exp balay $ */
+/* $Id: petscerror.h,v 1.29 1998/12/10 22:51:34 balay Exp balay $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -73,13 +73,13 @@
 
 #if defined(USE_PETSC_DEBUG)
 #define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
-#define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
-#define SETERRQ1(n,p,s,a1) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1);}
-#define SETERRQ2(n,p,s,a1,a2) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2);}
-#define SETERRQ3(n,p,s,a1,a2,a3) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2,a3);}
+                          MPI_Abort(PETSC_COMM_WORLD,_ierr);}
+#define SETERRQ(n,p,s)              {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
+#define SETERRQ1(n,p,s,a1)          {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1);}
+#define SETERRQ2(n,p,s,a1,a2)       {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2);}
+#define SETERRQ3(n,p,s,a1,a2,a3)    {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2,a3);}
 #define SETERRQ4(n,p,s,a1,a2,a3,a4) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2,a3,a4);}
 
-                          MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)     {if (n) SETERRQ(n,0,(char *)0);}
 #define CHKERRA(n)     {if (n) SETERRA(n,0,(char *)0);}
 #define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,0,(char*)0);
