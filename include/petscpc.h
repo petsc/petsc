@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.117 2001/06/21 21:17:35 bsmith Exp buschelm $ */
+/* $Id: petscpc.h,v 1.118 2001/07/11 21:47:27 buschelm Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -173,7 +173,7 @@ EXTERN int PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
 EXTERN int PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN int PCILUSetAllowDiagonalFill(PC);
 EXTERN int PCILUSetDamping(PC,double);
-EXTERN int PCILUSetSetSinglePrecisionSolves(PC,PetscTruth);
+EXTERN int PCILUSetSinglePrecisionSolves(PC,PetscTruth);
 
 EXTERN int PCICCSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCICCSetFill(PC,double);
