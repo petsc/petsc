@@ -114,6 +114,8 @@ extern int MPIUNI_Memcpy(void*,void*,int);
 #define MPI_UNSIGNED        sizeof(unsigned)
 #define MPI_UNSIGNED_CHAR   sizeof(unsigned char)
 #define MPI_UNSIGNED_LONG   sizeof(unsigned long)
+#define MPI_COMPLEX         2*sizeof(float)
+#define MPI_DOUBLE_COMPLEX  2*sizeof(double)
 #define MPIU_PETSCLOGDOUBLE sizeof(PetscLogDouble)
 #define MPI_REQUEST_NULL    ((MPI_Request)0)
 #define MPI_GROUP_NULL      ((MPI_Group)0)
