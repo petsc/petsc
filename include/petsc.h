@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.293 2001/08/06 21:19:20 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.294 2001/08/07 03:05:29 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -169,7 +169,11 @@ typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
+#if defined(PETSC_USE_SINGLE)
+#define PETSC_SCALAR PETSC_FLOAT
+#else
 #define PETSC_SCALAR PETSC_DOUBLE
+#endif
 #endif
 #if defined(PETSC_USE_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
