@@ -78,7 +78,8 @@ examples_1: chkopts
 	  (for ex in $(EXAMPLES_1) foo ; do \
 	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
 	  > trashz 2>&1; \
-	  grep -v clog trashz | grep -v "information sections" | \
+	  grep -v clog trashz | grep -v "information sections" |\
+          grep -v "preempts that definition" | \
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz;\
@@ -98,6 +99,7 @@ examples_2: chkopts
 	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
 	  > trashz 2>&1; \
 	  grep -v clog trashz | grep -v "information sections" | \
+          grep -v "preempts that definition" | \
 	  egrep -i '(Error|warning|Can)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz;\
@@ -136,6 +138,7 @@ examples_4: chkopts
 	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
 	  > trashz 2>&1; \
 	  grep -v clog trashz | grep -v "information sections" | \
+          grep -v "preempts that definition" | \
 	  egrep -i '(Error|warning|Can)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz;\
@@ -155,6 +158,7 @@ examples_5: chkopts
 	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
 	  > trashz 2>&1; \
 	  grep -v clog trashz | grep -v "information sections" | \
+          grep -v "preempts that definition" | \
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz;\
