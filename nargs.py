@@ -254,7 +254,9 @@ class ArgDir(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
+    import os.path
     # Should check whether it is a well-formed path
+    value = os.path.expanduser(value)
     if self.mustExist and not os.path.isdir(value):
       raise TypeError('Invalid directory: '+str(value)+' for key '+str(self.key))
     self.value = value
@@ -289,9 +291,14 @@ class ArgDirList(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
+    import os.path
     if not isinstanceof(value, list):
       value = [value]
     # Should check whether it is a well-formed path
+    nvalue = []
+    for dir in value:
+      nvalue.append(os.path.expanduser(dir))
+    value = nvalue
     for dir in value:
       if self.mustExist and not os.path.isdir(dir):
         raise TypeError('Invalid directory: '+str(dir)+' for key '+str(self.key))
