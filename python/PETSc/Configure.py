@@ -2,6 +2,7 @@ import config.base
 
 import commands
 import os
+import os.path
 import re
 
 class Configure(config.base.Configure):
@@ -62,6 +63,56 @@ class Configure(config.base.Configure):
     self.blocksolve.headerPrefix  = self.headerPrefix
     self.netcdf.headerPrefix      = self.headerPrefix
     return
+
+  #  this sucks, I have to call this after constructor, but by then configure is essentially done
+  #  Matt needs to rearrange things so this can be called before the configure of compilers but still have
+  #  argDB and log file
+  #
+  #  Other issues: it tries to get the patch and apply everytime configure is called. Only safe way
+  #  but still seems like overkill. 
+  def updatepatches(self):
+    if not os.path.isdir('BitKeeper_test') and self.framework.argDB.has_key('disable-update'): return
+    self.framework.getExecutable('patch')
+    if not hasattr(self.framework, 'patch'):
+      self.framework.log.write('Cannot find patch program.\nContinuing configure without patches.\n')
+      return
+    # on solaris and alpha make sure patch is gnupatch?
+
+    # Get PETSc current version number
+    if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
+      raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
+    fd  = open(os.path.join(self.dir, 'include', 'petscversion.h'))
+    pv = fd.read()
+    fd.close()
+    try:
+      majorversion    = re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1)
+      minorversion    = re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1)
+      subminorversion = re.compile(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)').search(pv).group(1)
+    except:
+      raise RuntimeError('Unable to find version information from include/petscversion.h')
+    version=str(majorversion)+'.'+str(minorversion)+'.'+str(subminorversion)
+    
+    self.framework.log.write('Downloading latest patches for version '+version+'\n')
+    patchfile1 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/petsc_patch_all-'+version
+    patchfile2 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/buildsystem_patch_all-'+version
+    import urllib
+    try:
+      urllib.urlretrieve(patchfile1, 'patches1')
+      urllib.urlretrieve(patchfile2, 'patches2')
+    except:
+      self.framework.log.write('Unable to download patches. Perhaps you are off the network?\nContinuing configure without patches.\n')
+      return
+    import commands
+    (status1,output1) = commands.getstatusoutput('echo patch -Np1 < patches1')
+    (status2,output2) = commands.getstatusoutput('cd python/BuildSystem; echo patch -Np1 < ../../patches2')
+    os.unlink('patches1')
+    os.unlink('patches2')
+    if status1 or output1.find('error') >= 0 or status2 or output2.find('error') >= 0:
+      self.framework.log.write('Error applying patches. Continuing configure anyways.\n')
+      self.framework.log.write(output1+'\n')
+      self.framework.log.write(output2+'\n')
+      return
+    return 
 
   def configureHelp(self, help):
     import nargs
@@ -815,8 +866,10 @@ acfindx:
       self.framework.log.write('Document files found\n')
     return
 
+ 
   def configure(self):
     self.executeTest(self.configureDirectories)
+    self.updatepatches()
     self.executeTest(self.checkRequirements)
     self.executeTest(self.configureArchitecture)
     self.framework.header = 'bmake/'+self.arch+'/petscconf.h'
