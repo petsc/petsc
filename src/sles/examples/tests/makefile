@@ -264,7 +264,8 @@ runex8_2:
 	   $(RM) -f ex8_2.tmp
 
 # Note: We test these BlockSolve95 examples differently from the usual
-# because the coloring heuristic is machine-dependent.
+# because the coloring heuristic is machine-dependent; convergence rates
+# may differ slightly on various architectures.
 runex8_3:
 	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs -ksp_rtol .000001;\
 	echo "This is program tested the ICC preconditioner in BlockSolve95."
