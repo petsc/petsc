@@ -34,13 +34,13 @@ class Configure(config.base.Configure):
           TRADITIONAL_CPP = ''
         # Fortran does NOT handle CPP macros 
         self.addMakeRule('.F.o .F90.o','',['${RM} __$*.F __$*.c',\
-                                           '${CP} $*.F __$*.c',\
-                                           '${CC} ${FPP_FLAGS} -E '+TRADITIONAL_CPP+' ${FC_INCLUDES}  __$*.c | grep -v \'^ *#\' > __$*.F',\
+                                           '${GREP} -v "^!" $*.F > __$*.c',\
+                                           '${CC} ${FPP_FLAGS} -E '+TRADITIONAL_CPP+' ${FC_INCLUDES}  __$*.c | ${GREP} -v \'^ *#\' > __$*.F',\
                                            '${FC} -c ${FFLAGS} ${FC_FLAGS} __$*.F -o $*.o',\
-                                           '${RM} __$*.F __$*.c'])
+                                           'if [ "${SKIP_RM}" != "yes" ] ;then  ${RM} __$*.F __$*.c ; fi'])
         self.addMakeRule('.F.a',       '',['${RM} __$*.F __$*.c',\
-                                           '${CP} $*.F __$*.c',\
-                                           '${CC} ${FPP_FLAGS} -E '+TRADITIONAL_CPP+' ${FC_INCLUDES}  __$*.c | grep -v \'^ *#\' > __$*.F',\
+                                           '${GREP} -v "^!" $*.F > __$*.c',\
+                                           '${CC} ${FPP_FLAGS} -E '+TRADITIONAL_CPP+' ${FC_INCLUDES}  __$*.c | ${GREP} -v \'^ *#\' > __$*.F',\
                                            '${FC} -c ${FFLAGS} ${FC_FLAGS} __$*.F -o $*.o',\
                                            '${AR} cr ${LIBNAME} $*.o',\
                                            '${RM} __$*.F __$*.c'])
