@@ -125,7 +125,9 @@ class compilerOptions(config.base.Configure):
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
-          flags.append('-MT -GX -GR')
+          flags.append('-MT -GR')
+          if not self.addCompilerFlag('-EHsc'):
+            self.addCompilerFlag('-GX')
         elif bopt == 'g':
           flags.append('-Z7')
         elif bopt == 'O':
