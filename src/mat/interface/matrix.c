@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.171 1996/05/03 19:26:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.172 1996/05/11 04:04:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1079,6 +1079,9 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   if (newtype == mat->type || newtype == MATSAME) {
     if (mat->ops.convertsametype) { /* customized copy */
       ierr = (*mat->ops.convertsametype)(mat,M,COPY_VALUES); CHKERRQ(ierr);
+    }
+    else { /* generic conversion */
+      ierr = MatConvert_Basic(mat,newtype,M); CHKERRQ(ierr);
     }
   }
   else if (mat->ops.convert) { /* customized conversion */
