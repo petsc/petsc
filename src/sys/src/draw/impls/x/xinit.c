@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.54 1999/03/01 19:36:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.55 1999/03/01 19:41:58 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -195,6 +195,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
   ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 ); CHKERRQ(ierr);
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
+  XSetWindowBackground( w->disp, w->win, w->cmapping[0] );
 
 
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
@@ -232,10 +233,9 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );
   w->x = w->y = 0;
 
-
-
   XiSetGC( w, w->cmapping[1] );
   XiSetPixVal(w, w->background );
+  XSetWindowBackground( w->disp, w->win, w->cmapping[0] );
   ierr = XiFontFixed( w,6, 10,&w->font ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

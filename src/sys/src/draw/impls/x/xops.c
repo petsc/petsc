@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.124 1999/01/31 16:05:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.125 1999/02/26 04:43:05 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -266,7 +266,7 @@ static int DrawSynchronizedClear_X(Draw Win)
   ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
   MPI_Comm_rank(Win->comm,&rank);
   if (!rank) {
-    DrawClear_X(Win);
+    ierr = DrawClear_X(Win);CHKERRQ(ierr);
   }
   XFlush( XiWin->disp );
   ierr = MPI_Barrier(Win->comm);CHKERRQ(ierr);
