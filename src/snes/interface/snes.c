@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.23 1995/10/19 22:28:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.24 1995/11/01 19:12:03 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -410,7 +410,7 @@ int SNESCreate(MPI_Comm comm,SNESType type,SNES *outsnes)
   SNES snes;
   SNES_KSP_EW_ConvCtx *kctx;
   *outsnes = 0;
-  PETSCHEADERCREATE(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
+  PetscHeaderCreate(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
   PLogObjectCreate(snes);
   snes->max_its           = 50;
   snes->max_funcs	  = 1000;
@@ -435,7 +435,7 @@ int SNESCreate(MPI_Comm comm,SNESType type,SNES *outsnes)
   snes->ksp_ewconv        = 0;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
-  kctx = PETSCNEW(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
+  kctx = PetscNew(SNES_KSP_EW_ConvCtx); CHKPTRQ(kctx);
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
   kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but 
@@ -859,11 +859,11 @@ int SNESDestroy(SNES snes)
   int ierr;
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   ierr = (*(snes)->destroy)((PetscObject)snes); CHKERRQ(ierr);
-  if (snes->kspconvctx) PETSCFREE(snes->kspconvctx);
+  if (snes->kspconvctx) PetscFree(snes->kspconvctx);
   if (snes->mfshell) MatDestroy(snes->mfshell);
   ierr = SLESDestroy(snes->sles); CHKERRQ(ierr);
   PLogObjectDestroy((PetscObject)snes);
-  PETSCHEADERDESTROY((PetscObject)snes);
+  PetscHeaderDestroy((PetscObject)snes);
   return 0;
 }
 
@@ -1298,7 +1298,7 @@ int SNESSetMethod(SNES snes,SNESMethod method)
   if (!__NLList) {SETERRQ(1,"SNESSetMethod:Could not get methods");}
   r =  (int (*)(SNES))NRFindRoutine( __NLList, (int)method, (char *)0 );
   if (!r) {SETERRQ(1,"SNESSetMethod:Unknown method");}
-  if (snes->data) PETSCFREE(snes->data);
+  if (snes->data) PetscFree(snes->data);
   snes->set_method_called = 1;
   return (*r)(snes);
 }

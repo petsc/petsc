@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.48 1995/10/17 21:41:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.49 1995/10/19 22:20:50 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -37,9 +37,9 @@ static int PCDestroy_BJacobi(PetscObject obj)
 {
   PC         pc = (PC) obj;
   PC_BJacobi *jac = (PC_BJacobi *) pc->data;
-  if (jac->g_lens) PETSCFREE(jac->g_lens);
-  if (jac->l_lens) PETSCFREE(jac->l_lens);
-  PETSCFREE(jac);
+  if (jac->g_lens) PetscFree(jac->g_lens);
+  if (jac->l_lens) PetscFree(jac->l_lens);
+  PetscFree(jac);
   return 0;
 }
 
@@ -174,7 +174,7 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
 int PCCreate_BJacobi(PC pc)
 {
   int          rank,size;
-  PC_BJacobi   *jac = PETSCNEW(PC_BJacobi); CHKPTRQ(jac);
+  PC_BJacobi   *jac = PetscNew(PC_BJacobi); CHKPTRQ(jac);
 
   MPI_Comm_rank(pc->comm,&rank);
   MPI_Comm_size(pc->comm,&size);
@@ -230,7 +230,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
     jac->g_lens = 0;
   }
   else {
-    jac->g_lens = (int *) PETSCMALLOC( blocks*sizeof(int) ); CHKPTRQ(jac->g_lens);
+    jac->g_lens = (int *) PetscMalloc( blocks*sizeof(int) ); CHKPTRQ(jac->g_lens);
     PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
   }
   return 0;
@@ -265,7 +265,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
     jac->l_lens = 0;
   }
   else {
-    jac->l_lens = (int *) PETSCMALLOC( blocks*sizeof(int) ); CHKPTRQ(jac->l_lens);
+    jac->l_lens = (int *) PetscMalloc( blocks*sizeof(int) ); CHKPTRQ(jac->l_lens);
     PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
   }
   return 0;

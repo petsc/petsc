@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.28 1995/10/12 04:15:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.29 1995/11/01 19:09:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -58,7 +58,7 @@ int main(int Argc, char **Args)
   if (OptionsHasName(0,"-f")) {am = MGFULL;}
   if (OptionsHasName(0,"-j")) {use_jacobi = 1;}
          
-  N = (int *) PETSCMALLOC(levels*sizeof(int)); CHKPTRA(N);
+  N = (int *) PetscMalloc(levels*sizeof(int)); CHKPTRA(N);
   N[0] = x_mesh;
   for ( i=1; i<levels; i++ ) {
     N[i] = N[i-1]/2;
@@ -151,7 +151,7 @@ int main(int Argc, char **Args)
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
 
-  PETSCFREE(N);
+  PetscFree(N);
   ierr = VecDestroy(solution); CHKERRA(ierr);
 
   /* note we have to keep a list of all vectors allocated, this is 

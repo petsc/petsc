@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sp1wd.c,v 1.9 1995/08/15 20:28:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sp1wd.c,v 1.10 1995/09/30 19:29:19 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -12,12 +12,12 @@ int MatOrder1WD(int *Nrow, int *ia, int *ja, int * perm,int *permc )
 {
 int i,   *mask, *xls, nblks, *xblk, *ls, nrow = *Nrow;
 
-mask = (int *)PETSCMALLOC( nrow * sizeof(int) );     CHKPTRQ(mask);
-xls  = (int *)PETSCMALLOC( (nrow+1) * sizeof(int) ); CHKPTRQ(xls);
-ls   = (int *)PETSCMALLOC( nrow * sizeof(int) );     CHKPTRQ(ls);
-xblk = (int *)PETSCMALLOC( nrow * sizeof(int) );     CHKPTRQ(xblk);
+mask = (int *)PetscMalloc( nrow * sizeof(int) );     CHKPTRQ(mask);
+xls  = (int *)PetscMalloc( (nrow+1) * sizeof(int) ); CHKPTRQ(xls);
+ls   = (int *)PetscMalloc( nrow * sizeof(int) );     CHKPTRQ(ls);
+xblk = (int *)PetscMalloc( nrow * sizeof(int) );     CHKPTRQ(xblk);
 gen1wd( &nrow, ia, ja, mask, &nblks, xblk, perm, xls, ls );
-PETSCFREE( mask ); PETSCFREE( xls ); PETSCFREE( ls ); PETSCFREE( xblk );
+PetscFree( mask ); PetscFree( xls ); PetscFree( ls ); PetscFree( xblk );
 for (i=0; i<nrow; i++) perm[i]--;
 PetscMemcpy(permc,perm,nrow*sizeof(int));
 return 0;

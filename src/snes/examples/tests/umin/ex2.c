@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.11 1995/09/21 20:12:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.12 1995/09/30 19:31:36 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   user.hx = one/(double)(mx+1);
   user.hy = one/(double)(my+1);
   if (user.problem == 2) {
-    user.work = (double*)PETSCMALLOC(2*(mx+my+4)*sizeof(double)); 
+    user.work = (double*)PetscMalloc(2*(mx+my+4)*sizeof(double)); 
     CHKPTRQ(user.work);
   } else {
     user.work = 0;
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
   MPIU_printf(MPI_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
 
   /* Free data structures */
-  if (user.work) PETSCFREE(user.work); 
+  if (user.work) PetscFree(user.work); 
   ierr = VecDestroy(user.s); CHKERRA(ierr);
   ierr = VecDestroy(user.y); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
@@ -281,10 +281,10 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   for (j=0; j<ny; j++) {
-    temp = PETSCMIN(j+1,ny-j)*hy;
+    temp = PetscMin(j+1,ny-j)*hy;
     for (i=0; i<nx; i++) {
       k = nx*j + i;
-      x[k] = PETSCMIN((PETSCMIN(i+1,nx-i))*hx,temp);
+      x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
     }
   }
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);

@@ -24,7 +24,7 @@ int StashBuild_Private(Stash *stash)
 {
   stash->nmax  = CHUNCKSIZE; /* completely arbitrary number */
   stash->n     = 0;
-  stash->array = (Scalar *) PETSCMALLOC( stash->nmax*(2*sizeof(int) +
+  stash->array = (Scalar *) PetscMalloc( stash->nmax*(2*sizeof(int) +
                             sizeof(Scalar))); CHKPTRQ(stash->array);
   stash->idx   = (int *) (stash->array + stash->nmax); CHKPTRQ(stash->idx);
   stash->idy   = (int *) (stash->idx + stash->nmax); CHKPTRQ(stash->idy);
@@ -34,7 +34,7 @@ int StashBuild_Private(Stash *stash)
 int StashDestroy_Private(Stash *stash)
 {
   stash->nmax = stash->n = 0;
-  if (stash->array) {PETSCFREE(stash->array); stash->array = 0;}
+  if (stash->array) {PetscFree(stash->array); stash->array = 0;}
   return 0;
 }
 
@@ -59,14 +59,14 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,
     if (!found) { /* not found so add to end */
       if ( stash->n == stash->nmax ) {
         /* allocate a larger stash */
-        n_array = (Scalar *) PETSCMALLOC( (stash->nmax + CHUNCKSIZE)*(
+        n_array = (Scalar *) PetscMalloc( (stash->nmax + CHUNCKSIZE)*(
                                      2*sizeof(int)+sizeof(Scalar)));CHKPTRQ(n_array);
         n_idx = (int *) (n_array + stash->nmax + CHUNCKSIZE);
         n_idy = (int *) (n_idx + stash->nmax + CHUNCKSIZE);
         PetscMemcpy(n_array,stash->array,stash->nmax*sizeof(Scalar));
         PetscMemcpy(n_idx,stash->idx,stash->nmax*sizeof(int));
         PetscMemcpy(n_idy,stash->idy,stash->nmax*sizeof(int));
-        if (stash->array) PETSCFREE(stash->array);
+        if (stash->array) PetscFree(stash->array);
         stash->array = n_array; stash->idx = n_idx; stash->idy = n_idy;
         stash->nmax += CHUNCKSIZE;
       }

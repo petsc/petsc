@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.30 1995/09/30 19:27:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.31 1995/10/11 15:18:56 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
@@ -151,7 +151,7 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,int number,
 int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),
                           void *ctx )
 {
-  struct  EH *neweh = (struct EH*) PETSCMALLOC(sizeof(struct EH)); CHKPTRQ(neweh);
+  struct  EH *neweh = (struct EH*) PetscMalloc(sizeof(struct EH)); CHKPTRQ(neweh);
   if (eh) {neweh->previous = eh;} 
   else {neweh->previous = 0;}
   neweh->handler = handler;
@@ -173,7 +173,7 @@ int PetscPopErrorHandler()
   if (!eh) return 0;
   tmp = eh;
   eh = eh->previous;
-  PETSCFREE(tmp);
+  PetscFree(tmp);
 
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.32 1995/10/11 17:52:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.33 1995/10/22 04:16:56 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -42,9 +42,9 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 static int ISDestroy_Stride(PetscObject obj)
 {
   IS is = (IS) obj;
-  PETSCFREE(is->data); 
+  PetscFree(is->data); 
   PLogObjectDestroy(is);
-  PETSCHEADERDESTROY(is); return 0;
+  PetscHeaderDestroy(is); return 0;
 }
 
 static int ISGetIndices_Stride(IS in,int **idx)
@@ -53,7 +53,7 @@ static int ISGetIndices_Stride(IS in,int **idx)
   int       i;
 
   if (sub->n) {
-    *idx = (int *) PETSCMALLOC(sub->n*sizeof(int)); CHKPTRQ(idx);
+    *idx = (int *) PetscMalloc(sub->n*sizeof(int)); CHKPTRQ(idx);
     (*idx)[0] = sub->first;
     for ( i=1; i<sub->n; i++ ) (*idx)[i] = (*idx)[i-1] + sub->step;
   }
@@ -63,7 +63,7 @@ static int ISGetIndices_Stride(IS in,int **idx)
 
 static int ISRestoreIndices_Stride(IS in,int **idx)
 {
-  if (*idx) PETSCFREE(*idx);
+  if (*idx) PetscFree(*idx);
   return 0;
 }
 
@@ -130,10 +130,10 @@ int ISCreateStrideSeq(MPI_Comm comm,int n,int first,int step,IS *is)
    if (n < 0) SETERRQ(1,"ISCreateStrideSeq:Number of indices < 0");
   if (step == 0) SETERRQ(1,"ISCreateStrideSeq:Step must be nonzero");
 
-  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,IS_STRIDE_SEQ,comm); 
+  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_STRIDE_SEQ,comm); 
   PLogObjectCreate(Nindex);
   PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _IS));
-  sub            = (IS_Stride *) PETSCMALLOC(sizeof(IS_Stride)); CHKPTRQ(sub);
+  sub            = (IS_Stride *) PetscMalloc(sizeof(IS_Stride)); CHKPTRQ(sub);
   sub->n         = n;
   sub->first     = first;
   sub->step      = step;

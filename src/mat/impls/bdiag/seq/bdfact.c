@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.21 1995/10/16 20:29:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.22 1995/11/01 19:10:40 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -85,7 +85,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
         pivoting is used only within the dense subblocks. 
    */
   if (nb == 1) {
-    dgptr = (int *) PETSCMALLOC((m+n)*sizeof(int)); CHKPTRQ(dgptr);
+    dgptr = (int *) PetscMalloc((m+n)*sizeof(int)); CHKPTRQ(dgptr);
     PetscMemzero(dgptr,(m+n)*sizeof(int));
     for ( k=0; k<nd; k++ ) dgptr[diag[k]+m] = k+1;
     for ( k=0; k<m; k++ ) { /* k = pivot_row */
@@ -112,17 +112,17 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
         }
       }
     }
-    PETSCFREE(dgptr);
+    PetscFree(dgptr);
   } 
   else {
     if (!a->pivot) {
       /* Comment: We have chosen to hide column permutation in the pivots,
                   rather than put it in the Mat->col slot. */
-      a->pivot = (int *) PETSCMALLOC(m*sizeof(int)); CHKPTRQ(a->pivot);
+      a->pivot = (int *) PetscMalloc(m*sizeof(int)); CHKPTRQ(a->pivot);
       PLogObjectMemory(C,m*sizeof(int));
     }
     nb2 = nb*nb;
-    dgptr = (int *) PETSCMALLOC((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
+    dgptr = (int *) PetscMalloc((mblock+nblock)*sizeof(int)); CHKPTRQ(dgptr);
     PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));
     for ( k=0; k<nd; k++ ) dgptr[diag[k]+mblock] = k+1;
     for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
@@ -154,7 +154,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
         }
       }
     }
-    PETSCFREE(dgptr);
+    PetscFree(dgptr);
   }
   C->factor = FACTOR_LU;
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.18 1995/10/17 21:43:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.19 1995/11/01 19:12:13 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -92,7 +92,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
         } else {
           CHKERRQ(ierr);
           if (PetscAbsScalar(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UMTR:Hessian norm is too small");
-          delta = PETSCMAX(delta,*gnorm/max_val);
+          delta = PetscMax(delta,*gnorm/max_val);
         }
       } else { 
         delta = neP->delta0;
@@ -117,7 +117,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       neP->prered = -qcgP->quadratic;
 
       /* Adjust delta for the first Newton step */
-      if ((i == 0) && (newton)) delta = PETSCMIN(delta,qcgP->ltsnrm);
+      if ((i == 0) && (newton)) delta = PetscMin(delta,qcgP->ltsnrm);
 
       if (neP->actred < neP->eta1 * neP->prered) {  /* Unsuccessful step */
 
@@ -195,7 +195,7 @@ static int SNESDestroy_UMTR(PetscObject obj )
   SNES snes = (SNES) obj;
   int  ierr;
   ierr = VecFreeVecs(snes->work,snes->nwork); CHKERRQ(ierr);
-  PETSCFREE(snes->data);
+  PetscFree(snes->data);
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -338,7 +338,7 @@ int SNESCreate_UMTR(SNES snes)
   snes->setfromoptions  = SNESSetFromOptions_UMTR;
   snes->view            = SNESView_UMTR;
 
-  neP			= PETSCNEW(SNES_UMTR); CHKPTRQ(neP);
+  neP			= PetscNew(SNES_UMTR); CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UMTR));
   snes->data	        = (void *) neP;
   neP->delta0		= 1.0e-6;

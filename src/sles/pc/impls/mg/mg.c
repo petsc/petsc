@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.35 1995/10/01 21:52:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.36 1995/11/01 19:09:38 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -50,11 +50,11 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
   MG  *mg;
   int i,ierr;
 
-  mg = (MG *) PETSCMALLOC( levels*sizeof(MG) ); CHKPTRQ(mg);
+  mg = (MG *) PetscMalloc( levels*sizeof(MG) ); CHKPTRQ(mg);
   PLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));
 
   for ( i=0; i<levels; i++ ) {
-    mg[i]         = (MG) PETSCMALLOC( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
+    mg[i]         = (MG) PetscMalloc( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
     PetscMemzero(mg[i],sizeof(MG));
     mg[i]->level  = levels - i - 1;
     mg[i]->cycles = 1;
@@ -85,9 +85,9 @@ static int PCDestroy_MG(PetscObject obj)
       if (mg[i]->smoothd != mg[i]->smoothu) SLESDestroy(mg[i]->smoothd);
       SLESDestroy(mg[i]->smoothu);
     }
-     PETSCFREE(mg[i]);
+     PetscFree(mg[i]);
   }
-  PETSCFREE(mg);
+  PetscFree(mg);
   return 0;
 }
 

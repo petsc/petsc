@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.4 1995/10/17 03:24:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.5 1995/10/17 21:42:01 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -26,9 +26,9 @@ int PCDestroy_BJacobiMPIAIJ(PetscObject obj)
   for ( i=0; i<jac->n_local; i++ ) {
     ierr = SLESDestroy(jac->sles[i]); CHKERRQ(ierr);
   }
-  PETSCFREE(jac->sles);
+  PetscFree(jac->sles);
   ierr = VecDestroy(bjac->x); CHKERRQ(ierr);
-  PETSCFREE(bjac); PETSCFREE(jac); 
+  PetscFree(bjac); PetscFree(jac); 
   return 0;
 }
 
@@ -84,12 +84,12 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
     pc->destroy  = PCDestroy_BJacobiMPIAIJ;
     pc->apply    = PCApply_BJacobiMPIAIJ;
 
-    bjac         = (PC_BJacobiMPIAIJ *) PETSCMALLOC(sizeof(PC_BJacobiMPIAIJ));
+    bjac         = (PC_BJacobiMPIAIJ *) PetscMalloc(sizeof(PC_BJacobiMPIAIJ));
     CHKPTRQ(bjac);
     PLogObjectMemory(pc,sizeof(PC_BJacobiMPIAIJ));
     bjac->x      = x;
 
-    jac->sles    = (SLES*) PETSCMALLOC( sizeof(SLES) ); CHKPTRQ(jac->sles);
+    jac->sles    = (SLES*) PetscMalloc( sizeof(SLES) ); CHKPTRQ(jac->sles);
     jac->sles[0] = sles;
     jac->data    = (void *) bjac;
   }

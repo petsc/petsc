@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.35 1995/10/11 17:52:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.36 1995/10/22 04:16:53 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -16,9 +16,9 @@ typedef struct {
 static int ISDestroy_General(PetscObject obj)
 {
   IS is = (IS) obj;
-  PETSCFREE(is->data); 
+  PetscFree(is->data); 
   PLogObjectDestroy(is);
-  PETSCHEADERDESTROY(is); return 0;
+  PetscHeaderDestroy(is); return 0;
 }
 
 static int ISGetIndices_General(IS in,int **idx)
@@ -39,13 +39,13 @@ static int ISInvertPermutation_General(IS is, IS *isout)
   IS_General *sub = (IS_General *)is->data;
   int        i,ierr, *ii,n = sub->n,*idx = sub->idx;
 
-  ii = (int *) PETSCMALLOC( n*sizeof(int) ); CHKPTRQ(ii);
+  ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
   ierr = ISCreateSeq(MPI_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
-  PETSCFREE(ii);
+  PetscFree(ii);
   return 0;
 }
 
@@ -103,9 +103,9 @@ int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
   IS_General *sub;
 
   *is = 0;
-  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,IS_SEQ,comm); 
+  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_SEQ,comm); 
   PLogObjectCreate(Nindex);
-  sub            = (IS_General *) PETSCMALLOC(size); CHKPTRQ(sub);
+  sub            = (IS_General *) PetscMalloc(size); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,size + sizeof(struct _IS));
   sub->idx       = (int *) (sub+1);
   sub->n         = n;
@@ -150,7 +150,7 @@ int ISAddStrideSeq(IS *is,int n,int first,int step)
   IS_General *sub;
   if (*is) PETSCVALIDHEADERSPECIFIC(*is,IS_COOKIE);
 
-  PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,IS_SEQ,MPI_COMM_SELF); 
+  PetscHeaderCreate(Newis, _IS,IS_COOKIE,IS_SEQ,MPI_COMM_SELF); 
   PLogObjectCreate(Newis);
 
   if (*is) {
@@ -162,7 +162,7 @@ int ISAddStrideSeq(IS *is,int n,int first,int step)
   }
 
   size = sizeof(IS_General) + n*sizeof(int) + N*sizeof(int);
-  sub            = (IS_General *) PETSCMALLOC(size); CHKPTRQ(sub);
+  sub            = (IS_General *) PetscMalloc(size); CHKPTRQ(sub);
   PLogObjectMemory(Newis,size + sizeof(struct _IS));
   sub->idx = idx = (int *) (sub+1);
   sub->sorted    = 1;

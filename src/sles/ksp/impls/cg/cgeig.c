@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.19 1995/10/17 21:41:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.20 1995/11/01 19:08:53 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -330,14 +330,14 @@ static double cgpthy_private(double *a, double *b)
 
 /* Computing MAX */
     d__1 = PetscAbsScalar(*a), d__2 = PetscAbsScalar(*b);
-    p = PETSCMAX(d__1,d__2);
+    p = PetscMax(d__1,d__2);
     if (p == 0.) {
         goto L20;
     }
 /* Computing MIN */
     d__2 = PetscAbsScalar(*a), d__3 = PetscAbsScalar(*b);
 /* Computing 2nd power */
-    d__1 = PETSCMIN(d__2,d__3) / p;
+    d__1 = PetscMin(d__2,d__3) / p;
     r = d__1 * d__1;
 L10:
     t = r + 4.;

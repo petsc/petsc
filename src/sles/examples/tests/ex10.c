@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.44 1995/10/27 00:46:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.45 1995/11/01 19:11:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -109,9 +109,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERRQ(ierr); 
 
   /* Form stiffness for element */
-  K = (double **) PETSCMALLOC(81*sizeof(double *)); CHKPTRQ(K);
+  K = (double **) PetscMalloc(81*sizeof(double *)); CHKPTRQ(K);
   for ( i=0; i<81; i++ ) {
-    K[i] = (double *) PETSCMALLOC(81*sizeof(double)); CHKPTRQ(K[i]);
+    K[i] = (double *) PetscMalloc(81*sizeof(double)); CHKPTRQ(K[i]);
   }
   ierr = Elastic20Stiff(K); CHKERRQ(ierr);
 
@@ -145,9 +145,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
 
   for ( i=0; i<81; i++ ) {
-    PETSCFREE(K[i]);
+    PetscFree(K[i]);
   }
-  PETSCFREE(K);
+  PetscFree(K);
 
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -155,7 +155,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict = 0;
-  rowkeep = (int *) PETSCMALLOC((N-nstart)*sizeof(int)); CHKPTRQ(rowkeep);
+  rowkeep = (int *) PetscMalloc((N-nstart)*sizeof(int)); CHKPTRQ(rowkeep);
   for (i=nstart; i<N; i++) {
     ierr = MatGetRow(mat,i,&nz,0,0); CHKERRQ(ierr);
     if (nz) rowkeep[ict++] = i;
@@ -163,7 +163,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
   ierr = ISCreateSeq(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
   ierr = MatGetSubMatrix(mat,iskeep,iskeep,MAT_INITIAL_MATRIX,&submat); CHKERRQ(ierr);
-  PETSCFREE(rowkeep);
+  PetscFree(rowkeep);
   ierr = ISDestroy(iskeep);  CHKERRQ(ierr);
   ierr = MatDestroy(mat); CHKERRQ(ierr);
 
@@ -270,7 +270,7 @@ int Elastic20Stiff(double **Ke)
       for ( k=0; k<3; k++ ) {
         for ( l=0; l<3; l++ ) {
           Ke[3*rmap[i]+k][3*rmap[j]+l] = v = K[I+k][J+l];
-          m = PETSCMAX(m,PetscAbsScalar(v));
+          m = PetscMax(m,PetscAbsScalar(v));
         }
       }
       J += 3;

@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.5 1995/10/12 04:20:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex9.c,v 1.6 1995/10/13 01:58:00 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -145,14 +145,14 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   for (k=zs; k<zs+zm; k++) {
     base1 = (Xm*Ym)*(k-Zs);
     for (j=ys; j<ys+ym; j++) {
-      temp = (double)(PETSCMIN(j,my-j-1))*hy;
+      temp = (double)(PetscMin(j,my-j-1))*hy;
       for (i=xs; i<xs+xm; i++) {
         loc = base1 + i-Xs + (j-Ys)*Xm; 
         if (i == 0 || j == 0 || k == 0 || i==mx-1 || j==my-1 || k==mz-1) {
           x[loc] = 0.0; 
           continue;
         }
-        x[loc] = temp1*sqrt( PETSCMIN( (double)(PETSCMIN(i,mx-i-1))*hx,temp) ); 
+        x[loc] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
       }
     }
   }

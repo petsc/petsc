@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.4 1995/10/01 21:52:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: essl.c,v 1.5 1995/10/19 15:47:17 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -43,7 +43,7 @@ static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*) a->spptr;
 
   /* free the Essl datastructures */
-  PETSCFREE(essl->a);
+  PetscFree(essl->a);
   return MatDestroy_SeqAIJ(obj);
 }
 
@@ -79,7 +79,7 @@ static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   B->destroy    = MatDestroy_SeqAIJ_Essl;
   B->factor     = FACTOR_LU;
   b             = (Mat_SeqAIJ*) B->data;
-  essl          = PETSCNEW(Mat_SeqAIJ_Essl); CHKPTRQ(essl);
+  essl          = PetscNew(Mat_SeqAIJ_Essl); CHKPTRQ(essl);
   b->spptr      = (void*) essl;
 
   /* allocate the work arrays required by ESSL */
@@ -90,7 +90,7 @@ static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   /* since malloc is slow on IBM we try a single malloc */
   len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + 
                essl->naux*sizeof(Scalar);
-  essl->a    = (Scalar*) PETSCMALLOC(len); CHKPTRQ(essl->a);
+  essl->a    = (Scalar*) PetscMalloc(len); CHKPTRQ(essl->a);
   essl->aux  = essl->a + essl->lna;
   essl->ia   = (int*) (essl->aux + essl->naux);
   essl->ja   = essl->ia + essl->lna;

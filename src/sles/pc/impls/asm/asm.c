@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.1 1995/10/31 20:06:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.2 1995/11/01 19:09:46 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -44,7 +44,7 @@ static int PCSetUp_ASM(PC pc)
       osm->n = size;
       MatGetOwnershipRange(pc->pmat,&start,&end);
       ierr = ISCreateStrideSeq(MPI_COMM_SELF,end-start,start,1,&isl); CHKERRQ(ierr);
-      osm->is    = (IS *) PETSCMALLOC( sizeof(IS **) ); CHKPTRQ(osm->is);
+      osm->is    = (IS *) PetscMalloc( sizeof(IS **) ); CHKPTRQ(osm->is);
       osm->is[0] = isl;
     }
 
@@ -56,9 +56,9 @@ static int PCSetUp_ASM(PC pc)
     n_local      = osm->n_local;
     n_local_true = osm->n_local_true;
 
-    osm->sles = (SLES *) PETSCMALLOC(n_local*sizeof(SLES **)); CHKPTRQ(osm->sles);
-    osm->scat = (VecScatter *) PETSCMALLOC(n_local*sizeof(VecScatter **)); CHKPTRQ(osm->scat);
-    osm->x    = (Vec *) PETSCMALLOC(2*n_local*sizeof(Vec **)); CHKPTRQ(osm->x);
+    osm->sles = (SLES *) PetscMalloc(n_local*sizeof(SLES **)); CHKPTRQ(osm->sles);
+    osm->scat = (VecScatter *) PetscMalloc(n_local*sizeof(VecScatter **)); CHKPTRQ(osm->scat);
+    osm->x    = (Vec *) PetscMalloc(2*n_local*sizeof(Vec **)); CHKPTRQ(osm->x);
     osm->y    = osm->x + n_local;
 
     /* create the local work vectors and scatter contexts */
@@ -141,19 +141,19 @@ static int PCDestroy_ASM(PetscObject obj)
     ierr = MatDestroy(osm->pmat[i]);
     ierr = SLESDestroy(osm->sles[i]);
   }
-  PETSCFREE(osm->sles);
-  PETSCFREE(osm->scat);
-  PETSCFREE(osm->x);
-  PETSCFREE(osm->pmat);
-  PETSCFREE(osm);
+  PetscFree(osm->sles);
+  PetscFree(osm->scat);
+  PetscFree(osm->x);
+  PetscFree(osm->pmat);
+  PetscFree(osm);
   return 0;
 }
 
 int PCCreate_ASM(PC pc)
 {
-  PC_ASM *osm = PETSCNEW(PC_ASM); CHKPTRQ(osm);
+  PC_ASM *osm = PetscNew(PC_ASM); CHKPTRQ(osm);
 
-  PetscZero(osm,sizeof(PC_ASM)); 
+  PetscMemzero(osm,sizeof(PC_ASM)); 
   osm->n            = PETSC_DECIDE;
   osm->n_local_true = PETSC_DECIDE;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: search.c,v 1.4 1995/10/12 04:20:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: search.c,v 1.5 1995/11/01 19:12:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -77,7 +77,7 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
 
   /* Check the input parameters for errors */
   neP->infoc = 0;
-  if (neP->bracket && (*stp <= PETSCMIN(*stx,*sty) || (*stp >= PETSCMAX(*stx,*sty))))
+  if (neP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty))))
     SETERRQ(1,"SNESDefaultUMLineSearch:bad stp in bracket");
   if (*dx * (*stp-*stx) >= zero) 
     SETERRQ(1,"SNESDefaultUMLineSearch: dx * (stp-stx) >= 0");
@@ -96,8 +96,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     neP->infoc = 1;
     bound = 1;
     theta = 3 * (*fx - *fp) / (*stp - *stx) + *dx + *dp;
-    s = PETSCMAX(PetscAbsScalar(theta),PetscAbsScalar(*dx));
-    s = PETSCMAX(s,PetscAbsScalar(*dp));
+    s = PetscMax(PetscAbsScalar(theta),PetscAbsScalar(*dx));
+    s = PetscMax(s,PetscAbsScalar(*dp));
     gamma1 = s*sqrt(pow(theta/s,two) - (*dx/s)*(*dp/s));
     if (*stp < *stx) gamma1 = -gamma1;
     p = (gamma1 - *dx) + theta;
@@ -122,8 +122,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     neP->infoc = 2;
     bound = 0;
     theta = 3*(*fx - *fp)/(*stp - *stx) + *dx + *dp;
-    s = PETSCMAX(PetscAbsScalar(theta),PetscAbsScalar(*dx));
-    s = PETSCMAX(s,PetscAbsScalar(*dp));
+    s = PetscMax(PetscAbsScalar(theta),PetscAbsScalar(*dx));
+    s = PetscMax(s,PetscAbsScalar(*dp));
     gamma1 = s*sqrt(pow(theta/s,two) - (*dx/s)*(*dp/s));
     if (*stp > *stx) gamma1 = -gamma1;
     p = (gamma1 - *dp) + theta;
@@ -150,12 +150,12 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     neP->infoc = 3;
     bound = 1;
     theta = 3*(*fx - *fp)/(*stp - *stx) + *dx + *dp;
-    s = PETSCMAX(PetscAbsScalar(theta),PetscAbsScalar(*dx));
-    s = PETSCMAX(s,PetscAbsScalar(*dp));
+    s = PetscMax(PetscAbsScalar(theta),PetscAbsScalar(*dx));
+    s = PetscMax(s,PetscAbsScalar(*dp));
 
     /* The case gamma1 = 0 only arises if the cubic does not tend
        to infinity in the direction of the step. */
-    gamma1 = s*sqrt(PETSCMAX(zero,pow(theta/s,two) - (*dx/s)*(*dp/s)));
+    gamma1 = s*sqrt(PetscMax(zero,pow(theta/s,two) - (*dx/s)*(*dp/s)));
     if (*stp > *stx) gamma1 = -gamma1;
     p = (gamma1 - *dp) + theta;
     q = (gamma1 + (*dx - *dp)) + gamma1;
@@ -184,8 +184,8 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     bound = 0;
     if (neP->bracket) {
       theta = 3*(*fp - *fy)/(*sty - *stp) + *dy + *dp;
-      s = PETSCMAX(PetscAbsScalar(theta),PetscAbsScalar(*dy));
-      s = PETSCMAX(s,PetscAbsScalar(*dp));
+      s = PetscMax(PetscAbsScalar(theta),PetscAbsScalar(*dy));
+      s = PetscMax(s,PetscAbsScalar(*dp));
       gamma1 = s*sqrt(pow(theta/s,two) - (*dy/s)*(*dp/s));
       if (*stp > *sty) gamma1 = -gamma1;
       p = (gamma1 - *dp) + theta;
@@ -219,12 +219,12 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
   }
 
   /* Compute the new step and safeguard it */
-  stpf = PETSCMIN(neP->stepmax,stpf);
-  stpf = PETSCMAX(neP->stepmin,stpf);
+  stpf = PetscMin(neP->stepmax,stpf);
+  stpf = PetscMax(neP->stepmin,stpf);
   *stp = stpf;
   if (neP->bracket && bound) {
-    if (*sty > *stx) *stp = PETSCMIN(*stx+0.66*(*sty-*stx),*stp);
-    else             *stp = PETSCMAX(*stx+0.66*(*sty-*stx),*stp);
+    if (*sty > *stx) *stp = PetscMin(*stx+0.66*(*sty-*stx),*stp);
+    else             *stp = PetscMax(*stx+0.66*(*sty-*stx),*stp);
   }
   return 0;
 }

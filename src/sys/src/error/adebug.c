@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.29 1995/10/11 15:17:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.30 1995/10/24 21:43:29 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -34,10 +34,10 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
 {
   if (debugger) Debugger = debugger;
   Xterm    = xterm;
-  if (Display) {PETSCFREE(Display); Display = 0;}
+  if (Display) {PetscFree(Display); Display = 0;}
   if (display) {
     int len = PetscStrlen(display)+1;
-    Display = (char *) PETSCMALLOC(len*sizeof(char)); if (!Display) return 1;
+    Display = (char *) PetscMalloc(len*sizeof(char)); if (!Display) return 1;
     PetscStrcpy(Display,display);
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.21 1995/10/24 21:54:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.22 1995/11/01 19:12:23 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -121,7 +121,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   IS            to,from;
   *inra = 0;
 
-  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
+  PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
 
@@ -177,7 +177,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   ierr=ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
-  idx = (int *) PETSCMALLOC( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
+  idx = (int *) PetscMalloc( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
   PLogObjectMemory(da,(x+2*s)*sizeof(int));
 
   nn = 0;

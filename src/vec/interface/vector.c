@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.52 1995/10/17 14:28:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.53 1995/11/01 19:08:31 bsmith Exp bsmith $";
 #endif
 
 #include "vecimpl.h"    /*I "vec.h" I*/
@@ -623,7 +623,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
   int    i,ierr;
   Scalar **q;
   PETSCVALIDHEADERSPECIFIC(*x,VEC_COOKIE);
-  q = (Scalar **)PETSCMALLOC(n*sizeof(Scalar*)); CHKPTRQ(q);
+  q = (Scalar **)PetscMalloc(n*sizeof(Scalar*)); CHKPTRQ(q);
   for(i=0;i<n;++i) {
     ierr = VecGetArray(x[i],&q[i]); CHKERRQ(ierr);
   }
@@ -651,7 +651,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
   for(i=0;i<n;++i) {
     ierr = VecRestoreArray(x[i],&q[i]); CHKERRQ(ierr);
   }
-  PETSCFREE(q);
+  PetscFree(q);
   return 0;
 }
 
@@ -778,7 +778,7 @@ int Veiobtain_vectors(Vec w,int m,Vec **V )
 {
   Vec *v;
   int  i;
-  *V = v = (Vec *) PETSCMALLOC( m * sizeof(Vec *) );
+  *V = v = (Vec *) PetscMalloc( m * sizeof(Vec *) );
   for (i=0; i<m; i++) VecDuplicate(w,v+i);
   return 0;
 }
@@ -787,7 +787,7 @@ int Veirelease_vectors( Vec *v, int m )
 {
   int i;
   for (i=0; i<m; i++) VecDestroy(v[i]);
-  PETSCFREE( v );
+  PetscFree( v );
   return 0;
 }
 

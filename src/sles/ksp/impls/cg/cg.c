@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.30 1995/10/17 21:41:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.31 1995/11/01 19:08:53 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -24,7 +24,7 @@ int KSPSetUp_CG(KSP itP)
 
   if (itP->calc_eigs) {
     /* get space to store tridiagonal matrix for Lanczo */
-    cgP->e = (Scalar *) PETSCMALLOC(4*(maxit+1)*sizeof(Scalar)); CHKPTRQ(cgP->e);
+    cgP->e = (Scalar *) PetscMalloc(4*(maxit+1)*sizeof(Scalar)); CHKPTRQ(cgP->e);
     PLogObjectMemory(itP,4*(maxit+1)*sizeof(Scalar));
     cgP->d  = cgP->e + maxit + 1; 
     cgP->ee = cgP->d + maxit + 1;
@@ -131,20 +131,20 @@ int KSPDestroy_CG(PetscObject obj)
 
   /* free space used for eigenvalue calculations */
   if ( itP->calc_eigs ) {
-    PETSCFREE(cgP->e);
+    PetscFree(cgP->e);
   }
 
   KSPiDefaultFreeWork( itP );
   
   /* free the context variables */
-  PETSCFREE(cgP); 
+  PetscFree(cgP); 
   return 0;
 }
 
 int KSPCreate_CG(KSP itP)
 {
   KSP_CG *cgP;
-  cgP = (KSP_CG*) PETSCMALLOC(sizeof(KSP_CG));  CHKPTRQ(cgP);
+  cgP = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));  CHKPTRQ(cgP);
   PLogObjectMemory(itP,sizeof(KSP_CG));
   itP->data = (void *) cgP;
   itP->type                 = KSPCG;

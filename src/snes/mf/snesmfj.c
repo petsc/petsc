@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.20 1995/10/29 18:41:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.21 1995/11/01 19:12:03 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -16,7 +16,7 @@ int SNESMatrixFreeDestroy_Private(void *ptr)
   int           ierr;
   MFCtx_Private *ctx = (MFCtx_Private* ) ptr;
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
-  PETSCFREE(ptr);
+  PetscFree(ptr);
   return 0;
 }
 
@@ -88,7 +88,7 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   MFCtx_Private *mfctx;
   int           n,ierr;
 
-  mfctx = (MFCtx_Private *) PETSCMALLOC(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
+  mfctx = (MFCtx_Private *) PetscMalloc(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
   PLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->snes = snes;
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);

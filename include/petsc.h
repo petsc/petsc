@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.63 1995/10/14 19:48:26 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.64 1995/11/01 19:12:32 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -33,13 +33,13 @@ extern void fscanf(FILE *,char *,...);
 
 extern void *(*PetscMalloc)(unsigned int,int,char*);
 extern int  (*PetscFree)(void *,int,char*);
-#define PETSCMALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
-#define PETSCFREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
+#define PetscMalloc(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
+#define PetscFree(a)         (*PetscFree)(a,__LINE__,__FILE__)
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
 extern int  TrDump(FILE *);
 extern int  TrGetMaximumAllocated(double*);
 
-#define PETSCNEW(A)         (A*) PETSCMALLOC(sizeof(A))
+#define PetscNew(A)         (A*) PetscMalloc(sizeof(A))
 
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemzero(void *,int);
@@ -56,8 +56,8 @@ extern char* PetscStrstr(char*,char*);
 extern char* PetscStrtok(char*,char*);
 extern char* PetscStrrtok(char*,char*);
 
-#define PETSCMIN(a,b)      ( ((a)<(b)) ? (a) : (b) )
-#define PETSCMAX(a,b)      ( ((a)<(b)) ? (b) : (a) )
+#define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
+#define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
 #define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
 
 #if defined(PETSC_COMPLEX)

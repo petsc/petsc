@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.42 1995/09/10 20:52:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.43 1995/09/21 20:11:38 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -133,7 +133,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   int ierr;
   SLES sles;
   *outsles = 0;
-  PETSCHEADERCREATE(sles,_SLES,SLES_COOKIE,0,comm);
+  PetscHeaderCreate(sles,_SLES,SLES_COOKIE,0,comm);
   PLogObjectCreate(sles);
   ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);
   ierr = PCCreate(comm,&sles->pc); CHKERRQ(ierr);
@@ -161,7 +161,7 @@ int SLESDestroy(SLES sles)
   ierr = KSPDestroy(sles->ksp); CHKERRQ(ierr);
   ierr = PCDestroy(sles->pc); CHKERRQ(ierr);
   PLogObjectDestroy(sles);
-  PETSCHEADERDESTROY(sles);
+  PetscHeaderDestroy(sles);
   return 0;
 }
 extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.15 1995/07/26 02:26:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.16 1995/08/04 01:51:45 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -41,13 +41,13 @@ static int PCDestroy_Jacobi(PetscObject obj)
   PC pc = (PC) obj;
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
   if (jac->diag) VecDestroy(jac->diag);
-  PETSCFREE(jac);
+  PetscFree(jac);
   return 0;
 }
 
 int PCCreate_Jacobi(PC pc)
 {
-  PC_Jacobi *jac = PETSCNEW(PC_Jacobi); CHKPTRQ(jac);
+  PC_Jacobi *jac = PetscNew(PC_Jacobi); CHKPTRQ(jac);
   jac->diag   = 0;
   pc->apply   = PCApply_Jacobi;
   pc->setup   = PCSetUp_Jacobi;

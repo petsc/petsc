@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.26 1995/10/24 21:54:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.27 1995/11/01 19:12:23 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -152,7 +152,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   IS            to,from;
   *inra = 0;
 
-  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
+  PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
 
@@ -219,7 +219,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* determine starting point of each processor */
   nn = x*y;
-  bases = (int *) PETSCMALLOC( (size+1)*sizeof(int) ); CHKPTRQ(bases);
+  bases = (int *) PetscMalloc( (size+1)*sizeof(int) ); CHKPTRQ(bases);
   MPI_Allgather(&nn,1,MPI_INT,bases+1,1,MPI_INT,comm);
   bases[0] = 0;
   for ( i=1; i<=size; i++ ) {
@@ -237,7 +237,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
 
   left  = xs - Xs; down  = ys - Ys; up    = down + y;
-  idx = (int *) PETSCMALLOC( x*(up - down)*sizeof(int) ); CHKPTRQ(idx);
+  idx = (int *) PetscMalloc( x*(up - down)*sizeof(int) ); CHKPTRQ(idx);
   count = 0;
   for ( i=down; i<up; i++ ) {
     for ( j=0; j<x; j++ ) {
@@ -245,7 +245,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
   }
   ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&from);CHKERRQ(ierr);
-  PETSCFREE(idx);
+  PetscFree(idx);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
   PLogObjectParent(da,to);
@@ -271,7 +271,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     /* bottom */
     left  = xs - Xs; down = ys - Ys; up    = down + y;
     count = down*(xe-xs) + (up-down)*(Xe-Xs) + (Ye-Ys-up)*(xe-xs);
-    idx   = (int *) PETSCMALLOC( count*sizeof(int) ); CHKPTRQ(idx);
+    idx   = (int *) PetscMalloc( count*sizeof(int) ); CHKPTRQ(idx);
     count = 0;
     for ( i=0; i<down; i++ ) {
       for ( j=0; j<xe-xs; j++ ) {
@@ -291,7 +291,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       }
     }
     ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&to);CHKERRQ(ierr);
-    PETSCFREE(idx);
+    PetscFree(idx);
   }
 
 
@@ -372,7 +372,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   if (stencil_type == DA_STENCIL_STAR) {n0 = n2 = n6 = n8 = -1;}
 
-  idx = (int *)PETSCMALLOC((x+2*s_x)*(y+2*s_y)*sizeof(int));CHKPTRQ(idx);
+  idx = (int *)PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(int));CHKPTRQ(idx);
   PLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(int));
   nn = 0;
 
@@ -597,7 +597,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
     }
   }
-  PETSCFREE(bases);
+  PetscFree(bases);
   return 0;
 }
 
@@ -663,10 +663,10 @@ int DADestroy(DA da)
 {
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   PLogObjectDestroy(da);
-  PETSCFREE(da->idx);
+  PetscFree(da->idx);
   VecScatterDestroy(da->ltog);
   VecScatterDestroy(da->gtol);
-  PETSCHEADERDESTROY(da);
+  PetscHeaderDestroy(da);
   return 0;
 }
 

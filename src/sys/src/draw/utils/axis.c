@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.21 1995/09/30 19:30:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.22 1995/10/06 22:25:17 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -63,7 +63,7 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) {
      return DrawOpenNull(vobj->comm,(DrawCtx*)ctx);
   }
-  PETSCHEADERCREATE(ad,_DrawAxisCtx,AXIS_COOKIE,0,vobj->comm);
+  PetscHeaderCreate(ad,_DrawAxisCtx,AXIS_COOKIE,0,vobj->comm);
   PLogObjectCreate(ad);
   PLogObjectParent(win,ad);
   ad->xticks    = XiADefTicks;
@@ -91,7 +91,7 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
 int DrawAxisDestroy(DrawAxisCtx axis)
 {
   PLogObjectDestroy(axis);
-  PETSCHEADERDESTROY(axis);
+  PetscHeaderDestroy(axis);
   return 0;
 }
 

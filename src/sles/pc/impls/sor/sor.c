@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.37 1995/09/06 03:05:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.38 1995/10/01 21:52:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -110,7 +110,7 @@ static int PCView_SOR(PetscObject obj,Viewer viewer)
 
 int PCCreate_SOR(PC pc)
 {
-  PC_SOR *jac   = PETSCNEW(PC_SOR); CHKPTRQ(jac);
+  PC_SOR *jac   = PetscNew(PC_SOR); CHKPTRQ(jac);
   pc->apply     = PCApply_SOR;
   pc->applyrich = PCApplyRichardson_SOR;
   pc->setfrom   = PCSetFromOptions_SOR;

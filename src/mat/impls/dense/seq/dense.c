@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.70 1995/10/25 22:42:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.71 1995/11/01 19:10:00 bsmith Exp bsmith $";
 #endif
 
 #include "dense.h"
@@ -34,7 +34,7 @@ static int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
   int          info;
 
   if (!mat->pivots) {
-    mat->pivots = (int *) PETSCMALLOC(mat->m*sizeof(int));CHKPTRQ(mat->pivots);
+    mat->pivots = (int *) PetscMalloc(mat->m*sizeof(int));CHKPTRQ(mat->pivots);
     PLogObjectMemory(A,mat->m*sizeof(int));
   }
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
@@ -69,7 +69,7 @@ static int MatCholeskyFactor_SeqDense(Mat A,IS perm,double f)
   int           info;
 
   if (mat->pivots) {
-    PETSCFREE(mat->pivots);
+    PetscFree(mat->pivots);
     PLogObjectMemory(A,-mat->m*sizeof(int));
     mat->pivots = 0;
   }
@@ -275,11 +275,11 @@ static int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
   int          i;
   *ncols = mat->n;
   if (cols) {
-    *cols = (int *) PETSCMALLOC(mat->n*sizeof(int)); CHKPTRQ(*cols);
+    *cols = (int *) PetscMalloc(mat->n*sizeof(int)); CHKPTRQ(*cols);
     for ( i=0; i<mat->n; i++ ) (*cols)[i] = i;
   }
   if (vals) {
-    *vals = (Scalar *) PETSCMALLOC(mat->n*sizeof(Scalar)); CHKPTRQ(*vals);
+    *vals = (Scalar *) PetscMalloc(mat->n*sizeof(Scalar)); CHKPTRQ(*vals);
     v = mat->v + row;
     for ( i=0; i<mat->n; i++ ) {(*vals)[i] = *v; v += mat->m;}
   }
@@ -287,8 +287,8 @@ static int MatGetRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 }
 static int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,Scalar **vals)
 {
-  if (cols) { PETSCFREE(*cols); }
-  if (vals) { PETSCFREE(*vals); }
+  if (cols) { PetscFree(*cols); }
+  if (vals) { PetscFree(*vals); }
   return 0;
 }
 /* ----------------------------------------------------------------*/
@@ -369,7 +369,7 @@ int MatLoad_SeqDense(Viewer bview,MatType type,Mat *A)
   M = header[1]; N = header[2]; nz = header[3];
 
   /* read row lengths */
-  rowlengths = (int*) PETSCMALLOC( M*sizeof(int) ); CHKPTRQ(rowlengths);
+  rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
   ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
 
   /* create our matrix */
@@ -379,9 +379,9 @@ int MatLoad_SeqDense(Viewer bview,MatType type,Mat *A)
   v = a->v;
 
   /* read column indices and nonzeros */
-  cols = scols = (int *) PETSCMALLOC( nz*sizeof(int) ); CHKPTRQ(cols);
+  cols = scols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cols);
   ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
-  vals = svals = (Scalar *) PETSCMALLOC( nz*sizeof(Scalar) ); CHKPTRQ(vals);
+  vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
   ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
 
   /* insert into matrix */  
@@ -389,7 +389,7 @@ int MatLoad_SeqDense(Viewer bview,MatType type,Mat *A)
     for ( j=0; j<rowlengths[i]; j++ ) v[i+M*scols[j]] = svals[j];
     svals += rowlengths[i]; scols += rowlengths[i];
   }
-  PETSCFREE(vals); PETSCFREE(cols); PETSCFREE(rowlengths);   
+  PetscFree(vals); PetscFree(cols); PetscFree(rowlengths);   
 
   ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -437,7 +437,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
   Scalar       *v, *anonz;
 
   ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
-  col_lens = (int *) PETSCMALLOC( (4+nz)*sizeof(int) ); CHKPTRQ(col_lens);
+  col_lens = (int *) PetscMalloc( (4+nz)*sizeof(int) ); CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
   col_lens[1] = m;
   col_lens[2] = n;
@@ -454,10 +454,10 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     for ( j=0; j<n; j++ ) col_lens[ict++] = j;
   }
   ierr = SYWrite(fd,col_lens,nz,SYINT,0); CHKERRQ(ierr);
-  PETSCFREE(col_lens);
+  PetscFree(col_lens);
 
   /* store nonzero values */
-  anonz = (Scalar *) PETSCMALLOC((nz)*sizeof(Scalar)); CHKPTRQ(anonz);
+  anonz = (Scalar *) PetscMalloc((nz)*sizeof(Scalar)); CHKPTRQ(anonz);
   ict = 0;
   for ( i=0; i<m; i++ ) {
     v = a->v + i;
@@ -466,7 +466,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
     }
   }
   ierr = SYWrite(fd,anonz,nz,SYSCALAR,0); CHKERRQ(ierr);
-  PETSCFREE(anonz);
+  PetscFree(anonz);
   return 0;
 }
 
@@ -500,10 +500,10 @@ static int MatDestroy_SeqDense(PetscObject obj)
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows %d Cols %d",l->m,l->n);
 #endif
-  if (l->pivots) PETSCFREE(l->pivots);
-  PETSCFREE(l);
+  if (l->pivots) PetscFree(l->pivots);
+  PetscFree(l);
   PLogObjectDestroy(mat);
-  PETSCHEADERDESTROY(mat);
+  PetscHeaderDestroy(mat);
   return 0;
 }
 
@@ -735,9 +735,9 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
 
-  smap = (int *) PETSCMALLOC(oldcols*sizeof(int)); CHKPTRQ(smap);
-  cwork = (int *) PETSCMALLOC(ncols*sizeof(int)); CHKPTRQ(cwork);
-  vwork = (Scalar *) PETSCMALLOC(ncols*sizeof(Scalar)); CHKPTRQ(vwork);
+  smap = (int *) PetscMalloc(oldcols*sizeof(int)); CHKPTRQ(smap);
+  cwork = (int *) PetscMalloc(ncols*sizeof(int)); CHKPTRQ(cwork);
+  vwork = (Scalar *) PetscMalloc(ncols*sizeof(Scalar)); CHKPTRQ(vwork);
   PetscMemzero((char*)smap,oldcols*sizeof(int));
   for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
 
@@ -759,7 +759,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   ierr = MatAssemblyEnd(newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Free work space */
-  PETSCFREE(smap); PETSCFREE(cwork); PETSCFREE(vwork);
+  PetscFree(smap); PetscFree(cwork); PetscFree(vwork);
   ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
   *submat = newmat;
@@ -812,9 +812,9 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
   Mat_SeqDense *l;
 
   *newmat        = 0;
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
+  PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
   PLogObjectCreate(mat);
-  l              = (Mat_SeqDense *) PETSCMALLOC(size); CHKPTRQ(l);
+  l              = (Mat_SeqDense *) PetscMalloc(size); CHKPTRQ(l);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy   = MatDestroy_SeqDense;
   mat->view      = MatView_SeqDense;

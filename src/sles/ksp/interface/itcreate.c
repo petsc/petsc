@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.64 1995/10/04 23:19:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.65 1995/10/17 21:40:55 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -76,7 +76,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 {
   KSP ctx;
   *ksp = 0;
-  PETSCHEADERCREATE(ctx,_KSP,KSP_COOKIE,KSPGMRES,comm);
+  PetscHeaderCreate(ctx,_KSP,KSP_COOKIE,KSPGMRES,comm);
   PLogObjectCreate(ctx);
   *ksp               = ctx;
   ctx->view          = 0;
@@ -155,7 +155,7 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
   if (!__ITList) SETERRQ(1,"KSPSetMethod:Could not get list of KSP methods"); 
   r =  (int (*)(KSP))NRFindRoutine( __ITList, (int)itmethod, (char *)0 );
   if (!r) {SETERRQ(1,"KSPSetMethod:Unknown method");}
-  if (ctx->data) PETSCFREE(ctx->data);
+  if (ctx->data) PetscFree(ctx->data);
   ctx->data = 0;
   return (*r)(ctx);
 }

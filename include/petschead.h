@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.18 1995/09/30 19:31:53 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.19 1995/11/01 19:12:32 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -13,7 +13,7 @@
      All Major PETSc Data structures have a common core; this 
    is defined below by PETSCHEADER. 
 
-     PETSCHEADERCREATE should be used whenever you create a PETSc structure.
+     PetscHeaderCreate should be used whenever you create a PETSc structure.
 
      CHKSAME checks if your PETSc structures are of same type.
 */
@@ -34,17 +34,17 @@
 
 #define  PETSCFREEDHEADER -1
 
-#define PETSCHEADERCREATE(h,tp,cook,t,com)                         \
-      {h = (struct tp *) PETSCNEW(struct tp);                      \
+#define PetscHeaderCreate(h,tp,cook,t,com)                         \
+      {h = (struct tp *) PetscNew(struct tp);                      \
        CHKPTRQ((h));                                               \
        PetscMemzero(h,sizeof(struct tp));                          \
        (h)->cookie = cook;                                         \
        (h)->type = t;                                              \
        MPIU_Comm_dup(com,&(h)->comm,&(h)->tag);}
-#define PETSCHEADERDESTROY(h)                                      \
+#define PetscHeaderDestroy(h)                                      \
        {MPIU_Comm_free(&(h)->comm);                                \
         (h)->cookie = PETSCFREEDHEADER;                            \
-        PETSCFREE(h);          }
+        PetscFree(h);          }
 
 extern void *PetscLow,*PetscHigh;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.11 1995/09/30 19:28:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.12 1995/11/01 19:10:07 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: ij.c,v 1.11 1995/09/30 19:28:44 bsmith Exp bsmith $";
 .   ja     - ja part (column indices)
 
     Notes:
-$    Both ia and ja maybe freed with PETSCFREE();
+$    Both ia and ja maybe freed with PetscFree();
 $    This routine is provided for ordering routines that require a 
 $    symmetric structure.  It is used in SpOrder (and derivatives) since
 $    those routines call SparsePak routines that expect a symmetric 
@@ -35,9 +35,9 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
   int *work,*ia,*ja,*j,i, nz, n = A->m, row, wr, col, shift = A->indexshift;
 
   /* allocate space for row pointers */
-  *iia = ia = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(ia);
+  *iia = ia = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ia);
   PetscMemzero(ia,(n+1)*sizeof(int));
-  work = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(work);
+  work = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */
   ia[0] = 1;
@@ -61,7 +61,7 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
 
   /* allocate space for column pointers */
   nz = ia[n] + (!shift);
-  *jja = ja = (int *) PETSCMALLOC( nz*sizeof(int) ); CHKPTRQ(ja);
+  *jja = ja = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(ja);
 
   /* loop over lower triangular part putting into ja */ 
   for (row = 0; row < n; row++) {
@@ -75,7 +75,7 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
        ja[wr] = col + 1;
     }
   }
-  PETSCFREE(work);
+  PetscFree(work);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.19 1995/10/24 21:54:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.20 1995/11/01 19:12:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -189,7 +189,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   IS            to,from;
   *inra = 0;
 
-  PETSCHEADERCREATE(da,_DA,DA_COOKIE,0,comm);
+  PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
 
@@ -331,7 +331,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
 
   /* determine starting point of each processor */
   nn = x*y*z;
-  bases = (int *) PETSCMALLOC( (size+1)*sizeof(int) ); CHKPTRQ(bases);
+  bases = (int *) PetscMalloc( (size+1)*sizeof(int) ); CHKPTRQ(bases);
   MPI_Allgather(&nn,1,MPI_INT,bases+1,1,MPI_INT,comm);
   bases[0] = 0;
   for ( i=1; i<=size; i++ ) {
@@ -353,7 +353,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   bottom = ys - Ys; top = bottom + y;
   down   = zs - Zs; up  = down + z;
   count  = x*(top-bottom)*(up-down);
-  idx    = (int *) PETSCMALLOC( count*sizeof(int) ); CHKPTRQ(idx);
+  idx    = (int *) PetscMalloc( count*sizeof(int) ); CHKPTRQ(idx);
   count  = 0;
   for ( i=down; i<up; i++ ) {
     for ( j=bottom; j<top; j++) {
@@ -363,7 +363,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
     }
   }
   ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&from); CHKERRQ(ierr);
-  PETSCFREE(idx);
+  PetscFree(idx);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
   PLogObjectParent(da,to);
@@ -384,7 +384,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
     count  = down*(top-bottom)*x +
              (up-down)*(bottom*x  + (top-bottom)*(Xe-Xs) + (Ye-Ys-top)*x) +
              (Ze-Zs-up)*(top-bottom)*x;
-    idx    = (int *) PETSCMALLOC( count*sizeof(int) ); CHKPTRQ(idx);
+    idx    = (int *) PetscMalloc( count*sizeof(int) ); CHKPTRQ(idx);
     count  = 0;
     for ( i=0; i<down; i++ ) {
       for ( j=bottom; j<top; j++) {
@@ -413,7 +413,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
       }
     }
     ierr = ISCreateSeq(MPI_COMM_SELF,count,idx,&to); CHKERRQ(ierr);
-    PETSCFREE(idx);
+    PetscFree(idx);
   }
 
   /* determine who lies on each side of use stored in    n24 n25 n26
@@ -647,7 +647,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
                       n20 = n21 = n23 = n24 = n25 = n26 = -1;}
 
 
-  idx = (int *) PETSCMALLOC( (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int) ); CHKPTRQ(idx);
+  idx = (int *) PetscMalloc( (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int) ); CHKPTRQ(idx);
   PLogObjectMemory(da,(Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int) );
 
   nn = 0;
@@ -1346,7 +1346,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
       }
     }
   }
-  PETSCFREE(bases);
+  PetscFree(bases);
   return 0;
 }
 

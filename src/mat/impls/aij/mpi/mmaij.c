@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.21 1995/10/24 21:46:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.22 1995/11/01 19:10:10 bsmith Exp bsmith $";
 #endif
 
 
@@ -21,7 +21,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
-  indices = (int *) PETSCMALLOC( N*sizeof(int) ); CHKPTRQ(indices);
+  indices = (int *) PetscMalloc( N*sizeof(int) ); CHKPTRQ(indices);
   PetscMemzero(indices,N*sizeof(int));
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
@@ -31,7 +31,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int *) PETSCMALLOC( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
+  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
   ec = 0;
   for ( i=0; i<N; i++ ) {
     if (indices[i]) garray[ec++] = i;
@@ -49,7 +49,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
     }
   }
   B->n = ec;
-  PETSCFREE(indices);
+  PetscFree(indices);
   
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(MPI_COMM_SELF,ec,&aij->lvec); CHKERRQ(ierr);
@@ -102,7 +102,7 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = VecDestroy(aij->lvec); CHKERRQ(ierr); aij->lvec = 0;
   ierr = VecScatterDestroy(aij->Mvctx); CHKERRQ(ierr); aij->Mvctx = 0;
   if (aij->colmap) {
-    PETSCFREE(aij->colmap); aij->colmap = 0;
+    PetscFree(aij->colmap); aij->colmap = 0;
     PLogObjectMemory(A,-Baij->n*sizeof(int));
   }
 
@@ -111,12 +111,12 @@ int DisAssemble_MPIAIJ(Mat A)
   MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* invent new B and copy stuff over */
-  nz = (int *) PETSCMALLOC( m*sizeof(int) ); CHKPTRQ(nz);
+  nz = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(nz);
   for ( i=0; i<m; i++ ) {
     nz[i] = Baij->i[i+1]-Baij->i[i];
   }
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,n,0,nz,&Bnew); CHKERRQ(ierr);
-  PETSCFREE(nz);
+  PetscFree(nz);
   for ( i=0; i<m; i++ ) {
     for ( j=Baij->i[i]+shift; j<Baij->i[i+1]+shift; j++ ) {
       col = garray[Baij->j[ct]+shift];
@@ -124,7 +124,7 @@ int DisAssemble_MPIAIJ(Mat A)
       ierr = MatSetValues(Bnew,1,&i,1,&col,&v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
-  PETSCFREE(aij->garray); aij->garray = 0;
+  PetscFree(aij->garray); aij->garray = 0;
   PLogObjectMemory(A,-ec*sizeof(int));
   ierr = MatDestroy(B); CHKERRQ(ierr);
   PLogObjectParent(A,Bnew);

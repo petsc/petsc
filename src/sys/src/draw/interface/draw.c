@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.21 1995/10/18 03:16:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.22 1995/11/01 19:11:36 bsmith Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -406,7 +406,7 @@ int DrawTriangle(DrawCtx ctx,double x1,double y1,double x2,double y2,
 int DrawDestroy_Null(PetscObject obj)
 {
   PLogObjectDestroy(obj);
-  PETSCHEADERDESTROY(obj); 
+  PetscHeaderDestroy(obj); 
   return 0;
 }
 
@@ -421,7 +421,7 @@ int DrawOpenNull(MPI_Comm comm,DrawCtx *win)
 {
   DrawCtx ctx;
   *win = 0;
-  PETSCHEADERCREATE(ctx,_DrawCtx,DRAW_COOKIE,NULLWINDOW,comm);
+  PetscHeaderCreate(ctx,_DrawCtx,DRAW_COOKIE,NULLWINDOW,comm);
   PLogObjectCreate(ctx);
   PetscMemzero(&ctx->ops,sizeof(struct _DrawOps));
   ctx->destroy = DrawDestroy_Null;

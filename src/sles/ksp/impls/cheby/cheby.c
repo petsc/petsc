@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.27 1995/10/17 21:41:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.28 1995/11/01 19:09:04 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -162,7 +162,7 @@ int KSPCreate_Chebychev(KSP itP)
 {
   KSP_Chebychev *chebychevP;
 
-  chebychevP=(KSP_Chebychev*)PETSCMALLOC(sizeof(KSP_Chebychev));CHKPTRQ(chebychevP);
+  chebychevP=(KSP_Chebychev*)PetscMalloc(sizeof(KSP_Chebychev));CHKPTRQ(chebychevP);
   PLogObjectMemory(itP,sizeof(KSP_Chebychev));
   itP->data = (void *) chebychevP;
 

@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.11 1995/10/01 21:51:20 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.12 1995/11/01 19:08:38 bsmith Exp bsmith $ */
 
 #include <math.h>
 #include "pvecimpl.h" 
@@ -8,14 +8,14 @@
 static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
   Scalar *work;
-  work = (Scalar *)PETSCMALLOC( nv * sizeof(Scalar) );  CHKPTRQ(work);
+  work = (Scalar *)PetscMalloc( nv * sizeof(Scalar) );  CHKPTRQ(work);
   VecMDot_Seq(  nv, xin, y, work );
 #if defined(PETSC_COMPLEX)
   MPI_Allreduce( work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #else
   MPI_Allreduce( work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );
 #endif
-  PETSCFREE(work);
+  PetscFree(work);
   return 0;
 }
 

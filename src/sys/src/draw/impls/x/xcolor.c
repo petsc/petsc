@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.12 1995/07/28 04:23:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.13 1995/09/30 19:30:30 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -433,9 +433,9 @@ PixVal XiSimColor(DrawCtx_X *XiWin,PixVal pixel, int intensity, int is_fore)
 #define WHITE_AMOUNT 5000
   if (intensity > 0) {
     /* Add white to the color */
-    red   = PETSCMIN(65535,red + WHITE_AMOUNT);
-    green = PETSCMIN(65535,green + WHITE_AMOUNT);
-    blue  = PETSCMIN(65535,blue + WHITE_AMOUNT);
+    red   = PetscMin(65535,red + WHITE_AMOUNT);
+    green = PetscMin(65535,green + WHITE_AMOUNT);
+    blue  = PetscMin(65535,blue + WHITE_AMOUNT);
   }
   else {
     /* Subtract white from the color */
@@ -461,13 +461,13 @@ int XiUniformHues( DrawCtx_X *Xiwin, int ncolors )
 {
   unsigned char *red, *green, *blue;
 
-  red   = (unsigned char *)PETSCMALLOC( 3 * ncolors * sizeof(unsigned char) );   
+  red   = (unsigned char *)PetscMalloc( 3 * ncolors * sizeof(unsigned char) );   
   CHKPTRQ(red);
   green = red + ncolors;
   blue  = green + ncolors;
   XiSetCmapHue( red, green, blue, ncolors );
   XiCmap( red, green, blue, ncolors, Xiwin );
-  PETSCFREE( red );
+  PetscFree( red );
   return 0;
 }
 

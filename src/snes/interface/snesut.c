@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.4 1995/09/30 19:31:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.5 1995/10/01 21:53:26 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -226,15 +226,15 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
       rtol = (snes->norm - kctx->lresid_last)/kctx->norm_last; 
       if (rtol < 0.0) rtol = -rtol;
       stol = pow(kctx->rtol_last,kctx->alpha2);
-      if (stol > kctx->threshold) rtol = PETSCMAX(rtol,stol);
+      if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
     } else if (kctx->version == 2) {
       rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
       stol = kctx->gamma * pow(kctx->rtol_last,kctx->alpha);
-      if (stol > kctx->threshold) rtol = PETSCMAX(rtol,stol);
+      if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
     } else SETERRQ(1,
      "SNES_KSP_EW_Converged_Private:Only versions 1 or 2 are supported");
   }
-  rtol = PETSCMIN(rtol,kctx->rtol_max);
+  rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
   PLogInfo((PetscObject)snes,
     "SNES: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",

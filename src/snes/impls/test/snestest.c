@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.15 1995/10/01 21:53:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.16 1995/10/12 04:20:20 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -66,7 +66,7 @@ int SNESDestroy_Test(PetscObject obj)
   SNES snes = (SNES) obj;
   SLESDestroy(snes->sles);
   PLogObjectDestroy(obj);
-  PETSCHEADERDESTROY(obj);
+  PetscHeaderDestroy(obj);
   return 0;
 }
 
@@ -101,7 +101,7 @@ int SNESCreate_Test(SNES  snes )
   snes->printhelp       = SNESPrintHelp_Test;
   snes->setfromoptions  = SNESSetFromOptions_Test;
 
-  neP			= PETSCNEW(SNES_Test);   CHKPTRQ(neP);
+  neP			= PetscNew(SNES_Test);   CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_Test));
   snes->data    	= (void *) neP;
   neP->complete_print   = 0;

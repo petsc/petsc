@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.11 1995/10/12 04:16:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.12 1995/10/24 21:48:02 bsmith Exp bsmith $";
 #endif
 
 #include "../../matimpl.h"
@@ -12,7 +12,7 @@ int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,IS *rperm, IS *cp
 {
   int  ierr,*permr,*permc,(*r)(int*,int*,int*,int*,int*);
 
-  permr = (int *) PETSCMALLOC( (2*n+1)*sizeof(int) ); CHKPTRQ(permr);
+  permr = (int *) PetscMalloc( (2*n+1)*sizeof(int) ); CHKPTRQ(permr);
   permc = permr + n;
 
   /* Get the function pointers for the method requested */
@@ -30,7 +30,7 @@ int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,IS *rperm, IS *cp
   ISSetPermutation(*rperm);
   ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
-  PETSCFREE(permr); 
+  PetscFree(permr); 
 
   /* 
      this is tacky: In the future when we have written special factorization

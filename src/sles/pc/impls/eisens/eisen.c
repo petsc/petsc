@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.32 1995/09/06 03:05:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.33 1995/10/01 21:52:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -113,7 +113,7 @@ static int PCDestroy_Eisenstat(PetscObject obj)
   if (eis->b) VecDestroy(eis->b);
   if (eis->shell) MatDestroy(eis->shell);
   if (eis->diag) VecDestroy(eis->diag);
-  PETSCFREE(eis);
+  PetscFree(eis);
   return 0;
 }
 
@@ -175,7 +175,7 @@ static int PCSetUp_Eisenstat(PC pc)
 int PCCreate_Eisenstat(PC pc)
 {
   int          ierr;
-  PC_Eisenstat *eis = PETSCNEW(PC_Eisenstat); CHKPTRQ(eis);
+  PC_Eisenstat *eis = PetscNew(PC_Eisenstat); CHKPTRQ(eis);
   pc->apply         = PCApply_Eisenstat;
   pc->presolve      = PCPre_Eisenstat;
   pc->postsolve     = PCPost_Eisenstat;

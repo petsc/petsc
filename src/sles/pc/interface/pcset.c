@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.26 1995/10/01 21:52:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.27 1995/10/02 20:20:52 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -37,7 +37,7 @@ int PCSetMethod(PC ctx,PCMethod method)
   PETSCVALIDHEADERSPECIFIC(ctx,PC_COOKIE);
   if (ctx->setupcalled) {
     if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
-    else {if (ctx->data) PETSCFREE(ctx->data);}
+    else {if (ctx->data) PetscFree(ctx->data);}
     ctx->data = 0;
   }
   /* Get the function pointers for the method requested */
@@ -45,7 +45,7 @@ int PCSetMethod(PC ctx,PCMethod method)
   if (!__PCList) {SETERRQ(1,"PCSetMethod:Could not get list of methods");}
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)method, (char *)0 );
   if (!r) {SETERRQ(1,"PCSetMethod:Unknown method");}
-  if (ctx->data) PETSCFREE(ctx->data);
+  if (ctx->data) PetscFree(ctx->data);
   ctx->setfrom     = ( int (*)(PC) ) 0;
   ctx->printhelp   = ( int (*)(PC) ) 0;
   ctx->setup       = ( int (*)(PC) ) 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.13 1995/10/01 21:53:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.14 1995/11/01 19:11:41 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -25,7 +25,7 @@ int XiFontFixed( DrawCtx_X *XBWin,int w, int h,XiFont **outfont )
   static int    fw = 0, fh = 0;
   if (!curfont) { XiInitFonts( XBWin );}
   if (w != fw || h != fh) {
-    if (!font)	font = (XiFont*) PETSCMALLOC(sizeof(XiFont)); CHKPTRQ(font);
+    if (!font)	font = (XiFont*) PetscMalloc(sizeof(XiFont)); CHKPTRQ(font);
     XiMatchFontSize( font, w, h );
     fw = w;
     fh = h;
@@ -133,9 +133,9 @@ int XiMatchFontSize( XiFont *font, int w, int h )
 
   /* determine closest fit, per max. norm */
   imax = 0;
-  max  = PETSCMAX(PetscAbsInt(nfonts[0].w - w),PetscAbsInt(nfonts[0].h - h));
+  max  = PetscMax(PetscAbsInt(nfonts[0].w - w),PetscAbsInt(nfonts[0].h - h));
   for (i=1; i<act_nfonts; i++) {
-    tmp = PETSCMAX(PetscAbsInt(nfonts[i].w - w),PetscAbsInt(nfonts[i].h - h));
+    tmp = PetscMax(PetscAbsInt(nfonts[i].w - w),PetscAbsInt(nfonts[i].h - h));
     if (tmp < max) {max = tmp; imax = i;}
   }
 

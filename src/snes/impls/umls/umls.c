@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.12 1995/10/12 04:20:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.13 1995/11/01 19:12:15 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -117,7 +117,7 @@ static int SNESDestroy_UMLS(PetscObject obj )
 {
   SNES snes = (SNES) obj;
   VecFreeVecs(snes->work,snes->nwork);
-  PETSCFREE(snes->data);
+  PetscFree(snes->data);
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -365,16 +365,16 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   for (i=0; i< neP->maxfev; i++) {
     /* Set min and max steps to correspond to the interval of uncertainty */
     if (neP->bracket) {
-      neP->stepmin = PETSCMIN(stx,sty); 
-      neP->stepmax = PETSCMAX(stx,sty); 
+      neP->stepmin = PetscMin(stx,sty); 
+      neP->stepmax = PetscMax(stx,sty); 
     } else {
       neP->stepmin = stx;
       neP->stepmax = *step + xtrapf * (*step - stx);
     }
 
     /* Force the step to be within the bounds */
-    *step = PETSCMAX(*step,neP->stepmin);
-    *step = PETSCMIN(*step,neP->stepmax);
+    *step = PetscMax(*step,neP->stepmin);
+    *step = PetscMin(*step,neP->stepmax);
 
     /* If an unusual termination is to occur, then let step be the lowest
        point obtained thus far */
@@ -433,7 +433,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
     /* In the first stage, we seek a step for which the modified function
         has a nonpositive value and nonnegative derivative */
-    if ((stage1) && (*f <= ftest1) && (dg >= dginit * PETSCMIN(neP->ftol, neP->gtol)))
+    if ((stage1) && (*f <= ftest1) && (dg >= dginit * PetscMin(neP->ftol, neP->gtol)))
       stage1 = 0;
 
     /* A modified function is used to predict the step only if we
@@ -494,7 +494,7 @@ int SNESCreate_UMLS(SNES snes)
   snes->view              = SNESView_UMLS;
   snes->setfromoptions    = SNESSetFromOptions_UMLS;
 
-  neP			  = PETSCNEW(SNES_UMLS); CHKPTRQ(neP);
+  neP			  = PetscNew(SNES_UMLS); CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UMLS));
   snes->data	          = (void *) neP;
   neP->LineSearch	  = SNESMoreLineSearch; 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.11 1995/10/24 21:42:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.12 1995/11/01 19:08:59 bsmith Exp bsmith $";
 #endif
 
 #define RERROR  gmres_error
@@ -84,7 +84,7 @@ int KSPGMRESIROrthog(KSP  itP,int it )
   /* Don't allocate small arrays */
   if (it < 20) lhh = shh;
   else {
-    lhh = (Scalar *)PETSCMALLOC((it+1) * sizeof(Scalar));
+    lhh = (Scalar *)PetscMalloc((it+1) * sizeof(Scalar));
   }
   
   /* update hessenberg matrix and do unmodified Gram-Schmidt */
@@ -130,7 +130,7 @@ int KSPGMRESIROrthog(KSP  itP,int it )
 
   /* It would be nice to put ncnt somewhere.... */
 
-  if (it >= 20) PETSCFREE( lhh );
+  if (it >= 20) PetscFree( lhh );
   PLogEventEnd(KSP_GMRESOrthogonalization,itP,0,0,0);
   return 0;
 }

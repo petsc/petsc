@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.17 1995/10/17 16:11:00 curfman Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.18 1995/10/19 22:15:56 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -71,18 +71,18 @@ int VecLoad(Viewer bview,Vec *newvec)
       /* determine maximum chunck owned by other */
       n = 1;
       for ( i=1; i<size; i++ ) {
-        n = PETSCMAX(n,v->ownership[i] - v->ownership[i-1]);
+        n = PetscMax(n,v->ownership[i] - v->ownership[i-1]);
       }
-      avec = (Scalar *) PETSCMALLOC( n*sizeof(Scalar) ); CHKPTRQ(avec);
-      requests = (MPI_Request *) PETSCMALLOC((size-1)*sizeof(MPI_Request));CHKPTRQ(requests);
-      statuses = (MPI_Status *) PETSCMALLOC((size-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
+      avec = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(avec);
+      requests = (MPI_Request *) PetscMalloc((size-1)*sizeof(MPI_Request));CHKPTRQ(requests);
+      statuses = (MPI_Status *) PetscMalloc((size-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
       for ( i=1; i<size; i++ ) {
         n = v->ownership[i+1]-v->ownership[i];
         ierr = SYRead(fd,avec,n,SYSCALAR);CHKERRQ(ierr);
         MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);
       }
       MPI_Waitall(size-1,requests,statuses);
-      PETSCFREE(avec); PETSCFREE(requests); PETSCFREE(statuses);
+      PetscFree(avec); PetscFree(requests); PetscFree(statuses);
     }
   } else {
     MPI_Bcast(&rows,1,MPI_INT,0,comm);

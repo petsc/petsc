@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.47 1995/10/13 01:58:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.48 1995/11/01 19:12:09 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -105,7 +105,7 @@ int SNESDestroy_LS(PetscObject obj)
   SNES snes = (SNES) obj;
   int  ierr;
   ierr = VecFreeVecs(snes->work,snes->nwork); CHKERRQ(ierr);
-  PETSCFREE(snes->data);
+  PetscFree(snes->data);
   return 0;
 }
 /* ------------------------------------------------------------ */
@@ -546,7 +546,7 @@ int SNESCreate_LS(SNES  snes )
   snes->setfromoptions  = SNESSetFromOptions_LS;
   snes->view            = SNESView_LS;
 
-  neP			= PETSCNEW(SNES_LS);   CHKPTRQ(neP);
+  neP			= PetscNew(SNES_LS);   CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_LS));
   snes->data    	= (void *) neP;
   neP->alpha		= 1.e-4;

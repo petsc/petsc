@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.47 1995/10/13 02:06:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.48 1995/10/24 21:44:30 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -143,7 +143,7 @@ static int PCDestroy_LU(PetscObject obj)
   if (!dir->inplace) MatDestroy(dir->fact);
   if (dir->row && dir->col && dir->row != dir->col) ISDestroy(dir->row);
   if (dir->col) ISDestroy(dir->col);
-  PETSCFREE(dir); 
+  PetscFree(dir); 
   return 0;
 }
 
@@ -156,7 +156,7 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 
 int PCCreate_LU(PC pc)
 {
-  PC_LU *dir     = PETSCNEW(PC_LU); CHKPTRQ(dir);
+  PC_LU *dir     = PetscNew(PC_LU); CHKPTRQ(dir);
   dir->fact      = 0;
   dir->inplace   = 0;
   dir->col       = 0;

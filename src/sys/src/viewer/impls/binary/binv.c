@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.11 1995/10/17 15:20:40 curfman Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.12 1995/10/19 22:28:29 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -25,7 +25,7 @@ static int ViewerDestroy_BinaryFile(PetscObject obj)
   MPI_Comm_rank(v->comm,&rank);
   if (!rank) close(v->fdes);
   PLogObjectDestroy(obj);
-  PETSCHEADERDESTROY(obj);
+  PetscHeaderDestroy(obj);
   return 0;
 }
 
@@ -55,7 +55,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   int    rank;
   Viewer v;
 
-  PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm);
+  PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm);
   PLogObjectCreate(v);
   v->destroy = ViewerDestroy_BinaryFile;
   *binv = v;

@@ -62,14 +62,14 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
 
     if (!x) {
       xin = 0; 
-      x = (double *) PETSCMALLOC( m*sizeof(double) ); CHKPTRQ(x);
+      x = (double *) PetscMalloc( m*sizeof(double) ); CHKPTRQ(x);
       h = 1.0/(m-1);
       x[0] = 0.0;
       for ( i=1; i<m; i++ ) x[i] = x[i-1] + h;
     }
     if (!y) {
       yin = 0; 
-      y = (double *) PETSCMALLOC( n*sizeof(double) ); CHKPTRQ(y);
+      y = (double *) PetscMalloc( n*sizeof(double) ); CHKPTRQ(y);
       h = 1.0/(n-1);
       y[0] = 0.0;
       for ( i=1; i<n; i++ ) y[i] = y[i-1] + h;
@@ -88,8 +88,8 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
       DrawTriangle(win,x1,y1,x3,y3,x4,y4,c1,c3,c4);
     }
     VecRestoreArray(W,&v);
-    if (!xin) PETSCFREE(x); 
-    if (!yin) PETSCFREE(y);
+    if (!xin) PetscFree(x); 
+    if (!yin) PetscFree(y);
 #endif
   }
   VecDestroy(W);

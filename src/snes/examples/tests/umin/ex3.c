@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.9 1995/09/30 19:31:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.10 1995/10/19 22:30:00 curfman Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -260,10 +260,10 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   xe = xs+xm;
   ye = ys+ym;
   for (j=ys; j<ye; j++) {  /*  for (j=0; j<ny; j++) */
-    temp = PETSCMIN(j+1,ny-j)*hy;
+    temp = PetscMin(j+1,ny-j)*hy;
     for (i=xs; i<xe; i++) {  /*  for (i=0; i<nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
-      x[k] = PETSCMIN((PETSCMIN(i+1,nx-i))*hx,temp);
+      x[k] = PetscMin((PetscMin(i+1,nx-i))*hx,temp);
     }
   }
   ierr = VecRestoreArray(user->localX,&x); CHKERRQ(ierr);

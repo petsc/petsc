@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.34 1995/10/28 21:10:43 curfman Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.35 1995/10/29 19:09:24 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -179,7 +179,7 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
   int          j, *cw2, ict;
 
   /* rough over-estimate; could refine for individual rows */
-  nz = PETSCMIN(n,a->nd*a->nb); 
+  nz = PetscMin(n,a->nd*a->nb); 
   switch (newtype) {
     case MATSEQAIJ:
       ierr = MatCreateSeqAIJ(A->comm,m,n,nz,0,B); CHKERRQ(ierr); 
@@ -217,8 +217,8 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
   }
   ierr = MatGetOwnershipRange(*B,&rstart,&rend); CHKERRQ(ierr);
 
-  cw2 = (int *)PETSCMALLOC( n * sizeof(int) ); CHKPTRQ(cw2);
-  vw2 = (Scalar *)PETSCMALLOC( n * sizeof(Scalar) ); CHKPTRQ(vw2);
+  cw2 = (int *)PetscMalloc( n * sizeof(int) ); CHKPTRQ(cw2);
+  vw2 = (Scalar *)PetscMalloc( n * sizeof(Scalar) ); CHKPTRQ(vw2);
   for (i=rstart; i<rend; i++) {
    ierr = MatGetRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
    ict = 0; /* strip out the zero elements ... is this what we really want? */
@@ -229,7 +229,7 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
      {ierr = MatSetValues(*B,1,&i,ict,cw2,vw2,INSERT_VALUES); CHKERRQ(ierr);}
    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
-  PETSCFREE(cw2); PETSCFREE(vw2);
+  PetscFree(cw2); PetscFree(vw2);
   ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;

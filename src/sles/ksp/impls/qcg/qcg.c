@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.8 1995/10/17 21:41:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.9 1995/11/01 19:09:16 bsmith Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -280,14 +280,14 @@ static int KSPDestroy_QCG(PetscObject obj)
   KSPiDefaultFreeWork( itP );
   
   /* Free the context variable */
-  PETSCFREE(cgP); 
+  PetscFree(cgP); 
   return 0;
 }
 
 int KSPCreate_QCG(KSP itP)
 {
   KSP_QCG *cgP;
-  cgP = (KSP_QCG*) PETSCMALLOC(sizeof(KSP_QCG));  CHKPTRQ(cgP);
+  cgP = (KSP_QCG*) PetscMalloc(sizeof(KSP_QCG));  CHKPTRQ(cgP);
   PLogObjectMemory(itP,sizeof(KSP_QCG));
   itP->data = (void *) cgP;
   itP->type                 = KSPQCG;

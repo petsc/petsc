@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.44 1995/10/13 19:39:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.45 1995/10/17 21:41:43 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -184,7 +184,7 @@ static int PCDestroy_ILU(PetscObject obj)
   if (!ilu->inplace) MatDestroy(ilu->fact);
   if (ilu->row && ilu->col && ilu->row != ilu->col) ISDestroy(ilu->row);
   if (ilu->col) ISDestroy(ilu->col);
-  PETSCFREE(ilu); 
+  PetscFree(ilu); 
   return 0;
 }
 
@@ -203,7 +203,7 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 
 int PCCreate_ILU(PC pc)
 {
-  PC_ILU    *ilu = PETSCNEW(PC_ILU); CHKPTRQ(ilu);
+  PC_ILU    *ilu = PetscNew(PC_ILU); CHKPTRQ(ilu);
   ilu->fact      = 0;
   ilu->levels    = 0;
   ilu->col       = 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.31 1995/10/01 21:51:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.32 1995/10/17 21:40:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -122,7 +122,7 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if ( n == 0 ) {
-    itP->ttol   = PETSCMAX(itP->rtol*rnorm,itP->atol);
+    itP->ttol   = PetscMax(itP->rtol*rnorm,itP->atol);
     itP->rnorm0 = rnorm;
   }
   if ( rnorm <= itP->ttol )      return 1;
@@ -239,7 +239,7 @@ int KSPiDefaultDestroy(PetscObject obj)
 {
   KSP itP = (KSP) obj;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->data) PETSCFREE(itP->data);
+  if (itP->data) PetscFree(itP->data);
 
   /* free work vectors */
   KSPiDefaultFreeWork( itP );

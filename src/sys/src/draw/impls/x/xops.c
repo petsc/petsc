@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.31 1995/10/19 22:27:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.32 1995/11/01 19:11:41 bsmith Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -272,9 +272,9 @@ int DrawDestroy_X(PetscObject obj)
 {
   DrawCtx   ctx = (DrawCtx) obj;
   DrawCtx_X *win = (DrawCtx_X *) ctx->data;
-  PETSCFREE(win);
+  PetscFree(win);
   PLogObjectDestroy(ctx);
-  PETSCHEADERDESTROY(ctx);
+  PetscHeaderDestroy(ctx);
   return 0;
 }
 
@@ -315,7 +315,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   }
 
   *inctx = 0;
-  PETSCHEADERCREATE(ctx,_DrawCtx,DRAW_COOKIE,XWINDOW,comm);
+  PetscHeaderCreate(ctx,_DrawCtx,DRAW_COOKIE,XWINDOW,comm);
   PLogObjectCreate(ctx);
   PetscMemcpy(&ctx->ops,&DvOps,sizeof(DvOps));
   ctx->destroy = DrawDestroy_X;
@@ -329,7 +329,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   OptionsGetInt(0,"-pause",&ctx->pause);
 
   /* actually create and open the window */
-  Xwin         = (DrawCtx_X *) PETSCMALLOC( sizeof(DrawCtx_X) ); CHKPTRQ(Xwin);
+  Xwin         = (DrawCtx_X *) PetscMalloc( sizeof(DrawCtx_X) ); CHKPTRQ(Xwin);
   PLogObjectMemory(ctx,sizeof(DrawCtx_X)+sizeof(struct _DrawCtx));
   PetscMemzero(Xwin,sizeof(DrawCtx_X));
   MPI_Comm_size(comm,&size);
@@ -339,11 +339,11 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
       display = string;
     }
     if (!display) {
-      display = (char *) PETSCMALLOC( 128*sizeof(char) ); CHKPTRQ(display);
+      display = (char *) PetscMalloc( 128*sizeof(char) ); CHKPTRQ(display);
       MPIU_Set_display(comm,display,128);
     }
     ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERRQ(ierr);
-    if (display != string) PETSCFREE(display);
+    if (display != string) PetscFree(display);
     MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);
   }
   else {
@@ -352,12 +352,12 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
       display = string;
     }
     if (!display) {
-      display = (char *) PETSCMALLOC( 128*sizeof(char) ); CHKPTRQ(display);
+      display = (char *) PetscMalloc( 128*sizeof(char) ); CHKPTRQ(display);
       MPIU_Set_display(comm,display,128);
     }
     MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
     ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);
-    if (display != string) PETSCFREE(display);
+    if (display != string) PetscFree(display);
   }
  
   ctx->data    = (void *) Xwin;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.28 1995/10/17 21:41:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.29 1995/11/01 19:09:07 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -135,7 +135,7 @@ static int KSPView_Richardson(PetscObject obj,Viewer viewer)
 int KSPCreate_Richardson(KSP itP)
 {
   KSP_Richardson *richardsonP;
-  richardsonP = PETSCNEW(KSP_Richardson); CHKPTRQ(richardsonP);
+  richardsonP = PetscNew(KSP_Richardson); CHKPTRQ(richardsonP);
   itP->data = (void *) richardsonP;
   itP->type                 = KSPRICHARDSON;
   richardsonP->scale        = 1.0;

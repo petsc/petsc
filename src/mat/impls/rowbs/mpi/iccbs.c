@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.1 1995/10/05 02:47:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.2 1995/11/01 19:10:33 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
@@ -17,9 +17,9 @@ static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
   PC     pc = (PC) obj;
   PC_ICC *icc = (PC_ICC *) pc->data;
   PCiBS  *iccbs = (PCiBS *) icc->implctx; 
-  PETSCFREE(iccbs);
+  PetscFree(iccbs);
   MatDestroy(icc->fact);
-  PETSCFREE(icc);
+  PetscFree(icc);
   return 0;
 }
 
@@ -77,7 +77,7 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
   PCiBS  *iccbs;
 
   pc ->destroy        = PCDestroy_ICC_MPIRowbs;
-  icc->implctx        = (void *) (iccbs = PETSCNEW(PCiBS)); CHKPTRQ(iccbs);
+  icc->implctx        = (void *) (iccbs = PetscNew(PCiBS)); CHKPTRQ(iccbs);
   if (icc->bs_iter) { /* Set BlockSolve iterative solver defaults */
     iccbs->blocksize  = 1;
     iccbs->pre_option = PRE_STICCG;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.19 1995/09/30 19:28:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.20 1995/11/01 19:10:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -47,9 +47,9 @@ static int MatDestroy_Shell(PetscObject obj)
   Mat_Shell *shell;
   shell = (Mat_Shell *) mat->data;
   if (shell->destroy) {ierr = (*shell->destroy)(shell->ctx);CHKERRQ(ierr);}
-  PETSCFREE(shell); 
+  PetscFree(shell); 
   PLogObjectDestroy(mat);
-  PETSCHEADERDESTROY(mat);
+  PetscHeaderDestroy(mat);
   return 0;
 }
   
@@ -100,13 +100,13 @@ int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 {
   Mat      newmat;
   Mat_Shell *shell;
-  PETSCHEADERCREATE(newmat,_Mat,MAT_COOKIE,MATSHELL,comm);
+  PetscHeaderCreate(newmat,_Mat,MAT_COOKIE,MATSHELL,comm);
   PLogObjectCreate(newmat);
   *mat           = newmat;
   newmat->factor = 0;
   newmat->destroy= MatDestroy_Shell;
   PetscMemcpy(&newmat->ops,&MatOps,sizeof(struct _MatOps));
-  shell          = PETSCNEW(Mat_Shell); CHKPTRQ(shell);
+  shell          = PetscNew(Mat_Shell); CHKPTRQ(shell);
   PetscMemzero(shell,sizeof(Mat_Shell));
   newmat->data   = (void *) shell;
   shell->mult    = 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.16 1995/10/23 22:11:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.17 1995/11/01 19:10:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,7 +20,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
 
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
-  indices = (int *) PETSCMALLOC( N*sizeof(int) ); CHKPTRQ(indices);
+  indices = (int *) PetscMalloc( N*sizeof(int) ); CHKPTRQ(indices);
   PetscMemzero(indices,N*sizeof(int));
 
   if (nb == 1) {
@@ -56,12 +56,12 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   }
 
   /* form array of columns we need */
-  garray = (int *) PETSCMALLOC( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
+  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
   ec = 0;
   for ( i=0; i<N; i++ ) {
     if (indices[i]) garray[ec++] = i;
   }
-  PETSCFREE(indices);
+  PetscFree(indices);
 
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&mbd->lvec); CHKERRQ(ierr);
@@ -69,7 +69,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   /* create temporary index set for building scatter-gather */
   ierr = ISCreateSeq(MPI_COMM_SELF,ec,garray,&tofrom); CHKERRQ(ierr);
   CHKERRQ(ierr);
-  PETSCFREE(garray);
+  PetscFree(garray);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 

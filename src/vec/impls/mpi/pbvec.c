@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.45 1995/10/19 22:16:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.46 1995/11/01 19:08:38 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -60,10 +60,10 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
   *vv = 0;
 
   mem           = sizeof(Vec_MPI)+(size+1)*sizeof(int);
-  PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,VECMPI,comm);
+  PetscHeaderCreate(v,_Vec,VEC_COOKIE,VECMPI,comm);
   PLogObjectCreate(v);
   PLogObjectMemory(v,mem + sizeof(struct _Vec) + (n+1)*sizeof(Scalar));
-  s              = (Vec_MPI *) PETSCMALLOC(mem); CHKPTRQ(s);
+  s              = (Vec_MPI *) PetscMalloc(mem); CHKPTRQ(s);
   PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
   v->destroy     = VecDestroy_MPI;
@@ -72,7 +72,7 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
   s->N           = N;
   s->size        = size;
   s->rank        = rank;
-  s->array       = (Scalar *) PETSCMALLOC((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
+  s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
   s->ownership   = (int *) (s + 1);
   s->insertmode  = NOT_SET_VALUES;
   if (owners) {
@@ -86,7 +86,7 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,
     }
   }
   s->stash.nmax = 10; s->stash.n = 0;
-  s->stash.array = (Scalar *) PETSCMALLOC( 10*sizeof(Scalar) + 10*sizeof(int) );
+  s->stash.array = (Scalar *) PetscMalloc( 10*sizeof(Scalar) + 10*sizeof(int) );
   CHKPTRQ(s->stash.array);
   PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
   s->stash.idx = (int *) (s->stash.array + 10);

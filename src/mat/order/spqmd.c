@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.9 1995/08/15 20:28:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.10 1995/09/30 19:29:19 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -13,19 +13,19 @@ int MatOrderQMD( int *Nrow, int *ia, int *ja, int *perm,int *permc )
   int i,   *deg, *marker, *rchset, *nbrhd, *qsize,
       *qlink, nofsub, *iperm, nrow = *Nrow;
 
-  iperm = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(iperm);
-  deg    = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(deg);
-  marker = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(marker);
-  rchset = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(rchset);
-  nbrhd  = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(nbrhd);
-  qsize  = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(qsize);
-  qlink  = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(qlink);
+  iperm = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(iperm);
+  deg    = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(deg);
+  marker = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(marker);
+  rchset = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(rchset);
+  nbrhd  = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(nbrhd);
+  qsize  = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(qsize);
+  qlink  = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(qlink);
   /* WARNING - genqmd trashes ja */    
   genqmd( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,
 	 qlink, &nofsub );
-  PETSCFREE( deg ); PETSCFREE( marker ); PETSCFREE( rchset ); 
-  PETSCFREE( nbrhd ); PETSCFREE( qsize );
-  PETSCFREE( qlink ); PETSCFREE(iperm);
+  PetscFree( deg ); PetscFree( marker ); PetscFree( rchset ); 
+  PetscFree( nbrhd ); PetscFree( qsize );
+  PetscFree( qlink ); PetscFree(iperm);
   for (i=0; i<nrow; i++) perm[i]--;
   PetscMemcpy(permc,perm,nrow*sizeof(int));
   return 0;

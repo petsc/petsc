@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.26 1995/10/11 17:57:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.27 1995/11/01 19:11:56 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -94,7 +94,7 @@ static int ViewerDestroy_Matlab(PetscObject obj)
     && !defined(PARCH_t3d)
   usleep((unsigned) 100);
 #endif
-  PETSCHEADERDESTROY(viewer);
+  PetscHeaderDestroy(viewer);
   return 0;
 }
 
@@ -177,7 +177,7 @@ int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
   int    t;
   if (port <= 0) port = DEFAULTPORT;
   t = SOCKCall_Private(machine,port);
-  PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,MPI_COMM_SELF);
+  PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,MPI_COMM_SELF);
   PLogObjectCreate(v);
   v->port        = t;
   v->destroy     = ViewerDestroy_Matlab;

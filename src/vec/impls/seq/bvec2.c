@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.51 1995/10/01 21:51:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.52 1995/11/01 19:08:35 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -92,12 +92,12 @@ static int VecView_Seq_LG(Vec xin,DrawLGCtx lg)
   double   *xx;
   DrawLGGetDrawCtx(lg,&win);
   DrawLGReset(lg);
-  xx = (double *) PETSCMALLOC( (n+1)*sizeof(double) ); CHKPTRQ(xx);
+  xx = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(xx);
   for ( i=0; i<n; i++ ) {
     xx[i] = (double) i;
   }
   DrawLGAddPoints(lg,n,&xx,&x->array);
-  PETSCFREE(xx);
+  PetscFree(xx);
   DrawLG(lg);
   DrawSyncFlush(win);
   DrawPause(win);
@@ -197,9 +197,9 @@ static int VecDestroy_Seq(PetscObject obj )
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
-  PETSCFREE(v->data);
+  PetscFree(v->data);
   PLogObjectDestroy(v);
-  PETSCHEADERDESTROY(v); 
+  PetscHeaderDestroy(v); 
   return 0;
 }
 
@@ -242,12 +242,12 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
   if (flag == MPI_UNEQUAL) SETERRQ(1,"VecCreateSeq:Must call with MPI_COMM_SELF");
-  PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,VECSEQ,comm);
+  PetscHeaderCreate(v,_Vec,VEC_COOKIE,VECSEQ,comm);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _Vec)+size);
   v->destroy     = VecDestroy_Seq;
   v->view        = VecView_Seq;
-  s              = (Vec_Seq *) PETSCMALLOC(size); CHKPTRQ(s);
+  s              = (Vec_Seq *) PetscMalloc(size); CHKPTRQ(s);
   PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
   s->n           = n;

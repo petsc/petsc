@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.20 1995/10/24 21:43:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.21 1995/10/31 02:08:26 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -120,9 +120,9 @@ int MPIU_Set_display(MPI_Comm comm,char *display,int n)
   if (!rank) {
     str = getenv("DISPLAY");
     if (!str || str[0] == ':') {
-      string = (char *) PETSCMALLOC( 256*sizeof(char) ); CHKPTRQ(string);
+      string = (char *) PetscMalloc( 256*sizeof(char) ); CHKPTRQ(string);
       MPI_Get_processor_name(string,&len);
-      PetscStrncpy(display,string,n-4); PETSCFREE(string);
+      PetscStrncpy(display,string,n-4); PetscFree(string);
       PetscStrcat(display,":0.0");
     }
     else {
@@ -247,7 +247,7 @@ static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
 */
 static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,void* extra_state )
 {
-  PETSCFREE( attr_val );
+  PetscFree( attr_val );
   return MPI_SUCCESS;
 }
 
@@ -285,7 +285,7 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
        dup it and set the first value */
     MPI_Comm_dup( comm_in, comm_out );
     MPI_Attr_get( MPI_COMM_WORLD, MPI_TAG_UB, (void**)&maxval, &flag );
-    tagvalp = (int *)PETSCMALLOC( 2*sizeof(int) );
+    tagvalp = (int *)PetscMalloc( 2*sizeof(int) );
     if (!tagvalp) return MPI_ERR_EXHAUSTED;
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
