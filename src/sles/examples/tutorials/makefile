@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.53 1998/08/11 02:22:11 curfman Exp bsmith $ 
+# $Id: makefile,v 1.54 1998/08/29 14:49:28 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -308,7 +308,7 @@ runex10_4:
 	   ${RM} -f ex10_4.tmp
 
 runex10_5:
-	-@${MPIRUN} -np 1 ex10 -ksp_type bicg -f0 ../../../mat/examples/matrices/medium \
+	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg -f0 ../../../mat/examples/matrices/medium \
            > ex10_5.tmp 2>&1; \
 	   if (diff output/ex10_5.out ex10_5.tmp) then true; \
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
