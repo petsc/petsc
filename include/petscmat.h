@@ -107,7 +107,7 @@ extern int MatGetSize(Mat,int*,int*);
 extern int MatGetLocalSize(Mat,int*,int*);
 extern int MatGetOwnershipRange(Mat,int*,int*);
 
-extern int MatCreateInitialMatrix(MPI_Comm,int,int,Mat*);
+extern int MatCreate(MPI_Comm,int,int,Mat*);
 
 extern int MatGetSubMatrix(Mat,IS,IS,Mat*);
 extern int MatGetSubMatrixInPlace(Mat,IS,IS);

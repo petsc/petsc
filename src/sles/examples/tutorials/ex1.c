@@ -21,12 +21,12 @@ int main(int argc,char **args)
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
 
-  ierr = VecCreateInitialVector(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
-  ierr = VecCreate(x,&b); CHKERRA(ierr);
-  ierr = VecCreate(x,&u); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&b); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&u); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
 
-  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.20 1995/04/27 18:25:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.21 1995/05/02 18:58:30 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -612,7 +612,7 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
   int ierr;
   VALIDHEADER(ctx,KSP_COOKIE);
   if (!w) {
-    ierr = VecCreate(ctx->vec_rhs,&w); CHKERR(ierr);
+    ierr = VecDuplicate(ctx->vec_rhs,&w); CHKERR(ierr);
     PLogObjectParent((PetscObject)ctx,w);
   }
   return (*ctx->BuildSolution)(ctx,w,V);
@@ -644,11 +644,11 @@ int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
   Vec w = v, tt = t;
   VALIDHEADER(ctx,KSP_COOKIE);
   if (!w) {
-    ierr = VecCreate(ctx->vec_rhs,&w); CHKERR(ierr);
+    ierr = VecDuplicate(ctx->vec_rhs,&w); CHKERR(ierr);
     PLogObjectParent((PetscObject)ctx,w);
   }
   if (!tt) {
-    ierr = VecCreate(ctx->vec_rhs,&tt); CHKERR(ierr); flag = 1;
+    ierr = VecDuplicate(ctx->vec_rhs,&tt); CHKERR(ierr); flag = 1;
     PLogObjectParent((PetscObject)ctx,tt);
   }
   ierr = (*ctx->BuildResidual)(ctx,tt,w,V); CHKERR(ierr);

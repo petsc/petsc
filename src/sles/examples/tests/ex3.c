@@ -48,7 +48,7 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
 
   /* create stiffness matrix */
-  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,N,N,&C); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,N,N,&C); CHKERRA(ierr);
 
   start = mytid*(M/numtids) + ((M%numtids) < mytid ? (M%numtids) : mytid);
   end   = start + M/numtids + ((M%numtids) > mytid); 
@@ -67,11 +67,11 @@ int main(int argc,char **args)
 
   /* create right hand side and solution */
 
-  ierr = VecCreateInitialVector(MPI_COMM_WORLD,N,&u); CHKERRA(ierr); 
+  ierr = VecCreate(MPI_COMM_WORLD,N,&u); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)u,"Approx. Solution");
-  ierr = VecCreate(u,&b); CHKERRA(ierr);
+  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)b,"Right hand side");
-  ierr = VecCreate(b,&ustar); CHKERRA(ierr);
+  ierr = VecDuplicate(b,&ustar); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);
   ierr = VecSet(&zero,b); CHKERRA(ierr);
 

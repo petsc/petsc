@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.14 1995/04/17 02:26:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.15 1995/04/17 16:57:05 curfman Exp bsmith $";
 #endif
 
 /*
@@ -49,7 +49,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
 
   KSPGetRhs(ksp,&b);
   if (!jac->b) {
-    ierr = VecCreate(b,&jac->b); CHKERR(ierr);
+    ierr = VecDuplicate(b,&jac->b); CHKERR(ierr);
     PLogObjectParent(pc,jac->b);
   }
   

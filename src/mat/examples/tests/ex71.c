@@ -23,7 +23,7 @@ int main(int argc,char **args)
 
   ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERR(ierr);
 
-  if ((ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,m*n,m*n,&A)))
+  if ((ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A)))
                                                            SETERR(ierr,0);
   ierr = GridCreateUniform2d(MPI_COMM_WORLD,m,0.0,1.0,n,0.0,1.0,&grid);
   ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uxx,&stencil); CHKERR(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.37 1995/05/03 01:03:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.38 1995/05/03 04:06:05 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -660,7 +660,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     the case of SSOR preconditioner, so E is D/omega where omega
     is the relaxation factor.
     */
-    ierr = VecCreate(xx,&tt); CHKERR(ierr);
+    ierr = VecDuplicate(xx,&tt); CHKERR(ierr);
     VecGetArray(tt,&t);
     scale = (2.0/omega) - 1.0;
     /*  x = (E + U)^{-1} b */
@@ -1258,7 +1258,7 @@ static int MatCopy_MPIAIJ_Private(Mat matin,Mat *newmat)
   } else aij->garray = 0;
   mat->comm           = matin->comm;
   
-  ierr =  VecCreate(oldmat->lvec,&aij->lvec); CHKERR(ierr);
+  ierr =  VecDuplicate(oldmat->lvec,&aij->lvec); CHKERR(ierr);
   PLogObjectParent(mat,aij->lvec);
   ierr =  VecScatterCtxCopy(oldmat->Mvctx,&aij->Mvctx); CHKERR(ierr);
   PLogObjectParent(mat,aij->Mvctx);

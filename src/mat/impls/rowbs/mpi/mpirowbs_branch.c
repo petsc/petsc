@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.17 1995/05/03 01:04:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.18 1995/05/03 04:06:19 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -941,7 +941,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->failures    = 0;
   if (!mrow->diag) {ierr = VecCreateMPI(mat->comm,mrow->m,mrow->M,
                             &(mrow->diag)); CHKERR(ierr);}
-  if (!mrow->xwork) {ierr = VecCreate(mrow->diag,&(mrow->xwork)); 
+  if (!mrow->xwork) {ierr = VecDuplicate(mrow->diag,&(mrow->xwork)); 
                             CHKERR(ierr);}
   mrow->inv_diag = (Scalar *) MALLOC( (mrow->m)*sizeof(Scalar) );
   CHKPTR(mrow->inv_diag);

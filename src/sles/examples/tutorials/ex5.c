@@ -32,7 +32,7 @@ int main(int argc,char **args)
   n = 2*numtids;
 
   /* Generate matrix */
-  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
       v = -1.0;  I = j + n*i;
@@ -48,8 +48,8 @@ int main(int argc,char **args)
 
   /* Generate vectors */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
-  ierr = VecCreate(u,&b); CHKERRA(ierr);
-  ierr = VecCreate(b,&x); CHKERRA(ierr);
+  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
+  ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecGetLocalSize(x,&ldim); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(x,&low,&high); CHKERRA(ierr);
   for (i=0; i<ldim; i++) {

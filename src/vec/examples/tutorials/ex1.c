@@ -22,9 +22,9 @@ int main(int argc,char **argv)
   OptionsGetInt(0,0,"-n",&n);
 
   /* create a vector */
-  ierr = VecCreateInitialVector(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
-  ierr = VecCreate(x,&y); CHKERRA(ierr);
-  ierr = VecCreate(x,&w); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&y); CHKERRA(ierr);
+  ierr = VecDuplicate(x,&w); CHKERRA(ierr);
   ierr = VecGetVecs(x,3,&z); CHKERRA(ierr); 
   ierr = VecSet(&one,x);CHKERRA(ierr);
   ierr = VecSet(&two,y);CHKERRA(ierr);

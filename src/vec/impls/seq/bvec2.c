@@ -2,7 +2,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.19 1995/04/28 05:09:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.20 1995/04/28 20:20:26 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -46,7 +46,7 @@ static struct _VeOps DvOps = {VecCreate_Blas,
 
 .keywords: vector, sequential, create, BLAS
 
-.seealso: VecCreateMPI(), VecCreateInitialVector()
+.seealso: VecCreateMPI(), VecCreate()
 @*/
 int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
 {

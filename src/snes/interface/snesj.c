@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.4 1995/05/02 23:39:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.5 1995/05/03 04:07:54 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -31,9 +31,9 @@ int SNESDefaultComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,int *flag,
   Scalar dx, mone = -1.0,*y,scale;
   double norm;
 
-  ierr = VecCreate(x1,&j1); CHKERR(ierr);
-  ierr = VecCreate(x1,&j2); CHKERR(ierr);
-  ierr = VecCreate(x1,&x2); CHKERR(ierr);
+  ierr = VecDuplicate(x1,&j1); CHKERR(ierr);
+  ierr = VecDuplicate(x1,&j2); CHKERR(ierr);
+  ierr = VecDuplicate(x1,&x2); CHKERR(ierr);
   ierr = VecNorm(x1,&norm); CHKERR(ierr);
   dx = 1.e-8*norm; /* assumes double precision */
   scale = -1.0/dx;

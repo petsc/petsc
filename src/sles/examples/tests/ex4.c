@@ -62,8 +62,8 @@ int main(int argc,char **args)
   /* create right hand side and solution */
 
   ierr = VecCreateSequential(MPI_COMM_SELF,N,&u); CHKERRA(ierr); 
-  ierr = VecCreate(u,&b); CHKERRA(ierr);
-  ierr = VecCreate(b,&ustar); CHKERRA(ierr);
+  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
+  ierr = VecDuplicate(b,&ustar); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);
   ierr = VecSet(&zero,b); CHKERRA(ierr);
 

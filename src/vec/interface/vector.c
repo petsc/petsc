@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.30 1995/05/02 23:37:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.31 1995/05/03 04:03:33 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -399,22 +399,22 @@ int VecPDiv(Vec x,Vec y,Vec w)
 
 .keywords: vector, create
 
-.seealso: VecDestroy(), VecGetVecs(), VecCreateInitialVector()
+.seealso: VecDestroy(), VecGetVecs(), VecCreate()
 @*/
-int VecCreate(Vec v,Vec *newv) 
+int VecDuplicate(Vec v,Vec *newv) 
 {
   VALIDHEADER(v,VEC_COOKIE);
   return   (*v->ops->create)(v,newv);
 }
 /*@
-   VecDestroy - Destroys  a vector created with VecCreate().
+   VecDestroy - Destroys  a vector created with VecDuplicate().
 
    Input Parameters:
 .  v  - the vector
 
 .keywords: vector, destroy
 
-.seealso: VecCreate()
+.seealso: VecDuplicate()
 @*/
 int VecDestroy(Vec v)
 {
@@ -433,12 +433,12 @@ int VecDestroy(Vec v)
 .  V - location to put pointer to array of vectors
 
    Notes:
-   Use VecFreeVecs() to free the space. Use VecCreate() to get a single
+   Use VecFreeVecs() to free the space. Use VecDuplicate() to get a single
    vector.
 
 .keywords: vector, get 
 
-.seealso:  VecFreeVecs(), VecCreate(), VecCreateInitialVector()
+.seealso:  VecFreeVecs(), VecDuplicate(), VecCreate()
 @*/
 int VecGetVecs(Vec v,int m,Vec **V)  
 {
@@ -762,7 +762,7 @@ int Veiobtain_vectors(Vec w,int m,Vec **V )
   Vec *v;
   int  i;
   *V = v = (Vec *) MALLOC( m * sizeof(Vec *) );
-  for (i=0; i<m; i++) VecCreate(w,v+i);
+  for (i=0; i<m; i++) VecDuplicate(w,v+i);
   return 0;
 }
 

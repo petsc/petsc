@@ -27,7 +27,7 @@ typedef struct _VecScatterCtx*  VecScatterCtx;
 
 extern int VecCreateSequential(MPI_Comm,int,Vec *);  
 extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
-extern int VecCreateInitialVector(MPI_Comm,int,Vec *); 
+extern int VecCreate(MPI_Comm,int,Vec *); 
 
 extern int VecDot(Vec, Vec, Scalar*);
 extern int VecTDot(Vec, Vec, Scalar*);  
@@ -49,7 +49,7 @@ extern int VecAYPX(Scalar*, Vec, Vec);
 extern int VecWAXPY(Scalar*, Vec, Vec, Vec);
 extern int VecPMult(Vec, Vec, Vec);    
 extern int VecPDiv(Vec, Vec, Vec);    
-extern int VecCreate(Vec,Vec *);          
+extern int VecDuplicate(Vec,Vec *);          
 extern int VecDestroy(Vec);        
 extern int VecGetVecs(Vec, int,Vec **);         
 extern int VecFreeVecs(Vec*,int); 
