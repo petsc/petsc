@@ -2,7 +2,7 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(PCONF) $(PETSC_INCLUDE) -D__DIR__='"contrib/sda/src"' $(CONF) 
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = sda2.c sda2f.c
 SOURCEF  =
 SOURCEH  = sda.h
