@@ -42,6 +42,10 @@ add to it).
 
     Changed ViewerFileOpenASCII() to ViewerASCIIOpen()
 
+    Changed ViewerDrawOpenX() to ViewerDrawOpen()
+
+    Changed ViewerFileOpenBinary() to ViewerBinaryOpen()
+
     Remove the gvec directory from the distribution. If you are using this
  please let us and know and we can provide it or provide alternative code
 to do what you need.
