@@ -78,6 +78,7 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', 'FFLAGS_g', 'Flags for the Fortran compiler with BOPT=g')
     help.addOption('PETSc', 'FFLAGS_O', 'Flags for the Fortran compiler with BOPT=O')
     help.addOption('PETSc', '-with-libtool', 'Specify that libtool should be used for compiling and linking', nargs.ArgBool)
+    help.addOption('PETSc', '-with-make', 'Specify make')
     help.addOption('PETSc', '-with-ranlib', 'Specify ranlib')
 
     self.framework.argDB['enable-debug']           = 1
@@ -98,6 +99,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['COPTFLAGS']              = ''
     self.framework.argDB['FOPTFLAGS']              = ''
     self.framework.argDB['with-libtool']           = 0
+    self.framework.argDB['with-make']              = 'make'
     self.framework.argDB['with-ranlib']            = 'ranlib'
 
     self.framework.argDB['BOPT'] = 'O'
@@ -326,7 +328,7 @@ class Configure(config.base.Configure):
 
   def configureMake(self):
     '''Check various things about make'''
-    self.framework.getExecutable('make', getFullPath = 1)
+    self.framework.getExecutable(self.framework.argDB['with-make'], getFullPath = 1)
     # Check for GNU make
     haveGNUMake = 0
     try:
@@ -344,7 +346,9 @@ class Configure(config.base.Configure):
     # Check to see if make allows rules which look inside archives
     if haveGNUMake:
       self.framework.addSubstitution('LIB_C_TARGET', 'libc: ${LIBNAME}(${OBJSC} ${SOBJSC})')
-      self.framework.addSubstitution('LIB_F_TARGET', 'libf: ${LIBNAME}(${OBJSF})')
+      self.framework.addSubstitution('LIB_F_TARGET', '''
+libf: ${OBJSF}
+	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}''')
     else:
       self.framework.addSubstitution('LIB_C_TARGET', '''
 libc: ${OBJSC}
