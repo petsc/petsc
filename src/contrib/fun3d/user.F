@@ -2818,7 +2818,7 @@ c  TAPE11 -- output: writes restart file
 c  TAPE12 -- output: writes residual and lift for plotting
 c  TAPE13 -- output: writes flowfield for contour plotting
 c
-      OPEN(UNIT= 7,FILE='ginput.faces',
+      OPEN(UNIT= 7,FILE='testgrid/ginput.faces',
      +form='formatted',STATUS='OLD')
  
 c     OPEN(UNIT=9,FILE='framer.bin',
