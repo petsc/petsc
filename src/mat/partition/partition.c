@@ -327,7 +327,7 @@ int MatPartitioningDestroy(MatPartitioning part)
 
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetPartitionWeights()
 @*/
-int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
+int MatPartitioningSetVertexWeights(MatPartitioning part,const int weights[])
 {
   int ierr;
 
@@ -337,7 +337,7 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
   if (part->vertex_weights){
     ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
   }
-  part->vertex_weights = weights;
+  part->vertex_weights = (int *)weights;
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +362,7 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
 
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetVertexWeights()
 @*/
-int MatPartitioningSetPartitionWeights(MatPartitioning part,PetscReal *weights)
+int MatPartitioningSetPartitionWeights(MatPartitioning part,const PetscReal weights[])
 {
   int ierr;
 
@@ -372,7 +372,7 @@ int MatPartitioningSetPartitionWeights(MatPartitioning part,PetscReal *weights)
   if (part->part_weights){
     ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
   }
-  part->part_weights = weights;
+  part->part_weights = (PetscReal*)weights;
   PetscFunctionReturn(0);
 }
 

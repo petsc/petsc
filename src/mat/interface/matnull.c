@@ -36,7 +36,7 @@ int MAT_NULLSPACE_COOKIE;
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), PCNullSpaceAttach(), MatNullSpace
 @*/
-int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *SP)
+int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,const Vec vecs[],MatNullSpace *SP)
 {
   MatNullSpace sp;
   int          ierr,i;
@@ -105,7 +105,11 @@ int MatNullSpaceDestroy(MatNullSpace sp)
 
    Input Parameters:
 +  sp - the null space context
--  vec - the vector from which the null space is to be removed 
+.  vec - the vector from which the null space is to be removed 
+-  out - if this is supplied (not PETSC_NULL) then this is vec with the null space removed otherwise
+         the removal is done in-place (in vec)
+
+
 
    Level: advanced
 

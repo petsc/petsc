@@ -189,7 +189,7 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_MPIAdj"
-int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
+int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
 {
   int        ierr,size,i;
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
@@ -212,7 +212,7 @@ int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_MPIAdj"
-int MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
+int MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int *ia[],int *ja[],PetscTruth *done)
 {
   int        i;
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;

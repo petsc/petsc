@@ -216,7 +216,7 @@ EXTERN int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqBAIJ"
-static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
+static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int *ia[],int *ja[],PetscTruth *done)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         ierr,n = a->mbs,i;
@@ -241,7 +241,7 @@ static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_SeqBAIJ" 
-static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
+static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int *ia[],int *ja[],PetscTruth *done)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         i,n = a->mbs,ierr;
@@ -1428,7 +1428,7 @@ int MatSetUpPreallocation_SeqBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetArray_SeqBAIJ"
-int MatGetArray_SeqBAIJ(Mat A,PetscScalar **array)
+int MatGetArray_SeqBAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
   PetscFunctionBegin;
@@ -1438,7 +1438,7 @@ int MatGetArray_SeqBAIJ(Mat A,PetscScalar **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreArray_SeqBAIJ"
-int MatRestoreArray_SeqBAIJ(Mat A,PetscScalar **array)
+int MatRestoreArray_SeqBAIJ(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

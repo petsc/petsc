@@ -162,7 +162,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringPatch_SeqAIJ_Inode"
-int MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,ISColoringValue *coloring,ISColoring *iscoloring)
+int MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,const ISColoringValue coloring[],ISColoring *iscoloring)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)mat->data;
   int             n = mat->n,ierr,m = a->inode.node_count,j,*ns = a->inode.size,row;
@@ -194,7 +194,6 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,ISColoringValue *c
     newcolor[i] = colorused[newcolor[i]];
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
-  ierr = PetscFree(coloring);CHKERRQ(ierr);
   ierr = ISColoringCreate(mat->comm,n,newcolor,iscoloring);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

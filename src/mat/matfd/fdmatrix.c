@@ -481,7 +481,7 @@ int MatFDColoringDestroy(MatFDColoring c)
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring coloring,int *n,int **cols)
+EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring coloring,int *n,int *cols[])
 {
   PetscFunctionBegin;
   if (coloring->currentcolor >= 0) {

@@ -269,11 +269,11 @@ EXTERN int MatGetType(Mat,MatType*);
 EXTERN int MatGetValues(Mat,int,const int[],int,const int[],PetscScalar[]);
 EXTERN int MatGetRow(Mat,int,int *,int *[],PetscScalar*[]);
 EXTERN int MatRestoreRow(Mat,int,int *,int *[],PetscScalar*[]);
-EXTERN int MatGetColumn(Mat,int,int *,int **,PetscScalar**);
-EXTERN int MatRestoreColumn(Mat,int,int *,int **,PetscScalar**);
+EXTERN int MatGetColumn(Mat,int,int *,int *[],PetscScalar*[]);
+EXTERN int MatRestoreColumn(Mat,int,int *,int *[],PetscScalar*[]);
 EXTERN int MatGetColumnVector(Mat,Vec,int);
-EXTERN int MatGetArray(Mat,PetscScalar **);
-EXTERN int MatRestoreArray(Mat,PetscScalar **);
+EXTERN int MatGetArray(Mat,PetscScalar *[]);
+EXTERN int MatRestoreArray(Mat,PetscScalar *[]);
 EXTERN int MatGetBlockSize(Mat,int *);
 
 EXTERN int MatMult(Mat,Vec,Vec);
@@ -336,10 +336,10 @@ extern PetscFList MatLoadList;
 EXTERN int        MatLoad(PetscViewer,MatType,Mat*);
 EXTERN int        MatMerge(MPI_Comm,Mat,Mat*);
 
-EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
-EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
-EXTERN int MatGetColumnIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
-EXTERN int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
+EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int *[],int *[],PetscTruth *);
+EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int *[],int *[],PetscTruth *);
+EXTERN int MatGetColumnIJ(Mat,int,PetscTruth,int*,int *[],int *[],PetscTruth *);
+EXTERN int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int *[],int *[],PetscTruth *);
 
 /*S
      MatInfo - Context of matrix information, used with MatGetInfo()
@@ -816,7 +816,7 @@ M*/
 EXTERN int        MatOrderingRegisterDestroy(void);
 EXTERN int        MatOrderingRegisterAll(char*);
 extern PetscTruth MatOrderingRegisterAllCalled;
-extern PetscFList      MatOrderingList;
+extern PetscFList MatOrderingList;
 
 EXTERN int MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
@@ -869,7 +869,6 @@ EXTERN int MatSolves(Mat,Vecs,Vecs);
 
 EXTERN int MatSetUnfactored(Mat);
 
-/*  MatSORType may be bitwise ORd together, so do not change the numbers */
 /*E
     MatSORType - What type of (S)SOR to perform
 
@@ -878,6 +877,8 @@ EXTERN int MatSetUnfactored(Mat);
    May be bitwise ORd together
 
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+   MatSORType may be bitwise ORd together, so do not change the numbers 
 
 .seealso: MatRelax()
 E*/
@@ -955,7 +956,7 @@ M*/
 EXTERN int        MatColoringRegisterAll(char *);
 extern PetscTruth MatColoringRegisterAllCalled;
 EXTERN int        MatColoringRegisterDestroy(void);
-EXTERN int        MatColoringPatch(Mat,int,int,ISColoringValue *,ISColoring*);
+EXTERN int        MatColoringPatch(Mat,int,int,const ISColoringValue[],ISColoring*);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences
@@ -981,7 +982,7 @@ EXTERN int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringApplyTS(Mat,MatFDColoring,PetscReal,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringSetRecompute(MatFDColoring);
 EXTERN int MatFDColoringSetF(MatFDColoring,Vec);
-EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring,int*,int**);
+EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring,int*,int*[]);
 /* 
     These routines are for partitioning matrices: currently used only 
   for adjacency matrix, MatCreateMPIAdj().
@@ -1015,7 +1016,8 @@ EXTERN int MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 EXTERN int MatPartitioningSetType(MatPartitioning,MatPartitioningType);
 EXTERN int MatPartitioningSetNParts(MatPartitioning,int);
 EXTERN int MatPartitioningSetAdjacency(MatPartitioning,Mat);
-EXTERN int MatPartitioningSetVertexWeights(MatPartitioning,int*);
+EXTERN int MatPartitioningSetVertexWeights(MatPartitioning,const int[]);
+EXTERN int MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
 EXTERN int MatPartitioningApply(MatPartitioning,IS*);
 EXTERN int MatPartitioningDestroy(MatPartitioning);
 
@@ -1176,34 +1178,6 @@ EXTERN int MatShellSetContext(Mat,void*);
 */
 #define MATRIX_BINARY_FORMAT_DENSE -1
 
-/*
-     New matrix classes not yet distributed 
-*/
-/*
-    MatAIJIndices is a data structure for storing the nonzero location information
-  for sparse matrices. Several matrices with identical nonzero structure can share
-  the same MatAIJIndices.
-*/ 
-typedef struct _p_MatAIJIndices* MatAIJIndices;
-
-EXTERN int MatCreateAIJIndices(int,int,int*,int*,PetscTruth,MatAIJIndices*);
-EXTERN int MatCreateAIJIndicesEmpty(int,int,int*,PetscTruth,MatAIJIndices*);
-EXTERN int MatAttachAIJIndices(MatAIJIndices,MatAIJIndices*);
-EXTERN int MatDestroyAIJIndices(MatAIJIndices);
-EXTERN int MatCopyAIJIndices(MatAIJIndices,MatAIJIndices*);
-EXTERN int MatValidateAIJIndices(int,MatAIJIndices);
-EXTERN int MatShiftAIJIndices(MatAIJIndices);
-EXTERN int MatShrinkAIJIndices(MatAIJIndices);
-EXTERN int MatTransposeAIJIndices(MatAIJIndices,MatAIJIndices*);
-
-EXTERN int MatCreateSeqCSN(MPI_Comm,int,int,int*,int,Mat*);
-EXTERN int MatCreateSeqCSN_Single(MPI_Comm,int,int,int*,int,Mat*);
-EXTERN int MatCreateSeqCSNWithPrecision(MPI_Comm,int,int,int*,int,PetscScalarPrecision,Mat*);
-
-EXTERN int MatCreateSeqCSNIndices(MPI_Comm,MatAIJIndices,int,Mat *);
-EXTERN int MatCreateSeqCSNIndices_Single(MPI_Comm,MatAIJIndices,int,Mat *);
-EXTERN int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,PetscScalarPrecision,Mat *);
-
 EXTERN int MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);
 EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
@@ -1223,7 +1197,7 @@ EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
 S*/
 typedef struct _p_MatNullSpace* MatNullSpace;
 
-EXTERN int MatNullSpaceCreate(MPI_Comm,int,int,Vec *,MatNullSpace*);
+EXTERN int MatNullSpaceCreate(MPI_Comm,int,int,const Vec[],MatNullSpace*);
 EXTERN int MatNullSpaceDestroy(MatNullSpace);
 EXTERN int MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 EXTERN int MatNullSpaceAttach(Mat,MatNullSpace);
@@ -1240,8 +1214,6 @@ EXTERN int MatMatMultNumeric(Mat A,Mat B,Mat C);
 EXTERN int MatCreateMAIJ(Mat,int,Mat*);
 EXTERN int MatMAIJRedimension(Mat,int,Mat*);
 EXTERN int MatMAIJGetAIJ(Mat,Mat*);
-
-EXTERN int MatMPIAdjSetValues(Mat,int*,int*,int*);
 
 EXTERN int MatComputeExplicitOperator(Mat,Mat*);
 

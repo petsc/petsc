@@ -3817,7 +3817,7 @@ int MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 
 .seealso: MatRestoreArray(), MatGetArrayF90()
 @*/
-int MatGetArray(Mat mat,PetscScalar **v)
+int MatGetArray(Mat mat,PetscScalar *v[])
 {
   int ierr;
 
@@ -3866,7 +3866,7 @@ int MatGetArray(Mat mat,PetscScalar **v)
 
 .seealso: MatGetArray(), MatRestoreArrayF90()
 @*/
-int MatRestoreArray(Mat mat,PetscScalar **v)
+int MatRestoreArray(Mat mat,PetscScalar *v[])
 {
   int ierr;
 
@@ -4117,7 +4117,7 @@ int MatGetBlockSize(Mat mat,int *bs)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
+int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
 {
   int ierr;
 
@@ -4159,7 +4159,7 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
+int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
 {
   int ierr;
 
@@ -4203,7 +4203,7 @@ int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** 
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
-int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
+int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
 {
   int ierr;
 
@@ -4247,7 +4247,7 @@ int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int**
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
-int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
+int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int *ia[],int* ja[],PetscTruth *done)
 {
   int ierr;
 
@@ -4288,7 +4288,7 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
 @*/
-int MatColoringPatch(Mat mat,int n,int ncolors,ISColoringValue *colorarray,ISColoring *iscoloring)
+int MatColoringPatch(Mat mat,int n,int ncolors,const ISColoringValue colorarray[],ISColoring *iscoloring)
 {
   int ierr;
 

@@ -102,7 +102,7 @@ int MatGetValues_MPIDense(Mat mat,int m,const int idxm[],int n,const int idxn[],
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetArray_MPIDense"
-int MatGetArray_MPIDense(Mat A,PetscScalar **array)
+int MatGetArray_MPIDense(Mat A,PetscScalar *array[])
 {
   Mat_MPIDense *a = (Mat_MPIDense*)A->data;
   int          ierr;
@@ -169,7 +169,7 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreArray_MPIDense"
-int MatRestoreArray_MPIDense(Mat A,PetscScalar **array)
+int MatRestoreArray_MPIDense(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

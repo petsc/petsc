@@ -71,7 +71,7 @@ static int Mat_AIJ_CreateColInode(Mat A,int* size,int ** ns)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqAIJ_Inode_Symmetric"
-static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,int **iia,int **jja,int ishift,int oshift)
+static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,int *iia[],int *jja[],int ishift,int oshift)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int        *work,*ia,*ja,*j,nz,nslim_row,nslim_col,m,row,col,*jmax,n,ierr;
@@ -162,7 +162,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,int **iia,int **jja,int ishi
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric"
-static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,int ishift,int oshift)
+static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int *iia[],int *jja[],int ishift,int oshift)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int        *work,*ia,*ja,*j,nz,nslim_row,n,row,col,ierr,*ns_col,nslim_col;
@@ -241,7 +241,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,int i
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqAIJ_Inode"
-static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
+static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int *ia[],int *ja[],PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int        ierr;
@@ -260,7 +260,7 @@ static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_SeqAIJ_Inode"
-static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
+static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int *ia[],int *ja[],PetscTruth *done)
 {
   int ierr;
 
@@ -275,7 +275,7 @@ static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,in
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric" 
-static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,int ishift,int oshift)
+static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int *iia[],int *jja[],int ishift,int oshift)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int *work,*ia,*ja,*j,nz,nslim_row, n,row,col,ierr,*ns_col,nslim_col;
@@ -356,7 +356,7 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,in
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Inode"
-static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
+static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int *ia[],int *ja[],PetscTruth *done)
 {
   int ierr;
 
@@ -375,7 +375,7 @@ static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ_Inode"
-static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
+static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int *ia[],int *ja[],PetscTruth *done)
 {
   int ierr;
 
@@ -763,7 +763,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
-EXTERN int MatColoringPatch_SeqAIJ_Inode(Mat,int,int,ISColoringValue *,ISColoring *);
+EXTERN int MatColoringPatch_SeqAIJ_Inode(Mat,int,int,const ISColoringValue[],ISColoring *);
 
 /*
     samestructure indicates that the matrix has not changed its nonzero structure so we 

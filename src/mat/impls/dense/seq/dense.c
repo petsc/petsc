@@ -1278,7 +1278,7 @@ int MatZeroRows_SeqDense(Mat A,IS is,const PetscScalar *diag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetArray_SeqDense"
-int MatGetArray_SeqDense(Mat A,PetscScalar **array)
+int MatGetArray_SeqDense(Mat A,PetscScalar *array[])
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
 
@@ -1289,7 +1289,7 @@ int MatGetArray_SeqDense(Mat A,PetscScalar **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreArray_SeqDense"
-int MatRestoreArray_SeqDense(Mat A,PetscScalar **array)
+int MatRestoreArray_SeqDense(Mat A,PetscScalar *array[])
 {
   PetscFunctionBegin;
   *array = 0; /* user cannot accidently use the array later */
