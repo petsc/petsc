@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   ierr  = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
 
   /* get options from command line THIS IS NO LONGER NECESSARY */
-  //ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
+  /* ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr); */
 
   /* write bag to stdio & file */
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
