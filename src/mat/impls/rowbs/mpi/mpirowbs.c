@@ -1983,7 +1983,7 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatILUInfo* info,Mat
   PetscTruth   idn;
   PetscFunctionBegin;
 
-  if (info && info->levels != 0) SETERRQ(1,"Blocksolve ILU only supports 0 fill");
+  if (info->levels != 0) SETERRQ(1,"Blocksolve ILU only supports 0 fill");
   if (isrow) {
     ierr = ISIdentity(isrow,&idn);CHKERRQ(ierr);
     if (!idn) SETERRQ(PETSC_ERR_SUP,"Only identity row permutation supported");

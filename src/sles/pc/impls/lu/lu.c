@@ -66,7 +66,7 @@ static int PCSetFromOptions_LU(PC pc)
     }
     ierr = PetscOptionsReal("-pc_lu_fill","Expected non-zeros in LU/non-zeros in matrix","PCLUSetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsHasName(pc->prefix,"-pc_lu_damping",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_lu_damping","Damping added to diagonal","PCLUSetDamping",&flg);CHKERRQ(ierr);
     if (flg) {
         ierr = PCLUSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
@@ -272,11 +272,9 @@ int PCLUSetDamping_LU(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
   if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.damping = 0.0;
-    dir->info.damp    = 1.0;
-  } else if (damping != 0.0) {
+    dir->info.damping = 1.e-12;
+  } else {
     dir->info.damping = damping;
-    dir->info.damp    = 1.0;
   }
   PetscFunctionReturn(0);
 }
@@ -460,7 +458,7 @@ int PCLUSetFill(PC pc,PetscReal fill)
    
    Input Parameters:
 +  pc - the preconditioner context
--  damping - amount of damping
+-  damping - amount of damping  (use PETSC_DECIDE for default of 1.e-12)
 
    Options Database Key:
 .  -pc_lu_damping <damping> - Sets damping amount or PETSC_DECIDE for the default
@@ -677,7 +675,6 @@ int PCCreate_LU(PC pc)
   dir->info.fill          = 5.0;
   dir->info.dtcol         = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
   dir->info.damping       = 0.0;
-  dir->info.damp          = 0.0;
   dir->info.zeropivot     = 1.e-12;
   dir->info.pivotinblocks = 1.0;
   dir->col                = 0;

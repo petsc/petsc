@@ -46,7 +46,6 @@ typedef struct {
   int              rmax;             /* max nonzeros in any row */
   PetscTruth       ilu_preserve_row_sums;
   PetscReal        lu_dtcol;
-  PetscTruth       lu_damp;
   PetscReal        lu_damping;
   PetscReal        lu_zeropivot;
   PetscScalar      *saved_values;    /* location for stashing nonzero values of matrix */

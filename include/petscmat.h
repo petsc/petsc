@@ -379,12 +379,30 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   }\
 }
     
+#define MatPreallocateSymmetricSetLocal(map,nrows,rows,ncols,cols,dnz,onz) 0;\
+{\
+  int __l;\
+  _4_ierr = ISLocalToGlobalMappingApply(map,nrows,rows,rows);CHKERRQ(_4_ierr);\
+  _4_ierr = ISLocalToGlobalMappingApply(map,ncols,cols,cols);CHKERRQ(_4_ierr);\
+  for (__l=0;__l<nrows;__l++) {\
+    _4_ierr = MatPreallocateSymmetricSet((rows)[__l],ncols,cols,dnz,onz);CHKERRQ(_4_ierr);\
+  }\
+}
+
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { int __i; \
   for (__i=0; __i<nc; __i++) {\
     if (cols[__i] < __start || cols[__i] >= __end) onz[row - __rstart]++; \
   }\
   dnz[row - __rstart] = nc - onz[row - __rstart];\
+}
+
+#define MatPreallocateSymmetricSet(row,nc,cols,dnz,onz) 0;\
+{ int __i; \
+  for (__i=0; __i<nc; __i++) {\
+    if (cols[__i] >= __end) onz[row - __rstart]++; \
+    else if (cols[__i] >= row) dnz[row - __rstart]++;\
+  }\
 }
 
 #define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree(dnz);CHKERRQ(_4_ierr);}
@@ -511,7 +529,6 @@ typedef struct {
   PetscReal     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
   PetscReal     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
   PetscReal     damping; /* scaling of identity added to matrix to prevent zero pivots */
-  PetscReal     damp;    /* if this is 1.0 and factorization fails, damp until successful */
   PetscReal     zeropivot; /* pivot is called zero if less than this */
   PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
                                    factorization may be faster if do not pivot */
@@ -533,7 +550,6 @@ S*/
 typedef struct {
   PetscReal     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
   PetscReal     damping; /* scaling of identity added to matrix to prevent zero pivots */
-  PetscReal     damp;    /* if this is 1.0 and factorization fails, damp until successful */
   PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
                                    factorization may be faster if do not pivot */
 } MatCholeskyInfo;

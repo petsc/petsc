@@ -438,11 +438,7 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      /* Allocate the workspace needed by LUSOL.                              */
      /************************************************************************/
 
-     lusol->elbowroom = 2.5;	/* Assume at least some extra memory alloced */
-     if (info) 
-     {
-	  lusol->elbowroom = PetscMax(lusol->elbowroom, info->fill);
-     }
+     lusol->elbowroom = PetscMax(lusol->elbowroom, info->fill);
      nnz = PetscMax((int)(lusol->elbowroom*nz), 5*n);
      
      lusol->n = n;

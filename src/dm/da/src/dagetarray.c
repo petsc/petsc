@@ -4,7 +4,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAVecGetArray"
-/*@
+/*@C
    DAVecGetArray - Returns a multiple dimension array that shares data with 
       the underlying vector and is indexed using the global dimensions.
 
