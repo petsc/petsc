@@ -66,4 +66,5 @@ EXTERN int MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat,Vec,Vec);
 EXTERN int MatRelax_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
 EXTERN int MatLoad_SeqSBAIJ(PetscViewer,const MatType,Mat*);
 
+extern int MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS[],int);
 #endif
