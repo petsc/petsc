@@ -12,8 +12,8 @@ configure_options = [
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
   '--sizeof_MPI_Fint=4',
-  '--with-f90-header=include/f90impl/f90_rs6000.h',
-  '--with-f90-source=src/sys/src/f90/f90_rs6000.c'
+  '--with-f90-header=f90_rs6000.h',
+  '--with-f90-source=f90_rs6000.c'
   ]
 
 if __name__ == '__main__':
