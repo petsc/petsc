@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zplog.c,v 1.7 1996/10/10 23:19:18 balay Exp balay $";
+static char vcid[] = "$Id: zplog.c,v 1.8 1996/10/16 18:42:27 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -80,7 +80,7 @@ void plogeventbegin_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscOb
   if (o3) t3 = (PetscObject) PetscToPointer(*(int*)(o3)); else t3 = 0;
   if (o4) t4 = (PetscObject) PetscToPointer(*(int*)(o4)); else t4 = 0;
 
-  if (_PLB) (*_PLB)(*e,1,t1,t2,t3,t4);
+  if (_PLogPLB) (*_PLogPLB)(*e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
   if (UseMPE && PLogEventMPEFlags[*e]) MPE_Log_event(MPEBEGIN+2*(*e),0,"");
 #endif
@@ -94,7 +94,7 @@ void plogeventend_(int *e,PetscObject o1,PetscObject o2,PetscObject o3,PetscObje
   if (o2) t2 = (PetscObject) PetscToPointer(*(int*)(o2)); else t2 = 0;
   if (o3) t3 = (PetscObject) PetscToPointer(*(int*)(o3)); else t3 = 0;
   if (o4) t4 = (PetscObject) PetscToPointer(*(int*)(o4)); else t4 = 0;
-  if (_PLE) (*_PLE)(*e,1,t1,t2,t3,t4);
+  if (_PLogPLE) (*_PLogPLE)(*e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
   if (UseMPE && PLogEventMPEFlags[*e]) MPE_Log_event(MPEBEGIN+2*(*e)+1,0,"");
 #endif
