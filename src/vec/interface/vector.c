@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.171 1999/03/18 02:01:45 balay Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.172 1999/03/18 15:39:15 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -2193,6 +2193,10 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
 +  vec   - the vector
 .  size  - the initial size of the stash.
 -  bsize - the initial size of the block-stash(if used).
+
+   Options Database Keys:
++   -vecstash_initial_size <size> or <size0,size1,...sizep-1>
+-   -vecstash_block_initial_size <size> or <size0,size1,...sizep-1>
 
    Level: intermediate
 

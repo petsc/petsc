@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.326 1999/03/18 15:39:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.327 1999/03/18 15:42:57 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -3783,8 +3783,8 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
 -  bsize - the initial size of the block-stash(if used).
 
    Options Database Keys:
-+   -matstash_initial_size <size>
--   -matstash_block_initial_size <size>
++   -matstash_initial_size <size> or <size0,size1,...sizep-1>
+-   -matstash_block_initial_size <size>  or <size0,size1,...sizep-1>
 
    Level: intermediate
 
