@@ -32,20 +32,14 @@ class Template(base.Base):
 
   def addServer(self, lang):
     '''Designate that a server for lang should be built'''
-    if lang in self.argDB['installedLanguages']:
-      if not lang in self.serverLanguages and not lang in self.usingSIDL.serverLanguages:
-        self.serverLanguages.append(lang)
-    else:
-      self.debugPrint('Language '+lang+' not installed', 2, 'compile')
+    if not lang in self.serverLanguages and not lang in self.usingSIDL.serverLanguages:
+      self.serverLanguages.append(lang)
     return
 
   def addClient(self, lang):
     '''Designate that a client for lang should be built'''
-    if lang in self.argDB['installedLanguages']:
-      if not lang in self.clientLanguages and not lang in self.usingSIDL.clientLanguages:
-        self.clientLanguages.append(lang)
-    else:
-      self.debugPrint('Language '+lang+' not installed', 2, 'compile')
+    if not lang in self.clientLanguages and not lang in self.usingSIDL.clientLanguages:
+      self.clientLanguages.append(lang)
     return
 
   def getUsing(self, name):
