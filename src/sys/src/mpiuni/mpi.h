@@ -125,6 +125,14 @@ extern int MPIUNI_Memcpy(void*,void*,int);
 #define MPI_COMPLEX         2*sizeof(float)
 #define MPI_DOUBLE_COMPLEX  2*sizeof(double)
 #define MPIU_PETSCLOGDOUBLE sizeof(PetscLogDouble)
+#define MPI_FLOAT_INT       (sizeof(float) + sizeof(int))
+#define MPI_DOUBLE_INT      (sizeof(double) + sizeof(int))
+#define MPI_LONG_INT        (sizeof(long) + sizeof(int))
+#define MPI_SHORT_INT       (sizeof(short) + sizeof(int))
+#define MPI_2INT            (2* sizeof(int))
+
+
+
 #define MPI_REQUEST_NULL    ((MPI_Request)0)
 #define MPI_GROUP_NULL      ((MPI_Group)0)
 typedef int MPI_Op;
