@@ -133,4 +133,8 @@ class Update (build.transform.Transform):
     output = build.transform.Transform.handleFileSet(self, set)
     # I could check here, and only save in the first recursive call
     self.sourceDB.save()
+    try:
+      import gc
+      gc.collect()
+    except ImportError: pass
     return output

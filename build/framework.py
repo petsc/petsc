@@ -10,6 +10,10 @@ class Framework(base.Base):
   '''This is the base class for all user make modules'''
   def __init__(self, project, clArgs = None, argDB = None):
     '''Setup the project, argument database, and source database'''
+    try:
+      import gc
+      gc.set_debug(gc.DEBUG_LEAK)
+    except ImportError: pass
     base.Base.__init__(self, clArgs, argDB)
     import build.builder
     self.project         = project
