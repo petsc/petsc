@@ -28,7 +28,7 @@ C_SYS_LIB	   = /usr/lib/libxlf.a /usr/lib/libxlf90.a  -lisode -lm
 G_COPTFLAGS	   = -g  -qfullpath
 G_FOPTFLAGS	   = -g  -qfullpath
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O3 -qmaxmem=-1 -w -qspillsize=8000 -qarch=auto -qtune=auto -qcache=auto -qhot
+O_COPTFLAGS	   = -O3 -qmaxmem=-1 -w -qspill=8000 -qarch=auto -qtune=auto -qcache=auto -qhot
 O_FOPTFLAGS	   = -O3 -w -qmaxmem=-1 -qarch=auto -qtune=auto -qcache=auto -qhot
 # ########################## C++ compiler ##################################
 #
