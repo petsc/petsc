@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.30 1996/03/02 01:52:33 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.31 1996/03/02 04:14:10 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -48,9 +48,9 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x); CHKERRA(ierr);
 
   /* Solve system */
-  PLogEventRegister(&e1,"*SLESCreate    ", "red");
-  PLogEventRegister(&e2,"*SLESSetOperato", "green");
-  PLogEventRegister(&e3,"*SLESSetFromOpt", "orange");
+  PLogEventRegister(&e1,"*SLESCreate     ", "red");
+  PLogEventRegister(&e2,"*SLESSetOperator", "green");
+  PLogEventRegister(&e3,"*SLESSetFromOpti", "orange");
   PetscBarrier(A);
   
   PLogStagePush(1);
