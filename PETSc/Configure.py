@@ -17,11 +17,15 @@ class Configure(configure.Configure):
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'readlink',
                  'realpath', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'uname']
     libraries = [('dl', 'dlopen')]
-    framework.checkTypes()
-    framework.checkHeaders(headersC)
-    framework.checkFunctions(functions)
-    framework.checkLibraries(libraries)
-    framework.checkCompilers()
+    self.compilers = self.framework.require('config.compilers', self)
+    self.types     = self.framework.require('config.types',     self)
+    self.headers   = self.framework.require('config.headers',   self)
+    self.functions = self.framework.require('config.functions', self)
+    self.libraries = self.framework.require('config.libraries', self)
+    self.lapack    = self.framework.require('PETSc.LAPACK',     self)
+    self.headers.headers.extend(headersC)
+    self.functions.functions.extend(functions)
+    self.libraries.libraries.extend(libraries)
     return
 
   def defineAutoconfMacros(self):
@@ -102,9 +106,9 @@ class Configure(configure.Configure):
 
   def configureCompilerFlags(self):
     optionsCmd = os.path.join(self.configAuxDir, 'config.options')+' '+self.host_cpu+'-'+self.host_vendor+'-'+self.host_os
-    self.getCompilerFlags('C',   self.framework.compilers.CC)
-    self.getCompilerFlags('CXX', self.framework.compilers.CXX)
-    self.getCompilerFlags('F',   self.framework.compilers.FC)
+    self.getCompilerFlags('C',   self.compilers.CC)
+    self.getCompilerFlags('CXX', self.compilers.CXX)
+    self.getCompilerFlags('F',   self.compilers.FC)
 
     self.addSubstitution('C_VERSION',   self.CVersion)
     self.addSubstitution('CFLAGS_g',    self.CFLAGS_g)
@@ -147,7 +151,7 @@ class Configure(configure.Configure):
     '''Checks for --enable-shared, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.getArgument('shared', 0, '-enable-', int, comment = 'Dynamic libraries flag')
-    self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.framework.libraries.haveLib('dl'))
+    self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.libraries.haveLib('dl'))
     if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
       self.addDefine('HAVE_RTLD_GLOBAL', 1)
     return
@@ -230,9 +234,9 @@ class Configure(configure.Configure):
 
   def configureMissingFunctions(self):
     '''Checks for MISSING_GETPWUID and MISSING_SOCKETS'''
-    if not self.framework.functions.defines.has_key(self.framework.functions.getDefineName('getpwuid')):
+    if not self.functions.defines.has_key(self.functions.getDefineName('getpwuid')):
       self.addDefine('MISSING_GETPWUID', 1)
-    if not self.framework.functions.defines.has_key(self.framework.functions.getDefineName('socket')):
+    if not self.functions.defines.has_key(self.functions.getDefineName('socket')):
       self.addDefine('MISSING_SOCKETS', 1)
     return
 
@@ -262,15 +266,15 @@ class Configure(configure.Configure):
     return
 
   def configureFPTrap(self):
-    if self.framework.headers.check('sigfpe.h'):
-      if self.framework.functions.check(handle_sigfpes, library = 'fpe'):
+    if self.headers.check('sigfpe.h'):
+      if self.functions.check(handle_sigfpes, library = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
-    elif self.framework.headers.check('fpxcp.h') and self.framework.headers.check('fptrap.h'):
-      if reduce(lambda x,y: x and y, map(self.framework.functions.check, ['fp_sh_trap_info', 'fp_trap', 'fp_enable', 'fp_disable'])):
+    elif self.headers.check('fpxcp.h') and self.headers.check('fptrap.h'):
+      if reduce(lambda x,y: x and y, map(self.functions.check, ['fp_sh_trap_info', 'fp_trap', 'fp_enable', 'fp_disable'])):
         self.addDefine('HAVE_RS6000_STYLE_FPTRAP', 1)
-    elif self.framework.headers.check('floatingpoint.h'):
-      if self.framework.functions.check('ieee_flags') and self.framework.functions.check('ieee_handler'):
-        if self.framework.headers.check('sunmath.h'):
+    elif self.headers.check('floatingpoint.h'):
+      if self.functions.check('ieee_flags') and self.functions.check('ieee_handler'):
+        if self.headers.check('sunmath.h'):
           self.addDefine('HAVE_SOLARIS_STYLE_FPTRAP', 1)
         else:
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)

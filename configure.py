@@ -97,7 +97,6 @@ class Configure:
     return self.setLanguage(self.language[-1])
 
   def setLanguage(self, language):
-    print 'Setting language to '+language
     self.language[-1] = language
     if language == 'C':
       self.compilerName = 'CC'
@@ -378,11 +377,30 @@ class Framework(Configure):
     self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles = {}
     self.header     = 'matt_config.h'
+    self.setFromOptions()
     return
 
   def setupArgDB(self, clArgs):
     return nargs.ArgDict('ArgDict', clArgs)
 
+  def setFromOptions(self):
+    for moduleName in self.argDB['configModules']:
+      self.children.append(__import__(moduleName, globals(), locals(), ['Configure']).Configure(self))
+
+  def require(self, moduleName, depChild = None, keywordArgs = {}):
+    type   = __import__(moduleName, globals(), locals(), ['Configure']).Configure
+    config = None
+    for child in self.children:
+      if isinstance(child, type):
+        config = child
+    if not config:
+      config = apply(type, [self], keywordArgs)
+      self.children.append(config)
+    if depChild in self.children and self.children.index(config) > self.children.index(depChild):
+      self.children.remove(config)
+      self.children.insert(self.children.index(depChild), config)
+    return config
+        
   def addSubstitutionFile(self, inName, outName = ''):
     '''Designate that file should experience substitution
       - If outName is given, inName --> outName
@@ -531,63 +549,17 @@ class Framework(Configure):
     f.close()
     return
 
-  def checkCompilers(self):
-    if not hasattr(self, 'compilers'):
-      import config.compilers
-      self.compilers = config.compilers.Configure(self)
-      # It is important to check the compilers first
-      self.children.insert(0, self.compilers)
-    return
-
-  def checkTypes(self):
-    if not hasattr(self, 'types'):
-      import config.types
-      self.types = config.types.Configure(self)
-      self.children.append(self.types)
-    return
-
-  def checkHeaders(self, headers = []):
-    if not hasattr(self, 'headers'):
-      import config.headers
-      self.headers = config.headers.Configure(self, headers)
-      self.children.append(self.headers)
-    else:
-      self.headers.headers.append(headers)
-    return
-
-  def checkFunctions(self, functions = []):
-    if not hasattr(self, 'functions'):
-      import config.functions
-      self.functions = config.functions.Configure(self, functions)
-      self.children.append(self.functions)
-    else:
-      self.functions.functions.append(functions)
-    return
-
-  def checkLibraries(self, libraries = []):
-    if not hasattr(self, 'libraries'):
-      import config.libraries
-      self.libraries = config.libraries.Configure(self, libraries)
-      self.children.append(self.libraries)
-    else:
-      self.libraries.libraries.append(libraries)
-    return
-
   def configure(self):
     '''Configure the system'''
     for child in self.children:
+      print 'Configuring '+child.__module__
       child.configure()
     self.substitute()
     self.outputHeader(self.header)
     return
 
 if __name__ == '__main__':
-  import PETSc.BLAS
-  import PETSc.Configure
-
   framework = Framework(sys.argv[1:])
   framework.argDB['LIBS'] = ''
-  framework.children.append(PETSc.BLAS.Configure(framework))
-  framework.children.append(PETSc.Configure.Configure(framework))
   framework.configure()
   framework.dumpSubstitutions()
