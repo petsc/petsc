@@ -1,6 +1,10 @@
 
 CC       = gcc  -DPARCH_freebsd
-FC       = f77
+#
+# We use the f77 f2c that comes with freebsd, the -Nn802 is required for
+# large Fortran files, you can increase the 1000 if need be.
+# 
+FC       = f77 -Nn1000
 AR       = ar
 RM       = rm -f *.c.*
 #
