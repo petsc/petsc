@@ -330,9 +330,9 @@ class CompileDefaults (Defaults):
       elif lang == 'Java':
         taggers.extend([compile.TagC(root = sourceDir), compile.TagJava(root = sourceDir)])
         actions.extend([compile.CompileC(self.getClientLibrary(lang, 1)), compile.CompileJava(library)])
-        actions[0].includeDirs.append(self.javaIncludeDir)
-        actions[1].includeDirs.append(self.javaRuntimeLib)
-        actions[1].archiverRoot = sourceDir
+        actions[-2].includeDirs.append(self.javaIncludeDir)
+        actions[-1].includeDirs.append(self.javaRuntimeLib)
+        actions[-1].archiverRoot = sourceDir
       else:
         raise RuntimeError('Unknown client language: '+lang)
 
@@ -378,8 +378,8 @@ class CompileDefaults (Defaults):
     else:
       return target.Target(None, [self.getSIDLTarget()]+compileTargets)
 
-  def getExecutableCompileTargets(self, lang, executable):
-    baseName  = os.path.splitext(os.path.split(executable[0])[1])[0] 
+  def getExecutableCompileTargets(self, sources, lang, executable):
+    baseName  = os.path.splitext(os.path.basename(executable[0]))[0] 
     library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.a')])
     libraries = fileset.FileSet()
     taggers   = []
@@ -396,6 +396,12 @@ class CompileDefaults (Defaults):
       actions.append(compile.CompileF77(library))
       taggers.append(compile.TagC())
       actions.append(compile.CompileC(library))
+    elif lang == 'Java':
+      library = fileset.FileSet([os.path.join(self.libDir, 'lib'+baseName+'.jar')])
+      taggers.append(compile.TagJava())
+      actions.append(compile.CompileJava(library))
+      actions[-1].includeDirs.append(self.javaRuntimeLib)
+      actions[-1].archiverRoot = os.path.dirname(sources[0])
     else:
       raise RuntimeError('Unknown executable language: '+lang)
 
@@ -413,7 +419,8 @@ class CompileDefaults (Defaults):
                          [taggers,
                           actions,
                           link.TagLibrary(),
-                          link.LinkSharedLibrary(extraLibraries = self.addBabelLib(libraries))])]
+                          link.LinkSharedLibrary(extraLibraries = self.addBabelLib(libraries)),
+                          transform.Update()])]
 
   def getExecutableTarget(self, lang, sources, executable):
     libraries = fileset.FileSet([])
@@ -423,6 +430,6 @@ class CompileDefaults (Defaults):
     return target.Target(sources,
                          [self.getCompileTarget(),
                           transform.FileFilter(self.isNotLibrary)]+
-                         self.getExecutableCompileTargets(lang, executable)+
+                         self.getExecutableCompileTargets(sources, lang, executable)+
                          [link.TagShared(),
                           link.LinkExecutable(executable, extraLibraries = libraries)])

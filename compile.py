@@ -292,6 +292,13 @@ class CompileJava (Compile):
     elif output.find('warning') >= 0:
       print('\''+command+'\': '+output)
 
+  def execute(self):
+    retval = Compile.execute(self)
+    # Need to update JAR files since they do not get linked
+    library = self.library[0]
+    bs.sourceDB.updateSource(library)
+    return retval
+
 class TagEtags (transform.GenericTag):
   def __init__(self, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = '', root = None):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
