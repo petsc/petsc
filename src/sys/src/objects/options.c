@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.72 1996/02/26 18:06:03 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.73 1996/02/26 19:47:54 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -188,8 +188,16 @@ int PetscFinalize()
 
   ViewerDestroy_Private();
 #if defined(PETSC_LOG)
+#if defined (HAVE_MPE)
+  mname[0] = 0;
+  ierr = OptionsGetString(PETSC_NULL,"-log_mpe",mname,64,&flg1); CHKERRQ(ierr);
+  if (flg1){
+    if (mname[0]) PLogMPEDump(mname); 
+    else          PLogMPEDump(0);
+  }
+#endif
   ierr = OptionsHasName(PETSC_NULL,"-log_summary",&flg1); CHKERRQ(ierr);
-  if (flg1) { PLogPrint(MPI_COMM_WORLD,stdout); }
+  if (flg1) { PLogPrintSummary(MPI_COMM_WORLD,stdout); }
   mname[0] = 0;
   ierr = OptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1); CHKERRQ(ierr);
   ierr = OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2); CHKERRQ(ierr);
@@ -425,26 +433,14 @@ int OptionsCheckInitial_Private()
   ierr = OptionsHasName(PETSC_NULL,"-info", &flg1); CHKERRQ(ierr);
   if (flg1) { PLogAllowInfo(PETSC_TRUE);  }
 #if defined (HAVE_MPE)
-  {
-    int log_all,log_upshot,log,log_summary;
-    
-    ierr = OptionsHasName(PETSC_NULL,"-log_all", &log_all); CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-log_upshot", &log_upshot); CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-log", &log); CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-log_summary", &log_summary); CHKERRQ(ierr);
-    
-    if (log_upshot && log_all)   {  PLogAllUpshotBegin();  }
-    else if (log_upshot)         {  PLogUpshotBegin(); }
-    else if (log_all)            {  PLogAllBegin();  }
-    else if (log || log_summary) {  PLogBegin(); }
-  }
-#else
+  ierr = OptionsHasName(PETSC_NULL,"-log_mpe", &flg1); CHKERRQ(ierr);
+  if (flg1) PLogMPEBegin();
+#endif
   ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
   if (flg1)              {  PLogAllBegin();  }
   else if (flg2 || flg3) {  PLogBegin(); }
-#endif
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {
@@ -468,7 +464,7 @@ int OptionsCheckInitial_Private()
     MPIU_printf(comm," -optionsleft: dump list of unused options\n");
     MPIU_printf(comm," -log[_all _summary]: logging objects and events\n");
 #if defined (HAVE_MPE)
-    MPIU_printf(comm," -log_upshot: Also create logfile vilwable through upshot\n");
+    MPIU_printf(comm," -log_mpe: Also create logfile viewable through upshot\n");
 #endif
     MPIU_printf(comm," -v: prints PETSc version number and release date\n");
     MPIU_printf(comm,"-----------------------------------------------\n");

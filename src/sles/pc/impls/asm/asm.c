@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.16 1996/02/23 23:58:23 balay Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.17 1996/02/24 22:22:42 balay Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -39,7 +39,7 @@ static int PCSetUp_ASM(PC pc)
   PC                  subpc;
   char                *prefix;
 
-    if (pc->setupcalled == 0) {
+  if (pc->setupcalled == 0) {
     if (osm->n == PETSC_DECIDE && osm->n_local_true == PETSC_DECIDE) { 
       /* no subdomains given, use one per processor */
       osm->n_local_true = osm->n_local = 1;
@@ -122,8 +122,17 @@ static int PCSetUp_ASM(PC pc)
   for ( i=0; i<n_local_true; i++ ) {
     PLogObjectParent(pc,osm->pmat[i]);
     ierr = SLESSetOperators(osm->sles[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
-    ierr = SLESSetUp(osm->sles[i],osm->x[i],osm->y[i]); CHKERRQ(ierr);
+  }
+  return 0;
+}
 
+static int PCSetUpOnBlocks_ASM(PC pc)
+{
+  PC_ASM *osm = (PC_ASM *) pc->data;
+  int    i,n_local = osm->n_local,ierr;
+
+  for ( i=0; i<n_local; i++ ) {
+    ierr = SLESSetUp(osm->sles[i],osm->x[i],osm->y[i]);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -215,6 +224,7 @@ int PCCreate_ASM(PC pc)
   pc->type          = PCASM;
   pc->printhelp     = PCPrintHelp_ASM;
   pc->setfrom       = PCSetFromOptions_ASM;
+  pc->setuponblocks = PCSetUpOnBlocks_ASM;
   pc->data          = (void *) osm;
   pc->view          = 0;
   return 0;
