@@ -80,13 +80,20 @@ make etags etags_examples TAGSDIR=`pwd`
 
 # Clean up the external Packages from PETSC_ARCH/packages files
 for i in bmake/*/packages ; do
-  cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | sed "s/^MPE_LIB/#MPE_LIB/g" | \
+  cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | \
+    sed "s/^MPE_LIB/#MPE_LIB/g" | \
     sed "s/^PETSC_HAVE_MPE/#PETSC_HAVE_MPE/g" | \
-    sed "s/^BLOCKSOLVE_INCLUDE/#BLOCKSOLVE_INCLUDE/g" | sed "s/^BLOCKSOLVE_LIB/#BLOCKSOLVE_LIB/g" | \
+    sed "s/^BLOCKSOLVE_INCLUDE/#BLOCKSOLVE_INCLUDE/g" | \
+    sed "s/^BLOCKSOLVE_LIB/#BLOCKSOLVE_LIB/g" | \
     sed "s/^PETSC_HAVE_BLOCKSOLVE/#PETSC_HAVE_BLOCKSOLVE/g" | \
-    sed "s/^MCC/#MCC/g" | sed "s/^MATLABCOMMAND/#MATLABCOMMAND/g" | \
-    sed "s/^PETSC_HAVE_MATLAB/#PETSC_HAVE_MATLAB/g" |  sed "s/^CMEX/#CMEX/g" | \
-    sed "s/^ADIC_INCLUDE/#ADIC_INCLUDE/g" | sed "s/^ADIC_LIB/#ADIC_LIB/g" | \
+    sed "s/^MCC/#MCC/g" | \
+    sed "s/^MATLABCOMMAND/#MATLABCOMMAND/g" | \
+    sed "s/^MATLAB_INCLUDE/#MATLAB_INCLUDE//g" | \
+    sed "s/^MATLAB_LIB/#MATLAB_LIB//g" | \
+    sed "s/^PETSC_HAVE_MATLAB/#PETSC_HAVE_MATLAB/g" | \
+    sed "s/^CMEX/#CMEX/g" | \
+    sed "s/^ADIC_INCLUDE/#ADIC_INCLUDE/g" | \
+    sed "s/^ADIC_LIB/#ADIC_LIB/g" | \
     sed "s/^PETSC_HAVE_ADIC/#PETSC_HAVE_ADIC/g" | sed "s/^ADIC_CC/#ADIC_CC/g" | \
     sed "s/^PVODE_INCLUDE/#PVODE_INCLUDE/g" | sed "s/^PVODE_LIB/#PVODE_LIB/g" | \
     sed "s/^PETSC_HAVE_PVODE/#PETSC_HAVE_PVODE/g" | \
@@ -98,6 +105,22 @@ for i in bmake/*/packages ; do
     sed "s/^PETSC_HAVE_SPAI/#PETSC_HAVE_SPAI/g" | \
     sed "s/^PETSC_HAVE_LUSOL/#PETSC_HAVE_LUSOL/g" | \
     sed "s/^LUSOL_LIB/#LUSOL_LIB/g" | \
+    sed "s/^ESI_INCLUDE/#ESI_INCLUDE//g" | \
+    sed "s/^PETSC_HAVE_ESI/#PETSC_HAVE_ESI//g" | \
+    sed "s/^TRILINOS_INCLUDE/#TRILINOS_INCLUDE//g" | \
+    sed "s/^PETSC_HAVE_TRILINOS/#PETSC_HAVE_TRILINOS//g" | \
+    sed "s/^TRILINOS_LIB/#TRILINOS_LIB//g" | \
+    sed "s/^CCA_INCLUDE/#CCA_INCLUDE//g" | \
+    sed "s/^PETSC_HAVE_CCA/#PETSC_HAVE_CCA//g" | \
+    sed "s/^SUPERLU_LIB/#SUPERLU_LIB//g" | \
+    sed "s/^SUPERLU_INCLUDE/#SUPERLU_INCLUDE//g" | \
+    sed "s/^PETSC_HAVE_SUPERLU/#PETSC_HAVE_SUPERLU//g" | \
+    sed "s/^SUPERLUDIST_INCLUDE/#SUPERLUDIST_INCLUDE//g" | \
+    sed "s/^SUPERLUDIST_LIB/#SUPERLUDIST_LIB//g" | \
+    sed "s/^PETSC_HAVE_SUPERLUDIST/#PETSC_HAVE_SUPERLUDIST//g" | \
+    sed "s/^DSCPACK_INCLUDE/#DSCPACK_INCLUDE//g" | \
+    sed "s/^DSCPACK_LIB/#DSCPACK_LIB//g" | \
+    sed "s/^PETSC_HAVE_DSCPACK/#PETSC_HAVE_DSCPACK//g" | \
     sed "s/^JAVA/#JAVA/g" | sed "s/^JAVAC/#JAVAC/g" | sed "s/^PETSC_HAVE_JAVA/#PETSC_HAVE_JAVA/g" | \
     sed "s/^PCONF/#PCONF/g" > $i.tmp
   /bin/mv -f $i.tmp $i

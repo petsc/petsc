@@ -56,8 +56,8 @@ MPIRUN         = mpirun
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE = -I/usr/local/lib/petsc/BlockSolve95/include
-BS_LIB     = -L/usr/local/lib/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+BLOCKSOLVE_INCLUDE = -I/usr/local/lib/petsc/BlockSolve95/include
+BLOCKSOLVE_LIB     = -L/usr/local/lib/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
