@@ -59,20 +59,20 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 .F.f:
 	-$(RM) $*.f $*.c
 	-cp $< $*.c	
-	-gcc $(CFLAGS) -E $*.c > $*.f
+	-gcc $(CFLAGS) -E $*.c  | grep -v '^ *#' > $*.f
 	-$(RM) $*.c
 
 .F.o:
 	-$(RM) $*.f $*.c
 	-cp $< $*.c	
-	-gcc $(CFLAGS) -E $*.c > $*.f
+	-gcc $(CFLAGS) -E $*.c  | grep -v '^ *#' > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	-$(RM) $*.f $*.c
 
 .F.a:
 	-$(RM) $*.f $*.c
 	-cp $< $*.c	
-	-xlc $(CFLAGS) -E $*.c > $*.f
+	-xlc $(CFLAGS) -E $*.c  | grep -v '^ *#' > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	-$(AR) cr $(LIBNAME) $*.o
 	-$(RM) $*.o $*.f $*.c
