@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.109 1997/12/12 19:36:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.110 1998/03/12 23:15:29 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -201,9 +201,8 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "VecView_Seq"
-int VecView_Seq(PetscObject obj,Viewer viewer)
+int VecView_Seq(Vec xin,Viewer viewer)
 {
-  Vec         xin = (Vec) obj;
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   ViewerType  vtype;
   int         ierr;
@@ -292,15 +291,14 @@ int VecSetValuesBlocked_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 
 #undef __FUNC__  
 #define __FUNC__ "VecDestroy_Seq"
-int VecDestroy_Seq(PetscObject obj )
+int VecDestroy_Seq(Vec v)
 {
-  Vec      v  = (Vec ) obj;
   Vec_Seq *vs = (Vec_Seq*) v->data;
   int     ierr;
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_LOG)
-  PLogObjectState(obj,"Length=%d",((Vec_Seq *)v->data)->n);
+  PLogObjectState((PetscObject)v,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
   if (vs->array_allocated) PetscFree(vs->array_allocated);
   PetscFree(vs);
@@ -379,10 +377,10 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,VECSEQ,comm,VecDestroy,VecView);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _p_Vec)+n*sizeof(Scalar));
-  v->destroy         = VecDestroy_Seq;
-  v->view            = VecView_Seq;
-  s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
   PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
+  v->ops->destroy    = VecDestroy_Seq;
+  v->ops->view       = VecView_Seq;
+  s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
   v->data            = (void *) s;
   s->n               = n;
   v->n               = n; 
@@ -440,8 +438,6 @@ int VecDuplicate_Seq(Vec win,Vec *V)
 
   PetscFunctionBegin;
   ierr = VecCreateSeq(win->comm,w->n,V); CHKERRQ(ierr);
-  (*V)->childcopy    = win->childcopy;
-  (*V)->childdestroy = win->childdestroy;
   if (win->mapping) {
     (*V)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);
@@ -451,9 +447,7 @@ int VecDuplicate_Seq(Vec win,Vec *V)
     PetscObjectReference((PetscObject)win->bmapping);
   }
   (*V)->bs = win->bs;
-  if (win->child) {
-    ierr = (*win->childcopy)(win->child,&(*V)->child);CHKERRQ(ierr);
-  }
+  ierr = OListDuplicate(win->olist,&(*V)->olist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
