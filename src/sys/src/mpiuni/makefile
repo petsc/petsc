@@ -2,8 +2,8 @@ ALL: libmpi
 
 CC	= gcc
 
-libmpi: mpi.o
-	ar r libmpi.a mpi.o
+libmpi: mpi.o mpif.o
+	ar r libmpi.a mpi.o mpif.o
 	ranlib libmpi.a
 	$(RM) *.o
 

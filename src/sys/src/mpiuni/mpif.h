@@ -1,5 +1,4 @@
-c #ifndef __MPI_BINDINGS
-c #define __MPI_BINDINGS
+C     Trying to provide as little support for fortran code in petsc as needed
 
 c     External objects outside of MPI calls 
        integer MPI_COMM_WORLD
@@ -27,23 +26,7 @@ c     External objects outside of MPI calls
        PARAMETER(MPI_SOURCE=2, MPI_TAG=3, MPI_ERROR=4)
 
 c     External types 
-c #define  MPI_Comm integer;      
 #define  MPI_Request integer;
 #define  MPI_Group integer;
 #define  MPI_Errhandler integer;
-
-c     In order to handle data types, we make them into "sizeof(raw-type)"
-c     this allows us to do the PetscMemcpy's easily 
-
-#define MPI_REAL sizeof(REAL)
-#define MPI_DOUBLE_PRECISION sizeof(DOUBLE PRECISION)
-#define MPI_INT sizeof(INTEGER)
-
-/* This is a special PETSC datatype */
-#define MPIU_COMPLEX (2*sizeof(DOUBLE PRECISION))
-
-#define MPI_Comm_size(comm, size) (*(size)=1,MPI_SUCCESS)
-#define MPI_Comm_rank(comm, rank) (*(rank)=0,MPI_SUCCESS)
-#define MPI_Wtick() 1.0
-#define mpi_init(argc) MPI_SUCCESS
-#define MPI_Finalize() MPI_SUCCESS
+       double precision MPI_Wtime
