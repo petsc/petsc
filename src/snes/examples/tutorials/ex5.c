@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.51 1996/05/19 15:54:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.52 1996/07/02 18:08:44 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -223,7 +223,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
 
-  /* Evaluate function */
+  /* Evaluate Jacobian */
   for (j=ys; j<ys+ym; j++) {
     row = (j - Ys)*Xm + xs - Xs - 1; 
     for (i=xs; i<xs+xm; i++) {
