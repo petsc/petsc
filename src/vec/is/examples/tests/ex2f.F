@@ -1,5 +1,5 @@
 C
-C  "$Id: ex2f.F,v 1.1 1996/08/16 19:31:32 bsmith Exp bsmith $"
+C  "$Id: ex2f.F,v 1.2 1996/08/17 14:35:28 bsmith Exp bsmith $"
 C
 C
 C  Tests IS stride routines
@@ -31,8 +31,8 @@ C     Test IS of size 0
       if (flag .ne. PETSC_TRUE) then 
         SETERRA(1,0) 
       endif
-      call ISGetIndices(is,ii,ierr)
-      call ISRestoreIndices(is,ii,ierr)
+      call ISGetIndices(is,ii,iis,ierr)
+      call ISRestoreIndices(is,ii,iis,ierr)
       call ISDestroy(is,ierr)
 
 C     Test ISGetIndices()
