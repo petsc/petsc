@@ -511,7 +511,7 @@ class Configure:
     (output, error, status)        = self.outputCompile(includes, body)
     output  += error
     valid    = 1
-    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0:
+    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0:
       valid = 0
     self.framework.argDB[flagsArg] = oldFlags
     return valid
@@ -548,7 +548,7 @@ class Configure:
       self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
-    return (err, ret)
+    return (out+err, ret)
 
   def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd)

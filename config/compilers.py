@@ -218,15 +218,13 @@ class Configure(config.base.Configure):
 
     However, the Fortran 77 intrinsic and run-time libraries must be
     linked in as well, but the C++ compiler/linker does not know how to
-    add these Fortran 77 libraries.  Hence, the macro
-    AC_F77_LIBRARY_LDFLAGS was created to determine these Fortran 77
-    libraries.
+    add these Fortran 77 libraries. 
 
-    This macro was packaged in its current form by Matthew D. Langston
-    <langston@SLAC.Stanford.EDU>.  However, nearly all of this macro
-    came from the OCTAVE_FLIBS macro in octave-2.0.13/aclocal.m4,
-    and full credit should go to John W. Eaton for writing this
-    extremely useful macro.  Thank you John.'''
+    This code was translated from the autoconf macro which was packaged in
+    its current form by Matthew D. Langston <langston@SLAC.Stanford.EDU>.
+    However, nearly all of this macro came from the OCTAVE_FLIBS macro in
+    octave-2.0.13/aclocal.m4, and full credit should go to John W. Eaton
+    for writing this extremely useful macro.'''
     if not 'CC' in self.framework.argDB or not 'FC' in self.framework.argDB: 
       self.flibs = ''
       self.addSubstitution('FLIBS', '')
@@ -244,7 +242,7 @@ class Configure(config.base.Configure):
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
     # since doing that causes problems on other systems.
-    if output.find('xlfentry') >= 0:
+    if output.find('xlf') >= 0:
       output = output.replace(',', ' ')
     # We are only supposed to find LD_RUN_PATH on Solaris systems
     # and the run path should be absolute
@@ -257,13 +255,16 @@ class Configure(config.base.Configure):
         ldRunPath = '-R '+ldRunPath
     else:
       ldRunPath = ''
+      
     # Parse output
     argIter = iter(output.split())
     flibs   = []
     lflags  = []
     try:
       while 1:
+        self.framework.log.write( 'Getting arg\n')
         arg = argIter.next()
+        self.framework.log.write( 'Checking arg '+arg+'\n')
         # Check for full library name
         m = re.match(r'^/.*\.a$', arg)
         if m:
@@ -321,6 +322,7 @@ class Configure(config.base.Configure):
           for lib in argIter.next().split(':'):
             flibs.append('-L'+lib)
           continue
+        self.framework.log.write( 'Unknown arg '+arg+'\n')
     except StopIteration:
       pass
 
