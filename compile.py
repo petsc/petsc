@@ -279,6 +279,7 @@ class CompilePythonC (CompileC):
       for source in set:
         self.products.append(fileset.FileSet([self.getLibraryName(source)]))
 
+
 class TagCxx (transform.GenericTag):
   def __init__(self, sourceDB, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh', root = None):
     transform.GenericTag.__init__(self, sourceDB, tag, ext, sources, extraExt, root)
@@ -305,6 +306,24 @@ class CompileCxx (Compile):
       raise RuntimeError('Could not execute \''+command+'\':\n'+output)
     elif output.find('warning') >= 0:
       print('\''+command+'\': '+output)
+
+class CompileMatlabCxx (CompileCxx):
+  def __init__(self, sourceDB, sources = None, tag = 'c', compiler = 'g++', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
+    CompileCxx.__init__(self, sourceDB, None, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
+    self.products = []
+
+  def getLibraryName(self, source = None):
+    if not source: return None
+    (dir, file) = os.path.split(source)
+    (base, ext) = os.path.splitext(file)
+    libraryName = os.path.join(dir, base+'.mexglx')
+    return libraryName
+
+  def setExecute(self, set):
+    Compile.setExecute(self, set)
+    if set.tag == self.tag or set.tag == 'old '+self.tag:
+      for source in set:
+        self.products.append(fileset.FileSet([self.getLibraryName(source)]))
 
 class TagF77 (transform.GenericTag):
   def __init__(self, sourceDB, tag = 'f77', ext = 'f', sources = None, extraExt = '', root = None):

@@ -580,6 +580,9 @@ class UsingMatlab(UsingCompiler):
     self.setupExtraLibraries()
     return
 
+  def getCompiler(self, library):
+    return compile.CompileMatlabCxx(self.usingSIDL.sourceDB)
+
   def setupIncludeDirectories(self):
     includeDir = bs.argDB['MATLAB_INCLUDE']
     if isinstance(includeDir, list):
@@ -590,7 +593,7 @@ class UsingMatlab(UsingCompiler):
 
   def setupExtraLibraries(self):
     for package in self.usingSIDL.getPackages():
-      self.extraLibraries[package].append(bs.argDB['MATLAB_LIB'])
+      self.extraLibraries[package].extend(bs.argDB['MATLAB_LIB'])
     return self.extraLibraries
 
   def getLanguage(self):
