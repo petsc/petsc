@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.14 2001/02/15 16:40:47 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.15 2001/02/15 17:16:38 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -60,7 +60,7 @@ public class PETScRun extends JApplet implements Pageable, Printable
       try {
         sock = new Socket(servername,2000);
       } catch(java.net.ConnectException oops) {
-        appletcontext.showDocument(new URL("http://www.mcs.anl.gov/petsc/noserver.html"));
+        getserver();
         return;
       }
       sock.setSoLinger(true,5);
@@ -100,7 +100,6 @@ public class PETScRun extends JApplet implements Pageable, Printable
 
     server = new JComboBox();
     server.addItem(servername);
-    server.addItem("fire.mcs.anl.gov");
     server.setEditable(true);
     server.addItemListener(new ItemListener() {
                           public void itemStateChanged(ItemEvent e) {
@@ -409,6 +408,54 @@ public class PETScRun extends JApplet implements Pageable, Printable
     japplet.printComponents(g2);
     return Printable.PAGE_EXISTS;
   }
+
+  public void getserver() { /* ------------------------------------------*/
+
+    japplet.removeAll();
+    japplet.setVisible(false);
+    /*
+
+         Make GUI to get host and port number from user 
+    */
+    japplet.setLayout(new FlowLayout());
+        
+    tpanel = new JPanel(new GridLayout(3,1));
+    japplet.add(tpanel, BorderLayout.NORTH);
+        
+    final JTextField inputserver = new JTextField(servername,32);
+    JPanelSimplePack text = new JPanelSimplePack("AMS Client machine",inputserver);
+    tpanel.add(text);
+    JTextField inputport = new JTextField(2000+"",8);
+    text = new JPanelSimplePack("AMS Client port",inputport);
+    tpanel.add(text);
+    System.out.println("put up server and port");
+    
+    /*--------------------- */
+    JButton button = new JButton("Continue");
+    tpanel.add(button);
+    button.addActionListener(new ActionListener(){
+      public void actionPerformed(ActionEvent e) { 
+        System.out.println("User selected continue");
+        setserver(inputserver.getText());
+      }
+    }); 
+    System.out.println("put up continue");
+
+    japplet.setVisible(true);
+    japplet.validate(); 
+    japplet.repaint(); 
+    System.out.println("put up continue done");
+    return;
+  }
+
+  public class JPanelSimplePack extends JPanel { /*-----------------------------------*/
+    public JPanelSimplePack(String text,Component c1) {
+      super( new GridBagLayout());
+      add(new JLabel(text));
+      add(c1);
+    }
+  }
+
 }
 
 
