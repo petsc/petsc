@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.128 1998/04/13 17:26:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.129 1998/04/15 21:57:24 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1593,15 +1593,17 @@ int VecDestroyVecs_Default( Vec *v, int m )
     this routine is implementation dependent. You MUST call VecRestoreArrayF90() 
     when you no longer need access to the array.
 
+    Synopsis:
+    VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not Collective 
+
     Input Parameter:
 .   x - vector
 
     Output Parameters:
-.   xx_v - the Fortran90 pointer to the array
-.   ierr - error code
-
-    Synopsis:
-    VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
 
     Example of Usage: 
 $    Scalar, pointer :: xx_v(:)
