@@ -4,8 +4,9 @@
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
 set TMP=/sandbox/petsc/petsc-test
-set MACH=shakey
-set ARCH=linux
+set MACH=harley
+set CONFIGURE='yes'
+set ARCH=linux-gnu
 set TEST=testexamples_
 #
 set day=`date | cut -f1 -d" "`
