@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.11 1997/05/03 23:02:13 curfman Exp curfman $";
+C "$Id: ex4f.F,v 1.12 1997/05/03 23:05:37 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -232,10 +232,10 @@ C ---------------------------------------------------------------------
 C
 C  FormInitialGuess - Forms initial approximation.
 C
-C  Input Parameters:
+C  Input Parameter:
 C  X - vector
 C
-C  Output Parameter:
+C  Output Parameters:
 C  X - vector
 C  ierr - error code 
 C
@@ -286,7 +286,20 @@ C  Restore vector
       end
 
 C ---------------------------------------------------------------------
-
+C
+C  ApplicationInitialGuess - Computes initial approximation, called by
+C  the higher level routine FormInitialGuess().
+C
+C  Input Parameter:
+C  x - local vector data
+C
+C  Output Parameters:
+C  x - local vector data
+C  ierr - error code 
+C
+C  Notes:
+C  This routine uses standard Fortran-style computations over a 2-dim array.
+C
       subroutine ApplicationInitialGuess(x,ierr)
 
       implicit none
@@ -302,7 +315,7 @@ C  Common blocks:
 
 C  Local variables:
       integer  i, j, hxdhy, hydhx
-      Scalar   temp1, temp, hx, hy, sc, one, x(mx,my)
+      Scalar   temp1, temp, hx, hy, sc, one
 
 C  Set parameters
 
@@ -397,7 +410,20 @@ C  Restore vectors
       end
 
 C ---------------------------------------------------------------------
-
+C
+C  ApplicationFunction - Computes nonlinear function, called by
+C  the higher level routine FormFunction().
+C
+C  Input Parameter:
+C  x - local vector data
+C
+C  Output Parameters:
+C  x - local vector data
+C  ierr - error code 
+C
+C  Notes:
+C  This routine uses standard Fortran-style computations over a 2-dim array.
+C
       subroutine ApplicationFunction(x,f,ierr)
 
       implicit none
@@ -417,8 +443,8 @@ C  Common blocks:
 C  Local variables:
 
       Scalar   two, one, hx, hy, hxdhy, hydhx, sc
-      Scalar   u, uxx, uyy, x(mx,my), f(mx,my)
-      integer  i, j, mx, my
+      Scalar   u, uxx, uyy
+      integer  i, j
 
       ierr   = 0
       one    = 1.0
