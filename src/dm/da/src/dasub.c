@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dasub.c,v 1.1 1996/06/19 00:18:16 curfman Exp curfman $";
+static char vcid[] = "$Id: dasub.c,v 1.2 1996/06/19 01:51:10 curfman Exp curfman $";
 #endif
  
 /*
@@ -64,6 +64,7 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   MPI_Comm_group(da->comm,&group);
   MPI_Group_incl(group,ict,ranks,&subgroup);
   MPI_Comm_create(da->comm,subgroup,comm);
+  PetscFree(owners);
   return 0;
 } 
 
