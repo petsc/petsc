@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.163 2001/04/07 15:22:00 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.164 2001/04/10 19:37:23 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -249,8 +249,10 @@ EXTERN_C_END
 
    Options Database Key:
 +  -da_view - Calls DAView() at the conclusion of DACreate2d()
-.  -da_grid_x <nx> - number of grid points in x direction
-.  -da_grid_y <ny> - number of grid points in y direction
+.  -da_grid_x <nx> - number of grid points in x direction, if M < 0
+.  -da_grid_y <ny> - number of grid points in y direction, if N < 0
+.  -da_processors_x <nx> - number of processors in x direction
+.  -da_processors_y <ny> - number of processors in y direction
 -  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
@@ -279,7 +281,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   int           s_x,s_y; /* s proportionalized to w */
   int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,*flx = 0,*fly = 0;
-  int           sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
+  int           sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0,refine_x = 2, refine_y = 2,tM = M,tN = N;
   PetscTruth    flg1,flg2;
   DA            da;
   Vec           local,global;
@@ -291,15 +293,22 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
-  if (M < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have M positive");
-  if (N < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have N positive");
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"2d DA Options","DA");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate2d",M,&M,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate2d",N,&N,PETSC_NULL);CHKERRQ(ierr);
+    if (M < 0){
+      tM = -M;
+      ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate2d",tM,&tM,PETSC_NULL);CHKERRQ(ierr);
+    }
+    if (N < 0){
+      tN = -N;
+      ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate2d",tN,&tN,PETSC_NULL);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate2d",m,&m,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate2d",n,&n,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DACreate2d",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DACreate2d",refine_y,&refine_y,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  M = tM; N = tN;
 
   PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PetscLogObjectCreate(da);
@@ -310,7 +319,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->ops->refine             = DARefine;
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 2;
+  da->interptype = DA_Q1;
   da->gtog1      = 0;
+  da->refine_x   = refine_x;
+  da->refine_y   = refine_y;
   ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 
@@ -1106,20 +1118,20 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
 
-  if (DAXPeriodic(da->wrap)){
-    M = 2*da->M;
+  if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
+    M = da->refine_x*da->M;
   } else {
-    M = 2*da->M - 1;
+    M = 1 + da->refine_x*(da->M - 1);
   }
-  if (DAYPeriodic(da->wrap)){
-    N = 2*da->N;
+  if (DAYPeriodic(da->wrap) || da->interptype == DA_Q0){
+    N = da->refine_y*da->N;
   } else {
-    N = 2*da->N - 1;
+    N = 1 + da->refine_y*(da->N - 1);
   }
-  if (DAZPeriodic(da->wrap)){
-    P = 2*da->P;
+  if (DAZPeriodic(da->wrap) || da->interptype == DA_Q0){
+    P = da->refine_z*da->P;
   } else {
-    P = 2*da->P - 1;
+    P = 1 + da->refine_z*(da->P - 1);
   }
   if (da->dim == 1) {
     ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,PETSC_NULL,&da2);CHKERRQ(ierr);
@@ -1182,5 +1194,282 @@ int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
   } else {
     *outcomm = comm;
   }
+  PetscFunctionReturn(0);
+}
+
+/*MC
+       DASetLocalFunction - Caches in a DA a local function and its adiC Jacobian
+
+   Collective on DA
+
+   Synopsis:
+   int int DASetLocalFunction(DA da,DALocalFunction1 lf,DALocalFunction1 lj,DALocalFunction1 ad_lf)
+   
+   Input Parameter:
++  da - initial distributed array
+.  lf - the local function
+.  lj - the local Jacobian
+-  ad_lf - the local function as computed by ADIC/ADIFOR
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction()
+M*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocalFunction_Private"
+int DASetLocalFunction_Private(DA da,DALocalFunction1 lf,DALocalFunction1 lj,DALocalFunction1 ad_lf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  da->lf    = lf;
+  da->lj    = lj;
+  da->ad_lf = ad_lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetLocalFunction"
+/*@C
+       DAGetLocalFunction - Gets from a DA a local function and its ADIC/ADIFOR Jacobian
+
+   Collective on DA
+
+   Input Parameter:
+.  da - initial distributed array
+
+   Output Parameters:
++  lf - the local function
+.  lj - the local Jacobian
+-  ad_lf - the ADIC or ADIFOR generate local function
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DASetLocalFunction()
+@*/
+int DAGetLocalFunction(DA da,DALocalFunction1 *lf,DALocalFunction1 *lj,DALocalFunction1 *ad_lf)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  if (lf)       *lf = da->lf;
+  if (lj)       *lj = da->lj;
+  if (ad_lf) *ad_lf = da->ad_lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DAFormFunction1"
+/*@
+    DAFormFunction1 - Evaluates a user provided function on each processor that 
+        share a DA
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    vu - input vector
+.    vfu - output vector 
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+.seealso: DAComputeJacobian1WithAdic()
+
+@*/
+int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
+{
+  int         ierr;
+  void        *u,*fu;
+  DALocalInfo info;
+  
+  PetscFunctionBegin;
+
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
+
+  ierr = (*da->lf)(&info,u,fu,w);CHKERRQ(ierr);
+
+  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#if defined(PETSC_HAVE_ADIC)
+
+#include "adic_utils.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "DAComputeJacobian1WithAdic"
+/*@
+    DAComputeJacobian1WithAdic - Evaluates a adiC provided Jacobian function on each processor that 
+        share a DA
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    vu - input vector
+.    J - output matrix
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+.seealso: DAFormFunction1()
+
+@*/
+int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
+{
+  int         ierr,gtdof,tdof;
+  Scalar      *u,*ustart;
+  DALocalInfo info;
+  void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
+  ISColoring  iscoloring;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+
+  /* get space for derivative objects.  */
+  ierr = DAGetADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
+  my_AD_SetValArray(((DERIV_TYPE*)ad_ustart),gtdof,ustart);
+  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
+
+  my_AD_ResetIndep();
+  ierr = DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,PETSC_IGNORE);CHKERRQ(ierr);
+  my_AD_SetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors);
+  my_AD_IncrementTotalGradSize(iscoloring->n);
+  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+  my_AD_SetIndepDone();
+
+  ierr = (*da->ad_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
+
+  /* stick the values into the matrix */
+  ierr = MatSetValuesAdic(J,(Scalar**)ad_fstart);CHKERRQ(ierr);
+
+  /* return space for derivative objects.  */
+  ierr = DARestoreADArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DAComputeJacobian1"
+/*@
+    DAComputeJacobian1 - Evaluates a local Jacobian function on each processor that 
+        share a DA
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    vu - input vector
+.    J - output matrix
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+.seealso: DAFormFunction1()
+
+@*/
+int DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
+{
+  int         ierr;
+  void        *u;
+  DALocalInfo info;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,&u);CHKERRQ(ierr);
+  ierr = (*da->lj)(&info,u,J,w);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "DAComputeJacobian1WithAdifor"
+/*
+    DAComputeJacobian1WithAdifor - Evaluates a adifor provided Jacobian local function on each processor that 
+        share a DA
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    vu - input vector
+.    J - output matrix
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+.seealso: DAFormFunction1()
+
+*/
+int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
+{
+  int         i,ierr,Nc,*color,N;
+  DALocalInfo info;
+  Scalar      *u,*g_u,*g_f,*f,*p_u;
+  ISColoring  iscoloring;
+  void        (*lf)(int *,DALocalInfo*,Scalar*,Scalar*,int*,Scalar*,Scalar*,int*,void*,int*) = 
+              (void (*)(int *,DALocalInfo*,Scalar*,Scalar*,int*,Scalar*,Scalar*,int*,void*,int*))*da->ad_lf;
+
+  PetscFunctionBegin;
+  ierr = DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,PETSC_IGNORE);CHKERRQ(ierr);
+  Nc   = iscoloring->n;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  N    = info.gxm*info.gym*info.gzm*info.dof;
+
+  /* get space for derivative objects.  */
+  ierr  = PetscMalloc(Nc*info.gxm*info.gym*info.gzm*info.dof*sizeof(Scalar),&g_u);CHKERRQ(ierr);
+  ierr  = PetscMemzero(g_u,Nc*info.gxm*info.gym*info.gzm*info.dof*sizeof(Scalar));CHKERRQ(ierr);
+  p_u   = g_u;
+  color = iscoloring->colors;
+  for (i=0; i<N; i++) {
+    p_u[*color++] = 1.0;
+    p_u          += Nc;
+  }
+  ierr = PetscMalloc(Nc*info.xm*info.ym*info.zm*info.dof*sizeof(Scalar),&g_f);CHKERRQ(ierr);
+  ierr = PetscMalloc(info.xm*info.ym*info.zm*info.dof*sizeof(Scalar),&f);CHKERRQ(ierr);
+
+  /* Seed the input array g_u with coloring information */
+ 
+  ierr = VecGetArray(vu,&u);CHKERRQ(ierr);
+  (lf)(&Nc,&info,u,g_u,&Nc,f,g_f,&Nc,w,&ierr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(vu,&u);CHKERRQ(ierr);
+
+  /* stick the values into the matrix */
+  /* PetscScalarView(Nc*info.xm*info.ym,g_f,0); */
+  ierr = MatSetValuesAdifor(J,Nc,g_f);CHKERRQ(ierr); 
+
+  /* return space for derivative objects.  */
+  ierr = PetscFree(g_u);CHKERRQ(ierr);
+  ierr = PetscFree(g_f);CHKERRQ(ierr);
+  ierr = PetscFree(f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DASetInterpolationType"
+/*@C
+       DASetInterpolationType - Sets the type of interpolation that will be 
+          returned by DAGetInterpolation()
+
+   Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+.  ctype - DA_Q1 is currently the only supported form
+
+   Level: intermediate
+
+.keywords:  distributed array, interpolation
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAInterpolationType
+@*/
+int DASetInterpolationType(DA da,DAInterpolationType ctype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  da->interptype = ctype;
   PetscFunctionReturn(0);
 }
