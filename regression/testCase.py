@@ -16,6 +16,7 @@ class MPITest (unittest.TestCase):
       ASE.Args.Args.set(sys.argv)
       MPITest.mpi = MPIB.Base.Base(ASE.Loader.Loader.createClass(baseClass))
       MPITest.mpi.Initialize()
+      atexit.register(ASE.Loader.Loader.setLibraries, [])
       atexit.register(MPITest.mpi.Finalize)
     return
   setUpMPI = staticmethod(setUpMPI)
