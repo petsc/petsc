@@ -3725,6 +3725,7 @@ PetscErrorCode MatZeroEntries(Mat mat)
   PetscValidType(mat,1);
   MatPreallocated(mat);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix"); 
   if (!mat->ops->zeroentries) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = PetscLogEventBegin(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
