@@ -94,11 +94,11 @@ class UsingSIDL (logging.Logger):
     return 'sidl'
 
   def getBaseLanguage(self):
-    '''The implementation language for the SIDL runtime library, usually C'''
+    '''The implementation language for the SIDL runtime library, usually C++'''
     if bs.argDB.has_key('SIDL_LANG'):
       return bs.argDB['SIDL_LANG']
     else:
-      return 'C'
+      return 'C++'
 
   def getPackages(self):
     return self.packages
