@@ -13,7 +13,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscsnes
 LINCLUDE = $(SOURCEH)
-DIRS     = ls tr test
+DIRS     = ls tr test trum
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
