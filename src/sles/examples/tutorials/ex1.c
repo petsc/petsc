@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.57 1997/01/01 03:39:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.58 1997/01/07 16:52:28 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -96,8 +96,8 @@ int main(int argc,char **args)
   /* 
      Set linear solver defaults for this problem (optional).
      - By extracting the KSP and PC contexts from the SLES context,
-       we can then directly directly call any KSP and PC routines
-       to set various options.
+       we can then directly call any KSP and PC routines to set
+       various options.
      - The following four statements are optional; all of these
        parameters could alternatively be specified at runtime via
        SLESSetFromOptions();

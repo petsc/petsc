@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.59 1996/12/10 20:47:09 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.60 1996/12/10 20:58:00 curfman Exp curfman $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -148,8 +148,8 @@ int main(int argc,char **args)
   /* 
      Set linear solver defaults for this problem (optional).
      - By extracting the KSP and PC contexts from the SLES context,
-       we can then directly directly call any KSP and PC routines
-       to set various options.
+       we can then directly call any KSP and PC routines to set
+       various options.
      - The following four statements are optional; all of these
        parameters could alternatively be specified at runtime via
        SLESSetFromOptions().  All of these defaults can be
