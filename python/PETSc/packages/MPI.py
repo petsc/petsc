@@ -281,6 +281,9 @@ class Configure(config.base.Configure):
       self.lib      = [os.path.join(root, 'lib', 'libmpich.a'), os.path.join(root, 'lib', 'libpmpich.a')]
       self.include  = [os.path.join(root, 'include')]
       functionalMPI.append(('Downloaded MPICH', self.lib, self.include, '1.2'))
+
+      self.addDefine('HAVE_MPI_COMM_F2C', 1)
+      self.addDefine('HAVE_MPI_COMM_C2F', 1)
     else:
       for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
         self.framework.log.write('================================================================================\n')
