@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.22 1997/05/01 18:42:15 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.23 1997/05/04 00:23:47 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -86,21 +86,6 @@ C  Note: Any user-defined Fortran routines (such as FormJacobian)
 C  MUST be declared as external.
 
       external FormFunction, FormInitialGuess, FormJacobian
-
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                   Macro definitions
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  Macros to make clearer the process of setting values in vectors and
-C  getting values from vectors.  These vectors are used in the routines
-C  FormFunction(), FormInitialGuess(), and FormJacobian().
-C
-C   - The element lx_a(ib) is element ib+1 in the vector localX
-C   - Here we add 1 to the base array index to facilitate the use of
-C     conventional Fortran 1-based array indexing.
-C
-#define lx_a(ib) lx_v(lx_i + (ib) + 1)
-#define lf_a(ib) lf_v(lf_i + (ib) + 1)
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                 Beginning of program
@@ -562,6 +547,14 @@ C          MatSetValues()
 C  Option (A) seems cleaner/easier in many cases, and is the procedure
 C  used in this example.
 C
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C                   Macro definition
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C
+C  Macro to make clearer the process of getting values from vectors.
+C
+#define lx_a(ib) lx_v(lx_i + (ib))
+
       subroutine FormJacobian(snes,X,jac,B,flag,dummy)
       implicit none
 
@@ -577,7 +570,7 @@ C
 
 C  Declarations for use with local arrays
 
-      Scalar   lx_v(1)
+      Scalar   lx_v(0:1)
       common   lx_v
       integer  lx_i
 
@@ -621,7 +614,6 @@ C     in Fortran as well as in C.
          row = (j - gys)*gxm + xs - gxs - 1
          do 10 i=xs,xe
             row = row + 1
-c            write(6,*) 'j,i,row = ',j,i,row
 C           boundary points
             if (i .eq. 1 .or. j .eq. 1
      &             .or. i .eq. mx .or. j .eq. my) then
