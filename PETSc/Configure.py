@@ -66,9 +66,9 @@ class Configure(configure.Configure):
     return
 
   def configureDebuggers(self):
-    self.checkProgram('gdb', getFullPath = 1, comment = 'GNU debugger')
-    self.checkProgram('dbx', getFullPath = 1, comment = 'DBX debugger')
-    self.checkProgram('xdb', getFullPath = 1, comment = 'XDB debugger')
+    self.getExecutable('gdb', getFullPath = 1, comment = 'GNU debugger')
+    self.getExecutable('dbx', getFullPath = 1, comment = 'DBX debugger')
+    self.getExecutable('xdb', getFullPath = 1, comment = 'XDB debugger')
     if hasattr(self, 'gdb'):
       self.addDefine('USE_GDB_DEBUGGER', 1, comment = 'Use GDB as the default debugger')
     elif hasattr(self, 'dbx'):
@@ -114,7 +114,11 @@ class Configure(configure.Configure):
     return
 
   def configureHeaders(self):
-    #self.checkHeader('dos.h')
+    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'stdlib',
+                                            'string', 'strings', 'stropts', 'unistd', 'machine/endian', 'sys/param',
+                                            'sys/procfs', 'sys/resource', 'sys/stat', 'sys/systeminfo', 'sys/time',
+                                            'sys/times', 'sys/utsname'])
+    map(self.checkHeader, headersC)
     return
 
   def configure(self):

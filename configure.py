@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-import args
 import PETSc
 import PETSc.Configure
+import nargs
 
 import cPickle
 import os
 import re
+import select
 import sys
 
 ## SECTION: Initialization
@@ -71,11 +72,11 @@ class Configure:
   def getExecutable(self, name, path = '', getFullPath = 0, comment = ''):
     if not path: path = os.environ['PATH']
     for dir in path.split(':'):
-      prog = os.join(dir, name)
+      prog = os.path.join(dir, name)
 
       if os.path.isfile(prog) and os.access(prog, os.X_OK):
         if getFullPath:
-          setattr(self, name, os.abspath(prog))
+          setattr(self, name, os.path.abspath(prog))
         else:
           setattr(self, name, name)
         self.addSubstitution(name.upper(), getattr(self, name), comment = comment)
@@ -83,18 +84,23 @@ class Configure:
     return
 
   def checkPreprocess(self, codeStr):
-    (input, output, err) = popen3(self.cpp)
+    (input, output, err) = os.popen3(self.cpp)
     input.write(codeStr)
     input.close()
+    out   = ''
+    ready = select.select([err], [], [], 0.1)
+    if len(ready[0]):
+      # Log failure of preprocessor
+      out = ready[0][0].read()
     err.close()
     output.close()
-    return
+    return not len(out)
 
   def checkHeader(self, name):
     found = 0
     if self.checkPreprocess('#include <'+name+'>\n'):
       found = 1
-    self.addDefine('HAVE_'+name.upper().replace('.', '_'), found, 'Defined if we have the header '+name)
+    self.addDefine('HAVE_'+name.upper().replace('.', '_').replace('/', '_'), found, 'Defined if we have the header '+name)
     return found
 
   ######################################
@@ -193,17 +199,7 @@ class Framework(Configure):
     return
 
   def setupArgDB(self, clArgs):
-    filename = 'configureArg.db'
-    parent   = 'bs'
-
-    if os.path.exists(filename):
-      f     = file(filename)
-      argDB = cPickle.load(f)
-      f.close()
-    else:
-      argDB = args.ArgDict(os.path.join(os.getcwd(), filename), parent)
-    argDB.input(clArgs)
-    return argDB
+    return nargs.ArgDict('ArgDict', clArgs)
 
   def addSubstitutionFile(self, inName, outName = ''):
     '''Designate that file should experience substitution
@@ -288,7 +284,7 @@ class Framework(Configure):
         if line: f.write('/* '+line+' */\n')
     f.write('#ifndef '+name+'\n')
     if value:
-      f.write('#define '+name+' '+value+'\n')
+      f.write('#define '+name+' '+str(value)+'\n')
     else:
       f.write('/* #undef '+name+' */\n')
     f.write('#endif\n\n')
