@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.22 2001/04/24 22:09:40 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.23 2001/04/27 02:33:33 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -74,7 +74,7 @@ typedef struct {
 
 extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormFunctionLocal(Field**x,Field**f,DALocalInfo*info,void*);
+extern int FormFunctionLocal(DALocalInfo*info,Field**x,Field**f,void*);
 
 typedef struct {
    PassiveDouble  lidvelocity,prandtl,grashof;  /* physical parameters */
@@ -141,7 +141,7 @@ int main(int argc,char **argv)
 
     ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
     if (localfunction) {
-      ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal);CHKERRQ(ierr);
+      ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
     } else {
       ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
     }
@@ -435,7 +435,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0; 
 } 
 
-int FormFunctionLocal(Field **x,Field **f,DALocalInfo *info,void *ptr)
+int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
  {
   AppCtx  *user = (AppCtx*)ptr;
   int     ierr,i,j;

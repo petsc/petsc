@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.135 2001/05/10 03:23:33 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.136 2001/05/16 19:06:42 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -70,11 +70,12 @@ int main(int argc,char **argv)
 {
   SNES                   snes;                 /* nonlinear solver */
   Vec                    x,r;                  /* solution, residual vectors */
-  Mat                    J;                    /* Jacobian matrix */
+  Mat                    A,J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
   int                    its;                  /* iterations for convergence */
   PetscTruth             local_function = PETSC_TRUE,global_function = PETSC_FALSE,matlab_function = PETSC_FALSE;
   PetscTruth             fd_jacobian = PETSC_FALSE,global_jacobian=PETSC_FALSE,local_jacobian=PETSC_TRUE,adic_jacobian=PETSC_FALSE;
+  PetscTruth             adicmf_jacobian = PETSC_FALSE;
   int                    ierr;
   double                 bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
   MatFDColoring          matfdcoloring = 0;
@@ -120,7 +121,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DASetLocalFunction(user.da,(DALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
   ierr = DASetLocalJacobian(user.da,(DALocalFunction1)FormJacobianLocal);CHKERRQ(ierr);
-  ierr = DASetLocalad_Function(user.da,ad_FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DASetLocalAdicFunction(user.da,ad_FormFunctionLocal);CHKERRQ(ierr);
 
   /* Decide which FormFunction to use */
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
@@ -149,31 +150,42 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
+  A    = J;
+
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-fd_jacobian",&fd_jacobian,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-adic_jacobian",&adic_jacobian,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-global_jacobian",&global_jacobian,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-local_jacobian",&local_jacobian,0);CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_ADIC)
+  ierr = PetscOptionsGetLogical(PETSC_NULL,"-adicmf_jacobian",&adicmf_jacobian,0);CHKERRQ(ierr);
+  if (adicmf_jacobian) {
+    ierr = DASetLocalAdicMFFunction(user.da,admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = MatCreateDAAD(user.da,&A);CHKERRQ(ierr);
+    ierr = MatDAADSetSNES(A,snes);CHKERRQ(ierr);
+    ierr = MatDAADSetCtx(A,&user);CHKERRQ(ierr);
+  }    
+#endif
+
   if (fd_jacobian) {
-    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,&iscoloring,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,A,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ADIC)
   } else if (adic_jacobian) {
-    ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+    ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,PETSC_IGNORE);CHKERRQ(ierr);
     ierr = MatSetColoring(J,iscoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdic,&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdic,&user);CHKERRQ(ierr);
 #endif
   } else if (global_jacobian){
-    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,A,J,FormJacobian,&user);CHKERRQ(ierr);
   } else if (local_jacobian){
-    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,A,J,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -207,6 +219,9 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  if (A != J) {
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(J);CHKERRQ(ierr);
   if (matfdcoloring) {
     ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.72 2001/05/04 19:47:27 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.73 2001/05/10 03:29:04 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -56,18 +56,18 @@
 !
       SNES                   snes
       Vec                    x,r
-      Mat                    J
-      integer                its,flg,ierr,skipadifor
+      Mat                    J,A
+      integer                its,flg,ierr
       double precision       lambda_max,lambda_min
       ISColoring             coloring
-      PetscTruth             adifor_jacobian
+      PetscTruth             adifor_jacobian,adiformf_jacobian
 
 !  Note: Any user-defined Fortran routines (such as FormJacobianLocal)
 !  MUST be declared as external.
 
       external FormInitialGuess
       external FormFunctionLocal,g_FormFunctionLocal
-      external FormJacobianLocal
+      external FormJacobianLocal,m_FormFunctionLocal
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -141,9 +141,11 @@
 
 !  Set function evaluation routine and vector
 
+      call DASetLocalFunction(da,FormFunctionLocal,ierr)
+      call DASetLocalJacobian(da,FormJacobianLocal,ierr)
 #if defined(PETSC_HAVE_ADIFOR)
-      call DASetLocalFunction(da,FormFunctionLocal,                        &
-     &         FormJacobianLocal,g_FormFunctionLocal,ierr)
+      call DASetLocalAdiforFunction(da,                                             &
+     &         g_FormFunctionLocal,ierr)
 #endif
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
 
@@ -160,22 +162,38 @@
 !                         products within Newton-Krylov method
 !
 
+      call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
+     &                   PETSC_NULL_OBJECT,J,ierr)
+
+#if defined(PETSC_HAVE_ADIFOR)
+      call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
+     &     ,'-adiformf_jacobian',                                                 &
+     &     adiformf_jacobian,PETSC_NULL_INTEGER,ierr)
+      if (adiformf_jacobian .eq. 1) then
+        call DASetLocalAdiforMFFunction(da,                                       &
+     &         m_FormFunctionLocal,ierr)
+        call MatCreateDAAD(da,A,ierr)
+        call MatDAADSetSNES(A,snes,ierr)
+      else 
+        A = J
+      endif
+#endif
+
       call PetscOptionsGetLogical(PETSC_NULL_CHARACTER                            &
      &     ,'-adifor_jacobian',                                                   &
      &     adifor_jacobian,PETSC_NULL_INTEGER,ierr)
       if (adifor_jacobian .eq. 0) then
-        call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
-     &                     PETSC_NULL_OBJECT,J,ierr)
-        call SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,                      &
+        call SNESSetJacobian(snes,A,J,SNESDAComputeJacobian,                      &
      &                       da,ierr)
       else
         call DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,                      &
-     &                     coloring,J,ierr)
+     &                     coloring,PETSC_NULL_OBJECT,ierr)
         call MatSetColoring(J,coloring,ierr)
-        call SNESSetJacobian(snes,J,J,SNESDAComputeJacobianWithAdifor,            &
+        call SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdifor,            &
      &                         da,ierr)
         call ISColoringDestroy(coloring,ierr)
       endif
+
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options
@@ -207,6 +225,7 @@
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+      if (A .ne. J) call MatDestroy(A,ierr)
       call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
