@@ -1,222 +1,268 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.5 1996/07/08 22:22:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.18 1997/06/3 01:37:07 lixu Exp $";
 #endif
-
-static char help[] ="Solves the time dependent Bratu problem";
-
 /*
-     This code demonstrates how one may solve a nonlinear problem 
-   with pseudo time-stepping. In this simple example, the pseudo-time
-   step is the same for all grid points, i.e. this is equivalent to 
-   a backward Euler with variable time-step.
+       Formatted test for TS routines.
+
+          Solves U_t=F(t,u)
+	  Where:
+          
+	          [2*u1+u2
+	  F(t,u)= [u1+2*u2+u3
+	          [   u2+2*u3
+       We can compare the solutions from euler, beuler and PVODE to
+       see what is the difference.
+
 */
 
-#include "draw.h"
-#include "ts.h"
-#include "options.h"
+static char help[] = "Solves a nonlinear ODE \n\n";
+
+#include <malloc.h>
+#include "sys.h"
 #include <math.h>
+#include "ts.h"
+#include "pc.h"
 
-typedef struct {
-      double      param;        /* test problem parameter */
-      int         mx;           /* Discretization in x-direction */
-      int         my;           /* Discretization in y-direction */
-} AppCtx;
+int RHSFunction(TS,double,Vec,Vec,void*);
+int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+int Monitor(TS, int, double, Vec, void *);
+int Initial(Vec, void *);
 
-typedef struct {
-  SNES snes;
-  Vec  w;
-} MFCtx_Private;
+#define linear_no_matrix       0
+#define linear_no_time         1
+#define linear                 2
+#define nonlinear_no_jacobian  3
+#define nonlinear              4
 
-
-int  FormJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(TS,double,Vec,Vec,void*),
-     FormInitialGuess(Vec,AppCtx*);
-
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
-  TS           ts;
-  Vec          x,r;
-  Mat          J;
-  int          ierr, N, its,flg; 
-  AppCtx       user;
-  double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.,dt = 1.e-6;
-  double       ftime;
+  int           ierr,  time_steps = 100, steps, flg, size;
+  Vec           global;
+  double        dt,ftime;
+  TS            ts;
+  TSType        type;
+  Viewer	viewer;
+  MatStructure  A_structure;
 
-  PetscInitialize( &argc, &argv, (char *)0,help );
-  user.mx        = 4;
-  user.my        = 4;
-  user.param     = 6.0;
-  
-  OptionsGetInt(0,"-mx",&user.mx,&flg);
-  OptionsGetInt(0,"-my",&user.my,&flg);
-  OptionsGetDouble(0,"-param",&user.param,&flg);
-  if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRQ(1,"Lambda is out of range");
-  }
-  OptionsGetDouble(0,"-dt",&dt,&flg);
-  N          = user.mx*user.my;
-  
-  /* Set up data structures */
-  ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,0,0,&J); CHKERRA(ierr);
+  PC		pc;
 
-  /* Create nonlinear solver */
-  ierr = TSCreate(MPI_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
+  Mat           A = 0;
+  TSProblemType tsproblem = TS_NONLINEAR; /* Need to be TS_NONLINEAR */
+  char          pcinfo[120], tsinfo[120];
+ 
+  PetscInitialize(&argc,&argv,(char*)0,help);
+  MPI_Comm_size(PETSC_COMM_WORLD, &size);
+ 
+  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
+    
+  /* set initial conditions */
+  ierr = VecCreate(MPI_COMM_WORLD,3,&global); CHKERRQ(ierr);
+  ierr = Initial(global,NULL); CHKERRA(ierr);
+ 
+  /* make timestep context */
+  ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts); CHKERRA(ierr);
+  ierr = TSSetMonitor(ts,Monitor,NULL); CHKERRA(ierr);
 
-  /* Set various routines */
-  ierr = TSSetSolution(ts,x); CHKERRA(ierr);
-  ierr = TSSetRHSFunction(ts,FormFunction,(void *)&user); CHKERRA(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,FormJacobian,(void *)&user);CHKERRA(ierr);
+  dt = 0.1;
 
-  /* Set up nonlinear solver; then execute it */
-  ierr = FormInitialGuess(x,&user);
-  ierr = TSSetType(ts,TS_PSEUDO_POSITION_INDEPENDENT_TIMESTEP); CHKERRA(ierr);
+  /*
+    The user provides the RHS and Jacobian
+  */
+  ierr = TSSetRHSFunction(ts,RHSFunction,NULL); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,3,3,&A); CHKERRA(ierr);
+  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL); CHKERRA(ierr);
+  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL); CHKERRA(ierr);  
+ 
+  /* Use CVODE */
+  ierr = TSSetType(ts, TS_CVODE); CHKERRA(ierr);
+
+  ierr = TSSetFromOptions(ts);CHKERRA(ierr);
+  ierr = TSGetType(ts,&type,PETSC_NULL); CHKERRA(ierr);
+
   ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
-  ierr = TSSetDuration(ts,1000,1.e12);
-  ierr = TSPseudoSetPositionIndependentTimeStep(ts,
-                    TSPseudoDefaultPositionIndependentTimeStep,0); CHKERRA(ierr);
+  ierr = TSSetDuration(ts,time_steps,1); CHKERRA(ierr);
+  ierr = TSSetSolution(ts,global); CHKERRA(ierr);
 
-  ierr = TSSetFromOptions(ts); CHKERRA(ierr);
+
+  /* Pick up a Petsc preconditioner */
+  /* one can always set method or preconditioner during the run time */
+  /*
+  ierr = TSPVodePCSetType(ts, PCJACOBI); CHKERRA(ierr);
+  ierr = TSPVodeSetMethod(ts, PVODE_BDF); CHKERRA(ierr);
+  ierr = TSPVodeSetMethodFromOptions(ts); CHKERRA(ierr);
+  */
+
   ierr = TSSetUp(ts); CHKERRA(ierr);
-  ierr = TSStep(ts,&its,&ftime); CHKERRA(ierr);
-  printf( "number of pseudo time-steps = %d\n", its );
+  ierr = TSStep(ts,&steps,&ftime); CHKERRA(ierr);
 
-  /* Free data structures */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = MatDestroy(J); CHKERRA(ierr);
+  /* extracts the PC  from ts */
+  ierr = TSPVodeGetPC(ts, &pc); CHKERRA(ierr);
+
+  ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer); CHKERRA(ierr);
+  ierr = TSView(ts,viewer); CHKERRQ(ierr);
+
+  ierr = ViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer); CHKERRA(ierr);
+  ierr = PCView(pc,viewer); CHKERRQ(ierr);
+
+  PetscPrintf(PETSC_COMM_WORLD,"%d Procs, %s Preconditioner, %s\n",
+                size,tsinfo,pcinfo);
+
+  /* free the memories */
   ierr = TSDestroy(ts); CHKERRA(ierr);
+  ierr = VecDestroy(global); CHKERRA(ierr);
+  if (A) {ierr= MatDestroy(A); CHKERRA(ierr);}
+  ierr = PCDestroy(pc); CHKERRA(ierr);
+
   PetscFinalize();
+  return 0;
+}
+
+/* -------------------------------------------------------------------*/
+/* this test problem has initial values (1,1,1).                      */
+int Initial(Vec global, void *ctx)
+{
+  Scalar *localptr;
+  int    i,mybase,myend,ierr,locsize;
+
+  /* determine starting point of each processor */
+  ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(global,&locsize); CHKERRQ(ierr);
+
+  /* Initialize the array */
+  ierr = VecGetArray(global,&localptr); CHKERRQ(ierr);
+  for (i=0; i<locsize; i++) {
+    localptr[i] = 1.0;
+  }
+  
+  if (mybase == 0) localptr[0]=1.0;
+
+  ierr = VecRestoreArray(global,&localptr); CHKERRQ(ierr);
+  return 0;
+}
+
+int Monitor(TS ts, int step, double time,Vec global, void *ctx)
+{
+  VecScatter scatter;
+  IS from, to;
+  int i, n, *idx;
+  Vec tmp_vec;
+  int      ierr;
+  Scalar   *tmp;
+
+  /* Get the size of the vector */
+  ierr = VecGetSize(global, &n); CHKERRQ(ierr);
+
+  /* Set the index sets */
+  idx=(int *) calloc(n,sizeof(int));
+  for(i=0; i<n; i++) idx[i]=i;
+ 
+  /* Create local sequential vectors */
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&tmp_vec); CHKERRQ(ierr);
+
+  /* Create scatter context */
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
+  ierr = VecScatterCreate(global,from,tmp_vec,to,&scatter); CHKERRQ(ierr);
+  ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  CHKERRA(ierr);
+  ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  CHKERRA(ierr);
+
+  ierr = VecGetArray(tmp_vec,&tmp); CHKERRQ(ierr);
+  PetscPrintf(MPI_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
+    time,tmp[0],tmp[1],tmp[2]);
+  ierr = VecRestoreArray(tmp_vec,&tmp);
+  return 0;
+}
+
+int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
+{
+  Scalar *inptr, *outptr;
+  int i, n, ierr;
+
+  IS from, to;
+  int *idx;
+  VecScatter scatter;
+  Vec tmp_in, tmp_out;
+
+  /* Get the length of parallel vector */
+  ierr = VecGetSize(globalin, &n); CHKERRQ(ierr);
+
+  /* Set the index sets */
+  idx=(int *) calloc(n,sizeof(int));
+  for(i=0; i<n; i++) idx[i]=i;
+  
+  /* Create local sequential vectors */
+  ierr = VecCreateSeq(MPI_COMM_SELF,n,&tmp_in); CHKERRQ(ierr);
+  ierr = VecDuplicate(tmp_in, &tmp_out); CHKERRQ(ierr);
+
+  /* Create scatter context */
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
+  ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter); CHKERRQ(ierr);
+  ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  CHKERRA(ierr);
+  ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  CHKERRA(ierr);
+
+  /*Extract income array */ 
+  ierr = VecGetArray(tmp_in,&inptr); CHKERRQ(ierr);
+
+  /* Extract outcome array*/
+  ierr = VecGetArray(tmp_out,&outptr); CHKERRQ(ierr);
+
+  outptr[0] = 2*inptr[0]+inptr[1];
+  outptr[1] = inptr[0]+2*inptr[1]+inptr[2];
+  outptr[2] = inptr[1]+2*inptr[2];
+
+  ierr = VecRestoreArray(globalin,&inptr);
+  ierr = VecRestoreArray(tmp_out,&outptr);
+
+  ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter); CHKERRQ(ierr);
+  ierr = VecScatterBegin(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  CHKERRA(ierr);
+  ierr = VecScatterEnd(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  CHKERRA(ierr);
+
+  /* Destroy idx aand scatter */
+  ierr = ISDestroy(from); CHKERRQ(ierr);
+  ierr = ISDestroy(to); CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
 
   return 0;
 }
-/* ------------------------------------------------------------------ */
-/*           Bratu (Solid Fuel Ignition) Test Problem                 */
-/* ------------------------------------------------------------------ */
 
-/* --------------------  Form initial approximation ----------------- */
-
-int FormInitialGuess(Vec X,AppCtx *user)
+int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
-  int     i, j, row, mx, my, ierr;
-  double  one = 1.0, lambda;
-  double  temp1, temp, hx, hy, hxdhy, hydhx;
-  double  sc;
-  Scalar  *x;
+  Mat A = *AA;
+  Scalar v[3], *tmp;
+  int idx[3], i, ierr;
+ 
+  *str = SAME_NONZERO_PATTERN;
 
-  mx	 = user->mx; 
-  my	 = user->my;
-  lambda = user->param;
+  idx[0]=0; idx[1]=1; idx[2]=2;
+  ierr = VecGetArray(x,&tmp); CHKERRQ(ierr);
 
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
-  sc    = hx*hy;
-  hxdhy = hx/hy;
-  hydhx = hy/hx;
+  i = 0;
+  v[0] = 2.0; v[1] = 1.0; v[2] = 0.0; 
+  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
 
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  temp1 = lambda/(lambda + one);
-  for (j=0; j<my; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
-    for (i=0; i<mx; i++) {
-      row = i + j*mx;  
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        x[row] = 0.0; 
-        continue;
-      }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
-    }
-  }
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  i = 1;
+  v[0] = 1.0; v[1] = 2.0; v[2] = 1.0; 
+  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
+ 
+  i = 2;
+  v[0]= 0.0; v[1] = 1.0; v[2] = 2.0;
+  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(x,&tmp); CHKERRQ(ierr);
+
   return 0;
 }
-/* --------------------  Evaluate Function F(x) --------------------- */
 
-int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
-{
-  AppCtx *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my;
-  double  two = 2.0, one = 1.0, lambda;
-  double  hx, hy, hxdhy, hydhx;
-  Scalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
-
-  mx	 = user->mx; 
-  my	 = user->my;
-  lambda = user->param;
-
-  hx    = one / (double)(mx-1);
-  hy    = one / (double)(my-1);
-  sc    = hx*hy;
-  hxdhy = hx/hy;
-  hydhx = hy/hx;
-
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f); CHKERRQ(ierr);
-  for (j=0; j<my; j++) {
-    for (i=0; i<mx; i++) {
-      row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        f[row] = x[row];
-        continue;
-      }
-      u = x[row];
-      ub = x[row - mx];
-      ul = x[row - 1];
-      ut = x[row + mx];
-      ur = x[row + 1];
-      uxx = (-ur + two*u - ul)*hydhx;
-      uyy = (-ut + two*u - ub)*hxdhy;
-      f[row] = -uxx + -uyy + sc*lambda*exp(u);
-    }
-  }
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
-  return 0; 
-}
-/* --------------------  Evaluate Jacobian F'(x) -------------------- */
-
-int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
-{
-  AppCtx *user = (AppCtx *) ptr;
-  Mat     jac = *B;
-  int     i, j, row, mx, my, col[5], ierr;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
-  double  hx, hy, hxdhy, hydhx;
-
-
-  mx	 = user->mx; 
-  my	 = user->my;
-  lambda = user->param;
-
-  hx    = 1.0 / (double)(mx-1);
-  hy    = 1.0 / (double)(my-1);
-  sc    = hx*hy;
-  hxdhy = hx/hy;
-  hydhx = hy/hx;
-
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-  for (j=0; j<my; j++) {
-    for (i=0; i<mx; i++) {
-      row = i + j*mx;
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERT_VALUES); CHKERRQ(ierr);
-        continue;
-      }
-      v[0] = hxdhy; col[0] = row - mx;
-      v[1] = hydhx; col[1] = row - 1;
-      v[2] = -two*(hydhx + hxdhy) + sc*lambda*exp(x[row]); col[2] = row;
-      v[3] = hydhx; col[3] = row + 1;
-      v[4] = hxdhy; col[4] = row + mx;
-      ierr = MatSetValues(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
-    }
-  }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
-  return 0;
-}
 
 
 
