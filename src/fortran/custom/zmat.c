@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.64 1999/04/04 00:13:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.65 1999/04/05 00:10:43 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
-#include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
 #define matsetvalue_                     MATSETVALUE

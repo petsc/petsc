@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.59 1999/03/04 16:47:41 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.60 1999/04/04 20:09:02 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
-#include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
 #define petscattachdebugger_       PETSCATTACHDEBUGGER

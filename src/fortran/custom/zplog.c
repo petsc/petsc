@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zplog.c,v 1.15 1998/10/05 20:43:09 balay Exp bsmith $";
+static char vcid[] = "$Id: zplog.c,v 1.16 1998/10/19 22:15:08 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
-#include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
 #define plogeventbegin_       PLOGEVENTBEGIN

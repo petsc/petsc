@@ -1,9 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zdraw.c,v 1.25 1998/12/04 23:21:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.26 1999/01/31 16:12:02 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
-#include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
 #define drawaxisdestroy_     DRAWAXISDESTROY

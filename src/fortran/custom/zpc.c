@@ -1,11 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.23 1999/03/02 20:12:16 bsmith Exp balay $";
+static char vcid[] = "$Id: zpc.c,v 1.24 1999/04/05 18:22:51 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
 #include "mg.h"
-#include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
 #define pcregisterdestroy_         PCREGISTERDESTROY
