@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.22 1998/04/30 15:32:25 balay Exp bsmith $ 
+# $Id: buildntdist,v 1.23 1998/04/30 23:13:28 bsmith Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -63,5 +63,5 @@ cd ~/
 
 gzip -f /mcs/tmp/petscnt$version.tar
 /bin/cp /mcs/tmp/petscnt$version.tar.gz ~/
-chmod ug+w ~/petsc$version.tar.gz 
+chmod ug+w ~/petscnt$version.tar.gz 
 /bin/rm -f /mcs/tmp/petscnt$version.tar.gz
