@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 2001/03/12 20:49:09 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.14 2001/03/12 20:55:55 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -68,7 +68,7 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Matlab location
 #
-CMEX            = /software/linux/com/packages/matlab-5.2/bin/mex
+CMEX            = /software/linux/com/packages/matlab-r12/bin/mex
 MCC             = gcc
 MATLABCOMMAND   = matlab
 PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
@@ -79,7 +79,7 @@ PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 # and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
 # in matrix.h (sigh)
 #
-MATLAB_INCLUDE    = -I/software/solaris-2/com/packages/matlab-r12/extern/include
+MATLAB_INCLUDE    = -I/software/linux/com/packages/matlab-r12/extern/include
 MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
 MATLAB_LIB        = ${CLINKER_SLFLAG}/software/linux/com/packages/matlab-r12/extern/lib/lnx86 -L/software/linux/com/packages/matlab-r12/extern/lib/lnx86 -leng -lmx -lmat -lmi -lut
 PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
