@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.19 1998/06/11 19:55:34 bsmith Exp balay $";
+static char vcid[] = "$Id: reg.c,v 1.20 1998/06/14 15:40:08 balay Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -10,8 +10,8 @@ static char vcid[] = "$Id: reg.c,v 1.19 1998/06/11 19:55:34 bsmith Exp balay $";
 #include "sys.h"
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterGetPathAndFunction"
-int DLRegisterGetPathAndFunction(char *name,char **path,char **function)
+#define __FUNC__ "FListGetPathAndFunction"
+int FListGetPathAndFunction(char *name,char **path,char **function)
 {
   char work[256],*lfunction;
 
@@ -121,61 +121,27 @@ int PetscFinalize_DynamicLibraries(void)
 #endif
 
 /* ------------------------------------------------------------------------------*/
-typedef struct _FuncList *FuncList;
-struct _FuncList {
-  int      (*routine)(void *); /* the routine */
-  char     *path;              /* path of link library containing routine */
-  char     *name;              /* string to identify routine */
-  char     *rname;             /* routine name in dynamic library */
-  FuncList next;               /* next pointer */
-};
-
-struct _DLList {
-    FuncList head, tail;   /* head and tail of this DLList */
-    char     *regname;       /* registration type name */
-    DLList   next;           /* next DLList */
+struct _FList {
+  int    (*routine)(void *); /* the routine */
+  char   *path;              /* path of link library containing routine */
+  char   *name;              /* string to identify routine */
+  char   *rname;             /* routine name in dynamic library */
+  FList next;               /* next pointer */
+  FList next_list;          /* used to maintain list of all lists for freeing */
 };
 
 /*
-     Keep a linked list of DLLists so that we can destroy all the left-over ones.
+     Keep a linked list of FLists so that we can destroy all the left-over ones.
 */
-static DLList dlallhead = 0;
+static FList   dlallhead = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "DLRegisterCreate"
-/*
-  DLRegisterCreate - Creates a name registry.
-
-.seealso: DLRegister(), DLRegisterDestroy()
-*/
-int DLRegisterCreate(DLList *fl )
-{
-  PetscFunctionBegin;
-  *fl                = PetscNew(struct _DLList);CHKPTRQ(*fl);
-  (*fl)->head        = 0;
-  (*fl)->tail        = 0;
-  
-  /* 
-      Add list to front of nasty-global lists of lists
-  */
-  if (!dlallhead) {
-    dlallhead   = *fl;
-    (*fl)->next = 0;
-  } else {
-    DLList tmp  = dlallhead;
-    
-    dlallhead   = *fl;
-    (*fl)->next = tmp;
-  }
-  PetscFunctionReturn(0);
-}
 
 /*
    DLRegister - Given a routine and a string id, saves that routine in the
    specified registry.
 
    Synopsis:
-   int DLRegister(DLList *fl, char *name, char *rname,int (*fnc)(void *))
+   int FListAdd(FList *fl, char *name, char *rname,int (*fnc)(void *))
 
    Input Parameters:
 +  fl    - pointer registry
@@ -187,62 +153,96 @@ int DLRegisterCreate(DLList *fl )
    Users who wish to register new methods for use by a particular PETSc
    component (e.g., SNES) should generally call the registration routine
    for that particular component (e.g., SNESRegister()) instead of
-   calling DLRegister() directly.
+   calling FListAdd() directly.
 
-.seealso: DLRegisterCreate(), DLRegisterDestroy(), SNESRegister(), KSPRegister(),
+.seealso: FListDestroy(), SNESRegister(), KSPRegister(),
           PCRegister(), TSRegister()
 */
 
 #undef __FUNC__  
 #define __FUNC__ "DLRegister_Private"
-int DLRegister_Private( DLList *fl, char *name, char *rname,int (*fnc)(void *))
+int FListAdd_Private( FList *fl, char *name, char *rname,int (*fnc)(void *))
 {
-  FuncList entry;
+  FList   entry,ne;
   int      ierr;
   char     *fpath,*fname;
 
   PetscFunctionBegin;
-  entry          = (FuncList) PetscMalloc(sizeof(struct _FuncList));CHKPTRQ(entry);
+  entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
   entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
   PetscStrcpy( entry->name, name );
 
-  ierr = DLRegisterGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+  ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
 
   entry->path    = fpath;
   entry->rname   = fname;
   entry->routine = fnc;
+  entry->next    = 0;
 
   if (!*fl) {
-    ierr = DLRegisterCreate(fl);CHKERRQ(ierr);
-  }
+    *fl = entry;
 
-  entry->next = 0;
-  if ((*fl)->tail) (*fl)->tail->next = entry;
-  else             (*fl)->head       = entry;
-  (*fl)->tail = entry;
+    /* add this new list to list of all lists */
+    if (!dlallhead) {
+      dlallhead        = *fl;
+      (*fl)->next_list = 0;
+    } else {
+      ne               = dlallhead;
+      dlallhead        = *fl;
+      (*fl)->next_list = ne;
+    }
+  } else {
+    /* add entry to the end of the list */
+    ne = *fl;
+    while (ne->next) {
+      ne = ne->next;
+    }
+    ne->next = entry;
+  }
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterDestroy"
+#define __FUNC__ "FListDestroy"
 /*
-    DLRegisterDestroy - Destroys a list of registered routines.
+    FListDestroy - Destroys a list of registered routines.
 
     Input Parameter:
 .   fl  - pointer to list
 
-.seealso: DLRegisterCreate(), DLRegister()
+.seealso: FListAdd()
 */
-int DLRegisterDestroy(DLList fl)
+int FListDestroy(FList fl)
 {
-  FuncList entry, next;
-  DLList   tmp = dlallhead;
+  FList   next,entry,tmp = dlallhead;
 
   PetscFunctionBegin;
   if (!fl) PetscFunctionReturn(0);
 
-  entry = fl->head;
+  if (!dlallhead) {
+    SETERRQ(1,1,"Internal PETSc error, function registration corrupted");
+  }
+
+  /*
+       Remove this entry from the master DL list 
+  */
+  if (dlallhead == fl) {
+    if (dlallhead->next_list) {
+      dlallhead = dlallhead->next_list;
+    } else {
+      dlallhead = 0;
+    }
+  } else {
+    while (tmp->next_list != fl) {
+      tmp = tmp->next_list;
+      if (!tmp->next_list) SETERRQ(1,1,"Internal PETSc error, function registration corrupted");
+    }
+    tmp->next_list = tmp->next_list->next_list;
+  }
+
+  /* free this list */
+  entry = fl;
   while (entry) {
     next = entry->next;
     if (entry->path) PetscFree(entry->path);
@@ -252,38 +252,21 @@ int DLRegisterDestroy(DLList fl)
     entry = next;
   }
 
-  /*
-       Remove this entry from the master DL list 
-  */
-  if (dlallhead == fl) {
-    if (dlallhead->next) {
-      dlallhead = dlallhead->next;
-    } else {
-      dlallhead = 0;
-    }
-  } else {
-    while (tmp->next != fl) {
-      tmp = tmp->next;
-      if (!tmp->next) SETERRQ(1,1,"Internal PETSc error, function registration corrupted");
-    }
-    tmp->next = tmp->next->next;
-  }
  
-  PetscFree( fl );
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterDestroyAll"
-int DLRegisterDestroyAll(void)
+#define __FUNC__ "FListDestroyAll"
+int FListDestroyAll(void)
 {
-  DLList tmp2,tmp1 = dlallhead;
+  FList tmp2,tmp1 = dlallhead;
   int    ierr;
 
   PetscFunctionBegin;
   while (tmp1) {
-    tmp2 = tmp1->next;
-    ierr = DLRegisterDestroy(tmp1);CHKERRQ(ierr);
+    tmp2 = tmp1->next_list;
+    ierr = FListDestroy(tmp1);CHKERRQ(ierr);
     tmp1 = tmp2;
   }
   dlallhead = 0;
@@ -291,9 +274,9 @@ int DLRegisterDestroyAll(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterFind"
+#define __FUNC__ "FListFind"
 /*
-    DLRegisterFind - Given a name, finds the matching routine.
+    FListFind - Given a name, finds the matching routine.
 
     Input Parameters:
 +   comm - processors looking for routine
@@ -304,19 +287,19 @@ int DLRegisterDestroyAll(void)
 .   r - the routine
 
     Notes:
-    The routine's id or name MUST have been registered with the DLList via
-    DLRegister() before DLRegisterFind() can be called.
+    The routine's id or name MUST have been registered with the FList via
+    FListAdd() before FListFind() can be called.
 
-.seealso: DLRegister()
+.seealso: FListAdd()
 */
-int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
+int FListFind(MPI_Comm comm,FList fl,char *name, int (**r)(void *))
 {
-  FuncList      entry = fl->head;
+  FList        entry = fl;
   char          *function, *path;
   int           ierr;
  
   PetscFunctionBegin;
-  ierr = DLRegisterGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
+  ierr = FListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
 
   /*
         If path then append it to search libraries
@@ -363,7 +346,7 @@ int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
   ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
   if (path) PetscFree(path);
   if (*r) {
-    ierr = DLRegister(&fl,name,name,r); CHKERRQ(ierr);
+    ierr = FListAdd(&fl,name,name,r); CHKERRQ(ierr);
     PetscFree(function);
     PetscFunctionReturn(0);
   }
@@ -383,9 +366,9 @@ int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DLRegisterPrintTypes"
+#define __FUNC__ "FListPrintTypes"
 /*
-   DLRegisterPrintTypes - Prints the methods available.
+   FListPrintTypes - Prints the methods available.
 
    Collective over MPI_Comm
 
@@ -396,11 +379,10 @@ int DLRegisterFind(MPI_Comm comm,DLList fl,char *name, int (**r)(void *))
 .  name   - option string
 -  list   - list of types
 
-.seealso: DLRegister()
+.seealso: FListAdd()
 */
-int DLRegisterPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
+int FListPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,FList list)
 {
-  FuncList entry;
   int      count = 0;
   char     p[64];
 
@@ -409,10 +391,9 @@ int DLRegisterPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList l
   if (prefix) PetscStrcat(p,prefix);
   PetscPrintf(comm,"  %s%s (one of)",p,name);
 
-  entry = list->head;
-  while (entry) {
-    PetscFPrintf(comm,fd," %s",entry->name);
-    entry = entry->next;
+  while (list) {
+    PetscFPrintf(comm,fd," %s",list->name);
+    list = list->next;
     count++;
     if (count == 8) PetscFPrintf(comm,fd,"\n     ");
   }
@@ -420,6 +401,39 @@ int DLRegisterPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList l
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "FListDuplicate"
+/*
+    FListDuplicate - Creates a new list from a give object list.
+
+    Input Parameters:
+.   fl   - pointer to list
+
+    Output Parameters:
+.   nl - the new list (should point to 0 to start, otherwise appends)
+
+
+*/
+int FListDuplicate(FList fl, FList *nl)
+{
+  int  ierr;
+  char path[1024];
+
+  PetscFunctionBegin;
+  while (fl) {
+    /* this is silly, rebuild the complete pathname */
+    if (fl->path) {
+      PetscStrcpy(path,fl->path);
+      PetscStrcat(path,":");
+      PetscStrcat(path,fl->name);
+    } else {
+      PetscStrcpy(path,fl->name);
+    }       
+    ierr = FListAdd(nl,path,fl->rname,fl->routine); CHKERRQ(ierr);
+    fl = fl->next;
+  }
+  PetscFunctionReturn(0);
+}
 
 
 
