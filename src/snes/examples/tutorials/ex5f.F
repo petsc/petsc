@@ -1,5 +1,5 @@
 
-C "$Id: ex6f.F,v 1.4 1996/08/27 18:29:38 curfman Exp curfman $";
+C "$Id: ex6f.F,v 1.5 1996/08/29 15:56:03 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -393,9 +393,9 @@ C  Declarations for use with local arrays
       hydhx  = hy/hx
 
 C  Scatter ghost points to local vector, using the 2-step process
-C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
-C  Computations can be done while messages are in transition,
-C  by placing code between these two statements.
+C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+C  By placing code between these two statements, computations can
+C  be done while messages are in transition.
 
       call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
       call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
