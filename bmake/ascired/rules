@@ -5,5 +5,5 @@ libadic: ${LIBNAME}(${OBJSADIC})
 libf: ${LIBNAME}(${OBJSF})
 
 #############
-shared:
+shared_arch:
 oshared:

@@ -6,4 +6,4 @@ libf: ${OBJSF}
 	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
 
 #######
- shared:
+shared_arch:

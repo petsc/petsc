@@ -11,31 +11,7 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 ##############
 SLSUFFIX = sl
 
-shared: chkopts_basic
-	-@echo making shared libraries in ${INSTALL_LIB_DIR} ;\
-	cd ${INSTALL_LIB_DIR}; \
-	${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.a ]; then \
-	    flag=""; \
-	    if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-	    if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${AR} x ../$$LIBNAME.a ;\
-	      ${LD} -b  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	      ${RM} -f * ; \
-	    fi; \
-	  fi; \
-	done ;\
-	cd ../ ; \
-	${RM} -rf tmp 
+shared_arch: shared_hpux
 
 #
 #  Generates a shared library from any .a library; not just the PETSc ones

@@ -10,7 +10,7 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	@-true
 
 #########
-shared:
+shared_arch:
 
 oshared:
 
