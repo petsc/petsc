@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.2 1997/11/25 21:17:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.3 1997/11/28 16:18:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -140,7 +140,20 @@ int PetscSharedMemorySetSize(int s)
 }
 
 #include "pinclude/petscfix.h"
+
+/*
+   The following is to force k_sigset_t to be defined!
+*/
+#if defined(__cplusplus)
+#define _NO_POSIX 
+#define _NO_XOPEN4
+#endif
 #include <sys/types.h>
+#if defined(__cplusplus)
+#undef _NO_POSIX 
+#undef _NO_XOPEN4
+#endif
+
 #include <ulocks.h>
 
 #undef __FUNC__  
