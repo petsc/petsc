@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.71 1995/11/28 19:53:58 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.72 1995/12/05 05:14:54 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -109,7 +109,8 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 
 #include "viewer.h"
 #include "options.h"
-#include "ptime.h"
+
+extern double PetscGetTime();
 
 extern int PetscInitialize(int*,char***,char*,char*,char*);
 extern int PetscFinalize();

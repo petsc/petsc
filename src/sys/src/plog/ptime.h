@@ -1,4 +1,8 @@
-/* $Id: ptime.h,v 1.11 1995/12/05 05:20:34 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.12 1995/12/05 05:24:04 bsmith Exp bsmith $ */
+/*
+     Low cost access to system time. This, in general, should not
+  be included in user programs.
+*/
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
@@ -34,7 +38,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
     machine dependent versions
 */
 
-/*M
+/*
    PetscTime - Returns the current time of day in seconds.  
 
    Output Parameter:
@@ -59,12 +63,12 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 .seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscTimeElapsed()
 
 .keywords:  Petsc, time
-M*/
+*/
 #define PetscTime(v)         {struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
 
-/*M
+/*
    PetscTimeSubtract - Subtracts the current time of day (in seconds) from
    the value v.  
 
@@ -86,12 +90,12 @@ M*/
 .seealso:  PetscTime(), PetscTimeAdd() PetscTimeElapsed()
 
 .keywords:  Petsc, time, subtract
-M*/
+*/
 
 #define PetscTimeSubtract(v) {struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)-=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
-/*M
+/*
    PetscTimeAdd - Adds the current time of day (in seconds) to the value v.  
 
    Input Parameter:
@@ -112,38 +116,10 @@ M*/
 .seealso:  PetscTime(), PetscTimeSubtract(), PetscTimeElapsed() 
 
 .keywords:  Petsc, time, add
-M*/
+*/
 #define PetscTimeAdd(v)      {struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)+=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
-
-/*M
-   PetscTimeElapsed - Returns the time from the call to PetscTime().  
-
-   Output Parameter:
-.  v - time counter
-
-   Synopsis:
-   PetscTimeElapsed(double v)
-
-   Usage: 
-     double v;
-     PetscTime(v);
-     ... perform some calculation ..
-     PetscTimeElapsed(v); 
-     printf("Time for operation %g\n",v);
-
-   Notes:
-   Since the PETSc libraries incorporate timing of phases and operations, 
-   PetscTimeElapsed() is intended only for timing of application codes.  
-   The options database commands -log, -log_summary, and -log_all activate
-   PETSc library timing.  See the users manual for further details.
-
-.seealso:  PetscTimeSubtract(), PetscTimeAdd(), PetscTim()
-
-.keywords:  Petsc, time
-M*/
-#define PetscTimeElapsed(v)  {PetscTimeSubtract(v); v = -(v); }
 
 #endif
 
