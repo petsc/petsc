@@ -14,7 +14,8 @@ class Base(logging.Logger):
     self.argDB = self.createArgDB(argDB)
     self.log   = self.createLog(None)
     # SHOULD BE JUST self.setupArgDB(self.argDB, clArgs) here, but this way preserves logging.Logger for now
-    logging.Logger.__init__(self, self.argDB, self.log)
+    # needed to remove this, otherwise ignores installer command line arguments
+    #    logging.Logger.__init__(self, self.argDB, self.log)
     self.setupArgDB(self.argDB, clArgs)
 
     self.getRoot()
