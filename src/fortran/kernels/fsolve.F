@@ -1,5 +1,5 @@
 C
-C  "$Id: fsolve.F,v 1.3 1997/09/18 16:38:44 balay Exp curfman $";
+C  "$Id: fsolve.F,v 1.4 1997/10/20 02:30:33 curfman Exp bsmith $";
 C
 C    Fortran kernel for sparse triangular solve in the AIJ matrix format
 C
@@ -11,33 +11,31 @@ C
       Scalar           x(0:*),aa(0:*),b(0:*)
       integer          n, ai(0:*),aj(0:*),adiag(0:*)
 
-      integer          i,j,ai_i,nz,adiag_i
+      integer          i,j,ai_i,nz,adiag_i,jstart,jend
       Scalar           sum
 C     
 C     Forward Solve
 C
       x(0) = b(0)
       do 20 i=1,n-1
-         ai_i = ai(i)
-         nz   = adiag(i) - ai_i
-         sum  = b(i)
-         do 30 j=1,nz
-            sum  = sum -  aa(ai_i) * x(aj(ai_i))
-            ai_i = ai_i + 1
+         jstart = ai(i)
+         jend   = adiag(i) - 1
+         sum    = b(i)
+         do 30 j=jstart,jend
+            sum  = sum -  aa(j) * x(aj(j))
  30      continue
-      x(i) = sum
+         x(i) = sum
  20   continue
       
 C
 C     Backward solve the upper triangular
 C
       do 40 i=n-1,0,-1
-         adiag_i = adiag(i)
-         nz      = ai(i+1) - adiag_i - 1
+         jstart  = adiag(i) + 1
+         jend    = ai(i+1) - 1
          sum     = x(i)
-         do 50 j=1,nz
-            adiag_i = adiag_i + 1
-            sum = sum - aa(adiag_i)* x(aj(adiag_i)) 
+         do 50 j=jstart,jend
+            sum = sum - aa(j)* x(aj(j)) 
  50      continue
          x(i)    = sum * aa(adiag(i))
  40   continue
