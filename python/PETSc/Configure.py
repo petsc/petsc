@@ -238,13 +238,14 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('FOPTFLAGS',  self.framework.argDB['FOPTFLAGS'])
     return
 
-  def checkF77CompilerOption(self, option):
-    self.pushLanguage('F77')
+  def checkFortranCompilerOption(self, option, lang = 'F77'):
+    self.pushLanguage(lang)
+    self.sourceExtension = '.F'
     oldFlags = self.framework.argDB['FFLAGS']
     success  = 0
 
     (output, returnCode) = self.outputCompile('', '')
-    if returnCode: raise RuntimeError('Could not compile anything with F77 compiler:\n'+output)
+    if returnCode: raise RuntimeError('Could not compile anything with '+lang+' compiler:\n'+output)
 
     self.framework.argDB['FFLAGS'] = option
     (newOutput, returnCode) = self.outputCompile('', '')
@@ -259,13 +260,42 @@ class Configure(config.base.Configure):
     '''Determine the PIC option for the Fortran compiler'''
     # We use the framework in order to remove the PETSC_ namespace
     option = ''
-    if self.checkF77CompilerOption('-PIC'):
+    if self.checkFortranCompilerOption('-PIC'):
       option = '-PIC'
-    elif self.checkF77CompilerOption('-fPIC'):
+    elif self.checkFortranCompilerOption('-fPIC'):
       option = '-fPIC'
-    elif self.checkF77CompilerOption('-KPIC'):
+    elif self.checkFortranCompilerOption('-KPIC'):
       option = '-KPIC'
     self.framework.addSubstitution('FC_SHARED_OPT', option)
+    return
+
+  def configureFortranCPP(self):
+    '''Determine if Fortran handles CPP properly'''
+    # IBM xlF chokes on this
+    if not self.checkFortranCompilerOption('-DPTesting'):
+      if self.framework.argDB['CC'] == 'gcc': traditional = '-traditional-cpp'
+      else:                         traditional = ''
+      self.framework.addSubstitution('F_to_o_TARGET', """
+.F.f:
+	-${RM} __$*.f __$*.c
+	-${CP} $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E  """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
+	-${RM} __$*.c
+
+.F.o:
+	-${RM} __$*.f __$*.c
+	-${CP} $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E  """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
+	-${RM} __$*.f __$*.c
+ 
+.F.a:
+	-${RM} __$*.f __$*.c
+	-${CP} $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E """+traditional+""" __$*.c | grep -v '^ *#' > __$*.f
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
+	-${AR} cr ${LIBNAME} $*.o
+	-${RM} __$*.f __$*.c""")
     return
 
   def configureFortranStubs(self):
@@ -726,7 +756,8 @@ acfindx:
     self.executeTest(self.configureCompilerFlags)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.configureFortranPIC)
-    self.executeTest(self.configureFortranStubs)
+      self.executeTest(self.configureFortranCPP)
+      self.executeTest(self.configureFortranStubs)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)

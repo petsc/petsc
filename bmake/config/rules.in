@@ -1,6 +1,8 @@
 @LIB_C_TARGET@
 @LIB_F_TARGET@
 
+@F_to_o_TARGET@
+
 #############
 
 shared_arch: @SHARED_TARGET@
