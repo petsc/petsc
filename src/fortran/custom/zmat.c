@@ -1,9 +1,10 @@
-/*$Id: zmat.c,v 1.90 2001/01/15 21:49:49 bsmith Exp balay $*/
+/*$Id: zmat.c,v 1.91 2001/01/16 18:22:02 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matgetrowij_                     MATGETROWIJ
 #define matsetfromoptions_               MATSETFROMOPTIONS
 #define matcreateseqaijwitharrays_       MATCREATESEQAIJWITHARRAYS
 #define matpartitioningdestroy_          MATPARTITIONINGDESTROY
@@ -51,6 +52,7 @@
 #define matpartitioningapply_            MATPARTITIONINGAPPLY
 #define matcreatempiadj_                 MATCREATEMPIADJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matgetrowij_                     matgetrowij
 #define matcreateseqaijwitharrays_       matcreateseqaijwitharrays
 #define matpartitioningdestroy_          matpartitioningdestroy
 #define matpartitioningsettype_          matpartitioningsettype
@@ -100,6 +102,15 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL matgetrowij_(Mat *B,int *shift,PetscTruth *sym,int *n,int *ia,long *iia,int *ja,long *jja,
+                                PetscTruth *done,int *ierr)
+{
+  int *IA,*JA;
+  *ierr = MatGetRowIJ(*B,*shift,*sym,n,&IA,&JA,done);if (*ierr) return;
+  *iia  = PetscIntAddressToFortran(ia,IA);
+  *jja  = PetscIntAddressToFortran(ja,JA);
+}
 
 void PETSC_STDCALL matsetfromoptions_(Mat *B,int *ierr)
 {
