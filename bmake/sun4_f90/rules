@@ -1,4 +1,4 @@
-# $Id: base,v 1.19 1998/12/04 23:22:05 bsmith Exp balay $ 
+# $Id: base,v 1.20 1998/12/04 23:54:46 balay Exp balay $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -20,7 +20,7 @@ C_SYS_LIB        = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
 	           /home/petsc/lib/sun4/libm.a
 # change /home/petsc/lib/sun4/libm.a to /usr/lang/SC1.0.1/libm.a
 # ---------------------------- BOPT=g options ----------------------------
-G_COPTFLAGS      = -g -Wall -Wshadow
+G_COPTFLAGS      = -g -Wall -Wshadow -fomit-frame-pointer
 G_FOPTFLAGS      = -g
 # ----------------------------- BOPT=O options -----------------------------
 O_COPTFLAGS      = -O -Wall -Wshadow -fomit-frame-pointer
@@ -36,16 +36,16 @@ CXX_SYS_LIB      = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
 	           /home/petsc/lib/sun4/libm.a
 # ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   = -g 
+GCXX_COPTFLAGS   = -g -Wall -Wshadow -fomit-frame-pointer 
 GCXX_FOPTFLAGS   = -g
 # ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O
+OCXX_COPTFLAGS   = -O -Wall -Wshadow -fomit-frame-pointer
 OCXX_FOPTFLAGS   = -O 
 # -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  = -g 
+GCOMP_COPTFLAGS  = -g -Wall -Wshadow -fomit-frame-pointer 
 GCOMP_FOPTFLAGS  = -g
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O
+OCOMP_COPTFLAGS  = -O -Wall -Wshadow -fomit-frame-pointer
 OCOMP_FOPTFLAGS  = -O
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
