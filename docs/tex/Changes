@@ -59,6 +59,8 @@ passed in the options database with  -anything
   Added PetscEmacsclientErrorHandler() -on_error_emacs [machinename] to allow emacs to jump to error; can be used
 with any other error handler.
 
+  So long as you have defined the macro __FUNC__ "main" before your main C/C++ subroutine you can
+use SETERRQ() and CHKERRQ() instead of SETERRA(), CHKERRA().
  
   Viewers
 
