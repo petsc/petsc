@@ -255,7 +255,7 @@ class SIDLMake(Make):
     import graph
     framework = Make.configure(self, builder)
     if framework is None:
-      for depMake, depSidlFiles in graph.DirectedGraph.topologicalSort(self.dependencyGraph):
+      for depMake, depSidlFiles in graph.DirectedGraph.topologicalSort(self.dependencyGraph, outEdges = 0):
         if depMake is self: continue
         self.logWrite('Loading configure for '+depMake.getRoot())
         framework = depMake.loadConfigure()

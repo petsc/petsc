@@ -72,6 +72,8 @@ class Linker(config.compile.processor.Processor):
 
   def getExtraArguments(self):
     if not hasattr(self, '_extraArguments'):
+      if not 'LIBS' in self.argDB:
+        return ''
       return self.argDB['LIBS']
     return self._extraArguments
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')

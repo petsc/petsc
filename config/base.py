@@ -223,6 +223,16 @@ class Configure(script.Script):
   def getLinkerFlags(self):
     return self.framework.getLinkerObject(self.language[-1]).getFlags()
 
+  def getSharedLinker(self):
+    linker            = self.framework.getSharedLinkerObject(self.language[-1])
+    linker.checkSetup()
+    self.linkerSource = 'conftest'+linker.sourceExtension
+    self.linkerObj    = 'conftest'
+    return self.framework.argDB[linker.name]
+
+  def getSharedLinkerFlags(self):
+    return self.framework.getSharedLinkerObject(self.language[-1]).getFlags()
+
   def getPreprocessorCmd(self):
     self.getCompiler()
     preprocessor = self.framework.getPreprocessorObject(self.language[-1])
@@ -238,6 +248,12 @@ class Configure(script.Script):
   def getLinkerCmd(self):
     self.getLinker()
     linker = self.framework.getLinkerObject(self.language[-1])
+    linker.checkSetup()
+    return linker.getCommand(self.linkerSource, self.linkerObj)
+
+  def getSharedLinkerCmd(self):
+    self.getSharedLinker()
+    linker = self.framework.getSharedLinkerObject(self.language[-1])
     linker.checkSetup()
     return linker.getCommand(self.linkerSource, self.linkerObj)
 
@@ -381,7 +397,7 @@ class Configure(script.Script):
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
 
-  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None):
+  def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
     import sys
 
     (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
@@ -399,15 +415,19 @@ class Configure(script.Script):
         self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return
 
-    (out, err, ret) = Configure.executeShellCommand(self.getLinkerCmd(), checkCommand = report, log = self.framework.log)
+    if shared:
+      cmd = self.getSharedLinkerCmd()
+    else:
+      cmd = self.getLinkerCmd()
+    (out, err, ret) = Configure.executeShellCommand(cmd, checkCommand = report, log = self.framework.log)
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (out+err, ret)
 
-  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
-    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd)
+  def checkLink(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
+    (output, returnCode) = self.outputLink(includes, body, cleanup, codeBegin, codeEnd, shared)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 

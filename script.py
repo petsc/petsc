@@ -272,6 +272,7 @@ class LanguageProcessor(args.ArgumentProcessor):
     self.preprocessorObject = {}
     self.compilerObject     = {}
     self.linkerObject       = {}
+    self.sharedLinkerObject = {}
     self.compilers          = compilers
     self.libraries          = libraries
     self.versionControl     = versionControl
@@ -375,3 +376,16 @@ class LanguageProcessor(args.ArgumentProcessor):
     if not self.versionControl is None:
       self.linkerObject[language].versionControl  = self.versionControl
     return self.linkerObject[language]
+
+  def getSharedLinkerObject(self, language):
+    language = self.normalizeLanguage(language)
+    if not language in self.sharedLinkerObject:
+      self.sharedLinkerObject[language] = self.getLanguageModule(language).Linker(self.argDB)
+      self.sharedLinkerObject[language].setup()
+    if not self.compilers is None:
+      self.sharedLinkerObject[language].configCompilers = self.compilers
+    if not self.libraries is None:
+      self.sharedLinkerObject[language].configLibraries = self.libraries
+    if not self.versionControl is None:
+      self.sharedLinkerObject[language].versionControl  = self.versionControl
+    return self.sharedLinkerObject[language]

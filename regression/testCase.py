@@ -34,25 +34,26 @@ class MPITest (unittest.TestCase):
 class PETScTest (MPITest):
   petsc = None
 
-  def setUpPETSc():
+  def setUpPETSc(baseClass):
     '''Initialize PETSc'''
     if PETScTest.petsc is None:
-      import SIDL.Loader
-      import SIDL.ProjectState
+      import ASE.Loader
+      import PETSc.Base
       import atexit
 
-      PETScTest.petsc = SIDL.ProjectState.ProjectState(SIDL.Loader.createClass('PETSc.State'))
+      PETScTest.petsc = PETSc.Base.Base(ASE.Loader.Loader.createClass(baseClass))
       PETScTest.petsc.Initialize()
       atexit.register(PETScTest.petsc.Finalize)
     return
   setUpPETSc = staticmethod(setUpPETSc)
 
-  def setUp(self):
+  def setUp(self, baseClass = 'PETSc.Base', mpiBaseClass = 'MPIB.Default.Base'):
     '''Initialize PETSc'''
-    MPITest.setUp(self)
-    PETScTest.setUpPETSc()
+    MPITest.setUp(self, mpiBaseClass)
+    PETScTest.setUpPETSc(baseClass)
     return
 
   def tearDown(self):
     '''Cannot finalize PETSc since it can only be initialized once'''
+    MPITest.tearDown(self)
     return

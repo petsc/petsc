@@ -75,7 +75,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.createChildren()
     # Perhaps these initializations should just be local temporary arguments
     self.argDB['CPPFLAGS']   = ''
-    self.argDB['LIBS']       = ''
     if not 'LDFLAGS' in self.argDB:
       self.argDB['LDFLAGS']  = ''
     return

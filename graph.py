@@ -171,12 +171,12 @@ class DirectedGraph(object):
         yield vertex
     return
 
-  def topologicalSort(graph, start = None):
+  def topologicalSort(graph, start = None, outEdges = 1):
     '''Reorder the vertices using topological sort'''
     if start is None:
-      vertices = [vertex for vertex in DirectedGraph.depthFirstSearch(graph, returnFinished = 1)]
+      vertices = [vertex for vertex in DirectedGraph.depthFirstSearch(graph, returnFinished = 1, outEdges = outEdges)]
     else:
-      vertices = [vertex for vertex in DirectedGraph.depthFirstVisit(graph, start, returnFinished = 1)]
+      vertices = [vertex for vertex in DirectedGraph.depthFirstVisit(graph, start, returnFinished = 1, outEdges = outEdges)]
     vertices.reverse()
     for vertex in vertices:
       yield vertex

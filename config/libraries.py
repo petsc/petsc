@@ -83,7 +83,11 @@ class Configure(config.base.Configure):
     '''Checks that the library "libName" contains "funcName", and if it does adds "libName" to $LIBS and defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
-    self.framework.log.write('Checking for function '+funcName+' in library '+str(libName)+'\n')
+    if not isinstance(libName, list): libName = [libName]
+    if reduce(lambda x,y: x and y, [self.haveLib(lib) for lib in libName], 1):
+      self.framework.logPrint('Already located libraries '+str(libName))
+      return
+    self.framework.logPrint('Checking for function '+funcName+' in library '+str(libName))
     # Handle Fortran mangling
     if fortranMangle:
       funcName = self.compilers.mangleFortranFunction(funcName)
@@ -111,7 +115,6 @@ class Configure(config.base.Configure):
       if not isinstance(libDir, list): libDir = [libDir]
       for dir in libDir:
         self.framework.argDB['LIBS'] += ' -L'+dir
-    if not isinstance(libName, list): libName = [libName]
     for lib in libName:
       self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
     self.framework.argDB['LIBS'] += ' '+otherLibs
@@ -120,6 +123,7 @@ class Configure(config.base.Configure):
       found = 1
       self.framework.argDB['LIBS'] = oldLibs
       for lib in libName:
+        if self.haveLib(lib): continue
         self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
         strippedlib = os.path.splitext(os.path.basename(lib))[0]
         if strippedlib: self.addDefine(self.getDefineName(strippedlib), 1)
@@ -187,7 +191,7 @@ int checkInit(void) {
     if not checkLink(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd):
       if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
       self.framework.argDB['LDFLAGS'] = oldFlags
-      self.framework.log.write('Could not complete shared library check\n')
+      self.framework.logPrint('Could not complete shared library check')
       return 0
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     os.rename(self.linkerObj, 'lib2.so')
@@ -251,7 +255,7 @@ int checkInit(void) {
     if os.path.isfile('lib1.so'): os.remove('lib1.so')
     if os.path.isfile('lib2.so'): os.remove('lib2.so')
     if not isShared:
-      self.framework.log.write('Library was not shared\n')
+      self.framework.logPrint('Library was not shared')
     return isShared
 
   def checkMath(self):

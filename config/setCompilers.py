@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-cc=<prog>',  nargs.Arg(None, None, 'Specify the C compiler'))
     help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
-    help.addArgument('Compilers', '-with-ld=<prog>',  nargs.Arg(None, None, 'Specify the linker'))
+    help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
 
     help.addArgument('Compilers', '-with-gnu-compilers=<bool>',             nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
     help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
@@ -82,10 +82,7 @@ class Configure(config.base.Configure):
     if not self.checkCompile():
       raise RuntimeError('Cannot compile '+language+' with '+self.getCompiler()+'.')
     if not self.checkLink():
-      if hasattr(self, 'linker'):
-        raise RuntimeError('Cannot link '+language+' with '+self.getLinker()+'.')
-      else:
-        raise RuntimeError('Cannot compile '+language+' with '+self.getCompiler()+'.')
+      raise RuntimeError('Cannot compile/link '+language+' with '+self.getCompiler()+'.')
     if self.framework.argDB['can-execute']:
       if not self.checkRun():
         raise RuntimeError('Cannot run executables created with '+language+'.')
@@ -158,6 +155,8 @@ class Configure(config.base.Configure):
 
   def checkCCompiler(self):
     '''Locate a functional C compiler'''
+    if 'with-cc' in self.framework.argDB and self.framework.argDB['with-cc'] == '0':
+      raise RuntimeError('A functional C compiler is necessary for configure')
     for compiler in self.generateCCompilerGuesses():
       try:
         if self.getExecutable(compiler, resultName = 'CC'):
@@ -177,7 +176,6 @@ class Configure(config.base.Configure):
 
         if os.path.basename(self.framework.argDB['CC']) == 'mpicc':
           self.framework.log.write(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
-        self.popLanguage()
         del self.framework.argDB['CC']
     if not 'CC' in self.framework.argDB:
       raise RuntimeError('Could not locate a functional C compiler')
@@ -224,12 +222,9 @@ class Configure(config.base.Configure):
       raise RuntimeError('Keyword --with-CC is WRONG, use --with-cxx')
     
     if self.framework.argDB.has_key('with-cxx'):
-      if self.framework.argDB['with-cxx'] == '0':
-        return
-      else:
-        if self.framework.argDB['with-cxx'] in ['icl','cl','bcc32']: self.framework.argDB['with-cxx'] = 'win32fe '+self.framework.argDB['with-cxx']
-        yield self.framework.argDB['with-cxx']
-        raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
+      if self.framework.argDB['with-cxx'] in ['icl','cl','bcc32']: self.framework.argDB['with-cxx'] = 'win32fe '+self.framework.argDB['with-cxx']
+      yield self.framework.argDB['with-cxx']
+      raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
     elif self.framework.argDB.has_key('CXX'):
       if 'CXX' in os.environ and os.environ['CXX'] == self.framework.argDB['CXX']:
         self.startLine()
@@ -290,6 +285,10 @@ class Configure(config.base.Configure):
 
   def checkCxxCompiler(self):
     '''Locate a functional Cxx compiler'''
+    if 'with-cxx' in self.framework.argDB and self.framework.argDB['with-cxx'] == '0':
+      if 'CXX' in self.framework.argDB:
+        del self.framework.argDB['CXX']
+      return
     for compiler in self.generateCxxCompilerGuesses():
       # Determine an acceptable extensions for the C++ compiler
       for ext in ['.cc', '.cpp', '.C']:
@@ -356,7 +355,6 @@ class Configure(config.base.Configure):
     import os
 
     if self.framework.argDB.has_key('with-fc'):
-      if self.framework.argDB['with-fc'] == '0': return
       if self.framework.argDB['with-fc'] in ['ifl','df']:
         self.framework.argDB['with-fc'] = 'win32fe '+self.framework.argDB['with-fc']
       if self.framework.argDB['with-fc'] in ['ifort','f90'] and self.framework.argDB['PETSC_ARCH_BASE'].startswith('cygwin'): self.framework.argDB['with-fc'] = 'win32fe '+self.framework.argDB['with-fc']
@@ -421,6 +419,10 @@ class Configure(config.base.Configure):
 
   def checkFortranCompiler(self):
     '''Locate a functional Fortran compiler'''
+    if 'with-fc' in self.framework.argDB and self.framework.argDB['with-fc'] == '0':
+      if 'FC' in self.framework.argDB:
+        del self.framework.argDB['FC']
+      return
     for compiler in self.generateFortranCompilerGuesses():
       try:
         if self.getExecutable(compiler, resultName = 'FC'):
@@ -444,18 +446,181 @@ class Configure(config.base.Configure):
         del self.framework.argDB['FC']
     return
 
-  def checkLinkerFlags(self):
-    '''Just substitutes the flags right now'''
+  def checkPIC(self):
+    '''Determine the PIC option for each compiler
+       - There needs to be a test that checks that the functionality is actually working'''
+    # Instead of this, I need to add a link check
+    #
+    #if self.framework.argDB['PETSC_ARCH'].startswith('hpux') and not self.setCompilers.isGNU(self.framework.argDB['CC']):
+    #  return
+    if 'with-shared' in self.framework.argDB and not self.framework.argDB['with-shared']:
+      self.framework.log.write("Skipping checking PIC options since shared libraries are turned off")
+      return
+    languages = ['C']
+    if 'CXX' in self.framework.argDB:
+      languages.append('C++')
+    if 'FC' in self.framework.argDB:
+      languages.append('FC')
+    for language in languages:
+      self.pushLanguage(language)
+      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
+        try:
+          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+          self.addCompilerFlag(testFlag)
+          break
+        except RuntimeError:
+          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+      self.popLanguage()
     return
 
-  def checkSharedLinkerFlag(self):
-    '''Determine what flags are necessary for dynamic library creation'''
-    flag = '-shared'
-    if not self.checkLinkerFlag(flag):
-      flag = '-dylib'
-      if not self.checkLinkerFlag(flag):
-        flag = ''
-    self.sharedLibraryFlag = flag
+  def generateArchiverFlags(self,archiver):
+    flag = ''
+    if 'AR_FLAGS' in self.framework.argDB: flag = self.framework.argDB['AR_FLAGS']
+    elif archiver == 'ar': flag = 'cr'
+    elif archiver == 'win32fe lib': flag = '-a'
+    elif archiver == 'win32fe tlib': flag = '-a -P512'
+    return flag
+  
+  def generateArchiverGuesses(self):
+    if 'with-ar' in self.framework.argDB:
+      if self.framework.argDB['with-ar'] in ['lib','tlib']:
+        self.framework.argDB['with-ar'] = 'win32fe '+self.framework.argDB['with-ar']
+    if 'AR' in self.framework.argDB:
+      if self.framework.argDB['AR'] in ['lib','tlib']:
+        self.framework.argDB['AR'] = 'win32fe '+self.framework.argDB['AR']
+    #if anyone has a better idea about doing these checks, i'm all for it
+    if 'with-ar' in self.framework.argDB and 'with-ranlib' in self.framework.argDB:
+      yield(self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),self.framework.argDB['with-ranlib'])
+      raise RuntimeError('The archiver set --with-ar="'+self.framework.argDB['with-ar']+'" is incompatible with the ranlib set --with-ranlib="'+self.framework.argDB['with-ranlib']+'".')
+    if 'with-ar' in self.framework.argDB and 'RANLIB' in self.framework.argDB:
+      yield(self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),self.framework.argDB['RANLIB'])
+      raise RuntimeError('The archiver set --with-ar="'+self.framework.argDB['with-ar']+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+self.framework.argDB['RANLIB']+'".')
+    if 'AR' in self.framework.argDB and 'with-ranlib' in self.framework.argDB:
+      yield(self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']),self.framework.argDB['with-ranlib'])
+      raise RuntimeError('The archiver set --AR="'+self.framework.argDB['AR']+'" is incompatible with the ranlib set --with-ranlib="'+self.framework.argDB['with-ranlib']+'".')
+    if 'AR' in self.framework.argDB and 'RANLIB' in self.framework.argDB:
+      yield(self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']),self.framework.argDB['RANLIB'])
+      raise RuntimeError('The archiver set --AR="'+self.framework.argDB['AR']+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+self.framework.argDB['RANLIB']+'".')
+    if 'with-ar' in self.framework.argDB:
+      yield (self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),'ranlib')
+      yield (self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),'true')
+      raise RuntimeError('You set a value for --with-ar='+self.framework.argDB['with-ar']+'", but '+self.framework.argDB['with-ar']+' cannot be used\n')
+    if 'AR' in self.framework.argDB:
+      yield (self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']),'ranlib')
+      yield (self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']),'true')
+      raise RuntimeError('You set a value for -AR="'+self.framework.argDB['AR']+'" (perhaps in your environment), but '+self.framework.argDB['AR']+' cannot be used\n')
+    if 'with-ranlib' in self.framework.argDB:
+      yield ('ar',self.generateArchiverFlags('ar'),self.framework.argDB['with-ranlib'])
+      yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),self.framework.argDB['with-ranlib'])
+      yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),self.framework.argDB['with-ranlib'])
+      raise RuntimeError('You set --with-ranlib="'+self.framework.argDB['with-ranlib']+'", but '+self.framework.argDB['with-ranlib']+' cannot be used\n')
+    if 'RANLIB' in self.framework.argDB:
+      yield ('ar',self.generateArchiverFlags('ar'),self.framework.argDB['RANLIB'])
+      yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),self.framework.argDB['RANLIB'])
+      yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),self.framework.argDB['RANLIB'])
+      raise RuntimeError('You set -RANLIB="'+self.framework.argDB['RANLIB']+'" (perhaps in your environment), but '+self.framework.argDB['with-ranlib']+' cannot be used\n')
+    yield ('ar',self.generateArchiverFlags('ar'),'ranlib')
+    yield ('ar',self.generateArchiverFlags('ar'),'true')
+    yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),'true')
+    yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),'true')
+    return
+  
+  def checkArchiver(self):
+    '''Check that the archiver exists and can make a library usable by the compiler'''
+    def checkArchive(command, status, output, error):
+      if error or status:
+        self.framework.log.write('Possible ERROR while running archiver: '+output)
+        if status: self.framework.log.write('ret = '+str(status)+'\n')
+        if error: self.framework.log.write('error message = {'+error+'}\n')
+        os.remove('conf1.o')
+        raise RuntimeError('Archiver is not functional')
+      return
+    def checkRanlib(command, status, output, error):
+      if error or status:
+        self.framework.log.write('Possible ERROR while running ranlib: '+output)
+        if status: self.framework.log.write('ret = '+str(status)+'\n')
+        if error: self.framework.log.write('error message = {'+error+'}\n')
+        os.remove('conf1.a')
+        raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
+      return
+    if not 'LIBS' in self.framework.argDB:
+      self.framework.argDB['LIBS'] = ''
+    oldLibs = self.framework.argDB['LIBS']
+    self.pushLanguage('C')
+    if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
+      raise RuntimeError('Compiler is not functional')
+    os.rename(self.compilerObj, 'conf1.o')
+    for (archiver, flags, ranlib) in self.generateArchiverGuesses():
+      if self.getExecutable(archiver, getFullPath = 1, resultName = 'AR'):
+        if self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB'):
+          (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
+          self.framework.argDB['LIBS'] = 'conf1.a'
+          success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
+          os.rename('conf1.a','conf1.lib')
+          if not success:
+            self.framework.argDB['LIBS'] = 'conf1.lib'
+            success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
+            os.remove('conf1.lib')
+            if success: break
+          else:
+            os.remove('conf1.lib')
+            break
+    else:
+      os.remove('conf1.o')
+      self.framework.argDB['LIBS'] = oldLibs
+      self.popLanguage()
+      raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
+    self.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
+    self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB')
+    self.framework.argDB['AR_FLAGS']=flags
+    self.framework.addMakeMacro('AR_FLAGS',flags)
+    self.AR_FLAGS = flags
+    os.remove('conf1.o')
+    self.framework.argDB['LIBS'] = oldLibs
+    self.popLanguage()
+    return
+
+  def generateSharedLinkerGuesses(self):
+    if 'with-shared-ld' in self.framework.argDB:
+      yield (self.framework.argDB['with-shared-ld'], [], 'so')
+    # C compiler default
+    yield (self.framework.argDB['CC'], ['-shared'], 'so')
+    # Mac OSX
+    yield ('libtool', ['-noprebind', '-dynamic'], 'dylib')
+    return
+
+  def checkSharedLinker(self):
+    '''Check that the linker can produce shared libraries'''
+    self.sharedLibraries = 0
+    for linker, flags, ext in self.generateSharedLinkerGuesses():
+      self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
+      if self.getExecutable(linker, resultName = 'LD_SHARED'):
+        flagsArg = self.getLinkerFlagsArg()
+        oldFlags = self.framework.argDB[flagsArg]
+        goodFlags = filter(self.checkLinkerFlag, flags)
+        testMethod = 'foo'
+        self.framework.argDB[flagsArg] += ' '+' '.join(goodFlags)
+        if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', cleanup = 0, shared = 1):
+          os.rename(self.linkerObj, 'libfoo.'+ext)
+          oldLibs = self.framework.argDB['LIBS']
+          self.framework.argDB['LIBS'] += ' -L. -lfoo'
+          self.framework.argDB[flagsArg] = oldFlags
+          # Might need to segregate shared linker flags
+          if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
+            os.remove('libfoo.'+ext)
+            self.framework.argDB['LIBS'] = oldLibs
+            self.sharedLibraries = 1
+            self.sharedLinker = linker
+            self.sharedLibraryFlags = goodFlags
+            self.sharedLibraryExt = ext
+            self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
+            break
+          self.framework.argDB['LIBS'] = oldLibs
+          os.remove('foo.'+ext)
+        if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+        self.framework.argDB[flagsArg] = oldFlags
+      del self.LD_SHARED
     return
 
   def checkSharedLinkerPaths(self):
@@ -511,113 +676,7 @@ class Configure(config.base.Configure):
     else:
       self.addSubstitution('FC', '')
     self.addArgumentSubstitution('LDFLAGS', 'LDFLAGS')
-    self.addSubstitution('SHARED_LIBRARY_FLAG', self.sharedLibraryFlag)
-    return
-
-  def generateArchiverFlags(self,archiver):
-    flag = ''
-    if 'AR_FLAGS' in self.framework.argDB: flag = self.framework.argDB['AR_FLAGS']
-    elif archiver == 'ar': flag = 'cr'
-    elif archiver == 'win32fe lib': flag = '-a'
-    elif archiver == 'win32fe tlib': flag = '-a -P512'
-    return flag
-  
-  def generateArchiverGuesses(self):
-    if 'with-ar' in self.framework.argDB:
-      if self.framework.argDB['with-ar'] in ['lib','tlib']:
-        self.framework.argDB['with-ar'] = 'win32fe '+self.framework.argDB['with-ar']
-    if 'AR' in self.framework.argDB:
-      if self.framework.argDB['AR'] in ['lib','tlib']:
-        self.framework.argDB['AR'] = 'win32fe '+self.framework.argDB['AR']
-    #if anyone has a better idea about doing these checks, i'm all for it
-    if 'with-ar' in self.framework.argDB and 'with-ranlib' in self.framework.argDB:
-      yield(self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),self.framework.argDB['with-ranlib'])
-      raise RuntimeError('The archiver set --with-ar="'+self.framework.argDB['with-ar']+'" is incompatible with the ranlib set --with-ranlib="'+self.framework.argDB['with-ranlib']+'".')
-    if 'with-ar' in self.framework.argDB and 'RANLIB' in self.framework.argDB:
-      yield(self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),self.framework.argDB['RANLIB'])
-      raise RuntimeError('The archiver set --with-ar="'+self.framework.argDB['with-ar']+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+self.framework.argDB['RANLIB']+'".')
-    if 'AR' in self.framework.argDB and 'with-ranlib' in self.framework.argDB:
-      yield(self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']),self.framework.argDB['with-ranlib'])
-      raise RuntimeError('The archiver set --AR="'+self.framework.argDB['AR']+'" is incompatible with the ranlib set --with-ranlib="'+self.framework.argDB['with-ranlib']+'".')
-    if 'AR' in self.framework.argDB and 'RANLIB' in self.framework.argDB:
-      yield(self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']),self.framework.argDB['RANLIB'])
-      raise RuntimeError('The archiver set --AR="'+self.framework.argDB['AR']+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+self.framework.argDB['RANLIB']+'".')
-    if 'with-ar' in self.framework.argDB:
-      yield (self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),'ranlib')
-      yield (self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),'true')
-      raise RuntimeError('You set a value for --with-ar='+self.framework.argDB['with-ar']+'", but '+self.framework.argDB['with-ar']+' cannot be used\n')
-    if 'AR' in self.framework.argDB:
-      yield (self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']),'ranlib')
-      yield (self.framework.argDB['AR'],self.generateArchiverFlags(self.framework.argDB['AR']),'true')
-      raise RuntimeError('You set a value for -AR="'+self.framework.argDB['AR']+'" (perhaps in your environment), but '+self.framework.argDB['AR']+' cannot be used\n')
-    if 'with-ranlib' in self.framework.argDB:
-      yield ('ar',self.generateArchiverFlags('ar'),self.framework.argDB['with-ranlib'])
-      yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),self.framework.argDB['with-ranlib'])
-      yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),self.framework.argDB['with-ranlib'])
-      raise RuntimeError('You set --with-ranlib="'+self.framework.argDB['with-ranlib']+'", but '+self.framework.argDB['with-ranlib']+' cannot be used\n')
-    if 'RANLIB' in self.framework.argDB:
-      yield ('ar',self.generateArchiverFlags('ar'),self.framework.argDB['RANLIB'])
-      yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),self.framework.argDB['RANLIB'])
-      yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),self.framework.argDB['RANLIB'])
-      raise RuntimeError('You set -RANLIB="'+self.framework.argDB['RANLIB']+'" (perhaps in your environment), but '+self.framework.argDB['with-ranlib']+' cannot be used\n')
-    yield ('ar',self.generateArchiverFlags('ar'),'ranlib')
-    yield ('ar',self.generateArchiverFlags('ar'),'true')
-    yield ('win32fe tlib',self.generateArchiverFlags('win32fe tlib'),'true')
-    yield ('win32fe lib',self.generateArchiverFlags('win32fe lib'),'true')
-    return
-  
-  def configureArchiver(self):
-    '''Check that the archiver exists and can make a library usable by the compiler'''
-    def checkArchive(command, status, output, error):
-      if error or status:
-        self.framework.log.write('Possible ERROR while running archiver: '+output)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
-        os.remove('conf1.o')
-        raise RuntimeError('Archiver is not functional')
-      return
-    def checkRanlib(command, status, output, error):
-      if error or status:
-        self.framework.log.write('Possible ERROR while running ranlib: '+output)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
-        os.remove('conf1.a')
-        raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
-      return
-    oldLibs = self.framework.argDB['LIBS']
-    self.pushLanguage('C')
-    if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
-      raise RuntimeError('Compiler is not functional')
-    os.rename(self.compilerObj, 'conf1.o')
-    for (archiver, flags, ranlib) in self.generateArchiverGuesses():
-      if self.getExecutable(archiver, getFullPath = 1, resultName = 'AR'):
-        if self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB'):
-          (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
-          (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
-          self.framework.argDB['LIBS'] = 'conf1.a'
-          success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
-          os.rename('conf1.a','conf1.lib')
-          if not success:
-            self.framework.argDB['LIBS'] = 'conf1.lib'
-            success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
-            os.remove('conf1.lib')
-            if success: break
-          else:
-            os.remove('conf1.lib')
-            break
-    else:
-      os.remove('conf1.o')
-      self.framework.argDB['LIBS'] = oldLibs
-      self.popLanguage()
-      raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
-    self.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
-    self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB')
-    self.framework.argDB['AR_FLAGS']=flags
-    self.framework.addMakeMacro('AR_FLAGS',flags)
-    self.AR_FLAGS = flags
-    os.remove('conf1.o')
-    self.framework.argDB['LIBS'] = oldLibs
-    self.popLanguage()
+    self.addSubstitution('SHARED_LIBRARY_FLAG', ' '.join(self.sharedLibraryFlags))
     return
 
   def configure(self):
@@ -625,10 +684,9 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
     self.executeTest(self.checkFortranCompiler)
-    self.executeTest(self.checkLinkerFlags)
-    # In the future, we will check that shared and dyanmic linking works here
-    self.executeTest(self.checkSharedLinkerFlag)
+    self.executeTest(self.checkPIC)
+    self.executeTest(self.checkArchiver)
+    self.executeTest(self.checkSharedLinker)
     self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.output)
-    self.executeTest(self.configureArchiver)
     return

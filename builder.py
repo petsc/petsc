@@ -365,6 +365,43 @@ class Builder(logging.Logger):
     if target is None:
       target = self.getLinkerTarget(source[0], shared)
     if shared:
+      obj.pushRequiredFlags(' '.join(self.setCompilers.sharedLibraryFlags))
+    command = obj.getCommand(source, target)
+    if shared:
+      obj.popRequiredFlags()
+    return command
+
+  def getSharedLinker(self):
+    linker = self.getLanguageProcessor().getSharedLinkerObject(self.language[-1])
+    linker.checkSetup()
+    return linker.getProcessor()
+
+  def getSharedLinkerFlags(self):
+    return self.getLanguageProcessor().getSharedLinkerObject(self.language[-1]).getFlags()
+
+  def setSharedLinkerFlags(self, flags):
+    return self.getLanguageProcessor().getSharedLinkerObject(self.language[-1]).setFlags(flags)
+
+  def getSharedLinkerExtraArguments(self):
+    return self.getLanguageProcessor().getSharedLinkerObject(self.language[-1]).getExtraArguments()
+
+  def setSharedLinkerExtraArguments(self, args):
+    return self.getLanguageProcessor().getSharedLinkerObject(self.language[-1]).setExtraArguments(args)
+
+  def getSharedLinkerTarget(self, source, shared):
+    return self.getLanguageProcessor().getSharedLinkerObject(self.language[-1]).getTarget(source, shared)
+
+  def getSharedLinkerObject(self):
+    compiler = self.getLanguageProcessor().getSharedLinkerObject(self.language[-1])
+    compiler.checkSetup()
+    return compiler
+
+  def getSharedLinkerCommand(self, source, target = None, shared = 0):
+    self.getLinker()
+    obj = self.getLanguageProcessor().getSharedLinkerObject(self.language[-1])
+    if target is None:
+      target = self.getLinkerTarget(source[0], shared)
+    if shared:
       obj.pushRequiredFlags(self.setCompilers.sharedLibraryFlag)
     command = obj.getCommand(source, target)
     if shared:
