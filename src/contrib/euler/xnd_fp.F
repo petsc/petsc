@@ -1,5 +1,8 @@
+c
+c  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+c
 c ----------------------------------------------------------------
-c  Full potential physics code initial condition
+c  Full potential initial condition
 c ----------------------------------------------------------------
 
       SUBROUTINE IC_FP(xx,p,x,y,z)

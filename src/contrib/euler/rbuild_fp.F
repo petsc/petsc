@@ -1,4 +1,6 @@
-
+c
+c  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+c
 c ----------------------------------------------------------------------
 c
       integer function rbuild_direct_fp( f, sctype, dt, dxx )

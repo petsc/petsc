@@ -1,4 +1,6 @@
-
+c
+c  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+c
       integer function PVAR(xx,p,
      &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                      x,y,z,pprint,tcl,tcd,wcomm,wing)

@@ -1,3 +1,6 @@
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+#endif
 
 #include "pinclude/pviewer.h"
 #include "sys.h"

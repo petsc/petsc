@@ -1,4 +1,6 @@
 c
+c  $Id: mat.h,v 1.35 1997/08/13 22:27:52 bsmith Exp $;
+c
 c PETSc include files needed by Fortran routines
 c   petsc.h - basic PETSc interface
 c   mat.h   - matrices

@@ -1,4 +1,6 @@
 C
+C    "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+C
 C This file contains routines that are used by both the Julianne 
 C and PETSc solvers.
 C

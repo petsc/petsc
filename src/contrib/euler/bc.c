@@ -1,3 +1,7 @@
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+#endif
+
 /*
    This file contains the routines that control the vector scatters that
    are used to apply certain boundary conditions.  In particular, these

@@ -1,3 +1,7 @@
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+#endif
+
 #include "user.h"
 
 #undef __FUNC__  
@@ -34,106 +38,24 @@ int UserSetJacobian(SNES snes,Euler *app)
   int           istart, iend;           /* range of locally owned matrix rows */
   int           *nnz_d = 0, *nnz_o = 0; /* arrays for preallocating matrix memory */
   int           wkdim;                  /* dimension of nnz_d and nnz_o */
-  /*  MatFDColoring fdc; */                   /* finite difference coloring context */
+  MatFDColoring fdc;                    /* finite difference coloring context */
   PetscTruth    mset; 
   int           jac_snes_fd = 0, ierr, flg;
+  ISColoring    iscoloring;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     First, compute amount of space for matrix preallocation, to enable
-     fast matrix assembly without continual dynamic memory allocation.
+         Form Jacobian matrix data structure with preallocated space
+         Two choices:
+            - finite differencing via coloring
+            - application-defined sparse finite differences
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* Determine matrix format, where we choose block AIJ as the default if
-     no runtime option is specified */
-  ierr = MatGetTypeFromOptions(comm,PETSC_NULL,&mtype,&mset); CHKERRQ(ierr);
-  if (mset != PETSC_TRUE) {
-    if (app->size == 1) mtype = MATSEQBAIJ;
-    else                mtype = MATMPIBAIJ;
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-mat_block_size_1",&flg); CHKERRQ(ierr);
-  if (flg) ndof_block = 1;
-  else     ndof_block = ndof;
-
-  /* Row-based matrix formats */
-  if (mtype == MATSEQAIJ || mtype == MATMPIAIJ || mtype == MATMPIROWBS) {
-    wkdim = app->ldim;
-  } else if (mtype == MATSEQBAIJ || mtype == MATMPIBAIJ) { /* block row formats */
-    if (ndof_block == ndof) wkdim = app->lbkdim;
-    else                    wkdim = app->ldim;
-  }
-  else SETERRQ(1,1,"Matrix format not currently supported.");
-
-  /* Allocate work arrays */
-  nnz_d = (int *)PetscMalloc(2*wkdim * sizeof(int)); CHKPTRQ(nnz_d);
-  PetscMemzero(nnz_d,2*wkdim * sizeof(int));
-  nnz_o = nnz_d + wkdim;
-
-  /* Note that vector and matrix partitionings are the same (see note below) */
-  ierr = VecGetOwnershipRange(app->X,&istart,&iend); CHKERRQ(ierr);
-
-  /* We mimic the matrix assembly code to determine precise locations 
-     of nonzero matrix entries */
-
-  ndof_euler = 5;
-  ierr = nzmat_(&mtype,&app->mmtype,&ndof_euler,&ndof_block,&istart,&iend,
-                app->is1,app->ltog,&app->nloc,&wkdim,nnz_d,nnz_o,
-                &app->fort_ao); CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                  Form Jacobian matrix data structure
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /*
-     Note:  For the parallel case, vectors and matrices MUST be partitioned
-     accordingly.  When using distributed arrays (DAs) to create vectors,
-     the DAs determine the problem partitioning.  We must explicitly
-     specify the local matrix dimensions upon its creation for compatibility
-     with the vector distribution.  Thus, the generic MatCreate() routine
-     is NOT sufficient when working with distributed arrays.
-  */
-
-  if (mtype == MATSEQAIJ) {
-    /* Rough estimate of nonzeros per row is:  nd * ndof */
-    /* ierr = MatCreateSeqAIJ(comm,gdim,gdim,nd*ndof,PETSC_NULL,&J); CHKERRQ(ierr); */
-       ierr = MatCreateSeqAIJ(comm,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
-  } 
-  else if (mtype == MATMPIAIJ) {
-    ierr = MatCreateMPIAIJ(comm,ldim,ldim,gdim,
-                           gdim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&J); CHKERRQ(ierr);
-  } 
-  else if (mtype == MATMPIROWBS) {
-    ierr = MatCreateMPIRowbs(comm,ldim,gdim,PETSC_NULL,nnz_d,
-                             PETSC_NULL,&J); CHKERRQ(ierr);
-  }
-  else if (mtype == MATSEQBAIJ) {
-    /* Rough estimate of block nonzeros per row is:  # of diagonals, nd */
-    /* ierr = MatCreateSeqBAIJ(comm,ndof_block,gdim,gdim,nd,PETSC_NULL,&J); CHKERRQ(ierr); */
-    ierr = MatCreateSeqBAIJ(comm,ndof_block,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
-  } 
-  else if (mtype == MATMPIBAIJ) {
-    ierr = MatCreateMPIBAIJ(comm,ndof_block,ldim,ldim,
-           gdim,gdim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&J); CHKERRQ(ierr);
-  } else {
-    SETERRQ(1,1,"Matrix format not currently supported.");
-  }
-  if (nnz_d) PetscFree(nnz_d);
-  app->J = J;
-
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        Set data structures and routine for Jacobian evaluation 
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* Set up coloring information needed for sparse finite difference
-     approximation of the Jacobian
-   */
-
-    /* Change to use Barry's new code */
-  /*  ierr = OptionsHasName(PETSC_NULL,"-jac_snes_fd",&jac_snes_fd); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-jac_snes_fd",&jac_snes_fd); CHKERRQ(ierr);
   if (jac_snes_fd) {
-    ISColoring    iscoloring;
+     /* Set up coloring information needed for sparse finite difference
+        approximation of the Jacobian */
 
-    ierr = DAGetColoring3dBox(app->da,&iscoloring,&J); CHKERRQ(ierr);
+    ierr = DAGetColoring(app->da,&iscoloring,&J); CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&fdc); CHKERRQ(ierr); 
     app->fdcoloring = fdc;
     ierr = ISColoringDestroy(iscoloring); CHKERRQ(ierr);
@@ -148,9 +70,96 @@ int UserSetJacobian(SNES snes,Euler *app)
     ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
     PetscPrintf(comm,"Jacobian for preconditioner formed via PETSc FD approx\n"); 
-  } else {
+  } 
+  else {
+    /* Use the alternative old application-defined approach */
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       First, compute amount of space for matrix preallocation, to enable
+       fast matrix assembly without continual dynamic memory allocation.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /* Determine matrix format, where we choose block AIJ as the default if
+       no runtime option is specified */
+    ierr = MatGetTypeFromOptions(comm,PETSC_NULL,&mtype,&mset); CHKERRQ(ierr);
+    if (mset != PETSC_TRUE) {
+      if (app->size == 1) mtype = MATSEQBAIJ;
+      else                mtype = MATMPIBAIJ;
+    }
+    ierr = OptionsHasName(PETSC_NULL,"-mat_block_size_1",&flg); CHKERRQ(ierr);
+    if (flg) ndof_block = 1;
+    else     ndof_block = ndof;
+
+    /* Row-based matrix formats */
+    if (mtype == MATSEQAIJ || mtype == MATMPIAIJ || mtype == MATMPIROWBS) {
+      wkdim = app->ldim;
+    } else if (mtype == MATSEQBAIJ || mtype == MATMPIBAIJ) { /* block row formats */
+      if (ndof_block == ndof) wkdim = app->lbkdim;
+      else                    wkdim = app->ldim;
+    }
+    else SETERRQ(1,1,"Matrix format not currently supported.");
+
+    /* Allocate work arrays */
+    nnz_d = (int *)PetscMalloc(2*wkdim * sizeof(int)); CHKPTRQ(nnz_d);
+    PetscMemzero(nnz_d,2*wkdim * sizeof(int));
+    nnz_o = nnz_d + wkdim;
+
+    /* Note that vector and matrix partitionings are the same (see note below) */
+    ierr = VecGetOwnershipRange(app->X,&istart,&iend); CHKERRQ(ierr);
+
+    /* We mimic the matrix assembly code to determine precise locations 
+       of nonzero matrix entries */
+
+    ndof_euler = 5;
+    ierr = nzmat_(&mtype,&app->mmtype,&ndof_euler,&ndof_block,&istart,&iend,
+                  app->is1,app->ltog,&app->nloc,&wkdim,nnz_d,nnz_o,
+                  &app->fort_ao); CHKERRQ(ierr);
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                    Form Jacobian matrix data structure
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /*
+       Note:  For the parallel case, vectors and matrices MUST be partitioned
+       accordingly.  When using distributed arrays (DAs) to create vectors,
+       the DAs determine the problem partitioning.  We must explicitly
+       specify the local matrix dimensions upon its creation for compatibility
+       with the vector distribution.  Thus, the generic MatCreate() routine
+       is NOT sufficient when working with distributed arrays.
+    */
+
+    if (mtype == MATSEQAIJ) {
+      /* Rough estimate of nonzeros per row is:  nd * ndof */
+      /* ierr = MatCreateSeqAIJ(comm,gdim,gdim,nd*ndof,PETSC_NULL,&J); CHKERRQ(ierr); */
+         ierr = MatCreateSeqAIJ(comm,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
+    } 
+    else if (mtype == MATMPIAIJ) {
+      ierr = MatCreateMPIAIJ(comm,ldim,ldim,gdim,
+                             gdim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&J); CHKERRQ(ierr);
+    } 
+    else if (mtype == MATMPIROWBS) {
+      ierr = MatCreateMPIRowbs(comm,ldim,gdim,PETSC_NULL,nnz_d,
+                               PETSC_NULL,&J); CHKERRQ(ierr);
+    }
+    else if (mtype == MATSEQBAIJ) {
+      /* Rough estimate of block nonzeros per row is:  # of diagonals, nd */
+      /* ierr = MatCreateSeqBAIJ(comm,ndof_block,gdim,gdim,nd,PETSC_NULL,&J); CHKERRQ(ierr); */
+      ierr = MatCreateSeqBAIJ(comm,ndof_block,gdim,gdim,PETSC_NULL,nnz_d,&J); CHKERRQ(ierr);
+    } 
+    else if (mtype == MATMPIBAIJ) {
+      ierr = MatCreateMPIBAIJ(comm,ndof_block,ldim,ldim,
+             gdim,gdim,PETSC_NULL,nnz_d,PETSC_NULL,nnz_o,&J); CHKERRQ(ierr);
+    } else {
+      SETERRQ(1,1,"Matrix format not currently supported.");
+    }
+    if (nnz_d) PetscFree(nnz_d);
     PetscPrintf(comm,"Jacobian for preconditioner formed via application code FD approx\n"); 
-  } */
+  }
+  app->J = J;
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        Set data structures and routine for Jacobian evaluation 
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&app->matrix_free); CHKERRQ(ierr);
   if (!app->matrix_free) {
