@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.261 1997/10/01 22:31:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.262 1997/10/12 02:16:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -551,7 +551,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping");
   }
   if (nrow > 2048 || ncol > 2048) {
-    SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 2048");
+    SETERRQ(PETSC_ERR_SUP,0,"Number column/row indices must be <= 2048");
   }
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 #endif
@@ -618,7 +618,7 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMappingBlocked");
   }
   if (nrow > 2048 || ncol > 2048) {
-    SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 2048");
+    SETERRQ(PETSC_ERR_SUP,0,"Number column/row indices must be <= 2048");
   }
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 #endif
