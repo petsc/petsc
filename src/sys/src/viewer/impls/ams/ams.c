@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.21 1999/05/12 03:26:20 bsmith Exp balay $";
+static char vcid[] = "$Id: ams.c,v 1.22 1999/06/30 23:48:56 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -188,6 +188,8 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
 /*
        If there is a Viewer associated with this communicator, it is destroyed.
 */
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_AMS_Destroy"
 int VIEWER_AMS_Destroy(MPI_Comm comm)
 {
   int    ierr,flag;
@@ -266,9 +268,12 @@ EXTERN_C_END
 
 #else
 
-int dummy_()
+#undef __FUNC__  
+#define __FUNC__ "ViewerAMS_Dummy"
+int ViewerAMS_Dummy()
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #endif

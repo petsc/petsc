@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.33 1999/06/30 23:48:55 balay Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.34 1999/09/02 14:52:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -15,6 +15,8 @@ typedef struct  {
   int          curlen,maxlen;
 } Viewer_String;
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroy_String"
 static int ViewerDestroy_String(Viewer viewer)
 {
   Viewer_String *vstr = (Viewer_String *)viewer->data;

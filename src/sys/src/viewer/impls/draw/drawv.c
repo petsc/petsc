@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.38 1999/06/30 23:48:58 balay Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.39 1999/09/02 14:52:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -462,6 +462,8 @@ Viewer VIEWER_DRAW_(MPI_Comm comm)
 /*
        If there is a Viewer associated with this communicator it is destroyed.
 */
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_DRAW_Destroy"
 int VIEWER_DRAW_Destroy(MPI_Comm comm)
 {
   int    ierr,flag;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vcreatea.c,v 1.8 1999/03/31 03:58:09 bsmith Exp balay $";
+static char vcid[] = "$Id: vcreatea.c,v 1.9 1999/05/04 20:27:51 balay Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -100,6 +100,8 @@ Viewer VIEWER_STDOUT_(MPI_Comm comm)
 /*
        If there is a Viewer associated with this communicator it is destroyed.
 */
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_STDOUT_Destroy"
 int VIEWER_STDOUT_Destroy(MPI_Comm comm)
 {
   int    ierr,flag;
@@ -169,6 +171,8 @@ Viewer VIEWER_STDERR_(MPI_Comm comm)
 /*
        If there is a Viewer associated with this communicator it is destroyed.
 */
+#undef __FUNC__  
+#define __FUNC__ "VIEWER_STDERR_Destroy"
 int VIEWER_STDERR_Destroy(MPI_Comm comm)
 {
   int    ierr,flag;

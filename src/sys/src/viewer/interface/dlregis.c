@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.2 1999/01/27 19:49:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.3 1999/02/03 04:29:01 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -13,15 +13,17 @@ EXTERN_C_BEGIN
 /*
   DLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the KSP and PC methods that are in the basic PETSc libpetscsles
-  library.
 
   Input Parameter:
-  path - library path
+.  path - library path
  */
 int DLLibraryRegister(char *path)
 {
-  return DLLibraryRegister_Petsc(path);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr =  DLLibraryRegister_Petsc(path);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
@@ -32,6 +34,10 @@ EXTERN_C_BEGIN
 #define __FUNC__ "DLLibraryInfo"
 int DLLibraryInfo(char *path,char *type,char **mess) 
 { 
-  return DLLibraryInfo_Petsc(path,type,mess);
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = DLLibraryInfo_Petsc(path,type,mess);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
