@@ -10,6 +10,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.foundMatlab  = 0
+    self.setCompilers = self.framework.require('config.setCompilers', self)
     return
 
   def __str__(self):
@@ -81,8 +82,8 @@ class Configure(config.base.Configure):
               matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
             else:
               matlab_sys = ''
-            if self.framework.slpath:
-              self.addSubstitution('MATLAB_LIB',self.framework.slpath+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            if self.setCompilers.slpath:
+              self.addSubstitution('MATLAB_LIB',self.setCompilers.slpath+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
             else:
               self.addSubstitution('MATLAB_LIB','-L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)              
             return
