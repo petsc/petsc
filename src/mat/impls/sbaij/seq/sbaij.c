@@ -1234,7 +1234,7 @@ int MatAXPY_SeqSBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsSymmetric_SeqSBAIJ"
-int MatIsSymmetric_SeqSBAIJ(Mat A,PetscTruth *flg)
+int MatIsSymmetric_SeqSBAIJ(Mat A,PetscReal tol,PetscTruth *flg)
 {
   PetscFunctionBegin;
   *flg = PETSC_TRUE;

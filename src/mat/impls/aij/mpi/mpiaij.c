@@ -618,7 +618,7 @@ int MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatIsTranspose_MPIAIJ"
-int MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
+int MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth tol,PetscTruth *f)
 {
   MPI_Comm comm;
   Mat_MPIAIJ *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
@@ -630,7 +630,7 @@ int MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
 
   /* Easy test: symmetric diagonal block */
   Bij = (Mat_MPIAIJ *) Bmat->data; Bdia = Bij->A;
-  ierr = MatIsTranspose(Adia,Bdia,f);CHKERRQ(ierr);
+  ierr = MatIsTranspose(Adia,Bdia,tol,f);CHKERRQ(ierr);
   if (!*f) PetscFunctionReturn(0);
   ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&ntids);CHKERRQ(ierr);
@@ -648,7 +648,7 @@ int MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
   Aoff = Aoffs[0];
   ierr = MatGetSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs);CHKERRQ(ierr);
   Boff = Boffs[0];
-  ierr = MatIsTranspose(Aoff,Boff,f);CHKERRQ(ierr);
+  ierr = MatIsTranspose(Aoff,Boff,tol,f);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Aoffs);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Boffs);CHKERRQ(ierr);
   ierr = ISDestroy(Me);CHKERRQ(ierr);

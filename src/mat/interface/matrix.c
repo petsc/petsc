@@ -2915,9 +2915,9 @@ int MatTranspose(Mat mat,Mat *B)
 
 .seealso: MatTranspose(), MatIsSymmetric(), MatIsHermitian()
 @*/
-int MatIsTranspose(Mat A,Mat B,PetscTruth *flg)
+int MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscTruth *flg)
 {
-  int ierr,(*f)(Mat,Mat,PetscTruth*),(*g)(Mat,Mat,PetscTruth*);
+  int ierr,(*f)(Mat,Mat,PetscReal,PetscTruth*),(*g)(Mat,Mat,PetscReal,PetscTruth*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -2927,7 +2927,7 @@ int MatIsTranspose(Mat A,Mat B,PetscTruth *flg)
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsTranspose_C",(void (**)(void))&g);CHKERRQ(ierr);
   if (f && g) {
     if (f==g) {
-      ierr = (*f)(A,B,flg);CHKERRQ(ierr);
+      ierr = (*f)(A,B,tol,flg);CHKERRQ(ierr);
     } else {
       SETERRQ(1,"Matrices do not have the same comparator for symmetry test");
     }
@@ -3471,6 +3471,17 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(mat->prefix,"-mat_is_symmetric",&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscReal tol = 0.0;
+      ierr = PetscOptionsGetReal(mat->prefix,"-mat_is_symmetric",&tol,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatIsSymmetric(mat,tol,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PetscPrintf(mat->comm,"Matrix is symmetric (tolerance %g)\n",tol);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(mat->comm,"Matrix is not symmetric (tolerance %g)\n",tol);CHKERRQ(ierr);
+      }
+    }
   }
   inassm--;
   ierr = PetscOptionsHasName(mat->prefix,"-help",&flg);CHKERRQ(ierr);
@@ -5389,7 +5400,8 @@ int MatSolves(Mat mat,Vecs b,Vecs x)
    Collective on Mat
 
    Input Parameter:
-.  A - the matrix to test
++  A - the matrix to test
+-  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact transpose)
 
    Output Parameters:
 .  flg - the result
@@ -5400,7 +5412,7 @@ int MatSolves(Mat mat,Vecs b,Vecs x)
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetricKnown()
 @*/
-int MatIsSymmetric(Mat A,PetscTruth *flg)
+int MatIsSymmetric(Mat A,PetscReal tol,PetscTruth *flg)
 {
   int ierr;
 
@@ -5413,7 +5425,7 @@ int MatIsSymmetric(Mat A,PetscTruth *flg)
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(1,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
-    ierr = (*A->ops->issymmetric)(A,&A->symmetric);CHKERRQ(ierr);
+    ierr = (*A->ops->issymmetric)(A,tol,&A->symmetric);CHKERRQ(ierr);
     A->symmetric_set = PETSC_TRUE;
     if (A->symmetric) {
       A->structurally_symmetric_set = PETSC_TRUE;
