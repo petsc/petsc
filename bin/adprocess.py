@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: adprocess.py,v 1.1 2001/04/20 20:06:23 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.2 2001/05/02 21:11:01 bsmith Exp bsmith $ 
 #
 # change python1.5 to whatever is needed on your system to invoke python
 #
@@ -55,16 +55,16 @@ def getfunctionF(filename,functionname):
 	line = f.readline()
         line = lower(line)
 	while line:
-                line = lstrip(line)+" "
-                if len(line) >= 11 + len(functionname): 
-                   print line[0:11+len(functionname)]
-                   print "subroutine "+functionname
-                   if line[0:11+len(functionname)] == "subroutine "+functionname:
+                sline = lstrip(line)
+                if sline:
+                  if len(sline) >= 11 + len(functionname): 
+                     if sline[0:11+len(functionname)] == "subroutine "+functionname:
 			while line:
-                                line = lstrip(line)+" "
-				g.write(line)
-                                if line[0] == "end ":
-	 	                	 break
+                                sline = lstrip(line)
+                                if sline:
+				  g.write(line)
+                                  if sline[0:4] == "end\n":
+	 	                     	 break
  		                line = f.readline()
                                 line = lower(line)
 		line = f.readline()
