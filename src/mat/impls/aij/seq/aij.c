@@ -2664,6 +2664,7 @@ EXTERN int MatConvert_SeqAIJ_SeqSBAIJ(Mat,MatType,Mat*);
 EXTERN int MatConvert_SeqAIJ_SeqBAIJ(Mat,MatType,Mat*);
 EXTERN int MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
 EXTERN int MatAdjustForInodes_SeqAIJ(Mat,IS*,IS*);
+EXTERN int MatSeqAIJGetInodeSizes_SeqAIJ(Mat,int*,int*[],int*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
@@ -2762,6 +2763,9 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatAdjustForInodes_C",
                                      "MatAdjustForInodes_SeqAIJ",
                                       MatAdjustForInodes_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJGetInodeSizes_C",
+                                     "MatSeqAIJGetInodeSizes_SeqAIJ",
+                                      MatSeqAIJGetInodeSizes_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);

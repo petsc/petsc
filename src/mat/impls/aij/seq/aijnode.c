@@ -1708,7 +1708,6 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJGetInodeSizes"
-
 /*@C
    MatSeqAIJGetInodeSizes - Returns the inode information of the SeqAIJ matrix.
 
@@ -1735,14 +1734,26 @@ EXTERN_C_END
 @*/
 int MatSeqAIJGetInodeSizes(Mat A,int *node_count,int *sizes[],int *limit)
 {
+  int ierr,(*f)(Mat,int*,int*[],int*);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJGetInodeSizes_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,node_count,sizes,limit);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSeqAIJGetInodeSizes_SeqAIJ"
+int MatSeqAIJGetInodeSizes_SeqAIJ(Mat A,int *node_count,int *sizes[],int *limit)
+{
   Mat_SeqAIJ *a;
   PetscTruth flg;
   int        ierr;
 
   PetscFunctionBegin;  
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_ERR_ARG_WRONG,"MatSeqAIJ only");
   a           = (Mat_SeqAIJ*)A->data; 
   *node_count = a->inode.node_count;
   *sizes      = a->inode.size;
