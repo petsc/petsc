@@ -115,7 +115,7 @@ etags:
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS src/*/examples/*.c src/*/examples/*/*.c
-	etags -a -f TAGS src/*/*.h src/*/interface/*.c 
+	etags -a -f TAGS src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c 
 	etags -a -f TAGS include/*.h include/*include/*.h bmake/common
@@ -144,7 +144,7 @@ etags:
 etags_noexamples:
 	$(RM) TAGS_NO_EXAMPLES
 	etags -f TAGS_NO_EXAMPLES src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/interface/*.c
+	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/src/*.c  src/*/impls/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES include/*.h include/*include/*.h

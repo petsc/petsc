@@ -5,7 +5,7 @@
        double *PetscDoubleAddressFromFortran(double*,int);
        int     PetscIntAddressToFortran(int*,int*);
        int    *PetscIntAddressFromFortran(int*,int); 
-extern void   *PetscNull_Fortran;
+extern void   *PETSC_NULL_Fortran;
 
 #ifdef HAVE_64BITS
 extern void *MPIR_ToPointer(int);
