@@ -1,10 +1,10 @@
-/*$Id: sro.c,v 1.24 2001/03/23 23:22:21 balay Exp bsmith $*/
+/*$Id: sro.c,v 1.25 2001/04/24 14:12:07 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
-#include "sbaij.h"   
+#include "src/mat/impls/sbaij/seq/sbaij.h"   
 
 /* 
 This function is used before applying a 

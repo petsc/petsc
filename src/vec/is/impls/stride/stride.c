@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.102 2001/01/15 21:44:28 bsmith Exp balay $*/
+/*$Id: stride.c,v 1.103 2001/03/23 23:21:09 balay Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -47,7 +47,6 @@ int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
   PetscFunctionBegin;
   if (is->isidentity) {
     ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm);CHKERRQ(ierr);
-    ierr = ISSetPermutation(*perm);CHKERRQ(ierr);
   } else {
     IS  tmp;
     int *indices,n = isstride->n;
@@ -327,7 +326,12 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->max     = max;
   Nindex->data    = (void*)sub;
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  Nindex->isperm  = PETSC_FALSE;
+
+  if ((first == 0 && step == 1) || (first == max && step == -1 && min == 0)) {
+    Nindex->isperm  = PETSC_TRUE;
+  } else {
+    Nindex->isperm  = PETSC_FALSE;
+  }
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ISView(Nindex,PETSC_VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.120 2001/04/10 19:35:07 bsmith Exp balay $ */
+/* $Id: matimpl.h,v 1.121 2001/04/10 22:35:01 balay Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -88,7 +88,11 @@ struct _MatOps {
             (*setvalueslocal)(Mat,int,int *,int,int *,Scalar *,InsertMode),
             (*zerorowslocal)(Mat,IS,Scalar *),
             (*getrowmax)(Mat,Vec),
-            (*convert)(Mat,MatType,Mat*);
+            (*convert)(Mat,MatType,Mat*),
+            (*setcoloring)(Mat,ISColoring),
+            (*setvaluesadic)(Mat,void*),
+            (*setvaluesadifor)(Mat,int,void*),
+            (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);
 };
 
 /*
@@ -259,6 +263,7 @@ struct  _p_MatFDColoring{
   Vec        vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
   PetscTruth usersetsrecompute;/* user determines when Jacobian is recomputed, via MatFDColoringSetRecompute() */
   PetscTruth recompute;        /* used with usersetrecompute to determine if Jacobian should be recomputed */
+  Vec        F;                /* current value of user provided function; can set with MatFDColoringSetF() */
 };
 
 /*

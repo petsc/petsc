@@ -1,5 +1,5 @@
-/*$Id: sbaijfact9.c,v 1.2 2001/02/14 16:42:55 bsmith Exp balay $*/
-#include "sbaij.h"
+/*$Id: sbaijfact9.c,v 1.3 2001/03/23 23:22:21 balay Exp bsmith $*/
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/inline/ilu.h"
 
 /* Version for when blocks are 6 by 6 */

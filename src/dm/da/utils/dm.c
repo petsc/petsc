@@ -1,4 +1,4 @@
-/*$Id: dm.c,v 1.4 2001/03/23 23:25:14 balay Exp bsmith $*/
+/*$Id: dm.c,v 1.5 2001/04/10 19:37:31 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"     /*I      "petscda.h"     I*/
 
@@ -23,7 +23,7 @@
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
 int DMDestroy(DM dm)
@@ -48,7 +48,7 @@ int DMDestroy(DM dm)
 
     Level: developer
 
-.seealso DMDestroy(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring()
+.seealso DMDestroy(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
 int DMView(DM dm,PetscViewer v)
@@ -56,7 +56,9 @@ int DMView(DM dm,PetscViewer v)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->bops->view)((PetscObject)dm,v);CHKERRQ(ierr);
+  if (dm->bops->view) {
+    ierr = (*dm->bops->view)((PetscObject)dm,v);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -75,7 +77,7 @@ int DMView(DM dm,PetscViewer v)
 
     Level: developer
 
-.seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring()
+.seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
 int DMCreateGlobalVector(DM dm,Vec *vec)
@@ -104,7 +106,7 @@ int DMCreateGlobalVector(DM dm,Vec *vec)
 
     Level: developer
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix()
 
 @*/
 int DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
@@ -125,24 +127,50 @@ int DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
     Input Parameter:
 +   dm - the DM object
-.   ctype - IS_COLORING_LOCAL or IS_COLORING_GLOBAL
--   mtype - MATMPIAIJ or MATMPIBAIJ
+-   ctype - IS_COLORING_GHOSTED or IS_COLORING_LOCAL
 
     Output Parameter:
-+   coloring - the coloring (optional)
--   mat - the Jacobian (optional)
+.   coloring - the coloring
 
     Level: developer
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-int DMGetColoring(DM dm,ISColoringType ctype,MatType mtype,ISColoring *coloring,Mat *mat)
+int DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->getcoloring)(dm,ctype,mtype,coloring,mat);CHKERRQ(ierr);
+  ierr = (*dm->ops->getcoloring)(dm,ctype,coloring);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetMatrix"
+/*@C
+    DMGetMatrix - Gets empty Jacobian for a DA or VecPack
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object
+-   mtype - MATMPIAIJ or MATMPIBAIJ
+
+    Output Parameter:
+.   mat - the empty Jacobian 
+
+    Level: developer
+
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
+
+@*/
+int DMGetMatrix(DM dm,MatType mtype,Mat *mat)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->getmatrix)(dm,mtype,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.152 2001/03/23 23:20:36 balay Exp bsmith $*/
+/*$Id: mtr.c,v 1.153 2001/04/10 19:34:33 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -229,8 +229,7 @@ int PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *di
   }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-  ierr = PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)),lineno,function,filename,dir,(void**)&inew);  
-  if (ierr) PetscFunctionReturn(ierr);
+  ierr = PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)),lineno,function,filename,dir,(void**)&inew);CHKERRQ(ierr);
 
 
   /*
@@ -266,7 +265,7 @@ int PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *di
   TRfrags++;
 
 #if defined(PETSC_USE_STACK)
-  ierr = PetscStackCopy(petscstack,&head->stack); if (ierr) PetscFunctionReturn(ierr);
+  ierr = PetscStackCopy(petscstack,&head->stack);CHKERRQ(ierr);
 #endif
 
   /*
@@ -275,13 +274,13 @@ int PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *di
   if (PetscLogMalloc > -1 && PetscLogMalloc < PetscLogMallocMax) {
     if (PetscLogMalloc == 0) {
       PetscLogMallocLength    = (int*)malloc(PetscLogMallocMax*sizeof(int));
-      if (!PetscLogMallocLength) PetscFunctionReturn(ierr);
+      if (!PetscLogMallocLength) SETERRQ(PETSC_ERR_MEM,"");
       PetscLogMallocDirectory = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocDirectory) PetscFunctionReturn(ierr);
+      if (!PetscLogMallocDirectory) SETERRQ(PETSC_ERR_MEM,"");
       PetscLogMallocFile      = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocFile) PetscFunctionReturn(ierr);
+      if (!PetscLogMallocFile) SETERRQ(PETSC_ERR_MEM,"");
       PetscLogMallocFunction  = (char**)malloc(PetscLogMallocMax*sizeof(char**));
-      if (!PetscLogMallocFunction) PetscFunctionReturn(ierr);
+      if (!PetscLogMallocFunction) SETERRQ(PETSC_ERR_MEM,""); 
     }
     PetscLogMallocLength[PetscLogMalloc]      = nsize;
     PetscLogMallocDirectory[PetscLogMalloc]   = dir;
@@ -426,7 +425,7 @@ int PetscShowMemoryUsage(PetscViewer viewer,char *message)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTrSpace"
-/*@
+/*@C
     PetscTrSpace - Returns space statistics.
    
     Not Collective

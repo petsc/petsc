@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2000/08/17 20:02:48 balay Exp bsmith $ 
+# $Id: makefile,v 1.5 2001/06/02 03:10:55 bsmith Exp bsmith $ 
 
 
 
@@ -14,7 +14,7 @@ EXAMPLESF	 =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts  
-	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o   ${PETSC_LIB}
 	${RM} -f ex1.o 
 #--------------------------------------------------------------------------
 TESTEXAMPLES_1	 = ex1.PETSc ex1.rm

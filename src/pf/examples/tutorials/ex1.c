@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.8 2001/01/23 20:58:45 balay Exp balay $*/
+/*$Id: ex1.c,v 1.9 2001/03/23 23:25:53 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -49,6 +49,7 @@ int main(int argc,char **argv)
 
   ierr = DACreatePF(da,&pf);CHKERRQ(ierr);
   ierr = PFSet(pf,myfunction,0,0,0,0);CHKERRQ(ierr);
+  ierr = PFSetFromOptions(pf);CHKERRQ(ierr);
 
   ierr = PFApplyVec(pf,xy,u);CHKERRQ(ierr);
 

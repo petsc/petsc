@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.55 2000/09/02 02:49:31 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.56 2001/01/15 21:47:47 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -100,8 +100,6 @@ struct _p_SNES {
   PetscTruth  ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
   void        *kspconvctx;       /* KSP convergence context */
 
-  Mat         mfshell;           /* MatShell for runtime matrix-free option */
-
   double      ttol;              /* used by default convergence test routine */
 
   Vec         *vwork;            /* more work vectors for Jacobian/Hessian approx */
@@ -126,8 +124,9 @@ typedef struct {
 
 #define SNESLogConvHistory(snes,res,its) \
   { if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) \
-    { snes->conv_hist[snes->conv_hist_len]       = res; \
-      snes->conv_hist_its[snes->conv_hist_len++] = its; \
+    { if (snes->conv_hist)     snes->conv_hist[snes->conv_hist_len]     = res; \
+      if (snes->conv_hist_its) snes->conv_hist_its[snes->conv_hist_len] = its; \
+      snes->conv_hist_len++;\
     }}
 
 #define SNESMonitor(snes,it,rnorm) \

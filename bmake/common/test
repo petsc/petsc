@@ -1,6 +1,4 @@
-# $Id: common_test,v 1.4 2001/06/20 03:24:12 bsmith Exp bsmith $ 
-#
-#
+# $Id: common_test,v 1.5 2001/06/20 15:21:40 bsmith Exp bsmith $ 
 #
 #  testexamples_X - Runs various PETSc test suites
 #    1 - basic C suite used in installation tests
@@ -17,8 +15,6 @@
 #   12 - basic f90 examples
 #   13 - Examples that should only be compiled.
 #   14 - requires Matlab - src/dm/da/examples/tests
-#   15 - AMS (Alice Memory Snooper) tests - src/snes/examples/tutuorials
-#   16 - Requires ParMetis
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
 
 testexamples_1: ${TESTEXAMPLES_1} clean
@@ -35,11 +31,12 @@ testexamples_11: ${TESTEXAMPLES_11} clean
 testexamples_12: ${TESTEXAMPLES_12} clean
 testexamples_13: ${TESTEXAMPLES_13} clean
 testexamples_14: ${TESTEXAMPLES_14} clean
-testexamples_15: ${TESTEXAMPLES_15} clean
-testexamples_16: ${TESTEXAMPLES_16} clean
+testexamples_AMS: ${TESTEXAMPLES_AMS} clean
+testexamples_PARMETIS: ${TESTEXAMPLES_PARMETIS} clean
 testexamples_17: ${TESTEXAMPLES_17} clean
 testexamples_SPAI: ${TESTEXAMPLES_SPAI} clean
 testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR} clean
+testexamples_ADIC: ${TESTEXAMPLES_ADIC} clean
 
 buildexamples_1: 
 	-@${OMAKE} testexamples_1 TESTEXAMPLES_1=`echo ${TESTEXAMPLES_1} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
@@ -69,16 +66,18 @@ buildexamples_13:
 	-@${OMAKE} testexamples_13 TESTEXAMPLES_13=`echo ${TESTEXAMPLES_13} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_14:
 	-@${OMAKE} testexamples_14 TESTEXAMPLES_14=`echo ${TESTEXAMPLES_14} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_15:
-	-@${OMAKE} testexamples_15 TESTEXAMPLES_15=`echo ${TESTEXAMPLES_15} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
-buildexamples_16:
-	-@${OMAKE} testexamples_16 TESTEXAMPLES_16=`echo ${TESTEXAMPLES_16} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_AMS:
+	-@${OMAKE} testexamples_AMS TESTEXAMPLES_AMS=`echo ${TESTEXAMPLES_AMS} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_PARMETIS:
+	-@${OMAKE} testexamples_PARMETIS TESTEXAMPLES_PARMETIS=`echo ${TESTEXAMPLES_PARMETIS} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_17:
 	-@${OMAKE} testexamples_17 TESTEXAMPLES_17=`echo ${TESTEXAMPLES_17} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_SPAI:
 	-@${OMAKE} testexamples_SPAI TESTEXAMPLES_SPAI=`echo ${TESTEXAMPLES_SPAI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 buildexamples_ADIFOR:
 	-@${OMAKE} testexamples_ADIFOR TESTEXAMPLES_ADIFOR=`echo ${TESTEXAMPLES_ADIFOR} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
+buildexamples_ADIC:
+	-@${OMAKE} testexamples_ADIC TESTEXAMPLES_ADIC=`echo ${TESTEXAMPLES_ADIC} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 
 
 

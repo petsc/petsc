@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.63 2001/03/23 23:24:07 balay Exp bsmith $*/
+/*$Id: snesut.c,v 1.64 2001/04/10 19:36:48 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
@@ -117,6 +117,94 @@ int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function value %14.12e, Gradient norm %14.12e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown method class");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESRatioMonitor"
+/*@C
+   SNESRatioMonitor - Monitoring progress of the SNES solvers, prints ratio
+      of residual norm at each iteration to previous
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  its - iteration number
+.  fgnorm - 2-norm of residual (or gradient)
+-  dummy - unused context
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, monitor, norm
+
+.seealso: SNESSetMonitor(), SNESVecViewMonitor()
+@*/
+int SNESRatioMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
+{
+  int         ierr,len;
+  double      *history;
+  PetscViewer viewer;
+
+  PetscFunctionBegin;
+  viewer = PETSC_VIEWER_STDOUT_(snes->comm);
+
+  ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,&len);CHKERRQ(ierr);
+  if (its == 0 || !history || its > len) {
+    ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+  } else {
+    double ratio = fgnorm/history[its-1];
+    ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e %g \n",its,fgnorm,ratio);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+   If the we set the history monitor space then we must destroy it
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "SNESRatioMonitorDestroy"
+int SNESRatioMonitorDestroy(void *history)
+{
+  int         ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(history);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetRatioMonitor"
+/*@C
+   SNESSetRatioMonitor - Sets SNES to use a monitor that prints the 
+     ratio of the function norm at each iteration
+
+   Collective on SNES
+
+   Input Parameters:
+.   snes - the SNES context
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, monitor, norm
+
+.seealso: SNESSetMonitor(), SNESVecViewMonitor(), SNESDefaultMonitor()
+@*/
+int SNESSetRatioMonitor(SNES snes)
+{
+  int         ierr;
+  double      *history;
+
+  PetscFunctionBegin;
+
+  ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  if (!history) {
+    ierr = PetscMalloc(100*sizeof(double),&history);CHKERRQ(ierr);
+    ierr = SNESSetConvergenceHistory(snes,history,0,100,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = SNESSetMonitor(snes,SNESRatioMonitor,history,SNESRatioMonitorDestroy);CHKERRQ(ierr);
+  } else {
+    ierr = SNESSetMonitor(snes,SNESRatioMonitor,0,0);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.70 2001/05/16 19:20:41 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.71 2001/05/17 15:11:48 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -115,6 +115,7 @@ EXTERN int   DAVecRestoreArray(DA,Vec,void **);
 
 EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 
+EXTERN int   MatRegisterDAAD(void);
 EXTERN int   MatCreateDAAD(DA,Mat*);
 
 /*S
@@ -146,34 +147,40 @@ EXTERN int DAComputeJacobian1WithAdic(DA,Vec,Mat,void*);
 EXTERN int DAComputeJacobian1WithAdifor(DA,Vec,Mat,void*);
 EXTERN int DAMultiplyByJacobian1WithAdic(DA,Vec,Vec,Vec,void*);
 EXTERN int DAMultiplyByJacobian1WithAdifor(DA,Vec,Vec,Vec,void*);
+EXTERN int DAMultiplyByJacobian1WithAD(DA,Vec,Vec,Vec,void*);
 EXTERN int DAComputeJacobian1(DA,Vec,Mat,void*);
 EXTERN int DAGetLocalFunction(DA,DALocalFunction1*);
 EXTERN int DASetLocalFunction(DA,DALocalFunction1);
 EXTERN int DASetLocalJacobian(DA,DALocalFunction1);
-EXTERN int DASetLocalad_Function_Private(DA,DALocalFunction1);
-#if defined(PETSC_HAVE_ADIC)
-#define DASetLocalad_Function(a,d) DASetLocalad_Function_Private(a,(DALocalFunction1)d)
+EXTERN int DASetLocalAdicFunction_Private(DA,DALocalFunction1);
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#define DASetLocalAdicFunction(a,d) DASetLocalAdicFunction_Private(a,(DALocalFunction1)d)
 #else
-#define DASetLocalad_Function(a,d) DASetLocalad_Function_Private(a,0)
+#define DASetLocalAdicFunction(a,d) DASetLocalAdicFunction_Private(a,0)
 #endif
-EXTERN int DASetLocaladmf_Function_Private(DA,DALocalFunction1);
-#if defined(PETSC_HAVE_ADIC)
-#define DASetLocaladmf_Function(a,d) DASetLocaladmf_Function_Private(a,(DALocalFunction1)d)
+EXTERN int DASetLocalAdicMFFunction_Private(DA,DALocalFunction1);
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,(DALocalFunction1)d)
 #else
-#define DASetLocaladmf_Function(a,d) DASetLocaladmf_Function_Private(a,0)
+#define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,0)
 #endif
 
 
 #include "petscmat.h"
-EXTERN int DAGetColoring(DA,ISColoringType,MatType,ISColoring *,Mat *);
+EXTERN int DAGetColoring(DA,ISColoringType,ISColoring *);
+EXTERN int DAGetMatrix(DA,MatType,Mat *);
 EXTERN int DAGetInterpolation(DA,DA,Mat*,Vec*);
 
 EXTERN int DAGetAdicArray(DA,PetscTruth,void**,void**,int*);
 EXTERN int DARestoreAdicArray(DA,PetscTruth,void**,void**,int*);
+EXTERN int DAGetAdicMFArray(DA,PetscTruth,void**,void**,int*);
+EXTERN int DARestoreAdicMFArray(DA,PetscTruth,void**,void**,int*);
 EXTERN int DAGetArray(DA,PetscTruth,void**);
 EXTERN int DARestoreArray(DA,PetscTruth,void**);
 EXTERN int ad_DAGetArray(DA,PetscTruth,void**);
 EXTERN int ad_DARestoreArray(DA,PetscTruth,void**);
+EXTERN int admf_DAGetArray(DA,PetscTruth,void**);
+EXTERN int admf_DARestoreArray(DA,PetscTruth,void**);
 
 #include "petscpf.h"
 EXTERN int DACreatePF(DA,PF*);
@@ -227,7 +234,8 @@ typedef struct _p_DM* DM;
 EXTERN int DMView(DM,PetscViewer);
 EXTERN int DMDestroy(DM);
 EXTERN int DMCreateGlobalVector(DM,Vec*);
-EXTERN int DMGetColoring(DM,ISColoringType,MatType,ISColoring*,Mat*);
+EXTERN int DMGetColoring(DM,ISColoringType,ISColoring*);
+EXTERN int DMGetMatrix(DM,MatType,Mat*);
 EXTERN int DMGetInterpolation(DM,DM,Mat*,Vec*);
 EXTERN int DMRefine(DM,MPI_Comm,DM*);
 EXTERN int DMGetInterpolationScale(DM,DM,Mat,Vec*);
@@ -257,7 +265,6 @@ struct _p_DMMG {
   int        (*rhs)(DMMG,Vec);
 
   /* SNES only */
-  PetscTruth    matrixfree;
   Mat           B;
   Vec           Rscale;                /* scaling to restriction before computing Jacobian */
   int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
@@ -266,7 +273,7 @@ struct _p_DMMG {
   MatFDColoring    fdcoloring;            /* only used with FD coloring for Jacobian */  
   SNES             snes;                  
   int              (*initialguess)(SNES,Vec,void*);
-  Vec              work1,work2;
+  Vec              w,work1,work2;
 };
 
 EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
@@ -279,13 +286,14 @@ EXTERN int DMMGView(DMMG*,PetscViewer);
 EXTERN int DMMGSolve(DMMG*);
 EXTERN int DMMGSetUseMatrixFree(DMMG*);
 EXTERN int DMMGSetDM(DMMG*,DM);
+EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 
-EXTERN int DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1);
-#if defined(PETSC_HAVE_ADIC)
-#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function) \
-  DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)(ad_function))
+EXTERN int DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) \
+  DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)(ad_function),(DALocalFunction1)(admf_function))
 #else
-#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function) DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)0)
+#  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)0,(DALocalFunction1)0)
 #endif
 
 #define DMMGGetb(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b

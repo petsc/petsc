@@ -1,4 +1,4 @@
-/* $Id: isimpl.h,v 1.25 2000/11/28 17:28:12 bsmith Exp bsmith $ */
+/* $Id: isimpl.h,v 1.26 2001/01/15 21:44:24 bsmith Exp bsmith $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
@@ -24,8 +24,18 @@ struct _ISOps {
        (*identity)(IS,PetscTruth*);
 };
 
+#if defined(__cplusplus)
+class ISOps {
+  public:
+    int getsize(int*) {return 0;};
+};
+#endif
+
 struct _p_IS {
   PETSCHEADER(struct _ISOps)
+#if defined(__cplusplus)
+  ISOps        *cops;
+#endif
   PetscTruth   isperm;          /* if is a permutation */
   int          max,min;         /* range of possible values */
   void         *data;

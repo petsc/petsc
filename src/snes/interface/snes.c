@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.228 2001/03/23 23:24:07 balay Exp bsmith $*/
+/*$Id: snes.c,v 1.229 2001/04/10 19:36:48 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -53,7 +53,11 @@ int SNESView(SNES snes,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
+    if (snes->prefix) {
+      ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:(%s)\n",snes->prefix);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
+    }
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     if (type) {
       ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
@@ -196,6 +200,8 @@ int SNESSetFromOptions(SNES snes)
     if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_monitor","Monitor norm of function","SNESDefaultMonitor",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0,0);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-snes_ratiomonitor","Monitor norm of function","SNESSetRatioMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESSetRatioMonitor(snes);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_smonitor","Monitor norm of function (fewer digits)","SNESDefaultSMonitor",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0,0);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_vecmonitor","Plot solution at each iteration","SNESVecViewMonitor",&flg);CHKERRQ(ierr);
@@ -1090,6 +1096,8 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 @*/
 int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (A) PetscValidHeaderSpecific(A,MAT_COOKIE);
@@ -1100,10 +1108,18 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStru
     SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
   }
 
-  snes->computejacobian = func;
-  snes->jacP            = ctx;
-  snes->jacobian        = A;
-  snes->jacobian_pre    = B;
+  if (func) snes->computejacobian = func;
+  if (ctx)  snes->jacP            = ctx;
+  if (A) {
+    if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
+    snes->jacobian = A;
+    ierr           = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  }
+  if (B) {
+    if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
+    snes->jacobian_pre = B;
+    ierr               = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1186,6 +1202,8 @@ $    func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 @*/
 int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidHeaderSpecific(A,MAT_COOKIE);
@@ -1195,10 +1213,18 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStruc
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
-  snes->computejacobian = func;
-  snes->jacP            = ctx;
-  snes->jacobian        = A;
-  snes->jacobian_pre    = B;
+  if (func) snes->computejacobian = func;
+  if (ctx)  snes->jacP            = ctx;
+  if (A) {
+    if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
+    snes->jacobian = A;
+    ierr           = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  }
+  if (B) {
+    if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
+    snes->jacobian_pre = B;
+    ierr               = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1283,11 +1309,10 @@ int SNESSetUp(SNES snes,Vec x)
   if (flg) {
     Mat J;
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
-    PetscLogObjectParent(snes,J);
-    snes->mfshell  = J;
-    snes->jacobian = J;
-    PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator routines\n");
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
+    PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator routines\n");
+    ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
+    ierr = MatDestroy(J);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf",&flg);CHKERRQ(ierr); 
   /*
@@ -1300,17 +1325,17 @@ int SNESSetUp(SNES snes,Vec x)
     PC   pc;
 
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
-    PetscLogObjectParent(snes,J);
-    snes->mfshell = J;
+    ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator and preconditioner routines\n");
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetJacobian(snes,J,J,MatSNESMFFormJacobian,snes->funP);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-      ierr = SNESSetHessian(snes,J,J,MatSNESMFFormJacobian,snes->funP);CHKERRQ(ierr);
+      ierr = SNESSetHessian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Method class doesn't support matrix-free option");
     }
-    ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
+    ierr = MatDestroy(J);CHKERRQ(ierr);
+
     /* force no preconditioner */
     ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
     ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
@@ -1380,7 +1405,8 @@ int SNESDestroy(SNES snes)
 
   if (snes->destroy) {ierr = (*(snes)->destroy)(snes);CHKERRQ(ierr);}
   if (snes->kspconvctx) {ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);}
-  if (snes->mfshell) {ierr = MatDestroy(snes->mfshell);CHKERRQ(ierr);}
+  if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
+  if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
   ierr = SLESDestroy(snes->sles);CHKERRQ(ierr);
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
   for (i=0; i<snes->numbermonitors; i++) {
@@ -2052,7 +2078,7 @@ int SNESRegisterDestroy(void)
 .  snes - nonlinear solver context
 
    Output Parameter:
-.  type - SNES method (a charactor string)
+.  type - SNES method (a character string)
 
    Level: intermediate
 
@@ -2345,7 +2371,7 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
    SNESRegisterDynamic - Adds a method to the nonlinear solver package.
 
    Synopsis:
-   SNESRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
+   int SNESRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
 
    Not collective
 

@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.71 2001/03/23 23:20:38 balay Exp balay $*/
+/*$Id: init.c,v 1.72 2001/04/05 21:06:49 balay Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -308,6 +308,31 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag)
   }
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscEnd"
+/*@C 
+   PetscEnd - Calls PetscFinalize() and then ends the program. This is useful if one 
+     wishes a clean exit somewhere deep in the program.
+
+   Collective on PETSC_COMM_WORLD
+
+   Options Database Keys are the same as for PetscFinalize()
+
+   Level: advanced
+
+   Note:
+   See PetscInitialize() for more general runtime options.
+
+.seealso: PetscInitialize(), PetscOptionsPrint(), PetscTrDump(), PetscMPIDump(), PetscFinalize()
+@*/
+int PetscEnd(void)
+{
+  PetscFunctionBegin;
+  PetscFinalize();
+  exit(0);
+  return 0;
+}
+
 PetscTruth        PetscOptionsPublish = PETSC_FALSE;
 EXTERN int        PetscLogInfoAllow(PetscTruth,char *);
 EXTERN int        PetscSetUseTrMalloc_Private(void);
@@ -599,7 +624,7 @@ int PetscOptionsCheckInitial(void)
     ierr = (*PetscHelpPrintf)(comm," -trdebug: enables extended checking for memory corruption\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_table: dump list of options inputted\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_left: dump list of unused options\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -options_left_off: don't dump list of unused options\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -options_left no: don't dump list of unused options\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -tmp tmpdir: alternative /tmp directory\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -shared_tmp: tmp directory is shared by all processors\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -not_shared_tmp: each processor has seperate tmp directory\n");CHKERRQ(ierr);

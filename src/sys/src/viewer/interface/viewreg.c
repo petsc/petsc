@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.34 2001/03/23 23:20:05 balay Exp bsmith $*/
+/*$Id: viewreg.c,v 1.35 2001/04/10 19:34:10 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -124,7 +124,7 @@ int PetscViewerRegisterDestroy(void)
    PetscViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscViewer))
+   int PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscViewer))
 
    Not Collective
 

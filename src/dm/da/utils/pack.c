@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.15 2001/03/23 23:25:14 balay Exp balay $*/
+/*$Id: pack.c,v 1.16 2001/03/28 19:42:48 balay Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -21,7 +21,8 @@ typedef struct _VecPackOps *VecPackOps;
 struct _VecPackOps {
   int  (*view)(VecPack,PetscViewer);
   int  (*createglobalvector)(VecPack,Vec*);
-  int  (*getcoloring)(VecPack,ISColoring*,Mat*);
+  int  (*getcoloring)(VecPack,ISColoringType,ISColoring*);
+  int  (*getmatrix)(VecPack,MatType,Mat*);
   int  (*getinterpolation)(VecPack,VecPack,Mat*,Vec*);
   int  (*refine)(VecPack,MPI_Comm,VecPack*);
 };
@@ -857,7 +858,7 @@ int VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *da)
 #define __FUNCT__ "VecPackGetEntries"
 /*@C
     VecPackGetEntries - Gets the DA, redundant size, etc for each entry in a VecPack.
-       Use VecPakcRestoreEntries() to return them.
+       Use VecPackRestoreEntries() to return them.
 
     Collective on VecPack
 
@@ -871,7 +872,7 @@ int VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *da)
 
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
          VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(), 
-         VecPackRestoreLocalVectors(), VecPackGetLocalVectors()
+         VecPackRestoreLocalVectors(), VecPackGetLocalVectors(), VecPackRestoreEntries()
 
 @*/
 int VecPackGetEntries(VecPack packer,...)

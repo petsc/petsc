@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.106 2001/01/15 21:47:47 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.107 2001/03/22 20:31:48 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -81,7 +81,7 @@ EXTERN int SNESSetTypeFromOptions(SNES);
 EXTERN int MatCreateSNESMF(SNES,Vec,Mat*);
 EXTERN int MatCreateMF(Vec,Mat*);
 EXTERN int MatSNESMFSetBase(Mat,Vec);
-EXTERN int MatSNESMFFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN int MatSNESMFComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void *);
 EXTERN int MatSNESMFAddNullSpace(Mat,MatNullSpace);
 EXTERN int MatSNESMFSetHHistory(Mat,Scalar *,int);
@@ -105,12 +105,16 @@ EXTERN int MatSNESMFRegister(char *,char *,char *,int (*)(MatSNESMFCtx));
 #endif
 EXTERN int MatSNESMFRegisterAll(char *);
 EXTERN int MatSNESMFRegisterDestroy(void);
-EXTERN int MatSNESMFDefaultSetUmin(Mat,double);
+EXTERN int MatSNESMFDefaultSetUmin(Mat,PetscReal);
 EXTERN int MatSNESMFWPSetComputeNormA(Mat,PetscTruth);
 EXTERN int MatSNESMFWPSetComputeNormU(Mat,PetscTruth);
 
+EXTERN int MatDAADSetSNES(Mat,SNES);
+
 EXTERN int SNESGetType(SNES,SNESType*);
 EXTERN int SNESDefaultMonitor(SNES,int,double,void *);
+EXTERN int SNESRatioMonitor(SNES,int,double,void *);
+EXTERN int SNESSetRatioMonitor(SNES);
 EXTERN int SNESVecViewMonitor(SNES,int,double,void *);
 EXTERN int SNESVecViewUpdateMonitor(SNES,int,double,void *);
 EXTERN int SNESDefaultSMonitor(SNES,int,double,void *);
@@ -166,6 +170,11 @@ EXTERN int SNESConverged_UM_TR(SNES,double,double,double,SNESConvergedReason*,vo
 EXTERN int SNESConverged_EQ_LS(SNES,double,double,double,SNESConvergedReason*,void*);
 EXTERN int SNESConverged_EQ_TR(SNES,double,double,double,SNESConvergedReason*,void*);
 EXTERN int SNESGetConvergedReason(SNES,SNESConvergedReason*);
+
+EXTERN int SNESDAFormFunction(SNES,Vec,Vec,void*);
+EXTERN int SNESDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN int SNESDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN int SNESDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
 EXTERN int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);

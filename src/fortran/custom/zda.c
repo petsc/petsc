@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.46 2001/05/03 16:33:02 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.47 2001/05/03 16:38:06 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -6,6 +6,9 @@
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dasetlocalfunction_          DASETLOCALFUNCTION
+#define dasetLocaladiforfunction_    DASETLOCALADIFORFUNCTION
+#define dasetlocaladiformffunction_  DASETLOCALADIFORMFFUNCTION
+#define dasetlocaljacobian_          DASETLOCALJACOBIAN
 #define dagetlocalinfo_              DAGETLOCALINFO
 #define dagetinterpolation_          DAGETINTERPOLATION
 #define dacreate1d_                  DACREATE1D
@@ -21,6 +24,7 @@
 #define daview_                      DAVIEW
 #define dagetinfo_                   DAGETINFO
 #define dagetcoloring_               DAGETCOLORING
+#define dagetmatrix_                 DAGETMATRIX
 #define dagetislocaltoglobalmapping_ DAGETISLOCALTOGLOBALMAPPING
 #define dagetislocaltoglobalmappingblck_ DAGETISLOCALTOGLOBALMAPPINGBLCK
 #define daload_                      DALOAD
@@ -45,6 +49,7 @@
 #define dagetglobalindices_          dagetglobalindices
 #define dagetinfo_                   dagetinfo
 #define dagetcoloring_               dagetcoloring
+#define dagetmatrix_                 dagetmatrix
 #define dagetislocaltoglobalmapping_ dagetislocaltoglobalmapping
 #define dagetislocaltoglobalmappingblck_ dagetislocaltoglobalmappingblck
 #define dasetfieldname_              dasetfieldname
@@ -52,11 +57,39 @@
 #define darefine_                    darefine
 #define dagetao_                     dagetao
 #define dasetlocalfunction_          dasetlocalfunction
+#define dasetlocaladiforfunction_       dasetlocaladiforfunction
+#define dasetlocaladiformffunction_       dasetlocaladiformffunction
+#define dasetlocaljacobian_          dasetlocaljacobian
 #endif
 
 
 
 EXTERN_C_BEGIN
+
+
+static void (PETSC_STDCALL *j1d)(DALocalInfo*,void*,void*,void*,int*);
+static int ourlj1d(DALocalInfo *info,Scalar *in,Mat m,void *ptr)
+{
+  int ierr = 0;
+  (*j1d)(info,&in[info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static void (PETSC_STDCALL *j2d)(DALocalInfo*,void*,void*,void*,int*);
+static int ourlj2d(DALocalInfo *info,Scalar **in,Mat m,void *ptr)
+{
+  int ierr = 0;
+  (*j2d)(info,&in[info->gys][info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static void (PETSC_STDCALL *j3d)(DALocalInfo*,void*,void*,void*,int*);
+static int ourlj3d(DALocalInfo *info,Scalar ***in,Mat m,void *ptr)
+{
+  int ierr = 0;
+  (*j3d)(info,&in[info->gzs][info->gys][info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
+  return 0;
+}
 
 static void (PETSC_STDCALL *f1d)(DALocalInfo*,void*,void*,void*,int*);
 static int ourlf1d(DALocalInfo *info,Scalar *in,Scalar *out,void *ptr)
@@ -82,21 +115,51 @@ static int ourlf3d(DALocalInfo *info,Scalar ***in,Scalar ***out,void *ptr)
   return 0;
 }
 
-void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocalInfo*,void*,void*,void*,int*),
-				       void (PETSC_STDCALL *jfunc)(DALocalInfo*,void*,void*,void*,int*),int *ierr)
+void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocalInfo*,void*,void*,void*,int*),int *ierr)
 {
   int dim;
 
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
      f2d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))func; 
-    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf2d,0);
+    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf2d);
   } else if (dim == 3) {
      f3d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))func; 
-    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf3d,0);
+    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf3d);
   } else if (dim == 1) {
      f1d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))func; 
-    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf1d,0);
+    *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf1d);
+  } else *ierr = 1;
+}
+
+#include "src/dm/da/daimpl.h"
+
+void PETSC_STDCALL dasetlocaladiforfunction_(DA *da,
+void (PETSC_STDCALL *jfunc)(int*,DALocalInfo*,void*,void*,int*,void*,void*,int*,void*,int*),int *ierr)
+{
+  (*da)->adifor_lf = (DALocalFunction1)jfunc;
+}
+
+void PETSC_STDCALL dasetlocaladiformffunction_(DA *da,
+void (PETSC_STDCALL *jfunc)(DALocalInfo*,void*,void*,void*,void*,void*,int*),int *ierr)
+{
+  (*da)->adiformf_lf = (DALocalFunction1)jfunc;
+}
+
+void PETSC_STDCALL dasetlocaljacobian_(DA *da,void (PETSC_STDCALL *jac)(DALocalInfo*,void*,void*,void*,int*),int *ierr)
+{
+  int dim;
+
+  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
+  if (dim == 2) {
+     j2d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))jac; 
+    *ierr = DASetLocalJacobian(*da,(DALocalFunction1)ourlj2d);
+  } else if (dim == 3) {
+     j3d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))jac;
+    *ierr = DASetLocalJacobian(*da,(DALocalFunction1)ourlj3d);
+  } else if (dim == 1) {
+     j1d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,int*))jac; 
+    *ierr = DASetLocalJacobian(*da,(DALocalFunction1)ourlj1d);
   } else *ierr = 1;
 }
 
@@ -160,13 +223,16 @@ void PETSC_STDCALL dagetislocaltoglobalmappingblck_(DA *da,ISLocalToGlobalMappin
   *ierr = DAGetISLocalToGlobalMappingBlck(*da,map);
 }
 
-void PETSC_STDCALL dagetcoloring_(DA *da,ISColoringType *ctype,CHAR mat_type PETSC_MIXED_LEN(len),ISColoring *coloring,Mat *J,int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL dagetcoloring_(DA *da,ISColoringType *ctype,ISColoring *coloring,int *ierr PETSC_END_LEN(len))
+{
+  *ierr = DAGetColoring(*da,*ctype,coloring);
+}
+
+void PETSC_STDCALL dagetmatrix_(DA *da,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,int *ierr PETSC_END_LEN(len))
 {
   char *t;
-  if (FORTRANNULLOBJECT(coloring)) coloring = PETSC_NULL;
-  if (FORTRANNULLOBJECT(J))        J        = PETSC_NULL;
   FIXCHAR(mat_type,len,t);
-  *ierr = DAGetColoring(*da,*ctype,t,coloring,J);
+  *ierr = DAGetMatrix(*da,t,J);
   FREECHAR(mat_type,t);
 }
 

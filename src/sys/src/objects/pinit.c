@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.52 2001/05/15 03:15:59 bsmith Exp balay $*/
+/*$Id: pinit.c,v 1.53 2001/05/15 19:05:16 balay Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -416,6 +416,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   PetscFunctionReturn(ierr);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFinalize"
 /*@C 
@@ -456,7 +457,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
    Note:
    See PetscInitialize() for more general runtime options.
 
-.seealso: PetscInitialize(), PetscOptionsPrint(), PetscTrDump(), PetscMPIDump()
+.seealso: PetscInitialize(), PetscOptionsPrint(), PetscTrDump(), PetscMPIDump(), PetscEnd()
 @*/
 int PetscFinalize(void)
 {

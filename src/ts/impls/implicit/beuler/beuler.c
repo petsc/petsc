@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.55 2001/03/28 19:42:31 balay Exp balay $*/
+/*$Id: beuler.c,v 1.56 2001/04/04 16:56:38 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -380,7 +380,7 @@ int TSCreate_BEuler(TS ts)
     ts->setfromoptions  = TSSetFromOptions_BEuler_Linear;
     ierr = SLESCreate(ts->comm,&ts->sles);CHKERRQ(ierr);
     ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
     if (isshell) {

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.39 2001/03/23 23:24:56 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.40 2001/04/10 19:37:19 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a a simple unstructured grid from a file. Partitions it,\n\
 and distributes the grid data accordingly\n\n";
@@ -407,11 +407,11 @@ int DataRead(GridData *gdata)
 */
 int DataPartitionElements(GridData *gdata)
 {
-  Mat          Adj;                /* adjacency matrix */
-  int          *ia,*ja;
-  int          mlocal_ele,n_ele,ierr;
+  Mat             Adj;                /* adjacency matrix */
+  int             *ia,*ja;
+  int             mlocal_ele,n_ele,ierr;
   MatPartitioning part;
-  IS           isnewproc; 
+  IS              isnewproc; 
 
   PetscFunctionBegin;
   n_ele       = gdata->n_ele;

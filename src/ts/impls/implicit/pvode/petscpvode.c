@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.67 2001/03/23 23:24:40 balay Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.68 2001/04/10 19:37:10 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -17,8 +17,8 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "TSPrecond_PVode"
-int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,bool jok,
-                    bool *jcurPtr,real _gamma,N_Vector ewt,real h,
+int TSPrecond_PVode(integer N,real tn,N_Vector y,N_Vector fy,boole jok,
+                    boole *jcurPtr,real _gamma,N_Vector ewt,real h,
                     real uround,long int *nfePtr,void *P_data,
                     N_Vector vtemp1,N_Vector vtemp2,N_Vector vtemp3)
 {
@@ -246,7 +246,8 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
 
   /* allocate the memory for machEnv */
-  machEnv = PVInitMPI(ts->comm,locsize,M); 
+  /* machEnv = PVInitMPI(ts->comm,locsize,M);  */
+  machEnv = PVecInitMPI(ts->comm, locsize, M, 0, 0);
 
   /* allocate the memory for N_Vec y */
   cvode->y         = N_VNew(M,machEnv); 

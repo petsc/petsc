@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.48 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.49 2001/04/10 19:36:40 bsmith Exp bsmith $*/
 
 static char help[] = "The solution of 2 different linear systems with different linear solvers.\n\
 Also, this example illustrates the repeated\n\
@@ -244,7 +244,7 @@ int main(int argc,char **args)
        guess vector; otherwise, an initial guess of zero is used.
     */
     if (t>0) {
-      ierr = KSPSetInitialGuessNonzero(ksp1);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp1,PETSC_TRUE);CHKERRQ(ierr);
     }
 
     /* 

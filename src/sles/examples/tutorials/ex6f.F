@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.33 2001/01/15 21:47:36 bsmith Exp balay $";
+!    "$Id: ex6f.F,v 1.34 2001/01/19 23:21:44 balay Exp bsmith $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -187,7 +187,7 @@
 ! All other times: Set previous solution as initial guess for next solve.
       else
         call SLESGetKSP(sles,ksp,ierr)
-        call KSPSetInitialGuessNonzero(ksp,ierr)
+        call KSPSetInitialGuessNonzero(ksp,PETSC_TRUE,ierr)
       endif
 
 ! Alter the matrix A a bit

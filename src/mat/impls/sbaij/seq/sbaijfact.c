@@ -1,12 +1,12 @@
-/*$Id: sbaijfact.c,v 1.58 2001/03/23 23:22:21 balay Exp balay $*/
+/*$Id: sbaijfact.c,v 1.59 2001/04/10 22:35:39 balay Exp bsmith $*/
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
 /*
     Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
 */
-#include "sbaij.h"
 #include "src/mat/impls/baij/seq/baij.h" 
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 #include "include/petscis.h"
@@ -23,10 +23,6 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   PetscTruth  perm_identity;
 
   PetscFunctionBegin;
-  if (!perm) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,mbs,0,1,&perm);CHKERRQ(ierr);
-  }
-  PetscValidHeaderSpecific(perm,IS_COOKIE);
 
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
@@ -37,7 +33,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   if (perm_identity){ /* without permutation */
     ai = a->i; aj = a->j;
   } else {            /* non-trivial permutation */    
-    ierr = MatReorderingSeqSBAIJ(A, perm);CHKERRQ(ierr);   
+    ierr = MatReorderingSeqSBAIJ(A,perm);CHKERRQ(ierr);   
     ai = a->inew; aj = a->jnew;
   }
   

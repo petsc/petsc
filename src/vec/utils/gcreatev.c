@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.85 2001/03/23 23:21:18 balay Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.86 2001/04/10 19:34:51 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -66,7 +66,7 @@ int VecRegisterDestroy(void)
    VecRegisterDynamic - Adds a new vector component implementation
 
    Synopsis:
-   VecRegisterDynamic(char *name_solver,char *path,char *name_create,
+   int VecRegisterDynamic(char *name_solver,char *path,char *name_create,
                int (*routine_create)(MPI_Comm,int,int,Vec*))
 
    Not Collective

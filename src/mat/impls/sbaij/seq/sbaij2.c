@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.28 2001/01/17 22:22:55 bsmith Exp balay $*/
+/*$Id: sbaij2.c,v 1.29 2001/03/23 23:22:21 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -6,7 +6,7 @@
 #include "src/inline/spops.h"
 #include "src/inline/ilu.h"
 #include "petscbt.h"
-#include "sbaij.h"
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqSBAIJ"

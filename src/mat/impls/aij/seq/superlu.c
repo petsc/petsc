@@ -1,4 +1,4 @@
-/*$Id: superlu.c,v 1.2 2001/06/21 19:39:38 bsmith Exp bsmith $*/
+/*$Id: superlu.c,v 1.3 2001/06/21 19:43:16 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver
@@ -18,11 +18,11 @@ typedef struct {
   SuperMatrix AC;
   SuperMatrix L;
   SuperMatrix U;
-  int         perm_spec; /* 0 = natural ordering,1 = minimum degree on A^T A,2 = min deg on A^T + A */
   int        *perm_r;
   int        *perm_c;
   int         relax;
   int         panel_size;
+  double      pivot_threshold;
 } Mat_SeqAIJ_SuperLU;
 
 
@@ -143,11 +143,11 @@ extern int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 }
 
 /*
-   Note r and c are ignored 
+   Note the r permutation is ignored
 */
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
-extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *infof,Mat *F)
+extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   Mat                 B;
@@ -172,6 +172,12 @@ extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *infof,M
   ierr = ISGetIndices(c,&ca);CHKERRQ(ierr);
   ierr = PetscMemcpy(lu->perm_c,ca,A->m*sizeof(int));CHKERRQ(ierr);
   ierr = ISRestoreIndices(c,&ca);CHKERRQ(ierr);
+  
+  if (info) {
+    lu->pivot_threshold = info->dtcol;
+  } else {
+    lu->pivot_threshold = 0.0; /* no pivoting */
+  }
 
   PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SeqAIJ_SuperLU));
   PetscFunctionReturn(0);
@@ -216,7 +222,6 @@ extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   /* Set SuperLU options */
   lu->relax      = sp_ienv(2);
   lu->panel_size = sp_ienv(1);
-  lu->perm_spec  = 1;
   ierr           = PetscMalloc(A->n*sizeof(int),&etree);CHKERRQ(ierr);
   /* We have to initialize global data or SuperLU crashes (sucky design) */
   StatInit(lu->panel_size,lu->relax);
@@ -224,7 +229,7 @@ extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   /* Create the elimination tree */
   sp_preorder("N",&lu->A,lu->perm_c,etree,&lu->AC);
   /* Factor the matrix */
-  dgstrf("N",&lu->AC,1.0,0.0,lu->relax,lu->panel_size,etree,PETSC_NULL,0,lu->perm_r,lu->perm_c,&lu->L,&lu->U,&ierr);
+  dgstrf("N",&lu->AC,lu->pivot_threshold,0.0,lu->relax,lu->panel_size,etree,PETSC_NULL,0,lu->perm_r,lu->perm_c,&lu->L,&lu->U,&ierr);
   if (ierr < 0) {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"The diagonal element of row %d was invalid",-ierr);
   } else if (ierr > 0) {

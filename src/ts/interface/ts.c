@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.39 2001/04/04 18:04:08 balay Exp balay $ */
+/* $Id: ts.c,v 1.40 2001/04/05 21:09:19 balay Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
@@ -1394,8 +1394,7 @@ int TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
    TSRegisterDynamic - Adds a method to the timestepping solver package.
 
    Synopsis:
-
-   TSRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(TS))
+   int TSRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(TS))
 
    Not collective
 

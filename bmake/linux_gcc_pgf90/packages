@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.18 2001/03/27 00:14:44 bsmith Exp balay $ 
+# $Id: base.site,v 1.19 2001/03/27 22:17:30 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -66,9 +66,9 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Matlab location
 #
-#CMEX            = /software/linux/com/packages/matlab-r12/bin/mex
-#MCC             = gcc
-#MATLABCOMMAND   = matlab
+CMEX            = /software/linux/com/packages/matlab-r12/bin/mex
+MCC             = gcc
+MATLABCOMMAND   = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #  The Matlab include file have some bugs in them with C++,  they have a 
@@ -84,16 +84,22 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location where adiC is installed
 #
-#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
-#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
-#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
-#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
+ADIC_INCLUDE    = -I${ADIC}/include -Dad_GRAD_MAX=36
+ADIC_LIB        =  -L${ADIC}/lib/${ADIC_ARCH}/ -ladic -lADIntrinsics-C -laif_grad
+ADIC_CC         = adiC -a -d gradient
+PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
+#
+# Location where adifor is installed
+#
+ADIFOR_LIB        =  /home/derivs/ADIFOR2.0D.lib/lib/ReqADIntrinsics-Linux86.o /home/derivs/ADIFOR2.0D.lib/lib/libADIntrinsics-Linux86.a
+ADIFOR_FC          = /home/derivs/ADIFOR2.0D/bin/Adifor2.1  AD_PMAX=36 AD_IVARS=X AD_DVARS=F AD_PROG=silly.cmp AD_OUTPUT_DIR=. AD_EXCLUDE_PROCS=PETSCLOGFLOPS
+PETSC_HAVE_ADIFOR = -DPETSC_HAVE_ADIFOR
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/linux/libpvode.a
-#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
+PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/libpvode_linux_gcc_pgf90.a
+PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
 # Location of ParMetis
 #
@@ -124,9 +130,15 @@ SPAI_INCLUDE    = -I/home/petsc/software/spai_3.0/lib
 SPAI_LIB        = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
 PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
+#  Location of SuperLU
+#
+SUPERLU_LIB        = /home/petsc/software/SuperLU/superlu_linux.a
+SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC
+PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
 C_DYLIBPATH     =
 F_DYLIBPATH     = 
+

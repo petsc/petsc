@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.121 2001/05/22 03:29:12 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.122 2001/05/29 03:40:33 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -883,7 +883,7 @@ int MatSNESMFComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
 #define __FUNCT__ "MatSNESMFSetBase"
 int MatSNESMFSetBase(Mat J,Vec U)
 {
-  int  ierr,(*f)(Mat J,Vec U);
+  int  ierr,(*f)(Mat,Vec);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);

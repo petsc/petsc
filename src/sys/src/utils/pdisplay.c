@@ -1,4 +1,4 @@
-/*$Id: pdisplay.c,v 1.22 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: pdisplay.c,v 1.23 2001/03/23 23:20:45 balay Exp bsmith $*/
 
 #include "petsc.h"        
 #include "petscsys.h"             /*I    "petscsys.h"   I*/
@@ -56,22 +56,26 @@ int PetscOptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,PetscTr
     ierr = PetscStrcat(work,name);CHKERRQ(ierr);
   }
   ierr = PetscStrtolower(work);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(PETSC_NULL,work,env,len,&flg);CHKERRQ(ierr);
-  if (flg) {
-    if (flag) *flag = PETSC_TRUE;
-  } else { /* now check environment */
-    ierr = PetscMemzero(env,len*sizeof(char));CHKERRQ(ierr);
+  if (env) {
+    ierr = PetscOptionsGetString(PETSC_NULL,work,env,len,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (flag) *flag = PETSC_TRUE;
+    } else { /* now check environment */
+      ierr = PetscMemzero(env,len*sizeof(char));CHKERRQ(ierr);
 
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      str = getenv(name);
-      if (str) flg = PETSC_TRUE;
-      if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
-    }
-    ierr = MPI_Bcast(&flg,1,MPI_INT,0,comm);CHKERRQ(ierr);
-    ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
-    if (flag) *flag = flg;
-  } 
+      ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+      if (!rank) {
+	str = getenv(name);
+	if (str) flg = PETSC_TRUE;
+	if (str && env) {ierr = PetscStrncpy(env,str,len);CHKERRQ(ierr);}
+      }
+      ierr = MPI_Bcast(&flg,1,MPI_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
+      if (flag) *flag = flg;
+    } 
+  } else {
+    ierr = PetscOptionsHasName(PETSC_NULL,work,flag);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

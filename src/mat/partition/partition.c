@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.58 2001/03/23 23:22:49 balay Exp bsmith $*/
+/*$Id: partition.c,v 1.59 2001/04/10 19:36:00 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -96,7 +96,7 @@ PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;
    matrix package. 
 
    Synopsis:
-   MatPartitioningRegisterDynamic(char *name_partitioning,char *path,char *name_create,int (*routine_create)(MatPartitioning))
+   int MatPartitioningRegisterDynamic(char *name_partitioning,char *path,char *name_create,int (*routine_create)(MatPartitioning))
 
    Not Collective
 

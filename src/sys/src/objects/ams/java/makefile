@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 2001/03/22 20:29:05 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.20 2001/03/28 16:05:02 bsmith Exp bsmith $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
 
@@ -31,46 +31,46 @@ PETSCBINPATH  = ${PETSC_DIR}
 PETScRun:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScRun.java
 	-@${JAR} cf PETScRun.jar PETScRun*.class
-	-@rm -f ${PETSCBINPATH}/bin/PETScRun.*
-	-@mv -f PETScRun.jar ${PETSCBINPATH}/bin
-	-@cp -f PETScRun.html ${PETSCBINPATH}/bin
+	-@${RM} ${PETSCBINPATH}/bin/PETScRun.*
+	-@${MV} -f PETScRun.jar ${PETSCBINPATH}/bin
+	-@${CP} -f PETScRun.html ${PETSCBINPATH}/bin
 	-@${RM} *.class
 	-@chmod g+w ${PETSCBINPATH}/bin/PETScRun.*
 
 PETScView:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScView*.java 
-	-@mv PETScView*.class AMSBean
+	-@${MV} PETScView*.class AMSBean
 	-@cd AMSBean; ${JAR} cf PETScView.jar *
-	-@rm -f ${PETSCBINPATH}/bin/PETScView.*
-	-@mv -f AMSBean/PETScView.jar ${PETSCBINPATH}/bin
-	-@cp -f PETScView.html ${PETSCBINPATH}/bin
+	-@${RM} ${PETSCBINPATH}/bin/PETScView.*
+	-@${MV} -f AMSBean/PETScView.jar ${PETSCBINPATH}/bin
+	-@${CP} -f PETScView.html ${PETSCBINPATH}/bin
 	-@${RM} AMSBean/*.class
 	-@chmod g+w ${PETSCBINPATH}/bin/PETScView.*
 
 PETScOptions:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScOptions.java 
-	-@mv PETScOptions*.class AMSBean
+	-@${MV} PETScOptions*.class AMSBean
 	-@cd AMSBean; ${JAR} cf PETScOptions.jar *
-	-@rm -f ${PETSCBINPATH}/bin/PETScOptions.*
-	-@mv -f AMSBean/PETScOptions.jar ${PETSCBINPATH}/bin
-	-@cp -f PETScOptions.html ${PETSCBINPATH}/bin
+	-@${RM} ${PETSCBINPATH}/bin/PETScOptions.*
+	-@${MV} -f AMSBean/PETScOptions.jar ${PETSCBINPATH}/bin
+	-@${CP} -f PETScOptions.html ${PETSCBINPATH}/bin
 	-@${RM} AMSBean/*.class
 	-@chmod g+w ${PETSCBINPATH}/bin/PETScOptions.*
 
 PETScPlugins:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} PETScPlugins*.java 
 	-@${JAR} cf PETScPlugins.jar *.class
-	-@rm -f ${PETSCBINPATH}/bin/PETScPlugins.*
-	-@mv -f PETScPlugins.jar ${PETSCBINPATH}/bin
-	-@cp PETScPlugins.html ${PETSCBINPATH}/bin
+	-@${RM} ${PETSCBINPATH}/bin/PETScPlugins.*
+	-@${MV} -f PETScPlugins.jar ${PETSCBINPATH}/bin
+	-@${CP} PETScPlugins.html ${PETSCBINPATH}/bin
 	-@${RM} *.class
 	-@chmod g+w ${PETSCBINPATH}/bin/PETScPlugins.*
 
 PETScRund:
 	-@${JAVAC} -deprecation PETScRund.java PumpStream.java
 	-@${JAR} cf PETScRund.jar PETScRund*.class PumpStream*.class
-	-@rm  ../../../../../../bin/PETScRund.jar
-	-@mv -f PETScRund.jar ../../../../../../bin
+	-@${RM}  ../../../../../../bin/PETScRund.jar
+	-@${MV} -f PETScRund.jar ../../../../../../bin
 	-@${RM} *.class
 	-@chmod g+w  ../../../../../../bin/PETScRund.jar
 

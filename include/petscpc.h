@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.115 2001/02/15 22:23:26 bsmith Exp balay $ */
+/* $Id: petscpc.h,v 1.116 2001/03/28 19:41:44 balay Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -55,6 +55,7 @@ E*/
 #define PCNN        "nn"
 #define PCCHOLESKY  "cholesky"
 #define PCRAMG      "ramg"
+#define PCPBJACOBI  "pbjacobi"
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right
@@ -144,6 +145,7 @@ EXTERN int PCSLESSetUseTrue(PC);
 EXTERN int PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*);
 EXTERN int PCShellSetSetUp(PC,int (*)(void*));
 EXTERN int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
+EXTERN int PCShellSetView(PC,int (*)(void*,PetscViewer));
 EXTERN int PCShellSetName(PC,char*);
 EXTERN int PCShellGetName(PC,char**);
 
@@ -153,7 +155,7 @@ EXTERN int PCLUSetReuseFill(PC,PetscTruth);
 EXTERN int PCLUSetUseInPlace(PC);
 EXTERN int PCLUSetFill(PC,double);
 EXTERN int PCLUSetDamping(PC,double);
-EXTERN int PCLUSetColumnPivoting(PC,PetscReal);
+EXTERN int PCLUSetPivoting(PC,PetscReal);
 
 EXTERN int PCCholeskySetMatOrdering(PC,MatOrderingType);
 EXTERN int PCCholeskySetReuseOrdering(PC,PetscTruth);
@@ -201,6 +203,7 @@ EXTERN int PCASMSetType(PC,PCASMType);
 EXTERN int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 EXTERN int PCASMSetUseInPlace(PC);
 EXTERN int PCASMGetLocalSubdomains(PC,int*,IS**);
+EXTERN int PCASMGetLocalSubmatrices(PC,int*,Mat**);
 
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed

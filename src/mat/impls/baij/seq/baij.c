@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.225 2001/04/10 19:35:34 bsmith Exp balay $*/
+/*$Id: baij.c,v 1.226 2001/05/31 22:25:50 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1893,6 +1893,7 @@ int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
   if (nnz) {
     for (i=0; i<mbs; i++) {
       if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
+      if (nnz[i] > nbs) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than block row length: local row %d value %d rowlength %d",i,nnz[i],nbs);
     }
   }
 

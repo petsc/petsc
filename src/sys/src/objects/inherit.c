@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.68 2001/03/23 23:20:38 balay Exp bsmith $*/
+/*$Id: inherit.c,v 1.69 2001/04/10 19:34:33 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -544,7 +544,7 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 }
 
 /*MC
-   PetscObjectComposeFunction - Associates a function with a given PETSc object. 
+   PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
                        
    Collective on PetscObject
 
@@ -558,7 +558,7 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
    Level: advanced
 
     Synopsis:
-    PetscObjectComposeFunctionDynamic(PetscObject obj,char *name,char *fname,void *ptr)
+    int PetscObjectComposeFunctionDynamic(PetscObject obj,char *name,char *fname,void *ptr)
 
    Notes:
    PetscObjectComposeFunctionDynamic() can be used with any PETSc object (such as

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.175 2001/03/12 23:11:18 bsmith Exp balay $ 
+# $Id: makefile,v 1.176 2001/03/29 16:36:12 balay Exp bsmith $ 
 
 CFLAGS	  = 
 FFLAGS    =
@@ -193,13 +193,13 @@ runex5:
 # ftp://info.mcs.anl.gov/pub/petsc/testmatrices
 #
 runex6:
-	-@${MPIRUN} -np 1 ex6 -ksp_type preonly  -pc_type lu -options_left_off \
+	-@${MPIRUN} -np 1 ex6 -ksp_type preonly  -pc_type lu -options_left no \
 	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex6_2:
-	-@${MPIRUN} -np 1 ex6 -sub_pc_type ilu -options_left_off \
+	-@${MPIRUN} -np 1 ex6 -sub_pc_type ilu -options_left no \
 	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1 \
 	   -ksp_gmres_restart 100 -ksp_gmres_irorthog -sub_ksp_type preonly -pc_type bjacobi \
 	   -pc_bjacobi_blocks 8 -sub_pc_ilu_in_place -ksp_smonitor \
@@ -208,7 +208,7 @@ runex6_2:
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   ${RM} -f ex6_2.tmp
 runex6_3:
-	-@${MPIRUN} -np 1 ex6 -pc_type ilu -options_left_off \
+	-@${MPIRUN} -np 1 ex6 -pc_type ilu -options_left no \
 	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco4 \
 	   -ksp_gmres_restart 100  -ksp_gmres_irorthog -ksp_smonitor  > ex6_3.tmp 2>&1; \
 	   if (${DIFF} output/ex6_3.out ex6_3.tmp) then true; \

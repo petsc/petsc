@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.19 2001/03/23 23:24:56 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.20 2001/04/10 19:37:19 bsmith Exp bsmith $*/
 
 static char help[] = "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
     -f input_file : Specifies input file\n\
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
 {
   int            ierr,bs,zero = 0,edited = 0;
   char           filename[256],string[256],*segname,*value,keyname[256],*ikeyname;
-  PetscViewer         binary;
+  PetscViewer    binary;
   AOData         aodata;
   PetscTruth     keyexists,flag;
 

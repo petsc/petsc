@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.39 2001/03/19 21:30:56 bsmith Exp bsmith $";
+! "$Id: ex5f90.F,v 1.40 2001/05/01 18:32:18 bsmith Exp bsmith $";
 !
 !  Description: Solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -46,7 +46,7 @@
         DA      da
         integer xs,xe,xm,gxs,gxe,gxm
         integer ys,ye,ym,gys,gye,gym
-        integer mx,my,rank,size
+        integer mx,my,rank
         double precision lambda
       end type userctx
       contains
@@ -95,7 +95,7 @@
 
 !  Declarations for use with local arrays:
       Scalar,pointer :: lx_v(:),lf_v(:)
-      Vec            localX,localF
+      Vec            localX
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
@@ -103,7 +103,6 @@
 !  be done while messages are in transition.
 
       call DAGetLocalVector(user%da,localX,ierr)
-      call DAGetLocalVector(user%da,localF,ierr)
       call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
      &     localX,ierr)
       call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
@@ -117,7 +116,7 @@
 !      and is useable from Fortran-90 Only.
 
       call VecGetArrayF90(localX,lx_v,ierr)
-      call VecGetArrayF90(localF,lf_v,ierr)
+      call VecGetArrayF90(F,lf_v,ierr)
 
 !  Compute function over the locally owned part of the grid
 
@@ -126,13 +125,11 @@
 !  Restore vectors
 
       call VecRestoreArrayF90(localX,lx_v,ierr)
-      call VecRestoreArrayF90(localF,lf_v,ierr)
+      call VecRestoreArrayF90(F,lf_v,ierr)
 
 !  Insert values into global vector
 
-      call DALocalToGlobal(user%da,localF,INSERT_VALUES,F,ierr)
       call DARestoreLocalVector(user%da,localX,ierr)
-      call DARestoreLocalVector(user%da,localF,ierr)
       call PetscLogFlops(11*user%ym*user%xm,ierr)
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
@@ -177,11 +174,8 @@
       SNES                   snes
       Vec                    x,r
       Mat                    J
-      ISLocalToGlobalMapping isltog
-      integer                its,matrix_free,flg,N,ierr,m
+      integer                its,matrix_free,flg,ierr
       double precision       lambda_max,lambda_min
-      integer,pointer     :: ltog_a(:)
-      integer                nloc
       type (userctx)         user
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -194,7 +188,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,user%size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,user%rank,ierr)
 
 !  Initialize problem parameters
@@ -209,7 +202,6 @@
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRQ(1,' ',ierr)
       endif
-      N = user%mx*user%my
 
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -300,28 +292,8 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
-        if (user%size .eq. 1) then
-           call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,                 &
-     &          PETSC_NULL_INTEGER,J,ierr)
-        else
-          call VecGetLocalSize(x,m,ierr)
-          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,              &
-     &         PETSC_NULL_INTEGER,3,PETSC_NULL_INTEGER,J,ierr)
-        endif
+        call DAGetMatrix(user%da,MATMPIAIJ,J,ierr)
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
-
-!       Get the global node numbers for all local nodes, including ghost points.
-!       Associate this mapping with the matrix for later use in setting matrix
-!       entries via MatSetValuesLocal().
-!        - Note that the interface to DAGetGlobalIndicesF90() differs from
-!          DAGetGlobalIndices().
-
-        call DAGetGlobalIndicesF90(user%da,nloc,ltog_a,ierr)
-        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,         &
-     &       ltog_a,isltog,ierr)
-        call MatSetLocalToGlobalMapping(J,isltog,ierr)
-        call ISLocalToGlobalMappingDestroy(isltog,ierr)
-
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -520,7 +492,7 @@
 !  Input/output variables:
       type (userctx) user
       Scalar   x(user%gxs:user%gxe,user%gys:user%gye)
-      Scalar   f(user%gxs:user%gxe,user%gys:user%gye)
+      Scalar   f(user%xs:user%xe,user%ys:user%ye)
       integer  ierr
 
 !  Local variables:

@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.247 2001/04/13 03:27:47 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.248 2001/04/13 15:06:15 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -43,7 +43,7 @@ int PetscOptionsAtoi(const char name[],int *a)
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  if (!len) SETERRQ(1,"charactor string of length zero has no numerical value");
+  if (!len) SETERRQ(1,"character string of length zero has no numerical value");
 
   ierr = PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault);CHKERRQ(ierr);
   if (!tdefault) {
@@ -84,7 +84,7 @@ int PetscOptionsAtod(const char name[],PetscReal *a)
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  if (!len) SETERRQ(1,"charactor string of length zero has no numerical value");
+  if (!len) SETERRQ(1,"character string of length zero has no numerical value");
 
   ierr = PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault);CHKERRQ(ierr);
   if (!tdefault) {
@@ -856,6 +856,8 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
       if (istrue) PetscFunctionReturn(0);
       ierr = PetscStrcmp(value,"yes",&istrue);CHKERRQ(ierr);
       if (istrue) PetscFunctionReturn(0);
+      ierr = PetscStrcmp(value,"on",&istrue);CHKERRQ(ierr);
+      if (istrue) PetscFunctionReturn(0);
 
       *ivalue = PETSC_FALSE;
       ierr = PetscStrcmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
@@ -867,6 +869,8 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
       ierr = PetscStrcmp(value,"false",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
       ierr = PetscStrcmp(value,"no",&isfalse);CHKERRQ(ierr);
+      if (isfalse) PetscFunctionReturn(0);
+      ierr = PetscStrcmp(value,"off",&isfalse);CHKERRQ(ierr);
       if (isfalse) PetscFunctionReturn(0);
 
       SETERRQ1(1,"Unknown logical value: %s",value);

@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.20 2000/10/24 20:25:36 bsmith Exp bsmith $ */
+/* $Id: mpiaij.h,v 1.21 2001/01/15 21:45:38 bsmith Exp bsmith $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
@@ -45,5 +45,10 @@ typedef struct {
   /* for factorization codes to hide stuff */
   void          *spptr;
 } Mat_MPIAIJ;
+
+EXTERN int MatSetColoring_MPIAIJ(Mat,ISColoring);
+EXTERN int MatSetValuesAdic_MPIAIJ(Mat,void*);
+EXTERN int MatSetValuesAdifor_MPIAIJ(Mat,int,void*);
+
 
 #endif

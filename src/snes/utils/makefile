@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.2 2000/08/01 20:57:38 bsmith Exp bsmith $
+# $Id: makefile,v 1.3 2000/08/17 04:52:55 bsmith Exp bsmith $
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${ADIC_INCLUDE}
 FFLAGS   =
 SOURCEC  = damgsnes.c
 SOURCEF  =

@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.161 2001/04/23 15:12:05 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.162 2001/05/17 03:31:28 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -18,7 +18,7 @@ int MatOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 
 
 EXTERN int MatMarkDiagonal_SeqAIJ(Mat);
-EXTERN int Mat_AIJ_CheckInode(Mat);
+EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 
 EXTERN int SPARSEKIT2dperm(int*,Scalar*,int*,int*,Scalar*,int*,int*,int*,int*,int*);
 EXTERN int SPARSEKIT2ilutp(int*,Scalar*,int*,int*,int*,PetscReal*,PetscReal*,int*,Scalar*,int*,int*,int*,Scalar*,int*,int*,int*);
@@ -117,7 +117,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     }
     ierr = PetscMalloc((n+1)*sizeof(int),&old_i2);CHKERRQ(ierr);
     ierr = PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(int),&old_j2);CHKERRQ(ierr);
-    ierr = PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(Scalar),old_a2);CHKERRQ(ierr);
+    ierr = PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(Scalar),&old_a2);CHKERRQ(ierr);
     job  = 3; SPARSEKIT2dperm(&n,old_a,old_j,old_i,old_a2,old_j2,old_i2,r,c,&job);
     for (i=0;i<n;i++) {
       r[i]  = r[i]-1;
@@ -249,7 +249,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
 
   /* check out for identical nodes. If found, use inode functions */
-  ierr = Mat_AIJ_CheckInode(*fact);CHKERRQ(ierr);
+  ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
 
   af = ((double)b->nz)/((double)a->nz) + .001;
   PetscLogInfo(A,"MatILUDTFactor_SeqAIJ:Fill ratio:given %g needed %g\n",info->fill,af);
@@ -414,6 +414,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   (*B)->factor                 =  FACTOR_LU;
   (*B)->info.factor_mallocs    = realloc;
   (*B)->info.fill_ratio_given  = f;
+  ierr = Mat_AIJ_CheckInode(*B,PETSC_FALSE);CHKERRQ(ierr);
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
   if (ai[n] != 0) {
@@ -424,7 +425,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   PetscFunctionReturn(0); 
 }
 /* ----------------------------------------------------------- */
-EXTERN int Mat_AIJ_CheckInode(Mat);
+EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
@@ -442,7 +443,6 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   PetscTruth damp;
 
   PetscFunctionBegin;
-
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(Scalar),&rtmp);CHKERRQ(ierr);
@@ -510,7 +510,6 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
-  ierr = Mat_AIJ_CheckInode(C);CHKERRQ(ierr);
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
   PetscLogFlops(C->n);
@@ -1030,12 +1029,13 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     b->lu_damping = 0.0;
   }
   (*fact)->factor   = FACTOR_LU;
+  ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
+  (*fact)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
   (*fact)->info.factor_mallocs    = realloc;
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
   (*fact)->factor                 =  FACTOR_LU;
-
   PetscFunctionReturn(0); 
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.28 2001/03/23 01:39:24 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.29 2001/03/23 23:23:55 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
@@ -149,7 +149,7 @@ int main(int argc,char **args)
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

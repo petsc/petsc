@@ -1,4 +1,4 @@
-/*$Id: matregis.c,v 1.8 2001/03/23 23:21:44 balay Exp bsmith $*/
+/*$Id: matregis.c,v 1.9 2001/05/11 03:14:08 bsmith Exp bsmith $*/
 
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
@@ -18,7 +18,6 @@ EXTERN int MatCreate_SeqDense(Mat);
 EXTERN int MatCreate_MPIDense(Mat);
 EXTERN int MatCreate_MPIAdj(Mat);
 EXTERN int MatCreate_Shell(Mat);
-EXTERN int MatCreate_Adic(Mat);
 EXTERN_C_END
   
 /*
@@ -73,9 +72,7 @@ int MatRegisterAll(char *path)
   ierr = MatRegisterDynamic(MATSEQDENSE,  path,"MatCreate_SeqDense",  MatCreate_SeqDense);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATMPIADJ,    path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ADIC)
-  ierr = MatRegisterDynamic(MATADIC,    path,"MatCreate_Adic",    MatCreate_Adic);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
+
 

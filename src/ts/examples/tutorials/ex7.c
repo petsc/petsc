@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.2 2001/04/10 19:37:12 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.3 2001/04/14 03:58:23 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -75,7 +75,8 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DAGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+  ierr = DAGetColoring(da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
+  ierr = DAGetMatrix(da,MATMPIAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,da);CHKERRQ(ierr);

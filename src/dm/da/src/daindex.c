@@ -1,4 +1,4 @@
-/*$Id: daindex.c,v 1.31 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: daindex.c,v 1.32 2001/03/23 23:25:00 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -35,10 +35,10 @@
    This routine is used differently from Fortran
 .vb
         DA          da
-        integer     da_array(1)
+        integer     n,da_array(1)
         PetscOffset i_da
         integer     ierr
-        call DAGetGlobalIndices(da,da_array,i_da,ierr)
+        call DAGetGlobalIndices(da,n,da_array,i_da,ierr)
 
    C Access first local entry in list
         value = da_array(i_da + 1)

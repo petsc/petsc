@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2000/02/09 19:38:27 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2000/08/17 04:53:37 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -24,7 +24,7 @@ petscdlib.c:
 
 petscdlib:  petscdlib.c
 	-@${RM} libpetscdlib.a libpetscdlib.${SLSUFFIX}
-	-@${OMAKE} -f petscmakefile PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} LIBNAME=libpetscdlib.a OBJSC=petscdlib.o libc
-	-@${OMAKE} -f petscmakefile PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} LIBNAME=libpetscdlib oshared
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} LIBNAME=libpetscdlib.a OBJSC=petscdlib.o libc
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} LIBNAME=libpetscdlib oshared
 #	-@${RM} petscdlib.c
 

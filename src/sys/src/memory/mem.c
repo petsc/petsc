@@ -1,4 +1,4 @@
-/*$Id: mem.c,v 1.53 2001/01/15 21:43:50 bsmith Exp balay $*/
+/*$Id: mem.c,v 1.54 2001/03/23 23:20:36 balay Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "petscsys.h"
@@ -49,7 +49,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetResidentSetSize"
-/*@
+/*@C
    PetscGetResidentSetSize - Returns the maximum resident set size (memory used)
    for the program.
 

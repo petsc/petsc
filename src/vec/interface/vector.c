@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.229 2001/03/28 19:41:06 balay Exp bsmith $*/
+/*$Id: vector.c,v 1.230 2001/05/24 20:54:52 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -383,17 +383,16 @@ $      x[i] = alpha * x[i], for i=1,...,n.
    Concepts: scaling^vector
 
 @*/
-PETSCTEMPLATE1 int VecScale PSCALAR1 (const Scalar1 *alpha,Vec x)
+int VecScale (const Scalar *alpha,Vec x)
 {
   int ierr;
-
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
   PetscValidType(x);
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->scale[PetscIndexOffPrecisionType(*alpha)])(alpha,x);CHKERRQ(ierr);
+  ierr = (*x->ops->scale)(alpha,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

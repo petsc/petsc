@@ -1,4 +1,4 @@
-/*$Id: appalgebra.c,v 1.18 2001/01/22 21:00:49 bsmith Exp balay $*/
+/*$Id: appalgebra.c,v 1.19 2001/03/23 23:25:29 balay Exp bsmith $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -91,7 +91,7 @@ int AppCtxSolve(AppCtx* appctx, int *its)
     {
       KSP ksp;
       ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
     ierr = SLESSetUp(sles,appctx->algebra.b,appctx->algebra.b);CHKERRQ(ierr);

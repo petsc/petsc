@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.171 2001/03/23 23:23:37 balay Exp bsmith $*/
+/*$Id: gmres.c,v 1.172 2001/04/10 19:36:32 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -246,7 +246,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
-  *outits         = itcount;
+  if (outits) *outits = itcount;
   PetscFunctionReturn(0);
 }
 

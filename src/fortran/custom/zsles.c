@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.34 2001/03/30 04:20:30 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.35 2001/04/02 15:10:29 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -19,7 +19,6 @@
 #define dmmgsetdm_               DMMGSETDM
 #define dmmgview_                DMMGVIEW
 #define dmmgsolve_               DMMGSOLVE
-#define dmmgsetusematrixfree_    DMMGSETUSEMATRIXFREE
 #define dmmggetda_               DMMGGETDA
 #define dmmgsetsles_             DMMGSETSLES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
@@ -39,7 +38,6 @@
 #define dmmggetda_               dmmggetda
 #define dmmgview_                dmmgview
 #define dmmgsolve_               dmmgsolve
-#define dmmgsetusematrixfree_    dmmgsetusematrixfree
 #endif
 
 EXTERN_C_BEGIN
@@ -103,11 +101,6 @@ void PETSC_STDCALL dmmgview_(DMMG **dmmg,PetscViewer *viewer,int *ierr)
 void PETSC_STDCALL dmmgsolve_(DMMG **dmmg,int *ierr)
 {
   *ierr = DMMGSolve(*dmmg);
-}
-
-void PETSC_STDCALL dmmgsetusematrixfree_(DMMG **dmmg,int *ierr)
-{
-  *ierr = DMMGSetUseMatrixFree(*dmmg);
 }
 
 void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmmg,int *ierr)

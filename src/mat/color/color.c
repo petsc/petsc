@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.58 2001/04/03 15:19:54 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.59 2001/04/03 18:39:30 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -206,7 +206,7 @@ PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
                                matrix package. 
 
    Synopsis:
-   MatColoringRegisterDynamic(char *name_coloring,char *path,char *name_create,int (*routine_create)(MatColoring))
+   int MatColoringRegisterDynamic(char *name_coloring,char *path,char *name_create,int (*routine_create)(MatColoring))
 
    Not Collective
 

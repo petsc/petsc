@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.212 2001/03/23 23:23:02 balay Exp bsmith $*/
+/*$Id: precon.c,v 1.213 2001/04/10 19:36:06 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -758,6 +758,7 @@ int PCSetUp(PC pc)
 
   if (pc->setupcalled > 1) {
     PetscLogInfo(pc,"PCSetUp:Setting PC with identical preconditioner\n");
+    PetscFunctionReturn(0);
   } else if (pc->setupcalled == 0) {
     PetscLogInfo(pc,"PCSetUp:Setting up new PC\n");
   } else if (pc->flag == SAME_NONZERO_PATTERN) {
@@ -765,7 +766,7 @@ int PCSetUp(PC pc)
   } else {
     PetscLogInfo(pc,"PCSetUp:Setting up PC with different nonzero pattern\n");
   }
-  if (pc->setupcalled > 1) PetscFunctionReturn(0);
+
   ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Vector must be set first");}
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
@@ -1399,7 +1400,11 @@ int PCView(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
+    if (pc->prefix) {
+      ierr = PetscViewerASCIIPrintf(viewer,"PC Object:(%s)\n",pc->prefix);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
+    }
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
     if (cstr) {
       ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",cstr);CHKERRQ(ierr);
@@ -1447,7 +1452,7 @@ int PCView(PC pc,PetscViewer viewer)
    PCRegisterDynamic - Adds a method to the preconditioner package.
 
    Synopsis:
-   PCRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
+   int PCRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
 
    Not collective
 

@@ -1,9 +1,9 @@
-/*$Id: minres.c,v 1.14 2001/02/19 18:28:37 bsmith Exp balay $*/
+/*$Id: minres.c,v 1.15 2001/03/23 23:23:48 balay Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
 
-    Contibuted by: Robert Scheichl: maprs@maths.bath.ac.uk
+    Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
 
 */
 #include "src/sles/ksp/kspimpl.h"

@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.76 2001/03/23 23:25:54 balay Exp balay $*/
+/*$Id: zoptions.c,v 1.77 2001/03/28 19:43:08 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -11,6 +11,7 @@
 extern PetscTruth PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define petscoptionsgetlogical_            PETSCOPTIONSGETLOGICAL
 #define petscgetarchtype_                  PETSCGETARCHTYPE
 #define petscoptionsgetintarray_           PETSCOPTIONSGETINTARRAY
 #define petscoptionssetvalue_              PETSCOPTIONSSETVALUE
@@ -23,6 +24,7 @@ extern PetscTruth PetscBeganMPI;
 #define petscgetprogramname                PETSCGETPROGRAMNAME
 #define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petscoptionsgetlogical_            petscoptionsgetlogical
 #define petscgetarchtype_                  petscgetarchtype
 #define petscoptionssetvalue_              petscoptionssetvalue
 #define petscoptionsclearvalue_            petscoptionsclearvalue
@@ -90,6 +92,18 @@ void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
   *ierr = PetscOptionsGetInt(c1,c2,ivalue,flg);
+  FREECHAR(pre,c1);
+  FREECHAR(name,c2);
+}
+
+void PETSC_STDCALL petscoptionsgetlogical_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                    PetscTruth *ivalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+{
+  char *c1,*c2;
+
+  FIXCHAR(pre,len1,c1);
+  FIXCHAR(name,len2,c2);
+  *ierr = PetscOptionsGetLogical(c1,c2,ivalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }

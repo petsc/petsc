@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.43 2001/03/23 23:20:08 balay Exp bsmith $*/
+/*$Id: drawreg.c,v 1.44 2001/04/10 19:34:13 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc PetscDraw routines
 */
@@ -197,7 +197,7 @@ int PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
    PetscDrawRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   PetscDrawRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscDraw))
+   int PetscDrawRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscDraw))
 
    Not Collective
 

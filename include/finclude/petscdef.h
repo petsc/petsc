@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.25 2001/01/15 21:50:11 bsmith Exp bsmith $;
+!  $Id: petscdef.h,v 1.26 2001/01/17 22:29:15 bsmith Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -15,9 +15,9 @@
 !
 #define MPI_Comm integer
 !
-#define PetscTruth    integer
+#define PetscTruth integer
 #define PetscDataType integer
-#define PetscFPTrap   integer
+#define PetscFPTrap integer
 !
 !
 ! The real*8,complex*16 notatiton is used so that the 
@@ -29,13 +29,13 @@
 !
 
 #if (PETSC_SIZEOF_VOIDP == 8)
-#define PetscOffset      integer*8
+#define PetscOffset integer*8
 #define PetscFortranAddr integer*8
 #elif defined (PETSC_MISSING_FORTRANSTAR)
-#define PetscOffset      integer
+#define PetscOffset integer
 #define PetscFortranAddr integer
 #else
-#define PetscOffset      integer*4
+#define PetscOffset integer*4
 #define PetscFortranAddr integer*4
 #endif
 
@@ -48,10 +48,10 @@
 #endif
 
 #if defined (PETSC_MISSING_FORTRANSTAR)
-#define PetscFortranDouble  double precision
+#define PetscFortranDouble double precision
 #define PetscFortranComplex complex (KIND=SELECTED_REAL_KIND(14))
 #else
-#define PetscFortranDouble  real*8
+#define PetscFortranDouble real*8
 #define PetscFortranComplex complex*16
 #endif
 
@@ -70,17 +70,17 @@
 !
 #if defined (PETSC_MISSING_DREAL)
 #define PetscRealPart(a) real(a)
-#define PetscConj(a)     conjg(a)
+#define PetscConj(a) conjg(a)
 #else
 #define PetscRealPart(a) dreal(a)
-#define PetscConj(a)     dconjg(a)
+#define PetscConj(a) dconjg(a)
 #endif
-#define MPIU_SCALAR      MPI_DOUBLE_COMPLEX
+#define MPIU_SCALAR MPI_DOUBLE_COMPLEX
 #else
-#define Scalar           PetscFortranDouble
+#define Scalar PetscFortranDouble
 #define PetscRealPart(a) a
-#define PetscConj(a)     a
-#define MPIU_SCALAR      MPI_DOUBLE_PRECISION
+#define PetscConj(a) a
+#define MPIU_SCALAR MPI_DOUBLE_PRECISION
 #endif
 !
 !    Allows the matrix Fortran Kernels to work with single precision

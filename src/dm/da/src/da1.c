@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.126 2001/03/23 23:25:00 balay Exp balay $*/
+/*$Id: da1.c,v 1.127 2001/03/28 19:42:42 balay Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -111,7 +111,7 @@ EXTERN int DAPublish_Petsc(PetscObject);
 
    Options Database Key:
 +  -da_view - Calls DAView() at the conclusion of DACreate1d()
-.  -da_grid_x <nx> - number of grid points in x direction
+.  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
 -  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
@@ -132,7 +132,7 @@ EXTERN int DAPublish_Petsc(PetscObject);
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
 {
   int        rank,size,xs,xe,x,Xs,Xe,ierr,start,end,m;
-  int        i,*idx,nn,j,left,gdim;
+  int        i,*idx,nn,j,left,gdim,refine_x = 2,tM = M;
   PetscTruth flg1,flg2;
   DA         da;
   Vec        local,global;
@@ -146,8 +146,13 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"1d DA Options","DA");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate1d",M,&M,PETSC_NULL);CHKERRQ(ierr);
+    if (M < 0) {
+      tM   = -M; 
+      ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate1d",tM,&tM,PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DACreate1d",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  M = tM;
 
   PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PetscLogObjectCreate(da);
@@ -155,10 +160,13 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
+  da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 1;
+  da->interptype = DA_Q1;
   da->gtog1      = 0;
+  da->refine_x   = refine_x;
   ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 

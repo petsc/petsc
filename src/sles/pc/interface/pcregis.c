@@ -1,10 +1,11 @@
-/*$Id: pcregis.c,v 1.63 2001/03/13 16:00:48 bsmith Exp balay $*/
+/*$Id: pcregis.c,v 1.64 2001/03/23 23:23:02 balay Exp bsmith $*/
 
 #include "src/sles/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
 EXTERN_C_BEGIN
 EXTERN int PCCreate_Jacobi(PC);
 EXTERN int PCCreate_BJacobi(PC);
+EXTERN int PCCreate_PBJacobi(PC);
 EXTERN int PCCreate_ILU(PC);
 EXTERN int PCCreate_None(PC);
 EXTERN int PCCreate_LU(PC);
@@ -53,6 +54,7 @@ int PCRegisterAll(char *path)
 
   ierr = PCRegisterDynamic(PCNONE         ,path,"PCCreate_None",PCCreate_None);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCJACOBI       ,path,"PCCreate_Jacobi",PCCreate_Jacobi);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCPBJACOBI     ,path,"PCCreate_PBJacobi",PCCreate_PBJacobi);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCBJACOBI      ,path,"PCCreate_BJacobi",PCCreate_BJacobi);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCSOR          ,path,"PCCreate_SOR",PCCreate_SOR);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCLU           ,path,"PCCreate_LU",PCCreate_LU);CHKERRQ(ierr);
@@ -70,7 +72,7 @@ int PCRegisterAll(char *path)
 #if defined(PETSC_HAVE_SPAI) && !defined(__cplusplus)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_RAMG) && !defined(__cplusplus)
+#if defined(PETSC_HAVE_RAMG)
   ierr = PCRegisterDynamic(PCRAMG         ,path,"PCCreate_RAMG",PCCreate_RAMG);CHKERRQ(ierr);
 #endif
   ierr = PCRegisterDynamic(PCMILU         ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);

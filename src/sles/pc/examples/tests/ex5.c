@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.72 2001/03/23 23:23:25 balay Exp balay $*/
+/*$Id: ex5.c,v 1.73 2001/03/28 19:41:57 balay Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -113,9 +113,8 @@ int main(int Argc,char **Args)
     }
     ierr = SLESGetKSP(sles[i],&ksp);CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,
-                            PETSC_DEFAULT,smooths);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,smooths);CHKERRQ(ierr);
 
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     X[levels - 1 - i] = x;

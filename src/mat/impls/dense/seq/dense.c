@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.199 2001/04/10 19:35:15 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.200 2001/04/25 15:04:47 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -731,7 +731,7 @@ static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
     }
 #endif
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
-      ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %d %d \n",A->m,A->n);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%d,%d);\n",name,A->m,A->n);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);

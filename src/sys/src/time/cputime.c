@@ -1,4 +1,4 @@
-/*$Id: cputime.c,v 1.39 2001/03/23 23:20:44 balay Exp bsmith $*/
+/*$Id: cputime.c,v 1.40 2001/04/10 19:34:38 bsmith Exp bsmith $*/
 /*
   This is to allow one to measure CPU time usage of their job, 
   NOT real time usage. Do not use this for reported timings, speedup etc.
@@ -67,7 +67,7 @@ int PetscGetCPUTime(PetscLogDouble *t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetCPUTime"
-/*@
+/*@C
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
 
     Not Collective

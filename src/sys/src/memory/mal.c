@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.53 2001/03/23 23:20:36 balay Exp bsmith $*/
+/*$Id: mal.c,v 1.54 2001/04/05 16:20:58 bsmith Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -31,6 +31,8 @@
 #  endif
 #endif
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMallocAlign"
 int PetscMallocAlign(int mem,int line,char *func,char *file,char *dir,void** result)
 {
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)
@@ -55,10 +57,12 @@ int PetscMallocAlign(int mem,int line,char *func,char *file,char *dir,void** res
     }
   }
 #endif
-  if (!*result) return 1;
+  if (!*result)  SETERRQ1(PETSC_ERR_MEM,"Memory requested %d",mem); 
   return 0;
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFreeAlign"
 int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
 {
   int ierr = 0;
@@ -89,6 +93,8 @@ int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
         We never use the system free directly because on many machines it 
     does not return an error code.
 */
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFreeDefault"
 int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
 {
 #if defined(PETSC_HAVE_FREE_RETURN_INT)

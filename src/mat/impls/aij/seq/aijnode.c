@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.124 2001/03/23 23:21:51 balay Exp bsmith $*/
+/*$Id: aijnode.c,v 1.125 2001/04/10 19:35:19 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -6,7 +6,7 @@
 #include "src/mat/impls/aij/seq/aij.h"                
 #include "src/vec/vecimpl.h"
 
-EXTERN int Mat_AIJ_CheckInode(Mat);
+EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 EXTERN int MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
 EXTERN int MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat *);
 
@@ -771,15 +771,23 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 /* ----------------------------------------------------------- */
 EXTERN int MatColoringPatch_SeqAIJ_Inode(Mat,int,int,int *,ISColoring *);
 
+/*
+    samestructure indicates that the matrix has not changed its nonzero structure so we 
+    do not need to recompute the inodes 
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_AIJ_CheckInode"
-int Mat_AIJ_CheckInode(Mat A)
+int Mat_AIJ_CheckInode(Mat A,PetscTruth samestructure)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int        ierr,i,j,m,nzx,nzy,*idx,*idy,*ns,*ii,node_count,blk_size;
   PetscTruth flag,flg;
 
   PetscFunctionBegin;  
+  if (samestructure && a->inode.checked) PetscFunctionReturn(0);
+
+  a->inode.checked = PETSC_TRUE;
+
   /* Notes: We set a->inode.limit=5 in MatCreateSeqAIJ(). */
   if (!a->inode.use) {PetscLogInfo(A,"Mat_AIJ_CheckInode: Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n"); PetscFunctionReturn(0);}
   ierr = PetscOptionsHasName(A->prefix,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
@@ -1615,7 +1623,6 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
   C->factor      = FACTOR_LU;
   C->assembled   = PETSC_TRUE;
-  ierr = Mat_AIJ_CheckInode(C);CHKERRQ(ierr);
   if (ndamp || b->lu_damping) {
     PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ_Inode: number of damping tries %d damping value %g\n",ndamp,damping);
   }

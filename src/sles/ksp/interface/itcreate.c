@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.203 2001/03/23 23:23:29 balay Exp bsmith $*/
+/*$Id: itcreate.c,v 1.204 2001/04/10 19:36:24 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -50,7 +50,11 @@ int KSPView(KSP ksp,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
+    if (ksp->prefix) {
+      ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:(%s)\n",ksp->prefix);CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
+    }
     if (type) {
       ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
     } else {
@@ -90,7 +94,8 @@ PetscFList KSPList = 0;
    Collective on KSP
 
    Input Parameter:
-.  ksp - Krylov solver context
++  ksp - Krylov solver context
+-  flg - PETSC_TRUE or PETSC_FALSE
 
    Notes: 
    One cannot use the default convergence test routines when this option is 
@@ -105,14 +110,18 @@ PetscFList KSPList = 0;
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()
 @*/
-int KSPSetAvoidNorms(KSP ksp)
+int KSPSetAvoidNorms(KSP ksp,PetscTruth flg)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->avoidnorms = PETSC_TRUE;
-  ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);CHKERRQ(ierr);
+  ksp->avoidnorms = flg;
+  if (flg) {
+    ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);CHKERRQ(ierr);
+  } else {
+    ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,PETSC_NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -423,7 +432,7 @@ int KSPSetFromOptions(KSP ksp)
 
     ierr = PetscOptionsName("-ksp_avoid_norms","Do not compute norms for convergence tests","KSPSetAvoidNorms",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPSetAvoidNorms(ksp);CHKERRQ(ierr);
+      ierr = KSPSetAvoidNorms(ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-ksp_cancelmonitors","Remove any hardwired monitor routines","KSPClearMonitor",&flg);CHKERRQ(ierr);
@@ -460,7 +469,7 @@ int KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsName("-ksp_singmonitor","Monitor singular values","KSPSetMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr);
+      ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
     }
     /*
@@ -487,7 +496,7 @@ int KSPSetFromOptions(KSP ksp)
 
     /* -----------------------------------------------------------------------*/
     ierr = PetscOptionsName("-ksp_preres","Use preconditioner residual norm in convergence tests","KSPSetUsePreconditionedResidual",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPSetUsePreconditionedResidual(ksp);CHKERRQ(ierr);}
+    if (flg) { ierr = KSPSetUsePreconditionedResidual(ksp,PETSC_TRUE);CHKERRQ(ierr);}
 
     ierr = PetscOptionsLogicalGroupBegin("-ksp_left_pc","Use left preconditioning","KSPSetPreconditionerSide",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_LEFT);CHKERRQ(ierr); }
@@ -497,11 +506,11 @@ int KSPSetFromOptions(KSP ksp)
     if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_SYMMETRIC);CHKERRQ(ierr);}
 
     ierr = PetscOptionsName("-ksp_compute_singularvalues","Compute singular values of preconditioned operator","KSPSetComputeSingularValues",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
+    if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
     ierr = PetscOptionsName("-ksp_compute_eigenvalues","Compute eigenvalues of preconditioned operator","KSPSetComputeSingularValues",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
+    if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
     ierr = PetscOptionsName("-ksp_plot_eigenvalues","Scatter plot extreme eigenvalues","KSPSetComputeSingularValues",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPSetComputeSingularValues(ksp);CHKERRQ(ierr); }
+    if (flg) { ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr); }
 
     if (ksp->ops->setfromoptions) {
       ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
@@ -516,7 +525,7 @@ int KSPSetFromOptions(KSP ksp)
    KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   KSPRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))
+   int KSPRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))
 
    Not Collective
 

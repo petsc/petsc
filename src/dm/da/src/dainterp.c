@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.21 2001/03/23 23:25:00 balay Exp bsmith $*/
+/*$Id: dainterp.c,v 1.22 2001/04/10 19:37:23 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -26,8 +26,77 @@ int DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetInterpolation_1D_dof"
-int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
+#define __FUNCT__ "DAGetInterpolation_1D_Q1"
+int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
+{
+  int            ierr,i,i_start,m_f,Mx,*idx_f;
+  int            m_ghost,*idx_c,m_ghost_c;
+  int            row,col,i_start_ghost,mx,m_c,nc,ratio;
+  int            i_c,i_start_c,i_start_ghost_c,cols[2],dof;
+  Scalar         v[2],x;
+  Mat            mat;
+  DAPeriodicType pt;
+
+  PetscFunctionBegin;
+  ierr = DAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (pt == DA_XPERIODIC) {
+    ratio = mx/Mx;
+    if (ratio*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+  } else {
+    ratio = (mx-1)/(Mx-1);
+    if (ratio*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  }
+
+  ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+
+  ierr = DAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+
+  /* create interpolation matrix */
+  ierr = MatCreateMPIAIJ(dac->comm,m_f,m_c,mx,Mx,2,0,0,0,&mat);CHKERRQ(ierr);
+  ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+
+  /* loop over local fine grid nodes setting interpolation for those*/
+  for (i=i_start; i<i_start+m_f; i++) {
+    /* convert to local "natural" numbering and then to PETSc global numbering */
+    row    = idx_f[dof*(i-i_start_ghost)]/dof;
+
+    i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
+
+    /* 
+         Only include those interpolation points that are truly 
+         nonzero. Note this is very important for final grid lines
+         in x direction; since they have no right neighbor
+    */
+    x  = ((double)(i - i_c*ratio))/((double)ratio);
+    /* printf("i j %d %d %g %g\n",i,j,x,y); */
+    nc = 0;
+      /* one left and below; or we are right on it */
+    col      = dof*(i_c-i_start_ghost_c);
+    cols[nc] = idx_c[col]/dof; 
+    v[nc++]  = - x + 1.0;
+    /* one right? */
+    if (i_c*ratio != i) { 
+      cols[nc] = idx_c[col+dof]/dof;
+      v[nc++]  = x;
+    }
+    ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
+  }
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
+  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  PetscLogFlops(5*m_f);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetInterpolation_1D_Q0"
+int DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,i_start,m_f,Mx,*idx_f;
   int            m_ghost,*idx_c,m_ghost_c;
@@ -97,8 +166,8 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetInterpolation_2D_dof"
-int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
+#define __FUNCT__ "DAGetInterpolation_2D_Q1"
+int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
   int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
@@ -245,8 +314,8 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetInterpolation_3D_dof"
-int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
+#define __FUNCT__ "DAGetInterpolation_3D_Q1"
+int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;
   int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
@@ -457,17 +526,27 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   if (sc != sf) SETERRQ2(1,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
   if (wrapc != wrapf) SETERRQ(1,"Periodic type different in two DAs");CHKERRQ(ierr);
   if (stc != stf) SETERRQ(1,"Stencil type different in two DAs");CHKERRQ(ierr);
+  if (Mc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in x direction");
+  if (dimc > 1 && Nc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in y direction");
+  if (dimc > 2 && Pc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in z direction");
 
-  if (dimc == 1){
-    ierr = DAGetInterpolation_1D_dof(dac,daf,A);CHKERRQ(ierr);
-  } else if (dimc == 2){
-    ierr = DAGetInterpolation_2D_dof(dac,daf,A);CHKERRQ(ierr);
-  } else if (dimc == 3){
-    ierr = DAGetInterpolation_3D_dof(dac,daf,A);CHKERRQ(ierr);
-  } else {
-    SETERRQ(1,"No support for this DA yet");
+  if (dac->interptype == DA_Q1){
+    if (dimc == 1){
+      ierr = DAGetInterpolation_1D_Q1(dac,daf,A);CHKERRQ(ierr);
+    } else if (dimc == 2){
+      ierr = DAGetInterpolation_2D_Q1(dac,daf,A);CHKERRQ(ierr);
+    } else if (dimc == 3){
+      ierr = DAGetInterpolation_3D_Q1(dac,daf,A);CHKERRQ(ierr);
+    } else {
+      SETERRQ2(1,"No support for this DA dimension %d for interpolation type %d",dimc,dac->interptype);
+    }
+  } else if (dac->interptype == DA_Q0){
+    if (dimc == 1){
+      ierr = DAGetInterpolation_1D_Q0(dac,daf,A);CHKERRQ(ierr);
+    } else {
+      SETERRQ2(1,"No support for this DA dimension %d for interpolation type %d",dimc,dac->interptype);
+    }
   }
-
   if (scale) {
     ierr = DMGetInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);
   }

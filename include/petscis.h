@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.61 2001/04/10 19:34:48 bsmith Exp bsmith $ */
+/* $Id: petscis.h,v 1.62 2001/04/19 18:08:04 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -170,7 +170,9 @@ EXTERN int ISColoringDestroy(ISColoring);
 EXTERN int ISColoringView(ISColoring,PetscViewer);
 EXTERN int ISColoringGetIS(ISColoring,int*,IS*[]);
 EXTERN int ISColoringRestoreIS(ISColoring,IS*[]);
-#define ISColoringReference(coloring) (coloring->refct++,0)
+#define ISColoringReference(coloring) ((coloring)->refct++,0)
+#define ISColoringSetType(coloring,type) ((coloring)->ctype = type,0)
+
 /* --------------------------------------------------------------------------*/
 
 EXTERN int ISPartitioningToNumbering(IS,IS*);

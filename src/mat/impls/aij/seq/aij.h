@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.42 2001/01/15 21:45:34 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.43 2001/03/23 22:04:55 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -12,6 +12,7 @@ typedef struct {
   int        *size;                         /* size of each inode */
   int        limit;                         /* inode limit */
   int        max_limit;                     /* maximum supported inode limit */
+  PetscTruth checked;                       /* if inodes have been checked for */
 } Mat_SeqAIJ_Inode;
 
 /*  
@@ -53,6 +54,7 @@ typedef struct {
 
   PetscTruth       keepzeroedrows;   /* keeps matrix structure same in calls to MatZeroRows()*/
   PetscTruth       ignorezeroentries;
+  ISColoring       coloring;         /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
@@ -64,5 +66,9 @@ EXTERN int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
 EXTERN int MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
 EXTERN int MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
 EXTERN int MatRelax_SeqAIJ(Mat,Vec,double,MatSORType,double,int,Vec);
+
+EXTERN int MatSetColoring_SeqAIJ(Mat,ISColoring);
+EXTERN int MatSetValuesAdic_SeqAIJ(Mat,void*);
+EXTERN int MatSetValuesAdifor_SeqAIJ(Mat,int,void*);
 
 #endif

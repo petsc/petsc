@@ -1,124 +1,40 @@
 !
-!      "$Id: ex36.F,v 1.29 2001/01/15 21:46:09 bsmith Exp $";
+!      "$Id: ex85f.F,v 1.1 2001/05/30 17:41:51 bsmith Exp bsmith $";
 !
-!   This program demonstrates use of PETSc dense matrices.
+!   This program tests MatGetDiagonal()
 !
       program main
+      implicit none
 
 #include "include/finclude/petsc.h"
-
-      integer err
-
-      call PetscInitialize(PETSC_NULL_CHARACTER,err)
-
-!  Demo of PETSc-allocated dense matrix storage
-      call Demo1()
-
-!  Demo of user-allocated dense matrix storage
-      call Demo2()
-
-      call PetscFinalize(err)
-      end
-
-! -----------------------------------------------------------------
-!
-!  Demo1 -  This subroutine demonstrates the use of PETSc-allocated dense
-!  matrix storage.  Here MatGetArray() is used for direct access to the
-!  array that stores the dense matrix.  The user declares an array (aa(1))
-!  and index variable (ia), which are then used together to manipulate
-!  the array contents.
-!
-!  Note the use of PETSC_NULL_SCALAR in MatCreateSeqDense() to indicate that no
-!  storage is being provided by the user. (Do NOT pass a zero in that
-!  location.)
-!
-      subroutine Demo1()
-
-#include "include/finclude/petsc.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscviewer.h"
 
-      Mat         A
-      integer     n,m,err
-      Scalar      aa(1)
-      PetscOffset ia
+      integer ierr,i
+      Vec     v
+      Mat     m
+      double precision value
 
-      n = 4
-      m = 5
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-!  Create matrix
-      call MatCreateSeqDense(PETSC_COMM_SELF,m,n,PETSC_NULL_SCALAR,     &
-     &     A,err)
-!      call MatCreateMPIDense(PETSC_COMM_WORLD,m,n,m,n,PETSC_NULL_SCALAR,A,err)
+      call MatCreate(PETSC_COMM_SELF,12,12,12,12,m,ierr)
+      call MatSetFromOptions(m,ierr)
 
-!  Access array storage
-      call MatGetArray(A,aa,ia,err)
+      value = 3.0
+      i     = 4
+      call MatSetValues(m,1,i,1,i,value,INSERT_VALUES,ierr)
+      call MatAssemblyBegin(m,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(m,MAT_FINAL_ASSEMBLY,ierr)
 
-!  Set matrix values directly
-      call FillUpMatrix(m,n,aa(ia+1))
+      call VecCreateSeq(PETSC_COMM_SELF,12,v,ierr)
+      call MatGetDiagonal(m,v,ierr)
+      call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
-      call MatRestoreArray(A,aa,ia,err)
-
-!  Finalize matrix assembly
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,err)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
-
-!  View matrix
-      call MatView(A,PETSC_VIEWER_STDOUT_SELF,err)
-
-!  Clean up
-      call MatDestroy(A,err)     
-      return 
+      call MatDestroy(m,ierr)
+      call VecDestroy(v,ierr)
+      call PetscFinalize(ierr)
       end
-
-! -----------------------------------------------------------------
-!
-!  Demo2 -  This subroutine demonstrates the use of user-allocated dense
-!  matrix storage.
-!
-      subroutine Demo2()
-
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscviewer.h"
-
-      integer   n,m,err
-      parameter (m=5,n=4)
-      Mat       A
-      Scalar    aa(m,n)
-
-!  Create matrix
-      call MatCreateSeqDense(PETSC_COMM_SELF,m,n,aa,A,err)
-
-!  Set matrix values directly
-      call FillUpMatrix(m,n,aa)
-
-!  Finalize matrix assembly
-      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,err)
-      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,err)
-
-!  View matrix
-      call MatView(A,PETSC_VIEWER_STDOUT_SELF,err)
-
-!  Clean up
-      call MatDestroy(A,err)     
-      return 
-      end
-
-! -----------------------------------------------------------------
-
-      subroutine FillUpMatrix(m,n,X)
-      integer          m,n,i,j
-      Scalar           X(m,n)
-
-      do 10, j=1,n
-        do 20, i=1,m
-          X(i,j) = 1.0/(i+j-1)
- 20     continue
- 10   continue
-      return
-      end
-
-
 
 

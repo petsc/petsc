@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.79 2001/04/10 19:36:16 bsmith Exp balay $*/
+/*$Id: icc.c,v 1.80 2001/04/10 22:36:06 balay Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -250,7 +250,7 @@ static int PCSetFromOptions_ICC(PC pc)
   char       tname[256];
   PetscTruth flg;
   int        ierr;
-  PetscFList      ordlist;
+  PetscFList ordlist;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);

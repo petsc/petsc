@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.32 2001/04/10 19:36:47 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.33 2001/04/20 15:11:09 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -25,8 +25,8 @@
 .    - the context
 
     Notes:
-      To provide a different user context for each level, or to change the 
-    ratio in the grid spacing simply change the DMMG structure after calling this routine
+      To provide a different user context for each level call DMMGSetUser() after calling
+      this routine
 
     Level: advanced
 
@@ -48,38 +48,11 @@ int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
     p[i]->nlevels    = nlevels - i;
     p[i]->comm       = comm;
     p[i]->user       = user;
-    p[i]->matrixfree = PETSC_FALSE;
   }
   *dmmg = p;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMMGSetUseMatrixFree"
-/*@C
-    DMMGSetUseMatrixFree - Use matrix-free version of operator
-
-    Collective on DMMG
-
-    Input Parameter:
-.    - the context
-
-    Level: advanced
-
-.seealso DMMGCreate()
-
-@*/
-int DMMGSetUseMatrixFree(DMMG *dmmg)
-{
-  int i,nlevels = dmmg[0]->nlevels;
-
-  PetscFunctionBegin;
-  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
-  for (i=0; i<nlevels; i++) {
-    dmmg[i]->matrixfree = PETSC_TRUE;
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGDestroy"
@@ -112,12 +85,12 @@ int DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->b)  {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}
     if (dmmg[i]->r)  {ierr = VecDestroy(dmmg[i]->r);CHKERRQ(ierr);}
     if (dmmg[i]->work1)  {ierr = VecDestroy(dmmg[i]->work1);CHKERRQ(ierr);}
+    if (dmmg[i]->w)  {ierr = VecDestroy(dmmg[i]->w);CHKERRQ(ierr);}
     if (dmmg[i]->work2)  {ierr = VecDestroy(dmmg[i]->work2);CHKERRQ(ierr);}
     if (dmmg[i]->B && dmmg[i]->B != dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);}
     if (dmmg[i]->J)  {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
     if (dmmg[i]->Rscale)  {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
     if (dmmg[i]->fdcoloring)  {ierr = MatFDColoringDestroy(dmmg[i]->fdcoloring);CHKERRQ(ierr);}
-    if (dmmg[i]->iscoloring)  {ierr = ISColoringDestroy(dmmg[i]->iscoloring);CHKERRQ(ierr);}
     if (dmmg[i]->sles)  {ierr = SLESDestroy(dmmg[i]->sles);CHKERRQ(ierr);}
     if (dmmg[i]->snes)  {ierr = PetscObjectDestroy((PetscObject)dmmg[i]->snes);CHKERRQ(ierr);} 
     ierr = PetscFree(dmmg[i]);CHKERRQ(ierr);
@@ -177,23 +150,14 @@ int DMMGSetDM(DMMG *dmmg,DM dm)
 int DMMGSetUp(DMMG *dmmg)
 {
   int        ierr,i,nlevels = dmmg[0]->nlevels;
-  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_snes_mf",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DMMGSetUseMatrixFree(dmmg);CHKERRQ(ierr);
-  }
 
   /* Create work vectors and matrix for each level */
   for (i=0; i<nlevels; i++) {
     ierr = DMCreateGlobalVector(dmmg[i]->dm,&dmmg[i]->x);CHKERRQ(ierr);
     ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->b);CHKERRQ(ierr);
     ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->r);CHKERRQ(ierr);
-    if (!dmmg[i]->matrixfree) {
-      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_NULL,&dmmg[i]->J);CHKERRQ(ierr);
-    } 
-    dmmg[i]->B = dmmg[i]->J;
   }
 
   /* Create interpolation/restriction between levels */
@@ -201,10 +165,6 @@ int DMMGSetUp(DMMG *dmmg)
     ierr = DMGetInterpolation(dmmg[i-1]->dm,dmmg[i]->dm,&dmmg[i]->R,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = DMMGView(dmmg,PETSC_VIEWER_STDOUT_(dmmg[0]->comm));CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -226,7 +186,7 @@ int DMMGSetUp(DMMG *dmmg)
 int DMMGSolve(DMMG *dmmg)
 {
   int        i,ierr,nlevels = dmmg[0]->nlevels;
-  PetscTruth gridseq,vecmonitor;
+  PetscTruth gridseq,vecmonitor,flg;
   KSP        ksp;
 
   PetscFunctionBegin;
@@ -237,7 +197,7 @@ int DMMGSolve(DMMG *dmmg)
       ierr = (*dmmg[0]->initialguess)(dmmg[0]->snes,dmmg[0]->x,dmmg[0]);CHKERRQ(ierr);
       if (dmmg[0]->sles) {
         ierr = SLESGetKSP(dmmg[0]->sles,&ksp);CHKERRQ(ierr);
-        ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+        ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
     for (i=0; i<nlevels-1; i++) {
@@ -248,7 +208,7 @@ int DMMGSolve(DMMG *dmmg)
       ierr = MatInterpolate(dmmg[i+1]->R,dmmg[i]->x,dmmg[i+1]->x);CHKERRQ(ierr);
       if (dmmg[i+1]->sles) {
         ierr = SLESGetKSP(dmmg[i+1]->sles,&ksp);CHKERRQ(ierr);
-        ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+        ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
   } else {
@@ -256,13 +216,18 @@ int DMMGSolve(DMMG *dmmg)
       ierr = (*dmmg[nlevels-1]->initialguess)(dmmg[nlevels-1]->snes,dmmg[nlevels-1]->x,dmmg[nlevels-1]);CHKERRQ(ierr);
       if (dmmg[nlevels-1]->sles) {
         ierr = SLESGetKSP(dmmg[nlevels-1]->sles,&ksp);CHKERRQ(ierr);
-        ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+        ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
   }
   ierr = (*DMMGGetFine(dmmg)->solve)(dmmg,nlevels-1);CHKERRQ(ierr);
   if (vecmonitor) {
      ierr = VecView(dmmg[nlevels-1]->x,PETSC_VIEWER_DRAW_(dmmg[nlevels-1]->comm));CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view",&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = DMMGView(dmmg,PETSC_VIEWER_STDOUT_(dmmg[0]->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -289,7 +254,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 {
   int         ierr,i;
   PC          pc;
-  PetscTruth  ismg,monitor;
+  PetscTruth  ismg,monitor,ismf,isshell;
   SLES        lsles; /* solver internal to the multigrid preconditioner */
   MPI_Comm    *comms,comm;
   PetscViewer ascii;
@@ -328,7 +293,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
       ierr = MGGetSmoother(pc,i,&lsles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(lsles,dmmg[i]->J,dmmg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = SLESSetOperators(lsles,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = MGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
       ierr = MGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
       ierr = MGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
@@ -343,7 +308,9 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
       /* If using a matrix free multiply and did not provide an explicit matrix to build
          the preconditioner then must use no preconditioner 
       */
-      if (dmmg[i]->matrixfree && dmmg[i]->J == dmmg[i]->B) {
+      ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATSHELL,&isshell);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATDAAD,&ismf);CHKERRQ(ierr);
+      if (isshell || ismf) {
         PC lpc;
         ierr = SLESGetPC(lsles,&lpc);CHKERRQ(ierr);
         ierr = PCSetType(lpc,PCNONE);CHKERRQ(ierr);
@@ -364,12 +331,13 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 /*@C
     DMMGSetSLES - Sets the linear solver object that will use the grid hierarchy
 
-    Collective on DMMG and SLES
+    Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
 .   func - function to compute linear system matrix on each grid level
--   rhs - function to compute right hand side on each level
+-   rhs - function to compute right hand side on each level (need only work on the finest grid
+          if you do not use grid sequencing
 
     Level: advanced
 
@@ -385,6 +353,14 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 
   /* create solvers for each level */
   for (i=0; i<nlevels; i++) {
+
+    if (!dmmg[i]->B) {
+      ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
+    } 
+    if (!dmmg[i]->J) {
+      dmmg[i]->J = dmmg[i]->B;
+    }
+
     ierr = SLESCreate(dmmg[i]->comm,&dmmg[i]->sles);CHKERRQ(ierr);
     ierr = DMMGSetUpLevel(dmmg,dmmg[i]->sles,i+1);CHKERRQ(ierr);
     ierr = SLESSetFromOptions(dmmg[i]->sles);CHKERRQ(ierr);
@@ -438,13 +414,20 @@ int DMMGView(DMMG *dmmg,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"DMMG Object with %d levels\n",nlevels);CHKERRQ(ierr);
-    for (i=0; i<nlevels; i++) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = DMView(dmmg[i]->dm,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    }
+  }
+  for (i=0; i<nlevels; i++) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = DMView(dmmg[i]->dm,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"%s Object on finest level\n",dmmg[nlevels-1]->sles ? "SLES" : "SNES");CHKERRQ(ierr);
+  }
+  if (dmmg[nlevels-1]->sles) {
+    ierr = SLESView(dmmg[nlevels-1]->sles,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,"Viewer type %s not supported",*((PetscObject)viewer)->type_name);
+    /* use of PetscObjectView() means we do not have to link with libpetscsnes if SNES is not being used */
+    ierr = PetscObjectView((PetscObject)dmmg[nlevels-1]->snes,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

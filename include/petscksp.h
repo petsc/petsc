@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.99 2001/02/15 22:12:30 bsmith Exp bsmith $ */
+/* $Id: petscksp.h,v 1.100 2001/03/22 20:31:17 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -70,11 +70,11 @@ EXTERN int KSPGetPreconditionerSide(KSP,PCSide*);
 EXTERN int KSPGetTolerances(KSP,double*,double*,double*,int*);
 EXTERN int KSPSetTolerances(KSP,double,double,double,int);
 EXTERN int KSPSetComputeResidual(KSP,PetscTruth);
-EXTERN int KSPSetUsePreconditionedResidual(KSP);
-EXTERN int KSPSetInitialGuessNonzero(KSP);
+EXTERN int KSPSetUsePreconditionedResidual(KSP,PetscTruth);
+EXTERN int KSPSetInitialGuessNonzero(KSP,PetscTruth);
 EXTERN int KSPGetInitialGuessNonzero(KSP,PetscTruth *);
-EXTERN int KSPSetComputeEigenvalues(KSP);
-EXTERN int KSPSetComputeSingularValues(KSP);
+EXTERN int KSPSetComputeEigenvalues(KSP,PetscTruth);
+EXTERN int KSPSetComputeSingularValues(KSP,PetscTruth);
 EXTERN int KSPSetRhs(KSP,Vec);
 EXTERN int KSPGetRhs(KSP,Vec *);
 EXTERN int KSPSetSolution(KSP,Vec);
@@ -85,7 +85,7 @@ EXTERN int KSPGetIterationNumber(KSP,int*);
 EXTERN int KSPSetPC(KSP,PC);
 EXTERN int KSPGetPC(KSP,PC*);
 
-EXTERN int KSPSetAvoidNorms(KSP);
+EXTERN int KSPSetAvoidNorms(KSP,PetscTruth);
 
 EXTERN int KSPSetMonitor(KSP,int (*)(KSP,int,double,void*),void *,int (*)(void*));
 EXTERN int KSPClearMonitor(KSP);

@@ -1,10 +1,10 @@
-# $Id: base,v 1.55 2000/09/13 15:12:01 balay Exp balay $ 
+# $Id: base,v 1.56 2001/04/05 21:05:54 balay Exp bsmith $ 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 include ${PETSC_DIR}/bmake/common
 
 libc:
-	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} LIBNAME=${LIBNAME} libmember LIBMEMBER=$$i ; done
 
 libf:
 	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done

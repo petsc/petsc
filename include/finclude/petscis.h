@@ -1,5 +1,5 @@
 !
-!  $Id: petscis.h,v 1.22 2000/09/25 17:56:52 balay Exp bsmith $;
+!  $Id: petscis.h,v 1.23 2001/04/10 19:37:50 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the IS (index set) package in PETSc
 !
@@ -19,8 +19,8 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
-      integer IS_COLORING_GLOBAL,IS_COLORING_LOCAL
-      parameter (IS_COLORING_GLOBAL = 0,IS_COLORING_LOCAL = 1)
+      integer IS_COLORING_LOCAL,IS_COLORING_GHOSTED
+      parameter (IS_COLORING_LOCAL = 0,IS_COLORING_GHOSTED = 1)
 
       integer IS_GENERAL,IS_STRIDE,IS_BLOCK
       parameter (IS_GENERAL = 0,IS_STRIDE = 1,IS_BLOCK = 2)

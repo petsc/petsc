@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.360 2001/04/10 19:37:53 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.361 2001/04/17 18:49:35 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2200,7 +2200,7 @@ value for the solution vector that is given; this zeroing is done at the
 call to \trl{SLESSolve()} (or \trl{KSPSolve()}). To use a nonzero 
 initial guess, the user {\em must} call \findex{KSPSetInitialGuessNonzero()}
 \begin{verbatim}
-  KSPSetInitialGuessNonzero(KSP ksp);
+  KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg);
 \end{verbatim}
 
 \subsection{Preconditioning within KSP} 
@@ -2248,7 +2248,7 @@ Chebyshev methods.  For these three cases the true residual is used by
 default, but the preconditioned residual can be employed instead with
 the options database command \trl{ksp_preres} or by calling the routine
 \begin{verbatim}
-  KSPSetUsePreconditionedResidual(KSP ksp);
+  KSPSetUsePreconditionedResidual(KSP ksp,PETSC_TRUE);
 \end{verbatim}
 
 \begin{table}
@@ -2417,7 +2417,7 @@ the spectrum (eigenvalues) of the preconditioned operator, PETSc has specific
 routines for eigenvalue approximation via the Arnoldi or Lanczos iteration.
 First, before the linear solve one must call 
 \begin{verbatim}
- KSPSetComputeEigenvalues(KSP ksp);
+ KSPSetComputeEigenvalues(KSP ksp,PETSC_TRUE);
 \end{verbatim}
 Then after the SLES solve one calls \findex{KSPSetComputeEigenvalues()}
 \begin{verbatim}
@@ -3688,7 +3688,7 @@ see the manual page for MatSNESMFSetType() and MatSNESMFRegisterDynamic). \finde
 \end{verbatim}
 For the default approach there is one ``tuning'' parameter, set with 
 \begin{verbatim}
-  MatSNESMFDefaultSetUmin(Mat mat,double);
+  MatSNESMFDefaultSetUmin(Mat mat,PetscReal umin);
 \end{verbatim}
 \findex{MatSNESMFDefaultSetUmin()}
 This parameter, \trl{umin} (or $u_{min}$), is a bit involved; its default is 
@@ -4237,6 +4237,36 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
 \end{itemize}
 
 
+\chapter{Using ADIC and ADIFOR with PETSc}
+
+\section{Work arrays inside the local functions} In C you can call \trl{DAGetArray()} to get 
+work arrays (this is low overhead). In Fortran you can provide a \trl{FormFunctionLocal()}
+that had local arrays that have hardwired sizes that are large enough or somehow allocate
+space and pass it into an inner FormFunctionLocal() that is the one you differentiate; this
+second approach will require some hand massaging. For example,
+
+\begin{verbatim}
+  subroutine TrueFormFunctionLocal(info,x,f,ctx,ierr)
+  double precision x(gxs:gxe,gys:gye),f(xs:xe,ys:ye)
+  DA info(DA_LOCAL_INFO_SIZE)
+  integer ctx,ierr
+  double precision work(gxs:gxe,gys:gye)
+   
+  .... do the work ....
+
+
+  return
+   
+  subroutine FormFunctionLocal(info,x,f,ctx,ierr)
+
+  double precision x(*),f(*)
+  DA info(DA_LOCAL_INFO_SIZE)
+  integer ctx,ierr
+  double precision work(10000)
+
+  call TrueFormFunctionLocal(info,x,f,work,ctx,ierr)
+  return
+\end{verbatim}
 
 %------------------------------------------------------------------
 \chapter{Using Matlab with PETSc}

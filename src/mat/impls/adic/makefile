@@ -1,18 +1,18 @@
-# $Id: makefile,v 1.47 2001/01/16 18:17:28 balay Exp bsmith $ 
+# $Id: makefile,v 1.1 2001/05/11 03:02:33 bsmith Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   = ${MATLAB_INCLUDE} ${DSCPACK_INCLUDE} ${ADIC_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
-SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c unary.c ilut.c aijmatlab.c lusol.c dsc.c
+SOURCEC  = matadic.c
 SOURCEF  = 
-SOURCEH  = aij.h
-OBJSC    = aij.o aijfact.o ij.o essl.o dxml.o aijnode.o fdaij.o unary.o ilut.o aijmatlab.o lusol.o dsc.o
+SOURCEH  = 
+OBJSC    = matadic.o
 OBJSF    = 
-LIBBASE  = libpetscmat
+LIBBASE  = libpetscsnes
 DIRS     = 
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/aij/seq/
+LOCDIR   = src/mat/impls/adic
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 include ${PETSC_DIR}/bmake/common_test

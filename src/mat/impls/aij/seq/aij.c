@@ -1,4 +1,5 @@
-/*$Id: aij.c,v 1.372 2001/05/29 21:02:54 bsmith Exp balay $*/
+
+/*$Id: aij.c,v 1.373 2001/05/31 21:33:53 balay Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -597,7 +598,7 @@ int MatView_SeqAIJ(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN int Mat_AIJ_CheckInode(Mat);
+EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJ"
 int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
@@ -650,7 +651,7 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   a->rmax              = rmax;
 
   /* check out for identical nodes. If found, use inode functions */
-  ierr = Mat_AIJ_CheckInode(A);CHKERRQ(ierr);
+  ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2479,6 +2480,7 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
   if (nnz) {
     for (i=0; i<B->m; i++) {
       if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
+      if (nnz[i] > B->n) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be greater than row length: local row %d value %d rowlength %d",i,nnz[i],B->n);
     }
   }
 
@@ -2576,7 +2578,6 @@ int MatCreate_SeqAIJ(Mat B)
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 
-  /*  SuperLU is not currently supported through PETSc */
 #if defined(PETSC_HAVE_SUPERLU)
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu",&flg);CHKERRQ(ierr);
   if (flg) { ierr = MatUseSuperLU_SeqAIJ(B);CHKERRQ(ierr); }

@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.218 2001/04/10 19:35:07 bsmith Exp balay $ */
+/* $Id: petscmat.h,v 1.219 2001/04/10 22:35:01 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -45,6 +45,7 @@ E*/
 #define MATMPIADJ   "mpiadj"
 #define MATSEQSBAIJ "seqsbaij"
 #define MATMPISBAIJ "mpisbaij"
+#define MATDAAD     "matdaad"
 typedef char* MatType;
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
@@ -75,6 +76,7 @@ EXTERN int MatCreateMPIAdj(MPI_Comm,int,int,int*,int*,int *,Mat*);
 EXTERN int MatCreateSeqSBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
 EXTERN int MatCreateMPISBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
 EXTERN int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
+EXTERN int MatCreateAdic(MPI_Comm,int,int,int,int,int,void (*)(void),Mat*);
 EXTERN int MatDestroy(Mat);
 
 EXTERN int MatPrintHelp(Mat);
@@ -101,6 +103,10 @@ typedef struct {
 EXTERN int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,Scalar*,InsertMode);
 EXTERN int MatSetValuesBlockedStencil(Mat,int,MatStencil*,int,MatStencil*,Scalar*,InsertMode);
 EXTERN int MatSetStencil(Mat,int,int*,int*,int);
+
+EXTERN int MatSetColoring(Mat,ISColoring);
+EXTERN int MatSetValuesAdic(Mat,void*);
+EXTERN int MatSetValuesAdifor(Mat,int,void*);
 
 /*E
     MatAssemblyType - Indicates if the matrix is now to be used, or if you plan 
@@ -370,9 +376,12 @@ EXTERN int MatMPIDenseSetPreallocation(Mat,Scalar*);
 EXTERN int MatMPIRowbsSetPreallocation(Mat,int,int*);
 EXTERN int MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,int**);
 EXTERN int MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,int**);
+EXTERN int MatAdicSetLocalFunction(Mat,void (*)(void));
 
 EXTERN int MatStoreValues(Mat);
 EXTERN int MatRetrieveValues(Mat);
+
+EXTERN int MatDAADSetCtx(Mat,void*);
 
 /* 
   These routines are not usually accessed directly, rather solving is 
@@ -571,6 +580,7 @@ EXTERN int MatFDColoringSetFromOptions(MatFDColoring);
 EXTERN int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringSetRecompute(MatFDColoring);
+EXTERN int MatFDColoringSetF(MatFDColoring,Vec);
 
 /* 
     These routines are for partitioning matrices: currently used only 

@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.155 2001/03/23 23:23:29 balay Exp bsmith $*/
+/*$Id: itfunc.c,v 1.156 2001/04/10 19:36:24 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -344,7 +344,6 @@ int KSPSolveTranspose(KSP ksp,int *its)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidIntPointer(its);
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
@@ -593,7 +592,8 @@ int KSPSetComputeResidual(KSP ksp,PetscTruth flag)
    Collective on KSP
 
    Input Parameter:
-.  ksp  - iterative context obtained from KSPCreate()
++  ksp  - iterative context obtained from KSPCreate()
+-  flg - PETSC_TRUE or PETSC_FALSE
 
    Notes:
    Currently only CG, CHEBYCHEV, and RICHARDSON use this with left
@@ -608,11 +608,11 @@ int KSPSetComputeResidual(KSP ksp,PetscTruth flag)
 
 .keywords: KSP, set, residual, precondition, flag
 @*/
-int KSPSetUsePreconditionedResidual(KSP ksp)
+int KSPSetUsePreconditionedResidual(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->use_pres   = PETSC_TRUE;
+  ksp->use_pres   = flg;
   PetscFunctionReturn(0);
 }
 
@@ -626,7 +626,8 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
    Collective on KSP
 
    Input Parameters:
-.  ksp - iterative context obtained from SLESGetKSP() or KSPCreate()
++  ksp - iterative context obtained from SLESGetKSP() or KSPCreate()
+-  flg - PETSC_TRUE or PETSC_FALSE
 
    Level: beginner
 
@@ -638,10 +639,10 @@ SLESSolve() (or KSPSolve()).
 
 .seealso: KSPGetIntialGuessNonzero()
 @*/
-int KSPSetInitialGuessNonzero(KSP ksp)
+int KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
-  ksp->guess_zero   = PETSC_FALSE;
+  ksp->guess_zero   = (PetscTruth)!(int)flg;
   PetscFunctionReturn(0);
 }
 
@@ -683,7 +684,8 @@ int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
    Collective on KSP
 
    Input Parameters:
-.  ksp - iterative context obtained from KSPCreate()
++  ksp - iterative context obtained from KSPCreate()
+-  flg - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
 .  -ksp_singmonitor - Activates KSPSetComputeSingularValues()
@@ -701,11 +703,11 @@ int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 
 .seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
 @*/
-int KSPSetComputeSingularValues(KSP ksp)
+int KSPSetComputeSingularValues(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->calc_sings  = PETSC_TRUE;
+  ksp->calc_sings  = flg;
   PetscFunctionReturn(0);
 }
 
@@ -719,7 +721,8 @@ int KSPSetComputeSingularValues(KSP ksp)
    Collective on KSP
 
    Input Parameters:
-.  ksp - iterative context obtained from KSPCreate()
++  ksp - iterative context obtained from KSPCreate()
+-  flg - PETSC_TRUE or PETSC_FALSE
 
    Notes:
    Currently this option is not valid for all iterative methods.
@@ -730,11 +733,11 @@ int KSPSetComputeSingularValues(KSP ksp)
 
 .seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly()
 @*/
-int KSPSetComputeEigenvalues(KSP ksp)
+int KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->calc_sings  = PETSC_TRUE;
+  ksp->calc_sings  = flg;
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.26 2001/03/09 04:13:10 bsmith Exp balay $*/
+/*$Id: aoptions.c,v 1.27 2001/03/23 23:20:42 balay Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -348,18 +348,14 @@ int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
 #define __FUNCT__ "PetscOptionsList"
 int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defaultv,char *value,int len,PetscTruth *set)
 {
-  int   ierr;
-
-#if defined(PETSC_HAVE_AMS)
-  PetscFList next = list;
-#endif
+  int        ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)
   if (!PetscOptionsPublishCount) {
     PetscOptionsAMS amsopt;
-    int        ntext,i;
-    char       ldefault[128],**vtext;
+    int        ntext;
+    char       ldefault[128];
 
     ierr = PetscOptionsCreate_Private(opt,ltext,man,&amsopt);CHKERRQ(ierr);
     amsopt->type             = OPTION_LIST;
@@ -398,7 +394,7 @@ int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char
 #if defined(PETSC_HAVE_AMS)
   if (!PetscOptionsPublishCount) {
     PetscOptionsAMS amsopt;
-    char       ldefault[128],**vtext;
+    char       ldefault[128];
 
     ierr = PetscOptionsCreate_Private(opt,ltext,man,&amsopt);CHKERRQ(ierr);
     amsopt->type             = OPTION_LIST;

@@ -1,292 +1,208 @@
-/*$Id: jacobi.c,v 1.74 2001/04/10 19:36:07 bsmith Exp $*/
-
-/*  -------------------------------------------------------------------- 
-
-     This file implements a Jacobi preconditioner for matrices that use
-     the Mat interface (various matrix formats).  Actually, the only
-     matrix operation used here is MatGetDiagonal(), which extracts 
-     diagonal elements of the preconditioning matrix.
-
-     The following basic routines are required for each preconditioner.
-          PCCreate_XXX()          - Creates a preconditioner context
-          PCSetFromOptions_XXX()  - Sets runtime options
-          PCApply_XXX()           - Applies the preconditioner
-          PCDestroy_XXX()         - Destroys the preconditioner context
-     where the suffix "_XXX" denotes a particular implementation, in
-     this case we use _Jacobi (e.g., PCCreate_Jacobi, PCApply_Jacobi).
-     These routines are actually called via the common user interface
-     routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(), 
-     so the application code interface remains identical for all 
-     preconditioners.  
-
-     Another key routine is:
-          PCSetUp_XXX()           - Prepares for the use of a preconditioner
-     by setting data structures and options.   The interface routine PCSetUp()
-     is not usually called directly by the user, but instead is called by
-     PCApply() if necessary.
-
-     Additional basic routines are:
-          PCView_XXX()            - Prints details of runtime options that
-                                    have actually been used.
-     These are called by application codes via the interface routines
-     PCView().
-
-     The various types of solvers (preconditioners, Krylov subspace methods,
-     nonlinear solvers, timesteppers) are all organized similarly, so the
-     above description applies to these categories also.  One exception is
-     that the analogues of PCApply() for these components are KSPSolve(), 
-     SNESSolve(), and TSSolve().
-
-     Additional optional functionality unique to preconditioners is left and
-     right symmetric preconditioner application via PCApplySymmetricLeft() 
-     and PCApplySymmetricRight().  The Jacobi implementation is 
-     PCApplySymmetricLeftOrRight_Jacobi().
-
-    -------------------------------------------------------------------- */
+/*$Id: pbjacobi.c,v 1.1 2001/04/24 00:16:43 bsmith Exp bsmith $*/
 
 /* 
-   Include files needed for the Jacobi preconditioner:
+   Include files needed for the PBJacobi preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners 
 */
 
 #include "src/sles/pc/pcimpl.h"   /*I "petscpc.h" I*/
 
 /* 
-   Private context (data structure) for the Jacobi preconditioner.  
+   Private context (data structure) for the PBJacobi preconditioner.  
 */
 typedef struct {
-  Vec        diag;               /* vector containing the reciprocals of the diagonal elements
-                                    of the preconditioner matrix */
-  Vec        diagsqrt;           /* vector containing the reciprocals of the square roots of
-                                    the diagonal elements of the preconditioner matrix (used 
-                                    only for symmetric preconditioner application) */
-  PetscTruth userowmax;
-} PC_Jacobi;
+  Scalar *diag;
+  int    bs,mbs;
+} PC_PBJacobi;
 
-EXTERN_C_BEGIN
+/*
+   Currently only implemented for baij matrices and directly access baij
+  data structures.
+*/
+#include "src/mat/impls/baij/mpi/mpibaij.h"
+#include "src/inline/ilu.h"
+
 #undef __FUNCT__  
-#define __FUNCT__ "PCJacobiSetUseRowMax_Jacobi"
-int PCJacobiSetUseRowMax_Jacobi(PC pc)
+#define __FUNCT__ "PCApply_PBJacobi_2"
+static int PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 {
-  PC_Jacobi *j;
-
+  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  int         ierr,i,m = jac->mbs;
+  Scalar      *diag = jac->diag,x0,x1,*xx,*yy;
+  
   PetscFunctionBegin;
-  j            = (PC_Jacobi*)pc->data;
-  j->userowmax = PETSC_TRUE;
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    x0 = xx[2*i]; x1 = xx[2*i+1];
+    yy[2*i]   = diag[0]*x0 + diag[2]*x1;
+    yy[2*i+1] = diag[1]*x0 + diag[3]*x1;
+    diag     += 4;
+  }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  PetscLogFlops(6*m);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
-/* -------------------------------------------------------------------------- */
-/*
-   PCSetUp_Jacobi - Prepares for the use of the Jacobi preconditioner
-                    by setting data structures and options.   
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCSetUp()
-
-   Notes:
-   The interface routine PCSetUp() is not usually called directly by
-   the user, but instead is called by PCApply() if necessary.
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_Jacobi"
-static int PCSetUp_Jacobi(PC pc)
+#define __FUNCT__ "PCApply_PBJacobi_3"
+static int PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 {
-  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
-  Vec        diag,diagsqrt;
-  int        ierr,n,i,zeroflag=0;
-  Scalar     *x;
+  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  int         ierr,i,m = jac->mbs;
+  Scalar      *diag = jac->diag,x0,x1,x2,*xx,*yy;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    x0 = xx[3*i]; x1 = xx[3*i+1]; x2 = xx[3*i+2];
+    yy[3*i]   = diag[0]*x0 + diag[3]*x1 + diag[6]*x2;
+    yy[3*i+1] = diag[1]*x0 + diag[4]*x1 + diag[7]*x2;
+    yy[3*i+2] = diag[2]*x0 + diag[5]*x1 + diag[8]*x2;
+    diag     += 9;
+  }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  PetscLogFlops(15*m);
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_PBJacobi_4"
+static int PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
+{
+  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  int         ierr,i,m = jac->mbs;
+  Scalar      *diag = jac->diag,x0,x1,x2,x3,*xx,*yy;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    x0 = xx[4*i]; x1 = xx[4*i+1]; x2 = xx[4*i+2]; x3 = xx[4*i+3];
+    yy[4*i]   = diag[0]*x0 + diag[4]*x1 + diag[8]*x2  + diag[12]*x3;
+    yy[4*i+1] = diag[1]*x0 + diag[5]*x1 + diag[9]*x2  + diag[13]*x3;
+    yy[4*i+2] = diag[2]*x0 + diag[6]*x1 + diag[10]*x2 + diag[14]*x3;
+    yy[4*i+3] = diag[3]*x0 + diag[7]*x1 + diag[11]*x2 + diag[15]*x3;
+    diag     += 16;
+  }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  PetscLogFlops(28*m);
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_PBJacobi_5"
+static int PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
+{
+  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  int         ierr,i,m = jac->mbs;
+  Scalar      *diag = jac->diag,x0,x1,x2,x3,x4,*xx,*yy;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    x0 = xx[5*i]; x1 = xx[5*i+1]; x2 = xx[5*i+2]; x3 = xx[5*i+3]; x4 = xx[5*i+4];
+    yy[5*i]   = diag[0]*x0 + diag[5]*x1 + diag[10]*x2  + diag[15]*x3 + diag[20]*x4;
+    yy[5*i+1] = diag[1]*x0 + diag[6]*x1 + diag[11]*x2  + diag[16]*x3 + diag[21]*x4;
+    yy[5*i+2] = diag[2]*x0 + diag[7]*x1 + diag[12]*x2 + diag[17]*x3 + diag[22]*x4;
+    yy[5*i+3] = diag[3]*x0 + diag[8]*x1 + diag[13]*x2 + diag[18]*x3 + diag[23]*x4;
+    yy[5*i+4] = diag[4]*x0 + diag[9]*x1 + diag[14]*x2 + diag[19]*x3 + diag[24]*x4;
+    diag     += 25;
+  }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  PetscLogFlops(45*m);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetUp_PBJacobi"
+static int PCSetUp_PBJacobi(PC pc)
+{
+  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  int         ierr,i,*diag_offset,bs2;
+  PetscTruth  seqbaij,mpibaij;
+  Mat         A = pc->pmat;
+  Scalar      *diag,*odiag,*v;
+  Mat_SeqBAIJ *a;
 
   PetscFunctionBegin;
-
-  /*
-       For most preconditioners the code would begin here something like
-
-  if (pc->setupcalled == 0) { allocate space the first time this is ever called
-    ierr = VecDuplicate(pc->vec,&jac->diag);CHKERRQ(ierr);
-    PetscLogObjectParent(pc,jac->diag);
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQBAIJ,&seqbaij);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIBAIJ,&mpibaij);CHKERRQ(ierr);
+  if (!seqbaij && !mpibaij) {
+    SETERRQ(1,"Currently only supports BAIJ matrices");
   }
+  if (mpibaij) A = ((Mat_MPIBAIJ*)A->data)->A;
+  if (A->m != A->n) SETERRQ(1,"Supported only for square matrices and square storage");
+  ierr        = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
+  a           = (Mat_SeqBAIJ*)A->data;
+  bs2         = a->bs*a->bs;
+  diag_offset = a->diag;
+  v           = a->a;
+  ierr        = PetscMalloc((bs2*a->mbs+1)*sizeof(Scalar),&diag);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,bs2*a->mbs*sizeof(Scalar));
+  jac->diag   = diag;
+  jac->bs     = a->bs;
+  jac->mbs    = a->mbs;
 
-    But for this preconditioner we want to support use of both the matrix' diagonal
-    elements (for left or right preconditioning) and square root of diagonal elements
-    (for symmetric preconditioning).  Hence we do not allocate space here, since we
-    don't know at this point which will be needed (diag and/or diagsqrt) until the user
-    applies the preconditioner, and we don't want to allocate BOTH unless we need
-    them both.  Thus, the diag and diagsqrt are allocated in PCSetUp_Jacobi_NonSymmetric()
-    and PCSetUp_Jacobi_Symmetric(), respectively.
-  */
-
-  /*
-    Here we set up the preconditioner; that is, we copy the diagonal values from
-    the matrix and put them into a format to make them quick to apply as a preconditioner.
-  */
-  diag     = jac->diag;
-  diagsqrt = jac->diagsqrt;
-
-  if (diag) {
-    if (jac->userowmax) {
-      ierr = MatGetRowMax(pc->pmat,diag);CHKERRQ(ierr);
-    } else {
-      ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
-    }
-    ierr = VecReciprocal(diag);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(diag,&n);CHKERRQ(ierr);
-    ierr = VecGetArray(diag,&x);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      if (x[i] == 0.0) {
-        x[i]     = 1.0;
-        zeroflag = 1;
+  /* factor and invert each block */
+  switch (a->bs){
+    case 2:
+      for (i=0; i<a->mbs; i++) {
+        odiag   = v + 4*diag_offset[i];
+        diag[0] = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
+	ierr    = Kernel_A_gets_inverse_A_2(diag);CHKERRQ(ierr);
+	diag   += 4;
       }
-    }
-    ierr = VecRestoreArray(diag,&x);CHKERRQ(ierr);
-  }
-  if (diagsqrt) {
-    if (jac->userowmax) {
-      ierr = MatGetRowMax(pc->pmat,diagsqrt);CHKERRQ(ierr);
-    } else {
-      ierr = MatGetDiagonal(pc->pmat,diagsqrt);CHKERRQ(ierr);
-    }
-    ierr = VecGetLocalSize(diagsqrt,&n);CHKERRQ(ierr);
-    ierr = VecGetArray(diagsqrt,&x);CHKERRQ(ierr);
-    for (i=0; i<n; i++) {
-      if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
-      else {
-        x[i]     = 1.0;
-        zeroflag = 1;
+      pc->ops->apply = PCApply_PBJacobi_2;
+      break;
+    case 3:
+      for (i=0; i<a->mbs; i++) {
+        odiag   = v + 9*diag_offset[i];
+        diag[0] = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
+        diag[4] = odiag[4]; diag[5] = odiag[5]; diag[6] = odiag[6]; diag[7] = odiag[7];
+        diag[8] = odiag[8]; diag[9] = odiag[9]; 
+	ierr    = Kernel_A_gets_inverse_A_3(diag);CHKERRQ(ierr);
+	diag   += 9;
       }
-    }
-    ierr = VecRestoreArray(diagsqrt,&x);CHKERRQ(ierr);
+      pc->ops->apply = PCApply_PBJacobi_3;
+      break;
+    case 4:
+      for (i=0; i<a->mbs; i++) {
+        odiag = v + 16*diag_offset[i];
+        ierr  = PetscMemcpy(diag,odiag,16*sizeof(Scalar));CHKERRQ(ierr);
+	ierr  = Kernel_A_gets_inverse_A_4(diag);CHKERRQ(ierr);
+	diag += 16;
+      }
+      pc->ops->apply = PCApply_PBJacobi_4;
+      break;
+    case 5:
+      for (i=0; i<a->mbs; i++) {
+        odiag = v + 25*diag_offset[i];
+        ierr  = PetscMemcpy(diag,odiag,25*sizeof(Scalar));CHKERRQ(ierr);
+	ierr  = Kernel_A_gets_inverse_A_5(diag);CHKERRQ(ierr);
+	diag += 25;
+      }
+      pc->ops->apply = PCApply_PBJacobi_5;
+      break;
+    default: 
+      SETERRQ1(1,"not supported for block size %d",a->bs);
   }
-  if (zeroflag) {
-    PetscLogInfo(pc,"PCSetUp_Jacobi:Zero detected in diagonal of matrix, using 1 at those locations\n");
-  }
 
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-/*
-   PCSetUp_Jacobi_Symmetric - Allocates the vector needed to store the
-   inverse of the square root of the diagonal entries of the matrix.  This
-   is used for symmetric application of the Jacobi preconditioner.
-
-   Input Parameter:
-.  pc - the preconditioner context
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_Jacobi_Symmetric"
-static int PCSetUp_Jacobi_Symmetric(PC pc)
+#define __FUNCT__ "PCDestroy_PBJacobi"
+static int PCDestroy_PBJacobi(PC pc)
 {
-  int        ierr;
-  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
+  PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
+  int         ierr;
 
   PetscFunctionBegin;
-
-  ierr = VecDuplicate(pc->vec,&jac->diagsqrt);CHKERRQ(ierr);
-  PetscLogObjectParent(pc,jac->diagsqrt);
-  ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-/*
-   PCSetUp_Jacobi_NonSymmetric - Allocates the vector needed to store the
-   inverse of the diagonal entries of the matrix.  This is used for left of
-   right application of the Jacobi preconditioner.
-
-   Input Parameter:
-.  pc - the preconditioner context
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_Jacobi_NonSymmetric"
-static int PCSetUp_Jacobi_NonSymmetric(PC pc)
-{
-  int        ierr;
-  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
-
-  PetscFunctionBegin;
-
-  ierr = VecDuplicate(pc->vec,&jac->diag);CHKERRQ(ierr);
-  PetscLogObjectParent(pc,jac->diag);
-  ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-/*
-   PCApply_Jacobi - Applies the Jacobi preconditioner to a vector.
-
-   Input Parameters:
-.  pc - the preconditioner context
-.  x - input vector
-
-   Output Parameter:
-.  y - output vector
-
-   Application Interface Routine: PCApply()
- */
-#undef __FUNCT__  
-#define __FUNCT__ "PCApply_Jacobi"
-static int PCApply_Jacobi(PC pc,Vec x,Vec y)
-{
-  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
-  int       ierr;
-
-  PetscFunctionBegin;
-  if (!jac->diag) {
-    ierr = PCSetUp_Jacobi_NonSymmetric(pc);CHKERRQ(ierr);
-  }
-  ierr = VecPointwiseMult(x,jac->diag,y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-/*
-   PCApplySymmetricLeftOrRight_Jacobi - Applies the left or right part of a
-   symmetric preconditioner to a vector.
-
-   Input Parameters:
-.  pc - the preconditioner context
-.  x - input vector
-
-   Output Parameter:
-.  y - output vector
-
-   Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCApplySymmetricLeftOrRight_Jacobi"
-static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
-{
-  int       ierr;
-  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
-
-  PetscFunctionBegin;
-  if (!jac->diagsqrt) {
-    ierr = PCSetUp_Jacobi_Symmetric(pc);CHKERRQ(ierr);
-  }
-  VecPointwiseMult(x,jac->diagsqrt,y);
-  PetscFunctionReturn(0);
-}
-/* -------------------------------------------------------------------------- */
-/*
-   PCDestroy_Jacobi - Destroys the private context for the Jacobi preconditioner
-   that was created with PCCreate_Jacobi().
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCDestroy()
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_Jacobi"
-static int PCDestroy_Jacobi(PC pc)
-{
-  PC_Jacobi *jac = (PC_Jacobi*)pc->data;
-  int       ierr;
-
-  PetscFunctionBegin;
-  if (jac->diag)     {ierr = VecDestroy(jac->diag);CHKERRQ(ierr);}
-  if (jac->diagsqrt) {ierr = VecDestroy(jac->diagsqrt);CHKERRQ(ierr);}
+  if (jac->diag)     {ierr = PetscFree(jac->diag);CHKERRQ(ierr);}
 
   /*
       Free the private data structure that was hanging off the PC
@@ -294,39 +210,13 @@ static int PCDestroy_Jacobi(PC pc)
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCSetFromOptions_Jacobi"
-static int PCSetFromOptions_Jacobi(PC pc)
-{
-  PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
-  int        ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
-    ierr = PetscOptionsLogical("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
-                          &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* -------------------------------------------------------------------------- */
-/*
-   PCCreate_Jacobi - Creates a Jacobi preconditioner context, PC_Jacobi, 
-   and sets this as the private data within the generic preconditioning 
-   context, PC, that was created within PCCreate().
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCCreate()
-*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreate_Jacobi"
-int PCCreate_Jacobi(PC pc)
+#define __FUNCT__ "PCCreate_PBJacobi"
+int PCCreate_PBJacobi(PC pc)
 {
-  PC_Jacobi *jac;
+  PC_PBJacobi *jac;
   int       ierr;
 
   PetscFunctionBegin;
@@ -335,22 +225,20 @@ int PCCreate_Jacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNew(PC_Jacobi,&jac);CHKERRQ(ierr);
+  ierr      = PetscNew(PC_PBJacobi,&jac);CHKERRQ(ierr);
   pc->data  = (void*)jac;
 
   /*
      Logs the memory usage; this is not needed but allows PETSc to 
      monitor how much memory is being used for various purposes.
   */
-  PetscLogObjectMemory(pc,sizeof(PC_Jacobi));
+  PetscLogObjectMemory(pc,sizeof(PC_PBJacobi));
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store
      diagonal entries of the matrix for fast preconditioner application.
   */
   jac->diag          = 0;
-  jac->diagsqrt      = 0;
-  jac->userowmax     = PETSC_FALSE;
 
   /*
       Set the pointers for the functions that are provided above.
@@ -359,52 +247,17 @@ int PCCreate_Jacobi(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = PCApply_Jacobi;
-  pc->ops->applytranspose      = PCApply_Jacobi;
-  pc->ops->setup               = PCSetUp_Jacobi;
-  pc->ops->destroy             = PCDestroy_Jacobi;
-  pc->ops->setfromoptions      = PCSetFromOptions_Jacobi;
+  pc->ops->apply               = 0; /*set depending on the block size */
+  pc->ops->applytranspose      = 0;
+  pc->ops->setup               = PCSetUp_PBJacobi;
+  pc->ops->destroy             = PCDestroy_PBJacobi;
+  pc->ops->setfromoptions      = 0;
   pc->ops->view                = 0;
   pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
-  pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",
-                    PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
+  pc->ops->applysymmetricleft  = 0;
+  pc->ops->applysymmetricright = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "PCJacobiSetUseRowMax"
-/*@
-   PCJacobiSetUseRowMax - Causes the Jacobi preconditioner to use the 
-      maximum entry in each row as the diagonal preconditioner, instead of
-      the diagonal entry
-
-   Collective on PC
-
-   Input Parameters:
-.  pc - the preconditioner context
-
-
-   Options Database Key:
-.  -pc_jacobi_rowmax 
-
-   Level: intermediate
-
-   Concepts: Jacobi preconditioner
-
-@*/
-int PCJacobiSetUseRowMax(PC pc)
-{
-  int ierr,(*f)(PC);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetRowMax_C",(void (**)())&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
 

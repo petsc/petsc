@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.167 2001/05/17 15:21:45 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.168 2001/05/18 19:29:22 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -316,6 +316,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
+  da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 2;
@@ -1349,6 +1350,8 @@ int DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 
     Notes: Does NOT do ghost updates on vu upon entry
 
+    Level: advanced
+
 .seealso: DAComputeJacobian1WithAdic()
 
 @*/
@@ -1371,9 +1374,10 @@ int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_ADIC)
-
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+EXTERN_C_BEGIN
 #include "adic_utils.h"
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "DAComputeJacobian1WithAdic"
@@ -1413,7 +1417,7 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
 
   my_AD_ResetIndep();
-  ierr = DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
   my_AD_SetIndepArrayColored(ad_ustart,gtdof,iscoloring->colors);
   my_AD_IncrementTotalGradSize(iscoloring->n);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
@@ -1488,8 +1492,8 @@ int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
   ierr = VecRestoreArray(f,&af);CHKERRQ(ierr);  
 
   /* return space for derivative objects.  */
-  ierr = DAGetAdicMFArray(da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
-  ierr = DAGetAdicMFArray(da,PETSC_FALSE,(void **)&ad_f,(void**)&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicMFArray(da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreAdicMFArray(da,PETSC_FALSE,(void **)&ad_f,(void**)&ad_fstart,&tdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1501,7 +1505,6 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Must compile with base.site flag PETSC_HAVE_ADIC for this routine");
-  PetscFunctionReturn(0);
 }
 
 #endif
@@ -1519,6 +1522,8 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 -    w - any user data
 
     Notes: Does NOT do ghost updates on vu upon entry
+
+    Level: advanced
 
 .seealso: DAFormFunction1()
 
@@ -1565,7 +1570,7 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
               (void (*)(int *,DALocalInfo*,Scalar*,Scalar*,int*,Scalar*,Scalar*,int*,void*,int*))*da->adifor_lf;
 
   PetscFunctionBegin;
-  ierr = DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
   Nc   = iscoloring->n;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
   N    = info.gxm*info.gym*info.gzm*info.dof;
@@ -1579,6 +1584,7 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
     p_u[*color++] = 1.0;
     p_u          += Nc;
   }
+  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
   ierr = PetscMalloc(Nc*info.xm*info.ym*info.zm*info.dof*sizeof(Scalar),&g_f);CHKERRQ(ierr);
   ierr = PetscMalloc(info.xm*info.ym*info.zm*info.dof*sizeof(Scalar),&f);CHKERRQ(ierr);
 
@@ -1628,11 +1634,15 @@ int DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 
   PetscFunctionBegin;
   if (da->adicmf_lf) {
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
     ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
+#else
+    SETERRQ(1,"Requires ADIC to be installed and cannot use complex numbers");
+#endif
   } else if (da->adiformf_lf) {
     ierr = DAMultiplyByJacobian1WithAdifor(da,u,v,f,w);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Must call DAMultiplyByJacobian1WithAdifor() or DAMultiplyByJacobian1WithAdic() before using");
+    SETERRQ(1,"Must call DASetLocalAdiforMFFunction() or DASetLocalAdicMFFunction() before using");
   }
   PetscFunctionReturn(0);
 }

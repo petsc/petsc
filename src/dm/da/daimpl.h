@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.40 2001/04/10 19:37:22 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.41 2001/05/02 20:22:09 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -17,7 +17,8 @@ typedef struct _DMOps *DMOps;
 struct _DMOps {
   int  (*view)(DM,PetscViewer);
   int  (*createglobalvector)(DM,Vec*);
-  int  (*getcoloring)(DM,ISColoringType,MatType,ISColoring*,Mat*);
+  int  (*getcoloring)(DM,ISColoringType,ISColoring*);
+  int  (*getmatrix)(DM,MatType,Mat*);
   int  (*getinterpolation)(DM,DM,Mat*,Vec*);
   int  (*refine)(DM,MPI_Comm,DM*);
 };
@@ -30,7 +31,8 @@ typedef struct _DAOps *DAOps;
 struct _DAOps {
   int  (*view)(DA,PetscViewer);
   int  (*createglobalvector)(DA,Vec*);
-  int  (*getcoloring)(DA,ISColoringType,MatType,ISColoring*,Mat*);
+  int  (*getcoloring)(DA,ISColoringType,ISColoring*);
+  int  (*getmatrix)(DA,MatType,Mat*);
   int  (*getinterpolation)(DA,DA,Mat*,Vec*);
   int  (*refine)(DA,MPI_Comm,DA*);
 };
@@ -75,15 +77,31 @@ struct _p_DA {
 
   int                    refine_x,refine_y,refine_z; /* ratio used in refining */
 
-#define DA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DAGetADArray() */
+#define DA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DAGetAdicArray() */
   void                   *adarrayin[DA_MAX_AD_ARRAYS],*adarrayout[DA_MAX_AD_ARRAYS]; 
   void                   *adarrayghostedin[DA_MAX_AD_ARRAYS],*adarrayghostedout[DA_MAX_AD_ARRAYS];
   void                   *adstartin[DA_MAX_AD_ARRAYS],*adstartout[DA_MAX_AD_ARRAYS]; 
   void                   *adstartghostedin[DA_MAX_AD_ARRAYS],*adstartghostedout[DA_MAX_AD_ARRAYS];
   int                    tdof,ghostedtdof;
 
+                            /* work arrays for holding derivative type data, via DAGetAdicMFArray() */
+  void                   *admfarrayin[DA_MAX_AD_ARRAYS],*admfarrayout[DA_MAX_AD_ARRAYS]; 
+  void                   *admfarrayghostedin[DA_MAX_AD_ARRAYS],*admfarrayghostedout[DA_MAX_AD_ARRAYS];
+  void                   *admfstartin[DA_MAX_AD_ARRAYS],*admfstartout[DA_MAX_AD_ARRAYS]; 
+  void                   *admfstartghostedin[DA_MAX_AD_ARRAYS],*admfstartghostedout[DA_MAX_AD_ARRAYS];
+
+#define DA_MAX_WORK_ARRAYS 2 /* work arrays for holding work via DAGetArray() */
+  void                   *arrayin[DA_MAX_WORK_ARRAYS],*arrayout[DA_MAX_WORK_ARRAYS]; 
+  void                   *arrayghostedin[DA_MAX_WORK_ARRAYS],*arrayghostedout[DA_MAX_WORK_ARRAYS];
+  void                   *startin[DA_MAX_WORK_ARRAYS],*startout[DA_MAX_WORK_ARRAYS]; 
+  void                   *startghostedin[DA_MAX_WORK_ARRAYS],*startghostedout[DA_MAX_WORK_ARRAYS];
+
   DALocalFunction1       lf;
   DALocalFunction1       lj;
+  DALocalFunction1       adic_lf;
+  DALocalFunction1       adicmf_lf;
+  DALocalFunction1       adifor_lf;
+  DALocalFunction1       adiformf_lf;
 };
 
 /*

@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.96 2001/03/30 15:58:58 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.97 2001/04/07 02:33:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -491,6 +491,7 @@ void PETSC_STDCALL matcreatempibaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M
   *ierr = MatCreateMPIBAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
+
 
 /*
       The MatShell Matrix Vector product requires a C routine.

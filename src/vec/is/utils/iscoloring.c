@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.68 2001/04/02 18:19:13 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.69 2001/04/04 14:43:59 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -23,6 +23,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
+  if (--iscoloring->refct > 0) PetscFunctionReturn(0);
 
   if (iscoloring->is) {
     for (i=0; i<iscoloring->n; i++) {
@@ -115,7 +116,6 @@ int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
       int *mcolors,**ii,nc = iscoloring->n,i,base, n = iscoloring->N;
       int *colors = iscoloring->colors;
       IS  *is;
-
       
       /* generate the lists of nodes for each color */
       ierr = PetscMalloc((nc+1)*sizeof(int),&mcolors);CHKERRQ(ierr);
@@ -130,8 +130,8 @@ int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
 	ii[i] = ii[i-1] + mcolors[i-1];
       }
    
-      ierr = MPI_Scan(&iscoloring->n,&base,1,MPI_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
-      base -= iscoloring->n;
+      ierr = MPI_Scan(&iscoloring->N,&base,1,MPI_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
+      base -= iscoloring->N;
       ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
       for (i=0; i<n; i++) {
 	ii[colors[i]][mcolors[colors[i]]++] = i + base;
@@ -200,8 +200,11 @@ int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 .   -is_coloring_view - Activates ISColoringView()
 
    Level: advanced
+   
+    Notes: By default sets coloring type to  IS_COLORING_LOCAL
 
-.seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy()
+.seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
+
 @*/
 int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscoloring)
 {
@@ -241,12 +244,14 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   (*iscoloring)->is     = 0;
   (*iscoloring)->colors = (int *)colors;
   (*iscoloring)->N      = n;
+  (*iscoloring)->refct  = 1;
+  (*iscoloring)->ctype  = IS_COLORING_LOCAL;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ISColoringView(*iscoloring,PETSC_VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
   }
-
+  PetscLogInfo(0,"ISColoringCreate: Number of colors %d\n",nc);
   PetscFunctionReturn(0);
 }
 
@@ -417,7 +422,7 @@ int ISPartitioningCount(IS part,int count[])
     Concepts: index sets^gathering to all processors
     Concepts: IS^gathering to all processors
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock()
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGatherIndices()
 @*/
 int ISAllGather(IS is,IS *isout)
 {
@@ -450,6 +455,57 @@ int ISAllGather(IS is,IS *isout)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISAllGatherIndices"
+/*@C
+    ISAllGatherIndices - Given a a set of integers on each processor, generates a large 
+    set (same on each processor) by concatenating together each processors integers
+
+    Collective on MPI_Comm
+
+    Input Parameter:
++   comm - communicator to share the indices
+.   n - local size of set
+-   lindices - local indices
+
+    Output Parameter:
++   outN - total number of indices
+-   outindices - all of the integers
+
+    Notes: 
+    ISAllGatherIndices() is clearly not scalable for large index sets.
+
+
+    Level: intermediate
+
+    Concepts: gather^index sets
+    Concepts: index sets^gathering to all processors
+    Concepts: IS^gathering to all processors
+
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+@*/
+int ISAllGatherIndices(MPI_Comm comm,int n,int *lindices,int *outN,int **outindices)
+{
+  int *indices,*sizes,size,*offsets,i,N,ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size*sizeof(int),&sizes);CHKERRQ(ierr);
+  offsets = sizes + size;
+  
+  ierr = MPI_Allgather(&n,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
+  offsets[0] = 0;
+  for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+  N    = offsets[size-1] + sizes[size-1];
+  ierr = PetscFree(sizes);CHKERRQ(ierr);
+
+  ierr = PetscMalloc((N+1)*sizeof(int),&indices);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(lindices,n,MPI_INT,indices,sizes,offsets,MPI_INT,comm);CHKERRQ(ierr); 
+
+  *outindices = indices;
+  if (outN) *outN = N;
+  PetscFunctionReturn(0);
+}
 
 
 

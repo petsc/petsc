@@ -1,5 +1,5 @@
 !
-!  $Id: petscsnes.h,v 1.30 2000/09/25 18:02:37 balay Exp balay $;
+!  $Id: petscsnes.h,v 1.31 2001/04/10 22:37:56 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -92,6 +92,9 @@
       external SNESNOLINESEARCH
       external SNESNOLINESEARCHNONORMS
 
+      external SNESDAFORMFUNCTION
+      external SNESDACOMPUTEJACOBIANWITHADIFOR
+      external SNESDACOMPUTEJACOBIAN
 !
 !  End of Fortran include file for the SNES package in PETSc
 

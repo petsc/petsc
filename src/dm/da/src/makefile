@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.40 2000/05/05 18:30:52 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.41 2000/08/17 04:53:16 bsmith Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   = ${MATLAB_INCLUDE}
+CFLAGS   = ${MATLAB_INCLUDE} ${ADIC_INCLUDE}
 FFLAGS   =
 SOURCEC  = da2.c da1.c da3.c daghost.c dacorn.c dagtol.c daltol.c \
            daltog.c daindex.c dascatter.c dadestroy.c dalocal.c \

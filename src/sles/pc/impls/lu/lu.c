@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.145 2001/04/20 03:49:40 bsmith Exp balay $*/
+/*$Id: lu.c,v 1.146 2001/05/14 17:41:00 balay Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -88,7 +88,7 @@ static int PCSetFromOptions_LU(PC pc)
     }
     ierr = PetscOptionsDouble("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsDouble("-pc_lu_column_pivoting","Column pivoting tolerance (not used)","PCLUSetColumnPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsDouble("-pc_lu_pivoting","Pivoting tolerance (used only for SuperLU)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -297,8 +297,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetColumnPivoting_LU"
-int PCLUSetColumnPivoting_LU(PC pc,PetscReal dtcol)
+#define __FUNCT__ "PCLUSetPivoting_LU"
+int PCLUSetPivoting_LU(PC pc,PetscReal dtcol)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -534,31 +534,31 @@ int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCLUSetColumnPivoting"
+#define __FUNCT__ "PCLUSetPivoting"
 /*@
-    PCLUSetColumnPivoting - Determines when column pivoting is done during LU. 
+    PCLUSetPivoting - Determines when pivoting is done during LU. 
       For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
-      it is never done. For the Matlab factorization this is used.
+      it is never done. For the Matlab and SuperLU factorization this is used.
 
     Collective on PC
 
     Input Parameters:
 +   pc - the preconditioner context
--   dtcol - 0.0 implies no pivoting, 1.0 complete column pivoting (slower, requires more memory but more stable)
+-   dtcol - 0.0 implies no pivoting, 1.0 complete pivoting (slower, requires more memory but more stable)
 
     Options Database Key:
-.   -pc_lu_column_pivoting - dttol
+.   -pc_lu_pivoting - dttol
 
     Level: intermediate
 
 .seealso: PCILUSetMatOrdering()
 @*/
-int PCLUSetColumnPivoting(PC pc,PetscReal dtcol)
+int PCLUSetPivoting(PC pc,PetscReal dtcol)
 {
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetColumnPivoting_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetPivoting_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dtcol);CHKERRQ(ierr);
   } 
@@ -618,8 +618,8 @@ int PCCreate_LU(PC pc)
                     PCLUSetReuseOrdering_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseFill_C","PCLUSetReuseFill_LU",
                     PCLUSetReuseFill_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetColumnPivoting_C","PCLUSetColumnPivoting_LU",
-                    PCLUSetColumnPivoting_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetPivoting_C","PCLUSetPivoting_LU",
+                    PCLUSetPivoting_LU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

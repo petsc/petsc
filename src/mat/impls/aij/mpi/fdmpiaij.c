@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.39 2001/04/10 19:35:25 bsmith Exp bsmith $*/
+/*$Id: fdmpiaij.c,v 1.40 2001/05/29 19:26:27 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -77,7 +77,9 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     /* Determine the total (parallel) number of columns of this color */
     ierr = MPI_Allgather(&n,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);CHKERRQ(ierr);
     nctot = 0; for (j=0; j<size; j++) {nctot += ncolsonproc[j];}
-    if (!nctot) SETERRQ(PETSC_ERR_PLIB,"Invalid coloring of matrix detected");
+    if (!nctot) {
+      PetscLogInfo((PetscObject)mat,"MatFDColoringCreate_MPIAIJ: Coloring of matrix has some unneeded colors with no corresponding rows\n");
+    }
 
     disp[0] = 0;
     for (j=1; j<size; j++) {
@@ -85,7 +87,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     }
     
     /* Get complete list of columns for color on each processor */
-    ierr = PetscMalloc(nctot*sizeof(int),&cols);CHKERRQ(ierr);
+    ierr = PetscMalloc((nctot+1)*sizeof(int),&cols);CHKERRQ(ierr);
     ierr = MPI_Allgatherv(is,n,MPI_INT,cols,ncolsonproc,disp,MPI_INT,mat->comm);CHKERRQ(ierr);
 
     /*

@@ -1,9 +1,9 @@
-/*$Id: bicg.c,v 1.25 2001/03/22 20:31:38 bsmith Exp balay $*/
+/*$Id: bicg.c,v 1.26 2001/03/23 23:23:46 balay Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
 
-    Contibuted by: Victor Eijkhout
+    Contributed by: Victor Eijkhout
 
 */
 #include "src/sles/ksp/kspimpl.h"

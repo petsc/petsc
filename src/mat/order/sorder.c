@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.88 2001/03/23 23:22:51 balay Exp bsmith $*/
+/*$Id: sorder.c,v 1.89 2001/04/10 19:36:03 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -99,7 +99,7 @@ EXTERN_C_END
                                matrix package. 
 
    Synopsis:
-   MatOrderingRegisterDynamic(char *name_ordering,char *path,char *name_create,int (*routine_create)(MatOrdering))
+   int MatOrderingRegisterDynamic(char *name_ordering,char *path,char *name_create,int (*routine_create)(MatOrdering))
 
    Not Collective
 

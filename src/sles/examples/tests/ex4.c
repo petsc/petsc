@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.59 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex4.c,v 1.60 2001/03/23 23:23:50 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
@@ -115,7 +115,7 @@ int main(int argc,char **args)
  CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   ierr = SLESSolve(sles,b,u,&its);CHKERRQ(ierr);
 
   /* check error */

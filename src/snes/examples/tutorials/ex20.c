@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.15 2001/03/22 20:32:01 bsmith Exp balay $ */
+/* $Id: ex20.c,v 1.16 2001/03/23 23:24:25 balay Exp bsmith $ */
 
 
 static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 3d.\n\
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   /*
       Set the DA (grid structure) for the grids.
   */
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,5,5,5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
+  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-5,-5,-5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 

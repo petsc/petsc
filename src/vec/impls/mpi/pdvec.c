@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.147 2001/03/23 23:21:26 balay Exp bsmith $*/
+/* $Id: pdvec.c,v 1.148 2001/04/10 19:34:57 bsmith Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -69,7 +69,7 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         Matlab uses %18.16e format while ASCII uses %g
     */
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
-      ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+      ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
       for (i=0; i<xin->n; i++) {
 #if defined(PETSC_USE_COMPLEX)

@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.18 2001/04/10 19:37:05 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.19 2001/04/29 15:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem.\n\n";
 
@@ -70,9 +70,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-dmmg_snes_mffd",0);CHKERRQ(ierr);
   /* ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
-  
+
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
@@ -85,7 +86,6 @@ int main(int argc,char **argv)
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetUseMatrixFree(dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
   /*

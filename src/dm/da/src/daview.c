@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.48 2001/03/23 23:25:00 balay Exp bsmith $*/
+/*$Id: daview.c,v 1.49 2001/03/30 16:27:15 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -169,6 +169,7 @@ int DAGetLocalInfo(DA da,DALocalInfo *info)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
+  info->da   = da;
   info->dim  = da->dim;
   info->mx   = da->M;
   info->my   = da->N;
@@ -189,6 +190,13 @@ int DAGetLocalInfo(DA da,DALocalInfo *info)
   info->zs = da->zs;
   info->zm = (da->ze - da->zs); 
 
+  info->gxs = da->Xs/w; 
+  info->gxm = (da->Xe - da->Xs)/w;
+  /* the y and z have NOT been multiplied by w */
+  info->gys = da->Ys;
+  info->gym = (da->Ye - da->Ys);
+  info->gzs = da->Zs;
+  info->gzm = (da->Ze - da->Zs); 
   PetscFunctionReturn(0);
 }  
 

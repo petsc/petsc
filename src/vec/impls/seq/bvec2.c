@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.194 2001/03/23 23:21:25 balay Exp bsmith $*/
+/*$Id: bvec2.c,v 1.195 2001/04/10 19:34:56 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -80,7 +80,7 @@ int VecView_Seq_File(Vec xin,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
 #if defined(PETSC_USE_COMPLEX)

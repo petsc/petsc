@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.248 2001/03/14 00:08:22 bsmith Exp balay $ 
+# $Id: makefile,v 1.249 2001/03/29 16:35:33 balay Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -14,7 +14,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c
-EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex63.F ex67f.F ex79f.F
+EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex63.F ex67f.F ex79f.F ex85f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -324,6 +324,9 @@ ex81: ex81.o chkopts
 ex79f: ex79f.o chkopts
 	-${FLINKER} -o ex79f ex79f.o  ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
 	${RM} ex79f.o
+ex85f: ex85f.o chkopts
+	-${FLINKER} -o ex85f ex85f.o  ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	${RM} ex85f.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -557,19 +560,19 @@ runex37:
 	   else echo "Possible problem with part IV of ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex40:
-	-@${MPIRUN} -np 3 ex40 -f ../matrices/arco1 -nd 7 -ov 2 -options_left_off > ex40_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ex40 -f ../matrices/arco1 -nd 7 -ov 2 -options_left no > ex40_1.tmp 2>&1; \
 	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
 	   if (${DIFF} output/ex40_1.out ex40_12.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   ${RM} -f ex40_1.tmp ex40_12.tmp
 runex41:
-	-@${MPIRUN} -np 3 ex41 -f ../matrices/arco1 -nd 3 -ov 1 -options_left_off > ex41_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ex41 -f ../matrices/arco1 -nd 3 -ov 1 -options_left no > ex41_1.tmp 2>&1; \
 	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \
 	   if (${DIFF} output/ex41_1.out ex41_12.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   ${RM} -f ex41_1.tmp ex41_12.tmp
 runex42:
-	-@${MPIRUN} -np 3 ex42 -f ../matrices/arco1 -mat_aij_oneindex -options_left_off \
+	-@${MPIRUN} -np 3 ex42 -f ../matrices/arco1 -mat_aij_oneindex -options_left no \
 	   -nd 5 -ov 2  > ex42_1.tmp 2>&1; \
 	   grep -v "flg =1" ex42_1.tmp > ex42_12.tmp; \
 	   if (${DIFF} output/ex42_1.out ex42_12.tmp) then true; \
@@ -720,7 +723,7 @@ runex63:
 	   else echo "Possible problem with ex63_1, diffs above"; fi; \
 	   ${RM} -f ex63_1.tmp dense.mat
 runex67f:
-	-@${MPIRUN} -np 1  ex67f -options_left_off  > ex67f_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ex67f -options_left no  > ex67f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex67f_1.out ex67f_1.tmp) then true; \
 	   else echo "Possible problem with ex67f_1, diffs above"; fi; \
 	   ${RM} -f ex67f_1.tmp
@@ -814,6 +817,6 @@ TESTEXAMPLES_7	 = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm
 TESTEXAMPLES_8	 = ex67f.PETSc runex67f ex67f.rm
 TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13  = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
-TESTEXAMPLES_16  = ex73.PETSc ex73.rm
+TESTEXAMPLES_PARMETIS  = ex73.PETSc ex73.rm
 
 include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.30 2001/04/25 18:54:19 bsmith Exp bsmith $*/
+/*$Id: dalocal.c,v 1.31 2001/05/18 19:29:28 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -234,9 +234,12 @@ int DARestoreGlobalVector(DA da,Vec* g)
 }
 
 /* ------------------------------------------------------------------- */
-#if defined(PETSC_HAVE_ADIC)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
 
+EXTERN_C_BEGIN
 #include "adic_utils.h"
+EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "DAGetAdicArray"
 /*@C
@@ -270,7 +273,7 @@ int DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->adarrayghostedin[i]) {
         *iptr                   = da->adarrayghostedin[i];
-        iarray_start            = da->adstartghostedin[i];
+        iarray_start            = (char*)da->adstartghostedin[i];
         itdof                   = da->ghostedtdof;
         da->adarrayghostedin[i] = PETSC_NULL;
         da->adstartghostedin[i] = PETSC_NULL;
@@ -485,7 +488,7 @@ int ad_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 @*/
 int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 {
-  int  ierr,j,i,xs,ys,xm,ym,zs,zm,itdof;
+  int  ierr,j,i,xs,ys,xm,ym,zs,zm;
   char *iarray_start;
 
   PetscFunctionBegin;
@@ -529,7 +532,6 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
   switch (da->dim) {
     case 1: {
       void *ptr;
-      itdof = xm;
 
       ierr  = PetscMalloc(xm*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
       ierr  = PetscMemzero(iarray_start,xm*sizeof(Scalar));CHKERRQ(ierr);
@@ -539,7 +541,6 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
       break;}
     case 2: {
       void **ptr;
-      itdof = xm*ym;
 
       ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
       ierr  = PetscMemzero(iarray_start,xm*ym*sizeof(Scalar));CHKERRQ(ierr);
@@ -552,7 +553,6 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
       break;}
     case 3: {
       void ***ptr,**bptr;
-      itdof = xm*ym*zm;
 
       ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
       ierr  = PetscMemzero(iarray_start,xm*ym*zm*sizeof(Scalar));CHKERRQ(ierr);
@@ -673,7 +673,7 @@ int DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 
      Level: advanced
 
-.seealso: DARestoreAdicArray()
+.seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
 
 @*/
 int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *tdof)
@@ -687,7 +687,7 @@ int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->admfarrayghostedin[i]) {
         *iptr                     = da->admfarrayghostedin[i];
-        iarray_start              = da->admfstartghostedin[i];
+        iarray_start              = (char*)da->admfstartghostedin[i];
         itdof                     = da->ghostedtdof;
         da->admfarrayghostedin[i] = PETSC_NULL;
         da->admfstartghostedin[i] = PETSC_NULL;

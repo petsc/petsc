@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.8 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex21.c,v 1.9 2001/04/10 19:37:05 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem.\n\n";
 
@@ -36,9 +36,9 @@ static char help[] = "Solves PDE optimization problem.\n\n";
 */
 
 typedef struct {
-  DA      da1,da2;
-  int     nredundant;
-  VecPack packer;
+  DA           da1,da2;
+  int          nredundant;
+  VecPack      packer;
   PetscViewer  u_viewer,lambda_viewer;
   PetscViewer  fu_viewer,flambda_viewer;
 } UserCtx;
@@ -51,21 +51,20 @@ extern int Monitor(SNES,int,PetscReal,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr,N = 5,its;
+  int     ierr,its;
   Vec     U,FU;
   SNES    snes;
   UserCtx user;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
   user.nredundant = 1;
   ierr = VecPackAddArray(user.packer,user.nredundant);CHKERRQ(ierr);
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
   ierr = VecPackAddDA(user.packer,user.da1);CHKERRQ(ierr);
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
   ierr = VecPackAddDA(user.packer,user.da2);CHKERRQ(ierr);
   ierr = VecPackCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
@@ -177,32 +176,5 @@ int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
-/* 
-   This is currently not used. It computes the exact solution */
-
-/*
-int u_solution(void *dummy,int n,Scalar *x,Scalar *u)
-{
-  int i;
-  PetscFunctionBegin;
-  for (i=0; i<n; i++) {
-    u[i] = x[i]*x[i] - 1.25*x[i] + .25;
-  }
-  PetscFunctionReturn(0);
-}
-
-  PF      pf;
-  Vec     x;
-  Vec     u_global;
-  Scalar  *w;
-  ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);
-  ierr = PFSetType(pf,PFQUICK,(void*)u_solution);CHKERRQ(ierr);
-  ierr = DASetUniformCoordinates(user.da1,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(user.da1,&x);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(user.packer,U,&w,&u_global,0);CHKERRQ(ierr);
-  w[0] = .25;
-  ierr = PFApplyVec(pf,x,u_global);CHKERRQ(ierr);
-  ierr = PFDestroy(pf);CHKERRQ(ierr);
-*/
 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 2001/02/13 16:41:31 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.18 2001/03/22 20:28:36 bsmith Exp bsmith $ 
 
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
@@ -14,7 +14,7 @@ SPECIALFASTLIB = yes
 speciallib:
 	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
 	-@${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
-	-@mv receive.mex* openport.mex* closeport.mex* launch.mex* readinvecs.mex* ${PETSC_DIR}/bin/matlab
+	-@${MV} receive.mex* openport.mex* closeport.mex* launch.mex* readinvecs.mex* ${PETSC_DIR}/bin/matlab
 specialfastlib: speciallib
 
 matlabcodes: receive openport closeport launch readinvecs

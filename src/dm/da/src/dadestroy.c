@@ -1,4 +1,4 @@
-/*$Id: dadestroy.c,v 1.42 2001/01/17 19:47:38 bsmith Exp balay $*/
+/*$Id: dadestroy.c,v 1.43 2001/03/23 23:25:00 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -29,7 +29,7 @@ int DADestroy(DA da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
 
-  for (i=0; i<10; i++) {
+  for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
     if (da->localin[i])  {cnt++;}
     if (da->globalin[i]) {cnt++;}
   }
@@ -43,11 +43,54 @@ int DADestroy(DA da)
   if (da->refct < 0) PetscFunctionReturn(0);
   da->refct = 0;
 
-  for (i=0; i<10; i++) {
+  for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
     if (da->localout[i]) SETERRQ(1,"Destroying a DA that has a local vector obtained with DAGetLocalVector()");
     if (da->localin[i]) {ierr = VecDestroy(da->localin[i]);CHKERRQ(ierr);}
     if (da->globalout[i]) SETERRQ(1,"Destroying a DA that has a global vector obtained with DAGetGlobalVector()");
     if (da->globalin[i]) {ierr = VecDestroy(da->globalin[i]);CHKERRQ(ierr);}
+  }
+
+  for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    if (da->adstartghostedout[i]){
+      ierr = PetscFree(da->adstartghostedout[i]);CHKERRQ(ierr);
+    }
+    if (da->adstartghostedin[i]){
+      ierr = PetscFree(da->adstartghostedin[i]);CHKERRQ(ierr);
+    }
+    if (da->adstartout[i]){
+      ierr = PetscFree(da->adstartout[i]);CHKERRQ(ierr);
+    }
+    if (da->adstartin[i]){
+      ierr = PetscFree(da->adstartin[i]);CHKERRQ(ierr);
+    }
+  }
+  for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
+    if (da->admfstartghostedout[i]){
+      ierr = PetscFree(da->admfstartghostedout[i]);CHKERRQ(ierr);
+    }
+    if (da->admfstartghostedin[i]){
+      ierr = PetscFree(da->admfstartghostedin[i]);CHKERRQ(ierr);
+    }
+    if (da->admfstartout[i]){
+      ierr = PetscFree(da->admfstartout[i]);CHKERRQ(ierr);
+    }
+    if (da->admfstartin[i]){
+      ierr = PetscFree(da->admfstartin[i]);CHKERRQ(ierr);
+    }
+  }
+  for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
+    if (da->startghostedout[i]){
+      ierr = PetscFree(da->startghostedout[i]);CHKERRQ(ierr);
+    }
+    if (da->startghostedin[i]){
+      ierr = PetscFree(da->startghostedin[i]);CHKERRQ(ierr);
+    }
+    if (da->startout[i]){
+      ierr = PetscFree(da->startout[i]);CHKERRQ(ierr);
+    }
+    if (da->startin[i]){
+      ierr = PetscFree(da->startin[i]);CHKERRQ(ierr);
+    }
   }
 
   /* if memory was published with AMS then destroy it */
@@ -81,6 +124,13 @@ int DADestroy(DA da)
     ierr = PetscStrfree(da->fieldname[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(da->fieldname);CHKERRQ(ierr);
+
+  if (da->localcoloring) {
+    ierr = ISColoringDestroy(da->localcoloring);CHKERRQ(ierr);
+  }
+  if (da->ghostedcoloring) {
+    ierr = ISColoringDestroy(da->ghostedcoloring);CHKERRQ(ierr);
+  }
 
   if (da->coordinates) {ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);}
   if (da->gtog1) {ierr = PetscFree(da->gtog1);CHKERRQ(ierr);}

@@ -1,5 +1,5 @@
-/*$Id: sbaijfact10.c,v 1.4 2001/02/14 16:42:46 bsmith Exp balay $*/
-#include "sbaij.h"
+/*$Id: sbaijfact10.c,v 1.5 2001/03/23 23:22:21 balay Exp bsmith $*/
+#include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/inline/ilu.h"
 
 /*

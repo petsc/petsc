@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.5 2001/03/22 20:32:01 bsmith Exp balay $*/
+/*$Id: ex23.c,v 1.6 2001/03/23 23:24:25 balay Exp bsmith $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -34,13 +34,12 @@ extern int FormFunction(SNES,Vec,Vec,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr,N = 5;
+  int     ierr;
   UserCtx user;
   DA      da;
   DMMG    *dmmg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
   ierr = PetscOptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
@@ -55,11 +54,12 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-dmmg_snes_mffd",0);CHKERRQ(ierr);
   /*  ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
   /* Create a global vector from a da arrays */
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
 
   /* create graphics windows */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"u - state variables",-1,-1,-1,-1,&user.u_viewer);CHKERRQ(ierr);
@@ -67,7 +67,6 @@ int main(int argc,char **argv)
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetUseMatrixFree(dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.86 2001/05/29 19:55:29 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.87 2001/05/29 20:13:27 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -7,6 +7,15 @@
 
 #include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringSetF"
+int MatFDColoringSetF(MatFDColoring fd,Vec F)
+{
+  PetscFunctionBegin;
+  fd->F = F;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringView_Draw_Zoom"
@@ -476,7 +485,7 @@ int MatFDColoringDestroy(MatFDColoring c)
 int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   int           (*f)(void *,Vec,Vec,void*) = (int (*)(void *,Vec,Vec,void *))coloring->f;
-  int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow;
+  int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
   Scalar        dx,mone = -1.0,*y,*xx,*w3_array;
   Scalar        *vscale_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
@@ -526,6 +535,18 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
     ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
     
+    /*
+      This is a horrible, horrible, hack. See DMMGComputeJacobian_Multigrid() it inproperly sets
+      coloring->F for the coarser grids from the finest
+    */
+    if (coloring->F) {
+      ierr = VecGetLocalSize(coloring->F,&m1);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(w1,&m2);CHKERRQ(ierr);
+      if (m1 != m2) {
+	coloring->F = 0; 
+      }    
+    }
+
     if (coloring->F) {
       w1          = coloring->F; /* use already computed value of function */
       coloring->F = 0; 

@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.131 2001/03/23 23:25:00 balay Exp balay $*/
+/*$Id: da3.c,v 1.132 2001/03/28 19:42:42 balay Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -181,9 +181,9 @@ EXTERN int DAPublish_Petsc(PetscObject);
 
    Options Database Key:
 +  -da_view - Calls DAView() at the conclusion of DACreate3d()
-.  -da_grid_x <nx> - number of grid points in x direction
-.  -da_grid_y <ny> - number of grid points in y direction
-.  -da_grid_z <nz> - number of grid points in z direction
+.  -da_grid_x <nx> - number of grid points in x direction, if M < 0
+.  -da_grid_y <ny> - number of grid points in y direction, if N < 0
+.  -da_grid_z <nz> - number of grid points in z direction, if P < 0
 -  -da_noao - do not compute natural to PETSc ordering object
 
    Level: beginner
@@ -213,10 +213,10 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   int           n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
   int           *bases,*ldims,x_t,y_t,z_t,s_t,base,count,s_x,s_y,s_z; 
-  int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim;
+  int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,tM = M,tN = N,tP = P;
   int           sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
   int           sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
-  int           sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0;
+  int           sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0,refine_x = 2, refine_y = 2, refine_z = 2;
   PetscTruth    flg1,flg2;
   DA            da;
   Vec           local,global;
@@ -228,30 +228,45 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
 
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
-  if (M < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have M positive");
-  if (N < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have N positive");
-  if (P < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have P positive");
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"3d DA Options","DA");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate3d",M,&M,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate3d",N,&N,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DACreate3d",P,&P,PETSC_NULL);CHKERRQ(ierr);
+    if (M < 0){
+      tM   = -M;
+      ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DACreate3d",tM,&tM,PETSC_NULL);CHKERRQ(ierr);
+    }
+    if (N < 0){
+      tN   = -N;
+      ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DACreate3d",tN,&tN,PETSC_NULL);CHKERRQ(ierr);
+    }
+    if (P < 0){
+      tP   = -P;
+      ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DACreate3d",tP,&tP,PETSC_NULL);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DACreate3d",m,&m,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DACreate3d",n,&n,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-da_processors_z","Number of processors in z direction","DACreate3d",p,&p,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_x","Refinement ratio in x direction","DACreate3d",refine_x,&refine_x,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_y","Refinement ratio in y direction","DACreate3d",refine_y,&refine_y,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_refine_z","Refinement ratio in z direction","DACreate3d",refine_z,&refine_z,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  M = tM; N = tN; P = tP;
 
   PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   da->bops->publish           = DAPublish_Petsc;
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
+  da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
 
   PetscLogObjectCreate(da);
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 3;
+  da->interptype = DA_Q1;
   da->gtog1      = 0;
+  da->refine_x   = refine_x;
+  da->refine_y   = refine_y;
+  da->refine_z   = refine_z;
   ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
 

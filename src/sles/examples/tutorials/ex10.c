@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.51 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.52 2001/04/25 15:19:34 bsmith Exp bsmith $*/
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This version first preloads and solves a small system, then loads \n\
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   char           file[2][128];     /* input file name */
   PetscTruth     table,flg,trans;
-  int            ierr,its;
+  int            ierr,its,ierrp;
   double         norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   Scalar         zero = 0.0,none = -1.0;
@@ -88,9 +88,11 @@ int main(int argc,char **args)
     /*
        Load the matrix and vector; then destroy the viewer.
     */
-    ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
-    ierr = VecLoad(fd,&b);
-    if (ierr) { /* if file contains no RHS, then use a vector of all ones */
+    ierr  = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
+    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
+    ierrp = VecLoad(fd,&b);
+    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
+    if (ierrp) { /* if file contains no RHS, then use a vector of all ones */
       int    m;
       Scalar one = 1.0;
       ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);

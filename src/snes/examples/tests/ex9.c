@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.47 2001/03/23 23:24:20 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.48 2001/04/10 19:37:00 bsmith Exp bsmith $*/
 
 static char help[] = "This program demonstrates use of the SNES package. Solve systems of\n\
 nonlinear equations in parallel.  This example uses matrix-free Krylov\n\
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user);CHKERRQ(ierr);
   ierr = MatCreateSNESMF(snes,x,&J);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,MatSNESMFFormJacobian,&user);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* Force no preconditioning to be used.  Note that this overrides whatever

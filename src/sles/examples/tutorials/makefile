@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.95 2001/03/30 16:07:31 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.96 2001/04/11 03:12:15 bsmith Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -241,30 +241,30 @@ runex9:
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   ${RM} -f ex9_1.tmp
 runex10:
-	-@${MPIRUN} -np 2 ex10 -f0 ../../../mat/examples/matbinary.cplx.ex -ksp_gmres_irorthog > ex10_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex10 -f0 ../../../mat/examples/matbinary.cplx.ex -ksp_gmres_irorthog -options_left off > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 runex10_2:
-	-@${MPIRUN} -np 2 ex10 -options_left_off -ksp_type bicg \
+	-@${MPIRUN} -np 2 ex10 -options_left no -ksp_type bicg \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
 	   else echo "Possible problem with ex10_2, diffs above"; fi; \
 	   ${RM} -f ex10_2.tmp
 runex10_3:
-	-@${MPIRUN} -np 2 ex10 -options_left_off -ksp_type bicg -pc_type asm \
+	-@${MPIRUN} -np 2 ex10 -options_left no -ksp_type bicg -pc_type asm \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_3.tmp 2>&1; \
 	   if (${DIFF} output/ex10_3.out ex10_3.tmp) then true; \
 	   else echo "Possible problem with ex10_3, diffs above"; fi; \
 	   ${RM} -f ex10_3.tmp
 runex10_4:
-	-@${MPIRUN} -np 1 ex10 -options_left_off -ksp_type bicg -pc_type lu \
+	-@${MPIRUN} -np 1 ex10 -options_left no -ksp_type bicg -pc_type lu \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_4.tmp 2>&1; \
 	   if (${DIFF} output/ex10_4.out ex10_4.tmp) then true; \
 	   else echo "Possible problem with ex10_4, diffs above"; fi; \
 	   ${RM} -f ex10_4.tmp
 runex10_5:
-	-@${MPIRUN} -np 1 ex10 -options_left_off -ksp_type bicg \
+	-@${MPIRUN} -np 1 ex10 -options_left no -ksp_type bicg \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_5.tmp 2>&1; \
 	   if (${DIFF} output/ex10_5.out ex10_5.tmp) then true; \
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
@@ -297,7 +297,7 @@ runex10_7:
 	-@${RM} -f ex10_7.tmp
 runex10_8:
 	-@${MPIRUN} -np 1 ex10 -sles_diagonal_scale -pc_type eisenstat -ksp_smonitor -sles_diagonal_scale_fix \
-	   -f0 ../../../mat/examples/matrices/medium -ksp_gmres_irorthog -options_left_off > ex10_8.tmp 2>&1; \
+	   -f0 ../../../mat/examples/matrices/medium -ksp_gmres_irorthog -options_left no > ex10_8.tmp 2>&1; \
 	   if (${DIFF} output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
 	   ${RM} -f ex10_8.tmp
@@ -317,28 +317,28 @@ runex10_9:
 	   else echo "Possible problem with ex10_9, diffs above"; fi;
 	-@${RM} -f ex10_9.tmp
 runex10_10:
-	-@${MPIRUN} -np 2 ex10 -options_left_off -ksp_type fgmres -pc_type sles \
+	-@${MPIRUN} -np 2 ex10 -options_left no -ksp_type fgmres -pc_type sles \
 	   -f0 ../../../mat/examples/matrices/medium -ksp_fgmres_modifypcsles -ksp_smonitor> ex10_10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_10.out ex10_10.tmp) then true; \
 	   else echo "Possible problem with ex10_10, diffs above"; fi; \
 	   ${RM} -f ex10_10.tmp
 runex10_11:
-	-@${MPIRUN} -np 2 ex10 -options_left_off -f0 ftp://info.mcs.anl.gov/pub/petsc/testmatrix.gz > ex10_11.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ex10 -options_left no -f0 ftp://info.mcs.anl.gov/pub/petsc/testmatrix.gz > ex10_11.tmp 2>&1;\
 	   if (${DIFF} output/ex10_11.out ex10_11.tmp) then true; \
 	   else echo "Possible problem with ex10_11, diffs above"; fi; \
 	   ${RM} -f ex10_11.tmp
 runex10_12:
-	-@${MPIRUN} -np 1 ex10 -options_left_off -mat_aij_matlab -pc_type lu -f0 /home/petsc/matrices/arco1 > ex10_12.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_matlab -pc_type lu -f0 /home/petsc/matrices/arco1 > ex10_12.tmp 2>&1;\
 	   if (${DIFF} output/ex10_12.out ex10_12.tmp) then true; \
 	   else echo "Possible problem with ex10_12, diffs above"; fi; \
 	   ${RM} -f ex10_12.tmp
 runex10_13:
-	-@${MPIRUN} -np 1 ex10 -options_left_off -mat_aij_lusol -pc_type lu -f0 /home/petsc/matrices/arco1 > ex10_13.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_lusol -pc_type lu -f0 /home/petsc/matrices/arco1 > ex10_13.tmp 2>&1;\
 	   if (${DIFF} output/ex10_13.out ex10_13.tmp) then true; \
 	   else echo "Possible problem with ex10_13, diffs above"; fi; \
 	   ${RM} -f ex10_13.tmp
 runex10_14:
-	-@${MPIRUN} -np 3 ex10 -options_left_off -pc_type spai -f0 /home/petsc/matrices/medium; \
+	-@${MPIRUN} -np 3 ex10 -options_left no -pc_type spai -f0 /home/petsc/matrices/medium; \
 	echo "ex10_14: This program tested the SPAI preconditioner."
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
@@ -446,6 +446,6 @@ TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_14  = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
-TESTEXAMPLES_18  = ex10.PETSc runex10_14 ex10.rm
+TESTEXAMPLES_SPAI  = ex10.PETSc runex10_14 ex10.rm
 
 include ${PETSC_DIR}/bmake/common_test

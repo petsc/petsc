@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.18 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.19 2001/04/10 19:37:05 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -134,14 +134,15 @@ int main(int argc,char **argv)
     if (coloring) {
       ISColoring    iscoloring;
 
-      ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+      ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
+      ierr = DAGetMatrix(user.da,MATMPIAIJ,&J);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
     } else {
-      ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
+      ierr = DAGetMatrix(user.da,MATMPIAIJ,&J);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
     }
   }

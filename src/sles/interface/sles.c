@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.147 2001/03/22 20:30:52 bsmith Exp balay $*/
+/*$Id: sles.c,v 1.148 2001/03/23 23:23:00 balay Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -427,7 +427,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
      initial guess, the user must call
 .vb
         SLESGetKSP(sles,&ksp);
-        KSPSetInitialGuessNonzero(ksp);
+        KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);
 .ve
 
    Solving Successive Linear Systems:
@@ -548,7 +548,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
      initial guess, the user must call
 .vb
         SLESGetKSP(sles,&ksp);
-        KSPSetInitialGuessNonzero(ksp);
+        KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);
 .ve
 
    Solving Successive Linear Systems:

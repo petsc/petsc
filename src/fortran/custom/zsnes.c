@@ -1,7 +1,8 @@
-/*$Id: zsnes.c,v 1.57 2001/03/29 16:37:13 balay Exp bsmith $*/
+/*$Id: zsnes.c,v 1.58 2001/05/03 21:54:25 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
+#include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 #define snesconverged_eq_tr_         snesconverged_eq_tr__
@@ -11,6 +12,10 @@
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matcreatedaad_                   MATCREATEDAAD
+#define matregisterdaad_                   MATREGISTERDAAD
+#define matdaadsetsnes_                  MATDAADSETSNES
+#define snesdacomputejacobian_           SNESDACOMPUTEJACOBIAN
 #define snesdacomputejacobianwithadifor_ SNESDACOMPUTEJACOBIANWITHADIFOR
 #define snesdaformfunction_          SNESDAFORMFUNCTION          
 #define matsnesmfsetbase_            MATSNESMFSETBASE
@@ -62,6 +67,10 @@
 #define snesnolinesearchnonorms_         SNESNOLINESEARCHNONORMS
 #define snesview_                        SNESVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matcreatedaad_                   matcreatedaad
+#define matregisterdaad_                   matregisterdaad
+#define matdaadsetsnes_                  matdaadsetsnes
+#define snesdacomputejacobian_           snesdacomputejacobian
 #define snesdacomputejacobianwithadifor_ snesdacomputejacobianwithadifor
 #define snesdaformfunction_          snesdaformfunction
 #define matsnesmfsetbase_            matsnesmfsetbase
@@ -115,6 +124,21 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL matregisterdaad_(int *ierr)
+{
+  *ierr = MatRegisterDAAD();
+}
+
+void PETSC_STDCALL matcreatedaad_(DA *da,Mat *mat,int *ierr)
+{
+  *ierr = MatCreateDAAD(*da,mat);
+}
+
+void PETSC_STDCALL matdaadsetsnes_(Mat *mat,SNES *snes,int *ierr)
+{
+  *ierr = MatDAADSetSNES(*mat,*snes);
+}
 
 void PETSC_STDCALL snesview_(SNES *snes,PetscViewer *viewer, int *ierr)
 {
@@ -532,6 +556,12 @@ void  snesdacomputejacobianwithadifor_(SNES *snes,Vec *X,Mat *m,Mat *p,MatStruct
   *ierr = 1;
 }
 
+void  snesdacomputejacobian_(SNES *snes,Vec *X,Mat *m,Mat *p,MatStructure* type,void *ctx,int *ierr) 
+{
+  (*PetscErrorPrintf)("Cannot call this function from Fortran");
+  *ierr = 1;
+}
+
 static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
 static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
@@ -550,6 +580,8 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianColor,*(MatFDColoring*)ctx);
   } else if ((void(*)())func == (void(*)())snesdacomputejacobianwithadifor_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobianWithAdifor,ctx);
+  } else if ((void(*)())func == (void(*)())snesdacomputejacobian_) {
+    *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobian,ctx);
   } else {
     f3 = func;
     *ierr = SNESSetJacobian(*snes,*A,*B,oursnesjacobian,ctx);

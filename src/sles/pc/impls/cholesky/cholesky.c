@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.9 2001/03/23 23:23:23 balay Exp bsmith $*/
+/*$Id: cholesky.c,v 1.10 2001/04/10 19:36:21 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -49,11 +49,11 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetFromOptions_Cholesky"
 static int PCSetFromOptions_Cholesky(PC pc)
 {
-  PC_Cholesky      *lu = (PC_Cholesky*)pc->data;
-  int        ierr;
-  PetscTruth flg;
-  char       tname[256];
-  PetscFList      ordlist;
+  PC_Cholesky *lu = (PC_Cholesky*)pc->data;
+  int         ierr;
+  PetscTruth  flg;
+  char        tname[256];
+  PetscFList  ordlist;
   
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);

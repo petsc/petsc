@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.21 2001/04/10 19:37:48 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.22 2001/04/20 19:52:37 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -174,8 +174,8 @@ typedef double PetscLogDouble;
 #endif
 #endif
 
-#define InactiveDouble double
-#define InactiveScalar Scalar
+#define PassiveDouble double
+#define PassiveScalar Scalar
 
 #define PETSCMAP1_a(a,b)  a ## _ ## b
 #define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)

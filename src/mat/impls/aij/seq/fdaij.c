@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.38 2001/04/10 19:35:19 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.39 2001/05/29 19:02:59 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -58,8 +58,8 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
       c->columns[i]  = 0;
     }
 
-    if (flg) { /* ------------------------------------------------------------------------------*/
-      /* crude version requires O(N*N) work */
+    if (!flg) { /* ------------------------------------------------------------------------------*/
+      /* fast, crude version requires O(N*N) work */
       ierr = PetscMemzero(rowhit,N*sizeof(int));CHKERRQ(ierr);
       /* loop over columns*/
       for (j=0; j<n; j++) {
@@ -77,8 +77,8 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
         if (rowhit[j]) nrows++;
       }
       c->nrows[i] = nrows;
-      ierr        = PetscMalloc(nrows*sizeof(int),&c->rows[i]);CHKERRQ(ierr);
-      ierr        = PetscMalloc(nrows*sizeof(int),&c->columnsforrow[i]);CHKERRQ(ierr);
+      ierr        = PetscMalloc((nrows+1)*sizeof(int),&c->rows[i]);CHKERRQ(ierr);
+      ierr        = PetscMalloc((nrows+1)*sizeof(int),&c->columnsforrow[i]);CHKERRQ(ierr);
       nrows       = 0;
       for (j=0; j<N; j++) {
         if (rowhit[j]) {
@@ -88,7 +88,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
         }
       }
     } else {  /*-------------------------------------------------------------------------------*/
-      /* efficient version, using rowhit as a linked list */
+      /* slow version, using rowhit as a linked list */
       int currentcol,fm,mfm;
       rowhit[N] = N;
       nrows     = 0;

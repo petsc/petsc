@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.15 2001/04/03 20:24:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.16 2001/04/07 02:31:17 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -134,7 +134,7 @@ int MatGetType(Mat mat,MatType *type)
    MatRegisterDynamic - Adds a new matrix type
 
    Synopsis:
-   MatRegisterDynamic(char *name,char *path,char *name_create,int (*routine_create)(Mat))
+   int MatRegisterDynamic(char *name,char *path,char *name_create,int (*routine_create)(Mat))
 
    Not Collective
 

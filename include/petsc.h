@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.290 2001/05/24 20:52:45 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.291 2001/05/24 20:53:46 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -266,6 +266,7 @@ EXTERN int  PetscInitializeNoArguments(void);
 EXTERN int  PetscFinalize(void);
 EXTERN int  PetscInitializeFortran(void);
 EXTERN int  PetscGetArgs(int*,char ***);
+EXTERN int  PetscEnd();
 
 /*
     Functions that can act on any PETSc object.

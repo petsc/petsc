@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.121 2001/03/12 17:27:03 bsmith Exp balay $*/
+/*$Id: mg.c,v 1.122 2001/03/23 23:23:10 balay Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -325,14 +325,14 @@ static int PCSetUp_MG(PC pc)
   for (i=1; i<n; i++) {
     if (mg[i]->smoothd) {
       ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
     }
   }
   for (i=0; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
       ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x);CHKERRQ(ierr);
     }
   }

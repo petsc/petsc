@@ -1,4 +1,4 @@
-/*$Id: zis.c,v 1.39 2001/01/17 19:48:31 bsmith Exp bsmith $*/
+/*$Id: zis.c,v 1.40 2001/04/10 19:37:46 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscis.h"
@@ -28,7 +28,9 @@
 #define iscoloringview_               ISCOLORINGVIEW
 #define ispartitioningtonumbering_    ISPARTITIONINGTONUMBERING
 #define islocaltoglobalmappingapply_  ISLOCALTOGLOBALMAPPINGAPPLY
+#define islocaltoglobalmappingview_  ISLOCALTOGLOBALMAPPINGVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define islocaltoglobalmappingview_   islocaltoglobalmappingview
 #define islocaltoglobalmappingapply_  islocaltoglobalmappingapply
 #define iscoloringview_        iscoloringview
 #define iscoloringdestroy_     iscoloringdestroy
@@ -57,6 +59,14 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,int *ierr)
+{
+  PetscViewer v;
+  if (FORTRANNULLOBJECT(viewer)) v = 0;
+  else                           v = *viewer;
+  *ierr = ISLocalToGlobalMappingView(*mapping,v);
+}
 
 /*
    This is the same as the macro ISLocalToGlobalMappingApply() except it does not

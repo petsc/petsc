@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.28 2001/03/28 19:42:32 balay Exp balay $*/
+/*$Id: cn.c,v 1.29 2001/04/04 16:56:35 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -436,7 +436,7 @@ int TSCreate_CN(TS ts)
     ts->setfromoptions  = TSSetFromOptions_CN_Linear;
     ierr = SLESCreate(ts->comm,&ts->sles);CHKERRQ(ierr);
     ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
     if (isshell) {
