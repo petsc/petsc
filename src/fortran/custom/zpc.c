@@ -5,7 +5,7 @@
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define pcmgdefaultresidual_       PCMGDEFAULTRESIDUAL
-#define mgsetresidual_             MGSETRESIDUAL
+#define pcmgsetresidual_           PCMGSETRESIDUAL
 #define pcasmsetlocalsubdomains_   PCASMSETLOCALSUBDOMAINS
 #define pcasmsetglobalsubdomains_  PCASMSETGLOBALSUBDOMAINS
 #define pcasmgetlocalsubmatrices_  PCASMGETLOCALSUBMATRICES
@@ -19,10 +19,10 @@
 #define pcappendoptionsprefix_     PCAPPENDOPTIONSPREFIX
 #define pcbjacobigetsubksp_        PCBJACOBIGETSUBKSP
 #define pcasmgetsubksp_            PCASMGETSUBKSP
-#define mggetcoarsesolve_          MGGETCOARSESOLVE
-#define mggetsmoother_             MGGETSMOOTHER
-#define mggetsmootherup_           MGGETSMOOTHERUP
-#define mggetsmootherdown_         MGGETSMOOTHERDOWN
+#define pcmggetcoarsesolve_        PCMGGETCOARSESOLVE
+#define pcmggetsmoother_           PCMGGETSMOOTHER
+#define pcmggetsmootherup_         PCMGGETSMOOTHERUP
+#define pcmggetsmootherdown_       PCMGGETSMOOTHERDOWN
 #define pcshellsetapply_           PCSHELLSETAPPLY
 #define pcshellsetapplytranspose_  PCSHELLSETAPPLYTRANSPOSE
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
@@ -31,7 +31,7 @@
 #define pcgetoptionsprefix_        PCGETOPTIONSPREFIX
 #define matnullspacecreate_        MATNULLSPACECREATE
 #define pcview_                    PCVIEW
-#define mgsetlevels_               MGSETLEVELS
+#define pcmgsetlevels_             PCMGSETLEVELS
 #define pccompositesettype_        PCCOMPOSITESETTYPE
 #define pccompositeaddpc_          PCCOMPOSITEADDPC
 #define pccompositegetpc_          PCCOMPOSITEGETPC
@@ -41,7 +41,7 @@
 #define pclusetmatordering_        PCLUSETMATORDERING
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcmgdefaultresidual_       pcmgdefaultresidual
-#define mgsetresidual_             mgsetresidual
+#define pcmgsetresidual_           pcmgsetresidual
 #define pcasmsetlocalsubdomains_   pcasmsetlocalsubdomains
 #define pcasmsetglobalsubdomains_  pcasmsetglobalsubdomains
 #define pcasmgetlocalsubmatrices_  pcasmgetlocalsubmatrices
@@ -56,10 +56,10 @@
 #define pcappendoptionsprefix_     pcappendoptionsprefix
 #define pcbjacobigetsubksp_        pcbjacobigetsubksp
 #define pcasmgetsubksp_            pcasmgetsubksp
-#define mggetcoarsesolve_          mggetcoarsesolve
-#define mggetsmoother_             mggetsmoother
-#define mggetsmootherup_           mggetsmootherup
-#define mggetsmootherdown_         mggetsmootherdown
+#define pcmggetcoarsesolve_        pcmggetcoarsesolve
+#define pcmggetsmoother_           pcmggetsmoother
+#define pcmggetsmootherup_         pcmggetsmootherup
+#define pcmggetsmootherdown_       pcmggetsmootherdown
 #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
 #define pcshellsetapply_           pcshellsetapply
 #define pcshellsetapplytranspose_  pcshellsetapplytranspose
@@ -67,7 +67,7 @@
 #define pcsettype_                 pcsettype
 #define pcgetoptionsprefix_        pcgetoptionsprefix
 #define pcview_                    pcview
-#define mgsetlevels_               mgsetlevels
+#define pcmgsetlevels_             pcmgsetlevels
 #define pccompositesettype_        pccompositesettype
 #define pccompositeaddpc_          pccompositeaddpc
 #define pccompositegetpc_          pccompositegetpc
@@ -148,7 +148,7 @@ void PETSC_STDCALL pccompositegetpc_(PC *pc,PetscInt *n,PC *subpc,PetscErrorCode
   *ierr = PCCompositeGetPC(*pc,*n,subpc);
 }
 
-void PETSC_STDCALL mgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
+void PETSC_STDCALL pcmgsetlevels_(PC *pc,PetscInt *levels,MPI_Comm *comms, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(comms);
   *ierr = PCMGSetLevels(*pc,*levels,comms);
@@ -207,22 +207,22 @@ void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
   *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson,ptr);
 }
 
-void PETSC_STDCALL mggetcoarsesolve_(PC *pc,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL pcmggetcoarsesolve_(PC *pc,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = PCMGGetCoarseSolve(*pc,ksp);
 }
 
-void PETSC_STDCALL mggetsmoother_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL pcmggetsmoother_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = PCMGGetSmoother(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL mggetsmootherup_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL pcmggetsmootherup_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = PCMGGetSmootherUp(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL mggetsmootherdown_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
+void PETSC_STDCALL pcmggetsmootherdown_(PC *pc,PetscInt *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = PCMGGetSmootherDown(*pc,*l,ksp);
 }
@@ -379,7 +379,7 @@ void pcmgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
   *ierr = PCMGDefaultResidual(*mat,*b,*x,*r);
 }
 
-void PETSC_STDCALL mgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
+void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
   if ((FCNVOID)residual == (FCNVOID)pcmgdefaultresidual_) rr = PCMGDefaultResidual;
