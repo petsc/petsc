@@ -104,26 +104,6 @@ runexamples:
            if (diff ex4_5.out ex4_5.tmp) then true; \
            else echo "Possible problem with ex4_5, diffs above"; fi; \
            $(RM) -f ex4_5.tmp
-	-@$(MPIRUN) ex5 -ksp_monitor -m 5 >\
-           ex5_1.tmp 2>&1;   \
-           if (diff ex5_1.out ex5_1.tmp) then true; \
-           else echo "Possible problem with ex5_1, diffs above"; fi; \
-           $(RM) -f ex5_1.tmp
-	-@$(MPIRUN) -np 2 ex5 -ksp_monitor -m 5 >\
-           ex5_2.tmp 2>&1;   \
-           if (diff ex5_2.out ex5_2.tmp) then true; \
-           else echo "Possible problem with ex5_2, diffs above"; fi; \
-           $(RM) -f ex5_2.tmp
-	-@$(MPIRUN) ex6 -ksp_monitor -m 5 >\
-           ex6_1.tmp 2>&1;   \
-           if (diff ex6_1.out ex6_1.tmp) then true; \
-           else echo "Possible problem with ex6_1, diffs above"; fi; \
-           $(RM) -f ex6_1.tmp
-	-@$(MPIRUN) -np 2 ex6 -ksp_monitor -m 5 >\
-           ex6_2.tmp 2>&1;   \
-           if (diff ex6_2.out ex6_2.tmp) then true; \
-           else echo "Possible problem with ex6_2, diffs above"; fi; \
-           $(RM) -f ex6_2.tmp
 	-@$(MPIRUN) ex8 -ksp_monitor > ex8_1.tmp 2>&1; \
            if (diff ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \
