@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.16 1996/02/07 15:44:13 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.17 1996/02/07 23:36:30 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -541,15 +541,16 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   Mat_MPIAIJ  *c = (Mat_MPIAIJ *) C->data;
   Mat         A = c->A, B = c->B;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
-  int         **idx, *n, *w1, *w2, *w3, *w4, *rtable, start, end, size, rank;
-  int         m,i,j,k, ierr, **rbuf, row, proc, mct, msz, **outdat, **ptr, index;
-  int         *req_size, *ctr, *pa, tag, *tmp,bsz, nmsg , **rbuf2;
-  int          rstart,cstart, ashift, bshift,*ai, *aj, *bi, *bj, *garray,*rbufsize;
+  int         **idx, *n, *w1, *w2, *w3, *w4, *rtable, start, end, size,**outdat, rank;
+  int         m,i,j,k,l,ct1,ct2, oct2, ierr, **rbuf, row, proc, mct, msz, **ptr, index;
+  int         *req_size, *ctr, *pa, tag, *tmp,bsz, nmsg , **rbuf2,*req_source,**sbuf_aj;
+  int          rstart,cstart, ashift, bshift,*ai, *aj, *bi, *bj,*garray,*rbufsize, max1;
   MPI_Request *send_waits, *recv_waits, *send_waits2, *recv_waits2, *recv_waits3 ;
-  MPI_Request *recv_waits4;
-  MPI_Status  *recv_status ,*recv_status2;
+  MPI_Request *recv_waits4,*send_waits3,*send_waits4;
+  MPI_Status  *recv_status ,*recv_status2,*send_status,*send_status3 ,*send_status2;
+  MPI_Status  *recv_status3,*recv_status4,*send_status4;
   MPI_Comm    comm;
-  Scalar      **rbuf3;
+  Scalar      **rbuf3, *aa, *ba, **sbuf_aa;
   double      space, fr, maxs;
 
 
@@ -562,10 +563,12 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   cstart = c->cstart;
   ashift = a->indexshift;
   ai     = a->i;
-  aj     = a->j +ashift;
+  aj     = a->j;
+  aa     = a->a;
   bshift = b->indexshift;
   bi     = b->i;
-  bj     = b->j +bshift;
+  bj     = b->j;
+  ba     = b->a;
   garray = c->garray;
 
   TrSpace( &space, &fr, &maxs );
@@ -715,7 +718,7 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   rbufsize = (int*)PetscMalloc((mct+1) *sizeof(int)); CHKPTRQ(rbufsize);
   for( i =0; i< mct; ++i){
     j = pa[i];
-    MPI_Irecv( (void *)rbufsize+j, 1, MPI_INT, j, tag, comm, recv_waits2+i);
+    MPI_Irecv( (void *)(rbufsize+i), 1, MPI_INT, j, tag+1, comm, recv_waits2+i);
   }
 
   /* Send to other procs the buf size they should allocate */
@@ -727,6 +730,7 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   recv_status = (MPI_Status *) PetscMalloc( (nmsg+1)*sizeof(MPI_Status) );
   CHKPTRQ(recv_status);
   req_size    = (int *) PetscMalloc( (nmsg +1) * sizeof(int)) ; CHKPTRQ(req_size);
+  req_source  = (int *) PetscMalloc( (nmsg +1) * sizeof(int)) ; CHKPTRQ(req_source);
   
   for ( i=0; i< nmsg; ++i) {
     MPI_Waitany(nmsg, recv_waits, &index, recv_status+i);
@@ -735,11 +739,14 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
     start           = 2*rbuf[index][0] + 1 ;
     MPI_Get_count(recv_status+i,MPI_INT, &end);
     for (j=start; j< end; j++) {
-      row       = rbuf[index][j];
+      row       = rbuf[index][j] - rstart;
       req_size[index] += ai[row+1] - ai[row];
       req_size[index] += bi[row+1] - bi[row];
     }
-    MPI_Isend((void *)req_size+index,1,MPI_INT,recv_status[i].MPI_SOURCE,tag, comm, send_waits2+index);
+    req_source[index] = recv_status[i].MPI_SOURCE;
+    printf("[%d] Send to %d: size %d, index = %d start = %d end = %d \n", rank, 
+          req_source[index] , *(req_size+index), index, start, end);
+    MPI_Isend((void *)(req_size+index),1,MPI_INT,req_source[index],tag+1, comm, send_waits2+i); 
     
   }
 
@@ -755,15 +762,119 @@ int MatGetSubMatrices_MPIAIJ (Mat C,int imax, IS *irow,IS *icol,MatGetSubMatrixC
   CHKPTRQ(recv_waits4);
   recv_status2 = (MPI_Status *) PetscMalloc( (mct+1)*sizeof(MPI_Status) );
   CHKPTRQ(recv_status2);
-  for ( i=0; i< nmsg; ++i) {
+  for ( i=0; i< mct; ++i) {
     MPI_Waitany(mct, recv_waits2, &index, recv_status2+i);
-    /* Allocate memory to recieve mat->j */
-    rbuf2[index] = PetscMalloc(rbufsize[index]*sizeof(int));
     
-    MPI_Irecv((void *)rbuf2[index],rbufsize[index], MPI_INT, recv_status2[i].MPI_SOURCE, tag, comm, recv_waits3+i); 
-    MPI_Irecv((void *)rbuf3[index],rbufsize[index], MPIU_SCALAR, recv_status2[i].MPI_SOURCE, tag, comm, recv_waits4+i); 
+    rbuf2[index] = (int *)PetscMalloc(rbufsize[index]*sizeof(int)); 
+    CHKPTRQ(rbuf2[index]);
+    rbuf3[index] = (Scalar *)PetscMalloc(rbufsize[index]*sizeof(Scalar));
+    CHKPTRQ(rbuf3[index]);
+    
+    MPI_Irecv((void *)rbuf2[index],rbufsize[index], MPI_INT, 
+              recv_status2[i].MPI_SOURCE, tag+2, comm, recv_waits3+index); 
+    MPI_Irecv((void *)rbuf3[index],rbufsize[index], MPIU_SCALAR, 
+              recv_status2[i].MPI_SOURCE, tag+3, comm, recv_waits4+index); 
+              
   } 
   
+  /* Wait on sends1 and sends2 */
+    send_status = (MPI_Status *) PetscMalloc( (mct+1)*sizeof(MPI_Status) );
+    CHKPTRQ(send_status);
+    send_status2 = (MPI_Status *) PetscMalloc( (nmsg+1)*sizeof(MPI_Status) );
+    CHKPTRQ(send_status2);
+
+  MPI_Waitall(mct,send_waits,send_status);
+  MPI_Waitall(nmsg,send_waits2,send_status2);
+  
+
+  /* Now allocate buffers for a->j, and send them off */
+  sbuf_aj = (int **)PetscMalloc((nmsg+1)*sizeof(int *)); CHKPTRQ(sbuf_aj);
+  for ( i=0, j =0; i< nmsg; i++) j += req_size[i];
+  sbuf_aj[0] = (int*) PetscMalloc((j+1)*sizeof(int)); CHKPTRQ(sbuf_aj[0]);
+  for  (i =1; i< nmsg; i++)  sbuf_aj[i] = sbuf_aj[i-1] + req_size[i-1];
+  
+  send_waits3 = (MPI_Request *) PetscMalloc((nmsg+1)*sizeof(MPI_Request)); 
+  CHKPTRQ(send_waits3);
+  for (i=0; i<nmsg; i++) {
+    ct1 = 2*rbuf[i][0]+1;
+    ct2 = ct1;
+    for (j=1, max1 = rbuf[i][0]; j< max1; j++){
+      oct2 = ct2;
+      for( k=0; k< rbuf[i][2*j]; k++, ct1++) {
+        row   = rbuf[i][ct1] - rstart;
+        start = ai[row];
+        end   = ai[row+1];
+        for (l = start; l< end; l++) {
+          sbuf_aj[i][ct2++] = aj[l] + cstart;
+        }
+        start = bi[row];
+        end   = bi[row+1];
+        for (l = start; l< end; l++) {
+          sbuf_aj[i][ct2++] = garray[bj[l]];
+        }
+      }
+      /* update the header  */
+      sbuf_aj[i][2*j]   = ct2 - oct2;
+      sbuf_aj[i][2*j-1] = rbuf[i][2*j-1];
+    }
+    sbuf_aj[i][0] = rbuf[i][0];
+    MPI_Isend((void *)(sbuf_aj+i),req_size[i],MPI_INT,req_source[i],tag+2, comm, send_waits3+i);
+  } 
+  recv_status3 = (MPI_Status *) PetscMalloc( (mct+1)*sizeof(MPI_Status) );
+  CHKPTRQ(recv_status3);
+  send_status3 = (MPI_Status *) PetscMalloc( (nmsg+1)*sizeof(MPI_Status) );
+  CHKPTRQ(send_status3);
+
+
+  MPI_Waitall(mct,recv_waits3,recv_status3);
+  MPI_Waitall(nmsg,send_waits3,send_status3);
+
+ 
+  /* Now allocate buffers for a->a, and send them off */
+  sbuf_aa = (Scalar **)PetscMalloc((nmsg+1)*sizeof(Scalar *)); CHKPTRQ(sbuf_aa);
+  for ( i=0, j =0; i< nmsg; i++) j += req_size[i];
+  sbuf_aa[0] = (Scalar*) PetscMalloc((j+1)*sizeof(Scalar)); CHKPTRQ(sbuf_aa[0]);
+  for  (i =1; i< nmsg; i++)  sbuf_aa[i] = sbuf_aa[i-1] + req_size[i-1];
+  
+  send_waits4 = (MPI_Request *) PetscMalloc((nmsg+1)*sizeof(MPI_Request)); 
+  CHKPTRQ(send_waits4);
+  for (i=0; i<nmsg; i++) {
+    ct1 = 2*rbuf[i][0]+1;
+    ct2 = ct1;
+    for (j=1, max1 = rbuf[i][0]; j< max1; j++){
+      oct2 = ct2;
+      for( k=0; k< rbuf[i][2*j]; k++, ct1++) {
+        row   = rbuf[i][ct1] - rstart;
+        start = ai[row];
+        end   = ai[row+1];
+        for (l = start; l< end; l++) {
+          sbuf_aa[i][ct2++] = aa[l];
+        }
+        start = bi[row];
+        end   = bi[row+1];
+        for (l = start; l< end; l++) {
+          sbuf_aj[i][ct2++] = ba[l];
+        }
+      }
+      /* update the header  */
+      sbuf_aj[i][2*j]   = (Scalar)(ct2 - oct2);
+      sbuf_aj[i][2*j-1] = (Scalar)(rbuf[i][2*j-1]);
+    }
+    sbuf_aj[i][0] = (Scalar)rbuf[i][0];
+    MPI_Isend((void *)(sbuf_aa+i),req_size[i],MPIU_SCALAR,req_source[i],tag+3, comm, send_waits4+i);
+  } 
+  recv_status4 = (MPI_Status *) PetscMalloc( (mct+1)*sizeof(MPI_Status) );
+  CHKPTRQ(recv_status4);
+  send_status4 = (MPI_Status *) PetscMalloc( (nmsg+1)*sizeof(MPI_Status) );
+  CHKPTRQ(send_status4);
+
+
+  MPI_Waitall(mct,recv_waits4,recv_status4);
+  MPI_Waitall(nmsg,send_waits4,send_status4);
+
+
+  /* Now u have all the data required, so form the matrix */
+  /* rbuf2->aj, rbuf3 -> aa */
   
   
   return 0;
