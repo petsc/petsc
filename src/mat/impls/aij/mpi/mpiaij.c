@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.141 1996/04/26 00:03:32 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.142 1996/04/26 00:25:06 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -440,9 +440,9 @@ static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   int        ierr;
 
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
-  ierr = MatMult_SeqAIJ(a->A,xx,yy); CHKERRQ(ierr);
+  ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
-  ierr = MatMultAdd_SeqAIJ(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
+  ierr = (*a->B->ops.multadd)(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
   return 0;
 }
 
@@ -451,9 +451,9 @@ static int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
-  ierr = MatMultAdd_SeqAIJ(a->A,xx,yy,zz); CHKERRQ(ierr);
+  ierr = (*a->A->ops.multadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
-  ierr = MatMultAdd_SeqAIJ(a->B,a->lvec,zz,zz); CHKERRQ(ierr);
+  ierr = (*a->B->ops.multadd)(a->B,a->lvec,zz,zz); CHKERRQ(ierr);
   return 0;
 }
 
@@ -463,12 +463,12 @@ static int MatMultTrans_MPIAIJ(Mat A,Vec xx,Vec yy)
   int        ierr;
 
   /* do nondiagonal part */
-  ierr = MatMultTrans_SeqAIJ(a->B,xx,a->lvec); CHKERRQ(ierr);
+  ierr = (*a->B->ops.multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,
                 (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
   /* do local part */
-  ierr = MatMultTrans_SeqAIJ(a->A,xx,yy); CHKERRQ(ierr);
+  ierr = (*a->A->ops.multtrans)(a->A,xx,yy); CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
@@ -483,12 +483,12 @@ static int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   int        ierr;
 
   /* do nondiagonal part */
-  ierr = MatMultTrans_SeqAIJ(a->B,xx,a->lvec); CHKERRQ(ierr);
+  ierr = (*a->B->ops.multtrans)(a->B,xx,a->lvec); CHKERRQ(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,
                  (ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),a->Mvctx); CHKERRQ(ierr);
   /* do local part */
-  ierr = MatMultTransAdd_SeqAIJ(a->A,xx,yy,zz); CHKERRQ(ierr);
+  ierr = (*a->A->ops.multtransadd)(a->A,xx,yy,zz); CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
@@ -921,7 +921,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   }
   else if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      return MatRelax_SeqAIJ(mat->A,bb,omega,flag,fshift,its,xx);
+      return (*mat->A->ops.relax)(mat->A,bb,omega,flag,fshift,its,xx);
     }
     ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,mat->Mvctx);
     CHKERRQ(ierr);
@@ -960,7 +960,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   }
   else if (flag & SOR_LOCAL_FORWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      return MatRelax_SeqAIJ(mat->A,bb,omega,flag,fshift,its,xx);
+      return (*mat->A->ops.relax)(mat->A,bb,omega,flag,fshift,its,xx);
     }
     ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,mat->Mvctx);
     CHKERRQ(ierr);
@@ -984,7 +984,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   }
   else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
-      return MatRelax_SeqAIJ(mat->A,bb,omega,flag,fshift,its,xx);
+      return (*mat->A->ops.relax)(mat->A,bb,omega,flag,fshift,its,xx);
     }
     ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_ALL,
                             mat->Mvctx); CHKERRQ(ierr);
@@ -1131,8 +1131,8 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
   if (!v)   {pvA = 0; pvB = 0;}
   if (!idx) {pcA = 0; if (!v) pcB = 0;}
-  ierr = MatGetRow_SeqAIJ(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
-  ierr = MatGetRow_SeqAIJ(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
+  ierr = (*mat->A->ops.getrow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
+  ierr = (*mat->B->ops.getrow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
   nztot = nzA + nzB;
 
   cmap  = mat->garray;
@@ -1170,8 +1170,8 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
     else {*idx = 0; *v=0;}
   }
   *nz = nztot;
-  ierr = MatRestoreRow_SeqAIJ(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
-  ierr = MatRestoreRow_SeqAIJ(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
+  ierr = (*mat->A->ops.restorerow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
+  ierr = (*mat->B->ops.restorerow)(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
   return 0;
 }
 
