@@ -1,4 +1,10 @@
 
+
+Whenever you introduce ANYTHING new in PETSc, be sure to add 
+it to the Fortran include files and fix the interface files as
+well if necessary; otherwise, indicate that this still needs to be
+fixed in the ThingsToDo file.
+
 PETSc Users Mailing list info:
   Perl script for WWW petsc-users subscription is located in:
   charlotte:/www/ncsa_httpd/cgi-bin/petsc/subscribe-to-petsc-users
