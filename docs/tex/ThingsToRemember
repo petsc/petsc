@@ -129,20 +129,20 @@ Debugging on the Cray t3d:  use totalview:
 ---------------
 NCSA Convex Exemplar account
 Machine: lena.ncsa.uiuc.edu
-userid: barrys
+userid: barrys,balay
 password: petsc-password
 Account (whatever that means?) ryc
 
 NCSA Origin2000
 Machine: modi4.ncsa.uiuc.edu
-userid: barrys
+userid: barrys,balay
 password: petsc-password
 Account (whatever that means?) ryc
 help: consult@ncsa.uiuc.edu, future@ncsa.uiuc.edu
 
 NCSA Power Challenge 
 Machine: sif.ncsa.uiuc.edu loki.ncsa.uiuc.edu  odin
-Userid: barrys
+Userid: barrys,balay
 password: petsc-passwd
 Account (whatever that means?) ryc
 
@@ -155,10 +155,17 @@ password: petsc-password
 
 Account info at NCSA - command: usage
 
-AFS :afs directory at NCSA /afs/ncsa.uiuc.edu/user/barrys
+AFS :afs directory at NCSA /afs/ncsa/user/barrys,balay
 To use afs on powerchallenge/convex exemplar, log into afs using klog
 other afs commands to aremember:fs,pts
 http://www.ncsa.uiuc.edu/Pubs/UserGuides/AFSGuide/AFSv2.1Book.html
+
+UniTree - mass storage system: 
+Machine: mss.ncsa.uiuc.edu
+Userid: barrys,balay
+password: petsc-passwd
+useful commands: msscmd
+
 
 Batch Jobs: batch jobs on SGIs ( Challange/Origin2000) can be submitted
 by using bsub command. Sample scripts for batch submission are located 
