@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.3 1998/08/19 03:06:09 bsmith Exp balay $";
+static char vcid[] = "$Id: pipeline.c,v 1.4 1998/08/19 16:43:57 balay Exp balay $";
 #endif
 
 /*
@@ -164,7 +164,6 @@ int VecPipelineSetup(VecPipeline ctx)
    VecPipelineSetType
 @*/
 static int ProcYes(int proc,PetscObject pipe_info);
-static int ProcNo(int proc,PetscObject pipe_info);
 static int ProcUp(int proc,PetscObject pipe_info);
 static int ProcDown(int proc,PetscObject pipe_info);
 static int PipelineSequentialSetup(VecPipeline,PetscObject,PetscObject*);
@@ -172,6 +171,8 @@ static int ProcColourUp(int proc,PetscObject pipe_info);
 static int ProcColourDown(int proc,PetscObject pipe_info);
 static int PipelineRedblackSetup(VecPipeline,PetscObject,PetscObject*);
 static int PipelineMulticolourSetup(VecPipeline,PetscObject,PetscObject*);
+
+int ProcNo(int proc,PetscObject pipe_info);
 
 #undef __FUNC__
 #define __FUNC__ "VecPipelineSetType"
