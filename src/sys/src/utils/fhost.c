@@ -52,10 +52,12 @@ PetscErrorCode PetscGetHostName(char name[],size_t nlen)
   struct utsname utname;
 #endif
 
-
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETCOMPUTERNAME)
-  GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
+ {
+    size_t nnlen = nlen;
+    GetComputerName((LPTSTR)name,(LPDWORD)(&nnlen));
+ }
 #elif defined(PETSC_HAVE_UNAME)
   uname(&utname); 
   ierr = PetscStrncpy(name,utname.nodename,nlen);CHKERRQ(ierr);
@@ -64,12 +66,15 @@ PetscErrorCode PetscGetHostName(char name[],size_t nlen)
 #elif defined(PETSC_HAVE_SYSINFO_3ARG)
   sysinfo(SI_HOSTNAME,name,nlen);
 #endif
+  /* if there was not enough room then system call will not null terminate name */
+  name[nlen-1] = 0;
+
   /* See if this name includes the domain */
   ierr = PetscStrchr(name,'.',&domain);CHKERRQ(ierr);
   if (!domain) {
     size_t  l,ll;
     ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
-    if (l == nlen) {name[nlen-1] = 0; PetscFunctionReturn(0);}
+    if (l == nlen-1) PetscFunctionReturn(0);
     name[l++] = '.';
 #if defined(PETSC_HAVE_SYSINFO_3ARG)
     sysinfo(SI_SRPC_DOMAIN,name+l,nlen-l);
@@ -98,6 +103,5 @@ PetscErrorCode PetscGetHostName(char name[],size_t nlen)
       }
     }
   }
-  name[nlen-1] = 0;
   PetscFunctionReturn(0);
 }
