@@ -10,6 +10,6 @@ OBJSC    = qcg.o
 OBJSF    =
 LIBBASE  = libpetscksp
 LINCLUDE = 
-LOCDIR   = ksp/impls/qcg/
+LOCDIR   = src/ksp/impls/qcg/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

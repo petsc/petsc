@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.44 1996/03/18 00:37:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.45 1996/03/19 21:22:50 bsmith Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
 */
 
 #include "sys.h"
-#include "is/isimpl.h"
+#include "src/is/isimpl.h"
 #include "vecimpl.h"                     /*I "vec.h" I*/
 #include "impls/dvecimpl.h"
 #include "impls/mpi/pvecimpl.h"

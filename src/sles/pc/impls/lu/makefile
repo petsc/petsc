@@ -11,6 +11,6 @@ OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 
 MANSEC   = 4
-LOCDIR   = src/pc/impls/lu
+LOCDIR   = src/pc/impls/lu/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

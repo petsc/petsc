@@ -7,6 +7,6 @@ SOURCEF  =
 OBJSC    = tfqmr.o
 OBJSF    =
 LIBBASE  = libpetscksp
-LOCDIR   = ksp/impls/tfqmr/
+LOCDIR   = src/ksp/impls/tfqmr/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

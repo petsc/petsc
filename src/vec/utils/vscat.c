@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.58 1996/04/13 20:32:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.59 1996/04/20 04:18:39 bsmith Exp balay $";
 #endif
 
 /*
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: vscat.c,v 1.58 1996/04/13 20:32:03 bsmith Exp bsmith 
   includes the code for scattering between sequential vectors.
 */
 
-#include "is/isimpl.h"
+#include "src/is/isimpl.h"
 #include "vecimpl.h"                     /*I "vec.h" I*/
 #include "impls/dvecimpl.h"
 #include "impls/mpi/pvecimpl.h"

@@ -2,7 +2,7 @@ PETSC_DIR = ../..
 
 ALL: lib
 
-CFLAGS   =  -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF)
+CFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = drawimpl.h
@@ -10,5 +10,6 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscdraw
 DIRS     = interface impls examples utils
+LOCDIR   = src/draw/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
