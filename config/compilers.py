@@ -42,7 +42,6 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-cc=<prog>',  nargs.Arg(None, None, 'Specify the C compiler'))
     help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
-    #help.addArgument('Compilers', '-with-f90=<prog>',       nargs.Arg(None, None, 'Specify the Fortran 90 compiler'))
     help.addArgument('Compilers', '-with-f90-header=<file>', nargs.Arg(None, None, 'Specify the C header for the F90 interface'))
     help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface'))
     help.addArgument('Compilers', '-with-ld=<prog>',         nargs.Arg(None, None, 'Specify the linker'))
@@ -80,50 +79,103 @@ class Configure(config.base.Configure):
     return 0
   isGNU = staticmethod(isGNU)
 
-  def checkCCompiler(self):
-    '''Determine the C compiler using --with-cc, then CC, then a search
-    - Also determines the preprocessor from --with-cpp, then CPP, then the C compiler'''
-    if self.framework.argDB.has_key('with-cc'):
-      compilers = self.framework.argDB['with-cc']
-    elif self.framework.argDB.has_key('CC'):
-      compilers = self.framework.argDB['CC']
-    elif self.framework.argDB.has_key('with-mpi-dir') and self.framework.argDB['with-mpi-compilers']:
-      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpicc')]
+  def checkCompiler(self, language):
+    '''Check that the given compiler is functional, and if not raise an exception'''
+    self.pushLanguage(language)
+    if not self.checkCompile():
+      raise RuntimeError('Cannot compile '+language+' with '+self.compiler+'.')
+    if not self.checkLink():
+      raise RuntimeError('Cannot link '+language+' with '+self.linker+'.')
+    if not self.checkRun():
+      raise RuntimeError('Cannot run executables created with '+language+'.')
+    self.popLanguage()
+    return
+
+  def generateCCompilerGuesses(self):
+    '''Determine the C compiler using CC, then --with-cc, then MPI, then GNU, then vendors
+       - Any given category can be excluded'''
+    import os
+
+    if self.framework.argDB.has_key('CC'):
+      yield self.framework.argDB['CC']
+    elif self.framework.argDB.has_key('with-cc'):
+      yield self.framework.argDB['with-cc']
+    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicc')
     else:
-      compilers = []
-      if self.framework.argDB['with-mpi']:
-        compilers.append('mpicc')
+      if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
+        yield 'mpicc'
       if self.framework.argDB['with-gnu-compilers']:
-        compilers.append('gcc')
+        yield 'gcc'
       vendor = self.framework.argDB['with-vendor-compilers']
       if not vendor == '0':
         if not vendor and not Configure.isGNU('cc'):
-          compilers.append('cc')
+          yield 'cc'
         if vendor == 'kai' or not vendor:
-          compilers.append('kcc')
+          yield 'kcc'
         if vendor == 'ibm' or not vendor:
-          compilers.append('xlc')
+          yield 'xlc'
         if vendor == 'intel' or not vendor:
-          compilers.append('icc')
+          yield 'icc'
         if vendor == 'portland' or not vendor:
-          compilers.append('pgcc')
-    if not isinstance(compilers, list): compilers = [compilers]
-    if self.getExecutables(compilers, resultName = 'CC'):
-      self.framework.argDB['CC'] = self.CC
-      self.addSubstitution('CC', self.CC)
-      self.isGCC = Configure.isGNU(self.framework.argDB['CC'])
+          yield 'pgcc'
+    return
 
-      if self.framework.argDB.has_key('with-cpp'):
-        preprocessors = self.framework.argDB['with-cpp']
-      elif self.framework.argDB.has_key('CPP'):
-        preprocessors = self.framework.argDB['CPP']
-      else:
-        preprocessors = [self.framework.argDB['CC']+' -E']
-      if not isinstance(preprocessors, list): preprocessors = [preprocessors]
-      if self.getExecutables(preprocessors, resultName = 'CPP'):
-        self.framework.argDB['CPP'] = self.CPP
-        self.addSubstitution('CPP', self.CPP)
-        self.addSubstitution('CPPFLAGS', self.framework.argDB['CPPFLAGS'])
+  def checkCCompiler(self):
+    '''Locate a functional C compiler'''
+    for compiler in self.generateCCompilerGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'CC'):
+          self.framework.argDB['CC'] = self.CC
+          self.checkCompiler('C')
+          break
+      except RuntimeError, e:
+        import os
+
+        print str(e)+' You may specify another compiler with --with-cc.'
+        if os.path.basename(self.framework.argDB['CC']) == 'mpicc':
+          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+        self.popLanguage()
+        self.framework.argDB['CC'] = None
+    if 'CC' in self.framework.argDB and not self.framework.argDB['CC'] is None:
+      self.addSubstitution('CC', self.framework.argDB['CC'])
+      self.isGCC = Configure.isGNU(self.framework.argDB['CC'])
+    else:
+      raise RuntimeError('Could not locate a functional C compiler')
+    return
+
+  def generateCPreprocessorGuesses(self):
+    '''Determines the C preprocessor from CPP, then --with-cpp, then the C compiler'''
+    if self.framework.argDB.has_key('CPP'):
+      yield self.framework.argDB['CPP']
+    elif self.framework.argDB.has_key('with-cpp'):
+      yield self.framework.argDB['with-cpp']
+    else:
+      yield self.framework.argDB['CC']+' -E'
+    return
+
+  def checkCPreprocessor(self):
+    '''Locate a functional C preprocessor'''
+    for compiler in self.generateCPreprocessorGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'CPP'):
+          self.framework.argDB['CPP'] = self.CPP
+          self.pushLanguage('C')
+          if not self.checkPreprocess('#include <stdlib.h>\n'):
+            raise RuntimeError('Cannot preprocess C with '+self.CPP+'.')
+          self.popLanguage()
+          break
+      except RuntimeError, e:
+        import os
+
+        print str(e)+' You may specify another preprocessor with --with-cpp.'
+        if os.path.basename(self.framework.argDB['CPP']) == 'mpicc':
+          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+        self.popLanguage()
+        self.framework.argDB['CPP'] = None
+    if 'CPP' in self.framework.argDB and not self.framework.argDB['CPP'] is None:
+      self.addSubstitution('CPP', self.framework.argDB['CPP'])
+      self.addSubstitution('CPPFLAGS', self.framework.argDB['CPPFLAGS'])
     return
 
   def checkCFlags(self):
@@ -166,61 +218,97 @@ class Configure(config.base.Configure):
       self.addDefine('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
     return
 
-  def checkCxxCompiler(self):
-    '''Determine the C++ compiler using --with-cxx, then CXX, then a search
-    - Also determines the preprocessor from --with-cxxcpp, then CXXCPP, then the C++ compiler'''
-    if self.framework.argDB.has_key('with-cxx'):
-      compilers = self.framework.argDB['with-cxx']
-    elif self.framework.argDB.has_key('CXX'):
-      compilers = self.framework.argDB['CXX']
-    elif self.framework.argDB.has_key('with-mpi-dir') and self.framework.argDB['with-mpi-compilers']:
-      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpicxx'), os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpiCC')]
+  def generateCxxCompilerGuesses(self):
+    '''Determine the Cxx compiler using CXX, then --with-cxx, then MPI, then GNU, then vendors
+       - Any given category can be excluded'''
+    import os
+
+    if self.framework.argDB.has_key('CXX'):
+      yield self.framework.argDB['CXX']
+    elif self.framework.argDB.has_key('with-cxx'):
+      yield self.framework.argDB['with-cxx']
+    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC')
     else:
-      compilers = []
-      if self.framework.argDB['with-mpi']:
-        compilers.extend(['mpicxx', 'mpiCC'])
+      if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
+        yield 'mpicxx'
+        yield 'mpiCC'
       if self.framework.argDB['with-gnu-compilers']:
-        compilers.append('g++')
+        yield 'g++'
       vendor = self.framework.argDB['with-vendor-compilers']
       if not vendor == '0':
         if not vendor:
-          if not Configure.isGNU('c++'): compilers.append('c++')
-          if not Configure.isGNU('CC'): compilers.append('CC')
-          compilers.extend(['cxx', 'cc++'])
+          if not Configure.isGNU('c++'):
+            yield 'c++'
+          if not Configure.isGNU('CC'):
+            yield 'CC'
+          yield 'cxx'
+          yield 'cc++'
         if vendor == 'ibm' or not vendor:
-          compilers.append('xlC')
+          yield 'xlC'
         if vendor == 'intel' or not vendor:
-          compilers.append('icc')
+          yield 'icc'
         if vendor == 'microsoft' or not vendor:
-          compilers.append('cl')
+          yield 'cl'
         if vendor == 'portland' or not vendor:
-          compilers.append('pgCC')
-    if not isinstance(compilers, list): compilers = [compilers]
-    if self.getExecutables(compilers, resultName = 'CXX'):
-      self.framework.argDB['CXX'] = self.CXX
-      self.addSubstitution('CXX', self.CXX)
-      # Check for g++
-      self.isGCXX = 0
-      if self.framework.argDB['CXX'].endswith('g++'):
-        self.isGCXX = 1
-      else:
-        try:
-          import commands
-          (status, output) = commands.getstatusoutput(self.framework.argDB['CXX']+' --help')
-          if not status and output.find('www.gnu.org') >= 0:
-            self.isGCXX = 1
-        except Exception, e: pass
+          yield 'pgCC'
+    return
 
-      if self.framework.argDB.has_key('with-cxxcpp'):
-        preprocessors = self.framework.argDB['with-cxxcpp']
-      elif self.framework.argDB.has_key('CXXCPP'):
-        preprocessors = self.framework.argDB['CXXCPP']
-      else:
-        preprocessors = [self.CXX+' -E']
-      if not isinstance(preprocessors, list): preprocessors = [preprocessors]
-      if self.getExecutables(preprocessors, resultName = 'CXXCPP'):
-        self.framework.argDB['CXXCPP'] = self.CXXCPP
-        self.addSubstitution('CXXCPP', self.CXXCPP)
+  def checkCxxCompiler(self):
+    '''Locate a functional Cxx compiler'''
+    for compiler in self.generateCxxCompilerGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'CXX'):
+          self.framework.argDB['CXX'] = self.CXX
+          self.checkCompiler('Cxx')
+          break
+      except RuntimeError, e:
+        import os
+
+        print str(e)+' You may specify another compiler with --with-cxx.'
+        if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
+          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+        self.popLanguage()
+        self.framework.argDB['CXX'] = None
+    if 'CXX' in self.framework.argDB and not self.framework.argDB['CXX'] is None:
+      self.addSubstitution('CXX', self.framework.argDB['CXX'])
+      self.isGCXX = Configure.isGNU(self.framework.argDB['CXX'])
+    else:
+      raise RuntimeError('Could not locate a functional C compiler')
+    return
+
+  def generateCxxPreprocessorGuesses(self):
+    '''Determines the Cxx preprocessor from CXXCPP, then --with-cxxcpp, then the Cxx compiler'''
+    if self.framework.argDB.has_key('CXXCPP'):
+      yield self.framework.argDB['CXXCPP']
+    elif self.framework.argDB.has_key('with-cxxcpp'):
+      yield self.framework.argDB['with-cxxcpp']
+    else:
+      yield self.framework.argDB['CXX']+' -E'
+    return
+
+  def checkCxxPreprocessor(self):
+    '''Locate a functional Cxx preprocessor'''
+    for compiler in self.generateCxxPreprocessorGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'CXXCPP'):
+          self.framework.argDB['CXXCPP'] = self.CXXCPP
+          self.pushLanguage('Cxx')
+          if not self.checkPreprocess('#include <cstdlib>\n'):
+            raise RuntimeError('Cannot preprocess Cxx with '+self.CXXCPP+'.')
+          self.popLanguage()
+          break
+      except RuntimeError, e:
+        import os
+
+        print str(e)+' You may specify another preprocessor with --with-cxxcpp.'
+        if os.path.basename(self.framework.argDB['CXXCPP']) in ['mpicxx', 'mpiCC']:
+          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+        self.popLanguage()
+        self.framework.argDB['CXXCPP'] = None
+    if 'CXXCPP' in self.framework.argDB and not self.framework.argDB['CXXCPP'] is None:
+      self.addSubstitution('CXXCPP', self.framework.argDB['CXXCPP'])
     return
 
   def checkCxxFlags(self):
@@ -243,37 +331,60 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
-  def checkFortranCompiler(self):
-    '''Determine the Fortran compiler using --with-fc, then FC, then a search'''
-    if self.framework.argDB.has_key('with-fc'):
-      compilers = self.framework.argDB['with-fc']
-    elif self.framework.argDB.has_key('FC'):
-      compilers = self.framework.argDB['FC']
-    elif self.framework.argDB.has_key('with-mpi-dir') and self.framework.argDB['with-mpi-compilers']:
-      compilers = [os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpif90'), os.path.join(self.framework.argDB['with-mpi-dir'],'bin','mpif77')]
+  def generateFortranCompilerGuesses(self):
+    '''Determine the Fortran compiler using FC, then --with-fc, then MPI, then GNU, then vendors
+       - Any given category can be excluded'''
+    import os
+
+    if self.framework.argDB.has_key('FC'):
+      yield self.framework.argDB['FC']
+    elif self.framework.argDB.has_key('with-fc'):
+      yield self.framework.argDB['with-fc']
+    elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')
+      yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
     else:
-      compilers = []
-      if self.framework.argDB['with-mpi']:
-        compilers.extend(['mpif90', 'mpif77'])
+      if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
+        yield 'mpif90'
+        yield 'mpif77'
       if self.framework.argDB['with-gnu-compilers']:
-        compilers.append('g77')
+        yield 'g77'
       vendor = self.framework.argDB['with-vendor-compilers']
       if not vendor == '0':
         if not vendor:
-          compilers.append('f90')
+          yield 'f90'
         if vendor == 'ibm' or not vendor:
-          compilers.extend(['xlf90', 'xlf'])
+          yield 'xlf90'
+          yield 'xlf'
         if vendor == 'intel' or not vendor:
-          compilers.append('icf')
+          yield 'icf'
         if vendor == 'portland' or not vendor:
-          compilers.extend(['pgf90', 'pgf77'])
+          yield 'pgf90'
+          yield 'pgf77'
         if not vendor:
-          compilers.append('f77')
-    if not isinstance(compilers, list): compilers = [compilers]
-    if self.getExecutables(compilers, resultName = 'FC'):
-      self.framework.argDB['FC'] = self.FC
-      self.addSubstitution('FC', self.FC)
-      self.addSubstitution('FFLAGS', self.framework.argDB['FFLAGS'])
+          yield 'f77'
+    return
+
+  def checkFortranCompiler(self):
+    '''Locate a functional Fortran compiler'''
+    for compiler in self.generateFortranCompilerGuesses():
+      try:
+        if self.getExecutable(compiler, resultName = 'FC'):
+          self.framework.argDB['FC'] = self.FC
+          self.checkCompiler('F77')
+          break
+      except RuntimeError, e:
+        import os
+
+        print str(e)+' You may specify another compiler with --with-fc.'
+        if os.path.basename(self.framework.argDB['FC']) in ['mpif90', 'mpif77']:
+          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
+        self.popLanguage()
+        self.framework.argDB['FC'] = None
+    if 'FC' in self.framework.argDB and not self.framework.argDB['FC'] is None:
+      self.addSubstitution('FC', self.framework.argDB['FC'])
+    else:
+      raise RuntimeError('Could not locate a functional Fortran compiler')
     return
 
   def checkFortranFlags(self):
@@ -285,16 +396,6 @@ class Configure(config.base.Configure):
         self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS']+' '+flag
       self.popLanguage()
     self.addSubstitution('FFLAGS', self.framework.argDB['FFLAGS'])
-    return
-
-  def checkFortranLink(self):
-    '''See if Fortran can link at all'''
-    self.pushLanguage('F77')
-    if not self.checkCompile():
-      raise RuntimeError('Cannot compile Fortran. Check configure.log for more information.')
-    if not self.checkLink():
-      raise RuntimeError('Cannot link Fortran Check configure.log for more information.')
-    self.popLanguage()
     return
 
   def mangleFortranFunction(self, name):
@@ -374,21 +475,6 @@ class Configure(config.base.Configure):
     if os.path.isfile(cobj[0]): os.remove(cobj[0])
     self.framework.argDB['LIBS'] = oldLIBS
     self.popLanguage()
-    return
-
-
-  def checkFortran90Compiler(self):
-    '''Determine the Fortran 90 compiler using --with-f90, then F90, then a search'''
-    if self.framework.argDB.has_key('with-f90'):
-      compilers = self.framework.argDB['with-f90']
-    elif self.framework.argDB.has_key('F90'):
-      compilers = self.framework.argDB['F90']
-    else:
-      compilers = ['f90', 'pgf90', 'ifc']
-    if not isinstance(compilers, list): compilers = [compilers]
-    if self.getExecutables(compilers, resultName = 'F90'):
-      self.framework.argDB['F90'] = self.F90
-      self.addSubstitution('F90', self.F90)
     return
 
   def checkFortran90Interface(self):
@@ -553,20 +639,22 @@ class Configure(config.base.Configure):
 
   def configure(self):
     self.executeTest(self.checkCCompiler)
+    self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCFlags)
     self.executeTest(self.checkCRestrict)
     self.executeTest(self.checkCFormatting)
+
     self.executeTest(self.checkCxxCompiler)
     self.executeTest(self.checkCxxFlags)
     self.executeTest(self.checkCxxNamespace)
+
     self.executeTest(self.checkFortranCompiler)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranFlags)
-      self.executeTest(self.checkFortranLink)
       self.executeTest(self.checkFortranNameMangling)
     self.executeTest(self.checkFortranLibraries)
-    self.executeTest(self.checkFortran90Compiler)
     self.executeTest(self.checkFortran90Interface)
+
     self.executeTest(self.checkLinkerFlags)
     self.executeTest(self.checkSharedLinkerFlag)
     self.executeTest(self.checkSharedLinkerPaths)
