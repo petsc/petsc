@@ -138,8 +138,7 @@
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,        &
-     &     snes,ierr)
+      call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create vector data structures; set function evaluation routine

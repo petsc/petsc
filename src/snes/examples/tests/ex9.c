@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = VecDuplicate(user.localX,&user.localF);CHKERRQ(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user);CHKERRQ(ierr);
   ierr = MatCreateSNESMF(snes,x,&J);CHKERRQ(ierr);
