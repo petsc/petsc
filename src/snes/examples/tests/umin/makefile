@@ -24,7 +24,7 @@ FOBJ = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
 
 ex1: ex1.o $(FOBJ) chkopts
 	-$(CLINKER) -o ex1 ex1.o $(FOBJ)  $(PETSC_LIB)
-	$(RM) $(EX1)
+	$(RM) ex1.o $(FOBJ)
 
 ex2: ex2.o chkopts
 	-$(CLINKER) -o ex2 ex2.o $(PETSC_LIB)
