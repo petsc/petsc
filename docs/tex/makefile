@@ -1,6 +1,6 @@
 
 # Build the entire manual as well as the intro part
-manual.dvi: intro.tex manual_tex.tex part1.tex routines.red part2.tex
+manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex routines.red part2.tex
 # First build the manual
 	latex manual_tex
 	bibtex manual_tex
@@ -28,7 +28,7 @@ manual.ps:
 	dvips intro
 	-@chmod g+w intro.ps
 
-manual.html: manual.tex part1.tex part2.tex
+manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
 	       -mapref../www/petsc.cit -nobottomnav
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
