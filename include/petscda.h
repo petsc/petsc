@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.56 2000/08/01 20:58:40 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.57 2000/08/17 04:53:46 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -40,6 +40,8 @@ EXTERN int   DAGetOwnershipRange(DA,int **,int **,int **);
 EXTERN int   DACreateGlobalVector(DA,Vec *);
 EXTERN int   DACreateNaturalVector(DA,Vec *);
 EXTERN int   DACreateLocalVector(DA,Vec *);
+EXTERN int   DAGetLocalVector(DA,Vec *);
+EXTERN int   DARestoreLocalVector(DA,Vec *);
 EXTERN int   DALoad(Viewer,int,int,int,DA *);
 EXTERN int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
 EXTERN int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
@@ -70,7 +72,6 @@ EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 #include "petscmat.h"
 EXTERN int   DAGetColoring(DA,ISColoring *,Mat *);
 EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
-EXTERN int   DAGetInterpolationScale(DA,DA,Mat,Vec*);
 
 #include "petscpf.h"
 EXTERN int DACreatePF(DA,PF*);
@@ -89,58 +90,71 @@ EXTERN int VecPackAddDA(VecPack,DA);
 EXTERN int VecPackAddVecScatter(VecPack,VecScatter);
 EXTERN int VecPackScatter(VecPack,Vec,...);
 EXTERN int VecPackGather(VecPack,Vec,...);
+EXTERN int VecPackAccess(VecPack,Vec,...);
+EXTERN int VecPackGetLocalVectors(VecPack,...);
+EXTERN int VecPackRestoreLocalVectors(VecPack,...);
 EXTERN int VecPackCreateGlobalVector(VecPack,Vec*);
 EXTERN int VecPackGetGlobalIndices(VecPack,...);
 
 #include "petscsnes.h"
 
+typedef struct _p_DM* DM;
+EXTERN int DMView(DM,Viewer);
+EXTERN int DMDestroy(DM);
+EXTERN int DMCreateGlobalVector(DM,Vec*);
+EXTERN int DMGetColoring(DM,ISColoring*,Mat*);
+EXTERN int DMGetInterpolation(DM,DM,Mat*,Vec*);
+EXTERN int DMGetInterpolationScale(DM,DM,Mat,Vec*);
+
 /*
-     Data structure to easily manage multi-level linear solvers on regular grids managed by DA
+     Data structure to easily manage multi-level non-linear solvers on regular grids managed by DA
 */
-typedef struct _p_DAMG *DAMG;
-struct _p_DAMG {
-  DA         da;                    /* grid information for this level */
-  Vec        x,b,r;                 /* global vectors used in multigrid preconditioner for this level*/
-  Mat        J;                     /* matrix on this level */
-  Mat        R;                     /* restriction to next coarser level (not defined on level 0) */
-  int        ratiox,ratioy,ratioz;  /* grid spacing to next level finer level, usually 2 */
-  int        nlevels;               /* number of levels above this one (total number of levels on level 0) */
+typedef struct _p_DMMG *DMMG;
+struct _p_DMMG {
+  DM         dm;                   /* grid information for this level */
+  Vec        x,b,r;                /* global vectors used in multigrid preconditioner for this level*/
+  Mat        J;                    /* matrix on this level */
+  Mat        R;                    /* restriction to next coarser level (not defined on level 0) */
+  int        ratiox,ratioy,ratioz; /* grid spacing to next level finer level, usually 2 */
+  int        nlevels;              /* number of levels above this one (total number of levels on level 0)*/
   MPI_Comm   comm;
-  int        (*solve)(DAMG*,int);
+  int        (*solve)(DMMG*,int);
   void       *user;         
 
   /* SLES only */
   SLES       sles;             
-  int        (*rhs)(DAMG,Vec);
+  int        (*rhs)(DMMG,Vec);
 
   /* SNES only */
   Mat           B;
   Vec           Rscale;                /* scaling to restriction before computing Jacobian */
-  Vec           localX,localF;         /* ghosted work vectors */
   int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
   int           (*computefunction)(SNES,Vec,Vec,void*);  
   MatFDColoring fdcoloring;            /* only used with finite difference coloring for Jacobian */  
   SNES          snes;                  
   int           (*initialguess)(SNES,Vec,void*);
 };
-EXTERN int DAMGCreate(MPI_Comm,int,void*,DAMG**);
-EXTERN int DAMGDestroy(DAMG*);
-EXTERN int DAMGSetGrid(DAMG*,int,DAPeriodicType,DAStencilType,int,int,int,int,int);
-EXTERN int DAMGSetSLES(DAMG*,int (*)(DAMG,Vec),int (*)(DAMG,Mat));
-EXTERN int DAMGSetSNES(DAMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
-EXTERN int DAMGSetInitialGuess(DAMG*,int (*)(SNES,Vec,void*));
-EXTERN int DAMGView(DAMG*,Viewer);
-EXTERN int DAMGSolve(DAMG*);
+EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
+EXTERN int DMMGDestroy(DMMG*);
+EXTERN int DMMGSetGrid(DMMG*,int,DAPeriodicType,DAStencilType,int,int,int,int,int);
+EXTERN int DMMGSetUp(DMMG*);
+EXTERN int DMMGSetSLES(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
+EXTERN int DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+EXTERN int DMMGSetInitialGuess(DMMG*,int (*)(SNES,Vec,void*));
+EXTERN int DMMGView(DMMG*,Viewer);
+EXTERN int DMMGSolve(DMMG*);
 
-#define DAMGGetb(ctx) (ctx)[(ctx)[0]->nlevels-1]->b
-#define DAMGGetr(ctx) (ctx)[(ctx)[0]->nlevels-1]->r
-#define DAMGGetx(ctx) (ctx)[(ctx)[0]->nlevels-1]->x
-#define DAMGGetJ(ctx) (ctx)[(ctx)[0]->nlevels-1]->J
-#define DAMGGetB(ctx) (ctx)[(ctx)[0]->nlevels-1]->B
-#define DAMGGetFine(ctx) (ctx)[(ctx)[0]->nlevels-1]
-#define DAMGGetSLES(ctx) (ctx)[(ctx)[0]->nlevels-1]->sles
-#define DAMGGetSNES(ctx) (ctx)[(ctx)[0]->nlevels-1]->snes
-#define DAMGGetDA(ctx) (ctx)[(ctx)[0]->nlevels-1]->da
+#define DMMGGetb(ctx)    (ctx)[(ctx)[0]->nlevels-1]->b
+#define DMMGGetr(ctx)    (ctx)[(ctx)[0]->nlevels-1]->r
+#define DMMGGetx(ctx)    (ctx)[(ctx)[0]->nlevels-1]->x
+#define DMMGGetJ(ctx)    (ctx)[(ctx)[0]->nlevels-1]->J
+#define DMMGGetB(ctx)    (ctx)[(ctx)[0]->nlevels-1]->B
+#define DMMGGetFine(ctx) (ctx)[(ctx)[0]->nlevels-1]
+#define DMMGGetSLES(ctx) (ctx)[(ctx)[0]->nlevels-1]->sles
+#define DMMGGetSNES(ctx) (ctx)[(ctx)[0]->nlevels-1]->snes
+#define DMMGGetDA(ctx)   (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
+#define DMMGGetVecPack(ctx)   (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
+
 
 #endif
 
