@@ -467,3 +467,16 @@ exercises:
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
         start_configure configure_petsc configure_clean
+
+citool:
+	-@bk citool
+	-@cd python/BuildSystem; bk citool
+
+pull:
+	-@bk pull
+	-@cd python/BuildSystem; bk pull
+
+push:
+	-@bk push
+	-@cd python/BuildSystem; bk push
+
