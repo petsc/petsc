@@ -495,7 +495,7 @@ c      COMMON /FREQ/ IFREQ,ISGS
       Double  drecv(3),dsend(3),rtmax,rtrms,etmax,etrms
       Double  dsup,con,rt,et,rtrmsr,etrmsr,tcl,tcd,areas,cn,cc
       Double  area,pbody,cls,cds,xl2,work(*),cfl_new
-      integer i,j,k,ierr,nsup,no_monitor
+      integer i,j,k,ierr,nsup
 
       ncyc     = ncyc + 1
       jmonitor = 0

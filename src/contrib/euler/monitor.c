@@ -31,7 +31,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
   Euler    *app = (Euler *)dummy;
-  Scalar   negone = -1.0, mfeps, cfl1;
+  Scalar   ksprtol, negone = -1.0, mfeps, cfl1;
   Vec      DX, X;
   Viewer   view1;
   char     filename[64];
@@ -61,10 +61,10 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   app->ftime[its] = PetscGetTime() - app->time_init;
   if (!its) {
     /* Do the following only during the initial call to this routine */
-    app->fnorm_init  = app->fnorm_last = fnorm;
-    app->cfl_init    = app->cfl;
-    app->lin_its[0]  = 0;
-    /* app->lin_rtol[0] = 0; */
+    app->fnorm_init    = app->fnorm_last = fnorm;
+    app->cfl_init      = app->cfl;
+    app->lin_its[0]    = 0;
+    app->lin_rtol[0]   = 0;
     if (!app->no_output) {
       if (app->cfl_advance != CONSTANT)
         PetscPrintf(comm,"iter=%d, fnorm=%g, fnorm reduction ratio=%g, CFL_init=%g\n",
@@ -73,10 +73,8 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       if (app->rank == 0) {
         app->fp = fopen("fnorm.m","w"); 
         fprintf(app->fp,"zsnes = [\n");
-        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d\n",
-                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its]);
-	/*        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]); */
+	fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
       }
     }
   } else {
@@ -86,18 +84,16 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRQ(ierr);
     app->lin_its[its] = lits - app->last_its;
     app->last_its     = lits;
-    /* ierr = KSPGetTolerances(app->ksp,&(app->lin_rtol[its]),PETSC_NULL,PETSC_NULL,
-           PETSC_NULL); CHKERRQ(ierr); */
+    ierr = KSPGetTolerances(app->ksp,&(app->lin_rtol[its]),PETSC_NULL,PETSC_NULL,
+           PETSC_NULL); CHKERRQ(ierr);
     if (!app->no_output) {
       PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d\n",
                   its,fnorm,app->lin_its[its]);
       /* PetscPrintf(comm,"iter = %d, Function norm %g, lin_rtol=%g, lin_its = %d\n",
                   its,fnorm,app->lin_rtol[its],app->lin_its[its]); */
       if (app->rank == 0) {
-        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d\n",
-             its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its]);
-        /* fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-             its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]); */
+        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+             its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
         fflush(app->fp);
       }
     }
@@ -121,7 +117,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       }
       if (app->cfl_begin_advancement) {
         /* Modify the CFL if we are past the threshold ratio and we're not at a plateau */
-        if (!(its%app->cfl_snes_its)) {
+        if (!(its%app->cfl_snes_it)) {
           if (app->cfl_advance == ADVANCE_GLOBAL) {
             cfl1 = app->cfl * app->fnorm_last / fnorm;
           } else if (app->cfl_advance == ADVANCE_LOCAL) {
@@ -186,6 +182,16 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       }
     }
   }
+
+  /* Set our own adaptive relative convergence tolerance for the next linear solve */
+  if (app->adaptive_ksp_rtol) {
+    ksprtol = 0.2 * fnorm;
+    ksprtol = PetscMin(app->ksp_rtol_max,ksprtol);
+    ksprtol = app->ksp_rtol_max;
+    ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_NULL,PETSC_NULL,
+           PETSC_NULL); CHKERRQ(ierr);
+  }
+
   app->iter = its+1;
   return 0;
 }

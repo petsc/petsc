@@ -44,8 +44,10 @@ Runtime options include:\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
   -implicit                  : use fully implicit formulation of boundary conditions\n\
-  -cfl_advance_local         : use advancing CFL number (local strategy) \n\
-  -cfl_advance_global        : use advancing CFL number (global strategy) \n\
+  -cfl_advance               : use advancing CFL number\n\
+  -cfl_max_incr              : maximum ratio for advancing CFL number at any given step\n\
+  -cfl_max_decr              : maximum ratio for decreasing CFL number at any given step\n\
+  -cfl_snes_it <it>          : number of SNES iterations at each CFL step\n\
   -f_red <fraction>          : reduce the function norm by this fraction before advancing CFL\n\
   -no_output                 : do not print any output during SNES solve (intended for use\n\
                                during timing runs)\n\n";
@@ -105,7 +107,6 @@ int main(int argc,char **argv)
   int      total_stages = 1;      /* number of times to run nonlinear solver */
   int      log_stage_0 = 0;       /* are we doing dummy solve for logging stage 0? */
   int      maxsnes;               /* maximum number of SNES iterations */
-  Scalar   ksprtol = 1.0e-2;      /* KSP relative convergence tolerance */
   double   rtol = 1.e-10;         /* SNES relative convergence tolerance */
   double   time1, tsolve;         /* time for solution process */
 
@@ -255,10 +256,22 @@ int main(int argc,char **argv)
   ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&app->ksp); CHKERRA(ierr);
   ierr = KSPSetType(app->ksp,KSPGMRES); CHKERRA(ierr);
-  ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,maxksp); CHKERRA(ierr);
+  ierr = KSPSetTolerances(app->ksp,app->ksp_rtol_max,PETSC_DEFAULT,
+         PETSC_DEFAULT,maxksp); CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(app->ksp,maxksp+1); CHKERRA(ierr);
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
                                 1.e-13,1000,100000); CHKERRA(ierr);
+
+  /* Either use my own adaptive method for choosing KSP relative convergence tolerance, or
+     use the Eisenstat-Walker method */
+  ierr = OptionsHasName(PETSC_NULL,"-adaptive_ksp_rtol",&app->adaptive_ksp_rtol); CHKERRA(ierr);
+  if (!app->adaptive_ksp_rtol) {
+    /* Use the Eisenstat-Walker method to set KSP convergence tolerances.  Set the
+       initial and maximum relative tolerance for the linear solvers to ksp_rtol_max */
+    ierr = SNES_KSP_SetConvergenceTestEW(snes); CHKERRA(ierr);
+    ierr = SNES_KSP_SetParametersEW(snes,PETSC_DEFAULT,app->ksp_rtol_max,app->ksp_rtol_max,
+           PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRA(ierr);
+  }
 
   /* Set runtime options (e.g. -snes_rtol <rtol> -ksp_type <type>) */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
@@ -276,16 +289,13 @@ int main(int argc,char **argv)
          PETSC_NULL); CHKERRA(ierr);
   len = maxsnes + 1;
 
-  /* temporarily omit rtol */
-  /*  app->farray = (Scalar *)PetscMalloc(6*len*sizeof(Scalar)); CHKPTRQ(app->farray);
-  PetscMemzero(app->farray,6*len*sizeof(Scalar)); */
-  app->farray = (Scalar *)PetscMalloc(5*len*sizeof(Scalar)); CHKPTRQ(app->farray);
-  PetscMemzero(app->farray,5*len*sizeof(Scalar));
+  app->farray = (Scalar *)PetscMalloc(6*len*sizeof(Scalar)); CHKPTRQ(app->farray);
+  PetscMemzero(app->farray,6*len*sizeof(Scalar));
   app->favg     = app->farray + len;
   app->flog     = app->favg   + len;
   app->ftime    = app->flog   + len;
   app->fcfl     = app->ftime  + len;
-  /* app->lin_rtol = app->fcfl   + len; */
+  app->lin_rtol = app->fcfl   + len;
   app->lin_its  = (int *)PetscMalloc(len*sizeof(int)); CHKPTRQ(app->lin_its);
   PetscMemzero(app->lin_its,len*sizeof(int));
   ierr = SNESSetConvergenceHistory(snes,app->farray,maxsnes); CHKERRA(ierr);
@@ -342,10 +352,8 @@ int main(int argc,char **argv)
       app->fp = fopen("fnorm.m","w"); 
       fprintf(app->fp,"zsnes = [\n");
       for (i=0; i<=its; i++)
-	/*        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-                i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i],app->lin_rtol[i]); */
-        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d\n",
-                i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i]);
+	fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
+                i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i],app->lin_rtol[i]);
     }
   }
   if (app->rank == 0) {
@@ -1157,7 +1165,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 4; app->itl = 8; app->itu = 38; app->ile = 23;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
-      app->cfl_snes_its   = 1;
+      app->cfl_snes_it    = 1;
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
@@ -1165,7 +1173,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 5.0e-4;
-      app->cfl_snes_its   = 1;
+      app->cfl_snes_it    = 1;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
@@ -1173,7 +1181,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 5.0e-3;
-      app->cfl_snes_its   = 1;
+      app->cfl_snes_it    = 1;
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1200,48 +1208,49 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
   app->mf_adaptive           = 0;        /* by default, we do not adapt mf param */
   app->fstagnate_ratio       = .01;      /* stagnation detection parameter */
+  app->ksp_rtol_max          = 1.0e-2;   /* maximum KSP relative convergence tolerance */
 
   app->mat_assemble_direct   = 1;        /* by default, we assemble Jacobian directly */
   app->use_vecsetvalues      = 0;        /* flag - by default assemble local vector data directly */
 
   /* control of forming new preconditioner matrices */
   app->jfreq                 = 10;       /* default frequency of computing Jacobian matrix */
-  app->jratio                = 100;      /* default ration for computing new Jacobian */
+  app->jratio                = 50;       /* default ration for computing new Jacobian */
   app->use_jratio            = 0;        /* flag - are we using the Jacobian ratio test? */
   app->check_solution        = 0;        /* flag - are we checking solution components? */
   app->iter_last_jac         = 0;        /* iteration at which last Jacobian precond was formed */
   app->fnorm_last_jac        = 0;        /* || F || - last time Jacobian precond was formed */
 
   app->no_output             = 0;        /* flag - by default print some output as program runs */
-  app->farray                = 0;        /* work array */
-  app->favg                  = 0;        /* work array */
-  app->flog                  = 0;        /* work array */
-  app->ftime                 = 0;        /* work array */
-  app->lin_rtol              = 0;        /* work array */
-  app->lin_its               = 0;        /* work array */
+  app->farray                = 0;        /* work arrays */
+  app->favg                  = 0;
+  app->flog                  = 0;
+  app->ftime                 = 0;
+  app->lin_rtol              = 0;
+  app->lin_its               = 0;
   app->last_its              = 0;
 
   /* Override default with runtime options */
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_incr",&app->cfl_max_incr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_decr",&app->cfl_max_decr,&flg); CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_its",&app->cfl_snes_its,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_it",&app->cfl_snes_it,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_local",&flg); CHKERRQ(ierr);
   if (flg) {
     app->cfl_advance = ADVANCE_LOCAL;
-    PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method\n",app->cfl_snes_its);
+    PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method\n",app->cfl_snes_it);
   } else {
     ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_global",&flg); CHKERRQ(ierr);
     if (flg) {
       app->cfl_advance = ADVANCE_GLOBAL;
-      PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_global method\n",app->cfl_snes_its);
+      PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_global method\n",app->cfl_snes_it);
     } else PetscPrintf(comm,"CFL remains constant\n");
   }
-  if (app->cfl_advance != CONSTANT) PetscPrintf(comm,"Cfl_snes_its=%d, CFL_max_incr=%g, CFL_max_decr=%g\n",
-    app->cfl_snes_its,app->cfl_max_incr,app->cfl_max_decr);
+  if (app->cfl_advance != CONSTANT) PetscPrintf(comm,"Cfl_snes_it=%d, CFL_max_incr=%g, CFL_max_decr=%g\n",
+    app->cfl_snes_it,app->cfl_max_incr,app->cfl_max_decr);
 
   ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-jratio",&app->jratio,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_vecsetvalues",&app->use_vecsetvalues); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_switch",&app->cfl_switch,&flg); CHKERRQ(ierr);
@@ -1370,7 +1379,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   if (Nx*Ny*Nz != app->size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE && Nz != PETSC_DECIDE))
     SETERRQ(1,1,"Incompatible number of processors:  Nx * Ny * Nz != size");
   app->Nx = Nx; app->Ny = Ny; app->Nz = Nz;
-  ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
+  ierr = DACreate3d_Lois(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
          app->Nx,app->Ny,app->Nz,nc,2,&app->da); CHKERRQ(ierr);
 
   /* Get global and local vectors */
@@ -1405,7 +1414,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   }
 
   /* Create pressure work vector, used for explicit boundary conditions */
-  ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
+  ierr = DACreate3d_Lois(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
          app->Nx,app->Ny,app->Nz,1,2,&app->da1); CHKERRQ(ierr);
   ierr = DAGetDistributedVector(app->da1,&app->P); CHKERRQ(ierr);
   ierr = VecDuplicate(app->P,&app->Pbc); CHKERRQ(ierr);

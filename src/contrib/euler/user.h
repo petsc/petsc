@@ -21,6 +21,133 @@ typedef enum {DT_MULT=0, DT_DIV=1} ScaleType;
 
 /* Application data structure for 3D Euler code */
 typedef struct {
+  /* ----------------- Basic data structures ------------------- */
+
+    DA       da;                /* distributed array for X, F */ 
+    DA       da1;               /* distributed array for pressure */ 
+    Vec      X, Xbc, F;         /* global solution, residual vectors */
+    Vec      P, Pbc, localP;    /* pressure work vectors */
+    Vec      localX, localDX;   /* local solution, dx vectors */
+    Mat      J;                 /* Jacobian (preconditioner) matrix */
+    Mat      Jmf;               /* matrix-free Jacobian context */
+    KSP      ksp;               /* Krylov context */
+
+  /* ----------------- General parameters and flags ------------------- */
+
+    int    first_time_resid;     /* flag - first time computing residual */
+    int    bc_test;              /* flag - test boundary condition scatters */
+    int    no_output;            /* flag - indicates no runtime output (use when timing code) */
+    int    iter;                 /* nonlinear iteration number */
+    int    use_vecsetvalues;     /* flag - 1 indicates use of VecSetValues() */
+    Scalar fstagnate_ratio;      /* stagnation detection */
+
+  /* ------------- Control of computing Jacobian (preconditioner matrix) ------------ */
+
+    int    mat_assemble_direct;  /* flag - indicates assembling matrix directly */
+    int    jfreq;		 /* frequency of computing Jacobian */
+    Scalar jratio;		 /* ratio indicating when to form a new preconditioning Jacobian */
+    int    use_jratio;           /* flag - are we using the jratio test? */
+    Scalar fnorm_last_jac;       /* || F || - last iteration Jac precond was formed */
+    int    iter_last_jac;        /* iteration at which last Jac precond was formed */
+    Scalar eps_jac;              /* differencing parameter for FD Jacobian approx */
+    Scalar eps_jac_inv;          /* 1.0/eps_jac_inv */
+
+  /* ------------- Control of computing Jacobian (matrix-free approx) ------------ */
+
+    int    matrix_free;          /* flag - using matrix-free method */
+    int    matrix_free_mult;     /* flag - currently in the midst of a matrix-free mult */
+    int    mf_adaptive;          /* flag - are we doing adaptive CFL advancement? */
+    Scalar eps_mf_default;       /* default differencing parameter for FD mat-vec product approx */
+    Scalar fnorm_init, fnorm_last;  /* || F || - initial and last iterations */
+
+  /* ----------------- CFL advancement control ------------------- */
+
+    CFLAdvanceType cfl_advance;             /* flag - indicates type of CFL advancement */
+    Scalar   cfl, cfl_init, cfl_max;        /* CFL parameters */
+    Scalar   cfl_switch;                    /* CFL at which to dump binary linear system */
+    Scalar   cfl_begin_advancement;         /* flag - 1 indicates CFL advancement has begun */
+    Scalar   f_reduction;                   /* reduce fnorm by this much before advancing CFL */
+    Scalar   cfl_max_incr, cfl_max_decr;    /* maximum increase/decrease for CFL number */
+    int      cfl_snes_it;                   /* number of SNES iterations at each CFL step */
+
+  /* ----------------- Output: visualization and debugging  ------------------- */
+
+    Vec    Fvrml;                /* work vector form dumping residual to VRML */
+    int    print_vecs;           /* flag - print vectors */
+    int    print_grid;           /* flag - print grid info */
+    int    print_debug;          /* flag - print debug info */
+    int    dump_general;         /* flag - dump fields for later viewing */
+    int    dump_vrml;            /* flag - dump fields directly into VRML format */
+    int    dump_freq;            /* flag - dump fields every X iterations */
+    int    dump_vrml_pressure;   /* flag - dump pressure field directly into VRML format */
+    int    dump_vrml_residual;   /* flag - dump residual directly into VRML format */
+    int    check_solution;       /* flag - check solution components size */
+
+
+  /* ----------------- Parallel information ------------------- */
+
+    MPI_Comm   comm;               /* general communicator */
+    VecScatter Xbcscatter;         /* scatter context for vector BCs */
+    VecScatter Pbcscatter;         /* scatter context for pressure BCs */
+    int        rank;               /* my processor number */
+    int        size;               /* number of processors */
+    int        ldim;               /* local dimension */
+    int        lbkdim;             /* block local dimension */
+    int        gdim;               /* global dimension */
+    int        Nx, Ny, Nz;         /* number of procs in x-, y-, and z-directions */
+    int        mx, my, mz;         /* global vector dimensions */
+    int        nloc;               /* number of ghosted local grid points */
+    int        *ltog;              /* local-to-global mapping */
+
+  /* ----------------- Problem-specific parameters and flags ------------------- */
+
+    int       ni, nj, nk;          /* sizes of the grid */
+    int       ni1, nj1, nk1;	   /* ni-1, nj-1, nk-1 */
+    int       nim, njm, nkm;	   /* ni+1, nj+1, nk+1 */
+    int       itl, itu, ile, ktip; /* wing parameters (i:lower, upper, leading edge, k:tip) */
+    int       nc;		   /* DOF per node */
+    int       nd;		   /* number of diagonals for interior of grid
+                                      (are more for C-grid j=0 boundary condition) */
+    char      **label;             /* labels for components */
+    Scalar    angle;               /* flow parameter - angle of attack */
+    BCType    bctype;              /* flag - boundary condition type */
+    ScaleType sctype;              /* flag - type of scaling */
+
+  /* ----------------- Local grid information ------------------- */
+    int    xs, ys, zs, xe, ye, ze;        /* local starting/ending grid points */
+    int    xsi, ysi, zsi, xei, yei, zei;  /* local starting/ending grid points (interior) */
+    int    gxs, gys, gzs, gxe, gye, gze;  /* local starting/ending ghost points */
+    int    gxsi, gysi, gzsi, gxei, gyei, gzei; /* local starting/ending ghost points (interior) */
+    int    xm, ym, zm, gxm, gym, gzm;     /* local grid/ghost widths */
+    int    xsf, ysf, zsf;                 /* Fortran starting grid points */
+    int    xefm1, yefm1, zefm1;           /* Fortran ending grid points */
+    int    gxsf, gysf, gzsf;              /* Fortran starting ghost points */
+    int    xef, yef, zef;                 /* Fortran ending points */
+    int    xef01, yef01, zef01;           /* Fortran ending points ni,nj,nk */
+    int    gxef, gyef, gzef;              /* ending ghost points */
+    int    gxef01, gyef01, gzef01;        /* ending ghost points ni,nj,nk */
+    int    xefp1, yefp1, zefp1;           /* Fortran ending points ni1,nj1,nk1 */
+    int    gxefp1, gyefp1, gzefp1;        /* ending ghost points ni1,nj1,nk1 */
+    int    xsf1, ysf1, zsf1;              /* Fortran starting points 1,1,1 */
+    int    gxsf1, gysf1, gzsf1;           /* Fortran starting points 1,1,1 */
+    int    xsf2, ysf2, zsf2;              /* Fortran starting points 2,2,2 */
+    int    gxsf2, gysf2, gzsf2;           /* Fortran starting points 2,2,2 */
+    int    gxsfw, gysfw, gzsfw;           /* Fortran starting ghost points + 1 */
+    int    gxefw, gyefw, gzefw;           /* Fortran ending ghost points - 1 */
+    int    gxmfp1, gymfp1, gzmfp1;        /* Julianne ghost width */
+    int    xmfp1, ymfp1, zmfp1;           /* Julianne width */
+    int    *is1;                          /* mapping from application to PETSc ordering */
+
+
+   /* --------------------------------- Output data -------------------------- */
+
+    Scalar time_init;                     /* initial time */
+    Scalar *farray;                       /* array for use with SNESSetConvergenceHistory() */
+    Scalar *favg;                         /* array of average fnorm for the past 10 iterations */
+    Scalar *flog, *ftime, *fcfl, *lin_rtol;
+    int    *lin_its, last_its;
+    FILE   *fp;                           /* file for stashing convergence info at each iteration */
+
   /* ------------------- Fortran work arrays ------------------- */
     Scalar *dr, *dru, *drv, *drw, *de, *dt;  /* residual */
     Scalar *r, *ru, *rv, *rw, *e;            /* solution */
@@ -47,112 +174,8 @@ typedef struct {
     Scalar *fbcrk1, *fbcruk1, *fbcrvk1, *fbcrwk1, *fbcek1;
     Scalar *fbcrk2, *fbcruk2, *fbcrvk2, *fbcrwk2, *fbcek2;
 
-  /* ----------------- Parameters and flags ------------------- */
-    int    ni, nj, nk;           /* sizes of the grid */
-    int    ni1, nj1, nk1;	 /* ni-1, nj-1, nk-1 */
-    int    nim, njm, nkm;	 /* ni+1, nj+1, nk+1 */
-    int    itl, itu, ile, ktip;  /* wing parameters (i:lower, upper, leading edge, k:tip) */
-    int    nc;		         /* DOF per node */
-    int    nd;		         /* number of diagonals for interior of grid
-                                    (are more for C-grid j=0 boundary condition) */
-    char   **label;              /* labels for components */
-    Scalar   angle;              /* flow parameter - angle of attack */
-    BCType bctype;               /* flag - boundary condition type */
-    ScaleType sctype;            /* flag - type of scaling */
-    int    first_time_resid;     /* flag - first time computing residual */
-    int    print_vecs;           /* flag - print vectors */
-    int    print_grid;           /* flag - print grid info */
-    int    print_debug;          /* flag - print debug info */
-    int    dump_general;         /* flag - dump fields for later viewing */
-    int    dump_vrml;            /* flag - dump fields directly into VRML format */
-    int    dump_freq;            /* flag - dump fields every X iterations */
-    int    dump_vrml_pressure;   /* flag - dump pressure field directly into VRML format */
-    int    dump_vrml_residual;   /* flag - dump residual directly into VRML format */
-    Vec    Fvrml;                /* work vector form dumping residual to VRML */
-    int    bc_test;              /* flag - test boundary condition scatters */
-    int    matrix_free;          /* flag - using matrix-free method */
-    int    matrix_free_mult;     /* flag - doing matrix-free mult */
-    int    mat_assemble_direct;  /* flag - indicates assembling matrix directly */
-    int    mf_adaptive;          /* flag - are we doing adaptive CFL advancement? */
-    int    no_output;            /* flag - indicates no runtime output (use when timing code) */
-    int    iter;                 /* nonlinear iteration number */
-    int    jfreq;		 /* frequency of computing Jacobian */
-    Scalar jratio;		 /* ratio indicating when to form a new preconditioning Jacobian */
-    int    use_jratio;           /* flag - are we using the jratio test? */
-    Scalar fnorm_last_jac;       /* || F || - last iteration Jac precond was formed */
-    int    iter_last_jac;        /* iteration at which last Jac precond was formed */
-
-  /* ----------------- Basic data structures ------------------- */
-    DA       da;                /* distributed array for X, F */ 
-    DA       da1;               /* distributed array for pressure */ 
-    Vec      X, Xbc, F;         /* global solution, residual vectors */
-    Vec      P, Pbc, localP;    /* pressure work vectors */
-    Vec      localX, localDX;   /* local solution, dx vectors */
-    Mat      J;                 /* Jacobian (preconditioner) matrix */
-    Mat      Jmf;               /* matrix-free Jacobian context */
-    KSP      ksp;               /* Krylov context */
-
-  /* ----------------- Parallel information ------------------- */
-    MPI_Comm comm;              /* general communicator */
-    VecScatter Xbcscatter;      /* scatter context for vector BCs */
-    VecScatter Pbcscatter;      /* scatter context for pressure BCs */
-    int      rank;              /* my processor number */
-    int      size;              /* number of processors */
-    int      ldim;              /* local dimension */
-    int      lbkdim;            /* block local dimension */
-    int      gdim;              /* global dimension */
-    int      Nx, Ny, Nz;        /* number of procs in x-, y-, and z-directions */
-    int      mx, my, mz;        /* global vector dimensions */
-    int      nloc;              /* number of ghosted local grid points */
-    int      *ltog;             /* local-to-global mapping */
-
-  /* ----------------- Local grid information ------------------- */
-    int      xs, ys, zs, xe, ye, ze;        /* local starting/ending grid points */
-    int      xsi, ysi, zsi, xei, yei, zei;  /* local starting/ending grid points (interior) */
-    int      gxs, gys, gzs, gxe, gye, gze;  /* local starting/ending ghost points */
-    int      gxsi, gysi, gzsi, gxei, gyei, gzei; /* local starting/ending ghost points (interior) */
-    int      xm, ym, zm, gxm, gym, gzm;     /* local grid/ghost widths */
-    int      xsf, ysf, zsf;                 /* Fortran starting grid points */
-    int      xefm1, yefm1, zefm1;           /* Fortran ending grid points */
-    int      gxsf, gysf, gzsf;              /* Fortran starting ghost points */
-    int      xef, yef, zef;                 /* Fortran ending points */
-    int      xef01, yef01, zef01;           /* Fortran ending points ni,nj,nk */
-    int      gxef, gyef, gzef;              /* ending ghost points */
-    int      gxef01, gyef01, gzef01;        /* ending ghost points ni,nj,nk */
-    int      xefp1, yefp1, zefp1;           /* Fortran ending points ni1,nj1,nk1 */
-    int      gxefp1, gyefp1, gzefp1;        /* ending ghost points ni1,nj1,nk1 */
-    int      xsf1, ysf1, zsf1;              /* Fortran starting points 1,1,1 */
-    int      gxsf1, gysf1, gzsf1;           /* Fortran starting points 1,1,1 */
-    int      xsf2, ysf2, zsf2;              /* Fortran starting points 2,2,2 */
-    int      gxsf2, gysf2, gzsf2;           /* Fortran starting points 2,2,2 */
-    int      gxsfw, gysfw, gzsfw;           /* Fortran starting ghost points + 1 */
-    int      gxefw, gyefw, gzefw;           /* Fortran ending ghost points - 1 */
-    int      gxmfp1, gymfp1, gzmfp1;        /* Julianne ghost width */
-    int      xmfp1, ymfp1, zmfp1;           /* Julianne width */
-    int      *is1;                          /* mapping from application to PETSc ordering */
-    int      use_vecsetvalues;              /* flag - 1 indicates use of VecSetValues() */
-    Scalar   eps_jac;                       /* differencing parameter for FD Jacobian approx */
-    Scalar   eps_jac_inv;                   /* 1.0/eps_jac_inv */
-    Scalar   eps_mf_default;                /* default differencing parameter for FD 
-                                               matrix-vector product approx */
-    Scalar   fnorm_init, fnorm_last;        /* || F || - initial and last iterations */
-    Scalar   cfl, cfl_init, cfl_max;        /* CFL parameters */
-    Scalar   cfl_switch;                    /* CFL at which to dump binary linear system */
-    Scalar   cfl_begin_advancement;         /* flag - 1 indicates CFL advancement has begun */
-    Scalar   f_reduction;                   /* reduce fnorm by this much before advancing CFL */
-    CFLAdvanceType cfl_advance;             /* flag - indicates type of CFL advancement */
-    Scalar   fstagnate_ratio;               /* counter for stagnation detection */
-    double   time_init;                     /* initial time */
-    Scalar   *farray;                       /* array for use with SNESSetConvergenceHistory() */
-    Scalar   *favg;                         /* array of average fnorm for the past 10 iterations */
-
-   /* --- output data --- */
-    double   *flog, *ftime, *fcfl, *lin_rtol;
-    int      *lin_its, last_its;
-    FILE     *fp;                           /* file for stashing convergence info at each iteration */
-    int      check_solution;
-    int      cfl_snes_its;
-    double   cfl_max_incr, cfl_max_decr;    /* maximum increase/decrease for CFL number */
+    int    adaptive_ksp_rtol;              /* flag - using our own adaptive rtol setting mechanism */
+    Scalar ksp_rtol_max;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
