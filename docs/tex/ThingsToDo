@@ -15,7 +15,7 @@ Additional Capabilities that PETSc Needs:
     this means the bmake files must insure that -DPETSC_COMPLEX is 
     properly set.
 
-  - Test MATMPIROWBS for nonsymmetric matrices by building another 
+  X Test MATMPIROWBS for nonsymmetric matrices by building another 
     set of ARCO matrices by removing small values from them.
 
   X Change Scalabe ODE solvers to Scalable Time-Steppers
@@ -24,7 +24,7 @@ Additional Capabilities that PETSc Needs:
 
   X add filename to petscinitialize for fortran
 
-  - Fix PetscRandomCreate() so that it actually generates random numbers
+  X Fix PetscRandomCreate() so that it actually generates random numbers
     for all machines.
 
   X Fix PetscGetArchType() for Fortran.
@@ -83,6 +83,7 @@ Additional Capabilities that PETSc Needs:
     
    X don't require user to set diagonal entries in mpirowbs, that is
      insane - says Barry.
+   
    X But BlockSolve _requires_ a diagonal entry for each row, even if it is
      zero - says Lois.
      I have changed the MatCreateMPIRowbs() to create an initial matrix that 
