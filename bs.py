@@ -33,8 +33,11 @@ class BS (maker.Maker):
 
   def setupArgDB(self, clArgs):
     global argDB
+    parent = None
 
-    argDB = args.ArgDict(os.path.join(os.getcwd(), 'bsArg.db'))
+    if sys.modules.has_key('bs'):
+      parent = os.path.join(os.path.dirname(sys.modules['bs'].__file__), 'bsArg.db')
+    argDB = args.ArgDict(os.path.join(os.getcwd(), 'bsArg.db'), parent)
     self.setupDefaultArgs()
     argDB.input(clArgs)
 

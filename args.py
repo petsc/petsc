@@ -11,14 +11,15 @@ import UserDict
 import readline   #allows editing of raw_input line as typed (so delete works :-)
 
 class ArgDict (UserDict.UserDict, logging.Logger):
-  def __init__(self, filename = None):
+  def __init__(self, filename = None, defaultParent = None):
     UserDict.UserDict.__init__(self)
-    self.filename = filename
+    self.filename      = filename
     self.load(filename)
     atexit.register(self.save)
-    self.interactive = 1
-    self.metadata    = {'help' : {}, 'default' : {}, 'parent' : {}, 'tester' : {}}
-    self.argRE       = re.compile(r'\$(\w+|\{[^}]*\})')
+    self.interactive   = 1
+    self.metadata      = {'help' : {}, 'default' : {}, 'parent' : {}, 'tester' : {}}
+    self.argRE         = re.compile(r'\$(\w+|\{[^}]*\})')
+    self.defaultParent = defaultParent
 
   def __getitem__(self, key):
     ok = 1
@@ -125,6 +126,12 @@ class ArgDict (UserDict.UserDict, logging.Logger):
   def getParent(self, key):
     if self.metadata['parent'].has_key(key):
       parent = self.metadata['parent'][key]
+    elif self.defaultParent:
+      parent = self.defaultParent
+    else:
+      parent = None
+
+    if parent:
       if type(parent) == types.StringType:
         parent = self.expandVars(parent)
         if not os.path.exists(parent):
