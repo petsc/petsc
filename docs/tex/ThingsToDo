@@ -14,8 +14,6 @@ Additional Capabilities that PETSc Needs:
     setting unique error code number and save to big file: error code,
     file, line number and error message.
 
-  - Have option for VecSetValues() to ignore data inserted
-    that belongs to other processors.
 
   - Support y = alpha *y + beta *A *x
 
@@ -591,3 +589,5 @@ Additional Capabilities that PETSc Needs:
 
  X Add MatSetValuesLocal() modeled on VecSetValuesLocal().
 
+ X Have option for MatSetValues() and VecSetValues() to ignore data inserted
+    that belongs to other processors.
