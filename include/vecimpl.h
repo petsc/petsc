@@ -12,8 +12,6 @@
 struct _PetscMapOps {
   PetscErrorCode (*setfromoptions)(PetscMap);
   PetscErrorCode (*destroy)(PetscMap);
-  PetscErrorCode (*setfromoptions)(PetscMap);
-  PetscErrorCode (*destroy)(PetscMap);
 };
 
 struct _p_PetscMap {
@@ -28,54 +26,58 @@ struct _p_PetscMap {
 
 typedef struct _VecOps *VecOps;
 struct _VecOps {
-  PetscErrorCode (*duplicate)(Vec,Vec*),         /* get single vector */
-       (*duplicatevecs)(Vec,PetscInt,Vec**),     /* get array of vectors */
-       (*destroyvecs)(Vec[],PetscInt),           /* free array of vectors */
-       (*dot)(Vec,Vec,PetscScalar*),             /* z = x^H * y */
-       (*mdot)(PetscInt,Vec,const Vec[],PetscScalar*), /* z[j] = x dot y[j] */
-       (*norm)(Vec,NormType,PetscReal*),        /* z = sqrt(x^H * x) */
-       (*tdot)(Vec,Vec,PetscScalar*),             /* x'*y */
-       (*mtdot)(PetscInt,Vec,const Vec[],PetscScalar*),/* z[j] = x dot y[j] */
-       (*scale)(const PetscScalar*,Vec),          /* x = alpha * x   */
-       (*copy)(Vec,Vec),                     /* y = x */
-       (*set)(const PetscScalar*,Vec),            /* y = alpha  */
-       (*swap)(Vec,Vec),                     /* exchange x and y */
-       (*axpy)(const PetscScalar*,Vec,Vec),       /* y = y + alpha * x */
-       (*axpby)(const PetscScalar*,const PetscScalar*,Vec,Vec), /* y = y + alpha * x + beta * y*/
-       (*maxpy)(PetscInt,const PetscScalar*,Vec,Vec*), /* y = y + alpha[j] x[j] */
-       (*aypx)(const PetscScalar*,Vec,Vec),       /* y = x + alpha * y */
-       (*waxpy)(const PetscScalar*,Vec,Vec,Vec),  /* w = y + alpha * x */
-       (*pointwisemult)(Vec,Vec,Vec),        /* w = x .* y */
-       (*pointwisedivide)(Vec,Vec,Vec),      /* w = x ./ y */
-       (*setvalues)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode),
-       (*assemblybegin)(Vec),                /* start global assembly */
-       (*assemblyend)(Vec),                  /* end global assembly */
-       (*getarray)(Vec,PetscScalar**),            /* get data array */
-       (*getsize)(Vec,PetscInt*),
-       (*getlocalsize)(Vec,PetscInt*),
-       (*restorearray)(Vec,PetscScalar**),        /* restore data array */
-       (*max)(Vec,PetscInt*,PetscReal*),      /* z = max(x); idx=index of max(x) */
-       (*min)(Vec,PetscInt*,PetscReal*),      /* z = min(x); idx=index of min(x) */
-       (*setrandom)(PetscRandom,Vec),        /* set y[j] = random numbers */
-       (*setoption)(Vec,VecOption),
-       (*setvaluesblocked)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode),
-       (*destroy)(Vec),
-       (*view)(Vec,PetscViewer),
-       (*placearray)(Vec,const PetscScalar*),     /* place data array */
-       (*replacearray)(Vec,const PetscScalar*),     /* replace data array */
-       (*dot_local)(Vec,Vec,PetscScalar*),
-       (*tdot_local)(Vec,Vec,PetscScalar*),
-       (*norm_local)(Vec,NormType,PetscReal*),
-       (*loadintovector)(PetscViewer,Vec),
-       (*reciprocal)(Vec),
-       (*viewnative)(Vec,PetscViewer),
-       (*conjugate)(Vec),
-       (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping),
-       (*setvalueslocal)(Vec,PetscInt,const PetscInt *,const PetscScalar *,InsertMode),
-       (*resetarray)(Vec),      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
-       (*setfromoptions)(Vec),
-       (*maxpointwisedivide)(Vec,Vec,PetscReal*),      /* m = max abs(x ./ y) */
-       (*load)(PetscViewer,const VecType,Vec*);
+  PetscErrorCode (*duplicate)(Vec,Vec*);         /* get single vector */
+  PetscErrorCode (*duplicatevecs)(Vec,PetscInt,Vec**);     /* get array of vectors */
+  PetscErrorCode (*destroyvecs)(Vec[],PetscInt);           /* free array of vectors */
+  PetscErrorCode (*dot)(Vec,Vec,PetscScalar*);             /* z = x^H * y */
+  PetscErrorCode (*mdot)(PetscInt,Vec,const Vec[],PetscScalar*); /* z[j] = x dot y[j] */
+  PetscErrorCode (*norm)(Vec,NormType,PetscReal*);        /* z = sqrt(x^H * x) */
+  PetscErrorCode (*tdot)(Vec,Vec,PetscScalar*);             /* x'*y */
+  PetscErrorCode (*mtdot)(PetscInt,Vec,const Vec[],PetscScalar*);/* z[j] = x dot y[j] */
+  PetscErrorCode (*scale)(const PetscScalar*,Vec);          /* x = alpha * x   */
+  PetscErrorCode (*copy)(Vec,Vec);                     /* y = x */
+  PetscErrorCode (*set)(const PetscScalar*,Vec);            /* y = alpha  */
+  PetscErrorCode (*swap)(Vec,Vec);                     /* exchange x and y */
+  PetscErrorCode (*axpy)(const PetscScalar*,Vec,Vec);       /* y = y + alpha * x */
+  PetscErrorCode (*axpby)(const PetscScalar*,const PetscScalar*,Vec,Vec); /* y = y + alpha * x + beta * y*/
+  PetscErrorCode (*maxpy)(PetscInt,const PetscScalar*,Vec,Vec*); /* y = y + alpha[j] x[j] */
+  PetscErrorCode (*aypx)(const PetscScalar*,Vec,Vec);       /* y = x + alpha * y */
+  PetscErrorCode (*waxpy)(const PetscScalar*,Vec,Vec,Vec);  /* w = y + alpha * x */
+  PetscErrorCode (*pointwisemult)(Vec,Vec,Vec);        /* w = x .* y */
+  PetscErrorCode (*pointwisedivide)(Vec,Vec,Vec);      /* w = x ./ y */
+  PetscErrorCode (*setvalues)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+  PetscErrorCode (*assemblybegin)(Vec);                /* start global assembly */
+  PetscErrorCode (*assemblyend)(Vec);                  /* end global assembly */
+  PetscErrorCode (*getarray)(Vec,PetscScalar**);            /* get data array */
+  PetscErrorCode (*getsize)(Vec,PetscInt*);
+  PetscErrorCode (*getlocalsize)(Vec,PetscInt*);
+  PetscErrorCode (*restorearray)(Vec,PetscScalar**);        /* restore data array */
+  PetscErrorCode (*max)(Vec,PetscInt*,PetscReal*);      /* z = max(x); idx=index of max(x) */
+  PetscErrorCode (*min)(Vec,PetscInt*,PetscReal*);      /* z = min(x); idx=index of min(x) */
+  PetscErrorCode (*setrandom)(PetscRandom,Vec);        /* set y[j] = random numbers */
+  PetscErrorCode (*setoption)(Vec,VecOption);
+  PetscErrorCode (*setvaluesblocked)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+  PetscErrorCode (*destroy)(Vec);
+  PetscErrorCode (*view)(Vec,PetscViewer);
+  PetscErrorCode (*placearray)(Vec,const PetscScalar*);     /* place data array */
+  PetscErrorCode (*replacearray)(Vec,const PetscScalar*);     /* replace data array */
+  PetscErrorCode (*dot_local)(Vec,Vec,PetscScalar*);
+  PetscErrorCode (*tdot_local)(Vec,Vec,PetscScalar*);
+  PetscErrorCode (*norm_local)(Vec,NormType,PetscReal*);
+  PetscErrorCode (*loadintovector)(PetscViewer,Vec);
+  PetscErrorCode (*reciprocal)(Vec);
+  PetscErrorCode (*viewnative)(Vec,PetscViewer);
+  PetscErrorCode (*conjugate)(Vec);
+  PetscErrorCode (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping);
+  PetscErrorCode (*setvalueslocal)(Vec,PetscInt,const PetscInt *,const PetscScalar *,InsertMode);
+  PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
+  PetscErrorCode (*setfromoptions)(Vec);
+  PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
+  PetscErrorCode (*load)(PetscViewer,const VecType,Vec*);
+  PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
+  PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
+  PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);
+  PetscErrorCode (*getvalues)(Vec,PetscInt,const PetscInt[],PetscScalar[]);
 };
 
 /* 
@@ -279,7 +281,6 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
 
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);
 
-#if defined(PETSC_HAVE_MATLAB)
 #if defined(PETSC_HAVE_MATLAB)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
