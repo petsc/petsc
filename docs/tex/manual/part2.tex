@@ -600,8 +600,7 @@ in one and three dimensions are analogous:
 \begin{tabbing}
   DACreate1d(MPI\_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);\\
   DACreate3d(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType stencil\_type,\\
-             int M,int N,int P,int m,int n,int p,int w,int s,int *lx,\\
-             int *ly,int *lz,DA *inra);
+             int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DA *inra);
 \end{tabbing}
 \trl{DA_ZPERIODIC}, \findex{DA_ZPERIODIC}
 \trl{DA_XZPERIODIC}, \findex{DA_XZPERIODIC}
@@ -2375,8 +2374,8 @@ with the command
 \begin{tabbing}
   KSPLGMonitorDestroy(PetscDrawLG lg);
 \end{tabbing}
-The user can change aspects of the graphs with the \trl{DrawLG*()} and 
-\trl{DrawAxis*()} routines. \findex{DrawAxis*()} \findex{DrawLG*()}
+The user can change aspects of the graphs with the \trl{PetscDrawLG*()} and 
+\trl{PetscDrawAxis*()} routines. \findex{PetscDrawAxis*()} \findex{PetscDrawLG*()}
 One can also access this functionality from the options database 
 with the command \trl{-ksp_xmonitor} \trl{[x,y,w,h]}. \findex{-ksp_xmonitor} 
 Where \trl{x, y, w, h} are the optional location and size of the window.
@@ -2420,8 +2419,8 @@ There is an additional routine
 that is useful only for very small problems. It explicitly computes the 
 full representation of the preconditioned operator and calles LAPACK to 
 compute its eigenvalues. It should be only used for matrices of size up to 
-a couple hundred.  The \trl{DrawSP*()} routines are very useful for 
-drawing scatter plots of the eigenvalues. \findex{DrawSP*()}
+a couple hundred.  The \trl{PetscDrawSP*()} routines are very useful for 
+drawing scatter plots of the eigenvalues. \findex{PetscDrawSP*()}
 
 The eigenvalues may also be computed and displayed graphically with the options 
 data base commands \trl{-ksp_plot_eigenvalues} and \trl{-ksp_plot_eigenvalues_explicitly}.
@@ -2568,6 +2567,7 @@ By alleviating the considerable overhead for dynamic memory allocation,
 such tuning can significantly enhance performance.
 
 % --------------------------------------------------------------------
+\label{sec_blocksolve}
 PETSc supports incomplete factorization preconditioners for several matrix
 types for the uniprocessor case.  \sindex{ILU, parallel}
 \sindex{ICC, parallel} In addition, for the parallel case
@@ -2697,6 +2697,7 @@ sets the SSOR relaxation coefficient, \trl{omega}, as discussed above.
 
 %------------------------------------------------------------------
 \subsection{LU Factorization}
+\label{sec_factorization}
 
 The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
@@ -3182,7 +3183,7 @@ the following two steps:
 
 In the simplest usage of the nonlinear solvers, the user must merely 
 provide a C, C++, or Fortran routine to evaluate the nonlinear function 
-of Equation~(\ref{eq_F=0}) or (\ref{eq_minF}).
+of Equation~(\ref{eq_F=0}).
 The corresponding Jacobian \sindex{Jacobian} matrix 
 can be approximated with finite differences.
 For codes that are typically more efficient and accurate, the
@@ -3556,7 +3557,7 @@ matrix. \sindex{Jacobian, debugging}
 
 \sindex{inexact Newton methods}
 Since exact solution of the linear Newton systems within (\ref{eq_n1}) 
-and (\ref{eq_n2}) at each iteration can be costly, modifications 
+at each iteration can be costly, modifications 
 are often introduced that significantly reduce these expenses and 
 yet retain the rapid convergence of Newton's method.  Inexact or 
 truncated Newton techniques approximately solve the linear systems 
@@ -4086,6 +4087,7 @@ corresponds to SNESDefaultComputeJacobian(). \findex{TSDefaultComputeJacobianCol
 \sindex{coloring with TS} \findex{TSDefaultComputeJacobian()}
 
 \subsection{Using PVODE from PETSc}
+\label{sec_pvode}
 
 PVODE is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
 The TS component provides an interface to use PVODE directly from PETSc.
@@ -5007,6 +5009,7 @@ Section~\ref{sec_makeflags}.  The profiling options include the following:
 additional profilng can be done with MPE.
 
 \subsection{Interpreting {\tt -log\_summary} Output: The Basics}
+\label{sec_ploginfo}
 
 As shown in Figure~\ref{fig_exprof} (in Part I), the option \trl{
 -log_summary} \findex{-log_summary} activates printing of profile
@@ -6352,7 +6355,7 @@ coefficient matrix.  Its Fortran counterpart is
 \section{Emacs Users} \sindex{Emacs} \label{sec_emacs}
 
 \sindex{Emacs} \sindex{etags, in Emacs}
-If users develop application codes on UNIX machines using Emacs (which we
+If users develop application codes  using Emacs (which we
 highly recommend), the \trl{etags} feature can be used to search PETSc 
 files quickly and efficiently.  To use this feature, one should 
 first check if the file,
@@ -6409,9 +6412,9 @@ command \findex{PetscViewerDrawGetDraw()}
 \begin{tabbing}
   PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
 \end{tabbing}
-Then one can call any of the \trl{DrawXXX} commands on the \trl{draw}
+Then one can call any of the \trl{PetscDrawXXX} commands on the \trl{draw}
 object. If one obtains the \trl{draw} object in this manner, 
-one does not call the DrawOpenX() command discussed below.
+one does not call the PetscDrawOpenX() command discussed below.
 
 \findex{PETSC_VIEWER_DRAW_WORLD} \findex{PETSC_VIEWER_DRAW_SELF} 
 Predefined viewers, \trl{PETSC_VIEWER_DRAW_WORLD} 
@@ -6431,7 +6434,7 @@ colormap can be used via the option \trl{-draw_x_shared_colormap}.
 
 One can open a window that is not associated with a viewer directly 
 under the X11 Window System with the
-command \findex{DrawOpenX()} \sindex{X windows}
+command \findex{PetscDrawOpenX()} \sindex{X windows}
 \begin{tabbing}
   PetscDrawOpenX(MPI\_Comm comm,char *display,char *title,int x,\\
                  int y,int w,int h,PetscDraw *win);
@@ -6440,13 +6443,13 @@ All drawing routines are done relative to the windows coordinate system
 and viewport. By default the drawing coordinates are from \trl{(0,0)} to 
 \trl{(1,1)}, where \trl{(0,0)} indicates the lower left corner of the 
 window. The application program can change the window coordinates with the 
-command \findex{DrawSetCoordinates()} \sindex{coordinates}
+command \findex{PetscDrawSetCoordinates()} \sindex{coordinates}
 \begin{tabbing}
   PetscDrawSetCoordinates(PetscDraw win,double xl,double yl,double xr,double yr);
 \end{tabbing}
 By default, graphics will be drawn in the entire window. To restrict the 
 drawing to a portion of the window, one may 
-use the command \findex{DrawSetViewPort()}
+use the command \findex{PetscDrawSetViewPort()}
 \begin{tabbing}
   PetscDrawSetViewPort(PetscDraw win,double xl,double yl,double xr,double yr);
 \end{tabbing}
@@ -6455,43 +6458,43 @@ drawing should be done, must satisfy
 $ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$ 
 
 To draw a line, one uses
- the command \findex{DrawLine()} \sindex{lines, drawing}
+ the command \findex{PetscDrawLine()} \sindex{lines, drawing}
 \begin{tabbing}
   PetscDrawLine(PetscDraw win,double xl,double yl,double xr,double yr,int cl);
 \end{tabbing}
 The argument \trl{cl} indicates the color (which is an integer between 0 and 255)
 of the line. A list of predefined colors may be found in \trl{include/petscdraw.h}
-and includes \trl{DRAW_BLACK}, \trl{DRAW_RED}, \trl{DRAW_BLUE} etc.
+and includes \trl{PETSC_DRAW_BLACK}, \trl{PETSC_DRAW_RED}, \trl{PETSC_DRAW_BLUE} etc.
 
 To ensure that all graphics actually have been displayed, one should use 
 \sindex{flushing, graphics} the
-command \findex{DrawFlush()}
+command \findex{PetscDrawFlush()}
 \begin{tabbing}
   PetscDrawFlush(PetscDraw win);
 \end{tabbing}
 When displaying by using double buffering, which is set with the
-command \findex{DrawSetDoubleBuffer()} \sindex{double buffer}
+command \findex{PetscDrawSetDoubleBuffer()} \sindex{double buffer}
 \begin{tabbing}
   PetscDrawSetDoubleBuffer(PetscDraw win);
 \end{tabbing}
-{\em all} processors must call \findex{DrawSynchronizedFlush()}
+{\em all} processors must call \findex{PetscDrawSynchronizedFlush()}
 \begin{tabbing}
   PetscDrawSynchronizedFlush(PetscDraw win);
 \end{tabbing}
 in order to swap the buffers. From the options database one may use 
 \trl{-draw_pause n}, which \findex{-draw_pause} causes the PETSc application 
-to pause \trl{n} seconds at each DrawPause(). A time of \trl{-1}
+to pause \trl{n} seconds at each PetscDrawPause(). A time of \trl{-1}
 indicates that the application should pause until receiving mouse 
 input from the user.
 
-Text can be drawn with either of the two \findex{DrawStringVertical()}
-commands \findex{DrawString()} \sindex{text, drawing}
+Text can be drawn with either of the two \findex{PetscDrawStringVertical()}
+commands \findex{PetscDrawString()} \sindex{text, drawing}
 \begin{tabbing}
   PetscDrawString(PetscDraw win,double x,double y,int color,char *text);\\
   PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
 \end{tabbing}
 The user can set the text font size or determine it with the 
-commands \findex{DrawStringSetSize()} \findex{DrawStringGetSize()}
+commands \findex{PetscDrawStringSetSize()} \findex{PetscDrawStringGetSize()}
 \begin{tabbing}
   PetscDrawStringSetSize(PetscDraw win,double width,double height);\\
   PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
@@ -6499,56 +6502,56 @@ commands \findex{DrawStringSetSize()} \findex{DrawStringGetSize()}
 
 \subsection{Line Graphs}
 PETSc includes a set of routines for manipulating simple two-dimensional
-graphs. These routines, which begin with DrawAxisDraw(), are usually 
+graphs. These routines, which begin with PetscDrawAxisDraw(), are usually 
 not used directly by the application programmer.  Instead, the programmer 
 employs the line graph routines to draw simple line graphs.
 As shown in the program, within Figure~\ref{fig_plot}, line graphs 
-are created with the command \findex{DrawLGCreate()} \sindex{line graphs}
+are created with the command \findex{PetscDrawLGCreate()} \sindex{line graphs}
 \begin{tabbing}
   PetscDrawLGCreate(PetscDraw win,int ncurves,PetscDrawLG *ctx);
 \end{tabbing}
 The argument \trl{ncurves} indicates how many curves are to be drawn.
 Points can be added to each of the curves with the 
-command \findex{DrawLGAddPoint()}
+command \findex{PetscDrawLGAddPoint()}
 \begin{tabbing}
   PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
 \end{tabbing}
 The arguments \trl{x} and \trl{y} are arrays containing the next 
 point value for each curve.
-Several points for each curve may be added with \findex{DrawLGAddPoints()}
+Several points for each curve may be added with \findex{PetscDrawLGAddPoints()}
 \begin{tabbing}
   PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
 \end{tabbing}
 
-The line graph is drawn (or redrawn) with the command \findex{DrawLGDraw()}
+The line graph is drawn (or redrawn) with the command \findex{PetscDrawLGDraw()}
 \begin{tabbing}
   PetscDrawLGDraw(PetscDrawLG ctx);
 \end{tabbing}
 A line graph that is no longer needed can be destroyed with the 
-command \findex{DrawLGDestroy()}
+command \findex{PetscDrawLGDestroy()}
 \begin{tabbing}
   PetscDrawLGDestroy(PetscDrawLG ctx);
 \end{tabbing}
 To plot new curves, one can reset a linegraph with the
-command \findex{DrawLGReset()}
+command \findex{PetscDrawLGReset()}
 \begin{tabbing}
   PetscDrawLGReset(PetscDrawLG ctx);
 \end{tabbing}
 The line graph automatically determines the range of values to 
 display on the two axes.  The user can change these defaults with the 
-command \findex{DrawLGSetLimits()}
+command \findex{PetscDrawLGSetLimits()}
 \begin{tabbing}
   PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
 \end{tabbing}
 
 It is also possible to change the display of the axes and to label
 them. This procedure is done by first obtaining the axes context with the 
-command \findex{DrawLGGetAxis()} \sindex{axis, drawing}
+command \findex{PetscDrawLGGetAxis()} \sindex{axis, drawing}
 \begin{tabbing}
   PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
 \end{tabbing}
 One can set the axes' colors and labels, respectively, by using the
-commands \findex{DrawAxisSetColors()} \findex{DrawAxisSetLabels()}
+commands \findex{PetscDrawAxisSetColors()} \findex{PetscDrawAxisSetLabels()}
 \begin{tabbing}
   PetscDrawAxisSetColors(PetscDrawAxis axis,int axis\_lines,int ticks,int text);\\
   PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
@@ -7033,7 +7036,7 @@ We do not currently support sparse matrix factorization with pivoting
 for numerical stability. This is because trying to both reduce fill
 and do pivoting can become quite complicated. Instead, we provide a 
 poor stepchild substitute. After one has obtained a reordering, with
-\trl{MatGetOrdering(Mat A,MatOrdering type,IS *row,IS *col)} one
+MatGetOrdering(Mat A,MatOrdering type,IS *row,IS *col) one
 may call
 \begin{tabbing}
   MatReorderForNonzeroDiagonal(Mat A,double tol,IS row, IS col);
@@ -7054,12 +7057,12 @@ Once a matrix has been factored, it is natural to solve linear systems.
 The following four routines enable this process: \findex{MatSolve()} 
 \begin{tabbing}
   MatSolve(Mat A,Vec x, Vec y);\\
-  MatSolveTrans(Mat A, Vec x, Vec y);\\
+  MatSolveTranspose(Mat A, Vec x, Vec y);\\
   MatSolveAdd(Mat A,Vec x, Vec y, Vec w);\\
-  MatSolveTransAdd(Mat A, Vec x, Vec y, Vec w);
+  MatSolveTransposeAdd(Mat A, Vec x, Vec y, Vec w);
 \end{tabbing}
-The \findex{MatSolveTrans()} \findex{MatSolveAdd()}
-matrix \findex{MatSolveTransAdd()}
+The \findex{MatSolveTranspose()} \findex{MatSolveAdd()}
+matrix \findex{MatSolveTransposeAdd()}
 \trl{A} of these routines must have been obtained from a 
 factorization routine; otherwise, an error will be generated.
 In general, the user should use the SLES solvers introduced in the 
@@ -7152,13 +7155,13 @@ The routine \findex{PCGetOperators()}
 \end{tabbing}
 returns the values set with PCSetOperators().
 
-\findex{PCApply()} \findex{PCApplyTrans()} 
+\findex{PCApply()} \findex{PCApplyTranspose()} 
 The preconditioners in PETSc can be used in several ways.  The two
 most basic routines simply apply the preconditioner or its transpose
 and are given, respectively, by
 \begin{tabbing}
   PCApply(PC pc,Vec x,Vec y);\\
-  PCApplyTrans(PC pc,Vec x,Vec y);
+  PCApplyTranspose(PC pc,Vec x,Vec y);
 \end{tabbing}
 In particular, for a preconditioner matrix, \trl{B}, that has
 been set via \trl{PCSetOperators(pc,A,B,flag)},
@@ -7167,11 +7170,11 @@ by solving the linear system $By = x$ with the specified preconditioner
 method.
 
 \findex{PCApplyBAorAB()}
-\findex{PCApplyBAorABTrans()} \findex{PCApplyRichardson()}
+\findex{PCApplyBAorABTranspose()} \findex{PCApplyRichardson()}
 Additional preconditioner routines are
 \begin{tabbing}
   PCApplyBAorAB(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
-  PCApplyBAorABTrans(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
+  PCApplyBAorABTranspose(PC pc,PCSide right,Vec x,Vec y,Vec work,int its);\\
   PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,PetscReal rtol,PetscReal atol, PetscReal dtolint its);
 \end{tabbing}
 The first two routines apply the action of the matrix followed by the
@@ -7188,7 +7191,9 @@ command \findex{PCDestroy()}
   PCDestroy(PC pc);
 \end{tabbing}
 
-\chapter{Index}
-
+\addtocounter{chapter}{1}
+\addcontentsline{toc}{chapter}{Index}
+\begin{theindex}
 \label{ch_index}
+\end{theindex}
 

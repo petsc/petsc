@@ -94,11 +94,7 @@ http://www.mcs.anl.gov/petsc
 % Blank page makes double sided printout look bettter.
 %\newpage \hbox{ } \newpage
 
-\pagenumbering{roman}
-\setcounter{page}{3}
 \tableofcontents
-\clearpage
-\pagenumbering{arabic}
 
 % --------------------------------------------------------------------
 %                            PART 1
@@ -118,9 +114,9 @@ http://www.mcs.anl.gov/petsc
 
 %------------------------------------------------------------------
 
-\include{index}
 
 \bibliographystyle{plain}
+\addtocounter{chapter}{1}
 \addcontentsline{toc}{chapter}{Bibliography}
 \label{sec:bib}
 \bibliography{../petsc,../petscapp}

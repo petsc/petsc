@@ -67,7 +67,7 @@ EXTERN int   ISAllGatherIndices(MPI_Comm,int,int*,int*,int**);
 #define IS_LTOGM_COOKIE PETSC_COOKIE+12
 
 /*S
-   ISLocalToGlobalMappings - mappings from an arbitrary
+   ISLocalToGlobalMapping - mappings from an arbitrary
       local ordering from 0 to n-1 to a global PETSc ordering 
       used by a vector or matrix.
 
