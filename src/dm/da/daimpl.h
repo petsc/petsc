@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.11 1996/02/17 16:35:35 curfman Exp curfman $ */
+/* $Id: daimpl.h,v 1.12 1996/04/14 00:49:20 curfman Exp curfman $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -7,6 +7,7 @@
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
 #include "da.h"
+#include "dfvec.h"
 
 struct _DA {
   PETSCHEADER
@@ -20,12 +21,13 @@ struct _DA {
   int            base;              /* global number of 1st local node */
   DAPeriodicType wrap;              /* indicates type of periodic boundaries */
   VecScatter     gtol, ltog, ltol;  /* scatters, see below for details */
-  Vec            global, local;     /* vectors */
+  DFVec          global, local;     /* vectors that are discrete functions */
   DAStencilType  stencil_type;      /* stencil, either box or star */
   int            dim;               /* DA dimension (1,2, or 3) */
   int            *gtog1;            /* mapping from global ordering to
                                        ordering that would be used for 1
                                        proc; intended for internal use only */
+  DF             dfshell;           /* discrete function shell */
 };
 
 /*
@@ -42,4 +44,8 @@ struct _DA {
             values in the first vector.  This is good for explicit
             nearest neighbor time-stepping.
 */
+
+extern int DFShellCreateDA_Private(MPI_Comm,char**,DA,DF*);
+extern int DAGetGlobalToGlobal1_Private(DA,int**);
+
 #endif
