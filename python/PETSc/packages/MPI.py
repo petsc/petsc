@@ -267,9 +267,9 @@ class Configure(config.base.Configure):
 
     if PETSC_ARCH and PETSC_DIR:
       try:
-        libArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs', log = self.framework.log)[0]
-        incArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs', log = self.framework.log)[0]
-        runArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun', log = self.framework.log)[0]
+        libArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs', log = self.framework.log)[0].strip()
+        incArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs', log = self.framework.log)[0].strip()
+        runArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun', log = self.framework.log)[0].strip()
 
         libArgs = self.splitLibs(libArgs)
         incArgs = self.splitIncludes(incArgs)
