@@ -3,7 +3,7 @@ dnl The file must be relative to the location of the configure program
 dnl itself
 dnl
 dnl Here is a typical configure usage
-dnl setenv PETSC_ARCH sun4config
+dnl setenv PETSC_ARCH solarisconfig
 dnl ./bin/configure --enable-installsite --enable-opt=-O --enable-optname=O \
 dnl                --with-blas=/home/petsc/software/blaslapack/blas.a \
 dnl                --with-lapack=/home/petsc/software/blaslapack/lapack.a
