@@ -10,7 +10,7 @@ OBJSC	        =
 OBJSF	        = 
 LIBBASE	        = libpetscvec
 LOCDIR          = src/is/examples/
-DIRS            = tests tutorial
+DIRS            = tests tutorials
 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
