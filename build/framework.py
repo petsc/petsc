@@ -252,7 +252,7 @@ class Framework(base.Base):
 
     for lang in self.compileTemplate.usingSIDL.clientLanguages:
       clientDir = self.compileTemplate.usingSIDL.getClientRootDir(lang)
-      if not os.path.isdir(os.path.join(v.getRoot(), clientDir)):
+      if not os.path.isdir(os.path.join(self.project.getRoot(), clientDir)):
         self.debugPrint('Building missing '+lang+' client in '+self.project.getRoot(), 1, 'build')
         return 1
     return 0
@@ -274,7 +274,7 @@ class Framework(base.Base):
     else:
       import build.buildGraph
 
-      self.getProjectCompileGraph(self)
+      (compileGraph, input) = self.getProjectCompileGraph(self)
       # Add project dependency compile graphs
       if len(self.dependenceGraph.outEdges[self.project]):
         input = dict(map(lambda r: (r, self.filesets['sidl']), build.buildGraph.BuildGraph.getRoots(compileGraph)))
