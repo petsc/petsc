@@ -4,4 +4,6 @@
 #  command is run every night at 2am.
 # run crontab crontab to install the nightly build
 # crontab -r to remove it
-0 2 * * * /home/bsmith/petsc/maint/buildtest
+#
+0 23 * * * /home/bsmith/petsc/maint/buildtest /home/bsmith/petsc
+0 23 * * * /home/curfman/petsc/maint/buildtest /home/curfman/petsc
