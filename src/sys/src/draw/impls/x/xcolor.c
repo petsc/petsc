@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.18 1996/08/08 14:45:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.19 1996/11/07 15:10:27 bsmith Exp balay $";
 #endif
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -20,6 +20,8 @@ Colormap XiCreateColormap(Display*,int,Visual *);
 
 #include <X11/Xatom.h>
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiInitColors"
 int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 {
   PixVal   white_pixel, black_pixel;
@@ -53,6 +55,8 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 /*
     Set the initial color map
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiInitCmap"
 int XiInitCmap(Draw_X* XiWin )
 {
   XColor  colordef;
@@ -79,6 +83,8 @@ int XiInitCmap(Draw_X* XiWin )
  * The input to this routine is RGB, not HLS.
  * X colors are 16 bits, not 8, so we have to shift the input by 8.
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiCmap"
 int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue, 
             int mapsize, Draw_X *XiWin )
 {
@@ -181,6 +187,8 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 	GrayScale
 	StaticGray
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiSetVisualClass"
 int XiSetVisualClass(Draw_X* XiWin )
 {
   XVisualInfo vinfo;
@@ -201,6 +209,8 @@ int XiSetVisualClass(Draw_X* XiWin )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiGetVisualClass"
 int XiGetVisualClass(Draw_X* XiWin )
 {
 #if defined(__cplusplus)
@@ -210,6 +220,8 @@ int XiGetVisualClass(Draw_X* XiWin )
 #endif
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiCreateColormap"
 Colormap XiCreateColormap(Display* display,int screen,Visual *visual )
 {
   Colormap Cmap;
@@ -222,12 +234,16 @@ Colormap XiCreateColormap(Display* display,int screen,Visual *visual )
   return Cmap;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiSetColormap"
 int XiSetColormap(Draw_X* XiWin )
 {
   XSetWindowColormap( XiWin->disp, XiWin->win, XiWin->cmap );
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiAllocBW"
 int XiAllocBW(Draw_X* XiWin,PixVal* white,PixVal* black )
 {
   XColor  bcolor, wcolor;
@@ -246,6 +262,8 @@ int XiAllocBW(Draw_X* XiWin,PixVal* white,PixVal* black )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiGetBaseColor"
 int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix )
 {
   *white_pix  = XiWin->cmapping[DRAW_WHITE];
@@ -266,12 +284,16 @@ int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix )
 static double Gamma = 2.0;
 #include <math.h>
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiSetGamma"
 int XiSetGamma( double g )
 {
   Gamma = g;
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiSetCmapHue"
 int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,
               int mapsize )
 {
@@ -306,6 +328,8 @@ int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,
  *   (0:255, 0:255, 0:255)
  *      r       g      b
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiHlsHelper"
 int XiHlsHelper(int h,int n1,int n2 )
 {
   while (h > 360) h = h - 360;
@@ -316,6 +340,8 @@ int XiHlsHelper(int h,int n1,int n2 )
   return n1;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiHlsToRgb"
 int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,
            unsigned char *b )
 {
@@ -342,6 +368,8 @@ int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,
     This routine returns the pixel value for the specified color
     Returns 0 on failure, <>0 otherwise.
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiFindColor"
 int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
 {
   XColor   colordef;
@@ -368,6 +396,8 @@ int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
  * This is like XiCmap, except that it APPENDS to the existing
  * colormap.
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiFindColor"
 int XiAddCmap( unsigned char *red, unsigned char *green, unsigned char *blue,
                int mapsize, Draw_X *XiWin )
 {
@@ -402,6 +432,8 @@ int XiAddCmap( unsigned char *red, unsigned char *green, unsigned char *blue,
     In the monchrome case (or if the color is otherwise unavailable),
     the "background" or "foreground" colors will be chosen
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiGetColor"
 PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
 {
   PixVal pixval;
@@ -415,6 +447,8 @@ PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
    This routine takes a named color and returns a color that is either
    lighter or darker
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiSimColor"
 PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
 {
   XColor   colordef, colorsdef;
@@ -454,6 +488,8 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
   colormap is used.  The Pixel values chosen are in the cmapping 
   structure; this is used by routines such as the Xi contour plotter.
 */  
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiUniformHues"
 int XiUniformHues( Draw_X *Xiwin, int ncolors )
 {
   unsigned char *red, *green, *blue;
@@ -473,6 +509,8 @@ int XiUniformHues( Draw_X *Xiwin, int ncolors )
   
   The initial color is (red[0],green[0],blue[0]).
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiSetCmapLight"
 int XiSetCmapLight(unsigned char *red, unsigned char *green,
                     unsigned char *blue, int mapsize )
 {
