@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 1997/09/10 18:25:40 balay Exp bsmith $ 
+# $Id: base.site,v 1.6 1997/11/03 04:39:47 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -25,11 +25,12 @@
 FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a 
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see $(PETSC_DIR)/docs/instllation.html for information on retrieving them.
+#
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-#  If you list -lessl below you must have -DHAVE_ESSL listed in the 
+#  If you list -lessl or -lesslp2 below you must have -DHAVE_ESSL listed in the 
 # PCONF line at the bottom of this file.
 #
 BLAS_LIB       = -lblas $(FC_LIB)
@@ -41,20 +42,22 @@ MPI_LIB        = /home/petsc/mpich/lib/rs6000/ch_p4/libmpe.a /usr/lpp/ppe.poe/li
 MPI_INCLUDE    = -I/usr/lpp/ppe.poe/include -I/home/petsc/mpich/mpe
 MPIRUN         = mpirun
 #
-# Location of MPE software (optional, if used added HAVE_MPE below)
-#
-#MPE_LIB        = /usr/local/mpi/lib/rs6000/ch_mpl/liblmpi.a \
-#                 /usr/local/mpi/lib/rs6000/ch_mpl/libpmpi.a 
-#
 # Location of X-windows software
 #
 X11_INCLUDE    = 
 X11_LIB        = -lX11
 #
-# Optional location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there and comment out or remove the next two lines 
-# below. You cannot use Blocksolve with complex.
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
+# ----------------------------------------------------------------------------------------  
+#
+# Optional ocation of MPE software 
+#
+#MPE_LIB        = /usr/local/mpi/lib/rs6000/ch_mpl/liblmpi.a \
+#                 /usr/local/mpi/lib/rs6000/ch_mpl/libpmpi.a 
+#
+# Optional location of BlockSolve 
 #
 BS_INCLUDE = 
 BS_LIB     = 
@@ -67,22 +70,24 @@ CMEX           =
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/rs6000/libpvode.a
+#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/rs6000/libpvode.a
 #
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+#
+# -------------------------------------------------------------------------
 #
 # PCONF - indicates which external packages are available at your site
-#    Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you 
-#    have installed BlockSolve95 and listed the include files and
-#    library files above in the BS_ line.
-#
-#    Only list -DHAVE_MPE if you have MPICH installed, with the 
-#    MPE options.
 #
 #    Only list -DHAVE_ESSL below if you have IBM's library essl
 #    installed on your machine (in /usr/lib/libessl.a) and 
 #    have it listed above in the LAPACK_LIB line above.
 #
-PCONF          =  -DHAVE_ESSL -DHAVE_MPE -DHAVE_PVODE
+#PCONF         =  -DHAVE_ESSL -DHAVE_MPE -DHAVE_PVODE
+PCONF         =  -DHAVE_ESSL -DHAVE_MPE 
 #
 EXTERNAL_LIB  = $(BS_LIB) $(PVODE_LIB) $(ADIC_LIB)
