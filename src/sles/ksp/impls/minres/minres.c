@@ -1,4 +1,4 @@
-/*$Id: gmres2.c,v 1.27 2000/04/12 04:25:01 bsmith Exp $*/
+/*$Id: minres.c,v 1.4 2000/05/04 16:28:21 bsmith Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -61,10 +61,10 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
 
   ksp->its = 0;
 
-  ierr = VecSet(&zero,UOLD); CHKERRQ(ierr);         /*     u_old  <-   0   */
-  ierr = VecCopy(UOLD,VOLD); CHKERRQ(ierr);         /*     v_old  <-   0   */
-  ierr = VecCopy(UOLD,W); CHKERRQ(ierr);            /*     w      <-   0   */
-  ierr = VecCopy(UOLD,WOLD); CHKERRQ(ierr);         /*     w_old  <-   0   */
+  ierr = VecSet(&zero,UOLD);CHKERRQ(ierr);         /*     u_old  <-   0   */
+  ierr = VecCopy(UOLD,VOLD);CHKERRQ(ierr);         /*     v_old  <-   0   */
+  ierr = VecCopy(UOLD,W);CHKERRQ(ierr);            /*     w      <-   0   */
+  ierr = VecCopy(UOLD,WOLD);CHKERRQ(ierr);         /*     w_old  <-   0   */
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x    */
