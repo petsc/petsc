@@ -123,17 +123,6 @@ int MatMarkDiagonal_MPIAdj(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_MPIAdj"
-int MatGetOwnershipRange_MPIAdj(Mat A,int *m,int *n)
-{
-  Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
-  PetscFunctionBegin;
-  if (m) *m = a->rstart;
-  if (n) *n = a->rend;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIAdj"
 int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
@@ -277,7 +266,6 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       MatGetOwnershipRange_MPIAdj,
        0,
        0,
        0,

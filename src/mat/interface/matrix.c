@@ -3555,8 +3555,7 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
   MatPreallocated(mat);
   if (m) PetscValidIntPointer(m);
   if (n) PetscValidIntPointer(n);
-  if (!mat->ops->getownershiprange) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
-  ierr = (*mat->ops->getownershiprange)(mat,m,n);CHKERRQ(ierr);
+  ierr = PetscMapGetLocalRange(mat->rmap,m,n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

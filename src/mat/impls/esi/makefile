@@ -1,17 +1,22 @@
 # $Id: makefile,v 1.1 2001/09/12 03:29:26 bsmith Exp bsmith $
 
+#requirespackage  'PETSC_HAVE_ESI'
+#requireslanguage  CPP
+#requiresscalar    real 
+#requiresprecision double
+
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${ESI_INCLUDE}  ${CCA_INCLUDE}
 FFLAGS   =
-SOURCEC  =  
+SOURCEC  = mesi.c 
 SOURCEF  =
-SOURCEH  = dvecimpl.h
-OBJSC    =  
+SOURCEH  = 
+OBJSC    = mesi.o
 OBJSF    =
-LIBBASE  = libpetscvec
-DIRS     = seq mpi shared esi
-LOCDIR   = src/vec/impls/
+LIBBASE  = libpetscmat
+DIRS     = 
+LOCDIR   = src/mat/impls/esi
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

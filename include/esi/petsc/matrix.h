@@ -30,6 +30,9 @@ class Matrix : public virtual esi::Operator<Scalar,Ordinal>,
     // Construct a matrix from two IndexSpaces.
     Matrix(esi::IndexSpace<Ordinal> *rsource,esi::IndexSpace<Ordinal> *csource);
 
+    // Construct a esi::petsc::matrix from a PETSc Mat
+    Matrix(Mat pmat);
+
     //  Interface for esi::Object  ---------------
 
     virtual esi::ErrorCode getInterface(const char* name, void*& iface) ;

@@ -957,18 +957,6 @@ int MatScale_MPISBAIJ(PetscScalar *aa,Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_MPISBAIJ"
-int MatGetOwnershipRange_MPISBAIJ(Mat matin,int *m,int *n)
-{
-  Mat_MPISBAIJ *mat = (Mat_MPISBAIJ*)matin->data;
-
-  PetscFunctionBegin;
-  if (m) *m = mat->rstart*mat->bs;
-  if (n) *n = mat->rend*mat->bs;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPISBAIJ"
 int MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
@@ -1486,7 +1474,6 @@ static struct _MatOps MatOps_Values = {
   0,
   MatSetUpPreallocation_MPISBAIJ,
   0,
-  MatGetOwnershipRange_MPISBAIJ,
   0,
   0,
   0,
