@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.19 1995/06/09 19:33:26 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.20 1995/06/10 21:03:47 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -244,7 +244,7 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
   dvmain = mat->diagv[mainbd];
   if (flag == SOR_APPLY_UPPER) {
     /* apply ( U + D/omega) to the vector */
-/*    if (nb == 1) {
+    if (nb == 1) {
       for ( i=0; i<m; i++ ) {
         sum = b[i] * (shift + dvmain[i]) / omega;
         for (d=mainbd+1; d<mat->nd; d++) {
@@ -271,11 +271,11 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
           x[kloc+i] = sum;
         }
       }
-    } */
+    }
     return 0;
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
-/*    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       if (nb == 1) {
         for (i=0; i<m; i++) {
           sum  = b[i];
@@ -285,33 +285,34 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
           }
           x[i] = omega*(sum/(shift + dvmain[i]));
         }
-        xb = x;
       } else {
         for ( k=0; k<mblock; k++ ) {
           kloc = k*nb; kbase = kloc*nb;
           for (i=0; i<nb; i++) {
             sum = b[i+kloc];
-            for (j=i+1; j<nb; j++)
-              sum += dvmain[kbase + j*nb + i] * b[kloc + j];
+            for (j=0; j<i; j++)
+              sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
             for (d=mainbd+1; d<mat->nd; d++) {
               diag = mat->diag[d];
               dv   = mat->diagv[d];
               bloc = k - diag;
               if (bloc >= 0) {
                 for (j=0; j<nb; j++)
-                  sum -= dv[kbase + j*nb + i] * b[kloc*nb + j];
+                  sum -= dv[kbase + j*nb + i] * x[kloc*nb + j];
               }
 	    }
-            x[kloc+i] = sum;
+            x[kloc+i] = omega*(sum/(shift + dvmain[i*(nb+1)+kbase]));
           }
         }
       }
+      xb = x;
     }
     else xb = b;
-/*
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
-      if (nb == 1) for ( i=0; i<m; i++ ) x[i] *= dvmain[i];
+      if (nb == 1) {
+        for ( i=0; i<m; i++ ) x[i] *= dvmain[i];
+      } 
       else {
         for ( k=0; k<mblock; k++ ) {
           kloc = k*nb; kbase = kloc*nb;
@@ -320,8 +321,7 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
         }
       }
     }
-*/
-/*    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       if (nb == 1) {
         for ( i=m-1; i>=0; i-- ) {
           sum = xb[i];
@@ -337,30 +337,28 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
           kloc = k*nb; kbase = kloc*nb;
           for ( i=nb-1; i>=0; i-- ) {
             sum = xb[i+kloc];
-            for ( j=0; j<i; j++ )
+            for ( j=i+1; j<nb; j++ )
               sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
-            x[kloc+i] = sum;
             for (d=mainbd+1; d<mat->nd; d++) {
               diag = mat->diag[d];
               dv   = mat->diagv[d];
               bloc = k - diag;
-              if (bloc >= 0) {
-                for (j=0; j<nb; j++) {
-                  sum -= dv[kbase + j*nb + i] * b[(k-diag)nb + j];
-                }
+              if (bloc < mblock) {
+                for (j=0; j<nb; j++)
+                  sum -= dv[kbase + j*nb + i] * b[(k-diag)*nb + j];
               }
 	    }
-            x[kloc+i] = sum;
+            x[kloc+i] = omega*(sum/(shift + dvmain[i*(nb+1)+kbase]));
           }
         }
       }
+    }
     its--;
   }
-*/
-/*  while (its--) {
+  while (its--) {
     SETERRQ(1, "This section not done.");
     SETERRQ(1,"This option not yet supported for MATBDiag format.");
-  } */
+  }
   return 0;
 } 
 
