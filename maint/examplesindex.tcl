@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: examplesindex.tcl,v 1.20 1997/09/10 19:41:58 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -191,7 +191,7 @@ proc deletelinefeed { name } {
 ##################################################
 
 proc write_access_tables { } {
-    global  Concepts Routines Processors Comment PETSC_DIR files html
+    global  Concepts Routines Processors Comment PETSC_DIR_www files html
 
     set table1 [ open docs/tex/access/table1.txt  w ]
     puts $table1 "Key;Dir;Name;Source;Processors;comments"
@@ -249,7 +249,7 @@ proc write_access_tables { } {
 
 proc write_concepts_file { } {
     global concepts  ConceptsFile Concepts Routines Processors 
-    global sub Comment PETSC_DIR files html
+    global sub Comment PETSC_DIR_www files html
 
     exec /bin/rm -f docs/www/concepts.html
     set concepts_file [ open docs/www/concepts.html w ]
@@ -296,7 +296,7 @@ proc write_concepts_file { } {
             set i 0
             while { $i < $n } {
                 set filename [ join [ lindex $ConceptsFile($concept$subconcept) $i ] " " ]
-                set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+                set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR_www $filename $filename ]
                 puts $concepts_file {<TABLE>}
                 puts $concepts_file {<TD WIDTH=192 ><BR></TD>}
                 puts $concepts_file {<TD WIDTH=300 >}
@@ -331,7 +331,7 @@ proc write_concepts_file { } {
 
 proc write_routines_file { } {
     global concepts  ConceptsFile Concepts routines Routines RoutinesFile 
-    global Processors Comment PETSC_DIR files html
+    global Processors Comment PETSC_DIR_www files html
     
     exec /bin/rm -f docs/www/routines.html
     set routines_file [ open docs/www/routines.html w ]
@@ -367,7 +367,7 @@ proc write_routines_file { } {
         set i 0
         while { $i < $n } {
             set filename [ join [ lindex $RoutinesFile($routine) $i ] " " ]
-            set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+            set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR_www $filename $filename ]
             puts $routines_file {<TABLE>}
             puts $routines_file {<TD WIDTH=192 ><BR></TD>}
             puts $routines_file {<TD WIDTH=300 >}
@@ -401,7 +401,7 @@ proc write_routines_file { } {
 proc main { }  {
     global  concepts ConceptsFile Concepts 
     global routines Routines RoutinesFile 
-    global Processors Comment PETSC_DIR files html
+    global Processors Comment PETSC_DIR_www files html
     global sub argc argv env
 
     set PETSC_HOME $env(PETSC_DIR)
@@ -413,9 +413,10 @@ proc main { }  {
     if { $argc == 1  && ([lindex $argv 0 ] == "-www" || [lindex $argv 0 ] == "-wwwhome") } {
         set UPDATE_WWW true
     }
-    set PETSC_DIR ../../..
+    set PETSC_DIR_www ../..
     if { $argc == 1  &&  [lindex $argv 0 ] == "-wwwhome" } {
-        set PETSC_DIR ftp://info.mcs.anl.gov/pub/petsc/petsc
+        set PETSC_DIR_www     ftp://info.mcs.anl.gov/pub/petsc/petsc
+        set PETSC_DIR_www_man ftp://info.mcs.anl.gov/pub/petsc/petsc
     }   
     
     # All the tutorial files containg formated comments
@@ -513,7 +514,7 @@ proc main { }  {
         puts "returning early.. not updating wwwmanpages pages."
         return 0
     }
-    puts  "$PETSC_DIR"
+    puts  "$PETSC_DIR_www"
     # Update wwwmanpages
     puts  "updating wwwmanpages pages."
 
@@ -544,7 +545,7 @@ proc main { }  {
         close $routines_fileid        
         while { $i < $n } {
             set filename [ join [ lindex $RoutinesFile($routine) $i ] " " ]
-            set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+            set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR_www_man $filename $filename ]
             set buf [format "%s%s%s\n" $buf $temp "<BR>"]
             set i [ expr $i + 1 ]
         }
