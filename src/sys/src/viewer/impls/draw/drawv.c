@@ -264,6 +264,7 @@ PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v,const char display[],const c
 +  -draw_type x or null
 .  -nox - Disables all x-windows output
 .  -display <name> - Specifies name of machine for the X display
+.  -geometry <x,y,w,h> - allows setting the window location and size
 -  -draw_pause <pause> - Sets time (in seconds) that the
      program pauses after PetscDrawPause() has been called
      (0 is default, -1 implies until user input).
