@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.1 1995/09/02 21:18:27 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.9 1995/09/03 19:21:24 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -210,6 +210,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 
   ndim = user->ndim;
   ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
+  ierr = MatZeroEntries(*H); CHKERRQ(ierr);
   user->xvec = X; /* Set location of vector */
 
   for (j=0; j<ndim; j++) {   /* loop over columns */
@@ -236,6 +237,8 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
     }
     ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
   }
+  ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Modify diagonal if necessary */
   ierr = SNESGetMethodFromContext(snes,&method); CHKERRQ(ierr);
@@ -244,10 +247,10 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
     printf("  gamma1 = %g\n",gamma1);
     for (i=0; i<ndim; i++) {
       ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADDVALUES); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
     }
   }
-  ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -294,8 +297,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
-  int    ierr, nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
-  int    ind, i, j, k;
+  int    ierr, nx = user->mx, ny = user->my, ind, i, j, k;
   double hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5, cdiv3;
   double zero = 0.0, v, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
   Scalar val, *x;
@@ -389,18 +391,17 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 int HessianProduct1(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int    nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
-  int    i, j, k, ierr, ind;
-  double p5 = 0.5, one = 1.0, zero = 0.0, hx = user->hx, hy = user->hy;
-  double v, vb, vl, vr, vt, hxhx, hyhy;
-  Scalar val, area, *x, *s;
+  int    nx = user->mx, ny = user->my, i, j, k, ierr, ind;
+  double p5 = 0.5, one = 1.0, hx = user->hx, hy = user->hy;
+  double v, vb, vl, vr, vt, hxhx, hyhy, zero = 0.0;
+  Scalar val, area, *x, *s, szero = 0.0;
 
   hxhx = one/(hx*hx);
   hyhy = one/(hy*hy);
 
   ierr = VecGetArray(user->xvec,&x); CHKERRQ(ierr);
   ierr = VecGetArray(svec,&s); CHKERRQ(ierr);
-  ierr = VecSet((Scalar*)&zero,y); CHKERRQ(ierr);
+  ierr = VecSet(&szero,y); CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
   for (j=-1; j<ny; j++) {
@@ -451,8 +452,8 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
        }
     }
   }
-  ierr = VecRestoreArray(svec,(Scalar**)&s); CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->xvec,(Scalar**)&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(svec,&s); CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->xvec,&x); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(y); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y); CHKERRQ(ierr);
 
@@ -504,8 +505,7 @@ int FormInitialGuess2(SNES snes,Vec X,void *ptr)
 int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
-  int    ierr, nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
-  int    ind, i, j, k;
+  int    ierr, nx = user->mx, ny = user->my, ind, i, j, k;
   double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy, fl, fu, area;
   double *bottom, *top, *left, *right;
   double v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, dvdx, dvdy;
@@ -630,8 +630,7 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 int HessianProduct2(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int    nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
-  int    i, j, k, ierr, ind;
+  int    nx = user->mx, ny = user->my, i, j, k, ierr, ind;
   double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
   double dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, z, zb, zl, zr, zt;
   double *bottom, *top, *left, *right;
