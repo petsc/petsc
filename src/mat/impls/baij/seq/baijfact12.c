@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.10 2001/04/06 04:20:08 buschelm Exp bsmith $*/
+/*$Id: baijfact12.c,v 1.11 2001/04/07 19:09:57 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -16,7 +16,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
     Default Version for when blocks are 4 by 4 Using natural ordering
 */
   Mat         C = *B;
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   int         ierr,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
   int         *ajtmpold,*ajtmp,nz,row;
   int         *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
@@ -142,11 +142,12 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   C->assembled = PETSC_TRUE;
   PetscLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
+}
 
 #else
 
 #include "xmmintrin.h"
-EXTERN int Kernel_A_gets_inverse_A_4SSE(float *);
+EXTERN int Kernel_A_gets_inverse_A_4SSE(float*);
 
 
 /*
@@ -158,7 +159,7 @@ EXTERN int Kernel_A_gets_inverse_A_4SSE(float *);
 int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
 {
   Mat         C = *B;
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   int         ierr,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
   int         *ajtmpold,*ajtmp,nz,row;
   int         *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
@@ -176,14 +177,14 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
     for  (j=0; j<nz; j++) {
       /* zero out the accumulators */
       x = rtmp+16*ajtmp[j]; 
-      _mm_storel_pi((__m64 *)(x   ),_mm_setzero_ps());
-      _mm_storeh_pi((__m64 *)(x+2 ),_mm_setzero_ps());
-      _mm_storel_pi((__m64 *)(x+4 ),_mm_setzero_ps());
-      _mm_storeh_pi((__m64 *)(x+6 ),_mm_setzero_ps());
-      _mm_storel_pi((__m64 *)(x+8 ),_mm_setzero_ps());
-      _mm_storeh_pi((__m64 *)(x+10),_mm_setzero_ps());
-      _mm_storel_pi((__m64 *)(x+12),_mm_setzero_ps());
-      _mm_storeh_pi((__m64 *)(x+14),_mm_setzero_ps());
+      _mm_storel_pi((__m64*)(x),   _mm_setzero_ps());
+      _mm_storeh_pi((__m64*)(x+2), _mm_setzero_ps());
+      _mm_storel_pi((__m64*)(x+4), _mm_setzero_ps());
+      _mm_storeh_pi((__m64*)(x+6), _mm_setzero_ps());
+      _mm_storel_pi((__m64*)(x+8), _mm_setzero_ps());
+      _mm_storeh_pi((__m64*)(x+10),_mm_setzero_ps());
+      _mm_storel_pi((__m64*)(x+12),_mm_setzero_ps());
+      _mm_storeh_pi((__m64*)(x+14),_mm_setzero_ps());
     }
     /* load in initial (unfactored row) */
     nz       = ai[i+1] - ai[i];
@@ -193,24 +194,24 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
       __m128 tmp;
       x = rtmp+16*ajtmpold[j];
       /* Copy v block into x block */ 
-      _mm_storel_pi((__m64 *)(x   ),_mm_loadl_pi(tmp,(__m64 *)(v   )));
-      _mm_storeh_pi((__m64 *)(x+2 ),_mm_loadh_pi(tmp,(__m64 *)(v+2 )));
-      _mm_storel_pi((__m64 *)(x+4 ),_mm_loadl_pi(tmp,(__m64 *)(v+4 )));
-      _mm_storeh_pi((__m64 *)(x+6 ),_mm_loadh_pi(tmp,(__m64 *)(v+6 )));
-      _mm_storel_pi((__m64 *)(x+8 ),_mm_loadl_pi(tmp,(__m64 *)(v+8 )));
-      _mm_storeh_pi((__m64 *)(x+10),_mm_loadh_pi(tmp,(__m64 *)(v+10)));
-      _mm_storel_pi((__m64 *)(x+12),_mm_loadl_pi(tmp,(__m64 *)(v+12)));
-      _mm_storeh_pi((__m64 *)(x+14),_mm_loadh_pi(tmp,(__m64 *)(v+14)));
+      _mm_storel_pi((__m64*)(x),   _mm_loadl_pi(tmp,(__m64*)(v)));
+      _mm_storeh_pi((__m64*)(x+2), _mm_loadh_pi(tmp,(__m64*)(v+2)));
+      _mm_storel_pi((__m64*)(x+4), _mm_loadl_pi(tmp,(__m64*)(v+4)));
+      _mm_storeh_pi((__m64*)(x+6), _mm_loadh_pi(tmp,(__m64*)(v+6)));
+      _mm_storel_pi((__m64*)(x+8), _mm_loadl_pi(tmp,(__m64*)(v+8)));
+      _mm_storeh_pi((__m64*)(x+10),_mm_loadh_pi(tmp,(__m64*)(v+10)));
+      _mm_storel_pi((__m64*)(x+12),_mm_loadl_pi(tmp,(__m64*)(v+12)));
+      _mm_storeh_pi((__m64*)(x+14),_mm_loadh_pi(tmp,(__m64*)(v+14)));
       v += 16;
     }
     row = *ajtmp++;
     while (row < i) {
       pc  = rtmp + 16*row;
       /* Load block from lower triangle */ 
-      P0 = _mm_loadh_pi(_mm_loadl_pi(P0,(__m64 *)(pc   )),(__m64 *)(pc+2 ));
-      P1 = _mm_loadh_pi(_mm_loadl_pi(P1,(__m64 *)(pc+4 )),(__m64 *)(pc+6 ));
-      P2 = _mm_loadh_pi(_mm_loadl_pi(P2,(__m64 *)(pc+8 )),(__m64 *)(pc+10));
-      P3 = _mm_loadh_pi(_mm_loadl_pi(P3,(__m64 *)(pc+12)),(__m64 *)(pc+14));
+      P0 = _mm_loadh_pi(_mm_loadl_pi(P0,(__m64*)(pc)),   (__m64*)(pc+2));
+      P1 = _mm_loadh_pi(_mm_loadl_pi(P1,(__m64*)(pc+4)), (__m64*)(pc+6));
+      P2 = _mm_loadh_pi(_mm_loadl_pi(P2,(__m64*)(pc+8)), (__m64*)(pc+10));
+      P3 = _mm_loadh_pi(_mm_loadl_pi(P3,(__m64*)(pc+12)),(__m64*)(pc+14));
       /* Compare block to zero block */ 
       COMP0 = _mm_cmpneq_ps(P0,_mm_setzero_ps());
       COMP1 = _mm_cmpneq_ps(P1,_mm_setzero_ps());
@@ -219,8 +220,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
       /* If block is nonzero ... */ 
       if (_mm_movemask_ps(_mm_or_ps(_mm_or_ps(COMP0,COMP1),_mm_or_ps(COMP2,COMP3)))) {
         pv = ba + 16*diag_offset[row];
-        _mm_prefetch((char *)(pv+16),_MM_HINT_T0);
-        _mm_prefetch((char *)(pv+24),_MM_HINT_T0);
+        _mm_prefetch((char*)(pv+16),_MM_HINT_T0);
+        _mm_prefetch((char*)(pv+24),_MM_HINT_T0);
         pj = bj + diag_offset[row] + 1;
 
         /* Form Multiplier, one column at a time */
@@ -229,72 +230,72 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
         M0 = _mm_add_ps(_mm_mul_ps(P2,_mm_load_ps1(pv+2)),M0);
         M0 = _mm_add_ps(_mm_mul_ps(P3,_mm_load_ps1(pv+3)),M0);
 
-        _mm_storel_pi((__m64 *)(pc  ),M0);
-        _mm_storeh_pi((__m64 *)(pc+2),M0);
+        _mm_storel_pi((__m64*)(pc),  M0);
+        _mm_storeh_pi((__m64*)(pc+2),M0);
         
         M1 = _mm_mul_ps(P0,_mm_load_ps1(pv+4));
         M1 = _mm_add_ps(_mm_mul_ps(P1,_mm_load_ps1(pv+5)),M1);
         M1 = _mm_add_ps(_mm_mul_ps(P2,_mm_load_ps1(pv+6)),M1);
         M1 = _mm_add_ps(_mm_mul_ps(P3,_mm_load_ps1(pv+7)),M1);
         
-        _mm_storel_pi((__m64 *)(pc+4),M1);
-        _mm_storeh_pi((__m64 *)(pc+6),M1);
+        _mm_storel_pi((__m64*)(pc+4),M1);
+        _mm_storeh_pi((__m64*)(pc+6),M1);
         
         M2 = _mm_mul_ps(P0,_mm_load_ps1(pv+8));
         M2 = _mm_add_ps(_mm_mul_ps(P1,_mm_load_ps1(pv+9)),M2);
         M2 = _mm_add_ps(_mm_mul_ps(P2,_mm_load_ps1(pv+10)),M2);
         M2 = _mm_add_ps(_mm_mul_ps(P3,_mm_load_ps1(pv+11)),M2);
   
-        _mm_storel_pi((__m64 *)(pc+8 ),M2);
-        _mm_storeh_pi((__m64 *)(pc+10),M2);
+        _mm_storel_pi((__m64*)(pc+8), M2);
+        _mm_storeh_pi((__m64*)(pc+10),M2);
 
         M3 = _mm_mul_ps(P0,_mm_load_ps1(pv+12));
         M3 = _mm_add_ps(_mm_mul_ps(P1,_mm_load_ps1(pv+13)),M3);
         M3 = _mm_add_ps(_mm_mul_ps(P2,_mm_load_ps1(pv+14)),M3);
         M3 = _mm_add_ps(_mm_mul_ps(P3,_mm_load_ps1(pv+15)),M3);
 
-        _mm_storel_pi((__m64 *)(pc+12),M3);
-        _mm_storeh_pi((__m64 *)(pc+14),M3);
+        _mm_storel_pi((__m64*)(pc+12),M3);
+        _mm_storeh_pi((__m64*)(pc+14),M3);
 
         /* Update the row: */
         nz = bi[row+1] - diag_offset[row] - 1;
         pv += 16;
         for (j=0; j<nz; j++) {
-          _mm_prefetch((char *)(pv+16),_MM_HINT_T0);
-          _mm_prefetch((char *)(pv+24),_MM_HINT_T0);
+          _mm_prefetch((char*)(pv+16),_MM_HINT_T0);
+          _mm_prefetch((char*)(pv+24),_MM_HINT_T0);
           x = rtmp + 16*pj[j];
           /* x:=x-m*pv, One column at a time */
-          X0 = _mm_sub_ps(_mm_load_ps(x),_mm_mul_ps(M0,_mm_load_ps1(pv  )));
+          X0 = _mm_sub_ps(_mm_load_ps(x),_mm_mul_ps(M0,_mm_load_ps1(pv)));
           X0 = _mm_sub_ps(X0,_mm_mul_ps(M1,_mm_load_ps1(pv+1)));
           X0 = _mm_sub_ps(X0,_mm_mul_ps(M2,_mm_load_ps1(pv+2)));
           X0 = _mm_sub_ps(X0,_mm_mul_ps(M3,_mm_load_ps1(pv+3)));
 
-          _mm_storel_pi((__m64 *)(x  ),X0);
-          _mm_storeh_pi((__m64 *)(x+2),X0);
+          _mm_storel_pi((__m64*)(x),  X0);
+          _mm_storeh_pi((__m64*)(x+2),X0);
           
           X1 = _mm_sub_ps(_mm_load_ps(x+4),_mm_mul_ps(M0,_mm_load_ps1(pv+4)));
           X1 = _mm_sub_ps(X1,_mm_mul_ps(M1,_mm_load_ps1(pv+5)));
           X1 = _mm_sub_ps(X1,_mm_mul_ps(M2,_mm_load_ps1(pv+6)));
           X1 = _mm_sub_ps(X1,_mm_mul_ps(M3,_mm_load_ps1(pv+7)));
           
-          _mm_storel_pi((__m64 *)(x+4),X1);
-          _mm_storeh_pi((__m64 *)(x+6),X1);
+          _mm_storel_pi((__m64*)(x+4),X1);
+          _mm_storeh_pi((__m64*)(x+6),X1);
           
           X2 = _mm_sub_ps(_mm_load_ps(x+8),_mm_mul_ps(M0,_mm_load_ps1(pv+8)));
-          X2 = _mm_sub_ps(X2,_mm_mul_ps(M1,_mm_load_ps1(pv+9 )));
+          X2 = _mm_sub_ps(X2,_mm_mul_ps(M1,_mm_load_ps1(pv+9)));
           X2 = _mm_sub_ps(X2,_mm_mul_ps(M2,_mm_load_ps1(pv+10)));
           X2 = _mm_sub_ps(X2,_mm_mul_ps(M3,_mm_load_ps1(pv+11)));
           
-          _mm_storel_pi((__m64 *)(x+8 ),X2);
-          _mm_storeh_pi((__m64 *)(x+10),X2);
+          _mm_storel_pi((__m64*)(x+8), X2);
+          _mm_storeh_pi((__m64*)(x+10),X2);
           
           X3 = _mm_sub_ps(_mm_load_ps(x+12),_mm_mul_ps(M0,_mm_load_ps1(pv+12)));
           X3 = _mm_sub_ps(X3,_mm_mul_ps(M1,_mm_load_ps1(pv+13)));
           X3 = _mm_sub_ps(X3,_mm_mul_ps(M2,_mm_load_ps1(pv+14)));
           X3 = _mm_sub_ps(X3,_mm_mul_ps(M3,_mm_load_ps1(pv+15)));
           
-          _mm_storel_pi((__m64 *)(x+12),X3);
-          _mm_storeh_pi((__m64 *)(x+14),X3);
+          _mm_storel_pi((__m64*)(x+12),X3);
+          _mm_storeh_pi((__m64*)(x+14),X3);
 
           pv   += 16;
         }
@@ -310,14 +311,14 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
       __m128 tmp;
       x  = rtmp+16*pj[j];
       /* Copy x block back into pv block */
-      _mm_storel_pi((__m64 *)(pv   ),_mm_loadl_pi(tmp,(__m64 *)(x   )));
-      _mm_storeh_pi((__m64 *)(pv+2 ),_mm_loadh_pi(tmp,(__m64 *)(x+2 )));
-      _mm_storel_pi((__m64 *)(pv+4 ),_mm_loadl_pi(tmp,(__m64 *)(x+4 )));
-      _mm_storeh_pi((__m64 *)(pv+6 ),_mm_loadh_pi(tmp,(__m64 *)(x+6 )));
-      _mm_storel_pi((__m64 *)(pv+8 ),_mm_loadl_pi(tmp,(__m64 *)(x+8 )));
-      _mm_storeh_pi((__m64 *)(pv+10),_mm_loadh_pi(tmp,(__m64 *)(x+10)));
-      _mm_storel_pi((__m64 *)(pv+12),_mm_loadl_pi(tmp,(__m64 *)(x+12)));
-      _mm_storeh_pi((__m64 *)(pv+14),_mm_loadh_pi(tmp,(__m64 *)(x+14)));
+      _mm_storel_pi((__m64*)(pv),   _mm_loadl_pi(tmp,(__m64*)(x)));
+      _mm_storeh_pi((__m64*)(pv+2), _mm_loadh_pi(tmp,(__m64*)(x+2)));
+      _mm_storel_pi((__m64*)(pv+4), _mm_loadl_pi(tmp,(__m64*)(x+4)));
+      _mm_storeh_pi((__m64*)(pv+6), _mm_loadh_pi(tmp,(__m64*)(x+6)));
+      _mm_storel_pi((__m64*)(pv+8), _mm_loadl_pi(tmp,(__m64*)(x+8)));
+      _mm_storeh_pi((__m64*)(pv+10),_mm_loadh_pi(tmp,(__m64*)(x+10)));
+      _mm_storel_pi((__m64*)(pv+12),_mm_loadl_pi(tmp,(__m64*)(x+12)));
+      _mm_storeh_pi((__m64*)(pv+14),_mm_loadh_pi(tmp,(__m64*)(x+14)));
       pv += 16;
     }
     /* invert diagonal block */
@@ -331,5 +332,5 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   C->assembled = PETSC_TRUE;
   PetscLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
-#endif
 }
+#endif
