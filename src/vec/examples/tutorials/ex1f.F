@@ -1,7 +1,7 @@
 !
-!    "$Id: ex1f.F,v 1.14 1998/04/15 18:06:49 balay Exp curfman $"
+!    "$Id: ex1f.F,v 1.15 1998/04/16 02:50:55 curfman Exp curfman $"
 !
-!   Usage:  mpirun ex1f [-help] [all PETSc options] 
+!   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;

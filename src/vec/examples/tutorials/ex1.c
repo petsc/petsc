@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.46 1998/04/15 15:01:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.47 1998/04/16 02:51:06 curfman Exp curfman $";
 #endif
 
-/* Usage:  mpirun ex1 [-help] [all PETSc options] */
+/* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
 static char help[] = "Demonstrates various vector routines.\n\n";
 

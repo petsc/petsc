@@ -1,10 +1,10 @@
 
-!    "$Id: ex2f.F,v 1.46 1998/03/30 22:03:20 balay Exp balay $";
+!    "$Id: ex2f.F,v 1.47 1998/04/15 18:01:49 balay Exp curfman $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
 !
-!  Program usage: mpirun ex2f [-help] [all PETSc options]
+!  Program usage: mpirun -np <procs> ex2f [-help] [all PETSc options]
 !
 !/*T
 !  Concepts: SLES^Solving a system of linear equations (basic parallel example);
