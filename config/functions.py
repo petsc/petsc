@@ -55,11 +55,12 @@ class Configure(config.base.Configure):
           self.framework.argDB['LIBS'] += ' -l'+library
         else:
           self.framework.argDB['LIBS'] += library
-    if self.checkLink(includes, body):
-      self.addDefine(self.getDefineName(funcName), 1)
+    found = self.checkLink(includes, body)
     if libraries:
       self.framework.argDB['LIBS'] = oldLibs
-    return
+    if found:
+      self.addDefine(self.getDefineName(funcName), 1)
+    return found
 
   def checkMemcmp(self):
     '''Check for 8-bit clean memcmp'''
