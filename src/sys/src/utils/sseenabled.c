@@ -125,7 +125,7 @@ int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   if (*lflag) {
     ierr = PetscSSEOSEnabledTest(lflag);CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(gflag,lflag,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(lflag,gflag,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
