@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.6 1995/10/19 22:26:52 curfman Exp bsmith $";
+C    "$Id: ex7.F,v 1.7 1995/11/01 19:11:21 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -30,7 +30,7 @@ C
 
 C Create and assemble matrix
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-     *                      m*n,m*n,0,0,0,0,A,ierr)
+     *                      m*n,m*n,0,PetscNull,0,PetscNull,A,ierr)
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
       do 10, II=Istart,Iend-1
         v = -1.0
