@@ -12,7 +12,7 @@ chkpetsc_dir:
           echo "Your PETSC_DIR does not match the directory you are in";\
           echo "******************************************************" ; \
         fi
-	
+
 chklib_dir:
 	@if [ ${BOPT}foo = foo ] ; then \
 	  echo "*********************** ERROR ************************" ; \
@@ -353,7 +353,7 @@ fortranstubs:
 .c.o .cpp.o .cc.o .C.o .ad.o: 
 	@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
-  	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir;\
+	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir;\
         fi
 	-@complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
         if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
@@ -623,7 +623,7 @@ html:
          done
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
-          cat ${PETSC_DIR}/docs/manualpages/sec/bop.${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          cat ${PETSC_DIR}/docs/manualpages/sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
           echo "<p>" >> $${loc}/index.html
 	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
             if [ "${EXAMPLESC}" != "" ] ; then \
