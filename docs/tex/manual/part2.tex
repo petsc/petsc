@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.268 1998/04/22 21:56:38 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.269 1998/04/24 01:02:15 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -52,15 +52,15 @@ of components to store on the local processor, and {\tt M} is the
 total number of vector components.  Either the local or global 
 dimension, but not both, can be set to {\tt PETSC\_DECIDE} to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
-%More generally, one can use the routine \findex{VecCreate()}
-%\begin{verbatim}
-%   ierr = VecCreate(MPI_Comm comm,int M,Vec *v);
-%\end{verbatim}
-%which automatically generates the appropriate vector type 
-%(sequential or parallel) over all processors in {\tt comm}.
-%The option {\tt -vec\_mpi} can be used in conjunction with 
-%{\tt VecCreate()} to specify the use of MPI
-%vectors for the uniprocessor case.
+More generally, one can use the routine \findex{VecCreate()}
+\begin{verbatim}
+   ierr = VecCreate(MPI_Comm comm,int M,Vec *v);
+\end{verbatim}
+which automatically generates the appropriate vector type 
+(sequential or parallel) over all processors in {\tt comm}.
+The option {\tt -vec\_mpi} can be used in conjunction with 
+{\tt VecCreate()} to specify the use of MPI
+vectors for the uniprocessor case.
 
 We emphasize that all processors in {\tt comm} {\em must} call the
 vector creation routines, since these routines are collective over all
@@ -306,8 +306,8 @@ In many applications it is desirable to work with one or more
 etc.  \sindex{global numbering} Doing so in a parallel environment is
 complicated by the fact that each processor cannot keep complete lists
 of the mappings between different orderings. In addition, the
-orderings used in the PETSc linear algebra routines may not correspond
-to the ``natural'' orderings for the application.
+orderings used in the PETSc linear algebra routines (often contiguous 
+ranges) may not correspond to the ``natural'' orderings for the application.
 
 PETSc provides certain utility routines that allow one to deal cleanly
 and efficiently with the various orderings. To define a new application ordering
@@ -520,7 +520,7 @@ denote the processor partition in each direction; {\tt m*n} must equal
 the number of processors in the MPI communicator, {\tt comm}.  
 Instead of specifying the processor layout, one may use
 {\tt PETSC\_DECIDE} for {\tt m} and {\tt n} 
-so that PETSc will determine the partition. The type of
+so that PETSc will determine the partition using MPI. The type of
 periodicity of the array is specified by {\tt wrap}, which can be 
 {\tt DA\_NONPERIODIC} \findex{DA_NONPERIODIC} (no periodicity), 
 {\tt DA\_XYPERIODIC} \findex{DA_XYPERIODIC} (periodic in
@@ -3248,7 +3248,7 @@ unconstrained minimization problems, and thus are not repeated here.
 The directory {\tt \$\{PETSC\_DIR\}/src/snes/examples/tests/umin} provides
 examples of solving unconstrained minimization problems. 
 
-\section{The Various Nonlinear Solvers}
+\section{The Nonlinear Solvers}
 \label{sec:nlsolvers}
 
 As summarized in Table~\ref{tab:snesdefaults}, SNES includes several
@@ -3439,7 +3439,7 @@ Once can cancel all hardwired monitoring routines for SNES at runtime with
 {\tt -snes\_cancelmonitors}. \findex{-snes_cancelmonitors}
 
 As the Newton method converges so that the residual norm is small,
-say $ 10^{-10} $ many of the final digits printed with the {\tt -snes\_monitor}
+say $ 10^{-10} $, many of the final digits printed with the {\tt -snes\_monitor}
 option are meaningless. Worse, they are different on different 
 machines; due to different round-off rules used by, say, the IBM RS6000
 and the Sun Sparc. This makes testing between different machines
@@ -3575,18 +3575,18 @@ product approximation with the command
 \end{verbatim}
 \findex{SNESSetMatrixFreeParameters()}
 The parameter {\tt rerror} should be set to the square root of the 
-relative error in the function evaluations, $e_{rel}$; the default is $ 1.0e-8 $ , which assumes
+relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , which assumes
 that the functions are evaluated to full double precision accuracy. 
 The 
 second parameter, {\tt umin} (or $u_{min}$), is a bit more involved; its default is 
-$ 1.0e-8 $ . The Jacobian-vector product is approximated via the formula
+$ 10^{-8} $ . The Jacobian-vector product is approximated via the formula
 \[
     F'(u) a \approx \frac{F(u + h*a) - F(u)}{h}
 \]
 where $ h $ is computed via 
 \begin{eqnarray*}
-        h = e_{rel}*u^{T}a/||a||^2                       &    \hbox{if}  |u'a| > u_{min}*||a||_{1} \\
-          = e_{rel}*u_{min}*sign(u^{T}a)*||a||_{1}/||a||^2  &    \hbox{otherwise}.
+        h = e_{rel}*u^{T}a/||a||^2_2                       &    \hbox{if}  |u'a| > u_{min}*||a||_{1} \\
+          = e_{rel}*u_{min}*sign(u^{T}a)*||a||_{1}/||a||^2_2  &    \hbox{otherwise}.
 \end{eqnarray*}
 This approach is taken from Brown and Saad \cite{brownsaad:90}.
 These parameters can also be set from the options database with 
@@ -3746,17 +3746,17 @@ finite difference Jacobian approximation.  These are set with the command
 \end{verbatim}
 \findex{MatFDColoringSetParameters()}
 The parameter {\tt rerror} is the square root of 
-the relative error in the function evaluations, $e_{rel}$; the default is $ 1.0e-8 $ , which assumes
+the relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , which assumes
 that the functions are evaluated to full double-precision accuracy. The 
 second parameter, {\tt umin}, is a bit more involved; its default is 
-$ 1.0e-8 $ .  Column $i$ of the Jacobian matrix (denoted by $F\_{:i}$) is 
+$ 10e^{-8} $ .  Column $i$ of the Jacobian matrix (denoted by $F\_{:i}$) is 
 approximated by the formula
 \[
     F'_{:i} \approx \frac{F(u + h*dx_{i}) - F(u)}{h}
 \]
 where $ h $ is computed via 
 \begin{eqnarray*}
-        h = e_{rel}*u_{i}             &    \hbox{if }  u_{i} > u_{min} \\
+        h = e_{rel}*u_{i}             &    \hbox{if }  |u_{i}| > u_{min} \\
         h = e_{rel}*u_{min}*sign(u_{i})  &    \hbox{otherwise}.
 \end{eqnarray*}
 These parameters may be set from the options database with 
@@ -3861,7 +3861,7 @@ One can set the solution method with the routine
 {\tt TS\_BEULER}, and {\tt TS\_PSEUDO}
 \findex{TS_EULER} \findex{TS_BEULER} \findex{TS_PSEUDO}
 or the command line option
-{\tt -ts\_type euler, beuler}. \findex{-ts_type} \sindex{Euler}
+{\tt -ts\_type euler, beuler, pseudo}. \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
 
@@ -4271,7 +4271,7 @@ commands \findex{DrawAxisSetColors()} \findex{DrawAxisSetLabels()}
 
 It is possible to turn off all graphics with the option \findex{-nox}
 {\tt -nox}. This
-will prevent any windows from being open or any drawing actions to be done.
+will prevent any windows from being opened or any drawing actions to be done.
 This is useful for running large jobs when the graphics overhead is too
 large, or for timing.
 
@@ -4292,7 +4292,7 @@ PETSc contains some code to generate output in Postscript and VRML (Virtual
 Reality Modeling Language).  This code is currently undergoing revision, but
 is available for the adventurous.  Stay tuned for future developments.
 
-\section{Disabling Graphics}
+\section{Disabling Graphics at Compile Time}
 
 \sindex{graphics, disabling}
 To disable all x-window-based graphics, edit the file
@@ -4308,10 +4308,9 @@ Most of the functionality of PETSc can be obtained by people who
 program purely in Fortran 77 or Fortran 90.  Note, however, that we recommend the
 use of C and/or C++ because these languages contain several extremely powerful
 concepts that the Fortran77/90 family does not. 
-
 The PETSc Fortran interface works with both F77 and F90 compilers.
 
-Since Fortran does not provide type checking of routine input/output
+Since Fortran77 does not provide type checking of routine input/output
 parameters, we find that many errors encountered within PETSc Fortran
 programs result from accidentally using incorrect calling sequences.
 Such mistakes are immediately detected during compilation when using
@@ -4572,6 +4571,17 @@ The macros are used, for example, as follows:
    dabsc_(&n,x,y); /* call the Fortran function */
 \end{verbatim}
 
+\findex{PetscInitializeFortran()} 
+Another useful routine for mixed language programming with PETSc is
+{\tt PetscInitializeFortran()}, which should be used if one is using a
+C main program that calls Fortran routines that in turn call PETSc
+routines.  In this case, {\tt PetscInitializeFortran()} should be
+called from C after the call to {\tt PetscInitialize()} to initialize
+some of the default viewers, communicators, etc.  for use in the
+Fortran.  {\tt PetscInitializeFortran()} is {\em not} needed if a
+user's main program is written in Fortran; in this case, just calling
+{\tt PetscInitialize()} in the main program is sufficient.
+
 \subsection{Passing Null Pointers}
 
 In several PETSc C functions, one has the option of passing a 0 (null)
@@ -4592,7 +4602,7 @@ Fortran:
 This Fortran requirement is inconsistent with C, where the 
 user can employ {\tt PETSC\_NULL} for all null arguments. The reason
 for this difference is that some machines (e.g., the Cray T3D)
-handle strings in Fortran in an unusual manner, so that
+handle strings in Fortran in a manner different from numerics, so that
 the only way we can provide support for portable code
 is to require the use of {\tt PETSC\_NULL\_CHARACTER}.
 
@@ -4825,7 +4835,7 @@ logfile} stores profiling information for later interpretation with
 PETScView; if {\tt logfile} is not given, the file {\tt
 Log.processor\_rank} is used, where {\tt processor\_rank} is 0 for the
 first processor, etc.  As discussed in Section~\ref{sec:mpelogs},
-additional profilng can be done with of MPE.
+additional profilng can be done with MPE.
 
 \subsection{Interpreting -log\_summary Output: The Basics}
 
@@ -5565,7 +5575,7 @@ Below we briefly describe some common problems and possibilities for
 overcoming them.
 
 \begin{itemize}
-\item {\bf Problem to large for physical memory size}: When timing a program, one
+\item {\bf Problem too large for physical memory size}: When timing a program, one
       should always leave at least a ten percent margin between the total
       memory a process is using and the physical size of 
       the machine's memory. One way to estimate the amount of 
@@ -5760,7 +5770,7 @@ predefined viewers:
       is similar to {\tt VIEWER\_STDOUT\_SELF}, except that 
       parallel objects are printed in the natural order that would occur
       if only a single processor were in use for the entire problem;
-      this viewer uses the communicator {\tt MPI\_COMM\_WORLD}.
+      this viewer uses the communicator {\tt PETSC\_COMM\_WORLD}.
 \item {\tt VIEWER\_DRAWX\_WORLD} \findex{VIEWER_DRAWX_WORLD} causes the 
       object to be drawn in a default X window.
 \item {\tt VIEWER\_DRAWX\_SELF} \findex{VIEWER_DRAWX_SELF} causes the 

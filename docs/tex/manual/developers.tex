@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.3 1998/04/22 18:47:12 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.4 1998/04/27 19:18:43 bsmith Exp curfman $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -56,34 +56,36 @@ http://www.mcs.anl.gov/petsc
 \noindent {\bf Abstract:} 
 
 \medskip \medskip
-This manual describes how to develop library codes that are compatible and
-may be used directly and easily with PETSc 2.0. It assumes that you are 
-familar with PETSc, have a copy of the PETSc users manual and access to all its
-source code and documentation (available via http://www.mcs.anl.gov/petsc).
+This manual describes how to develop library codes that are compatible
+and may be used directly and easily with PETSc 2.0.  The text assumes
+that you are familar with PETSc, have a copy of the PETSc users
+manual, and have access to all source code and documentation
+(available via h{\tt ttp://www.mcs.anl.gov/petsc}).
 
-PETSc is designed using a component object oriented architecture. This means that
-libraries consist of {\em objects} that have a certain, defined functionality. This
-document defines how these objects are implemented.
+PETSc is designed using a component-based object-oriented
+architecture. This means that libraries consist of {\em objects} that
+have a certain, defined functionality. This document defines how these
+objects are implemented.
 
 \vspace{1cm}
 
-This is the first draft of the PETSc developers users manual, therefore it is
-very sketchy and incomplete. You are welcome to direct all commponents and 
-questions regarding PETSc development to {\tt petsc-developers@mcs.anl.gov}.
-Note that all {\em bug reports and questions regarding the use of PETSc} should
-continue to be directed to {\tt petsc-maint@mcs.anl.gov}.
+This is the first draft of the PETSc developers users manual;
+therefore, it is very sketchy and incomplete. You are welcome to
+direct all comments and questions regarding PETSc design and
+development to {\tt petsc-developers@mcs.anl.gov}.  Note that all {\em
+bug reports and questions regarding the use of PETSc} should continue
+to be directed to {\tt petsc-maint@mcs.anl.gov}.
 
 The PETSc team is part of a larger group (mostly at the DOE labs) funded by 
 the DOE2000 initiative to develop a Common Component Architecture (CCA). In addition,
 we are involved in a related DOE lab initiative to develop a standard object 
-interface for scalable linear solvers. Already as a result of these efforts
-we have modifid the PETSc software design and will continue to evolve PETSc as
-these initiatives continue.  Part of these projects will allow C and C++ objects
+interface for scalable linear solvers.  Already as a result of these efforts
+we have modified the PETSc software design and will continue to evolve PETSc as
+these initiatives progress.  Part of these projects will allow C and C++ objects
 to interoperate in the same application, through the use of object wrappers; this
-work is still experimental and thus is not yet part of PETSc.
+work is still experimental and thus is not yet part of PETSc. 
 
-
-% $Id: developers.tex,v 1.3 1998/04/22 18:47:12 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.4 1998/04/27 19:18:43 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -191,7 +193,7 @@ struct _p_<component> {
   char*            name;                                    
   char             *prefix;                                 
   void**           fortran_func_pointers;       
-  COMPONENT SPECIFIC DATASTRUCTURES
+  COMPONENT-SPECIFIC DATASTRUCTURES
 }; 
 
 \end{verbatim}
@@ -272,7 +274,8 @@ which returns in {\tt comm} \findex{PetscObjectGetComm()}
 specified object for any component object.
 
 The longer term plans for making PETSc compatible with an emerging
-CCA would possibly require that all CCA C objects have the common header:
+CCA would possibly require that all CCA C objects have a common header
+with content such as:
 
 \begin{verbatim}
 struct _p_<component> {
@@ -481,7 +484,7 @@ dominated by the time to move the data into position, not the time to
 compute the arithmetic result.  For example, the time to perform a
 multiplication operation may be one clock cycle, while the time to
 move the floating point number from memory to the arithmetic unit may
-take 10 to 15 cycles. To help manage this difference in time scales,
+take 10 or more cycles. To help manage this difference in time scales,
 most processors have at least three levels of memory: registers,
 cache, and random access memory, RAM. (In addition, some processors
 have external caches, and the complications of paging introduce
@@ -503,7 +506,7 @@ compiler and hardware cache system can perform well. Good quality code
 is then be said to respect the memory hierarchy.
 
 The standard approach to improving the hardware utilization is to use
-``blocking''. That is, rather than working with individual elements in
+blocking. That is, rather than working with individual elements in
 the matrices, one employs blocks of elements.  Since the use of
 implicit methods in PDE-based simulations leads to matrices with a
 naturally blocked structure (with a block size equal to the number of
@@ -539,11 +542,11 @@ of checking block sizes.
 The following table presents the floating point performance
 for a basic matrix-vector product using these four approaches: a basic
 compressed row storage format (using the PETSc runtime options 
--mat\_seqaij -mat\_no\_unroll); the same compressed row format using
-I-nodes (with the option -mat\_seqaij); a fixed block size code,
+{\tt -mat\_seqaij -mat\_no\_unroll)}; the same compressed row format using
+I-nodes (with the option {-mat\_seqaij}); a fixed block size code,
 with a block size of three for these problems (using the option 
--mat\_seqbaij); and the BlockSolve95 variable block size code (using
-PETSc option -mat\_mpirowbs). The rates were computed on one
+{-mat\_seqbaij}); and the BlockSolve95 variable block size code (using
+PETSc option {-mat\_mpirowbs}). The rates were computed on one
 node of an older IBM SP, using two test matrices.  The first matrix
 (ARCO1), courtesy of Rick Dean of Arco, arises in multiphase flow
 simulation; it has 1501 degrees of freedom, 26,131 matrix nonzeros
@@ -743,7 +746,6 @@ rows, {\tt n} global columns, and a block size of {\tt nb} is
 \end{verbatim}
 Either the {\tt m} or {\tt M} can be set to {\tt PETSC\_DECIDE} for PETSc
 to determine the corresponding quantity.
-
 
 \bibliographystyle{plain}
 \bibliography{petsc}
