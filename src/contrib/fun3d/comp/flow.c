@@ -2844,8 +2844,7 @@ int set_up_grid(GRID *grid)
 /*===========================================================================*/
 #undef __FUNCT__
 #define __FUNCT__ "write_fine_grid"
-int write_fine_grid(grid)                  
-GRID *grid;
+int write_fine_grid(GRID *grid)
 {
    FILE *output;
 
