@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.9 1995/10/06 22:25:52 bsmith Exp curfman $ */
+/* $Id: plapack.h,v 1.10 1995/10/11 20:23:49 curfman Exp curfman $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -225,6 +225,7 @@ extern void   BLcopy_(int*,Scalar*,int*,Scalar*,int*);
 extern void   BLswap_(int*,Scalar*,int*,Scalar*,int*);
 extern void   BLaxpy_(int*,Scalar*,Scalar*,int*,Scalar*,int*);
 extern void   LAgetrf_(int*,int*,Scalar*,int*,int*,int*);
+extern void   LAgetf2_(int*,int*,Scalar*,int*,int*,int*);
 extern void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 
 #if defined(PARCH_t3d)
