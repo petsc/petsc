@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.13 1995/03/24 16:00:49 curfman Exp $";
+static char vcid[] = "$Id: precon.c,v 1.13 1995/03/25 17:26:23 curfman Exp bsmith $";
 #endif
 
 /*  
@@ -188,7 +188,8 @@ int PCSetUp(PC pc)
   Input Parameters:
 .  pc - the preconditioner context
 .  mat - the matrix
-.  pre - matrix to be used in constructing preconditioner, usually the same
+.  pmat - matrix to be used in constructing preconditioner, usually the same.
+.         If pmat is 0 it reuses the old preconditioner.
 .  flag - use either 0 or MAT_SAME_NONZERO_PATTERN
 
   Notes:
