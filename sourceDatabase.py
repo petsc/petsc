@@ -42,6 +42,11 @@ class SourceDB (dict, logging.Logger):
     f.close()
     return m.hexdigest()
 
+  def stickinSource(self, source):
+    dependencies = ()
+    self.debugPrint('Sticking '+source+' in source database', 3, 'sourceDB')
+    self[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies, 1)
+
   def updateSource(self, source):
     dependencies = ()
     try:

@@ -239,7 +239,7 @@ class CompilePythonC (CompileC):
     (base, ext) = os.path.splitext(file)
     if not base[-7:] == '_Module' or not ext == '.c':
       # Stupid Babel hack
-      if base == 'SIDLObjA' or base == 'SIDLPyArrays':
+      if base == 'SIDLObjA' or base == 'SIDLPyArrays' or base == 'OpaqueObject':
         package     = base
         libraryName = os.path.join(dir, package+'.a')
       else:

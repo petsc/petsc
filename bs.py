@@ -144,6 +144,9 @@ class BS (maker.Maker):
         if sourceDB.has_key(file):
           self.debugPrint('Updating '+file, 3, 'sourceDB')
           sourceDB.updateSource(file)
+        else:
+          self.debugPrint('Updating '+file, 3, 'sourceDB')
+          sourceDB.stickinSource(file)
     except KeyError:
       try:
         self.debugPrint('Updating '+setName, 3, 'sourceDB')

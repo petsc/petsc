@@ -4,6 +4,7 @@ import BSTemplates.sidl
 import fileset
 
 import os
+import os.path
 import pwd
 import sys
 import argtest
@@ -41,30 +42,33 @@ class PetscMake(bs.BS):
         raise RuntimeError("Cannot create tmp directory "+bs.argDB['TMPDIR'])
     
     self.defineHelp()
+
+    #  see if we can find SIDLRuntimeANL
+    if not bs.argDB.has_key('SIDLRUNTIME_DIR'):
+        if os.path.exists(os.getcwd()+"/../SIDLRuntimeANL"):
+           bs.argDB['SIDLRUNTIME_DIR'] = os.getcwd()+"/../SIDLRuntimeANL"
+
+                
     self.defineDirectories()
     self.defineFileSets()
     self.defineTargets()
 
   def install(self):
-    '''this is pitiful'''
     if not bs.argDB.has_key('install'): return
+    bs.argDB.setDir('installlib',0)
+    bs.argDB.setDir('installh',0)
+    bs.argDB.setDir('installexamples',0)
     try:
       os.makedirs(bs.argDB['installlib'])
+      os.makedirs(bs.argDB['installh'])
+      os.makedirs(bs.argDB['installexamples'])
     except:
       pass
     (status, output) = commands.getstatusoutput('cp -f *.py '+bs.argDB['installlib'])
     (status, output) = commands.getstatusoutput('cp -rf BSTemplates '+bs.argDB['installlib'])
-
-    try:
-      os.makedirs(bs.argDB['installlib'])
-    except:
-      pass
     (status, output) = commands.getstatusoutput('cp -f lib/*.so '+bs.argDB['installlib'])
     
   def defineHelp(self):
-    bs.argDB.setHelp('PYTHON_INCLUDE', 'The directory in which the Python headers were installed (like Python.h)')
-    bs.argDB.setTester('PYTHON_INCLUDE',argtest.DirectoryTester())
-
     bs.argDB.setHelp('SIDLRUNTIME_DIR', 'The directory in which the SIDL runtime was installed')
     bs.argDB.setTester('SIDLRUNTIME_DIR',argtest.DirectoryNotNoneTester())
 
@@ -86,9 +90,9 @@ class PetscMake(bs.BS):
 
 if __name__ ==  '__main__':
   try:
-      pm = PetscMake(sys.argv[1:])
+    pm = PetscMake(sys.argv[1:])
+    pm.main()
+    pm.install()
   except Exception, e:
     print 'ERROR: '+str(e)
     sys.exit(1)
-  pm.main()
-  pm.install()
