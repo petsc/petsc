@@ -1,4 +1,4 @@
-!  $Id: userJac.F,v 1.8 2000/09/06 22:19:09 balay Exp bsmith $
+!  $Id: userJac.F,v 1.9 2000/09/15 19:28:25 bsmith Exp bsmith $
 !---------------------------------------------------------------
 ! The following subroutines are from node6t.f in the original
 ! code.
@@ -413,7 +413,7 @@
         irow(1) = node1 - 1
         icol(1) = node1 - 1
         icol(2) = node2 - 1
-        call MatSetValuesBlockedLocal(A,1,irow,2,icol,
+        call MatSetValuesBlockedLocal(A,1,irow,2,icol,                  &
      &                                val1,ADD_VALUES,ierr)
 #else
         do j = 1,4
@@ -453,7 +453,7 @@
         irow(1) = node2 - 1
         icol(1) = node1 - 1
         icol(2) = node2 - 1
-        call MatSetValuesBlockedLocal(A,1,irow,2,icol,
+        call MatSetValuesBlockedLocal(A,1,irow,2,icol,                 &
      &                         val1,ADD_VALUES,ierr)
 #else
         do j = 1,4
@@ -461,7 +461,6 @@
          icol(j) = 4*(node1-1)+j-1
          icol(4+j) = irow(j)
         enddo
-!       call MatSetValuesLocal(A,4,irow,8,icol,val,ADD_VALUES,ierr)
         call MatSetValuesLocal(A,4,irow,8,icol,val1,ADD_VALUES,ierr)
 #endif
 #else
@@ -476,11 +475,11 @@
 
         endif
  1040 continue
-c
+!
 ! Now loop over the boundaries
-c
-c For inviscid surface add contribution from pressure
-c
+!
+! For inviscid surface add contribution from pressure
+!
       do 1070 i = 1,nsnode
         inode = isnode(i)
         if (inode .le. nnodes) then
@@ -491,7 +490,7 @@ c
          xnorm = xnorm/area
          ynorm = ynorm/area
          znorm = znorm/area
-c
+!
          val(1) = area*xnorm
          val(2) = area*ynorm
          val(3) = area*znorm
@@ -787,7 +786,7 @@ c
 #if defined(INTERLACING)
 #if defined(BLOCKING)
          irow(1) = inode - 1
-         call MatSetValuesBlockedLocal(A,1,irow,1,irow,val,
+         call MatSetValuesBlockedLocal(A,1,irow,1,irow,val,             &
      &                                 ADD_VALUES,ierr)
 #else
          do k = 1,4
@@ -831,7 +830,7 @@ c
 #include "include/finclude/petscdef.h"
       integer irank,ierr,irow,icol
       if (ierr .gt. 0) then 
-       write(*,*) 'On processor ',irank, ': Non-zero entry in row ',
+       write(*,*) 'On processor ',irank, ': Non-zero entry in row ',     &
      & irow, ' and column ',icol,' is beyond the pre-allocated memory'
       endif
       return
