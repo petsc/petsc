@@ -180,8 +180,6 @@ class Configure(config.base.Configure):
       (name, lib, include) = self.downLoadMPICH()
       yield (name, lib, include)
       raise RuntimeError('Downloaded MPICH could not be used. Please check install in '+os.path.dirname(include[0])+'\n')
-    # May not need to list anything
-    yield ('Default compiler locations', [''], [[]])
     # Try specified library and include
     if 'with-mpi-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-mpi-lib']
@@ -197,6 +195,8 @@ class Configure(config.base.Configure):
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
       raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
+    # May not need to list anything
+    yield ('Default compiler locations', [''], [[]])
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
     for packageDir in self.framework.argDB['package-dirs']:
@@ -346,17 +346,20 @@ class Configure(config.base.Configure):
       self.framework.log.write('Checking for a functional MPI in '+name+'\n')
       self.lib     = None
       self.include = None
+      found        = 0
       for libraries in libraryGuesses:
         if self.checkLib(libraries):
           self.lib = libraries
-          break
-      if self.lib is None: continue
-      for includeDir in includeGuesses:
-        if self.checkInclude(includeDir):
-          self.include = includeDir
-          break
-      if self.include is None: continue
-      if not self.executeTest(self.checkWorkingLink): continue
+          for includeDir in includeGuesses:
+            if self.checkInclude(includeDir):
+              self.include = includeDir
+              if self.executeTest(self.checkWorkingLink):
+                found = 1
+                break
+          if found:
+            break
+      if not found: continue
+      
       version = self.executeTest(self.configureVersion)
       if self.framework.argDB['with-mpi-shared']:
         if not self.executeTest(self.checkSharedLibrary):
