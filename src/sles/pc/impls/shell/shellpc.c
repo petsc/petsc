@@ -1,4 +1,4 @@
-/*$Id: shellpc.c,v 1.70 2000/05/05 22:17:07 balay Exp bsmith $*/
+/*$Id: shellpc.c,v 1.71 2000/09/28 21:12:44 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -69,7 +69,7 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  ierr  = (*shell->applyrich)(shell->ctx,x,y,w,it);CHKERRQ(ierr);
+  ierr  = (*shell->applyrich)(shell->ctxrich,x,y,w,it);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -395,14 +395,14 @@ int PCShellGetName(PC pc,char **name)
 
    Calling sequence of apply:
 .vb
-   int apply (void *ptr,Vec x,Vec b,Vec r,int maxits)
+   int apply (void *ptr,Vec b,Vec x,Vec r,int maxits)
 .ve
 
 +  ptr - the application context
-.  x - current iterate
 .  b - right-hand-side
-.  r - residual
--  maxits - maximum number of iterations
+.  x - current iterate
+.  r - work space
+-  maxits - number of iterations to run
 
    Level: developer
 
@@ -487,6 +487,8 @@ int PCCreate_Shell(PC pc)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+
 
 
 
