@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.15 1998/04/13 17:58:52 bsmith Exp balay $";
+static char vcid[] = "$Id: dadestroy.c,v 1.16 1998/04/24 21:59:10 balay Exp balay $";
 #endif
  
 /*
@@ -61,7 +61,8 @@ int DADestroy(DA da)
 .keywords: distributed array, destroy
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
-@*/int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
+@*/
+int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
