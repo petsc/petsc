@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.20 1997/10/19 03:22:39 bsmith Exp balay $ */
+/* $Id: bvec1.c,v 1.21 1998/03/16 18:34:15 balay Exp balay $ */
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -42,7 +42,9 @@ int VecDot_Seq(Vec xin, Vec yin,Scalar *z )
 int VecTDot_Seq(Vec xin, Vec yin,Scalar *z )
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
-  int     one = 1;
+#if !defined(USE_PETSC_COMPLEX)
+ int     one = 1;
+#endif
 
   PetscFunctionBegin;
 #if defined(USE_PETSC_COMPLEX)
