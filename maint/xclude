@@ -1,5 +1,7 @@
+petsc/surplus
+petsc/src/pc/impls/icc
+petsc/src/mat/impls/rowbs
 petsc/TAGS
-petsc/doc
 petsc/maint
 petsc/lib
 petsc/wrappers
@@ -8,12 +10,11 @@ petsc/Keywords
 petsc/bin/RCS
 petsc/bmake/RCS
 petsc/docs/RCS
-petsc/docs/private
+petsc/docs/tex
 petsc/include/RCS
 petsc/pinclude/RCS
 petsc/src/RCS
 petsc/src/examples
-petsc/src/f90/RCS
 petsc/bmake/IRIX/RCS
 petsc/bmake/alpha/RCS
 petsc/bmake/freebsd/RCS
@@ -21,8 +22,13 @@ petsc/bmake/rs6000/RCS
 petsc/bmake/sun4/RCS
 petsc/docs/man/RCS
 petsc/docs/www
-petsc/docs/baa
-petsc/src/f90
+petsc/docs
+petsc/src/snes/RCS
+petsc/src/snes/impls/RCS
+petsc/src/snes/src/RCS
+petsc/src/snes/impls/ls/RCS
+petsc/src/snes/impls/tr/RCS
+petsc/src/snes/examples/RCS
 petsc/src/draw/RCS
 petsc/src/grid/RCS
 petsc/src/inline/RCS
@@ -65,6 +71,7 @@ petsc/src/sles/src/RCS/
 petsc/src/stencil/examples/RCS/
 petsc/src/stencil/impls/RCS/
 petsc/src/stencil/src/RCS/
+petsc/src/stencil/utils/RCS
 petsc/src/sys/error/RCS/
 petsc/src/vec/examples/RCS/
 petsc/src/vec/impls/RCS/
