@@ -122,19 +122,24 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFileStat"
-static int PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode) {
+static int PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscTruth *exists) {
   struct stat statbuf;
   int         ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_STAT_NO_CONST)
-  ierr = stat((char*) fname, &statbuf);                                                                   CHKERRQ(ierr);
+  ierr = stat((char*) fname, &statbuf);
 #else
-  ierr = stat(fname, &statbuf);                                                                           CHKERRQ(ierr);
+  ierr = stat(fname, &statbuf);
 #endif
-  *fileUid  = statbuf.st_uid;
-  *fileGid  = statbuf.st_gid;
-  *fileMode = statbuf.st_mode;
+  if (ierr) {
+    *exists = PETSC_FALSE;
+  } else {
+    *exists = PETSC_TRUE;
+    *fileUid  = statbuf.st_uid;
+    *fileGid  = statbuf.st_gid;
+    *fileMode = statbuf.st_mode;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -142,16 +147,18 @@ static int PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, 
 #define __FUNCT__ "PetscTestFile"
 int PetscTestFile(const char fname[], char mode, PetscTruth *flg)
 {
-  uid_t fuid;
-  gid_t fgid;
-  int   fmode;
-  int   ierr;
+  uid_t      fuid;
+  gid_t      fgid;
+  int        fmode;
+  int        ierr;
+  PetscTruth exists;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode);                                                   CHKERRQ(ierr);
+  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);                                           CHKERRQ(ierr);
+  if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a regular file */
   if (!S_ISREG(fmode)) PetscFunctionReturn(0);
@@ -164,16 +171,18 @@ int PetscTestFile(const char fname[], char mode, PetscTruth *flg)
 #define __FUNCT__ "PetscTestDirectory"
 int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
 {
-  uid_t fuid;
-  gid_t fgid;
-  int   fmode;
-  int   ierr;
+  uid_t      fuid;
+  gid_t      fgid;
+  int        fmode;
+  int        ierr;
+  PetscTruth exists;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode);                                                   CHKERRQ(ierr);
+  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);                                           CHKERRQ(ierr);
+  if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a directory */
   if (!S_ISDIR(fmode)) PetscFunctionReturn(0);
