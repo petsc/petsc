@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.25 1995/11/23 04:28:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.26 1995/12/21 18:33:24 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -33,6 +33,8 @@ int DrawLine(Draw ctx,double xl,double yl,double xr,double yr,int cl)
 .  width - the width in user coordinates
 
 .keywords:  draw, line, set, width
+
+.seealso:  DrawLineGetWidth()
 @*/
 int DrawLineSetWidth(Draw ctx,double width)
 {
@@ -52,7 +54,9 @@ int DrawLineSetWidth(Draw ctx,double width)
    Output Parameter:
 .  width - the width in user coordinates
 
-.keywords:  draw, line, set, width
+.keywords:  draw, line, get, width
+
+.seealso:  DrawLineSetWidth()
 @*/
 int DrawLineGetWidth(Draw ctx,double *width)
 {
@@ -60,7 +64,6 @@ int DrawLineGetWidth(Draw ctx,double *width)
   if (ctx->type == NULLWINDOW) return 0;
   return (*ctx->ops.linegetwidth)(ctx,width);
 }
-
 
 /*@C
    DrawText - Draws text onto a drawable.
