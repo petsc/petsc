@@ -1,51 +1,27 @@
 
+#include "PETSc_Matrix.h"
 
-#include "PETSc_Vector.h"
+extern int ESI_Matrix_test(ESI_Matrix *,ESI_Vector *,ESI_Vector*);
 
-
-extern int ESI_VectorPointerAccess_test(ESI_VectorPointerAccess *);
 int main(int argc,char **args)
 {
   int    ierr;
-  double norm,dot;
 
   PetscInitialize(&argc,&args,0,0);
 
-  PETSc_Map *map = new PETSc_Map(MPI_COMM_WORLD,5,PETSC_DECIDE);
+  PETSc_Map    *map     = new PETSc_Map(MPI_COMM_WORLD,5,PETSC_DECIDE);
+  PETSc_Vector *vector  = new PETSc_Vector((ESI_MapAlgebraic *)map);
+  PETSc_Vector *bvector = new PETSc_Vector((ESI_MapAlgebraic *)map);
+  PETSc_Matrix *matrix  = new PETSc_Matrix((ESI_MapAlgebraic *)map,(ESI_MapAlgebraic *)map);
 
-  MPI_Comm comm;
-  map->getCommunicator(&comm);
-  int rank;
-  MPI_Comm_rank(comm,&rank);
+  ierr = ESI_Matrix_test(matrix,vector,bvector);
+  if (ierr) {printf("error calling ESI_Matrix_test()\n");return ierr;}
 
-
-  PETSc_Vector *vector = new PETSc_Vector((ESI_MapAlgebraic *)map);
-
-  ierr = ESI_VectorPointerAccess_test((ESI_VectorPointerAccess *)vector);
-  if (ierr) {printf("Error in ESI_Vector_Test()\n");return ierr;}
-
-  const ESI_Map *gmap; vector->getMap(gmap);
-
-  delete map;
-
-  vector->put(3.0);
-  vector->scale(4.2);
-  vector->norm1(norm);
-  vector->dot(*vector,dot);
-
-  PetscPrintf(comm,"norm %g dot %g\n",norm,dot);
-
-  double *array; int silly;
-
-  vector->getArrayPointer(array,silly);
-  array[0] = 22.3;
-  vector->restoreArrayPointer(array,silly);
-  vector->norm1(norm);
-  vector->dot(*vector,dot);
-
-  PetscPrintf(comm,"norm %g dot %g\n",norm,dot);
-
+  
+  delete matrix;
   delete vector;
+  delete bvector;
+  delete map;
   PetscFinalize();
 
   return 0;

@@ -1,29 +1,16 @@
 
-#include "PETSc_Map.h"
 
-int innerMap(ESI_Map *map)
+#include "PETSc_Vector.h"
+
+
+extern int ESI_VectorPointerAccess_test(ESI_VectorPointerAccess *);
+int main(int argc,char **args)
 {
-  MPI_Comm comm;
+  int    ierr;
+  double norm,dot;
 
-  int end;
-  map->getCommunicator(&comm);
-  int rank;
-  MPI_Comm_rank(comm,&rank);
+  PetscInitialize(&argc,&args,0,0);
 
-  int localsize;
-  map->getLocalSize(localsize);
-  PetscSynchronizedPrintf(comm,"[%d]My size %d\n",rank,localsize);
-  PetscSynchronizedFlush(comm);
-  return 0;
-}
-
-
-
-
-int innerMain()
-{
-  int ierr;
-  
   PETSc_Map *map = new PETSc_Map(MPI_COMM_WORLD,5,PETSC_DECIDE);
 
   MPI_Comm comm;
@@ -32,47 +19,33 @@ int innerMain()
   MPI_Comm_rank(comm,&rank);
 
 
-  int start,end;
+  PETSc_Vector *vector = new PETSc_Vector((ESI_MapAlgebraic *)map);
 
-  map->getLocalStart(start);
-  map->getLocalEnd(end);
- 
-  PetscSynchronizedPrintf(comm,"[%d]My start %d end %d\n",rank,start,end);
-  PetscSynchronizedFlush(comm);
+  ierr = ESI_VectorPointerAccess_test((ESI_VectorPointerAccess *)vector);
+  if (ierr) {printf("Error in ESI_Vector_Test()\n");return ierr;}
 
-  ESI_Map *emap = (ESI_Map *)map;
+  const ESI_Map *gmap; vector->getMap(gmap);
 
-  innerMap((ESI_Map *)map);
+  delete map;
 
-  int localsize,localoffset;
-  map->getLocalInfo(localsize,localoffset);
-  PetscSynchronizedPrintf(comm,"[%d]My size %d offset %d\n",rank,localsize,localoffset);
+  vector->put(3.0);
+  vector->scale(4.2);
+  vector->norm1(norm);
+  vector->dot(*vector,dot);
 
-  int globalsize,*globaloffsets;
-  map->getGlobalInfo(globalsize,&globaloffsets);
-  int size; MPI_Comm_size(comm,&size);
-  for (int i=0; i<size+1; i++ ) {
-    PetscSynchronizedPrintf(comm,"[%d]Global size %d offset %d\n",rank,globalsize,globaloffsets[i]);
-  }
-  PetscSynchronizedFlush(comm);
+  PetscPrintf(comm,"norm %g dot %g\n",norm,dot);
 
+  double *array; int silly;
 
-  delete emap;
-  return 0;
-}
+  vector->getArrayPointer(array,silly);
+  array[0] = 22.3;
+  vector->restoreArrayPointer(array,silly);
+  vector->norm1(norm);
+  vector->dot(*vector,dot);
 
-/*
-    We don't put any objects in main() because they won't be
-  destructed until the end of the routine; after PetscFinalize()
-  is called. Thus PETSc memory monitor will detect lots of memory
-  that has not yet been freed.
-*/
-int main(int argc,char **args)
-{
-  int ierr;
+  PetscPrintf(comm,"norm %g dot %g\n",norm,dot);
 
-  PetscInitialize(&argc,&args,0,0);
-  ierr = innerMain();CHKERRA(ierr);
+  delete vector;
   PetscFinalize();
 
   return 0;
