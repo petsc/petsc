@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecreg.c,v 1.5 1999/01/12 23:13:10 bsmith Exp balay $";
+static char vcid[] = "$Id: vecreg.c,v 1.6 1999/01/27 21:20:22 balay Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
@@ -45,3 +45,5 @@ int VecRegisterAll(const char path[])
   ierr = VecRegister(VEC_SEQ,           path,"VecCreate_Seq",     VecCreate_Seq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
