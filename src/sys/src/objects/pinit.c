@@ -720,9 +720,9 @@ int PetscFinalize(void)
 
 .seealso: PetscGlobalMin(), PetscGlobalSum()
 @*/
-int PetscGlobalMax(double* local,double* result,MPI_Comm comm)
+int PetscGlobalMax(PetscReal* local,PetscReal* result,MPI_Comm comm)
 {
-  return MPI_Allreduce(local,result,1,MPI_DOUBLE,MPI_MAX,comm);
+  return MPI_Allreduce(local,result,1,MPIU_REAL,MPI_MAX,comm);
 }
 
 #undef __FUNCT__  
@@ -747,9 +747,9 @@ int PetscGlobalMax(double* local,double* result,MPI_Comm comm)
 
 .seealso: PetscGlobalMax(), PetscGlobalSum()
 @*/
-int PetscGlobalMin(double* local,double* result,MPI_Comm comm)
+int PetscGlobalMin(PetscReal* local,PetscReal* result,MPI_Comm comm)
 {
-  return MPI_Allreduce(local,result,1,MPI_DOUBLE,MPI_MIN,comm);
+  return MPI_Allreduce(local,result,1,MPIU_REAL,MPI_MIN,comm);
 }
 
 #undef __FUNCT__  
