@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.240 2000/07/10 03:38:58 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.241 2000/07/21 20:47:06 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1389,6 +1389,7 @@ int PLogEventActivate(int event)
   PetscFunctionReturn(0);
 }
 
+PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PLogPrintSummary"
@@ -1610,6 +1611,18 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
 #endif
+
+  if (!PetscPreLoadingUsed) {
+    ierr = PetscFPrintf(comm,fd,"\n\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      ##########################################################\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   This code was run with the PreLoadinBegin() macros   #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   To get timing results we always recommend preloading #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      #   otherwise timing numbers may be meaningless.         #\n");CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
+  }
 
   /* loop over operations looking for interesting ones */
   ierr = PetscFPrintf(comm,fd,"Phase                  Count      Time (sec)        Flops/sec \
