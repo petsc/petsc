@@ -4,7 +4,7 @@
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
 set TMP=/sandbox/petsc/petsc-test
-set MACH=monsoon
+set MACH=zither
 set ARCH=linux_absoft
 set TEST=testexamples_
 set NICE=''
