@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.149 2001/01/15 21:43:50 bsmith Exp balay $*/
+/*$Id: mtr.c,v 1.150 2001/01/17 19:44:23 balay Exp balay $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -497,7 +497,7 @@ int PetscTrDump(FILE *fp)
   head = TRhead;
   while (head) {
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%2d]%8d bytes %s() line %d in %s%s\n",rank,(int)head->size,
-            head->functionname,head->lineno,head->dirname,head->filename);
+            head->functionname,head->lineno,head->dirname,head->filename);CHKERRQ(ierr);
 #if defined(PETSC_USE_STACK)
     ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif

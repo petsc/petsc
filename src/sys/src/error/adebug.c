@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.110 2000/10/24 20:24:29 bsmith Exp bsmith $*/
+/*$Id: adebug.c,v 1.111 2001/01/15 21:43:39 bsmith Exp balay $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -430,7 +430,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 @*/
 int PetscStopForDebugger(void)
 {
-  int        sleeptime=0,ierr=0,ppid,rank;
+  int        sleeptime=0,ierr,ppid,rank;
   char       program[256],hostname[256];
   PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb;
 

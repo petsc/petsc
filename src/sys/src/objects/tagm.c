@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.30 2000/09/28 21:09:12 bsmith Exp bsmith $*/
+/*$Id: tagm.c,v 1.31 2001/01/15 21:43:52 bsmith Exp balay $*/
 /*
       Some PETSc utilites
 */
@@ -165,7 +165,7 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 */
 int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
-  int        ierr = MPI_SUCCESS,*tagvalp,*maxval;
+  int        ierr,*tagvalp,*maxval;
   PetscTruth flg;
 
   PetscFunctionBegin;

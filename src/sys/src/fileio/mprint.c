@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.56 2000/11/25 03:41:48 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.57 2001/01/15 21:43:46 bsmith Exp balay $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -457,7 +457,6 @@ int PetscErrorPrintfDefault(const char format[],...)
   */
 
   if (!PetscErrorPrintfCalled) {
-    int        rank;
     char       arch[10],hostname[64],username[16],pname[256],date[64];
     PetscTruth use_stderr;
 
@@ -476,10 +475,13 @@ int PetscErrorPrintfDefault(const char format[],...)
       different processors, the messages are printed all jumbled up; to try to 
       prevent this we have each processor wait based on their rank
     */
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-    if (rank > 8) rank = 8;
 #if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
-    PetscSleep(rank);
+    {
+      int        rank;
+      MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+      if (rank > 8) rank = 8;
+      PetscSleep(rank);
+    }
 #endif
 
     /* Cannot do error checking on these calls because we are called by error handler */
