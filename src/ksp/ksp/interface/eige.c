@@ -271,7 +271,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
       LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
     }
 #endif
-    if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",lierr);
+    if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);

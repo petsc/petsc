@@ -12,8 +12,6 @@ EXTERN_C_BEGIN
 EXTERN int gettimeofday(struct timeval *,struct timezone *);
 EXTERN_C_END
 #endif
-
-static char starttime[256];
    
 /*
   This function is called once during the initialize stage.
@@ -38,9 +36,7 @@ static char starttime[256];
   Level: beginner
 
     This function DOES make a system call and thus SHOULD NOT be called
-    from an error handler. Use PetscGetInitialDate() instead.
-
-.seealso: PetscGetInitialDate()
+    from an error handler. 
 
 @*/
 PetscErrorCode PetscGetDate(char date[],size_t len)
@@ -65,48 +61,6 @@ PetscErrorCode PetscGetDate(char date[],size_t len)
   /* now strip out the new-line chars at the end of the string */
   ierr = PetscStrstr(date,"\n",&str);CHKERRQ(ierr);
   if (str) str[0] = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSetInitialDate"
-PetscErrorCode PetscSetInitialDate(void)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = PetscGetDate(starttime,256);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscGetInitialDate"
-/*@C
-    PetscGetInitialDate - Gets the date the program was started 
-      on.
-
-   Not collective
-
-  Input Parameter:
-.  len - length of string to hold date
-
-  Output Parameter:
-.  date - the date
-
-  Level: beginner
-
-  Notes:
-    This function does not make a system call and thus may be called
-    from an error handler.
-
-.seealso: PetscGetDate()
-
-@*/
-PetscErrorCode PetscGetInitialDate(char date[],size_t len)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscStrncpy(date,starttime,len);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

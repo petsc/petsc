@@ -17,7 +17,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v,"Length=%d",v->N);
+  PetscLogObjectState((PetscObject)v,"Length=%D",v->N);
 #endif  
   if (x->array_allocated) {ierr = PetscFree(x->array_allocated);CHKERRQ(ierr);}
 
@@ -121,7 +121,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       cnt = 0;
       for (i=0; i<xin->n; i++) {
         if (format == PETSC_VIEWER_ASCII_INDEX) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%d: ",cnt++);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%D: ",cnt++);CHKERRQ(ierr);
         }
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(xarray[i]) > 0.0) {
@@ -144,7 +144,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         }
         for (i=0; i<n; i++) {
           if (format == PETSC_VIEWER_ASCII_INDEX) {
-            ierr = PetscViewerASCIIPrintf(viewer,"%d: ",cnt++);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer,"%D: ",cnt++);CHKERRQ(ierr);
           }
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginaryPart(values[i]) > 0.0) {
@@ -208,9 +208,9 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file && xin->bs > 1) {
       if (xin->prefix) {
-	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %d\n",xin->prefix,xin->bs);CHKERRQ(ierr);
+	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%svecload_block_size %D\n",xin->prefix,xin->bs);CHKERRQ(ierr);
       } else {
-	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %d\n",xin->bs);CHKERRQ(ierr);
+	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->bs);CHKERRQ(ierr);
       }
     }
   } else {
@@ -527,7 +527,7 @@ PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
         ierr = MPI_Get_count(&status, MPI_FLOAT, &len);CHKERRQ(ierr);cur += len;
       }
       if (cur != N) {
-        SETERRQ2(PETSC_ERR_PLIB, "? %d %d", cur, N);
+        SETERRQ2(PETSC_ERR_PLIB, "? %D %D", cur, N);
       }
       ierr = PetscViewerHDF4WriteSDS(viewer, xf, 2, dims, bs);CHKERRQ(ierr); 
     } else {
@@ -673,7 +673,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",ix[i],xin->N);
+        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->N);
 #endif
         VecStashValue_Private(&xin->stash,row,y[i]);
       }
@@ -685,7 +685,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",ix[i],xin->N);
+        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->N);
 #endif        
         VecStashValue_Private(&xin->stash,row,y[i]);
       }
@@ -726,7 +726,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d max %d",ix[i],xin->N);
+        if (ix[i] >= xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
       }
@@ -741,7 +741,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d max %d",ix[i],xin->N);
+        if (ix[i] > xin->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->N);
 #endif
         VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
       }
@@ -789,9 +789,9 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = VecStashScatterBegin_Private(&xin->stash,owners);CHKERRQ(ierr);
   ierr = VecStashScatterBegin_Private(&xin->bstash,bowners);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"VecAssemblyBegin_MPI:Stash has %d entries, uses %d mallocs.\n",(int)nstash,(int)reallocs);
+  PetscLogInfo(0,"VecAssemblyBegin_MPI:Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);
   ierr = VecStashGetInfo_Private(&xin->bstash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"VecAssemblyBegin_MPI:Block-Stash has %d entries, uses %d mallocs.\n",(int)nstash,(int)reallocs);
+  PetscLogInfo(0,"VecAssemblyBegin_MPI:Block-Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);
 
   PetscFunctionReturn(0);
 }

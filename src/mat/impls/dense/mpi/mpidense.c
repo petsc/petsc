@@ -198,7 +198,7 @@ PetscErrorCode MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
   ierr = MatStashScatterBegin_Private(&mat->stash,mdn->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(mdn->A,"MatAssemblyBegin_MPIDense:Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);
+  PetscLogInfo(mdn->A,"MatAssemblyBegin_MPIDense:Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);
   PetscFunctionReturn(0);
 }
 
@@ -480,7 +480,7 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscFunctionBegin;
 
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mat->M,mat->N);
+  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->M,mat->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = PetscFree(mdn->rowners);CHKERRQ(ierr);
@@ -535,8 +535,8 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       MatInfo info;
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mat->m,
-                   (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);       
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] local rows %D nz %D nz alloced %D mem %D \n",rank,mat->m,
+                   (PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);CHKERRQ(ierr);       
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = VecScatterView(mdn->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0); 

@@ -29,18 +29,18 @@ int  amult(Mat,Vec,Vec);
 #define __FUNCT__ "main"
 int main(int Argc,char **Args)
 {
-  int         x_mesh = 15,levels = 3,cycles = 1,use_jacobi = 0;
-  int         i,smooths = 1,*N;
-  int         ierr,its;
-  MGType      am = MGMULTIPLICATIVE;
-  Mat         cmat,mat[20],fmat;
-  KSP         cksp,ksp[20],kspmg;
-  PetscReal   e[3]; /* l_2 error,max error, residual */
-  char        *shellname;
-  Vec         x,solution,X[20],R[20],B[20];
-  PetscScalar zero = 0.0;
-  PC          pcmg,pc;
-  PetscTruth  flg;
+  PetscInt        x_mesh = 15,levels = 3,cycles = 1,use_jacobi = 0;
+  PetscInt        i,smooths = 1,*N,its;
+  PetscErrorCode  ierr;
+  MGType          am = MGMULTIPLICATIVE;
+  Mat             cmat,mat[20],fmat;
+  KSP             cksp,ksp[20],kspmg;
+  PetscReal       e[3]; /* l_2 error,max error, residual */
+  char            *shellname;
+  Vec             x,solution,X[20],R[20],B[20];
+  PetscScalar     zero = 0.0;
+  PC              pcmg,pc;
+  PetscTruth      flg;
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
 
@@ -93,7 +93,7 @@ int main(int Argc,char **Args)
     ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
     ierr = PCShellSetName(pc,"user_precond");CHKERRQ(ierr);
     ierr = PCShellGetName(pc,&shellname);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%D, PCShell name is %s\n",i,shellname);CHKERRQ(ierr);
 
     /* this is a dummy! since KSP requires a matrix passed in  */
     ierr = KSPSetOperators(ksp[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -147,7 +147,7 @@ int main(int Argc,char **Args)
   ierr = KSPGetIterationNumber(kspmg,&its);CHKERRQ(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRQ(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);
 
   ierr = PetscFree(N);CHKERRQ(ierr);
   ierr = VecDestroy(solution);CHKERRQ(ierr);

@@ -181,8 +181,8 @@ PetscErrorCode PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 PetscErrorCode PFApplyVec(PF pf,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PetscInt i,rstart,rend,n,p;
-  PetscTruth nox = PETSC_FALSE;
+  PetscInt       i,rstart,rend,n,p;
+  PetscTruth     nox = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
@@ -205,9 +205,9 @@ PetscErrorCode PFApplyVec(PF pf,Vec x,Vec y)
 
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&p);CHKERRQ(ierr);
-  if (pf->dimin*(n/pf->dimin) != n) SETERRQ2(PETSC_ERR_ARG_IDN,"Local input vector length %d not divisible by dimin %d of function",n,pf->dimin);
-  if (pf->dimout*(p/pf->dimout) != p) SETERRQ2(PETSC_ERR_ARG_IDN,"Local output vector length %d not divisible by dimout %d of function",p,pf->dimout);
-  if (n/pf->dimin != p/pf->dimout) SETERRQ4(PETSC_ERR_ARG_IDN,"Local vector lengths %d %d are wrong for dimin and dimout %d %d of function",n,p,pf->dimin,pf->dimout);
+  if (pf->dimin*(n/pf->dimin) != n) SETERRQ2(PETSC_ERR_ARG_IDN,"Local input vector length %D not divisible by dimin %D of function",n,pf->dimin);
+  if (pf->dimout*(p/pf->dimout) != p) SETERRQ2(PETSC_ERR_ARG_IDN,"Local output vector length %D not divisible by dimout %D of function",p,pf->dimout);
+  if (n/pf->dimin != p/pf->dimout) SETERRQ4(PETSC_ERR_ARG_IDN,"Local vector lengths %D %D are wrong for dimin and dimout %D %D of function",n,p,pf->dimin,pf->dimout);
 
   if (pf->ops->applyvec) {
     ierr = (*pf->ops->applyvec)(pf->data,x,y);CHKERRQ(ierr);

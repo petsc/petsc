@@ -48,11 +48,11 @@ PetscErrorCode TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat
     ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
     if ((freq > 1) && ((it % freq) != 1)) {
-      PetscLogInfo(color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %d, freq %d\n",it,freq);
+      PetscLogInfo(color,"TSDefaultComputeJacobianColor:Skipping Jacobian, it %D, freq %D\n",it,freq);
       *flag = SAME_PRECONDITIONER;
       PetscFunctionReturn(0);
     } else {
-      PetscLogInfo(color,"TSDefaultComputeJacobianColor:Computing Jacobian, it %d, freq %d\n",it,freq);
+      PetscLogInfo(color,"TSDefaultComputeJacobianColor:Computing Jacobian, it %D, freq %D\n",it,freq);
       *flag = SAME_NONZERO_PATTERN;
     }
   }

@@ -88,7 +88,7 @@ int main(int argc,char **args)
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
 
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"i=%d, flg=%d :bs=%d m=%d ov=%d nd=%d np=%d\n",i,flg,bs,m,ov,nd,size);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"i=%D, flg=%d :bs=%D m=%D ov=%D nd=%D np=%D\n",i,flg,bs,m,ov,nd,size);CHKERRQ(ierr);
     }
   }
 

@@ -48,10 +48,10 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
   if (iascii == PETSC_TRUE) {
-    PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %d\n", aomap->N);
+    PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %D\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
     for(i = 0; i < aomap->N; i++) {
-      PetscViewerASCIIPrintf(viewer, "%d   %d    %d\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
+      PetscViewerASCIIPrintf(viewer, "%D   %D    %D\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
     }
   }
   PetscFunctionReturn(0);
@@ -92,7 +92,7 @@ PetscErrorCode AOPetscToApplication_Mapping(AO ao, int n, int *ia)
         low  = mid + 1;
       }
     }
-    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %d", idex);
+    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %D", idex);
     ia[i] = app[perm[mid]];
   }
   PetscFunctionReturn(0);
@@ -133,7 +133,7 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
         low  = mid + 1;
       }
     }
-    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %d", idex);
+    if (low > high) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid input index %D", idex);
     ia[i] = petsc[perm[mid]];
   }
   PetscFunctionReturn(0);

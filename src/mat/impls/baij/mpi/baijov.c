@@ -550,7 +550,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
     isz1[i]     = ct2; /* size of each message */
   }
   ierr = PetscBTDestroy(xtable);CHKERRQ(ierr);
-  PetscLogInfo(0,"MatIncreaseOverlap_MPIBAIJ:[%d] Allocated %d bytes, required %d, no of mallocs = %d\n",rank,mem_estimate,ct3,no_malloc);    
+  PetscLogInfo(0,"MatIncreaseOverlap_MPIBAIJ:[%d] Allocated %D bytes, required %D, no of mallocs = %D\n",rank,mem_estimate,ct3,no_malloc);    
   PetscFunctionReturn(0);
 }  
 

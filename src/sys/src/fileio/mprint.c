@@ -9,16 +9,45 @@
 extern FILE *petsc_history;
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscFormatConvert"
+PetscErrorCode PetscFormatConvert(const char *format,char *newformat)
+{
+  PetscInt i = 0,j = 0;
+
+  while (format[i] && i < 8*1024-1) {
+    if (format[i] == '%' && format[i+1] == 'D') {
+      newformat[j++] = '%';
+#if defined(PETSC_USE_32BIT_INT)
+      newformat[j++] = 'd';
+#else
+      newformat[j++] = 'l';
+      newformat[j++] = 'l';
+      newformat[j++] = 'd';
+#endif
+      i += 2;
+    }else {
+      newformat[j++] = format[i++];
+    }
+  }
+  newformat[j] = 0;
+  return 0;
+}
+ 
+#undef __FUNCT__  
 #define __FUNCT__ "PetscVSNPrintf"
 /* 
    No error handling because may be called by error handler
 */
 PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
 {
+  /* no malloc since may be called by error handler */
+  char     newformat[8*1024];
+ 
+  PetscFormatConvert(format,newformat); 
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(str,format,(char *)Argp);
+  vsprintf(str,newformat,(char *)Argp);
 #else
-  vsprintf(str,format,Argp);
+  vsprintf(str,newformat,Argp);
 #endif
   return 0;
 }
@@ -30,10 +59,14 @@ PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,va_list Ar
 */
 PetscErrorCode PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
 {
+  /* no malloc since may be called by error handler */
+  char     newformat[8*1024];
+ 
+  PetscFormatConvert(format,newformat); 
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vfprintf(fd,format,(char *)Argp);
+  vfprintf(fd,newformat,(char *)Argp);
 #else
-  vfprintf(fd,format,Argp);
+  vfprintf(fd,newformat,Argp);
 #endif
   return 0;
 }
@@ -385,6 +418,30 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
 /* ---------------------------------------------------------------------------------------*/
 
+static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
+static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorPrintfInitialize"
+/*
+   Initializes arch, hostname, username,date so that system calls do NOT need
+   to be made during the error handler.
+*/
+PetscErrorCode PetscErrorPrintfInitialize()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
+  ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
+  ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetDate(date,64);CHKERRQ(ierr);
+  PetscErrorPrintfInitializeCalled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfDefault" 
 PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
@@ -407,7 +464,6 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
   */
 
   if (!PetscErrorPrintfCalled) {
-    char       arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
     PetscTruth use_stderr;
 
     PetscErrorPrintfCalled    = PETSC_TRUE;
@@ -435,12 +491,6 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
     
     PetscGetVersion(&version);
 
-    /* Cannot do error checking on these calls because we are called by error handler */
-    PetscGetArchType(arch,10);
-    PetscGetHostName(hostname,64);
-    PetscGetUserName(username,16);
-    PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);
-    PetscGetInitialDate(date,64);
     fprintf(fd,"--------------------------------------------\
 ------------------------------\n");
     fprintf(fd,"%s\n",version);
@@ -449,7 +499,9 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
     fprintf(fd,"See docs/index.html for manual pages.\n");
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
-    fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+    if (PetscErrorPrintfInitializeCalled) {
+      fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+    }
 #if !defined (PARCH_win32)
     fprintf(fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
 #endif

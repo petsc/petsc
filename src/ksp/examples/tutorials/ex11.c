@@ -41,15 +41,16 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,b,u;      /* approx solution, RHS, exact solution */
-  Mat         A;            /* linear system matrix */
-  KSP         ksp;         /* linear solver context */
-  PetscReal   norm;         /* norm of solution error */
-  int         dim,i,j,I,J,Istart,Iend,ierr,n = 6,its,use_random;
-  PetscScalar v,none = -1.0,sigma2,pfive = 0.5,*xa;
-  PetscRandom rctx;
-  PetscReal   h2,sigma1 = 100.0;
-  PetscTruth  flg;
+  Vec            x,b,u;      /* approx solution, RHS, exact solution */
+  Mat            A;            /* linear system matrix */
+  KSP            ksp;         /* linear solver context */
+  PetscReal      norm;         /* norm of solution error */
+  PetscInt       dim,i,j,I,J,Istart,Iend,n = 6,its,use_random;
+  PetscErrorCode ierr;
+  PetscScalar    v,none = -1.0,sigma2,pfive = 0.5,*xa;
+  PetscRandom    rctx;
+  PetscReal      h2,sigma1 = 100.0;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)
@@ -187,7 +188,7 @@ int main(int argc,char **args)
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);
     for (i=0; i<3; i++){
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%D] = %g + %g i\n",i,PetscRealPart(xa[i]),PetscImaginaryPart(xa[i]));CHKERRQ(ierr);
   }
     ierr = VecRestoreArray(x,&xa);CHKERRQ(ierr);
   }
@@ -198,7 +199,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

@@ -34,8 +34,8 @@ int main(int argc,char **args)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   ierr = MatGetInfo(C,MAT_LOCAL,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"matrix nonzeros = %d, allocated nonzeros = %d\n",
-    (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"matrix nonzeros = %D, allocated nonzeros = %D\n",
+    (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);

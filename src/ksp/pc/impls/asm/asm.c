@@ -44,7 +44,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %D, amount of overlap = %D\n",jac->n,jac->overlap);CHKERRQ(ierr);
     if (jac->type == PC_ASM_NONE)             cstring = "limited restriction and interpolation (PC_ASM_NONE)";
     else if (jac->type == PC_ASM_RESTRICT)    cstring = "full restriction (PC_ASM_RESTRICT)";
     else if (jac->type == PC_ASM_INTERPOLATE) cstring = "full interpolation (PC_ASM_INTERPOLATE)";
@@ -63,10 +63,10 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
       ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Proc %d: number of local blocks = %d\n",rank,jac->n_local);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] number of local blocks = %D\n",rank,jac->n_local);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local block number %D\n",rank,i);CHKERRQ(ierr);
         ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = KSPView(jac->ksp[i],sviewer);CHKERRQ(ierr);
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," blks=%D, overlap=%D, type=%D",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       if (jac->ksp) {ierr = KSPView(jac->ksp[0],sviewer);CHKERRQ(ierr);}
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);

@@ -137,7 +137,7 @@ int main(int argc,char **argv)
   for (i=0; i<39; i++) {
     ierr = VecDotEnd(vecs[i],vecs[i+1],results+i);CHKERRQ(ierr);
     if (results[i] != 25.0*i*(i+1)) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"i %d expected %g got %g\n",i,25.0*i*(i+1),PetscRealPart(results[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"i %D expected %g got %g\n",i,25.0*i*(i+1),PetscRealPart(results[i]));CHKERRQ(ierr);
     }
   } 
   for (i=0; i<40; i++) {

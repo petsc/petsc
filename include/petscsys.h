@@ -12,8 +12,6 @@ EXTERN PetscErrorCode  PetscGetUserName(char[],size_t);
 EXTERN PetscErrorCode  PetscGetProgramName(char[],size_t);
 EXTERN PetscErrorCode  PetscSetProgramName(const char[]);
 EXTERN PetscErrorCode  PetscGetDate(char[],size_t);
-EXTERN PetscErrorCode  PetscSetInitialDate(void);
-EXTERN PetscErrorCode  PetscGetInitialDate(char[],size_t);
 
 EXTERN PetscErrorCode  PetscSortInt(PetscInt,PetscInt[]);
 EXTERN PetscErrorCode  PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);

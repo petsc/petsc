@@ -107,8 +107,8 @@ int main(int argc, char **argv)
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D, ",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %D\n\n",nfails);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xvalues);CHKERRQ(ierr);
   ierr = PetscDrawTensorContour(draw,user.mx,user.my,0,0,xvalues);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xvalues);CHKERRQ(ierr);

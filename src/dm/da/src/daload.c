@@ -41,7 +41,7 @@ PetscErrorCode DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
     SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"No DA information in file");
   }
   if (nmax != 8) {
-    SETERRQ1(PETSC_ERR_FILE_UNEXPECTED,"Wrong number of items in DA information in file: %d",nmax);
+    SETERRQ1(PETSC_ERR_FILE_UNEXPECTED,"Wrong number of items in DA information in file: %D",nmax);
   }
   if (info[0] == 1) {
     ierr = DACreate1d(comm,(DAPeriodicType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);
@@ -52,10 +52,10 @@ PetscErrorCode DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
     ierr = DACreate3d(comm,(DAPeriodicType) info[7],(DAStencilType) info[6],info[1],info[2],info[3],M,N,P,
                       info[4],info[5],0,0,0,da);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_FILE_UNEXPECTED,"Dimension in info file is not 1, 2, or 3 it is %d",info[0]);
+    SETERRQ1(PETSC_ERR_FILE_UNEXPECTED,"Dimension in info file is not 1, 2, or 3 it is %D",info[0]);
   }
   for (i=0; i<info[4]; i++) {
-    sprintf(fieldnametag,"-daload_fieldname_%d",i);
+    sprintf(fieldnametag,"-daload_fieldname_%d",(int)i);
     ierr = PetscOptionsGetString(PETSC_NULL,fieldnametag,fieldname,64,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = DASetFieldName(*da,i,fieldname);CHKERRQ(ierr);

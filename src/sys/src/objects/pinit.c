@@ -374,8 +374,8 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
   }
   PetscInitializeCalled = PETSC_TRUE;
 
-  /* Also initialize the initial datestamp. Done after init due to a bug in MPICH-GM? */
-  ierr = PetscSetInitialDate();CHKERRQ(ierr);
+  /* Done after init due to a bug in MPICH-GM? */
+  ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);
 
   if (!PETSC_COMM_WORLD) {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
@@ -531,7 +531,7 @@ PetscErrorCode PetscFinalize(void)
   if (flg1) {
     ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
     if (rss) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %D\n",rank,(PetscInt)rss);CHKERRQ(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] OS does not support computing entire process memory\n",rank);CHKERRQ(ierr);
     }

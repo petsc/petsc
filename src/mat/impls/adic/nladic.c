@@ -44,7 +44,6 @@ PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *
     J    = -ad_f[1];
     f    = -ad_f[0] + residual;
     ad_vustart[2*gI] =  ad_vustart[2*gI] - f/J;
-    /* printf("nI %d f %g J %g\n",nI,f,J);   */
   } while (--cnt > 0 && PetscAbsScalar(f) > 1.e-14);
 
   ad_vustart[1+2*gI] = 0.0;
@@ -69,7 +68,7 @@ PetscErrorCode NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
   void*         *ad_vu;
 
   PetscFunctionBegin;
-  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d positive",its);
+  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
 
   ierr = DAGetLocalVector(A->da,&localxx);CHKERRQ(ierr);
   /* get space for derivative object.  */

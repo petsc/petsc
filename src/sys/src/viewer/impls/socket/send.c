@@ -289,7 +289,7 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v,const char machine[]
 
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    PetscLogInfo(0,"PetscViewerSocketSetConnection:Connecting to socket process on port %d machine %s\n",port,mach);
+    PetscLogInfo(0,"PetscViewerSocketSetConnection:Connecting to socket process on port %D machine %s\n",port,mach);
     ierr = SOCKCall_Private(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

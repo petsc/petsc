@@ -127,7 +127,7 @@ PetscErrorCode MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscR
   PetscFunctionBegin;
   if (omega != 1.0) SETERRQ(PETSC_ERR_ARG_WRONG,"Currently only support omega of 1.0");
   if (fshift)       SETERRQ(PETSC_ERR_ARG_WRONG,"Currently do not support fshift");
-  if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
+  if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
 
   if (!a->diagonal) {
     ierr = DACreateGlobalVector(a->da,&a->diagonal);CHKERRQ(ierr);

@@ -29,7 +29,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   if (!rank){
     ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
     if (iascii) { 
-      ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",aodebug->N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
       for (i=0; i<aodebug->N; i++) {
         ierr = PetscViewerASCIIPrintf(viewer,"%3d  %3d    %3d  %3d\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);

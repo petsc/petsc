@@ -253,18 +253,18 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
     mpi_init_(&mierr);
     if (mierr) {
       *ierr = mierr;
-      (*PetscErrorPrintf)("PetscInitialize:");
+      (*PetscErrorPrintf)("PetscInitialize: Calling Fortran MPI_Init()");
       return;
     }
     PetscBeganMPI    = PETSC_TRUE;
   }
   PetscInitializeCalled = PETSC_TRUE;
 
-  *ierr = PetscSetInitialDate();
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscSetInitialDate()");return;}
+  *ierr = PetscErrorPrintfInitialize();
+  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscErrorPrintfInitialize()");return;}
 
   if (!PETSC_COMM_WORLD) {
-    PETSC_COMM_WORLD          = MPI_COMM_WORLD;
+    PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
 
   *ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);

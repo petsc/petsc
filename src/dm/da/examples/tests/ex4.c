@@ -128,9 +128,9 @@ int main(int argc,char **argv)
       for (i=Xs; i<Xs+Xm; i++) {
         iloc = w*((j-Ys)*Xm + i-Xs); 
         for (l=0; l<w; l++) {
-          if (iglobal[kk] != ltog[iloc+l]) {fprintf(stdout,
-            "[%d] Problem with mapping: j=%d, i=%d, l=%d, petsc1=%d, petsc2=%d\n",
-             rank,j,i,l,ltog[iloc+l],iglobal[kk]);}
+          if (iglobal[kk] != ltog[iloc+l]) {
+            ierr = PetscFPrintf(PETSC_COMM_SELF,stdout,"[%d] Problem with mapping: j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",
+                                rank,j,i,l,ltog[iloc+l],iglobal[kk]);}
           kk++;
         }
       }

@@ -412,7 +412,7 @@ gsi_new(void)
 
   
 #ifdef DEBUG
-  error_msg_warning("gsi_new() :: size=%d\n",size);
+  error_msg_warning("gsi_new() :: size=%D\n",size);
 #endif
 
   gs = (gs_id *) perm_malloc(size);

@@ -30,7 +30,7 @@ PetscErrorCode PFApplyVec_Constant(void *value,Vec x,Vec y)
 PetscErrorCode PFView_Constant(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ PetscErrorCode PFDestroy_Constant(void *value)
 PetscErrorCode PFSetFromOptions_Constant(PF pf)
 {
   PetscErrorCode ierr;
-  PetscScalar  *value = (PetscScalar *)pf->data;
+  PetscScalar    *value = (PetscScalar *)pf->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Constant function options");CHKERRQ(ierr);
@@ -73,7 +73,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PFCreate_Constant(PF pf,void *value)
 {
   PetscErrorCode ierr;
-  PetscScalar *loc;
+  PetscScalar    *loc;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(2*sizeof(PetscScalar),&loc);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ PetscErrorCode PFApplyVec_Identity(void *value,Vec x,Vec y)
 PetscErrorCode PFView_Identity(void *value,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -155,11 +155,11 @@ EXTERN_C_BEGIN
 PetscErrorCode PFCreate_Identity(PF pf,void *value)
 {
   PetscErrorCode ierr;
-  PetscInt *loc;
+  PetscInt       *loc;
 
   PetscFunctionBegin;
   if (pf->dimout != pf->dimin) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ,"Input dimension must match output dimension for Identity function, dimin = %d dimout = %d\n",pf->dimin,pf->dimout);
+    SETERRQ2(PETSC_ERR_ARG_SIZ,"Input dimension must match output dimension for Identity function, dimin = %D dimout = %D\n",pf->dimin,pf->dimout);
   }
   ierr = PetscMalloc(sizeof(PetscInt),&loc);CHKERRQ(ierr);
   loc[0] = pf->dimout;

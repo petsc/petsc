@@ -282,7 +282,7 @@ PetscErrorCode TSPseudoDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(ts->comm,"TS %d dt %g time %g fnorm %g\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ts->comm,"TS %D dt %g time %g fnorm %g\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

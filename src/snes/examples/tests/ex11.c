@@ -105,8 +105,8 @@ int main( int argc, char **argv )
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Building coarse Jacobian redundantly\n");CHKERRQ(ierr);
   }
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %D by %D\n",user.coarse.mx,user.coarse.my);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",user.fine.mx,user.fine.my);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param < bratu_lambda_min) {
@@ -199,7 +199,7 @@ int main( int argc, char **argv )
   ierr = FormInitialGuess1(&user,user.fine.x);CHKERRQ(ierr);
   ierr = SNESSolve(snes,user.fine.x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n", its );CHKERRQ(ierr);
 
   /* Free data structures */
   if (user.redundant_build) {
@@ -519,14 +519,13 @@ int FormInterpolation(AppCtx *user)
       */
       x  = ((double)(i - i_c*ratio))/((double)ratio);
       y  = ((double)(j - j_c*ratio))/((double)ratio);
-      /* printf("i j %d %d %g %g\n",i,j,x,y); */
       nc = 0;
       /* one left and below; or we are right on it */
       if (j_c < j_start_ghost_c || j_c > j_start_ghost_c+n_ghost_c) {
-        SETERRQ3(1,"Sorry j %d %d %d",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
+        SETERRQ3(1,"Sorry j %D %D %D",j_c,j_start_ghost_c,j_start_ghost_c+n_ghost_c);
       }
       if (i_c < i_start_ghost_c || i_c > i_start_ghost_c+m_ghost_c) {
-        SETERRQ3(1,"Sorry i %d %d %d",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
+        SETERRQ3(1,"Sorry i %D %D %D",i_c,i_start_ghost_c,i_start_ghost_c+m_ghost_c);
       }
       col      = m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c);
       cols[nc] = idx_c[col];

@@ -98,19 +98,19 @@ int main(int argc,char **args)
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
     ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRQ(ierr);
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"processor number %d: start=%d, end=%d, mystart=%d, myend=%d\n",
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"processor number %d: start=%D, end=%D, mystart=%D, myend=%D\n",
             rank,start,end,mystart,myend);CHKERRQ(ierr);
     for (i=0; i<nrsub; i++) {
       for (j=0; j<ncsub; j++) {
 #if defined(PETSC_USE_COMPLEX)
 	if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0) {
-           ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%d, %d] = %g + %g i\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]),
+           ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %g + %g i\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]),
                                        PetscImaginaryPart(vals[i*ncsub+j]));CHKERRQ(ierr);
 	} else {
-           ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%d, %d] = %g\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+           ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %g\n",rsub[i],csub[j],PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
         }
 #else
-         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%d, %d] = %g\n",rsub[i],csub[j],vals[i*ncsub+j]);CHKERRQ(ierr);
+         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%D, %D] = %g\n",rsub[i],csub[j],vals[i*ncsub+j]);CHKERRQ(ierr);
 #endif
       }
     }

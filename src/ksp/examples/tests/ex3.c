@@ -31,14 +31,16 @@ int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,m = 5,rank,size,N,start,end,M,its;
-  PetscScalar val,zero = 0.0,one = 1.0,none = -1.0,Ke[16],r[4];
-  PetscReal   x,y,h,norm;
-  int         ierr,idx[4],count,*rows;
-  Vec         u,ustar,b;
-  KSP         ksp;
-  IS          is;
+  Mat            C; 
+  PetscMPIInt    rank,size;
+  PetscInt       i,m = 5,N,start,end,M,its;
+  PetscScalar    val,zero = 0.0,one = 1.0,none = -1.0,Ke[16],r[4];
+  PetscReal      x,y,h,norm;
+  PetscErrorCode ierr;
+  PetscInt       idx[4],count,*rows;
+  Vec            u,ustar,b;
+  KSP            ksp;
+  IS             is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -148,7 +150,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,ustar,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %D\n",norm*h,its);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);

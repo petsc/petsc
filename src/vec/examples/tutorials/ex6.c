@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = PetscBinaryRead(fd,&sz,1,PETSC_INT);CHKERRQ(ierr);
   if (sz <=0) SETERRQ(1,"Error: Must have array length > 0");
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%d ...\n",(int)sz);CHKERRQ(ierr); 
+  ierr = PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%D ...\n",sz);CHKERRQ(ierr); 
   ierr = PetscBinaryRead(fd,avec,sz,PETSC_SCALAR);CHKERRQ(ierr);
 
   /* View vector */

@@ -164,8 +164,7 @@ SCOTCH_DIRS        = src/mat/partition
 PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${EXTERNAL_LIB_BASIC}
 #
 # Some variables used to build shared libraries
-SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts \
-           libpetsccontrib
+SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts libpetsccontrib
 #
 #   These should really be defined in each of the bmake/${PETSC_ARCH}/variables files but
 #   it is easier to have defaults which work on most machines (overwritable in ${PETSC_ARCH}/variables)
@@ -176,6 +175,8 @@ DOCTEXT  = doctext
 MAPNAMES = mapnames
 C2HTML   = c2html
 BIB2HTML = bib2html
+#
+DATAFILESPATH = /home/petsc/datafiles
 #
 # The following include files set customized site, optimization, and version
 # options.  Do NOT remove any of these include files.  You should generally

@@ -162,7 +162,7 @@ int main(int argc,char **argv)
   */
   ierr = TSStep(ts,&its,&ftime);CHKERRQ(ierr);
   
-  printf("Number of pseudo timesteps = %d final time %4.2e\n",its,ftime);
+  printf("Number of pseudo timesteps = %d final time %4.2e\n",(int)its,ftime);
 
   /* 
      Free the data structures constructed above

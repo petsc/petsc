@@ -412,7 +412,7 @@ PetscErrorCode TSView_PVode(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"PVode GMRES max iterations (same as restart in PVODE) %d\n",cvode->restart);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PVode GMRES max iterations (same as restart in PVODE) %D\n",cvode->restart);CHKERRQ(ierr);
     if (cvode->gtype == PVODE_MODIFIED_GS) {
       ierr = PetscViewerASCIIPrintf(viewer,"PVode using modified Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     } else {

@@ -24,13 +24,15 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x, b, u;      /* approx solution, RHS, exact solution */
-  Mat         A;            /* linear system matrix */
-  KSP         ksp;         /* linear solver context */
-  PC          pc;           /* preconditioner context */
-  PetscReal   norm;         /* norm of solution error */
-  int         ierr,i,n = 10,col[3],its,size;
-  PetscScalar neg_one = -1.0,one = 1.0,value[3];
+  Vec            x, b, u;      /* approx solution, RHS, exact solution */
+  Mat            A;            /* linear system matrix */
+  KSP            ksp;         /* linear solver context */
+  PC             pc;           /* preconditioner context */
+  PetscReal      norm;         /* norm of solution error */
+  PetscErrorCode ierr;
+  PetscInt       i,n = 10,col[3],its;
+  PetscMPIInt    size;
+  PetscScalar    neg_one = -1.0,one = 1.0,value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -150,7 +152,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&neg_one,u,x);CHKERRQ(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
   /* 
      Free work space.  All PETSc objects should be destroyed when they
