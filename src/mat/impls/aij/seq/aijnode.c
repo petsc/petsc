@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.55 1996/10/10 00:10:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.56 1996/10/10 00:13:49 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -44,7 +44,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
     j    = aj + ai[row] + ishift;
     jmax = aj + ai[row+1] + ishift;
     i2   = 0;
-    col  = *j + ishift;
+    col  = *j++ + ishift;
     i2   = tvc[col];
     while (i2<i1 && j<jmax) { /* 1.[-xx-d-xx--] 2.[-xx-------], off-diagonal elemets */
       ia[i1+1]++;
@@ -60,7 +60,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
   for ( i1=1; i1<m+1; i1++ ) {
     row        = ia[i1-1];
     ia[i1]    += row;
-    work[i1-1] = row - 1;
+    work[i1-1] = row - oshift;
   }
 
   /* allocate space for column pointers */
@@ -73,7 +73,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
     j    = aj + ai[row] + ishift;
     jmax = aj + ai[row+1] + ishift;
     i2   = 0;                     /* Col inode index */
-    col  = *j + ishift;
+    col  = *j++ + ishift;
     i2   = tvc[col];
     while (i2<i1 && j<jmax) {
       ja[work[i2]++] = i1 + oshift;
@@ -137,7 +137,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int 
   for ( i1=1; i1<m+1; i1++ ) {
     row        = ia[i1-1];
     ia[i1]    += row;
-    work[i1-1] = row - 1;
+    work[i1-1] = row - oshift;
   }
 
   /* allocate space for column pointers */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.21 1996/10/11 19:39:42 balay Exp balay $";
+static char vcid[] = "$Id: ij.c,v 1.22 1996/10/11 19:50:00 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -44,7 +44,7 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
   ia[0] = shiftout;
   for (row = 0; row < n; row++) {
     nz = ai[row+1] - ai[row];
-    j  = aj + ai[row];
+    j  = aj + ai[row] + shiftin;
     while (nz--) {
        col = *j++ + shiftin;
        if (col > row) { break;}
@@ -55,9 +55,9 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
 
   /* shiftin ia[i] to point to next row */
   for ( i=1; i<n+1; i++ ) {
-    row       = ia[i-shiftout];
+    row       = ia[i-1];
     ia[i]     += row;
-    work[i-1] = row - 1;
+    work[i-1] = row - shiftout;
   }
 
   /* allocate space for column pointers */
@@ -67,7 +67,7 @@ int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shiftin, int shiftout,
   /* loop over lower triangular part putting into ja */ 
   for (row = 0; row < n; row++) {
     nz = ai[row+1] - ai[row];
-    j  = aj + ai[row];
+    j  = aj + ai[row] + shiftin;
     while (nz--) {
       col = *j++ + shiftin;
       if (col > row) { break;}
