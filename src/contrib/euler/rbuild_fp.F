@@ -1,5 +1,5 @@
 c
-c  "$Id: rbuild_fp.F,v 1.5 1997/10/12 18:35:57 keyes Exp curfman $";
+c  "$Id: rbuild_fp.F,v 1.6 1997/10/19 21:23:51 curfman Exp curfman $";
 c
 c ----------------------------------------------------------------------
 c
@@ -55,10 +55,10 @@ c     uniprocessor grid!
         rbuild_direct_fp = -1
         return
       endif
-      if (model .eq. MMFP) then
+      if (model .eq. MMFP_INT) then
         ndof_fe = 0
-      else if (model .eq. MMHYBRID_F .or.
-     &         model .eq. MMHYBRID_EF1) then
+      else if (model .eq. MMHYBRID_F_INT .or.
+     &         model .eq. MMHYBRID_EF1_INT) then
         ndof_fe = 5
       else
         if (rank .eq. 0) write(6,*) 'Unsupported model type'

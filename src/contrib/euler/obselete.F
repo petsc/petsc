@@ -1,5 +1,5 @@
 c
-c  "$Id: obselete.F,v 1.6 1997/10/11 18:39:18 curfman Exp curfman $";
+c  "$Id: obselete.F,v 1.7 1997/10/16 22:01:31 curfman Exp curfman $";
 c
 c  This file contains routines that are now obselete.  But since
 c  these were crucial during development stages of the parallel,
@@ -876,7 +876,6 @@ c
 #include "dt.h"
 #include "varbls.h"
 #include "consts.h"
-#include "freq.h"
 #include "es.h"
 #include "sada.h"
 #include "avctrs.h"
@@ -885,7 +884,6 @@ c
 
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
-c      COMMON /FREQ/ IFREQ,ISGS
       double precision  qer(5),qel(5),eps,epsi,dql,dqr
       integer i,j,k,l,m
 
@@ -958,7 +956,6 @@ c
 #include "dt.h"
 #include "varbls.h"
 #include "consts.h"
-#include "freq.h"
 #include "es.h"
 #include "sada.h"
 #include "avctrs.h"
@@ -968,7 +965,6 @@ c
 
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
-c      COMMON /FREQ/ IFREQ,ISGS
       double precision  qer(5),qel(5),eps,epsi,dti
       integer nloc,ltog(0:nloc-1)
       integer m,ierr,nd2,ijk,jk,rc(5),i,j,k
@@ -1084,7 +1080,6 @@ c
 #include "wing.h"
 #include "avctrs.h"
 #include "sada.h"
-#include "freq.h"
 #include "ang.h"
 #include "es.h"
 #include "bc.h"
@@ -1109,7 +1104,6 @@ c      COMMON /DIAG/ D(5,5,NI,NJ,NK)
 c      COMMON /TSTEP/ DT(NI,NJ,NK)
 c      COMMON /ANG/ ALPHA,BETA,PHI
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
-c      COMMON /FREQ/ IFREQ,ISGS
 c      COMMON /BCINFO/  b1bc(5,5,4,nj,nk), b2bc(5,5,ni,4,nk),
 c     &                 b3bc(5,5,ni,nj,4), b2bc_tmp(5,5,ni,4,nk)
       double precision  qer(5),qel(5),eps,epsi,dql,dqr
@@ -1237,9 +1231,7 @@ c
 #include "wing.h"
 #include "avctrs.h"
 #include "sada.h"
-#include "freq.h"
 #include "es.h"
-#include "condi.h"
 #include "sigma.h"
 #include "fv.h"
 
@@ -1255,8 +1247,6 @@ c      common /fv/ f1(5,ni,nj,nk),g1(5,ni,nj,nk),h1(5,ni,nj,nk)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /SIGMA/ SP(5,NI),SM(5,NI)
 c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
-c      COMMON /CONDI/ ORDER,PSI,LIMIT
-c      COMMON /FREQ/ IFREQ,ISGS
 c      double precision b1(5,5,ni1,nj1,nk1),b2(5,5,ni1,nj1,nk1)
 c      double precision b3(5,5,ni1,nj1,nk1)
 c

@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.15 1997/10/17 19:46:42 curfman Exp keyes $";
+c  "$Id: resid_fp.F,v 1.16 1998/03/19 16:42:45 curfman Exp curfman $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -76,8 +76,6 @@ c though most of this is written out more explicitly than necessary.
 #include "wing.h"
 #include "avctrs.h"
 #include "sada.h"
-#include "freq.h"
-#include "condi.h"
 #include "aux_fp.h"
 #include "coord.h"
 
@@ -97,8 +95,6 @@ c      common /fv/ f1(5,ni,nj,nk),g1(5,ni,nj,nk),h1(5,ni,nj,nk)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /SIGMA/ SP(5,NI),SM(5,NI)
 c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
-c      COMMON /CONDI/ ORDER,PSI,LIMIT
-c      COMMON /FREQ/ IFREQ,ISGS
       double precision F(D_NI)
       integer i,j,k
       double precision p25 

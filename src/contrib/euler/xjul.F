@@ -1,5 +1,5 @@
 C
-C  "$Id: xjul.F,v 1.13 1997/10/11 18:39:18 curfman Exp curfman $";
+C  "$Id: xjul.F,v 1.14 1998/03/19 16:41:25 curfman Exp curfman $";
 C
 C  This file contains routines that are used only by the Julianne solver,
 C  not by any of the PETSc solvers.
@@ -189,6 +189,7 @@ c
 #include "wing.h"
 #include "avctrs.h"
 #include "sada.h"
+#include "freq.h"
 #include "ang.h"
 #include "gs.h"
 #include "es.h"

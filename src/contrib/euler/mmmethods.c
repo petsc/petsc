@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmmethods.c,v 1.4 1997/10/11 18:39:18 curfman Exp curfman $";
+static char vcid[] = "$Id: mmmethods.c,v 1.5 1998/05/13 20:02:16 curfman Exp curfman $";
 #endif
 
 #include "mmimpl.h"
@@ -16,7 +16,7 @@ int MMCreate_Euler(MM mm)
   MM_Euler *euler = PetscNew(MM_Euler); CHKPTRQ(euler);
 
   PetscFunctionBegin;
-  PetscMemzero(mm,sizeof(MM_Euler));
+  PetscMemzero(euler,sizeof(MM_Euler));
   PLogObjectMemory(mm,sizeof(MM_Euler));
 
   euler->stuff       = 0;
