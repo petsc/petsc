@@ -282,11 +282,11 @@ int MatApplyPtAP_SeqAIJ_Symbolic(Mat A,Mat P,Mat *C) {
   ptj = pti + pn+1;
 
   /* Walk through pj and count ## of non-zeros in each row of P^T. */
-  for (i=0;i<pi[pm]-1;i++) {
+  for (i=0;i<pi[pm];i++) {
     pti[pj[i]+1] += 1;
   }
   /* Form pti for csr format of P^T. */
-  for (i=0;i<pm;i++) {
+  for (i=0;i<pn;i++) {
     pti[i+1] += pti[i];
   }
 
@@ -298,10 +298,11 @@ int MatApplyPtAP_SeqAIJ_Symbolic(Mat A,Mat P,Mat *C) {
   for (i=0;i<pm;i++) {
     pnzj = pi[i+1] - pi[i];
     for (j=0;j<pnzj;j++) {
-      ptj[ptfill[j]] =  i;
-      ptfill[j]      += 1;
+      ptj[ptfill[*pj]] =  i;
+      ptfill[*pj++]      += 1;
     }
   }
+  pj = p->j;
 
   /* Clean-up temporary space. */
   ierr = PetscFree(ptfill);CHKERRQ(ierr);
