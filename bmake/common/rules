@@ -351,9 +351,9 @@ fortranstubs:
 #
 #
 .c.o .cpp.o .cc.o .C.o .ad.o: 
-	complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
+	-@complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
         if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
-          egrep PETSC_HAVE_ADIC ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h ;\
+          egrep PETSC_HAVE_ADIC ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h > /dev/null;\
           if [ "$$?" = 0 ]; then \
             haveadic=1; \
           else \
