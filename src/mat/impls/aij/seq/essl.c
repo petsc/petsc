@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.24 1997/12/01 01:54:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.25 1998/03/12 23:18:23 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -27,13 +27,12 @@ typedef struct {
 } Mat_SeqAIJ_Essl;
 
 
-extern int MatDestroy_SeqAIJ(PetscObject);
+extern int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ "MatDestroy_SeqAIJ_Essl"
-extern int MatDestroy_SeqAIJ_Essl(PetscObject obj)
+extern int MatDestroy_SeqAIJ_Essl(Mat A)
 {
-  Mat             A = (Mat) obj;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*) a->spptr;
   int             ierr;
@@ -41,7 +40,7 @@ extern int MatDestroy_SeqAIJ_Essl(PetscObject obj)
   PetscFunctionBegin;
   /* free the Essl datastructures */
   PetscFree(essl->a);
-  ierr = MatDestroy_SeqAIJ(obj);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -77,8 +76,8 @@ extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   if (a->m != a->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"matrix must be square"); 
   ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F); CHKERRQ(ierr);
   B             = *F;
-  B->ops->solve  = MatSolve_SeqAIJ_Essl;
-  B->destroy    = MatDestroy_SeqAIJ_Essl;
+  B->ops->solve   = MatSolve_SeqAIJ_Essl;
+  B->ops->destroy = MatDestroy_SeqAIJ_Essl;
   B->factor     = FACTOR_LU;
   b             = (Mat_SeqAIJ*) B->data;
   essl          = PetscNew(Mat_SeqAIJ_Essl); CHKPTRQ(essl);
