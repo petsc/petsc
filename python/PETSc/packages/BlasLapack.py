@@ -31,14 +31,14 @@ class Configure(config.base.Configure):
 
   def configureHelp(self, help):
     import nargs
-    help.addArgument('BLAS/LAPACK', '-with-blas-lapack-dir=<lib>', nargs.ArgDir(None, None, 'Indicate the directory containing BLAS and LAPACK libraries'))
-    help.addArgument('BLAS/LAPACK', '-with-blas-lapack=<lib>', nargs.Arg(None, None, 'Indicate the library containing BLAS and LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-blas=<lib>',        nargs.Arg(None, None, 'Indicate the library containing BLAS'))
-    help.addArgument('BLAS/LAPACK', '-with-lapack=<lib>',      nargs.Arg(None, None, 'Indicate the library containing LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-c-blas-lapack>',    nargs.ArgBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-f-blas-lapack>',    nargs.ArgBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-c-blas-lapack-if-needed>',    nargs.ArgBool(None, 0, 'Automatically install a C version of BLAS/LAPACK if no BLAS/LAPACK found'))
-    help.addArgument('BLAS/LAPACK', '-with-f-blas-lapack-if-needed>',    nargs.ArgBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK if no BLAS/LAPACK found'))
+    help.addArgument('BLAS/LAPACK', '-with-blas-lapack-dir=<lib>',   nargs.ArgDir(None, None, 'Indicate the directory containing BLAS and LAPACK libraries'))
+    help.addArgument('BLAS/LAPACK', '-with-blas-lapack=<lib>',       nargs.Arg(None, None, 'Indicate the library containing BLAS and LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-blas=<lib>',              nargs.Arg(None, None, 'Indicate the library containing BLAS'))
+    help.addArgument('BLAS/LAPACK', '-with-lapack=<lib>',            nargs.Arg(None, None, 'Indicate the library containing LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-c-blas-lapack',           nargs.ArgBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-f-blas-lapack',           nargs.ArgBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
+    help.addArgument('BLAS/LAPACK', '-with-c-blas-lapack-if-needed', nargs.ArgBool(None, 0, 'Automatically install a C version of BLAS/LAPACK if no BLAS/LAPACK found'))
+    help.addArgument('BLAS/LAPACK', '-with-f-blas-lapack-if-needed', nargs.ArgBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK if no BLAS/LAPACK found'))
     return
 
   def parseLibrary(self, library):
