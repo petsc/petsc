@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.1 2001/01/02 21:42:39 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.2 2001/01/03 20:44:57 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -35,7 +35,6 @@ static char help[] = "Solves PDE optimization problem of ex22.c with finite diff
 */
 
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int PDEFormFunction(SNES,Vec,Vec,void*);
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -86,6 +85,45 @@ int main(int argc,char **argv)
 }
  
 /*
+     Enforces the PDE on the grid
+     This local function acts on the ghosted version of U (accessed via DAGetLocalVector())
+     BUT the global, nonghosted version of FU
+
+*/
+#undef __FUNC__
+#define __FUNC__ "PDEFormFunction"
+int PDEFormFunction(Scalar *w,Vec U,Vec FU,DA da)
+{
+  int     ierr,xs,xm,i,N;
+  Scalar  *u,*fu,d,h;
+  Vec     vu;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
+
+  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,FU,(void**)&fu);CHKERRQ(ierr);
+  d    = N-1.0;
+  h    = 1.0/d;
+
+  for (i=xs; i<xs+xm; i++) {
+    if      (i == 0)   fu[0]   = 2.0*d*(u[0] - w[0]);
+    else if (i == N-1) fu[N-1] = 2.0*d*u[N-1];
+    else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h);
+  } 
+
+  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,FU,(void**)&fu);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
+  PLogFlops(6*N);
+  PetscFunctionReturn(0);
+}
+
+/*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
      This local function acts on the ghosted version of U (accessed via VecPackGetLocalVectors() and
@@ -95,6 +133,8 @@ int main(int argc,char **argv)
    for the Lagrange multiplier equations
 
 */
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   DMMG    dmmg = (DMMG)dummy;
@@ -133,17 +173,13 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     else               flambda[i]   = -((2.*h*u[i]   + d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1])));
   } 
 
-  /* derivative of L() w.r.t. lambda */
-  for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu[0]   = 2.0*d*(u[0] - w[0]);
-    else if (i == N-1) fu[N-1] = 2.0*d*u[N-1];
-    else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h);
-  } 
-
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vlambda,(void**)&lambda);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vflambda,(void**)&flambda);CHKERRQ(ierr);
+
+  /* derivative of L() w.r.t. lambda */
+  ierr = PDEFormFunction(w,vu,vfu,da);CHKERRQ(ierr);
 
   ierr = VecPackRestoreLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   PLogFlops(13*N);
@@ -151,40 +187,3 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 }
 
 
-/*
-     This local function acts on the ghosted version of U (accessed via DAGetLocalVector())
-     BUT the global, nonghosted version of FU
-
-*/
-int PDEFormFunction(SNES snes,Vec U,Vec FU,void* dummy)
-{
-  DMMG    dmmg = (DMMG)dummy;
-  int     ierr,xs,xm,i,N;
-  Scalar  *u,*fu,d,h;
-  Vec     vu;
-  DA      da = (DA) dmmg->dm;
-
-  PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
-
-  ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,FU,(void**)&fu);CHKERRQ(ierr);
-  d    = N-1.0;
-  h    = 1.0/d;
-
-  for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu[0]   = 2.0*d*(u[0] - .25);
-    else if (i == N-1) fu[N-1] = 2.0*d*u[N-1];
-    else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h);
-  } 
-
-  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,FU,(void**)&fu);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
-  PLogFlops(6*N);
-  PetscFunctionReturn(0);
-}
