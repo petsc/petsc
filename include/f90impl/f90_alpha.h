@@ -1,4 +1,4 @@
-/* $Id: f90_alpha.h,v 1.1 2000/07/18 19:54:17 balay Exp balay $ */
+/* $Id: f90_alpha.h,v 1.2 2000/07/18 20:15:01 balay Exp balay $ */
 
 #if !defined (__F90_ALPHA_H)
 #define __F90_ALPHA_H
@@ -40,7 +40,7 @@ short          id;      /* integer id representing the datatype */ \
 long           sd;      /* sizeof(DataType) in bits */  \
 void*          addr;    /* Pointer to the data */ \
 long           a;       /* unknown stuff - always 0 */ \
-long           addr_d;  /* addr-sumof(lower*mult) */ \
+void*          addr_d;  /* addr-sumof(lower*mult) */ \
 int            ndim;    /* No of dimensions */
 
 typedef struct {
