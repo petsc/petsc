@@ -30,16 +30,17 @@ struct _p_Object {
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj)
 {
-  PetscObject o;
+  PetscObject    o;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(obj,2);
 
   ierr = PetscHeaderCreate(o,_p_Object,PetscInt,-1,0,"PetscObject",comm,PetscObjectDestroy,0);CHKERRQ(ierr);
+  /* records not yet defined in PetscObject 
   o->data        = 0;
-  o->view        = 0;
   o->setupcalled = 0;
+  */
   *obj = o;
   PetscFunctionReturn(0);
 }
