@@ -535,7 +535,7 @@ int PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
       if (vascii->fd == PETSC_NULL) {
         vascii->fd = fopen(fname,"w+");
       } else {
-        ierr     = fseek(vascii->fd, 0, SEEK_END);                                                        CHKERRQ(ierr);
+        ierr     = fseek(vascii->fd, 0, SEEK_END);CHKERRQ(ierr);
       }
       break;
     default:

@@ -173,7 +173,7 @@ const int two = 2;
 
   /*  Create vector to contain load, nonlinear function, and initial guess  */
   ierr = VecCreateMPI(comm,two*vertex_local_n,PETSC_DECIDE,&b);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(b,two);  CHKERRQ(ierr);
+  ierr = VecSetBlockSize(b,two);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(b,ltog);CHKERRQ(ierr);
  
   /* duplicated vectors inherit the blocking */
@@ -531,7 +531,7 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
     bvs[2*i] = uvvals[2*indices[i]] - pde_bc1(xval,yval);
     bvs[2*i+1] = uvvals[2*indices[i]+1] - pde_bc2(xval,yval);
   }
-  ierr = VecRestoreArray(f_local,&uvvals);  CHKERRQ(ierr);
+  ierr = VecRestoreArray(f_local,&uvvals);CHKERRQ(ierr);
   ierr = ISRestoreIndices(vertex_boundary,&indices);CHKERRQ(ierr);
 
  /*********  Set Values *************/

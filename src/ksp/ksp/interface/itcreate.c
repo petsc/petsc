@@ -268,7 +268,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   PetscValidPointer(inksp,2);
   *inksp = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = KSPInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
+  ierr = KSPInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);

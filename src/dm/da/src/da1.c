@@ -139,7 +139,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   PetscValidPointer(inra,7);
   *inra = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);

@@ -18,7 +18,7 @@
 /*
   Sample usage: 
   ierr = KSPSetMonitor(ksp, KSPMonitorWriteConvHist,PETSC_NULL, 
-                       PETSC_NULL); CHKERRQ(ierr); 
+                       PETSC_NULL);CHKERRQ(ierr); 
    
   Note: the tolerance file can viewed using gnuplot, e.g. 
   gnuplot plotpetsctol 
@@ -114,25 +114,25 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
   numnodes = convhist->NUMNODES;
 
   sprintf(filename,"/home/domenico/Antas/Output/residual.%u",n); 
-  ierr = VecCreate(MPI_COMM_WORLD,&t); CHKERRQ(ierr);
-  ierr = VecSetSizes(t,numnodes,numnodes); CHKERRQ(ierr);
-  ierr = VecSetType(t,VECSEQ); CHKERRQ(ierr);
-  ierr = VecDuplicate(t,&v); CHKERRQ(ierr); 
+  ierr = VecCreate(MPI_COMM_WORLD,&t);CHKERRQ(ierr);
+  ierr = VecSetSizes(t,numnodes,numnodes);CHKERRQ(ierr);
+  ierr = VecSetType(t,VECSEQ);CHKERRQ(ierr);
+  ierr = VecDuplicate(t,&v);CHKERRQ(ierr); 
 
-  ierr = KSPBuildResidual(ksp, t, v, &V); CHKERRQ(ierr); 
+  ierr = KSPBuildResidual(ksp, t, v, &V);CHKERRQ(ierr); 
   
-  /*  ierr = PetscViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer); CHKERRQ(ierr);
+  /*  ierr = PetscViewerFileOpenASCII(MPI_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB); 
            CHKERRQ(ierr);
-    ierr = VecView(V, viewer); CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr); */
-  ierr = VecGetArray(V,&values); CHKERRQ(ierr); 
+    ierr = VecView(V, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr); */
+  ierr = VecGetArray(V,&values);CHKERRQ(ierr); 
   PetscFOpen(MPI_COMM_WORLD,filename,"w",&fout);
   for (i=0;i<numnodes;i++)
       PetscFPrintf(MPI_COMM_WORLD,fout,"%14.12e \n", values[i]); 
   PetscFClose(MPI_COMM_WORLD,fout);
 
-  ierr = VecRestoreArray(V,&values); CHKERRQ(ierr);
+  ierr = VecRestoreArray(V,&values);CHKERRQ(ierr);
 
   return 0;
 }
@@ -178,7 +178,7 @@ int ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   MatOrderingType   rtype = MATORDERING_RCM;
 
   for (i=0; i<nsub; i++) {
-     ierr = MatGetOrdering(submat[i], rtype, &isrow, &iscol); CHKERRQ(ierr);
+     ierr = MatGetOrdering(submat[i], rtype, &isrow, &iscol);CHKERRQ(ierr);
   }
 
   return 0;
@@ -194,12 +194,12 @@ int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   PetscPrintf(PETSC_COMM_WORLD,"***  Overzicht van opdeling matrix *** \n");
   for (i=0; i<nsub; i++) {
     PetscPrintf(PETSC_COMM_WORLD,"\n** Jacobi Blok %d \n",i);
-    ierr = ISGetSize(row[i],&nloc); CHKERRQ(ierr); 
-    ierr = ISGetIndices(row[i], &glo_row_ind); CHKERRQ(ierr);
+    ierr = ISGetSize(row[i],&nloc);CHKERRQ(ierr); 
+    ierr = ISGetIndices(row[i], &glo_row_ind);CHKERRQ(ierr);
     for (j=0; j< nloc; j++) {
        PetscPrintf(PETSC_COMM_WORLD,"[%d] global row %d\n",j,glo_row_ind[j]); 
     }
-  ierr = ISRestoreIndices(row[i],&glo_row_ind); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(row[i],&glo_row_ind);CHKERRQ(ierr);
   }
 
   return 0;
@@ -215,13 +215,13 @@ int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
   PetscDraw   draw; 
 
   for (i=0; i<nsub; i++) {
-     /* ierr = MatView(submat[i],PETSC_NULL); CHKERRQ(ierr); */
+     /* ierr = MatView(submat[i],PETSC_NULL);CHKERRQ(ierr); */
      ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
             0, 0, 500,500,&viewer); 
-     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRQ(ierr);
-     ierr = MatView(submat[i], viewer); CHKERRQ(ierr);
-     ierr = PetscDrawPause(draw); CHKERRQ(ierr);
-     ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
+     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+     ierr = MatView(submat[i], viewer);CHKERRQ(ierr);
+     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
 
   return 0;
@@ -237,11 +237,11 @@ int MyMatView(Mat mat,void *dummy)
   PetscDraw   draw; 
 
   ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 0, 0, 500,500,&viewer); 
-  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRQ(ierr);
-  ierr = MatView(mat, viewer); CHKERRQ(ierr);
-  ierr = PetscDrawSetPause(draw, 5); CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+  ierr = MatView(mat, viewer);CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw, 5);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
   return 0;
 }
@@ -258,8 +258,8 @@ int PrintMatrix(Mat mat, char* path, char* base)
    MatInfo     info;
 
    /*..Get size and number of unknowns of matrix..*/ 
-   ierr = MatGetSize(mat, &numrows, &numcols); CHKERRQ(ierr);
-   ierr = MatGetInfo(mat,MAT_LOCAL,&info); CHKERRQ(ierr); 
+   ierr = MatGetSize(mat, &numrows, &numcols);CHKERRQ(ierr);
+   ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr); 
    numnonzero = (int)info.nz_used;
 
    /*..Set file and open file for reading..*/ 
@@ -295,7 +295,7 @@ int PrintMatrix(Mat mat, char* path, char* base)
    }
 
    /*..Close file..*/ 
-   ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
+   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
    printf("   [PrintMatrix]::Done Generating file ! %s\n", filename);       
    return 0; 
 }
@@ -312,9 +312,9 @@ int PrintVector(Vec vec, char* path, char* base)
 
    sprintf(filename, "%s%s%s", path, base, ".m");
    printf("   [PrintVector]::Generating file %s ...\n", filename); 
-   ierr = VecGetSize(vec, &size); CHKERRQ(ierr);
+   ierr = VecGetSize(vec, &size);CHKERRQ(ierr);
    ierr = PetscMalloc(size * sizeof(PetscScalar),&values);CHKERRQ(ierr); 
-   ierr = VecGetArray(vec, &values); CHKERRQ(ierr);
+   ierr = VecGetArray(vec, &values);CHKERRQ(ierr);
    ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
    ierr = PetscViewerASCIIPrintf(viewer,"function [z] = %s()\n",base);CHKERRQ(ierr);
    ierr = PetscViewerASCIIPrintf(viewer,"z = [\n");CHKERRQ(ierr);
@@ -327,8 +327,8 @@ int PrintVector(Vec vec, char* path, char* base)
      #endif 
    }
    ierr = PetscViewerASCIIPrintf(viewer,"]; \n");CHKERRQ(ierr);
-   ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
-   ierr = VecRestoreArray(vec, &values); CHKERRQ(ierr);
+   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+   ierr = VecRestoreArray(vec, &values);CHKERRQ(ierr);
    printf("   [PrintVector]::Done Generating file ! %s\n", filename);    
    return 0; 
 }

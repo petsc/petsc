@@ -26,7 +26,7 @@ int PetscMapRegisterAll(const char path[])
   PetscFunctionBegin;
   PetscMapRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PetscMapRegisterDynamic(MAP_MPI, path, "PetscMapCreate_MPI", PetscMapCreate_MPI);                       CHKERRQ(ierr);
+  ierr = PetscMapRegisterDynamic(MAP_MPI, path, "PetscMapCreate_MPI", PetscMapCreate_MPI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -28,8 +28,8 @@ int PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isdrawnull);                              CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
-  ierr = (*draw->ops->ellipse)(draw, x, y, a, b, c);                                                      CHKERRQ(ierr);
+  ierr = (*draw->ops->ellipse)(draw, x, y, a, b, c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -257,7 +257,7 @@ int SNESSetFromOptions(SNES snes)
     }
 
     for(i = 0; i < numberofsetfromoptions; i++) {
-      ierr = (*othersetfromoptions[i])(snes);                                                             CHKERRQ(ierr);
+      ierr = (*othersetfromoptions[i])(snes);CHKERRQ(ierr);
     }
 
     if (snes->setfromoptions) {
@@ -604,7 +604,7 @@ int SNESCreate(MPI_Comm comm,SNES *outsnes)
   PetscValidPointer(outsnes,1);
   *outsnes = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = SNESInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
+  ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(snes,_p_SNES,int,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);

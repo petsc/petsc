@@ -77,8 +77,8 @@ int ParameterDictDestroy(ParameterDict dict)
   while(next != PETSC_NULL) {
     node = next;
     next = node->next;
-    ierr = PetscFree(node->key);                                                                          CHKERRQ(ierr);
-    ierr = PetscFree(node);                                                                               CHKERRQ(ierr);
+    ierr = PetscFree(node->key);CHKERRQ(ierr);
+    ierr = PetscFree(node);CHKERRQ(ierr);
   }
   PetscLogObjectDestroy(dict);
   PetscHeaderDestroy(dict);
@@ -110,11 +110,11 @@ int ParameterDictSetInteger(ParameterDict dict, const char key[], int data)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
   PetscValidCharPointer(key,2);
-  ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(DictNode), &node);CHKERRQ(ierr);
   node->intData  = data;
   node->realData = 0.0;
   node->data     = PETSC_NULL;
-  ierr = PetscStrallocpy(key, &node->key);                                                                CHKERRQ(ierr);
+  ierr = PetscStrallocpy(key, &node->key);CHKERRQ(ierr);
   /* Push node onto the linked list */
   node->next     = dict->dictHead;
   dict->dictHead = node;
@@ -146,11 +146,11 @@ int ParameterDictSetDouble(ParameterDict dict, const char key[], double data)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
   PetscValidCharPointer(key,2);
-  ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(DictNode), &node);CHKERRQ(ierr);
   node->intData  = 0;
   node->realData = data;
   node->data     = PETSC_NULL;
-  ierr = PetscStrallocpy(key, &node->key);                                                                CHKERRQ(ierr);
+  ierr = PetscStrallocpy(key, &node->key);CHKERRQ(ierr);
   /* Push node onto the linked list */
   node->next     = dict->dictHead;
   dict->dictHead = node;
@@ -182,11 +182,11 @@ int ParameterDictSetObject(ParameterDict dict, const char key[], void *data)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
   PetscValidCharPointer(key,2);
-  ierr = PetscMalloc(sizeof(DictNode), &node);                                                            CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(DictNode), &node);CHKERRQ(ierr);
   node->intData  = 0;
   node->realData = 0.0;
   node->data     = data;
-  ierr = PetscStrallocpy(key, &node->key);                                                                CHKERRQ(ierr);
+  ierr = PetscStrallocpy(key, &node->key);CHKERRQ(ierr);
   /* Push node onto the linked list */
   node->next     = dict->dictHead;
   dict->dictHead = node;
@@ -222,19 +222,19 @@ int ParameterDictRemove(ParameterDict dict, const char key[])
   node  = dict->dictHead;
   prev  = node;
   /* Check the head separately */
-  ierr = PetscStrcmp(key, node->key, &found);                                                             CHKERRQ(ierr);
+  ierr = PetscStrcmp(key, node->key, &found);CHKERRQ(ierr);
   if (found == PETSC_TRUE) {
     dict->dictHead = node->next;
-    ierr = PetscFree(node->key);                                                                          CHKERRQ(ierr);
-    ierr = PetscFree(node);                                                                               CHKERRQ(ierr);
+    ierr = PetscFree(node->key);CHKERRQ(ierr);
+    ierr = PetscFree(node);CHKERRQ(ierr);
   }
   /* Check the rest */
   while((node != PETSC_NULL) && (found == PETSC_FALSE)) {
-    ierr = PetscStrcmp(key, node->key, &found);                                                           CHKERRQ(ierr);
+    ierr = PetscStrcmp(key, node->key, &found);CHKERRQ(ierr);
     if (found == PETSC_TRUE) {
       prev->next = node->next;
-      ierr = PetscFree(node->key);                                                                        CHKERRQ(ierr);
-      ierr = PetscFree(node);                                                                             CHKERRQ(ierr);
+      ierr = PetscFree(node->key);CHKERRQ(ierr);
+      ierr = PetscFree(node);CHKERRQ(ierr);
     }
     prev = node;
     node = node->next;
@@ -276,7 +276,7 @@ int ParameterDictGetInteger(ParameterDict dict, const char key[], int *data)
   node  = dict->dictHead;
   /* Check the rest */
   while((node != PETSC_NULL) && (found == PETSC_FALSE)) {
-    ierr = PetscStrcmp(key, node->key, &found);                                                           CHKERRQ(ierr);
+    ierr = PetscStrcmp(key, node->key, &found);CHKERRQ(ierr);
     if (found == PETSC_TRUE) {
       *data = node->intData;
     }
@@ -319,7 +319,7 @@ int ParameterDictGetDouble(ParameterDict dict, const char key[], double *data)
   node  = dict->dictHead;
   /* Check the rest */
   while((node != PETSC_NULL) && (found == PETSC_FALSE)) {
-    ierr = PetscStrcmp(key, node->key, &found);                                                           CHKERRQ(ierr);
+    ierr = PetscStrcmp(key, node->key, &found);CHKERRQ(ierr);
     if (found == PETSC_TRUE) {
       *data = node->realData;
     }
@@ -362,7 +362,7 @@ int ParameterDictGetObject(ParameterDict dict, const char key[], void **data)
   node  = dict->dictHead;
   /* Check the rest */
   while((node != PETSC_NULL) && (found == PETSC_FALSE)) {
-    ierr = PetscStrcmp(key, node->key, &found);                                                           CHKERRQ(ierr);
+    ierr = PetscStrcmp(key, node->key, &found);CHKERRQ(ierr);
     if (found == PETSC_TRUE) {
       *data = node->data;
     }

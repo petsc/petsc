@@ -1403,15 +1403,15 @@ int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscTruth *f)
   PetscFunctionBegin;
   bij = (Mat_SeqAIJ *) B->data;
   
-  ierr = MatGetSize(A,&ma,&na); CHKERRQ(ierr);
-  ierr = MatGetSize(B,&mb,&nb); CHKERRQ(ierr);
+  ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
+  ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
   if (ma!=nb || na!=mb)
     SETERRQ(1,"Incompatible A/B sizes for symmetry test");
   aii = aij->i; bii = bij->i;
   adx = aij->j; bdx = bij->j;
   va = aij->a; vb = bij->a;
-  ierr = PetscMalloc(ma*sizeof(int),&aptr); CHKERRQ(ierr);
-  ierr = PetscMalloc(mb*sizeof(int),&bptr); CHKERRQ(ierr);
+  ierr = PetscMalloc(ma*sizeof(int),&aptr);CHKERRQ(ierr);
+  ierr = PetscMalloc(mb*sizeof(int),&bptr);CHKERRQ(ierr);
   for (i=0; i<ma; i++) aptr[i] = aii[i];
   for (i=0; i<mb; i++) bptr[i] = bii[i];
 
@@ -1434,9 +1434,9 @@ int MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscTruth *f)
     }
   }
  done:
-  ierr = PetscFree(aptr); CHKERRQ(ierr);
+  ierr = PetscFree(aptr);CHKERRQ(ierr);
   if (B) {
-    ierr = PetscFree(bptr); CHKERRQ(ierr);
+    ierr = PetscFree(bptr);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -1449,7 +1449,7 @@ int MatIsSymmetric_SeqAIJ(Mat A,PetscTruth *f)
 {
   int ierr;
   PetscFunctionBegin;
-  ierr = MatIsTranspose_SeqAIJ(A,A,f); CHKERRQ(ierr);
+  ierr = MatIsTranspose_SeqAIJ(A,A,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

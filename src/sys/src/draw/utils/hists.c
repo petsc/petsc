@@ -59,12 +59,12 @@ int PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_COOKIE,1);
   PetscValidPointer(hist,3);
-  ierr = PetscObjectGetComm((PetscObject) draw, &comm);                                                   CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) draw, &comm);CHKERRQ(ierr);
   PetscHeaderCreate(h, _p_DrawHG, int, DRAWHG_COOKIE, 0, "PetscDrawHG", comm, PetscDrawHGDestroy, PETSC_NULL);
   h->view        = PETSC_NULL;
   h->destroy     = PETSC_NULL;
   h->win         = draw;
-  ierr = PetscObjectReference((PetscObject) draw);                                                        CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) draw);CHKERRQ(ierr);
   h->color       = PETSC_DRAW_GREEN;
   h->xmin        = PETSC_MAX;
   h->xmax        = PETSC_MIN;
@@ -72,16 +72,16 @@ int PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   h->ymax        = 1.;
   h->numBins     = bins;
   h->maxBins     = bins;
-  ierr = PetscMalloc(h->maxBins * sizeof(PetscReal), &h->bins);                                           CHKERRQ(ierr);
+  ierr = PetscMalloc(h->maxBins * sizeof(PetscReal), &h->bins);CHKERRQ(ierr);
   h->numValues   = 0;
   h->maxValues   = CHUNKSIZE;
   h->calcStats   = PETSC_FALSE;
   h->integerBins = PETSC_FALSE;
-  ierr = PetscMalloc(h->maxValues * sizeof(PetscReal), &h->values);                                       CHKERRQ(ierr);
+  ierr = PetscMalloc(h->maxValues * sizeof(PetscReal), &h->values);CHKERRQ(ierr);
   PetscLogObjectMemory(h, (h->maxBins + h->maxValues)*sizeof(PetscReal));
-  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);                                  CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
   if (isnull == PETSC_FALSE) {
-    ierr = PetscDrawAxisCreate(draw, &h->axis);                                                           CHKERRQ(ierr);
+    ierr = PetscDrawAxisCreate(draw, &h->axis);CHKERRQ(ierr);
     PetscLogObjectParent(h, h->axis);
   } else {
     h->axis = PETSC_NULL;
@@ -114,8 +114,8 @@ int PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
   if (hist->maxBins < bins) {
-    ierr = PetscFree(hist->bins);                                                                         CHKERRQ(ierr);
-    ierr = PetscMalloc(bins * sizeof(PetscReal), &hist->bins);                                            CHKERRQ(ierr);
+    ierr = PetscFree(hist->bins);CHKERRQ(ierr);
+    ierr = PetscMalloc(bins * sizeof(PetscReal), &hist->bins);CHKERRQ(ierr);
     PetscLogObjectMemory(hist, (bins - hist->maxBins) * sizeof(PetscReal));
     hist->maxBins = bins;
   }
@@ -176,11 +176,11 @@ int PetscDrawHGDestroy(PetscDrawHG hist)
 
   if (--hist->refct > 0) PetscFunctionReturn(0);
   if (hist->axis != PETSC_NULL) {
-    ierr = PetscDrawAxisDestroy(hist->axis);                                                              CHKERRQ(ierr);
+    ierr = PetscDrawAxisDestroy(hist->axis);CHKERRQ(ierr);
   }
-  ierr = PetscDrawDestroy(hist->win);                                                                     CHKERRQ(ierr);
-  ierr = PetscFree(hist->bins);                                                                           CHKERRQ(ierr);
-  ierr = PetscFree(hist->values);                                                                         CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(hist->win);CHKERRQ(ierr);
+  ierr = PetscFree(hist->bins);CHKERRQ(ierr);
+  ierr = PetscFree(hist->values);CHKERRQ(ierr);
   PetscLogObjectDestroy(hist);
   PetscHeaderDestroy(hist);
   PetscFunctionReturn(0);
@@ -214,10 +214,10 @@ int PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
     PetscReal *tmp;
     int        ierr;
 
-    ierr = PetscMalloc((hist->maxValues+CHUNKSIZE) * sizeof(PetscReal), &tmp);                            CHKERRQ(ierr);
+    ierr = PetscMalloc((hist->maxValues+CHUNKSIZE) * sizeof(PetscReal), &tmp);CHKERRQ(ierr);
     PetscLogObjectMemory(hist, CHUNKSIZE * sizeof(PetscReal));
-    ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));                           CHKERRQ(ierr);
-    ierr = PetscFree(hist->values);                                                                       CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmp, hist->values, hist->maxValues * sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscFree(hist->values);CHKERRQ(ierr);
     hist->values     = tmp;
     hist->maxValues += CHUNKSIZE;
   }
@@ -283,7 +283,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);                                  CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
   if (isnull == PETSC_TRUE) PetscFunctionReturn(0);
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
@@ -304,7 +304,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
   mean      = 0.0;
   var       = 0.0;
  
-  ierr = PetscDrawClear(draw);                                                                            CHKERRQ(ierr);
+  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   if (xmin == xmax) {
     /* Calculate number of points in each bin */
     bins    = hist->bins;
@@ -317,7 +317,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
     maxHeight = bins[0];
     if (maxHeight > ymax) ymax = hist->ymax = maxHeight;
     xmax = xmin + 1;
-    ierr = PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax);                                    CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
     if (hist->calcStats) {
       mean /= numValues;
       if (numValues > 1) {
@@ -327,17 +327,17 @@ int PetscDrawHGDraw(PetscDrawHG hist)
       }
       sprintf(title,  "Mean: %g  Var: %g", mean, var);
       sprintf(xlabel, "Total: %d", numValues);
-      ierr  = PetscDrawAxisSetLabels(hist->axis, title, xlabel, PETSC_NULL);                              CHKERRQ(ierr);
+      ierr  = PetscDrawAxisSetLabels(hist->axis, title, xlabel, PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscDrawAxisDraw(hist->axis);                                                                 CHKERRQ(ierr);
+    ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
     /* Draw bins */
     binLeft   = xmin;
     binRight  = xmax;
-    ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[0],bcolor,bcolor,bcolor,bcolor);            CHKERRQ(ierr);
+    ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[0],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
     if (color == PETSC_DRAW_ROTATE && bins[0]) bcolor++; if (bcolor > 31) bcolor = 2;
-    ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[0],PETSC_DRAW_BLACK);                             CHKERRQ(ierr);
-    ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[0],PETSC_DRAW_BLACK);                           CHKERRQ(ierr);
-    ierr = PetscDrawLine(draw,binLeft,bins[0],binRight,bins[0],PETSC_DRAW_BLACK);                         CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,binLeft,bins[0],binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
@@ -346,13 +346,13 @@ int PetscDrawHGDraw(PetscDrawHG hist)
       while (initSize*numBins != (int) xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
         numBins  = (int) ((int) xmax - xmin)/initSize;
-        ierr     = PetscDrawHGSetNumberBins(hist, numBins);                                               CHKERRQ(ierr);
+        ierr     = PetscDrawHGSetNumberBins(hist, numBins);CHKERRQ(ierr);
       }
     }
     binSize = (xmax - xmin)/numBins;
     bins    = hist->bins;
 
-    ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));                                               CHKERRQ(ierr);
+    ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));CHKERRQ(ierr);
     maxHeight = 0;
     for (i = 0; i < numBins; i++) {
       binLeft   = xmin + binSize*i;
@@ -370,7 +370,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
     }
     if (maxHeight > ymax) ymax = hist->ymax = maxHeight;
 
-    ierr = PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax);                                    CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
     if (hist->calcStats) {
       mean /= numValues;
       if (numValues > 1) {
@@ -380,23 +380,23 @@ int PetscDrawHGDraw(PetscDrawHG hist)
       }
       sprintf(title, "Mean: %g  Var: %g", mean, var);
       sprintf(xlabel, "Total: %d", numValues);
-      ierr  = PetscDrawAxisSetLabels(hist->axis, title, xlabel, PETSC_NULL);                              CHKERRQ(ierr);
+      ierr  = PetscDrawAxisSetLabels(hist->axis, title, xlabel, PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscDrawAxisDraw(hist->axis);                                                                 CHKERRQ(ierr);
+    ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
     /* Draw bins */
     for (i = 0; i < numBins; i++) {
       binLeft   = xmin + binSize*i;
       binRight  = xmin + binSize*(i+1);
-      ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[i],bcolor,bcolor,bcolor,bcolor);          CHKERRQ(ierr);
+      ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[i],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
       if (color == PETSC_DRAW_ROTATE && bins[i]) bcolor++; if (bcolor > 31) bcolor = 2;
-      ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[i],PETSC_DRAW_BLACK);                           CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[i],PETSC_DRAW_BLACK);                         CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,binLeft,bins[i],binRight,bins[i],PETSC_DRAW_BLACK);                       CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,binLeft,bins[i],binRight,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
     }
-    ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);                                                    CHKERRQ(ierr);
+    ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);CHKERRQ(ierr);
   }
-  ierr = PetscDrawSynchronizedFlush(draw);                                                                CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);                                                                            CHKERRQ(ierr);
+  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -451,14 +451,14 @@ int PetscDrawHGPrint(PetscDrawHG hist)
       while (initSize*numBins != (int) xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
         numBins  = (int) ((int) xmax - xmin)/initSize;
-        ierr     = PetscDrawHGSetNumberBins(hist, numBins);                                               CHKERRQ(ierr);
+        ierr     = PetscDrawHGSetNumberBins(hist, numBins);CHKERRQ(ierr);
       }
     }
     binSize = (xmax - xmin)/numBins;
     bins    = hist->bins;
 
     /* Calculate number of points in each bin */
-    ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));                                               CHKERRQ(ierr);
+    ierr = PetscMemzero(bins, numBins * sizeof(PetscReal));CHKERRQ(ierr);
     for (i = 0; i < numBins; i++) {
       binLeft   = xmin + binSize*i;
       binRight  = xmin + binSize*(i+1);
@@ -478,7 +478,7 @@ int PetscDrawHGPrint(PetscDrawHG hist)
       binRight  = xmin + binSize*(i+1);
       PetscPrintf(hist->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", i, binLeft, binRight, bins[i]);
     }
-    ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);                                                    CHKERRQ(ierr);
+    ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);CHKERRQ(ierr);
   }
 
   if (hist->calcStats) {

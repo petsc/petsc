@@ -28,37 +28,37 @@ int DMInitializePackage(const char path[]) {
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");                                      CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");                                       CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");                                      CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&AOEvents[AO_PetscToApplication], "AOPetscToApplication", AO_COOKIE);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", AO_COOKIE);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DAEvents[DA_GlobalToLocal],      "DAGlobalToLocal",      DA_COOKIE);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DAEvents[DA_LocalToGlobal],      "DALocalToGlobal",      DA_COOKIE);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DAEvents[DA_LocalADFunction],    "DALocalADFunc",        DA_COOKIE);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&AOEvents[AO_PetscToApplication], "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", AO_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DAEvents[DA_GlobalToLocal],      "DAGlobalToLocal",      DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DAEvents[DA_LocalToGlobal],      "DALocalToGlobal",      DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DAEvents[DA_LocalADFunction],    "DALocalADFunc",        DA_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "ao", &className);                                                        CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(AO_COOKIE);                                                      CHKERRQ(ierr);
+      ierr = PetscLogInfoDeactivateClass(AO_COOKIE);CHKERRQ(ierr);
     }
-    ierr = PetscStrstr(logList, "da", &className);                                                        CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(DA_COOKIE);                                                      CHKERRQ(ierr);
+      ierr = PetscLogInfoDeactivateClass(DA_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "ao", &className);                                                        CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "ao", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(AO_COOKIE);                                                     CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(AO_COOKIE);CHKERRQ(ierr);
     }
-    ierr = PetscStrstr(logList, "da", &className);                                                        CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(DA_COOKIE);                                                     CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(DA_COOKIE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -87,7 +87,7 @@ int PetscDLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = DMInitializePackage(path);                                                                       CHKERRQ(ierr);
+  ierr = DMInitializePackage(path);CHKERRQ(ierr);
   return(0);
 }
 EXTERN_C_END

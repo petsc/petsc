@@ -27,29 +27,29 @@ int SNESInitializePackage(const char path[]) {
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&SNES_COOKIE,         "SNES");                                             CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&MATSNESMFCTX_COOKIE, "MatSNESMFCtx");                                     CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&SNES_COOKIE,         "SNES");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&MATSNESMFCTX_COOKIE, "MatSNESMFCtx");CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = SNESRegisterAll(path);                                                                           CHKERRQ(ierr);
+  ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&SNES_Solve,                    "SNESSolve",        SNES_COOKIE);          CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNES_LineSearch,               "SNESLineSearch",   SNES_COOKIE);          CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNES_FunctionEval,             "SNESFunctionEval", SNES_COOKIE);          CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNES_JacobianEval,             "SNESJacobianEval", SNES_COOKIE);          CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_Solve,                    "SNESSolve",        SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_LineSearch,               "SNESLineSearch",   SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_FunctionEval,             "SNESFunctionEval", SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_JacobianEval,             "SNESJacobianEval", SNES_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "snes", &className);                                                      CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(SNES_COOKIE);                                                    CHKERRQ(ierr);
+      ierr = PetscLogInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "snes", &className);                                                      CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(SNES_COOKIE);                                                   CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -78,7 +78,7 @@ int PetscDLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = SNESInitializePackage(path);                                                                     CHKERRQ(ierr);
+  ierr = SNESInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

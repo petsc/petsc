@@ -279,8 +279,8 @@ int MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
 
     /* convert A to A_seq */
     if (size > 1) { 
-      ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&lu->iden); CHKERRQ(ierr);
-      ierr = MatGetSubMatrices(A,1,&lu->iden,&lu->iden,MAT_INITIAL_MATRIX,&tseq); CHKERRQ(ierr);  
+      ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&lu->iden);CHKERRQ(ierr);
+      ierr = MatGetSubMatrices(A,1,&lu->iden,&lu->iden,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);  
    
       A_seq = *tseq;
       ierr = PetscFree(tseq);CHKERRQ(ierr); 
@@ -376,7 +376,7 @@ int MatCholeskyFactorNumeric_DSCPACK(Mat A,Mat *F) {
         }
       } /* end of (lu->dsc_id == -1) */
       ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,itmp,&my_cols_sorted);CHKERRQ(ierr);     
-      ierr = MatGetSubMatrices(A,1,&my_cols_sorted,&lu->iden,MAT_INITIAL_MATRIX,&tseq); CHKERRQ(ierr);        
+      ierr = MatGetSubMatrices(A,1,&my_cols_sorted,&lu->iden,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);        
       ierr = ISDestroy(my_cols_sorted);CHKERRQ(ierr);
    
       A_seq = *tseq;

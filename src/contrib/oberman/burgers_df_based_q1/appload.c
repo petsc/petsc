@@ -185,7 +185,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   /*     Generate a list of local vertices that are on the boundary  */
   ierr = ISGetIndices(grid->vertex_global,&vertices);CHKERRQ(ierr);
   /*  AODataKeyGetActiveLocal dumps the flagged (active) indices into the IS */
-  ierr = AODataKeyGetActiveLocal(ao,"vertex","boundary",grid->vertex_n_ghosted,vertices,0,&grid->isvertex_boundary);  CHKERRQ(ierr);
+  ierr = AODataKeyGetActiveLocal(ao,"vertex","boundary",grid->vertex_n_ghosted,vertices,0,&grid->isvertex_boundary);CHKERRQ(ierr);
   ierr = ISRestoreIndices(grid->vertex_global,&vertices);CHKERRQ(ierr);
 
   /* Create some boundary information */

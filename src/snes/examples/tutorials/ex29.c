@@ -260,13 +260,13 @@ int main(int argc,char **argv)
        Also, compute the initial guess.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /* create application context for each level */    
-    ierr = PetscMalloc(param.mglevels*sizeof(AppCtx),&user); CHKERRQ(ierr);
+    ierr = PetscMalloc(param.mglevels*sizeof(AppCtx),&user);CHKERRQ(ierr);
     for (i=0; i<param.mglevels; i++) {
       /* create work vectors to hold previous time-step solution and
          function value */
-      ierr = VecDuplicate(dmmg[i]->x, &user[i].Xoldold); CHKERRQ(ierr);
-      ierr = VecDuplicate(dmmg[i]->x, &user[i].Xold); CHKERRQ(ierr);
-      ierr = VecDuplicate(dmmg[i]->x, &user[i].func); CHKERRQ(ierr);
+      ierr = VecDuplicate(dmmg[i]->x, &user[i].Xoldold);CHKERRQ(ierr);
+      ierr = VecDuplicate(dmmg[i]->x, &user[i].Xold);CHKERRQ(ierr);
+      ierr = VecDuplicate(dmmg[i]->x, &user[i].func);CHKERRQ(ierr);
       user[i].tsCtx = &tsCtx;
       user[i].param = &param;
       dmmg[i]->user = &user[i];
@@ -333,12 +333,12 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     
     for (i=0; i<param.mglevels; i++) {
-      ierr = VecDestroy(user[i].Xoldold); CHKERRQ(ierr);
-      ierr = VecDestroy(user[i].Xold); CHKERRQ(ierr);
-      ierr = VecDestroy(user[i].func); CHKERRQ(ierr);
+      ierr = VecDestroy(user[i].Xoldold);CHKERRQ(ierr);
+      ierr = VecDestroy(user[i].Xold);CHKERRQ(ierr);
+      ierr = VecDestroy(user[i].func);CHKERRQ(ierr);
     }
-    ierr = PetscFree(user); CHKERRQ(ierr);
-    ierr = DMMGDestroy(dmmg); CHKERRQ(ierr);
+    ierr = PetscFree(user);CHKERRQ(ierr);
+    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
     PreLoadEnd();
     
@@ -778,10 +778,10 @@ int Update(DMMG *dmmg)
 
     if (ts_monitor)
     {
-      ierr = SNESGetIterationNumber(snes, &its); CHKERRQ(ierr);
-      ierr = SNESGetNumberLinearIterations(snes, &lits); CHKERRQ(ierr);
-      ierr = SNESGetNumberUnsuccessfulSteps(snes, &nfails); CHKERRQ(ierr);
-      ierr = SNESGetFunctionNorm(snes, &tsCtx->fnorm); CHKERRQ(ierr);
+      ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
+      ierr = SNESGetNumberLinearIterations(snes, &lits);CHKERRQ(ierr);
+      ierr = SNESGetNumberUnsuccessfulSteps(snes, &nfails);CHKERRQ(ierr);
+      ierr = SNESGetFunctionNorm(snes, &tsCtx->fnorm);CHKERRQ(ierr);
 
       nfailsCum += nfails;
       if (nfailsCum >= 2)
@@ -797,8 +797,8 @@ int Update(DMMG *dmmg)
       if (!user->param->PreLoading && tsCtx->socketviewer)
       {
         Vec v;
-        ierr = SNESGetSolution(snes, &v); CHKERRQ(ierr);
-        ierr = VecView(v, tsCtx->socketviewer); CHKERRQ(ierr);
+        ierr = SNESGetSolution(snes, &v);CHKERRQ(ierr);
+        ierr = VecView(v, tsCtx->socketviewer);CHKERRQ(ierr);
       }
     }
 

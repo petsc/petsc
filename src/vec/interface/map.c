@@ -35,7 +35,7 @@ static int PetscMapSetTypeFromOptions_Private(PetscMap map)
   if (map->type_name != PETSC_NULL) {
     defaultType = map->type_name;
   } else {
-    ierr = MPI_Comm_size(map->comm, &size);                                                           CHKERRQ(ierr);
+    ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
     if (size > 1) {
       defaultType = MAP_MPI;
     } else {
@@ -44,14 +44,14 @@ static int PetscMapSetTypeFromOptions_Private(PetscMap map)
   }
 
   if (!PetscMapRegisterAllCalled) {
-    ierr = PetscMapRegisterAll(PETSC_NULL);                                                               CHKERRQ(ierr);
+    ierr = PetscMapRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsList("-map_type", "PetscMap type"," PetscMapSetType", PetscMapList, defaultType, typeName, 256, &opt);
   CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscMapSetType(map, typeName);                                                                CHKERRQ(ierr);
+    ierr = PetscMapSetType(map, typeName);CHKERRQ(ierr);
   } else {
-    ierr = PetscMapSetType(map, defaultType);                                                             CHKERRQ(ierr);
+    ierr = PetscMapSetType(map, defaultType);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -85,23 +85,23 @@ int PetscMapSetFromOptions(PetscMap map)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map,MAP_COOKIE,1);
 
-  ierr = PetscOptionsBegin(map->comm, map->prefix, "PetscMap options", "PetscMap");                       CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(map->comm, map->prefix, "PetscMap options", "PetscMap");CHKERRQ(ierr);
 
   /* Handle generic maptor options */
-  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);                                                  CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscMapPrintHelp(map);                                                                        CHKERRQ(ierr);
+    ierr = PetscMapPrintHelp(map);CHKERRQ(ierr);
   }
 
   /* Handle map type options */
-  ierr = PetscMapSetTypeFromOptions_Private(map);                                                         CHKERRQ(ierr);
+  ierr = PetscMapSetTypeFromOptions_Private(map);CHKERRQ(ierr);
 
   /* Handle specific maptor options */
   if (map->ops->setfromoptions != PETSC_NULL) {
-    ierr = (*map->ops->setfromoptions)(map);                                                              CHKERRQ(ierr);
+    ierr = (*map->ops->setfromoptions)(map);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsEnd();                                                                               CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -130,9 +130,9 @@ int PetscMapPrintHelp(PetscMap map)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
 
-  ierr = PetscStrcpy(p, "-");                                                                             CHKERRQ(ierr);
+  ierr = PetscStrcpy(p, "-");CHKERRQ(ierr);
   if (map->prefix != PETSC_NULL) {
-    ierr = PetscStrcat(p, map->prefix);                                                                   CHKERRQ(ierr);
+    ierr = PetscStrcat(p, map->prefix);CHKERRQ(ierr);
   }
 
   (*PetscHelpPrintf)(map->comm, "PetscMap options ------------------------------------------------\n");
@@ -163,10 +163,10 @@ int PetscMapDestroy(PetscMap map)
   PetscValidHeaderSpecific(map, MAP_COOKIE,1); 
   if (--map->refct > 0) PetscFunctionReturn(0);
   if (map->range != PETSC_NULL) {
-    ierr = PetscFree(map->range);                                                                         CHKERRQ(ierr);
+    ierr = PetscFree(map->range);CHKERRQ(ierr);
   }
   if (map->ops->destroy != PETSC_NULL) {
-    ierr = (*map->ops->destroy)(map);                                                                     CHKERRQ(ierr);
+    ierr = (*map->ops->destroy)(map);CHKERRQ(ierr);
   }
   PetscLogObjectDestroy(map);
   PetscHeaderDestroy(map);

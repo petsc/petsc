@@ -865,7 +865,7 @@ static int PCDestroy_ILU(PC pc)
   int    ierr;
 
   PetscFunctionBegin;
-  ierr = PCDestroy_ILU_Internal(pc); CHKERRQ(ierr);
+  ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
   ierr = PetscStrfree(ilu->ordering);CHKERRQ(ierr);
   ierr = PetscFree(ilu);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -324,29 +324,29 @@ int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
   ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
   /* Write the netCDF dataset */
-  ierr = PetscViewerNetcdfGetID(viewer,&ncid); CHKERRQ(ierr);
+  ierr = PetscViewerNetcdfGetID(viewer,&ncid);CHKERRQ(ierr);
   if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
-  ierr = VecGetSize(xin,&xin_N); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xin,&xin_n); CHKERRQ(ierr);
-  ierr = ncmpi_def_dim(ncid,"PETSc_DA_Vector_Global_Size",xin_N,&xin_dim); CHKERRQ(ierr);
-  ierr = VecGetSize(xyz,&xyz_N); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xyz,&xyz_n); CHKERRQ(ierr);
-  ierr = ncmpi_def_dim(ncid,"PETSc_DA_Coordinate_Vector_Global_Size",xyz_N,&xyz_dim); CHKERRQ(ierr);
+  ierr = VecGetSize(xin,&xin_N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xin,&xin_n);CHKERRQ(ierr);
+  ierr = ncmpi_def_dim(ncid,"PETSc_DA_Vector_Global_Size",xin_N,&xin_dim);CHKERRQ(ierr);
+  ierr = VecGetSize(xyz,&xyz_N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xyz,&xyz_n);CHKERRQ(ierr);
+  ierr = ncmpi_def_dim(ncid,"PETSc_DA_Coordinate_Vector_Global_Size",xyz_N,&xyz_dim);CHKERRQ(ierr);
   /* define variables */
-  ierr = ncmpi_def_var(ncid,"PETSc_DA_Vector",NC_DOUBLE,xdim_num,&xin_dim,&xin_id); CHKERRQ(ierr);
-  ierr = ncmpi_def_var(ncid,"PETSc_DA_Coordinate_Vector",NC_DOUBLE,xdim_num,&xyz_dim,&xyz_id); CHKERRQ(ierr);
+  ierr = ncmpi_def_var(ncid,"PETSc_DA_Vector",NC_DOUBLE,xdim_num,&xin_dim,&xin_id);CHKERRQ(ierr);
+  ierr = ncmpi_def_var(ncid,"PETSc_DA_Coordinate_Vector",NC_DOUBLE,xdim_num,&xyz_dim,&xyz_id);CHKERRQ(ierr);
   /* leave define mode */
-  ierr = ncmpi_enddef(ncid); CHKERRQ(ierr);
+  ierr = ncmpi_enddef(ncid);CHKERRQ(ierr);
   /* store the vector */
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&xin_n,xarray); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&xin_n,xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   /* store the coordinate vector */
   ierr = VecGetArray(xyz,&xarray);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(xyz,&xstart,PETSC_NULL); CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xyz_id,(const size_t*)&xstart,(const size_t*)&xyz_n,xarray); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xyz,&xstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xyz_id,(const size_t*)&xstart,(const size_t*)&xyz_n,xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(xyz,&xarray);CHKERRQ(ierr);
   /* destroy the vectors and da */
   ierr = VecDestroy(natural);CHKERRQ(ierr);

@@ -230,8 +230,8 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
 
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
     if (size > 1) { /* convert mpi A to seq mat A */
-      ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow); CHKERRQ(ierr);  
-      ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq); CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);  
+      ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
       ierr = ISDestroy(isrow);CHKERRQ(ierr);
    
       A_seq = *tseq;

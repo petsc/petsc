@@ -177,7 +177,7 @@ int main(int argc,char **argv)
        routine.
     */
     MatStructure A_structure;
-    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx); CHKERRQ(ierr);
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
   }
 
@@ -403,7 +403,7 @@ int Monitor(TS ts,int step,PetscReal ctime,Vec u,void *ctx)
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
-  ierr = TSGetTimeStep(ts,&dt); CHKERRQ(ierr);
+  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
   printf("Timestep %d: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",
          step,dt,ctime,norm_2,norm_max);
   appctx->norm_2   += norm_2;
@@ -413,7 +413,7 @@ int Monitor(TS ts,int step,PetscReal ctime,Vec u,void *ctx)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dttol",&dttol,&flg);CHKERRQ(ierr);
   if (dt < dttol) {
     dt *= .999;
-    ierr = TSSetTimeStep(ts,dt); CHKERRQ(ierr);
+    ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   }
 
   /* 

@@ -252,17 +252,17 @@ int VecView_Seq_Netcdf(Vec xin,PetscViewer v)
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
-  ierr = PetscViewerNetcdfGetID(v,&ncid); CHKERRQ(ierr);
+  ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
   if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
-  ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",n,&xdim); CHKERRQ(ierr);
+  ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",n,&xdim);CHKERRQ(ierr);
   /* define variables */
-  ierr = ncmpi_def_var(ncid,"PETSc_Vector_Seq",NC_DOUBLE,xdim_num,&xdim,&xin_id); CHKERRQ(ierr);
+  ierr = ncmpi_def_var(ncid,"PETSc_Vector_Seq",NC_DOUBLE,xdim_num,&xdim,&xin_id);CHKERRQ(ierr);
   /* leave define mode */
-  ierr = ncmpi_enddef(ncid); CHKERRQ(ierr);
+  ierr = ncmpi_enddef(ncid);CHKERRQ(ierr);
   /* store the vector */
-  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&n,xarray); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&n,xarray);CHKERRQ(ierr);
 #else 
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif

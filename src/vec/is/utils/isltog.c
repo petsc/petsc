@@ -182,7 +182,7 @@ int ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocal
   PetscValidPointer(mapping,4);
   *mapping = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   if (IS_LTOGM_COOKIE == -1) {
     ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS Local to global mapping");CHKERRQ(ierr);

@@ -441,17 +441,17 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
-  ierr = PetscViewerNetcdfGetID(v,&ncid); CHKERRQ(ierr);
+  ierr = PetscViewerNetcdfGetID(v,&ncid);CHKERRQ(ierr);
   if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
   /* define dimensions */
-  ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",xin->N,&xdim); CHKERRQ(ierr);
+  ierr = ncmpi_def_dim(ncid,"PETSc_Vector_Global_Size",xin->N,&xdim);CHKERRQ(ierr);
   /* define variables */
-  ierr = ncmpi_def_var(ncid,"PETSc_Vector_MPI",NC_DOUBLE,xdim_num,&xdim,&xin_id); CHKERRQ(ierr);
+  ierr = ncmpi_def_var(ncid,"PETSc_Vector_MPI",NC_DOUBLE,xdim_num,&xdim,&xin_id);CHKERRQ(ierr);
   /* leave define mode */
-  ierr = ncmpi_enddef(ncid); CHKERRQ(ierr);
+  ierr = ncmpi_enddef(ncid);CHKERRQ(ierr);
   /* store the vector */
-  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
-  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&n,xarray); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,(const size_t*)&xstart,(const size_t*)&n,xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
 #else 
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
@@ -481,13 +481,13 @@ int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
   n  = X->n / bs;
 
   // For now, always convert to float
-  ierr = PetscMalloc(N * sizeof(float), &xf); CHKERRQ(ierr);
-  ierr = PetscMalloc(n * sizeof(float), &xlf); CHKERRQ(ierr);
+  ierr = PetscMalloc(N * sizeof(float), &xf);CHKERRQ(ierr);
+  ierr = PetscMalloc(n * sizeof(float), &xlf);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(X->comm, &rank); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(X->comm, &size); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(X->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(X->comm, &size);CHKERRQ(ierr);
 
-  ierr = VecGetArray(X, &x); CHKERRQ(ierr);
+  ierr = VecGetArray(X, &x);CHKERRQ(ierr);
 
   for (k = 0; k < bs; k++) {
     for (i = 0; i < n; i++) {
@@ -499,21 +499,21 @@ int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
       cur += n;
       for (j = 1; j < size; j++) {
  ierr = MPI_Recv(xf + cur, N - cur, MPI_FLOAT, j, tag, X->comm,
- &status); CHKERRQ(ierr);
- ierr = MPI_Get_count(&status, MPI_FLOAT, &len); CHKERRQ(ierr);
+ &status);CHKERRQ(ierr);
+ ierr = MPI_Get_count(&status, MPI_FLOAT, &len);CHKERRQ(ierr);
  cur += len;
       }
       if (cur != N) {
  SETERRQ2(1, "? %d %d", cur, N);
       }
-      ierr = PetscViewerHDF4WriteSDS(viewer, xf, 2, dims, bs); CHKERRQ(ierr); 
+      ierr = PetscViewerHDF4WriteSDS(viewer, xf, 2, dims, bs);CHKERRQ(ierr); 
     } else {
-      ierr = MPI_Send(xlf, n, MPI_FLOAT, 0, tag, X->comm); CHKERRQ(ierr);
+      ierr = MPI_Send(xlf, n, MPI_FLOAT, 0, tag, X->comm);CHKERRQ(ierr);
     }
   }
-  ierr = VecRestoreArray(X, &x); CHKERRQ(ierr);
-  ierr = PetscFree(xlf); CHKERRQ(ierr);
-  ierr = PetscFree(xf); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
+  ierr = PetscFree(xlf);CHKERRQ(ierr);
+  ierr = PetscFree(xf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else /* !defined(PETSC_HAVE_HDF4) */
   PetscFunctionBegin;
@@ -531,7 +531,7 @@ int VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 
   bs = xin->bs > 0 ? xin->bs : 1;
   dims[0] = xin->N / bs;
-  ierr = VecView_MPI_HDF4_Ex(xin, viewer, 1, dims); CHKERRQ(ierr);
+  ierr = VecView_MPI_HDF4_Ex(xin, viewer, 1, dims);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else /* !defined(PETSC_HAVE_HDF4) */
   PetscFunctionBegin;

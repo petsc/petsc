@@ -28,10 +28,10 @@ int PetscPLAPACKInitializePackage(char *path) {
   int      ierr;
 
   PetscFunctionBegin;
-  ierr = PLA_Initialized(&initPLA);                                                                       CHKERRQ(ierr);
+  ierr = PLA_Initialized(&initPLA);CHKERRQ(ierr);
   if (!initPLA) {
-    ierr = PLA_Comm_1D_to_2D_ratio(PETSC_COMM_WORLD, 1.0, &comm);                                         CHKERRQ(ierr);
-    ierr = PLA_Init(comm);                                                                                CHKERRQ(ierr);
+    ierr = PLA_Comm_1D_to_2D_ratio(PETSC_COMM_WORLD, 1.0, &comm);CHKERRQ(ierr);
+    ierr = PLA_Init(comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 #else
@@ -56,7 +56,7 @@ int PetscPLAPACKFinalizePackage(void) {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PLA_Finalize();                                                                                  CHKERRQ(ierr);
+  ierr = PLA_Finalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #else
   PetscFunctionBegin;

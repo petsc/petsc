@@ -186,10 +186,10 @@ int main(int argc,char **argv)
     tsCtx.print_freq = tsCtx.max_steps; 
     ierr = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,PETSC_NULL);CHKERRQ(ierr);
     
-    ierr = PetscMalloc(param.mglevels*sizeof(AppCtx),&user); CHKERRQ(ierr);
+    ierr = PetscMalloc(param.mglevels*sizeof(AppCtx),&user);CHKERRQ(ierr);
     for (i=0; i<param.mglevels; i++) {
-      ierr = VecDuplicate(dmmg[i]->x, &(user[i].Xold)); CHKERRQ(ierr);
-      ierr = VecDuplicate(dmmg[i]->x, &(user[i].func)); CHKERRQ(ierr);
+      ierr = VecDuplicate(dmmg[i]->x, &(user[i].Xold));CHKERRQ(ierr);
+      ierr = VecDuplicate(dmmg[i]->x, &(user[i].func));CHKERRQ(ierr);
       user[i].tsCtx = &tsCtx;
       user[i].param = &param;
       dmmg[i]->user = &user[i];
@@ -217,8 +217,8 @@ int main(int argc,char **argv)
     ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
     
     PreLoadStage("Solve");
-    ierr = Initialize(dmmg); CHKERRQ(ierr);
-    ierr = Update(dmmg); CHKERRQ(ierr);
+    ierr = Initialize(dmmg);CHKERRQ(ierr);
+    ierr = Update(dmmg);CHKERRQ(ierr);
     /*
       Visualize solution
     */
@@ -233,11 +233,11 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     
     for (i=0; i<param.mglevels; i++) {
-      ierr = VecDestroy(user[i].Xold); CHKERRQ(ierr);
-      ierr = VecDestroy(user[i].func); CHKERRQ(ierr);
+      ierr = VecDestroy(user[i].Xold);CHKERRQ(ierr);
+      ierr = VecDestroy(user[i].func);CHKERRQ(ierr);
     }
-    ierr = PetscFree(user); CHKERRQ(ierr);
-    ierr = DMMGDestroy(dmmg); CHKERRQ(ierr);
+    ierr = PetscFree(user);CHKERRQ(ierr);
+    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
     PreLoadEnd();
     
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -334,7 +334,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   AppCtx    *user = (AppCtx*)dmmg->user;
   TstepCtx  *tsCtx = user->tsCtx;
   int       ierr;
-  ierr = VecCopy(user->Xold, X); CHKERRQ(ierr);
+  ierr = VecCopy(user->Xold, X);CHKERRQ(ierr);
 
   /* calculate the residual on fine mesh */
   if (user->tsCtx->fnorm_ini == 0.0) {
@@ -518,7 +518,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 
   /* Add time step contribution */
   if (tsCtx->ires) {
-    ierr = AddTSTermLocal(info,x,f,ptr); CHKERRQ(ierr);
+    ierr = AddTSTermLocal(info,x,f,ptr);CHKERRQ(ierr);
   }
   /*
      Flop count (multiply-adds are counted as 2 operations)
@@ -675,7 +675,7 @@ int Update(DMMG *dmmg)
     /*tsCtx->qcur = DMMGGetx(dmmg);
       ierr = VecCopy(tsCtx->qcur,tsCtx->qold);CHKERRQ(ierr);*/
 
-    ierr = VecCopy(dmmg[param->mglevels-1]->x, ((AppCtx*)dmmg[param->mglevels-1]->user)->Xold); CHKERRQ(ierr);
+    ierr = VecCopy(dmmg[param->mglevels-1]->x, ((AppCtx*)dmmg[param->mglevels-1]->user)->Xold);CHKERRQ(ierr);
     for (its=param->mglevels-1; its>0 ;its--) {
       ierr = MatRestrict(dmmg[its]->R, ((AppCtx*)dmmg[its]->user)->Xold, ((AppCtx*)dmmg[its-1]->user)->Xold);CHKERRQ(ierr);
       ierr = VecPointwiseMult(dmmg[its]->Rscale,((AppCtx*)dmmg[its-1]->user)->Xold,((AppCtx*)dmmg[its-1]->user)->Xold);CHKERRQ(ierr);
@@ -706,7 +706,7 @@ int Update(DMMG *dmmg)
   {
     Vec xx,yy;
     PetscScalar fnorm,fnorm1;
-    ierr = SNESGetFunctionNorm(snes,&fnorm); CHKERRQ(ierr);
+    ierr = SNESGetFunctionNorm(snes,&fnorm);CHKERRQ(ierr);
     xx = DMMGGetx(dmmg);
     ierr = VecDuplicate(xx,&yy);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes,xx,yy);

@@ -60,11 +60,11 @@ int PetscLogInfoAllow(PetscTruth flag, char *filename)
 
   PetscFunctionBegin;
   if (flag && filename) {
-    ierr = PetscFixFilename(filename, fname);                                                             CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);                                                        CHKERRQ(ierr);
+    ierr = PetscFixFilename(filename, fname);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
     sprintf(tname, ".%d", rank);
-    ierr = PetscStrcat(fname, tname);                                                                     CHKERRQ(ierr);
-    ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscLogInfoFile);                                    CHKERRQ(ierr);
+    ierr = PetscStrcat(fname, tname);CHKERRQ(ierr);
+    ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscLogInfoFile);CHKERRQ(ierr);
     if (PetscLogInfoFile == PETSC_NULL) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
   } else if (flag) {
     PetscLogInfoFile = stdout;
@@ -187,14 +187,14 @@ int PetscLogInfo(void *vobj, const char message[], ...)
   if (!obj) {
     rank = 0;
   } else {
-    ierr = MPI_Comm_rank(obj->comm, &rank);                                                               CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(obj->comm, &rank);CHKERRQ(ierr);
   }
   if (rank) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);                                                           CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);CHKERRQ(ierr);
   va_start(Argp, message);
   sprintf(string, "[%d]", urank); 
-  ierr = PetscStrlen(string, &len);                                                                       CHKERRQ(ierr);
+  ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vsprintf(string+len, message, (char *) Argp);
 #else

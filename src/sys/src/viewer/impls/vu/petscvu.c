@@ -29,12 +29,12 @@ int PetscViewerDestroy_VU(PetscViewer viewer)
 
   PetscFunctionBegin;
   if (vu->vecSeen == PETSC_TRUE) {
-    ierr = PetscViewerVUPrintDeferred(viewer, "};\n\n");                                                  CHKERRQ(ierr);
+    ierr = PetscViewerVUPrintDeferred(viewer, "};\n\n");CHKERRQ(ierr);
   }
-  ierr = PetscViewerVUFlushDeferred(viewer);                                                              CHKERRQ(ierr);
-  ierr = PetscFClose(viewer->comm, vu->fd);                                                               CHKERRQ(ierr);
-  ierr = PetscStrfree(vu->filename);                                                                      CHKERRQ(ierr);
-  ierr = PetscFree(vu);                                                                                   CHKERRQ(ierr);
+  ierr = PetscViewerVUFlushDeferred(viewer);CHKERRQ(ierr);
+  ierr = PetscFClose(viewer->comm, vu->fd);CHKERRQ(ierr);
+  ierr = PetscStrfree(vu->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -47,7 +47,7 @@ int PetscViewerFlush_VU(PetscViewer viewer)
   int             ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(viewer->comm, &rank);                                                              CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
   if (rank == 0) fflush(vu->fd);
   PetscFunctionReturn(0);  
 }
@@ -77,10 +77,10 @@ int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
 
   PetscFunctionBegin;
   if (name == PETSC_NULL) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(viewer->comm, &rank);                                                              CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
   if (rank != 0) PetscFunctionReturn(0);
-  ierr = PetscStrallocpy(name, &vu->filename);                                                            CHKERRQ(ierr);
-  ierr = PetscFixFilename(name, fname);                                                                   CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name, &vu->filename);CHKERRQ(ierr);
+  ierr = PetscFixFilename(name, fname);CHKERRQ(ierr);
   switch(vu->mode) {
   case FILE_MODE_READ:
     vu->fd = fopen(fname, "r");
@@ -105,7 +105,7 @@ int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
     if (vu->fd == PETSC_NULL) {
       vu->fd = fopen(fname, "w+");
     } else {
-      ierr = fseek(vu->fd, 0, SEEK_END);                                                                  CHKERRQ(ierr);
+      ierr = fseek(vu->fd, 0, SEEK_END);CHKERRQ(ierr);
     }
     break;
   default:
@@ -130,7 +130,7 @@ int PetscViewerCreate_VU(PetscViewer viewer)
   int             ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(PetscViewer_VU, &vu);                                                           CHKERRQ(ierr);
+  ierr         = PetscNew(PetscViewer_VU, &vu);CHKERRQ(ierr);
   viewer->data = (void*) vu;
 
   viewer->ops->destroy          = PetscViewerDestroy_VU;
@@ -149,9 +149,9 @@ int PetscViewerCreate_VU(PetscViewer viewer)
   vu->queueLength = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerSetFilename_C", "PetscViewerSetFilename_VU",
-                                           PetscViewerSetFilename_VU);                                    CHKERRQ(ierr);
+                                           PetscViewerSetFilename_VU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject) viewer,"PetscViewerGetFilename_C", "PetscViewerGetFilename_VU",
-                                           PetscViewerGetFilename_VU);                                    CHKERRQ(ierr);
+                                           PetscViewerGetFilename_VU);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -294,7 +294,7 @@ int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
   int             ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _PrintfQueue, &next);                                                            CHKERRQ(ierr);
+  ierr = PetscNew(struct _PrintfQueue, &next);CHKERRQ(ierr);
   if (vu->queue != PETSC_NULL) {
     vu->queue->next = next;
     vu->queue       = next;
@@ -311,7 +311,7 @@ int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
   vsprintf(next->string, format, Argp);
 #endif
   va_end(Argp);
-  ierr = PetscStrlen(next->string, &len);                                                                 CHKERRQ(ierr);
+  ierr = PetscStrlen(next->string, &len);CHKERRQ(ierr);
   if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Formatted string longer than %d bytes", QUEUESTRINGSIZE);
   PetscFunctionReturn(0);
 }
@@ -344,7 +344,7 @@ int PetscViewerVUFlushDeferred(PetscViewer viewer)
     PetscFPrintf(viewer->comm, vu->fd, "%s", next->string);
     previous = next; 
     next     = next->next;
-    ierr     = PetscFree(previous);                                                                       CHKERRQ(ierr);
+    ierr     = PetscFree(previous);CHKERRQ(ierr);
   }
   vu->queue       = PETSC_NULL;
   vu->queueLength = 0;

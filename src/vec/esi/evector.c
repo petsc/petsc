@@ -203,9 +203,9 @@ esi::petsc::Vector<double,int>::~Vector()
   if (!y) return 1;
   esi::petsc::Vector<double,int> *w;  ierr = yy2.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(w));CHKERRQ(ierr);
   if (!w) return 1;
-  ierr = VecCopy(y->vec,this->vec); CHKERRQ(ierr);
-  ierr = VecScale(&dy1,this->vec); CHKERRQ(ierr);
-  ierr = VecAXPY(&y2,w->vec,this->vec); CHKERRQ(ierr);
+  ierr = VecCopy(y->vec,this->vec);CHKERRQ(ierr);
+  ierr = VecScale(&dy1,this->vec);CHKERRQ(ierr);
+  ierr = VecAXPY(&y2,w->vec,this->vec);CHKERRQ(ierr);
   return(0);
 }
 

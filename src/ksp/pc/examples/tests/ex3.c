@@ -23,9 +23,9 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create and initialize vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);    CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&ustar);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);    CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
   ierr = VecSet(&one,ustar);CHKERRQ(ierr);
   ierr = VecSet(&zero,u);CHKERRQ(ierr);
 

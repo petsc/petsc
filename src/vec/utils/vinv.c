@@ -1023,12 +1023,12 @@ int VecSqrt(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1);
-  ierr = VecGetLocalSize(v, &n);                                                                          CHKERRQ(ierr);
-  ierr = VecGetArray(v, &x);                                                                              CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &x);CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
     x[i] = sqrt(PetscAbsScalar(x[i]));
   }
-  ierr = VecRestoreArray(v, &x);                                                                          CHKERRQ(ierr);
+  ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1162,9 +1162,9 @@ int VecPermute(Vec x, IS row, PetscTruth inv)
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = ISGetIndices(row, &idx);                                                                         CHKERRQ(ierr);
-  ierr = VecGetArray(x, &array);                                                                          CHKERRQ(ierr);
-  ierr = PetscMalloc((x->n+1) * sizeof(PetscScalar), &newArray);                                          CHKERRQ(ierr);
+  ierr = ISGetIndices(row, &idx);CHKERRQ(ierr);
+  ierr = VecGetArray(x, &array);CHKERRQ(ierr);
+  ierr = PetscMalloc((x->n+1) * sizeof(PetscScalar), &newArray);CHKERRQ(ierr);
 #ifdef PETSC_USE_BOPT_g
   for(i = 0; i < x->n; i++) {
     if ((idx[i] < 0) || (idx[i] >= x->n)) {
@@ -1177,9 +1177,9 @@ int VecPermute(Vec x, IS row, PetscTruth inv)
   } else {
     for(i = 0; i < x->n; i++) newArray[idx[i]] = array[i];
   }
-  ierr = VecRestoreArray(x, &array);                                                                      CHKERRQ(ierr);
-  ierr = ISRestoreIndices(row, &idx);                                                                     CHKERRQ(ierr);
-  ierr = VecReplaceArray(x, newArray);                                                                    CHKERRQ(ierr);
+  ierr = VecRestoreArray(x, &array);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(row, &idx);CHKERRQ(ierr);
+  ierr = VecReplaceArray(x, newArray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

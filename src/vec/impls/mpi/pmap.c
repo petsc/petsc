@@ -27,13 +27,13 @@ int PetscMapCreate_MPI(PetscMap m)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(m->ops, &DvOps, sizeof(DvOps));                                                      CHKERRQ(ierr);
+  ierr = PetscMemcpy(m->ops, &DvOps, sizeof(DvOps));CHKERRQ(ierr);
 
-  ierr = MPI_Comm_size(m->comm, &size);                                                                   CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(m->comm, &rank);                                                                   CHKERRQ(ierr); 
-  ierr = PetscSplitOwnership(m->comm,&m->n,&m->N);                                                        CHKERRQ(ierr);
-  ierr = PetscMalloc((size+1)*sizeof(int), &m->range);                                                    CHKERRQ(ierr);
-  ierr = MPI_Allgather(&m->n, 1, MPI_INT, m->range+1, 1, MPI_INT, m->comm);                               CHKERRQ(ierr);
+  ierr = MPI_Comm_size(m->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(m->comm, &rank);CHKERRQ(ierr); 
+  ierr = PetscSplitOwnership(m->comm,&m->n,&m->N);CHKERRQ(ierr);
+  ierr = PetscMalloc((size+1)*sizeof(int), &m->range);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&m->n, 1, MPI_INT, m->range+1, 1, MPI_INT, m->comm);CHKERRQ(ierr);
 
   m->range[0] = 0;
   for(p = 2; p <= size; p++) {
@@ -77,9 +77,9 @@ int PetscMapCreateMPI(MPI_Comm comm,int n,int N,PetscMap *m)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMapCreate(comm, m);                                                                         CHKERRQ(ierr);
-  ierr = PetscMapSetLocalSize(*m, n);                                                                     CHKERRQ(ierr);
-  ierr = PetscMapSetSize(*m, N);                                                                          CHKERRQ(ierr);
-  ierr = PetscMapSetType(*m, MAP_MPI);                                                                    CHKERRQ(ierr);
+  ierr = PetscMapCreate(comm, m);CHKERRQ(ierr);
+  ierr = PetscMapSetLocalSize(*m, n);CHKERRQ(ierr);
+  ierr = PetscMapSetSize(*m, N);CHKERRQ(ierr);
+  ierr = PetscMapSetType(*m, MAP_MPI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -69,7 +69,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
   /* Get the number of supplementary group IDs */
 #if !defined(PETSC_MISSING_GETGROUPS)
   numGroups = getgroups(0, gid); if (numGroups < 0) {SETERRQ(numGroups, "Unable to count supplementary group IDs");}
-  ierr = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid);                                                CHKERRQ(ierr);
+  ierr = PetscMalloc((numGroups+1) * sizeof(gid_t), &gid);CHKERRQ(ierr);
 #else
   numGroups = 0;
 #endif
@@ -100,7 +100,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
       }
     }
   }
-  ierr = PetscFree(gid);                                                                                  CHKERRQ(ierr);
+  ierr = PetscFree(gid);CHKERRQ(ierr);
 
   if (mode == 'r') {
     if (fmode & rbit) *flg = PETSC_TRUE;
@@ -151,13 +151,13 @@ int PetscTestFile(const char fname[], char mode, PetscTruth *flg)
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);                                           CHKERRQ(ierr);
+  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);CHKERRQ(ierr);
   if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a regular file */
   if (!S_ISREG(fmode)) PetscFunctionReturn(0);
 
-  ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);                                         CHKERRQ(ierr);
+  ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -175,13 +175,13 @@ int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);                                           CHKERRQ(ierr);
+  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode,&exists);CHKERRQ(ierr);
   if (!exists) PetscFunctionReturn(0);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a directory */
   if (!S_ISDIR(fmode)) PetscFunctionReturn(0);
 
-  ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);                                         CHKERRQ(ierr);
+  ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -252,11 +252,11 @@ int ierr;
   /* using very rough estimate for nonzeros on and off the diagonal */
   ierr = MatCreateMPIAIJ(comm,grid->df_local_count,grid->df_local_count,PETSC_DETERMINE,PETSC_DETERMINE,10,0,5,0,&algebra->A);CHKERRQ(ierr);
   /* Set the local to global mapping */
-  ierr = MatSetLocalToGlobalMapping(algebra->A,grid->dfltog);  CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(algebra->A,grid->dfltog);CHKERRQ(ierr);
 
   /* ditto for jac */
   ierr = MatCreateMPIAIJ(comm,grid->df_local_count,grid->df_local_count,PETSC_DETERMINE,PETSC_DETERMINE,10,0,5,0,&algebra->J);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(algebra->J,grid->dfltog);  CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(algebra->J,grid->dfltog);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -594,7 +594,7 @@ int SetBoundaryConditions(Vec g,AppCtx *appctx,Vec f)
  ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
  
  /* Destroy stuff */
-  ierr = VecRestoreArray(algebra->f_boundary,&uvvals);  CHKERRQ(ierr);
+  ierr = VecRestoreArray(algebra->f_boundary,&uvvals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

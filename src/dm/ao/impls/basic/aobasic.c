@@ -104,12 +104,12 @@ int AOPetscToApplicationPermuteInt_Basic(AO ao, int block, int *array)
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(int), &temp);                                              CHKERRQ(ierr);
+  ierr = PetscMalloc(aodebug->N*block * sizeof(int), &temp);CHKERRQ(ierr);
   for(i = 0; i < aodebug->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->petsc[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(int));                                        CHKERRQ(ierr);
-  ierr = PetscFree(temp);                                                                                 CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -123,12 +123,12 @@ int AOApplicationToPetscPermuteInt_Basic(AO ao, int block, int *array)
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(int), &temp);                                              CHKERRQ(ierr);
+  ierr = PetscMalloc(aodebug->N*block * sizeof(int), &temp);CHKERRQ(ierr);
   for(i = 0; i < aodebug->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->app[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(int));                                        CHKERRQ(ierr);
-  ierr = PetscFree(temp);                                                                                 CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -142,12 +142,12 @@ int AOPetscToApplicationPermuteReal_Basic(AO ao, int block, double *array)
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(double), &temp);                                           CHKERRQ(ierr);
+  ierr = PetscMalloc(aodebug->N*block * sizeof(double), &temp);CHKERRQ(ierr);
   for(i = 0; i < aodebug->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->petsc[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(double));                                     CHKERRQ(ierr);
-  ierr = PetscFree(temp);                                                                                 CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(double));CHKERRQ(ierr);
+  ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -161,12 +161,12 @@ int AOApplicationToPetscPermuteReal_Basic(AO ao, int block, double *array)
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(double), &temp);                                           CHKERRQ(ierr);
+  ierr = PetscMalloc(aodebug->N*block * sizeof(double), &temp);CHKERRQ(ierr);
   for(i = 0; i < aodebug->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->app[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(double));                                     CHKERRQ(ierr);
-  ierr = PetscFree(temp);                                                                                 CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(double));CHKERRQ(ierr);
+  ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -218,23 +218,23 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
   PetscValidPointer(aoout,5);
   *aoout = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_BASIC, "AO", comm, AODestroy, AOView); 
   PetscLogObjectCreate(ao);
-  ierr = PetscNew(AO_Basic, &aobasic);                                                                    CHKERRQ(ierr);
+  ierr = PetscNew(AO_Basic, &aobasic);CHKERRQ(ierr);
   PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Basic));
 
-  ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));                                                     CHKERRQ(ierr);
+  ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
   ao->data = (void *) aobasic;
 
   /* transmit all lengths to all processors */
-  ierr = MPI_Comm_size(comm, &size);                                                                      CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);                                                                      CHKERRQ(ierr);
-  ierr = PetscMalloc(2*size * sizeof(int), &lens);                                                        CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size * sizeof(int), &lens);CHKERRQ(ierr);
   disp = lens + size;
-  ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);                                        CHKERRQ(ierr);
+  ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
   for(i = 0; i < size; i++) {
     disp[i] = N;
@@ -247,7 +247,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
   */
   if (!mypetsc) {
     start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(int), &petsc);                                                  CHKERRQ(ierr);
+    ierr  = PetscMalloc((napp+1) * sizeof(int), &petsc);CHKERRQ(ierr);
     for (i=0; i<napp; i++) {
       petsc[i] = start + i;
     }
@@ -256,17 +256,17 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
   }
 
   /* get all indices on all processors */
-  ierr   = PetscMalloc(2*N * sizeof(int), &allpetsc);                                                     CHKERRQ(ierr);
+  ierr   = PetscMalloc(2*N * sizeof(int), &allpetsc);CHKERRQ(ierr);
   allapp = allpetsc + N;
-  ierr   = MPI_Allgatherv(petsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
-  ierr   = MPI_Allgatherv((void*)myapp, napp, MPI_INT, allapp, lens, disp, MPI_INT, comm);                       CHKERRQ(ierr);
-  ierr   = PetscFree(lens);                                                                               CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv(petsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv((void*)myapp, napp, MPI_INT, allapp, lens, disp, MPI_INT, comm);CHKERRQ(ierr);
+  ierr   = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc(2*N * sizeof(int), &aobasic->app);                                                   CHKERRQ(ierr);
+  ierr = PetscMalloc(2*N * sizeof(int), &aobasic->app);CHKERRQ(ierr);
   PetscLogObjectMemory(ao,2*N*sizeof(int));
   aobasic->petsc = aobasic->app + N;
-  ierr = PetscMemzero(aobasic->app, 2*N*sizeof(int));                                                     CHKERRQ(ierr);
+  ierr = PetscMemzero(aobasic->app, 2*N*sizeof(int));CHKERRQ(ierr);
   for(i = 0; i < N; i++) {
     ip = allpetsc[i];
     ia = allapp[i];
@@ -277,18 +277,18 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
     aobasic->petsc[ia] = ip + 1;
   }
   if (!mypetsc) {
-    ierr = PetscFree(petsc);                                                                              CHKERRQ(ierr);
+    ierr = PetscFree(petsc);CHKERRQ(ierr);
   }
-  ierr = PetscFree(allpetsc);                                                                             CHKERRQ(ierr);
+  ierr = PetscFree(allpetsc);CHKERRQ(ierr);
   /* shift indices down by one */
   for(i = 0; i < N; i++) {
     aobasic->app[i]--;
     aobasic->petsc[i]--;
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-ao_view", &opt);                                               CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-ao_view", &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);                                                          CHKERRQ(ierr);
+    ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   *aoout = ao;

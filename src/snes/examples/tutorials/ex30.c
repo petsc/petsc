@@ -162,10 +162,10 @@ int main(int argc,char **argv)
 
     /*======================================================================*/
     
-    ierr = PetscMalloc(param.mglevels*sizeof(AppCtx),&user); CHKERRQ(ierr);
+    ierr = PetscMalloc(param.mglevels*sizeof(AppCtx),&user);CHKERRQ(ierr);
     for (i=0; i<param.mglevels; i++) {
-      ierr = VecDuplicate(dmmg[i]->x, &(user[i].Xold)); CHKERRQ(ierr);
-      ierr = VecDuplicate(dmmg[i]->x, &(user[i].func)); CHKERRQ(ierr);
+      ierr = VecDuplicate(dmmg[i]->x, &(user[i].Xold));CHKERRQ(ierr);
+      ierr = VecDuplicate(dmmg[i]->x, &(user[i].func));CHKERRQ(ierr);
       user[i].param = &param;
       dmmg[i]->user = &user[i]; 
     }
@@ -186,7 +186,7 @@ int main(int argc,char **argv)
        Solve the nonlinear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     PreLoadStage("Solve"); 
-    ierr = Initialize(dmmg); CHKERRQ(ierr);
+    ierr = Initialize(dmmg);CHKERRQ(ierr);
 
     if (param.ivisc>0) { 
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Doing Constant Viscosity Solve\n", its);CHKERRQ(ierr);
@@ -231,11 +231,11 @@ int main(int argc,char **argv)
        are no longer needed.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     for (i=0; i<param.mglevels; i++) {
-      ierr = VecDestroy(user[i].Xold); CHKERRQ(ierr);
-      ierr = VecDestroy(user[i].func); CHKERRQ(ierr);
+      ierr = VecDestroy(user[i].Xold);CHKERRQ(ierr);
+      ierr = VecDestroy(user[i].func);CHKERRQ(ierr);
     }
-    ierr = PetscFree(user); CHKERRQ(ierr);
-    ierr = DMMGDestroy(dmmg); CHKERRQ(ierr);
+    ierr = PetscFree(user);CHKERRQ(ierr);
+    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
     PreLoadEnd();
     
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -768,7 +768,7 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   AppCtx    *user = (AppCtx*)dmmg->user;
   int       ierr;
 
-  ierr = VecCopy(user->Xold, X); CHKERRQ(ierr);
+  ierr = VecCopy(user->Xold, X);CHKERRQ(ierr);
 
   /* calculate the residual on fine mesh, but only the first time this is called */
   if (user->fnorm_ini == 0.0) {

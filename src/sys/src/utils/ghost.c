@@ -58,18 +58,18 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
 
   PetscFunctionBegin;
   /* Initialize communication */
-  ierr = MPI_Comm_size(comm, &size);                                                                  CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);                                                                      CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(int), &numSendGhosts);                                             CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(int), &numRecvGhosts);                                             CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(int), &sumSendGhosts);                                             CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(int), &sumRecvGhosts);                                             CHKERRQ(ierr);
-  ierr = PetscMalloc(size * sizeof(int), &offsets);                                                   CHKERRQ(ierr);
-  ierr = PetscMemzero(numSendGhosts,  size * sizeof(int));                                            CHKERRQ(ierr);
-  ierr = PetscMemzero(numRecvGhosts,  size * sizeof(int));                                            CHKERRQ(ierr);
-  ierr = PetscMemzero(sumSendGhosts,  size * sizeof(int));                                            CHKERRQ(ierr);
-  ierr = PetscMemzero(sumRecvGhosts,  size * sizeof(int));                                            CHKERRQ(ierr);
-  ierr = PetscMemzero(offsets,        size * sizeof(int));                                            CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &numSendGhosts);CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &numRecvGhosts);CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &sumSendGhosts);CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &sumRecvGhosts);CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(int), &offsets);CHKERRQ(ierr);
+  ierr = PetscMemzero(numSendGhosts,  size * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(numRecvGhosts,  size * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(sumSendGhosts,  size * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(sumRecvGhosts,  size * sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(offsets,        size * sizeof(int));CHKERRQ(ierr);
 #ifdef PETSC_USE_BOPT_g
   numLocVars = firstVar[rank+1] - firstVar[rank];
 #endif
@@ -80,7 +80,7 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
   }
 
   /* Get number of ghosts to provide variables for */
-  ierr = MPI_Alltoall(numSendGhosts, 1, MPI_INT, numRecvGhosts, 1, MPI_INT, comm);                        CHKERRQ(ierr);
+  ierr = MPI_Alltoall(numSendGhosts, 1, MPI_INT, numRecvGhosts, 1, MPI_INT, comm);CHKERRQ(ierr);
   for(proc = 1; proc < size; proc++) {
     sumSendGhosts[proc] = sumSendGhosts[proc-1] + numSendGhosts[proc-1];
     sumRecvGhosts[proc] = sumRecvGhosts[proc-1] + numRecvGhosts[proc-1];
@@ -92,13 +92,13 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
     SETERRQ2(PETSC_ERR_PLIB, "Invalid number of ghosts %d in send, should be %d", totSendGhosts, numGhosts);
   }
 
-  ierr = PetscDataTypeGetSize(dataType, &typeSize);                                                       CHKERRQ(ierr);
+  ierr = PetscDataTypeGetSize(dataType, &typeSize);CHKERRQ(ierr);
   if (totSendGhosts) {
-    ierr = PetscMalloc(totSendGhosts * sizeof(int), &sendIndices);                                        CHKERRQ(ierr);
+    ierr = PetscMalloc(totSendGhosts * sizeof(int), &sendIndices);CHKERRQ(ierr);
   }
   if (totRecvGhosts) {
-    ierr = PetscMalloc(totRecvGhosts * sizeof(int), &recvIndices);                                        CHKERRQ(ierr);
-    ierr = PetscMalloc(totRecvGhosts * typeSize,    &tempVars);                                           CHKERRQ(ierr);
+    ierr = PetscMalloc(totRecvGhosts * sizeof(int), &recvIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc(totRecvGhosts * typeSize,    &tempVars);CHKERRQ(ierr);
   }
 
   /* Must order ghosts by processor */
@@ -142,14 +142,14 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
     }
 
     /* Communicate local variables to ghost storage */
-    ierr = PetscDataTypeToMPIDataType(dataType, &MPIType);                                                CHKERRQ(ierr);
+    ierr = PetscDataTypeToMPIDataType(dataType, &MPIType);CHKERRQ(ierr);
     ierr = MPI_Alltoallv(tempVars,  numRecvGhosts, sumRecvGhosts, MPIType,
                          ghostVars, numSendGhosts, sumSendGhosts, MPIType, comm);
     CHKERRQ(ierr);
     break;
   case SCATTER_REVERSE:
     /* Communicate ghost variables to local storage */
-    ierr = PetscDataTypeToMPIDataType(dataType, &MPIType);                                                CHKERRQ(ierr);
+    ierr = PetscDataTypeToMPIDataType(dataType, &MPIType);CHKERRQ(ierr);
     ierr = MPI_Alltoallv(ghostVars, numSendGhosts, sumSendGhosts, MPIType,
                          tempVars,  numRecvGhosts, sumRecvGhosts, MPIType, comm);
     CHKERRQ(ierr);
@@ -215,17 +215,17 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
   }
 
   /* Cleanup */
-  ierr = PetscFree(numSendGhosts);                                                                        CHKERRQ(ierr);
-  ierr = PetscFree(numRecvGhosts);                                                                        CHKERRQ(ierr);
-  ierr = PetscFree(sumSendGhosts);                                                                        CHKERRQ(ierr);
-  ierr = PetscFree(sumRecvGhosts);                                                                        CHKERRQ(ierr);
-  ierr = PetscFree(offsets);                                                                              CHKERRQ(ierr);
+  ierr = PetscFree(numSendGhosts);CHKERRQ(ierr);
+  ierr = PetscFree(numRecvGhosts);CHKERRQ(ierr);
+  ierr = PetscFree(sumSendGhosts);CHKERRQ(ierr);
+  ierr = PetscFree(sumRecvGhosts);CHKERRQ(ierr);
+  ierr = PetscFree(offsets);CHKERRQ(ierr);
   if (totSendGhosts) {
-    ierr = PetscFree(sendIndices);                                                                        CHKERRQ(ierr);
+    ierr = PetscFree(sendIndices);CHKERRQ(ierr);
   }
   if (totRecvGhosts) {
-    ierr = PetscFree(recvIndices);                                                                        CHKERRQ(ierr);
-    ierr = PetscFree(tempVars);                                                                           CHKERRQ(ierr);
+    ierr = PetscFree(recvIndices);CHKERRQ(ierr);
+    ierr = PetscFree(tempVars);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -254,7 +254,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView); 

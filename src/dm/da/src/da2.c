@@ -254,7 +254,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscValidPointer(inra,12);
   *inra = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);

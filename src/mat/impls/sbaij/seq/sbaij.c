@@ -2068,7 +2068,7 @@ int MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fsh
     }
   } 
 
-  ierr = PetscFree(t); CHKERRQ(ierr);
+  ierr = PetscFree(t);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) { 
     ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);

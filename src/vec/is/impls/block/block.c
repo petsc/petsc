@@ -258,7 +258,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
   if (n) {PetscValidIntPointer(idx,4);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 

@@ -79,22 +79,22 @@ int PetscHeaderDestroy_Private(PetscObject h)
     ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
   }
   if (h->intcomposeddata) {
-    ierr = PetscFree(h->intcomposeddata); CHKERRQ(ierr);
+    ierr = PetscFree(h->intcomposeddata);CHKERRQ(ierr);
   }
   if (h->intcomposedstate) {
-    ierr = PetscFree(h->intcomposedstate); CHKERRQ(ierr);
+    ierr = PetscFree(h->intcomposedstate);CHKERRQ(ierr);
   }
   if (h->realcomposeddata) {
-    ierr = PetscFree(h->realcomposeddata); CHKERRQ(ierr);
+    ierr = PetscFree(h->realcomposeddata);CHKERRQ(ierr);
   }
   if (h->realcomposedstate) {
-    ierr = PetscFree(h->realcomposedstate); CHKERRQ(ierr);
+    ierr = PetscFree(h->realcomposedstate);CHKERRQ(ierr);
   }
   if (h->scalarcomposeddata) {
-    ierr = PetscFree(h->scalarcomposeddata); CHKERRQ(ierr);
+    ierr = PetscFree(h->scalarcomposeddata);CHKERRQ(ierr);
   }
   if (h->scalarcomposedstate) {
-    ierr = PetscFree(h->scalarcomposedstate); CHKERRQ(ierr);
+    ierr = PetscFree(h->scalarcomposedstate);CHKERRQ(ierr);
   }
   ierr = PetscFree(h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -482,10 +482,10 @@ int PetscObjectSetParameterDict(PetscObject obj, ParameterDict dict) {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (obj->dict != PETSC_NULL) {
-    ierr = PetscObjectDereference((PetscObject) obj->dict);                                               CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject) obj->dict);CHKERRQ(ierr);
   }
   if (dict != PETSC_NULL) {
-    ierr = PetscObjectReference((PetscObject) dict);                                                      CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject) dict);CHKERRQ(ierr);
   }
   obj->dict = dict;
   PetscFunctionReturn(0);

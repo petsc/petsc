@@ -278,7 +278,7 @@ int AOPetscToApplicationPermuteInt(AO ao, int block, int array[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
   PetscValidIntPointer(array,3);
-  ierr = (*ao->ops->petsctoapplicationpermuteint)(ao, block, array);                                      CHKERRQ(ierr);
+  ierr = (*ao->ops->petsctoapplicationpermuteint)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -308,7 +308,7 @@ int AOApplicationToPetscPermuteInt(AO ao, int block, int array[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
   PetscValidIntPointer(array,3);
-  ierr = (*ao->ops->applicationtopetscpermuteint)(ao, block, array);                                      CHKERRQ(ierr);
+  ierr = (*ao->ops->applicationtopetscpermuteint)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -338,7 +338,7 @@ int AOPetscToApplicationPermuteReal(AO ao, int block, double array[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
   PetscValidIntPointer(array,3);
-  ierr = (*ao->ops->petsctoapplicationpermutereal)(ao, block, array);                                     CHKERRQ(ierr);
+  ierr = (*ao->ops->petsctoapplicationpermutereal)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -368,6 +368,6 @@ int AOApplicationToPetscPermuteReal(AO ao, int block, double array[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_COOKIE,1);
   PetscValidIntPointer(array,3);
-  ierr = (*ao->ops->applicationtopetscpermutereal)(ao, block, array);                                     CHKERRQ(ierr);
+  ierr = (*ao->ops->applicationtopetscpermutereal)(ao, block, array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

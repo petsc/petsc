@@ -3374,7 +3374,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   ierr = ISRestoreIndices(iscol,&icol);CHKERRQ(ierr);
 
   /* Destroy allocated memory */
-  ierr = PetscFree(rtable); CHKERRQ(ierr);
+  ierr = PetscFree(rtable);CHKERRQ(ierr);
   ierr = PetscFree(w1);CHKERRQ(ierr);
   ierr = PetscFree(pa);CHKERRQ(ierr);
 

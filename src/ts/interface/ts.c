@@ -34,13 +34,13 @@ static int TSSetTypeFromOptions(TS ts)
   }
 
   if (!TSRegisterAllCalled) {
-    ierr = TSRegisterAll(PETSC_NULL);                                                                     CHKERRQ(ierr);
+    ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = TSSetType(ts, typeName);                                                                       CHKERRQ(ierr);
+    ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
   } else {
-    ierr = TSSetType(ts, defaultType);                                                                    CHKERRQ(ierr);
+    ierr = TSSetType(ts, defaultType);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -77,7 +77,7 @@ int TSSetFromOptions(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
-  ierr = PetscOptionsBegin(ts->comm, ts->prefix, "Time step options", "TS");                              CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(ts->comm, ts->prefix, "Time step options", "TS");CHKERRQ(ierr);
 
   /* Handle generic TS options */
   ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
@@ -89,39 +89,39 @@ int TSSetFromOptions(TS ts)
   }
 
   /* Monitor options */
-    ierr = PetscOptionsName("-ts_monitor","Monitor timestep size","TSDefaultMonitor",&opt);               CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor","Monitor timestep size","TSDefaultMonitor",&opt);CHKERRQ(ierr);
     if (opt == PETSC_TRUE) {
-      ierr = TSSetMonitor(ts,TSDefaultMonitor,PETSC_NULL,PETSC_NULL);                                     CHKERRQ(ierr);
+      ierr = TSSetMonitor(ts,TSDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_xmonitor","Monitor timestep size graphically","TSLGMonitor",&opt);       CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_xmonitor","Monitor timestep size graphically","TSLGMonitor",&opt);CHKERRQ(ierr);
     if (opt == PETSC_TRUE) {
-      ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL,PETSC_NULL);                                          CHKERRQ(ierr);
+      ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_vecmonitor","Monitor solution graphically","TSVecViewMonitor",&opt);     CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_vecmonitor","Monitor solution graphically","TSVecViewMonitor",&opt);CHKERRQ(ierr);
     if (opt == PETSC_TRUE) {
-      ierr = TSSetMonitor(ts,TSVecViewMonitor,PETSC_NULL,PETSC_NULL);                                     CHKERRQ(ierr);
+      ierr = TSSetMonitor(ts,TSVecViewMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
 
   /* Handle TS type options */
-  ierr = TSSetTypeFromOptions(ts);                                                                        CHKERRQ(ierr);
+  ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
   /* Handle specific TS options */
   if (ts->ops->setfromoptions != PETSC_NULL) {
-    ierr = (*ts->ops->setfromoptions)(ts);                                                                CHKERRQ(ierr);
+    ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsEnd();                                                                               CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Handle subobject options */
   switch(ts->problem_type) {
     /* Should check for implicit/explicit */
   case TS_LINEAR:
     if (ts->ksp != PETSC_NULL) {
-      ierr = KSPSetFromOptions(ts->ksp);                                                                CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
     }
     break;
   case TS_NONLINEAR:
     if (ts->snes != PETSC_NULL) {
-      ierr = SNESSetFromOptions(ts->snes);                                                                CHKERRQ(ierr);
+      ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
     }
     break;
   default:
@@ -157,40 +157,40 @@ int TSViewFromOptions(TS ts,const char title[])
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);                                               CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscOptionsGetString(ts->prefix, "-ts_view", typeName, 1024, &opt);                           CHKERRQ(ierr);
-    ierr = PetscStrlen(typeName, &len);                                                                   CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(ts->prefix, "-ts_view", typeName, 1024, &opt);CHKERRQ(ierr);
+    ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
     if (len > 0) {
-      ierr = PetscViewerCreate(ts->comm, &viewer);                                                        CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, typeName);                                                        CHKERRQ(ierr);
-      ierr = PetscOptionsGetString(ts->prefix, "-ts_view_file", fileName, 1024, &opt);                    CHKERRQ(ierr);
+      ierr = PetscViewerCreate(ts->comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, typeName);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(ts->prefix, "-ts_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
       if (opt == PETSC_TRUE) {
-        ierr = PetscViewerSetFilename(viewer, fileName);                                                  CHKERRQ(ierr);
+        ierr = PetscViewerSetFilename(viewer, fileName);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerSetFilename(viewer, ts->name);                                                  CHKERRQ(ierr);
+        ierr = PetscViewerSetFilename(viewer, ts->name);CHKERRQ(ierr);
       }
-      ierr = TSView(ts, viewer);                                                                          CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);                                                                    CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);                                                                  CHKERRQ(ierr);
+      ierr = TSView(ts, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {
-      ierr = TSView(ts, PETSC_NULL);                                                                      CHKERRQ(ierr);
+      ierr = TSView(ts, PETSC_NULL);CHKERRQ(ierr);
     }
   }
-  ierr = PetscOptionsHasName(ts->prefix, "-ts_view_draw", &opt);                                          CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(ts->prefix, "-ts_view_draw", &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscViewerDrawOpen(ts->comm, 0, 0, 0, 0, 300, 300, &viewer);                                  CHKERRQ(ierr);
-    ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);                                                      CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(ts->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
     if (title != PETSC_NULL) {
-      ierr = PetscDrawSetTitle(draw, (char *)title);                                                      CHKERRQ(ierr);
+      ierr = PetscDrawSetTitle(draw, (char *)title);CHKERRQ(ierr);
     } else {
       ierr = PetscObjectName((PetscObject) ts);                                                           CHKERRQ(ierr) ;
-      ierr = PetscDrawSetTitle(draw, ts->name);                                                           CHKERRQ(ierr);
+      ierr = PetscDrawSetTitle(draw, ts->name);CHKERRQ(ierr);
     }
-    ierr = TSView(ts, viewer);                                                                            CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);                                                                      CHKERRQ(ierr);
-    ierr = PetscDrawPause(draw);                                                                          CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);                                                                    CHKERRQ(ierr);
+    ierr = TSView(ts, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1538,14 +1538,14 @@ int TSStep(TS ts,int *steps,PetscReal *ptime)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   if (!ts->setupcalled) {
-    ierr = TSSetUp(ts);                                                                                   CHKERRQ(ierr);
+    ierr = TSSetUp(ts);CHKERRQ(ierr);
   }
 
-  ierr = PetscLogEventBegin(TS_Step, ts, 0, 0, 0);                                                        CHKERRQ(ierr);
-  ierr = (*ts->ops->prestep)(ts);                                                                         CHKERRQ(ierr);
-  ierr = (*ts->ops->step)(ts, steps, ptime);                                                              CHKERRQ(ierr);
-  ierr = (*ts->ops->poststep)(ts);                                                                        CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TS_Step, ts, 0, 0, 0);                                                          CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
+  ierr = (*ts->ops->prestep)(ts);CHKERRQ(ierr);
+  ierr = (*ts->ops->step)(ts, steps, ptime);CHKERRQ(ierr);
+  ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
 
   if (!PetscPreLoadingOn) {
     ierr = TSViewFromOptions(ts,ts->name);CHKERRQ(ierr);

@@ -22,7 +22,7 @@ int PetscViewerDestroy_Netcdf(PetscViewer v)
 
   PetscFunctionBegin;
   if (vnetcdf->ncid) {
-    ierr = ncmpi_close(vnetcdf->ncid); CHKERRQ(ierr);
+    ierr = ncmpi_close(vnetcdf->ncid);CHKERRQ(ierr);
   }
   ierr = PetscStrfree(vnetcdf->filename);CHKERRQ(ierr);
   ierr = PetscFree(vnetcdf);CHKERRQ(ierr);
@@ -120,11 +120,11 @@ int PetscViewerSetFilename_Netcdf(PetscViewer viewer,const char name[])
   if (type == (PetscViewerFileType) -1) {
     SETERRQ(1,"Must call PetscViewerSetFileType() before PetscViewerSetFilename()");
   } else if (type == PETSC_FILE_RDONLY) {
-    ierr = ncmpi_open(comm,vnetcdf->filename,0,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
+    ierr = ncmpi_open(comm,vnetcdf->filename,0,MPI_INFO_NULL,&vnetcdf->ncid);CHKERRQ(ierr);
   } else if (type == PETSC_FILE_RDWR) {
-    ierr = ncmpi_open(comm,vnetcdf->filename,NC_WRITE,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
+    ierr = ncmpi_open(comm,vnetcdf->filename,NC_WRITE,MPI_INFO_NULL,&vnetcdf->ncid);CHKERRQ(ierr);
   } else if (type == PETSC_FILE_CREATE) {
-    ierr = ncmpi_create(comm,vnetcdf->filename,NC_CLOBBER,MPI_INFO_NULL,&vnetcdf->ncid); CHKERRQ(ierr);
+    ierr = ncmpi_create(comm,vnetcdf->filename,NC_CLOBBER,MPI_INFO_NULL,&vnetcdf->ncid);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

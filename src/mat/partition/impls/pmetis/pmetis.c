@@ -69,7 +69,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   ierr = PetscMalloc((mat->m+1)*sizeof(int),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
-  ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts); CHKERRQ(ierr);
+  ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts);CHKERRQ(ierr);
   for (i=0; i<ncon; i++) {
     for (j=0; j<nparts; j++) {
       if (part->part_weights) {
@@ -79,7 +79,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
       }
     }
   }
-  ierr = PetscMalloc(ncon*sizeof(float),&ubvec); CHKERRQ(ierr);
+  ierr = PetscMalloc(ncon*sizeof(float),&ubvec);CHKERRQ(ierr);
   for (i=0; i<ncon; i++) {
     ubvec[i] = 1.05;
   }
@@ -87,8 +87,8 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   /* ParMETIS has no error conditions ??? */
   ParMETIS_V3_PartKway(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,
                        options,&edgecut,locals,&parmetis->comm_pmetis);
-  ierr = PetscFree(tpwgts); CHKERRQ(ierr);
-  ierr = PetscFree(ubvec); CHKERRQ(ierr);
+  ierr = PetscFree(tpwgts);CHKERRQ(ierr);
+  ierr = PetscFree(ubvec);CHKERRQ(ierr);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
 
   ierr = ISCreateGeneral(part->comm,mat->m,locals,partitioning);CHKERRQ(ierr);

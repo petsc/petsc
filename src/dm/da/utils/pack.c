@@ -64,7 +64,7 @@ int VecPackCreate(MPI_Comm comm,VecPack *packer)
   PetscValidPointer(packer,2);
   *packer = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(p,_p_VecPack,struct _VecPackOps,DA_COOKIE,0,"VecPack",comm,VecPackDestroy,0);

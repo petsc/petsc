@@ -24,10 +24,10 @@ int ClassRegLogCreate(ClassRegLog *classLog) {
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _ClassRegLog, &l);                                                               CHKERRQ(ierr);
+  ierr = PetscNew(struct _ClassRegLog, &l);CHKERRQ(ierr);
   l->numClasses = 0;
   l->maxClasses = 100;
-  ierr = PetscMalloc(l->maxClasses * sizeof(ClassRegInfo), &l->classInfo);                                CHKERRQ(ierr);
+  ierr = PetscMalloc(l->maxClasses * sizeof(ClassRegInfo), &l->classInfo);CHKERRQ(ierr);
   *classLog = l;
   PetscFunctionReturn(0);
 }
@@ -53,10 +53,10 @@ int ClassRegLogDestroy(ClassRegLog classLog) {
 
   PetscFunctionBegin;
   for(c = 0; c < classLog->numClasses; c++) {
-    ierr = ClassRegInfoDestroy(&classLog->classInfo[c]);                                                  CHKERRQ(ierr);
+    ierr = ClassRegInfoDestroy(&classLog->classInfo[c]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(classLog->classInfo);                                                                  CHKERRQ(ierr);
-  ierr = PetscFree(classLog);                                                                             CHKERRQ(ierr);
+  ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
+  ierr = PetscFree(classLog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +80,7 @@ int ClassRegInfoDestroy(ClassRegInfo *c) {
 
   PetscFunctionBegin;
   if (c->name != PETSC_NULL) {
-    ierr = PetscFree(c->name);                                                                            CHKERRQ(ierr);
+    ierr = PetscFree(c->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -105,10 +105,10 @@ int ClassPerfLogCreate(ClassPerfLog *classLog) {
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _ClassPerfLog, &l);                                                              CHKERRQ(ierr);
+  ierr = PetscNew(struct _ClassPerfLog, &l);CHKERRQ(ierr);
   l->numClasses = 0;
   l->maxClasses = 100;
-  ierr = PetscMalloc(l->maxClasses * sizeof(ClassPerfInfo), &l->classInfo);                               CHKERRQ(ierr);
+  ierr = PetscMalloc(l->maxClasses * sizeof(ClassPerfInfo), &l->classInfo);CHKERRQ(ierr);
   *classLog = l;
   PetscFunctionReturn(0);
 }
@@ -132,8 +132,8 @@ int ClassPerfLogDestroy(ClassPerfLog classLog) {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(classLog->classInfo);                                                                  CHKERRQ(ierr);
-  ierr = PetscFree(classLog);                                                                             CHKERRQ(ierr);
+  ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
+  ierr = PetscFree(classLog);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -185,14 +185,14 @@ int ClassPerfLogEnsureSize(ClassPerfLog classLog, int size) {
 
   PetscFunctionBegin;
   while(size > classLog->maxClasses) {
-    ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(ClassPerfInfo), &classInfo);                       CHKERRQ(ierr);
-    ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(ClassPerfInfo));     CHKERRQ(ierr);
-    ierr = PetscFree(classLog->classInfo);                                                                CHKERRQ(ierr);
+    ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(ClassPerfInfo), &classInfo);CHKERRQ(ierr);
+    ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(ClassPerfInfo));CHKERRQ(ierr);
+    ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
     classLog->classInfo   = classInfo;
     classLog->maxClasses *= 2;
   }
   while(classLog->numClasses < size) {
-    ierr = ClassPerfInfoClear(&classLog->classInfo[classLog->numClasses++]);                              CHKERRQ(ierr);
+    ierr = ClassPerfInfoClear(&classLog->classInfo[classLog->numClasses++]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -229,13 +229,13 @@ int ClassRegLogRegister(ClassRegLog classLog, const char cname[], int *cookie) {
   PetscValidIntPointer(cookie,3);
   c = classLog->numClasses++;
   if (classLog->numClasses > classLog->maxClasses) {
-    ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(ClassRegInfo), &classInfo);                        CHKERRQ(ierr);
-    ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(ClassRegInfo));      CHKERRQ(ierr);
-    ierr = PetscFree(classLog->classInfo);                                                                CHKERRQ(ierr);
+    ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(ClassRegInfo), &classInfo);CHKERRQ(ierr);
+    ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(ClassRegInfo));CHKERRQ(ierr);
+    ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
     classLog->classInfo   = classInfo;
     classLog->maxClasses *= 2;
   }
-  ierr = PetscStrallocpy(cname, &str);                                                                    CHKERRQ(ierr);
+  ierr = PetscStrallocpy(cname, &str);CHKERRQ(ierr);
   classLog->classInfo[c].name     = str;
   if (*cookie == PETSC_DECIDE) {
     classLog->classInfo[c].cookie = ++PETSC_LARGEST_COOKIE;
@@ -300,18 +300,18 @@ int PetscLogObjCreateDefault(PetscObject obj) {
 
   PetscFunctionBegin;
   /* Record stage info */
-  ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
-  ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
-  ierr = StageLogGetClassRegLog(stageLog, &classRegLog);                                                  CHKERRQ(ierr);
-  ierr = StageLogGetClassPerfLog(stageLog, stage, &classPerfLog);                                         CHKERRQ(ierr);
-  ierr = ClassRegLogGetClass(classRegLog, obj->cookie, &oclass);                                          CHKERRQ(ierr);
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+  ierr = StageLogGetClassRegLog(stageLog, &classRegLog);CHKERRQ(ierr);
+  ierr = StageLogGetClassPerfLog(stageLog, stage, &classPerfLog);CHKERRQ(ierr);
+  ierr = ClassRegLogGetClass(classRegLog, obj->cookie, &oclass);CHKERRQ(ierr);
   classPerfLog->classInfo[oclass].creations++;
   /* Dynamically enlarge logging structures */
   if (numActions >= maxActions) {
     PetscTime(start);
-    ierr = PetscMalloc(maxActions*2 * sizeof(Action), &tmpAction);                                        CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpAction, actions, maxActions * sizeof(Action));                                  CHKERRQ(ierr);
-    ierr = PetscFree(actions);                                                                            CHKERRQ(ierr);
+    ierr = PetscMalloc(maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpAction, actions, maxActions * sizeof(Action));CHKERRQ(ierr);
+    ierr = PetscFree(actions);CHKERRQ(ierr);
     actions     = tmpAction;
     maxActions *= 2;
     PetscTime(end);
@@ -328,24 +328,24 @@ int PetscLogObjCreateDefault(PetscObject obj) {
     actions[numActions].id2    = -1;
     actions[numActions].id3    = -1;
     actions[numActions].flops  = _TotalFlops;
-    ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);               CHKERRQ(ierr);
+    ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);CHKERRQ(ierr);
     numActions++;
   }
   /* Record the object */
   if (logObjects == PETSC_TRUE) {
     objects[numObjects].parent = -1;
     objects[numObjects].obj    = obj;
-    ierr = PetscMemzero(objects[numObjects].name, 64 * sizeof(char));                                     CHKERRQ(ierr);
-    ierr = PetscMemzero(objects[numObjects].info, 64 * sizeof(char));                                     CHKERRQ(ierr);
+    ierr = PetscMemzero(objects[numObjects].name, 64 * sizeof(char));CHKERRQ(ierr);
+    ierr = PetscMemzero(objects[numObjects].info, 64 * sizeof(char));CHKERRQ(ierr);
     numObjects++;
   }
   obj->id = numObjects;
   /* Dynamically enlarge logging structures */
   if (numObjects >= maxObjects) {
     PetscTime(start);
-    ierr = PetscMalloc(maxObjects*2 * sizeof(Object), &tmpObjects);                                       CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpObjects, objects, maxObjects * sizeof(Object));                                 CHKERRQ(ierr);
-    ierr = PetscFree(objects);                                                                            CHKERRQ(ierr);
+    ierr = PetscMalloc(maxObjects*2 * sizeof(Object), &tmpObjects);CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpObjects, objects, maxObjects * sizeof(Object));CHKERRQ(ierr);
+    ierr = PetscFree(objects);CHKERRQ(ierr);
     objects     = tmpObjects;
     maxObjects *= 2;
     PetscTime(end);
@@ -371,19 +371,19 @@ int PetscLogObjDestroyDefault(PetscObject obj) {
 
   PetscFunctionBegin;
   /* Record stage info */
-  ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
-  ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
-  ierr = StageLogGetClassRegLog(stageLog, &classRegLog);                                                  CHKERRQ(ierr);
-  ierr = StageLogGetClassPerfLog(stageLog, stage, &classPerfLog);                                         CHKERRQ(ierr);
-  ierr = ClassRegLogGetClass(classRegLog, obj->cookie, &oclass);                                          CHKERRQ(ierr);
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
+  ierr = StageLogGetClassRegLog(stageLog, &classRegLog);CHKERRQ(ierr);
+  ierr = StageLogGetClassPerfLog(stageLog, stage, &classPerfLog);CHKERRQ(ierr);
+  ierr = ClassRegLogGetClass(classRegLog, obj->cookie, &oclass);CHKERRQ(ierr);
   classPerfLog->classInfo[oclass].destructions++;
   classPerfLog->classInfo[oclass].mem += obj->mem;
   /* Credit all ancestors with your memory */
   parent = obj->parent;
   while (parent != PETSC_NULL) {
-    ierr = PetscObjectExists(parent, &exists);                                                            CHKERRQ(ierr);
+    ierr = PetscObjectExists(parent, &exists);CHKERRQ(ierr);
     if (exists == PETSC_FALSE) break;
-    ierr = ClassRegLogGetClass(classRegLog, parent->cookie, &pclass);                                     CHKERRQ(ierr);
+    ierr = ClassRegLogGetClass(classRegLog, parent->cookie, &pclass);CHKERRQ(ierr);
     classPerfLog->classInfo[pclass].descMem += obj->mem;   
     parent = parent->parent;
   } 
@@ -391,9 +391,9 @@ int PetscLogObjDestroyDefault(PetscObject obj) {
   /* Dynamically enlarge logging structures */
   if (numActions >= maxActions) {
     PetscTime(start);
-    ierr = PetscMalloc(maxActions*2 * sizeof(Action), &tmpAction);                                        CHKERRQ(ierr);
-    ierr = PetscMemcpy(tmpAction, actions, maxActions * sizeof(Action));                                  CHKERRQ(ierr);
-    ierr = PetscFree(actions);                                                                            CHKERRQ(ierr);
+    ierr = PetscMalloc(maxActions*2 * sizeof(Action), &tmpAction);CHKERRQ(ierr);
+    ierr = PetscMemcpy(tmpAction, actions, maxActions * sizeof(Action));CHKERRQ(ierr);
+    ierr = PetscFree(actions);CHKERRQ(ierr);
     actions     = tmpAction;
     maxActions *= 2;
     PetscTime(end);
@@ -410,12 +410,12 @@ int PetscLogObjDestroyDefault(PetscObject obj) {
     actions[numActions].id2    = -1;
     actions[numActions].id3    = -1;
     actions[numActions].flops  = _TotalFlops;
-    ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);               CHKERRQ(ierr);
+    ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);CHKERRQ(ierr);
     numActions++;
   }
   if (logObjects == PETSC_TRUE) {
     if (obj->parent != PETSC_NULL) {
-      ierr = PetscObjectExists(obj->parent, &exists);                                                     CHKERRQ(ierr);
+      ierr = PetscObjectExists(obj->parent, &exists);CHKERRQ(ierr);
       if (exists == PETSC_TRUE) {
         objects[obj->id].parent = obj->parent->id;
       } else {
@@ -425,7 +425,7 @@ int PetscLogObjDestroyDefault(PetscObject obj) {
       objects[obj->id].parent   = -1;
     }
     if (obj->name != PETSC_NULL) {
-      ierr = PetscStrncpy(objects[obj->id].name, obj->name, 64);                                          CHKERRQ(ierr);
+      ierr = PetscStrncpy(objects[obj->id].name, obj->name, 64);CHKERRQ(ierr);
     }
     objects[obj->id].obj      = PETSC_NULL;
     objects[obj->id].mem      = obj->mem;

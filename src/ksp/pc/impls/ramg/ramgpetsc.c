@@ -55,7 +55,7 @@ int RamgShellPCCreate(RamgShellPC **shell)
    int         ierr;
 
    PetscFunctionBegin;
-   ierr              = PetscNew(RamgShellPC,&newctx); CHKERRQ(ierr);
+   ierr              = PetscNew(RamgShellPC,&newctx);CHKERRQ(ierr);
    newctx->arraysset = PETSC_FALSE;
    *shell            = newctx; 
    PetscFunctionReturn(0); 
@@ -108,8 +108,8 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 
    PetscFunctionBegin;
    /*..Get size and number of unknowns of preconditioner matrix..*/ 
-   ierr = MatGetSize(pmat, &numnodes, &numnodes); CHKERRQ(ierr);
-   ierr = MatGetInfo(pmat,MAT_LOCAL,&info); CHKERRQ(ierr); 
+   ierr = MatGetSize(pmat, &numnodes, &numnodes);CHKERRQ(ierr);
+   ierr = MatGetInfo(pmat,MAT_LOCAL,&info);CHKERRQ(ierr); 
    numnonzero = (int)info.nz_used;
    /*..Set number of unknowns and nonzeros in RAMG terminology..*/
    nnu    = numnodes; 
@@ -205,7 +205,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ..*/ 
    ncyc   = 1030; 
 
-   ierr = PetscLogInfo((PetscObject)pmat,"\n\n"); CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"\n\n");CHKERRQ(ierr);
    ierr = PetscLogInfo((PetscObject)pmat,"******************************************\n");CHKERRQ(ierr);
    ierr = PetscLogInfo((PetscObject)pmat,"*** RAMG Start Setup                   ***\n");CHKERRQ(ierr);
    ierr = PetscLogInfo((PetscObject)pmat,"******************************************\n");CHKERRQ(ierr);
@@ -319,7 +319,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
 
    /*..Get numnodes as the size of the input vector r..*/
    PetscFunctionBegin;
-   ierr = VecGetSize(r,&numnodes); CHKERRQ(ierr);
+   ierr = VecGetSize(r,&numnodes);CHKERRQ(ierr);
    nnu  = numnodes; 
 
    /*..Get values from context..*/
@@ -332,7 +332,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    ramg_param = shell->PARAM; 
 
    /*..Set the rhs of the call to ramg equal to the residual..*/
-   ierr = VecGetArray(r,&vals_getarray); CHKERRQ(ierr);
+   ierr = VecGetArray(r,&vals_getarray);CHKERRQ(ierr);
 
    /*..Set rhs of call to ramg..*/
    ierr = PetscMemcpy(rhs, vals_getarray, numnodes * sizeof(*rhs));CHKERRQ(ierr);
@@ -396,7 +396,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    ierr = VecSetValues(z,numnodes,cols,u_approx,INSERT_VALUES);CHKERRQ(ierr);  
 
    /*..Restore PETSc rhs vector..*/
-   ierr = VecRestoreArray(r, &vals_getarray); CHKERRQ(ierr);
+   ierr = VecRestoreArray(r, &vals_getarray);CHKERRQ(ierr);
 
    ierr = PetscFree(cols);CHKERRQ(ierr);
    

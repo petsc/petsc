@@ -49,8 +49,8 @@ int SamgGetGrid(int levels, int numnodes, int numnonzero,
 
        /*....Get size and number of nonzeros of coarse grid matrix on
              level k, i.e. get new nna_cg and nnu_cg values....*/ 
-       ierr = MatGetSize(grid[k].A, &nnu_cg, &nnu_cg); CHKERRQ(ierr);
-       ierr = MatGetInfo(grid[k].A, MAT_LOCAL, &info); CHKERRQ(ierr); 
+       ierr = MatGetSize(grid[k].A, &nnu_cg, &nnu_cg);CHKERRQ(ierr);
+       ierr = MatGetInfo(grid[k].A, MAT_LOCAL, &info);CHKERRQ(ierr); 
        nna_cg = int(info.nz_used);
    }  
  
@@ -78,8 +78,8 @@ int SamgGetGrid(int levels, int numnodes, int numnonzero,
              interpolation associated to level k. NOTE: The 
              number of collums at this loop equals the number of 
              rows at the next loop...*/
-       ierr = MatGetSize(grid[k].Interp, &dummy, &rows_weights); CHKERRQ(ierr);
-       ierr = MatGetInfo(grid[k].Interp, MAT_LOCAL, &info); CHKERRQ(ierr); 
+       ierr = MatGetSize(grid[k].Interp, &dummy, &rows_weights);CHKERRQ(ierr);
+       ierr = MatGetInfo(grid[k].Interp, MAT_LOCAL, &info);CHKERRQ(ierr); 
        nna_weights = int(info.nz_used);
    }
 
@@ -150,11 +150,11 @@ int SamgGetCoarseMat(int level, int ia_shift, int ja_shift,
                               /* vector global column indices */
                (PetscScalar *) &(a_k[ ia_k[I] ]),
                               /* vector of coefficients */
-	INSERT_VALUES); CHKERRQ(ierr);
+	INSERT_VALUES);CHKERRQ(ierr);
    }   
 
-   ierr = MatAssemblyBegin(*coarsemat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-   ierr = MatAssemblyEnd(*coarsemat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+   ierr = MatAssemblyBegin(*coarsemat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+   ierr = MatAssemblyEnd(*coarsemat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
    /*..Free memory required by storage in skyline format..*/ 
    PetscFree(a_k); 
@@ -240,11 +240,11 @@ int SamgGetInterpolation(int level, int iw_shift, int jw_shift,
                               /* vector global column indices */
                (PetscScalar *) &(weights[ iweights[I] ]),
                               /* vector of coefficients */
-	INSERT_VALUES); CHKERRQ(ierr);
+	INSERT_VALUES);CHKERRQ(ierr);
    }   
 
-   ierr = MatAssemblyBegin(*interpolation,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-   ierr = MatAssemblyEnd(*interpolation,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+   ierr = MatAssemblyBegin(*interpolation,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+   ierr = MatAssemblyEnd(*interpolation,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
    /*..Free memory required by storage in skyline format..*/ 
    PetscFree(weights); 
@@ -366,15 +366,15 @@ int SamgCheckGalerkin(int levels, Mat A, GridCtx* grid,
       /*....Compute A^H - I^H_h A^h I^h_H....*/ 
       ierr = MatSubstract(grid[k+1].A, Galerkin, &Diff); 
      /*....Compute || A^H - I^H_h A^h I^h_H||_{\infty}....*/ 
-      ierr = MatNorm(Diff,NORM_INFINITY,&normdiff); CHKERRQ(ierr);
+      ierr = MatNorm(Diff,NORM_INFINITY,&normdiff);CHKERRQ(ierr);
 
       printf("SamgCheckGalerkin :: || A^H - I^H_h A^h I^h_H||_{infty} on level %8d = %e\n", 
 	      k+1, normdiff); 
 
-      ierr = MatDestroy(Restriction); CHKERRQ(ierr); 
-      ierr = MatDestroy(HalfGalerkin); CHKERRQ(ierr); 
-      ierr = MatDestroy(Galerkin); CHKERRQ(ierr); 
-      ierr = MatDestroy(Diff); CHKERRQ(ierr); 
+      ierr = MatDestroy(Restriction);CHKERRQ(ierr); 
+      ierr = MatDestroy(HalfGalerkin);CHKERRQ(ierr); 
+      ierr = MatDestroy(Galerkin);CHKERRQ(ierr); 
+      ierr = MatDestroy(Diff);CHKERRQ(ierr); 
    }
    return 0;
 } 
@@ -398,8 +398,8 @@ int MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
    double       Zero_Element_Treshold = 0.0 ;
 
    /*..Get sizes of terms..*/ 
-   ierr = MatGetSize(Term1, &rows1, &cols1); CHKERRQ(ierr); 
-   ierr = MatGetSize(Term2, &rows2, &cols2); CHKERRQ(ierr); 
+   ierr = MatGetSize(Term1, &rows1, &cols1);CHKERRQ(ierr); 
+   ierr = MatGetSize(Term2, &rows2, &cols2);CHKERRQ(ierr); 
 
    /*..Check input..*/ 
    if ( (cols1 != rows1) || (cols2 != rows2) ){
@@ -412,16 +412,16 @@ int MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
    ierr = MatSeqAIJSetPreallocation(*Diff,0,PETSC_NULL);CHKERRQ(ierr);
 
    /*..Create vectors..*/ 
-   ierr = VecCreate(MPI_COMM_WORLD,&col_vec1); CHKERRQ(ierr);
-   ierr = VecSetSizes(col_vec1,PETSC_DECIDE,rows1); CHKERRQ(ierr);
-   ierr = VecSetType(col_vec1,VECSEQ); CHKERRQ(ierr);
-   ierr = VecDuplicate(col_vec1, &col_vec2); CHKERRQ(ierr);
-   ierr = VecDuplicate(col_vec1, &diff_vec); CHKERRQ(ierr);
+   ierr = VecCreate(MPI_COMM_WORLD,&col_vec1);CHKERRQ(ierr);
+   ierr = VecSetSizes(col_vec1,PETSC_DECIDE,rows1);CHKERRQ(ierr);
+   ierr = VecSetType(col_vec1,VECSEQ);CHKERRQ(ierr);
+   ierr = VecDuplicate(col_vec1, &col_vec2);CHKERRQ(ierr);
+   ierr = VecDuplicate(col_vec1, &diff_vec);CHKERRQ(ierr);
 
    for (col=0;col<cols1;col++){
        /*..Get collumns..*/ 
-      ierr = MatGetColumnVector(Term1,col_vec1,col); CHKERRQ(ierr); 
-      ierr = MatGetColumnVector(Term2,col_vec2,col); CHKERRQ(ierr); 
+      ierr = MatGetColumnVector(Term1,col_vec1,col);CHKERRQ(ierr); 
+      ierr = MatGetColumnVector(Term2,col_vec2,col);CHKERRQ(ierr); 
       /*..Substract collumns..*/ 
       ierr = VecWAXPY(&dminusone, col_vec2, col_vec1, diff_vec); 
              CHKERRQ(ierr);  
@@ -433,7 +433,7 @@ int MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
       Zero_Element_Treshold = inf_norm_diff_vec * Machine_Precision_Eps ;
 
       /*..Get Term1(:,col) -  Term2(:,col) values..*/       
-      ierr = VecGetArray(diff_vec, &vec_getvalues); CHKERRQ(ierr);
+      ierr = VecGetArray(diff_vec, &vec_getvalues);CHKERRQ(ierr);
 
       for (row=0;row<rows1;row++){
           matrix_element = vec_getvalues[row];
@@ -441,15 +441,15 @@ int MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
    	      MatSetValue(*Diff, row, col,matrix_element, INSERT_VALUES ); 
 	   }
       }
-      ierr = VecRestoreArray(diff_vec, &vec_getvalues); CHKERRQ(ierr);
+      ierr = VecRestoreArray(diff_vec, &vec_getvalues);CHKERRQ(ierr);
    }
 
-   ierr = MatAssemblyBegin(*Diff,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-   ierr = MatAssemblyEnd(*Diff,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+   ierr = MatAssemblyBegin(*Diff,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+   ierr = MatAssemblyEnd(*Diff,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-   ierr = VecDestroy(col_vec1); CHKERRQ(ierr);
-   ierr = VecDestroy(col_vec2); CHKERRQ(ierr);
-   ierr = VecDestroy(diff_vec); CHKERRQ(ierr);
+   ierr = VecDestroy(col_vec1);CHKERRQ(ierr);
+   ierr = VecDestroy(col_vec2);CHKERRQ(ierr);
+   ierr = VecDestroy(diff_vec);CHKERRQ(ierr);
 
    return 0; 
 } 

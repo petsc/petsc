@@ -147,7 +147,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->restorerow) PetscFunctionReturn(0);
   ierr = (*mat->ops->restorerow)(mat,row,ncols,cols,vals);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -313,7 +313,7 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
   if (mat->ops->scalesystem) {
     ierr = (*mat->ops->scalesystem)(mat,x,b);CHKERRQ(ierr);
   }
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1231,7 +1231,7 @@ int MatMult(Mat mat,Vec x,Vec y)
   if (mat->nullsp) {
     ierr = MatNullSpaceRemove(mat->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = PetscObjectIncreaseState((PetscObject)y); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
 
@@ -1291,7 +1291,7 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
     ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)y); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
 
@@ -1343,7 +1343,7 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   ierr = PetscLogEventBegin(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = (*mat->ops->multadd)(mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultAdd,mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)v3); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
 
@@ -1394,7 +1394,7 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   ierr = PetscLogEventBegin(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = (*mat->ops->multtransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTransposeAdd,mat,v1,v2,v3);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)v3); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1438,9 +1438,9 @@ int MatMultConstrained(Mat mat,Vec x,Vec y)
   if (mat->m != y->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: local dim %d %d",mat->m,y->n); 
 
   ierr = PetscLogEventBegin(MAT_MultConstrained,mat,x,y,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->multconstrained)(mat,x,y); CHKERRQ(ierr);
+  ierr = (*mat->ops->multconstrained)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultConstrained,mat,x,y,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)y); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }   
@@ -1486,7 +1486,7 @@ int MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
   ierr = PetscLogEventBegin(MAT_MultConstrained,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->multtransposeconstrained)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultConstrained,mat,x,y,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)y); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)y);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }   
@@ -1618,7 +1618,7 @@ int MatILUDTFactor(Mat mat,MatFactorInfo *info,IS row,IS col,Mat *fact)
   ierr = PetscLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->iludtfactor)(mat,info,row,col,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*fact); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*fact);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1673,7 +1673,7 @@ int MatLUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
   ierr = PetscLogEventBegin(MAT_LUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->lufactor)(mat,row,col,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactor,mat,row,col,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1727,7 +1727,7 @@ int MatILUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
   ierr = PetscLogEventBegin(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->ilufactor)(mat,row,col,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ILUFactor,mat,row,col,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1783,7 +1783,7 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
   ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
   ierr = (*mat->ops->lufactorsymbolic)(mat,row,col,info,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*fact); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1835,7 +1835,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
 
   ierr = MatView_Private(*fact);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*fact); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1886,7 +1886,7 @@ int MatCholeskyFactor(Mat mat,IS perm,MatFactorInfo *info)
   ierr = PetscLogEventBegin(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->choleskyfactor)(mat,perm,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactor,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1944,7 +1944,7 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
   ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->choleskyfactorsymbolic)(mat,perm,info,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*fact); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1993,7 +1993,7 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
   ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
   ierr = (*(*fact)->ops->choleskyfactornumeric)(mat,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*fact); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2050,7 +2050,7 @@ int MatSolve(Mat mat,Vec b,Vec x)
   ierr = PetscLogEventBegin(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->solve)(mat,b,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Solve,mat,b,x,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2107,7 +2107,7 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
   ierr = PetscLogEventBegin(MAT_ForwardSolve,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->forwardsolve)(mat,b,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ForwardSolve,mat,b,x,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2164,7 +2164,7 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
   ierr = PetscLogEventBegin(MAT_BackwardSolve,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->backwardsolve)(mat,b,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_BackwardSolve,mat,b,x,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2239,7 +2239,7 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
     }
   }
   ierr = PetscLogEventEnd(MAT_SolveAdd,mat,b,x,y);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2292,7 +2292,7 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
   ierr = PetscLogEventBegin(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
   ierr = (*mat->ops->solvetranspose)(mat,b,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SolveTranspose,mat,b,x,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2367,7 +2367,7 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
     }
   }
   ierr = PetscLogEventEnd(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
@@ -2456,7 +2456,7 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
     ierr =(*mat->ops->pbrelax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2499,7 +2499,7 @@ int MatPBRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int
   ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   ierr =(*mat->ops->pbrelax)(mat,b,omega,flag,shift,its,lits,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2523,7 +2523,7 @@ int MatCopy_Basic(Mat A,Mat B,MatStructure str)
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)B); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2588,7 +2588,7 @@ int MatCopy(Mat A,Mat B,MatStructure str)
     ierr = MatSetLocalToGlobalMappingBlock(B,A->mapping);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)B); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2715,7 +2715,7 @@ int MatConvert(Mat mat,const MatType newtype,Mat *M)
     ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*M); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2766,7 +2766,7 @@ int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
     ierr = MatSetLocalToGlobalMappingBlock(*M,mat->mapping);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*M); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2809,7 +2809,7 @@ int MatGetDiagonal(Mat mat,Vec v)
   if (!mat->ops->getdiagonal) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = (*mat->ops->getdiagonal)(mat,v);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)v); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2846,7 +2846,7 @@ int MatGetRowMax(Mat mat,Vec v)
   if (!mat->ops->getrowmax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
 
   ierr = (*mat->ops->getrowmax)(mat,v);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)v); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2884,7 +2884,7 @@ int MatTranspose(Mat mat,Mat *B)
   ierr = PetscLogEventBegin(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr); 
   ierr = (*mat->ops->transpose)(mat,B);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr);
-  if (B) {ierr = PetscObjectIncreaseState((PetscObject)*B); CHKERRQ(ierr);}
+  if (B) {ierr = PetscObjectIncreaseState((PetscObject)*B);CHKERRQ(ierr);}
   PetscFunctionReturn(0);  
 }
 
@@ -2972,7 +2972,7 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->permute) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name); 
   ierr = (*mat->ops->permute)(mat,row,col,B);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*B); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3026,18 +3026,18 @@ int MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, 
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   if (A->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   if (!A->ops->permutesparsify) {
-    ierr = MatGetSize(A, &M, &N);                                                                         CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(A, &locRowStart, &locRowEnd);                                             CHKERRQ(ierr);
-    ierr = ISGetSize(rowp, &size);                                                                        CHKERRQ(ierr);
+    ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
+    ierr = MatGetOwnershipRange(A, &locRowStart, &locRowEnd);CHKERRQ(ierr);
+    ierr = ISGetSize(rowp, &size);CHKERRQ(ierr);
     if (size != M) SETERRQ2(PETSC_ERR_ARG_WRONG, "Wrong size %d for row permutation, should be %d", size, M);
-    ierr = ISGetSize(colp, &size);                                                                        CHKERRQ(ierr);
+    ierr = ISGetSize(colp, &size);CHKERRQ(ierr);
     if (size != N) SETERRQ2(PETSC_ERR_ARG_WRONG, "Wrong size %d for column permutation, should be %d", size, N);
-    ierr = ISInvertPermutation(rowp, 0, &irowp);                                                          CHKERRQ(ierr);
-    ierr = ISGetIndices(irowp, &rows);                                                                    CHKERRQ(ierr);
-    ierr = ISInvertPermutation(colp, 0, &icolp);                                                          CHKERRQ(ierr);
-    ierr = ISGetIndices(icolp, &cols);                                                                    CHKERRQ(ierr);
-    ierr = PetscMalloc(N * sizeof(int),         &cnew);                                                   CHKERRQ(ierr);
-    ierr = PetscMalloc(N * sizeof(PetscScalar), &vnew);                                                   CHKERRQ(ierr);
+    ierr = ISInvertPermutation(rowp, 0, &irowp);CHKERRQ(ierr);
+    ierr = ISGetIndices(irowp, &rows);CHKERRQ(ierr);
+    ierr = ISInvertPermutation(colp, 0, &icolp);CHKERRQ(ierr);
+    ierr = ISGetIndices(icolp, &cols);CHKERRQ(ierr);
+    ierr = PetscMalloc(N * sizeof(int),         &cnew);CHKERRQ(ierr);
+    ierr = PetscMalloc(N * sizeof(PetscScalar), &vnew);CHKERRQ(ierr);
 
     /* Setup bandwidth to include */
     if (band == PETSC_DECIDE) {
@@ -3051,9 +3051,9 @@ int MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, 
     }
 
     /* Put values into new matrix */
-    ierr = MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, B);                                                    CHKERRQ(ierr);
+    ierr = MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, B);CHKERRQ(ierr);
     for(row = locRowStart, locRow = 0; row < locRowEnd; row++, locRow++) {
-      ierr = MatGetRow(A, row, &nz, &cwork, &vwork);                                                      CHKERRQ(ierr);
+      ierr = MatGetRow(A, row, &nz, &cwork, &vwork);CHKERRQ(ierr);
       newRow   = rows[locRow]+locRowStart;
       for(col = 0, newNz = 0; col < nz; col++) {
         newCol = cols[cwork[col]];
@@ -3063,21 +3063,21 @@ int MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, 
           newNz++;
         }
       }
-      ierr = MatSetValues(*B, 1, &newRow, newNz, cnew, vnew, INSERT_VALUES);                              CHKERRQ(ierr);
-      ierr = MatRestoreRow(A, row, &nz, &cwork, &vwork);                                                  CHKERRQ(ierr);
+      ierr = MatSetValues(*B, 1, &newRow, newNz, cnew, vnew, INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(A, row, &nz, &cwork, &vwork);CHKERRQ(ierr);
     }
-    ierr = PetscFree(cnew);                                                                               CHKERRQ(ierr);
-    ierr = PetscFree(vnew);                                                                               CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY);                                                      CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY);                                                        CHKERRQ(ierr);
-    ierr = ISRestoreIndices(irowp, &rows);                                                                CHKERRQ(ierr);
-    ierr = ISRestoreIndices(icolp, &cols);                                                                CHKERRQ(ierr);
-    ierr = ISDestroy(irowp);                                                                              CHKERRQ(ierr);
-    ierr = ISDestroy(icolp);                                                                              CHKERRQ(ierr);
+    ierr = PetscFree(cnew);CHKERRQ(ierr);
+    ierr = PetscFree(vnew);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*B, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(irowp, &rows);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(icolp, &cols);CHKERRQ(ierr);
+    ierr = ISDestroy(irowp);CHKERRQ(ierr);
+    ierr = ISDestroy(icolp);CHKERRQ(ierr);
   } else {
-    ierr = (*A->ops->permutesparsify)(A, band, frac, tol, rowp, colp, B);                                 CHKERRQ(ierr);
+    ierr = (*A->ops->permutesparsify)(A, band, frac, tol, rowp, colp, B);CHKERRQ(ierr);
   }
-  ierr = PetscObjectIncreaseState((PetscObject)*B); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3164,7 +3164,7 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->diagonalscale)(mat,l,r);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -3204,7 +3204,7 @@ int MatScale(const PetscScalar *a,Mat mat)
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->scale)(a,mat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -3462,7 +3462,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
   mat->insertmode = NOT_SET_VALUES;
   MatAssemblyEnd_InUse--;
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   if (!mat->symmetric_eternal) {
     mat->symmetric_set              = PETSC_FALSE;
     mat->hermitian_set              = PETSC_FALSE;
@@ -3706,7 +3706,7 @@ int MatZeroEntries(Mat mat)
   ierr = PetscLogEventBegin(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->zeroentries)(mat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ZeroEntries,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3766,7 +3766,7 @@ int MatZeroRows(Mat mat,IS is,const PetscScalar *diag)
 
   ierr = (*mat->ops->zerorows)(mat,is,diag);CHKERRQ(ierr);
   ierr = MatView_Private(mat);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3830,7 +3830,7 @@ int MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
     ierr = (*mat->ops->zerorows)(mat,newis,diag);CHKERRQ(ierr);
     ierr = ISDestroy(newis);CHKERRQ(ierr);
   }
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4158,7 +4158,7 @@ int MatRestoreArray(Mat mat,PetscScalar *v[])
 #endif
   if (!mat->ops->restorearray) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4811,7 +4811,7 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
 
   if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscol,csize,cll,newmat);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)*newmat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)*newmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5118,7 +5118,7 @@ int MatICCFactor(Mat mat,IS row,MatFactorInfo* info)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->iccfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->iccfactor)(mat,row,info);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5159,7 +5159,7 @@ int MatSetValuesAdic(Mat mat,void *v)
   ierr = (*mat->ops->setvaluesadic)(mat,v);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   ierr = MatView_Private(mat);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5234,7 +5234,7 @@ int MatSetValuesAdifor(Mat mat,int nl,void *v)
   if (!mat->ops->setvaluesadifor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->setvaluesadifor)(mat,nl,v);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5292,7 +5292,7 @@ int MatDiagonalScaleLocal(Mat mat,Vec diag)
     }
   }
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectIncreaseState((PetscObject)mat); CHKERRQ(ierr);
+  ierr = PetscObjectIncreaseState((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5409,10 +5409,10 @@ int MatIsSymmetric(Mat A,PetscTruth *flg)
   if (!A->symmetric_set) {
     if (!A->ops->issymmetric) {
       MatType mattype;
-      ierr = MatGetType(A,&mattype); CHKERRQ(ierr);
+      ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(1,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
-    ierr = (*A->ops->issymmetric)(A,&A->symmetric); CHKERRQ(ierr);
+    ierr = (*A->ops->issymmetric)(A,&A->symmetric);CHKERRQ(ierr);
     A->symmetric_set = PETSC_TRUE;
     if (A->symmetric) {
       A->structurally_symmetric_set = PETSC_TRUE;

@@ -35,22 +35,22 @@ int PetscMapSetType(PetscMap map, const PetscMapType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject) map, method, &match);                                             CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) map, method, &match);CHKERRQ(ierr);
   if (match == PETSC_TRUE) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
   if (PetscMapRegisterAllCalled == PETSC_FALSE) {
-    ierr = PetscMapRegisterAll(PETSC_NULL);                                                               CHKERRQ(ierr);
+    ierr = PetscMapRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = PetscFListFind(map->comm, PetscMapList, method, (void (**)(void)) &r);                           CHKERRQ(ierr);
+  ierr = PetscFListFind(map->comm, PetscMapList, method, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown map type: %s", method);
 
   if (map->ops->destroy != PETSC_NULL) {
-    ierr = (*map->ops->destroy)(map);                                                                     CHKERRQ(ierr);
+    ierr = (*map->ops->destroy)(map);CHKERRQ(ierr);
   }
-  ierr = (*r)(map);                                                                                       CHKERRQ(ierr);
+  ierr = (*r)(map);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject) map, method);                                            CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) map, method);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +80,7 @@ int PetscMapGetType(PetscMap map, PetscMapType *type)
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
   PetscValidCharPointer(type,2);
   if (PetscMapRegisterAllCalled == PETSC_FALSE) {
-    ierr = PetscMapRegisterAll(PETSC_NULL);                                                               CHKERRQ(ierr);
+    ierr = PetscMapRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   *type = map->type_name;
   PetscFunctionReturn(0);
@@ -137,10 +137,10 @@ int PetscMapRegister(const char sname[], const char path[], const char name[], i
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);                                                                     CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");                                                                      CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);                                                                     CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscMapList, sname, fullname, (void (*)(void)) function);                        CHKERRQ(ierr);
+  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PetscMapList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -163,7 +163,7 @@ int PetscMapRegisterDestroy()
 
   PetscFunctionBegin;
   if (PetscMapList != PETSC_NULL) {
-    ierr = PetscFListDestroy(&PetscMapList);                                                              CHKERRQ(ierr);
+    ierr = PetscFListDestroy(&PetscMapList);CHKERRQ(ierr);
     PetscMapList = PETSC_NULL;
   }
   PetscMapRegisterAllCalled = PETSC_FALSE;

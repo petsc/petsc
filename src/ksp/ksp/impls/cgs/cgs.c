@@ -71,13 +71,13 @@ static int  KSPSolve_CGS(KSP ksp)
      PetscReal vr0max;
      PetscScalar *tmp_RP=0;
      int         numnp=0, *max_pos=0;
-     ierr = VecMax(RP, max_pos, &vr0max); CHKERRQ(ierr);
-     ierr = VecGetArray(RP, &tmp_RP);     CHKERRQ(ierr);
-     ierr = VecGetLocalSize(RP, &numnp);  CHKERRQ(ierr);
+     ierr = VecMax(RP, max_pos, &vr0max);CHKERRQ(ierr);
+     ierr = VecGetArray(RP, &tmp_RP);CHKERRQ(ierr);
+     ierr = VecGetLocalSize(RP, &numnp);CHKERRQ(ierr);
      for (i=0; i<numnp; i++) {
        if (tmp_RP[i] == 0.0) tmp_RP[i] = vr0max;
      }
-     ierr = VecRestoreArray(RP, &tmp_RP); CHKERRQ(ierr);
+     ierr = VecRestoreArray(RP, &tmp_RP);CHKERRQ(ierr);
   }
   /*  end of addition for Fidap */
 

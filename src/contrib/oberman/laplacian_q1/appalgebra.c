@@ -172,7 +172,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ierr = MatSetFromOptions(algebra->A);CHKERRQ(ierr);
 
   /* Allows one to set values into the matrix using the LOCAL numbering, via MatSetValuesLocal() */
-  ierr = MatSetLocalToGlobalMapping(algebra->A,grid->ltog);  CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(algebra->A,grid->ltog);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

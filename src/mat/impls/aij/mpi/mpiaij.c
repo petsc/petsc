@@ -630,29 +630,29 @@ int MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
 
   /* Easy test: symmetric diagonal block */
   Bij = (Mat_MPIAIJ *) Bmat->data; Bdia = Bij->A;
-  ierr = MatIsTranspose(Adia,Bdia,f); CHKERRQ(ierr);
+  ierr = MatIsTranspose(Adia,Bdia,f);CHKERRQ(ierr);
   if (!*f) PetscFunctionReturn(0);
-  ierr = PetscObjectGetComm((PetscObject)Amat,&comm); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&ntids); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Amat,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&ntids);CHKERRQ(ierr);
   if (ntids==1) PetscFunctionReturn(0);
 
   /* Hard test: off-diagonal block. This takes a MatGetSubMatrix. */
-  ierr = MatGetSize(Amat,&M,&N); CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(Amat,&first,&last); CHKERRQ(ierr);
-  ierr = PetscMalloc((N-last+first)*sizeof(int),&notme); CHKERRQ(ierr);
+  ierr = MatGetSize(Amat,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Amat,&first,&last);CHKERRQ(ierr);
+  ierr = PetscMalloc((N-last+first)*sizeof(int),&notme);CHKERRQ(ierr);
   for (i=0; i<first; i++) notme[i] = i;
   for (i=last; i<M; i++) notme[i-last+first] = i;
-  ierr = ISCreateGeneral(MPI_COMM_SELF,N-last+first,notme,&Notme); CHKERRQ(ierr);
-  ierr = ISCreateStride(MPI_COMM_SELF,last-first,first,1,&Me); CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,N-last+first,notme,&Notme);CHKERRQ(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,last-first,first,1,&Me);CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs);CHKERRQ(ierr);
   Aoff = Aoffs[0];
-  ierr = MatGetSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs); CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs);CHKERRQ(ierr);
   Boff = Boffs[0];
-  ierr = MatIsTranspose(Aoff,Boff,f); CHKERRQ(ierr);
-  ierr = MatDestroyMatrices(1,&Aoffs); CHKERRQ(ierr);
-  ierr = MatDestroyMatrices(1,&Boffs); CHKERRQ(ierr);
-  ierr = ISDestroy(Me); CHKERRQ(ierr);
-  ierr = ISDestroy(Notme); CHKERRQ(ierr);
+  ierr = MatIsTranspose(Aoff,Boff,f);CHKERRQ(ierr);
+  ierr = MatDestroyMatrices(1,&Aoffs);CHKERRQ(ierr);
+  ierr = MatDestroyMatrices(1,&Boffs);CHKERRQ(ierr);
+  ierr = ISDestroy(Me);CHKERRQ(ierr);
+  ierr = ISDestroy(Notme);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1820,13 +1820,13 @@ int MatCreate_MPIAIJ(Mat B)
                                      MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsTranspose_C",
 				     "MatIsTranspose_MPIAIJ",
-				     MatIsTranspose_MPIAIJ); CHKERRQ(ierr);
+				     MatIsTranspose_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAIJSetPreallocation_C",
 				     "MatMPIAIJSetPreallocation_MPIAIJ",
-				     MatMPIAIJSetPreallocation_MPIAIJ); CHKERRQ(ierr);
+				     MatMPIAIJSetPreallocation_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
 				     "MatDiagonalScaleLocal_MPIAIJ",
-				     MatDiagonalScaleLocal_MPIAIJ); CHKERRQ(ierr);
+				     MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

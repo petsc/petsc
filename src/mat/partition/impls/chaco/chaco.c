@@ -81,7 +81,7 @@ static int MatPartitioningApply_Chaco(MatPartitioning part, IS *partitioning)
     
     ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
 
-    ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg); CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
 
     /* check if the matrix is sequential, use MatGetSubMatrices if necessary */
     if (size > 1) {

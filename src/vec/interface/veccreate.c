@@ -33,13 +33,13 @@ int VecCreate(MPI_Comm comm, Vec *vec)
   PetscValidPointer(vec,2);
   *vec = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_COOKIE, -1, "Vec", comm, VecDestroy, VecView);
   PetscLogObjectCreate(v);
   PetscLogObjectMemory(v, sizeof(struct _p_Vec));
-  ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));                                                    CHKERRQ(ierr);
+  ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));CHKERRQ(ierr);
   v->bops->publish  = PETSC_NULL /* VecPublish_Petsc */;
   v->type_name      = PETSC_NULL;
 

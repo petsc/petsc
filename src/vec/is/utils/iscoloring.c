@@ -292,7 +292,7 @@ int ISPartitioningToNumbering(IS part,IS *is)
   for (i=0; i<n; i++) {
     np = PetscMax(np,indices[i]);
   }
-  ierr = MPI_Allreduce(&np,&npt,1,MPI_INT,MPI_MAX,comm); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&np,&npt,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   np = npt+1; /* so that it looks like a MPI_Comm_size output */
 
   /*
@@ -378,7 +378,7 @@ int ISPartitioningCount(IS part,int count[])
   for (i=0; i<n; i++) {
     np = PetscMax(np,indices[i]);
   }  
-  ierr = MPI_Allreduce(&np,&npt,1,MPI_INT,MPI_MAX,comm); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&np,&npt,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   np = npt+1; /* so that it looks like a MPI_Comm_size output */
 
   /*

@@ -101,7 +101,7 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
   PetscValidPointer(A,6);
   *A = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = MatInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);

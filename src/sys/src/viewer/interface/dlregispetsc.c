@@ -30,38 +30,38 @@ int PetscInitializePackage(char *path)
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");                                           CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");                                             CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWAXIS_COOKIE,     "Axis");                                             CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWLG_COOKIE,       "Line Graph");                                       CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWHG_COOKIE,       "Histogram");                                        CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");                                     CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE, "Random Number Generator");                          CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DICT_COOKIE,         "Parameter Dictionary");                             CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWAXIS_COOKIE,     "Axis");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWLG_COOKIE,       "Line Graph");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWHG_COOKIE,       "Histogram");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE, "Random Number Generator");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DICT_COOKIE,         "Parameter Dictionary");CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = PetscDrawRegisterAll(path);                                                                      CHKERRQ(ierr);
-  ierr = PetscViewerRegisterAll(path);                                                                    CHKERRQ(ierr);
+  ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
+  ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&PETSC_Barrier, "PetscBarrier", PETSC_COOKIE);                             CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PETSC_Barrier, "PetscBarrier", PETSC_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "null", &className);                                                      CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "null", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(0);                                                              CHKERRQ(ierr);
+      ierr = PetscLogInfoDeactivateClass(0);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "null", &className);                                                      CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "null", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(0);                                                             CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
     }
   }
   /* Setup auxiliary packages */
-  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);                                             CHKERRQ(ierr);
-  ierr = PetscPLAPACKInitializePackage(PETSC_NULL);                                                       CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscPLAPACKInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -85,7 +85,7 @@ int PetscDLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = PetscInitializePackage(path);                                                                    CHKERRQ(ierr);
+  ierr = PetscInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

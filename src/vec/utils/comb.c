@@ -542,7 +542,7 @@ int VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   MPI_Comm            comm;
 
   PetscFunctionBegin;
-  ierr = VecNormComposedDataID(ntype,&type_id); CHKERRQ(ierr);
+  ierr = VecNormComposedDataID(ntype,&type_id);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);

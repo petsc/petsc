@@ -109,8 +109,8 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
  
 
   if (reorder) {
-    ierr = ISGetIndices(iscol,&c);           CHKERRQ(ierr);
-    ierr = ISGetIndices(isrow,&r);           CHKERRQ(ierr);
+    ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr);
+    ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
     for(i=0;i<n;i++) {
       r[i]  = r[i]+1;
       c[i]  = c[i]+1;
@@ -447,7 +447,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   rtmps = rtmp; ics = ic;
 
   if (!a->diag) {
-    ierr = MatMarkDiagonal_SeqAIJ(A); CHKERRQ(ierr);
+    ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   }
 
   if (b->lu_shift) { /* set max shift */

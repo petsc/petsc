@@ -56,7 +56,7 @@ int SamgShellPCCreate(SamgShellPC **shell)
    SamgShellPC *newctx; 
    int ierr; 
 
-   ierr = PetscNew(SamgShellPC,&newctx); CHKERRQ(ierr);
+   ierr = PetscNew(SamgShellPC,&newctx);CHKERRQ(ierr);
    *shell = newctx; 
    return 0; 
 }
@@ -116,8 +116,8 @@ int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
    int      intin; 
 
    /*..Get size and number of unknowns of preconditioner matrix..*/ 
-   ierr = MatGetSize(pmat, &numnodes, &numnodes); CHKERRQ(ierr);
-   ierr = MatGetInfo(pmat,MAT_LOCAL,&info); CHKERRQ(ierr); 
+   ierr = MatGetSize(pmat, &numnodes, &numnodes);CHKERRQ(ierr);
+   ierr = MatGetInfo(pmat,MAT_LOCAL,&info);CHKERRQ(ierr); 
    numnonzero = int(info.nz_used);
 
    /*..Allocate memory for RAMG variables..*/ 
@@ -156,7 +156,7 @@ int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
    ia[numnodes] = nnz_count; 
 
    /*..Allocate memory for SAMG parameters..*/
-   ierr = PetscNew(SAMG_PARAM,&samg_param); CHKERRQ(ierr);
+   ierr = PetscNew(SAMG_PARAM,&samg_param);CHKERRQ(ierr);
 
    /*..Set SAMG parameters..*/
    SamgGetParam(samg_param); 
@@ -306,13 +306,13 @@ int SamgShellPCApply(void *ctx, Vec r, Vec z)
 
    /*..Get numnodes and numnonzeros..*/ 
    /*....numnodes can be determined as the size of the input vector r....*/
-   ierr = VecGetSize(r,&numnodes); CHKERRQ(ierr);
+   ierr = VecGetSize(r,&numnodes);CHKERRQ(ierr);
    /*....numnonzero is determined from the pointer ia....*/ 
    /*....Remember that ia following Fortran conventions....*/  
    numnonzero = ia[numnodes]-1; 
 
    /*..Set the rhs of the call to ramg equal to the residual..*/
-   ierr = VecGetArray(r,&vals_getarray); CHKERRQ(ierr);
+   ierr = VecGetArray(r,&vals_getarray);CHKERRQ(ierr);
 
    /*..Allocate memory for rhs and initial solution of call to samg..*/
    ierr = PetscMalloc(numnodes     * sizeof(double),&u_approx);CHKERRQ(ierr);
@@ -367,7 +367,7 @@ int SamgShellPCApply(void *ctx, Vec r, Vec z)
           CHKERRQ(ierr);  
 
    /*..Restore PETSc rhs vector..*/
-   ierr = VecRestoreArray(r, &vals_getarray); CHKERRQ(ierr);
+   ierr = VecRestoreArray(r, &vals_getarray);CHKERRQ(ierr);
 
    PetscFree(cols); 
    PetscFree(rhs); 

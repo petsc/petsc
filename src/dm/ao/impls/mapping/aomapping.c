@@ -24,8 +24,8 @@ int AODestroy_Mapping(AO ao)
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(aomap->app);                                                                           CHKERRQ(ierr);
-  ierr = PetscFree(ao->data);                                                                             CHKERRQ(ierr);
+  ierr = PetscFree(aomap->app);CHKERRQ(ierr);
+  ierr = PetscFree(ao->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -39,14 +39,14 @@ int AOView_Mapping(AO ao, PetscViewer viewer)
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(ao->comm, &rank);                                                                  CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(ao->comm, &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   if (!viewer) {
     viewer = PETSC_VIEWER_STDOUT_SELF; 
   }
 
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &isascii);                            CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &isascii);CHKERRQ(ierr);
   if (isascii == PETSC_TRUE) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %d\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
@@ -286,22 +286,22 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
   PetscValidPointer(aoout,5);
   *aoout = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_MAPPING, "AO", comm, AODestroy, AOView);
   PetscLogObjectCreate(ao);
-  ierr = PetscNew(AO_Mapping, &aomap);                                                                    CHKERRQ(ierr);
+  ierr = PetscNew(AO_Mapping, &aomap);CHKERRQ(ierr);
   PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Mapping));
-  ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));                                                       CHKERRQ(ierr);
+  ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void *) aomap;
 
   /* transmit all lengths to all processors */
-  ierr = MPI_Comm_size(comm, &size);                                                                      CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);                                                                      CHKERRQ(ierr);
-  ierr = PetscMalloc(2*size * sizeof(int), &lens);                                                        CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*size * sizeof(int), &lens);CHKERRQ(ierr);
   disp = lens + size;
-  ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);                                        CHKERRQ(ierr);
+  ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    = 0;
   for(i = 0; i < size; i++) {
     disp[i] = N;
@@ -314,7 +314,7 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
     start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(int), &petsc);                                                  CHKERRQ(ierr);
+    ierr  = PetscMalloc((napp+1) * sizeof(int), &petsc);CHKERRQ(ierr);
     for(i = 0; i < napp; i++) {
       petsc[i] = start + i;
     }
@@ -323,16 +323,16 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
   }
 
   /* get all indices on all processors */
-  ierr = PetscMalloc(N*4 * sizeof(int), &allapp);                                                         CHKERRQ(ierr);
+  ierr = PetscMalloc(N*4 * sizeof(int), &allapp);CHKERRQ(ierr);
   appPerm   = allapp   + N;
   allpetsc  = appPerm  + N;
   petscPerm = allpetsc + N;
-  ierr = MPI_Allgatherv((void*)myapp,   napp, MPI_INT, allapp,   lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)mypetsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);                     CHKERRQ(ierr);
-  ierr = PetscFree(lens);                                                                                 CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)myapp,   napp, MPI_INT, allapp,   lens, disp, MPI_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv((void*)mypetsc, napp, MPI_INT, allpetsc, lens, disp, MPI_INT, comm);CHKERRQ(ierr);
+  ierr = PetscFree(lens);CHKERRQ(ierr);
 
   /* generate a list of application and PETSc node numbers */
-  ierr = PetscMalloc(N*4 * sizeof(int), &aomap->app);                                                     CHKERRQ(ierr);
+  ierr = PetscMalloc(N*4 * sizeof(int), &aomap->app);CHKERRQ(ierr);
   PetscLogObjectMemory(ao, 4*N * sizeof(int));
   aomap->appPerm   = aomap->app     + N;
   aomap->petsc     = aomap->appPerm + N;
@@ -341,8 +341,8 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
     appPerm[i]   = i;
     petscPerm[i] = i;
   }
-  ierr = PetscSortIntWithPermutation(N, allpetsc, petscPerm);                                             CHKERRQ(ierr);
-  ierr = PetscSortIntWithPermutation(N, allapp,   appPerm);                                               CHKERRQ(ierr);
+  ierr = PetscSortIntWithPermutation(N, allpetsc, petscPerm);CHKERRQ(ierr);
+  ierr = PetscSortIntWithPermutation(N, allapp,   appPerm);CHKERRQ(ierr);
   /* Form sorted arrays of indices */
   for(i = 0; i < N; i++) {
     aomap->app[i]   = allapp[appPerm[i]];
@@ -373,13 +373,13 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
 #endif
   /* Cleanup */
   if (!mypetsc) {
-    ierr = PetscFree(petsc);                                                                              CHKERRQ(ierr);
+    ierr = PetscFree(petsc);CHKERRQ(ierr);
   }
-  ierr = PetscFree(allapp);                                                                               CHKERRQ(ierr);
+  ierr = PetscFree(allapp);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-ao_view", &opt);                                               CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-ao_view", &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);                                                          CHKERRQ(ierr);
+    ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
   *aoout = ao;
@@ -415,20 +415,20 @@ int AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
   int      ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) isapp, &comm);                                                  CHKERRQ(ierr);
-  ierr = ISGetSize(isapp, &napp);                                                                         CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) isapp, &comm);CHKERRQ(ierr);
+  ierr = ISGetSize(isapp, &napp);CHKERRQ(ierr);
   if (ispetsc) {
-    ierr = ISGetSize(ispetsc, &npetsc);                                                                   CHKERRQ(ierr);
+    ierr = ISGetSize(ispetsc, &npetsc);CHKERRQ(ierr);
     if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
-    ierr = ISGetIndices(ispetsc, &mypetsc);                                                               CHKERRQ(ierr);
+    ierr = ISGetIndices(ispetsc, &mypetsc);CHKERRQ(ierr);
   }
-  ierr = ISGetIndices(isapp, &myapp);                                                                     CHKERRQ(ierr);
+  ierr = ISGetIndices(isapp, &myapp);CHKERRQ(ierr);
 
-  ierr = AOCreateMapping(comm, napp, myapp, mypetsc, aoout);                                              CHKERRQ(ierr);
+  ierr = AOCreateMapping(comm, napp, myapp, mypetsc, aoout);CHKERRQ(ierr);
 
-  ierr = ISRestoreIndices(isapp, &myapp);                                                                 CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isapp, &myapp);CHKERRQ(ierr);
   if (ispetsc) {
-    ierr = ISRestoreIndices(ispetsc, &mypetsc);                                                           CHKERRQ(ierr);
+    ierr = ISRestoreIndices(ispetsc, &mypetsc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

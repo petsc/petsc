@@ -16,7 +16,7 @@ static int PetscViewerDestroy_Silo(PetscViewer viewer)
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(viewer->comm, &rank);                                                             CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
   if(!rank) {
     DBClose(silo->file_pointer);
   }
@@ -104,11 +104,11 @@ int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
   v->data         = silo;
   v->ops->destroy = PetscViewerDestroy_Silo;
   v->ops->flush   = PetscViewerFlush_Silo;
-  ierr            = PetscStrallocpy(PETSC_VIEWER_SILO, &v->type_name);                                    CHKERRQ(ierr);
+  ierr            = PetscStrallocpy(PETSC_VIEWER_SILO, &v->type_name);CHKERRQ(ierr);
 
-  ierr = PetscStrncpy(filetemp, name, 251);                                                               CHKERRQ(ierr);
-  ierr = PetscStrcat(filetemp, ".pdb");                                                                   CHKERRQ(ierr);
-  ierr = PetscFixFilename(filetemp, filename);                                                            CHKERRQ(ierr);
+  ierr = PetscStrncpy(filetemp, name, 251);CHKERRQ(ierr);
+  ierr = PetscStrcat(filetemp, ".pdb");CHKERRQ(ierr);
+  ierr = PetscFixFilename(filetemp, filename);CHKERRQ(ierr);
 
   silo->file_pointer = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_PDB);
   if (!silo->file_pointer) SETERRQ(PETSC_ERR_FILE_OPEN,"Cannot open Silo viewer file");
@@ -149,7 +149,7 @@ int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerSiloGetFilePointer(viewer, &fp);                                                          CHKERRQ(ierr);
+  ierr = PetscViewerSiloGetFilePointer(viewer, &fp);CHKERRQ(ierr);
   if (vsilo->meshName == PETSC_NULL) {
     mesh_type = DBInqMeshtype(fp, "PetscMesh");
   } else {
@@ -157,7 +157,7 @@ int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
   }
   if(mesh_type != DB_UCDMESH) { 
     /* DBInqMeshType returns -1 if the mesh is not found*/
-    ierr = MeshView(mesh, viewer);                                                                       CHKERRQ(ierr);
+    ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

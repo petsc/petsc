@@ -303,7 +303,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   PetscValidPointer(newpc,1)
   *newpc = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = PCInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
+  ierr = PCInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);

@@ -141,7 +141,7 @@ int main(int argc,char **argv)
   if (!fd_jacobian) {
     ierr      = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,grids,grids,&user.J);CHKERRQ(ierr);
     ierr      = MatSetType(user.J,MATAIJ);CHKERRQ(ierr);
-    ierr      = MatSetFromOptions(user.J); CHKERRQ(ierr);
+    ierr      = MatSetFromOptions(user.J);CHKERRQ(ierr);
     ierr      = MatSeqAIJSetPreallocation(user.J,5,PETSC_NULL);CHKERRQ(ierr);
     ierr      = MatMPIAIJSetPreallocation(user.J,5,PETSC_NULL,3,PETSC_NULL);CHKERRQ(ierr);
     user.A    = user.J;
@@ -205,11 +205,11 @@ int main(int argc,char **argv)
   {
     PetscViewer view_out;
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"psi.binary",PETSC_FILE_CREATE,&view_out);CHKERRQ(ierr);
-    ierr = VecView(user.psi,view_out); CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(view_out); CHKERRQ(ierr);
+    ierr = VecView(user.psi,view_out);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(view_out);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"psi.out",&view_out);CHKERRQ(ierr);
-    ierr = VecView(user.psi,view_out); CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(view_out); CHKERRQ(ierr);
+    ierr = VecView(user.psi,view_out);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(view_out);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -292,17 +292,17 @@ int FormInitialGuess(AppCtx *user,Vec X)
     PetscViewer  view_in;
     PetscReal    fnorm;
     Vec          Y;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-initialGuess",filename,256,&flg); CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-initialGuess",filename,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_FILE_RDONLY,&view_in); CHKERRQ(ierr);
-      ierr = VecLoad(view_in,PETSC_NULL,&Y); CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(view_in); CHKERRQ(ierr);
-      ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy); CHKERRQ(ierr);
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_FILE_RDONLY,&view_in);CHKERRQ(ierr);
+      ierr = VecLoad(view_in,PETSC_NULL,&Y);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(view_in);CHKERRQ(ierr);
+      ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy);CHKERRQ(ierr);
       ierr = SNESDAFormFunction(PETSC_NULL,Y,user->r,(void*)user);CHKERRQ(ierr);
       ierr = VecNorm(user->r,NORM_2,&fnorm);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"In initial guess: psi_bdy = %f, fnorm = %g.\n",user->psi_bdy,fnorm);CHKERRQ(ierr);
-      ierr = VecCopy(Y,X); CHKERRQ(ierr);
-      ierr = VecDestroy(Y); CHKERRQ(ierr); 
+      ierr = VecCopy(Y,X);CHKERRQ(ierr);
+      ierr = VecDestroy(Y);CHKERRQ(ierr); 
     }
   }
 
@@ -399,9 +399,9 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   hx     = 1.0/(PetscReal)(Mx-1);  dhx    = 1.0/hx;
 
   imin = 0; imax = Mx-1;
-  ierr = VecMin(X,&imin,&psi_0); CHKERRQ(ierr);
-  ierr = VecMax(X,&imax,&psi_a); CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"psi_0(%d)=%g, psi_a(%d)=%g.\n",imin,psi_0,imax,psi_a); CHKERRQ(ierr);
+  ierr = VecMin(X,&imin,&psi_0);CHKERRQ(ierr);
+  ierr = VecMax(X,&imax,&psi_a);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"psi_0(%d)=%g, psi_a(%d)=%g.\n",imin,psi_0,imax,psi_a);CHKERRQ(ierr);
 
   /*
      Scatter ghost points to local vector, using the 2-step process
@@ -439,7 +439,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     v[0] = -3.0*dhx;                                              col[0]=row;
     v[1] = 4.0*dhx;                                               col[1]=row+1;
     v[2] = -1.0*dhx;                                              col[2]=row+2;
-    ierr = MatSetValues(jac,1,&row,3,col,v,ADD_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(jac,1,&row,3,col,v,ADD_VALUES);CHKERRQ(ierr);
   } 
   else {
     xint = xs;
@@ -448,7 +448,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     xend = Mx - 1;   /* f[Mx-1] = x[Mx-1] - user->psi_bdy; */
     row  = Mx - 1;  /* last row */
     v[0] = -1.0*dhx;
-    ierr = MatSetValue(jac,row,row,v[0],ADD_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValue(jac,row,row,v[0],ADD_VALUES);CHKERRQ(ierr);
   }
   else {
     xend = xs + xm;
@@ -464,7 +464,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
     v[2] = (r+0.5*hx)*dhx;                                                              col[2] = i+1;
     v[3] = hx*r*GdGdPsiPrime(r,u)*(x[i] - psi_a)/((psi_a - psi_0)*(psi_a - psi_0));     col[3] = imin;
     v[4] = hx*r*GdGdPsiPrime(r,u)*(psi_0 - x[i])/((psi_a - psi_0)*(psi_a - psi_0));     col[4] = imax;
-    ierr = MatSetValues(jac,1,&row,5,col,v,ADD_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(jac,1,&row,5,col,v,ADD_VALUES);CHKERRQ(ierr);
   }
   
   ierr = DAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);

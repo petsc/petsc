@@ -55,7 +55,7 @@ int main(int argc,char **args)
        Determine matrix format to be used (specified at runtime).
        See the manpage for MatLoad() for available formats.
   */
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set);CHKERRQ(ierr);
 
   /*
        Load the matrix and vector; then destroy the viewer.
@@ -65,10 +65,10 @@ int main(int argc,char **args)
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
 
   fd = fopen("example_matrix","w");
-  ierr = MatDumpSPAI(A,fd); CHKERRQ(ierr);
+  ierr = MatDumpSPAI(A,fd);CHKERRQ(ierr);
   fclose(fd);
   fd = fopen("example_rhs","w");
-  ierr = VecDumpSPAI(b,fd); CHKERRQ(ierr);
+  ierr = VecDumpSPAI(b,fd);CHKERRQ(ierr);
   fclose(fd);
 
   ierr = MatDestroy(A); CHKERRA(ierr);

@@ -63,7 +63,7 @@ int main(int argc,char **args)
   for (ol=0; ol<m+2; ++ol) {
 
     ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1);CHKERRQ(ierr);
-    ierr = MatIncreaseOverlap(C,Nsub1,is1,ol);                   CHKERRQ(ierr);
+    ierr = MatIncreaseOverlap(C,Nsub1,is1,ol);CHKERRQ(ierr);
     ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2);CHKERRQ(ierr);
     
     ierr = PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");CHKERRQ(ierr);

@@ -37,22 +37,22 @@ int VecSetType(Vec vec, const VecType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject) vec, method, &match);                                             CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   /* Get the function pointers for the vector requested */
   if (!VecRegisterAllCalled) {
-    ierr = VecRegisterAll(PETSC_NULL);                                                                    CHKERRQ(ierr);
+    ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = PetscFListFind(vec->comm, VecList, method,(void (**)(void)) &r);                                 CHKERRQ(ierr);
+  ierr = PetscFListFind(vec->comm, VecList, method,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown vector type: %s", method);
 
   if (vec->ops->destroy) {
-    ierr = (*vec->ops->destroy)(vec);                                                                     CHKERRQ(ierr);
+    ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
   }
-  ierr = (*r)(vec);                                                                                       CHKERRQ(ierr);
+  ierr = (*r)(vec);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject) vec, method);                                            CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) vec, method);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -82,7 +82,7 @@ int VecGetType(Vec vec, VecType *type)
   PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
   PetscValidCharPointer(type,2);
   if (VecRegisterAllCalled == PETSC_FALSE) {
-    ierr = VecRegisterAll(PETSC_NULL);                                                                    CHKERRQ(ierr);
+    ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   *type = vec->type_name;
   PetscFunctionReturn(0);
@@ -104,10 +104,10 @@ int VecRegister(const char sname[], const char path[], const char name[], int (*
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);                                                                     CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");                                                                      CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);                                                                     CHKERRQ(ierr);
-  ierr = PetscFListAdd(&VecList, sname, fullname, (void (*)(void)) function);                             CHKERRQ(ierr);
+  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&VecList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +131,7 @@ int VecRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (VecList != PETSC_NULL) {
-    ierr = PetscFListDestroy(&VecList);                                                                   CHKERRQ(ierr);
+    ierr = PetscFListDestroy(&VecList);CHKERRQ(ierr);
     VecList = PETSC_NULL;
   }
   VecRegisterAllCalled = PETSC_FALSE;

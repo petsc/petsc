@@ -135,7 +135,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
   PetscValidPointer(pf,1);
   *pf = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
 #endif
 
   PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);

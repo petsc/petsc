@@ -57,7 +57,7 @@ void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
   /*
      transpose the matrix, since it is stored by rows on the disk
    */
-  ierr = PetscMalloc(m*n*sizeof(PetscReal), &vals); CHKERRQ(ierr);
+  ierr = PetscMalloc(m*n*sizeof(PetscReal), &vals);CHKERRQ(ierr);
   if (!vals) {
     fprintf(stdout,"Out of memory ");
     exit(0);
@@ -68,7 +68,7 @@ void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
     }
   }
   ierr = write(fd,vals,m*n*sizeof(PetscReal));
-  ierr = PetscFree(vals); CHKERRQ(ierr);
+  ierr = PetscFree(vals);CHKERRQ(ierr);
 
 }
 

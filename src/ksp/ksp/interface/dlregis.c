@@ -27,32 +27,32 @@ int PCInitializePackage(const char path[]) {
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PC_COOKIE,   "Preconditioner");                                           CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&PC_COOKIE,   "Preconditioner");CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = PCRegisterAll(path);                                                                             CHKERRQ(ierr);
+  ierr = PCRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&PC_SetUp,                   "PCSetUp",          PC_COOKIE);               CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_SetUpOnBlocks,           "PCSetUpOnBlocks",  PC_COOKIE);               CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_Apply,                   "PCApply",          PC_COOKIE);               CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplyCoarse,             "PCApplyCoarse",    PC_COOKIE);               CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplyMultiple,           "PCApplyMultiple",  PC_COOKIE);               CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplySymmetricLeft,      "PCApplySymmLeft",  PC_COOKIE);               CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplySymmetricRight,     "PCApplySymmRight", PC_COOKIE);               CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ModifySubMatrices,       "PCModifySubMatri", PC_COOKIE);               CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_SetUp,                   "PCSetUp",          PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_SetUpOnBlocks,           "PCSetUpOnBlocks",  PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_Apply,                   "PCApply",          PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplyCoarse,             "PCApplyCoarse",    PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplyMultiple,           "PCApplyMultiple",  PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplySymmetricLeft,      "PCApplySymmLeft",  PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplySymmetricRight,     "PCApplySymmRight", PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ModifySubMatrices,       "PCModifySubMatri", PC_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "pc", &className);                                                        CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(PC_COOKIE);                                                      CHKERRQ(ierr);
+      ierr = PetscLogInfoDeactivateClass(PC_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "pc", &className);                                                        CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(PC_COOKIE);                                                     CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(PC_COOKIE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -84,27 +84,27 @@ int KSPInitializePackage(const char path[]) {
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&KSP_COOKIE,  "Krylov Solver");                                            CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&KSP_COOKIE,  "Krylov Solver");CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = KSPRegisterAll(path);                                                                            CHKERRQ(ierr);
+  ierr = KSPRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&KSP_GMRESOrthogonalization, "KSPGMRESOrthog",   KSP_COOKIE);              CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&KSP_SetUp,                  "KSPSetup",         KSP_COOKIE);             CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&KSP_Solve,                  "KSPSolve",         KSP_COOKIE);             CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&KSP_GMRESOrthogonalization, "KSPGMRESOrthog",   KSP_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&KSP_SetUp,                  "KSPSetup",         KSP_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&KSP_Solve,                  "KSPSolve",         KSP_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "ksp", &className);                                                       CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogInfoDeactivateClass(KSP_COOKIE);                                                     CHKERRQ(ierr);
+      ierr = PetscLogInfoDeactivateClass(KSP_COOKIE);CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
-    ierr = PetscStrstr(logList, "ksp", &className);                                                       CHKERRQ(ierr);
+    ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(KSP_COOKIE);                                                    CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(KSP_COOKIE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -133,8 +133,8 @@ int PetscDLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = PCInitializePackage(path);                                                                     CHKERRQ(ierr);
-  ierr = KSPInitializePackage(path);                                                                     CHKERRQ(ierr);
+  ierr = PCInitializePackage(path);CHKERRQ(ierr);
+  ierr = KSPInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

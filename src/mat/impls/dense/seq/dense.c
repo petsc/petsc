@@ -155,7 +155,7 @@ int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
   /* copy the numerical values */
   if (lda1>m || lda2>m ) {
     for (j=0; j<n; j++) {
-      ierr = PetscMemcpy(l->v+j*lda2,mat->v+j*lda1,m*sizeof(PetscScalar)); CHKERRQ(ierr);
+      ierr = PetscMemcpy(l->v+j*lda2,mat->v+j*lda1,m*sizeof(PetscScalar));CHKERRQ(ierr);
     }
   } else {
     ierr = PetscMemcpy(l->v,mat->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1247,7 +1247,7 @@ int MatZeroEntries_SeqDense(Mat A)
   PetscFunctionBegin;
   if (lda>m) {
     for (j=0; j<A->n; j++) {
-      ierr = PetscMemzero(l->v+j*lda,m*sizeof(PetscScalar)); CHKERRQ(ierr);
+      ierr = PetscMemzero(l->v+j*lda,m*sizeof(PetscScalar));CHKERRQ(ierr);
     }
   } else {
     ierr = PetscMemzero(l->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);

@@ -50,30 +50,30 @@ int TSSetType(TS ts, const TSType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject) ts, type, &match);                                                CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match == PETSC_TRUE) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
   if (TSRegisterAllCalled == PETSC_FALSE) {
-    ierr = TSRegisterAll(PETSC_NULL);                                                                     CHKERRQ(ierr);
+    ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = PetscFListFind(ts->comm, TSList, type, (void (**)(void)) &r);                                    CHKERRQ(ierr);
+  ierr = PetscFListFind(ts->comm, TSList, type, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown TS type: %s", type);
 
   if (ts->ksp != PETSC_NULL) {
-    ierr = KSPDestroy(ts->ksp);                                                                         CHKERRQ(ierr);
+    ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);
     ts->ksp = PETSC_NULL;
   }
   if (ts->snes != PETSC_NULL) {
-    ierr = SNESDestroy(ts->snes);                                                                         CHKERRQ(ierr);
+    ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);
     ts->snes = PETSC_NULL;
   }
   if (ts->ops->destroy != PETSC_NULL) {
-    ierr = (*(ts)->ops->destroy)(ts);                                                                     CHKERRQ(ierr);
+    ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
   }
-  ierr = (*r)(ts);                                                                                        CHKERRQ(ierr);
+  ierr = (*r)(ts);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)ts, type);                                                CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -103,7 +103,7 @@ int TSGetType(TS ts, TSType *type)
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   PetscValidPointer(type,2);
   if (TSRegisterAllCalled == PETSC_FALSE) {
-    ierr = TSRegisterAll(PETSC_NULL);                                                                     CHKERRQ(ierr);
+    ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   *type = ts->type_name;
   PetscFunctionReturn(0);
@@ -124,10 +124,10 @@ int TSRegister(const char sname[], const char path[], const char name[], int (*f
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);                                                                     CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");                                                                      CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);                                                                     CHKERRQ(ierr);
-  ierr = PetscFListAdd(&TSList, sname, fullname, (void (*)(void)) function);                              CHKERRQ(ierr);
+  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&TSList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -150,7 +150,7 @@ int TSRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (TSList != PETSC_NULL) {
-    ierr = PetscFListDestroy(&TSList);                                                                    CHKERRQ(ierr);
+    ierr = PetscFListDestroy(&TSList);CHKERRQ(ierr);
     TSList = PETSC_NULL;
   }
   TSRegisterAllCalled = PETSC_FALSE;

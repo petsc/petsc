@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   /* To take care of the paging effects */
   ierr = PetscGetTime(&x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(e1,&x,0,0,0);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(e1,&x,0,0,0);  CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(e1,&x,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscGetTime(&x);CHKERRQ(ierr);
   /* 10 Occurences of the dummy event */

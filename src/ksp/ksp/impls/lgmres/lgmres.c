@@ -260,7 +260,7 @@ int LGMREScycle(int *itcount,KSP ksp)
             }  
         }
 
-       ierr = VecCopy(A_AUGVEC(spot), VEC_VV(1+loc_it)); CHKERRQ(ierr); 
+       ierr = VecCopy(A_AUGVEC(spot), VEC_VV(1+loc_it));CHKERRQ(ierr); 
        /*note: an alternate implementation choice would be to only save the AUGVECS and
          not A_AUGVEC and then apply the PC here to the augvec */
     }
@@ -353,11 +353,11 @@ int LGMREScycle(int *itcount,KSP ksp)
 
      
 
-     ierr = VecCopy(AUG_TEMP, AUGVEC(spot)); CHKERRQ(ierr); 
+     ierr = VecCopy(AUG_TEMP, AUGVEC(spot));CHKERRQ(ierr); 
      /*need to normalize */
-     ierr = VecNorm(AUGVEC(spot), NORM_2, &tmp_norm); CHKERRQ(ierr);
+     ierr = VecNorm(AUGVEC(spot), NORM_2, &tmp_norm);CHKERRQ(ierr);
      inv_tmp_norm = 1.0/tmp_norm;
-     ierr = VecScale(&inv_tmp_norm, AUGVEC(spot)); CHKERRQ(ierr); 
+     ierr = VecScale(&inv_tmp_norm, AUGVEC(spot));CHKERRQ(ierr); 
 
      /*set new aug vector to order 1  - move all others back one */
      for (ii=0; ii < aug_dim; ii++) {
@@ -370,7 +370,7 @@ int LGMREScycle(int *itcount,KSP ksp)
 
  
      /* first do H+*y */
-     ierr = VecSet(&zero, AUG_TEMP); CHKERRQ(ierr);
+     ierr = VecSet(&zero, AUG_TEMP);CHKERRQ(ierr);
      VecGetArray(AUG_TEMP, &avec);
      for (ii=0; ii < it_total + 1; ii++) {
         for (jj=0; jj <= ii+1; jj++) {
@@ -385,7 +385,7 @@ int LGMREScycle(int *itcount,KSP ksp)
   
      /*copy answer to aug location  and scale*/
      VecCopy(VEC_TEMP,  A_AUGVEC(spot)); 
-     ierr = VecScale(&inv_tmp_norm, A_AUGVEC(spot)); CHKERRQ(ierr); 
+     ierr = VecScale(&inv_tmp_norm, A_AUGVEC(spot));CHKERRQ(ierr); 
 
 
   }
@@ -587,7 +587,7 @@ static int BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
   }
   /* now VEC_TEMP is what we want to keep for augmenting purposes - grab before the
      preconditioner is "unwound" from right-precondtioning*/
-  ierr = VecCopy(VEC_TEMP, AUG_TEMP); CHKERRQ(ierr); 
+  ierr = VecCopy(VEC_TEMP, AUG_TEMP);CHKERRQ(ierr); 
 
   ierr = KSPUnwindPreconditioner(ksp,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
 
