@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.6 1995/03/25 01:25:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.7 1995/03/27 22:56:57 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -58,7 +58,7 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
   KSP_CG *cgP;
 
   VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->method != KSPCG) {SETERR(3,"Method not CG");}
+  if (itP->type != KSPCG) {SETERR(3,"Method not CG");}
   if (!itP->calc_eigs) {
       SETERR(4,"Eigenvalue calculation not requested in CG Setup");}
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.7 1995/03/06 03:49:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.8 1995/03/25 01:25:49 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -93,7 +93,7 @@ KSPUnwindPre(  itP, X, T );
 int KSPCreate_CGS(KSP itP)
 {
   itP->MethodPrivate        = (void *) 0;
-  itP->method               = KSPCGS;
+  itP->type                 = KSPCGS;
   itP->right_pre            = 0;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_CGS;

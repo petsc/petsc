@@ -12,7 +12,7 @@ int KSPSetUp(KSP itP)
 {
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->setupcalled) return 0;
-  if (itP->method == -1) {
+  if (itP->type == -1) {
     SETERR(1,"Method must be set before calling KSPSetUp");
   }
   itP->setupcalled = 1;
@@ -124,7 +124,7 @@ int KSPGetPreconditionerSide(KSP itP, int *side)
 int KSPGetMethodFromContext( KSP itP, KSPMETHOD *method )
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  *method = itP->method;
+  *method = itP->type;
   return 0;
 }
 
@@ -502,7 +502,7 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
   VALIDHEADER(ctx,KSP_COOKIE);
   if (!w) {
     ierr = VecCreate(ctx->vec_rhs,&w); CHKERR(ierr);
-    PLogParent((PetscObject)ctx,w);
+    PLogObjectParent((PetscObject)ctx,w);
   }
   return (*ctx->BuildSolution)(ctx,w,V);
 }
@@ -530,10 +530,10 @@ int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
   VALIDHEADER(ctx,KSP_COOKIE);
   if (!w) {
     ierr = VecCreate(ctx->vec_rhs,&w); CHKERR(ierr);
-    PLogParent((PetscObject)ctx,w);
+    PLogObjectParent((PetscObject)ctx,w);
   }
   if (!tt) {
-    PLogParent((PetscObject)ctx,tt);
+    PLogObjectParent((PetscObject)ctx,tt);
     ierr = VecCreate(ctx->vec_rhs,&tt); CHKERR(ierr); flag = 1;
   }
   ierr = (*ctx->BuildResidual)(ctx,tt,w,V); CHKERR(ierr);

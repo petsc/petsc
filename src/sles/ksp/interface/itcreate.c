@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.16 1995/03/25 01:25:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.17 1995/03/27 22:56:50 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -54,7 +54,7 @@ int KSPCreate(KSP *ksp)
   ctx->view          = _KSPView;
   ctx->prefix        = 0;
 
-  ctx->method        = (KSPMETHOD) -1;
+  ctx->type          = (KSPMETHOD) -1;
   ctx->max_it        = 10000;
   ctx->right_pre     = 0;
   ctx->use_pres      = 0;

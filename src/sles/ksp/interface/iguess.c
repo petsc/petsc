@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.3 1994/12/23 20:25:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.4 1995/03/04 16:54:00 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -27,7 +27,9 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
   itg->maxl = maxl;
   itg->alpha = (Scalar *)MALLOC( maxl * sizeof(Scalar) );  CHKPTR(itg->alpha);
   VecGetVecs(itctx->vec_rhs,maxl,&itg->xtilde);
+  PLogObjectParents(itctx,maxl,itg->xtilde);
   VecGetVecs(itctx->vec_rhs,maxl,&itg->btilde);
+  PLogObjectParents(itctx,maxl,itg->btilde);
   *ITG = (void *)itg;
   return 0;
 }

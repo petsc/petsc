@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.6 1995/03/06 04:49:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.7 1995/03/25 01:26:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -160,7 +160,7 @@ static int KSPSetUp_TCQMR(KSP  itP )
 int KSPCreate_TCQMR(KSP itP)
 {
   itP->MethodPrivate = (void *) 0;
-  itP->method        = KSPTCQMR;
+  itP->type        = KSPTCQMR;
   itP->converged     = KSPDefaultConverged;
   itP->BuildSolution = KSPDefaultBuildSolution;
   itP->BuildResidual = KSPDefaultBuildResidual;

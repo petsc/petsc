@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.9 1995/03/06 03:49:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.10 1995/03/25 01:25:56 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: rich.c,v 1.9 1995/03/06 03:49:35 bsmith Exp bsmith $"
 int KSPSetUp_Richardson(KSP itP)
 {
   int ierr;
-  if (itP->method != KSPRICHARDSON) {
+  if (itP->type != KSPRICHARDSON) {
     SETERR(1,"Attempt to use Richardson Setup on wrong context"); 
   }
   /* check user parameters and functions */
@@ -38,7 +38,7 @@ int KSPRichardsonSetScale(KSP itP,double scale)
 {
   KSP_Richardson *richardsonP;
   VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->method != KSPRICHARDSON) return 0;
+  if (itP->type != KSPRICHARDSON) return 0;
   richardsonP = (KSP_Richardson *) itP->MethodPrivate;
   richardsonP->scale = scale;
   return 0;
@@ -114,7 +114,7 @@ int KSPCreate_Richardson(KSP itP)
   KSP_Richardson *richardsonP;
   richardsonP = NEW(KSP_Richardson); CHKPTR(richardsonP);
   itP->MethodPrivate = (void *) richardsonP;
-  itP->method               = KSPRICHARDSON;
+  itP->type                 = KSPRICHARDSON;
   richardsonP->scale        = 1.0;
   itP->setup      = KSPSetUp_Richardson;
   itP->solver     = KSPSolve_Richardson;

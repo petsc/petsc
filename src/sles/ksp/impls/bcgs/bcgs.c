@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.8 1995/03/06 04:47:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.9 1995/03/25 01:25:45 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -109,7 +109,7 @@ KSPUnwindPre( itP, X, T );
 int KSPCreate_BCGS(KSP itP)
 {
   itP->MethodPrivate = (void *) 0;
-  itP->method               = KSPBCGS;
+  itP->type                 = KSPBCGS;
   itP->right_pre            = 0;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_BCGS;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.7 1995/03/06 03:49:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.8 1995/03/25 01:25:43 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -112,7 +112,7 @@ static int  KSPSolve_CR(KSP itP,int *its)
 
 int KSPCreate_CR(KSP itP)
 {
-  itP->method               = KSPCR;
+  itP->type                 = KSPCR;
   itP->right_pre            = 0;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_CR;

@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.13 1995/03/21 23:18:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.14 1995/03/25 01:25:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -98,6 +99,7 @@ static int KSPSetUp_GMRES(KSP itP )
     gmresP->vv_allocated   = VEC_OFFSET + 2 + max_k;
  ierr = VecGetVecs(itP->vec_rhs, gmresP->vv_allocated,&gmresP->user_work[0]);
     CHKERR(ierr);
+    PLogObjectParents(itP,gmresP->vv_allocated,gmresP->user_work[0]);
     gmresP->mwork_alloc[0] = gmresP->vv_allocated;
     gmresP->nwork_alloc    = 1;
     for (k=0; k<gmresP->vv_allocated; k++)
@@ -105,7 +107,8 @@ static int KSPSetUp_GMRES(KSP itP )
   }
   else {
     gmresP->vv_allocated    = 5;
-    VecGetVecs(itP->vec_rhs, 5,    &gmresP->user_work[0]);
+    ierr = VecGetVecs(itP->vec_rhs, 5,    &gmresP->user_work[0]); CHKERR(ierr);
+    PLogObjectParents(itP,5,gmresP->user_work[0]);
     gmresP->mwork_alloc[0]  = 5;
     gmresP->nwork_alloc     = 1;
     for (k=0; k<gmresP->vv_allocated; k++)
@@ -457,6 +460,7 @@ static int GMRESGetNewVectors( KSP itP,int it )
 
   gmresP->vv_allocated += nalloc;
   VecGetVecs(itP->vec_rhs, nalloc,&gmresP->user_work[nwork] );
+  PLogObjectParents(itP,nalloc,gmresP->user_work[nwork]);
   CHKPTR(gmresP->user_work[nwork]);
   gmresP->mwork_alloc[nwork] = nalloc;
   for (k=0; k<nalloc; k++)
@@ -464,9 +468,6 @@ static int GMRESGetNewVectors( KSP itP,int it )
   gmresP->nwork_alloc++;
   return 0;
 }
-
-
-
 
 /*@
     KSPGMRESSetRestart - Sets the number of search directions 
@@ -481,7 +482,7 @@ int KSPGMRESSetRestart(KSP itP,int max_k )
   KSP_GMRES *gmresP;
   VALIDHEADER(itP,KSP_COOKIE);
   gmresP = (KSP_GMRES *)itP->MethodPrivate;
-  if (itP->method != KSPGMRES) return 0;
+  if (itP->type != KSPGMRES) return 0;
   gmresP->max_k = max_k;
   return 0;
 }
@@ -532,7 +533,7 @@ static int GMRESBuildSolution(KSP itP,Vec  ptr,Vec *result )
 int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->method == KSPGMRES) {
+  if (itP->type == KSPGMRES) {
     ((KSP_GMRES *)itP->MethodPrivate)->orthog = fcn;
   }
   return 0;
@@ -545,7 +546,7 @@ int KSPCreate_GMRES(KSP itP)
   gmresP = NEW(KSP_GMRES); CHKPTR(gmresP);
 
   itP->MethodPrivate = (void *) gmresP;
-  itP->method        = KSPGMRES;
+  itP->type        = KSPGMRES;
   itP->converged     = KSPDefaultConverged_GMRES;
   itP->BuildSolution = GMRESBuildSolution;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.9 1995/03/06 04:48:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.10 1995/03/25 01:25:54 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: cheby.c,v 1.9 1995/03/06 04:48:43 bsmith Exp bsmith $
 int KSPSetUp_Chebychev(KSP itP)
 {
   int ierr;
-  if (itP->method != KSPCHEBYCHEV) {
+  if (itP->type != KSPCHEBYCHEV) {
      SETERR(1,"Attempt to use Chebychev Setup on wrong context");
   }
   if ((ierr = KSPCheckDef(itP))) return ierr;
@@ -33,7 +33,7 @@ int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev *) itP->MethodPrivate;
   VALIDHEADER(itP,KSP_COOKIE);
-  if (itP->method != KSPCHEBYCHEV) return 0;
+  if (itP->type != KSPCHEBYCHEV) return 0;
   chebychevP->emax = emax;
   chebychevP->emin = emin;
   return 0;
@@ -150,7 +150,7 @@ int KSPCreate_Chebychev(KSP itP)
   chebychevP = NEW(KSP_Chebychev); CHKPTR(chebychevP);
   itP->MethodPrivate = (void *) chebychevP;
 
-  itP->method               = KSPCHEBYCHEV;
+  itP->type                 = KSPCHEBYCHEV;
   itP->right_pre            = 0;
   itP->calc_res             = 1;
 

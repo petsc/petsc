@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.9 1995/03/17 04:55:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.10 1995/03/21 23:18:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -148,9 +148,12 @@ int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
  */
 int  KSPiDefaultGetWork( KSP itP, int nw )
 {
+  int ierr;
   if (itP->work) KSPiDefaultFreeWork( itP );
   itP->nwork = nw;
-  return VecGetVecs(itP->vec_rhs,nw,&itP->work);
+  ierr = VecGetVecs(itP->vec_rhs,nw,&itP->work); CHKERR(ierr);
+  PLogObjectParents(itP,nw,itP->work);
+  return 0;
 }
 
 /*
