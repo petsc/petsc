@@ -2,7 +2,12 @@
 
 import os
 
-machines = ['lemon','shakey','monsoon','ico09','ico08','fire','maple']
+machines = ['shakey','monsoon','ico09','ico08','fire','maple']
 
 for machine in machines:
         os.system('rsh -n ' + machine + ' zapall')        
+
+machines = ['lemon']
+
+for machine in machines:
+        os.system('ssh -n ' + machine + ' zapall')        
