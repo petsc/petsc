@@ -147,12 +147,12 @@ info_h:
 	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static char *petsccompilerinfo = \"  " >> MINFO
-	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
+	-@echo  "Using C compiler: ${C_CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
 	-@if [  "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
 	  echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1; fi ; true
 	-@if [  "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
 	  echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; fi ; true
-	-@echo  "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
+	-@echo  "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
 	-@if [  "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
 	  echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; fi ; true
 	-@echo  "-----------------------------------------\"; " >> MINFO
