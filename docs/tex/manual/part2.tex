@@ -2231,12 +2231,11 @@ monitoring within Table~\ref{tab:kspdefaults}.  Details regarding
 specific convergence tests and monitoring routines are presented in
 the following sections.  The preconditioned residual is used by
 default for convergence testing of all left-preconditioned KSP
-methods {\em except} for the conjugate gradient, Richardson, and
-Chebyshev methods.  For these three cases the true residual is used by
-default, but the preconditioned residual can be employed instead with
-the options database command \trl{ksp_preres} or by calling the routine
+methods. For the conjugate gradient, Richardson, and
+Chebyshev methods the true residual can be used by
+the options database command \trl{ksp_norm_type unpreconditioned } or by calling the routine
 \begin{verse}
-  KSPSetNormType(KSP ksp,KSP\_PRECONDITIONED\_NORM);
+  KSPSetNormType(KSP ksp,KSP\_UNPRECONDITIONED\_NORM);
 \end{verse}
 
 \begin{table}

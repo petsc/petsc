@@ -217,6 +217,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->atol          = 1.e-50;
   ksp->divtol        = 1.e4;
 
+  ksp->normtype            = KSP_PRECONDITIONED_NORM;
   ksp->rnorm               = 0.0;
   ksp->its                 = 0;
   ksp->guess_zero          = PETSC_TRUE;
@@ -395,9 +396,12 @@ int KSPGetType(KSP ksp,KSPType *type)
 .   -ksp_atol atol - absolute tolerance used in default convergence test, i.e. if residual 
                 norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
-.   -ksp_avoid_norms - skip norms used in convergence tests (useful only when not using 
-                       convergence test (say you always want to run with 5 iterations) to 
-                       save on communication overhead
+.   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using 
+$                       convergence test (say you always want to run with 5 iterations) to 
+$                       save on communication overhead
+$                    preconditioned - default for left preconditioning 
+$                    unpreconditioned - see KSPSetNormType()
+$                    natural - see KSPSetNormType()
 .   -ksp_cancelmonitors - cancel all previous convergene monitor routines set
 .   -ksp_monitor - print residual norm at each iteration
 .   -ksp_xmonitor - plot residual norm at each iteration
@@ -417,7 +421,7 @@ int KSPGetType(KSP ksp,KSPType *type)
 int KSPSetFromOptions(KSP ksp)
 {
   int        ierr;
-  char       type[256];
+  char       type[256],*stype[] = {"none","preconditioned","unpreconditioned","natural"};
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -440,10 +444,27 @@ int KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->atol,&ksp->atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsName("-ksp_avoid_norms","Do not compute norms for convergence tests","KSPSetNormType",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",stype,4,"preconditioned",type,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPSetNormType(ksp,KSP_NO_NORM);CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
+      PetscTruth isnone,ispreconditioned,isunpreconditioned,isnatural;
+
+      ierr = PetscStrcmp(type,stype[0],&isnone);CHKERRQ(ierr);
+      ierr = PetscStrcmp(type,stype[1],&ispreconditioned);CHKERRQ(ierr);
+      ierr = PetscStrcmp(type,stype[2],&isunpreconditioned);CHKERRQ(ierr);
+      ierr = PetscStrcmp(type,stype[3],&isnatural);CHKERRQ(ierr);
+
+      if (isnone) {
+        ierr = KSPSetNormType(ksp,KSP_NO_NORM);CHKERRQ(ierr);
+        ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
+      } else if (ispreconditioned) {
+        ierr = KSPSetNormType(ksp,KSP_PRECONDITIONED_NORM);CHKERRQ(ierr);
+      } else if (isunpreconditioned) {
+        ierr = KSPSetNormType(ksp,KSP_UNPRECONDITIONED_NORM);CHKERRQ(ierr);
+      } else if (isnatural) {
+        ierr = KSPSetNormType(ksp,KSP_NATURAL_NORM);CHKERRQ(ierr);
+      } else {
+        SETERRQ1(1,"Unknown KSP normtype %s",type);
+      }
     }
 
     ierr = PetscOptionsName("-ksp_cancelmonitors","Remove any hardwired monitor routines","KSPClearMonitor",&flg);CHKERRQ(ierr);
@@ -506,8 +527,6 @@ int KSPSetFromOptions(KSP ksp)
     }
 
     /* -----------------------------------------------------------------------*/
-    ierr = PetscOptionsName("-ksp_preres","Use preconditioner residual norm in convergence tests","KSPSetNormType",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPSetNormType(ksp,KSP_PRECONDITIONED_NORM);CHKERRQ(ierr);}
 
     ierr = PetscOptionsLogicalGroupBegin("-ksp_left_pc","Use left preconditioning","KSPSetPreconditionerSide",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_LEFT);CHKERRQ(ierr); }

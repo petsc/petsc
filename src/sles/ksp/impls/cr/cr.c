@@ -24,9 +24,9 @@ static int  KSPSolve_CR(KSP ksp,int *its)
 {
   int          i = 0, maxit, cerr = 0, ierr;
   MatStructure pflag;
-  double       dp;
+  PetscReal    dp;
   PetscScalar  ai, bi;
-  PetscScalar  btop, bbot, bbotold, tmp, mone = -1.0;
+  PetscScalar  btop, bbot, tmp, mone = -1.0;
   Vec          X,B,R,RT,P,AP,ART,Q;
   Mat          Amat, Pmat;
 
@@ -44,7 +44,6 @@ static int  KSPSolve_CR(KSP ksp,int *its)
 
                                       /*  we follow Rati Chandra's PhD */
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
-  bbotold = 1.0; /* a hack */
                                                  /*                      */
   if (!ksp->guess_zero) {
     ierr = MatMult(Amat,X,R); CHKERRQ(ierr);     /*   r <- Ax            */
@@ -62,7 +61,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
   } else if (ksp->normtype == KSP_NATURAL_NORM) {
-    dp = btop; if (dp<0) dp=-dp;           /* dp = (R,AR) (fdi)*/
+    dp = PetscAbsScalar(btop);                  /* dp = (R,AR) (fdi)*/
   }
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
@@ -90,7 +89,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(RT,NORM_2,&dp); CHKERRQ(ierr);/*   dp <- r'*r         */
     } else if (ksp->normtype == KSP_NATURAL_NORM) {
-      dp = btop; if (dp<0) dp=-dp;             /* dp = (R,AR) (fdi)*/
+      dp = PetscAbsScalar(btop);                /* dp = (R,AR) (fdi)*/
     } else { dp = 0.0; }
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -106,7 +105,6 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     bi = btop/bbot;
     ierr = VecAYPX(&bi,RT,P); CHKERRQ(ierr);     /*   P <- rt + Bi P     */
     ierr = VecAYPX(&bi,ART,AP); CHKERRQ(ierr);   /*   AP <- Art + Bi AP  */
-    bbotold = bbot; 
   }
   if (i == maxit) i--;
   if (cerr <= 0) *its = -(i+1);

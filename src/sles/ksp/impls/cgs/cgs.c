@@ -86,10 +86,11 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = VecAXPY(&a,T,X);CHKERRQ(ierr);           /* x <- x + a (u + q)   */
     ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,T,AUQ,U);CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
+    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     } else if (ksp->normtype == KSP_NATURAL_NORM) {
-      dp = PetscAbsInt(rho);
+      dp = PetscAbsScalar(rho);
     }
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -101,7 +102,6 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
 
-    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
     b    = rho / rhoold;                             /* b <- rho / rhoold    */
     ierr = VecWAXPY(&b,Q,R,U);CHKERRQ(ierr);        /* u <- r + b q         */
     ierr = VecAXPY(&b,P,Q);CHKERRQ(ierr);

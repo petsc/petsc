@@ -108,7 +108,7 @@ int KSPSetUp_CG(KSP ksp)
 int  KSPSolve_CG(KSP ksp,int *its)
 {
   int          ierr,i,maxit,eigs;
-  PetscScalar  dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma; 
+  PetscScalar  dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma,tdp; 
   PetscReal    dp = 0.0;
   Vec          X,B,Z,R,P;
   KSP_CG       *cg;
@@ -151,8 +151,8 @@ int  KSPSolve_CG(KSP ksp,int *its)
   } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
   } else if (ksp->normtype == KSP_NATURAL_NORM) {
-    ierr = VecXDot(Z,R,&dp);CHKERRQ(ierr);
-    if (dp<0) dp=-dp;
+    ierr = VecXDot(Z,R,&tdp);CHKERRQ(ierr);
+    dp = PetscAbsScalar(tdp);
   } else dp = 0.0;
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
   if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
@@ -194,8 +194,8 @@ int  KSPSolve_CG(KSP ksp,int *its)
      } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
      } else if (ksp->normtype == KSP_NATURAL_NORM) {
-       ierr = VecXDot(Z,R,&dp);CHKERRQ(ierr);
-       if (dp<0) dp=-dp;
+       ierr = VecXDot(Z,R,&tdp);CHKERRQ(ierr);
+       dp = PetscAbsScalar(tdp);
      } else {
        dp = 0.0;
      }
