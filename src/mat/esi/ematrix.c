@@ -193,7 +193,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getRowIndices(int row, int& lengt
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRow(int row, int& length, double*& coefs, int*& colIndices)
 {
-  return MatRestoreRow(this->mat,row,&length,(const int **)&colIndices,&coefs);
+  return MatRestoreRow(this->mat,row,&length,(const int **)&colIndices,(const PetscScalar**)&coefs);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowCoefs(int row, int& length, double*& coefs)
@@ -203,7 +203,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowCoefs(int row, int& len
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::restoreRowIndices(int row, int& length, int*& colIndices)
 {
-  return MatRestoreRow(this->mat,row,&length,&colIndices,PETSC_NULL);
+  return MatRestoreRow(this->mat,row,&length,(const int **)&colIndices,PETSC_NULL);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::copyIntoRow(int row,double* coefs, int* colIndices, int length)

@@ -67,7 +67,7 @@ int ComputeInitialSolution(DMMG *dmmg)
   
   for(i=xs; i<xs+xm; i++){
     col[0] = 2*i; col[1] = 2*i + 1;
-    val[0] = val[1] = PetscSinScalar(i*Hx);
+    val[0] = val[1] = PetscSinScalar(((PetscScalar)i)*Hx);
     ierr = VecSetValues(x,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ int ComputeJacobian(DMMG dmmg,Mat jac)
   ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
   ierr = DAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  lambda = 2*Hx;
+  lambda = 2.0*Hx;
   for(i=xs; i<xs+xm; i++){
     row.i = i; row.j = 0; row.k = 0; row.c = 0;
     v[0] = Hx;     col[0].i = i;   col[0].c = 0;
