@@ -1,7 +1,6 @@
 # $Id: makefile,v 1.4 2001/08/22 18:02:49 balay Exp $ 
 
 #requirespackage  'PETSC_HAVE_SAMG'
-#requirespackage  'PETSC_HAVE_F90_H'
 #requiresscalar    real 
 #requiresprecision double
 #requireslanguage  CPP
