@@ -799,6 +799,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(const PetscScalar *alpha,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidType(x,2);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
+#if defined (PETSC_USE_DEBUG)
+ {
+   PetscScalar alpha_max;
+   ierr = MPI_Allreduce((PetscScalar*)alpha,&alpha_max,1,MPIU_SCALAR,MPI_MAX,x->comm);CHKERRQ(ierr);
+   if (*alpha != alpha_max) SETERRQ(PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
+ }
+#endif
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(alpha,x);CHKERRQ(ierr);
