@@ -799,6 +799,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(const PetscScalar *alpha,Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidType(x,2);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
+#if defined (PETSC_USE_DEBUG)
+ {
+   PetscScalar alpha_max;
+   ierr = MPI_Allreduce((PetscScalar*)alpha,&alpha_max,1,MPIU_SCALAR,MPI_MAX,x->comm);CHKERRQ(ierr);
+   if (*alpha != alpha_max) SETERRQ(PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
+ }
+#endif
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(alpha,x);CHKERRQ(ierr);
@@ -3026,14 +3033,14 @@ M*/
 integers; not 64 as they are represented in the memory, so if you
 write your own routines to read/write these binary files from the Cray
 you need to adjust the integer sizes that you read in, see
-PetscReadBinary() and PetscWriteBinary() to see how this may be
+PetscBinaryRead() and PetscBinaryWrite() to see how this may be
 done.
 
    In addition, PETSc automatically does the byte swapping for
 machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
 linux, Windows and the paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscReadBinary()
-and PetscWriteBinary() to see how this may be done.
+read/write routines you have to swap the bytes; see PetscBinaryRead()
+and PetscBinaryWrite() to see how this may be done.
 
    Concepts: vector^loading from file
 

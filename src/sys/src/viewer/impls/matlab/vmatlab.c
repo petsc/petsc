@@ -10,7 +10,7 @@
    Level: intermediate
 
        Note: Currently can only save PETSc vectors to .mat files, not matrices (use the PETSC_VIEWER_BINARY and 
-             ${PETSC_DIR}/bin/matlab/PetscReadBinary.m to read matrices into matlab).
+             ${PETSC_DIR}/bin/matlab/PetscBinaryRead.m to read matrices into matlab).
 
              For parallel vectors obtained with DACreateGlobalVector() or DAGetGlobalVector() the vectors are saved to
              the .mat file in natural ordering. You can use DAView() to save the DA information to the .mat file

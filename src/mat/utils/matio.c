@@ -98,8 +98,8 @@ $    PetscScalar *values of all nonzeros
    PETSc automatically does the byte swapping for
 machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
 linux, Windows and the paragon; thus if you write your own binary
-read/write routines you have to swap the bytes; see PetscReadBinary()
-and PetscWriteBinary() to see how this may be done.
+read/write routines you have to swap the bytes; see PetscBinaryRead()
+and PetscBinaryWrite() to see how this may be done.
 
 .keywords: matrix, load, binary, input
 
