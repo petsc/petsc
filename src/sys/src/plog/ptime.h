@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.31 1997/02/21 17:34:08 balay Exp bsmith $ */
+/* $Id: ptime.h,v 1.32 1997/02/22 18:20:32 bsmith Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -202,3 +202,8 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 #endif
 
 #endif
+
+
+
+
+
