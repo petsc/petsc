@@ -1,7 +1,7 @@
 #ifndef KNR_COMPAT_H
 #define KNR_COMPAT_H 1
 
-#if defined(__stdc__) || defined(__GNUC__) || defined(__STDC__)
+#if defined(__stdc__) || defined(__GNUC__) || defined(__STDC__) || defined(__cplusplus)
 #define USE_PROTOTYPES 1
 #define USE_FN_ARGS 1
 #endif

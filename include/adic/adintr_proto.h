@@ -1,3 +1,8 @@
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 ADINTR_EXTERN void adintr_acos Proto((int,int,int,double*,...));
 ADINTR_EXTERN void adintr_acosh Proto((int,int,int,double*,...));
 ADINTR_EXTERN void adintr_asin Proto((int,int,int,double*,...));
@@ -27,3 +32,7 @@ ADINTR_EXTERN void adintr_sinh Proto((int,int,int,double*,...));
 ADINTR_EXTERN void adintr_sqrt Proto((int,int,int,double*,...));
 ADINTR_EXTERN void adintr_tan Proto((int,int,int,double*,...));
 ADINTR_EXTERN void adintr_tanh Proto((int,int,int,double*,...));
+
+#if defined(__cplusplus)
+}
+#endif

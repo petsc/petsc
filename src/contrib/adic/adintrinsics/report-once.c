@@ -1,3 +1,11 @@
+#include "petscconf.h"
+#if defined(PETSC_HAVE_STRINGS_H)
+#include <strings.h>
+#endif
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h>
+#endif
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
