@@ -20,7 +20,7 @@ def getarch():
 
 def rhl9():
   try:
-    file = open("/etc/redhat-release")
+    file = open('/etc/redhat-release','r')
   except:
     return 0
   try:
