@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.1 1996/10/01 02:41:19 curfman Exp bsmith $";
+C "$Id: ex4f.F,v 1.2 1996/10/03 12:56:09 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -275,8 +275,8 @@ C
       Vec      X
       integer  user(*)
       integer  i, j, row, mx, my, ierr, hxdhy, hydhx
-      Scalar   lambda, temp1, temp, hx, hy, sc, one
-
+      Scalar   temp1, temp, hx, hy, sc, one
+      Double   lambda
 C  Declarations for use with local arrays
       Scalar   lx_v(1)
       integer  lx_i
@@ -351,10 +351,10 @@ C
 
       SNES     snes
       Vec      X, F
-      Scalar   two, one, lambda, hx, hy, hxdhy, hydhx, sc
+      Scalar   two, one, hx, hy, hxdhy, hydhx, sc
       Scalar   u, uxx, uyy
       integer  ierr, i, j, row, mx, my, user(*)
-
+      Double   lambda
 C  Declarations for use with local arrays
 
       Scalar   lx_v(1), lf_v(1)
@@ -443,8 +443,9 @@ C
       Mat          jac, B
       MatStructure flag
       integer      user(*), ierr, i, j, row, mx, my, col(5)
-      Scalar       two, one, lambda, hx, hy, hxdhy, hydhx
+      Scalar       two, one,  hx, hy, hxdhy, hydhx
       Scalar       sc, v(5)
+      Double       lambda
 
       common /params/ lambda
 
