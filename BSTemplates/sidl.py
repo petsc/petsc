@@ -82,7 +82,7 @@ class UsingSIDL (SIDLConstants):
     self.internalClientLanguages = SIDLPackageDict(self)
     # Packages which must be compiled before the clients
     self.bootstrapPackages = SIDLPackageList(self)
-    # Flags forthe SIDL compiler
+    # Flags for the SIDL compiler
     self.compilerFlags  = ''
     self.includeDirs    = SIDLPackageDict(self)
     self.extraLibraries = SIDLPackageDict(self)
@@ -132,7 +132,7 @@ class UsingSIDL (SIDLConstants):
     return self.compilerFlags
 
   def setCompilerFlags(self, flags):
-    self.flags = flags
+    self.compilerFlags = flags
     return
 
   def getRootDir(self):
