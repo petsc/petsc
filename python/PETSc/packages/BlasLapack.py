@@ -113,7 +113,6 @@ class Configure(config.base.Configure):
     # Try specified installation root
     if 'with-blas-lapack-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-blas-lapack-dir']
-      yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'))
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'))      
       yield ('User specified installation root (F2C)', os.path.join(dir, 'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'))
@@ -130,6 +129,9 @@ class Configure(config.base.Configure):
       else:
         dir = os.path.join(dir, 'ia32', 'lib')
       yield ('User specified MKL Windows installation root', None, [os.path.join(dir, 'mkl_c_dll.lib')])
+      # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
+      # finding these in /usr/lib despite using -L<blas-lapack-dir> while attempting to get a different library.
+      yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'))
       raise RuntimeError('You set a value for --with-blas-lapack-dir=<dir>, but '+self.framework.argDB['with-blas-lapack-dir']+' cannot be used\n')
     # IRIX locations
     yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a')
