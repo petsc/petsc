@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.108 1998/03/06 00:09:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.109 1998/03/12 23:15:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -648,7 +648,34 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PLogInfo(xin,"Special case: sequential vector stride to general");
       goto functionend;
     } else {
-      SETERRQ(PETSC_ERR_SUP,0,"Cannot generate such a scatter context yet");
+      int                    nx,ny,*idx,*idy;
+      VecScatter_Seq_General *to,*from;
+
+      ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
+      ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
+      if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
+      len               = sizeof(VecScatter_Seq_General) + nx*sizeof(int);
+      to                = (VecScatter_Seq_General *) PetscMalloc(len); CHKPTRQ(to)
+      PLogObjectMemory(ctx,2*len);
+      to->slots         = (int *) (to + 1); 
+      to->n             = nx; 
+      PetscMemcpy(to->slots,idy,nx*sizeof(int));
+      from              = (VecScatter_Seq_General *) PetscMalloc(len); CHKPTRQ(from);
+      from->slots       = (int *) (from + 1);
+      from->n           = nx; 
+      PetscMemcpy(from->slots,idx,nx*sizeof(int));
+      to->type          = VEC_SCATTER_SEQ_GENERAL; 
+      from->type        = VEC_SCATTER_SEQ_GENERAL; 
+      ctx->todata       = (void *) to; 
+      ctx->fromdata     = (void *) from;
+      ctx->postrecvs    = 0;
+      ctx->begin        = VecScatterBegin_SGtoSG; 
+      ctx->end          = 0; 
+      ctx->destroy      = VecScatterDestroy_SGtoSG;
+      ctx->copy         = 0;
+      *newctx           = ctx;
+      PLogInfo(xin,"Sequential vector scatter with block indices");
+      goto functionend;
     }
   }
   /* ---------------------------------------------------------------------------*/
