@@ -26,8 +26,8 @@ extern int   ISDestroy(IS);
 extern int   ISInvertPermutation(IS,IS*);
 extern int   ISView(IS,Viewer);
 
-extern int   ISSetUpScatterBegin(IS,IS,ISScatterCtx*);
-extern int   ISSetUpScatterEnd(IS,IS,ISScatterCtx*);
+extern int   ISCreateScatterCtxBegin(IS,IS,ISScatterCtx*);
+extern int   ISCreateScatterCtxEnd(IS,IS,ISScatterCtx*);
 extern int   ISFreeScatterCtx(ISScatterCtx);
 
 #endif
