@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f.F,v 1.11 1998/07/01 21:07:18 balay Exp balay $";
+!    "$Id: ex13f90.F,v 1.12 1998/07/01 21:39:33 balay Exp balay $";
 !
 !
 !/*T
@@ -43,6 +43,13 @@
 !   Mat    A        /* sparse matrix */
 !   SLES   sles     /* linear solver context */
 !   int    m,n      /* grid dimensions */
+!
+!   Since we cannot store Scalars, and integers in the same context,
+!   we store the integers/pointers in the userdefined context, and
+!   the scalar values are carried out in the common block.
+!   The scalar values in this simplistic example, could easily
+!   be recalculated in each routine, where they are needed.
+!
 !   Scalar hx2,hy2  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.
@@ -66,12 +73,9 @@
       double precision hx2, hy2
       common /param/ hx2, hy2
 
-
       tmax = 2
       m = 6
       n = 7
-
-
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -155,10 +159,12 @@
          write(6,115) m,n,enorm
  115     format ('m = ',I2,' n = ',I2,' error norm = ',E10.4)
  100  continue
+
 !  We are all finished solving linear systems, so we clean up the
 !  data structures.
 
       DEALLOCATE (userx,userb,solution,rho)
+
       call UserFinalizeLinearSolver(userctx,ierr)
       call PetscFinalize(ierr)
       end
@@ -201,10 +207,13 @@
 
       call MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,5,                  &
      &     PETSC_NULL_INTEGER,A,ierr)
-
-!  Create vectors
-
-      call VecCreateSeq(PETSC_COMM_SELF,Ntot,b,ierr)
+!
+!  Create vectors. Here we create vectors with no memory allocated.
+!  This way, we can use the data structures already in the program
+!  by using VecPlaceArray() subroutine at a later stage.
+!
+      call VecCreateSeqWithArray(PETSC_COMM_SELF,Ntot,                  &
+     &     PETSC_NULL_SCALAR,b,ierr)
       call VecDuplicate(b,x,ierr)
 
 !  Create linear solver context. This will be used repeatedly for all 
@@ -350,8 +359,6 @@
 !     write their entire application using PETSc vectors rather than 
 !     arrays.
 !
-!      call VecGetArray(x,tmpx,xoff,ierr)
-!      call VecGetArray(b,tmpb,boff,ierr)
       call VecPlaceArray(x,userx,ierr)
       call VecPlaceArray(b,userb,ierr)
 
@@ -360,12 +367,6 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call SLESSolve(sles,b,x,its,ierr)
-
-!
-!    Put back the PETSc array that belongs in the vector xuserctx->x
-!
-!      call VecPlaceArray(userctx->x,tmpx(xoff+1),ierr)
-!     call VecPlaceArray(userctx->b,tmpb(boff+1),ierr)
 
       return
       end
