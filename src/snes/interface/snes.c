@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.90 1996/10/01 15:24:25 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.91 1996/10/01 16:04:39 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -606,15 +606,15 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
    Input Parameters:
 .  snes - the SNES context
 .  func - function evaluation routine
-.  ctx - optional user-defined function context 
+.  ctx - [optional] user-defined context for private data for the 
+         function evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
 .  func (SNES snes,Vec x,double *f,void *ctx);
 
 .  x - input vector
 .  f - function
-.  ctx - optional user-defined context for private data for the 
-         function evaluation routine (may be null)
+.  ctx - [optional] user-defined function context 
 
    Notes:
    SNESSetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
@@ -676,7 +676,8 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
    Input Parameters:
 .  snes - the SNES context
 .  func - function evaluation routine
-.  ctx - optional user-defined function context 
+.  ctx - optional user-defined context for private data for the 
+         gradient evaluation routine (may be PETSC_NULL)
 .  r - vector to store gradient value
 
    Calling sequence of func:
@@ -684,8 +685,7 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 
 .  x - input vector
 .  g - gradient vector
-.  ctx - optional user-defined context for private data for the 
-         function evaluation routine (may be null)
+.  ctx - optional user-defined gradient context 
 
    Notes:
    SNESSetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
@@ -831,7 +831,7 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 
 /*@C
    SNESSetJacobian - Sets the function to compute Jacobian as well as the
-   location to store it.
+   location to store the matrix.
 
    Input Parameters:
 .  snes - the SNES context
@@ -904,7 +904,7 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 
 /*@C
    SNESSetHessian - Sets the function to compute Hessian as well as the
-   location to store it.
+   location to store the matrix.
 
    Input Parameters:
 .  snes - the SNES context
@@ -1220,15 +1220,15 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
    Input Parameters:
 .  snes - the SNES context
 .  func - monitoring routine
-.  mctx - optional user-defined context for private data for the 
-          monitor routine (may be null)
+.  mctx - [optional] user-defined context for private data for the 
+          monitor routine (may be PETSC_NULL)
 
    Calling sequence of func:
    int func(SNES snes,int its, Vec x,Vec f,double norm,void *mctx)
 
 $    snes - the SNES context
 $    its - iteration number
-$    mctx - optional monitoring context
+$    mctx - [optional] monitoring context
 $
 $ SNES_NONLINEAR_EQUATIONS methods:
 $    norm - 2-norm function value (may be estimated)
@@ -1254,15 +1254,15 @@ int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
    Input Parameters:
 .  snes - the SNES context
 .  func - routine to test for convergence
-.  cctx - optional context for private data for the convergence routine 
-          (may be null)
+.  cctx - [optional] context for private data for the convergence routine 
+          (may be PETSC_NULL)
 
    Calling sequence of func:
    int func (SNES snes,double xnorm,double gnorm,
              double f,void *cctx)
 
 $    snes - the SNES context
-$    cctx - optional convergence context
+$    cctx - [optional] convergence context
 $    xnorm - 2-norm of current iterate
 $
 $ SNES_NONLINEAR_EQUATIONS methods:
