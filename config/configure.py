@@ -18,6 +18,23 @@ def getarch():
   if os.path.basename(sys.argv[0]).startswith('configure'): return ''
   else: return os.path.basename(sys.argv[0])[:-3]
 
+def fixWin32Flinker(filename):
+    '''Change CXX_FLINKER back to f90 for win32 (from cl)'''
+    import fileinput
+    import re
+
+    reglink    = re.compile('CXX_FLINKER ')
+    regwin32fe = re.compile('win32fe',re.I)
+    regcl      = re.compile('cl',re.I)
+
+    for line in fileinput.input(filename,inplace=1):
+      fl = reglink.search(line)
+      fw = regwin32fe.search(line)
+      if fl and fw:
+        line = regcl.sub('f90',line)
+      print line,
+    return
+
 def petsc_configure(configure_options):
   # use the name of the config/configure_arch.py to determine the arch
   if getarch(): configure_options.append('-PETSC_ARCH='+getarch())
@@ -28,16 +45,19 @@ def petsc_configure(configure_options):
   if not os.path.isdir(pythonDir):
     raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
   if not os.path.isdir(bsDir):
-    print '''Could not locate BuildSystem in $PETSC_DIR/python.
-    Downloading it using "bk clone bk://sidl.bkbits.net/BuildSystem $PETSC_DIR/python/BuildSystem"'''
+    print '''++ Could not locate BuildSystem in $PETSC_DIR/python.'''
+    print '''++ Downloading it using "bk clone bk://sidl.bkbits.net/BuildSystem $PETSC_DIR/python/BuildSystem"'''
     (status,output) = commands.getstatusoutput('bk clone bk://sidl.bkbits.net/BuildSystem python/BuildSystem')
     if status:
       if output.find('ommand not found') >= 0:
-        print '''******** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path\nor manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where you do have bk installed and can clone BuildSystem.******** '''
+        print '''** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path'''
+        print '''** or manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where'''
+        print '''** you do have bk installed and can clone BuildSystem. '''
       elif output.find('Cannot resolve host') >= 0:
-        print '''******** Unable to download BuildSystem. You must be off the network. Connect to the internet and run config/configure.py again******** '''
+        print '''** Unable to download BuildSystem. You must be off the network.'''
+        print '''** Connect to the internet and run config/configure.py again.'''
       else:
-        print '''******** Unable to download BuildSystem. Please send this message to petsc-maint@mcs.anl.gov******** '''
+        print '''** Unable to download BuildSystem. Please send this message to petsc-maint@mcs.anl.gov'''
       print output
       sys.exit(3)
       
@@ -50,20 +70,23 @@ def petsc_configure(configure_options):
   try:
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
+    fixWin32Flinker('bmake/'+framework.argDB['PETSC_ARCH']+'/variables')
     return 0
   except RuntimeError, e:
-    msg = '******* Unable to configure with given options ******* (see configure.log for full details):\n'+str(e)+'\n******************************************************\n'
+    msg = '***** Unable to configure with given options ***** (see configure.log for full details):\n'
+    +str(e)+'\n******************************************************\n'
     se = ''
   except TypeError, e:
-    msg = '******* Error in command line argument to configure.py ***********\n'+str(e)+'\n******************************************************\n'
+    msg = '***** Error in command line argument to configure.py *****\n'
+    +str(e)+'\n******************************************************\n'
     se = ''
   except SystemExit, e:
     if e.code is None or e.code == 0:
       return
-    msg = '******* CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
+    msg = '*** CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
     se  = str(e)
   except Exception, e:
-    msg = '******* CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
+    msg = '*** CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
     se  = str(e)
     
   print msg

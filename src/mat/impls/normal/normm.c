@@ -84,6 +84,8 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
    Output Parameter:
 .   N - the matrix that represents A'*A
 
+   Level: intermediate
+
    Notes: The product A'*A is NOT actually formed! Rather the new matrix
           object performs the matrix-vector product by first multiplying by
           A and then A'

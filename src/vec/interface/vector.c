@@ -2616,7 +2616,7 @@ PetscErrorCode VecPlaceArray(Vec vec,const PetscScalar array[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
   PetscValidType(vec,1);
-  PetscValidScalarPointer(array,2);
+  if (array) PetscValidScalarPointer(array,2);
   if (vec->ops->placearray) {
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
   } else {
