@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.81 2000/05/10 16:42:53 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.82 2000/05/16 23:12:17 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -27,7 +27,7 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 TESTEXAMPLES_6   = ex16.PETSc runex16 runex16_2 ex16.rm 
 TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm clean
 TESTEXAMPLES_13  = ex7.PETSc ex7.rm ex13.PETSc ex13.rm clean
-TESTEXAMPLES_15  = ex5m.PETSc runex5m runex5m_2 ex5m.rm clean
+TESTEXAMPLES_14  = ex5m.PETSc runex5m runex5m_2 ex5m.rm clean
 TESTEXAMPLES_15  = ex12.PETSc runex12 runex12_2 ex12.rm clean
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
 		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex16.PETSc ex16.rm clean \
@@ -39,7 +39,7 @@ BUILDEXAMPLES_4	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc 
 BUILDEXAMPLES_8	 = ex5f.PETSc ex5f.rm clean
 BUILDEXAMPLES_12 = ex5f90.PETSc ex5f90.rm clean
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5c.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
-                   common8and9.c ex12.c ex13.c ex14.c ex15.c ex16.c ex5d.c ex5s.c ex5m.c
+                   common8and9.c ex12.c ex13.c ex14.c ex15.c ex16.c ex5d.c ex5s.c ex5m.c ex18.c ex19.c ex20.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex8and9.h 
 EXAMPLESFH       = ex5f.h
@@ -127,6 +127,15 @@ ex16: ex16.o chkopts
 ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_SNES_LIB}
 	${RM} ex17.o
+ex18: ex18.o chkopts
+	-${CLINKER} -o ex18 ex18.o ${PETSC_SNES_LIB}
+	${RM} ex18.o
+ex19: ex19.o chkopts
+	-${CLINKER} -o ex19 ex19.o ${PETSC_SNES_LIB}
+	${RM} ex19.o
+ex20: ex20.o chkopts
+	-${CLINKER} -o ex20 ex20.o ${PETSC_SNES_LIB}
+	${RM} ex20.o
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog -snes_smonitor > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -203,6 +212,16 @@ runex4f_3:
 	   if (diff output/ex4f_2.out ex4f_3.tmp) then true; \
 	   else echo "Possible problem with ex4f_3, diffs above"; fi; \
 	   ${RM} -f ex4f_3.tmp
+runex5m:
+	-@${MPIRUN} -np 4 ex5m -snes_mf -Nx 4 -Ny 1 -snes_smonitor -ksp_gmres_irorthog > ex5m_1.tmp 2>&1; \
+	   if (diff output/ex5_1.out ex5m_1.tmp) then true; \
+	   else echo "Possible problem with ex5m_1, diffs above"; fi; \
+	   ${RM} -f ex5m_1.tmp
+runex5m_2:
+	-@${MPIRUN} -np 4 ex5m -Nx 2 -Ny 2 -snes_smonitor -ksp_gmres_irorthog > ex5m_2.tmp 2>&1; \
+	   if (diff output/ex5_2.out ex5m_2.tmp) then true; \
+	   else echo "Possible problem with ex5m_2, diffs above"; fi; \
+	   ${RM} -f ex5m_2.tmp
 runex5:
 	-@${MPIRUN} -np 4 ex5 -snes_mf -Nx 4 -Ny 1 -snes_smonitor -ksp_gmres_irorthog > ex5_1.tmp 2>&1; \
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
