@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.23 1997/07/02 22:24:44 bsmith Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.24 1997/07/03 18:16:06 balay Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -23,8 +23,8 @@ extern "C" {
 #if defined (__cplusplus) 
 }
 #endif
-
 #endif
+
 #include "pinclude/petscfix.h"
 
 #undef __FUNC__  
