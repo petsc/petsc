@@ -428,7 +428,7 @@ int PCASMSetTotalSubdomains_ASM(PC pc,int N,IS *is)
   PetscFunctionBegin;
   if (pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetup().");
 
-  if (is) SETERRQ(PETSC_ERR_SUP,"Use PCASMSetLocalSubdomains to set specific index sets\n\
+  if (is) SETERRQ(PETSC_ERR_SUP,"Use PCASMSetLocalSubdomains() to set specific index sets\n\
 they cannot be set globally yet.");
 
   osm               = (PC_ASM*)pc->data;

@@ -216,9 +216,9 @@ class Configure(config.base.Configure):
       self.framework.log.write('Unable to download patches. Perhaps you are off the network?\nContinuing configure without patches.\n')
       return
     try:
-      output1 = self.executeShellCommand(patch+' -Np1 < patches1')
+      output1 = self.executeShellCommand('echo '+patch+' -Np1 < patches1')
       os.unlink('patches1')
-      output2 = self.executeShellCommand('cd python/BuildSystem; '+patch+' -Np1 < ../../patches2')
+      output2 = self.executeShellCommand('cd python/BuildSystem; echo '+patch+' -Np1 < ../../patches2')
       os.unlink('patches2')
       if output1.find('error') >= 0 or output2.find('error') >= 0:
         self.framework.log.write(output1+'\n')
