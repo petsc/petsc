@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.26 1996/09/14 01:35:37 curfman Exp curfman $";
+static char vcid[] = "$Id: zoptions.c,v 1.27 1996/09/14 03:34:35 curfman Exp bsmith $";
 #endif
 
 /*
@@ -45,6 +45,7 @@ void optionssetvalue_(CHAR name,CHAR value,int *__ierr, int len1,int len2)
 {
   char *c1,*c2;
   int  ierr;
+
   FIXCHAR(name,len1,c1);
   FIXCHAR(value,len2,c2);
   ierr = OptionsSetValue(c1,c2);
@@ -65,7 +66,8 @@ void optionshasname_(CHAR pre,CHAR name,int *flg,int *__ierr,int len1,int len2){
   *__ierr = ierr;
 }
 
-void optionsgetint_(CHAR pre,CHAR name,int *ivalue,int *flg,int *__ierr,int len1,int len2){
+void optionsgetint_(CHAR pre,CHAR name,int *ivalue,int *flg,int *__ierr,int len1,int len2)
+{
   char *c1,*c2;
   int  ierr;
 
@@ -145,7 +147,8 @@ void optionsgetstring_(CHAR pre,CHAR name,CHAR string,int *flg,
 void petscgetarchtype_(CHAR str,int *__ierr,int len)
 {
 #if defined(USES_CPTOFCD)
-  char *tstr = _fcdtocp(str); int len1 = _fcdlen(str);
+  char *tstr = _fcdtocp(str); 
+  int  len1 = _fcdlen(str);
   *__ierr = PetscGetArchType(tstr,len1);
 #else
   *__ierr = PetscGetArchType(str,len);
@@ -209,7 +212,9 @@ int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
   if (base + itmp2 != addr) {
     fprintf(stderr,"PetscScalarAddressToFortran:C and Fortran arrays are\n");
     fprintf(stderr,"not commonly aligned or are too far apart to be indexed \n");
-    fprintf(stderr,"by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
+    fprintf(stderr,"by an integer. Locations: C %ld Fortran %ld\n",tmp3,tmp1);
+    fprintf(stderr,"Locations/sizeof(Scalar): C %f Fortran %f\n",((double) tmp3)/sizeof(Scalar),
+                                                 ((double) tmp1)/sizeof(Scalar));
     MPI_Abort(PETSC_COMM_WORLD,1);
   }
   return itmp2;
@@ -241,7 +246,7 @@ Scalar *PetscScalarAddressFromFortran(Scalar *base,int addr)
 int PetscCObjectToFortranObject(void *cobj,int *fobj)
 {
   PetscValidHeader(cobj);
-  *fobj = MPIR_FromPointer(cobj);
+  *fobj = PetscFromPointer(cobj);
   return 0;
 }
 
@@ -265,7 +270,7 @@ int PetscCObjectToFortranObject(void *cobj,int *fobj)
 @*/
 int PetscFortranObjectToCObject(int fobj,void *cobj)
 {
-  (*(void **) cobj) = (void *) MPIR_ToPointer(fobj);
+  (*(void **) cobj) = (void *) PetscToPointer(fobj);
   return 0;
 }
 
