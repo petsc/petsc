@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.29 1998/08/03 14:59:10 balay Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.30 1999/01/02 00:07:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -559,8 +559,7 @@ rather then all previous rows as it is now where a single large chunck of
 memory is used.
 
 */
-static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,
-                                            int **xdata, int * isz1)
+static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xdata, int * isz1)
 {
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *) C->data;
   Mat         A = c->A, B = c->B;
@@ -573,7 +572,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,
 
   PetscFunctionBegin;
   rank   = c->rank;
-  Mbs     = c->Mbs;
+  Mbs    = c->Mbs;
   rstart = c->rstart;
   cstart = c->cstart;
   ai     = a->i;
@@ -584,15 +583,16 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,
   
   
   for (i=0,ct=0,total_sz=0; i<nrqr; ++i) {
-    rbuf_i =  rbuf[i]; 
-    rbuf_0 =  rbuf_i[0];
+    rbuf_i  =  rbuf[i]; 
+    rbuf_0  =  rbuf_i[0];
     ct     += rbuf_0;
     for (j=1; j<=rbuf_0; j++) { total_sz += rbuf_i[2*j]; }
   }
   
-  max1         = ct*(a->nz +b->nz)/c->Mbs;
+  if (c->Mbs) max1 = ct*(a->nz +b->nz)/c->Mbs;
+  else        max1 = 1;
   mem_estimate =  3*((total_sz > max1 ? total_sz : max1)+1);
-  xdata[0]     = (int *)PetscMalloc(mem_estimate*sizeof(int)); CHKPTRQ(xdata[0]);
+  xdata[0]     = (int *) PetscMalloc(mem_estimate*sizeof(int)); CHKPTRQ(xdata[0]);
   ++no_malloc;
   ierr         = BTCreate(Mbs,xtable); CHKERRQ(ierr);
   PetscMemzero(isz1,nrqr*sizeof(int));
