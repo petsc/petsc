@@ -41,7 +41,7 @@ class Configure(config.base.Configure):
       # Get full host description
       output = self.executeShellCommand(self.shell+' '+configSub+' '+host)
     except:
-      raise RuntimeError('Unable to determine host type using config.sub: '+output)
+      raise RuntimeError('Unable to determine host type using config.sub')
     # Parse output
     m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
     if not m: raise RuntimeError('Unable to parse output of config.sub: '+output)
