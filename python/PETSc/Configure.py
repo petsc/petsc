@@ -64,7 +64,7 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
-    help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-dynamic', 'Build dynamic libraries for PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-fortran-kernels', 'Use Fortran for linear algebra kernels', nargs.ArgBool)
     help.addOption('PETSc', 'optionsModule', 'The Python module used to determine compiler options and versions')
     help.addOption('PETSc', 'C_VERSION', 'The version of the C compiler')
@@ -80,7 +80,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['enable-debug']           = 1
     self.framework.argDB['enable-log']             = 1
     self.framework.argDB['enable-stack']           = 1
-    self.framework.argDB['enable-shared']          = 0
+    self.framework.argDB['enable-dynamic']         = 1
     self.framework.argDB['enable-fortran-kernels'] = 0
     self.framework.argDB['C_VERSION']              = 'Unknown'
     self.framework.argDB['CFLAGS_g']               = '-g'
@@ -241,12 +241,18 @@ class Configure(config.base.Configure):
     return
 
   def configureDynamicLibraries(self):
-    '''Checks for --enable-shared, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
+    '''Checks for --enable-dynamic, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    self.shared = self.framework.argDB['enable-shared']
-    self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.libraries.haveLib('dl'))
+    useDynamic = self.framework.argDB['enable-dynamic']
+    self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic and self.libraries.haveLib('dl'))
     if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
       self.addDefine('HAVE_RTLD_GLOBAL', 1)
+    # This is really bad
+    flag = '-L'
+    if self.archBase == 'linux':
+      flag = '-rdynamic -Wl,-rpath,'
+    self.framework.addSubstitution('CLINKER_SLFLAG', flag)
+    self.framework.addSubstitution('FLINKER_SLFLAG', flag)
     return
 
   def configureDebuggers(self):
@@ -328,8 +334,6 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('MISSING_PROTOTYPES',     '')
     self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '')
     self.missingPrototypesExternC = ''
-    if self.archBase == 'linux':
-      self.missingPrototypesExternC += 'extern void *memalign(int, int);'
     self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC)
     return
 

@@ -22,7 +22,7 @@ PETSC_LIBTOOL      = ${PETSC_DIR}/bin/petsc_libtool
 # ######################### C compiler #####################################
 #
 C_CC               = @LT_CC@ @CC@ @CC_SHARED_OPT@
-C_CLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
+C_CLINKER_SLFLAG   = @PETSC_CLINKER_SLFLAG@
 C_CLINKER          = @CC@ @LDFLAGS@
 C_CCV              = @C_VERSION@
 C_SYS_LIB          = @LIBS@ @FLIBS@
@@ -32,11 +32,11 @@ G_COPTFLAGS        = @PETSC_CFLAGS_g@
 O_COPTFLAGS        = @PETSC_CFLAGS_O@
 # ############################ Fortran compiler ############################
 C_FC               = @FC@ @FC_SHARED_OPT@
-C_FLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
+C_FLINKER_SLFLAG   = @PETSC_FLINKER_SLFLAG@
 C_FLINKER          = @FC@ @LDFLAGS@
 C_FCV              = @F_VERSION@
 CXX_FC             = @FC@  @FC_SHARED_OPT@
-CXX_FLINKER_SLFLAG = -rdynamic -Wl,-rpath,
+CXX_FLINKER_SLFLAG = @PETSC_FLINKER_SLFLAG@
 CXX_FLINKER        = @CXX@ @LDFLAGS@
 # ---------------------------- BOPT=g options ------------------------------
 G_FOPTFLAGS        = @PETSC_FFLAGS_g@
@@ -47,7 +47,7 @@ OCXX_FOPTFLAGS     = @PETSC_FFLAGS_O@
 # ########################## C++ compiler ##################################
 #
 CXX_CC             = @LT_CC@ @CXX@ @CC_SHARED_OPT@
-CXX_CLINKER_SLFLAG = -rdynamic -Wl,-rpath,
+CXX_CLINKER_SLFLAG = @PETSC_CLINKER_SLFLAG@
 CXX_CLINKER        = @CXX@ @LDFLAGS@
 CXX_CCV            = @CXX_VERSION@
 CXX_SYS_LIB        = @LIBS@
