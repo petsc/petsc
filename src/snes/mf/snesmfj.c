@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.92 1999/10/01 21:22:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.93 1999/10/04 18:53:49 bsmith Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -359,6 +359,7 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
   mfctx->historyh     = PETSC_NULL;
   mfctx->ncurrenth    = 0;
   mfctx->maxcurrenth  = 0;
+  ierr = PetscMemzero(mfctx->type_name,256*sizeof(char));CHKERRQ(ierr);
 
   /* 
      Create the empty data structure to contain compute-h routines.
