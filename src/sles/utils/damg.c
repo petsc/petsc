@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.2 2000/07/07 03:48:01 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.3 2000/07/10 16:02:50 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -96,6 +96,11 @@ int DAMGDestroy(DAMG *ctx)
 +   ctx - the context
 -   da - the DA for the coarsest grid (this routine creates all the other ones)
 
+    Notes:
+      This keeps the passed in DA object (in ctx[0]->da) (without increasing the reference count)
+    so you should not destroy the da passed in later in your code (the DAMGDestroy() will 
+    handle that.
+
     Level: advanced
 
 .seealso DAMGCreate(), DAMGDestroy
@@ -108,7 +113,6 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
   DAPeriodicType pt;
   DAStencilType  st;
   char           *name;
-  Vec            xyz,txyz;
 
   PetscValidHeaderSpecific(da,DA_COOKIE);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -119,7 +123,7 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
 
   /* Create DA data structure for all the finer levels */
   ierr       = DAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,&dof,&sw,&pt,&st);CHKERRQ(ierr);
-  ctx[0]->da = da; ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+  ctx[0]->da = da;
   for (i=1; i<nlevels; i++) {
     M = ctx[i-1]->ratio*(M-1) + 1;
     N = ctx[i-1]->ratio*(N-1) + 1;
@@ -130,6 +134,55 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
       SETERRQ1(1,1,"Cannot handle dimension %d",dim);
     }
   }
+
+  /* Set fieldnames on finer grids */
+  for (j=0; j<dof; j++) {
+    ierr = DAGetFieldName(da,j,&name);CHKERRQ(ierr);
+    if (name) {
+      for (i=1; i<nlevels; i++) {
+        ierr = DASetFieldName(ctx[i]->da,j,name);CHKERRQ(ierr);
+      }
+    }
+  }
+
+
+
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DAMGSetSLES"></a>*/"DAMGSetSLES"
+/*@C
+    DAMGSetSLES - Sets the linear solver object that will use the grid hierarchy
+
+    Collective on DAMG and SLES
+
+    Input Parameter:
++   ctx - the context
+.   sles - the linear solver object
+-   func - function to compute linear system matrix on each grid level
+
+    Level: advanced
+
+.seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA()
+
+@*/
+int DAMGSetSLES(DAMG *ctx,SLES sles,int (*func)(DA,Mat))
+{
+  int      ierr,i,j,nlevels = ctx[0]->nlevels,flag,m,n,p,Nt,dim;
+  MPI_Comm comm;
+  PC       pc;
+  Vec      xyz,txyz;
+
+  PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  ierr = PetscObjectGetComm((PetscObject)sles,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(comm,ctx[0]->comm,&flag);CHKERRQ(ierr);
+  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
+    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the SLES");
+  }
+
+
 
   /* Create work vectors and matrix for each level */
   for (i=0; i<nlevels; i++) {
@@ -145,64 +198,36 @@ int DAMGSetCoarseDA(DAMG *ctx,DA da)
     ierr = DAGetInterpolation(ctx[i-1]->da,ctx[i]->da,&ctx[i]->R,PETSC_NULL);CHKERRA(ierr);
   }
 
-  /* Set fieldnames on finer grids */
-  for (j=0; j<dof; j++) {
-    ierr = DAGetFieldName(da,j,&name);CHKERRQ(ierr);
-    if (name) {
-      for (i=1; i<nlevels; i++) {
-        ierr = DASetFieldName(ctx[i]->da,j,name);CHKERRQ(ierr);
-      }
-    }
-  }
-
   /* If coarsest grid has coordinate information then interpolate it for finer grids */
-  ierr = DAGetCoordinates(da,&xyz);CHKERRQ(ierr);
+  ierr = DAGetCoordinates(ctx[0]->da,&xyz);CHKERRQ(ierr);
   if (xyz) {
-    Mat Rd;
+    Mat        Rd;
+    Vec        xyztest;
+    PetscTruth docoors = PETSC_FALSE;
 
     for (i=1; i<nlevels; i++) {
-      ierr = MatMAIJRedimension(ctx[i]->R,dim,&Rd);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(ctx[i]->x,&Nt);CHKERRQ(ierr);
-      Nt   = dim*(Nt/dof);
-      ierr = VecCreateMPI(comm,Nt,PETSC_DECIDE,&txyz);CHKERRQ(ierr);
-      ierr = MatInterpolate(Rd,xyz,txyz);CHKERRQ(ierr);
-      ierr = MatDestroy(Rd);CHKERRQ(ierr);
-      ierr = DASetCoordinates(ctx[i]->da,txyz);CHKERRQ(ierr);
-      xyz  = txyz;
+      ierr = DAGetCoordinates(ctx[i]->da,&xyztest);CHKERRQ(ierr);
+      if (!xyztest) {
+        docoors = PETSC_TRUE; break;
+      }
     }
-  }
 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="DAMGSetSLES"></a>*/"DAMGSetSLES"
-/*@C
-    DAMGSetSLES - Sets the linear solver object that will use the grid hierarchy
-
-    Collective on DAMG and SLES
-
-    Input Parameter:
-+   ctx - the context
--   sles - the linear solver object
-
-    Level: advanced
-
-.seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA()
-
-@*/
-int DAMGSetSLES(DAMG *ctx,SLES sles)
-{
-  int      ierr,i,j,nlevels = ctx[0]->nlevels,flag;
-  MPI_Comm comm;
-  PC       pc;
-  Mat      J;
-
-  PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = PetscObjectGetComm((PetscObject)sles,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(comm,ctx[0]->comm,&flag);CHKERRQ(ierr);
-  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
-    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the SLES");
+    if (docoors) {
+      ierr = DAGetInfo(ctx[0]->da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+      for (i=1; i<nlevels; i++) {
+        ierr = DAGetCoordinates(ctx[i]->da,&xyztest);CHKERRQ(ierr);
+        ierr = MatMAIJRedimension(ctx[i]->R,dim,&Rd);CHKERRQ(ierr);
+        ierr = DAGetCorners(ctx[i]->da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
+        Nt   = dim*m*n*p;
+        ierr = VecCreateMPI(comm,Nt,PETSC_DECIDE,&txyz);CHKERRQ(ierr);
+        ierr = MatInterpolate(Rd,xyz,txyz);CHKERRQ(ierr);
+        ierr = MatDestroy(Rd);CHKERRQ(ierr);
+        if (!xyztest) {
+          ierr = DASetCoordinates(ctx[i]->da,txyz);CHKERRQ(ierr);
+        }
+        xyz  = txyz;
+      }
+    }
   }
 
   ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
@@ -211,14 +236,14 @@ int DAMGSetSLES(DAMG *ctx,SLES sles)
   ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
   /* set solvers for each level */
-  for (i=1; i<nlevels; i++) {
+  for (i=0; i<nlevels; i++) {
     ierr = MGGetSmoother(pc,i,&ctx[i]->sles);CHKERRA(ierr);
     ierr = SLESSetFromOptions(ctx[i]->sles);CHKERRA(ierr);
     ierr = SLESSetOperators(ctx[i]->sles,ctx[i]->J,ctx[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
     ierr = MGSetX(pc,i,ctx[i]->x);CHKERRA(ierr); 
     ierr = MGSetRhs(pc,i,ctx[i]->b);CHKERRA(ierr); 
     ierr = MGSetR(pc,i,ctx[i]->r);CHKERRA(ierr); 
-    ierr = MGSetResidual(pc,i,MGDefaultResidual,J);CHKERRA(ierr);
+    ierr = MGSetResidual(pc,i,MGDefaultResidual,ctx[i]->J);CHKERRA(ierr);
   }
 
   /* Set interpolation/restriction between levels */
@@ -227,6 +252,12 @@ int DAMGSetSLES(DAMG *ctx,SLES sles)
     ierr = MGSetRestriction(pc,i,ctx[i]->R);CHKERRA(ierr); 
   }
 
+  /* set matrix for each level */
+  if (func) {
+    for (i=0; i<nlevels; i++) {
+      ierr = (*func)(ctx[i]->da,ctx[i]->J);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -272,6 +303,12 @@ int DAMGView(DAMG *ctx,Viewer viewer)
   }
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
 
 
 
