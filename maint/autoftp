@@ -1,0 +1,29 @@
+#!/usr/local/bin/expect -f
+#
+#  automatically ftp's to a certain site and 
+# drops off a file
+# 
+  set host     [lindex $argv 0]
+  set file_in  [lindex $argv 1]
+  set file_out [lindex $argv 2]
+
+     spawn ftp
+     expect {ftp>*}
+
+     # ftp can take a while to open a connection initially
+     set timeout 90
+     send "open $host \r"
+     expect {*Name*}
+     set timeout 15
+     send "\r"
+     expect {*Password:}
+     send "1953bz24\r"
+     expect {*ftp>*}
+     # may be moving a large file 
+     set timeout 2000
+     send "binary \r"
+     expect {*ftp>*}
+     send "put $file_in $file_out\r"
+     expect {*ftp>*}
+     send "quit\r"
+
