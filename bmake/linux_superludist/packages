@@ -27,3 +27,9 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
 SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux.a /home/petsc/software/SuperLU/superlu_linux.a
 PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+#
+# SPOOLES
+#
+SPOOLES_INCLUDE    = -I/sandbox/hzhang/spooles
+SPOOLES_LIB        = /sandbox/hzhang/spooles/spooles.a
+PETSC_HAVE_SPOOLES = -DPETSC_HAVE_SPOOLES
