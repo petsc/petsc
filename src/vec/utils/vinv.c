@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.52 1999/05/12 03:28:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.53 1999/09/14 19:22:10 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -184,7 +184,8 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  index - the location where the minimum occurred (not supported, pass PETSC_NULL)
++  index - the location where the minimum occurred (not supported, pass PETSC_NULL,
+           if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  norm - the min
 
    Level: intermediate
