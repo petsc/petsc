@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Thorougly test PetscRandomSetInterval().
+
   - fix breakdown error message in KSP BCGS.
 
   - fix error return codes; have a seperate petscerror.h? file
