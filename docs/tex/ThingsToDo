@@ -6,6 +6,15 @@ Additional Capabilities that PETSc Needs:
 
  o High priorities:
 
+   To do BEFORE the next release:
+
+   - Design better ILU/ICC interface for mpirowbs format (so that PC 
+     selection is correct and symmetric matrix canuse ILU).
+
+   - Change all CAPS macro to use _ between words, for example INSERT_VALUES
+
+   To do sometime soon:
+
    - Incorporate SPARSKIT strategy of Saad for managing AIJ data structure.
      (requested by Xiao Chuan Cai; this is supposedly much faster than
      our current code).
@@ -13,8 +22,6 @@ Additional Capabilities that PETSc Needs:
    - Develop more thorough test program suite.
 
    - Complex versions of the Krylov subspace solvers
-
-   - Change all CAPS macro to use _ between words, for example INSERT_VALUES
 
    * Upgrade tohtml and doc2tex
 
