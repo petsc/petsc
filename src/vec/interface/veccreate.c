@@ -4,8 +4,8 @@ static char vcid[] = "$Id: vecserialize.c,v 1.10 2000/01/10 03:18:14 knepley Exp
 
 #include "src/vec/vecimpl.h"      /*I "petscvec.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "VecCreate"
+#undef __FUNCT__  
+#define __FUNCT__ "VecCreate"
 /*@C
   VecCreate - Creates an empty vector object. The type can then be set with VecSetType().
 
@@ -58,8 +58,8 @@ int VecCreate(MPI_Comm comm, Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNC__
-#define __FUNC__ "VecSerialize"
+#undef  __FUNCT__
+#define __FUNCT__ "VecSerialize"
 /*@ 
   VecSerialize - This function stores or recreates a vector using a viewer for a binary file.
 

@@ -66,8 +66,8 @@ char           tracespace[128];
 PetscLogDouble tracetime   = 0.0;
 
 /*------------------------------------------- Performance Info Functions ---------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PerfInfoDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PerfInfoDestroy"
 /*@C
   PerfInfoDestroy - This destroys a PerfInfo object.
 
@@ -93,8 +93,8 @@ int PerfInfoDestroy(PerfInfo *p)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "ClassInfoDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "ClassInfoDestroy"
 /*@C
   ClassInfoDestroy - This destroys a ClassInfo object.
 
@@ -118,8 +118,8 @@ int ClassInfoDestroy(ClassInfo *c)
 }
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscLogDestroy"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogDestroy"
 /*@C
   PetscLogDestroy - Destroys the object and event logging data and resets the global counters. 
 
@@ -160,8 +160,8 @@ int PetscLogDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogSet"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogSet"
 /*@C
   PetscLogSet - Sets the logging functions called at the beginning and ending of every event.
 
@@ -185,8 +185,8 @@ int PetscLogSet(int (*b)(int, int, PetscObject, PetscObject, PetscObject, PetscO
 }
 
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscLogBegin_Private"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogBegin_Private"
 int PetscLogBegin_Private(void) {
   static int initialized = 0;
   int        stage;
@@ -216,8 +216,8 @@ int PetscLogBegin_Private(void) {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogBegin"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogBegin"
 /*@C
   PetscLogBegin - Turns on logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
@@ -258,8 +258,8 @@ int PetscLogBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogAllBegin"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogAllBegin"
 /*@C
   PetscLogAllBegin - Turns on extensive logging of objects and events. Logs 
   all events. This creates large log files and slows the program down.
@@ -298,8 +298,8 @@ int PetscLogAllBegin(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogTraceBegin"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogTraceBegin"
 /*@
   PetscLogTraceBegin - Activates trace logging.  Every time a PETSc event
   begins or ends, the event name is printed.
@@ -336,8 +336,8 @@ int PetscLogTraceBegin(FILE *file)
 }
 
 /*------------------------------------------------ Stage Functions --------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscLogStageRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogStageRegister"
 /*@C
   PetscLogStageRegister - Attaches a charactor string name to a logging stage.
 
@@ -365,8 +365,8 @@ int PetscLogStageRegister(int *stage, const char sname[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogStagePush"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogStagePush"
 /*@C
   PetscLogStagePush - This function pushes a stage on the stack.
 
@@ -409,8 +409,8 @@ int PetscLogStagePush(int stage)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogStagePop"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogStagePop"
 /*@C
   PetscLogStagePop - This function pops a stage from the stack.
 
@@ -533,8 +533,8 @@ int PetscLogStageGetId(const char name[], int *stage)
 }
 
 /*------------------------------------------------ Event Functions --------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscLogEventRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventRegister"
 /*@C
   PetscLogEventRegister - Registers an event name for logging operations in an application code. 
 
@@ -600,8 +600,8 @@ int PetscLogEventRegister(int *event, const char name[], const char color[], int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogEventActivate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventActivate"
 /*@
   PetscLogEventActivate - Indicates that a particular event should be logged.
 
@@ -640,8 +640,8 @@ int PetscLogEventActivate(int event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogEventDeactivate"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventDeactivate"
 /*@
   PetscLogEventDeactivate - Indicates that a particular event should not be logged. 
 
@@ -680,8 +680,8 @@ int PetscLogEventDeactivate(int event)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogEventActivateClass"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventActivateClass"
 /*@
   PetscLogEventActivateClass - Activates event logging for a PETSc object class.
 
@@ -708,8 +708,8 @@ int PetscLogEventActivateClass(int cookie)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogEventDeactivateClass"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventDeactivateClass"
 /*@
   PetscLogEventDeactivateClass - Deactivates event logging for a PETSc object class.
 
@@ -885,8 +885,8 @@ M*/
 M*/
 
 /*------------------------------------------------ Class Functions --------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscLogClassRegister"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogClassRegister"
 /*@C
   PetscLogClassRegister - Registers a class name for logging operations in an application code. 
 
@@ -919,8 +919,8 @@ int PetscLogClassRegister(int *oclass, const char name[])
 }
 
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscLogDump"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogDump"
 /*@C
   PetscLogDump - Dumps logs of objects to a file. This file is intended to 
   be read by petsc/bin/petscview.
@@ -1022,8 +1022,8 @@ int PetscLogDump(const char sname[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogPrintSummary"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogPrintSummary"
 /*@C
   PetscLogPrintSummary - Prints a summary of the logging.
 
@@ -1523,8 +1523,8 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
 }
 
 /*----------------------------------------------- Counter Functions -------------------------------------------------*/
-#undef __FUNC__  
-#define __FUNC__ "PetscGetFlops"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetFlops"
 /*@C
    PetscGetFlops - Returns the number of flops used on this processor 
    since the program began. 
@@ -1558,8 +1558,8 @@ int PetscGetFlops(PetscLogDouble *flops)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogObjectState"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogObjectState"
 int PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   va_list Argp;
@@ -1578,8 +1578,8 @@ int PetscLogObjectState(PetscObject obj, const char format[], ...)
 
 #else /* end of -DPETSC_USE_LOG section */
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogObjectState"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogObjectState"
 int PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscFunctionBegin;
@@ -1588,8 +1588,8 @@ int PetscLogObjectState(PetscObject obj, const char format[], ...)
 
 #endif /* PETSC_USE_LOG*/
 
-#undef __FUNC__  
-#define __FUNC__ "PetscGetTime"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetTime"
 /*@
    PetscGetTime - Returns the current time of day in seconds. This 
    returns wall-clock time.  
@@ -1628,8 +1628,8 @@ int PetscGetTime(PetscLogDouble *t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscLogGetStageLog"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogGetStageLog"
 /*
   PetscLogGetStageLog - This function returns the default stage logging object.
 

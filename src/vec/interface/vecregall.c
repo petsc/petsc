@@ -15,8 +15,8 @@ extern int VecSerialize_Seq(MPI_Comm, Vec *, PetscViewer, PetscTruth);
 extern int VecSerialize_MPI(MPI_Comm, Vec *, PetscViewer, PetscTruth);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "VecRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "VecRegisterAll"
 /*@C
   VecRegisterAll - Registers all of the vector components in the Vec package.
 
@@ -48,8 +48,8 @@ int VecRegisterAll(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecSerializeRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "VecSerializeRegisterAll"
 /*@C
   VecSerializeRegisterAll - Registers all of the serialization routines in the Vec package.
 

@@ -9,8 +9,8 @@ extern int PetscMapCreate_MPI(PetscMap);
 extern int PetscMapSerialize_MPI(MPI_Comm, PetscMap *, PetscViewer, PetscTruth);
 EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMapRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapRegisterAll"
 /*@C
   PetscMapRegisterAll - Registers all of the map components in the Vec package. 
 
@@ -35,8 +35,8 @@ int PetscMapRegisterAll(const char path[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "PetscMapSerializeRegisterAll"
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapSerializeRegisterAll"
 /*@C
   PetscMapSerializeRegisterAll - Registers all of the serialization routines in the Vec package.
 
