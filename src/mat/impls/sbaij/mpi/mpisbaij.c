@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.18 2000/09/08 14:15:12 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.19 2000/09/15 14:24:33 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -295,7 +295,7 @@ int MatSetValues_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Inser
 
   PetscFunctionBegin;  
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 } 
 
 #undef __FUNC__  
@@ -308,7 +308,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *
 
   PetscFunctionBegin;  
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 } 
 #endif
 
