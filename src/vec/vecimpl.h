@@ -119,13 +119,11 @@ struct _p_Vec {
   PetscTruth             array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscTruth             petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
-  PetscReal              normcurrent;  /* contains the current 2 norm of the vector, if normvalid is true */
-  PetscTruth             normvalid;    /* flag indicating that normcurrent is correct */ 
   void                   *esivec;      /* ESI wrapper of vector */
 };
 
 #define VecGetArrayFast(x,a)     ((x)->petscnative ? (*(a) = *((PetscScalar **)(x)->data),0) : VecGetArray((x),(a)))
-#define VecRestoreArrayFast(x,a) ((x)->petscnative ? ( (int)(x->normvalid = PETSC_FALSE)) : VecRestoreArray((x),(a)))
+#define VecRestoreArrayFast(x,a) ((x)->petscnative ? 0 : VecRestoreArray((x),(a)))
 
 /*
      Common header shared by array based vectors, 
