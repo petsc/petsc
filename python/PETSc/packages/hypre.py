@@ -7,7 +7,8 @@ import PETSc.package
 
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
-    PETSc.package.Package.__init__(self, framework,'hypre')
+    PETSc.package.Package.__init__(self, framework)
+    self.mpi = self.framework.require('PETSc.packages.MPI',self)
     return
 
   def generateIncludeGuesses(self):

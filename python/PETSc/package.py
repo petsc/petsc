@@ -1,24 +1,26 @@
 import config.base
 import os
 import re
+import sys
 
 class Package(config.base.Configure):
-  def __init__(self, framework,name):
+  def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
+    self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self)    
     self.functions    = self.framework.require('config.functions',         self)
     self.found        = 0
     self.lib          = []
     self.include      = []
-    self.name         = name
+    self.name         = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
-
+    self.complex      = 0
+    
   def __str__(self):
     output=''
     if self.found:
@@ -49,13 +51,18 @@ class Package(config.base.Configure):
   def configure(self):
     if self.framework.argDB['download-'+self.package]:
       self.framework.argDB['with-'+self.package] = 1
-    if 'with-'+self.package+'-dir' in self.framework.argDB:
+    if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
+      
     if self.framework.argDB['with-'+self.package]:
-      if self.mpi.usingMPIUni:
+      if hasattr(self,'mpi') and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if self.framework.argDB['with-64-bit-ints']:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
+      if not self.clanguage.precision.lower() == 'double':
+        raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    
+      if not self.complex && self.clanguage.scalartype.lower() == 'complex':
+        raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
       self.executeTest(self.configureLibrary)
     return
 
