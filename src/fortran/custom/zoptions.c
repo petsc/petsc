@@ -209,7 +209,7 @@ void   *PETSC_NULL_REAL_Fortran      = 0;
 EXTERN_C_BEGIN
 void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
-long PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
+PetscInt PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
 {
   unsigned long tmp1 = (unsigned long) base,tmp2 = 0;
   unsigned long tmp3 = (unsigned long) addr;
@@ -242,7 +242,7 @@ long PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
   return itmp2;
 }
 
-PetscInt *PetscIntAddressFromFortran(PetscInt *base,long addr)
+PetscInt *PetscIntAddressFromFortran(PetscInt *base,PetscInt addr)
 {
   return base + addr;
 }
@@ -259,12 +259,12 @@ PetscInt *PetscIntAddressFromFortran(PetscInt *base,long addr)
  currently we just stick into the signed and don't check.
 
 */
-PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *addr,int N,long *res)
+PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *addr,PetscInt N,PetscInt *res)
 {
   unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(PetscScalar);
   unsigned long tmp3 = (unsigned long) addr;
   long          itmp2;
-  int           shift;
+  PetscInt      shift;
 
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
@@ -303,7 +303,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
     ierr = PetscMemcpy(work,addr,N*sizeof(PetscScalar));CHKERRQ(ierr);
 
     /* store in the first location in addr how much you shift it */
-    ((int*)addr)[0] = shift;
+    ((PetscInt*)addr)[0] = shift;
  
     ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscObjectContainerSetPointer(container,addr);CHKERRQ(ierr);
@@ -342,10 +342,10 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
 
     lx   - the array space that is to be passed to XXXXRestoreArray()
 */     
-PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,long addr,int N,PetscScalar **lx)
+PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,PetscInt addr,PetscInt N,PetscScalar **lx)
 {
-  PetscErrorCode ierr;
-  int shift;
+  PetscErrorCode       ierr;
+  PetscInt             shift;
   PetscObjectContainer container;
   PetscScalar          *tlx;
 
@@ -354,7 +354,7 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,l
     ierr  = PetscObjectContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
     tlx   = base + addr;
 
-    shift = *(int*)*lx;
+    shift = *(PetscInt*)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
     tlx   = (PetscScalar*)(((char *)tlx) - shift);
     ierr = PetscFree(tlx);CHKERRQ(ierr);

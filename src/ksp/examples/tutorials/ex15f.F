@@ -49,8 +49,11 @@
       KSP              ksp   
       PetscScalar      v,one,neg_one
       double precision norm,tol
-      integer          i,j,II,JJ,Istart,Iend,ierr,m,n
-      integer          user_defined_pc,its,flg,rank
+      PetscErrorCode ierr
+      PetscInt          i,j,II,JJ,Istart,Iend,m,n,i1
+      PetscInt          its
+      PetscMPIInt rank
+      PetscTruth user_defined_pc,flg
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
@@ -67,6 +70,7 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       one     = 1.0
       neg_one = -1.0
+      i1 = 1
       m       = 8
       n       = 7
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
@@ -107,22 +111,22 @@
         j = II - i*n  
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,i1,II,i1,JJ,v,ADD_VALUES,ierr)
         endif
         v = 4.0
-        call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
+        call  MatSetValues(A,i1,II,i1,II,v,ADD_VALUES,ierr)
  10   continue
 
 !  Assemble matrix, using the 2-step process:

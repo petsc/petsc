@@ -45,12 +45,14 @@
 
        PetscScalar xwork(6)
        PetscScalar xx_v(1),yy_v(1)
-       integer     i,n,ierr,loc(6)
+       PetscInt     i,n,loc(6),isix
+       PetscErrorCode ierr
        PetscOffset xx_i,yy_i
        Vec         x,y
 
        call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
        n = 6
+       isix = 6
 
 !  Create initial vector and duplicate it
 
@@ -71,7 +73,7 @@
 !  natural size for a particular problem (not one that is as long
 !  as the full vector).
 
-       call VecSetValues(x,6,loc,xwork,INSERT_VALUES,ierr)
+       call VecSetValues(x,isix,loc,xwork,INSERT_VALUES,ierr)
 
 !  Assemble vector
 

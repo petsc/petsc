@@ -42,7 +42,8 @@
       PetscViewer      viewer
       character*(60)   type,tsinfo
       character*(5)    etype
-      PetscInt         flg,i1,i60
+      PetscInt         i1,i60
+      PetscTruth flg
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
       external RHSMatrixHeat,RHSJacobianHeat
