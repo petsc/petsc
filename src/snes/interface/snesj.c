@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.10 1995/05/12 04:18:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.11 1995/05/12 18:16:21 curfman Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -20,6 +20,9 @@ static char vcid[] = "$Id: snesj.c,v 1.10 1995/05/12 04:18:43 bsmith Exp curfman
 .  J - Jacobian
 .  B - preconditioner, same as Jacobian
 .  flag - matrix flag
+
+   Options Database Key:
+$  -snes_fd
 
    Notes:
    This routine is slow and expensive, and is not currently optimized

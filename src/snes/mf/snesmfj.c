@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.4 1995/05/05 11:48:16 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.5 1995/05/11 17:20:55 curfman Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -26,7 +26,8 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   Vec           w = ctx->w,U,F;
   int           ierr;
 
-  SNESGetSolution(snes,&U); SNESGetFunction(snes,&F);
+  SNESGetSolution(snes,&U); CHKERR(ierr);
+  SNESGetFunction(snes,&F); CHKERR(ierr);
   /* determine a "good" step size */
   VecDot(U,dx,&dot); VecASum(dx,&sum); VecNorm(dx,&norm);
   if (dot < 1.e-16*sum && dot >= 0.0) dot = 1.e-16*sum;
@@ -35,7 +36,7 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   
   /* evaluate function at F(x + dx) */
   VecWAXPY(&h,dx,U,w); 
-  ierr = SNESComputeFunction(snes,w,y);
+  ierr = SNESComputeFunction(snes,w,y); CHKERR(ierr);
   VecAXPY(&mone,F,y);
   h = -1.0/h;
   VecScale(&h,y);
@@ -47,11 +48,15 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
 
    Input Parameters:
 .  x - compute Jacobian at this point
-.  ctx - applications Function context
+.  ctx - application's function context, as set with SNESSetFunction()
 
    Output Parameters:
 .  J - Jacobian
 .  B - preconditioner, same as Jacobian
+.  flag - matrix flag
+
+   Options Database Key:
+$  -snes_mf
 
 .keywords: SNES, finite differences, Jacobian
 
