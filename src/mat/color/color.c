@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.26 1997/10/19 03:26:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.27 1997/12/01 01:55:13 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -56,7 +56,7 @@ int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
 */
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringSL_Minpack" 
-int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
+int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        ncolors;
@@ -93,7 +93,7 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 */
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringLF_Minpack" 
-int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
+int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        n1, none,ncolors;
@@ -132,7 +132,7 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 */
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringID_Minpack" 
-int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
+int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        ncolors;
@@ -170,7 +170,7 @@ int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 */
 #undef __FUNC__  
 #define __FUNC__ "MatColoring_Natural" 
-int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
+int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
   int      N,start,end,ierr,i,tag;
   IS       *is;
@@ -224,7 +224,7 @@ int MatColoringRegisterAllCalled = 0;
 
 .seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
 @*/
-int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*color)(Mat,MatColoring,ISColoring*))
+int MatColoringRegister(MatColoringType name,MatColoringType *oname,char *sname,int (*color)(Mat,MatColoringType,ISColoring*))
 {
   int         ierr;
   static int  numberregistered = 0;
@@ -234,7 +234,7 @@ int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*co
     ierr = NRCreate(&__MatColoringList); CHKERRQ(ierr);
   }
 
-  if (name == COLORING_NEW) name = (MatColoring) ((int) COLORING_NEW + numberregistered++);
+  if (name == COLORING_NEW) name = (MatColoringType) ((int) COLORING_NEW + numberregistered++);
   if (oname) *oname = name;
   ierr = NRRegister(__MatColoringList,(int)name,sname,(int (*)(void*))color);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -282,7 +282,7 @@ $    -mat_coloring lf
 
 .seealso: MatGetColoring()
 @*/
-int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
+int MatGetColoringTypeFromOptions(char *prefix,MatColoringType *type)
 {
   char sbuf[50];
   int  ierr,flg;
@@ -291,7 +291,7 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
   ierr = OptionsGetString(prefix,"-mat_coloring", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!__MatColoringList) MatColoringRegisterAll();
-    *type = (MatColoring)NRFindID( __MatColoringList, sbuf );
+    *type = (MatColoringType)NRFindID( __MatColoringList, sbuf );
   }
   PetscFunctionReturn(0);
 }
@@ -309,7 +309,7 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
 
 .keywords: matrix, get, coloring, name
 @*/
-int MatColoringGetName(MatColoring meth,char **name)
+int MatColoringGetName(MatColoringType meth,char **name)
 {
   int ierr;
 
@@ -352,10 +352,10 @@ $    -mat_coloring_view
 
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegister()
 @*/
-int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
+int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
 {
   int         ierr,flag;
-  int         (*r)(Mat,MatColoring,ISColoring *);
+  int         (*r)(Mat,MatColoringType,ISColoring *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -367,7 +367,7 @@ int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
 
   ierr = MatGetColoringTypeFromOptions(0,&type); CHKERRQ(ierr);
   PLogEventBegin(MAT_GetColoring,mat,0,0,0);
-  r =  (int (*)(Mat,MatColoring,ISColoring*))NRFindRoutine(__MatColoringList,(int)type,(char *)0);
+  r =  (int (*)(Mat,MatColoringType,ISColoring*))NRFindRoutine(__MatColoringList,(int)type,(char *)0);
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type");}
   ierr = (*r)(mat,type,iscoloring); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetColoring,mat,0,0,0);

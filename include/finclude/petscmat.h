@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.39 1997/11/13 20:35:31 balay Exp balay $;
+C  $Id: mat.h,v 1.40 1997/11/13 20:51:27 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -12,7 +12,7 @@ C
 #define MatInfoType         integer
 #define MatGetSubMatrixCall integer
 #define MatOperation        integer
-#define MatColoring         integer
+#define MatColoringType     integer
 #define MatFDColoring       integer
 #define MatInfo             double precision
 #define MatStructure        integer
@@ -142,7 +142,7 @@ C
      *           DIFFERENT_NONZERO_PATTERN = 1,
      *     SAME_PRECONDITIONER = 2)
 C
-C     MatColoring
+C     MatColoringType
 C
       integer COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
      *        COLORING_NEW

@@ -1,10 +1,8 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.24 1997/10/19 03:23:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.25 1997/12/20 04:35:57 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
-
 
 extern int KSPCreate_Richardson(KSP);
 extern int KSPCreate_Chebychev(KSP);
@@ -18,6 +16,13 @@ extern int KSPCreate_LSQR(KSP);
 extern int KSPCreate_PREONLY(KSP);
 extern int KSPCreate_CR(KSP);
 extern int KSPCreate_QCG(KSP);
+
+/*
+      This is used by KSPSetType() to make sure that at least one 
+    KSPRegisterAll() is called. In general, if there is more than one
+    DLL then KSPRegisterAll() may be called several times.
+*/
+extern int KSPRegisterAllCalled;
 
 #undef __FUNC__  
 #define __FUNC__ "KSPRegisterAll"

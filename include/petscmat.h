@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.149 1997/11/03 04:51:27 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.150 1997/11/09 04:10:30 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -216,10 +216,10 @@ typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
     These routines are for efficiently computing Jacobians via finite differences.
 */
 typedef enum {COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
-              COLORING_NEW} MatColoring;
-extern int MatGetColoring(Mat,MatColoring,ISColoring*);
-extern int MatGetColoringTypeFromOptions(char *,MatColoring*);
-extern int MatColoringRegister(MatColoring,MatColoring*,char*,int(*)(Mat,MatColoring,ISColoring *));
+              COLORING_NEW} MatColoringType;
+extern int MatGetColoring(Mat,MatColoringType,ISColoring*);
+extern int MatGetColoringTypeFromOptions(char *,MatColoringType*);
+extern int MatColoringRegister(MatColoringType,MatColoringType*,char*,int(*)(Mat,MatColoringType,ISColoring *));
 extern int MatColoringRegisterAll();
 extern int MatColoringRegisterAllCalled;
 extern int MatColoringRegisterDestroy();

@@ -1,12 +1,12 @@
-# $Id: makefile,v 1.8 1997/08/22 15:16:35 bsmith Exp bsmith $
+# $Id: makefile,v 1.9 1997/10/12 22:17:09 bsmith Exp bsmith $
 
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
-SOURCEC  = ts.c tsreg.c tsregall.c tsfd.c
+SOURCEC  = ts.c tsreg.c tsregall.c tsfd.c dlregis.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = ts.o tsreg.o tsregall.o tsfd.o
+OBJSC    = ts.o tsreg.o tsregall.o tsfd.o dlregis.o
 OBJSF    =
 LIBBASE  = libpetscts
 MANSEC   = t

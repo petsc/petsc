@@ -1,15 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: scolor.c,v 1.9 1997/08/22 15:14:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: scolor.c,v 1.10 1997/10/19 03:26:23 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
 #include "mat.h"
 #include "src/mat/impls/color/color.h"
 
-extern int MatColoring_Natural(Mat,MatColoring,ISColoring*);
-extern int MatFDColoringSL_Minpack(Mat,MatColoring,ISColoring*);
-extern int MatFDColoringLF_Minpack(Mat,MatColoring,ISColoring*);
-extern int MatFDColoringID_Minpack(Mat,MatColoring,ISColoring*);
+extern int MatColoring_Natural(Mat,MatColoringType,ISColoring*);
+extern int MatFDColoringSL_Minpack(Mat,MatColoringType,ISColoring*);
+extern int MatFDColoringLF_Minpack(Mat,MatColoringType,ISColoring*);
+extern int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
 
 #undef __FUNC__  
 #define __FUNC__ "MatColoringRegisterAll" 

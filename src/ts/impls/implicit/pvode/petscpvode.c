@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.16 1997/12/01 01:56:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.17 1998/01/14 02:43:50 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -166,7 +166,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   /* call CVSpgmr to use GMRES as the linear solver. */
   
   /* setup the ode integrator with the given preconditioner */
-  CVSpgmr(cvode->mem, LEFT, cvode->gtype, cvode->restart, 0.0, TSPrecond_PVode,TSPSolve_PVode, ts);
+  CVSpgmr(cvode->mem,LEFT,cvode->gtype,cvode->restart,cvode->linear_tol,TSPrecond_PVode,TSPSolve_PVode,ts);
 
   tout = ts->max_time;
   for ( i=0; i<max_steps; i++) {
@@ -284,7 +284,7 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
   TS_PVode *cvode = (TS_PVode*) ts->data;
   int      ierr, flag,restart;
   char     method[128];
-  double   aabs = PETSC_DECIDE,rel = PETSC_DECIDE;
+  double   aabs = PETSC_DECIDE,rel = PETSC_DECIDE,ltol = .05;
 
   PetscFunctionBegin;
 
@@ -312,6 +312,9 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_rtol",&rel,&flag);CHKERRQ(ierr);
   ierr = TSPVodeSetTolerance(ts,aabs,rel);CHKERRQ(ierr);
 
+  ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_linear_tolerance",&ltol,&flag);CHKERRQ(ierr);
+  ierr = TSPVodeSetLinearTolerance(ts,ltol);CHKERRQ(ierr);
+
   ierr = OptionsGetInt(PETSC_NULL,"-ts_pvode_gramschmidt_restart",&restart,&flag);CHKERRQ(ierr);
   ierr = TSPVodeSetGMRESRestart(ts,restart);CHKERRQ(ierr);
 
@@ -338,6 +341,7 @@ static int TSPrintHelp_PVode(TS ts,char *p)
   (*PetscHelpPrintf)(ts->comm," -ts_pvode_rtol rel: relative tolerance\n",p);
   (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>"); 
   (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size>"); 
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>"); 
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -370,6 +374,7 @@ static int TSView_PVode(PetscObject obj,Viewer viewer)
     PetscFPrintf(comm,fd,"PVode integrater does not use SNES!\n"); 
     PetscFPrintf(comm,fd,"PVode integrater type %s\n",type);
     PetscFPrintf(comm,fd,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);
+    PetscFPrintf(comm,fd,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);
     if (cvode->gtype == PVODE_MODIFIED_GS) {
       PetscFPrintf(comm,fd,"PVode using modified Gram-Schmidt for orthogonalization in GMRES");
     } else {
@@ -416,6 +421,7 @@ int TSCreate_PVode(TS ts )
   cvode->cvode_type = BDF;
   cvode->gtype      = PVODE_MODIFIED_GS;
   cvode->restart    = 5;
+  cvode->linear_tol = .05;
 
   /* set tolerance for PVode */
   cvode->abstol = 1e-6;
@@ -452,7 +458,8 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
 #define __FUNC__ "TSPVodeSetGMRESRestart"
 /*@
    TSPVodeSetGMRESRestart - Sets the dimension of the Krylov space used by 
-       GMRES in the linear solver in PVODE. The restart size.
+       GMRES in the linear solver in PVODE. PVODE DOES NOT use restarted GMRES so
+       this is ALSO the maximum number of GMRES steps that will be used.
 
    Input parameters:
     ts     - the time-step context
@@ -469,6 +476,31 @@ int TSPVodeSetGMRESRestart(TS ts, int restart)
   PetscFunctionBegin;
   if (ts->type != TS_PVODE) PetscFunctionReturn(0);
   cvode->restart = restart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "TSPVodeSetLinearTolerance"
+/*@
+   TSPVodeSetLinearTolerance - Sets the tolerance used to solve the linear
+       system by PVODE.
+
+   Input parameters:
+    ts     - the time-step context
+    tol    - the factor by which the tolerance on the nonlinear solver is
+             multiplied to get the tolerance on the linear solver, .05 by default.
+
+
+.keywords: GMRES, linear convergence tolerance, PVODE
+
+@*/
+int TSPVodeSetLinearTolerance(TS ts, double tol)
+{
+  TS_PVode *cvode = (TS_PVode*) ts->data;
+  
+  PetscFunctionBegin;
+  if (ts->type != TS_PVODE) PetscFunctionReturn(0);
+  cvode->linear_tol = tol;
   PetscFunctionReturn(0);
 }
 

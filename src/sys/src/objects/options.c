@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.159 1998/01/06 20:09:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.160 1998/01/14 02:39:22 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -292,6 +292,8 @@ int PetscInitializeOptions()
   PetscFunctionReturn(0);
 }
 
+extern int PetscInitialize_DynamicLibraries();
+
 #undef __FUNC__  
 #define __FUNC__ "OptionsSetProgramName"
 int OptionsSetProgramName(char *name)
@@ -425,27 +427,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   /*
       Initialize the default dynamic libraries
   */
-#if defined(USE_DYNAMIC_LIBRARIES)
-  {
-    char *libname[32];
-    int  nmax,i;
-
-    ierr = DLAppend(&DLLibrariesLoaded,PETSC_DEFAULT_DYNAMIC_LIBRARY);CHKERRQ(ierr);
-
-    nmax = 32;
-    ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);
-    for ( i=nmax-1; i>=0; i-- ) {
-      ierr = DLPrepend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-      PetscFree(libname[i]);
-    }
-    nmax = 32;
-    ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);
-    for ( i=0; i<nmax; i++ ) {
-      ierr = DLAppend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-      PetscFree(libname[i]);
-    }
-  }
-#endif
+  ierr = PetscInitialize_DynamicLibraries(); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

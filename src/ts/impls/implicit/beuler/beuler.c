@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.28 1997/10/19 03:28:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.29 1997/12/01 01:56:07 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -145,7 +145,7 @@ static int TSDestroy_BEuler(PetscObject obj )
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(beuler->update); CHKERRQ(ierr);
+  if (beuler->update) {ierr = VecDestroy(beuler->update); CHKERRQ(ierr);}
   if (beuler->func) {ierr = VecDestroy(beuler->func);CHKERRQ(ierr);}
   if (beuler->rhs) {ierr = VecDestroy(beuler->rhs);CHKERRQ(ierr);}
   if (ts->Ashell) {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}

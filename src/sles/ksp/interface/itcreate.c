@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.108 1997/12/20 04:35:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.109 1998/01/14 02:38:45 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -96,11 +96,10 @@ static DLList __KSPList = 0;
 int KSPCreate(MPI_Comm comm,KSP *ksp)
 {
   KSP ctx;
-  int ierr;
 
   PetscFunctionBegin;
   *ksp = 0;
-  PetscHeaderCreate(ctx,_p_KSP,KSP_COOKIE,KSPGMRES,comm,KSPDestroy,KSPView);
+  PetscHeaderCreate(ctx,_p_KSP,KSP_COOKIE,KSPUNKNOWN,comm,KSPDestroy,KSPView);
   PLogObjectCreate(ctx);
   *ksp               = ctx;
   ctx->view          = 0;
@@ -144,8 +143,6 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->cnvP          = 0;
 
   ctx->setupcalled   = 0;
-  /* this violates our rule about seperating abstract from implementations*/
-  ierr = KSPSetType(*ksp,KSPGMRES);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  
@@ -210,8 +207,8 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPRegister_Private"
-/*@C
-   KSPRegister - Adds the iterative method to the KSP package,  given
+/*
+   KSPRegister_Private - Adds the iterative method to the KSP package,  given
    an iterative name (KSPType) and a function pointer.
 
    Input Parameters:
@@ -232,7 +229,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 .keywords: KSP, register
 
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
-@*/
+*/
 int  KSPRegister_Private(KSPType name, char *sname, char *fname,int  (*create)(KSP),KSPType *oname)
 {
   int ierr;
@@ -286,7 +283,7 @@ int KSPGetType(KSP ksp,KSPType *type,char **name)
   int ierr;
 
   PetscFunctionBegin;
-  if (!__KSPList) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
   if (type) *type = (KSPType) ksp->type;
   if (name)  {ierr = DLFindName( __KSPList, (int) ksp->type,name);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -346,6 +343,7 @@ int KSPPrintHelp(KSP ksp)
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n",p);
   (*PetscHelpPrintf)(ksp->comm,"       (only for CG and GMRES)\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and \n",p);
+
   (*PetscHelpPrintf)(ksp->comm,"       (only for ICC and ILU in BlockSolve95)\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues\n",p);
@@ -392,7 +390,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
 
-  if (!__KSPList) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
   ierr = DLGetTypeFromOptions(ksp->prefix,"-ksp_type",__KSPList,(int *)&method,fname,256,&flg);CHKERRQ(ierr);
   if (flg) {
 #if defined(USE_DYNAMIC_LIBRARIES)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.89 1997/10/19 03:23:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.90 1997/12/01 01:53:00 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -121,6 +121,11 @@ int KSPSetUp(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+
+  if (ksp->type == KSPUNKNOWN) {
+    ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
+  }
+
   if (ksp->setupcalled) PetscFunctionReturn(0);
   ksp->setupcalled = 1;
   ierr = (*ksp->setup)(ksp);CHKERRQ(ierr);
@@ -267,7 +272,9 @@ int KSPDestroy(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (--ksp->refct > 0) PetscFunctionReturn(0);
-  ierr = (*ksp->destroy)((PetscObject)ksp); CHKERRQ(ierr);
+  if (ksp->destroy) {
+    ierr = (*ksp->destroy)((PetscObject)ksp); CHKERRQ(ierr);
+  }
   if (ksp->xmonitor) KSPLGMonitorDestroy(ksp->xmonitor);
   PLogObjectDestroy(ksp);
   PetscHeaderDestroy(ksp);

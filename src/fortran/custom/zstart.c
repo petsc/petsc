@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.33 1997/12/09 21:13:09 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.34 1998/01/14 02:34:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -146,6 +146,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 }
 
 extern int PetscInitializeOptions();
+extern int PetscInitialize_DynamicLibraries();
 extern int OptionsSetProgramName(char *);
 
 #if defined(__cplusplus)
@@ -238,6 +239,9 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   *__ierr = ViewerInitialize_Private(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   PetscInitializeFortran();
+
+  *__ierr = PetscInitialize_DynamicLibraries(); 
+  if (*__ierr) return;
 
   if (PetscBeganMPI) {
     int size;

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.7 1998/01/14 02:39:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.8 1998/01/15 03:40:29 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -24,13 +24,30 @@ DLLibraryList DLLibrariesLoaded = 0;
 */ 
 int PetscInitialize_DynamicLibraries()
 {
-  char *libname[32];
+  char *libname[32],libs[256];
   int  nmax,i,ierr,flg;
 
   PetscFunctionBegin;
 
+  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscts"); CHKERRQ(ierr);
+  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
-  ierr = DLAppend(&DLLibrariesLoaded,PETSC_DEFAULT_DYNAMIC_LIBRARY);CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscsnes"); CHKERRQ(ierr);
+  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+
+  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscsles"); CHKERRQ(ierr);
+  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+
+  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscmat"); CHKERRQ(ierr);
+  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+
+  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetscvec"); CHKERRQ(ierr);
+  ierr = DLAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   nmax = 32;
   ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);

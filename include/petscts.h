@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.20 1997/10/19 22:45:42 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.21 1998/01/14 02:47:08 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -10,7 +10,7 @@
 typedef struct _p_TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
 
-typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO, TS_PVODE, TS_NEW} TSType;
+typedef enum { TS_UNKNOWN = -1,TS_EULER, TS_BEULER, TS_PSEUDO, TS_PVODE, TS_NEW} TSType;
 typedef enum { TS_LINEAR, TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
@@ -65,10 +65,15 @@ extern int TSPseudoIncrementDtFromInitialDt(TS);
 
 extern int TSComputeRHSFunction(TS,double,Vec,Vec);
 
-extern int TSRegister(TSType,TSType*,char*,int (*)(TS));
 extern int TSRegisterAll();
 extern int TSRegisterDestroy();
 extern int TSRegisterAllCalled;
+extern int TSRegister_Private(TSType,char *,char *,int (*)(TS),TSType*);
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define    TSRegister(a,b,c,d,e)  TSRegister_Private(a,b,c,0,e)
+#else
+#define    TSRegister(a,b,c,d,e)  TSRegister_Private(a,b,c,d,e)
+#endif
 
 extern int TSGetSNES(TS,SNES*);
 extern int TSGetSLES(TS,SLES*);
@@ -93,6 +98,7 @@ typedef enum { PVODE_MODIFIED_GS = 0, PVODE_CLASSICAL_GS = 1 } TSPVodeGramSchmid
 #define PVODE_UNMODIFIED_GS PVODE_CLASSICAL_GS
 extern int TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
 extern int TSPVodeSetGMRESRestart(TS,int);
+extern int TSPVodeSetLinearTolerance(TS,double);
 
 #endif
 

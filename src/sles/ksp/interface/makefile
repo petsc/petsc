@@ -1,14 +1,14 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.31 1997/08/22 15:11:05 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
 SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
-           xmon.c eige.c
+           xmon.c eige.c dlregis.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
-           xmon.o eige.o
+           xmon.o eige.o dlregis.o
 LIBBASE  = libpetscsles
 DIRS     =
 MANSEC   = 5
