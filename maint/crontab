@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.136 1999/08/31 03:49:37 balay Exp balay $ 
+# $Id: crontab,v 1.137 1999/09/12 04:16:55 balay Exp bsmith $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -68,3 +68,6 @@
 #
 0 14 * * 1 /home/bsmith/petsc/maint/tuesdayreminder
 45 12 * * 2 /home/bsmith/petsc/maint/tuesdayreminder
+#
+# check for bad PetscFunctionBegin
+0 7 * * * /usr/ucb/rsh fire "cd /home/bsmith/petsc; make ACTION=checkbadPetscFunctionBegin tree >& /home/bsmith/petsc/maint/nightlylogs/petscbegin.log"
