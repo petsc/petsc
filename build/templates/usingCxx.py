@@ -8,7 +8,10 @@ import os
 
 class UsingCxx (base.Base):
   def __init__(self, sourceDB, project, usingSIDL, usingC = None):
+    import config.base
+
     base.Base.__init__(self)
+    self.language    = 'Cxx'
     self.sourceDB    = sourceDB
     self.project     = project
     self.usingSIDL   = usingSIDL
@@ -20,7 +23,6 @@ class UsingCxx (base.Base):
     if self.usingC is None:
       import build.templates.usingC
       self.usingC    = build.templates.usingC.UsingC(self.sourceDB, self.project, self.usingSIDL)
-    self.language    = 'Cxx'
     self.setup()
     # Driver may need many outside includes and libraries
     self.programIncludeDirs = {}
