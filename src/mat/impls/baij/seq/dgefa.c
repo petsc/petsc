@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa.c,v 1.12 1998/12/24 02:54:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgefa.c,v 1.13 1998/12/24 02:56:18 bsmith Exp bsmith $";
 #endif
 /*
        This routine was converted by f2c from Linpack source
@@ -12,6 +12,7 @@ static char vcid[] = "$Id: dgefa.c,v 1.12 1998/12/24 02:54:37 bsmith Exp bsmith 
        Used by the sparse factorization routines in 
      src/mat/impls/baij/seq and src/mat/impls/bdiag/seq
 
+       See also src/inline/ilu.h
 */
 #include "petsc.h"
 

@@ -1,8 +1,17 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa3.c,v 1.11 1997/10/19 03:26:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgefa3.c,v 1.12 1998/12/17 22:10:39 bsmith Exp bsmith $";
 #endif
 /*
-    Inverts 3 by 3 matrix using partial pivoting.
+     Inverts 3 by 3 matrix using partial pivoting.
+
+       Used by the sparse factorization routines in 
+     src/mat/impls/baij/seq and src/mat/impls/bdiag/seq
+
+       See also src/inline/ilu.h
+
+       This is a combination of the Linpack routines
+    dgefa() and dgedi() specialized for a size of 3.
+
 */
 #include "petsc.h"
 
@@ -141,4 +150,5 @@ int Kernel_A_gets_inverse_A_3(MatScalar *a)
     }
     PetscFunctionReturn(0);
 }
+
 
