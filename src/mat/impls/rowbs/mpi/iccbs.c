@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.2 1995/11/01 19:10:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.4 1995/12/01 22:29:37 curfman Exp $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
@@ -17,8 +17,9 @@ static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
   PC     pc = (PC) obj;
   PC_ICC *icc = (PC_ICC *) pc->data;
   PCiBS  *iccbs = (PCiBS *) icc->implctx; 
+  int    ierr;
   PetscFree(iccbs);
-  MatDestroy(icc->fact);
+  ierr = MatDestroy(icc->fact); CHKERRQ(ierr);
   PetscFree(icc);
   return 0;
 }
@@ -79,12 +80,13 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
   pc ->destroy        = PCDestroy_ICC_MPIRowbs;
   icc->implctx        = (void *) (iccbs = PetscNew(PCiBS)); CHKPTRQ(iccbs);
   if (icc->bs_iter) { /* Set BlockSolve iterative solver defaults */
-    iccbs->blocksize  = 1;
+    SETERRQ(1,"PCSetUp_ICC_MPIRowbs: BS iterative solvers not currently supported");
+/*    iccbs->blocksize  = 1;
     iccbs->pre_option = PRE_STICCG;
     iccbs->rtol       = 1.e-5;
     iccbs->max_it     = 10000;
     iccbs->rnorm      = 0.0;
-    iccbs->guess_zero = 1;
+    iccbs->guess_zero = 1; */
   } else {
     iccbs->blocksize  = 0;
     iccbs->pre_option = 0;
@@ -137,21 +139,24 @@ int KSPMonitor_MPIRowbs(KSP itP,int n,double rnorm,Mat mat)
 @ */
 int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
 {
-  PC_ICC       *icc = (PC_ICC *) pc->data;
+/*  PC_ICC       *icc = (PC_ICC *) pc->data;
   PCiBS        *iccbs = (PCiBS *) icc->implctx; 
   Mat_MPIRowbs *amat = (Mat_MPIRowbs *) pc->mat->data;
-  Scalar       *xa, *ba;
+  Scalar       *xa, *ba; */
 
-/* Note: The vectors x and b are permuted within BSpar_solve */
+  SETERRQ(1,"PCBSIterSolve: Currently out of commission.");
+  /* Note: The vectors x and b are permuted within BSpar_solve */
+/*
   if (amat != pc->pmat->data) SETERRQ(1,"PCBSIterSolve:Need same pre and matrix");
   if (pc->mat->type != MATMPIROWBS) SETERRQ(1,"PCBSIterSolve:MATMPIROWBS only");
   VecGetArray(b,&ba); VecGetArray(x,&xa);
   *its = BSpar_solve(iccbs->blocksize,amat->pA,amat->fpA,amat->comm_pA,ba,xa,
-                     iccbs->pre_option,iccbs->rtol,iccbs->max_it,&(iccbs->rnorm),
-                     iccbs->guess_zero,amat->procinfo); CHKERRQ(0);  
+             iccbs->pre_option,iccbs->rtol,iccbs->max_it,&(iccbs->rnorm),
+             iccbs->guess_zero,amat->procinfo); CHKERRQ(0);  
   MPIU_printf(pc->mat->comm,"method=%d, final residual = %e\n",
               iccbs->pre_option,iccbs->rnorm); 
   VecRestoreArray(b,&ba); VecRestoreArray(x,&xa);
+*/
   return 0;
 }
 
@@ -205,6 +210,7 @@ int PCBSIterSetBlockSolve(PC pc)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  SETERRQ(1,"PCBSIterSetBlockSolve: Not currently supported.");
   if (pc->setupcalled) SETERRQ(1,"PCBSIterSetBlockSolve:Must call before PCSetUp");
   if (pc->type != PCICC) return 0;
   icc->bs_iter = 1;

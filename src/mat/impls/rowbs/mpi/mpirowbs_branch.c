@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.76 1995/11/15 13:46:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.78 1995/12/01 22:29:43 curfman Exp $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: mpirowbs.c,v 1.76 1995/11/15 13:46:59 bsmith Exp bsmi
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
 #include "BSprivate.h"
-#include "BSilu.h"
 
 #define CHUNCKSIZE_LOCAL   10
 
@@ -318,12 +317,7 @@ static int MatSetValues_MPIRowbs(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
   a->insertmode = av;
   if ((a->assembled) && (!a->reassemble_begun)) {
     /* Symmetrically unscale the matrix by the diagonal */
-    if (a->mat_is_symmetric) {
-      BSscale_diag(a->pA,a->inv_diag,a->procinfo); CHKERRBS(0);
-    }
-    else {
-      BSILUscale_diag(a->pA,a->inv_diag,a->procinfo); CHKERRBS(0);
-    }
+    BSscale_diag(a->pA,a->inv_diag,a->procinfo); CHKERRBS(0);
     a->reassemble_begun = 1;
   }
   for ( i=0; i<m; i++ ) {
@@ -400,13 +394,8 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   StashInfo_Private(&a->stash);
 
   if ((a->assembled) && (!a->reassemble_begun)) {
-    /* Symmetrically unscale the matrix by the diagonal */
-    if (a->mat_is_symmetric) {
-      BSscale_diag(a->pA,a->inv_diag,a->procinfo); CHKERRBS(0);
-    }
-    else {
-      BSILUscale_diag(a->pA,a->inv_diag,a->procinfo); CHKERRBS(0);
-    }
+    /* Unscale the matrix by the diagonal */
+    BSscale_diag(a->pA,a->inv_diag,a->procinfo); CHKERRBS(0);
     a->reassemble_begun = 1;
   }
 
@@ -729,11 +718,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     }
     if ((!a->nonew) || (!a->assembled)) {
       /* Form permuted matrix for efficient parallel execution */
-        if (a->mat_is_symmetric) {
-          a->pA = BSmain_perm(a->procinfo,a->A); CHKERRBS(0);
-        } else {
-          a->pA = BSILUmain_perm(a->procinfo,a->A); CHKERRBS(0);
-        }
+      a->pA = BSmain_perm(a->procinfo,a->A); CHKERRBS(0);
       /* Set up the communication */
       a->comm_pA = BSsetup_forward(a->pA,a->procinfo); CHKERRBS(0);
     } else {
@@ -742,11 +727,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     }
 
     /* Symmetrically scale the matrix by the diagonal */
-    if (a->mat_is_symmetric) {
-      BSscale_diag(a->pA,a->pA->diag,a->procinfo); CHKERRBS(0);
-    } else {
-      BSILUscale_diag(a->pA,a->pA->diag,a->procinfo); CHKERRBS(0);
-    }
+    BSscale_diag(a->pA,a->pA->diag,a->procinfo); CHKERRBS(0);
 
     /* Store inverse of square root of permuted diagonal scaling matrix */
     ierr = VecGetLocalSize( a->diag, &ldim ); CHKERRQ(ierr);
@@ -936,23 +917,15 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   } 
 
   /* Do lower triangular multiplication:  [ y = L * xwork ] */
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_LOG)
   MLOG_ELM(bspinfo->procset);
 #endif
-  if (bsif->mat_is_symmetric) {
-    if (bspinfo->single)
-      BSforward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-    else
-      BSforward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-    CHKERRBS(0);
-  } else {
-    if (bspinfo->single)
-      BSILUforward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-    else
-      BSILUforward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
-    CHKERRBS(0);
-  }
-#if defined(PETSC_DEBUG)
+  if (bspinfo->single)
+    BSforward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
+  else
+    BSforward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
+  CHKERRBS(0);
+#if defined(PETSC_LOG)
   MLOG_ACC(MM_FORWARD);
   MLOG_ELM(bspinfo->procset);
 #endif
@@ -990,36 +963,19 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,MatSORType flag,
 
   if (flag & SOR_FORWARD_SWEEP) {
     MLOG_ELM(bsif->procinfo->procset);
-    if (bsif->mat_is_symmetric) {
-      if (bsif->procinfo->single) {
-        BSfor_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-      } else {
-        BSfor_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-      }
-    }
-    else {
-      if (bsif->procinfo->single) {
-        BSILUfor_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-      } else {
-        BSILUfor_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-      }
+    if (bsif->procinfo->single) {
+      BSfor_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
+    } else {
+      BSfor_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
     }
     MLOG_ACC(MS_FORWARD);
   }
   if (flag & SOR_BACKWARD_SWEEP) {
     MLOG_ELM(bsif->procinfo->procset);
-    if (bsif->mat_is_symmetric) {
-      if (bsif->procinfo->single) {
-        BSback_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-      } else {
-        BSback_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-      }
+    if (bsif->procinfo->single) {
+      BSback_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
     } else {
-      if (bsif->procinfo->single) {
-        BSILUback_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-      } else {
-        BSILUback_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
-      }
+      BSback_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
     }
     MLOG_ACC(MS_BACKWARD);
   }
@@ -1106,13 +1062,7 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
   if (a->diag)     {ierr = VecDestroy(a->diag); CHKERRQ(ierr);}
   if (a->xwork)    {ierr = VecDestroy(a->xwork); CHKERRQ(ierr);}
   if (a->pA)       {BSfree_par_mat(a->pA); CHKERRBS(0);}
-  if (a->fpA)      {
-    if (a->mat_is_symmetric) {
-      BSfree_copy_par_mat(a->fpA); CHKERRBS(0);
-    } else {
-      BSILUfree_copy_par_mat(a->fpA); CHKERRBS(0);
-    }
-  }
+  if (a->fpA)      {BSfree_copy_par_mat(a->fpA); CHKERRBS(0);}
   if (a->comm_pA)  {BSfree_comm(a->comm_pA); CHKERRBS(0);}
   if (a->comm_fpA) {BSfree_comm(a->comm_fpA); CHKERRBS(0);}
   if (a->imax)     PetscFree(a->imax);    
@@ -1133,6 +1083,8 @@ static int MatSetOption_MPIRowbs(Mat A,MatOption op)
   else if (op == NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
   else if (op == SYMMETRIC_MATRIX) {
+    BSset_mat_symmetric(a->A,PETSC_TRUE);
+    BSset_mat_icc_storage(a->A,PETSC_TRUE);
     a->mat_is_symmetric = 1;
     a->mat_is_structurally_symmetric = 1;
   }
@@ -1378,11 +1330,11 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   a->procinfo = bspinfo;
   BSctx_set_id(bspinfo,a->rank); CHKERRBS(0);
   BSctx_set_np(bspinfo,a->size); CHKERRBS(0);
-  BSctx_set_ps(bspinfo,comm); CHKERRBS(0);
+  BSctx_set_ps(bspinfo,(ProcSet*)comm); CHKERRBS(0);
   BSctx_set_cs(bspinfo,INT_MAX); CHKERRBS(0);
   BSctx_set_is(bspinfo,INT_MAX); CHKERRBS(0);
   BSctx_set_ct(bspinfo,IDO); CHKERRBS(0);
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_LOG)
   BSctx_set_err(bspinfo,1); CHKERRBS(0);  /* BS error checking */
 #else
   BSctx_set_err(bspinfo,0); CHKERRBS(0);
@@ -1396,7 +1348,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,void *procinfo,
   } else {
     BSctx_set_si(bspinfo,0); CHKERRBS(0);
   }
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_LOG)
   MLOG_INIT();  /* Initialize logging */
 #endif
 

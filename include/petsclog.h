@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.30 1995/11/27 21:13:51 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.31 1995/11/27 22:25:25 bsmith Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -89,9 +89,9 @@
 
 
 /* 
-   event numbers  PLOG_USER_EVENT_LOW to PLOG_USER_EVENT_HIGH are reserved 
-   for applications, make sure that src/sys/src/plog.c defines enough entries
-   in (*name)[] to go up to PLOG_USER_EVENT_HIGH.
+   Event numbers PLOG_USER_EVENT_LOW to PLOG_USER_EVENT_HIGH are reserved 
+   for applications.  Make sure that src/sys/src/plog.c defines enough
+   entries in (*name)[] to go up to PLOG_USER_EVENT_HIGH.
 */
 #define PLOG_USER_EVENT_LOW                     120
 #define PLOG_USER_EVENT_HIGH                    200
@@ -239,7 +239,7 @@ extern int PLogInfo(PetscObject,char*,...);
 extern int PLogDestroy();
 extern int PLogStagePush(int);
 extern int PLogStagePop();
-extern int PLogStageName();
+extern int PLogStageName(int,char*);
 
 #else
 
@@ -254,7 +254,7 @@ extern int PLogInfo(PetscObject,char*,...);
 extern int PLogDestroy();
 extern int PLogStagePush(int);
 extern int PLogStagePop();
-extern int PLogStageName();
+extern int PLogStageName(int,char*);
 #endif
 
 #endif

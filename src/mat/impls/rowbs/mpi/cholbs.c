@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.17 1995/09/01 04:52:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.19 1995/12/01 22:30:06 curfman Exp $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -7,7 +7,6 @@ static char vcid[] = "$Id: cholbs.c,v 1.17 1995/09/01 04:52:14 bsmith Exp bsmith
 #include "src/pc/pcimpl.h"
 #include "mpirowbs.h"
 #include "BSprivate.h"
-#include "BSilu.h"
 
 extern int MatCreateShellMPIRowbs(MPI_Comm,int,int,int,int*,Mat*);
 
@@ -43,7 +42,7 @@ int MatILUFactorSymbolic_MPIRowbs( Mat mat,IS perm,IS cperm,
     SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:Not for declared symmetric matrix");
 
   /* Copy permuted matrix */
-  mbs->fpA = BSILUcopy_par_mat(mbs->pA); CHKERRBS(0); 
+  mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0); 
 
   /* Set up the communication for factorization */
   mbs->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo); CHKERRBS(0);
@@ -97,21 +96,20 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     if (!mbs->nonew) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:\
       Must call MatSetOption(mat,NO_NEW_NONZERO_LOCATIONS) for re-solve.");
     /* Copy only the nonzeros */
-    BSILUcopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
+    BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
   }
   /* Form incomplete Cholesky factor */
   mbs->ierr = 0; mbs->failures = 0; mbs->alpha = 1.0;
-  while ((mbs->ierr = BSILUfactor(mbs->fpA,mbs->comm_fpA,mbs->procinfo))) {
+  while ((mbs->ierr = BSfactor(mbs->fpA,mbs->comm_fpA,mbs->procinfo))) {
     CHKERRBS(0); mbs->failures++;
     /* Copy only the nonzeros */
-    BSILUcopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
+    BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
-    BSILUset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
+    BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
     PLogInfo((PetscObject)mat,"BlockSolve: %d failed factors, err=%d, alpha=%g\n",
                                        mbs->failures, mbs->ierr, mbs->alpha ); 
   }
-
   mat->factor = FACTOR_LU;
   return 0;
 }
@@ -136,46 +134,25 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 #if defined(PETSC_DEBUG)
   MLOG_ELM(mbs->procinfo->procset);
 #endif
-  if (mbs->mat_is_symmetric) {
-    if (mbs->procinfo->single)
-      /* Use BlockSolve routine for no cliques/inodes */
-      BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    else
-      BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    CHKERRBS(0);
-  }
-  else {
-    if (mbs->procinfo->single)
-      /* Use BlockSolve routine for no cliques/inodes */
-      BSILUfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    else
-      BSILUfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    CHKERRBS(0);
-  }
-
+  if (mbs->procinfo->single)
+    /* Use BlockSolve routine for no cliques/inodes */
+    BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  else
+    BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  CHKERRBS(0);
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MS_FORWARD);
   MLOG_ELM(mbs->procinfo->procset);
 #endif
 
-  if (mbs->mat_is_symmetric) {
-    if (mbs->procinfo->single)
-      /* Use BlockSolve routine for no cliques/inodes */
-      BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    else
-      BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    CHKERRBS(0);
-  }
-  else {
-    if (mbs->procinfo->single)
-      /* Use BlockSolve routine for no cliques/inodes */
-      BSILUback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    else
-      BSILUback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    CHKERRBS(0);
-  }
+  if (mbs->procinfo->single)
+    /* Use BlockSolve routine for no cliques/inodes */
+    BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  else
+    BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  CHKERRBS(0);
 
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_LOG)
   MLOG_ACC(MS_BACKWARD);
 #endif
 
@@ -210,26 +187,16 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   }
   ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
 
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_LOG)
   MLOG_ELM(mbs->procinfo->procset);
 #endif
-  if (mbs->mat_is_symmetric) {
-    if (mbs->procinfo->single)
-      /* Use BlockSolve routine for no cliques/inodes */
-      BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    else
-      BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    CHKERRBS(0);
-  }
-  else {
-    if (mbs->procinfo->single)
-      /* Use BlockSolve routine for no cliques/inodes */
-      BSILUfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    else
-      BSILUfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    CHKERRBS(0);
-  }
-#if defined(PETSC_DEBUG)
+  if (mbs->procinfo->single)
+    /* Use BlockSolve routine for no cliques/inodes */
+    BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  else
+    BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  CHKERRBS(0);
+#if defined(PETSC_LOG)
   MLOG_ACC(MS_FORWARD);
   MLOG_ELM(mbs->procinfo->procset);
 #endif
@@ -247,25 +214,16 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   ierr = VecCopy( x, y ); CHKERRQ(ierr);
   ierr = VecGetArray( y, &ya );   CHKERRQ(ierr);
   ierr = VecGetArray( mbs->xwork, &xworka ); CHKERRQ(ierr);
-#if defined(PETSC_DEBUG)
+#if defined(PETSC_LOG)
   MLOG_ELM(mbs->procinfo->procset);
 #endif
-  if (mbs->mat_is_symmetric) {
-    if (mbs->procinfo->single)
-      /* Use BlockSolve routine for no cliques/inodes */
-      BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    else
-      BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    CHKERRBS(0);
-  } else {
-    if (mbs->procinfo->single)
-      /* Use BlockSolve routine for no cliques/inodes */
-      BSILUback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    else
-      BSILUback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-    CHKERRBS(0);
-  }
-#if defined(PETSC_DEBUG)
+  if (mbs->procinfo->single)
+    /* Use BlockSolve routine for no cliques/inodes */
+    BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  else
+    BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+  CHKERRBS(0);
+#if defined(PETSC_LOG)
   MLOG_ACC(MS_BACKWARD);
 #endif
 
