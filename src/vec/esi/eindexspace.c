@@ -5,8 +5,7 @@
 
 #include "esi/petsc/indexspace.h"
 
-
-esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm comm, int n, int N)
+PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm comm, int n, int N)
 {
   int ierr;
   ierr = PetscMapCreateMPI(comm,n,N,&this->map);
@@ -14,7 +13,7 @@ esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm comm, int n, int N)
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);
 }
 
-esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace)
+PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace)
 {
   int      ierr,n,N;
   MPI_Comm *comm;
@@ -32,7 +31,7 @@ esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);
 }
 
-esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
+PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
 {
   PetscObjectReference((PetscObject) sourceIndexSpace);
   this->map = sourceIndexSpace;
@@ -40,14 +39,14 @@ esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
   PetscObjectGetComm((PetscObject)sourceIndexSpace,&this->comm);
 }
 
-esi::petsc::IndexSpace<int>::~IndexSpace()
+PETSC_TEMPLATE esi::petsc::IndexSpace<int>::~IndexSpace()
 {
   int ierr;
   ierr = PetscMapDestroy(this->map); 
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
-::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterface(const char* name, void *& iface)
+PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterface(const char* name, void *& iface)
 {
   PetscTruth flg;
   if (PetscStrcmp(name,"esi::Object",&flg),flg){
@@ -62,7 +61,7 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
   return 0;
 }
 
-::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSupported(::esi::Argv * list)
+PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSupported(::esi::Argv * list)
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::IndexSpace");
@@ -72,22 +71,22 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
 
 
 /* -------------- esi::IndexSpace methods --------------------------------------------*/
-::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalSize(int &globalSize)
+PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalSize(int &globalSize)
 {
   return PetscMapGetSize(this->map,&globalSize);
 }
 
-::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalSize(int &localSize)
+PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalSize(int &localSize)
 {
   return PetscMapGetLocalSize(this->map,&localSize);
 }
 
-::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localoffset)
+PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localoffset)
 { 
   return PetscMapGetLocalRange(this->map,&localoffset,PETSC_IGNORE);
 }
 
-::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
+PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
 { 
   int ierr,*iglobaloffsets;
   int size;   
@@ -98,7 +97,7 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
   return ierr;
 }
 
-::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
+PETSC_TEMPLATE ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
 { 
   int ierr,i,n,*globalranges;
 

@@ -29,6 +29,9 @@
 #if !defined (PETSC_STDCALL)
 #define PETSC_STDCALL
 #endif
+#if !defined (PETSC_TEMPLATE)
+#define PETSC_TEMPLATE
+#endif
 
 /* ========================================================================== */
 
