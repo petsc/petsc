@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.16 1995/04/15 03:26:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: general.c,v 1.17 1995/04/16 19:21:21 curfman Exp curfman $";
 #endif
 /*
        General indices as a list of integers
@@ -56,7 +56,7 @@ static int ISView_General(PetscObject obj, Viewer viewer)
 
   if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
                                        (vobj->type == FILES_VIEWER))) {
-    fd = ViewerFileGetPointer(viewer);
+    fd = ViewerFileGetPointer_Private(viewer);
     if (is->isperm) {
       fprintf(fd,"Index set is permutation\n");
     }

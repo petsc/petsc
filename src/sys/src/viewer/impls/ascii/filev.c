@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.6 1995/04/26 15:29:31 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.7 1995/04/26 19:33:09 curfman Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: filev.c,v 1.6 1995/04/26 15:29:31 curfman Exp curfman
 struct _Viewer {
   PETSCHEADER
   FILE        *fd;
+  int         format;
+  char        *outputname;
 };
 
 Viewer STDOUT_VIEWER,STDERR_VIEWER,SYNC_STDOUT_VIEWER;
@@ -16,7 +18,7 @@ int ViewerInitialize()
 {
   ViewerFileOpen("stderr",&STDERR_VIEWER);
   ViewerFileOpen("stdout",&STDOUT_VIEWER);
-  ViewerSyncFileOpen("stdout",MPI_COMM_WORLD,&SYNC_STDOUT_VIEWER);
+  ViewerFileOpenSync("stdout",MPI_COMM_WORLD,&SYNC_STDOUT_VIEWER);
   return 0;
 }
 
@@ -31,9 +33,20 @@ static int ViewerDestroy_File(PetscObject obj)
   return 0;
 }
 
-FILE *ViewerFileGetPointer(Viewer viewer)
+FILE *ViewerFileGetPointer_Private(Viewer viewer)
 {
   return viewer->fd;
+}
+
+char *ViewerFileGetOutputname_Private(Viewer viewer)
+{
+  return viewer->outputname;
+}
+
+int ViewerFileGetFormat_Private(Viewer viewer,int *fmt)
+{
+  *fmt = viewer->format;
+  return 0;
 }
 
 /*@
@@ -68,6 +81,8 @@ int ViewerFileOpen(char *name,Viewer *lab)
   else {
     v->fd          = fopen(name,"w"); if (!v->fd) SETERR(1,0);
   }
+  v->format        = FILE_FORMAT_DEFAULT;
+  v->outputname    = 0;
 #if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
@@ -75,7 +90,7 @@ int ViewerFileOpen(char *name,Viewer *lab)
   return 0;
 }
 /*@
-   ViewerSyncFileOpen - Opens an ASCII file as a viewer, where only the first
+   ViewerFileOpenSync - Opens an ASCII file as a viewer, where only the first
    processor opens the file. All other processors send their data to the 
    first processor to print. 
 
@@ -87,17 +102,17 @@ int ViewerFileOpen(char *name,Viewer *lab)
 .  lab - the viewer to use with that file
 
    Notes:
-   As shown below, ViewerSyncFileOpen() is useful in conjunction with 
+   As shown below, ViewerFileOpenSync() is useful in conjunction with 
    MatView() and VecView()
 $
-$     ViewerSyncFileOpen("mat.output", &viewer);
+$     ViewerFileOpenSycn("mat.output", &viewer);
 $     MatView(matrix, viewer);
 
 .keywords: Viewer, file, open
 
 .seealso: ViewerFileOpen(), MatView(), VecView()
 @*/
-int ViewerSyncFileOpen(char *name,MPI_Comm comm,Viewer *lab)
+int ViewerFileOpenSync(char *name,MPI_Comm comm,Viewer *lab)
 {
   Viewer v;
   PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,FILES_VIEWER,comm);
@@ -109,6 +124,8 @@ int ViewerSyncFileOpen(char *name,MPI_Comm comm,Viewer *lab)
   else {
     v->fd        = fopen(name,"w"); if (!v->fd) SETERR(1,0);
   }
+  v->format        = FILE_FORMAT_DEFAULT;
+  v->outputname    = 0;
 #if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
@@ -116,5 +133,33 @@ int ViewerSyncFileOpen(char *name,MPI_Comm comm,Viewer *lab)
   return 0;
 }
 
+/*@
+   ViewerFileSetFormat - Sets the format for file viewers.
 
+   Input Parameters:
+.  v - the viewer
+.  format - the format
+.  char - optional object name
 
+   Notes:
+   Available formats include
+$    FILE_FORMAT_DEFAULT - default
+$    FILE_FORMAT_MATLAB - Matlab format
+$    FILE_FORMAT_IMPL - implementation-specific format
+$      (which is in many cases the same as the default)
+
+   Currently, the object name is used only in the Matlab format.
+
+.keywords: Viewer, file, set, format
+
+.seealso: ViewerFileOpen(), ViewerFileOpenSync(), MatView(), VecView()
+@*/
+int ViewerFileSetFormat(Viewer v,int format,char *name)
+{
+  VALIDHEADER(v,VIEWER_COOKIE);
+  if (v->type == FILES_VIEWER || v->type == FILE_VIEWER) {
+    v->format = format;
+    v->outputname = name;
+  }
+  return 0;
+}

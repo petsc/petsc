@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.10 1995/04/21 21:37:27 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.11 1995/04/25 18:59:00 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -433,7 +433,7 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER; vobj = (PetscObject) viewer;
   }
   if (vobj->cookie == VIEWER_COOKIE) {
-    FILE *fd = ViewerFileGetPointer(viewer);
+    FILE *fd = ViewerFileGetPointer_Private(viewer);
 /*  if (vobj->type == FILE_VIEWER) { */
       MPE_Seq_begin(mat->comm,1);
       fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
