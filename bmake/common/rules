@@ -331,12 +331,18 @@ chkpetsc_path:
 	    false; \
           fi; \
 	fi
-
+#
+# External tools required - from sowing & c2html packages
+# Currently installed in ~petsc/bin/linux-2
+#
+BFORT    = bfort
+DOCTEXT  = doctext
+MAPNAMES = mapnames
+C2HTML   = c2html
 
 # Builds Fortran-77 wrappers 
-# Source of bfort is in ~gropp/sowing/src/bfort
 fortranstubs:
-	@-/home/petsc/bin/linux/bfort -dir ${PETSC_DIR}/src/fortran/auto \
+	@-${BFORT} -dir ${PETSC_DIR}/src/fortran/auto \
 	  -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix Petsc\
 	  -ptr64 PETSC_USE_POINTER_CONVERSION  -fcaps PETSC_HAVE_FORTRAN_CAPS \
           -fuscore PETSC_HAVE_FORTRAN_UNDERSCORE ${SOURCEC}
@@ -498,7 +504,7 @@ chk_manualpage_dir:
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
 	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; \
-          /home/gropp/bin/linux/doctext -html -indexdir ../${MANSEC} \
+          ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH};  fi 
 #
@@ -506,7 +512,7 @@ manualpages_buildcite: chk_manualpage_dir
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
 	  DOCTEXT_PATH=${PETSC_DIR}/docs/tex/doctext; \
-	  /home/gropp/bin/linux/doctext -html \
+	  ${DOCTEXT} -html \
 		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
 		-defn ${PETSC_DIR}/docs/tex/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit \
@@ -522,7 +528,7 @@ manexamples:
           echo "Generating manual example links" ; \
           for i in ${EXAMPLESC} ${EXAMPLESF} foo ; do \
             if [ "$$i" != "foo" ] ; then \
-              a=`cat $$i | /home/gropp/bin/linux/mapnames -map ${LOC}/docs/manualpages/manualpages.cit \
+              a=`cat $$i | ${MAPNAMES} -map ${LOC}/docs/manualpages/manualpages.cit \
                    -printmatch -o /dev/null | sort | uniq` ;  \
               for j in $$a ; do \
                 b=`ls ${LOC}/docs/manualpages/*/$${j}.html | cut -f9` ; \
@@ -595,7 +601,7 @@ getexlist:
 #
 html:
 	-@sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > /tmp/$$USER.htmlmap
-	-@cat /home/MPI/www/www.index >> /tmp/$$USER.htmlmap
+	-@cat ${PETSC_DIR}/docs/mpi.www.index >> /tmp/$$USER.htmlmap
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} foo ; do\
@@ -610,10 +616,10 @@ html:
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
               grep -v __FUNCT__ $$i | sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
-              -e "s/ierr = //g"   | /home/gropp/bin/linux/c2html -n  | ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
+              -e "s/ierr = //g"   | ${C2HTML} -n  | ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
               grep -v PetscValid | grep -v PetscFunctionBegin | grep -v PetscCheck | grep -v "int ierr;" |\
               grep -v '#if !defined(__' | grep -v '#define __' | \
-              /home/gropp/bin/linux/mapnames -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
+              ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done
 	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
@@ -644,7 +650,7 @@ html:
             echo " " >> $${loc}/index.html; \
             echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
 	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
-	   cat makefile | /home/gropp/bin/linux/c2html  | /home/gropp/bin/linux/mapnames -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
+	   cat makefile | ${C2HTML}  | ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
 	-@${RM} /tmp/$$USER.htmlmap tmp
 
 cleanhtml:

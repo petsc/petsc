@@ -17,7 +17,7 @@ manual.pdf:  intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex g
 	-@rm -f anchors htmlmap tmp
 	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PETSC_DIR}/maint/getpdflabels.py > anchors
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > htmlmap
-	-@cat /home/MPI/www/www.index >> htmlmap
+	-@cat ${PETSC_DIR}/docs/mpi.www.index >> htmlmap
 	-@cat anchors >> ${LOC}/docs/manualpages/manualpages.cit
 	-@${RM} part1tmp.tex part2tmp.tex index.tex
 	-@PYTHONPATH=../../../maint;cat part1.tex | ../../../maint/mapnameslatex.py > part1tmp.tex
