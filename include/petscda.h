@@ -197,13 +197,84 @@ typedef struct {
   DA             da;
 } DALocalInfo;
 
+/*MC
+      DAForEachPointBegin2d - Starts a loop over the local part of a two dimensional DA
+
+   Synopsis:
+   int  DAForEachPointBegin2d(DALocalInfo *info,int i,int j);
+   
+.seealso: DAForEachPointEnd2d(), DAVecGetArray()
+M*/
 #define DAForEachPointBegin2d(info,i,j) {\
   int _xints = info->xs,_xinte = info->xs+info->xm,_yints = info->ys,_yinte = info->ys+info->ym;\
   for (j=_yints; j<_yinte; j++) {\
     for (i=_xints; i<_xinte; i++) {\
 
+/*MC
+      DAForEachPointEnd2d - Ends a loop over the local part of a two dimensional DA
+
+   Synopsis:
+   int  DAForEachPointEnd2d;
+   
+.seealso: DAForEachPointBegin2d(), DAVecGetArray()
+M*/
 #define DAForEachPointEnd2d }}}
 
+/*MC
+      DACoor2d - Structure for holding 2d (x and y) coordinates.
+
+    Level: intermediate
+
+    Sample Usage:
+      DACoor2d **coors;
+      Vec      vcoors;
+      DA       cda;     
+
+      DAGetCoordinates(da,&vcoors); 
+      DAGetCoordinateDA(da,&cda);
+      DAVecGetArray(dac,vcoors,&coors);
+      DAGetCorners(dac,&mstart,&nstart,0,&m,&n,0)
+      for (i=mstart; i<mstart+m; i++) {
+        for (j=nstart; j<nstart+n; j++) {
+          x = coors[j][i].x;
+          y = coors[j][i].y;
+          ......
+        }
+      }
+      DAVecRestoreArray(dac,vcoors,&coors);
+
+.seealso: DACoor3d, DAForEachPointBegin(), DAGetCoordinateDA(), DAGetCoordinates(), DAGetGhostCoordinates()
+M*/
+typedef struct {PetscScalar x,y;} DACoor2d;
+
+/*MC
+      DACoor3d - Structure for holding 3d (x, y and z) coordinates.
+
+    Level: intermediate
+
+    Sample Usage:
+      DACoor3d **coors;
+      Vec      vcoors;
+      DA       cda;     
+
+      DAGetCoordinates(da,&vcoors); 
+      DAGetCoordinateDA(da,&cda);
+      DAVecGetArray(dac,vcoors,&coors);
+      DAGetCorners(dac,&mstart,&nstart,&pstart,&m,&n,&p)
+      for (i=mstart; i<mstart+m; i++) {
+        for (j=nstart; j<nstart+n; j++) {
+          for (k=pstart; k<pstart+p; k++) {
+            x = coors[k][j][i].x;
+            y = coors[k][j][i].y;
+            z = coors[k][j][i].z;
+          ......
+        }
+      }
+      DAVecRestoreArray(dac,vcoors,&coors);
+
+.seealso: DACoor2d, DAForEachPointBegin(), DAGetCoordinateDA(), DAGetCoordinates(), DAGetGhostCoordinates()
+M*/
+typedef struct {PetscScalar x,y,z;} DACoor3d;
     
 
 EXTERN int DAGetLocalInfo(DA,DALocalInfo*);
@@ -228,7 +299,7 @@ EXTERN int DASetLocalAdicFunction_Private(DA,DALocalFunction1);
    Collective on DA
 
    Synopsis:
-   int int DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
+   int DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
    
    Input Parameter:
 +  da - initial distributed array

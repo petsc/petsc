@@ -107,6 +107,10 @@ int DAGetCoordinateDA(DA da,DA *cda)
   int            size,ierr;
 
   PetscFunctionBegin;
+  if (da->da_coordinates) {
+    *cda = da->da_coordinates;
+    PetscFunctionReturn(0);
+  }
   ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
   if (da->dim == 1) {
     if (da->w == 1) {
@@ -142,6 +146,34 @@ int DAGetCoordinateDA(DA da,DA *cda)
       ierr = DACreate2d(da->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
       ierr = PetscFree(ld);CHKERRQ(ierr);
+    }
+  } else if (da->dim == 3) {
+    ierr = DAGetInfo(da,0,0,0,0,0,0,0,0,0,0,&st);CHKERRQ(ierr);
+    if (da->w == 3 && st == DA_STENCIL_BOX) {
+      da->da_coordinates = da;
+    } else {
+      int            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
+      DAPeriodicType pt;
+      ierr = DAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
+      ierr = DAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&lc);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&ld);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&le);CHKERRQ(ierr);
+      /* only first M values in lc matter */
+      ierr = MPI_Allgather(&l,1,MPI_INT,lc,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      /* every Mth value in ld matters */
+      ierr = MPI_Allgather(&k,1,MPI_INT,ld,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      for ( i=0; i<N; i++) {
+        ld[i] = ld[M*i];
+      }
+      ierr = MPI_Allgather(&q,1,MPI_INT,le,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      for ( i=0; i<P; i++) {
+        le[i] = le[M*N*i];
+      }
+      ierr = DACreate3d(da->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = PetscFree(lc);CHKERRQ(ierr);
+      ierr = PetscFree(ld);CHKERRQ(ierr);
+      ierr = PetscFree(le);CHKERRQ(ierr);
     }
   }
   *cda = da->da_coordinates;
@@ -188,6 +220,7 @@ int DAGetGhostedCoordinates(DA da,Vec *c)
     int ierr;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
     ierr = DACreateLocalVector(dac,&da->ghosted_coordinates);CHKERRQ(ierr);
+    if (dac == da) {ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);}
     ierr = DAGlobalToLocalBegin(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
   }

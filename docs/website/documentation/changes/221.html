@@ -83,6 +83,12 @@ in PETSc 2.2.0 </font></p>
       </b></u></p>
       <p><u><b>KSP:</b></u></p>
 
+      <p><u><b>DA:</b></u></p>
+
+  <ul><li>Added DAGetGhostedCoordinates() and DAGetCoordinateDA() (see src/dm/da/examples/tutorials/ex3.c)</li>
+  <li>Added DACoor2d and DACoor3d (see src/dm/da/examples/tutorials/ex3.c)</li>
+  <li>DAGetInterpolation() now provides the correct interpolation for nonuniform grids using the coordinate information 
+          provided with DASetCoordinates(). (see src/dm/da/examples/tutorials/ex3.c)</li>
 
       <p><u><b>SNES:</b></u></p>
 

@@ -27,9 +27,23 @@ runex1:
 	-@${MPIRUN} -np 2 ex1
 runex2:
 	-@${MPIRUN} -np 3 ex2
-
-TESTEXAMPLES_1  =
-TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc ex3.rm
+runex3:
+	-@${MPIRUN} -np 3 ex3 -mat_view  > ex3_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
+	   else echo "Possible problem with ex3_1, diffs above"; fi; \
+	   ${RM} -f ex3_1.tmp
+runex3_2:
+	-@${MPIRUN} -np 3 ex3 -mat_view -dim 2 > ex3_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
+	   else echo "Possible problem with ex3_2, diffs above"; fi; \
+	   ${RM} -f ex3_2.tmp
+runex3_3:
+	-@${MPIRUN} -np 3 ex3 -mat_view -dim 3 > ex3_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
+	   else echo "Possible problem with ex3_3, diffs above"; fi; \
+	   ${RM} -f ex3_3.tmp
+TESTEXAMPLES_1  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm
+TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm 
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
 TESTEXAMPLES_5  =

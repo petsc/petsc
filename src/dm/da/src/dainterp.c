@@ -65,8 +65,8 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   if (!DAXPeriodic(pt)){ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
   if (vcoors) {
+    ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
     ierr = DAVecGetArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
     ierr = DAVecGetArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
@@ -85,7 +85,10 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
          in x direction; since they have no right neighbor
     */
     if (coors) {
-      x = (coors[i] - ccoors[i_c])/(ccoors[i_c+1] - ccoors[i_c]);
+      x = (coors[i] - ccoors[i_c]); 
+      /* only access the next coors point if we know there is one */
+      /* note this is dangerous because x may not exactly equal ZERO */
+      if (x) x = x/(ccoors[i_c+1] - ccoors[i_c]);
     } else {
       x  = ((double)(i - i_c*ratio))/((double)ratio);
     }
@@ -186,8 +189,6 @@ int DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   PetscFunctionReturn(0);
 }
 
-
-typedef struct {PetscScalar x,y;} Coor2d;
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInterpolation_2D_Q1"
 int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
@@ -200,7 +201,7 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   PetscScalar    v[4],x,y;
   Mat            mat;
   DAPeriodicType pt;
-  Coor2d         **coors,**ccoors;
+  DACoor2d       **coors,**ccoors;
   Vec            vcoors,cvcoors;
 
   PetscFunctionBegin;
@@ -293,8 +294,8 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   if (!DAXPeriodic(pt) && !DAYPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
   if (vcoors) {
+    ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
     ierr = DAVecGetArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
     ierr = DAVecGetArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
@@ -314,8 +315,12 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
          in x and y directions; since they have no right/top neighbors
       */
       if (coors) {
-        x = (coors[j][i].x - ccoors[j_c][i_c].x)/(ccoors[j_c][i_c+1].x - ccoors[j_c][i_c].x);
-        y = (coors[j][i].y - ccoors[j_c][i_c].y)/(ccoors[j_c+1][i_c].y - ccoors[j_c][i_c].y);
+        /* only access the next coors point if we know there is one */
+        /* note this is dangerous because x may not exactly equal ZERO */
+        x = (coors[j][i].x - ccoors[j_c][i_c].x);
+        if (x) x = x/(ccoors[j_c][i_c+1].x - ccoors[j_c][i_c].x);
+        y = (coors[j][i].y - ccoors[j_c][i_c].y);
+        if (y) y = y/(ccoors[j_c+1][i_c].y - ccoors[j_c][i_c].y);
       } else {
         x  = ((double)(i - i_c*ratioi))/((double)ratioi);
         y  = ((double)(j - j_c*ratioj))/((double)ratioj);
@@ -371,6 +376,8 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   PetscScalar    v[8],x,y,z;
   Mat            mat;
   DAPeriodicType pt;
+  DACoor3d       ***coors,***ccoors;
+  Vec            vcoors,cvcoors;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -469,6 +476,13 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   if (!DAXPeriodic(pt) && !DAYPeriodic(pt) && !DAZPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
+  ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
+  if (vcoors) {
+    ierr = DAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecGetArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+  }
+
   /* loop over local fine grid nodes setting interpolation for those*/
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
@@ -485,9 +499,20 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
            nonzero. Note this is very important for final grid lines
            in x and y directions; since they have no right/top neighbors
         */
-        x  = ((double)(i - i_c*ratioi))/((double)ratioi);
-        y  = ((double)(j - j_c*ratioj))/((double)ratioj);
-        z  = ((double)(l - l_c*ratiok))/((double)ratiok);
+	if (coors) {
+	  /* only access the next coors point if we know there is one */
+	  /* note this is dangerous because x may not exactly equal ZERO */
+	  x = (coors[l][j][i].x - ccoors[l_c][j_c][i_c].x);
+	  if (x) x = x/(ccoors[l_c][j_c][i_c+1].x - ccoors[l_c][j_c][i_c].x);
+	  y = (coors[l][j][i].y - ccoors[l_c][j_c][i_c].y);
+	  if (y) y = y/(ccoors[l_c][j_c+1][i_c].y - ccoors[l_c][j_c][i_c].y);
+	  z = (coors[l][j][i].z - ccoors[l_c][j_c][i_c].z);
+	  if (z) z = z/(ccoors[l_c+1][j_c][i_c].z - ccoors[l_c][j_c][i_c].z);
+	} else {
+	  x  = ((double)(i - i_c*ratioi))/((double)ratioi);
+	  y  = ((double)(j - j_c*ratioj))/((double)ratioj);
+	  z  = ((double)(l - l_c*ratiok))/((double)ratiok);
+        }
         /* printf("i j l %d %d %d %g %g %g\n",i,j,l,x,y,z); */
         nc = 0;
         /* one left and below; or we are right on it */
@@ -533,6 +558,10 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
         ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
       }
     }
+  }
+  if (vcoors) {
+    ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
