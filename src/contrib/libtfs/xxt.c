@@ -635,7 +635,7 @@ static
 int
 xxt_generate(xxt_ADT xxt_handle)
 {
-  int i,j,k,index;
+  int i,j,k,idex;
   int dim, col;
   REAL *u, *uu, *v, *z, *w, alpha, alpha_w;
   int *segs;
@@ -755,17 +755,17 @@ xxt_generate(xxt_ADT xxt_handle)
       if (col==fo[start])
 	{
 	  start++;
-	  index=ivec_linear_search(col, a_local2global, a_n);
-	  if (index!=-1)
-	    {v[index] = 1.0; j++;}
+	  idex=ivec_linear_search(col, a_local2global, a_n);
+	  if (idex!=-1)
+	    {v[idex] = 1.0; j++;}
 	  else
 	    {error_msg_fatal("NOT FOUND!\n");}
 	}
       else
 	{
-	  index=ivec_linear_search(col, a_local2global, a_m);
-	  if (index!=-1)
-	    {v[index] = 1.0;}
+	  idex=ivec_linear_search(col, a_local2global, a_m);
+	  if (idex!=-1)
+	    {v[idex] = 1.0;}
 	}
 
       /* perform u = A.v_l */

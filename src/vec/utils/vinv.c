@@ -126,7 +126,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
-int VecStrideMax(Vec v,int start,int *index,PetscReal *nrm)
+int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
 {
   int         i,n,ierr,bs;
   PetscScalar *x;
@@ -135,7 +135,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *nrm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  if (index) {
+  if (idex) {
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
@@ -184,7 +184,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *nrm)
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  index - the location where the minimum occurred (not supported, pass PETSC_NULL,
++  idex - the location where the minimum occurred (not supported, pass PETSC_NULL,
            if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
 -  nrm - the min
 
@@ -206,7 +206,7 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *nrm)
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
-int VecStrideMin(Vec v,int start,int *index,PetscReal *nrm)
+int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
 {
   int         i,n,ierr,bs;
   PetscScalar *x;
@@ -215,7 +215,7 @@ int VecStrideMin(Vec v,int start,int *index,PetscReal *nrm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  if (index) {
+  if (idex) {
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);

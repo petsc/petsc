@@ -223,10 +223,6 @@ int PetscTrMallocDefault(size_t a,int lineno,char *function,char *filename,char 
     (*PetscErrorPrintf)("PETSC ERROR: PetscTrMalloc: malloc zero length, this is illegal!\n");
     PetscFunctionReturn(1);
   }
-  if (a < 0) {
-    (*PetscErrorPrintf)("PETSC ERROR: PetscTrMalloc: malloc negative length, this is illegal!\n");
-    PetscFunctionReturn(1);
-  }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
   ierr = PetscMallocAlign(nsize+sizeof(TrSPACE)+sizeof(PetscScalar),lineno,function,filename,dir,(void**)&inew);CHKERRQ(ierr);

@@ -147,10 +147,10 @@ char *(PetscRGBColor[PETSC_RGB_COLOR_MAX]) = {
 @*/
 int PetscLogGetRGBColor(char **str)
 {
-  static int index = 0;
+  static int idx = 0;
 
   PetscFunctionBegin;
-  *str  = PetscRGBColor[index];
-  index = (index + 1)% PETSC_RGB_COLOR_MAX;
+  *str  = PetscRGBColor[idx];
+  idx = (idx + 1)% PETSC_RGB_COLOR_MAX;
   PetscFunctionReturn(0);
 }
