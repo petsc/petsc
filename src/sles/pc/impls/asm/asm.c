@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.116 2000/07/07 20:33:31 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.117 2000/07/07 20:38:04 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -15,7 +15,7 @@
 
 typedef struct {
   int        n,n_local,n_local_true;
-  int        is_flg;              /* flg set to 1 if the IS created in pcsetup */
+  PetscTruth is_flg;              /* flg set to 1 if the IS created in pcsetup */
   int        overlap;             /* overlap requested by user */
   SLES       *sles;               /* linear solvers for each block */
   VecScatter *scat;               /* mapping to subregion */
@@ -23,8 +23,8 @@ typedef struct {
   IS         *is;                 /* index set that defines each subdomain */
   Mat        *mat,*pmat;          /* mat is not currently used */
   PCASMType  type;                /* use reduced interpolation, restriction or both */
-  int        same_local_solves;   /* flag indicating whether all local solvers are same */
-  int        inplace;             /* indicates that the sub-matrices are deleted after 
+  PetscTruth same_local_solves;   /* flag indicating whether all local solvers are same */
+  PetscTruth inplace;             /* indicates that the sub-matrices are deleted after 
                                      PCSetUpOnBlocks() is done. Similar to inplace 
                                      factorization in the case of LU and ILU */
 } PC_ASM;
@@ -494,17 +494,21 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name=""></a>*/"PCASMGetSubSLES_ASM"
 int PCASMGetSubSLES_ASM(PC pc,int *n_local,int *first_local,SLES **sles)
 {
-  PC_ASM   *jac = (PC_ASM*)pc->data;;
+  PC_ASM   *jac = (PC_ASM*)pc->data;
+  int      ierr;
 
   PetscFunctionBegin;
   if (jac->n_local_true < 0) {
-    SETERRQ(1,1,"Need to call PCSetUP() on PC (or SLESSetUp() on the outter SLES object) before calling here");
+    SETERRQ(1,1,"Need to call PCSetUP() on PC (or SLESSetUp() on the outer SLES object) before calling here");
   }
 
   if (n_local)     *n_local     = jac->n_local_true;
-  if (first_local) *first_local = -1; /* need to determine global number of local blocks*/
+  if (first_local) {
+    ierr = MPI_Scan(&jac->n_local_true,first_local,1,MPI_INT,MPI_SUM,pc->comm);CHKERRQ(ierr);
+    *first_local -= jac->n_local_true;
+  }
   *sles                         = jac->sles;
-  jac->same_local_solves        = 0; /* Assume that local solves are now different;
+  jac->same_local_solves        = PETSC_FALSE; /* Assume that local solves are now different;
                                       not necessarily true though!  This flag is 
                                       used only for PCView_ASM() */
   PetscFunctionReturn(0);
@@ -520,7 +524,7 @@ int PCASMSetUseInPlace_ASM(PC pc)
 
   PetscFunctionBegin;
   dir          = (PC_ASM*)pc->data;
-  dir->inplace = 1;
+  dir->inplace = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -759,14 +763,15 @@ int PCASMSetType(PC pc,PCASMType type)
    PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
    
-   Not Collective
+   Collective on PC iff first_local is requested
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameters:
 +  n_local - the number of blocks on this processor or PETSC_NULL
-.  first_local - the global number of the first block on this processor or PETSC_NULL
+.  first_local - the global number of the first block on this processor or PETSC_NULL,
+                 all processors must request or all must pass PETSC_NULL
 -  sles - the array of SLES contexts
 
    Note:  
@@ -823,8 +828,8 @@ int PCCreate_ASM(PC pc)
   osm->mat               = 0;
   osm->pmat              = 0;
   osm->type              = PC_ASM_RESTRICT;
-  osm->same_local_solves = 1;
-  osm->inplace           = 0;
+  osm->same_local_solves = PETSC_TRUE;
+  osm->inplace           = PETSC_FALSE;
   pc->data               = (void*)osm;
 
   pc->ops->apply             = PCApply_ASM;
