@@ -1,4 +1,4 @@
-/* $Id: f90_hpux.h,v 1.2 1998/09/25 19:12:18 balay Exp bsmith $ */
+/* $Id: f90_hpux.h,v 1.3 2000/03/03 14:23:04 bsmith Exp bsmith $ */
 
 #if !defined (__F90_HPUX_H)
 #define __F90_HPUX_H
@@ -23,7 +23,7 @@ typedef struct {
 /*
  addr   - address
  sd     - sizeof datatype
- ndim   - DIMENTION ID
+ ndim   - DIMENSION ID
  cookie - f90 cookie
  a      - junk - always 0. Null pointer??
  */
