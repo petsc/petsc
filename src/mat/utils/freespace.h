@@ -1,3 +1,6 @@
+#if !defined(_FreeSpace_h_)
+#define _FreeSpace_h_
+
 #include "petsc.h"
 
 typedef struct _Space *FreeSpaceList;
@@ -13,3 +16,5 @@ typedef struct _Space {
 
 int GetMoreSpace(int size,FreeSpaceList *list);
 int MakeSpaceContiguous(FreeSpaceList *head,int *space);
+
+#endif

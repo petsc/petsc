@@ -2620,6 +2620,8 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
   PetscFunctionReturn(0);
 }
 
+EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJ"
@@ -2703,6 +2705,7 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);
 #endif
+  ierr = RegisterApplyPtAPRoutines_Private(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
