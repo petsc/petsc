@@ -22,5 +22,9 @@
 extern "C" {
   @MISSING_PROTOTYPES_EXTERN_C@
 }
+#else
+
+@MISSING_PROTOTYPES_C@
+
 #endif
 #endif

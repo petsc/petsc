@@ -9,6 +9,9 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
+    self.missingPrototypes        = []
+    self.missingPrototypesC       = []
+    self.missingPrototypesCxx     = []
     self.missingPrototypesExternC = []
     self.defineAutoconfMacros()
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
@@ -591,9 +594,16 @@ acfindx:
     self.libraries.addSubstitution('LIB_SUFFIX', suffix)
     return
 
+  def configureAlpha(self):
+    '''Alpha specific stuff'''
+    if self.archBase.startswith('osf'):
+      self.missingPrototypesC.append('int getdomainname(char *, size_t);')
+      self.missingPrototypesExternC.append('int getdomainname(char *, size_t);')
+    return
+
   def configureIRIX(self):
     '''IRIX specific stuff'''
-    if self.archBase == 'irix6.5':
+    if self.archBase.startswith('irix'):
       self.addDefine('USE_KBYTES_FOR_SIZE', 1)
     return
 
@@ -606,19 +616,20 @@ acfindx:
   def configureMacOSX(self):
     '''Mac specific stuff'''
     if self.archBase.startswith('darwin'):
-      self.missingPrototypesExternC.append('void *memalign(size_t, size_t)')
-      self.missingPrototypesExternC.append('int getdomainname(char *, size_t)')
+      self.missingPrototypesC.append('int getdomainname(char *, size_t);')
+      self.missingPrototypesExternC.append('int getdomainname(char *, size_t);')
     return
 
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
     if not 'HAVE_MPI_COMM_F2C' in self.mpi.defines:
-      self.missingPrototypesExternC.append('#define MPI_Comm_f2c(a) (a)')
+      self.missingPrototypes.append('#define MPI_Comm_f2c(a) (a)')
     if not 'HAVE_MPI_COMM_C2F' in self.mpi.defines:
-      self.missingPrototypesExternC.append('#define MPI_Comm_c2f(a) (a)')
+      self.missingPrototypes.append('#define MPI_Comm_c2f(a) (a)')
     # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('MISSING_PROTOTYPES',     '')
-    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '')
+    self.framework.addSubstitution('MISSING_PROTOTYPES',     '\n'.join(self.missingPrototypes))
+    self.framework.addSubstitution('MISSING_PROTOTYPES_C', '\n'.join(self.missingPrototypesC))
+    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '\n'.join(self.missingPrototypesCxx))
     self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', '\n'.join(self.missingPrototypesExternC))
     return
 
@@ -667,6 +678,7 @@ acfindx:
     self.executeTest(self.configureX)
     self.executeTest(self.configureFPTrap)
     self.executeTest(self.configureLibrarySuffix)
+    self.executeTest(self.configureAlpha)
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureMacOSX)
