@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.17 1996/03/26 00:11:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.18 1996/06/27 15:42:51 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -31,7 +31,7 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
     PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
     PetscPrintf(snes->comm,
-     "iter = %d, Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
+     "iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
   else SETERRQ(1,"SNESDefaultMonitor:Unknown method class");
   return 0;
 }
@@ -40,28 +40,28 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 {
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     if (fgnorm > 1.e-9) {
-      PetscPrintf(snes->comm, "iter = %d, Function norm %g \n",its,fgnorm);
+      PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
     }
     else if (fgnorm > 1.e-11){
-      PetscPrintf(snes->comm, "iter = %d, Function norm %5.3e \n",its,fgnorm);
+      PetscPrintf(snes->comm, "iter = %d, SNES Function norm %5.3e \n",its,fgnorm);
     }
     else {
-      PetscPrintf(snes->comm, "iter = %d, Function norm < 1.e-11\n",its);
+      PetscPrintf(snes->comm, "iter = %d, SNES Function norm < 1.e-11\n",its);
     }
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     if (fgnorm > 1.e-9) {
       PetscPrintf(snes->comm,
-       "iter = %d, Function value %g, Gradient norm %g \n",
+       "iter = %d, SNES Function value %g, Gradient norm %g \n",
        its,snes->fc,fgnorm);
     }
     else if (fgnorm > 1.e-11) {
       PetscPrintf(snes->comm,
-        "iter = %d, Function value %g, Gradient norm %5.3e \n",
+        "iter = %d, SNES Function value %g, Gradient norm %5.3e \n",
         its,snes->fc,fgnorm);
     }
     else {
       PetscPrintf(snes->comm,
-        "iter = %d, Function value %g, Gradient norm < 1.e-11\n",
+        "iter = %d, SNES Function value %g, Gradient norm < 1.e-11\n",
         its,snes->fc);
     }
   } else SETERRQ(1,"SNESDefaultSMonitor:Unknown method class");
