@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.9 2000/07/13 17:10:52 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.10 2000/07/13 19:11:26 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -43,6 +43,7 @@ int DAMGCreate(MPI_Comm comm,int nlevels,void *user,DAMG **damg)
   p    = (DAMG *)PetscMalloc(nlevels*sizeof(DAMG));CHKPTRQ(p);
   for (i=0; i<nlevels; i++) {
     p[i]          = (DAMG)PetscMalloc(sizeof(struct _p_DAMG));CHKPTRQ(p[i]);
+    ierr          = PetscMemzero(p[i],sizeof(struct _p_DAMG));CHKERRQ(ierr);
     p[i]->nlevels = nlevels - i;
     p[i]->ratiox  = 2;
     p[i]->ratioy  = 2;
@@ -236,6 +237,7 @@ int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
   MPI_Comm   comm;
   PC         pc;
   PetscTruth flg,ismg;
+  SLES       lsles;
 
   PetscFunctionBegin;
   if (!damg) SETERRQ(1,1,"Passing null as DAMG");
@@ -256,9 +258,9 @@ int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
 
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
-      ierr = MGGetSmoother(pc,i,&damg[i]->sles);CHKERRA(ierr);
-      ierr = SLESSetFromOptions(damg[i]->sles);CHKERRA(ierr);
-      ierr = SLESSetOperators(damg[i]->sles,damg[i]->J,damg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+      ierr = MGGetSmoother(pc,i,&sles);CHKERRA(ierr);
+      ierr = SLESSetFromOptions(lsles);CHKERRA(ierr);
+      ierr = SLESSetOperators(lsles,damg[i]->J,damg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
       ierr = MGSetX(pc,i,damg[i]->x);CHKERRA(ierr); 
       ierr = MGSetRhs(pc,i,damg[i]->b);CHKERRA(ierr); 
       ierr = MGSetR(pc,i,damg[i]->r);CHKERRA(ierr); 
@@ -272,7 +274,7 @@ int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
     }
   }
   
-  /* set matrix for each level */
+  /* set matrix values for each level (only for linear problems) */
   if (func) {
     for (i=0; i<nlevels; i++) {
       ierr = (*func)(damg[i],damg[i]->J);CHKERRQ(ierr);
