@@ -277,31 +277,37 @@ M*/
 */
 #define PetscLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
 
+/* Routines below are used for incomplete matrix factorization */
 /* 
-  Create and initialize a linked list 
+  Create and initialize a linked list and its levels
   Input Parameters:
     idx_start - starting index of the list
     lnk_max   - max value of lnk indicating the end of the list
     nlnk      - max length of the list
   Output Parameters:
     lnk       - list initialized
+    lnk_lvl   - array of size nlnk for storing levels of lnk
     bt        - PetscBT (bitarray) with all bits set to false
 */
-#define PetscLLCreate_PermutedLeveled(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt) \
-  (PetscMalloc(nlnk*sizeof(PetscInt),&lnk) || PetscMalloc(nlnk*sizeof(PetscInt),&lnk_lvl)|| PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,0))
-
+#define PetscLLCreate_PermutedLeveled(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt)\
+  (PetscMalloc(2*nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
 
 /*
   Add a index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
-    indices   - interger array
+    indices   - interger array used for storing column indices
+    level     - level of fill, e.g., ICC(level)
+    indices_lvl - level of indices 
     idx_start - starting index of the list
+    perm      - permutation 
     lnk       - linked list(an integer array) that is created
+    lnk_lvl   - levels of lnk
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
     nlnk      - number of newly added indices
     lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    lnk_lvl   - levels of lnk
     bt        - updated PetscBT (bitarray) 
 */
 #define PetscLLAdd_PermutedLeveled(nidx,indices,level,indices_lvl,idx_start,perm,nlnk,lnk,lnk_lvl,bt) 0;\
@@ -339,10 +345,12 @@ M*/
     lnk_max   - max value of lnk indicating the end of the list 
     nlnk      - number of data on the list to be copied
     lnk       - linked list
+    lnk_lvl   - level of lnk
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
     indices   - array that contains the copied data
     lnk       -llinked list that is cleaned and initialize
+    lnk_lvl   - level of lnk that is reinitialized 
     bt        - PetscBT (bitarray) with all bits set to false
 */
 #define PetscLLClean_PermutedLeveled(idx_start,lnk_max,nlnk,lnk,lnk_lvl,indices,indices_lvl,bt) 0;\
@@ -361,7 +369,7 @@ M*/
   Free memories used by the list
 */
 #define PetscLLDestroy_PermutedLeveled(lnk,lnk_lvl,bt) \
-(PetscFree(lnk) || PetscFree(lnk_lvl) || PetscBTDestroy(bt))
+(PetscFree(lnk) || PetscBTDestroy(bt))
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */
