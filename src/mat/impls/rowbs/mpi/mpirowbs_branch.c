@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.5 1995/04/16 16:25:46 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.6 1995/04/16 17:01:38 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -195,6 +195,8 @@ static int MatBeginAssembly_MPIRowbs_local(Mat mat,int mode)
   return 0;
 }
 
+/* Note: The local end assembley routine must be calle through
+   the parallel version only! */
 static int MatEndAssembly_MPIRowbs_local(Mat mat,int mode)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
@@ -276,6 +278,11 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
     SETERR(1,"You cannot mix inserts and adds");
   }
   mrow->insertmode = addv;
+  if ((mrow->assembled) && (!mrow->reassemble_begun)) {
+    /* Symmetrically unscale the matrix by the diagonal */
+    BSscale_diag(mrow->pA,mrow->inv_diag,mrow->procinfo); CHKERRBS(0);
+    mrow->reassemble_begun = 1;
+  }
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERR(1,"Negative row index");
     if (idxm[i] >= mrow->M) SETERR(1,"Row index too large");
@@ -316,6 +323,12 @@ static int MatBeginAssembly_MPIRowbs(Mat mat,int mode)
   int         tag = 50, *owner,*starts,count;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
+
+  if ((mrow->assembled) && (!mrow->reassemble_begun)) {
+    /* Symmetrically unscale the matrix by the diagonal */
+    BSscale_diag(mrow->pA,mrow->inv_diag,mrow->procinfo); CHKERRBS(0);
+    mrow->reassemble_begun = 1;
+  }
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &mrow->insertmode,(void *) &addv,1,MPI_INT,
@@ -444,7 +457,6 @@ static int MatEndAssembly_MPIRowbs(Mat mat,int mode)
   int          ldim, low, high, loc, row, col, ierr;
   Scalar       *values, val;
   InsertMode   addv = mrow->insertmode;
-  BSpar_mat    *pA;
 
   /*  wait on receives */
   while (count) {
@@ -480,27 +492,37 @@ static int MatEndAssembly_MPIRowbs(Mat mat,int mode)
   ierr = MatEndAssembly_MPIRowbs_local(mat,mode); CHKERR(ierr);
 
   if (mode == FINAL_ASSEMBLY) {   /* BlockSolve stuff */
-    /* Form permuted matrix for efficient parallel execution */
-    mrow->pA = pA = BSmain_perm(mrow->procinfo,mrow->A); CHKERRBS(0);
+    if ((mrow->assembled) && (!mrow->nonew)) {  /* Free the old info */
+      if (mrow->pA)       {BSfree_par_mat(mrow->pA); CHKERRBS(0);}
+      if (mrow->comm_pA)  {BSfree_comm(mrow->comm_pA); CHKERRBS(0);}
+    }
+    if ((!mrow->nonew) || (!mrow->assembled)) {
+      /* Form permuted matrix for efficient parallel execution */
+      mrow->pA = BSmain_perm(mrow->procinfo,mrow->A); CHKERRBS(0);
+
+      /* Set up the communication */
+      mrow->comm_pA = BSsetup_forward(mrow->pA,mrow->procinfo); CHKERRBS(0);
+    } else {
+      /* Repermute the matrix */
+      BSmain_reperm(mrow->procinfo,mrow->A,mrow->pA); CHKERRBS(0);
+    }
 
     /* Symmetrically scale the matrix by the diagonal */
-    BSscale_diag(pA,pA->diag,mrow->procinfo); CHKERRBS(0);
-
-    /* Set up the communication */
-    mrow->comm_pA = BSsetup_forward(pA,mrow->procinfo); CHKERRBS(0);
+    BSscale_diag(mrow->pA,mrow->pA->diag,mrow->procinfo); CHKERRBS(0);
 
     /* Store inverse of square root of permuted diagonal scaling matrix */
-    VecGetLocalSize( mrow->diag, &ldim );
-    VecGetOwnershipRange( mrow->diag, &low, &high );
+    ierr = VecGetLocalSize( mrow->diag, &ldim ); CHKERR(ierr);
+    ierr = VecGetOwnershipRange( mrow->diag, &low, &high ); CHKERR(ierr);
     for (i=0; i<ldim; i++) {
       loc = low + i;
-      val = 1.0/sqrt(pA->scale_diag[i]);
-      VecSetValues( mrow->diag, 1, &loc, &val, InsertValues );
+      val = 1.0/sqrt(mrow->pA->scale_diag[i]);
+      mrow->inv_diag[i] = 1.0/(mrow->pA->scale_diag[i]);
+      ierr = VecSetValues(mrow->diag,1,&loc,&val,InsertValues); CHKERR(ierr);
     }
-    VecBeginAssembly( mrow->diag );
-    VecEndAssembly( mrow->diag );
-
+    ierr = VecBeginAssembly( mrow->diag ); CHKERR(ierr);
+    ierr = VecEndAssembly( mrow->diag ); CHKERR(ierr);
     mrow->assembled = 1;
+    mrow->reassemble_begun = 0;
   }
   return 0;
 }
@@ -535,6 +557,8 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   if (!bsif->assembled) 
     SETERR(1,"MatMult_MPIRowbs: Must assemble matrix first.");
   ierr = VecGetArray(bsif->xwork,&xworka); CHKERR(ierr);
+  /* This isn't the best implementation if the vectors aren't permuted, 
+     but we're really interested in efficiency for the permuted case. */
   if (!bsif->vecs_permuted) {
     ierr = VecGetArray(xx,&xxa); CHKERR(ierr);
     BSperm_dvec(xxa,xworka,bsif->pA->perm); CHKERRBS(0);
@@ -571,6 +595,8 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   /* Apply diagonal scaling to vector:  [  y = D^{1/2} * y ] */
   ierr = VecPDiv(yy,bsif->diag,yy); CHKERR(ierr);
   if (!bsif->vecs_permuted) {
+    BSiperm_dvec(xxa,xworka,bsif->pA->perm); CHKERRBS(0);
+    ierr = VecCopy(bsif->xwork,xx); CHKERR(ierr);
     BSiperm_dvec(yya,xworka,bsif->pA->perm); CHKERRBS(0);
     ierr = VecCopy(bsif->xwork,yy); CHKERR(ierr);
   }
@@ -657,13 +683,14 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
       FREE(A);
     }
     if (mrow->procinfo) {BSfree_ctx(mrow->procinfo); CHKERRBS(0);}
-    if (mrow->diag)     FREE(mrow->diag);
-    if (mrow->xwork)    FREE(mrow->xwork);
+    if (mrow->diag)     {ierr = VecDestroy(mrow->diag); CHKERR(ierr);}
+    if (mrow->xwork)    {ierr = VecDestroy(mrow->xwork); CHKERR(ierr);}
     if (mrow->pA)       {BSfree_par_mat(mrow->pA); CHKERRBS(0);}
     if (mrow->fpA)      {BSfree_copy_par_mat(mrow->fpA); CHKERRBS(0);}
     if (mrow->comm_pA)  {BSfree_comm(mrow->comm_pA); CHKERRBS(0);}
     if (mrow->comm_fpA) {BSfree_comm(mrow->comm_fpA); CHKERRBS(0);}
-    FREE(mrow->imax);
+    if (mrow->imax)     FREE(mrow->imax);    
+    if (mrow->inv_diag) FREE(mrow->inv_diag);
   }
   FREE(mrow);  
   PLogObjectDestroy(mat);
@@ -772,8 +799,9 @@ int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int M, int nz,int *nnz,
   mat->row	= 0;
   mat->col	= 0;
   mat->comm	= comm;
-  mrow->assembled     = 0;
-  mrow->vecs_permuted = 0;
+  mrow->assembled        = 0;
+  mrow->reassemble_begun = 0;
+  mrow->vecs_permuted    = 0;
 
   mrow->insertmode = NotSetValues;
   MPI_Comm_rank(comm,&mrow->mytid);
@@ -883,6 +911,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                             &(mrow->diag)); CHKERR(ierr);}
   if (!mrow->xwork) {ierr = VecCreate(mrow->diag,&(mrow->xwork)); 
                             CHKERR(ierr);}
+  mrow->inv_diag = (Scalar *) MALLOC( (mrow->m)*sizeof(Scalar) );
+  CHKPTR(mrow->inv_diag);
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
   mrow->procinfo = bspinfo;
   BSctx_set_id(bspinfo,mrow->mytid); CHKERRBS(0);
@@ -906,10 +936,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   /* Compute global offsets */
   ierr = MatGetOwnershipRange(mat,&low,&high); CHKERR(ierr);
   offset = &low;
-#if defined(PETSC_DEBUG)
-  printf("[%d] global offsets: %d\n ", mrow->mytid, low );
-  fflush(stdout); 
-#endif
 
   if (!mrow->bsmap) {mrow->bsmap = (void *) NEW(BSmapping); 
                      CHKPTR(mrow->bsmap);}
@@ -929,7 +955,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   bsmap->fglobal2proc	= BSglob2proc;
   bsmap->free_g2p	= BSfree_off_map;
 
-  MatCreateMPIRowbs_local(mat,nz,nnz);
+  ierr = MatCreateMPIRowbs_local(mat,nz,nnz); CHKERR(ierr);
+  PLogObjectParent(mat,mrow->A);
   mrow->ctx_filled = 1;
   *newmat = mat;
   return 0;

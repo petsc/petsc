@@ -47,17 +47,14 @@ int main(int argc,char **args)
       if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
       if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
-      v = 6.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
+      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
     }
   }
   /* Modify matrix slightly to make things more interesting */
-  I = n; J = n-2; v = 2.0;
   MatSetValues(C,1,&I,1,&J,&v,InsertValues);
-  I = n-2; J = n; v = 2.0;
+  I = 3; J = 4; v = -2.0;
   MatSetValues(C,1,&I,1,&J,&v,InsertValues);
-  I = 3; J = 4; v = 3.0;
-  MatSetValues(C,1,&I,1,&J,&v,InsertValues);
-  I = 4; J = 3; v = 3.0;
+  I = 4; J = 3; v = -2.0;
   MatSetValues(C,1,&I,1,&J,&v,InsertValues);
   ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -92,13 +89,21 @@ int main(int argc,char **args)
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
+  MatSetOption(C,NO_NEW_NONZERO_LOCATIONS);
+  MatZeroEntries(C);
+  /* Fill matrix again */
   for ( i=0; i<m; i++ ) { 
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
-      I = j + n*i; v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
+      v = -1.0;  I = j + n*i;
+      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
+      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
+      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
+      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,InsertValues);}
+      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
     }
   } 
   ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr); 
 
   /* Compute another right-hand-side; then solve */
   ierr = MatMult(C,u,b); CHKERRA(ierr);
@@ -117,6 +122,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);
   ierr = MatDestroy(C); CHKERRA(ierr);
+
   PetscFinalize();
   return 0;
 }

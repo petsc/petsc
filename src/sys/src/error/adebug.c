@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.8 1995/03/06 04:31:52 bsmith Exp curfman $";
 #endif/*
 */
 #include "petsc.h"
@@ -10,17 +10,20 @@ static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $
 static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;
 /*@
-     PetscSetDebugger - Sets options associated with the debugger.
+   PetscSetDebugger - Sets options associated with the debugger.
 
-  Input Parameters:
-.   debugger - name of debugger, it should be in your path,
-.              usually either "dbx" or "gdb"
-.   xterm - 1 to indicate debugger should be started in a new xterm
-.           0 to start debugger in initial window (zero makes no 
-.           sense if you are using more than one processor.)
-.   display - name of display to open xterm to, or null.
+   Input Parameters:
+.  debugger - name of debugger, which should be in your path,
+              usually either "dbx", "gdb" or "xxgdb"
+.   xterm - flag to indicate debugger window, set to one of:
+$     1 to indicate debugger should be started in a new xterm
+$     0 to start debugger in initial window (zero makes no 
+.           sense when using more than one processor.)
+.   display - name of display for opening xterm, or null.
 
-  See PetscAttachDebugger() and PetscAttachDebuggerErrorHandler().
+.keywords: Set, debugger, options
+
+.seealso: PetscAttachDebugger(), PetscAttachDebuggerErrorHandler()
 @*/
 int PetscSetDebugger(char *debugger, int xterm,char *display)
 {

@@ -1,7 +1,7 @@
 IPETSCDIR = ../../../
 ALL: ex1
 
-CFLAGS    = $(OPT) $(CONF) $(INCLUDEDIRS)
+CFLAGS    = $(OPT) $(CONF) $(INCLUDEDIRS) $(BS_INCLUDE)
 SOURCEC   = 
 SOURCEF   =
 WSOURCEC  = 
@@ -11,7 +11,7 @@ WOBJS     =
 OBJSF     =
 LIBBASE   = libpetscsles
 EXAMPLES  = ex1 ex2 ex3 ex4 ex5 ex6 ex7
-EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
+EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c
 SYSLIB    = $(PETSC_LIB) -lm 
 LINCLUDE  = $(SOURCEH)
 
@@ -124,6 +124,18 @@ runexamples:
            if (diff ex6_2.out ex6_2.tmp) then true; \
            else echo "Possible problem with ex6_2, diffs above"; fi; \
            $(RM) -f ex6_2.tmp
+
+lois:
+	-@$(MPIRUN) ex8 -ksp_monitor > ex8_1.tmp 2>&1; \
+           if (diff ex8_1.out ex8_1.tmp) then true; \
+           else echo "Possible problem with ex8_1, diffs above"; fi; \
+           $(RM) -f ex8_1.tmp
+	-@$(MPIRUN) -np 2 ex8 -ksp_monitor -ksp_rtol .000001 >\
+           ex8_2.tmp 2>&1;   \
+           if (diff ex8_2.out ex8_2.tmp) then true; \
+           else echo "Possible problem with ex8_2, diffs above"; fi; \
+           $(RM) -f ex8_2.tmp
+
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex1.o
