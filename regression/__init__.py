@@ -1,1 +1,1 @@
-all = ['Tester']
+all = ['testCase']
