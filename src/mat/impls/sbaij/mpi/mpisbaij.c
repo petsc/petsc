@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.1 2000/07/07 20:55:55 balay Exp balay $*/
+/*$Id: mpisbaij.c,v 1.2 2000/07/07 21:01:52 balay Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   
 #include "src/vec/vecimpl.h"
@@ -810,7 +810,7 @@ int MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
     ierr =  MatNorm(baij->A,type,norm);CHKERRQ(ierr);
   } else {
     if (type == NORM_FROBENIUS) {
-      lnorm2 = (Scalar*)PetscMalloc(2*sizeof(Scalar));CHKPTRQ(lnorm2); 
+      lnorm2 = (double*)PetscMalloc(2*sizeof(double));CHKPTRQ(lnorm2); 
       ierr =  MatNorm(baij->A,type,lnorm2);CHKERRQ(ierr);
       *lnorm2 = (*lnorm2)*(*lnorm2); lnorm2++;            /* squar power of norm(A) */
       ierr =  MatNorm(baij->B,type,lnorm2);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.7 2000/07/10 16:43:14 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.8 2000/07/10 19:14:47 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -20,13 +20,13 @@ int main(int argc,char **args)
   IS      ip, isrow, iscol;
   PetscRandom rand;
 
-  PetscTruth       reorder=PETSC_FALSE,getrow=PETSC_TRUE;
+  PetscTruth       reorder=PETSC_FALSE,getrow=PETSC_FALSE;
   MatInfo          minfo1,minfo2;
   MatILUInfo       info;
   
   int      lf; /* level of fill for ilu */
   Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
-  int      *cols1,*cols2,nrows,mbs;
+  int      *cols1,*cols2,mbs;
   double   r1,r2,tol=1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -315,8 +315,8 @@ int main(int argc,char **args)
     /* Check the error */
     ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
     ierr = VecNorm(y,NORM_2,&r1);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, Norm of error=%g\n",lf,r1);CHKERRA(ierr);
-  }
+    /* ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, Norm of error=%g\n",lf,r1);CHKERRA(ierr);*/
+  } 
   
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
