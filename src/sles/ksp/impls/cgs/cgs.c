@@ -52,10 +52,9 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-  } else if (ksp->normtype == KSP_NATURAL_NORM) {
-    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+  ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+  if (ksp->normtype == KSP_NATURAL_NORM) {
+    dp *= dp;
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
@@ -68,6 +67,23 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
 
   /* Make the initial Rp == R */
   ierr = VecCopy(R,RP);CHKERRQ(ierr);
+  /*  added for Fidap */
+  /* Penalize Startup - Isaac Hasbani Trick for CGS 
+     Since most initial conditions result in a mostly 0 residual,
+     we change all the 0 values in the vector RP to the maximum.
+  */
+  if (ksp->normtype == KSP_NATURAL_NORM) {
+     PetscScalar vr0max, *tmp_RP=0;
+     int         pres, numnp=0, *max_pos=0;
+     ierr = VecMax(RP, max_pos, &vr0max); CHKERRQ(ierr);
+     ierr = VecGetArray(RP, &tmp_RP);     CHKERRQ(ierr);
+     ierr = VecGetLocalSize(RP, &numnp);  CHKERRQ(ierr);
+     for (i=0; i<numnp; i++) {
+       if (tmp_RP[i] == 0.0) tmp_RP[i] = vr0max;
+     }
+     ierr = VecRestoreArray(RP, &tmp_RP); CHKERRQ(ierr);
+  }
+  /*  end of addition for Fidap */
 
   /* Set the initial conditions */
   ierr = VecDot(R,RP,&rhoold);CHKERRQ(ierr);        /* rhoold = (r,rp)      */

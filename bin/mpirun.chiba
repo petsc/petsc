@@ -149,7 +149,6 @@ cp ${PETSC_DIR}/bin/ $rundir
 hasgm="`nm $programname | egrep 'T gm_init$'`"
 if [ -n "$hasgm" ] ; then
   usemyrinet="yes"
-  local="no"
   myrinetattribute=":myrinet"
 else
   usemyrinet="no"

@@ -96,12 +96,12 @@ void PETSC_STDCALL petsclogbegin_(int *ierr){
 #endif
 }
 
-void PETSC_STDCALL petsclogeventbegin_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4, int *_ierr){
-  *_ierr = PetscLogEventBegin(*e,*o1,*o2,*o3,*o4);
+void PETSC_STDCALL petsclogeventbegin_(int *e,int *_ierr){
+  *_ierr = PetscLogEventBegin(*e,0,0,0,0);
 }
 
-void PETSC_STDCALL petsclogeventend_(int *e,PetscObject *o1,PetscObject *o2,PetscObject *o3,PetscObject *o4, int *_ierr){
-  *_ierr = PetscLogEventEnd(*e,*o1,*o2,*o3,*o4);
+void PETSC_STDCALL petsclogeventend_(int *e,int *_ierr){
+  *_ierr = PetscLogEventEnd(*e,0,0,0,0);
 }
 
 void PETSC_STDCALL petsclogflops_(int *f,int *_ierr) {

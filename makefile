@@ -379,10 +379,10 @@ alldoc: chk_loc deletemanualpages chk_concepts_dir
 
 # Builds .html versions of the source
 allhtml: chk_loc
-	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} tree LOC=${LOC}
+	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 
 allcleanhtml: 
-	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} tree
+	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
 
 chk_concepts_dir: chk_loc
 	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
