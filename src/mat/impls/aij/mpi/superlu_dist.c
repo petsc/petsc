@@ -171,7 +171,7 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
 {
   Mat_MPIAIJ              *fac = (Mat_MPIAIJ*)(*F)->data;
-  Mat                     *tseq,A_seq;
+  Mat                     *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ              *aa;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)fac->spptr;
   int                     M=A->M,N=A->N,info,ierr,size=fac->size;
@@ -343,8 +343,6 @@ extern int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *in
 #define __FUNCT__ "MatUseSuperLU_DIST_MPIAIJ"
 int MatUseSuperLU_DIST_MPIAIJ(Mat A)
 {
-  int        ierr;  
-
   PetscFunctionBegin;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST;
   A->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;

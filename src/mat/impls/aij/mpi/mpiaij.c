@@ -1494,11 +1494,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_MPIAIJ"
 int MatCreate_MPIAIJ(Mat B)
 {
-  Mat_MPIAIJ   *b;
-  int          ierr,i,size;
-#if defined(PETSC_HAVE_SUPERLUDIST) 
-  PetscTruth   flg;
-#endif
+  Mat_MPIAIJ *b;
+  int        ierr,i,size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
