@@ -15,9 +15,7 @@ Additional Capabilities that PETSc Needs:
      Fix help info for matrices.
 
    - Design better ILU/ICC interface for mpirowbs format (so that PC 
-     selection is correct and symmetric matrix can use ILU).
-
-   X Change all CAPS macro to use _ between words, for example INSERT_VALUES
+     selection is correct and symmetric matrix can use ILU). Cannot do.
 
    - Fix bug in MatCreateMPIAIJ() for rectangular matrices (not square)
 
@@ -25,6 +23,8 @@ Additional Capabilities that PETSc Needs:
 
    - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix
     
+   X Change all CAPS macro to use _ between words, for example INSERT_VALUES
+
    X Add flag where user can announce that matrix is structurally symmetric and 
      that they are inserting all values for MPIRowbs, this prevents unneeded 
      communication.
@@ -32,6 +32,8 @@ Additional Capabilities that PETSc Needs:
 
    To do sometime soon:
   ----------------------
+
+   - Make PETSc work using include/mpiuni.h (i.e. no MPI needed)
 
    - Parallel dense matrix implementation.
 
@@ -48,7 +50,7 @@ Additional Capabilities that PETSc Needs:
 
    - Complex versions of the Krylov subspace solvers
 
-   - Inplace ILU(0).
+   - Inplace ILU(0) for AIJ.
 
    * Upgrade tohtml and doc2tex
 
