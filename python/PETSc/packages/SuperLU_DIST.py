@@ -53,20 +53,21 @@ class Configure(PETSc.package.Package):
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = -I'+self.libraries.toString(self.mpi.include)+'\n')
-    g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n') 
-    g.write('LIBS         = $(DSUPERLULIB) $(BLASLIB) $(MPILIB)\n')
-    g.write('ARCH         = ar\n')
-    g.write('ARCHFLAGS    = cr\n')
+    g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
+    g.write('SYS_LIB      = \n')
+    g.write('LIBS         = $(DSUPERLULIB) $(BLASLIB) $(PERFLIB) $(MPILIB) $(SYS_LIB)\n')
+    g.write('ARCH         = '+self.setcompilers.AR+'\n')
+    g.write('ARCHFLAGS    = '+self.setcompilers.AR_FLAGS+'\n')
     g.write('RANLIB       = '+self.setcompilers.RANLIB+'\n')
     self.setcompilers.pushLanguage('C')
     g.write('CC           = '+self.setcompilers.getCompiler()+'\n')
-    g.write('CFLAGS       = -O2\n') #'+self.setcompilers.getCompilerFlags()+'\n')-> -fPIC -Wall -Wshadow -Wwrite-strings -g3 ???
-    g.write('LOADER       = '+self.setcompilers.getCompiler()+'\n') #gcc???
-    g.write('LOADOPTS     =\n')
+    g.write('CFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
+    g.write('LOADER       = '+self.setcompilers.getCompiler()+'\n') 
+    g.write('LOADOPTS     = \n')
     self.setcompilers.popLanguage()
     self.setcompilers.pushLanguage('FC')
     g.write('FORTRAN      = '+self.setcompilers.getCompiler()+'\n')
-    g.write('FFLAGS       = -O2\n')
+    g.write('FFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
     self.setcompilers.popLanguage()
     g.write('CDEFS        = -DAdd_\n')
     g.close()
@@ -76,7 +77,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild SUPERLU_DIST, make.inc != '+installDir+'/make.inc\n')
       try:
         self.logPrint("Compiling superlu_dist; this may take several minutes\n", debugSection='screen')
-        output  = config.base.Configure.executeShellCommand('cd '+superluDir+';SUPERLU_DIST_INSTALL_DIR='+installDir+';export SUPERLU_DIST_INSTALL_DIR; make lib; mv *.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp SRC/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+superluDir+';SUPERLU_DIST_INSTALL_DIR='+installDir+';export SUPERLU_DIST_INSTALL_DIR; make clean; make lib; mv *.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp SRC/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       if not os.path.isdir(os.path.join(installDir,self.libdir)):

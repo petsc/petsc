@@ -53,10 +53,10 @@ class Configure(PETSc.package.Package):
     g = open(os.path.join(spoolesDir,'Make.inc'),'w')
     self.setcompilers.pushLanguage('C')
     g.write('CC          = '+self.setcompilers.getCompiler()+'\n') 
-    g.write('CFLAGS      = -O2\n') #self.framework.getCompilerFlags() fails!
+    g.write('CFLAGS      = -O\n') #self.setcompilers.getCompilerFlags() could take endless time to compile
     self.setcompilers.popLanguage()
-    g.write('AR          = ar\n')
-    g.write('ARFLAGS     = cr\n')
+    g.write('AR          = '+self.setcompilers.AR+'\n')
+    g.write('ARFLAGS     = '+self.setcompilers.AR_FLAGS+'\n')
     g.write('RANLIB      = '+self.setcompilers.RANLIB+'\n')
     g.write('MPI_LIBS    = '+self.libraries.toString(self.mpi.lib)+'\n') 
     g.write('MPI_INCLUDE_DIR = -I'+self.libraries.toString(self.mpi.include)+'\n') 

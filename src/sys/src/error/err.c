@@ -229,6 +229,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],c
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_ERRORCHECKING)
 PetscErrorCode PetscErrorUncatchable[PETSC_EXCEPTIONS_MAX] = {0};
 PetscInt       PetscErrorUncatchableCount                  = 0;
 PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX]       = {0};
@@ -301,6 +302,7 @@ void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
   /* if (PetscExceptionsCount <= 0)SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is empty"); */
   if (PetscErrorIsCatchable(err)) PetscExceptionsCount--;
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscError" 
@@ -341,7 +343,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
   PetscErrorCode ierr;
   char           buf[2048],*lbuf = 0;
   PetscTruth     ismain,isunknown;
+#if defined(PETSC_USE_ERRORCHECKING)
   PetscInt       i;
+#endif
 
   if (!func)  func = "User provided function";
   if (!file)  file = "User file";
@@ -359,10 +363,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
     }
   }
 
+#if defined(PETSC_USE_ERRORCHECKING)
   /* check if user is catching this exception */
   for (i=0; i<PetscExceptionsCount; i++) {
     if (n == PetscExceptions[i])  PetscFunctionReturn(n);
   }
+#endif
 
   if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,lbuf,0);
   else         ierr = (*eh->handler)(line,func,file,dir,n,p,lbuf,eh->ctx);

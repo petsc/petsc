@@ -262,8 +262,9 @@ extern PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX];
 extern PetscInt       PetscExceptionsCount;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
 EXTERN void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
 
 /*MC
    PetscExceptionCaught - Indicates if exception zierr was caught.
@@ -377,7 +378,10 @@ extern PetscErrorCode PetscExceptionTmp;
 #define ___  
 #endif 
 
-#define PetscExceptionTry1(a,b) a
+#define PetscErrorSetCatchable(a,b) 0
+#define PetscExceptionCaught(a,b)   PETSC_FALSE
+#define PetscExceptionValue(a)      PETSC_FALSE
+#define PetscExceptionTry1(a,b)     a
 #endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);

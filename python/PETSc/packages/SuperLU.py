@@ -55,18 +55,19 @@ class Configure(PETSc.package.Package):
     g.write('TMGLIB       = tmglib.a\n')
     g.write('SUPERLULIB   = superlu.a\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
+    g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('ARCH         = '+self.setcompilers.AR+'\n')
     g.write('ARCHFLAGS    = '+self.setcompilers.AR_FLAGS+'\n')
     g.write('RANLIB       = '+self.setcompilers.RANLIB+'\n')
     self.setcompilers.pushLanguage('C')
     g.write('CC           = '+self.setcompilers.getCompiler()+'\n')
-    g.write('CFLAGS       = -O2\n') #'+self.setcompilers.getCompilerFlags()+'\n')-> -fPIC -Wall -Wshadow -Wwrite-strings -g3 ???
-    g.write('LOADER       = '+self.setcompilers.getCompiler()+'\n') #gcc???
-    g.write('LOADOPTS     =\n')
+    g.write('CFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
+    g.write('LOADER       = '+self.setcompilers.getCompiler()+'\n') 
+    g.write('LOADOPTS     = \n') 
     self.setcompilers.popLanguage()
     self.setcompilers.pushLanguage('FC')
     g.write('FORTRAN      = '+self.setcompilers.getCompiler()+'\n')
-    g.write('FFLAGS       = -O2\n')
+    g.write('FFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
     self.setcompilers.popLanguage()
     g.write('CDEFS        = -DAdd_\n')
     g.write('MATLAB       =\n')
@@ -77,7 +78,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild SuperLU, make.inc != '+installDir+'/make.inc\n')
       try:
         self.logPrint("Compiling superlu; this may take several minutes\n", debugSection='screen')
-        output = config.base.Configure.executeShellCommand('cd '+superluDir+'; SUPERLU_INSTALL_DIR='+installDir+'; export SUPERLU_INSTALL_DIR; make install lib; mv *.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp SRC/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output = config.base.Configure.executeShellCommand('cd '+superluDir+'; SUPERLU_INSTALL_DIR='+installDir+'; export SUPERLU_INSTALL_DIR; make clean; make lib; mv *.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp SRC/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
     else:
