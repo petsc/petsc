@@ -76,6 +76,10 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  /* reuse the parameter struct */
+  params = (Parameter*)bag;
+  PetscPrintf(PETSC_COMM_WORLD,"The value of rho after loading is: %f\n",params->rho);
+
   /* clean up and exit */
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);

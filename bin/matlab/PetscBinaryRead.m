@@ -43,5 +43,10 @@ for l=1:nargout
     v = fread(fd,m,'double');
     varargout(l) = {v};
   end
+
+  if header(1) == 1211219
+     str = sprintf('No support for loading PetscBags');
+     error(str);
+  end
 end
 fclose(fd);
