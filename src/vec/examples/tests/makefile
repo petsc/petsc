@@ -142,7 +142,7 @@ ex23: ex23.o  chkopts
 	$(RM) -f ex23.o
 
 ex24: ex24.o ex24f.o chkopts
-	-$(CLINKER) -o ex24 ex24.o ex24f.o $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	-$(FLINKER) -o ex24 ex24.o ex24f.o $(PETSC_FORTRAN_LIB) $(SLES_LIB) 
 	$(RM) -f ex24.o ex24f.o
 
 runex1:
