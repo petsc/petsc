@@ -60,16 +60,50 @@ class Configure(config.base.Configure):
     self.framework.log.write('Downloading latest source with bk\n')
     try:
       output1 = self.executeShellCommand('bk pull')
-      output2 = self.executeShellCommand('cd python/BuildSystem; bk pull')
-      if output1.find('error') >= 0 or output2.find('error') >= 0:
-        raise RuntimeError()
-      if output1.find('Nothing to pull') >= 0 and output2.find('Nothing to pull') >= 0:
+      if output1.find('error') >= 0:
+        raise RuntimeError('Error pulling latest source code from PETSc BK website')
+      if output1.find('Nothing to pull') >= 0:
         self.strmsg = 'Source is current with PETSc BK website\n'
       else: 
         self.strmsg = 'Updated source code from PETSc BK website\n'
     except RuntimeError:
       self.framework.log.write('Error doing bk pull. Continuing configure anyways.\n')
       self.framework.log.write(output1+'\n')
+    return 
+
+  def updateBKBuildSystem(self):
+    '''Updates the source code from BuildSystem with bk pull'''
+    self.framework.getExecutable('bk')
+    if not hasattr(self.framework, 'bk'):
+      self.framework.log.write('Cannot find bk program.\nContinuing configure without update.\n')
+      return
+    
+    import re
+    self.framework.log.write('Checking if can downloading latest source with bk\n')
+    try:
+      output1 = self.executeShellCommand('cd python/BuildSystem; bk sfiles -lgpC')
+      output2 = self.executeShellCommand('cd python/BuildSystem; bk changes -L -v')
+      if output2.startswith('Pseudo-terminal will not be allocated because stdin is not a terminal.') and len(output2) <= 72:
+        output2 = ''
+      if output1 or output2:
+        self.framework.log.write('Cannot pull latest BuildSystem source code, you have changed files or bk change sets\n')
+        self.framework.log.write(output1+'\n'+output2+'\n')
+        return
+    except RuntimeError:
+      self.framework.log.write('BK failure in checking for latest changes in BuildSystem\n')
+      return
+
+    self.framework.log.write('Downloading latest BuildSystem source with bk\n')
+    try:
+      output2 = self.executeShellCommand('cd python/BuildSystem; bk pull')
+      if output2.find('error') >= 0:
+        raise RuntimeError('Error pulling latest source code from BuildSystem  BK website')
+      if output2.find('Nothing to pull') >= 0:
+        self.strmsg = self.strmsg+'BuildSystem source is current with PETSc BK website\n'
+      else: 
+        self.strmsg = self.strmsg+'Updated BuildSystem source code from PETSc BK website\n'
+    except RuntimeError:
+      self.framework.log.write('Error doing bk pull on BuildSystem. Continuing configure anyways.\n')
       self.framework.log.write(output2+'\n')
     return 
 
@@ -126,6 +160,8 @@ class Configure(config.base.Configure):
   def configure(self):
     self.executeTest(self.configureDirectories)
     if not self.framework.argDB['enable-update']: return
-    if os.path.isdir('BitKeeper'): self.executeTest(self.updateBK)
+    if os.path.isdir('BitKeeper'): 
+      self.executeTest(self.updateBK)
+      self.executeTest(self.updateBKBuildSystem)
     else:                          self.executeTest(self.updatePatches)
     return
