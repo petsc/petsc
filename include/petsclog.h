@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.21 1995/07/12 15:32:21 curfman Exp $ */
+/* $Id: plog.h,v 1.1 1995/07/12 16:28:35 curfman Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -81,7 +81,7 @@ extern int PLogEventRegister(int,char*);
 
 /*M   
    PLogEventBegin - Logs the beginning of a user event.  Note that
-   pinclude/plog.h must be included in the user's code to employ 
+   petsc/include/plog.h MUST be included in the user's code to employ 
    this function.
 
    Input Parameters:
@@ -104,10 +104,11 @@ extern int PLogEventRegister(int,char*);
 
     Example of Usage:
 $     #define USER_EVENT 75
+$     int user_event_flops;
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
-$     [code segment to monitor]
-$     PLogFlops(user_flops)
+$        [code segment to monitor]
+$        PLogFlops(user_event_flops);
 $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops()
@@ -120,7 +121,7 @@ M*/
 
 /*M   
    PLogEventEnd - Log the end of a user event.  Note that
-   pinclude/plog.h must be included in the user's code to employ 
+   petsc/include/plog.h MUST be included in the user's code to employ 
    this function.
 
    Input Parameters:
@@ -143,10 +144,11 @@ M*/
 
     Example of Usage:
 $     #define USER_EVENT 75
+$     int user_event_flops;
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
-$     [code segment to monitor]
-$     PLogFlops(user_flops)
+$        [code segment to monitor]
+$        PLogFlops(user_event_flops);
 $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogFlops()

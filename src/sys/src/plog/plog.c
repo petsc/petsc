@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.17 1995/07/11 19:38:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.18 1995/07/12 16:17:49 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -451,7 +451,7 @@ static char *(name[]) = {"MatMult         ",
 
 /*@
     PLogEventRegister - Registers an event name for logging operations in 
-    an application code.  Note that pinclude/plog.h must be included
+    an application code.  Note that petsc/include/plog.h MUST be included
     in the user's code to employ this function.
 
     Input Parameters:
@@ -467,10 +467,11 @@ static char *(name[]) = {"MatMult         ",
 
     Example of Usage:
 $     #define USER_EVENT 75
+$     int user_event_flops;
 $     PLogEventRegister(USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
-$     [code segment to monitor]
-$     PLogFlops(user_flops)
+$        [code segment to monitor]
+$        PLogFlops(user_event_flops);
 $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .keywords: log, event, register
