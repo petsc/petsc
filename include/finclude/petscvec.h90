@@ -1,9 +1,8 @@
 C
-C  $Id: vec.h90,v 1.1 1997/01/16 02:18:49 bsmith Exp bsmith $;
+C  $Id: vec.h90,v 1.2 1997/01/17 03:08:14 bsmith Exp curfman $;
 C
 C  Additional Vec include file for use of PETSc with Fortran 90/HPF
 C
-
       Interface 
         Subroutine VecGetArrayF90(v,array,ierr)
           Scalar, pointer :: array(:)
