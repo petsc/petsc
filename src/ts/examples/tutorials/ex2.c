@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.10 1997/07/11 16:04:28 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.11 1997/08/07 14:41:33 bsmith Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
 
@@ -72,7 +72,6 @@ int main(int argc,char **argv)
   double        dt,ftime;
   TS            ts;
   Mat           A;
-  TSType        dummy;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
