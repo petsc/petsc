@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.150 1996/07/05 19:19:25 balay Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.151 1996/07/08 01:18:41 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -445,11 +445,11 @@ static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 
   ierr = VecGetLocalSize(xx,&nt);  CHKERRQ(ierr);
   if (nt != a->n) {
-    SETERRQ(1,"MatMult_MPIAIJ:Incompatiable parition of A and xx");
+    SETERRQ(1,"MatMult_MPIAIJ:Incompatible parition of A and xx");
   }
   ierr = VecGetLocalSize(yy,&nt);  CHKERRQ(ierr);
   if (nt != a->m) {
-    SETERRQ(1,"MatMult_MPIAIJ:Incompatiable parition of A and yy");
+    SETERRQ(1,"MatMult_MPIAIJ:Incompatible parition of A and yy");
   }
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
   ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.9 1996/07/05 19:55:05 balay Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.10 1996/07/08 01:18:17 curfman Exp curfman $";
 #endif
 
 #include "mpibaij.h"
@@ -523,8 +523,16 @@ static int MatDestroy_MPIBAIJ(PetscObject obj)
 static int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) A->data;
-  int        ierr;
+  int         ierr, nt;
 
+  ierr = VecGetLocalSize(xx,&nt);  CHKERRQ(ierr);
+  if (nt != a->n) {
+    SETERRQ(1,"MatMult_MPIAIJ:Incompatible parition of A and xx");
+  }
+  ierr = VecGetLocalSize(yy,&nt);  CHKERRQ(ierr);
+  if (nt != a->m) {
+    SETERRQ(1,"MatMult_MPIAIJ:Incompatible parition of A and yy");
+  }
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
   ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
   ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
