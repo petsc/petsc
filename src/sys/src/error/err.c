@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.107 1999/11/05 14:44:06 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.108 2000/01/11 20:59:24 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -17,6 +17,62 @@ struct _EH {
 };
 
 static EH eh = 0;
+
+#undef __FUNC__  
+#define __FUNC__ "PetscEmacsClientErrorHandler"
+/*@C
+   PetscEmacsClientErrorHandler - Error handler that uses the emacsclient program to 
+    load the file where the error occured. Then calls the "previous" error handler.
+
+   Not Collective
+
+   Input Parameters:
++  line - the line number of the error (indicated by __LINE__)
+.  func - the function where error is detected (indicated by __FUNC__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  dir - the directory of the file (indicated by __SDIR__)
+.  mess - an error text string, usually just printed to the screen
+.  n - the generic error number
+.  p - specific error number
+-  ctx - error handler context
+
+   Options Database:
+.   -on_error_emacs <machinename>
+
+   Level: developer
+
+   Notes:
+   Most users need not directly employ this routine and the other error 
+   handlers, but can instead use the simplified interface SETERRQ, which has 
+   the calling sequence
+$     SETERRQ(number,p,mess)
+
+   Notes for experienced users:
+   Use PetscPushErrorHandler() to set the desired error handler.  The
+   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
+   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler()
+
+.keywords: default, error, handler, traceback
+
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
+          PetscAbortErrorHandler()
+ @*/
+int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
+{
+  int         ierr;
+  PetscTruth        flg1,flg2;
+  char        command[1024];
+  FILE        *fp;
+
+  PetscFunctionBegin;
+  sprintf(command,"emacsclient +%d %s/%s%s\n",line,PETSC_DIR,dir,file);
+  PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
+  PetscFClose(MPI_COMM_WORLD,fp);
+  PetscPopErrorHandler(); /* remove this handler from the stack of handlers */
+  if (!eh)     ierr = PetscTraceBackErrorHandler(line,fun,file,dir,n,p,mess,0);
+  else         ierr = (*eh->handler)(line,fun,file,dir,n,p,mess,eh->ctx);
+  PetscFunctionReturn(ierr);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PetscPushErrorHandler"
