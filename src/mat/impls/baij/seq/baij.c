@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.60 1996/07/31 19:21:20 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.61 1996/07/31 20:25:01 balay Exp balay $";
 #endif
 
 /*
@@ -216,6 +216,131 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   return 0;
 }
 
+static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
+{
+  Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
+  int          row,ierr,i,j,k,l,mbs=a->mbs,pause,color,bs=a->bs,bs2=a->bs2;
+  double       xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
+  Scalar       *aa;
+  Draw         draw;
+  DrawButton   button;
+  PetscTruth   isnull;
+
+  ViewerDrawGetDraw(viewer,&draw);
+  ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
+
+  xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
+  xr += w;    yr += h;  xl = -w;     yl = -h;
+  ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+  /* loop over matrix elements drawing boxes */
+  color = DRAW_BLUE;
+  for ( i=0,row=0; i<mbs; i++,row+=bs ) {
+    for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
+      y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+      x_l = a->j[j]*bs; x_r = x_l + 1.0;
+      aa = a->a + j*bs2;
+      for ( k=0; k<bs; k++ ) {
+        for ( l=0; l<bs; l++ ) {
+          if (PetscReal(*aa++) >=  0.) continue;
+          DrawRectangle(draw,x_l+k,y_l+l,x_r+k,y_r+l,color,color,color,color);
+        }
+      }
+    } 
+  }
+  color = DRAW_CYAN;
+  for ( i=0,row=0; i<mbs; i++,row+=bs ) {
+    for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
+      y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+      x_l = a->j[j]*bs; x_r = x_l + 1.0;
+      aa = a->a + j*bs2;
+      for ( k=0; k<bs; k++ ) {
+        for ( l=0; l<bs; l++ ) {
+          if (PetscReal(*aa++) != 0.) continue;
+          DrawRectangle(draw,x_l+k,y_l+l,x_r+k,y_r+l,color,color,color,color);
+        }
+      }
+    } 
+  }
+
+  color = DRAW_RED;
+  for ( i=0,row=0; i<mbs; i++,row+=bs ) {
+    for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
+      y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+      x_l = a->j[j]*bs; x_r = x_l + 1.0;
+      aa = a->a + j*bs2;
+      for ( k=0; k<bs; k++ ) {
+        for ( l=0; l<bs; l++ ) {
+          if (PetscReal(*aa++) <= 0.) continue;
+          DrawRectangle(draw,x_l+k,y_l+l,x_r+k,y_r+l,color,color,color,color);
+        }
+      }
+    } 
+  }
+
+  DrawFlush(draw); 
+  DrawGetPause(draw,&pause);
+  if (pause >= 0) { PetscSleep(pause); return 0;}
+
+  /* allow the matrix to zoom or shrink */
+  ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  while (button != BUTTON_RIGHT) {
+    DrawClear(draw);
+    if (button == BUTTON_LEFT) scale = .5;
+    else if (button == BUTTON_CENTER) scale = 2.;
+    xl = scale*(xl + w - xc) + xc - w*scale;
+    xr = scale*(xr - w - xc) + xc + w*scale;
+    yl = scale*(yl + h - yc) + yc - h*scale;
+    yr = scale*(yr - h - yc) + yc + h*scale;
+    w *= scale; h *= scale;
+    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+    color = DRAW_BLUE;
+    for ( i=0,row=0; i<mbs; i++,row+=bs ) {
+      for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
+        y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+        x_l = a->j[j]*bs; x_r = x_l + 1.0;
+        aa = a->a + j*bs2;
+        for ( k=0; k<bs; k++ ) {
+          for ( l=0; l<bs; l++ ) {
+            if (PetscReal(*aa++) >=  0.) continue;
+            DrawRectangle(draw,x_l+k,y_l+l,x_r+k,y_r+l,color,color,color,color);
+          }
+        }
+      } 
+    }
+    color = DRAW_CYAN;
+    for ( i=0,row=0; i<mbs; i++,row+=bs ) {
+      for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
+        y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+        x_l = a->j[j]*bs; x_r = x_l + 1.0;
+        aa = a->a + j*bs2;
+        for ( k=0; k<bs; k++ ) {
+          for ( l=0; l<bs; l++ ) {
+          if (PetscReal(*aa++) != 0.) continue;
+          DrawRectangle(draw,x_l+k,y_l+l,x_r+k,y_r+l,color,color,color,color);
+          }
+        }
+      } 
+    }
+    
+    color = DRAW_RED;
+    for ( i=0,row=0; i<mbs; i++,row+=bs ) {
+      for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
+        y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+        x_l = a->j[j]*bs; x_r = x_l + 1.0;
+        aa = a->a + j*bs2;
+        for ( k=0; k<bs; k++ ) {
+          for ( l=0; l<bs; l++ ) {
+            if (PetscReal(*aa++) <= 0.) continue;
+            DrawRectangle(draw,x_l+k,y_l+l,x_r+k,y_r+l,color,color,color,color);
+          }
+        }
+      } 
+    }
+    ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  }
+  return 0;
+}
+
 static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
@@ -233,7 +358,7 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
     return MatView_SeqBAIJ_Binary(A,viewer);
   }
   else if (vtype == DRAW_VIEWER) {
-    SETERRQ(1,"MatView_SeqBAIJ:Draw viewer not supported");
+    return MatView_SeqBAIJ_Draw(A,viewer);
   }
   return 0;
 }
