@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.223 1998/06/23 22:07:14 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.224 1998/07/13 18:13:04 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -327,6 +327,26 @@ extern int PetscDoubleView(int,double *,Viewer);
 
 #if !defined(USE_FORTRAN_KERNEL_MULTAIJ)
 #define USE_FORTRAN_KERNEL_MULTAIJ
+#endif
+
+#if !defined(USE_FORTRAN_KERNEL_NORMSQR)
+#define USE_FORTRAN_KERNEL_NORMSQR
+#endif
+
+#if !defined(USE_FORTRAN_KERNEL_MAXPY)
+#define USE_FORTRAN_KERNEL_MAXPY
+#endif
+
+#if !defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
+#define USE_FORTRAN_KERNEL_SOLVEAIJ
+#endif
+
+#if !defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
+#define USE_FORTRAN_KERNEL_MULTADDAIJ
+#endif
+
+#if !defined(USE_FORTRAN_KERNEL_MDOT)
+#define USE_FORTRAN_KERNEL_MDOT
 #endif
 
 #endif
