@@ -1,4 +1,4 @@
-! "$Id: ex1f.F,v 1.20 1999/03/02 16:20:11 balay Exp bsmith $"
+! "$Id: ex2f.h,v 1.7 2000/01/02 04:45:04 bsmith Exp curfman $"
 !  This file contains include statements and a user-defined
 !  common block for application-specific data.  This file is
 !  included in each routine within the program ex2f. 
@@ -55,13 +55,13 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Common block data:
       DA               da
-      Vec              localwork,solution
+      Vec              localwork,solution,u_local
       integer          M,rank,size,debug
       double precision h,zero_d0,one_d0,two_d0,four_d0
       MPI_Comm         comm
 
       common /params/ h,zero_d0,one_d0,two_d0,four_d0
       common /appctx/ M,debug,da,localwork,solution
-      common /appctx/ comm,rank,size
+      common /appctx/ u_local,comm,rank,size
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

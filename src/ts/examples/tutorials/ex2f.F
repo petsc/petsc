@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.27 1999/10/23 00:01:22 bsmith Exp bsmith $";
+! "$Id: ex2f.F,v 1.28 2000/01/11 21:03:05 bsmith Exp curfman $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -63,7 +63,7 @@
 !  Variables:
 !     ts             - timestepping solver
 !     A              - Jacobian matrix context
-!     u_local          - local vector
+!     u_local        - local vector
 !     u              - approximate solution vector
 !     ftime          - final time
 !     time_total_max - default total max time
@@ -146,7 +146,8 @@
 !  Set optional user-defined monitoring routine
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,ierr)
+      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,
+     &                  PETSC_NULL_FUNCTION,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  For nonlinear problems, the user can provide a Jacobian evaluation
