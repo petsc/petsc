@@ -31,7 +31,9 @@ cd /mcs/tmp
 tar xf ~/petsc.tar
 chmod -R u+w petsc
 /bin/rm -f ~/petsc.tar
-mv petsc petsc$version
+if ($#argv == 1) then
+  mv petsc petsc$version
+endif
 tar cf ~/petsc$version.tar petsc$version
 /bin/rm -r -f /mcs/tmp/petsc$version
 
