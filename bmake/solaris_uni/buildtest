@@ -6,7 +6,7 @@
 # This handles tests for solaris_uni, solaris_gun, and solaris64
 #
 set TMP=/sandbox/petsc/petsc-test
-set MACH=maple
+set MACH=atlantis
 set TEST=testexamples_
 #
 set day=`date | cut -f1 -d" "`
