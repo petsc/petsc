@@ -22,9 +22,5 @@
 typedef struct rusage* s_rusage;
 
 /* -----------------------linux ------------------------------------------*/
-#if defined(__cplusplus)
-extern "C" {
-extern void* memalign (int,int);
-}
-#endif
+
 #endif

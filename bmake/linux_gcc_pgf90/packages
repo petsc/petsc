@@ -138,9 +138,9 @@ PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU
 #
 #  Location of SuperLU_DIST
 #
-SUPERLU_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux.a
-SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
-PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST 
+SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
+SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux.a /home/petsc/software/SuperLU/superlu_linux.a
+PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
 #
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this
