@@ -30,9 +30,9 @@ class PetscMake(bs.BS):
 
   def defineTargets(self):
     babelDefaults = BSTemplates.sidl.CompileDefaults('bs', self.filesets['sidl'])
-    babelDefaults.serverLanguages.append('C++')
-    babelDefaults.clientLanguages.append('C++')
-    babelDefaults.clientLanguages.append('Python')
+    babelDefaults.addServerLanguage('C++')
+    babelDefaults.addClientLanguage('C++')
+    babelDefaults.addClientLanguage('Python')
 
     self.targets['sidl']    = babelDefaults.getSIDLTarget()
     self.targets['compile'] = babelDefaults.getCompileTarget()
