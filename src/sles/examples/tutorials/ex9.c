@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.5 1996/04/01 19:05:47 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.6 1996/04/01 20:05:48 curfman Exp balay $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Mat    C, C2; 
   Scalar v;
   int    I, J, ldim, ierr, low, high, iglobal, Istart, Iend, Istart2, Iend2;
-  int    i, j, m = 3, n = 2, rank, size, its, flg, t, ntimes = 3, CHECK_ERROR;
+  int    i, j, m = 3, n = 2, rank, size, its, flg, t, ntimes = 3, CHECK_ERROR = 0;
   Vec    u, x, b, x2, b2;
   SLES   sles, sles2;
 
@@ -32,7 +32,7 @@ int main(int argc,char **args)
   PLogStageRegister(0,"Prelim setup");
   PLogStageRegister(1,"Linear System 1");
   PLogStageRegister(2,"Linear System 2");
-  PLogEventRegister(&CHECK_ERROR,"Check Error     ","Red");
+  PLogEventRegister(&CHECK_ERROR,"Check Error     ","Red:");
 
    /* Create data structures for first linear system */
   PLogStagePush(0);
