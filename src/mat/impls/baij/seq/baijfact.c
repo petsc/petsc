@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.62 1998/03/30 19:48:59 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.63 1998/05/13 14:14:26 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -987,8 +987,8 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   Mat_SeqBAIJ    *mat = (Mat_SeqBAIJ *) A->data;
   int            ierr;
   Mat            C;
-  PetscOps       *Abops;
-  struct _MatOps *Aops;
+  PetscOps *Abops;
+  MatOps   Aops;
 
   PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,f,&C); CHKERRQ(ierr);
@@ -1003,6 +1003,9 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   if (mat->solve_work) PetscFree(mat->solve_work);
   if (mat->mult_work) PetscFree(mat->mult_work);
   PetscFree(mat);
+
+  ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
 
   /*
        This is horrible, horrible code. We need to keep the 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.102 1998/07/13 18:48:23 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.103 1998/07/13 18:49:48 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -309,6 +309,9 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   if (mat->solve_work) PetscFree(mat->solve_work);
   if (mat->inode.size) PetscFree(mat->inode.size);
   PetscFree(mat);
+
+  ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
 
   /*
        This is horrible, horrible code. We need to keep the 
