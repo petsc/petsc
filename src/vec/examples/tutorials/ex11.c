@@ -50,8 +50,8 @@ int main(int argc,char **argv)
      particular type of vector to be formed.
 
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n,&x);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
 
   ierr = VecSetBlockSize(x,2);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
