@@ -20,7 +20,7 @@
 */
 typedef struct rusage* s_rusage;
 
-/* -----------------------Windows NT with MS Visual C++ ---------------------*/
+/* -----------------------Windows with MS Visual C++ ---------------------*/
 
 /* Fixes from sys/stat.h */
 #if !defined(R_OK)

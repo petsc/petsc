@@ -287,7 +287,7 @@ EXTERN int StageLogGetStage(StageLog, const char [], int *);
    macros in a way that sometimes it double counts, hence 
    PETSC_HAVE_BROKEN_RECURSIVE_MACRO
 
-     It does not work with Windows NT because winmpich lacks MPI_Type_size()
+     It does not work with Windows because winmpich lacks MPI_Type_size()
 */
 #if !defined(_petsc_mpi_uni) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*

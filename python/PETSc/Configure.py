@@ -304,16 +304,12 @@ class Configure(config.base.Configure):
     return
 
   def configureMissingFunctions(self):
-    '''Checks for MISSING_GETPWUID and MISSING_SOCKETS'''
-    if not self.functions.haveFunction('getpwuid'):
-      self.addDefine('MISSING_GETPWUID', 1)
+    '''Checks for SOCKETS'''
     if not self.functions.haveFunction('socket'):
       # solaris requires these two libraries for socket()
       if self.libraries.haveLib('socket') and self.libraries.haveLib('nsl'):
         self.addDefine('HAVE_SOCKET', 1)
         self.framework.argDB['LIBS'] += ' -lsocket -lnsl'
-      else:
-        self.addDefine('MISSING_SOCKETS', 1)
     return
 
   def configureMissingSignals(self):

@@ -250,9 +250,9 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
   Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
   int               nznew,*smap,i,j,ierr,oldcols = A->n;
   int               *irow,*icol,newr,newc,*cwork,nz,bs;
-  const int         *col;
+  int               *col;
   PetscScalar       *vwork;
-  const PetscScalar *val;
+  PetscScalar       *val;
   Mat               newmat;
 
   PetscFunctionBegin;

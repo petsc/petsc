@@ -47,30 +47,34 @@
    Level: developer
 
    Note:
-   On Windows NT machine the enviornmental variable HOME specifies the home directory.
+   If PETSc cannot determine the home directory it makes dir a null string
+
+   On Windows machines the enviornmental variable HOME specifies the home directory.
 
    Concepts: home directory
 @*/
 int PetscGetHomeDirectory(char dir[],int maxlen)
 {
-  int ierr;
-#if defined(PARCH_win32) || defined(PARCH_win32_gnu)
-  char *d1 = getenv("HOME");
-#else
+  int  ierr;
+  char *d1 = 0;
+#if defined(PETSC_HAVE_GETPWUID)
   struct passwd *pw = 0;
 #endif
 
   PetscFunctionBegin;
-#if defined(PARCH_win32) || defined(PARCH_win32_gnu)
-  if (!d1) d1 ="c:";
-  ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
-#elif !defined(PETSC_MISSING_GETPWUID)
+#if defined(PETSC_HAVE_GETPWUID)
   pw = getpwuid(getuid());
-  if (!pw)  {dir[0] = 0; PetscFunctionReturn(0);}
-  ierr = PetscStrncpy(dir,pw->pw_dir,maxlen);CHKERRQ(ierr);
-#else 
-  dir[0] = 0;
+  if (pw)  {
+    d1 = pw->pw_dir;
+  }
+#else
+  d1 = getenv("HOME");
 #endif
+  if (d1) {
+    ierr = PetscStrncpy(dir,d1,maxlen);CHKERRQ(ierr);
+  } else if (maxlen > 0) {
+    dir[0] = 0;
+  }
   PetscFunctionReturn(0);
 }
 

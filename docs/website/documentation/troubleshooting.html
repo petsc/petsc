@@ -987,12 +987,12 @@ their names. </li>
         </li>
 
         <li><font color="#ff0000"><strong>Symptom:</strong> </font>Under
-Windows NT When Installing         using g++ libfast in:
+Windows when Installing         using g++ libfast in:
 /users/petsc/petsc_prj/petsc/src/sys/src str.c: In function `void      
 PetscStrncpy(char *, char *, int)': str.c:36: warning: implicit
 declaration of function         `int strncpy(...)' ... ...
           <p><font color="#ff0000"><strong>Problem:</strong></font> This
- is due to the case insensitivity of NT file systems. Instead of using
+ is due to the case insensitivity of Windows file systems. Instead of using
 string.h , the         compiler is picking up String.h - a C++
 include-file, causing these errors. </p>
           <p><font color="#ff0000"><strong>Cure: </strong></font>In

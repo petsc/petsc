@@ -102,7 +102,7 @@ done.
 
    In addition, PETSc automatically does the byte swapping for
 machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-linux, nt and the paragon; thus if you write your own binary
+linux, Windows and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscReadBinary()
 and PetscWriteBinary() to see how this may be done.
 
