@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.21 1999/06/30 23:52:09 balay Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.22 1999/08/29 23:56:30 bsmith Exp balay $";
 #endif
  
 #include "petsc.h"
@@ -8,21 +8,11 @@ static char vcid[] = "$Id: pmetis.c,v 1.21 1999/06/30 23:52:09 balay Exp bsmith 
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
 
 /* 
-   ParMeTiS include files : cannot use par_kmetis.h directly because it includes
-   a bunch of system include files that cannot be extern C
+   Currently using ParMetis-2.0. The following include file has
+   to be changed to par_kmetis.h for ParMetis-1.0
 */
 EXTERN_C_BEGIN
-#ifdef DMALLOC
-#include "dmalloc.h"
-#endif
-
-#include "rename.h"
-#include "defs.h"
-#include "struct.h"
-#include "defs.h"
-#include "macros.h"
 #include "parmetis.h"
-#include "proto.h"
 EXTERN_C_END
 
 /*
