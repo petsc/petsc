@@ -36,7 +36,6 @@ int EventLogDestroy(EventLog eventLog)
   for(event = 0; event < eventLog->numEvents; event++) {
     ierr = PerfInfoDestroy(&eventLog->eventInfo[event]);                                                  CHKERRQ(ierr);
   }
-  ierr = PetscFree(eventLog->eventActive);                                                                CHKERRQ(ierr);
   ierr = PetscFree(eventLog->eventInfo);                                                                  CHKERRQ(ierr);
   ierr = PetscFree(eventLog);                                                                             CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -70,10 +69,8 @@ int EventLogCopy(EventLog eventLog, EventLog *newLog)
   ierr = PetscNew(struct _EventLog, &l);                                                                  CHKERRQ(ierr);
   l->numEvents   = eventLog->numEvents;
   l->maxEvents   = eventLog->maxEvents;
-  ierr = PetscMalloc(l->maxEvents * sizeof(int),      &l->eventActive);                                   CHKERRQ(ierr);
   ierr = PetscMalloc(l->maxEvents * sizeof(PerfInfo), &l->eventInfo);                                     CHKERRQ(ierr);
   for(event = 0; event < eventLog->numEvents; event++) {
-    l->eventActive[event]             = eventLog->eventActive[event];
     ierr = PetscStrallocpy(eventLog->eventInfo[event].name, &l->eventInfo[event].name);                   CHKERRQ(ierr);
     if (eventLog->eventInfo[event].color) {
       ierr = PetscStrallocpy(eventLog->eventInfo[event].color, &l->eventInfo[event].color);               CHKERRQ(ierr);
@@ -82,6 +79,8 @@ int EventLogCopy(EventLog eventLog, EventLog *newLog)
     }
     l->eventInfo[event].id            = eventLog->eventInfo[event].id;
     l->eventInfo[event].cookie        = eventLog->eventInfo[event].cookie;
+    l->eventInfo[event].active        = eventLog->eventInfo[event].active;
+    l->eventInfo[event].visible       = eventLog->eventInfo[event].visible;
     l->eventInfo[event].depth         = 0;
     l->eventInfo[event].count         = 0;
     l->eventInfo[event].flops         = 0.0;
@@ -150,7 +149,6 @@ int EventLogCopy(EventLog eventLog, EventLog *newLog)
 @*/
 int EventLogRegister(EventLog eventLog, const char ename[], const char color[], int cookie, int *event)
 {
-  int      *eventActive;
   PerfInfo *eventInfo;
   char     *cstr = PETSC_NULL;
   char     *str;
@@ -162,15 +160,11 @@ int EventLogRegister(EventLog eventLog, const char ename[], const char color[], 
   PetscValidIntPointer(event);
   e = eventLog->numEvents++;
   if (eventLog->numEvents > eventLog->maxEvents) {
-    ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(int),      &eventActive);                           CHKERRQ(ierr);
     ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(PerfInfo), &eventInfo);                             CHKERRQ(ierr);
-    ierr = PetscMemcpy(eventActive, eventLog->eventActive, eventLog->maxEvents * sizeof(int));            CHKERRQ(ierr);
     ierr = PetscMemcpy(eventInfo,   eventLog->eventInfo,   eventLog->maxEvents * sizeof(PerfInfo));       CHKERRQ(ierr);
-    ierr = PetscFree(eventLog->eventActive);                                                              CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);                                                                CHKERRQ(ierr);
-    eventLog->eventActive = eventActive;
-    eventLog->eventInfo   = eventInfo;
-    eventLog->maxEvents  *= 2;
+    eventLog->eventInfo  = eventInfo;
+    eventLog->maxEvents *= 2;
   }
   ierr = PetscStrallocpy(ename, &str);                                                                    CHKERRQ(ierr);
   if (color != PETSC_NULL) {
@@ -180,6 +174,8 @@ int EventLogRegister(EventLog eventLog, const char ename[], const char color[], 
   eventLog->eventInfo[e].name          = str;
   eventLog->eventInfo[e].color         = cstr;
   eventLog->eventInfo[e].cookie        = cookie;
+  eventLog->eventInfo[e].active        = PETSC_TRUE;
+  eventLog->eventInfo[e].visible       = PETSC_TRUE;
   eventLog->eventInfo[e].depth         = 0;
   eventLog->eventInfo[e].count         = 0;
   eventLog->eventInfo[e].flops         = 0.0;
@@ -187,7 +183,6 @@ int EventLogRegister(EventLog eventLog, const char ename[], const char color[], 
   eventLog->eventInfo[e].numMessages   = 0.0;
   eventLog->eventInfo[e].messageLength = 0.0;
   eventLog->eventInfo[e].numReductions = 0.0;
-  eventLog->eventActive[e]             = 1;
   if (*event == PETSC_DECIDE) {
     eventLog->eventInfo[e].id          = ++PETSC_LARGEST_EVENT;
   } else if (cookie >= 0) {
@@ -246,7 +241,7 @@ int EventLogActivate(EventLog eventLog, int event)
 
   PetscFunctionBegin;
   ierr = EventLogGetEvent(eventLog, event, &eventNum);                                                    CHKERRQ(ierr);
-  eventLog->eventActive[eventNum] = 1;
+  eventLog->eventInfo[eventNum].active = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -285,7 +280,7 @@ int EventLogDeactivate(EventLog eventLog, int event)
 
   PetscFunctionBegin;
   ierr = EventLogGetEvent(eventLog, event, &eventNum);                                                    CHKERRQ(ierr);
-  eventLog->eventActive[eventNum] = 0;
+  eventLog->eventInfo[eventNum].active = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -309,7 +304,7 @@ int EventLogActivateClass(EventLog eventLog, int cookie)
 
   PetscFunctionBegin;
   for(e = 0; e < eventLog->numEvents; e++) {
-    if (eventLog->eventInfo[e].cookie == cookie) eventLog->eventActive[e] = 1;
+    if (eventLog->eventInfo[e].cookie == cookie) eventLog->eventInfo[e].active = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -334,12 +329,77 @@ int EventLogDeactivateClass(EventLog eventLog, int cookie)
 
   PetscFunctionBegin;
   for(e = 0; e < eventLog->numEvents; e++) {
-    if (eventLog->eventInfo[e].cookie == cookie) eventLog->eventActive[e] = 0;
+    if (eventLog->eventInfo[e].cookie == cookie) eventLog->eventInfo[e].active = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------ Query Functions --------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "EventLogSetVisible"
+/*@C
+  EventLogSetVisible - This function determines whether an event is printed during PetscLogPrintSummary()
+
+  Not Collective
+
+  Input Parameters:
++ eventLog  - The EventLog
+. event     - The event id to log
+- isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
+
+  Database Options:
+. -log_summary - Activates log summary
+
+  Level: intermediate
+
+.keywords: log, visible, event
+.seealso: EventLogGetVisible(), EventLogGetCurrent(), EventLogRegister(), StageLogGetEventLog()
+@*/
+int EventLogSetVisible(EventLog eventLog, int event, PetscTruth isVisible)
+{
+  int eventNum;
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = EventLogGetEvent(eventLog, event, &eventNum);                                                    CHKERRQ(ierr);
+  eventLog->eventInfo[eventNum].visible = isVisible;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "EventLogGetVisible"
+/*@C
+  EventLogGetVisible - This function returns whether an event is printed during PetscLogPrintSummary()
+
+  Not Collective
+
+  Input Parameters:
++ eventLog  - The EventLog
+- event     - The event id to log
+
+  Output Parameter:
+. isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
+
+  Database Options:
+. -log_summary - Activates log summary
+
+  Level: intermediate
+
+.keywords: log, visible, event
+.seealso: EventLogSetVisible(), EventLogGetCurrent(), EventLogRegister(), StageLogGetEventLog()
+@*/
+int EventLogGetVisible(EventLog eventLog, int event, PetscTruth *isVisible)
+{
+  int eventNum;
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = EventLogGetEvent(eventLog, event, &eventNum);                                                    CHKERRQ(ierr);
+  PetscValidIntPointer(isVisible);
+  *isVisible = eventLog->eventInfo[eventNum].visible;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "EventLogGetEvent"
 /*@C
@@ -640,7 +700,6 @@ int EventLogCreate(EventLog *eventLog)
   ierr = PetscNew(struct _EventLog, &l);                                                                  CHKERRQ(ierr);
   l->numEvents   = 0;
   l->maxEvents   = 100;
-  ierr = PetscMalloc(l->maxEvents * sizeof(int),      &l->eventActive);                                   CHKERRQ(ierr);
   ierr = PetscMalloc(l->maxEvents * sizeof(PerfInfo), &l->eventInfo);                                     CHKERRQ(ierr);
   *eventLog = l;
   PetscFunctionReturn(0);

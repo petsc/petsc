@@ -32,8 +32,6 @@ int StageLogDestroy(StageLog stageLog)
     ierr = EventLogDestroy(stageLog->eventLog[stage]);                                                    CHKERRQ(ierr);
     ierr = ClassLogDestroy(stageLog->classLog[stage]);                                                    CHKERRQ(ierr);
   }
-  ierr = PetscFree(stageLog->stageUsed);                                                                  CHKERRQ(ierr);
-  ierr = PetscFree(stageLog->stageVisible);                                                               CHKERRQ(ierr);
   ierr = StackDestroy(stageLog->stack);                                                                   CHKERRQ(ierr);
   ierr = PetscFree(stageLog->stageInfo);                                                                  CHKERRQ(ierr);
   ierr = PetscFree(stageLog->eventLog);                                                                   CHKERRQ(ierr);
@@ -63,8 +61,6 @@ int StageLogDestroy(StageLog stageLog)
 @*/
 int StageLogRegister(StageLog stageLog, const char sname[], int *stage)
 {
-  int        *stageUsed;
-  PetscTruth *stageVisible;
   PerfInfo   *stageInfo;
   EventLog   *eventLog;
   ClassLog   *classLog;
@@ -77,35 +73,27 @@ int StageLogRegister(StageLog stageLog, const char sname[], int *stage)
   PetscValidIntPointer(stage);
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
-    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(int),        &stageUsed);                           CHKERRQ(ierr);
-    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(PetscTruth), &stageVisible);                        CHKERRQ(ierr);
     ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(PerfInfo),   &stageInfo);                           CHKERRQ(ierr);
     ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(EventLog),   &eventLog);                            CHKERRQ(ierr);
     ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(ClassLog),   &classLog);                            CHKERRQ(ierr);
-    ierr = PetscMemcpy(stageUsed,    stageLog->stageUsed,    stageLog->maxStages * sizeof(int));          CHKERRQ(ierr);
-    ierr = PetscMemcpy(stageVisible, stageLog->stageVisible, stageLog->maxStages * sizeof(PetscTruth));   CHKERRQ(ierr);
     ierr = PetscMemcpy(stageInfo,    stageLog->stageInfo,    stageLog->maxStages * sizeof(PerfInfo));     CHKERRQ(ierr);
     ierr = PetscMemcpy(eventLog,     stageLog->eventLog,     stageLog->maxStages * sizeof(EventLog));     CHKERRQ(ierr);
     ierr = PetscMemcpy(classLog,     stageLog->classLog,     stageLog->maxStages * sizeof(ClassLog));     CHKERRQ(ierr);
-    ierr = PetscFree(stageLog->stageUsed);                                                                CHKERRQ(ierr);
-    ierr = PetscFree(stageLog->stageVisible);                                                             CHKERRQ(ierr);
     ierr = PetscFree(stageLog->stageInfo);                                                                CHKERRQ(ierr);
     ierr = PetscFree(stageLog->eventLog);                                                                 CHKERRQ(ierr);
     ierr = PetscFree(stageLog->classLog);                                                                 CHKERRQ(ierr);
-    stageLog->stageUsed    = stageUsed;
-    stageLog->stageVisible = stageVisible;
     stageLog->stageInfo    = stageInfo;
     stageLog->eventLog     = eventLog;
     stageLog->classLog     = classLog;
     stageLog->maxStages   *= 2;
   }
   /* Setup stage */
-  stageLog->stageUsed[s]    = 0;
-  stageLog->stageVisible[s] = PETSC_TRUE;
   ierr = PetscStrallocpy(sname, &str);                                                                    CHKERRQ(ierr);
   stageLog->stageInfo[s].name          = str;
   stageLog->stageInfo[s].color         = PETSC_NULL;
   stageLog->stageInfo[s].cookie        = -1;
+  stageLog->stageInfo[s].active        = PETSC_FALSE;
+  stageLog->stageInfo[s].visible       = PETSC_TRUE;
   stageLog->stageInfo[s].count         = 0;
   stageLog->stageInfo[s].flops         = 0.0;
   stageLog->stageInfo[s].time          = 0.0;
@@ -189,9 +177,9 @@ int StageLogPush(StageLog stageLog, int stage)
   }
   /* Activate the stage */
   ierr = StackPush(stageLog->stack, stage);                                                               CHKERRQ(ierr);
-  stageLog->stageUsed[stage] = 1;
+  stageLog->stageInfo[stage].active = PETSC_TRUE;
   stageLog->stageInfo[stage].count++;
-  stageLog->curStage         = stage;
+  stageLog->curStage = stage;
   /* Subtract current quantities so that we obtain the difference when we pop */
   PetscTimeSubtract(stageLog->stageInfo[stage].time);
   stageLog->stageInfo[stage].flops         -= _TotalFlops;
@@ -391,7 +379,7 @@ int StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible)
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
-  stageLog->stageVisible[stage] = isVisible;
+  stageLog->stageInfo[stage].visible = isVisible;
   PetscFunctionReturn(0);
 }
 
@@ -424,7 +412,7 @@ int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible)
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
   PetscValidIntPointer(isVisible);
-  *isVisible = stageLog->stageVisible[stage];
+  *isVisible = stageLog->stageInfo[stage].visible;
   PetscFunctionReturn(0);
 }
 
@@ -490,8 +478,6 @@ int StageLogCreate(StageLog *stageLog)
   l->numStages = 0;
   l->maxStages = 10;
   l->curStage  = -1;
-  ierr = PetscMalloc(l->maxStages * sizeof(int),        &l->stageUsed);                                   CHKERRQ(ierr);
-  ierr = PetscMalloc(l->maxStages * sizeof(PetscTruth), &l->stageVisible);                                CHKERRQ(ierr);
   ierr = PetscMalloc(l->maxStages * sizeof(PerfInfo),   &l->stageInfo);                                   CHKERRQ(ierr);
   ierr = PetscMalloc(l->maxStages * sizeof(EventLog),   &l->eventLog);                                    CHKERRQ(ierr);
   ierr = PetscMalloc(l->maxStages * sizeof(ClassLog),   &l->classLog);                                    CHKERRQ(ierr);

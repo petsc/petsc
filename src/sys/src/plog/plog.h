@@ -99,6 +99,8 @@ EXTERN int EventLogCopy(EventLog, EventLog *);
 /* Registration functions */
 EXTERN int EventLogRegister(EventLog, const char [], const char [], int, int *);
 /* Query functions */
+EXTERN int EventLogSetVisible(EventLog, int, PetscTruth);
+EXTERN int EventLogGetVisible(EventLog, int, PetscTruth *);
 EXTERN int EventLogGetEvent(EventLog, int, int *);
 /* Activaton functions */
 EXTERN int EventLogActivate(EventLog, int);
