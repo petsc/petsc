@@ -62,7 +62,7 @@ class Framework(config.base.Configure):
     self.header     = 'matt_config.h'
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.warningRE    = re.compile('warning', 'I')
+    self.warningRE    = re.compile('warning', re.I)
     self.setupChildren()
     return
 
