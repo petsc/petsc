@@ -292,9 +292,14 @@ class Framework(base.Base):
 
   def t_compile(self):
     '''Recompile the entire source for this project'''
-    import build.buildGraph
-
     (compileGraph, input) = self.getCompileGraph()
+    return self.executeGraph(compileGraph, input = input)
+
+  def t_compilePrograms(self):
+    '''Recompile executables for this project'''
+    (compileGraph, input) = self.getCompileGraph()
+    for program in self.filesets['programs']:
+      compileGraph.appendGraph(self.compileTemplate.getExecutableTarget(program))
     return self.executeGraph(compileGraph, input = input)
 
   def t_install(self):

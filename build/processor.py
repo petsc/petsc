@@ -203,12 +203,15 @@ class Compiler(Processor):
 
 class Linker(Processor):
   '''A Linker processes any FileSet with intermediate object files, and outputs a FileSet of libraries.'''
-  def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'a'):
-    Processor.__init__(self, sourceDB, archiver, inputTag, outputTag, isSetwise, updateType)
+  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = ''):
+    Processor.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType)
     self.library        = library
     self.libExt         = libExt
     self.extraLibraries = []
     return
+
+  def __str__(self):
+    return 'Linker('+self.processor+') for '+str(self.inputTag)
 
   def getLibrary(self, object):
     '''Get the library for "object", and ensures that a FileSet all has the same library'''
@@ -231,19 +234,38 @@ class Linker(Processor):
     dir = os.path.dirname(library)
     if dir and not os.path.exists(dir):
       os.makedirs(dir)
-    return library+'.'+self.libExt
+    if self.libExt:
+      return library+'.'+self.libExt
+    return library
 
   def getOptimizationFlags(self, source):
     '''Return a list of the linker optimization flags.'''
     return []
 
   def getLinkerFlags(self, source):
-    '''Return a list of the linker specific flags.'''
-    return []
+    '''Return a list of the linker specific flags. The default is gives the extraLibraries as arguments.'''
+    flags = []
+    for lib in map(str, self.extraLibraries):
+      # Options and object files are passed verbatim
+      if lib[0] == '-' or lib.endswith('.o'):
+        flags.append(lib)
+      # Big Intel F90 hack (the shared library is broken)
+      elif lib.endswith('intrins.a'):
+        flags.append(lib)
+      else:
+        (dir, file) = os.path.split(lib)
+        (base, ext) = os.path.splitext(file)
+        if not base.startswith('lib'):
+          flags.append(lib)
+        else:
+          if dir:
+            flags.extend(['-L'+dir, '-Wl,-rpath,'+dir])
+          flags.append('-l'+base[3:])
+    return flags
 
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the library'''
-    return []
+    return ['-o '+self.getLibrary(source)]
 
   def getFlags(self, source):
     return self.getOptimizationFlags(source)+self.getLinkerFlags(source)+self.getOutputFlags(source)
@@ -374,29 +396,10 @@ class SharedLinker(Linker):
     return ['-g']
 
   def getLinkerFlags(self, source):
-    '''Return a list of the linker specific flags. The default is -shared.'''
+    '''Return a list of the linker specific flags. The default is -shared plus the base class flags.'''
     flags = ['-shared']
-    for lib in map(str, self.extraLibraries):
-      # Options and object files are passed verbatim
-      if lib[0] == '-' or lib.endswith('.o'):
-        flags.append(lib)
-      # Big Intel F90 hack (the shared library is broken)
-      elif lib.endswith('intrins.a'):
-        flags.append(lib)
-      else:
-        (dir, file) = os.path.split(lib)
-        (base, ext) = os.path.splitext(file)
-        if not base.startswith('lib'):
-          flags.append(lib)
-        else:
-          if dir:
-            flags.extend(['-L'+dir, '-Wl,-rpath,'+dir])
-          flags.append('-l'+base[3:])
+    flags.extend(Linker.getLinkerFlags(self, source))
     return flags
-
-  def getOutputFlags(self, source):
-    '''Return a list of the linker flags specifying the shared library'''
-    return ['-o '+self.getLibrary(source)]
 
 class LibraryAdder (build.transform.Transform):
   '''A LibraryAdder adds every library matching inputTag to the extraLibraries member of linker'''

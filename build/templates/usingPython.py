@@ -145,6 +145,10 @@ class UsingPython (base.Base):
     target.appendGraph(linker)
     return target
 
+  def getExecutableCompileTarget(self, program):
+    '''Python code does not need compilation'''
+    return build.buildGraph.BuildGraph()
+
   def installClient(self):
     '''Add Python paths for clients to the project'''
     return self.project.appendPythonPath(os.path.join(self.project.getRoot(), self.usingSIDL.getClientRootDir(self.language)))
