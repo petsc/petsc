@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.223 1997/06/06 21:11:08 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.224 1997/06/13 01:57:34 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -512,6 +512,11 @@ Although we refer to the two orderings as ``PETSc'' and
 ``application'' orderings, the user is free to use them both for
 application orderings and to maintain relationships among a variety of
 orderings by employing several {\tt AO} contexts.
+
+The {\tt AOxxToxx()} routines all allow negative entries in the input 
+integer array. These entries are not mapped, they are just left the same.
+This is to allow one to map, for example, neighbor lists that use negative
+numbers to indicate nonexistent neighbors due to boundary conditions, etc.
 
 \section{Local to Global Mappings}
 \label{sec:islocaltoglobalmapping}
