@@ -10,7 +10,7 @@
 #
 FC_LIB         = -lF77 -lU77 -lI77 -lisam
 # FC_LIB         = -lsun -lF77 -lU77 -lI77 -lisam
-# ON  6.2 the above should proably be replaced by
+# For IRIX Release 6.2 the above should probably be replaced by
 # FC_LIB         =  -lftn
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
@@ -48,6 +48,6 @@ MPIRUN         = /usr/local/pub/mpich/bin/mpirun
 #
 PCONF         =   -DHAVE_BLOCKSOLVE
 #
-#  If you are using dynamic libraries  you must make this
-# point to the directories where all your shared libraries are stored.
+# If you are using dynamic libraries, you must make this point
+# to the directories where all your shared libraries are stored.
 DYLIBPATH     = /home/bsmith/lapack
