@@ -464,7 +464,6 @@ class Configure(config.base.Configure):
       sel.addSubstitution('MPIRUN', self.mpirun)
       return
     if 'with-mpirun' in self.framework.argDB:
-      import os.path
       self.framework.argDB['with-mpirun'] = os.path.expanduser(self.framework.argDB['with-mpirun'])
       if not self.getExecutable(self.framework.argDB['with-mpirun'], resultName = 'mpirun'):
         raise RuntimeError('Invalid mpirun specified: '+str(self.framework.argDB['with-mpirun']))
