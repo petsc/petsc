@@ -349,7 +349,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
     ierr = PetscFree(vsdraw->drawlg);CHKERRQ(ierr);
     ierr = PetscFree(vsdraw->draw);CHKERRQ(ierr);
     ierr = PetscFree((*sviewer)->data);CHKERRQ(ierr);
-    ierr = PetscHeaderDestroy((PetscObject)*sviewer);CHKERRQ(ierr);
+    ierr = PetscHeaderDestroy(*sviewer);CHKERRQ(ierr);
   }
   vdraw->singleton_made = PETSC_FALSE;
   PetscFunctionReturn(0);
