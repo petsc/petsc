@@ -26,7 +26,8 @@ sides for linear systems, etc. This chapter is organized as follows:
   \item (ISLocalToGlobalMapping) Mapping between local and global numberings
   \end{itemize}
 \item (DA) Section \ref{sec_struct} - management of structured grids
-\item (IS, VecScatter) Section \ref{sec_unstruct} - management of vectors related to unstructured grids
+\item (IS, VecScatter) Section \ref{sec_unstruct} - management of vectors related to 
+      unstructured grids
 \end{itemize}
 
 % --------------------------------------------------------------------------------------
@@ -52,7 +53,8 @@ of components to store on the local processor, and \trl{M} is the
 total number of vector components.  Either the local or global 
 dimension, but not both, can be set to PETSC\_DECIDE to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
-More generally, one can use the routines \findex{VecCreate()} \findex{VecSetSizes()} \findex{VecSetFromOptions()}
+More generally, one can use the routines \findex{VecCreate()} \findex{VecSetSizes()} 
+\findex{VecSetFromOptions()}
 \begin{tabbing}
   VecCreate(MPI\_Comm comm,Vec *v);\\
   VecSetSizes(Vec v, int m, int M);\\
@@ -105,7 +107,7 @@ the user's code can perform any series of other actions between these
 two calls while the messages are in transition. 
 
 Example usage of VecSetValues() may be found in 
-\trl{${PETSC_DIR}/src/vec/examples/tutorials/ex2.c or ex2f.F}
+\trl{${PETSC_DIR}/src/vec/examples/tutorials/ex2.c} or \trl{ex2f.F}
 
 Often, rather than inserting elements in a vector, one may wish to 
 add values. This process \sindex{vector values, setting}
@@ -195,7 +197,6 @@ the user is responsible for providing enough space in the array; \trl{m*sizeof(P
 % --------------------------------------------------------------------------------------
 \section{Basic Vector Operations}  
 \label{sec_vecbasic}
-
 \begin{table}[tb]
 \begin{center}
 \begin{tabular}{ll}
@@ -214,9 +215,9 @@ VecCopy(Vec x, Vec y); & $ y = x $ \\
 VecSwap(Vec x, Vec y); & $ y = x $ while $ x = y$ \\
 VecPointwiseMult(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}*y_{i} $ \\
 VecPointwiseDivide(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}/y_{i} $ \\
-VecMDot(int n,Vec x, Vec *y,PetscScalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
-VecMTDot(int n,Vec x, Vec *y,PetscScalar *r); & $ r[i] = x'*y[i]$ \\
-VecMAXPY(int n, PetscScalar *a,Vec y, Vec *x); \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
+VecMDot(int n,Vec x, Vec y[],PetscScalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
+VecMTDot(int n,Vec x, Vec y[],PetscScalar *r); & $ r[i] = x'*y[i]$ \\
+VecMAXPY(int n, PetscScalar *a,Vec y, Vec x[]); \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
 VecMax(Vec x,  int *idx, double *r); & $ r = \max x_{i}$ \\
 VecMin(Vec x,  int *idx, double *r); & $ r = \min x_{i}$ \\
 VecAbs(Vec x); & $ x_i = |x_{i}|$ \\
@@ -300,7 +301,8 @@ operations. Instead one can write
  VecNormEnd(Vec x,NormType NORM\_1,double *norm1);
 \end{tabbing}
 With this code, \findex{VecDotBegin()} \findex{VecDotEnd()} \findex{VecNormBegin()} 
-the \findex{VecNormEnd()} communication is delayed until the first call to \trl{VecxxxEnd()} at which 
+the \findex{VecNormEnd()} communication is delayed until the first call to 
+\trl{VecxxxEnd()} at which 
 a single MPI reduction is used to communicate all the required values. It is required that the
 calls to the \trl{VecxxxEnd()} are performed in the same order as the calls to the 
 \trl{VecxxxBegin()}; however if you mistakenly make the calls in the wrong order PETSc
@@ -310,7 +312,8 @@ VecTDotEnd(). \findex{VecTDotBegin()} \findex{VecTDotEnd()}
 These routines where suggested by Victor Eijkhout.
 
 Note: these routines use only MPI 1 functionality; so they do not allow you to overlap 
-computation and communication. Once MPI 2 implementations are more common we'll improve these
+computation and communication (assuming no threads are spawned within a MPI process). 
+Once MPI 2 implementations are more common we'll improve these
 routines to allow overlap of inner product and norm calculations with other calculations.
 Also currently these routines only work for the PETSc built in vector types.
 
@@ -369,11 +372,12 @@ We can write this correspondence as
 The user can create the PETSc-AO mappings in a number of ways.  For example,
 if using two processors, one could call
 \begin{tabbing}
-  AOCreateBasic(PETSC\_COMM\_WORLD,2,{0,3},{3,4},\&ao);
+%  AOCreateBasic(PETSC\_COMM\_WORLD,2,{0,3},{3,4},\&ao);
+  AOCreateBasic\trl{(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);}
 \end{tabbing}
 on the first processor and 
 \begin{tabbing}
-  AOCreateBasic(PETSC\_COMM\_WORLD,3,{1,2,4},{2,1,0},\&ao);
+ AOCreateBasic\trl{(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);}
 \end{tabbing}
 on the other processor.
 
@@ -398,7 +402,7 @@ An alternative routine to create the application ordering, AO, is
   AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 \end{tabbing}
 \findex{AOCreateBasicIS}
-where index sets are used instead of integer arrays. 
+where index sets (see \ref{sec_indexset} are used instead of integer arrays. 
 
 The 
 mapping routines 
@@ -471,22 +475,24 @@ ISLocalToGlobalMapping routines.
 If one is given a list of indices in a global numbering, the routine
 \begin{tabbing}
   ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,\\
-                              ISGlobalToLocalMappingType type,int nin,int *idxin,int *nout,int *idxout);
+                              ISGlobalToLocalMappingType type,int nin,int idxin[],int *nout,int idxout[]);
 \end{tabbing}
 \findex{ISGlobalToLocalMappingApply}  \sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in 
-\trl{idxin} are left unmapped.  But, in addition, if \trl{type} is set to \trl{IS_GTOLM_MASK},
-\findex{IS_GTOLM_MASK}, then \trl{nout} is set to \trl{nin} and all global values
+\trl{idxin} are left unmapped.  But, in addition, if \trl{type} is set to 
+\trl{IS_GTOLM_MASK}
+\findex{IS_GTOLM_MASK}, 
+then \trl{nout} is set to \trl{nin} and all global values
 in \trl{idxin} that are not represented in the local to global mapping
 are replaced by -1. When \trl{type} is set to \trl{IS_GTOLM_DROP},
 \findex{IS_GTOLM_DROP} the values in \trl{idxin} that are not
 represented locally in the mapping are not included in \trl{idxout}, so that
 potentially \trl{nout} is smaller than \trl{nin}.  One must
 pass in an array long enough to hold all the indices. One can call
-ISGlobalToLocalMappingApply() with \trl{idxout} equal to \trl{
-PETSC_NULL} to determine the required length (returned in \trl{nout})
-and then allocate the required space and call \trl{
-ISGlobalToLocalMappingApply()} a second time to set the values.
+ISGlobalToLocalMappingApply() with \trl{idxout} equal to 
+\trl{PETSC_NULL} to determine the required length (returned in 
+\trl{nout}) and then allocate the required space and call 
+\trl{ISGlobalToLocalMappingApply()} a second time to set the values.
 
 Often it is convenient to set elements into a vector using the local node 
 numbering rather than the global node numbering (e.g.,  each processor may
@@ -557,7 +563,7 @@ The \findex{DACreate2d} \sindex{array, distributed} arguments
 \sindex{distributed array} \trl{M} and \trl{N} indicate the global
 numbers of grid points in each direction, while \trl{m} and \trl{n}
 denote the processor partition in each direction; \trl{m*n} must equal
-the number of processors in the MPI communicator, \trl{comm}.  
+the number of processes in the MPI communicator, \trl{comm}.  
 Instead of specifying the processor layout, one may use
 PETSC\_DECIDE for \trl{m} and \trl{n} 
 so that PETSc will determine the partition using MPI. The type of
@@ -584,7 +590,7 @@ two-dimensional case,
 stencil, while \trl{DA_STENCIL_BOX} with width 1 denotes the
 standard 9-point stencil.  In both instances the ghost points are
 identical, the only difference being that with star-type stencils
-certain ghost points are ignored, potentially decreasing substantially
+certain ghost points are ignored, decreasing substantially
 the number of messages sent.  Note that the \trl{DA_STENCIL_STAR}
 stencils can save interprocessor communication in two and three
 dimensions.
@@ -765,20 +771,21 @@ corner components are {\em not} scattered between the processors and thus
 contain undefined values that should {\em not} be used.
 
 To assemble global stiffness matrices, one needs either 
-
-1) to be able to determine the global node number of each local node 
-including the ghost nodes. The number may be determined by using the 
+\begin{itemize}
+\item
+the global node number of each local node 
+including the ghost nodes. This number may be determined by using the 
 command \findex{DAGetGlobalIndices()}
 \begin{tabbing}
-  DAGetGlobalIndices(DA da,int *n,int **idx);
+  DAGetGlobalIndices(DA da,int *n,int *idx[]);
 \end{tabbing}
 The output argument \trl{n} contains the number of 
 local nodes, including ghost nodes, while \trl{idx} contains
 a list of the global indices that correspond to the local nodes.
 Note that the Fortran interface differs slightly; see Section~\ref{sec_fortranarrays}
 for details.
-
-2) or to set up the vectors and matrices so that their entries may be
+\item
+or to set up the vectors and matrices so that their entries may be
 added using the local numbering. This is done by first calling 
 \begin{tabbing}
   DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map);
@@ -790,7 +797,7 @@ followed by
 \end{tabbing}
 Now entries may be added to the vector and matrix using the local numbering
 and VecSetValuesLocal() and MatSetValuesLocal().
-
+\end{itemize}
 
 Since the global ordering that PETSc uses to manage its parallel vectors 
 (and matrices) does not usually correspond to the ``natural'' ordering 
@@ -817,7 +824,7 @@ The example
 illustrates the use of a distributed array in the solution of
 a nonlinear problem.  The analogous Fortran program is
 \break \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5f.F};
-See Chapter \ref{chapter_snes} for a discussion of the nonlinear
+see Chapter \ref{chapter_snes} for a discussion of the nonlinear
 solvers.
 
 %\begin{figure}[H]
@@ -936,8 +943,9 @@ To perform a conventional gather operation, the user simply makes
  the destination index set, 
 \trl{iy}, be a stride index set with a stride of one.  Similarly, a 
 conventional scatter can be done with an initial (sending) index set 
-consisting of a stride.  For parallel vectors, all processors that own 
-the vector {\em must} call the scatter routines. When scattering from a 
+consisting of a stride.  The scatter rotines are collective operations
+(i.e. all processes that own 
+a parallel vector {\em must} call the scatter routines). When scattering from a 
 parallel vector to sequential vectors, each processor has its own sequential 
 vector that receives values from locations as indicated in its own 
 index set. Similarly, in scattering
@@ -966,7 +974,7 @@ that have the appropriate parallel data layout. That is, one can call
 VecScatterBegin() and VecScatterEnd() with different vectors than 
 used in the call to VecScatterCreate() so long as they have the same 
 parallel layout (number of elements on each processor are the same). Usually,
-these ``different'' vectors would ahve been obtained vai calls to 
+these ``different'' vectors would have been obtained via calls to 
 VecDuplicate() from the original vectors used in the call to 
 VecScatterCreate().
 
@@ -990,7 +998,7 @@ elements it needed, or none by creating an index set with no entries.
    VecScatter  scatter;      /* scatter context */\\
    IS          from, to;     /* index sets that define the scatter */\\
    PetscScalar *values;\\
-   int         idx\_from[] = {100,200}, idx\_to[] = {0,1};\\
+   int         \trl{idx_from[] = {100,200}, idx_to[] = {0,1};}\\
 
    VecCreateSeq(PETSC\_COMM\_SELF,2,\&x);\\
    ISCreateGeneral(PETSC\_COMM\_SELF,2,idx\_from,\&from);\\
@@ -1029,9 +1037,9 @@ vector. In the simplest case this may be written as
                           ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
   VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
                         ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
-   /*\\
-        For example,  do local calculations from localin to localout \\
-   */\\
+   \trl{/*} \\
+        For example,  do local calculations from localin to localout\\
+   \trl{*/} \\
   VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
                           ScatterMode SCATTER\_REVERSE,VecScatter scatter);\\
   VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
@@ -1049,7 +1057,7 @@ computation speed.
 
 There are two minor drawbacks to the basic approach described above:
 \begin{itemize}
-\item the extra memory requirement for the local work vector, \trl{localin} that
+\item the extra memory requirement for the local work vector, \trl{localin}, which
       duplicates the memory in \trl{globalin}, and
 \item the extra time required to copy the local values from \trl{localin} to 
       \trl{globalin}.
@@ -1089,17 +1097,21 @@ are accessed in \trl{g} using the global numbering.
 A common usage of a ghosted vector is given by
 \findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEnd()}
 \begin{tabbing}
-  VecGhostUpdateBegin(Vec globalin,InsertMode INSERT\_VALUES,ScatterMode SCATTER\_FORWARD);\\
-  VecGhostUpdateEnd(Vec globalin,InsertMode INSERT\_VALUES,ScatterMode SCATTER\_FORWARD);\\
+  VecGhostUpdateBegin(Vec globalin,InsertMode INSERT\_VALUES,\\
+                                   ScatterMode SCATTER\_FORWARD);\\
+  VecGhostUpdateEnd(Vec globalin,InsertMode INSERT\_VALUES,\\
+                                 ScatterMode SCATTER\_FORWARD);\\
   VecGhostGetLocalForm(Vec globalin,Vec *localin);\\
   VecGhostGetLocalForm(Vec globalout,Vec *localout);\\
-   /*\\
+   \trl{/*}\\
       Do local calculations from localin to localout \\
-   */\\
+   \trl{*/}\\
   VecGhostRestoreLocalForm(Vec globalin,Vec *localin);\\
   VecGhostRestoreLocalForm(Vec globalout,Vec *localout);\\
-  VecGhostUpdateBegin(Vec globalout,InsertMode ADD\_VALUES,ScatterMode SCATTER\_REVERSE);\\
-  VecGhostUpdateEnd(Vec globalout,InsertMode ADD\_VALUES,ScatterMode SCATTER\_REVERSE);
+  VecGhostUpdateBegin(Vec globalout,InsertMode ADD\_VALUES,\\
+                                    ScatterMode SCATTER\_REVERSE);\\
+  VecGhostUpdateEnd(Vec globalout,InsertMode ADD\_VALUES,\\
+                                  ScatterMode SCATTER\_REVERSE);
 \end{tabbing}
       
 The routines \trl{VecGhostUpdateBegin/End()} are equivalent to the routines \trl{VecScatterBegin/End()}
@@ -1147,11 +1159,11 @@ The simplest routine for forming a PETSc matrix, \trl{A}, is \findex{MatCreate()
 \begin{tabbing}
   MatCreate(MPI\_Comm comm,int m,int n,int M,int N,Mat *A)
 \end{tabbing}
-This routine generates a sequential matrix when running on one
-processor and a parallel matrix for two or more processors; the
+This routine generates a sequential matrix when running one
+process and a parallel matrix for two or more processes; the
 particular matrix format is set by the user via options database
-commands.  The user specifies either or the global matrix dimensions, given
-by \trl{M} and \trl{N} and the local dimensions, given by \trl{m} and 
+commands.  The user specifies either the global matrix dimensions, given
+by \trl{M} and \trl{N} or the local dimensions, given by \trl{m} and 
 \trl{n} while PETSc completely controls memory allocation.  This routine
 facilitates switching among various matrix types, for example, to
 determine the format that is most efficient for a certain
@@ -1162,11 +1174,11 @@ the manual pages for further information about available matrix formats.
 To insert or add entries to a matrix, one can call a variant of \trl{
 MatSetValues}, either \findex{MatSetValues()}
 \begin{tabbing}
-  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,INSERT\_VALUES);
+  MatSetValues(Mat A,int m,int im[],int n,int in[],PetscScalar *values,INSERT\_VALUES);
 \end{tabbing}
 or 
 \begin{tabbing}
-  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,ADD\_VALUES);
+  MatSetValues(Mat A,int m,int im[],int n,int in[],PetscScalar *values,ADD\_VALUES);
 \end{tabbing}
 This routine inserts or adds a logically dense subblock of dimension
 \trl{m*n} into the 
@@ -1183,7 +1195,7 @@ major order, one can call the command \findex{MatSetOption()}
   MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED);
 \end{tabbing}
 {\bf Warning}: Several of the sparse implementations do {\em not} currently support
-the column-oriented option!
+the column-oriented option.
 
 This notation should not be a mystery to anyone. For example, 
 to insert one matrix into another when using Matlab, one uses the command 
@@ -1199,7 +1211,7 @@ The function MatSetOption() accepts several other inputs; see
 the manual page for details. We
 discuss two of these options, which are related to the efficiency of the
 assembly process.  To indicate to PETSc that the row (\trl{im}) or
-column (\trl{in}) indices set with MatSetValues() are sorted,
+column (\trl{in}) indices set with MatSetValues() are sorted (in increasing order),
 one uses the command \findex{MAT_ROWS_SORTED} \findex{MAT_COLUMNS_SORTED}
 \begin{tabbing}
   MatSetOption(Mat A,MAT\_ROWS\_SORTED);
@@ -1213,14 +1225,14 @@ MatSetValues(); they do not have anything to do with how the sparse
 matrix data is stored internally in PETSc.
 
 After the matrix elements have been inserted or added into the matrix, 
-they must be processed before they can be used. The routines for matrix
+they must be processed (also called assembled) before they can be used. The routines for matrix
 processing are \findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
 \begin{tabbing}
   MatAssemblyBegin(Mat A,MAT\_FINAL\_ASSEMBLY);\\
   MatAssemblyEnd(Mat A,MAT\_FINAL\_ASSEMBLY);
 \end{tabbing}
 By placing other code between these two calls, the user can perform
-computations while messages are in transition.
+computations while messages are in transit.
 Calls to MatSetValues() with the \trl{INSERT_VALUES} and \trl{
 ADD_VALUES} options {\em cannot} be mixed without intervening calls to
 the assembly routines.  For such intermediate assembly calls the
@@ -1240,7 +1252,8 @@ distributed across the processors by ranges, the routine
   MatGetOwnershipRange(Mat A,int *first\_row,int *last\_row);
 \end{tabbing}
 informs the user that all rows from \trl{first_row} to 
-\trl{last_row-1} will be stored on the local processor.
+\trl{last_row-1} (since the value returned in \trl{last_row} is one more
+than the global index of the last local row) will be stored on the local processor.
 
 In the sparse matrix implementations, once the assembly routines have been 
 called, the matrices are compressed and can be used for matrix-vector
@@ -1338,10 +1351,10 @@ intended for the various rows with the optional array, \trl{nnz} of
 length \trl{m}, where \trl{m} is the number of rows, for example
 \begin{tabbing}
    int nnz[m];\\
-   nnz[0] = <nonzeros in row 0>\\
-   nnz[1] = <nonzeros in row 1>\\
+   nnz[0] = \trl{<}nonzeros in row 0\trl{>}\\
+   nnz[1] = \trl{<}nonzeros in row 1\trl{>}\\
    ....\\
-   nnz[m-1] = <nonzeros in row m-1>
+   nnz[m-1] = \trl{<}nonzeros in row m-1\trl{>}
 \end{tabbing}
 In this case, the assembly process will require no additional memory
 allocations if the \trl{nnz} estimates are correct. If, however,
@@ -1391,8 +1404,8 @@ following example for the MATSEQAIJ matrix format:
    MatAssemblyEnd\_SeqAIJ:Matrix size 10 X 10; storage space:20 unneeded, 100 used\\
    MatAssemblyEnd\_SeqAIJ:Number of mallocs during MatSetValues is 0
 \end{tabbing}
-The first line indicates that the user preallocated 3000 spaces but only
-1000 were used. The second line indicates that the user preallocated
+The first line indicates that the user preallocated 120 spaces but only
+100 were used. The second line indicates that the user preallocated
 enough space so that PETSc did not have to internally allocate additional
 space (an expensive operation).  In the next example the user did not
 preallocate sufficient space, as indicated by the fact that the number
