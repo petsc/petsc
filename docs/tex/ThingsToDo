@@ -28,8 +28,6 @@ Meta priorities:
 
  add MatSolveTrans_SeqBAIj_....
 
- add in the vecpipeline stuff in vec/utils
-
 Documentation:
  - put vec/examples/tests/ex13.c in tutorials section; add other vecscatter
    examples to tutorials 
@@ -1067,3 +1065,6 @@ are drawn on top of the contour plots (that's a separate problem).
  X Added extra argument to KSPComputeEigenvalues()  instead
      Add NaN initialization to eigenvalue computations (else what seem to be zero e-values
      can be just uninitialized yet uncomputed data -- misleading, comment by Frank Elliott).
+
+ X add in the vecpipeline stuff in vec/utils
+
