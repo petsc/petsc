@@ -7,6 +7,7 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Add DAGetColoring() support for BAIJ matrices in 1 and 2d.
 
    After the SUSE rpm and Debian packages are made for 2.1.0 and
 listed at our download page annouce the newest PETSc release to
