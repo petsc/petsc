@@ -6,7 +6,7 @@ static char help[] = "Example demonstrating opening and drawing a window\n";
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "options.h"
+#include "petsc.h"
 #include "sysio.h"
 #include "draw.h"
 #include <math.h>
