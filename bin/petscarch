@@ -1,5 +1,5 @@
 #! /bin/sh -f
-# $Id: petscarch,v 1.25 2001/06/14 20:49:22 balay Exp balay $ 
+# $Id: petscarch,v 1.26 2001/06/14 23:07:59 balay Exp balay $ 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
@@ -9,11 +9,11 @@
 #   machines of different types that share the same filesystem, then when 
 #   you log into any of them, the PETSC_ARCH will always be set correctly.
 # 
-if [ -e /bin/uname ]; then
+if [ -f /bin/uname ]; then
     LARCH=`/bin/uname -s`
     MARCH=`/bin/uname -m`
     VARCH=`/bin/uname -r`
-elif [ -e /usr/bin/uname ]; then
+elif [ -f /usr/bin/uname ]; then
     LARCH=`/usr/bin/uname -s`
     MARCH=`/usr/bin/uname -m`
     VARCH=`/usr/bin/uname -r`
