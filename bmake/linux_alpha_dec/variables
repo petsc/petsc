@@ -39,7 +39,8 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = cxx
 CXX_FLINKER	   = fort
 CXX_CCV		   = unknown
-CXX_SYS_LIB	   = -lfor -lutil -lFutil -lots -lm
+CXX_SYS_LIB	   =  -L/usr/lib/compaq/cxx-6.3.9.7/alpha-linux/bin -lcxxstdma_rh60 -lcxxma_rh60 -lUfor -lfor -lutil -lFutil -lots -lm
+
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g

@@ -1,48 +1,20 @@
-# $Id: base.site,v 1.57 2001/04/05 21:05:54 balay Exp $ 
-
+# $Id: base.site,v 1.6 2001/03/27 22:17:30 balay Exp $ 
 #
-#  This file contains site-specific information.  The definitions below
-#  should be changed to match the locations of libraries at your site.
-#  The following naming convention is used:
-#     XXX_LIB - location of library XXX
-#     XXX_INCLUDE - directory for include files needed for library XXX
-#
-# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html 
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-# If you are lucky, you may have the DEC Alpha math library installed on 
-# your machine. The library name is dxml, and it contains both BLAS and Lapack.
-#
-SOFT_HOME = /u/u13/acti/bsmith/software
-#BLASLAPACK_LIB   = -ldxml 
-BLASLAPACK_LIB   = -L${SOFT_HOME}/blaslapack/alpha -lflapack -lfblas
+BLASLAPACK_LIB       = -L/home/petsc/software/fblaslapack/alpha -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = $(SOFT_HOME)/mpich-1.1.2
-MPI_BUILD_HOME = ${MPI_HOME}/build/alpha/ch_p4
-MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
-MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
-MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
-#
-# The following lines can be used with MPIUNI
-#
-#MPI_LIB         = ${INSTALL_LIB_DIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni
-#MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
-#
-# If you are using the Compaq/DEC implementation of MPI you can use the following
-# If the machine has prun instead of mpirun or dmpirun you can use 
-# ${PETSC_DIR}/bin/mpirun.prun below for MPIRUN
-#
-#MPI_LIB        = -lmpi -lelan
-#MPI_INCLUDE    = 
-#MPIRUN         =  dmpirun
+MPI_HOME       = /home/petsc/software/mpich-1.2.2.3/alpha_ssh
+MPI_LIB        = -L${MPI_HOME}/lib  -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
-#
 #
 # Location of X-windows software: on most DEC alpha's these are installed in
 # the default location and thus one need not edit the below. If they are not
@@ -55,57 +27,8 @@ X11_INCLUDE    =
 X11_LIB        = -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
-# Location of MPE
-# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+# Location of MPE - which is part of MPICH
 #
-#MPE_INCLUDE   = -I/usr/local/mpi/include
-#MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
-#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
-#
-# Location of BlockSolve (MPI version)
-#
-BLOCKSOLVE_INCLUDE = -I/home/petsc/BlockSolve95/include
-BLOCKSOLVE_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
-PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
-#
-# Matlab location
-#
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
-# Location where adiC is installed
-#
-#ADIC_DEFINES =  -Dad_GRAD_MAX=1
-#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
-#PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
-#
-# Location of PVODE; Alan Hindmarsh's parallel ODE solver
-# 
-#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/alpha/libpvode.a
-#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
-#
-# Location of ParMetis
-#
-#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
-#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
-#PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
-#
-#
-# Location of the LUSOL sparse LU factorization code (part of MINOS)
-# developed by Michael Saunders, saunders@stanford.edu at the
-# Systems Optimization Laboratory, Stanford University.
-#  http://www.sbsi-sol-optimize.com/
-# Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
-# depending on how they are named)
-#
-#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
-#LUSOL_LIB = 
-#
-# If you are using shared version of any external libraries you must make this
-# point to the directories where all your shared libraries are stored.
-#
-#C_DYLIBPATH     = 
-#F_DYLIBPATH     =
+MPE_INCLUDE   = 
+MPE_LIB       =  -lmpe
+PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
