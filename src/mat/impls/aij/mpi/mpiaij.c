@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.7 1995/03/06 04:04:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.8 1995/03/10 04:44:54 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -501,9 +501,9 @@ static int MatiAIJdestroy(PetscObject obj)
   FREE(aij->rowners); 
   ierr = MatDestroy(aij->A); CHKERR(ierr);
   ierr = MatDestroy(aij->B); CHKERR(ierr);
-  FREE(aij); FREE(mat);
   if (aij->lvec) VecDestroy(aij->lvec);
   if (aij->Mvctx) VecScatterCtxDestroy(aij->Mvctx);
+  FREE(aij); PETSCHEADERDESTROY(mat);
   return 0;
 }
 
@@ -552,6 +552,9 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
   ls--;
   if (!A->diag) {if ((ierr = MatiAIJmarkdiag(A))) return ierr;}
   diag = A->diag;
+  if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
+    SETERR(1,"That option not yet support for parallel AIJ matrices");
+  }
   if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
     U is upper triangular, E is diagonal; This routine applies
@@ -933,13 +936,11 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   Matimpiaij   *aij;
   int          ierr, i,sum[2],work[2];
   *newmat         = 0;
-  CREATEHEADER(mat,_Mat);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATAIJMPI,comm);
   mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
-  mat->cookie     = MAT_COOKIE;
   mat->ops        = &MatOps;
   mat->destroy    = MatiAIJdestroy;
   mat->view       = MatiView;
-  mat->type       = MATAIJMPI;
   mat->factor     = 0;
   mat->row        = 0;
   mat->col        = 0;
@@ -1010,13 +1011,11 @@ static int MatiCopy(Mat matin,Mat *newmat)
   *newmat      = 0;
 
   if (!oldmat->assembled) SETERR(1,"Cannot copy unassembled matrix");
-  CREATEHEADER(mat,_Mat);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATAIJMPI,matin->comm);
   mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
-  mat->cookie     = MAT_COOKIE;
   mat->ops        = &MatOps;
   mat->destroy    = MatiAIJdestroy;
   mat->view       = MatiView;
-  mat->type       = MATAIJMPI;
   mat->factor     = matin->factor;
   mat->row        = 0;
   mat->col        = 0;
