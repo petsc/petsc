@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.4 1999/01/12 23:13:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.5 1999/03/19 21:18:23 bsmith Exp balay $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -29,7 +29,7 @@ T*/
 int main(int argc,char **argv)
 {
   Vec      x, y;
-  int      n = 20, ierr, flg,i,j,row;
+  int      n = 20, ierr, flg,i,row;
   Scalar   value;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
     ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
 
-    ierr = PetscSleep(5); 
+    ierr = PetscSleep(5);
   }
 
 

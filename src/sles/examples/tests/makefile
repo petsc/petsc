@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.161 1999/02/01 21:30:06 balay Exp balay $ 
+# $Id: makefile,v 1.162 1999/02/01 21:30:13 balay Exp balay $ 
 
 ALL: ex1
 
@@ -23,7 +23,7 @@ TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
 		  ex6.rm clean
 TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm clean
 TESTEXAMPLES_8  = ex16.PETSc ex16.rm clean
-
+TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex5f.PETSc ex5f.rm clean
 BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
 BUILDEXAMPLES_2 = ex10.PETSc ex10.rm ex15.PETSc ex15.rm clean
 BUILDEXAMPLES_3 = ex12.PETSc ex12.rm ex16.PETSc ex16.rm clean
@@ -35,9 +35,9 @@ BUILDEXAMPLES_7 = ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_8 = ex16.PETSc ex16.rm clean
 BUILDEXAMPLES_9 = ex12.PETSc ex12.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex9.c ex10.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex10.c \
 		  ex15.c ex17.c ex18.c
-EXAMPLESCH      = pargrid.h
+EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12.F ex16.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

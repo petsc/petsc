@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.215 1999/03/22 21:41:23 balay Exp bsmith $ 
+# $Id: makefile,v 1.216 1999/03/24 00:23:03 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -43,6 +43,7 @@ TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex42.PETSc runex
 TESTEXAMPLES_7	 = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm clean
 TESTEXAMPLES_8	 = ex67f.PETSc runex67f ex67f.rm clean
 TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm clean 
+TESTEXAMPLES_13  = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm clean
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex3.PETSc ex3.rm ex5.PETSc ex5.rm ex6.PETSc \
 		   ex6.rm ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm\
 		   ex11.PETSc ex11.rm ex14.PETSc ex14.rm	ex15.PETSc ex15.rm \
@@ -152,10 +153,6 @@ ex17: ex17.o chkopts
 	-${CLINKER} -o ex17 ex17.o ${PETSC_MAT_LIB}
 	${RM} ex17.o
 
-ex18: ex18.o chkopts
-	-${CLINKER} -o ex18 ex18.o ${PETSC_MAT_LIB}
-	${RM} ex18.o
-
 ex19: ex19.o chkopts
 	-${CLINKER} -o ex19 ex19.o ${PETSC_MAT_LIB}
 	${RM} ex19.o
@@ -172,10 +169,6 @@ ex22: ex22.o chkopts
 	-${CLINKER} -o ex22 ex22.o ${PETSC_MAT_LIB}
 	${RM} ex22.o
 
-ex23: ex23.o chkopts
-	-${CLINKER} -o ex23 ex23.o ${PETSC_MAT_LIB}
-	${RM} ex23.o
-
 ex24: ex24.o chkopts
 	-${CLINKER} -o ex24 ex24.o ${PETSC_MAT_LIB}
 	${RM} ex24.o
@@ -184,10 +177,6 @@ ex25: ex25.o chkopts
 	-${CLINKER} -o ex25 ex25.o ${PETSC_MAT_LIB}
 	${RM} ex25.o
 
-ex26: ex26.o chkopts
-	-${CLINKER} -o ex26 ex26.o ${PETSC_MAT_LIB}
-	${RM} ex26.o
-
 ex27: ex27.o chkopts
 	-${CLINKER} -o ex27 ex27.o ${PETSC_MAT_LIB}
 	${RM} ex27.o
@@ -195,10 +184,6 @@ ex27: ex27.o chkopts
 ex28: ex28.o chkopts
 	-${CLINKER} -o ex28 ex28.o ${PETSC_MAT_LIB}
 	${RM} ex28.o
-
-ex29: ex29.o chkopts
-	-${CLINKER} -o ex29 ex29.o ${PETSC_MAT_LIB}
-	${RM} ex29.o
 
 ex30: ex30.o chkopts
 	-${CLINKER} -o ex30 ex30.o ${PETSC_MAT_LIB}
@@ -235,10 +220,6 @@ ex37: ex37.o chkopts
 ex38: ex38.o chkopts
 	-${CLINKER} -o ex38 ex38.o ${PETSC_MAT_LIB}
 	${RM} ex38.o
-
-ex39: ex39.o chkopts
-	-${CLINKER} -o ex39 ex39.o ${PETSC_MAT_LIB}
-	${RM} ex39.o
 
 ex40: ex40.o chkopts
 	-${CLINKER} -o ex40 ex40.o ${PETSC_MAT_LIB}
@@ -359,10 +340,6 @@ ex67f: ex67f.o chkopts
 ex68: ex68.o chkopts
 	-${CLINKER} -o ex68 ex68.o ${PETSC_MAT_LIB}
 	${RM} ex68.o
-
-ex69: ex69.o chkopts
-	-${CLINKER} -o ex69 ex69.o ${PETSC_MAT_LIB}
-	${RM} ex69.o
 
 ex70: ex70.o chkopts
 	-${CLINKER} -o ex70 ex70.o ${PETSC_MAT_LIB}

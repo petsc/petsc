@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.31 1999/02/01 19:23:24 bsmith Exp balay $ 
+# $Id: makefile,v 1.32 1999/02/01 20:22:55 balay Exp balay $ 
 
 ALL: ex1
 
@@ -11,11 +11,12 @@ LOCDIR          = src/ts/examples/tests/
 TESTEXAMPLES_1  = ex1.PETSc  runex1  ex1.rm 
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_4  =  
+TESTEXAMPLES_4  = 
+TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm clean 
 BUILDEXAMPLES_1 = ex1.PETSc   ex1.rm
 BUILDEXAMPLES_3 = ex1f.PETSc  ex1f.rm
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESC       = ex1.c ex2.c ex4.c
 EXAMPLESF       = ex1f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

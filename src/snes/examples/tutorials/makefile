@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.54 1999/03/24 19:52:23 balay Exp balay $ 
+# $Id: makefile,v 1.55 1999/03/25 22:39:38 balay Exp balay $ 
 
 ALL: ex1
 
@@ -21,6 +21,7 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
 		   runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
 		   ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc ex5.rm
 TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm clean
+TESTEXAMPLES_13  = ex7.PETSc ex7.rm clean
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
 		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm \
 		   ex12.PETSc ex12.rm clean
@@ -32,7 +33,7 @@ BUILDEXAMPLES_8	 = ex5f.PETSc ex5f.rm clean
 BUILDEXAMPLES_12 = ex5f90.PETSc ex5f90.rm clean
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
                    common8and9.c ex12.c
-EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h ex5fs.F
+EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5fs.F
 EXAMPLESCH	 = ex8and9.h 
 EXAMPLESFH       = ex5f.h
 DOCS		 = readme
@@ -79,8 +80,8 @@ ex5f: ex5f.o  chkopts
 ex5s: chkopts
 	-${CC} -pca keep  -WK,-lo=l ${FCONF} ${CFLAGS} -c ex5s.c
 	sed "s/, sqrt/ /g"   ex5s.M | sed "s/, exp/ /g"  > ex5s_tmp.c
-	-${CC} -mp ${CFLAGS} ${FCONF} -c ex5s_tmp.c
-	-${FC} -pfa keep -mp -64 ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} -c ex5fs.F
+	-${CC} -mp ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -c ex5s_tmp.c
+	-${FC} -pfa keep -mp -64 ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} -c ex5fs.F
 	-${CLINKER} -mp -o ex5s ex5s_tmp.o ex5fs.o ${PETSC_SNES_LIB}
 	${RM} ex5s.o
 
@@ -103,10 +104,6 @@ ex8: ex8.o common8and9.o chkopts
 ex9: ex9.o common8and9.o chkopts
 	-${CLINKER} -o ex9 ex9.o common8and9.o ${PETSC_SNES_LIB}
 	${RM} ex9.o common8and9.o
-
-ex11: ex11.o common10and11.o chkopts
-	-${CLINKER} -o ex11 ex11.o common10and11.o ${PETSC_SNES_LIB}
-	${RM} ex11.o common10and11.o
 
 ex12: ex12.o chkopts
 	-${CLINKER} -o ex12 ex12.o ${PETSC_SNES_LIB}
