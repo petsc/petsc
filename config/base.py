@@ -1,3 +1,47 @@
+'''
+config.base.Configure is the base class for all configure objects. It handles several types of interaction:
+
+Generic test execution
+----------------------
+
+  All configure tests should be run using
+
+  executeTest()
+
+which formats the output and adds metadata for the log.
+
+Preprocessing, Compiling, Linking, and Running
+----------------------------------------------
+
+  Two forms of this check are provided for each operation. The first is an "output" form which is
+intended to provide the status and complete output of the command. The second, or "check" form will
+return a success or failure indication based upon the status and output.
+
+  outputPreprocess(), checkPreprocess(), preprocess()
+  outputCompile(),    checkCompile()
+  outputLink(),       checkLink()
+  outputRun(),        checkRun()
+
+  The language used for these operation is managed with a stack, similar to autoconf.
+
+  pushLanguage(), popLanguage()
+
+  We also provide special forms used to check for valid compiler and linker flags, optionally adding
+them to the defaults.
+
+  checkCompilerFlag(), addCompilerFlag()
+  checkLinkerFlag(),   addLinkerFlag()
+
+Finding Executables
+-------------------
+
+  getExecutable(), getExecutables(), checkExecutable()
+
+Output
+------
+
+  addDefine(), addSubstitution(), addArgumentSubtitution(), addTypedef()
+'''
 import script
 
 import os

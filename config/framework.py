@@ -1,3 +1,10 @@
+'''
+  The cleanup() method performs the final output and logging actions
+    - Produce rrport from child __str__ methods
+    - Subtitute files
+    - Output configure header
+    - Log filesystem actions
+'''
 import script
 import config.base
 
@@ -5,6 +12,7 @@ import os
 import re
 
 class Framework(config.base.Configure, script.LanguageProcessor):
+  '''This needs to manage configure information in itself just as Builder manages it for configurations'''
   def __init__(self, clArgs = None, argDB = None, loadArgDB = 1):
     import graph
     import nargs
