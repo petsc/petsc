@@ -98,15 +98,10 @@ class BootstrapInstall (object):
         cmdline = os.path.join('/proc', str(int(f)), 'cmdline')
         if os.path.isfile(cmdline) and file(cmdline).read().find('RDict')>=0:
           pids.append(int(f))
-          sys.stdout.write('Killing RDict server '+str(pids[-1])+'\n')
-          os.kill(pids[-1], signal.SIGTERM)
+          # sys.stdout.write('Killing RDict server '+str(pids[-1])+'\n')
+          try: os.kill(pids[-1], signal.SIGTERM)
+          except: pass
           time.sleep(1)
-      except ValueError:
-        pass
-    for f in os.listdir('/proc'):
-      try:
-        if file(os.path.join('/proc', str(int(f)), 'cmdline')).read().find('RDict') >= 0:
-          raise RuntimeError('Unable to kill RDict server: '+str(int(f)))
       except ValueError:
         pass
     # Remove old PLY, Runtime and Compiler downloads
