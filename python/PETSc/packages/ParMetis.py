@@ -1,13 +1,16 @@
+#!/usr/bin/env python
+import user
 import config.base
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
-    self.found        = 0
-    self.compilers    = self.framework.require('config.compilers', self)
-    self.libraries    = self.framework.require('config.libraries', self)
+    self.headerPrefix  = ''
+    self.substPrefix   = ''
+    self.found         = 0
+    self.compilers     = self.framework.require('config.compilers', self)
+    self.libraries     = self.framework.require('config.libraries', self)
+    self.sourceControl = self.framework.require('config.sourceControl', self)
     return
 
   def __str__(self):
@@ -174,19 +177,22 @@ class Configure(config.base.Configure):
       import urllib
 
       packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
-      try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
-      except Exception, e:
-        raise RuntimeError('Error downloading ParMetis: '+str(e))
-      try:
-        config.base.Configure.executeShellCommand('cd packages; gunzip parmetis.tar.gz', log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error unzipping parmetis.tar.gz: '+str(e))
-      try:
-        config.base.Configure.executeShellCommand('cd packages; tar -xf parmetis.tar', log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error doing tar -xf parmetis.tar: '+str(e))
-      os.unlink(os.path.join(packages, 'parmetis.tar'))
+      if hasattr(self.sourceControl, 'bk'):
+        config.base.Configure.executeShellCommand('bk clone bk://parmetis.bkbits.net/ParMetis-dev packages/ParMetis', log = self.framework.log)
+      else:
+        try:
+          urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
+        except Exception, e:
+          raise RuntimeError('Error downloading ParMetis: '+str(e))
+        try:
+          config.base.Configure.executeShellCommand('cd packages; gunzip parmetis.tar.gz', log = self.framework.log)
+        except RuntimeError, e:
+          raise RuntimeError('Error unzipping parmetis.tar.gz: '+str(e))
+        try:
+          config.base.Configure.executeShellCommand('cd packages; tar -xf parmetis.tar', log = self.framework.log)
+        except RuntimeError, e:
+          raise RuntimeError('Error doing tar -xf parmetis.tar: '+str(e))
+        os.unlink(os.path.join(packages, 'parmetis.tar'))
       self.framework.actions.addArgument('ParMetis', 'Download', 'Downloaded ParMetis into '+self.getDir())
     # Get the ParMetis directories
     parmetisDir = self.getDir()
@@ -296,3 +302,12 @@ class Configure(config.base.Configure):
       self.executeTest(self.configureLibrary)
     self.setOutput()
     return
+
+if __name__ == '__main__':
+  import config.framework
+  import sys
+  framework = config.framework.Framework(sys.argv[1:])
+  framework.setup()
+  framework.addChild(Configure(framework))
+  framework.configure()
+  framework.dumpSubstitutions()
