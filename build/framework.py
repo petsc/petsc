@@ -423,9 +423,9 @@ class Framework(base.Base):
   def t_makeStamp(self):
     import build.buildGraph
 
-    bsProj = self.getInstalledProject('bk://sidl.bkbits.net/BuildSystem')
     stamp  = {}
-    stamp[bsProj.getUrl()] = self.getHeadRevision(bsProj)
+#    bsProj = self.getInstalledProject('bk://sidl.bkbits.net/BuildSystem')
+#    stamp[bsProj.getUrl()] = self.getHeadRevision(bsProj)
     for p in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
       stamp[p.getUrl()] = self.getHeadRevision(p)
     return stamp
