@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.82 1996/01/01 01:03:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.83 1996/01/02 20:16:19 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -937,18 +937,11 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   } 
 
   /* Do lower triangular multiplication:  [ y = L * xwork ] */
-#if defined(PETSC_LOG)
-  MLOG_ELM(bspinfo->procset);
-#endif
   if (bspinfo->single)
     BSforward1( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
   else
     BSforward( bsif->pA, xxa, yya, bsif->comm_pA, bspinfo );
   CHKERRBS(0);
-#if defined(PETSC_LOG)
-  MLOG_ACC(MM_FORWARD);
-  MLOG_ELM(bspinfo->procset);
-#endif
 
   /* Do upper triangular multiplication:  [ y = y + L^{T} * xwork ] */
   if (bsif->mat_is_symmetric) {
@@ -982,22 +975,18 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,MatSORType flag,
   SETERRQ(1,"MatRelax_MPIRowbs:Not done");
 
   if (flag & SOR_FORWARD_SWEEP) {
-    MLOG_ELM(bsif->procinfo->procset);
     if (bsif->procinfo->single) {
       BSfor_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
     } else {
       BSfor_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
     }
-    MLOG_ACC(MS_FORWARD);
   }
   if (flag & SOR_BACKWARD_SWEEP) {
-    MLOG_ELM(bsif->procinfo->procset);
     if (bsif->procinfo->single) {
       BSback_solve1(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
     } else {
       BSback_solve(bsif->pA,b,bsif->comm_pA,bsif->procinfo); CHKERRBS(0);
     }
-    MLOG_ACC(MS_BACKWARD);
   }
   ierr = VecCopy(bb,xx); CHKERRQ(ierr);
   return 0;
@@ -1354,10 +1343,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   BSctx_set_cs(bspinfo,INT_MAX); CHKERRBS(0);
   BSctx_set_is(bspinfo,INT_MAX); CHKERRBS(0);
   BSctx_set_ct(bspinfo,IDO); CHKERRBS(0);
-#if defined(PETSC_LOG)
+#if defined(PETSC_DEBUG)
   BSctx_set_err(bspinfo,1); CHKERRBS(0);  /* BS error checking */
-#else
-  BSctx_set_err(bspinfo,0); CHKERRBS(0);
 #endif
   BSctx_set_rt(bspinfo,1); CHKERRBS(0);
   if (OptionsHasName(PETSC_NULL,"-info")) {
@@ -1368,7 +1355,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   } else {
     BSctx_set_si(bspinfo,0); CHKERRBS(0);
   }
-#if defined(PETSC_LOG)
+#if defined(BSMAINLOG)
   MLOG_INIT();  /* Initialize logging */
 #endif
 
