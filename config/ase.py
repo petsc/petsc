@@ -34,7 +34,7 @@ class Configure(config.base.Configure):
     self.lib = [os.path.join(self.argDB['ASE_DIR'], 'lib', 'lib-python-'+self.baseName+'.so')]
     if not os.path.isdir(self.argDB['ASE_DIR']):
       raise RuntimeError('Invalid ASE directory: '+str(self.argDB['ASE_DIR']))
-    if not os.samefile(os.getcwd(), self.argDB['ASE_DIR']):
+    if not os.path.samefile(os.getcwd(), self.argDB['ASE_DIR']):
       for lib in self.lib:
         if not os.path.isfile(lib):
           raise RuntimeError('Invalid ASE library: '+str(lib))
