@@ -74,8 +74,8 @@ C   DERIVATIVE OF THE FIRST ORDER ROE FLUXES FOR THE JACOBIAN.
 C   THE SOLVER IS A BLOCK GAUSS-SEIDEL ITERATION SCHEME.
 C   FIRST GOT THIS TO RUN ON AUGUST 7, 1990, JULIANN`S BIRTHDAY.
 C
-C   "WHITE MAN BUILD BIG FIRE, SIT WAY BACK.
-C    INDIAN BUILD LITTLE FIRE, SIT UP CLOSE."
+C   `WHITE MAN BUILD BIG FIRE, SIT WAY BACK.
+C    INDIAN BUILD LITTLE FIRE, SIT UP CLOSE.`
 C
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
@@ -94,8 +94,8 @@ c      COMMON /FREQ/ IFREQ,ISGS
 #if !defined(ACTIVATE_JULIANNE)
       if (jsolve .eq. 1) then
          if (rank .eq. 0) 
-     &    write(6,*) 'JULIANNE: Solver is not compiled. Edit makefile to
-     & define ACTIVATE_JULIANNE; then recompile xnd.F and xjul.F'
+     &    write(6,*) 'JULIANNE: Solver is not compiled. Edit makefile',
+     & ' to define ACTIVATE_JULIANNE; then recompile xnd.F and xjul.F'
          julianne = -1
          return
       endif
