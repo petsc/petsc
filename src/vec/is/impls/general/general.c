@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.78 1999/02/01 21:48:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.79 1999/04/19 22:10:38 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -29,6 +29,26 @@ int ISDestroy_General(IS is)
   PetscFree(is_general); 
   PLogObjectDestroy(is);
   PetscHeaderDestroy(is); PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ISIdentity_General" 
+int ISIdentity_General(IS is,PetscTruth *ident)
+{
+  IS_General *is_general = (IS_General *) is->data;
+  int        i, n = is_general->n,*idx = is_general->idx;
+
+  PetscFunctionBegin;
+  is->isidentity = 1;
+  *ident         = PETSC_TRUE;
+  for (i=0; i<n; i++) {
+    if (idx[i] != i) {
+      is->isidentity = 0;
+      *ident         = PETSC_FALSE;
+      PetscFunctionReturn(0);
+    }
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -158,7 +178,10 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISInvertPermutation_General,
                                ISSort_General,
                                ISSorted_General,
-                               ISDuplicate_General };
+                               ISDuplicate_General,
+                               ISDestroy_General,
+                               ISView_General,
+                               ISIdentity_General };
 
 #undef __FUNC__  
 #define __FUNC__ "ISCreateGeneral" 
@@ -213,14 +236,12 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];
   }
-  PetscMemcpy(sub->idx,idx,n*sizeof(int));
+  ierr = PetscMemcpy(sub->idx,idx,n*sizeof(int));CHKERRQ(ierr);
   sub->sorted     = sorted;
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
-  PetscMemcpy(Nindex->ops,&myops,sizeof(myops));
-  Nindex->ops->destroy = ISDestroy_General;
-  Nindex->ops->view    = ISView_General;
+  ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm  = 0;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
   if (flg) {

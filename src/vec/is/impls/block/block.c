@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.34 1999/01/31 16:03:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: block.c,v 1.35 1999/04/23 19:23:25 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -164,6 +164,25 @@ int ISDuplicate_Block(IS is, IS *newIS)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "ISIdentity_Block" 
+int ISIdentity_Block(IS is,PetscTruth *ident)
+{
+  IS_Block *is_block = (IS_Block *) is->data;
+  int      i, n = is_block->n,*idx = is_block->idx, bs = is_block->bs;
+
+  PetscFunctionBegin;
+  is->isidentity = 1;
+  *ident         = PETSC_TRUE;
+  for (i=0; i<n; i++) {
+    if (idx[i] != bs*i) {
+      is->isidentity = 0;
+      *ident         = PETSC_FALSE;
+      PetscFunctionReturn(0);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 static struct _ISOps myops = { ISGetSize_Block,
                                ISGetSize_Block,
@@ -172,7 +191,10 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISInvertPermutation_Block,
                                ISSort_Block,
                                ISSorted_Block,
-                               ISDuplicate_Block };
+                               ISDuplicate_Block,
+                               ISDestroy_Block,
+                               ISView_Block,
+                               ISIdentity_Block };
 #undef __FUNC__  
 #define __FUNC__ "ISCreateBlock" 
 /*@C
@@ -207,7 +229,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 @*/
 int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 {
-  int      i, sorted = 1, min, max;
+  int      i, sorted = 1, min, max, ierr;
   IS       Nindex;
   IS_Block *sub;
 
@@ -227,15 +249,13 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];
   }
-  PetscMemcpy(sub->idx,idx,n*sizeof(int));
+  ierr = PetscMemcpy(sub->idx,idx,n*sizeof(int));CHKERRQ(ierr);
   sub->sorted     = sorted;
   sub->bs         = bs;
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
-  PetscMemcpy(Nindex->ops,&myops,sizeof(myops));
-  Nindex->ops->destroy = ISDestroy_Block;
-  Nindex->ops->view    = ISView_Block;
+  ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm  = 0;
   *is = Nindex; PetscFunctionReturn(0);
 }

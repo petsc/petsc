@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.80 1999/03/17 23:22:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.81 1999/04/19 22:10:40 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -10,6 +10,22 @@ static char vcid[] = "$Id: stride.c,v 1.80 1999/03/17 23:22:12 bsmith Exp bsmith
 typedef struct {
   int n,first,step;
 } IS_Stride;
+
+#undef __FUNC__  
+#define __FUNC__ "ISIdentity_Stride" 
+int ISIdentity_Stride(IS is,PetscTruth *ident)
+{
+  IS_Stride *is_stride = (IS_Stride *) is->data;
+
+  PetscFunctionBegin;
+  is->isidentity = 0;
+  *ident         = PETSC_FALSE;
+  if (is_stride->first != 0) PetscFunctionReturn(0);
+  if (is_stride->step  != 1) PetscFunctionReturn(0);
+  *ident          = PETSC_TRUE;
+  is->isidentity  = 1;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "ISDuplicate_Stride" 
@@ -239,7 +255,10 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISInvertPermutation_Stride,
                                ISSort_Stride, 
                                ISSorted_Stride,
-                               ISDuplicate_Stride };
+                               ISDuplicate_Stride,
+                               ISDestroy_Stride,
+                               ISView_Stride,
+                               ISIdentity_Stride };
 
 #undef __FUNC__  
 #define __FUNC__ "ISCreateStride" 
@@ -292,9 +311,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
-  PetscMemcpy(Nindex->ops,&myops,sizeof(myops));
-  Nindex->ops->destroy = ISDestroy_Stride;
-  Nindex->ops->view    = ISView_Stride;
+  ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm  = 0;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
   if (flg) {
