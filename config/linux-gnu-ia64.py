@@ -4,7 +4,7 @@ if __name__ == '__main__':
     import configure
 
     configure_options = [
-        # None required
+         '--enable-dynamic=0'
         ]
 
     configure.petsc_configure(configure_options)
