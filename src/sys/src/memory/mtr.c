@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.111 1998/05/08 16:12:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.112 1998/06/01 03:29:44 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -134,7 +134,7 @@ extern "C" {
 
    No output is generated if there are no problems detected.
 */
-int PetscTrValid(int line,char *function,char *file,char *dir )
+int PetscTrValid(int line,const char function[],const char file[],const char dir[])
 {
   TRSPACE  *head;
   char     *a;
