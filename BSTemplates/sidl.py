@@ -136,8 +136,9 @@ class Defaults:
                                         transform.SetFilter('old sidl')])
 
 class CompileDefaults (Defaults):
-  def __init__(self, sidlSources):
+  def __init__(self, project, sidlSources):
     Defaults.__init__(self, sidlSources)
+    self.project               = project
     self.libDir                = os.path.abspath('lib')
     self.babelDir              = os.path.abspath(bs.argDB['BABEL_DIR'])
     self.babelIncludeDir       = os.path.join(self.babelDir, 'include')
@@ -148,6 +149,14 @@ class CompileDefaults (Defaults):
     self.extraLibraries        = BabelPackageDict(self)
     self.etagsFile             = None
 
+  def getClientLibrary(self, lang):
+    'Client libraries following the naming scheme: lib<project>-<lang>-client.a'
+    return fileset.FileSet([os.path.join(self.libDir, 'lib'+self.project+'-'+string.lower(lang)+'-client.a')])
+
+  def getServerLibrary(self, lang, package):
+    'Server libraries following the naming scheme: lib<project>-<lang>-<package>-server.a'
+    return fileset.FileSet([os.path.join(self.libDir, 'lib'+self.project+'-'+string.lower(lang)+'-'+package+'-server.a')])
+
   def getServerCompileTargets(self):
     targets = []
     for lang in self.serverLanguages:
@@ -155,11 +164,10 @@ class CompileDefaults (Defaults):
       for package in self.getPackages():
         if len(self.serverLanguages) > 1:
           rootDir = self.serverBaseDir+'-'+string.lower(lang)+'-'+package
-          library = fileset.FileSet([os.path.join(self.libDir, 'lib'+lang+'server-'+package+'.a')])
         else:
           rootDir = self.serverBaseDir+'-'+package
-          library = fileset.FileSet([os.path.join(self.libDir, 'libserver-'+package+'.a')])
-        libraries = fileset.FileSet([os.path.join(self.libDir, 'lib'+string.lower(lang)+'client.a')], children = [self.babelLib])
+        library = self.getServerLibrary(lang, package)
+        libraries = fileset.FileSet(children = [self.getClientLibrary(lang), self.babelLib])
 
         # For IOR source
         cAction = compile.CompileC(library)
@@ -193,7 +201,7 @@ class CompileDefaults (Defaults):
     targets = []
     for lang in self.clientLanguages:
       sourceDir = os.path.abspath(string.lower(lang))
-      library   = fileset.FileSet([os.path.join(self.libDir, 'lib'+string.lower(lang)+'client.a')])
+      library   = self.getClientLibrary(lang)
 
       if lang in ['Python', 'F77', 'C']:
         tagger = compile.TagC(root = sourceDir)
@@ -241,12 +249,9 @@ class CompileDefaults (Defaults):
       rootDir = self.serverBaseDir+'-'+self.serverLanguages[0]+'-'+package
     else:
       rootDir = self.serverBaseDir+'-'+package
-    for lang in self.serverLanguages:
-      for package in self.getPackages():
-        if len(self.serverLanguages) > 1:
-          libraries.append(os.path.join(self.libDir, 'lib'+lang+'server-'+package+'.so'))
-        else:
-          libraries.append(os.path.join(self.libDir, 'libserver-'+package+'.so'))
+##    for lang in self.serverLanguages:
+##      for package in self.getPackages():
+##        libraries.extend(self.getServerLibrary(lang, package))
 
     action = compile.CompileCxx(library)
     action.includeDirs.append(self.babelIncludeDir)
