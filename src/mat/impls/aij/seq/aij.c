@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.222 1997/06/18 01:44:15 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.223 1997/06/18 23:13:09 curfman Exp curfman $";
 #endif
 
 /*
@@ -385,7 +385,12 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     }
     fprintf(fd," %d %d\n\n",m,nzd);
     for ( i=0; i<m; i+=6 ) {
-      fprintf(fd," %d %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4],sptr[i+5]);
+      if (i+5<m) fprintf(fd," %d %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4],sptr[i+5]);
+      else if (i+4<m) fprintf(fd," %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4]);
+      else if (i+3<m) fprintf(fd," %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3]);
+      else if (i+2<m) fprintf(fd," %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2]);
+      else if (i+1<m) fprintf(fd," %d %d\n",sptr[i],sptr[i+1]);
+      else            fprintf(fd," %d\n",sptr[i]);
     }
     fprintf(fd,"\n");
     PetscFree(sptr);
