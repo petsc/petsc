@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.41 1997/10/07 20:07:24 balay Exp balay $ 
+# $Id: builddist,v 1.42 1998/04/09 17:07:43 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -48,7 +48,7 @@ cd /mcs/tmp/petsc
 # Eliminate chmods in bmake/common
 /bin/mv bmake/common bmake/common.bak
 /bin/grep -v 'chmod' bmake/common.bak > bmake/common
-/bin/rm bmake/common.bak
+/bin/rm -f  bmake/common.bak
 # Create ETAGS and CTAGS
 make etags ctags
 
