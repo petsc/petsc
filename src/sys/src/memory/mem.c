@@ -1,5 +1,6 @@
 /*$Id: mem.c,v 1.55 2001/06/21 21:15:26 bsmith Exp $*/
 
+#include "petscconfig.h"
 #include "petsc.h"           /*I "petsc.h" I*/
 #include "petscsys.h"
 #include "petscfix.h"

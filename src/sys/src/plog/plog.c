@@ -2,6 +2,7 @@
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
+#include "petscconfig.h"
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "petscmachineinfo.h"
 #if defined(PETSC_HAVE_MPE)

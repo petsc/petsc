@@ -2,6 +2,7 @@
 /*
       Some PETSc utilites
 */
+#include "petscconfig.h"
 #include "petscsys.h"             /*I    "petscsys.h"   I*/
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>

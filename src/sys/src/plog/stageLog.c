@@ -1,5 +1,6 @@
 /* $Id: stageLog.c,v 1.1 2000/01/10 03:28:12 knepley Exp $ */
 
+#include "petscconfig.h"
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "src/sys/src/plog/ptime.h"
 #include "plog.h"

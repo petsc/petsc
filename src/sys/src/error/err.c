@@ -2,6 +2,7 @@
 /*
       Code that allows one to set the error handlers
 */
+#include "petscconfig.h"
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdarg.h>
 #if defined(HAVE_STDLIB_H)

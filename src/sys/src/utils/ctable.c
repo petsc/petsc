@@ -1,6 +1,7 @@
 /*$Id: ctable.c,v 1.18 2001/03/23 23:20:45 balay Exp $*/
 /* Contributed by - Mark Adams */
 
+#include "petscconfig.h"
 #include "petsc.h"
 #include "src/sys/ctable.h" 
 #if defined (HAVE_LIMITS_H)

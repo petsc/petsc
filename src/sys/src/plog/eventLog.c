@@ -1,5 +1,6 @@
 /* $Id: eventLog.c,v 1.3 2000/08/16 05:14:09 knepley Exp $ */
 
+#include "petscconfig.h"
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "src/sys/src/plog/ptime.h"
 #include "plog.h"

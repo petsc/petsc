@@ -355,7 +355,9 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   int         *row,*col,other_disassembled;
   PetscScalar *val;
   InsertMode  addv = mat->insertmode;
+#if defined(PETSC_HAVE_SUPERLUDIST) 
   PetscTruth  flag;
+#endif
 
   PetscFunctionBegin;
   if (!aij->donotstash) {
@@ -1493,7 +1495,9 @@ int MatCreate_MPIAIJ(Mat B)
 {
   Mat_MPIAIJ   *b;
   int          ierr,i,size;
+#if defined(PETSC_HAVE_SUPERLUDIST) 
   PetscTruth   flg;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);

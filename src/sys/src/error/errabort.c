@@ -3,6 +3,7 @@
        The default error handlers and code that allows one to change
    error handlers.
 */
+#include "petscconfig.h"
 #include "petsc.h"           /*I "petsc.h" I*/
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>

@@ -1,5 +1,6 @@
 /*$Id: stack.c,v 1.35 2001/09/07 20:08:25 bsmith Exp $*/
 
+#include "petscconfig.h"
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
 

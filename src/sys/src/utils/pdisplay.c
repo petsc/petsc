@@ -1,5 +1,6 @@
 /*$Id: pdisplay.c,v 1.24 2001/06/21 21:15:41 bsmith Exp $*/
 
+#include "petscconfig.h"
 #include "petsc.h"        
 #include "petscsys.h"             /*I    "petscsys.h"   I*/
 #include <stdarg.h>

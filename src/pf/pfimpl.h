@@ -3,6 +3,7 @@
 #ifndef _PFIMPL
 #define _PFIMPL
 
+#include "petscconfig.h"
 #include "petscpf.h"
 
 typedef struct _PFOps *PFOps;

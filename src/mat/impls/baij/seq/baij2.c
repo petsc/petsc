@@ -1,6 +1,5 @@
 /*$Id: baij2.c,v 1.75 2001/09/07 20:09:49 bsmith Exp $*/
 
-#include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"

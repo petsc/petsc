@@ -1,5 +1,6 @@
 /*$Id: sendsparse.c,v 1.37 2001/08/06 21:13:29 bsmith Exp $*/
 
+#include "petscconfig.h"
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
 /*--------------------------------------------------------------*/

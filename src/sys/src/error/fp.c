@@ -4,6 +4,7 @@
 *   enough slight differences we have completely separate codes for each one.
 *
 */
+#include "petscconfig.h"
 #include "petsc.h"           /*I  "petsc.h"  I*/
 #include "petscsys.h"
 #include <signal.h>

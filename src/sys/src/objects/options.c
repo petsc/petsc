@@ -7,6 +7,7 @@
   what malloc is being used until it has already processed the input.
 */
 
+#include "petscconfig.h"
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
 #if defined(HAVE_STDLIB_H)

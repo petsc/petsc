@@ -5,6 +5,7 @@
   they are broken.
 
 */
+#include "petscconfig.h"
 #include "petsc.h"        /*I  "petsc.h"   I*/
 /*
     On the IBM Rs6000 using the Gnu G++ compiler you may have to include 

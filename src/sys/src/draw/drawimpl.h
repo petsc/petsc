@@ -6,6 +6,7 @@
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
 
+#include "petscconfig.h"
 #include "petsc.h"
 
 struct _PetscDrawOps {

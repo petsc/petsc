@@ -13,23 +13,16 @@
 #include "petscversion.h"
 
 /* ========================================================================== */
-/* 
-   The PETSc configuration file.  Contains various definitions that
-   handle portability issues and the presence of machine features. 
-
-   petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h it is 
-   found automatically by the compiler due to the -I${PETSC_DIR}/bmake/${PETSC_ARCH}
-   in the bmake/common_variables definition of PETSC_INCLUDE
+/*
+   Fixes for configure time choices which impact our interface. Currently only
+   calling conventions and extra compiler checking falls under this category.
 */
-#include "petscconf.h"
-
 #if !defined(PETSC_PRINTF_FORMAT_CHECK)
 #define PETSC_PRINTF_FORMAT_CHECK(a,b)
 #endif
 #if !defined (PETSC_STDCALL)
 #define PETSC_STDCALL
 #endif
-
 
 /* ========================================================================== */
 

@@ -1,5 +1,6 @@
 /*$Id: rs6000_time.c,v 1.11 2001/04/10 19:34:38 bsmith Exp $*/
 
+#include "petscconfig.h"
 #include "petsc.h"
 #if defined (PETSC_USE_READ_REAL_TIME)
 #include <sys/time.h>

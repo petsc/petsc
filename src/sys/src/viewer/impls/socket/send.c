@@ -1,5 +1,6 @@
 /* $Id: send.c,v 1.123 2001/04/10 19:34:04 bsmith Exp $ */
 
+#include "petscconfig.h"
 #include "petsc.h"
 #include "petscsys.h"
 

@@ -2,6 +2,8 @@
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
+
+#include "petscconfig.h"
 #include "petscmat.h"
 
 /*

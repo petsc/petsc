@@ -2,6 +2,7 @@
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
+#include "petscconfig.h"
 #include "petsc.h"  /*I   "petsc.h"    I*/
 #include "petscsys.h"
 

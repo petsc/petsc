@@ -4,8 +4,7 @@
   matrix storage format.
 */
 
-#include "petscsys.h"                           /*I "petscmat.h" I*/
-#include "src/mat/impls/aij/seq/aij.h"
+#include "src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
 #include "src/inline/dot.h"
@@ -607,7 +606,9 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   int          fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax,ierr;
   int          m = A->m,*ip,N,*ailen = a->ilen,shift = a->indexshift,rmax = 0;
   PetscScalar  *aa = a->a,*ap;
+#if defined(PETSC_HAVE_SUPERLUDIST) 
   PetscTruth   flag;
+#endif
 
   PetscFunctionBegin;  
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);

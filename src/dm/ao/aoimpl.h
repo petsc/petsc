@@ -5,6 +5,8 @@
 
 #ifndef __AOIMPL 
 #define __AOIMPL
+
+#include "petscconfig.h"
 #include "petscao.h"
 
 /*

@@ -1,5 +1,6 @@
 /*$Id: mpiu.c,v 1.100 2001/03/23 23:20:45 balay Exp $*/
 
+#include "petscconfig.h"
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
 #undef __FUNCT__  

@@ -3,6 +3,7 @@
 #ifndef __BILINEARIMPL
 #define __BILINEARIMPL
 
+#include "petscconfig.h"
 #include "bilinear.h"
 
 typedef enum {BILINEAR_FACTOR_NONE, BILINEAR_FACTOR_LU, BILINEAR_FACTOR_CHOLESKY} BilinearFactorizationType;

@@ -1,5 +1,6 @@
 /*$Id: dlregispetsc.c,v 1.14 2001/03/23 23:20:05 balay Exp $*/
 
+#include "petscconfig.h"
 #include "petsc.h"
 #ifdef PETSC_HAVE_PLAPACK
   #include "PLA.h"

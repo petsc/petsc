@@ -6,6 +6,7 @@
    CURRENTLY NOT SUPPORTED 
 */
 
+#include "petscconfig.h"
 #include "petsc.h"        /*I  "petsc.h"   I*/
 
 extern int PetscMain(void);

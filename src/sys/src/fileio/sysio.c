@@ -4,6 +4,7 @@
    This file contains simple binary read/write routines.
  */
 
+#include "petscconfig.h"
 #include "petsc.h"     /*I          "petsc.h"    I*/
 #include "petscsys.h"
 

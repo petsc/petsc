@@ -5,6 +5,7 @@
   they are broken or have the wrong prototypes.
 
 */
+#include "petscconfig.h"
 #include "petsc.h"                   /*I  "petsc.h"   I*/
 #include "petscsys.h"
 #if defined(HAVE_STRING_H)

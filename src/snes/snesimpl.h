@@ -3,6 +3,7 @@
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
 
+#include "petscconfig.h"
 #include "petscsnes.h"
 
 /*

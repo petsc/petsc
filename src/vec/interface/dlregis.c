@@ -1,5 +1,6 @@
 /*$Id: dlregis.c,v 1.19 2001/03/23 23:24:34 balay Exp $*/
 
+#include "petscconfig.h"
 #include "petscvec.h"
 
 #undef __FUNCT__  

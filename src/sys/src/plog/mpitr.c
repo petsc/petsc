@@ -5,6 +5,7 @@
   nonblocking messages that are not correctly waited for, etc.
 */
 
+#include "petscconfig.h"
 #include "petsc.h"           /*I "petsc.h" I*/
 
 #if defined(PETSC_USE_LOG) && !defined(PETSC_HAVE_MPI_UNI)

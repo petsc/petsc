@@ -1,5 +1,6 @@
 /*$Id: pname.c,v 1.42 2001/04/10 19:34:33 bsmith Exp $*/
 
+#include "petscconfig.h"
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
 #undef __FUNCT__  

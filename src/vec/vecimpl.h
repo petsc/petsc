@@ -8,6 +8,8 @@
 
 #ifndef __VECIMPL_H
 #define __VECIMPL_H
+
+#include "petscconfig.h"
 #include "petscvec.h"
 
 struct _PetscMapOps {
