@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.17 1998/12/21 00:59:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.18 1999/01/31 16:08:28 bsmith Exp curfman $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -308,16 +308,20 @@ EXTERN_C_END
 #undef __FUNC__  
 #define __FUNC__ "PCCompositeSetType"
 /*@C
-   PCCompositeSetType
+   PCCompositeSetType - Sets the type of composite preconditioner.
    
+   Collective on PC
+
    Input Parameter:
 .  pc - the preconditioner context
 .  type - PC_COMPOSITE_ADDITIVE (default) or PC_COMPOSITE_MULTIPLICATIVE
 
-   Collective on PC
+   Options Database Key:
+.  -pc_composite_type <type> - Sets composite preconditioner type
 
-.keywords:  set,  composite preconditioner, additive, multiplicative
+   Level: Developer
 
+.keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
 int PCCompositeSetType(PC pc,PCCompositeType type)
 {
@@ -337,14 +341,15 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
 /*@C
    PCCompositeAddPC - Adds another PC to the composite PC.
    
-   Input Parameter:
+   Collective on PC
+
+   Input Parameters:
 .  pc - the preconditioner context
 .  type - the type of the new preconditioner
 
-   Collective on PC
+   Level: Developer
 
-.keywords:  composite preconditioner
-
+.keywords: PC, composite preconditioner, add
 @*/
 int PCCompositeAddPC(PC pc,PCType type)
 {
@@ -364,6 +369,8 @@ int PCCompositeAddPC(PC pc,PCType type)
 /*@C
    PCCompositeGetPC - Gets one of the PC objects in the composite PC.
    
+   Not Collective
+
    Input Parameter:
 .  pc - the preconditioner context
 .  n - the number of the pc requested
@@ -371,12 +378,10 @@ int PCCompositeAddPC(PC pc,PCType type)
    Output Parameters:
 .  subpc - the PC requested
 
-   Not Collective
+   Level: Developer
 
-.keywords:  get, composite preconditioner, sub preconditioner
-
+.keywords: PC, get, composite preconditioner, sub preconditioner
 .seealso: PCCompositeAddPC()
-
 @*/
 int PCCompositeGetPC(PC pc,int n,PC *subpc)
 {
@@ -400,19 +405,21 @@ int PCCompositeGetPC(PC pc,int n,PC *subpc)
                       the matrix used to define the preconditioner) is used to compute
                       the residual when the multiplicative scheme is used.
 
+   Collective on PC
+
    Input Parameters:
 .  pc - the preconditioner context
 
-   Collective on PC
-
    Options Database Key:
-$  -pc_composite_true
+.  -pc_composite_true - Activates PCCompositeSetUseTrue()
 
    Note:
    For the common case in which the preconditioning and linear 
    system matrices are identical, this routine is unnecessary.
 
-.keywords:  block, set, true, flag
+   Level: Developer
+
+.keywords: PC, composite preconditioner, set, true, flag
 
 .seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal(), PCSLESSetUseTrue()
 @*/

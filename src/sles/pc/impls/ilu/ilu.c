@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.119 1999/01/27 19:46:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.120 1999/01/31 16:08:22 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -136,13 +136,13 @@ EXTERN_C_END
 .  dt - the drop tolerance
 -  dtcount - the max number of nonzeros allowed in a row?
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_ilu_use_drop_tolerance <dt,dtcount> - Sets drop tolerance
 
    Note:
    This routine is NOT currently supported!
+
+   Level: intermediate
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
@@ -171,8 +171,6 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 +  pc - the preconditioner context
 -  fill - amount of expected fill
 
-   Level: intermediate
-
    Options Database Key:
 $  -pc_ilu_fill <fill>
 
@@ -181,6 +179,8 @@ $  -pc_ilu_fill <fill>
    fill to expect. By running with the option -log_info PETSc will print the 
    actual amount of fill used; allowing you to set the value accurately for
    future runs. Bt default PETSc uses a value of 1.0
+
+   Level: intermediate
 
 .keywords: PC, set, factorization, direct, fill
 
@@ -212,12 +212,13 @@ int PCILUSetFill(PC pc,double fill)
 +   pc - the preconditioner context
 -   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
 
-    Level: intermediate
-
     Options Database Key:
 .   -mat_order <nd,rcm,...> - Sets ordering routine
 
+    Level: intermediate
+
 .seealso: PCLUSetMatReordering()
+.keywords: PC, ILU, set, matrix, reordering
 @*/
 int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
 {
@@ -245,10 +246,10 @@ int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_ilu_reuse_reordering - Activate PCILUSetReuseReordering()
+
+   Level: intermediate
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 
@@ -279,10 +280,10 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 +  pc - the preconditioner context
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_ilu_reuse_fill - Activates PCILUSetReuseFill()
+
+   Level: intermediate
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 
@@ -312,10 +313,10 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 +  pc - the preconditioner context
 -  levels - number of levels of fill
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_ilu_levels <levels> - Sets fill level
+
+   Level: intermediate
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
@@ -337,20 +338,20 @@ int PCILUSetLevels(PC pc,int levels)
 #define __FUNC__ "PCILUSetAllowDiagonalFill"
 /*@
    PCILUSetAllowDiagonalFill - Causes all diagonal matrix entries to be 
-       treated as level 0 fill even if there is no non-zero location.
+   treated as level 0 fill even if there is no non-zero location.
 
    Collective on PC
 
    Input Parameters:
 +  pc - the preconditioner context
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_ilu_diagonal_fill
 
    Notes:
-     Does not apply with 0 fill
+   Does not apply with 0 fill.
+
+   Level: intermediate
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
@@ -376,17 +377,17 @@ int PCILUSetAllowDiagonalFill(PC pc)
    Input Parameters:
 .  pc - the preconditioner context
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_ilu_in_place - Activates in-place factorization
 
-   Note:
+   Notes:
    PCILUSetUseInPlace() is intended for use with matrix-free variants of
    Krylov methods, or when a different matrices are employed for the linear
    system and preconditioner.  Do NOT use this option if the linear system
    matrix also serves as the preconditioning matrix, since the factored
    matrix would then overwrite the original matrix. 
+
+   Level: intermediate
 
 .keywords: PC, set, factorization, inplace, in-place, ILU
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.79 1999/01/13 23:47:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.80 1999/01/31 16:08:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -178,19 +178,19 @@ EXTERN_C_END
     SOR_LOCAL_SYMMETRIC_SWEEP
 .ve
 
-   Level: intermediate
-
    Options Database Keys:
-.  -pc_sor_symmetric - Activates symmetric version
++  -pc_sor_symmetric - Activates symmetric version
 .  -pc_sor_backward - Activates backward version
 .  -pc_sor_local_forward - Activates local forward version
 .  -pc_sor_local_symmetric - Activates local symmetric version
-.  -pc_sor_local_backward - Activates local backward version
+-  -pc_sor_local_backward - Activates local backward version
 
    Notes: 
    To use the Eisenstat trick with SSOR, employ the PCEISENSTAT preconditioner,
    which can be chosen with the option 
 .  -pc_type eisenstat - Activates Eisenstat trick
+
+   Level: intermediate
 
 .keywords: PC, SOR, SSOR, set, relaxation, sweep, forward, backward, symmetric
 
@@ -221,10 +221,10 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
 +  pc - the preconditioner context
 -  omega - relaxation coefficient (0 < omega < 2). 
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_sor_omega <omega> - Sets omega
+
+   Level: intermediate
 
 .keywords: PC, SOR, SSOR, set, relaxation, omega
 
@@ -254,10 +254,10 @@ int PCSORSetOmega(PC pc, double omega)
 +  pc - the preconditioner context
 -  its - number of iterations to use
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_sor_its <its> - Sets number of iterations
+
+   Level: intermediate
 
 .keywords: PC, SOR, SSOR, set, iterations
 

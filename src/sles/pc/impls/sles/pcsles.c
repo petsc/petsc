@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.14 1998/12/21 00:59:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.15 1999/01/31 16:08:27 bsmith Exp curfman $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -151,22 +151,24 @@ EXTERN_C_END
 #define __FUNC__ "PCSLESSetUseTrue"
 /*@
    PCSLESSetUseTrue - Sets a flag to indicate that the true matrix (rather than
-                      the matrix used to define the preconditioner) is used to compute
-                      the residual inside the inner solve.
+   the matrix used to define the preconditioner) is used to compute the
+   residual inside the inner solve.
+
+   Collective on PC
 
    Input Parameters:
 .  pc - the preconditioner context
 
-   Collective on PC
-
    Options Database Key:
-$  -pc_sles_true
+.  -pc_sles_true - Activates PCSLESSetUseTrue()
 
    Note:
    For the common case in which the preconditioning and linear 
    system matrices are identical, this routine is unnecessary.
 
-.keywords:  block, Jacobi, set, true, local, flag
+   Level: advanced
+
+.keywords:  PC, SLES, set, true, local, flag
 
 .seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
 @*/
@@ -187,19 +189,21 @@ int PCSLESSetUseTrue(PC pc)
 #define __FUNC__ "PCSLESGetSLES"
 /*@C
    PCSLESGetSLES - Gets the SLES context for a SLES PC.
-   
+
+   Not Collective but SLES returned is parallel if PC was parallel
+
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameters:
 .  sles - the PC solver
 
-   Not Collective but SLES returned is parallel if PC was parallel
-
+   Notes:
    You must call SLESSetUp() before calling PCSLESGetSLES().
 
-.keywords:  get, sub, SLES, context
+   Level: advanced
 
+.keywords:  PC, SLES, get, context
 @*/
 int PCSLESGetSLES(PC pc,SLES *sles)
 {

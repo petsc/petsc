@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.83 1999/01/27 19:46:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.84 1999/01/31 16:08:21 bsmith Exp curfman $";
 #endif
 
 /*
@@ -226,11 +226,11 @@ EXTERN_C_END
    PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).
 
+   Collective on PC
+
    Input Parameters:
 +  pc - the preconditioner context
 -  omega - relaxation coefficient (0 < omega < 2)
-
-   Collective on PC
 
    Options Database Key:
 .  -pc_eisenstat_omega <omega> - Sets omega
@@ -244,6 +244,8 @@ EXTERN_C_END
    To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner, 
    which can be chosen with the database options
 $    -pc_type  sor  -pc_sor_symmetric
+
+   Level: intermediate
 
 .keywords: PC, Eisenstat, set, SOR, SSOR, relaxation, omega
 
@@ -274,10 +276,10 @@ int PCEisenstatSetOmega(PC pc,double omega)
    Input Parameter:
 .  pc - the preconditioner context
 
-   Level: intermediate
-
    Options Database Key:
 .  -pc_eisenstat_diagonal_scaling - Activates PCEisenstatUseDiagonalScaling()
+
+   Level: intermediate
 
 .keywords: PC, Eisenstat, use, diagonal, scaling, SSOR
 
