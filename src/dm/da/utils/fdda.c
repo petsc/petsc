@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.69 2001/05/02 03:20:31 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.70 2001/05/11 15:17:31 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -787,7 +787,7 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
-    if (!da->localcoloring) {
+    if (!da->ghostedcoloring) {
       ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=gys; j<gys+gny; j++) {
@@ -804,3 +804,4 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
   } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
   PetscFunctionReturn(0);
 }
+

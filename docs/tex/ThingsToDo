@@ -7,7 +7,7 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-Also, I need a DA mesh or grid type definition (i.e. #define DAGridType
+* Also, I need a DA mesh or grid type definition (i.e. #define DAGridType
 > integer with options of DA_GRID_CELL_CENTER, DA_GRID_GRID_CENTER [yes, those
 > stink, I am sure you have better ideas.]), just like the DAPeriodicTypes in
 > the DMMG interpolation and refinement functions. 
@@ -28,7 +28,7 @@ freshmeat.
 
   Change PETSc to use http://subversion.tigris.org instead of RCS
 
-  Improve DAGetColoring for star stencil, paul says (i + 3*j % 5) in 2d
+*  Improve DAGetColoring for star stencil, paul says (i + 3*j % 5) in 2d
 
 X  Man pages for PetscMalloc()/PetscFree()?
 
@@ -44,14 +44,14 @@ X  Man pages for PetscMalloc()/PetscFree()?
 
   win32_intel - #4028
 
-    Get Dinesh to help changing manual to be in .pdf instead of .ps and later
+*   Get Dinesh to help changing manual to be in .pdf instead of .ps and later
    add support for search and links
 
 X  Remove references to  -mat_order and -mat_ordering_type from manual
 
 X  Remove reference to PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_INFO from VecView?
 
-  Reorganize blaslapack.h to support the following (win32):
+*  Reorganize blaslapack.h to support the following (win32):
   -  When using intel-MKL or Atlas to support blas/lapack, also be
   able to use petscblas to provide missing functionality from these packages
   -  Add stdcall/mixed_string support so that fortran blas can be compiled
@@ -170,13 +170,8 @@ describes what effects performance for that routine. For examplle, memory bandwi
 communication latency, synchronization
 
 
-  MatFDColoring() stuff for BAIJ.
-
-
 
   try inlining 2 by 2, 3by 3, 4 by 4 etc matrix inverses in the LU factorizations fro BAIj matrices
-
-  Manual pages for enum types, objects, data structures etc
 
   Per Isaac, add option to matrices to put zeros on diagonal when creating.
 
