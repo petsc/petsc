@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.19 1995/11/02 04:10:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.20 1995/11/09 22:26:34 bsmith Exp curfman $";
 #endif
 
 #include "drawimpl.h"   /*I "draw.h" I*/
@@ -43,9 +43,15 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
   }
   else {
-    ierr = VecCreateSeq(MPI_COMM_SELF,0,&W); CHKERRQ(ierr);
+    /* Note:  This is a temporary fix, since scatters of size 0 seem broken */
+    VecGetSize(V,&N);
+    ierr = VecCreateSeq(MPI_COMM_SELF,N,&W); CHKERRQ(ierr);
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&from); CHKERRQ(ierr);
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,N,0,1,&to); CHKERRQ(ierr);
+
+    /* ierr = VecCreateSeq(MPI_COMM_SELF,0,&W); CHKERRQ(ierr);
     ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&from); CHKERRQ(ierr);
-    ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr);
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&to); CHKERRQ(ierr); */
   }
   PLogObjectParent(win,W);PLogObjectParent(win,from);PLogObjectParent(win,to);
   ierr = VecScatterCreate(V,from,W,to,&ctx); CHKERRQ(ierr);
