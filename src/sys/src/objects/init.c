@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.35 1999/03/12 23:13:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.36 1999/03/17 23:21:46 bsmith Exp balay $";
 #endif
 /*
 
@@ -95,7 +95,7 @@ int PLogOpenHistoryFile(const char filename[],FILE **fd)
 
     *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file: %s",fname);
     fprintf(*fd,"---------------------------------------------------------\n");
-    fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,date);
+    fprintf(*fd,"%s %s\n",PETSC_VERSION_NUMBER,date);
     ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
     fprintf(*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);
     OptionsPrint(*fd);
@@ -117,7 +117,7 @@ static int PLogCloseHistoryFile(FILE **fd)
   if (rank) PetscFunctionReturn(0);
   ierr = PetscGetDate(date,64); CHKERRQ(ierr);
   fprintf(*fd,"---------------------------------------------------------\n");
-  fprintf(*fd,"Finished at %s",date);
+  fprintf(*fd,"Finished at %s\n",date);
   fprintf(*fd,"---------------------------------------------------------\n");
   fflush(*fd);
   fclose(*fd);
