@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.53 1998/03/24 02:12:15 curfman Exp balay $";
+static char vcid[] = "$Id: monitor.c,v 1.54 1998/04/01 00:20:56 balay Exp curfman $";
 #endif
 
 /*
@@ -38,7 +38,8 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   Scalar     negone = -1.0, cfl1, ratio, ratio1, ksprtol, ksprtol1;
   Vec        DX, X;
   Viewer     view1;
-  PLogDouble t;
+  double     t;
+  /* PLogDouble t; v2.0.22 */
   char       filename[64], outstring[64];
   int        ierr, lits, overlap, flg;
 
@@ -56,7 +57,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   }
   app->flog[its]  = log10(fnorm);
   app->fcfl[its]  = app->cfl; 
-  ierr            = PetscGetTime(&t); CHKERR(ierr);
+  ierr            = PetscGetTime(&t); CHKERRQ(ierr);
   app->ftime[its] = t - app->time_init;
   if (!its) {
     /* Do the following only during the initial call to this routine */
@@ -202,17 +203,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRQ(ierr);
 
     /* temporarily allow this output */
-    /*
-      if (app->rank == 0) {
-	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
-                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
-                app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
-        fflush(app->fp);
-      }
-    */
-    /*    if (!app->no_output) { 
+    /*    if (!app->no_output) {  */
       PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d\n",
-                  its,fnorm,app->lin_its[its]); */
+                  its,fnorm,app->lin_its[its]);
       if (app->rank == 0) {
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
@@ -228,7 +221,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       Scalar *xa;
       ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
       ierr = VecGetArray(X,&xa); CHKERRQ(ierr);
-      if (app->mmtype == MMFP) {
+      if (!PetscStrcmp(app->mmtype,MMFP)) {
         ierr = VisualizeFP_Matlab(its,app,xa); CHKERRQ(ierr);
       } else SETERRQ(1,0,"Option not supported yet");
       ierr = VecRestoreArray(X,&xa); CHKERRQ(ierr);
@@ -258,7 +251,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         Viewer view;
         ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
         ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
-        ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRQ(ierr);
+        ierr = PCGetType(pc,&pctype); CHKERRQ(ierr);
         if (pctype == PCILU) {
           ierr = PCGetFactoredMatrix(pc,&fmat);
           ierr = ViewerFileOpenASCII(app->comm,"factor.out",&view); CHKERRQ(ierr);
