@@ -143,8 +143,9 @@ scratch space: /usr/tmp/[bsmith]  or $TMPDIR or $BIG
 
 NERSc contact for maintaining the PETSc "module" 
 Jonathan Carter <jcarter@Nersc.GOV>
-Run module use petsc.2.0.22 
-to setup to us PETSc 
+Run module use petsc.2.0.22 to setup to us PETSc 
+PETSc is located in  /usr/local/pkg/acts/PETSc.
+Use the group/accout 'mpccc1' while installing/modifying PETSc
 
 ---------------
 GONE!
