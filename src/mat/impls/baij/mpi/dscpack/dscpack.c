@@ -491,7 +491,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
       break;
     }
   }
-  ierr = PetscOptionsInt("-mat_dscpack_MaxMemAllowed","","None",
+  ierr = PetscOptionsInt("-mat_dscpack_MaxMemAllowed","in Mbytes","None",
          lu->max_mem_allowed,&lu->max_mem_allowed,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsInt("-mat_dscpack_stats","display stats: 0 = no display,  1 = display",
