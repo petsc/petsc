@@ -1181,16 +1181,16 @@ EXTERN_C_BEGIN
 int MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,int *indices)
 {
   Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *)mat->data;
-  int         i,nz,n;
+  int         i,nz,nbs;
 
   PetscFunctionBegin;
-  nz = baij->maxnz;
-  n  = mat->n;
+  nz  = baij->maxnz/baij->bs2;
+  nbs = baij->nbs;
   for (i=0; i<nz; i++) {
     baij->j[i] = indices[i];
   }
   baij->nz = nz;
-  for (i=0; i<n; i++) {
+  for (i=0; i<nbs; i++) {
     baij->ilen[i] = baij->imax[i];
   }
 
