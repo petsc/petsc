@@ -4,7 +4,6 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
-#define HAVE_64BITS 
 #define HAVE_PWD_H 
 #define HAVE_STRING_H 
 #define HAVE_MALLOC_H 

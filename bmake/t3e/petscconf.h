@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.2 1998/04/09 21:17:23 balay Exp bsmith $ */
+/* $Id: petscconf.h,v 1.3 1998/04/13 16:20:43 bsmith Exp bsmith $ */
 
 /*
     Defines the configuration for this machine
@@ -6,7 +6,6 @@
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
-#define HAVE_64BITS 
 #define HAVE_PWD_H 
 #define HAVE_STRING_H 
 #define HAVE_MALLOC_H 
@@ -29,5 +28,9 @@
 #define HAVE_DOUBLE_ALIGN
 
 #define HAVE_FAST_MPI_WTIME
+
+#if !defined(HAVE_64BITS)
+#define HAVE_64BITS
+#endif
 
 #endif
