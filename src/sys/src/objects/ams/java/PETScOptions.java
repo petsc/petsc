@@ -1,4 +1,4 @@
-/*$Id: PETScOptions.java,v 1.1 2001/02/06 16:26:34 bsmith Exp bsmith $*/
+/*$Id: PETScOptions.java,v 1.2 2001/02/07 22:17:55 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published database options and allows the user to change them via a GUI
 */
@@ -79,10 +79,12 @@ public class PETScOptions extends JApplet {
       } catch (java.net.MalformedURLException ex) {;}
     }
     System.out.println("done checking on amsacc");
-    amsbean = new AMSBean() {
+    amsbean = new AMSBean() throws UnableToConnect {
       public void print_error(String mess){  /* overwrite the error message output*/
         System.out.println("AMS Error Message: "+mess);
-        /* throw new RuntimeException("Stack traceback"); */
+        if (mess.substring(0,17).equals("Unable To Connect")) {
+          throw new RuntimeException("Stack traceback"); 
+        }
       }
     };
     appletcontext = this.getAppletContext();
