@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.91 2000/05/05 22:17:41 balay Exp bsmith $*/
+/*$Id: rich.c,v 1.92 2000/05/10 16:42:12 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -62,31 +62,35 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   }
 
   for (i=0; i<maxit; i++) {
-     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-     ksp->its++;
-     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ksp->its++;
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
-     ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
-     if (ksp->calc_res) {
-       if (!ksp->avoidnorms) {
-         if (!pres) {
-           ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
-         } else {
-           ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
-         }
-       }
-       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-       ksp->rnorm                              = rnorm;
-       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-       KSPLogResidualHistory(ksp,rnorm);
+    if (ksp->calc_res && !ksp->avoidnorms && !pres) {
+      ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
        KSPMonitor(ksp,i,rnorm);
-       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-       if (ksp->reason) break;
-     }
+    }
+
+    ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
+
+    if (ksp->calc_res && !ksp->avoidnorms && pres) {
+      ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
+      KSPMonitor(ksp,i,rnorm);
+    }
+
+    if (ksp->calc_res) {
+      ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ksp->rnorm = rnorm;
+      ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      KSPLogResidualHistory(ksp,rnorm);
+
+      ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      if (ksp->reason) break;
+    }
    
-     ierr = VecAXPY(&scale,z,x);CHKERRQ(ierr);    /*   x  <- x + scale z */
-     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
-     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
+    ierr = VecAXPY(&scale,z,x);CHKERRQ(ierr);    /*   x  <- x + scale z */
+    ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
+    ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   }
   if (ksp->calc_res && !ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
