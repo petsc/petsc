@@ -130,6 +130,9 @@ class Options(config.base.Configure):
           flags.extend(['-Z7', '-Zm200'])
         elif bopt == 'O_complex':
           flags.extend(['-O2', '-Zm200'])
+      elif compiler.find('win32fe bcc32') >= 0:
+        if bopt == '':
+          flags.append('-RT')
     # Generic
     if not len(flags):
       if bopt in ['g', 'g_complex']:
