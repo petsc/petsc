@@ -44,7 +44,7 @@ int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure 
   ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
-  if ((freq > 1) && ((it % freq) != 1)) {
+  if ((freq > 1) && ((it % freq))) {
     PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Skippingsnesj2.c and  Jacobian, it %d, freq %d\n",it,freq);
     *flag = SAME_PRECONDITIONER;
   } else {
