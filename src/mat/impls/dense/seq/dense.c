@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.151 1998/05/29 22:49:22 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.152 1998/07/14 02:49:10 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1318,8 +1318,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
     PetscMemzero(b->v,m*n*sizeof(Scalar));
     b->user_alloc = 0;
     PLogObjectMemory(B,n*m*sizeof(Scalar));
-  } 
-  else { /* user-allocated storage */
+  } else { /* user-allocated storage */
     b->v = data;
     b->user_alloc = 1;
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.161 1998/07/13 20:48:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.162 1998/07/14 02:39:59 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1247,6 +1247,10 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
 
   b->m      = m; B->m = m; B->M = m;
   b->n      = n; B->n = n; B->N = n;
+
+  ierr = MapCreate(comm,m,m,B->rmap);CHKERRQ(ierr);
+  ierr = MapCreate(comm,n,n,B->cmap);CHKERRQ(ierr);
+
   b->mblock = m/bs;
   b->nblock = n/bs;
   b->nd     = nd;
