@@ -145,6 +145,9 @@ EXTERN int PetscDrawSynchronizedClear(PetscDraw);
 EXTERN int PetscDrawBOP(PetscDraw);
 EXTERN int PetscDrawEOP(PetscDraw);
 
+EXTERN int PetscDrawSetDisplay(PetscDraw,char*);
+#define PetscDrawSetFilename(a,b) PetscDrawSetDisplay(a,b)
+
 EXTERN int PetscDrawGetSingleton(PetscDraw,PetscDraw*);
 EXTERN int PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 
