@@ -1,4 +1,4 @@
-# $Id: base,v 1.52 1999/01/25 21:48:17 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.1 1999/02/05 00:56:45 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -68,60 +68,4 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
 PARCH    = solaris
 
 
-include ${PETSC_DIR}/bmake/common
-
-libc: ${LIBNAME}(${OBJSC})
-libf: ${LIBNAME}(${OBJSF})
-
-
-#############
-shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-  	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-            if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${AR} x ../$$LIBNAME.a ;\
-	      ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	      ${RM} -f * ; \
-	    fi; \
-          fi; \
-	done ;\
-	cd ../ ; \
-	${RM} -rf tmp
-#
-#  Generates a shared library from any .a library; not just the PETSc ones
-#  This is to allow any user to generate his or her own shared library
-#
-#  The ${PETSC_LIB} -lC is too tell the linker the location of the libC.a 
-#  library and force it to include those symbols into the shared library.
-#  Since there is no .so version of the libC.a it must be done this way.
-
-oshared: chkopts_basic
-	-${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-        echo "building ${LIBNAME}.${SLSUFFIX}"; \
-	${AR} x ${LIBNAME}.a ;\
-	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ${LIBNAME}.${SLSUFFIX} \
-               ${C_SYS_LIB} -lC ; \
-	cd ../ ; \
-	${RM} -rf tmp
-
-
-
-
-
-
-
+include ${PETSC_DIR}/bmake/common_variables

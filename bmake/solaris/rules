@@ -1,8 +1,9 @@
-# $Id: base,v 1.53 1999/02/05 00:58:46 balay Exp balay $ 
+# $Id: base,v 1.54 1999/02/05 01:01:56 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
 
+include ${PETSC_DIR}/bmake/common
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 
 libc: ${LIBNAME}(${OBJSC})
