@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.91 1999/06/08 22:57:15 balay Exp balay $";
+static char vcid[] = "$Id: cg.c,v 1.92 1999/06/30 23:53:33 balay Exp bsmith $";
 #endif
 
 /*
@@ -130,11 +130,9 @@ int  KSPSolve_CG(KSP ksp,int *its)
   P       = ksp->work[2];
 
 #if !defined(PETSC_USE_COMPLEX)
-#define VecXDot(x,y,a) {ierr = VecDot(x,y,a);CHKERRQ(ierr)}
+#define VecXDot(x,y,a) VecDot(x,y,a)
 #else
-#define VecXDot(x,y,a) \
-  {if (cg->type == KSP_CG_HERMITIAN) {ierr = VecDot(x,y,a);CHKERRQ(ierr)} \
-   else                              {ierr = VecTDot(x,y,a);CHKERRQ(ierr)}}
+#define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
 #endif
 
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; b = 0.0; }
@@ -163,7 +161,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
 
   for ( i=0; i<maxit; i++) {
      ksp->its = i+1;
-     VecXDot(Z,R,&beta);                           /*     beta <- r'z     */
+     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
      if (i == 0) {
        if (beta == 0.0) break;
        ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
@@ -179,7 +177,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      }
      betaold = beta;
      ierr = MatMult(Amat,P,Z);CHKERRQ(ierr);      /*     z <- Kp         */
-     VecXDot(P,Z,&dpi);                            /*     dpi <- z'p      */
+     ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
      a = beta/dpi;                                 /*     a = beta/p'z    */
      if (eigs) {
        d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;
