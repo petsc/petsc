@@ -840,7 +840,7 @@ runex93:
 	   ${RM} -f ex93_1.tmp
 
 runex94:
-	-@${MPIRUN} -np 1 ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1> ex94_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -load_ignore_info > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo "Possible problem with ex94_1, diffs above"; fi; \
 	   ${RM} -f ex94_1.tmp
