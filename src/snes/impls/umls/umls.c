@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.43 1996/08/12 03:43:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.44 1996/08/14 01:00:50 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -40,11 +40,12 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   f		= &(snes->fc);		/* function to minimize */
   gnorm		= &(snes->norm);	/* gradient norm */
 
+  snes->iter = 0;
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);     /* G(X) <- gradient */
   ierr = VecNorm(G,NORM_2,gnorm);   CHKERRQ(ierr);         /* gnorm = || G || */
   if (history && history_len > 0) history[0] = *gnorm;
-  SNESMonitor(snes,0,*gnorm);
+  ierr = SNESMonitor(snes,0,*gnorm); CHKERRQ(ierr);
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);

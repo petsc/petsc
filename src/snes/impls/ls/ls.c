@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.69 1996/08/08 14:46:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.70 1996/08/12 03:42:59 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -42,6 +42,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   W		= snes->work[2];
 
   ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);               /* xnorm = || X || */
+  snes->iter = 0;
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm); CHKERRQ(ierr);	        /* fnorm <- ||F||  */
   snes->norm = fnorm;
