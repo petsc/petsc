@@ -145,7 +145,9 @@ alletags:
 etags:
 	$(RM) TAGS
 	etags -f TAGS	 src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS src/*/examples/*/*.c
+	etags -a -f TAGS src/*/examples/*/*.c src/*/examples/*/*/*.c
+	etags -a -f TAGS src/*/examples/*/*.F src/*/examples/*/*/*.F 
+	etags -a -f TAGS src/*/examples/*/*.f
 	etags -a -f TAGS src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c  src/benchmarks/*.c
@@ -169,14 +171,15 @@ etags:
 	etags -a -f TAGS bmake/common bmake/*/base*
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c 
 	etags -a -f TAGS src/benchmarks/*.c src/fortran/custom/*.F
-	etags -a -f TAGS src/*/examples/*/*.F src/*/examples/*/*.f
 	chmod g+w TAGS
 
 # Builds complete etags list; only for PETSc developers.
 etags_complete:
 	$(RM) TAGS_COMPLETE
 	etags -f TAGS_COMPLETE	  src/*/impls/*/*.h src/*/impls/*/*/*.h 
-	etags -a -f TAGS_COMPLETE src/*/examples/*/*.c
+	etags -a -f TAGS_COMPLETE src/*/examples/*/*.c src/*/examples/*/*/*.c
+	etags -a -f TAGS_COMPLETE src/*/examples/*/*.F src/*/examples/*/*/*.F
+	etags -a -f TAGS_COMPLETE src/*/examples/*/*.f
 	etags -a -f TAGS_COMPLETE src/*/*.h src/*/*/*.h src/*/interface/*.c 
 	etags -a -f TAGS_COMPLETE src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS_COMPLETE src/*/impls/*/*/*.c  src/benchmarks/*.c
@@ -204,7 +207,6 @@ etags_complete:
 	etags -a -f TAGS_COMPLETE src/fortran/custom/*.c src/fortran/auto/*.c 
 	etags -a -f TAGS_COMPLETE src/benchmarks/*.c
 	etags -a -f TAGS_COMPLETE src/fortran/custom/*.F 
-	etags -a -f TAGS_COMPLETE src/*/examples/*/*.F src/*/examples/*/*.f
 	etags -a -f TAGS_COMPLETE docs/tex/manual/routin.tex 
 	etags -a -f TAGS_COMPLETE docs/tex/manual/manual.tex
 	etags -a -f TAGS_COMPLETE docs/tex/manual/manual_tex.tex
