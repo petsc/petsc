@@ -81,6 +81,8 @@ typedef struct _PetscObject* PetscObject;
 #define PETSC_COOKIE         0x12121212
 #define PETSC_DECIDE         -1
 
+typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
+
 #include "viewer.h"
 
 /* useful Petsc routines (used often) */

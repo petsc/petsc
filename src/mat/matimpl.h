@@ -20,7 +20,7 @@ struct _MatOps {
             (*getdiag)(Mat,Vec),(*scale)(Mat,Vec,Vec),(*norm)(Mat,int,double*),
             (*bassembly)(Mat,MatAssemblyType),
             (*eassembly)(Mat,MatAssemblyType),(*compress)(Mat),
-            (*insopt)(Mat,MatOptionType),(*zeroentries)(Mat),
+            (*insopt)(Mat,MatOption),(*zeroentries)(Mat),
             (*zerorow)(Mat,IS,Scalar *),
             (*order)(Mat,int,IS*,IS*),
             (*lufactorsymbolic)(Mat,IS,IS,Mat *),

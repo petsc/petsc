@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.15 1995/04/17 03:24:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.16 1995/05/02 16:54:57 curfman Exp curfman $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -254,10 +254,6 @@ extern int MGFCycle(MG*);
    MGCycle - Runs either an additive, multiplicative or full cycle of 
    multigrid. 
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   am - either Multiplicative, Additive or FullMultigrid 
-
   Note: 
   A simple wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
 */ 
@@ -266,11 +262,11 @@ static int MGCycle(PC pc,Vec b,Vec x)
    MG *mg = (MG*) pc->data;
    Scalar zero = 0.0;
    mg[0]->b = b; mg[0]->x = x;
-   if (mg[0]->am == MG_Multiplicative) {
+   if (mg[0]->am == MGMULTIPLICATIVE) {
      VecSet(&zero,x);
      return MGMCycle(mg);
    } 
-   else if (mg[0]->am == MG_Additive) {
+   else if (mg[0]->am == MGADDITIVE) {
      return MGACycle(mg);
    }
    else {
@@ -308,10 +304,10 @@ static int PCSetFromOptions_MG(PC pc)
     MGSetNumberSmoothDown(pc,m);
   }
   if (OptionsGetString(0,pc->prefix,"-pc_mg_method",buff,15)) {
-    if (!strcmp(buff,"additive")) m = MG_Additive;
-    else if (!strcmp(buff,"multiplicative")) m = MG_Multiplicative;
-    else if (!strcmp(buff,"fullmultigrid")) m = MG_FullMultigrid;
-    else if (!strcmp(buff,"kaskade")) m = MG_Kaskade;
+    if (!strcmp(buff,"additive")) m = MGADDITIVE;
+    else if (!strcmp(buff,"multiplicative")) m = MGMULTIPLICATIVE;
+    else if (!strcmp(buff,"full")) m = MGFULL;
+    else if (!strcmp(buff,"kaskade")) m = MGKASKADE;
     else SETERR(1,"Unknown MG method");
     MGSetMethod(pc,m);
   }
@@ -360,7 +356,7 @@ int MGSetLevels(PC pc,int levels)
   MG  *mg;
   if (pc->type != PCMG) return 0;
   ierr          = MGCreate(pc->comm,levels,&mg); CHKERR(ierr);
-  mg[0]->am     = MG_Multiplicative;
+  mg[0]->am     = MGMULTIPLICATIVE;
   pc->data      = (void *) mg;
   pc->applyrich = MGCycleRichardson;
   return 0;
@@ -373,22 +369,22 @@ int MGSetLevels(PC pc,int levels)
    Input Parameters:
 .  pc - the preconditioner context
 .  form - multigrid form, one of the following:
-$      Multiplicative, Additive, FullMultigrid, Kaskade
+$      MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE
 
    Options Database Key:
 $  -pc_mg_method <form>, where <form> is one of the following:
-$      multiplicative, additive, fullmultigrid, kaskade   
+$      multiplicative, additive, full, kaskade   
 
 .keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
 
 .seealso: MGSetLevels()
 @*/
-int MGSetMethod(PC pc,MGMETHOD form)
+int MGSetMethod(PC pc,MGMethod form)
 {
   MG *mg = (MG *) pc->data;
   if (pc->type != PCMG) return 0;
   mg[0]->am = form;
-  if (form == MG_Multiplicative) pc->applyrich = MGCycleRichardson;
+  if (form == MGMULTIPLICATIVE) pc->applyrich = MGCycleRichardson;
   else pc->applyrich = 0;
   return 0;
 }

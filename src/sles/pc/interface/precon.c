@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.18 1995/04/16 03:43:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.19 1995/04/25 16:21:35 bsmith Exp curfman $";
 #endif
 
 /*  
@@ -7,6 +7,7 @@ static char vcid[] = "$Id: precon.c,v 1.18 1995/04/16 03:43:42 curfman Exp bsmit
 */
 #include "pcimpl.h"      /*I "pc.h" I*/
 
+extern int PCPrintMethods(char*,char*);
 /*@
    PCPrintHelp - Prints all the options for the PC component.
 
@@ -357,10 +358,10 @@ int PCSetVector(PC pc,Vec vec)
 
 .seealso: PCGetMethodName()
 @*/
-int PCGetMethodFromContext(PC pc,PCMETHOD *method)
+int PCGetMethodFromContext(PC pc,PCMethod *method)
 {
   VALIDHEADER(pc,PC_COOKIE);
-  *method = (PCMETHOD) pc->type;
+  *method = (PCMethod) pc->type;
   return 0;
 }
 

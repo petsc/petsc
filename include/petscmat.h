@@ -36,10 +36,9 @@ extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
 extern int MatAssemblyBegin(Mat,MatAssemblyType);
 extern int MatAssemblyEnd(Mat,MatAssemblyType);
 
-
 typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
               COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
-              YES_NEW_NONZERO_LOCATIONS=32} MatSORType;
+              YES_NEW_NONZERO_LOCATIONS=32} MatOption;
 
 extern int MatSetOption(Mat,MatOption);
 
@@ -55,7 +54,7 @@ extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
 typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,ORDER_RCM=3,
-              ORDER_QMD=4} MatOrdering);
+              ORDER_QMD=4} MatOrdering;
 
 extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
 
@@ -76,12 +75,13 @@ extern int MatSolveTransAdd(Mat,Vec,Vec,Vec);
 typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
               SOR_LOCAL_SYMMETRIC_SWEEP=12,SOR_ZERO_INITIAL_GUESS=16,
-              SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128} SORType;
+              SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128
+              } MatSORType;
 
-extern int MatRelax(Mat,Vec,double,SORType,double,int,Vec);
+extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
 extern int MatCopy(Mat,Mat*);
-extern int MatConvert(Mat,MATTYPE,Mat*);
+extern int MatConvert(Mat,MatType,Mat*);
 extern int MatView(Mat,Viewer);
 #include <stdio.h>
 

@@ -73,8 +73,8 @@ struct _VecScatterCtx {
   PETSCHEADER
   int     (*begin)(Vec,Vec,VecScatterCtx,InsertMode,int);
   int     (*end)(Vec,Vec,VecScatterCtx,InsertMode,int);
-  int     (*beginpipe)(Vec,Vec,VecScatterCtx,InsertMode,int);
-  int     (*endpipe)(Vec,Vec,VecScatterCtx,InsertMode,int);
+  int     (*beginpipe)(Vec,Vec,VecScatterCtx,InsertMode,PipelineMode);
+  int     (*endpipe)(Vec,Vec,VecScatterCtx,InsertMode,PipelineMode);
   int     (*copy)(VecScatterCtx,VecScatterCtx);
   void    *fromdata,*todata;
 };

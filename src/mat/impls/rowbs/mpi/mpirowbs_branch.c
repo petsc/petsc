@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.12 1995/04/27 20:15:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.13 1995/05/02 18:00:08 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -174,12 +174,17 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
   return 0;
 }
 
+/* Need to upgrade the viewers */
+#include "draw.h"
+#include "pviewer.h"
+
 static int MatView_MPIRowbs_local(Mat mat,Viewer ptr)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   BSspmat      *A = mrow->A;
   BSsprow      **rs = A->rows;
   int     i, j;
+
   for ( i=0; i<A->num_rows; i++ ) {
     printf("row %d:",i);
     for (j=0; j<rs[i]->length; j++) {
@@ -190,14 +195,14 @@ static int MatView_MPIRowbs_local(Mat mat,Viewer ptr)
   return 0;
 }
 
-static int MatAssemblyBegin_MPIRowbs_local(Mat mat,int mode)
+static int MatAssemblyBegin_MPIRowbs_local(Mat mat,MatAssemblyType mode)
 { 
   return 0;
 }
 
-/* Note: The local end assembley routine must be calle through
+/* Note: The local end assembley routine must be called through
    the parallel version only! */
-static int MatAssemblyEnd_MPIRowbs_local(Mat mat,int mode)
+static int MatAssemblyEnd_MPIRowbs_local(Mat mat,MatAssemblyType mode)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   BSspmat      *A = mrow->A;
@@ -312,7 +317,7 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
     either case.
 */
 
-static int MatAssemblyBegin_MPIRowbs(Mat mat,int mode)
+static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs  *mrow = (Mat_MPIRowbs *) mat->data;
   MPI_Comm    comm = mat->comm;
@@ -449,7 +454,7 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-static int MatAssemblyEnd_MPIRowbs(Mat mat,int mode)
+static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
   MPI_Status   *send_status,recv_status;
@@ -593,7 +598,7 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   return 0;
 }
 
-static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,int flag,
+static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,MatSORType flag,
                              double shift,int its,Vec xx)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;
@@ -653,7 +658,7 @@ static int MatRelax_MPIRowbs(Mat mat,Vec bb,double omega,int flag,
   return 0;
 }
 
-static int MatGetInfo_MPIRowbs(Mat matin,int flag,int *nz,int *nzalloc,
+static int MatGetInfo_MPIRowbs(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
                                int *mem)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs *) matin->data;
@@ -758,7 +763,7 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
   return 0;
 }
 
-static int MatSetOption_MPIRowbs(Mat mat,int op)
+static int MatSetOption_MPIRowbs(Mat mat,MatOption op)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
 

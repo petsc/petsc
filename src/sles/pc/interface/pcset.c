@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.8 1995/04/16 03:43:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.9 1995/04/17 02:15:56 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -24,7 +24,7 @@ static NRList *__PCList = 0;
 
 .keywords: PC, set, method
 @*/
-int PCSetMethod(PC ctx,PCMETHOD method)
+int PCSetMethod(PC ctx,PCMethod method)
 {
   int (*r)(PC);
   VALIDHEADER(ctx,PC_COOKIE);
@@ -48,14 +48,14 @@ int PCSetMethod(PC ctx,PCMETHOD method)
 
 /*@C
    PCRegister - Adds the iterative method to the preconditioner
-   package,  given an iterative name (PCMETHOD) and a function pointer.
+   package,  given an iterative name (PCMethod) and a function pointer.
 
    Input Parameters:
 .      name - for instance PCJACOBI, ...
 .      sname -  corresponding string for name
 .      create - routine to create method context
 @*/
-int  PCRegister(PCMETHOD name,char *sname,int (*create)(PC))
+int  PCRegister(PCMethod name,char *sname,int (*create)(PC))
 {
   int ierr;
   if (!__PCList) {ierr = NRCreate(&__PCList); CHKERR(ierr);}
@@ -79,7 +79,7 @@ int PCRegisterDestroy()
   return 0;
 }
 
-/*@C
+/* 
   PCGetMethodFromOptions - Sets the selected PC method from the options 
   database.
 
@@ -94,17 +94,13 @@ int PCRegisterDestroy()
 
   Options Database Key:
 $ -pc_method  method
-
-.keywords: PC, options, database, get, method
-
-.seealso: PCGetMethodName()
-@*/
-int PCGetMethodFromOptions(PC pc,PCMETHOD *method )
+*/
+int PCGetMethodFromOptions(PC pc,PCMethod *method )
 {
   char sbuf[50];
   if (OptionsGetString(  0, pc->prefix,"-pc_method", sbuf, 50 )) {
     if (!__PCList) PCRegisterAll();
-    *method = (PCMETHOD)NRFindID( __PCList, sbuf );
+    *method = (PCMethod)NRFindID( __PCList, sbuf );
     return 1;
   }
   return 0;
@@ -121,10 +117,8 @@ int PCGetMethodFromOptions(PC pc,PCMETHOD *method )
 .  name - name of preconditioner
 
 .keywords: PC, get, method, name
-
-.seealso: PCGetMethodFromOptions()
 @*/
-int PCGetMethodName(PCMETHOD meth,char **name)
+int PCGetMethodName(PCMethod meth,char **name)
 {
   if (!__PCList) PCRegisterAll();
   *name = NRFindName( __PCList, (int)meth );
@@ -165,13 +159,13 @@ int PCPrintMethods(char *prefix,char *name)
    Input Parameters:
 .  pc - the preconditioner context
 
-.keywords: KSP, set, from, options, database
+.keywords: PC, set, from, options, database
 
 .seealso: PCPrintHelp()
 @*/
 int PCSetFromOptions(PC pc)
 {
-  PCMETHOD method;
+  PCMethod method;
   VALIDHEADER(pc,PC_COOKIE);
 
   if (PCGetMethodFromOptions(pc,&method)) {

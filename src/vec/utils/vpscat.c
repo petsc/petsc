@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.11 1995/03/27 22:56:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.12 1995/04/15 03:26:19 bsmith Exp curfman $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -337,8 +337,8 @@ static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
   return 0;
 }
 /* --------------------------------------------------------------------*/
-static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
-                      int mode)
+static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
+               InsertMode addv, PipelineMode mode)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
@@ -414,8 +414,8 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   return 0;
 }
 
-static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
-                           int mode)
+static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,
+                 InsertMode addv, PipelineMode mode)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   Vec_MPI     *x = (Vec_MPI *)xin->data;

@@ -8,13 +8,13 @@
 #include "mat.h"
 
 typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-               PCESOR, PCILU, PCICC } PCMETHOD;
+               PCESOR, PCILU, PCICC } PCMethod;
 
 typedef struct _PC* PC;
 #define PC_COOKIE    PETSC_COOKIE+9
 
 extern int    PCCreate(MPI_Comm,PC*);
-extern int    PCSetMethod(PC,PCMETHOD);
+extern int    PCSetMethod(PC,PCMethod);
 extern int    PCSetUp(PC);
 extern int    PCApply(PC,Vec,Vec);
 extern int    PCApplyBAorAB(PC,int,Vec,Vec,Vec);
@@ -24,13 +24,11 @@ extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);
 extern int    PCApplyRichardsonExists(PC);
 extern int    PCRegisterAll();
 extern int    PCRegisterDestroy();
-extern int    PCRegister(PCMETHOD,char *,int (*)(PC));
+extern int    PCRegister(PCMethod,char *,int (*)(PC));
 extern int    PCDestroy(PC);
 extern int    PCSetFromOptions(PC);
-extern int    PCGetMethodFromOptions(PC pc,PCMETHOD *);
-extern int    PCPrintMethods(char*,char *);
-extern int    PCGetMethodFromContext(PC,PCMETHOD*);
-extern int    PCGetMethodName(PCMETHOD,char **);
+extern int    PCGetMethodFromContext(PC,PCMethod*);
+extern int    PCGetMethodName(PCMethod,char **);
 
 /* Flags for PCSetOperators */
 #define MAT_SAME_NONZERO_PATTERN 1
