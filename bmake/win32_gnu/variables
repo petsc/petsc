@@ -1,0 +1,12 @@
+# $Id: base,v 1.30 1999/02/09 00:04:07 balay Exp $ 
+#
+include ${PETSC_DIR}/bmake/common
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
+
+libc: ${OBJSC}
+	ar crl ${LIBNAME} ${OBJSC}
+libf: ${OBJSF}
+	ar crl ${LIBNAME} ${OBJSF}
+
+#############
+shared:
