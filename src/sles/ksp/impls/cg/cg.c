@@ -165,10 +165,12 @@ int  KSPSolve_CG(KSP ksp,int *its)
      ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
      if (beta == 0.0) {
        ksp->reason = KSP_CONVERGED_ATOL;
+       PetscLogInfo(ksp,"KSPSolve_CG:converged due to beta = 0");
        break;
 #if !defined(PETSC_USE_COMPLEX)
      } else if (beta < 0.0) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+       PetscLogInfo(ksp,"KSPSolve_CG:diverging due to indefinite preconditioner");
        break;
 #endif
      }
