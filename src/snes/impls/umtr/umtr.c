@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.5 1995/07/27 03:01:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.6 1995/07/28 04:25:20 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -60,10 +60,10 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   gnorm		= &(snes->norm);	/* gradient norm */
 
   ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);/* X <- X_0 */
-  VecNorm(X,&xnorm);                                    /* xnorm = || X || */
+  ierr = VecNorm(X,&xnorm); CHKERRQ(ierr);              /* xnorm = || X || */
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
-  VecNorm(G,gnorm);                                     /* gnorm = || G || */
+  ierr = VecNorm(G,gnorm); CHKERRQ(ierr);               /* gnorm = || G || */
   if (history && history_len > 0) history[0] = *gnorm;
   if (snes->monitor)
     {(*snes->monitor)(snes,0,*gnorm,snes->monP); CHKERRQ(ierr);}
@@ -99,14 +99,14 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       /* Minimize the quadratic to compute the step s */
       qcgP->delta = delta;
       ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
-      if (qits < 0) SETERRQ(1,"Input error in STEP_COMPUTE");
-      if (qcgP->info == 3) newton=1;	/* truncated Newton step */
+      if (qits < 0) SETERRQ(1,"SNESSolve_UMTR: Failure in SLESSolve");
+      if (qcgP->info == 3) newton=1;	            /* truncated Newton step */
       PLogInfo((PetscObject)snes,"%d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
         i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
 
-      VecWAXPY(&one,X,S,Xtrial);	        /* Xtrial <- X + S */
-      VecNorm(Xtrial,&xnorm); 	
-                            		/* ftrial = f(Xtrial) */
+      ierr = VecWAXPY(&one,X,S,Xtrial); CHKERRQ(ierr); /* Xtrial <- X + S */
+      ierr = VecNorm(Xtrial,&xnorm); CHKERRQ(ierr);
+                           		               /* ftrial = f(Xtrial) */
       ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial); CHKERRQ(ierr);
 
       /* Compute the function reduction and the step size */
@@ -152,20 +152,20 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
     /* Question:  If (!neP->success && break), then last step was rejected, 
        but convergence was detected.  Should this update really happen? */
     *f = ftrial;
-    VecCopy(Xtrial,X);
+    ierr = VecCopy(Xtrial,X); CHKERRQ(ierr);
     snes->vec_sol_always = X;
     /* Note:  At last iteration, the gradient evaluation is unnecessary */
     ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
-    VecNorm(G,gnorm);
+    ierr = VecNorm(G,gnorm); CHKERRQ(ierr);
     if (history && history_len > i+1) history[i+1] = *gnorm;
     snes->vec_func_always = G;
 
     if (snes->monitor) 
-     {(*snes->monitor)(snes,i+1,*gnorm,snes->monP); CHKERRQ(ierr);}
+     {ierr = (*snes->monitor)(snes,i+1,*gnorm,snes->monP); CHKERRQ(ierr);}
   }
   /* Verify solution is in corect location */
   if (X != snes->vec_sol) {
-    VecCopy(X, snes->vec_sol );
+    ierr = VecCopy(X,snes->vec_sol); CHKERRQ(ierr);
     snes->vec_sol_always = snes->vec_sol;
     snes->vec_func_always = snes->vec_func; 
   }
@@ -183,6 +183,7 @@ static int SNESSetUp_UMTR(SNES snes)
   int ierr;
   snes->nwork = 4;
   ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work); CHKERRQ(ierr);
+  PLogObjectParents(snes,snes->nwork,snes->work);
   snes->vec_sol_update_always = snes->work[3];
   return 0;
 }
@@ -190,7 +191,8 @@ static int SNESSetUp_UMTR(SNES snes)
 static int SNESDestroy_UMTR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
-  VecFreeVecs(snes->work,snes->nwork);
+  int  ierr;
+  ierr = VecFreeVecs(snes->work,snes->nwork); CHKERRQ(ierr);
   PETSCFREE(snes->data);
   return 0;
 }
@@ -236,8 +238,8 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
   double    ared = neP->actred, pred = neP->prered;
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION)
-    SETERRQ(1,"SNESConverged_UMTR: use with unconstrained min. routines only");
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
+   "SNESConverged_UMTR: Use with SNES_UNCONSTRAINED_MINIMIZATION routines only");
 
   /* Test for successful convergence */
   if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {

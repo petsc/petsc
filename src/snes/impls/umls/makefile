@@ -4,11 +4,11 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../..  \
           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/umls/"'
-SOURCEC  = umls.c
-SOURCEF  = mcsrch.f
+SOURCEC  = umls.c search.c
+SOURCEF  = 
 SOURCEH  = umls.h
-OBJSC    = umls.o
-OBJSF    = mcsrch.o
+OBJSC    = umls.o search.o
+OBJSF    = 
 LIBBASE  = libpetscsnes
 MANSEC   = n
 

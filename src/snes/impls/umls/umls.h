@@ -24,6 +24,8 @@ typedef struct {
   double stepmax;	     /* upper bound for step */
   int    maxfev;	     /* maximum funct evals per line search call */
   int    nfev;		     /* number of funct evals per line search call */
+  int    bracket;
+  int    infoc;
   double step;		     /* step size */
 } SNES_UMLS;
 

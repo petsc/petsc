@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.18 1995/07/17 20:42:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.19 1995/08/14 19:39:37 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -48,7 +48,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
   ierr = VecDuplicate(x1,&j2); CHKERRQ(ierr);
   ierr = VecDuplicate(x1,&x2); CHKERRQ(ierr);
   PLogObjectParent(snes,j1); PLogObjectParent(snes,j2);
-  PLogObjectParent(snes,j3);
+  PLogObjectParent(snes,x2);
 
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);

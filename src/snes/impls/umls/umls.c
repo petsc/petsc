@@ -1,25 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.3 1995/07/28 04:25:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.4 1995/08/14 19:45:50 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
 #include "umls.h"
 #include "pviewer.h"
 
-#if defined(FORTRANCAPS)
-#define mcstep1_  MCSTEP1
-#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define mcstep1_  mcstep1
-#endif
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern int mcstep1_(double*,double*,double*,double*,double*,double*,double*,
-              double*,double*,int*,double*,double*,int*);
-#if defined(__cplusplus)
-};
-#endif
+extern int SNESStep(SNES,double*,double*,double*,double*,
+              double*,double*,double*,double*,double*);
 
 /*
    Implements Newton's Method with a line search approach
@@ -309,7 +297,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   double    finit, width, width1, dginit;
   double    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1;
   double    fm, fxm, fym, dgm, dgxm, dgym;
-  int       ierr, i, infoc, stage1, bracket;
+  int       ierr, i, stage1;
 
  /* Note: This is not correctly coded for complex version */
 #if defined(PETSC_COMPLEX)
@@ -351,9 +339,9 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
   /* Check that search direction is a descent direction */
 #if defined(PETSC_COMPLEX)
-  VecDot(G,S,&cdginit); dginit = real(cdginit);
+  ierr = VecDot(G,S,&cdginit); CHKERRQ(ierr); dginit = real(cdginit);
 #else
-  VecDot(G,S,&dginit);		/* dginit = G^T S */
+  ierr = VecDot(G,S,&dginit); CHKERRQ(ierr);  /* dginit = G^T S */
 #endif
   if (dginit >= zero) {
     PLogInfo((PetscObject)snes,
@@ -363,15 +351,12 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
   /* Initialization */
   *info	  = 0;
-  bracket = 0;
-  infoc   = 1;
   stage1  = 1;
   finit   = *f;
   dgtest  = neP->ftol * dginit;
   width   = neP->stepmax - neP->stepmin;
   width1  = width * two;
-  VecCopy(X,W);
-  
+  ierr = VecCopy(X,W); CHKERRQ(ierr);
   /* Variable dictionary:  
      stx, fx, dgx - the step, function, and derivative at the best step
      sty, fy, dgy - the step, function, and derivative at the other endpoint 
@@ -388,7 +373,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   neP->nfev = 0;
   for (i=0; i< neP->maxfev; i++) {
     /* Set min and max steps to correspond to the interval of uncertainty */
-    if (bracket) {
+    if (neP->bracket) {
       neP->stepmin = PETSCMIN(stx,sty); 
       neP->stepmax = PETSCMAX(stx,sty); 
     } else {
@@ -402,10 +387,10 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
     /* If an unusual termination is to occur, then let step be the lowest
        point obtained thus far */
-    if (((bracket) && (*step <= neP->stepmin || *step >= neP->stepmax)) ||
-      ((bracket) && 
+    if (((neP->bracket) && (*step <= neP->stepmin || *step >= neP->stepmax)) ||
+      ((neP->bracket) && 
              (neP->stepmax - neP->stepmin <= neP->rtol * neP->stepmax)) ||
-      (neP->nfev >= neP->maxfev - 1) || (infoc == 0)) 
+      (neP->nfev >= neP->maxfev - 1) || (neP->infoc == 0)) 
       *step = stx;
 
 #if defined(PETSC_COMPLEX)
@@ -424,7 +409,8 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     ftest1 = finit + *step * dgtest;
   
     /* Convergence testing */
-    if (((bracket)&&(*step<=neP->stepmin || *step>=neP->stepmax)) || (!infoc)){
+    if (((neP->bracket) && (*step <= neP->stepmin || *step >= neP->stepmax)) 
+      || (!neP->infoc)) {
       *info = 6;
       PLogInfo((PetscObject)snes,
         "Rounding errors may prevent further progress.  May not be a step satisfying\n");
@@ -447,7 +433,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
         neP->nfev,neP->maxfev);
       *info = 3;
     }
-    if ((bracket) && (neP->stepmax - neP->stepmin <= neP->rtol*neP->stepmax)){
+    if ((neP->bracket) && (neP->stepmax - neP->stepmin <= neP->rtol*neP->stepmax)){
       PLogInfo((PetscObject)snes,
         "Relative width of interval of unceratinty is at most rtol (%g)\n",
          neP->rtol);
@@ -480,8 +466,8 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
       dgym = dgy - dgtest;
 
       /* Update the interval of uncertainty and compute the new step */
-      ierr = mcstep1_(&stx,&fxm,&dgxm,&sty,&fym,&dgym,step,&fm,&dgm,&bracket,
-                      &(neP->stepmin),&(neP->stepmax),&infoc); CHKERRQ(ierr);
+      ierr = SNESStep(snes,&stx,&fxm,&dgxm,&sty,&fym,&dgym,step,&fm,&dgm); 
+      CHKERRQ(ierr);
 
       fx  = fxm + stx * dgtest;	/* Reset the function and */
       fy  = fym + sty * dgtest;	/* gradient values */
@@ -489,12 +475,11 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
       dgy = dgym + dgtest; 
     } else {
       /* Update the interval of uncertainty and compute the new step */
-      ierr = mcstep1_(&stx,&fx,&dgx,&sty,&fy,&dgy,step,f,&dg,&bracket,
-               &(neP->stepmin),&(neP->stepmax),&infoc); CHKERRQ(ierr);
+      ierr = SNESStep(snes,&stx,&fx,&dgx,&sty,&fy,&dgy,step,f,&dg); CHKERRQ(ierr);
     }
 
    /* Force a sufficient decrease in the interval of uncertainty */
-   if (bracket) {
+   if (neP->bracket) {
      if (fabs(sty - stx) >= p66 * width1) *step = stx + p5*(sty - stx);
        width1 = width;
        width = fabs(sty - stx);
@@ -504,7 +489,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   /* Finish computations */
   PLogInfo((PetscObject)snes,
     "%d function evals in line search, step = %10.4f\n",neP->nfev, neP->step );
-  VecNorm(G,gnorm);
+  ierr = VecNorm(G,gnorm); CHKERRQ(ierr);
   return 0;
 }
 /* ---------------------------------------------------------- */
@@ -538,6 +523,8 @@ int SNESCreate_UMLS(SNES snes)
   neP->stepmin		= 1.0e-20;
   neP->stepmax		= 1.0e+20;
   neP->nfev		= 0; 
+  neP->bracket		= 0; 
+  neP->infoc            = 1;
   neP->maxfev		= 30;
   return 0;
 }
