@@ -1,4 +1,4 @@
-# $Id: base,v 1.30 1999/02/09 00:04:07 balay Exp balay $ 
+# $Id: base,v 1.31 1999/04/19 22:13:00 balay Exp curfman $ 
 #
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 include ${PETSC_DIR}/bmake/common
@@ -10,3 +10,6 @@ libf: ${OBJSF}
 
 #############
 shared:
+
+oshared:
+
