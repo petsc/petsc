@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.30 1995/08/04 01:53:24 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.31 1995/08/22 16:33:42 bsmith Exp curfman $ */
 
 /*
       Preconditioner module.
@@ -52,7 +52,7 @@ extern int PCSORSetIterations(PC, int);
 extern int PCBJacobiSetBlocks(PC, int);
 
 extern int PCBSIterSetBlockSolve(PC);
-extern int PCBSIterSetFrompOptions(PC);
+extern int PCBSIterSetFromOptions(PC);
 extern int PCBSIterSolve(PC,Vec,Vec,int*);
 
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
