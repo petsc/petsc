@@ -1,14 +1,7 @@
-/*$Id: milu.c,v 1.20 2000/04/09 04:40:16 bsmith Exp bsmith $*/
+/*$Id: milu.c,v 1.21 2000/04/12 04:26:40 bsmith Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
-*/
-/*
-    One may access this routine by either 
-  1) run your program with the option -pc_type PCCreate_mILU
-  2) in your program after creating a SLES object with SLESCreate() and extracting
-     the PC Object with SLESGetPC() call
-     PCSetType(pc,"PCCreate_mILU");
 */
 
 #include "src/sles/pc/pcimpl.h"
@@ -36,10 +29,10 @@
   User interface routines
 ****************************************************************/
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCmILUSetLevels"
+#define __FUNC__ /*<a name="PCmILUSetLevels"></a>*/"PCmILUSetLevels"
 int PCmILUSetLevels(PC pc,int levels)
 {
-  PC base_pc = (PC) pc->data;
+  PC  base_pc = (PC) pc->data;
   int ierr;
 
   PetscFunctionBegin;
@@ -49,10 +42,10 @@ int PCmILUSetLevels(PC pc,int levels)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCmILUSetBaseType"
+#define __FUNC__ /*<a name="PCmILUSetBaseType"></a>*/"PCmILUSetBaseType"
 int PCmILUSetBaseType(PC pc,PCType type)
 {
-  PC base_pc = (PC) pc->data;
+  PC  base_pc = (PC) pc->data;
   int ierr;
 
   PetscFunctionBegin;
@@ -66,18 +59,18 @@ int PCmILUSetBaseType(PC pc,PCType type)
 ****************************************************************/
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCSetup_mILU"
+#define __FUNC__ /*<a name="PCSetup_mILU"></a>*/"PCSetup_mILU"
 static int PCSetup_mILU(PC pc)
 {
-  PC base_pc = (PC) pc->data;
-  Mat omat = pc->pmat,pmat;
-  Vec diag;
+  PC     base_pc = (PC) pc->data;
+  Mat    omat = pc->pmat,pmat;
+  Vec    diag;
   Scalar *dia;
   double *mprop;
-  int lsize,first,last,ierr;
+  int    lsize,first,last,ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetOwnershipRange(omat,&first,&last);CHKERRQ(ierr);
+  ierr  = MatGetOwnershipRange(omat,&first,&last);CHKERRQ(ierr);
   lsize = last-first;
   mprop = (double*)PetscMalloc((lsize+1)*sizeof(double));CHKPTRQ(mprop);
   {
@@ -105,9 +98,9 @@ static int PCSetup_mILU(PC pc)
 
 #define ATTEMPTS 5
   {
-    Mat lu; Vec piv;
+    Mat    lu; Vec piv;
     Scalar *elt;
-    int bd,t,try1 = 0;
+    int    bd,t,try1 = 0;
     ierr = VecDuplicate(diag,&piv);CHKERRQ(ierr);
     do {
       ierr = PCSetUp(base_pc);CHKERRQ(ierr);
@@ -140,10 +133,10 @@ static int PCSetup_mILU(PC pc)
 }
 
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCApply_mILU"
+#define __FUNC__ /*<a name="PCApply_mILU"></a>*/"PCApply_mILU"
 static int PCApply_mILU(PC pc,Vec x,Vec y)
 {
-  PC base_pc = (PC) pc->data;
+  PC  base_pc = (PC) pc->data;
   int ierr;
   
   PetscFunctionBegin;
@@ -156,7 +149,7 @@ static int PCApply_mILU(PC pc,Vec x,Vec y)
 #define __FUNC__ /*<a name=""></a>*/"PCDestroy_mILU"
 static int PCDestroy_mILU(PC pc)
 {
-  PC base_pc = (PC) pc->data;
+  PC  base_pc = (PC) pc->data;
   int ierr;
   
   PetscFunctionBegin;
@@ -178,7 +171,7 @@ static int PCView_mILU(PC pc,Viewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  modified ILU preconditioner\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"    see src/contrib/pc/milu/milu.c\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"    see src/sles/pc/milu/milu.c\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"    base PC used by mILU next\n");CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for mILU PC",((PetscObject)viewer)->type_name);
@@ -189,10 +182,10 @@ static int PCView_mILU(PC pc,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ /*<a name=""></a>*/"PCCreate_mILU"
+#define __FUNC__ /*<a name="PCCreate_mILU"></a>*/"PCCreate_mILU"
 int PCCreate_mILU(PC pc)
 {
-  PC base_pc;
+  PC  base_pc;
   int ierr;
 
   PetscFunctionBegin;
