@@ -7,12 +7,8 @@ set CONF=solaris_gnu
 #
 set day=`date | cut -f1 -d" "`
 
-if ($day == Sun || $day == Wed $day == Sat) then
+if ($day == Sun || $day == Wed || $day == Sat) then
   set CONF=solaris_uni
 else if ($day == Thu || $day == Fri) then
   set CONF=solaris64
 endif
-
-
-
-
