@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.19 1998/05/04 22:06:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.20 1998/05/15 17:44:51 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -60,6 +60,20 @@ struct _DLLibraryList {
 };
 
 extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
+
+int DLLibraryPrintPath()
+{
+  DLLibraryList libs;
+
+  PetscFunctionBegin;
+  PetscErrorPrintf("Unable to find function. Search path:\n");
+  libs = DLLibrariesLoaded;
+  while (libs) {
+    PetscErrorPrintf("%s\n",libs->libname);
+    libs = libs->next;
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DLLibrarySharedTmp"
