@@ -14,9 +14,9 @@ EXAMPLES  = ex1 ex2 ex3
 EXAMPLESC = ex1.c ex2.c ex3.c
 SYSLIB    = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscsnes\
             -lpetscsles -lpetscksp -lpetscmat \
-           -lpetscvec -lpetscsys -lpetscdraw \
-           $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) $(MPI_LIB) $(SYS_LIB) \
-           $(FC_LIB) -lm 
+            -lpetscvec -lpetscsys -lpetscdraw \
+            $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) $(MPI_LIB) \
+            $(SYS_LIB) $(FC_LIB) -lm 
 LINCLUDE  = $(SOURCEH)
 
 
