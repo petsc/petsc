@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.53 1996/03/19 21:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.54 1996/03/26 04:47:11 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -11,8 +11,6 @@ arguments are\n\
 
 #include "sles.h"
 #include  <stdio.h>
-
-extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 
 int main(int argc,char **args)
 {
@@ -48,7 +46,7 @@ int main(int argc,char **args)
   if (flg) {
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.5; i = I/n;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( i>1 )   {J = I-n-1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
     }
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -72,22 +70,6 @@ int main(int argc,char **args)
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-  {
-  MatType mat_type;
-  ierr = MatGetType(C,&mat_type,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-bsmonitor",&flg); CHKERRA(ierr);
-  if (mat_type == MATMPIROWBS && flg) {
-    PC pc; KSP ksp; PCType pcmethod;
-    ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    ierr = PCGetType(pc,&pcmethod,PETSC_NULL); CHKERRA(ierr);
-    if (pcmethod == PCICC || pcmethod == PCILU) {
-      ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERRA(ierr);
-    }
-  }
-}
-#endif
   ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
 
   /* Compute right-hand-side */
@@ -112,18 +94,18 @@ int main(int argc,char **args)
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
+      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+      v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
     }
   } 
   ierr = OptionsHasName(PETSC_NULL,"-mat_nonsym",&flg); CHKERRA(ierr);
   if (flg) {
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.5; i = I/n;
-      if (i > 0)   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( i>1 )   {J = I-n-1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
     }
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
