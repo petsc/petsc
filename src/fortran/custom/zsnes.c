@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.59 2001/06/21 21:19:50 bsmith Exp bsmith $*/
+/*$Id: zsnes.c,v 1.60 2001/08/07 21:32:16 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -125,6 +125,7 @@
 
 EXTERN_C_BEGIN
 
+#if defined (PETSC_HAVE_ADIC)
 void PETSC_STDCALL matregisterdaad_(int *ierr)
 {
   *ierr = MatRegisterDAAD();
@@ -139,6 +140,7 @@ void PETSC_STDCALL matdaadsetsnes_(Mat *mat,SNES *snes,int *ierr)
 {
   *ierr = MatDAADSetSNES(*mat,*snes);
 }
+#endif
 
 void PETSC_STDCALL snesview_(SNES *snes,PetscViewer *viewer, int *ierr)
 {
