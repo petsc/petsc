@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = ${MATLAB_INCLUDE}
+CFLAGS   = ${MATLAB_ENGINE_INCLUDE}
 FFLAGS   =
 SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c \
            pipeline.c comb.c vecstash.c vecmpitoseq.c

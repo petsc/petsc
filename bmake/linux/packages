@@ -46,15 +46,6 @@ PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #BLOCKSOLVE_LIB         =  -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #
-# Matlab location
-#
-#CMEX            = /software/linux/com/packages/matlab-5.2/bin/mex
-#MCC             = gcc
-#MATLABCOMMAND   = matlab
-#MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-#MATLAB_LIB        = -L/software/linux/com/packages/matlab-r11.1/extern/lib/lnx86 -leng -lmx -lmat -lmi -lut
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
 # Location where adiC is installed
 #
 #ADIC_DEFINES    = -Dad_GRAD_MAX=36

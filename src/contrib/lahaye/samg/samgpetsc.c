@@ -1,19 +1,33 @@
 #include "global.h"
+#include "externc.h"
 #include "samgfunc.h"
 #include "petscfunc.h"
 #include "petscsles.h"
+#include "src/mat/impls/aij/seq/aij.h"
 
 /**************************************************************************/
 /*                                                                        */
-/*  PETSc - samg interface                                                */
+/*  SAMG - PETSc interface                                                */
 /*  author: Domenico Lahaye (domenico.lahaye@cs.kuleuven.ac.be)           */ 
-/*  May 2000                                                              */
-/*  This interface allows to call samg as a shell preconditioner.         */
+/*  January 2001                                                          */
+/*  This interface allows e.g. to call samg as a shell preconditioner.    */
 /*  samg is the new algebraic multigrid code by Klaus Stueben [1].        */ 
+/*  Reference for SAMG                                                    */ 
 /*  [1] K. St\"{u}ben,"Algebraic Multigrid: An Introduction for Positive  */
+/*      Definite Problems with Applications", in [2], pp. 413--532,       */ 
+/*      Academic Press, 2001.                                             */ 
+/*  [2] U. Trottenberg, C. Oosterlee and A. Sch\"{u}ller, "Multigrid      */
+/*      Methods", Academic Press, 2001.                                   */ 
+/*  [1] is also available as                                              */ 
+/*  [3] K. St\"{u}ben,"Algebraic Multigrid: An Introduction for Positive  */
 /*      Definite Problems with Applications", Tech. Rep. 53, German       */
 /*      National Research Center for Information Technology (GMD),        */
 /*      Schloss Birlinhoven, D-53754 Sankt-Augustin, Germany, March 1999  */ 
+/*  For more information on the SAMG-PETSc interface and examples of it's */
+/*  use, see                                                              */
+/*  [4] D. Lahaye "Algebraic Multigrid for Time-Harmonic Magnetic Field   */ 
+/*      Computations", PhD Thesis, KU Leuven, Belgium, December 2001.     */ 
+/*      (www.cs.kuleuven.ac.be/~domenico)                                 */ 
 /*                                                                        */
 /**************************************************************************/
 
@@ -36,7 +50,10 @@
 
 int SamgShellPCCreate(SamgShellPC **shell)
 {
-   SamgShellPC *newctx = PetscNew(SamgShellPC); CHKPTRQ(newctx);
+   SamgShellPC *newctx; 
+   int ierr; 
+
+   ierr = PetscNew(SamgShellPC,&newctx); CHKERRQ(ierr);
    *shell = newctx; 
    return 0; 
 }
@@ -59,85 +76,93 @@ int SamgShellPCCreate(SamgShellPC **shell)
 int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
 {
    int              ierr, numnodes, numnonzero, nnz_count; 
-   int              j, I, J, ncols_getrow, *cols_getrow; 
-   Scalar           *vals_getrow, rowentry; 
+   int              j, I, J, ncols_getrow, *cols_getrow, *diag; 
+   PetscScalar      *vals_getrow; 
    MatInfo          info;
+   Mat_SeqAIJ       *aij = (Mat_SeqAIJ*)pmat->data;
    /*..SAMG variables..*/
    SAMG_PARAM       *samg_param; 
    double           *u_approx, *rhs, *Asky; 
    int              *ia, *ja; 
-   /*....Class 0 input parameters..*/  
-   int              matrix; 
-   /*....Class 1 high-level control input parameters..*/  
-   int              nsolve, ifirst, ncyc, iswtch;
-   double           eps; 
-   /*....Class 1 input parameters for dimensioning..*/
-   double           a_cmplx, g_cmplx, p_cmplx, w_avrge; 
+   /*..Primary SAMG parameters..*/
+   /*....System of equations....*/ 
+   int      matrix; 
+   /*....Start solution and stopping criterium....*/ 
+   int      ifirst; 
+   double   eps; 
+   /*....Scalar and coupled system..*/ 
+   int      nsys=1, ndiu=1, ndip=1;
+   int      iscale[1], iu[1], ip[1];   
+   /*....Approach and smoother....*/ 
+   int      nsolve; 
+   /*....Cycling process....*/ 
+   int      ncyc; 
+   /*....Repeated calls....*/ 
+   int      iswtch; 
+   /*....Initial dimensioning..*/
+   double   a_cmplx, g_cmplx, p_cmplx, w_avrge; 
    /*....Class 1 input parameters controlling input/output..*/
-   int              idump, iout;   
-   double           chktol; 
-   /*....Class 2 input parameters for the solution phase of SAMG (see above)
-	 ....*/ 
-   int              nrd, nrc, nru;
-   /*....Class 3 general input parameters for the setup phase of SAMG....*/
-   int              levelx, nptmn;    
-   /*....Class 3 special input parameters for the setup phase of SAMG 
-	(see above)....*/ 
-   int              ncg, nwt, ntr; 
-   double           ecg, ewt, etr; 
-   /*..Number of levels that will be created..*/ 
-   int              levels;  
-   /*..Print intermediate results is desired..*/ 
-   int              debug = 0; 
+   int      idump, iout;   
+   double   chktol;
+   /*....Output parameters....*/
+   double   res_in, res_out; 
+   int      ncyc_done;  
+   /*..Numbers of levels created by SAMG..*/ 
+   int      levels; 
+   /*..Auxilary integer to set secondary parameters..*/ 
+   int      intin; 
 
    /*..Get size and number of unknowns of preconditioner matrix..*/ 
-   ierr = MatGetSize(pmat, &numnodes, &numnodes); CHKERRA(ierr);
-   ierr = MatGetInfo(pmat,MAT_LOCAL,&info); CHKERRA(ierr); 
+   ierr = MatGetSize(pmat, &numnodes, &numnodes); CHKERRQ(ierr);
+   ierr = MatGetInfo(pmat,MAT_LOCAL,&info); CHKERRQ(ierr); 
    numnonzero = int(info.nz_used);
 
    /*..Allocate memory for RAMG variables..*/ 
-   Asky     = (double *) PetscMalloc(numnonzero  * sizeof(double)); 
-              CHKPTRQ(Asky); 
-   ia       = (int*)     PetscMalloc((numnodes+1)* sizeof(int));
-              CHKPTRQ(ia); 
-   ja       = (int*)     PetscMalloc(numnonzero * sizeof(int)); 
-              CHKPTRQ(ja); 
-   u_approx = (double *) PetscMalloc(numnodes * sizeof(double)); 
-              CHKPTRQ(u_approx); 
-   rhs      = (double *) PetscMalloc(numnodes * sizeof(double)); 
-              CHKPTRQ(rhs); 
+   ierr = PetscMalloc(numnonzero   * sizeof(double),&Asky);CHKERRQ(ierr);
+   ierr = PetscMalloc((numnodes+1) * sizeof(int),&ia);CHKERRQ(ierr);
+   ierr = PetscMalloc(numnonzero   * sizeof(int),&ja);CHKERRQ(ierr);
+   ierr = PetscMalloc(numnodes     * sizeof(double),&u_approx);CHKERRQ(ierr);
+   ierr = PetscMalloc(numnodes     * sizeof(double),&rhs);CHKERRQ(ierr);
 
    /*..Store PETSc matrix in compressed skyline format required by SAMG..*/ 
    nnz_count = 0;
+   ierr = MatMarkDiagonal_SeqAIJ(pmat);
+   diag = aij->diag;
+
    for (I=0;I<numnodes;I++){
-     /*....Get row I of matrix....*/
-     ierr = MatGetRow(pmat,I,&ncols_getrow,&cols_getrow,&vals_getrow); 
-            CHKERRA(ierr); 
-     ia[I] = nnz_count; 
+     ia[I]           = nnz_count; 
+
+     /*....put in diagonal entry first....*/
+     ja[nnz_count]   = I;
+     Asky[nnz_count] = aij->a[diag[I]];
+     nnz_count++;
+
+     /*....put in off-diagonals....*/
+     ncols_getrow = aij->i[I+1] - aij->i[I];
+     vals_getrow  = aij->a + aij->i[I];
+     cols_getrow  = aij->j + aij->i[I];
      for (j=0;j<ncols_getrow;j++){
-           J               = cols_getrow[j];
-           rowentry        = vals_getrow[j]; 
-           Asky[nnz_count] = rowentry; 
-           ja[nnz_count]   = J; 
-           nnz_count++; 
+       J = cols_getrow[j];
+       if (J != I) {
+         Asky[nnz_count] = vals_getrow[j];
+         ja[nnz_count]   = J; 
+         nnz_count++; 
+       }
      }
    }
-   ia[numnodes] = nnz_count;
+   ia[numnodes] = nnz_count; 
 
-   makeskyline(numnodes,Asky,ja,ia);
- 
    /*..Allocate memory for SAMG parameters..*/
-   samg_param             = (SAMG_PARAM*) PetscMalloc(sizeof(SAMG_PARAM)); 
-			    CHKPTRQ(samg_param); ; 
+   ierr = PetscNew(SAMG_PARAM,&samg_param); CHKERRQ(ierr);
+
    /*..Set SAMG parameters..*/
    SamgGetParam(samg_param); 
 
-   /*..Set SAMG Class 0 parameters..*/
-   matrix  = (*samg_param).MATRIX;
-   /*..Set SAMG Class 1 parameters..*/
-   nsolve  = (*samg_param).NSOLVE; 
+   /*..Set Primary parameters..*/
+   matrix  = 12; 
    ifirst  = (*samg_param).IFIRST; 
    eps     = (*samg_param).EPS; 
+   nsolve  = (*samg_param).NSOLVE; 
    ncyc    = (*samg_param).NCYC; 
    iswtch  = (*samg_param).ISWTCH; 
    a_cmplx = (*samg_param).A_CMPLX;
@@ -147,23 +172,30 @@ int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
    chktol  = (*samg_param).CHKTOL; 
    idump   = (*samg_param).IDUMP; 
    iout    = (*samg_param).IOUT; 
-   /*..Set SAMG Class 2 parameters..*/
-   nrd     = (*samg_param).NRD; 
-   nrc     = (*samg_param).NRC; 
-   nru     = (*samg_param).NRU; 
-   levelx  = (*samg_param).LEVELX; 
-   nptmn   = (*samg_param).NPTMN; 
-   /*..Set SAMG Class 3 parameters..*/
-   ncg     = (*samg_param).NCG; 
-   nwt     = (*samg_param).NWT; 
-   ntr     = (*samg_param).NTR; 
-   ecg     = (*samg_param).ECG; 
-   ewt     = (*samg_param).EWT; 
-   etr     = (*samg_param).ETR;
+   /*..Set secondary parameters..*/
+   SAMG_set_levelx(&(samg_param->LEVELX)); 
+   SAMG_set_nptmn(&(samg_param->NPTMN)); 
+   SAMG_set_ecg(&(samg_param->ECG)); 
+   SAMG_set_ewt(&(samg_param->EWT)); 
+   SAMG_set_ncg(&(samg_param->NCG)); 
+   SAMG_set_nwt(&(samg_param->NWT)); 
+   SAMG_set_etr(&(samg_param->ETR)); 
+   SAMG_set_ntr(&(samg_param->NTR)); 
+   SAMG_set_nrd(&(samg_param->NRD)); 
+   SAMG_set_nru(&(samg_param->NRU)); 
+   SAMG_set_nrc(&(samg_param->NRC)); 
+   intin = 6; SAMG_set_logio(&intin);
+   intin = 1; SAMG_set_mode_debug(&intin);
+   intin = 0; SAMG_set_iter_pre(&intin);
+   intin = 0; SAMG_set_np_opt(&intin);
+   intin = 0; SAMG_set_ncgrad_default(&intin);
+
    /*..Reset ncyc such that only setup is performed. This is done by setting 
-     the last digit of ncyc (the number of cycles performed) equal to zero 
+     the last digit of ncyc (the number of cycles performed) equal to zero. 
+     The first digits of ncyc (related to the solve phase) become 
+     irrelevant.
    ..*/ 
-   ncyc   = 1030; 
+   ncyc   = 1000; 
 
    /*..Switch arrays ia and ja to Fortran conventions..*/ 
    for (j=0;j<=numnodes;j++)
@@ -173,22 +205,25 @@ int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
 
    PetscPrintf(MPI_COMM_WORLD,"\n\n"); 
    PetscPrintf(MPI_COMM_WORLD,"******************************************\n");
-   PetscPrintf(MPI_COMM_WORLD,"*** Start Setup new AMG code scal. mode***\n");
+   PetscPrintf(MPI_COMM_WORLD,"*** Start Setup SAMG code (scal. mode) ***\n");
    PetscPrintf(MPI_COMM_WORLD,"******************************************\n");
    PetscPrintf(MPI_COMM_WORLD,"\n\n"); 
 
    /*..Call SAMG..*/  
-   drvsamg_(&numnodes, Asky, ia, ja, u_approx, rhs, &matrix, &nsolve, &ifirst, 
-              &eps, &ncyc, &iswtch, &a_cmplx, &g_cmplx, &p_cmplx, &w_avrge, 
-              &chktol, &idump, &iout, &nrd, &nrc, &nru, &levelx, &nptmn, 
-              &ncg, &nwt, &ntr, &ecg, &ewt, &etr,
-              &levels, &debug); 
+   SAMG(&numnodes, &numnonzero, &nsys,
+	ia, ja, Asky, rhs, u_approx, iu, &ndiu, ip, &ndip, &matrix, 
+	iscale, &res_in, &res_out, &ncyc_done, &ierr, &nsolve, 
+	&ifirst, &eps, &ncyc, &iswtch, &a_cmplx, &g_cmplx, 
+ 	&p_cmplx, &w_avrge, &chktol, &idump, &iout);
 
    PetscPrintf(MPI_COMM_WORLD,"\n\n");  
    PetscPrintf(MPI_COMM_WORLD,"******************************************\n");
-   PetscPrintf(MPI_COMM_WORLD,"*** End Setup new AMG code scal. mode  ***\n");
+   PetscPrintf(MPI_COMM_WORLD,"*** End Setup SAMG code (scal. mode)   ***\n");
    PetscPrintf(MPI_COMM_WORLD,"******************************************\n");
    PetscPrintf(MPI_COMM_WORLD,"\n\n"); 
+
+   /*..Get number of levels created..*/ 
+   SAMGPETSC_get_levels(&levels); 
 
    /*..Store RAMG output in PETSc context..*/
    shell->A        = Asky; 
@@ -231,37 +266,34 @@ int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
 
 int SamgShellPCApply(void *ctx, Vec r, Vec z)
 {
-   int              ierr, I, numnodes, *cols; 
+   int              ierr, I, numnodes, numnonzero, *cols; 
    SamgShellPC      *shell = (SamgShellPC *) ctx; 
    double           *u_approx, *rhs, *Asky, *vals_getarray; 
    int              *ia, *ja; 
    SAMG_PARAM       *samg_param; 
-   /*....Class 0 input parameters..*/  
+   /*..Primary SAMG parameters..*/
+   /*....System of equations....*/ 
    int              matrix; 
-   /*....Class 1 high-level control input parameters..*/  
-   int              nsolve, ifirst, ncyc, iswtch;
+   /*....Start solution and stopping criterium....*/ 
+   int              ifirst; 
    double           eps; 
-   /*....Class 1 input parameters for dimensioning..*/
+   /*....Scalar and coupled system..*/ 
+   int              nsys=1, ndiu=1, ndip=1;
+   int              iscale[1], iu[1], ip[1];   
+   /*....Approach and smoother....*/ 
+   int              nsolve; 
+   /*....Cycling process....*/ 
+   int              ncyc; 
+   /*....Repeated calls....*/ 
+   int              iswtch; 
+   /*....Initial dimensioning..*/
    double           a_cmplx, g_cmplx, p_cmplx, w_avrge; 
    /*....Class 1 input parameters controlling input/output..*/
    int              idump, iout;   
-   double           chktol; 
-   /*....Class 2 input parameters for the solution phase of SAMG (see above)
-	 ....*/ 
-   int              nrd, nrc, nru;
-   /*....Class 3 general input parameters for the setup phase of SAMG....*/
-   int              levelx, nptmn;    
-   /*....Class 3 special input parameters for the setup phase of SAMG 
-	(see above)....*/ 
-   int              ncg, nwt, ntr; 
-   double           ecg, ewt, etr; 
-   /*..Print intermediate results is desired..*/ 
-   int              debug = 0; 
-   /*..Number of levels that was be created during setup..*/ 
-   int              levels;  
-
-   /*..Get numnodes as the size of the input vector r..*/
-   ierr = VecGetSize(r,&numnodes); CHKERRA(ierr);
+   double           chktol;
+   /*....Output parameters....*/
+   double           res_in, res_out; 
+   int              ncyc_done;  
 
    /*..Get values from context..*/
    Asky       = shell->A; 
@@ -269,14 +301,19 @@ int SamgShellPCApply(void *ctx, Vec r, Vec z)
    ja         = shell->JA; 
    samg_param = shell->PARAM; 
 
+   /*..Get numnodes and numnonzeros..*/ 
+   /*....numnodes can be determined as the size of the input vector r....*/
+   ierr = VecGetSize(r,&numnodes); CHKERRQ(ierr);
+   /*....numnonzero is determined from the pointer ia....*/ 
+   /*....Remember that ia following Fortran conventions....*/  
+   numnonzero = ia[numnodes]-1; 
+
    /*..Set the rhs of the call to ramg equal to the residual..*/
-   ierr = VecGetArray(r,&vals_getarray); CHKERRA(ierr);
+   ierr = VecGetArray(r,&vals_getarray); CHKERRQ(ierr);
 
    /*..Allocate memory for rhs and initial solution of call to samg..*/
-   rhs      = (double *) PetscMalloc( numnodes * sizeof(double) ); 
-              CHKPTRQ(rhs);
-   u_approx = (double *) PetscMalloc( numnodes * sizeof(double) ); 
-              CHKPTRQ(u_approx);
+   ierr = PetscMalloc(numnodes     * sizeof(double),&u_approx);CHKERRQ(ierr);
+   ierr = PetscMalloc(numnodes     * sizeof(double),&rhs);CHKERRQ(ierr);
 
    /*..Set rhs of call to ramg..*/
    memcpy(rhs, vals_getarray, numnodes * sizeof(*rhs)); 
@@ -286,12 +323,11 @@ int SamgShellPCApply(void *ctx, Vec r, Vec z)
        u_approx[I] = 0.;
    }
 
-   /*..Set SAMG Class 0 parameters..*/
-   matrix  = (*samg_param).MATRIX;
-   /*..Set SAMG Class 1 parameters..*/
-   nsolve  = (*samg_param).NSOLVE; 
+   /*..Set Primary parameters..*/
+   matrix  = (*samg_param).MATRIX; 
    ifirst  = (*samg_param).IFIRST; 
    eps     = (*samg_param).EPS; 
+   nsolve  = (*samg_param).NSOLVE; 
    ncyc    = (*samg_param).NCYC; 
    iswtch  = (*samg_param).ISWTCH; 
    a_cmplx = (*samg_param).A_CMPLX;
@@ -301,41 +337,34 @@ int SamgShellPCApply(void *ctx, Vec r, Vec z)
    chktol  = (*samg_param).CHKTOL; 
    idump   = (*samg_param).IDUMP; 
    iout    = (*samg_param).IOUT; 
-   /*..Set SAMG Class 2 parameters..*/
-   nrd     = (*samg_param).NRD; 
-   nrc     = (*samg_param).NRC; 
-   nru     = (*samg_param).NRU; 
-   levelx  = (*samg_param).LEVELX; 
-   nptmn   = (*samg_param).NPTMN; 
-   /*..Set SAMG Class 3 parameters..*/
-   ncg     = (*samg_param).NCG; 
-   nwt     = (*samg_param).NWT; 
-   ntr     = (*samg_param).NTR; 
-   ecg     = (*samg_param).ECG; 
-   ewt     = (*samg_param).EWT; 
-   etr     = (*samg_param).ETR;
+
    /*..Redefine iswtch to bypass setup..*/ 
-   iswtch = 210; 
+   /*....First digit of iswtch = 2: bypass setup and do not release memory
+         upon return....*/ 
+   /*....Second digit of iswtch = 1: memory extension switch....*/ 
+   /*....Third and fourth digit of iswtch: n_default. If n_default = 0, 
+     the user has to set secondary parameters....*/ 
+   iswtch = 210;  
 
    /*..Call SAMG..*/
-   drvsamg_(&numnodes, Asky, ia, ja, u_approx, rhs, &matrix, &nsolve, &ifirst, 
-              &eps, &ncyc, &iswtch, &a_cmplx, &g_cmplx, &p_cmplx, &w_avrge, 
-              &chktol, &idump, &iout, &nrd, &nrc, &nru, &levelx, &nptmn, 
-              &ncg, &nwt, &ntr, &ecg, &ewt, &etr,
-              &levels, &debug);
+   SAMG(&numnodes, &numnonzero, &nsys,
+	ia, ja, Asky, rhs, u_approx, iu, &ndiu, ip, &ndip, &matrix, 
+	iscale, &res_in, &res_out, &ncyc_done, &ierr, &nsolve, 
+	&ifirst, &eps, &ncyc, &iswtch, &a_cmplx, &g_cmplx, 
+	&p_cmplx, &w_avrge, &chktol, &idump, &iout);
 
-   /*..Create auxilary vector..*/ 
-   cols        = (int *) PetscMalloc(numnodes * sizeof(int) ); 
-                 CHKPTRQ(cols);
+   /*..Create auxilary integer array..*/ 
+   ierr = PetscMalloc(numnodes * sizeof(double),&cols);CHKERRQ(ierr);
+
    for (I=0;I<numnodes;I++)
        cols[I] = I; 
 
-   /*..Store values computed by RAMG into the PETSc vector z..*/
+   /*..Store values computed by SAMG into the PETSc vector z..*/
    ierr = VecSetValues(z,numnodes,cols,u_approx,INSERT_VALUES); 
-          CHKERRA(ierr);  
+          CHKERRQ(ierr);  
 
    /*..Restore PETSc rhs vector..*/
-   ierr = VecRestoreArray(r, &vals_getarray); CHKERRA(ierr);
+   ierr = VecRestoreArray(r, &vals_getarray); CHKERRQ(ierr);
 
    PetscFree(cols); 
    PetscFree(rhs); 
@@ -356,7 +385,7 @@ int SamgShellPCApply(void *ctx, Vec r, Vec z)
 int SamgShellPCDestroy(SamgShellPC *shell)
 {
   /*..Free memory allocated by samg..*/ 
-  samg_cleanup_(); 
+  SAMG_cleanup(); 
   /*..Free PCShell context..*/
   PetscFree(shell->A); 
   PetscFree(shell->IA);
@@ -380,14 +409,17 @@ int SamgGetParam(SAMG_PARAM *samg_param)
   /*..Set default SAMG paramets..*/ 
   /*....Class 0 SAMG parameters....*/
   (*samg_param).MATRIX    = 12;
-  /*....Class 1 SAMG parameters....*/
-  (*samg_param).NSOLVE    = 3501; 
-  (*samg_param).IFIRST    = 1;
+  /*....Primary SAMG parameters....*/
+  /*......If ifirst=0, the vector u, as passed to SAMG, is taken as first 
+          approximation......*/
+  (*samg_param).IFIRST    = 0;
   (*samg_param).EPS       = 1e-12;
+  /*......nsolve =1 denotes scalar approach......*/
+  (*samg_param).NSOLVE    = 1; 
   /*......note: in the AMG-PETSc interface the number of cycles is required 
-          to equal on assure that in the PCApply routine AMG only performs 
+          to equal one to assure that in the PCApply routine AMG only performs 
           one cycle......*/ 
-  (*samg_param).NCYC      = 1031;
+  (*samg_param).NCYC      = 1001;
   (*samg_param).ISWTCH    = 410;
   (*samg_param).A_CMPLX   = 2.5; 
   (*samg_param).G_CMPLX   = 1.9; 
@@ -396,155 +428,44 @@ int SamgGetParam(SAMG_PARAM *samg_param)
   (*samg_param).CHKTOL    = 1e-8;
   (*samg_param).IDUMP     = 0; 
   (*samg_param).IOUT      = 2; 
-  /*....Class 2 SAMG parameters....*/        
+  /*....Secundary SAMG parameters....*/ 
+  (*samg_param).LEVELX    = 25; 
+  (*samg_param).NPTMN     = 100;   
+  (*samg_param).ECG       = 0.25; 
+  (*samg_param).EWT       = 0.5;      
+  (*samg_param).NCG       = 1000; 
+  (*samg_param).NWT       = 3000; 
+  (*samg_param).ETR       = 12.2; 
+  (*samg_param).NTR       = 2; 
   (*samg_param).NRD       = 131; 
   (*samg_param).NRC       = 0; 
   (*samg_param).NRU       = -131; 
-  (*samg_param).LEVELX    = 25; 
-  (*samg_param).NPTMN     = 10; 
-  /*....Class 3 SAMG parameters....*/        
-  (*samg_param).NCG       = 1000; 
-  (*samg_param).NWT       = 3000; 
-  (*samg_param).NTR       = 2; 
-  (*samg_param).ECG       = 0.25; 
-  (*samg_param).EWT       = 0.5; 
-  (*samg_param).ETR       = 12.2; 
 
   /*..Overwrite default values by values specified at runtime..*/
-  /*....Class 2 SAMG parameters....*/ 
-  ierr = OptionsGetInt(PETSC_NULL,"-pc_samg_iswtch",&(*samg_param).ISWTCH,
-                       PETSC_NULL);CHKERRA(ierr);
+  /*....Primary SAMG parameters....*/ 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_samg_iswtch",&(*samg_param).ISWTCH,
+                       PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-pc_samg_iout",&(*samg_param).IOUT,
-                       PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_samg_ncyc",&(*samg_param).NCYC,
+                       PETSC_NULL);CHKERRQ(ierr);
 
-  /*....Class 3 SAMG parameters....*/ 
-  ierr = OptionsGetInt(PETSC_NULL,"-pc_samg_levelx",&(*samg_param).LEVELX,
-                       PETSC_NULL);CHKERRA(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_samg_iout",&(*samg_param).IOUT,
+                       PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-pc_samg_nptmn",&(*samg_param).NPTMN,
-                       PETSC_NULL);CHKERRA(ierr);
+ /*....Secundary SAMG parameters....*/ 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_samg_levelx",&(*samg_param).LEVELX,
+                       PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_samg_nptmn",&(*samg_param).NPTMN,
+                       PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_samg_nrd",&(*samg_param).NRD,
+                       PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_samg_nrc",&(*samg_param).NRC,
+                       PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_samg_nru",&(*samg_param).NRU,
+                       PETSC_NULL);CHKERRQ(ierr);
 
   return 0; 
 }
-/* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "SamgGetGrid"
-/*..SamgGetGrid - This routine gets an array of grids
-    INPUT:  levels: number of levels created by SAMG 
-            numnodes: number of nodes on finest grid 
-            numnonzeros: number of nonzeros on coarsest grid 
-    OUTPUT: grid  : array of grids                   ..*/   
-int SamgGetGrid(int levels, int numnodes, int numnonzero, 
-                GridCtx* grid, void* ctx)
-{
-   int      k; 
-   int      ia_shift[MAX_LEVELS], ja_shift[MAX_LEVELS], nnu_cg, nna_cg;
-   int      iw_shift[MAX_LEVELS], jw_shift[MAX_LEVELS], rows_weights, 
-            nna_weights, dummy;
-   int      ierr; 
-   MatInfo  info;
-   /*..Uncomment when debugging..*/ 
-   //   int      size; 
-
-   /*..Get coarse grid operators..*/ 
-   /*....Initialize ia_shift, ja_shift, nnu_cg and nna_cg....*/ 
-   ia_shift[1] = 1; 
-   ja_shift[1] = 1; 
-   nnu_cg = numnodes; 
-   nna_cg = numnonzero; 
-
-   for (k=2;k<=levels;k++){ /*....We do not get the finest level matrix....*/ 
-       /*....Update ia_shift and ja_shift values with nna_cg and nnu_cg 
-             from previous loop....*/ 
-       ia_shift[k] = ia_shift[k-1] + nna_cg ; 
-       ja_shift[k] = ja_shift[k-1] + nnu_cg ; 
-
-       /*....Get coarse grid matrix on level k....*/ 
-       ierr = SamgGetCoarseMat(k, ia_shift[k], ja_shift[k], &(grid[k].A), 
-                               PETSC_NULL); 
-
-       /*....Get size and number of nonzeros of coarse grid matrix on
-             level k, i.e. get new nna_cg and nnu_cg values....*/ 
-       ierr = MatGetSize(grid[k].A, &nnu_cg, &nnu_cg); CHKERRA(ierr);
-       ierr = MatGetInfo(grid[k].A, MAT_LOCAL, &info); CHKERRA(ierr); 
-       nna_cg = int(info.nz_used);
-   }  
-
-   /*..Get interpolation operators..*/ 
-   /*....Initialize iw_shift, jw_shift and nna_weights....*/ 
-   iw_shift[0] = 1; 
-   jw_shift[0] = 1; 
-   nna_weights = 0;
-   rows_weights = numnodes;
-
-   for (k=1;k<=levels-1;k++){/*....There's NO interpolation operator 
-                                   associated to the coarsest level....*/ 
-       /*....Update iw_shift with nna_weights value from 
-             previous loop....*/ 
-       iw_shift[k] = iw_shift[k-1] + nna_weights ; 
-       /*....Update jw_shift with rows_weights value from 
-             current loop....*/ 
-       jw_shift[k] = jw_shift[k-1] + rows_weights ; 
-         
-       /*....Get interpolation from level k+1 to level k....*/
-       ierr = SamgGetInterpolation(k, iw_shift[k], jw_shift[k],
-                                   &(grid[k].Interp), PETSC_NULL) ; 
-
-       /*....Get number of collumns and number of nonzeros of 
-             interpolation associated to level k. NOTE: The 
-             number of collums at this loop equals the number of 
-             rows at the next loop...*/
-       ierr = MatGetSize(grid[k].Interp, &dummy, &rows_weights); CHKERRA(ierr);
-       ierr = MatGetInfo(grid[k].Interp, MAT_LOCAL, &info); CHKERRA(ierr); 
-       nna_weights = int(info.nz_used);
-   }
-
-   //   ierr = MatGetSize(grid[2].A, &size, &size); CHKERRA(ierr);
- 
-   //   printf("Size of matrix on level 2 in MGPETSC.C is %4d\n",size); 
-
-   return 0;
-}
-/* ------------------------------------------------------------------- */
-#undef __FUNC__
-#define __FUNC__ "SamgCheckGalerkin"
-/*..SamgCheckGalerkin - This routine offers a check on the correctness 
-    of how SAMG interpolation and coarse grid operators are parsed to 
-    PETSc. This routine computes I^H_h A^h I^h_H by PETSc matrix - matrix 
-    multiplications, and compares this product with A^H..*/ 
- 
-int SamgCheckGalerkin(int levels, Mat A, GridCtx* grid, 
-                      void* ctx)
-{
-   Mat     FineLevelMatrix, Restriction, HalfGalerkin, Galerkin, Diff; 
-   double  normdiff; 
-   int     ierr, k; 
-
-   for (k=1;k<=levels-1;k++){ 
-      if (k==1)
-          FineLevelMatrix = A; 
-          else
-          FineLevelMatrix = grid[k].A; 
-      /*....Compute A^h I^h_H....*/ 
-      ierr = MatMatMult(FineLevelMatrix, grid[k].Interp, &HalfGalerkin); 
-      /*....Get I^h_H....*/ 
-      ierr = MatTranspose(grid[k].Interp,&Restriction);
-      /*....Compute I^H_h A^h I^h_H....*/ 
-      ierr = MatMatMult(Restriction, HalfGalerkin, &Galerkin);
-      /*....Compute A^H - I^H_h A^h I^h_H....*/ 
-      ierr = MatSubstract(grid[k+1].A, Galerkin, &Diff); 
-     /*....Compute || A^H - I^H_h A^h I^h_H||_{\infty}....*/ 
-      ierr = MatNorm(Diff,NORM_INFINITY,&normdiff); CHKERRA(ierr);
-
-      printf("SamgCheckGalerkin :: || A^H - I^H_h A^h I^h_H||_{infty} on level %8d = %e\n", 
-	      k+1, normdiff); 
-
-      ierr = MatDestroy(Restriction); CHKERRA(ierr); 
-      ierr = MatDestroy(HalfGalerkin); CHKERRA(ierr); 
-      ierr = MatDestroy(Galerkin); CHKERRA(ierr); 
-      ierr = MatDestroy(Diff); CHKERRA(ierr); 
-   }
-   return 0;
-} 
-

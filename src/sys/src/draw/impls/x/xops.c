@@ -730,7 +730,7 @@ int PetscDrawCreate_X(PetscDraw draw)
     ierr = XiQuickWindow(Xwin,draw->display,draw->title,x,y,w,h);CHKERRQ(ierr);
     ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
   } else {
-    unsigned long win;
+    unsigned long win = 0;
     ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
     ierr = XiQuickWindowFromWindow(Xwin,draw->display,win);CHKERRQ(ierr);
   }

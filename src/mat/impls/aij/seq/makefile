@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = ${MATLAB_INCLUDE} ${DSCPACK_INCLUDE} ${SUPERLU_INCLUDE} ${SPOOLES_INCLUDE}
+CFLAGS   = ${MATLAB_ENGINE_INCLUDE} ${DSCPACK_INCLUDE} ${SUPERLU_INCLUDE} ${SPOOLES_INCLUDE}
 FFLAGS   =
 SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c unary.c ilut.c aijmatlab.c \
 	   lusol.c dsc.c superlu.c aijspooles.c spoolesOptions.c spooles.c matmatmult.c \

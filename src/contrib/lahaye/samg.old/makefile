@@ -9,12 +9,11 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = samgmgpetsc.c samgpetsc.c samgpetsctools.c 
-SOURCEF  = samgtools1.F
-SOURCEH  = petscfunc.h samgfunc.h     
-OBJSC    = samgmgpetsc.o samgpetsc.o samgpetsctools.o 
-OBJSF    = samgtools1.o
-DOCS     = readme
+SOURCEC  = 
+SOURCEF  = 
+SOURCEH  = 
+OBJSC    = 
+OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = PC
 LOCDIR   = src/contrib/lahaye/samg
