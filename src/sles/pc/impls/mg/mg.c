@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.7 1995/03/21 23:18:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.8 1995/03/25 01:26:29 bsmith Exp curfman $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -13,9 +13,8 @@ static char vcid[] = "$Id: mg.c,v 1.7 1995/03/21 23:18:57 bsmith Exp bsmith $";
                   one multiplicative cycle down through the levels and
                   back up.
 
-    Iput Parameters:
+    Input Parameter:
 .   mg - structure created with  MGCreate().
-
 */
 int MGMCycle(MG *mglevels)
 {
@@ -166,14 +165,16 @@ int MGCheck(PC pc)
 }
 
 /*@C
-      MGSetNumberSmoothDown - Sets the number of pre smoothing steps to
-                    use on all levels. Use MGSetSmootherDown() to set 
-                    it different on different levels.
+   MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
+   use on all levels. Use MGSetSmootherDown() to set different 
+   pre-smoothing steps on different levels.
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   n - the number of smoothing steps
+   Input Parameters:
+.  mg - the multigrid context 
+.  n - the number of smoothing steps
 
+   Options Database Key:
+$  -mgsmoothdown  n
 @*/
 int MGSetNumberSmoothDown(PC pc,int n)
 { 
@@ -188,14 +189,16 @@ int MGSetNumberSmoothDown(PC pc,int n)
 }
 
 /*@C
-      MGSetNumberSmoothUp - Sets the number of post smoothing steps to use 
-                    on all levels. Use MGSetSmootherUp() to set 
-                    it different on different levels.
+   MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
+   on all levels. Use MGSetSmootherUp() to set different numbers of 
+   post-smoothing steps on different levels.
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   n - the number of smoothing steps
+   Input Parameters:
+.  mg - the multigrid context 
+.  n - the number of smoothing steps
 
+   Options Database Key:
+$  -mgsmoothup  n
 @*/
 int  MGSetNumberSmoothUp(PC pc,int n)
 { 
@@ -210,14 +213,16 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 }
 
 /*@C
-      MGSetCycles - Sets the number of cycles to use. 1 is V cycle, 2
-                    is W cycle. Use MGSetCyclesOnLevel() for more 
-                    complicated cycling.
+   MGSetCycles - Sets the number of cycles to use. 1 denotes a
+   V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
+   complicated cycling.
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   n - the number of cycles
+   Input Parameters:
+.  mg - the multigrid context 
+.  n - the number of cycles
 
+   Options Database Key:
+$  -mgcycles n
 @*/
 int MGSetCycles(PC pc,int n)
 { 
@@ -233,15 +238,15 @@ extern int MGACycle(MG*);
 extern int MGFCycle(MG*);
 
 /*
-      MGCycle - Runs either an additive, multiplicative or full cycle of 
-                multigrid. 
+   MGCycle - Runs either an additive, multiplicative or full cycle of 
+   multigrid. 
 
   Input Parameters:
 .   mg - the multigrid context 
 .   am - either Multiplicative, Additive or FullMultigrid 
 
-
-  Note: a simple  wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
+  Note: 
+  A simple wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
 */ 
 static int MGCycle(PC pc,Vec b,Vec x)
 {
@@ -283,10 +288,10 @@ static int PCSetFromOptions_MG(PC pc)
   if (OptionsGetInt(0,pc->prefix,"-mgcycles",&m)) {
     MGSetCycles(pc,m);
   } 
-  if (OptionsGetInt(0,pc->prefix,"-mgsmoothsup",&m)) {
+  if (OptionsGetInt(0,pc->prefix,"-mgsmoothup",&m)) {
     MGSetNumberSmoothUp(pc,m);
   }
-  if (OptionsGetInt(0,pc->prefix,"-mgsmoothsdown",&m)) {
+  if (OptionsGetInt(0,pc->prefix,"-mgsmoothdown",&m)) {
     MGSetNumberSmoothDown(pc,m);
   }
   if (OptionsGetString(0,pc->prefix,"-mgmethod",buff,15)) {
@@ -304,11 +309,11 @@ static int PCPrintHelp_MG(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"%smgmethod [additive,multiplicative,fullmultigrid,kaskade\
+  fprintf(stderr," %smgmethod [additive,multiplicative,fullmultigrid,kaskade\
                   : type of multigrid method\n",p);
-  fprintf(stderr,"%smgsmoothsdown m: number of pre-smooths\n",p);
-  fprintf(stderr,"%smgsmoothsup m: number of post-smooths\n",p);
-  fprintf(stderr,"%smgcycles m: 1 for V-cycle, 2 for W cycle\n",p);
+  fprintf(stderr," %smgsmoothdown m: number of pre-smooths\n",p);
+  fprintf(stderr," %smgsmoothup m: number of post-smooths\n",p);
+  fprintf(stderr," %smgcycles m: 1 for V-cycle, 2 for W-cycle\n",p);
   return 0;
 }
 
@@ -331,7 +336,6 @@ int PCCreate_MG(PC pc)
   Input Parameters:
 .  pc - the preconditioner context
 .  levels - the number of levels
-
 @*/
 int MGSetLevels(PC pc,int levels)
 {
@@ -347,13 +351,17 @@ int MGSetLevels(PC pc,int levels)
 
 /*@
 
-    MGSetMethod - Determines if multiplicative, additive or full 
-                  multigrid is used.
+   MGSetMethod - Determines the form of multigrid to use, either 
+   multiplicative, additive, full, or the Kaskade algorithm.
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
-.  flag - either Multiplicative, Additive or FullMultigrid
+.  flag - multigrid flag, one of the following:
+$      Multiplicative, Additive, FullMultigrid, Kaskade
 
+   Options Database Key:
+$  -mgmethod <flag>, where <flag> is one of the following:
+$      multiplicative, additive, fullmultigrid, kaskade   
 @*/
 int MGSetMethod(PC pc,int flag)
 {
