@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.204 2000/08/24 22:43:56 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.205 2000/09/02 02:50:55 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -10,7 +10,7 @@
 
 typedef struct _p_Mat*           Mat;
 
-#define MAX_MATRIX_TYPES 14
+#define MAX_MATRIX_TYPES 16
 /*
    The default matrix data storage formats and routines to create them.
   

@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.68 2000/05/05 22:16:35 balay Exp bsmith $*/
+/*$Id: matio.c,v 1.69 2000/09/02 02:48:31 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -9,7 +9,7 @@
 #include "petscsys.h"
 
 static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*) = 
-           {0,0,0,0,0,0,0,0,0,0,0,0};
+           {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoadRegister"
