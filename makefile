@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.218 1998/04/03 22:36:52 balay Exp bsmith $ 
+# $Id: makefile,v 1.219 1998/04/04 14:32:22 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -371,6 +371,7 @@ allci:
 
 allco: 
 	-@cd src/fortran/custom ; ${OMAKE} BOPT=${BOPT} co
+	-@cd src/fortran/f90 ; ${OMAKE} BOPT=${BOPT} co
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=co  tree 
 
 #
