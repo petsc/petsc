@@ -213,19 +213,6 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES docs/makefile
 	chmod g+w TAGS_MAKEFILES
 
-# Builds the etags file for contrib directory only
-etags_dfvec:
-	$(RM) TAGS_DFVEC
-	etags -f TAGS_DFVEC    src/dfvec/*.c src/dfvec/interface/*.c 
-	etags -a -f TAGS_DFVEC src/dfvec/examples/*.c src/impls/*/*.c
-	etags -a -f TAGS_DFVEC src/dfvec/impls/*/*/*.c
-	etags -a -f TAGS_DFVEC src/dfvec/*.h 
-	etags -a -f TAGS_DFVEC src/dfvec/README
-	etags -a -f TAGS_DFVEC src/dfvec/makefile src/dfvec/interface/makefile 
-	etags -a -f TAGS_DFVEC src/dfvec/impls/makefile src/dfvec/examples/makefile 
-	etags -a -f TAGS_DFVEC src/dfvec/impls/*/makefile 
-	etags -a -f TAGS_DFVEC src/dfvec/impls/*/*/makefile 
-
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.
