@@ -86,7 +86,7 @@ class Base (maker.Maker):
 
   def setupUrlMapping(self):
     self.urlMaps.append(self.bootstrapUrlMap)
-    if not self.argDB['urlMappingModules']:
+    if not self.argDB.has_key('urlMappingModules') or not self.argDB['urlMappingModules']:
       self.argDB['urlMappingModules'] = []
     elif not isinstance(self.argDB['urlMappingModules'], list):
       self.argDB['urlMappingModules'] = [self.argDB['urlMappingModules']]
