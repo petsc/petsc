@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.67 1999/07/13 17:05:38 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.68 1999/08/24 19:45:51 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -83,8 +83,8 @@ PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/solaris/libpvode.a
 #
 # Optional location of ParMetis
 #
-PARMETIS_INCLUDE = -I/home/petsc/software/ParMetis.v1.0
-PARMETIS_LIB     = /home/petsc/software/ParMetis.v1.0/libparmetis_solaris.a 
+PARMETIS_INCLUDE = -I/home/petsc/software/ParMetis-2.0
+PARMETIS_LIB     = -L/home/petsc/software/ParMetis-2.0/lib/solaris -lparmetis -lmetis
 #
 #  Optional location for ALICE Memory Snooper
 #
