@@ -21,6 +21,8 @@ int __main()
 }
 #endif
 
+#undef __FUNC__
+#define __FUNC__ "UnpackWork"
 /***************************************************************************/
 /*
    UnpackWork - Unpacks Fortran work arrays, converting from 5 
@@ -37,7 +39,7 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
   int    xe = app->xe, ye = app->ye, ze = app->ze;
   int    gxm = app->gxm, gxmfp1 = app->gxmfp1, gym = app->gym, gymfp1 = app->gymfp1;
   int    gxsf1 = app->gxsf1, gysf1 = app->gysf1, gzsf1 = app->gzsf1;
-  Scalar val[5];
+  Scalar val[5], *x;
   int    pos[5], *ltog, nloc, nc = app->nc;
 
   /* Note: Due to grid point reordering with DAs, we must always work
@@ -45,79 +47,140 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
      the new global numbering via DAGetGlobalIndices().  We cannot work
      directly with the global numbers for the original uniprocessor grid! */
 
-  ierr = DAGetGlobalIndices(app->da,&nloc,&ltog); CHKERRQ(ierr);
-  if (app->bctype == IMPLICIT) {
-    for (k=zs; k<ze; k++) {
-      for (j=ys; j<ye; j++) {
-        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
-        for (i=xs; i<xe; i++) {
-          ijkx   = jkx + i-gxs;
-          ijkxt  = nc * ijkx;
-	  pos[0] = ltog[ijkxt];
-          pos[1] = ltog[ijkxt+1];
-          pos[2] = ltog[ijkxt+2];
-          pos[3] = ltog[ijkxt+3];
-          pos[4] = ltog[ijkxt+4];
-          val[0] = v0[ijkx];
-	  val[1] = v1[ijkx];
-          val[2] = v2[ijkx];
-          val[3] = v3[ijkx];
-          val[4] = v4[ijkx];
-          ierr = VecSetValues(X,5,pos,val,INSERT_VALUES); CHKERRQ(ierr);
+  if (app->use_vecsetvalues) {
+    /* Either use VecSetValues() to set vector elements ... */
+    ierr = DAGetGlobalIndices(app->da,&nloc,&ltog); CHKERRQ(ierr);
+    if (app->bctype == IMPLICIT) {
+      for (k=zs; k<ze; k++) {
+        for (j=ys; j<ye; j++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xs; i<xe; i++) {
+            ijkx   = jkx + i-gxs;
+            ijkxt  = nc * ijkx;
+            pos[0] = ltog[ijkxt];
+            pos[1] = ltog[ijkxt+1];
+            pos[2] = ltog[ijkxt+2];
+            pos[3] = ltog[ijkxt+3];
+            pos[4] = ltog[ijkxt+4];
+            val[0] = v0[ijkx];
+            val[1] = v1[ijkx];
+            val[2] = v2[ijkx];
+            val[3] = v3[ijkx];
+            val[4] = v4[ijkx];
+            ierr = VecSetValues(X,5,pos,val,INSERT_VALUES); CHKERRQ(ierr);
+          }
         }
       }
-    }
-  } else if (app->bctype == IMPLICIT_SIZE) {
-    int xsi = app->xsi, ysi = app->ysi, zsi = app->zsi;
-    int xei = app->xei, yei = app->yei, zei = app->zei;
-    for (k=zsi; k<zei; k++) {
-      for (j=ysi; j<yei; j++) {
-        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
-        for (i=xsi; i<xei; i++) {
-          ijkx   = jkx + i-gxs;
-          ijkxt  = nc * ijkx;
-	  pos[0] = ltog[ijkxt];
-          pos[1] = ltog[ijkxt+1];
-          pos[2] = ltog[ijkxt+2];
-          pos[3] = ltog[ijkxt+3];
-          pos[4] = ltog[ijkxt+4];
-          val[0] = v0[ijkx];
-	  val[1] = v1[ijkx];
-          val[2] = v2[ijkx];
-          val[3] = v3[ijkx];
-          val[4] = v4[ijkx];
-          ierr = VecSetValues(X,5,pos,val,INSERT_VALUES); CHKERRQ(ierr);
+    } else if (app->bctype == IMPLICIT_SIZE) {
+      int xsi = app->xsi, ysi = app->ysi, zsi = app->zsi;
+      int xei = app->xei, yei = app->yei, zei = app->zei;
+      for (k=zsi; k<zei; k++) {
+        for (j=ysi; j<yei; j++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xsi; i<xei; i++) {
+            ijkx   = jkx + i-gxs;
+            ijkxt  = nc * ijkx;
+            pos[0] = ltog[ijkxt];
+            pos[1] = ltog[ijkxt+1];
+            pos[2] = ltog[ijkxt+2];
+            pos[3] = ltog[ijkxt+3];
+            pos[4] = ltog[ijkxt+4];
+            val[0] = v0[ijkx];
+            val[1] = v1[ijkx];
+            val[2] = v2[ijkx];
+            val[3] = v3[ijkx];
+            val[4] = v4[ijkx];
+            ierr = VecSetValues(X,5,pos,val,INSERT_VALUES); CHKERRQ(ierr);
+          }
         }
       }
-    }
-  } else if (app->bctype == EXPLICIT) {  /* Set interior grid points only */
-    for (k=zs; k<ze; k++) {
-      for (j=ys; j<ye; j++) {
-	jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
-        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
-        for (i=xs; i<xe; i++) {
-          ijkv   = jkv + i+2-gxsf1;
-          ijkx   = nc * (jkx + i-gxs);
-	  pos[0] = ltog[ijkx];
-          pos[1] = ltog[ijkx+1];
-          pos[2] = ltog[ijkx+2];
-          pos[3] = ltog[ijkx+3];
-          pos[4] = ltog[ijkx+4];
-          val[0] = v0[ijkv];
-	  val[1] = v1[ijkv];
-          val[2] = v2[ijkv];
-          val[3] = v3[ijkv];
-          val[4] = v4[ijkv];
-          ierr = VecSetValues(X,5,pos,val,INSERT_VALUES); CHKERRQ(ierr);
+    } else if (app->bctype == EXPLICIT) {  /* Set interior grid points only */
+      for (k=zs; k<ze; k++) {
+        for (j=ys; j<ye; j++) {
+  	jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xs; i<xe; i++) {
+            ijkv   = jkv + i+2-gxsf1;
+            ijkx   = nc * (jkx + i-gxs);
+            pos[0] = ltog[ijkx];
+            pos[1] = ltog[ijkx+1];
+            pos[2] = ltog[ijkx+2];
+            pos[3] = ltog[ijkx+3];
+            pos[4] = ltog[ijkx+4];
+            val[0] = v0[ijkv];
+            val[1] = v1[ijkv];
+            val[2] = v2[ijkv];
+            val[3] = v3[ijkv];
+            val[4] = v4[ijkv];
+            ierr = VecSetValues(X,5,pos,val,INSERT_VALUES); CHKERRQ(ierr);
+          }
         }
       }
+    } else {
+      SETERRQ(1,1,"Unsupported bctype");
     }
-  } else SETERRQ(1,1,"UnpackWork: Unsupported bctype");
-
-  ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
+  } else {
+    /* Or alternatively place values directly in local vector arrays. 
+       Since all vector elements are local, this alternative assembly 
+       is simple (requiring no communication) and we thus save the
+       overhead of calling VecSetValues(). */
+    ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+    if (app->bctype == IMPLICIT) {
+      for (k=zs; k<ze; k++) {
+        for (j=ys; j<ye; j++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xs; i<xe; i++) {
+            ijkx   = jkx + i-gxs;
+            ijkxt  = nc * ijkx;
+            x[ijkxt]   = v0[ijkx];
+            x[ijkxt+1] = v1[ijkx];
+            x[ijkxt+2] = v2[ijkx];
+            x[ijkxt+3] = v3[ijkx];
+            x[ijkxt+4] = v4[ijkx];
+          }
+        }
+      }
+    } else if (app->bctype == IMPLICIT_SIZE) { /* Set interior grid points only */
+      int gxsi = app->gxsi, gysi = app->gysi, gzsi = app->gzsi;
+      int gxei = app->gxei, gyei = app->gyei, gzei = app->gzei;
+      for (k=gzsi; k<gzei; k++) {
+        for (j=gysi; j<gyei; j++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=gxsi; i<gxei; i++) {
+            ijkx  = jkx + i-gxs;
+            ijkxt = nc * ijkx;
+            x[ijkxt]   = v0[ijkx];
+            x[ijkxt+1] = v1[ijkx];
+            x[ijkxt+2] = v2[ijkx];
+            x[ijkxt+3] = v3[ijkx];
+            x[ijkxt+4] = v4[ijkx];
+          }
+        }
+      }
+    } else if (app->bctype == EXPLICIT) {  /* Set interior grid points only */
+      for (k=zs; k<ze; k++) {
+        for (j=ys; j<ye; j++) {
+  	jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xs; i<xe; i++) {
+            ijkv   = jkv + i+2-gxsf1;
+            ijkx   = nc * (jkx + i-gxs);
+            x[ijkx]   = v0[ijkv];
+            x[ijkx+1] = v1[ijkv];
+            x[ijkx+2] = v2[ijkv];
+            x[ijkx+3] = v3[ijkv];
+            x[ijkx+4] = v4[ijkv];
+          }
+        }
+      }
+    } else SETERRQ(1,1,"Unsupported bctype");
+  }
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "PackWork"
 /***************************************************************************/
 /*
    PackWork - Packs Fortran work arrays, including all ghost points
@@ -187,11 +250,13 @@ int PackWork(Euler *app,Vec X,Vec localX,
         }
       }
     }
-  } else SETERRQ(1,1,"PackWork: Unsupported bctype");
+  } else SETERRQ(1,1,"Unsupported bctype");
 
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "PackWorkComponent"
 /***************************************************************************/
 /*
    PackWorkComponent - Packs Fortran work array, including all ghost points
@@ -248,11 +313,13 @@ int PackWorkComponent(Euler *app,Vec X,Vec localX,Scalar *v0)
         }
       }
     }
-  } else SETERRQ(1,1,"PackWorkComponent: Unsupported bctype");
+  } else SETERRQ(1,1,"Unsupported bctype");
 
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "UnpackWorkComponent"
 /***************************************************************************/
 /*
    UnpackWorkComponent - Unpacks Fortran work array, converting from 1
@@ -269,52 +336,99 @@ int UnpackWorkComponent(Euler *app,Scalar *v0,Vec X)
   int    gxs = app->gxs, gys = app->gys, gzs = app->gzs;
   int    gxsf1 = app->gxsf1, gysf1 = app->gysf1, gzsf1 = app->gzsf1;
   int    gxm = app->gxm, gxmfp1 = app->gxmfp1, gym = app->gym, gymfp1 = app->gymfp1;
+  Scalar *x;
  
   /* Note: Due to grid point reordering with DAs, we must always work
      with the local grid points for the vector X, then transform them to
      the new global numbering via DAGetGlobalIndices().  We cannot work
      directly with the global numbers for the original uniprocessor grid! */
 
-  ierr = DAGetGlobalIndices(app->da1,&nloc,&ltog); CHKERRQ(ierr);
-  if (app->bctype == IMPLICIT) {
-    for (k=zs; k<ze; k++) {
-      for (j=ys; j<ye; j++) {
-        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
-        for (i=xs; i<xe; i++) {
-          ijkx = jkx + i-gxs;
-          ierr = VecSetValues(X,1,&ltog[ijkx],&v0[ijkx],INSERT_VALUES); CHKERRQ(ierr);
+  if (app->use_vecsetvalues) {
+    /* Either use VecSetValues() to set vector elements ... */
+    ierr = DAGetGlobalIndices(app->da1,&nloc,&ltog); CHKERRQ(ierr);
+    if (app->bctype == IMPLICIT) {
+      for (k=zs; k<ze; k++) {
+        for (j=ys; j<ye; j++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xs; i<xe; i++) {
+            ijkx = jkx + i-gxs;
+            ierr = VecSetValues(X,1,&ltog[ijkx],&v0[ijkx],INSERT_VALUES); CHKERRQ(ierr);
+          }
         }
       }
-    }
-  } else if (app->bctype == IMPLICIT_SIZE) {
-    int xsi = app->xsi, ysi = app->ysi, zsi = app->zsi;
-    int xei = app->xei, yei = app->yei, zei = app->zei;
-    for (k=zsi; k<zei; k++) {
-      for (j=ysi; j<yei; j++) {
-        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
-        for (i=xsi; i<xei; i++) {
-          ijkx = jkx + i-gxs;
-          ierr = VecSetValues(X,1,&ltog[ijkx],&v0[ijkx],INSERT_VALUES); CHKERRQ(ierr);
+    } else if (app->bctype == IMPLICIT_SIZE) {
+      int xsi = app->xsi, ysi = app->ysi, zsi = app->zsi;
+      int xei = app->xei, yei = app->yei, zei = app->zei;
+      for (k=zsi; k<zei; k++) {
+        for (j=ysi; j<yei; j++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xsi; i<xei; i++) {
+            ijkx = jkx + i-gxs;
+            ierr = VecSetValues(X,1,&ltog[ijkx],&v0[ijkx],INSERT_VALUES); CHKERRQ(ierr);
+          }
         }
       }
-    }
-  } else if (app->bctype == EXPLICIT) {  /* Set interior grid points only */
-    for (k=zs; k<ze; k++) {
-      for (j=ys; j<ye; j++) {
-	jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
-        jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
-        for (i=xs; i<xe; i++) {
-          ijkv = jkv + i+2-gxsf1;
-          ijkx = jkx + i-gxs;
-          ierr = VecSetValues(X,1,&ltog[ijkx],&v0[ijkv],INSERT_VALUES); CHKERRQ(ierr);
+    } else if (app->bctype == EXPLICIT) {  /* Set interior grid points only */
+      for (k=zs; k<ze; k++) {
+        for (j=ys; j<ye; j++) {
+  	jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xs; i<xe; i++) {
+            ijkv = jkv + i+2-gxsf1;
+            ijkx = jkx + i-gxs;
+            ierr = VecSetValues(X,1,&ltog[ijkx],&v0[ijkv],INSERT_VALUES); CHKERRQ(ierr);
+          }
         }
       }
-    }
-  } else SETERRQ(1,1,"UnpackWorkComponent: Unsupported bctype");
-  ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
+    } else SETERRQ(1,1,"Unsupported bctype");
+    ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
+  } else {
+    /* Or alternatively place values directly in local vector arrays. 
+       Since all vector elements are local, this alternative assembly 
+       is simple (requiring no communication) and we thus save the
+       overhead of calling VecSetValues(). */
+    ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+    if (app->bctype == IMPLICIT) {
+      for (k=zs; k<ze; k++) {
+        for (j=ys; j<ye; j++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xs; i<xe; i++) {
+            ijkx = jkx + i-gxs;
+            x[ijkx] = v0[ijkx];
+          }
+        }
+      }
+    } else if (app->bctype == IMPLICIT_SIZE) {
+      int xsi = app->xsi, ysi = app->ysi, zsi = app->zsi;
+      int xei = app->xei, yei = app->yei, zei = app->zei;
+      for (k=zsi; k<zei; k++) {
+        for (j=ysi; j<yei; j++) {
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xsi; i<xei; i++) {
+            ijkx = jkx + i-gxs;
+            x[ijkx] = v0[ijkx];
+          }
+        }
+      }
+    } else if (app->bctype == EXPLICIT) {  /* Set interior grid points only */
+      for (k=zs; k<ze; k++) {
+        for (j=ys; j<ye; j++) {
+  	jkv = (j+2-gysf1)*gxmfp1 + (k+2-gzsf1)*gxmfp1*gymfp1;
+          jkx = (j-gys)*gxm + (k-gzs)*gxm*gym;
+          for (i=xs; i<xe; i++) {
+            ijkv = jkv + i+2-gxsf1;
+            ijkx = jkx + i-gxs;
+            x[ijkx] = v0[ijkv];
+          }
+        }
+      }
+    } else SETERRQ(1,1,"Unsupported bctype");
+  }
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "GridTest"
 /***************************************************************************/
 /* 
    GridTest - Tests parallel grid operations (not used when running actual
