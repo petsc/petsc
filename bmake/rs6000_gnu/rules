@@ -1,4 +1,4 @@
-# $Id: base,v 1.33 1998/12/07 19:47:22 balay Exp balay $ 
+# $Id: base,v 1.34 1998/12/07 20:20:25 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -11,8 +11,8 @@ SHELL            = /bin/sh
 #
 C_CC             = /home/alice/software/egcs/rs6000/bin/gcc
 C_FC             = /home/alice/software/egcs/rs6000/bin/g77
-C_CLINKER        = /home/alice/software/egcs/rs6000/bin/gcc ${COPTFLAGS} -Wl,-bbigtoc 
-C_FLINKER        = /home/alice/software/egcs/rs6000/bin/g77 ${FOPTFLAGS} -Wl,-bbigtoc 
+C_CLINKER        = /home/alice/software/egcs/rs6000/bin/gcc ${COPTFLAGS} -Wl,-bbigtoc
+C_FLINKER        = /home/alice/software/egcs/rs6000/bin/g77 ${FOPTFLAGS} -Wl,-bbigtoc
 C_CCV            = /home/alice/software/egcs/rs6000/bin/gcc -V
 C_SYS_LIB        = -lg2c -lisode
 # ---------------------------- BOPT=g options ----------------------------
