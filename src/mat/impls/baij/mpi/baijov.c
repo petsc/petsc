@@ -1156,8 +1156,8 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
 #if defined (PETSC_USE_CTABLE)
     /* Create row map*/
     ierr = PetscMalloc((1+ismax)*sizeof(PetscTable),&colmaps);CHKERRQ(ierr);
-    for (i=0; i<ismax+1; i++) {
-      ierr = PetscTableCreate(((i<ismax) ? ncol[i] : ncol[i-1])+1,&colmaps[i]);CHKERRQ(ierr);
+    for (i=0; i<ismax; i++) {
+      ierr = PetscTableCreate(ncol[i]+1,&colmaps[i]);CHKERRQ(ierr);
     }
 #else
     len     = (1+ismax)*sizeof(int*)+ ismax*c->Nbs*sizeof(int);
@@ -1236,8 +1236,8 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
 #if defined (PETSC_USE_CTABLE)
   /* Create row map*/
   ierr = PetscMalloc((1+ismax)*sizeof(PetscTable),&rowmaps);CHKERRQ(ierr);
-  for (i=0; i<ismax+1; i++){ 
-    ierr = PetscTableCreate((i<ismax) ? nrow[i] : nrow[i-1],&rowmaps[i]);CHKERRQ(ierr);
+  for (i=0; i<ismax; i++){ 
+    ierr = PetscTableCreate(nrow[i]+1,&rowmaps[i]);CHKERRQ(ierr);
   }
 #else
   /* Create row map*/
@@ -1541,7 +1541,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
 
 #if defined (PETSC_USE_CTABLE)
-  for (i=0; i<ismax+1; i++){
+  for (i=0; i<ismax; i++){
     ierr = PetscTableDelete(rowmaps[i]);CHKERRQ(ierr);
     ierr = PetscTableDelete(colmaps[i]);CHKERRQ(ierr);
   }
