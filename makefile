@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.195 1997/10/08 03:34:47 bsmith Exp balay $ 
+# $Id: makefile,v 1.196 1997/10/08 15:18:53 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -61,7 +61,7 @@ all: info chkpetsc_dir deletelibs build_kernels
 	-@cd $(PETSC_DIR)/src/sys/src ; \
 	$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) rs6000_time
 	$(RANLIB) $(PDIR)/*.a
-	-@#chmod g+w  $(PDIR)/*.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 
@@ -104,7 +104,7 @@ fortran: info chkpetsc_dir
 	-@cd src/fortran/auto; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	$(RANLIB) $(PDIR)/libpetscfortran.a
-	-@#chmod g+w  $(PDIR)/*.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran interface library"
 	-@echo "========================================="
 
@@ -118,7 +118,7 @@ fortrankernels: info chkpetsc_dir
 	-@echo "========================================="
 	-@cd src/fortran/kernels; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib
-	-@#chmod g+w  $(PDIR)/*.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran kernels library"
 	-@echo "========================================="
 
@@ -157,7 +157,7 @@ fortran90: info chkpetsc_dir fortran
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz
 	$(RANLIB) $(PDIR)/libpetscfortran.a
-	-@#chmod g+w  $(PDIR)/*.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran90 interface library"
 	-@echo "========================================="
 
@@ -174,7 +174,7 @@ noise: info chkpetsc_dir
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz
 	$(RANLIB) $(PDIR)/libpetscsnes.a
-	-@#chmod g+w  $(PDIR)/libpetscsnes.a
+	-@chmod g+w  $(PDIR)/libpetscsnes.a
 	-@echo "Completed compiling noise routines"
 	-@echo "========================================="
 
@@ -187,7 +187,7 @@ petscblas: info chkpetsc_dir
 	-@cd src/adic/lapack; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=libfast tree
 	$(RANLIB) $(PDIR)/libpetscblas.a
-	-@#chmod g+w  $(PDIR)/*.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling C version of BLAS and LAPACK"
 	-@echo "========================================="
 
