@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.52 1998/08/05 03:57:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.53 1998/08/05 12:57:51 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -139,18 +139,19 @@ void matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,Scalar *vals,int *ier
   matgetrowactive = 0;
 }
 
-void matview_(Mat mat,Viewer viewer, int *__ierr )
+void matview_(Mat *mat,Viewer viewer, int *__ierr )
 {
   PetscPatchDefaultViewers_Fortran(viewer);
-  *__ierr = MatView((Mat)PetscToPointer(mat),viewer);
+  *__ierr = MatView(*mat,viewer);
 }
 
-void matcopy_(Mat A,Mat B, int *__ierr )
+void matcopy_(Mat *A,Mat *B, int *__ierr )
 {
-  *__ierr = MatCopy(A,B);
+  *__ierr = MatCopy(*A,*B);
 }
 
-void matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *__ierr ){
+void matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *__ierr )
+{
   MatInfo info;
   *__ierr = MatGetInfo(*mat,*flag,&info);
   finfo[0]  = info.rows_global;
@@ -372,13 +373,12 @@ static int ourmult(Mat mat, Vec x, Vec y)
   return ierr;
 }
 
-void matshellsetoperation_(Mat mat,MatOperation *op,int (*f)(PetscFortranAddr*,PetscFortranAddr*,
+void matshellsetoperation_(Mat *mat,MatOperation *op,int (*f)(PetscFortranAddr*,PetscFortranAddr*,
                     PetscFortranAddr*,int*), int *__ierr )
 {
-  Mat mm = (Mat)PetscToPointer(mat);
   if (*op == MATOP_MULT) {
-    *__ierr = MatShellSetOperation(mm,*op,(void*) ourmult);
-    ((PetscObject)mm)->fortran_func_pointers[0] = (void *) f;
+    *__ierr = MatShellSetOperation(*mat,*op,(void*) ourmult);
+    ((PetscObject)*mat)->fortran_func_pointers[0] = (void *) f;
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");
@@ -416,13 +416,12 @@ static int ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y, void *ctx)
   return ierr;
 }
 
-void matfdcoloringsetfunction_(MatFDColoring fd,void (*f)(PetscFortranAddr*,double*,
-                PetscFortranAddr*,PetscFortranAddr*,void*,int*),
+void matfdcoloringsetfunction_(MatFDColoring *fd,void (*f)(PetscFortranAddr*,double*,
+                               PetscFortranAddr*,PetscFortranAddr*,void*,int*),
                                void *ctx, int *__ierr )
 {
-  MatFDColoring mm = (MatFDColoring)PetscToPointer(fd);
   f7 = f;
-  *__ierr = MatFDColoringSetFunction(mm,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
+  *__ierr = MatFDColoringSetFunction(*fd,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
 }
 
 #if defined(__cplusplus)
