@@ -3345,7 +3345,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
         cj[k]   = cmap[*bj++]; 
         ca[k++] = *ba++; 
       }
-      ierr = MatSetValues(Aw,1,&i,ncols,cj,ca,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues_SeqAIJ(Aw,1,&i,ncols,cj,ca,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(Aw,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Aw,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -3569,7 +3569,7 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",a->cstart,a->cend,b->rstart,b->rend);
   }
   if (!logkey_GetBrowsOfAocols) {
-    ierr = PetscLogEventRegister(&logkey_GetBrowsOfAocols,"MatGetBrowsOfAoCols",MAT_COOKIE);
+    ierr = PetscLogEventRegister(&logkey_GetBrowsOfAocols,"MatGetBrAoCol",MAT_COOKIE);
   }
   ierr = PetscLogEventBegin(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
   
