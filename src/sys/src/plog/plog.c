@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.93 1996/04/01 03:45:44 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.94 1996/04/01 16:57:48 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -951,8 +951,8 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
    PetscGetFlops - Returns the number of flops used on this processor 
    since the program began. 
 
-  Output Parameters:
-.   returns the number of flops as a double.
+   Output Parameter:
+   returns the number of flops as a double.
 
    Notes:
    A global counter logs all PETSc flop counts.  The user can use
@@ -965,7 +965,9 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
    intended for logging user flops to supplement this PETSc
    information.
 
-.seealso: log, flops, floating point operations, -log_summary
+.keywords: log, flops, floating point operations
+
+.seealso: PetscGetTime(), PLogFlops()
 @*/
 double PetscGetFlops()
 {
@@ -992,10 +994,10 @@ int PLogObjectState(PetscObject obj,char *format,...)
    double PetscGetTime()
 
    Usage: 
-     double v;
-     v = PetscGetTime();
-     .... perform some calculation ...
-     v = PetscGetTime() -v;
+$     double v;
+$     v = PetscGetTime();
+$     .... perform some calculation ...
+$     v = PetscGetTime() -v;
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 
@@ -1004,9 +1006,9 @@ int PLogObjectState(PetscObject obj,char *format,...)
    PETSc library timing.  See the users manual for further details.
 
 .seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(),  PLogStagePush(), 
-          PLogStagePop(), PLogStageRegister().
+          PLogStagePop(), PLogStageRegister(), PetscGetFlops()
 
-.keywords:  Petsc, time
+.keywords:  get, time
 @*/
 double PetscGetTime()
 {

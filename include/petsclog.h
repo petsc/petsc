@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.67 1996/03/23 20:44:39 bsmith Exp curfman $ */
+/* $Id: plog.h,v 1.68 1996/03/23 21:22:56 curfman Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -237,7 +237,7 @@ $        [code segment to monitor]
 $        PLogFlops(user_flops)
 $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
-.seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd()
+.seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PetscGetFlops()
 
 .keywords: log, flops, floating point operations
 M*/
