@@ -50,6 +50,9 @@ typedef struct {
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
   int (*MatDestroy)(Mat);
+
+  /* Flag to clean up Spooles objects during Destroy */
+  PetscTruth CleanUpSpooles;
 } Mat_Spooles;
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);

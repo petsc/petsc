@@ -15,14 +15,16 @@ int MatDestroy_SeqAIJ_Spooles(Mat A)
   
   PetscFunctionBegin;
  
-  FrontMtx_free(lu->frontmtx) ;        
-  IV_free(lu->newToOldIV) ;            
-  IV_free(lu->oldToNewIV) ;            
-  InpMtx_free(lu->mtxA) ;             
-  ETree_free(lu->frontETree) ;          
-  IVL_free(lu->symbfacIVL) ;         
-  SubMtxManager_free(lu->mtxmanager) ; 
-  Graph_free(lu->graph);
+  if (lu->CleanUpSpooles) {
+    FrontMtx_free(lu->frontmtx) ;        
+    IV_free(lu->newToOldIV) ;            
+    IV_free(lu->oldToNewIV) ;            
+    InpMtx_free(lu->mtxA) ;             
+    ETree_free(lu->frontETree) ;          
+    IVL_free(lu->symbfacIVL) ;         
+    SubMtxManager_free(lu->mtxmanager) ; 
+    Graph_free(lu->graph);
+  }
   
   destroy = lu->MatDestroy;
   ierr    = PetscFree(lu);CHKERRQ(ierr); 
@@ -449,7 +451,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   }
 
   lu->flg = SAME_NONZERO_PATTERN;
- 
+  lu->CleanUpSpooles = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -468,6 +470,7 @@ int MatCreate_SeqAIJ_Spooles(Mat A) {
   lu->MatView         = A->ops->view;
   lu->MatAssemblyEnd  = A->ops->assemblyend;
   lu->MatDestroy      = A->ops->destroy;
+  lu->CleanUpSpooles  = PETSC_FALSE;
   A->spptr            = (void*)lu;
   A->ops->view        = MatView_SeqAIJ_Spooles;
   A->ops->assemblyend = MatAssemblyEnd_SeqAIJ_Spooles;

@@ -20,18 +20,18 @@ int MatDestroy_MPIAIJ_Spooles(Mat A)
   int           ierr,(*destroy)(Mat);
   
   PetscFunctionBegin;
- 
-  FrontMtx_free(lu->frontmtx) ;        
-  IV_free(lu->newToOldIV) ;            
-  IV_free(lu->oldToNewIV) ; 
-  IV_free(lu->vtxmapIV) ;
-  InpMtx_free(lu->mtxA) ;             
-  ETree_free(lu->frontETree) ;          
-  IVL_free(lu->symbfacIVL) ;         
-  SubMtxManager_free(lu->mtxmanager) ;    
-  DenseMtx_free(lu->mtxX) ;
-  DenseMtx_free(lu->mtxY) ;
-
+  if (lu->CleanUpSpooles) {
+    FrontMtx_free(lu->frontmtx) ;        
+    IV_free(lu->newToOldIV) ;            
+    IV_free(lu->oldToNewIV) ; 
+    IV_free(lu->vtxmapIV) ;
+    InpMtx_free(lu->mtxA) ;             
+    ETree_free(lu->frontETree) ;          
+    IVL_free(lu->symbfacIVL) ;         
+    SubMtxManager_free(lu->mtxmanager) ;    
+    DenseMtx_free(lu->mtxX) ;
+    DenseMtx_free(lu->mtxY) ;
+  }
   ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
   if ( lu->scat ){
     ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
@@ -577,8 +577,9 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
   }
   lu->scat = PETSC_NULL;  
-  
   lu->flg = SAME_NONZERO_PATTERN;
+
+  lu->CleanUpSpooles = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -597,6 +598,7 @@ int MatCreate_MPIAIJ_Spooles(Mat A) {
   lu->MatView         = A->ops->view;
   lu->MatAssemblyEnd  = A->ops->assemblyend;
   lu->MatDestroy      = A->ops->destroy;
+  lu->CleanUpSpooles  = PETSC_FALSE;
   A->spptr            = (void*)lu;
   A->ops->view        = MatView_SeqAIJ_Spooles;
   A->ops->assemblyend = MatAssemblyEnd_MPIAIJ_Spooles;
