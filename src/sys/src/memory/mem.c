@@ -76,6 +76,7 @@
 @*/
 int PetscGetResidentSetSize(PetscLogDouble *mem)
 {
+#define PETSC_USE_PROC_FOR_SIZE
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   int             fd;
   char            proc[PETSC_MAX_PATH_LEN];
@@ -83,6 +84,9 @@ int PetscGetResidentSetSize(PetscLogDouble *mem)
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
   long            *ii = sbreak(0); 
   int             fd = ii - (long*)0; 
+#elif defined(PETSC_USE_PROC_FOR_SIZE)
+  FILE            *file;
+  char            proc[PETSC_MAX_PATH_LEN];
 #elif defined(PETSC_HAVE_NO_GETRUSAGE)
 #else
   static struct   rusage temp;
@@ -92,15 +96,20 @@ int PetscGetResidentSetSize(PetscLogDouble *mem)
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   sprintf(proc,"/proc/%d",(int)getpid());
   if ((fd = open(proc,O_RDONLY)) == -1) {
-    SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to access system file to get memory usage data");
+    SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",file);
   }
   if (ioctl(fd,PIOCPSINFO,&prusage) == -1) {
-    SETERRQ(PETSC_ERR_FILE_READ,"Unable to access system file  to get memory usage data"); 
+    SETERRQ1(PETSC_ERR_FILE_READ,"Unable to access system file %s to get memory usage data",file); 
   }
   *mem = (double)prusage.pr_byrssize;
   close(fd);
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
   *mem = (PetscLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
+#elif defined(PETSC_USE_PROC_FOR_SIZE)
+  sprintf(proc,"/proc/%d/status",(int)getpid());
+  if (!(file = fopen(proc,"r"))) {
+    SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
+  }
 #elif defined(PETSC_HAVE_NO_GETRUSAGE)
   *mem = 0.0;
 #else
