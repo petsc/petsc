@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.77 1997/10/19 03:25:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.78 1997/10/20 17:45:45 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -781,19 +781,24 @@ int Mat_AIJ_CheckInode(Mat A)
     idx +=blk_size*nzx;
     i    = j;
   }
-
-  A->ops.mult            = MatMult_SeqAIJ_Inode;
-  A->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
-  A->ops.solve           = MatSolve_SeqAIJ_Inode;
-  A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
-  A->ops.getrowij        = MatGetRowIJ_SeqAIJ_Inode;
-  A->ops.restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
-  A->ops.getcolumnij     = MatGetColumnIJ_SeqAIJ_Inode;
-  A->ops.restorecolumnij = MatRestoreColumnIJ_SeqAIJ_Inode;
-  A->ops.coloringpatch   = MatColoringPatch_SeqAIJ_Inode;
-  a->inode.node_count    = node_count;
-  a->inode.size          = ns;
-  PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes. Limit used: %d. Using Inode routines\n",node_count,a->inode.limit);
+  /* If not enough inodes found,, lets not use inode version of the routines */
+  if (node_count > 0.9*m) {
+    PetscFree(ns);
+    PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes out of %d rows. Not using Inode routines\n",node_count,m);
+  } else {
+    A->ops.mult            = MatMult_SeqAIJ_Inode;
+    A->ops.multadd         = MatMultAdd_SeqAIJ_Inode;
+    A->ops.solve           = MatSolve_SeqAIJ_Inode;
+    A->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+    A->ops.getrowij        = MatGetRowIJ_SeqAIJ_Inode;
+    A->ops.restorerowij    = MatRestoreRowIJ_SeqAIJ_Inode;
+    A->ops.getcolumnij     = MatGetColumnIJ_SeqAIJ_Inode;
+    A->ops.restorecolumnij = MatRestoreColumnIJ_SeqAIJ_Inode;
+    A->ops.coloringpatch   = MatColoringPatch_SeqAIJ_Inode;
+    a->inode.node_count    = node_count;
+    a->inode.size          = ns;
+    PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes. Limit used: %d. Using Inode routines\n",node_count,a->inode.limit);
+  }
   PetscFunctionReturn(0);
 }
 
