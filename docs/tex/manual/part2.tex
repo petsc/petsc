@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.179 1997/01/06 20:45:04 bsmith Exp gropp $ 
+% $Id: part2.tex,v 1.180 1997/01/08 19:51:48 gropp Exp gropp $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4663,6 +4663,11 @@ the file {\tt \$(PETSC\_DIR)/include/petsclog.h}) or one obtained with
 Section~\ref{sec:profileuser}).  These routines may be called as many
 times as desired in an application program, so that one could restrict
 MPE event logging only to certain code segments.
+
+To see what events are logged by default, you can use the source; see
+files src/plot/src/plogmpe.c and include/petsclog.h .  A simple program and
+GUI interface to see the events that are predefined and their definition is 
+being developed.
 
 You can also log the MPI events.  To do this, just view the PETSc application
 as any MPI application, and follow the instructions on logging MPI calls that
