@@ -1,8 +1,10 @@
-import commands
+import config.base
+
 import re
 
-class Options:
-  def __init__(self):
+class Options(config.base.Configure):
+  def __init__(self, framework):
+    config.base.Configure.__init__(self, framework)
     return
 
   def getCFlags(self, compiler, bopt):
@@ -105,40 +107,35 @@ class Options:
 
   def getCompilerVersion(self, language, compiler, configure):
     version = 'Unknown'
-    if language == 'C':
-      if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'cc':
-        (status, output) = commands.getstatusoutput(compiler+' -V')
-        if not status: version = output.split('\n')[0]
-      elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'cc':
-        (status, output) = commands.getstatusoutput(compiler+' -version')
-        if not status: version = output.split('\n')[0]
-      else:
-        (status, output) = commands.getstatusoutput(compiler+' --version')
-        if not status: version = output.split('\n')[0]
-    elif language == 'Cxx':
-      if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'cxx':
-        (status, output) = commands.getstatusoutput(compiler+' -V')
-        if not status: version = output.split('\n')[0]
-      elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'cc':
-        (status, output) = commands.getstatusoutput(compiler+' -version')
-        if not status: version = output.split('\n')[0]
-      else:
-        (status, output) = commands.getstatusoutput(compiler+' --version')
-        if not status: version = output.split('\n')[0]
-    elif language == 'Fortran':
-      if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'fort':
-        (status, output) = commands.getstatusoutput(compiler+' -version')
-        if not status: version = output.split('\n')[0]
-      elif re.match(r'i[3-9]86', configure.framework.host_cpu) and compiler == 'f90':
-        (status, output) = commands.getstatusoutput(compiler+' -V')
-        if not status: version = output.split('\n')[0]
-      elif re.match(r'i[3-9]86', configure.framework.host_cpu) and compiler == 'pgf90':
-        (status, output) = commands.getstatusoutput(compiler+' -V 2> /dev/null')
-        if not status: version = output.split('\n')[0]
-      elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'f90':
-        (status, output) = commands.getstatusoutput(compiler+' -version')
-        if not status: version = output.split('\n')[0]
-      else:
-        (status, output) = commands.getstatusoutput(compiler+' --version')
-        if not status: version = output.split('\n')[0]
+    try:
+      if language == 'C':
+        if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'cc':
+          flags = '-V'
+        elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'cc':
+          flags = '-version'
+        else:
+          flags = '--version'
+      elif language == 'Cxx':
+        if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'cxx':
+          flags = '-V'
+        elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'cc':
+          flags = '-version'
+        else:
+          flags = '--version'
+      elif language == 'Fortran':
+        if re.match(r'alphaev[0-9]', configure.framework.host_cpu) and compiler == 'fort':
+          flags = '-version'
+        elif re.match(r'i[3-9]86', configure.framework.host_cpu) and compiler == 'f90':
+          flags = '-V'
+        elif re.match(r'i[3-9]86', configure.framework.host_cpu) and compiler == 'pgf90':
+          flags = '-V'
+        elif re.match(r'mips', configure.framework.host_cpu) and compiler == 'f90':
+          flags = '-version'
+        else:
+          flags = '--version'
+      (output, error, status) = self.executeShellCommand(compiler+' '+flags)
+      if not status:
+        version = output.split('\n')[0]
+    except RuntimeError, e:
+      self.framework.log.write('Could not determine compiler version: '+str(e))
     return version

@@ -1,8 +1,6 @@
 import config.base
 
-import commands
 import os
-import os.path
 import re
 
 class Configure(config.base.Configure):
@@ -124,12 +122,12 @@ class Configure(config.base.Configure):
     options = None
     try:
       mod     = __import__('PETSc.Options', locals(), globals(), ['Options'])
-      options = mod.Options()
+      options = mod.Options(self.framework)
     except ImportError: print 'Failed to load generic options'
     try:
       if self.framework.argDB.has_key('optionsModule'):
         mod     = __import__(self.framework.argDB['optionsModule'], locals(), globals(), ['Options'])
-        options = mod.Options()
+        options = mod.Options(self.framework)
     except ImportError: print 'Failed to load custom options'
     if options:
       # We use the framework in order to remove the PETSC_ namespace
@@ -283,26 +281,35 @@ class Configure(config.base.Configure):
       f.close()
       foundOption = 0
       if not foundOption:
-        (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -p '+os.getpid())
-        for line in output:
-          if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_P_FOR_DEBUGGER', 1)
-            foundOption = 1
-            break
+        try:
+          (output, error, status) = self.executeShellCommand(self.dbx+' -c conftest -p '+os.getpid())
+          if not status:
+            for line in output:
+              if re.match(r'Process '+os.getpid()):
+                self.addDefine('USE_P_FOR_DEBUGGER', 1)
+                foundOption = 1
+                break
+        except RuntimeError: pass
       if not foundOption:
-        (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -a '+os.getpid())
-        for line in output:
-          if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_A_FOR_DEBUGGER', 1)
-            foundOption = 1
-            break
+        try:
+          (output, error, status) = self.executeShellCommand(self.dbx+' -c conftest -a '+os.getpid())
+          if not status:
+            for line in output:
+              if re.match(r'Process '+os.getpid()):
+                self.addDefine('USE_A_FOR_DEBUGGER', 1)
+                foundOption = 1
+                break
+        except RuntimeError: pass
       if not foundOption:
-        (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -pid '+os.getpid())
-        for line in output:
-          if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_PID_FOR_DEBUGGER', 1)
-            foundOption = 1
-            break
+        try:
+          (output, error, status) = self.executeShellCommand(self.dbx+' -c conftest -pid '+os.getpid())
+          if not status:
+            for line in output:
+              if re.match(r'Process '+os.getpid()):
+                self.addDefine('USE_PID_FOR_DEBUGGER', 1)
+                foundOption = 1
+                break
+        except RuntimeError: pass
       os.remove('conftest')
     elif hasattr(self, 'xdb'):
       self.addDefine('USE_XDB_DEBUGGER', 1)
@@ -315,11 +322,11 @@ class Configure(config.base.Configure):
     # Check for GNU make
     haveGNUMake = 0
     try:
-      import commands
-      (status, output) = commands.getstatusoutput('strings '+self.framework.make)
+      (output, error, status) = self.executeShellCommand('strings '+self.framework.make)
       if not status and output.find('GNU Make') >= 0:
         haveGNUMake = 1
-    except Exception, e: print 'Make check failed: '+str(e)
+    except RuntimeError, e:
+      self.framework.log.write('Make check failed: '+str(e)+'\n')
     # Setup make flags
     flags = ''
     if haveGNUMake:
@@ -348,10 +355,12 @@ libf: ${OBJSF}
     if hasattr(self.framework, 'mkdir'):
       self.mkdir = self.framework.mkdir
       if os.path.exists('.conftest'): os.rmdir('.conftest')
-      (status, output) = commands.getstatusoutput(self.mkdir+' -p .conftest/.tmp')
-      if not status and os.path.isdir('.conftest/.tmp'):
-        self.mkdir = self.mkdir+' -p'
-        self.framework.addSubstitution('MKDIR', self.mkdir)
+      try:
+        (output, error, status) = self.executeShellCommand(self.mkdir+' -p .conftest/.tmp')
+        if not status and os.path.isdir('.conftest/.tmp'):
+          self.mkdir = self.mkdir+' -p'
+          self.framework.addSubstitution('MKDIR', self.mkdir)
+      except RuntimeError: pass
       if os.path.exists('.conftest'): os.removedirs('.conftest/.tmp')
     return
 
@@ -425,22 +434,24 @@ acfindx:
 ''')
     f.close()
     # Compile makefile
-    if not os.system('xmkmf >/dev/null') and os.path.exists('Makefile'):
-      import commands
-      (status, output) = commands.getstatusoutput(self.framework.make+' acfindx')
-      results          = self.parseShellOutput(output)
-      # Open Windows xmkmf reportedly sets LIBDIR instead of USRLIBDIR.
-      for ext in ['.a', '.so', '.sl']:
-        if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
-          results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
-          break
-      # Screen out bogus values from the imake configuration.  They are
-      # bogus both because they are the default anyway, and because
-      # using them would break gcc on systems where it needs fixed includes.
-      if not results['X_INCLUDE_ROOT'] == '/usr/include' and os.path.isfile(os.path.join(results['X_INCLUDE_ROOT'], 'X11', 'Xos.h')):
-        includeDir = results['X_INCLUDE_ROOT']
-      if not (results['X_USR_LIB_DIR'] == '/lib' or results['X_USR_LIB_DIR'] == '/usr/lib') and os.path.isdir(results['X_USR_LIB_DIR']):
-        libraryDir = results['X_USR_LIB_DIR']
+    try:
+      (output, error, status) = self.executeShellCommand('xmkmf')
+      if not status and os.path.exists('Makefile'):
+        (output, error, status) = self.executeShellCommand(self.framework.make+' acfindx')
+        results                 = self.parseShellOutput(output)
+        # Open Windows xmkmf reportedly sets LIBDIR instead of USRLIBDIR.
+        for ext in ['.a', '.so', '.sl']:
+          if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
+            results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
+            break
+        # Screen out bogus values from the imake configuration.  They are
+        # bogus both because they are the default anyway, and because
+        # using them would break gcc on systems where it needs fixed includes.
+        if not results['X_INCLUDE_ROOT'] == '/usr/include' and os.path.isfile(os.path.join(results['X_INCLUDE_ROOT'], 'X11', 'Xos.h')):
+          includeDir = results['X_INCLUDE_ROOT']
+        if not (results['X_USR_LIB_DIR'] == '/lib' or results['X_USR_LIB_DIR'] == '/usr/lib') and os.path.isdir(results['X_USR_LIB_DIR']):
+          libraryDir = results['X_USR_LIB_DIR']
+    except RuntimeError: pass
     # Cleanup
     os.chdir(os.path.dirname(dir))
     shutil.rmtree(dir)
@@ -713,19 +724,22 @@ acfindx:
       if hasattr(self.framework, 'etags'):
         pd = self.framework.argDB['PETSC_DIR']
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
-        (status,output) = commands.getstatusoutput('export PETSC_ARCH=linux;make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags')
-        # filter out the normal messages
-        cnt = 0
-        for i in output.split('\n'):
-          if not (i.startswith('etags_') or i.find('TAGS') >= 0):
-            if not cnt:
-              self.framework.log.write('*******Error generating etags files****\n')
-            cnt = cnt + 1
-            self.framework.log.write(i+'\n')
-        if not cnt:
-          self.framework.log.write('           Completed generating etags files\n')
-        else:
-          self.framework.log.write('*******End of error messages from generating etags files****\n')
+        try:
+          (output, error, status) = self.executeShellCommand('export PETSC_ARCH=linux;make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags')
+          # filter out the normal messages
+          cnt = 0
+          for i in output.split('\n'):
+            if not (i.startswith('etags_') or i.find('TAGS') >= 0):
+              if not cnt:
+                self.framework.log.write('*******Error generating etags files****\n')
+              cnt = cnt + 1
+              self.framework.log.write(i+'\n')
+          if not cnt:
+            self.framework.log.write('           Completed generating etags files\n')
+          else:
+            self.framework.log.write('*******End of error messages from generating etags files*******\n')
+        except RuntimeError, e:
+          self.framework.log.write('*******Error generating etags files: '+str(e)+'*******\n')
       else:
         self.framework.log.write('           The etags command is not in your path, cannot build etags files\n')
     else:

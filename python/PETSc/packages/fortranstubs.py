@@ -24,14 +24,14 @@ class Configure(config.base.Configure):
         self.framework.log.write('           Running '+self.framework.bfort+' to generate Fortran stubs\n')
         (output,err,status) = self.executeShellCommand('export PETSC_ARCH=linux;make allfortranstubs')
         # filter out the normal messages, user has to cope with error messages
-        cnt = 0
-        for i in output.split('\n'):
-          if not (i.startswith('fortranstubs in:') or i.startswith('Fixing pointers') or i.find('ACTION=') >= 0):
-            if not cnt:
+        count = 0
+        for line in map(lambda l: l.strip(), output.split('\n')):
+          if line and not (line.startswith('fortranstubs in:') or line.startswith('Fixing pointers') or line.find('ACTION=') >= 0):
+            if not count:
               self.framework.log.write('*******Error generating Fortran stubs****\n')
-            cnt = cnt + 1
-            self.framework.log.write(i+'\n')
-        if not cnt:
+            count += 1
+            self.framework.log.write(line+'\n')
+        if not count:
           self.framework.log.write('           Completed generating Fortran stubs\n')
         else:
           self.framework.log.write('*******End of error messages from generating Fortran stubs****\n')
