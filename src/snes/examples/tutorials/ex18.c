@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.14 2001/03/15 21:34:20 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.15 2001/03/15 21:41:18 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -328,84 +328,75 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 #define __FUNC__ "FormJacobian"
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
-  DMMG    dmmg = (DMMG)ptr;
-  AppCtx  *user = (AppCtx*)dmmg->user;
-  Mat     jac = *J;
-  int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5],nloc,*ltog,grow;
-  double  one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw; 
-  double  dn,ds,de,dw,an,as,ae,aw,bn,bs,be,bw,gn,gs,ge,gw;
-  double  tleft,tright,beta,bm1,coef;
-  Scalar  v[5],*x;
-  Vec     localX;
+  DMMG       dmmg = (DMMG)ptr;
+  AppCtx     *user = (AppCtx*)dmmg->user;
+  Mat        jac = *J;
+  int        ierr,i,j,mx,my,xs,ys,xm,ym;
+  double     one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw; 
+  double     dn,ds,de,dw,an,as,ae,aw,bn,bs,be,bw,gn,gs,ge,gw;
+  double     tleft,tright,beta,bm1,coef;
+  Scalar     v[5],**x;
+  Vec        localX;
+  MatStencil col[5],row;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   *flg = SAME_NONZERO_PATTERN;
   ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  hxdhy = hx/hy;            hydhx = hy/hx;
-  tleft = user->tleft;      tright = user->tright;
-  beta = user->beta;	    bm1 = user->bm1;		coef = user->coef;
+  hx    = one/(double)(mx-1);  hy     = one/(double)(my-1);
+  hxdhy = hx/hy;               hydhx  = hy/hx;
+  tleft = user->tleft;         tright = user->tright;
+  beta  = user->beta;	       bm1    = user->bm1;		coef = user->coef;
 
   /* Get ghost points */
   ierr = DAGlobalToLocalBegin((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners((DA)dmmg->dm,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices((DA)dmmg->dm,&nloc,&ltog);CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
     for (i=xs; i<xs+xm; i++) {
-      row++;
-      grow = ltog[row];
-      t0 = x[row];
+      t0 = x[j][i];
 
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
 
         /* general interior volume */
 
-        tw = x[row - 1];   
+        tw = x[j][i-1];
         aw = 0.5*(t0 + tw);                 
         bw = pow(aw,bm1);
 	/* dw = bw * aw */
 	dw = pow(aw,beta); 
 	gw = coef*bw*(t0 - tw);
 
-        te = x[row + 1];
+        te = x[j][i+1];
         ae = 0.5*(t0 + te);
         be = pow(ae,bm1);
 	/* de = be * ae; */
 	de = pow(ae,beta);
         ge = coef*be*(te - t0);
 
-        ts = x[row - Xm];
+        ts = x[j-1][i];
         as = 0.5*(t0 + ts);
         bs = pow(as,bm1);
 	/* ds = bs * as; */
 	ds = pow(as,beta);
         gs = coef*bs*(t0 - ts);
   
-        tn = x[row + Xm];  
+        tn = x[j+1][i];
         an = 0.5*(t0 + tn);
         bn = pow(an,bm1);
 	/* dn = bn * an; */
 	dn = pow(an,beta);
         gn = coef*bn*(tn - t0);
 
-	col[0] = ltog[row - Xm];
-        v[0] = - hxdhy*(ds - gs); 
-	col[1] = ltog[row - 1];
-        v[1] = - hydhx*(dw - gw); 
-        col[2] = grow;
-        v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge); 
-	col[3] = ltog[row + 1];
-        v[3] = - hydhx*(de + ge); 
-	col[4] = ltog[row + Xm];
-        v[4] = - hxdhy*(dn + gn); 
-        ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i; 
+        v[1] = - hydhx*(dw - gw);                                      col[1].j = j;         col[1].i = i-1; 
+        v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  col[2].j = row.j = j; col[2].i = row.i = i;
+        v[3] = - hydhx*(de + ge);                                      col[3].j = j;         col[3].i = i+1;   
+        v[4] = - hxdhy*(dn + gn);                                      col[4].j = j+1;       col[4].i = i; 
+        ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
       } else if (i == 0) {
 
@@ -417,7 +408,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 	dw = pow(aw,beta); 
         gw = coef*bw*(t0 - tw); 
  
-        te = x[row + 1]; 
+        te = x[j][i + 1]; 
         ae = 0.5*(t0 + te); 
         be = pow(ae,bm1); 
 	/* de = be * ae; */
@@ -427,70 +418,60 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 	/* left-hand bottom boundary */
 	if (j == 0) {
 
-          tn = x[row + Xm];   
+          tn = x[j+1][i];
           an = 0.5*(t0 + tn); 
           bn = pow(an,bm1); 
 	  /* dn = bn * an; */
 	  dn = pow(an,beta);
           gn = coef*bn*(tn - t0); 
           
-          col[0] = grow;
-          v[0] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); 
-          col[1] = ltog[row + 1];
-          v[1] = - hydhx*(de + ge); 
-          col[2] = ltog[row + Xm];
-          v[2] = - hxdhy*(dn + gn); 
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
+          v[0] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); col[0].j = row.j = j; col[0].i = row.i = i;
+          v[1] = - hydhx*(de + ge);                           col[1].j = j;         col[1].i = i+1;
+          v[2] = - hxdhy*(dn + gn);                           col[2].j = j+1;       col[2].i = i;
+          ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
  
 	/* left-hand interior boundary */
 	} else if (j < my-1) {
 
-          ts = x[row - Xm];    
+          ts = x[j-1][i];
           as = 0.5*(t0 + ts); 
           bs = pow(as,bm1);  
 	  /* ds = bs * as; */
 	  ds = pow(as,beta);
           gs = coef*bs*(t0 - ts);  
           
-          tn = x[row + Xm];    
+          tn = x[j+1][i];
           an = 0.5*(t0 + tn); 
           bn = pow(an,bm1);  
 	  /* dn = bn * an; */
 	  dn = pow(an,beta);
           gn = coef*bn*(tn - t0);  
           
-          col[0] = ltog[row - Xm];
-          v[0] = - hxdhy*(ds - gs); 
-          col[1] = grow; 
-          v[1] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  
-          col[2] = ltog[row + 1]; 
-          v[2] = - hydhx*(de + ge);  
-          col[3] = ltog[row + Xm]; 
-          v[3] = - hxdhy*(dn + gn);  
-          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);  
+          v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i; 
+          v[1] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  col[1].j = row.j = j; col[1].i = row.i = i;
+          v[2] = - hydhx*(de + ge);                                      col[2].j = j;         col[2].i = i+1; 
+          v[3] = - hxdhy*(dn + gn);                                      col[3].j = j+1;       col[3].i = i; 
+          ierr = MatSetValuesStencil(jac,1,&row,4,col,v,INSERT_VALUES);CHKERRQ(ierr);  
 	/* left-hand top boundary */
 	} else {
 
-          ts = x[row - Xm];
+          ts = x[j-1][i];
           as = 0.5*(t0 + ts);
           bs = pow(as,bm1);
 	  /* ds = bs * as; */
 	  ds = pow(as,beta);
           gs = coef*bs*(t0 - ts);
           
-          col[0] = ltog[row - Xm]; 
-          v[0] = - hxdhy*(ds - gs);  
-          col[1] = grow; 
-          v[1] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  
-          col[2] = ltog[row + 1];  
-          v[2] = - hydhx*(de + ge); 
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr); 
+          v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i; 
+          v[1] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  col[1].j = row.j = j; col[1].i = row.i = i;
+          v[2] = - hydhx*(de + ge);                            col[2].j = j;         col[2].i = i+1; 
+          ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr); 
 	}
 
       } else if (i == mx-1) {
  
         /* right-hand boundary */
-        tw = x[row - 1];
+        tw = x[j][i-1];
         aw = 0.5*(t0 + tw);                  
         bw = pow(aw,bm1); 
 	/* dw = bw * aw */
@@ -507,139 +488,121 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 	/* right-hand bottom boundary */
 	if (j == 0) {
 
-          tn = x[row + Xm];   
+          tn = x[j+1][i];
           an = 0.5*(t0 + tn); 
           bn = pow(an,bm1); 
 	  /* dn = bn * an; */
 	  dn = pow(an,beta);
           gn = coef*bn*(tn - t0); 
           
-          col[0] = ltog[row - 1];
-          v[0] = - hydhx*(dw - gw); 
-          col[1] = grow;
-          v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); 
-          col[2] = ltog[row + Xm];
-          v[2] = - hxdhy*(dn + gn); 
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
+          v[0] = - hydhx*(dw - gw);                           col[0].j = j;         col[0].i = i-1;  
+          v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); col[1].j = row.j = j; col[1].i = row.i = i;
+          v[2] = - hxdhy*(dn + gn);                           col[2].j = j+1;       col[2].i = i; 
+          ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
  
 	/* right-hand interior boundary */
 	} else if (j < my-1) {
 
-          ts = x[row - Xm];    
+          ts = x[j-1][i];
           as = 0.5*(t0 + ts); 
           bs = pow(as,bm1);  
 	  /* ds = bs * as; */
 	  ds = pow(as,beta);
           gs = coef*bs*(t0 - ts);  
           
-          tn = x[row + Xm];    
+          tn = x[j+1][i];
           an = 0.5*(t0 + tn); 
           bn = pow(an,bm1);  
 	  /* dn = bn * an; */
 	  dn = pow(an,beta);
           gn = coef*bn*(tn - t0);  
           
-          col[0] = ltog[row - Xm];
-          v[0] = - hxdhy*(ds - gs); 
-          col[1] = ltog[row - 1]; 
-          v[1] = - hydhx*(dw - gw);  
-          col[2] = grow; 
-          v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  
-          col[3] = ltog[row + Xm]; 
-          v[3] = - hxdhy*(dn + gn);  
-          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);  
+          v[0] = - hxdhy*(ds - gs);                                      col[0].j = j-1;       col[0].i = i; 
+          v[1] = - hydhx*(dw - gw);                                      col[1].j = j;         col[1].i = i-1; 
+          v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  col[2].j = row.j = j; col[2].i = row.i = i;
+          v[3] = - hxdhy*(dn + gn);                                      col[3].j = j+1;       col[3].i = i; 
+          ierr = MatSetValuesStencil(jac,1,&row,4,col,v,INSERT_VALUES);CHKERRQ(ierr);  
 	/* right-hand top boundary */
 	} else {
 
-          ts = x[row - Xm];
+          ts = x[j-1][i];
           as = 0.5*(t0 + ts);
           bs = pow(as,bm1);
 	  /* ds = bs * as; */
 	  ds = pow(as,beta);
           gs = coef*bs*(t0 - ts);
           
-          col[0] = ltog[row - Xm]; 
-          v[0] = - hxdhy*(ds - gs);  
-          col[1] = ltog[row - 1];  
-          v[1] = - hydhx*(dw - gw); 
-          col[2] = grow; 
-          v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr); 
+          v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i; 
+          v[1] = - hydhx*(dw - gw);                            col[1].j = j;         col[1].i = i-1; 
+          v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  col[2].j = row.j = j; col[2].i = row.i = i;
+          ierr = MatSetValuesStencil(jac,1,&row,3,col,v,INSERT_VALUES);CHKERRQ(ierr); 
 	}
 
       /* bottom boundary,and i <> 0 or mx-1 */
       } else if (j == 0) {
 
-        tw = x[row - 1];
+        tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
         bw = pow(aw,bm1);
 	/* dw = bw * aw */
 	dw = pow(aw,beta); 
         gw = coef*bw*(t0 - tw);
 
-        te = x[row + 1];
+        te = x[j][i+1];
         ae = 0.5*(t0 + te);
         be = pow(ae,bm1);
 	/* de = be * ae; */
 	de = pow(ae,beta);
         ge = coef*be*(te - t0);
 
-        tn = x[row + Xm];
+        tn = x[j+1][i];
         an = 0.5*(t0 + tn);
         bn = pow(an,bm1);
 	/* dn = bn * an; */
 	dn = pow(an,beta);
         gn = coef*bn*(tn - t0);
  
-        col[0] = ltog[row - 1];
-        v[0] = - hydhx*(dw - gw);
-        col[1] = grow;
-        v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge);
-        col[2] = ltog[row + 1];
-        v[2] = - hydhx*(de + ge);
-        col[3] = ltog[row + Xm];
-        v[3] = - hxdhy*(dn + gn);
-        ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        v[0] = - hydhx*(dw - gw);                           col[0].j = j;         col[0].i = i-1; 
+        v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); col[1].j = row.j = j; col[1].i = row.i = i;
+        v[2] = - hydhx*(de + ge);                           col[2].j = j;         col[2].i = i+1; 
+        v[3] = - hxdhy*(dn + gn);                           col[3].j = j+1;       col[3].i = i; 
+        ierr = MatSetValuesStencil(jac,1,&row,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
  
       /* top boundary,and i <> 0 or mx-1 */
       } else if (j == my-1) {
  
-        tw = x[row - 1];
+        tw = x[j][i-1];
         aw = 0.5*(t0 + tw);
         bw = pow(aw,bm1);
 	/* dw = bw * aw */
 	dw = pow(aw,beta); 
         gw = coef*bw*(t0 - tw);
 
-        te = x[row + 1];
+        te = x[j][i+1];
         ae = 0.5*(t0 + te);
         be = pow(ae,bm1);
 	/* de = be * ae; */
 	de = pow(ae,beta);
         ge = coef*be*(te - t0);
 
-        ts = x[row - Xm];
+        ts = x[j-1][i];
         as = 0.5*(t0 + ts);
         bs = pow(as,bm1);
  	/* ds = bs * as; */
 	ds = pow(as,beta);
         gs = coef*bs*(t0 - ts);
 
-        col[0] = ltog[row - Xm];
-        v[0] = - hxdhy*(ds - gs);
-        col[1] = ltog[row - 1];
-        v[1] = - hydhx*(dw - gw);
-        col[2] = grow;
-        v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);
-        col[3] = ltog[row + 1];
-        v[3] = - hydhx*(de + ge);
-        ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        v[0] = - hxdhy*(ds - gs);                            col[0].j = j-1;       col[0].i = i; 
+        v[1] = - hydhx*(dw - gw);                            col[1].j = j;         col[1].i = i-1; 
+        v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  col[2].j = row.j = j; col[2].i = row.i = i;
+        v[3] = - hydhx*(de + ge);                            col[3].j = j;         col[3].i = i+1; 
+        ierr = MatSetValuesStencil(jac,1,&row,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
  
       }
     }
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
 
