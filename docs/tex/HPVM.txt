@@ -4,14 +4,15 @@
     There seems to be a little confusion regarding the C-Fortran 
 interface with HPVM, so I suggest we reset our registers and try again.
 
+  * we do not have access to the HPVM source code so cannot recompile
+    HPVM to suit our needs.
+
   * the default calling convention for Microsoft C is cdecl
 
   * the default calling convention for Digitial Fortran is stdcall
 
   * these are incompatible with each other
 
-  * we do not have access to the HPVM source code so cannot recompile
-    HPVM to suit our needs.
 
   There are two approaches to fix this 
 
