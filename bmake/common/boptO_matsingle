@@ -1,12 +1,9 @@
-# $Id: common_O_matsingle,v 1.2 1999/02/08 22:22:33 bsmith Exp balay $ 
+# $Id: common_O_matsingle,v 1.3 1999/08/03 18:42:06 balay Exp balay $ 
 
 CC         = ${C_CC}
 FC         = ${C_FC}
-CLINKER    = ${C_CLINKER}
-FLINKER    = ${C_FLINKER}
-
-CC_SLFLAG  = ${C_CC_SLFLAG}
-CC_SLFLAG  = ${C_FC_SLFLAG}
+CLINKER    = ${C_CLINKER} ${C_CC_SLFLAG}${LDIR}:${DYLIBPATH}
+FLINKER    = ${C_FLINKER} ${C_FC_SLFLAG}${LDIR}:${DYLIBPATH}
 SYS_LIB    = ${C_SYS_LIB}
 
 PETSCFLAGS = ${O_PETSCFLAGS}  -DUSE_MAT_SINGLE
