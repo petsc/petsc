@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.14 2000/07/20 16:55:51 balay Exp hzhang $*/
+/*$Id: ex74.c,v 1.15 2000/07/21 14:30:00 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   Mat     A;           /* linear system matrix */ 
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
-  int     n,bs=1,nz=3,prob=2;
+  int     n,bs=1,nz=3,prob=1;
   Scalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;
   int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   IS      ip, isrow, iscol;
@@ -69,7 +69,6 @@ int main(int argc,char **args)
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 = (int) (sqrt((double)n) + 0.001); 
       if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,0,"sqrt(n) must be a positive interger!"); 
-      printf("n1 = %d\n",n1);
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           I = j + n1*i;
@@ -298,6 +297,7 @@ int main(int argc,char **args)
     for (lf=-1; lf<10; lf++){   
       if (lf==-1) {  /* LU */
         ierr = MatLUFactorSymbolic(sA,ip,ip,PETSC_NULL,&sC);CHKERRA(ierr);
+        norm1 = tol;
       } else {       /* ILU */
         info.levels        = lf;
         info.fill          = 2.0;
@@ -313,8 +313,11 @@ int main(int argc,char **args)
       
       /* Check the error */
       ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
-      ierr = VecNorm(y,NORM_2,&norm1);CHKERRA(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, Norm of error=%g\n",lf,norm1);CHKERRA(ierr);
+      ierr = VecNorm(y,NORM_2,&norm2);CHKERRA(ierr);
+      if (norm1 < norm2 && lf){
+        ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, %d, Norm of error=%g, %g\n",lf-1,lf,norm1,norm2);CHKERRA(ierr); 
+      }
+      norm1 = norm2;
     } 
   }
   
