@@ -618,7 +618,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
       } 
       if (nonew == 1) goto noinsert2;
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-      MatSeqXAIJReallocateAIJ(a,bs2,nrow,row,rmax,aa,ai,aj,a->mbs,rp,ap,imax);
+      MatSeqXAIJReallocateAIJ(a,bs2,nrow,row,col,rmax,aa,ai,aj,a->mbs,rp,ap,imax,nonew);
       N = nrow++ - 1; 
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
@@ -828,7 +828,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         
         if (nonew == 1) goto noinsert1;
         if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col);
-        MatSeqXAIJReallocateAIJ(a,bs2,nrow,brow,rmax,aa,ai,aj,a->mbs,rp,ap,imax);
+        MatSeqXAIJReallocateAIJ(a,bs2,nrow,brow,bcol,rmax,aa,ai,aj,a->mbs,rp,ap,imax,nonew);
         
         N = nrow++ - 1;     
         /* shift up all the later entries in this row */
