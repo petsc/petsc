@@ -2,7 +2,6 @@
 <html>
 
 <head>
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
 <title>PETSc: Docs:&nbsp;&nbsp; FAQ</title>
 </head>
 
@@ -58,9 +57,8 @@
         PETSc's efficiency?</a></li>
       <li><a href="faq.html#work-efficiently">How do such a small group of people manage to write
         and maintain such a large and marvelous package as PETSc?</a></li>
-      <li><a href="faq.html#old-domain-dir">What happened to the very cool &quot;domain&quot;
-        directory that was in previous versions of PETSc and allowed me to easily set up and solve
-        elliptic PDEs on all kinds of grids? I can't find it in PETSc.</a></li>
+      <li><a href="#mg-log">How do I know the amount of time spent on each level of the solver in multigrid (PCType of PCMG)
+        -pc_type mg.</a></li>
       <li><a href="#mpi-vec-to-seq-vec">How do I collect all the values from a parallel PETSc
         vector into a sequential vector on each processor?</a></li>
       <li><a href="#mpi-vec-to-mpi-vec">How do I collect all the values from a parallel PETSc
@@ -104,6 +102,7 @@
     </menu>
     <h4><a href="faq.html#Debugging">Debugging</a></h4>
     <menu>
+      <li><a href="faq.html#debug-ibmfortran">How do I turn off PETSc signal handling so I can use the -C option on xlF?</a></li>
       <li><a href="faq.html#debug-cray">How do I debug on the Cray T3D/T3E?</a></li>
       <li><a href="faq.html#start_in_debugger-doesnotwork">How do I debug if -start_in_debugger
         does not work on my machine?</a></li>
@@ -191,12 +190,11 @@
     routine for each format).</p>
     <p>i) We try to provide the functionality requested by our users.</p>
     <p>j) We never sleep. </p>
-    <p><strong><a name="old-domain-dir"><font color="#FF0000">What happened to the very cool
-    &quot;domain&quot; directory that was in previous versions of PETSc and allowed me to
-    easily set up and solve elliptic PDEs on all kinds of grids?</font> <font color="#FF0000">I
-    can't find it in PETSc</font>.</a></strong></p>
-    <p>That code was all written only for sequential machines. We hope to redo it for parallel
-    machines using PETSc someday. Domain is no longer available or supported.</p>
+
+    <p><strong><a name="mg-log"><font color="#FF0000">How do I know the amount of time spent on each
+    level of the multigrid solver/preconditioner?</font></a></strong></p>
+    <p>Run with -log_summary and -pc_mg_log</p>
+
     <p><strong><a name="mpi-vec-to-seq-vec"><font color="#FF0000">How do I collect all the
     values from a parallel PETSc vector into a sequential vector on each processor?</font></a></strong></p>
     <p>
@@ -403,7 +401,16 @@ Note that this simply concatenates in the
     identical mathematical formulations. If you set a tighter linear solver tolerance (using
     -ksp_rtol), the differences will decrease.</p>
     <hr>
+
     <h3><a name="Debugging">Debugging</a></h3>
+
+    <p><a name="debug-ibm"><font color="#FF0000"><strong>How do I turn off PETSc signal handling so I can use the -C option on xlF?</strong>
+    </font></a></p>
+    <p>Immediately after calling PetscInitialize() call PetscPopSignalHandler()</p>
+    <p>Some Fortran compilers including the IBM xlf, xlF etc compilers have a compile option (-C for IBM's) that causes 
+       all array access in Fortran to be checked that they are in-bounds. This is a great feature but does require that
+       the array dimensions be set explicitly, not with a *.</p>
+
     <p><a name="debug-cray"><font color="#FF0000"><strong>How do I debug on the Cray T3D/T3E?</strong>
     </font></a></p>
     <p>Use TotalView. First, link your program with the additional option -Xn where n is the
