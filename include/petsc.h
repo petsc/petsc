@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.265 2000/01/22 22:57:18 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.266 2000/03/24 17:40:46 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -157,8 +157,9 @@ extern MPI_Op PetscSum_Op;
   increase the field sizes in petsc/src/sys/src/plog/plog.c
 */
 #define PETSC_COOKIE                    1211211
+#define PETSC_MAX_COOKIES               60
 #define LARGEST_PETSC_COOKIE_PREDEFINED PETSC_COOKIE + 30
-#define LARGEST_PETSC_COOKIE_ALLOWED    PETSC_COOKIE + 50
+#define LARGEST_PETSC_COOKIE_ALLOWED    PETSC_COOKIE + PETSC_MAX_COOKIES
 extern int LARGEST_PETSC_COOKIE;
 
 typedef struct _p_PetscObject* PetscObject;

@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.229 2000/02/24 04:52:47 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.230 2000/03/24 17:38:43 balay Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -427,8 +427,7 @@ static Objects     *objects = 0;
 
 static int         nobjects = 0,nevents = 0,objectsspace = CHUNCK;
 static int         ObjectsDestroyed = 0,eventsspace = CHUNCK;
-/* make sure the 50 below is larger then any cookie - PETSC_COOKIE */
-static PLogDouble  ObjectsType[10][50][4];
+static PLogDouble  ObjectsType[10][PETSC_MAX_COOKIES][4];
 
 static int         EventsStage = 0;    /* which log sessions are we using */
 static int         EventsStageMax = 0; /* highest event log used */ 
@@ -1667,7 +1666,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
         ierr = PetscFPrintf(comm,fd,"\n--- Event Stage %d:\n\n",j);CHKERRQ(ierr);
       }
     }
-    for (i=0; i<50; i++) {
+    for (i=0; i<PETSC_MAX_COOKIES; i++) {
       if (ObjectsType[j][i][0]) {
         ierr = PetscFPrintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int)
             ObjectsType[j][i][0],(int)ObjectsType[j][i][1],(int)ObjectsType[j][i][2],
