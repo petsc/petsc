@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.19 1997/10/17 03:48:10 curfman Exp curfman $";
+static char vcid[] = "$Id: mfj.c,v 1.20 1997/10/19 21:33:42 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -36,10 +36,9 @@ typedef struct {
 
 #undef __FUNC__
 #define __FUNC__ "UserMatrixFreeDestroy"
-int UserMatrixFreeDestroy(PetscObject obj)
+int UserMatrixFreeDestroy(Mat mat)
 {
   int                ierr;
-  Mat                mat = (Mat) obj;
   MFCtxEuler_Private *ctx;
 
   ierr = MatShellGetContext(mat,(void **)&ctx);
