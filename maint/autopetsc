@@ -95,7 +95,7 @@ set active_petsc_team_time(Lois)   "Unknown"
                                    send "mu $swho Welcome to PETSc Plaza\r"
                  } "* blinks\r\n" { 
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
-                                   send "mu $who Welcome back\r"
+                                   send "mu $swho Welcome back\r"
                                    set active_petsc_team_member($swho) "Active"
                                    set active_petsc_team_time($swho) [exec date]
                  } "* idles\r\n" { 
