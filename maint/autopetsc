@@ -1,11 +1,12 @@
 #!/usr/local/bin/expect -f
-# $Id: autopetsc,v 1.23 1997/09/10 19:38:58 balay Exp bsmith $ 
+# $Id: autopetsc,v 1.24 1997/09/25 17:51:45 bsmith Exp balay $ 
 
 #
 #  Simple PETSc MUD demon
 #
 proc mud_biff {swho gety} {
-  puts $gety
+  puts stdout $gety
+  flush stdout
   if {[string compare $gety "Barry"] == 0 || [string compare $gety "barry"] == 0} {
     catch { exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "eagle.mcs.anl.gov:0.0" & }
   }
@@ -47,7 +48,8 @@ set active_petsc_team_time(Lois)   "Unknown"
      set timeout 90
      send "@connect Petsc paxyjej \r"
      expect "* reading it.\r\n"
-     puts "PETSc successfully connected"
+     puts stdout "PETSc successfully connected"
+     flush stdout
 
      set timeout 60
 #
@@ -55,7 +57,8 @@ set active_petsc_team_time(Lois)   "Unknown"
 #        eventually for each pattern we can call large sophisticated functions.
 #
     while (1) {
-#       puts "Waiting for text string"
+#      puts stdout "Waiting for text string"
+#      flush stdout
        expect { 
                    "* pages you.*\r\n" { 
                                    scan $expect_out(buffer) "%s pages," swho  
@@ -122,7 +125,8 @@ set active_petsc_team_time(Lois)   "Unknown"
                                    scan $expect_out(buffer) "%s peers at you suspiciously.\r\n" swho
                                    send "peer $swho\r"
                  } "*\r\n" { 
-#                                   puts "Irrelevant message"
+#                                   puts stdout "Irrelevant message"
+                                    flush stdout
                  }
        }
 #
