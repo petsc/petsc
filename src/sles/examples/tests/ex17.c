@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.8 1996/07/08 22:20:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex17.c,v 1.9 1996/07/25 23:24:22 balay Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -160,7 +160,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
   else if (type == HELMHOLTZ_2) {
     /* Problem domain: unit square: (0,1) x (0,1)
        Solve Helmholtz equation:
-          -delta u - sigma1*u + i*sigma2*u = f, 
+          -delta u - sigma1*u = f, 
            where delta = Laplace operator
        Dirichlet b.c.'s on 3 sides
        du/dn = i*alpha*u on (1,y), 0<y<1
