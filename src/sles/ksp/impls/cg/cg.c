@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.41 1996/03/23 18:33:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.42 1996/03/26 04:45:47 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -18,7 +18,8 @@ static char vcid[] = "$Id: cg.c,v 1.41 1996/03/23 18:33:00 bsmith Exp bsmith $";
 */
 #include <stdio.h>
 #include <math.h>
-#include "cgctx.h"
+#include "cgctx.h"       /*I "ksp.h" I*/
+extern int KSPComputeExtremeEigenvalues_CG(KSP,Scalar *,Scalar *);
 
 int KSPSetUp_CG(KSP ksp)
 {
@@ -33,15 +34,16 @@ int KSPSetUp_CG(KSP ksp)
   if ((ierr = KSPCheckDef(ksp))) return ierr;
 
   /* get work vectors from user code */
-  if ((ierr = KSPiDefaultGetWork( ksp, 3 ))) return ierr;
+  if ((ierr = KSPDefaultGetWork( ksp, 3 ))) return ierr;
 
   if (ksp->calc_eigs) {
     /* get space to store tridiagonal matrix for Lanczo */
     cgP->e = (Scalar *) PetscMalloc(4*(maxit+1)*sizeof(Scalar)); CHKPTRQ(cgP->e);
     PLogObjectMemory(ksp,4*(maxit+1)*sizeof(Scalar));
-    cgP->d  = cgP->e + maxit + 1; 
-    cgP->ee = cgP->d + maxit + 1;
-    cgP->dd = cgP->ee + maxit + 1;
+    cgP->d                         = cgP->e + maxit + 1; 
+    cgP->ee                        = cgP->d + maxit + 1;
+    cgP->dd                        = cgP->ee + maxit + 1;
+    ksp->computeextremeeigenvalues = KSPComputeExtremeEigenvalues_CG;
   }
   return 0;
 }
@@ -131,13 +133,13 @@ int  KSPSolve_CG(KSP ksp,int *its)
        ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
      if (history && hist_len > i + 1) history[i+1] = dp;
+     ksp->its = i+1;
      KSPMonitor(ksp,i+1,dp);
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
      if (cerr) break;
-     if (!pres) 
-      {ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);} /*     z <- Br         */
+     if (!pres) {ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);} /* z <- Br  */
   }
-  if (i == maxit) i--;
+  if (i == maxit) {i--; ksp->its--;}
   if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
   if (cerr <= 0) *its = -(i+1);
   else           *its = i+1;
@@ -154,7 +156,7 @@ int KSPDestroy_CG(PetscObject obj)
     PetscFree(cg->e);
   }
 
-  KSPiDefaultFreeWork( ksp );
+  KSPDefaultFreeWork( ksp );
   
   /* free the context variables */
   PetscFree(cg); 
@@ -231,7 +233,7 @@ int KSPCreate_CG(KSP ksp)
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_CG;
   ksp->solver               = KSPSolve_CG;
-  ksp->adjustwork           = KSPiDefaultAdjustWork;
+  ksp->adjustwork           = KSPDefaultAdjustWork;
   ksp->destroy              = KSPDestroy_CG;
   ksp->view                 = KSPView_CG;
   ksp->converged            = KSPDefaultConverged;
