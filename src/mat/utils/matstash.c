@@ -1,7 +1,7 @@
 #include "vec/vecimpl.h"
 #include "matimpl.h"
 
-#define CHUNCKSIZE   100
+#define CHUNCKSIZE   5000
 /*
    This stash is currently used for all the parallel matrix implementations.
    The stash is where elements of a matrix destined to be stored on other 
@@ -39,6 +39,15 @@ int StashDestroy_Private(Stash *stash)
   return 0;
 }
 
+int StashInfo_Private(Stash *stash)
+{
+  PLogInfo(0,"Stash size %d\n",stash->n);
+  return 0;
+}
+
+/* 
+    Should do this properly. With a sorted array.
+*/
 int StashValues_Private(Stash *stash,int row,int n, int *idxn,
                         Scalar *values,InsertMode addv)
 {
@@ -78,5 +87,6 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,
   }
   return 0;
 }
+
 
 
