@@ -346,6 +346,17 @@ struct _p_MatNullSpace {
   Vec         vec;      /* for out of place removals */
 };
 
+/* 
+   Checking zero pivot for LU, ILU preconditioners.
+*/
+typedef struct {
+  PetscInt       nshift,nshift_max;
+  PetscReal      shift_amount,shift_lo,shift_hi,shift_top;
+  PetscTruth     lushift;
+  PetscReal      rs;  /* active row sum of abs(offdiagonals) */
+  PetscScalar    pv;  /* pivot of the active row */
+} LUShift_Ctx;
+EXTERN PetscErrorCode Mat_LUFactorCheckShift(MatFactorInfo*,LUShift_Ctx*,PetscInt*);
 #endif
 
 

@@ -420,7 +420,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
 /* ----------------------------------------------------------- */
 EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 
-#include "src/ksp/pc/impls/factor/factor.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
@@ -429,14 +428,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
-  PetscInt       *r,*ic,i,j,n=A->m,*ai=b->i,*aj=b->j;
-  PetscInt       *ajtmpold,*ajtmp,nz,row,*ics;
+  PetscInt       *r,*ic,i,j,n=A->m,*bi=b->i,*bj=b->j;
+  PetscInt       *ajtmp,*bjtmp,nz,row,*ics;
   PetscInt       *diag_offset = b->diag,diag,*pj;
   PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
   PetscReal      zeropivot,rs,d,shift_nonzero;
   PetscReal      row_shift,shift_top=0.;
   PetscTruth     shift_pd;
-  Shift_Ctx      sctx;
+  LUShift_Ctx    sctx;
   PetscInt       newshift;
 
   PetscFunctionBegin;
@@ -483,20 +482,20 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   do {
     sctx.lushift = PETSC_FALSE;
     for (i=0; i<n; i++){
-      nz    = ai[i+1] - ai[i];
-      ajtmp = aj + ai[i];
-      for  (j=0; j<nz; j++) rtmps[ajtmp[j]] = 0.0;
+      nz    = bi[i+1] - bi[i];
+      bjtmp = bj + bi[i];
+      for  (j=0; j<nz; j++) rtmps[bjtmp[j]] = 0.0;
 
       /* load in initial (unfactored row) */
-      nz       = a->i[r[i]+1] - a->i[r[i]];
-      ajtmpold = a->j + a->i[r[i]];
-      v        = a->a + a->i[r[i]];
+      nz    = a->i[r[i]+1] - a->i[r[i]];
+      ajtmp = a->j + a->i[r[i]];
+      v     = a->a + a->i[r[i]];
       for (j=0; j<nz; j++) {
-        rtmp[ics[ajtmpold[j]]] = v[j];
+        rtmp[ics[ajtmp[j]]] = v[j];
       }
       rtmp[ics[r[i]]] += sctx.shift_amount; /* shift the diagonal of the matrix */
 
-      row = *ajtmp++;
+      row = *bjtmp++;
       while  (row < i) {
         pc = rtmp + row;
         if (*pc != 0.0) {
@@ -504,30 +503,30 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
           pj         = b->j + diag_offset[row] + 1;
           multiplier = *pc / *pv++;
           *pc        = multiplier;
-          nz         = ai[row+1] - diag_offset[row] - 1;
+          nz         = bi[row+1] - diag_offset[row] - 1;
           for (j=0; j<nz; j++) rtmps[pj[j]] -= multiplier * pv[j];
           PetscLogFlops(2*nz);
         }
-        row = *ajtmp++;
+        row = *bjtmp++;
       }
       /* finished row so stick it into b->a */
-      pv   = b->a + ai[i] ;
-      pj   = b->j + ai[i] ;
-      nz   = ai[i+1] - ai[i];
-      diag = diag_offset[i] - ai[i];
-      /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
+      pv   = b->a + bi[i] ;
+      pj   = b->j + bi[i] ;
+      nz   = bi[i+1] - bi[i];
+      diag = diag_offset[i] - bi[i];
       rs   = 0.0;
       for (j=0; j<nz; j++) {
         pv[j] = rtmps[pj[j]];
         if (j != diag) rs += PetscAbsScalar(pv[j]);
       }
 
+      /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[diag];
       newshift = 0;
-      ierr = PCLUFactorCheckShift(A,info,B,&sctx,&newshift);CHKERRQ(ierr); 
+      ierr = Mat_LUFactorCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
       if (newshift == 1){
-        break;    
+        break;    /* sctx.shift_amount is updated */
       } else if (newshift == -1){
         SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",i,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
       }

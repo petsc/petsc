@@ -1218,29 +1218,33 @@ PetscErrorCode MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
   Mat            a=baij->A, b=baij->B;
   PetscErrorCode ierr;
   PetscInt       nv,m,n;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
-  if (ll != rr) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, left and right scaling vectors must be same\n");
+  if (ll != rr){
+    ierr = VecEqual(ll,rr,&flg);CHKERRQ(ierr);
+    if (!flg) 
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, left and right scaling vectors must be same\n");
   }
+  if (!ll) PetscFunctionReturn(0);
+
   ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_ERR_ARG_SIZ,"For symmetric format, local size %d %d must be same",m,n);
-  if (rr) {
-    ierr = VecGetLocalSize(rr,&nv);CHKERRQ(ierr);
-    if (nv!=n) SETERRQ(PETSC_ERR_ARG_SIZ,"Left and right vector non-conforming local size");
+  
+  ierr = VecGetLocalSize(rr,&nv);CHKERRQ(ierr);
+  if (nv!=n) SETERRQ(PETSC_ERR_ARG_SIZ,"Left and right vector non-conforming local size");
 
-    ierr = VecScatterBegin(rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
    
-    /* left diagonalscale the off-diagonal part */
-    ierr = (*b->ops->diagonalscale)(b,ll,PETSC_NULL);CHKERRQ(ierr);
+  /* left diagonalscale the off-diagonal part */
+  ierr = (*b->ops->diagonalscale)(b,ll,PETSC_NULL);CHKERRQ(ierr);
     
-    /* scale the diagonal part */
-    ierr = (*a->ops->diagonalscale)(a,ll,rr);CHKERRQ(ierr);
+  /* scale the diagonal part */
+  ierr = (*a->ops->diagonalscale)(a,ll,rr);CHKERRQ(ierr);
 
-    /* right diagonalscale the off-diagonal part */
-    ierr = VecScatterEnd(rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
-    ierr = (*b->ops->diagonalscale)(b,PETSC_NULL,baij->lvec);CHKERRQ(ierr);
-  } 
+  /* right diagonalscale the off-diagonal part */
+  ierr = VecScatterEnd(rr,baij->lvec,INSERT_VALUES,SCATTER_FORWARD,baij->Mvctx);CHKERRQ(ierr);
+  ierr = (*b->ops->diagonalscale)(b,PETSC_NULL,baij->lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

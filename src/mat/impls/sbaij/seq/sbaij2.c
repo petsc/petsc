@@ -15,13 +15,11 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   PetscBT        table,table0; 
 
   PetscFunctionBegin;
+  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
   mbs = a->mbs;
   ai  = a->i;
   aj  = a->j;
   bs  = A->bs;
-
-  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
-
   ierr = PetscBTCreate(mbs,table);CHKERRQ(ierr);
   ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscMalloc((A->m+1)*sizeof(PetscInt),&nidx2);CHKERRQ(ierr);
@@ -106,7 +104,6 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt
   PetscTruth     flag;
 
   PetscFunctionBegin;
- 
   if (isrow != iscol) SETERRQ(PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
   ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
   if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
@@ -287,7 +284,6 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;  
 
-
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -335,14 +331,13 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;  
 
-
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
    
-  v     = a->a;
-  xb = x;
+  v    = a->a;
+  xb   = x;
 
   for (i=0; i<mbs; i++) {
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
@@ -993,7 +988,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
     ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
@@ -1064,7 +1058,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
     ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
@@ -1138,7 +1131,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    /* ierr = VecCopy(yy,zz);CHKERRQ(ierr); */
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr); z_ptr=z;
     ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
   } else {
@@ -1179,7 +1171,6 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
       Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
       for (j=0; j<n; j++) {
         zb = z_ptr + bs*(*idx++); 
-        /* idx++; */
         for (k=0; k<bs; k++) zb[k] += workt[k] ;
         workt += bs;
       }
@@ -1343,7 +1334,6 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
   }  
   /* if a->a are the same */
   ierr = PetscMemcmp(a->a,b->a,(a->nz)*(A->bs)*(A->bs)*sizeof(PetscScalar),flg);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -1397,8 +1387,15 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   MatScalar      *aa,*v;
   PetscErrorCode ierr;
   PetscInt       i,j,k,lm,M,m,*ai,*aj,mbs,tmp,bs,bs2;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
+  if (ll != rr){
+    ierr = VecEqual(ll,rr,&flg);CHKERRQ(ierr);
+    if (!flg) 
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, left and right scaling vectors must be same\n");
+  }
+  if (!ll) PetscFunctionReturn(0);
   ai  = a->i;
   aj  = a->j;
   aa  = a->a;
@@ -1407,28 +1404,23 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   mbs = a->mbs;
   bs2 = a->bs2;
 
-  if (ll != rr) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, left and right scaling vectors must be same\n");
+  ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(ll,&lm);CHKERRQ(ierr);
+  if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
+  for (i=0; i<mbs; i++) { /* for each block row */
+    M  = ai[i+1] - ai[i];
+    li = l + i*bs;      
+    v  = aa + bs2*ai[i];
+    for (j=0; j<M; j++) { /* for each block */
+      ri = l + bs*aj[ai[i]+j];
+      for (k=0; k<bs; k++) { 
+        x = ri[k];          
+        for (tmp=0; tmp<bs; tmp++) (*v++) *= li[tmp]*x;
+      } 
+    }  
   }
-  if (ll) { 
-    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ll,&lm);CHKERRQ(ierr);
-    if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
-    for (i=0; i<mbs; i++) { /* for each block row */
-      M  = ai[i+1] - ai[i];
-      li = l + i*bs;      
-      v  = aa + bs2*ai[i];
-      for (j=0; j<M; j++) { /* for each block */
-        ri = l + bs*aj[ai[i]+j];
-        for (k=0; k<bs; k++) { 
-          x = ri[k];          
-          for (tmp=0; tmp<bs; tmp++) (*v++) *= li[tmp]*x;
-        } 
-      }  
-    }
-    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
-    PetscLogFlops(2*a->nz);
-  }
+  ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+  PetscLogFlops(2*a->nz);
   PetscFunctionReturn(0);
 }
 

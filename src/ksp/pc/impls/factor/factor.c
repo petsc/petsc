@@ -1,6 +1,5 @@
 
 #include "src/ksp/pc/pcimpl.h"                /*I "petscpc.h" I*/
-#include "src/ksp/pc/impls/factor/factor.h"
 
 /*  Options Database Keys: ???
 .  -pc_ilu_damping - add damping to diagonal to prevent zero (or very small) pivots
@@ -101,49 +100,3 @@ PetscErrorCode PCFactorSetShiftPd(PetscTruth shifting,MatFactorInfo *info)
   info->shiftpd = shifting;
   PetscFunctionReturn(0);
 }
-
-/* shift the diagonals when zero pivot is detected */
-#undef __FUNCT__  
-#define __FUNCT__ "PCLUFactorCheckShift"
-PetscErrorCode PCLUFactorCheckShift(Mat A,MatFactorInfo *info,Mat *B,Shift_Ctx *sctx,PetscInt *newshift)
-{
-  PetscReal      rs;
-  PetscScalar    pv;
-
-  PetscFunctionBegin;
-  rs = sctx->rs;
-  pv = sctx->pv;
-  /* printf(" CheckShift: rs: %g\n",rs); */
-  
-  if (PetscAbsScalar(pv) <= info->zeropivot*rs && info->shiftnz){
-    /* force |diag(*B)| > zeropivot*rs */
-    if (!sctx->nshift){
-      sctx->shift_amount = info->shiftnz;
-    } else {
-      sctx->shift_amount *= 2.0;
-    }
-    sctx->lushift = 1;
-    (sctx->nshift)++;
-    *newshift = PETSC_TRUE;
-  } else if (PetscRealPart(pv) <= info->zeropivot*rs && info->shiftpd){ 
-    /* force *B to be diagonally dominant */
-    if (sctx->nshift > sctx->nshift_max) {
-      SETERRQ(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner");
-    } else if (sctx->nshift == sctx->nshift_max) {
-      info->shift_fraction = sctx->shift_hi;
-      sctx->lushift        = PETSC_FALSE;
-    } else {
-      sctx->shift_lo = info->shift_fraction; 
-      info->shift_fraction = (sctx->shift_hi+sctx->shift_lo)/2.;
-      sctx->lushift  = PETSC_TRUE;
-    }
-    sctx->shift_amount = info->shift_fraction * sctx->shift_top;
-    sctx->nshift++; 
-    *newshift = PETSC_TRUE;
-  } else if (PetscAbsScalar(pv) <= info->zeropivot*rs){
-    *newshift = -1;
-  }
-  PetscFunctionReturn(0);
-}
-
-
