@@ -334,7 +334,7 @@ $       call PetscInitialize(file,ierr)
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetescGetArgs()
 
 @*/
-int PetscInitialize(int *argc,char ***args,char file[],const char help[])
+int PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   int        ierr,flag,dummy_tag,size;
   PetscTruth flg;

@@ -376,7 +376,7 @@ EXTERN int PetscSleep(int);
 /*
     Initialization of PETSc
 */
-EXTERN int  PetscInitialize(int*,char***,char[],const char[]);
+EXTERN int  PetscInitialize(int*,char***,const char[],const char[]);
 EXTERN int  PetscInitializeNoArguments(void);
 EXTERN int  PetscFinalize(void);
 EXTERN int  PetscInitializeFortran(void);

@@ -23,14 +23,14 @@ typedef struct {
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES         snes;                 /* SNES context */
-  SNESType     type = SNESLS;        /* default nonlinear solution method */
-  Vec          x,r,F,U,work;         /* vectors */
-  Mat          J,B;                  /* Jacobian matrix-free, explicit preconditioner */
-  MonitorCtx   monP;                 /* monitoring context */
-  AppCtx       user;                 /* user-defined work context */
-  PetscScalar  h,xp = 0.0,v;
-  int          ierr,its,n = 5,i;
+  SNES           snes;                 /* SNES context */
+  const SNESType type = SNESLS;        /* default nonlinear solution method */
+  Vec            x,r,F,U,work;         /* vectors */
+  Mat            J,B;                  /* Jacobian matrix-free, explicit preconditioner */
+  MonitorCtx     monP;                 /* monitoring context */
+  AppCtx         user;                 /* user-defined work context */
+  PetscScalar    h,xp = 0.0,v;
+  int            ierr,its,n = 5,i;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

@@ -87,34 +87,34 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES     snes;                 /* SNES context */
-  SNESType type = SNESLS;        /* default nonlinear solution method */
-  Vec      x,r;                  /* solution, residual vectors */
-  Mat      Jac;                  /* Jacobian matrix */
-  AppCtx   user;                 /* user-defined application context */
-  AO       ao;                   /* Application Ordering object */
-  IS       isglobal,islocal;     /* global and local index sets */
-  int	   rank,size;            /* rank of a process, number of processors */
-  int      rstart;               /* starting index of PETSc ordering for a processor */
-  int      nfails;               /* number of unsuccessful Newton steps */
-  int      bs = 1;               /* block size for multicomponent systems */
-  int      nvertices;            /* number of local plus ghost nodes of a processor */
-  int 	   *pordering;           /* PETSc ordering */
-  int      *vertices;            /* list of all vertices (incl. ghost ones) 
+  SNES           snes;                 /* SNES context */
+  const SNESType type = SNESLS;        /* default nonlinear solution method */
+  Vec            x,r;                  /* solution, residual vectors */
+  Mat            Jac;                  /* Jacobian matrix */
+  AppCtx         user;                 /* user-defined application context */
+  AO             ao;                   /* Application Ordering object */
+  IS             isglobal,islocal;     /* global and local index sets */
+  int	         rank,size;            /* rank of a process, number of processors */
+  int            rstart;               /* starting index of PETSc ordering for a processor */
+  int            nfails;               /* number of unsuccessful Newton steps */
+  int            bs = 1;               /* block size for multicomponent systems */
+  int            nvertices;            /* number of local plus ghost nodes of a processor */
+  int 	         *pordering;           /* PETSc ordering */
+  int            *vertices;            /* list of all vertices (incl. ghost ones) 
                                     on a processor */ 
-  int      *verticesmask,*svertices;
-  int      *tmp;
-  int      i,j,jstart,inode,nb,nbrs,Nvneighborstotal = 0;
-  int      ierr,its,N;
-  PetscScalar   *xx;
-  char     str[256],form[256],part_name[256];
-  FILE     *fptr,*fptr1;
+  int            *verticesmask,*svertices;
+  int            *tmp;
+  int            i,j,jstart,inode,nb,nbrs,Nvneighborstotal = 0;
+  int            ierr,its,N;
+  PetscScalar    *xx;
+  char           str[256],form[256],part_name[256];
+  FILE           *fptr,*fptr1;
   ISLocalToGlobalMapping isl2g;
 #if defined (UNUSED_VARIABLES)
-  PetscDraw    draw;                 /* drawing context */
-  PetscScalar  *ff,*gg;
-  PetscReal  tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
-  int     *tmp1,*tmp2;
+  PetscDraw      draw;                 /* drawing context */
+  PetscScalar    *ff,*gg;
+  PetscReal      tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
+  int            *tmp1,*tmp2;
 #endif
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program

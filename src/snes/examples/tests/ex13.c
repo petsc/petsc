@@ -46,15 +46,15 @@ extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES          snes;                      /* nonlinear solver */
-  SNESType      type = SNESLS;             /* nonlinear solution method */
-  Vec           x,r;                       /* solution, residual vectors */
-  Mat           J;                         /* Jacobian matrix */
-  AppCtx        user;                      /* user-defined work context */
-  int           i,ierr,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
-  PetscTruth    matrix_free;
-  int           size; 
-  PetscReal     bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  SNES           snes;                      /* nonlinear solver */
+  const SNESType type = SNESLS;             /* nonlinear solution method */
+  Vec            x,r;                       /* solution, residual vectors */
+  Mat            J;                         /* Jacobian matrix */
+  AppCtx         user;                      /* user-defined work context */
+  int            i,ierr,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
+  PetscTruth     matrix_free;
+  int            size; 
+  PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 

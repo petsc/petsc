@@ -19,10 +19,14 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP solver; KSP ksp; PC prec; Mat A,M; Vec X,B,D;
-  MPI_Comm comm;
-  PetscScalar v; KSPConvergedReason reason;
-  int i,j,its,ierr;
+  KSP                solver;
+  PC                 prec;
+  Mat                A,M;
+  Vec                X,B,D;
+  MPI_Comm           comm;
+  PetscScalar        v; 
+  KSPConvergedReason reason;
+  int                i,j,its,ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,0); CHKERRQ(ierr);
@@ -68,8 +72,8 @@ int main(int argc,char **argv)
   ierr = KSPCreate(comm,&solver); CHKERRQ(ierr);
   ierr = KSPSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
 
-  ierr = KSPSetType(ksp,KSPCG); CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE); CHKERRQ(ierr);
+  ierr = KSPSetType(solver,KSPCG); CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(solver,PETSC_TRUE); CHKERRQ(ierr);
 
   /*
    * ILU preconditioner;
@@ -80,7 +84,7 @@ int main(int argc,char **argv)
    * command line option, and see that the pivots are all positive and
    * the method converges.
    */
-  ierr = KSPGetPC(ksp,&prec); CHKERRQ(ierr);
+  ierr = KSPGetPC(solver,&prec); CHKERRQ(ierr);
   ierr = PCSetType(prec,PCICC); CHKERRQ(ierr);
   /*  ierr = PCICCSetShift(prec,PETSC_TRUE); CHKERRQ(ierr); */
 
@@ -105,14 +109,14 @@ int main(int argc,char **argv)
    * an indefinite preconditioner
    */
   ierr = KSPSolve(solver); CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(ksp,&reason); CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(solver,&reason); CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
     printf("\nDivergence because of indefinite preconditioner;\n");
     printf("Run the executable again but with -pc_icc_shift option.\n");
   } else if (reason<0) {
     printf("\nOther kind of divergence: this should not happen.\n");
   } else {
-    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(solver,&its);CHKERRQ(ierr);
     printf("\nConvergence in %d iterations.\n",its);
   }
   printf("\n");

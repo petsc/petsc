@@ -158,7 +158,7 @@ int PetscDrawAxisSetColors(PetscDrawAxis axis,int ac,int tc,int cc)
     Level: advanced
 
 @*/
-int PetscDrawAxisSetLabels(PetscDrawAxis axis,char* top,char *xlabel,char *ylabel)
+int PetscDrawAxisSetLabels(PetscDrawAxis axis,const char top[],const char xlabel[],const char ylabel[])
 {
   int ierr;
 

@@ -759,7 +759,7 @@ E*/
 #define MATORDERING_IDENTITY  "identity"
 #define MATORDERING_REVERSE   "reverse"
 
-EXTERN int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
+EXTERN int MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
 EXTERN int MatOrderingRegister(const char[],const char[],const char[],int(*)(Mat,MatOrderingType,IS*,IS*));
 
 /*MC

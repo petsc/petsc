@@ -92,12 +92,12 @@ int main(int argc,char **args)
  */
 int GetElasticityMatrix(int m,Mat *newmat)
 {
-  int        i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
-  int        ict,nz,base,r1,r2,N,*rowkeep,nstart,ierr;
-  IS         iskeep;
-  PetscReal  **K,norm;
-  Mat        mat,submat = 0,*submatb;
-  MatType    type = MATSEQBAIJ;
+  int           i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
+  int           ict,nz,base,r1,r2,N,*rowkeep,nstart,ierr;
+  IS            iskeep;
+  PetscReal     **K,norm;
+  Mat           mat,submat = 0,*submatb;
+  const MatType type = MATSEQBAIJ;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);

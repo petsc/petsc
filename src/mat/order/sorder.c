@@ -176,7 +176,7 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 
 .seealso:   MatOrderingRegisterDynamic(), PCLUSetMatOrdering(), PCILUSetMatOrdering()
 @*/
-int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
+int MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
 {
   int         ierr,mmat,nmat,mis,m;
   int         (*r)(Mat,MatOrderingType,IS*,IS*);

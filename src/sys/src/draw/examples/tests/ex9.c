@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscDrawAxis   axis;
   int             n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,bins = 8;
   int             color = PETSC_DRAW_GREEN;
-  char            *xlabel,*ylabel,*toplabel;
+  const char      *xlabel,*ylabel,*toplabel;
   PetscReal       xd;
   PetscTruth      flg;
 

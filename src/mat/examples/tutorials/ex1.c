@@ -25,13 +25,13 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat               A;                /* matrix */
-  PetscViewer       fd;               /* viewer */
-  char              file[2][128];     /* input file name */
-  IS                isrow,iscol;      /* row and column permutations */
-  int               ierr;
-  MatOrderingType   rtype = MATORDERING_RCM;
-  PetscTruth        flg,PreLoad = PETSC_FALSE;
+  Mat                   A;                /* matrix */
+  PetscViewer           fd;               /* viewer */
+  char                  file[2][128];     /* input file name */
+  IS                    isrow,iscol;      /* row and column permutations */
+  int                   ierr;
+  const MatOrderingType rtype = MATORDERING_RCM;
+  PetscTruth            flg,PreLoad = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
