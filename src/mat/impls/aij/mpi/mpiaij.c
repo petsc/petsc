@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.165 1996/08/22 19:53:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.166 1996/09/14 03:07:58 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1148,6 +1148,24 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   return 0;
 }
 
+int MatDiagonalScale_MPIAIJ(Mat A,Vec ll,Vec rr)
+{
+  Mat a = ((Mat_MPIAIJ *) A->data)->A;
+  Mat b = ((Mat_MPIAIJ *) A->data)->B;
+  int ierr,s1,s2,s3;
+
+  if (ll)  {
+    ierr = VecGetLocalSize(ll,&s1); CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&s2,&s3); CHKERRQ(ierr);
+    if (s1!=s2) SETERRQ(1,"Diagonal scale non-conforming local sizes");
+    ierr = MatDiagonalScale(a,ll,0); CHKERRQ(ierr);
+    ierr = MatDiagonalScale(b,ll,0); CHKERRQ(ierr);
+  }
+  if (rr) SETERRQ(1,"Diagonal Scale only for left vector");
+  return 0;
+}
+
+
 extern int MatPrintHelp_SeqAIJ(Mat);
 static int MatPrintHelp_MPIAIJ(Mat A)
 {
@@ -1178,7 +1196,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatRelax_MPIAIJ,
        MatTranspose_MPIAIJ,
        MatGetInfo_MPIAIJ,0,
-       MatGetDiagonal_MPIAIJ,0,MatNorm_MPIAIJ,
+       MatGetDiagonal_MPIAIJ,MatDiagonalScale_MPIAIJ,MatNorm_MPIAIJ,
        MatAssemblyBegin_MPIAIJ,MatAssemblyEnd_MPIAIJ,
        0,
        MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,
