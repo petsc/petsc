@@ -40,6 +40,8 @@ add to it).
 
     Added OptionsGetLogical()
 
+    Changed ViewerFileOpenASCII() to ViewerASCIIOpen()
+
     Remove the gvec directory from the distribution. If you are using this
  please let us and know and we can provide it or provide alternative code
 to do what you need.
