@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.81 1995/12/12 22:54:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.82 1995/12/21 18:31:30 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -358,7 +358,7 @@ static int MatGetValues_SeqDense(Mat A,int m,int *indexm,int n,int *indexn,Scala
 }
 
 /* -----------------------------------------------------------------*/
-static int MatCopyPrivate_SeqDense(Mat A,Mat *newmat,int cpvalues)
+static int MatConvertSameType_SeqDense(Mat A,Mat *newmat,int cpvalues)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data, *l;
   int          ierr;
@@ -811,7 +811,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatGetSize_SeqDense,MatGetSize_SeqDense,MatGetOwnershipRange_SeqDense,
        0,0,MatGetArray_SeqDense,0,0,
        MatGetSubMatrix_SeqDense,MatGetSubMatrixInPlace_SeqDense,
-       MatCopyPrivate_SeqDense,0,0,0,0,
+       MatConvertSameType_SeqDense,0,0,0,0,
        MatAXPY_SeqDense,0,0,
        MatGetValues_SeqDense};
 

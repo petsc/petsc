@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.16 1995/12/12 22:54:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.17 1995/12/21 18:31:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -730,7 +730,7 @@ static int MatTranspose_MPIDense(Mat A,Mat *matout)
   return 0;
 }
 
-static int MatCopyPrivate_MPIDense(Mat,Mat *,int);
+static int MatConvertSameType_MPIDense(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIDense,
@@ -750,7 +750,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatGetSize_MPIDense,MatGetLocalSize_MPIDense,
        MatGetOwnershipRange_MPIDense,
        0,0,
-       0,0,0,0,0,MatCopyPrivate_MPIDense,
+       0,0,0,0,0,MatConvertSameType_MPIDense,
        0,0,0,0,0,
        0,0,MatGetValues_MPIDense};
 
@@ -856,13 +856,13 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   return 0;
 }
 
-static int MatCopyPrivate_MPIDense(Mat A,Mat *newmat,int cpvalues)
+static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
 {
   Mat          mat;
   Mat_MPIDense *a,*oldmat = (Mat_MPIDense *) A->data;
   int          ierr;
 
-  if (!oldmat->assembled) SETERRQ(1,"MatCopyPrivate_MPIDense:Must assemble matrix");
+  if (!oldmat->assembled) SETERRQ(1,"MatConvertSameType_MPIDense:Must assemble matrix");
   *newmat       = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIDENSE,A->comm);
   PLogObjectCreate(mat);

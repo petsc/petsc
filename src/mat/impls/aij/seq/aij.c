@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.125 1995/12/12 22:49:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.126 1995/12/21 18:31:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1184,7 +1184,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatILUFactorSymbolic_SeqAIJ,0,
        0,0,MatConvert_SeqAIJ,
        MatGetSubMatrix_SeqAIJ,0,
-       MatCopyPrivate_SeqAIJ,0,0,
+       MatConvertSameType_SeqAIJ,0,0,
        MatILUFactor_SeqAIJ,0,0,
        MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ};
@@ -1308,14 +1308,14 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   return 0;
 }
 
-int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
+int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
 {
   Mat        C;
   Mat_SeqAIJ *c,*a = (Mat_SeqAIJ *) A->data;
   int        i,len, m = a->m,shift = a->indexshift;
 
   *B = 0;
-  if (!a->assembled) SETERRQ(1,"MatCopyPrivate_SeqAIJ:Cannot copy unassembled matrix");
+  if (!a->assembled) SETERRQ(1,"MatConvertSameType_SeqAIJ:Cannot copy unassembled matrix");
   PetscHeaderCreate(C,_Mat,MAT_COOKIE,MATSEQAIJ,A->comm);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);

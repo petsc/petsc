@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.76 1995/12/12 22:54:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.77 1995/12/21 18:32:17 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1383,7 +1383,7 @@ static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   return 0;
 }
 
-static int MatCopyPrivate_SeqBDiag(Mat,Mat *,int);
+static int MatConvertSameType_SeqBDiag(Mat,Mat *,int);
 extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,int,Mat*);
 extern int MatLUFactorNumeric_SeqBDiag(Mat,Mat*);
@@ -1412,7 +1412,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag,0,
        0,0,MatConvert_SeqBDiag,
        MatGetSubMatrix_SeqBDiag,0,
-       MatCopyPrivate_SeqBDiag,0,0,
+       MatConvertSameType_SeqBDiag,0,0,
        MatILUFactor_SeqBDiag,0,0,
        0,0,MatGetValues_SeqBDiag};
 
@@ -1529,13 +1529,13 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   return 0;
 }
 
-static int MatCopyPrivate_SeqBDiag(Mat A,Mat *matout,int cpvalues)
+static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
 { 
   Mat_SeqBDiag *newmat, *a = (Mat_SeqBDiag *) A->data;
   int          i, ierr, len;
   Mat          mat;
 
-  if (!a->assembled) SETERRQ(1,"MatCopyPrivate_SeqBDiag:Assemble matrix");
+  if (!a->assembled) SETERRQ(1,"MatConvertSameType_SeqBDiag:Assemble matrix");
 
   ierr = MatCreateSeqBDiag(A->comm,a->m,a->n,a->nd,a->nb,a->diag,PETSC_NULL,matout);
   CHKERRQ(ierr);

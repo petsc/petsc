@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.101 1995/12/12 22:11:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.102 1995/12/21 18:31:45 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1267,7 +1267,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 }
 
 extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
-static int MatCopyPrivate_MPIAIJ(Mat,Mat *,int);
+static int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
@@ -1288,7 +1288,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatLUFactorSymbolic_MPIAIJ,MatLUFactorNumeric_MPIAIJ,0,0,
        MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
        MatILUFactorSymbolic_MPIAIJ,0,
-       0,0,MatConvert_MPIAIJ,0,0,MatCopyPrivate_MPIAIJ,0,0,
+       0,0,MatConvert_MPIAIJ,0,0,MatConvertSameType_MPIAIJ,0,0,
        0,0,0,
        0,0,MatGetValues_MPIAIJ};
 
@@ -1424,13 +1424,13 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   return 0;
 }
 
-static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
+static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
 {
   Mat        mat;
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ *) matin->data;
   int        ierr, len;
 
-  if (!oldmat->assembled) SETERRQ(1,"MatCopyPrivate_MPIAIJ:Must assemble matrix");
+  if (!oldmat->assembled) SETERRQ(1,"MatConvertSameType_MPIAIJ:Must assemble matrix");
   *newmat       = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm);
   PLogObjectCreate(mat);

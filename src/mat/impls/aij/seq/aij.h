@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.19 1995/11/06 21:04:31 balay Exp curfman $ */
+/* $Id: aij.h,v 1.20 1995/12/12 22:54:35 curfman Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -45,7 +45,7 @@ typedef struct {
 
 extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,int,Mat *);
 extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
-extern int MatCopyPrivate_SeqAIJ(Mat, Mat*,int);
+extern int MatConvertSameType_SeqAIJ(Mat, Mat*,int);
 extern int MatMarkDiag_SeqAIJ(Mat);
 
 

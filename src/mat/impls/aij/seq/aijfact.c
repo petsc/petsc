@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.51 1995/12/12 22:54:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.52 1995/12/21 18:31:37 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -458,7 +458,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
 
   /* special case that simply copies fill pattern */
   if (levels == 0 && ISIsIdentity(isrow) && ISIsIdentity(iscol)) {
-    ierr = MatCopyPrivate_SeqAIJ(A,fact,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
+    ierr = MatConvertSameType_SeqAIJ(A,fact,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqAIJ *) (*fact)->data;
     if (!b->diag) {
