@@ -109,7 +109,18 @@ EXTERN int PetscViewerFlush(PetscViewer);
 /*
    Operations explicit to a particular class of viewers
 */
+
+/*E
+  PetscViewerFormat - Access mode for a file.
+
+  Level: beginner
+
+.seealso: PetscViewerASCIISetMode()
+E*/
+typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE} PetscFileMode;
+
 EXTERN int PetscViewerASCIIGetPointer(PetscViewer,FILE**);
+EXTERN int PetscViewerASCIISetMode(PetscViewer,PetscFileMode);
 EXTERN int PetscViewerASCIIPrintf(PetscViewer,const char[],...);
 EXTERN int PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...);
 EXTERN int PetscViewerASCIIPushTab(PetscViewer);

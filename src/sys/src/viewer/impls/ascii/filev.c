@@ -6,6 +6,7 @@
 
 typedef struct {
   FILE          *fd;
+  PetscFileMode mode;           /* The mode in which to open the file */
   int           tab;            /* how many times text is tabbed in from left */
   int           tab_store;      /* store tabs value while tabs are turned off */
   PetscViewer   bviewer;        /* if PetscViewer is a singleton, this points to mother */
@@ -114,6 +115,34 @@ int PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
 
   PetscFunctionBegin;
   *fd = vascii->fd;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerASCIISetMode"
+/*@C
+    ViewerASCIISetMode - Sets the mode in which to open the file.
+
+    Not Collective
+
++   viewer - viewer context, obtained from ViewerASCIIOpen()
+-   mode   - The file mode
+
+    Level: intermediate
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: Viewer, file, get, pointer
+
+.seealso: ViewerASCIIOpen()
+@*/
+int ViewerASCIISetMode(Viewer viewer, FileMode mode)
+{
+  Viewer_ASCII *vascii = (Viewer_ASCII *)viewer->data;
+
+  PetscFunctionBegin;
+  vascii->mode = mode;
   PetscFunctionReturn(0);
 }
 
@@ -480,8 +509,38 @@ int PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
   if (isstderr)      vascii->fd = stderr;
   else if (isstdout) vascii->fd = stdout;
   else {
-    ierr         = PetscFixFilename(name,fname);CHKERRQ(ierr);
-    vascii->fd   = fopen(fname,"w"); 
+    ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
+    switch(vascii->mode) {
+    case FILE_MODE_READ:
+      vascii->fd = fopen(fname,"r");
+      break;
+    case FILE_MODE_WRITE:
+      vascii->fd = fopen(fname,"w");
+      break;
+    case FILE_MODE_APPEND:
+      vascii->fd = fopen(fname,"a");
+      break;
+    case FILE_MODE_UPDATE:
+      vascii->fd = fopen(fname,"r+");
+      if (vascii->fd == PETSC_NULL) {
+        vascii->fd = fopen(fname,"w+");
+      }
+      break;
+    case FILE_MODE_APPEND_UPDATE:
+      /* I really want a file which is opened at the end for updating,
+         not a+, which opens at the beginning, but makes writes at the end.
+      */
+      vascii->fd = fopen(fname,"r+");
+      if (vascii->fd == PETSC_NULL) {
+        vascii->fd = fopen(fname,"w+");
+      } else {
+        ierr     = fseek(vascii->fd, 0, SEEK_END);                                                        CHKERRQ(ierr);
+      }
+      break;
+    default:
+      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid file mode %d", vascii->mode);
+    }
+
     if (!vascii->fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
   }
 #if defined(PETSC_USE_LOG)
@@ -572,6 +631,7 @@ int PetscViewerCreate_ASCII(PetscViewer viewer)
 
   /* defaults to stdout unless set with PetscViewerSetFilename() */
   vascii->fd             = stdout;
+  vascii->mode           = FILE_MODE_WRITE;
   vascii->bviewer        = 0;
   vascii->sviewer        = 0;
   viewer->format         = PETSC_VIEWER_ASCII_DEFAULT;
