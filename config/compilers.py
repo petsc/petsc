@@ -170,7 +170,7 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('F90'):
       self.F90 = self.framework.argDB['F90']
     else:
-      if not self.getExecutables(['f90', 'pgf90', 'ifc'], resultName = 'FC'):
+      if not self.getExecutables(['f90', 'pgf90', 'ifc'], resultName = 'F90'):
         #raise RuntimeError('Could not find a Fortran 90 compiler. Please set with the option --with-f90 or -F90')
         self.F90 = 'f90'
     self.framework.argDB['F90'] = self.F90
