@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.8 1996/03/19 21:29:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: daview.c,v 1.9 1996/04/16 21:57:00 curfman Exp curfman $";
 #endif
  
 /*
@@ -30,20 +30,33 @@ $         X window display
 
    Default Output Format:
 $ (for 3d arrays):
+$
 $   Processor [proc] M  N  P  m  n  p  w  s
+$   X range: xs xe, Y range: ys, ye, Z range: zs, ze
+$
 $   where
 $      M,N,P - global dimension in each direction of the array
 $      m,n,p - corresponding number of procs in each dimension 
-$      w - number of degress of freedom per node
+$      w - number of degrees of freedom per node
 $      s - stencil width
+$      xs, xe - internal local starting/ending grid points
+$               in x-direction, (augmented to handle multiple 
+$               degrees of freedom per node)
+$      ys, ye - local starting/ending grid points in y-direction
+$      zs, ze - local starting/ending grid points in z-direction
 
    Options Database Key:
 $  -da_view : call DAView() at the conclusion of DACreate1d(),
 $             DACreate2d(), and DACreate3d()
 
+   Notes:
+   Use DAGetCorners() and DAGetGhostCorners() to get the starting
+   and ending grid points (ghost points) in each direction.
+
 .keywords: distributed array, view, visualize
 
-.seealso: ViewerFileOpenASCII(), ViewerDrawOpenX(), DAGetInfo()
+.seealso: ViewerFileOpenASCII(), ViewerDrawOpenX(), DAGetInfo(), DAGetCorners(),
+          DAGetGhostCorners()
 @*/
 int DAView(DA da, Viewer v)
 {

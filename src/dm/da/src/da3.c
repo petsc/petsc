@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.34 1996/05/19 15:54:21 curfman Exp balay $";
+static char vcid[] = "$Id: da3.c,v 1.35 1996/05/30 20:54:55 balay Exp curfman $";
 #endif
 
 /*
@@ -34,7 +34,7 @@ int DAView_3d(PetscObject dain,Viewer viewer)
     PetscSequentialPhaseBegin(da->comm,1);
     fprintf(fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
                rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);
-    fprintf(fd,"X range: %d %d, Y: range %d %d, Z range: %d %d\n",
+    fprintf(fd,"X range: %d %d, Y range: %d %d, Z range: %d %d\n",
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
