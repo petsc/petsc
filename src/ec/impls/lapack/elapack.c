@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: elapack.c,v 1.4 1997/07/09 21:37:48 balay Exp bsmith $";
+static char vcid[] = "$Id: elapack.c,v 1.5 1997/08/27 14:58:52 curfman Exp curfman $";
 #endif
 
 /*
@@ -12,8 +12,14 @@ static char vcid[] = "$Id: elapack.c,v 1.4 1997/07/09 21:37:48 balay Exp bsmith 
 #include "src/ec/ecimpl.h"       /*I  "ec.h"  I*/
 #include "pinclude/pviewer.h"
 
+/* 
+   Note:  Both the real and complex numbers versions use r and c as allocated below;
+          the complex version also uses cwork.
+ */
+         
 typedef struct {
-  double *r,*c;
+  double *r,*c;   /* work space */
+  Scalar *cwork;  /* work space for complex version */
 } EC_Lapack;
 
 #undef __FUNC__  
@@ -27,6 +33,11 @@ static int    ECSetUp_Lapack(EC ec)
   ec->n        = n;
   la->r        = (double *) PetscMalloc( 2*n*sizeof(double) );CHKPTRQ(la->r);
   la->c        = la->r + n;
+#if defined(PETSC_COMPLEX)
+  la->cwork    = (Scalar *) PetscMalloc( n*sizeof(Scalar) );CHKPTRQ(la->cwork);
+#else
+  la->cwork    = 0;
+#endif
   ec->realpart = (double *) PetscMalloc( 2*n*sizeof(double) );CHKPTRQ(ec->realpart);
   ec->imagpart = ec->realpart + n;
   return 0;
@@ -39,7 +50,8 @@ static int ECDestroy_Lapack(PetscObject obj)
   EC        ec = (EC) obj;
   EC_Lapack *la = (EC_Lapack*) ec->data;
 
-  if (la->r) PetscFree(la->r);
+  if (la->r)        PetscFree(la->r);
+  if (la->cwork)    PetscFree(la->cwork);
   if (ec->realpart) PetscFree(ec->realpart);
 
   PetscFree(la);
@@ -52,10 +64,10 @@ static int ECDestroy_Lapack(PetscObject obj)
 static int ECSolve_Lapack(EC ec)
 {
   EC_Lapack *la = (EC_Lapack*) ec->data;
-  Mat       A = 0,BA = ec->A;
-  int       m,size, i,ierr, n,row,dummy,nz,*cols,rank;
-  MPI_Comm  comm;
-  Scalar    *vals,*array;
+  Mat        A = 0,BA = ec->A;
+  int        m,size,i,ierr,n,row,dummy,nz,*cols,rank;
+  MPI_Comm   comm;
+  Scalar     *vals,*array;
 
   if (ec->problemtype == EC_GENERALIZED_EIGENVALUE) {
     SETERRQ(PETSC_ERR_SUP,1,"Not coded for generalized eigenvalue problem");
@@ -97,22 +109,54 @@ static int ECSolve_Lapack(EC ec)
       ierr = MatGetArray(A,&array); CHKERRQ(ierr);
     }
   }
-
 #if !defined(PETSC_COMPLEX)
   if (!rank) {
-    Scalar *work,sdummy;
-    double *realpart = ec->realpart,*imagpart = ec->imagpart;
+    Scalar *work, sdummy;
+    double *realpart = ec->realpart, *imagpart = ec->imagpart;
     double *r = la->r, *c = la->c;
-    int    idummy,lwork,*perm;
+    int    idummy, lwork, *perm;
 
     idummy   = n;
     lwork    = 5*n;
     work     = (double *) PetscMalloc( 5*n*sizeof(double) ); CHKPTRQ(work);
     LAgeev_("N","N",&n,array,&n,r,c,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
-    if (ierr) SETERRQ(1,0,"Error in Lapack routine");
+    if (ierr) SETERRQ(1,0,"Error in LAPACK routine");
     PetscFree(work);
     perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
-    for ( i=0; i<n; i++ ) { perm[i] = i;}
+    for ( i=0; i<n; i++ ) {perm[i] = i;}
+    ierr = PetscSortDoubleWithPermutation(n,r,perm); CHKERRQ(ierr);
+    for ( i=0; i<n; i++ ) {
+      realpart[i] = r[perm[i]];
+      imagpart[i] = c[perm[i]];
+    }
+    PetscFree(perm);
+    MPI_Bcast(realpart,2*n,MPI_DOUBLE,0,comm);
+  } else {
+    MPI_Bcast(ec->realpart,2*ec->n,MPI_DOUBLE,0,comm);
+  }
+#else
+  if (!rank) {
+    Scalar *work, sdummy;
+    double *realpart = ec->realpart, *imagpart = ec->imagpart;
+    double *r = la->r, *c = la->c;
+    int    idummy, lwork, *perm;
+
+    idummy   = n;
+    lwork    = 5*n;
+    work     = (Scalar *) PetscMalloc( 5*n*sizeof(Scalar) ); CHKPTRQ(work);
+    LAgeev_("N","N",&n,array,&n,la->cwork,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,r,&ierr);
+    if (ierr) SETERRQ(1,0,"Error in LAPACK routine");
+    printf("optimal work dim = %g\n",work[0]);
+    PetscFree(work);
+
+    /* For now we stick with the convention of storing the real and imaginary
+       components of evalues separately.  But is this what we really want? */
+    perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+    for ( i=0; i<n; i++ ) {
+      r[i] = PetscReal(la->cwork[i]);
+      c[i] = PetscImaginary(la->cwork[i]);
+      perm[i] = i;
+    }
     ierr = PetscSortDoubleWithPermutation(n,r,perm); CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       realpart[i] = r[perm[i]];
@@ -124,8 +168,7 @@ static int ECSolve_Lapack(EC ec)
     MPI_Bcast(ec->realpart,2*ec->n,MPI_DOUBLE,0,comm);
   }
 #endif
-
-  if (A) { ierr = MatDestroy(A); CHKERRQ(ierr);}
+  if (A) {ierr = MatDestroy(A); CHKERRQ(ierr);}
   return 0;
 }
 
