@@ -57,7 +57,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 #if defined(PETSC_USE_BOPT_g)
   /* check that matrix has no diagonal entries */
   {
-    int i,j,rstart;
+    int rstart;
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<mat->m; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
