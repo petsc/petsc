@@ -1,4 +1,9 @@
 
+  July 31, 1995.
+
+ I have sent the following message to all the people I could 
+figure out who had retreive PETSc in the past.
+
   Our records indicate that you have retrieved the 
 PETSc software package from info.mcs.anl.gov sometime 
 in the past or may be interested in it. This note is to 
@@ -64,42 +69,44 @@ barrett@cs.utk.edu
 baum@astra.tamu.edu 
 bdavis@edcserver1.cr.usgs.gov 
 beaupre@draper.com 
-beecher@apollo.gp.com 
+beecher@apollo.gp.com              /* not a valid address */
 behling@ariel.bms.com 
 benton@dept.physics.upenn.edu 
-bernini@crs4.it 
+bernini@crs4.it                    /* not a valid address */
 berryman@cs.yale.edu 
-bildzok@kgnvmt.vnet.ibm.com 
+bildzok@kgnvmt.vnet.ibm.com          /* not a valid address */
 bl90338@decsys.vsb.cz 
 blee@newton.colorado.edu 
-bmw@cis.ufl.edu 
-boguta@abar.hepnet 
+bmw@cis.ufl.edu                    /* not a valid address */
+boguta@abar.hepnet                /* not a valid address */
 bollerma@math.ruu.nl 
-bordawek@bonnie.msc.anl.gov 
+bordawek@bonnie.msc.anl.gov       /* not a valid address */
 bottasso@scorec.rpi.edu 
 bpg@lns561.lns.cornell.edu 
 brett@mop.com 
 ---- sent to people above this line -------
 
 brian@hpcvxbjp.cv.hpc.om 
-broeckho@qtp.ufl.edu 
-brown@eurhep.dec.com 
+broeckho@qtp.ufl.edu               
+brown@eurhep.dec.com             /* not valid */
 bru@svipdag.si.sintef.no 
 bruce@liverpool.ac.uk 
 bsmith@math.ucla.edu 
 btier@anaphase.une.edu.au 
-bubak@uci.agh.edu.pl 
+bubak@uci.agh.edu.pl
+ 
 burns@zeus.usq.edu.au 
-c00mae00@nchc.edu.tw 
-cab@utaphy.phg.utexas.edu 
+c00mae00@nchc.edu.tw    /* not valid */
+cab@utaphy.phg.utexas.edu   /* not valid */
 cai@cs.colorado.edu 
 canfield@mcs.anl.gov 
-carlos@admin.kth.se 
+carlos@admin.kth.se       /* not valid */
 carriero@cs.yale.edu 
 carter@cmf.nrl.navy.mil 
-casale@olympus.crs4.it 
+casale@olympus.crs4.it    /* not valid */
 casarin@widlund.nyu.edu 
-cascade@merle.acns.nwu.edu 
+cascade@merle.acns.nwu.edu   /* not valid */
+ 
 cc0luism@lucano.uco.es 
 ccc@cs.toronto.edu 
 ccp@fred.inel.gov 
@@ -108,9 +115,10 @@ chaney@ms.uky.edu
 changym@cs.yale.edu 
 chase@think.com 
 chasman@chem.columbia.edu 
-chen4@cs.wmich.edu 
-chencq@ccit.arizona.edu 
-chiu@crayamid.cray.com 
+chen4@cs.wmich.edu           /* not valid */
+chencq@ccit.arizona.edu     /* not valid */
+chiu@crayamid.cray.com        /* not valid */
+ 
 chow@cs.umn.edu 
 christos@cs.colorado.edu 
 chuckr@skink.llnl.gov 
@@ -118,29 +126,32 @@ cj@geofys.uu.se
 clauzel@frcpn11.in2p3.fr 
 cliff@liv.ac.uk 
 cm@melach.login.qc.ca 
-cn9gr8av@triton.unm.edu 
+cn9gr8av@triton.unm.edu      /* not valid */
+ 
 colm@odyssey.ucc.ie 
 cosfgrs@rpi.edu 
 cravikir@kiwi.cs.wright.edu 
-crow@rockwell.com 
-cs188387@comp.hkp.hk 
-cszhang@uk.ac.swan.pyr 
-cu1757@c.nersc.gov 
+crow@rockwell.com                /* not valid */
+cs188387@comp.hkp.hk            /* not valid */
+cszhang@uk.ac.swan.pyr           /* not valid */
+cu1757@c.nersc.gov               /* not valid */
 curfman@mcs.anl.gov 
 cusgpxh@beta.oac.ucla.edu 
 cwc@minnie.nic.kingston.ibm.com 
 damianm@toy.ci.com.au 
-dan_sullivan@ncsu.edu 
+dan_sullivan@ncsu.edu
+ 
 danial@gn.ecn.purdue.edu 
 davet@granta.uchicago.edu 
 david@ivan.seas.ucla.edu 
-dcalabres@ucsd.edu 
+dcalabres@ucsd.edu             /* not valid */
 dd@ukc.ac.uk 
 demmel@cs.berkeley.edu 
-denneuli@jenlain.LIFL_RECH 
-dentja@delphi.com 
+denneuli@jenlain.LIFL_RECH   /* not valid */
+dentja@delphi.com           /* not valid */
 dermer@ssd.intel.com 
-dice@pradsys.com 
+dice@pradsys.com               /* not valid */
+
 dnb@sgi.com 
 dolinarg@crl.aecl.ca 
 dossa@hbar.enet.dec.com 
@@ -148,64 +159,70 @@ douglas@blondie.na.cs.yale.edu
 doylecm@rosevc.rose-hulman.edu 
 e40713@fep1.rl.gov 
 eckstein@math.tu-dresden.de 
-edpsbb@cc.ruu.nl 
+edpsbb@cc.ruu.nl              /*not valid */
 eep2ia@ee.surrey.ac.uk 
 ees1ic@ee.surrey.ac.uk 
 ehg@research.att.com 
 ekurgpol@law.usc.edu 
 elias@nada.kth.se 
+
 elliott@risky.dcrt.nih.gov 
-enrico@blues.unipd.it 
+enrico@blues.unipd.it         /* not valid */
 erlandf@nada.kth.se 
 fadb@corona.oslo.dnmi.no 
 fang@ifi.unibas.ch 
 fbbrown@anl.gov 
 felipe@labein.es 
 ferguson@seas.smu.edu 
-fkyu@top.cis.syr.ecu 
-fletcher@thaneer.colorado.edu 
+fkyu@top.cis.syr.ecu                       /* not valid */
+fletcher@thaneer.colorado.edu
+ 
 fons@nat.vu.nl 
-foong@syd.dit.csiro.au 
+foong@syd.dit.csiro.au    /* not valid */
 forrest@watson.ibm.com 
 forsman@mcs.anl.gov 
 franco@mechman.mm.swin.edu.au 
 frankeh@watson.ibm.com 
 fred@blas.cis.mcmaster.ca 
-fredrikm@ii.uib.no 
+fredrikm@ii.uib.no    /* not valid */
 friedman@nyu.edu 
 ftacnikj@fnal.fnal.gov 
 ftpmail@connect.com.au 
-g36kst@chulkn.chula.ac.th 
+g36kst@chulkn.chula.ac.th    /* not valid */
 gdi@empros.com 
-geir@fram.nrsc.no 
+
+geir@fram.nrsc.no      /* not valid */
 gerry@euler.me.pdx.edu
 gerry@me.pdx.edu 
 ggb@sgi.com 
 ggi@inel.gov 
 ghanem@venus.eng.buffalo.edu 
-gholam@uk.ac.man.cs 
-gi_fann@pnl.gov 
-giraud@cerfacs.fr 
+gholam@uk.ac.man.cs   /* not valid */
+gi_fann@pnl.gov          /* not valid */
+giraud@cerfacs.fr
+ 
 girou@lumiere.circe.fr 
 giuditta@crs4.it 
 gjertsen@cs.uiuc.edu 
 glenn@physics.su.oz.au 
 glennw@acci.com.au 
 gll@inel.gov 
-gmblacks@midway.ecn.uoknor.edu 
-gpcuris@rcamnl.wr.usgs.gov 
+gmblacks@midway.ecn.uoknor.edu    /* not valid */
+gpcuris@rcamnl.wr.usgs.gov         /* not valid */
 grantg@cerca.umontreal.ca 
-gregor@darla.npac.syr.edu.npac 
+gregor@darla.npac.syr.edu.npac
+ 
 gregor@nova.npac.syr.edu 
-grill@maulaf.ISD.Uni-Stuttgart.DE 
+grill@maulaf.ISD.Uni-Stuttgart.DE   /* not valid */
 gropp@mcs.anl.gov 
-gshively@csugrad.cs.vt.edu 
+gshively@csugrad.cs.vt.edu    /* not valid */
 gst@ornl.gov 
-h9116631@sp1n08.hku.hk 
+h9116631@sp1n08.hku.hk     /* not valid */
 ham@uxh.cso.uiuc.edu 
 hari@panda.bu.edu 
 hart@fsl.noaa.gov 
 harvey@clearlake.ibm.com 
+
 hbchen@cse.uta.edu 
 hchwang@ams.sunysb.edus 
 hedstrom@physics.llnl.gov 
@@ -213,57 +230,65 @@ hegedus@celeste.eng.yale.edu
 heiko@cadlab.de 
 heinken@math.vt.edu 
 hessenberger@dompfaf.ISD.Uni-Stuttgart.DE 
+
+
+
 hinton@erenj.com 
 hkersken@134.1.2 
-hlh11117@mahogany.egr.uh.edu 
-hm@hm.ulaval.ca 
+hlh11117@mahogany.egr.uh.edu   /* not valid 
+hm@hm.ulaval.ca                   /* not valid 
 hoerkens@igpm.rwth-aachen.de 
 hohmann@sc.zib-berlin.de 
-holst@caltech.edu 
+holst@caltech.edu   /* not valid */
 hopper.xrcc@xerox.com 
 howar@rz.uni-karlsruhe.de 
-huber@irs.inu-stuttgart.de 
-huber@kazoo.cs.uiuc.edu 
+huber@irs.inu-stuttgart.de   /* not valid 
+huber@kazoo.cs.uiuc.edu
+ 
 hubler@lerc.nasa.gov 
 humphrie@cs.umd.edu 
-hwyau@epc.ed.ac.uk 
+hwyau@epc.ed.ac.uk     /* not valid 
 hzg@iitb.fhg.de 
-ianh@cs.rhbnc.ac.uk 
+ianh@cs.rhbnc.ac.uk      /* not valid 
 idaho@engin.umich.edu 
-ierardi@flahs.usc.edu 
+ierardi@flahs.usc.edu    /* not valid 
 infvvg@cs.utwente.nl 
-ivan@think.com 
+ivan@think.com            /* not valid 
 ivar@nordita.dk 
-ivl@daphne.ffi.no 
+ivl@daphne.ffi.no
+ 
 iwata@sx.iah.nec.com 
 jakob@cray.com 
 jamespd@eee.bham.ac.uk 
-jan@neuroinformatik.uni-bochum.de 
+jan@neuroinformatik.uni-bochum.de   /* not valid 
 jandel@sics.se 
 japost@dxcern.cern.ch 
 jari@tora.ohsuga.rcast.u-tokyo.ac.jp 
 jcc@theory.pppl.gov 
 jclund@mmm.com 
-jdb@octavia.anu.edu.au 
+jdb@octavia.anu.edu.au         /* not valid 
+ 
 jdelgado@sun.che.scarolina.edu 
 jeg@kaiser.lanl.gov 
 jesse@heart.cor.epa.gov 
 jflores@sis.poli.edu.ec 
-jgardner@vega.cs.LaTech.EDU 
+jgardner@vega.cs.LaTech.EDU   /* not valid 
 jgc@appmath.columbia.edu 
 jgg@ppco.com 
 jgobat@ucsd.edu 
-jh@csc.fi 
-jin@soliton.chem.cmu.edu 
+jh@csc.fi                  /* not valid 
+jin@soliton.chem.cmu.edu
+ 
 jjstern@rsm1.capc.acf.nyu.edu 
 jkk@vscht.cz 
 jlcruz@sun630.uco.es 
 joern@imf.unit.no 
-johansen@@delco.ep.anl.gov 
+johansen@@delco.ep.anl.gov    /* not valid 
 john@cs.wmich.edu 
-john@dmdtu11.urz.tu-magddeburg.de 
-john@silvaco.com 
+john@dmdtu11.urz.tu-magddeburg.de   /* not valid 
+john@silvaco.com            /* not valid 
 johne@unislc.slc.unisys.com 
+
 jp@epcc.ed.ac.uk 
 jparker@ed.ac.uk 
 jpm@apple.fi 
@@ -273,9 +298,10 @@ jrapp@ucsd.edu
 jrs@sdna3.ucsd.edu 
 jstern@minnie.nic.kingsotn.ibm.com 
 jstern@rsm1.capc.acf.nyu.edu 
-jtwamley@physics.adelaaide.edu.au 
-juistn@neg.ruky.edu 
+jtwamley@physics.adelaaide.edu.au    /* not valid 
+juistn@neg.ruky.edu             /* not valid 
 justin@grasparc3.leeds.ac.uk 
+
 jwilson@cs.colorado.edu 
 jwlong@phoenix.ocf.llnl.gov 
 jyen@ccad.uiowa.edu 
@@ -286,7 +312,8 @@ kamath@nicctr.enet.dec.com
 kannawin@osmre.gov 
 kareti@cs.odu.edu 
 karuzis@wccf.mit.edu 
-kcf@gs136.sp.cs.cmu.edu 
+kcf@gs136.sp.cs.cmu.edu
+ 
 kdb@leibniz.unx.sas.com 
 keasler@cosmo.mcs.anl.gov 
 keken@geof.ruu.nl 
@@ -295,37 +322,41 @@ kern@masc5.rice.edu
 keum@tollbooth2.vnet.ibm.com 
 kincaid@cs.utexas.edu 
 kiwiel@iiasa.ac.at 
-klaus@fauww65.ww.uni-erlangen.de 
+klaus@fauww65.ww.uni-erlangen.de
+ 
 klawonn@math.uni-muenster.de 
-knight@cscns.com 
+knight@cscns.com                /* not valid
 knobe@ksr.com 
-knoth@mathematik.uin-halle 
+knoth@mathematik.uin-halle    /* not valid 
 konas@csrd.uiuc.edu 
 kony-s@ftp.ntt.jp 
-kot@pandion.amath.washington.edu 
+kot@pandion.amath.washington.edu     /* not valid 
 kouhia@nic.funet.fi 
-koures@allied.com 
-lane@selway.umt.edu 
-lang@math.uni-wuppertal.de 
+koures@allied.com          /* not valid 
+lane@selway.umt.edu
+ 
+lang@math.uni-wuppertal.de        /* not valid 
 lang@off.ttit.edu.tw 
-lap@engin.umich.edu 
+lap@engin.umich.edu              /* not valid 
 laprade@trantor.harris-atd.com 
 law@tcad.ee.ufl.edu 
 lebeufd@iro.umontreal.ca 
 levine@lyon.fr 
 levit@trinity.rdd.lmsc.lockheed.com 
 lindh@ctp.se.ibm.com 
-lockey@lanczos.ma.umist.ac.uk 
+lockey@lanczos.ma.umist.ac.uk
+ 
 long@ireq.hydro.qc.ca 
-lookie@165.132.10.21 
+lookie@165.132.10.21       /* not valid 
 lorentz@gmd.de 
 lucky@stpb.soft.net 
 luksch@informatik.tu-muenchen.de 
 lxj@orville.unh.edu 
-maarel@cwi.nl 
+maarel@cwi.nl                          /* not valid 
 macedon@dst.unipi.it 
 mad5c@virginia.edu 
 maiers@sunbode8.informatik.tu-muenchen.de 
+
 malagoli@mhd4.uc 
 malon@anl.gov 
 manolo@deimos.ulpgc.es 
@@ -338,7 +369,8 @@ mars@helium.appli.mimuw.edu.pl
 marsolf@csrd.uiuc.edu 
 martucci@sunpietro.cern.ch 
 maryse@cerca.umontreal.ca 
-masc0372@ucssun1.sdsu.edu 
+masc0372@ucssun1.sdsu.edu
+ 
 mastro@cps.na.cnr.it 
 matem@ipv36.unipv.it 
 matsuda@tansei.cc.u-tokyo.ac.jp 
@@ -350,6 +382,7 @@ max@mirtillo.usr.dsi.unimi.it
 mayesp@vnet.ibm.com 
 mbeall@scorec.rpi.edu 
 mchenry@aurora.cs.LaTech.EDU 
+
 mery@austrasie.loria.fr 
 meta@calpar.cnuce.cnr.it 
 mf@fnal.fnal.gov 
@@ -365,6 +398,7 @@ molgenet@bh.kyungpook.ac.kr
 molsen@kyzyl.arc.nasa.gov 
 monika@appli.mimuw.edu.pl 
 monta@image.mit.edu 
+
 moore@kong.gsfc.nasa.gov 
 morlet@math.ohio-state.edu 
 mos@agip.com 
@@ -376,7 +410,8 @@ mw@space.com
 newton@kbssp5.sseg.kobe-u.ac.jp 
 nican@ida.liu.se 
 nikola@minerva.cis.yale.edu 
-nikos@npac.syr.edu 
+nikos@npac.syr.edu
+ 
 nmihalac@mathp7.jussieu.fr 
 no05@andrew.cmu.edu 
 nsh@susan.ep.utsa.edu 
@@ -385,7 +420,8 @@ nurk@cs.umn.edu
 obecker@abyss.mpr.ca 
 oberhube@sunbode30.informatik.tu-muenchen.de 
 ochand70@ursa.calvin.edu 
-odd1@purgatorie.Central.Sun.COM 
+odd1@purgatorie.Central.Sun.COM
+ 
 ogihara@softlab.is.tsukuba.ac.jp 
 okrieg@sneth.eecg 
 oloso@mem.odu.edu 
@@ -394,7 +430,8 @@ oswald.haan@mch.sni.de
 ozturanc@cs.rpi.edu 
 p.lockey@dl.ac.uk 
 pablo@alligator.nada.kth.se 
-pak@regent.e-technik.tu-muenchen.de 
+pak@regent.e-technik.tu-muenchen.de
+ 
 panigrah@colorado.edu 
 pap@air16.larc.nasa.gov 
 parrott@bcm.tmc.edu 
@@ -404,6 +441,7 @@ pattani@sx.iah.nec.com
 paulc@lobby.ti.com 
 paulja@sci.kun.nl 
 paulmc@netcom.com 
+
 pav@cray.com 
 pdro@fis.nuclear.upm.es 
 pedelty@jansky.gsfc.nasa.gov 
@@ -414,6 +452,7 @@ petry@math.washington.edu
 pff@cfm.brown.edu 
 pfox@hao.ucar.edu 
 pgray@math.msu.edu 
+
 phaiic@unix1.sncc.lsu.edu 
 phi@ich002.ich.kfa-juelich.de 
 phillim@cs.tamu.edu 
@@ -421,7 +460,8 @@ pierce@nersc.gov
 pilz@server3.medizin.uni-leipzig.de 
 pimenta@fe.up.pt 
 pl169165@academ01.mty.itesm.mx 
-plauterbach@cortex.prospect.com 
+plauterbach@cortex.prospect.com
+ 
 plokker@bouw.tno.nl 
 plyon@emx.utexas.edu 
 pm@fct.unl.pt 
@@ -431,7 +471,8 @@ popelka@ody2.uchicago.edu
 pozo@cs.utk.edu 
 prj@ic.ac.uk 
 prp@ssd.intel.com
-rachid@matups.fr 
+rachid@matups.fr
+ 
 rajesh@czat.sye.edu 
 rajesh@grumium.npac.syr.edu 
 ramesh@erc.msstaete.edu 
@@ -440,7 +481,8 @@ rath@cs.umn.edu
 rdb@lab.jt.dk 
 rdd@ukc.ac.uk 
 reed@cs.uiuc.edu 
-reel@utrc.utc.com 
+reel@utrc.utc.com
+ 
 refloch@onera.fr 
 reinhard@research.allied.com 
 remzi@cs.berkeley.edu 
@@ -453,7 +495,8 @@ rj_littlefield@pnl.gov
 rob@maspar.com 
 robert@convex.mpa-garching.mpg.de 
 roberto@banach.nl.nuwc.navy.mil 
-roberto@picton.eecg.toronto.edu 
+roberto@picton.eecg.toronto.edu
+ 
 robinm@mrd.dsto.oz.au 
 rogoff@sccm.stanford.edu 
 root@cssun.usm.my 
@@ -466,7 +509,8 @@ rtp@ornl.gov
 rutger@cs.vu.nl 
 s2@s2.msi.umn 
 saied@cs.uiuc.edu 
-salinas@vision1.engr.utk.edu 
+salinas@vision1.engr.utk.edu
+ 
 santa@riacs.edu 
 santi@vm1.sdi.uam.es 
 saroff@ec.msc.edu 
@@ -478,7 +522,8 @@ scott@conman.geo.purdue.edu
 scroggs@math.cnsu.edu 
 seaborn@gatekeeper.imagen.com 
 sean@compaq.com 
-sharma@gate.ee.lsu.edu 
+sharma@gate.ee.lsu.edu
+ 
 shaver@ksr.com 
 sja@osg.npl.co.uk 
 skelley@birch.ee.vt.edu 
@@ -490,7 +535,8 @@ smw@uk.ac.soton.ecs
 soler@peano.dis.uniroma1.it 
 spoole@lanl.gov 
 spoon@131.217.60.1 
-sshsieh@ecn.purdue.edu 
+sshsieh@ecn.purdue.edu
+ 
 ssmith@merucyr.llnl.gov 
 sstrand@ncsa.uiuc.edu 
 staeph@cerfacs.fr 
@@ -500,7 +546,8 @@ stellner@informatik.tu-muenchen.de
 steube@sdsc.edu 
 steven@140.121.135.36 
 sthomas@rpn.aes.doe.ca 
-stoessel@ifp.fr 
+stoessel@ifp.fr
+ 
 sturler@cscs.ch 
 sturyoti@eku.acs.eku.edu 
 sukomal@cn.ecn.purdue.edu 
@@ -510,7 +557,8 @@ tabuj@altair.com
 tadams@nosc.mil 
 tan@wldelft.nl 
 tatalias@gsisun.gsi.nic.ddn.mil 
-tazoe@vnet.ibm.com 
+tazoe@vnet.ibm.com
+ 
 tda_work@tm1srv.mlo.dec.com 
 tencate@dutind4.tudelft.nl
 tesi@hp300b.rad.unipi.it
@@ -518,7 +566,8 @@ thomas@cs.chalmers.se
 thomas@loria.fr
 timothy@cor.med.utas.edu.au 
 tomtzigt@pcocd2.intel.com 
-tpham@cobra.hmc.edu 
+tpham@cobra.hmc.edu
+ 
 tsai@frith.msu.edu 
 tsaiyi@calcium.cps.msu.edu 
 turcotte@wes.army.mil 
@@ -526,7 +575,8 @@ turnbull@super.org
 u12231@pragate.sdsc.edu 
 uechi@vnet.ibm.com 
 ulf@icase.edu 
-unilwh@nofret.uni-c.dk 
+unilwh@nofret.uni-c.dk
+ 
 scroggs@math.ncsu.edu 
 usimap@sneffels.usi.utah.edu 
 uthd@wl.aecl.ca 
@@ -534,7 +584,8 @@ utke@mcs.anl.gov
 vaidya@nova.npac.syr.edu 
 vakis@marina.marinentua.ariadne-t.gr 
 ve@rrz.uni-koeln.de 
-vesseur@dffei.uva.nl 
+vesseur@dffei.uva.nl
+ 
 vibs@varuna.eng.lsu.edu 
 viggoh@astro.uio.no 
 vijayk@cs.uiuc.edu 
@@ -544,7 +595,8 @@ wallcraf@ajax.nrlssc.navy.mil
 wang@fsl.gov 
 wayne.stidolph@mtv.gtegsc.com 
 wd42ej@sgi8.wwb.noaa.gov 
-wdj@lanl.gov 
+wdj@lanl.gov
+ 
 wheeler@lobby.ti.com 
 wicks@atc.boeing.com 
 wiehe@scubed.scubed.com 
@@ -553,7 +605,8 @@ win@cray.com
 wjl@lacaille.cdev.com 
 wscarvie@cs.ucsd.edu 
 xzhang@stiefel.cs.umd.edu 
-y028@hrz.th-darmstadt.de 
+y028@hrz.th-darmstadt.de
+ 
 yen@math.uiowa.edu 
 yokoi@oxygen.aps1.anl.gov 
 yury@start.Eng.Sun.COM 
@@ -577,6 +630,8 @@ Wed Apr  5 16:17:54 1995 166 tam3.mech.nwu.edu 9848286 /pub/petsc/tools-1.2.1.ta
 Wed Apr  5 22:14:03 1995 255 auberge.irisa.fr 3669297 /pub/petsc/chameleon-1.2.2.tar.Z b _ o a tessera@litruchi.uchicago.edu ftp 0 *
 Thu Apr  6 17:44:33 1995 70 pv0f3d.vincent.iastate.edu 4849139 /pub/petsc/sles-1.2.tar.Z b _ o a schlarm@pv0f3d.vincent.iastate.edu ftp 0 *
 Sat Apr  8 15:42:55 1995 5003 141.30.68.7 3669297 /pub/petsc/chameleon-1.2.2.tar.Z b _ o a skalicky@ ftp 0 *
+
+
 Sat Apr  8 18:53:55 1995 7283 128.245.1.9 9470335 /pub/petsc/tools-1.2.2.tar.Z b _ o a govindan@Mach9.srai.com ftp 0 *
 Sun Apr  9 20:30:28 1995 565 inffour.kotel.co.kr 3669297 /pub/petsc/chameleon-1.2.2.tar.Z b _ o a jsse@inffour.kotel.co.kr ftp 0 *
 Mon Apr 10 01:56:00 1995 3118 193.56.40.7 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a alleon@ ftp 0 *
@@ -596,7 +651,7 @@ Fri Apr 14 15:39:18 1995 251 CTPA03.MIT.EDU 4631269 /pub/petsc/sles-1.2.2.tar.Z 
 Sat Apr 15 14:09:29 1995 195 alpha.ece.arizona.edu 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a chhuang@ ftp 0 *
 Mon Apr 17 16:04:05 1995 200 hot-fca1.cray.com 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a claa ftp 0 *
 Mon Apr 17 16:46:14 1995 337 kennedy.ecn.purdue.edu 9470335 /pub/petsc/tools-1.2.2.tar.Z b _ o a md@kennedy.ecn.purdue.edu ftp 0 *
-Tue Apr 18 03:41:02 1995 1808 omega.wsl.sinica.edu.tw 409295 /pub/petsc/blas_lapack.tar.Z b _ o a ywliu@omega.wsl.sinica.edu.tw ftp 0 *
+Tue Apr 18 03:41:02 1995 1808 omega.wsl.sinica.edu.tw 409295 /pub/petsc/blas_lapssrack.tar.Z b _ o a ywliu@omega.wsl.sinica.edu.tw ftp 0 *
 Tue Apr 18 04:47:04 1995 16969 kittyhawk.aero.rmit.EDU.AU 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a ender@kittyhawk.aero.rmit.edu.au ftp 0 *
 Tue Apr 18 09:19:40 1995 18873 omega.wsl.sinica.edu.tw 9470335 /pub/petsc/tools-1.2.2.tar.Z b _ o a ywliu@omega.wsl.sinica.edu.tw ftp 0 *
 Tue Apr 18 15:02:12 1995 1121 hot-fca1.cray.com 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a c ftp 0 *
@@ -639,6 +694,8 @@ Sun May 14 10:28:32 1995 1 iremia.univ-reunion.fr 3524 /pub/petsc/README~ a _ o 
 Mon May 15 03:12:40 1995 600 192.70.84.69 562904 /pub/petsc/textpgm-1.2.2.tar.Z b _ o a viry@arcturus.ciril.fr ftp 0 *
 Mon May 15 08:16:11 1995 42 olympus.crs4.it 8160 /pub/petsc/old/chblk.tar.Z a _ o a raus@crs4.it ftp 0 *
 Mon May 15 12:54:44 1995 14 astro.arsc.sunyit.edu 504231 /pub/petsc/tohtml-1.2.2.tar.Z b _ o a coker@astro.arsc.sunyit.edu ftp 0 *
+
+
 Tue May 16 06:19:42 1995 3427 olympus.crs4.it 1199535 /pub/petsc/old/chblk.tar.Z a _ o a raus@crs4.it ftp 0 *
 Tue May 16 06:23:08 1995 53 chianti.crs4.it 20397 /pub/petsc/old/chblk.tar.Z a _ o a raus@crs4.it ftp 0 *
 Tue May 16 18:57:30 1995 13 piweba2y.prodigy.com 480927 /pub/petsc/tohtml-1.2.1.tar.Z b _ o a Netscape@piweba2y.prodigy.com ftp 0 *
@@ -689,6 +746,9 @@ Sat Dec 17 10:55:33 1994 342 gonzales.ief-paris-sud.fr 4849139 /pub/petsc/sles-1
 Sat Dec 17 14:23:32 1994 156 down.engin.umich.edu 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a oliveria@engin.umich.edu ftp 0 *
 Sun Dec 18 20:08:10 1994 2 pobox.csc.fi 16152 /pub/petsc/matlabsockets.tar.Z b _ o a -gopher@sharp100b.dorm.tulane.edu ftp 0 *
 Mon Dec 19 04:35:19 1994 739 natuna.etca.fr 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a alleon@etca.fr ftp 0 *
+
+
+
 Tue Dec 20 19:43:12 1994 770 dsp.dsp.toronto.edu 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a zeus@ ftp 0 *
 Wed Dec 21 05:32:12 1994 781 power1.pc.uec.ac.jp 4849139 /pub/petsc/sles-1.2.tar.Z a _ o a cd_pub/p ftp 0 *
 Wed Dec 21 11:16:48 1994 325 pauli.phys.uwm.edu 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a niksterg@ ftp 0 *
@@ -713,7 +773,10 @@ Wed Jan 11 10:03:31 1995 282 crl6.crl.com 945222 /pub/petsc/old/chameleon.tar.Z 
 Wed Jan 11 12:29:31 1995 768 aerosol.ATMOS.ColoState.EDU 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a taylgr@aerosol.atmos.colostate.edu ftp 0 *
 Wed Jan 11 12:35:47 1995 3 w413zrz.bg.TU-Berlin.DE 16152 /pub/petsc/matlabsockets.tar.Z b _ o a volk1638@ ftp 0 *
 Thu Jan 12 01:37:45 1995 518 heiner.hrz.th-darmstadt.de 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a winfrid@hippo.mch.sni.de ftp 0 *
-Thu Jan 12 04:27:05 1995 1169 gonzales.ief-paris-sud.fr 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a bardo.ief-paris-sud.fr@ ftp 0 *
+Thu Jan 12 04:27:05 1995 1169 gonzales.ief-paris-sud.fr 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a bardo.ief-pa
+
+
+ris-sud.fr@ ftp 0 *
 Thu Jan 12 07:52:30 1995 2 144.212.12.24 16152 /pub/petsc/matlabsockets.tar.Z b _ o a tung@mathworks.com ftp 0 *
 Thu Jan 12 16:10:51 1995 121 helix.nih.gov 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a apolis@alw.nih.gov ftp 0 *
 Fri Jan 13 11:14:37 1995 40 avalon.es.anl.gov 1955806 /pub/petsc/chameleon-1.2.1.tar.Z a _ o a [none_given] ftp 0 *
@@ -744,6 +807,10 @@ Mon Jan 23 17:29:30 1995 90 aeetes.re.anl.gov 9848286 /pub/petsc/tools-1.2.1.tar
 Tue Jan 24 08:20:50 1995 26 hopper.ncsa.uiuc.edu 4931314 /pub/petsc/chameleon-1.2.tar.Z b _ o a pwalker@ncsa.uiuc.edu ftp 0 *
 Tue Jan 24 09:25:16 1995 59 bfp.cc.purdue.edu 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a WWWuser@bfp.cc.purdue.edu ftp 0 *
 Tue Jan 24 13:43:15 1995 344 sunray.pe.utexas.edu 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a sunray.pe.utexas.edu ftp 0 *
+
+
+
+
 Tue Jan 24 18:59:33 1995 132 tangaroa.OCE.ORST.EDU 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a sally@oce.orst.edu ftp 0 *
 Wed Jan 25 03:41:38 1995 5213 elc051.nchc.gov.tw 9848286 /pub/petsc/tools-1.2.1.tar.Z a _ o a c00dcw@nchc.gov.tw ftp 0 *
 Wed Jan 25 11:45:12 1995 5 JAVA.MIT.EDU 48424 /pub/petsc/Overview_domain.ps b _ o a matarese@java.mit.edu ftp 0 *
@@ -779,6 +846,9 @@ Wed Feb  8 17:27:46 1995 145 portal.chevron.com 4099747 /pub/petsc/chameleon-1.2
 Wed Feb  8 17:35:01 1995 786 trws.inet.dkfz-heidelberg.de 2680301 /pub/petsc/snes-1.2.2.tar.Z b _ o a tobias.reber@dkfz-heielberg.de ftp 0 *
 Wed Feb  8 18:21:18 1995 2633 trws.inet.dkfz-heidelberg.de 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a tobias.reber@dkfz-heielberg.de ftp 0 *
 Wed Feb  8 20:57:20 1995 615 colt115.nic.rpi.edu 10654837 /pub/petsc/tools-1.2.tar.Z b _ o a ozturanc@cs.rpi.edu ftp 0 *
+
+
+
 Thu Feb  9 11:45:20 1995 72 sam.earth.nwu.edu 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a huang@earth.nwu.edu ftp 0 *
 Fri Feb 10 00:44:05 1995 930 mihp710.mathematik.uni-leipzig.de 2680301 /pub/petsc/snes-1.2.2.tar.Z b _ o a voigt@mathematik.uni-leipzig.de ftp 0 *
 Fri Feb 10 02:24:29 1995 639 lexpc.mathematik.uni-kl.de 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a pfreundt@mathematik.uni-kl.de ftp 0 *
@@ -802,6 +872,8 @@ Thu Feb 16 08:56:59 1995 2005 is1.hk.super.net 573440 /pub/petsc/chameleon-1.2.1
 Thu Feb 16 12:32:25 1995 312 fennel.cs.hamptonu.edu 1191132 /pub/petsc/old/chameleon.tar.Z b _ o a tm@cs.hamptonu.edu ftp 0 *
 Thu Feb 16 13:42:34 1995 545 VARIAN.SLAC.Stanford.EDU 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a enj@slac.stanford.edu ftp 0 *
 Fri Feb 17 11:20:16 1995 321 violett.ifi.unibas.ch 1493343 /pub/petsc/old/tools_comm.tar.Z b _ o a fang@ifi.unibas.ch ftp 0 *
+
+
 Fri Feb 17 16:53:16 1995 6261 itsp1.intercon.net 4931314 /pub/petsc/chameleon-1.2.tar.Z b _ o a mctse ftp 0 *
 Fri Feb 17 18:37:27 1995 549 angie.ecs.umass.edu 10654837 /pub/petsc/tools-1.2.tar.Z b _ o a ieong@angie.ecs.umass.edu ftp 0 *
 Sun Feb 19 11:37:08 1995 112 hopper.ncsa.uiuc.edu 4931314 /pub/petsc/chameleon-1.2.tar.Z b _ o a pwalker@ncsa.uiuc.edu ftp 0 *
@@ -847,6 +919,8 @@ Sun Mar  5 20:48:07 1995 8 taranis.OBS-AZUR.fr 53538 /pub/petsc/Overview_chamele
 Tue Mar  7 09:52:16 1995 144 tollbooth.vnet.ibm.com 4631269 /pub/petsc/sles-1.2.2.tar.Z b _ o a sinharoy@cs.rpi.edu ftp 0 *
 Tue Mar  7 14:33:55 1995 275 purcell.ecn.purdue.edu 4865521 /pub/petsc/sles-1.2.1.tar.Z a _ o a md@ecn.purdue.edu ftp 0 *
 Tue Mar  7 17:39:07 1995 676 cosmos.jpl.nasa.gov 9470335 /pub/petsc/tools-1.2.2.tar.Z b _ o a malagoli@liturchi.uchicago.edhu ftp 0 *
+
+
 Tue Mar  7 18:47:16 1995 2 asrt3.cad.gatech.edu 16152 /pub/petsc/matlabsockets.tar.Z b _ o a gt9640a@prism.gatech.edu ftp 0 *
 Tue Mar  7 19:34:27 1995 135 kanga.cse.nd.edu 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a dlinfiel@kanga.cse.nd.edu ftp 0 *
 Wed Mar  8 06:47:25 1995 11 erc.cat.syr.EDU 562904 /pub/petsc/textpgm-1.2.2.tar.Z b _ o a lvaz@erc.cat.syr.edu ftp 0 *
@@ -864,9 +938,11 @@ Fri Mar 10 10:34:33 1995 3665 santana.laas.fr 3669297 /pub/petsc/chameleon-1.2.2
 Fri Mar 10 11:30:03 1995 236 minerva.nrtc.northrop.com 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a mcohen@charming.nrtc.northrop.com ftp 0 *
 Fri Mar 10 16:15:49 1995 229 sahp315.sandia.gov 4849139 /pub/petsc/sles-1.2.tar.Z b _ o a wwwuser@sahp315.sandia.gov ftp 0 *
 Fri Mar 10 19:22:25 1995 296 jetson.sri.com 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a gold@sri.com ftp 0 *
+
 Sat Mar 11 00:54:37 1995 108 buddy.lanl.gov 3669297 /pub/petsc/chameleon-1.2.2.tar.Z b _ o a tph@lanl.gov ftp 0 *
 Sat Mar 11 08:24:41 1995 573 squirt.icase.edu 9848286 /pub/petsc/tools-1.2.1.tar.Z b _ o a natalia@squirt.icase.edu ftp 0 *
 Sat Mar 11 22:46:03 1995 233 garnet.msen.com 4849139 /pub/petsc/sles-1.2.tar.Z b _ o a autoa@garnet.msen.com ftp 0 *
+
 Sun Mar 12 22:16:01 1995 1 saab.CS.Berkeley.EDU 16152 /pub/petsc/matlabsockets.tar.Z b _ o a WWWuser@saab.CS.Berkeley.EDU ftp 0 *
 Mon Mar 13 10:42:46 1995 182 poplar004.cray.com 3669297 /pub/petsc/chameleon-1.2.2.tar.Z a _ o a lmc@cray.com ftp 0 *
 Mon Mar 13 17:36:07 1995 1 necs.vuse.vanderbilt.edu 16152 /pub/petsc/matlabsockets.tar.Z b _ o a mellpm@ ftp 0 *
@@ -886,6 +962,7 @@ Sat Mar 18 05:03:47 1995 817 gales.ecs.soton.ac.uk 3669297 /pub/petsc/chameleon-
 Sat Mar 18 11:34:04 1995 3991 ideal.ios.net 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a VPA@ideal.ios.net ftp 0 *
 Sat Mar 18 17:53:42 1995 2598 204.174.70.42 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a dbrooks@netshop.net ftp 0 *
 Sun Mar 19 00:08:17 1995 300 Gauss.CL.UH.EDU 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a ghost@ghost.neosoft.com ftp 0 *
+
 Tue Mar 21 03:21:23 1995 1286 charlie.ifi.unibas.ch 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a kuhn@ifi.unibas.ch ftp 0 *
 Tue Mar 21 08:24:27 1995 140 delilah.ccsf.caltech.edu 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a gjertsen@cs.uiuc.edu ftp 0 *
 Tue Mar 21 13:37:09 1995 546 news.ti.com 4865521 /pub/petsc/sles-1.2.1.tar.Z b _ o a wheeler@dseg.ti.com ftp 0 *
@@ -902,6 +979,9 @@ Mon Mar 27 13:01:24 1995 229 tardis.union.edu 4865521 /pub/petsc/sles-1.2.1.tar.
 Mon Mar 27 19:33:48 1995 22 liturchi.uchicago.edu 3669297 /pub/petsc/chameleon-1.2.2.tar.Z b _ o a tessera@liturchi.uchicago.edu ftp 0 *
 Mon Mar 27 19:42:33 1995 1 tara.grace.cri.nz 2981 /pub/petsc/README a _ o a roger@maths.grace.cri.nz ftp 0 *
 Tue Mar 28 17:36:05 1995 189 tanya.ma.utexas.edu 4099747 /pub/petsc/chameleon-1.2.1.tar.Z b _ o a overfelt@maht.utexas.eud ftp 0 *
+
+
+
 Wed Mar 29 04:03:04 1995 5305 essi10.essi.fr 4931314 /pub/petsc/chameleon-1.2.tar.Z b _ o a sandru@essi.fr ftp 0 *
 Wed Mar 29 10:38:09 1995 572 magnus.univ-mrs.fr 409295 /pub/petsc/blas_lapack.tar.Z b _ o a ftp ftp 0 *
 Wed Mar 29 17:06:00 1995 46 bastet.cs.odu.edu 409295 /pub/petsc/blas_lapack.tar.Z b _ o a jdm@cs.odu.edu ftp 0 *
