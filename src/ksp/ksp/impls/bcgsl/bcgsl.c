@@ -245,7 +245,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
       /* round-off can cause negative kappa's */
       if (kappa0<0) kappa0 = -kappa0;
-      kappa0 = PetscSqrtScalar(kappa0);
+      kappa0 = sqrt(kappa0);
 
       kappaA = BLdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
 
@@ -254,7 +254,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       kappa1 = BLdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
 
       if (kappa1<0) kappa1 = -kappa1;
-      kappa1 = PetscSqrtScalar(kappa1);
+      kappa1 = sqrt(kappa1);
 
       if (kappa0!=0.0 && kappa1!=0.0) {
         if (kappaA<0.7*kappa0*kappa1) {
