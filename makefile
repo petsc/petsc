@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.333 2001/02/09 19:17:29 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.334 2001/02/09 19:27:25 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -117,8 +117,6 @@ build_fortran:
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} libf clean 
 	-@cd src/fortran/kernels; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} libf  clean
-	-@cd src/mat/impls/aij/seq; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} lib clean
 	${RANLIB} ${LDIR}/libpetscfortran.a
 	${RANLIB} ${LDIR}/libpetsc.a
 	-@chmod g+w  ${LDIR}/*.a
