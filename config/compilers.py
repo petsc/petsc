@@ -238,7 +238,14 @@ class Configure(config.base.Configure):
       if loc == -1: loc = output.find(' -lf77math')
       if loc >= -1:
         output = output[0:loc]+' -lU77 -lV77 '+output[loc:]
-    
+
+    # PGI/Windows: to properly resolve symbols, we need to list the fortran runtime libraries before -lpgf90
+    if output.find(' -lpgf90') >= 0 and output.find(' -lkernel32') >= 0:
+      loc  = output.find(' -lpgf90')
+      loc2 = output.find(' -lpgf90rtl -lpgftnrtl')
+      if loc2 >= -1:
+        output = output[0:loc] + ' -lpgf90rtl -lpgftnrtl' + output[loc:]
+        
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
     # since doing that causes problems on other systems.
