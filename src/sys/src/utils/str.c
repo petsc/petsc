@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.18 1998/03/06 00:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.19 1998/04/24 02:14:50 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -140,17 +140,28 @@ char *PetscStrrchr(char *a,char b)
   PetscFunctionReturn(tmp);
 }
 
+/*
+     This version is different from the system version in that
+  it allows you to pass a read-only string into the function.
+  A copy is made that is then passed into the system strtok() 
+  routine.
+
+    Limitation: 
+  String must be less than or equal 1024 bytes in length.
+
+*/
 #undef __FUNC__  
 #define __FUNC__ "PetscStrtok"
 char *PetscStrtok(char *a,char *b)
 {
-  char *tmp;
+  static char init[1024];
+         char *tmp;
 
   PetscFunctionBegin;
-#if defined(PARCH_linux)
-  /* Linux has bug in strtok() when argument is carriage return */
-  if (b && b[0] == '\n') PetscFunctionReturn(a);
-#endif
+  if (a) {
+    PetscStrncpy(init,a,1024);
+    a = init;
+  }
   tmp = strtok(a,b);
   PetscFunctionReturn(tmp);
 }

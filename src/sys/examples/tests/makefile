@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 1998/04/23 22:48:44 balay Exp bsmith $ 
+# $Id: makefile,v 1.21 1998/04/25 23:06:01 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -100,7 +100,7 @@ runex3:
 	   ${RM} -f ex3_1.tmp ex3_1.tmpz
 
 runex4:
-	-@${MPIRUN} -np 1 ex4 -fp_trap > ex4_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex4 > ex4_1.tmp 2>&1;\
 	   grep -v p0 ex4_1.tmp > ex4_1.tmpz ;	 \
 	   if (diff output/ex4_1.out ex4_1.tmpz) then true; \
 	   else echo "Error in ex4. Problem with PetscStrtok()"; fi; \
