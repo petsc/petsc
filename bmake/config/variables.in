@@ -8,13 +8,13 @@ DIFF               = @DIFF@
 
 AR                 = @AR@
 AR_FLAGS           = @AR_FLAGS@
-OMAKE              = @MAKE@ --no-print-directory
+OMAKE              = @MAKE@ @MAKE_FLAGS@
 RANLIB             = @RANLIB@
 MKDIR              = @MKDIR@
 @SET_MAKE@
 #
 PARCH              = @PETSC_ARCH@
-LIB_SUFFIX         = a
+LIB_SUFFIX         = @LIB_SUFFIX@
 
 top_builddir       = @PETSC_DIR@
 LIBTOOL            = @LIBTOOL@

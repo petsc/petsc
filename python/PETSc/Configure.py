@@ -15,8 +15,9 @@ class Configure(config.base.Configure):
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
-                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'readlink',
-                 'realpath', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'uname']
+                 'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
+                 'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
+                 'uname']
     libraries = [('dl', 'dlopen')]
     self.compilers   = self.framework.require('config.compilers', self)
     self.types       = self.framework.require('config.types',     self)
@@ -76,6 +77,7 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', 'F_VERSION', 'The version of the Fortran compiler')
     help.addOption('PETSc', 'FFLAGS_g', 'Flags for the Fortran compiler with BOPT=g')
     help.addOption('PETSc', 'FFLAGS_O', 'Flags for the Fortran compiler with BOPT=O')
+    help.addOption('PETSc', '-with-libtool', 'Specify that libtool should be used for compiling and linking', nargs.ArgBool)
 
     self.framework.argDB['enable-debug']           = 1
     self.framework.argDB['enable-log']             = 1
@@ -94,6 +96,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['PETSCFLAGS']             = ''
     self.framework.argDB['COPTFLAGS']              = ''
     self.framework.argDB['FOPTFLAGS']              = ''
+    self.framework.argDB['with-libtool']           = 0
 
     self.framework.argDB['BOPT'] = 'O'
     return
@@ -242,12 +245,22 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('FC_SHARED_OPT', option)
     return
 
+  def configureFortranStubs(self):
+    '''Determine whether the Fortran stubs exist or not'''
+    stubDir = os.path.join(self.framework.argDB['PETSC_DIR'], 'src', 'fortran', 'auto')
+    if not os.path.exists(os.path.join(stubDir, 'makefile.src')):
+      print '  WARNING: Fortran stubs have not been generated in '+stubDir
+    return
+
   def configureDynamicLibraries(self):
-    '''Checks for --enable-dynamic, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
+    '''Checks whether dynamic libraries should be used, for which you must
+      - Specify --enable-dynamic
+      - Find dlfcn.h and libdl
+    Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    useDynamic = self.framework.argDB['enable-dynamic']
-    self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic and self.libraries.haveLib('dl'))
-    if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
+    useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
+    self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
+    if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
       self.addDefine('HAVE_RTLD_GLOBAL', 1)
     # This is really bad
     flag = '-L'
@@ -320,11 +333,22 @@ class Configure(config.base.Configure):
     self.framework.getExecutable('sed',  getFullPath = 1)
     self.framework.getExecutable('diff', getFullPath = 1)
     self.framework.getExecutable('ar',   getFullPath = 1)
-    self.framework.getExecutable('make')
+    self.framework.getExecutable('make', getFullPath = 1)
+    try:
+      import commands
+      (status, output) = commands.getstatusoutput('strings '+self.framework.make)
+      flags            = ''
+      if not status and output.find('GNU Make') >= 0:
+        flags += ' --no-print-directory'
+      self.framework.addSubstitution('MAKE_FLAGS', flags.strip())
+    except Exception, e: print 'Make check failed: '+str(e)
     self.framework.addSubstitution('AR_FLAGS', 'cr')
     self.framework.getExecutable('ranlib')
     self.framework.addSubstitution('SET_MAKE', '')
-    self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
+    if self.framework.argDB['with-libtool']:
+      self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
+    else:
+      self.framework.addSubstitution('LIBTOOL', '')
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
@@ -341,9 +365,9 @@ class Configure(config.base.Configure):
 
   def configureMissingFunctions(self):
     '''Checks for MISSING_GETPWUID and MISSING_SOCKETS'''
-    if not self.functions.defines.has_key(self.functions.getDefineName('getpwuid')):
+    if not self.functions.haveFunction('getpwuid'):
       self.addDefine('MISSING_GETPWUID', 1)
-    if not self.functions.defines.has_key(self.functions.getDefineName('socket')):
+    if not self.functions.haveFunction('socket'):
       self.addDefine('MISSING_SOCKETS', 1)
     return
 
@@ -355,6 +379,15 @@ class Configure(config.base.Configure):
       self.addDefine('MISSING_SIGBUS', 1)
     if not self.checkCompile('#include <signal.h>\n', 'int i=SIGQUIT;\n\nif (i);\n'):
       self.addDefine('MISSING_SIGQUIT', 1)
+    return
+
+  def configureMemorySize(self):
+    '''Try to determine how to measure the memory usage'''
+    # Should also check for using procfs and kbytes for size
+    if self.functions.haveFunction('sbreak'):
+      self.addDefine('USE_SBREAK_FOR_SIZE', 1)
+    elif not (self.headers.haveHeader('sys/resource.h') and self.functions.haveFunction('getrusage')):
+        self.addDefine('HAVE_NO_GETRUSAGE', 1)
     return
 
   def configureX(self):
@@ -374,7 +407,7 @@ class Configure(config.base.Configure):
     return
 
   def configureFPTrap(self):
-    '''Checking the handling of flaoting point traps'''
+    '''Checking the handling of floating point traps'''
     if self.headers.check('sigfpe.h'):
       if self.functions.check('handle_sigfpes', libraries = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
@@ -389,6 +422,16 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
     return
 
+  def configureLibrarySuffix(self):
+    '''(Belongs in config.libraries) Determine the suffix used for libraries'''
+    # This is exactly like the libtool check
+    if self.archBase.find('win') >= 0 and not self.compilers.CC == 'gcc':
+      suffix = '.lib'
+    else:
+      suffix = '.a'
+    self.libraries.addSubstitution('LIB_SUFFIX', suffix)
+    return
+
   def configureIRIX(self):
     '''IRIX specific stuff'''
     if self.archBase == 'irix6.5':
@@ -399,6 +442,12 @@ class Configure(config.base.Configure):
     '''Linux specific stuff'''
     if self.archBase == 'linux':
       self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
+    return
+
+  def configureMacOSX(self):
+    '''Mac specific stuff'''
+    if self.archBase.startswith('darwin'):
+      self.framework.addDefine('MISSING_PROTOTYPES_EXTERN_C', 'void *memalign(size_t, size_t)')
     return
 
   def configureMachineInfo(self):
@@ -434,16 +483,20 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureCompilerFlags)
     self.executeTest(self.configureFortranPIC)
+    self.executeTest(self.configureFortranStubs)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configurePrograms)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
+    self.executeTest(self.configureMemorySize)
     self.executeTest(self.configureX)
     self.executeTest(self.configureFPTrap)
+    self.executeTest(self.configureLibrarySuffix)
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureLinux)
+    self.executeTest(self.configureMacOSX)
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
     self.executeTest(self.configureMPIUNI)
