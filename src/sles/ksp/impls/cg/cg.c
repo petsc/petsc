@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.108 2000/08/24 22:42:45 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.109 2000/09/02 02:49:10 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -201,7 +201,6 @@ int  KSPSolve_CG(KSP ksp,int *its)
      if (!pres) {ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr);} /* z <- Br  */
   }
   if (i == maxit) {
-    ksp->its--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;

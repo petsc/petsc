@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.56 2000/04/09 04:37:51 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.57 2000/04/12 04:24:56 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -116,8 +116,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
     Tmp = Qm1; Qm1 = Q; Q = Qp1; Qp1 = T = Tmp;
     bbotold = bbot; 
   }
-  if (i == maxit) {ksp->reason = KSP_DIVERGED_ITS; i--;}
-  *its = i;
+  if (i == maxit) {ksp->reason = KSP_DIVERGED_ITS;}
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

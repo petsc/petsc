@@ -1,4 +1,4 @@
-/*$Id: tcqmr.c,v 1.52 2000/04/09 04:38:04 bsmith Exp bsmith $*/
+/*$Id: tcqmr.c,v 1.53 2000/04/12 04:25:08 bsmith Exp bsmith $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
@@ -18,17 +18,16 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
   Scalar      theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
   Scalar      deltmp,rho,beta,eptmp,ta,s,c,tau_n,delta;
   Scalar      dp11,dp2,rhom1,alpha,tmp,zero = 0.0;
-  int         it,ierr;
+  int         ierr;
 
   PetscFunctionBegin;
   ksp->its = 0;
 
-  it    = 0;
   ierr  = KSPResidual(ksp,x,u,v,r,v0,b);CHKERRQ(ierr);
   ierr  = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
 
   ierr = (*ksp->converged)(ksp,0,rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  if (ksp->reason) {*its =  0; PetscFunctionReturn(0);}
+  if (ksp->reason) {*its = 0; PetscFunctionReturn(0);}
 
   ierr  = VecSet(&zero,um1);CHKERRQ(ierr);
   ierr  = VecCopy(r,u);CHKERRQ(ierr);
@@ -55,11 +54,11 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
   /*
    CALCULATE SQUARED LANCZOS  vectors
    */
-  ierr = (*ksp->converged)(ksp,it,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason){
+    KSPMonitor(ksp,ksp->its,rnorm);
     ksp->its++;
 
-    KSPMonitor(ksp,it,rnorm);
     ierr   = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(v0,y,&dp11);CHKERRQ(ierr);
     ierr   = VecDot(v0,u,&dp2);CHKERRQ(ierr);
@@ -100,11 +99,11 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
      SOLVE  Ax = b
    */
   /* Apply last two Given's (Gl-1 and Gl) rotations to (beta,alpha,Gamma) */
-    if (it > 1) {
+    if (ksp->its > 1) {
       theta =  sl1*beta;
       eptmp = -cl1*beta;
     }
-    if (it > 0) {
+    if (ksp->its > 0) {
       ep     = -cl*eptmp + sl*alpha;
       deltmp = -sl*eptmp - cl*alpha;
     }
@@ -133,15 +132,16 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
 #if defined(PETSC_USE_COMPLEX)
-    rnorm = rnorm0 * sqrt((double)it+2.0) * PetscRealPart(sprod);     
+    rnorm = rnorm0 * sqrt((double)ksp->its+2.0) * PetscRealPart(sprod);     
 #else
-    rnorm = rnorm0 * sqrt((double)it+2.0) * sprod;     
+    rnorm = rnorm0 * sqrt((double)ksp->its+2.0) * sprod;     
 #endif
-    it++; if (it > ksp->max_it) {ksp->reason = KSP_DIVERGED_ITS; break;}
+    if (ksp->its >= ksp->max_it) {ksp->reason = KSP_DIVERGED_ITS; break;}
   }
+  KSPMonitor(ksp,ksp->its,rnorm);
   ierr = KSPUnwindPreconditioner(ksp,x,vtmp);CHKERRQ(ierr);
 
-  *its = it;
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

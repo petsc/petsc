@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.4 2000/05/04 16:28:21 bsmith Exp bsmith $*/
+/*$Id: minres.c,v 1.5 2000/05/04 16:28:54 bsmith Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -169,7 +169,6 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
      if (ksp->reason) break;
   }
   if (i == maxit) {
-    ksp->its--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;

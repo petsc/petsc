@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.5 2000/09/04 02:22:13 hzhang Exp bsmith $*/
+/*$Id: symmlq.c,v 1.6 2000/09/08 17:48:28 bsmith Exp bsmith $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -172,7 +172,6 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   ierr = VecAXPY(&ceta_bar,Wbar,X);CHKERRQ(ierr); /* x <- x + ceta_bar*w_bar */
 
   if (i == maxit) {
-    ksp->its--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;

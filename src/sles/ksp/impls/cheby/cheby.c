@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.86 2000/05/04 14:04:10 balay Exp balay $*/
+/*$Id: cheby.c,v 1.87 2000/05/05 22:17:40 balay Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -170,7 +170,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   if (k) {
     ierr = VecCopy(p[k],x);CHKERRQ(ierr);
   }
-  *its = i+1;
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 
