@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.60 2001/03/31 04:21:33 bsmith Exp bsmith $ */
+/* $Id: petscis.h,v 1.61 2001/04/10 19:34:48 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -61,6 +61,7 @@ EXTERN int   ISStrideToGeneral(IS);
 
 EXTERN int   ISDuplicate(IS,IS*);
 EXTERN int   ISAllGather(IS,IS*);
+EXTERN int   ISAllGatherIndices(MPI_Comm,int,int*,int*,int**);
 
 /* --------------------------------------------------------------------------*/
 #define IS_LTOGM_COOKIE PETSC_COOKIE+12
@@ -133,9 +134,12 @@ EXTERN int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,int,ISLocalToGloba
 
     Level: beginner
 
+$   IS_COLORING_LOCAL - does not include the colors for ghost points
+$   IS_COLORING_GHOSTED - includes colors for ghost points
+
 .seealso: DAGetColoring()
 E*/
-typedef enum {IS_COLORING_GLOBAL,IS_COLORING_LOCAL} ISColoringType;
+typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
 
 /*S
      ISColorings - sets of IS's that define a coloring
@@ -151,6 +155,7 @@ typedef enum {IS_COLORING_GLOBAL,IS_COLORING_LOCAL} ISColoringType;
 .seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
 S*/
 struct _p_ISColoring {
+  int            refct;
   int            n;                /* number of colors */
   IS             *is;              /* for each color indicates columns */
   MPI_Comm       comm;
@@ -165,7 +170,7 @@ EXTERN int ISColoringDestroy(ISColoring);
 EXTERN int ISColoringView(ISColoring,PetscViewer);
 EXTERN int ISColoringGetIS(ISColoring,int*,IS*[]);
 EXTERN int ISColoringRestoreIS(ISColoring,IS*[]);
-
+#define ISColoringReference(coloring) (coloring->refct++,0)
 /* --------------------------------------------------------------------------*/
 
 EXTERN int ISPartitioningToNumbering(IS,IS*);
