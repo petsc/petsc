@@ -57,14 +57,6 @@ static int my_id=0;
 #endif
 
 
-void 
-error_msg_fatal_ (const char msg[])
-{
-  error_msg_fatal(msg);
-}
-
-
-
 /**********************************error.c*************************************
 Function error_msg_fatal()
 
@@ -73,8 +65,7 @@ Output: prints message to stdout.
 Return: na.
 Description: prints error message and terminates program.
 ***********************************error.c************************************/
-void 
-error_msg_fatal(const char msg[], ...)
+void error_msg_fatal(const char msg[], ...)
 {
   va_list    ap;
   const char *p;

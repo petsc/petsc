@@ -1541,7 +1541,6 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
           yv[il]   = xv[ir];
           yv[il+1] = xv[ir+1];
           yv[il+2] = xv[ir+2];
-          yv[il+3] = xv[ir+3];
         }
       }
     }  else if (addv == ADD_VALUES) {
@@ -1550,7 +1549,6 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
         yv[il]   += xv[ir];
         yv[il+1] += xv[ir+1];
         yv[il+2] += xv[ir+2];
-        yv[il+3] += xv[ir+3];
       }
 #if !defined(PETSC_USE_COMPLEX)
     }  else if (addv == MAX_VALUES) {
@@ -1559,7 +1557,6 @@ PetscErrorCode VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMod
         yv[il]   = PetscMax(yv[il],xv[ir]);
         yv[il+1] = PetscMax(yv[il+1],xv[ir+1]);
         yv[il+2] = PetscMax(yv[il+2],xv[ir+2]);
-        yv[il+3] = PetscMax(yv[il+3],xv[ir+3]);
       }
 #endif
     }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
@@ -1948,7 +1945,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
 
   /*  first count number of contributors to each processor */
   ierr = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
-  ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMalloc((nx+1)*sizeof(PetscInt),&owner);CHKERRQ(ierr);
   for (i=0; i<nx; i++) {
     idx = inidx[i];
