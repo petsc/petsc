@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.5 1998/12/17 22:07:56 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.6 1998/12/23 22:49:55 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -18,6 +18,10 @@ extern int  Kernel_A_gets_inverse_A_5(MatScalar *);
 /*
      These are Fortran kernels: They replace certain BLAS routines but
    have some arguments that may be single precision, rather than double
+   These routines are provided in src/fortran/kernels/sgemv.F 
+   They are pretty pitiful but get the job done. The intention is 
+   that for important block sizes (currently 3,4,5) custom inlined 
+   code is used.
 */
 #ifdef HAVE_FORTRAN_CAPS
 #define msgemv_  MSGEMV
@@ -58,7 +62,7 @@ EXTERN_C_END
 
 /* -----------------------------------------------------------------------*/
 
-#if defined(joe)
+#if !defined(USE_MAT_SINGLE)
 /*
         Version that calls the BLAS directly
 */
