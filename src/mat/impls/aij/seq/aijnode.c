@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.91 1998/11/06 23:07:39 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.92 1998/11/30 22:08:55 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1228,12 +1228,12 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   /* also map the inode sizes according to the reordering */
   tmp_vec       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
   for (i=0, j=0; i<node_max; ++i, ++j){
-    if (ns[i]>3) {
-      tmp_vec[j] = ns[i]/2; /* Assuming ns[i] < =5  */
+    if (ns[r[i]]>3) {
+      tmp_vec[j] = ns[r[i]]/2; /* Assuming ns[i] < =5  */
       ++j; 
-      tmp_vec[j] = ns[i] - tmp_vec[j-1];
+      tmp_vec[j] = ns[r[i]] - tmp_vec[j-1];
     } else {
-      tmp_vec[j] = ns[i];
+      tmp_vec[j] = ns[r[i]];
     }
   }
 
