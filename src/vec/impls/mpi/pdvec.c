@@ -19,6 +19,7 @@ static int VecDestroy_MPI(PetscObject obj )
   PLogObjectState(obj,"Rows %d",x->N);
 #endif  
   if (x->stash.array) FREE(x->stash.array);
+  FREE(x->array);
   FREE(v->data);
   PLogObjectDestroy(v);
   PETSCHEADERDESTROY(v);
@@ -33,7 +34,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
   MPI_Status  status;
   PetscObject vobj = (PetscObject) ptr;
 
-  MPI_Comm_rank(x->comm,&mytid); 
+  MPI_Comm_rank(xin->comm,&mytid); 
 
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
@@ -44,7 +45,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
   if (vobj->cookie == VIEWER_COOKIE) {
     FILE *fd = ViewerFileGetPointer_Private(ptr);
     if (vobj->type == FILE_VIEWER) {
-      MPE_Seq_begin(x->comm,1);
+      MPE_Seq_begin(xin->comm,1);
       fprintf(fd,"Processor [%d] \n",mytid);
       for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -54,14 +55,14 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
 #endif
       }
       fflush(fd);
-      MPE_Seq_end(x->comm,1);
+      MPE_Seq_end(xin->comm,1);
     }
     else if (vobj->type == FILES_VIEWER) {
       int        len, work = x->n,n,j,numtids;
       Scalar     *values;
       /* determine maximum message to arrive */
-      MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,x->comm);
-      MPI_Comm_size(x->comm,&numtids);
+      MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
+      MPI_Comm_size(xin->comm,&numtids);
 
       if (!mytid) {
         values = (Scalar *) MALLOC( len*sizeof(Scalar) ); CHKPTR(values);
@@ -75,7 +76,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
         }
         /* receive and print messages */
         for ( j=1; j<numtids; j++ ) {
-          MPI_Recv(values,len,MPI_SCALAR,j,47,x->comm,&status);
+          MPI_Recv(values,len,MPI_SCALAR,j,47,xin->comm,&status);
           MPI_Get_count(&status,MPI_SCALAR,&n);          
           fprintf(fd,"Processor [%d]\n",j);
           for ( i=0; i<n; i++ ) {
@@ -90,7 +91,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
       }
       else {
         /* send values */
-        MPI_Send(x->array,x->n,MPI_SCALAR,0,47,x->comm);
+        MPI_Send(x->array,x->n,MPI_SCALAR,0,47,xin->comm);
       }
     }
   }
@@ -99,7 +100,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
     int     start,end;
     double  coors[4],ymin,ymax,xmin,xmax,tmp;
 
-    MPI_Comm_size(x->comm,&numtid); 
+    MPI_Comm_size(xin->comm,&numtid); 
 
     xmin = 1.e20; xmax = -1.e20;
     for ( i=0; i<x->n; i++ ) {
@@ -111,9 +112,9 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
       else if (x->array[i] > xmax) xmax = x->array[i];
 #endif
     }
-    MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,x->comm);
-    MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,x->comm);
-    MPI_Comm_rank(x->comm,&mytid);
+    MPI_Reduce(&xmin,&ymin,1,MPI_DOUBLE,MPI_MIN,0,xin->comm);
+    MPI_Reduce(&xmax,&ymax,1,MPI_DOUBLE,MPI_MAX,0,xin->comm);
+    MPI_Comm_rank(xin->comm,&mytid);
     if (!mytid) {
       DrawAxisCtx axis;
       DrawClear(win); DrawFlush(win);
@@ -123,12 +124,12 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
       DrawAxisDestroy(axis);
       DrawGetCoordinates(win,coors,coors+1,coors+2,coors+3);
     }
-    MPI_Bcast(coors,4,MPI_DOUBLE,0,x->comm);
+    MPI_Bcast(coors,4,MPI_DOUBLE,0,xin->comm);
     if (mytid) DrawSetCoordinates(win,coors[0],coors[1],coors[2],coors[3]);
     /* draw local part of vector */
     VecGetOwnershipRange(xin,&start,&end);
     if (mytid < numtid-1) { /*send value to right */
-      MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,mytid+1,58,x->comm);
+      MPI_Send(&x->array[x->n-1],1,MPI_DOUBLE,mytid+1,58,xin->comm);
     }
     for ( i=1; i<x->n; i++ ) {
 #if !defined(PETSC_COMPLEX)
@@ -140,7 +141,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
 #endif
     }
     if (mytid) { /* receive value from right */
-      MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,58,x->comm,&status);
+      MPI_Recv(&tmp,1,MPI_DOUBLE,mytid-1,58,xin->comm,&status);
 #if !defined(PETSC_COMPLEX)
       DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],
                    DRAW_RED,DRAW_RED);
@@ -156,8 +157,8 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
     DrawCtx   win;
     double    *xx,*yy;
     int       N = x->N,*lens;
-    MPI_Comm_rank(x->comm,&mytid);
-    MPI_Comm_size(x->comm,&numtid);
+    MPI_Comm_rank(xin->comm,&mytid);
+    MPI_Comm_size(xin->comm,&numtid);
     if (!mytid) {
       DrawLGReset(lg);
       xx = (double *) MALLOC( 2*N*sizeof(double) ); CHKPTR(xx);
@@ -170,7 +171,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
       /* The next line is wrong for complex, one should stride out the 
          real part of x->array and Gatherv that */
       MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,
-                  0,x->comm);
+                  0,xin->comm);
       FREE(lens);
       DrawLGAddPoints(lg,N,&xx,&yy);
       FREE(xx);
@@ -179,7 +180,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
     else {
       /* The next line is wrong for complex, one should stride out the 
          real part of x->array and Gatherv that */
-      MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,x->comm);
+      MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
     }
     DrawLGGetDrawCtx(lg,&win);
     DrawSyncFlush(win);
@@ -267,7 +268,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   int         *owner,*starts,count,tag = 22;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
-  MPI_Comm    comm = x->comm;
+  MPI_Comm    comm = xin->comm;
   MPI_Request *send_waits,*recv_waits;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */

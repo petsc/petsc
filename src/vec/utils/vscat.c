@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.21 1995/05/16 00:58:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.22 1995/05/18 22:43:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -247,7 +247,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       if (nx != ny) SETERR(1,"Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,
-                    MPI_LAND,x->comm);
+                    MPI_LAND,xin->comm);
       if (cando) {
         to = (VecScatterStride *) MALLOC(sizeof(VecScatterStride)); 
         CHKPTR(to);
@@ -286,7 +286,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       if (nx != ny) SETERR(1,"Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,
-                    MPI_LAND,y->comm);
+                    MPI_LAND,yin->comm);
       if (cando) {
         to = (VecScatterStride *) MALLOC(sizeof(VecScatterStride)); 
         CHKPTR(to);

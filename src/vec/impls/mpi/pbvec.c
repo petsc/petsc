@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.24 1995/05/05 20:05:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.25 1995/05/18 22:43:47 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -25,7 +25,7 @@ static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
   Vec_MPI *x = (Vec_MPI *)xin->data;
   Scalar    sum, work;
   VecDot_Blas(  xin, yin, &work );
-  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_SCALAR,MPI_SUM,x->comm );
+  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_SCALAR,MPI_SUM,xin->comm );
   *z = sum;
   return 0;
 }
@@ -35,13 +35,13 @@ static int VecAsum_MPIBlas(  Vec xin, double *z )
   Vec_MPI *x = (Vec_MPI *) xin->data;
   double work;
   VecAsum_Blas( xin, &work );
-  MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_SUM,x->comm );
+  MPI_Allreduce((void *) &work,(void *) z,1,MPI_DOUBLE,MPI_SUM,xin->comm );
   return 0;
 }
 
-static int VecCreate_MPIBlas( Vec, Vec *);
+static int VecDuplicate_MPIBlas( Vec, Vec *);
 
-static struct _VeOps DvOps = { VecCreate_MPIBlas, 
+static struct _VeOps DvOps = { VecDuplicate_MPIBlas, 
             Veiobtain_vectors, Veirelease_vectors, VecDot_MPIBlas, 
             VecMDot_MPI,
             VecNorm_MPI, VecAMax_MPI, VecAsum_MPIBlas, VecDot_MPIBlas, 
@@ -55,15 +55,15 @@ static struct _VeOps DvOps = { VecCreate_MPIBlas,
             VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,
             VecGetOwnershipRange_MPI,0,VecMax_MPI,VecMin_MPI};
 
-static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
-                            int *owners,Vec *vv)
+static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
+                                int mytid,int *owners,Vec *vv)
 {
-  Vec       v;
+  Vec     v;
   Vec_MPI *s;
-  int       size,i;
+  int     size,i;
   *vv = 0;
 
-  size           = sizeof(Vec_MPI)+n*sizeof(Scalar)+(numtids+1)*sizeof(int);
+  size           = sizeof(Vec_MPI)+(numtids+1)*sizeof(int);
   PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,MPIVECTOR,comm);
   PLogObjectCreate(v);
   s              = (Vec_MPI *) MALLOC(size); CHKPTR(s);
@@ -75,8 +75,8 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
   s->N           = N;
   s->numtids     = numtids;
   s->mytid       = mytid;
-  s->array       = (Scalar *)(s + 1);
-  s->ownership   = (int *) (s->array + n);
+  s->array       = (Scalar *) MALLOC(n*sizeof(Scalar));CHKPTR(s->array);
+  s->ownership   = (int *) (s + 1);
   s->insertmode  = NOTSETVALUES;
   if (owners) {
     MEMCPY(s->ownership,owners,(numtids+1)*sizeof(int));
@@ -133,10 +133,11 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
   return VecCreateMPIBLASBase(comm,n,N,numtids,mytid,0,vv);
 }
 
-static int VecCreate_MPIBlas( Vec win, Vec *v)
+static int VecDuplicate_MPIBlas( Vec win, Vec *v)
 {
   Vec_MPI *w = (Vec_MPI *)win->data;
-  return VecCreateMPIBLASBase(w->comm,w->n,w->N,w->numtids,w->mytid,w->ownership,v);
+  return VecCreateMPIBLASBase(win->comm,w->n,w->N,w->numtids,w->mytid,
+                              w->ownership,v);
 }
 
 

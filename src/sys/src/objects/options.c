@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.6 1995/05/16 00:32:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.7 1995/05/18 22:44:42 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -15,27 +15,32 @@ static char vcid[] = "$Id: options.c,v 1.6 1995/05/16 00:32:22 curfman Exp bsmit
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
+#include "pviewer.h"
 #include "petscfix.h"
 
 /* 
     For simplicity, we begin with a static size database
 */
 #define MAXOPTIONS 256
+#define MAXALIASES 10
 
 typedef struct {
-  int  N,argc;
+  int  N,argc,Naliases;
   char **args,*names[MAXOPTIONS],*values[MAXOPTIONS];
+  char *aliases1[MAXALIASES],*aliases2[MAXALIASES];
   int  used[MAXOPTIONS];
   int  namegiven;
   char programname[64];
 } OptionsTable;
 
 static OptionsTable *options = 0;
-static int PetscBeganMPI = 0;
+static int          PetscBeganMPI = 0;
 
-extern int ViewerInitialize_Private(),
+static int OptionsCheckInitial_Private(),
            OptionsCreate_Private(int*,char***,char*,char*),
-           OptionsDestroy_Private();
+           OptionsDestroy_Private(),
+           OptionsSetAlias_Private(char *,char *);
+
 /*@
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize calls MPI_Init() if that has yet to be called,
@@ -66,8 +71,10 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
     ierr = MPI_Init(argc,args); CHKERR(ierr);
     PetscBeganMPI = 1;
   }
-  ViewerInitialize_Private();
-  return OptionsCreate_Private(argc,args,file,env);
+  ierr = ViewerInitialize_Private(); CHKERR(ierr);
+  ierr = OptionsCreate_Private(argc,args,file,env); CHKERR(ierr);
+  ierr = OptionsCheckInitial_Private(); CHKERR(ierr);
+  return 0;
 }
 
 /*@ 
@@ -92,14 +99,13 @@ $      with PETSC_LOG)
 @*/
 int PetscFinalize()
 {
-  int  ierr,i,mytid = 0,MPI_Used;
+  int  ierr,i,mytid = 0;
 
-  MPI_Initialized(&MPI_Used);
   if (!OptionsHasName(0,"-no_signal_handler")) {
     PetscPopSignalHandler();
   }
   OptionsHasName(0,"-trdump");
-  if (MPI_Used) {MPI_Comm_rank(MPI_COMM_WORLD,&mytid);}
+  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   if (OptionsHasName(0,"-optionstable")) {
     if (!mytid) OptionsPrint(stderr);
   }
@@ -125,40 +131,33 @@ int PetscFinalize()
 #if defined(PETSC_LOG)
   {
     char monitorname[64];
-    if (OptionsGetString("-logall",monitorname,64) || 
-        OptionsGetString("-log",monitorname,64)) {
+    if (OptionsGetString(0,"-logall",monitorname,64) || 
+        OptionsGetString(0,"-log",monitorname,64)) {
       if (monitorname[0]) PLogDump(monitorname); 
       else PLogDump(0);
     }
   }
 #endif
-#if defined(PETSC_MALLOC)
   if (OptionsHasName(0,"-trdump")) {
     OptionsDestroy_Private();
     NRDestroyAll();
-    if (MPI_Used) {MPE_Seq_begin(MPI_COMM_WORLD,1);}
+    MPE_Seq_begin(MPI_COMM_WORLD,1);
       ierr = Trdump(stderr); CHKERR(ierr);
-    if (MPI_Used) {MPE_Seq_end(MPI_COMM_WORLD,1);}
+    MPE_Seq_end(MPI_COMM_WORLD,1);
   }
   else {
     OptionsDestroy_Private();
     NRDestroyAll(); 
   }
-#else
-  OptionsDestroy_Private();
-  NRDestroyAll();
-#endif
-  if (MPI_Used) { 
-    if (PetscBeganMPI) {
+  if (PetscBeganMPI) {
       ierr = MPI_Finalize(); CHKERR(ierr);
-    }
   }
   return 0;
 }
  
 /* 
    This is ugly and probably belongs somewhere else, but I want to 
-  be able to put a true MPI abort error handler with commandline args.
+  be able to put a true MPI abort error handler with command line args.
 
     This is so MPI errors in the debugger will leave all the stack 
   frames. The default abort cleans up and exits.
@@ -170,24 +169,23 @@ void abort_function(MPI_Comm *comm,int *flag)
   abort();
 }
 
-#if defined(PARCH_sun4) && defined(__cplusplus) && defined(PETSC_MALLOC)
+#if defined(PARCH_sun4) && defined(__cplusplus)
 extern "C" {
   extern int malloc_debug(int);
 };
 #endif
 
 extern int PLogAllowInfo(PetscTruth);
-/* 
-   This is called by OptionsCreate_Private(). It checks for any initialization
-  options the user may like. At the moment is only support for type
-  of run-time error handling.
-*/
-int OptionsCheckInitial()
+
+static int OptionsCheckInitial_Private()
 {
   char     string[64];
   MPI_Comm comm = MPI_COMM_WORLD;
 
-#if defined(PARCH_sun4) && defined(PETSC_DEBUG) && defined(PETSC_MALLOC)
+  if (OptionsHasName(0,"-trdump")) {
+    PetscSetUseTrMalloc_Private();
+  }
+#if defined(PARCH_sun4) && defined(PETSC_DEBUG)
   if (OptionsHasName(0,"-malloc_debug")) {
     malloc_debug(2);
   }
@@ -210,21 +208,21 @@ int OptionsCheckInitial()
   if (OptionsHasName(0,"-on_error_abort")) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
   }
-  if (OptionsGetString("-on_error_attach_debugger",string,64)) {
+  if (OptionsGetString(0,"-on_error_attach_debugger",string,64)) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0;
     if (strstr(string,"noxterm")) xterm = 0;
     if (strstr(string,"dbx"))     debugger = "dbx";
     if (strstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString("-display",string,64)){
+    if (OptionsGetString(0,"-display",string,64)){
       display = string;
     }
     if (!display) {MPE_Set_display(comm,&display); sfree = 1;}; 
     PetscSetDebugger(debugger,xterm,display);
-    if (sfree) FREE(display);
+    if (sfree) free(display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
-  if (OptionsGetString("-start_in_debugger",string,64)) {
+  if (OptionsGetString(0,"-start_in_debugger",string,64)) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0,numtid = 1;
     MPI_Errhandler abort_handler;
@@ -248,12 +246,12 @@ int OptionsCheckInitial()
     if (strstr(string,"noxterm")) xterm = 0;
     if (strstr(string,"dbx"))     debugger = "dbx";
     if (strstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString("-display",string,64)){
+    if (OptionsGetString(0,"-display",string,64)){
       display = string;
     }
     if (!display) {MPE_Set_display(comm,&display);sfree = 1;} 
     PetscSetDebugger(debugger,xterm,display);
-    if (sfree) FREE(display);
+    if (sfree) free(display);
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
     PetscAttachDebugger();
     MPI_Errhandler_create((MPI_Handler_function*)abort_function,
@@ -273,27 +271,28 @@ int OptionsCheckInitial()
   if (OptionsHasName(0,"-info")) {
     PLogAllowInfo(PETSC_TRUE);
   }
+
 #endif
   if (OptionsHasName(0,"-help")) {
-    fprintf(stderr,"Options for all PETSc programs:\n");
-    fprintf(stderr," -on_error_abort: cause an abort when an error is");
-    fprintf(stderr," detected. Useful \n       only when run in the debugger\n");
-    fprintf(stderr," -on_error_attach_debugger [dbx,xxgdb,noxterm]"); 
-    fprintf(stderr," [-display display]:\n");
-    fprintf(stderr,"       start the debugger (gdb by default) in new xterm\n");
-    fprintf(stderr,"       unless noxterm is given\n");
-    fprintf(stderr," -start_in_debugger [dbx,xxgdb,noxterm]");
-    fprintf(stderr," [-display display]:\n");
-    fprintf(stderr,"       start all processes in the debugger\n");
-    fprintf(stderr," -no_signal_handler: do not trap error signals\n");
-    fprintf(stderr," -fp_trap: stop on floating point exceptions\n");
-    fprintf(stderr," -trdump: dump list of unfreed memory at conclusion\n");
-    fprintf(stderr," -optionstable: dump list of options inputted\n");
-    fprintf(stderr," -optionsleft: dump list of unused options\n");
-    fprintf(stderr," -optionsused: print number of unused options\n");
-    fprintf(stderr," -monitor: logging objects and events\n");
-    fprintf(stderr," -v: prints PETSc version number and release date\n");
-    fprintf(stderr,"-----------------------------------------------\n");
+    MPE_printf(comm,"Options for all PETSc programs:\n");
+    MPE_printf(comm," -on_error_abort: cause an abort when an error is");
+    MPE_printf(comm," detected. Useful \n       only when run in the debugger\n");
+    MPE_printf(comm," -on_error_attach_debugger [dbx,xxgdb,noxterm]"); 
+    MPE_printf(comm," [-display display]:\n");
+    MPE_printf(comm,"       start the debugger (gdb by default) in new xterm\n");
+    MPE_printf(comm,"       unless noxterm is given\n");
+    MPE_printf(comm," -start_in_debugger [dbx,xxgdb,noxterm]");
+    MPE_printf(comm," [-display display]:\n");
+    MPE_printf(comm,"       start all processes in the debugger\n");
+    MPE_printf(comm," -no_signal_handler: do not trap error signals\n");
+    MPE_printf(comm," -fp_trap: stop on floating point exceptions\n");
+    MPE_printf(comm," -trdump: dump list of unfreed memory at conclusion\n");
+    MPE_printf(comm," -optionstable: dump list of options inputted\n");
+    MPE_printf(comm," -optionsleft: dump list of unused options\n");
+    MPE_printf(comm," -optionsused: print number of unused options\n");
+    MPE_printf(comm," -monitor: logging objects and events\n");
+    MPE_printf(comm," -v: prints PETSc version number and release date\n");
+    MPE_printf(comm,"-----------------------------------------------\n");
   }
   return 0;
 }
@@ -323,12 +322,12 @@ char *OptionsGetProgramName()
 
 .seealso: OptionsDestroy_Private(), OptionsPrint()
 */
-int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
+static int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
 {
   int  ierr;
   char pfile[128];
   if (!options) {
-    options = (OptionsTable*) MALLOC(sizeof(OptionsTable)); CHKPTR(options);
+    options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTR(options);
     MEMSET(options->used,0,MAXOPTIONS*sizeof(int));
   }
   if (!env) env = "PETSC_OPTIONS";
@@ -346,15 +345,23 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
 
   /* insert file options */
   {
-    char string[128],*first,*second;
+    char string[128],*first,*second,*third;
     int   len;
     FILE *fd = fopen(file,"r"); 
     if (fd) {
       while (fgets(string,128,fd)) {
         first = strtok(string," ");
         second = strtok(0," ");
-        if (second) {len = strlen(second); second[len-1] = 0;}
-        if (first && first[0] == '-') OptionsSetValue(first,second);
+        if (first && first[0] == '-') {
+          OptionsSetValue(first,second);
+          if (second) {len = strlen(second); second[len-1] = 0;}
+        }
+        else if (first && !strcmp(first,"alias")) {
+          third = strtok(0," ");
+          if (!third) SETERR(1,"Error in options file after alias");
+          len = strlen(third); third[len-1] = 0;
+          ierr = OptionsSetAlias_Private(second,third); CHKERR(ierr);
+        }
       }
       fclose(fd);
     }
@@ -396,7 +403,6 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
       }
     }
   }
-  OptionsCheckInitial();
   return 0;
 }
 
@@ -436,15 +442,19 @@ int OptionsPrint(FILE *fd)
 
 .seealso: OptionsCreate_Private()
 */
-int OptionsDestroy_Private()
+static int OptionsDestroy_Private()
 {
   int i;
   if (!options) return 0;
   for ( i=0; i<options->N; i++ ) {
-    if (options->names[i]) FREE(options->names[i]);
-    if (options->values[i]) FREE(options->values[i]);
+    if (options->names[i]) free(options->names[i]);
+    if (options->values[i]) free(options->values[i]);
   }
-  FREE(options);
+  for ( i=0; i<options->Naliases; i++ ) {
+    free(options->aliases1[i]);
+    free(options->aliases2[i]);
+  }
+  free(options);
   options = 0;
   return 0;
 }
@@ -473,15 +483,24 @@ int OptionsSetValue(char *name,char *value)
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
   if (!strcmp(name,"-h")) name = "-help";
 
+  /* first check against aliases */
+  N = options->Naliases; 
+  for ( i=0; i<N; i++ ) {
+    if (!strcmp(options->aliases1[i],name)) {
+      name = options->aliases2[i];
+      break;
+    }
+  }
+
   N = options->N; n = N;
   names = options->names; 
  
   for ( i=0; i<N; i++ ) {
     if (strcmp(names[i],name) == 0) {
-      if (options->values[i]) FREE(options->values[i]);
+      if (options->values[i]) free(options->values[i]);
       len = strlen(value);
       if (len) {
-        options->values[i] = (char *) MALLOC( len ); 
+        options->values[i] = (char *) malloc( len ); 
         CHKPTR(options->values[i]);
         strcpy(options->values[i],value);
       }
@@ -506,11 +525,11 @@ int OptionsSetValue(char *name,char *value)
   }
   /* insert new name and value */
   len = (strlen(name)+1)*sizeof(char);
-  names[n] = (char *) MALLOC( len ); CHKPTR(names[n]);
+  names[n] = (char *) malloc( len ); CHKPTR(names[n]);
   strcpy(names[n],name);
   if (value) {
     len = (strlen(value)+1)*sizeof(char);
-    options->values[n] = (char *) MALLOC( len ); CHKPTR(options->values[n]);
+    options->values[n] = (char *) malloc( len ); CHKPTR(options->values[n]);
     strcpy(options->values[n],value);
   }
   else {options->values[n] = 0;}
@@ -518,7 +537,23 @@ int OptionsSetValue(char *name,char *value)
   return 0;
 }
 
-static int OptionsFindPair( char *pre,char *name,char **value)
+static int OptionsSetAlias_Private(char *newname,char *oldname)
+{
+  int len,n = options->Naliases;
+
+  if (n >= MAXALIASES) {
+    SETERR(1,"You have to many option aliases defined");
+  }
+  len = (strlen(newname)+1)*sizeof(char);
+  options->aliases1[n] = (char *) malloc( len ); CHKPTR(options->aliases1[n]);
+  strcpy(options->aliases1[n],newname);
+  len = (strlen(oldname)+1)*sizeof(char);
+  options->aliases2[n] = (char *) malloc( len );CHKPTR(options->aliases2[n]);
+  strcpy(options->aliases2[n],oldname);
+  options->Naliases++;
+  return 0;
+}
+static int OptionsFindPair_Private( char *pre,char *name,char **value)
 {
   int  i, N;
   char **names,tmp[128];
@@ -561,7 +596,7 @@ $  -1 if an error is detected.
 int OptionsHasName(char* pre,char *name)
 {
   char *value;
-  if (!OptionsFindPair(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
   return 1;
 }
 
@@ -584,7 +619,7 @@ int OptionsHasName(char* pre,char *name)
 int OptionsGetInt(char*pre,char *name,int *ivalue)
 {
   char *value;
-  if (!OptionsFindPair(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
   if (!value) SETERR(1,"Missing value for option");
   *ivalue = atoi(value);
   return 1; 
@@ -609,7 +644,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
 int OptionsGetDouble(char* pre,char *name,double *dvalue)
 {
   char *value;
-  if (!OptionsFindPair(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
   *dvalue = atof(value);
   return 1; 
 } 
@@ -638,7 +673,7 @@ int OptionsGetDoubleArray(char* pre,char *name,
 {
   char *value;
   int  n = 0;
-  if (!OptionsFindPair(pre,name,&value)) {*nmax = 0; return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {*nmax = 0; return 0;}
   value = strtok(value,",");
   while (n < *nmax) {
     if (!value) break;
@@ -674,7 +709,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
 {
   char *value;
   int  n = 0;
-  if (!OptionsFindPair(pre,name,&value)) {*nmax = 0; return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {*nmax = 0; return 0;}
   value = strtok(value,",");
   while (n < *nmax) {
     if (!value) break;
@@ -705,7 +740,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
 int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 {
   char *value;
-  if (!OptionsFindPair(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
   if (!value) SETERR(1,"Missing value for option");
   *dvalue = atof(value);
   return 1; 
@@ -732,7 +767,7 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 int OptionsGetString(char *pre,char *name,char *string,int len)
 {
   char *value;
-  if (!OptionsFindPair(pre,name,&value)) {return 0;}
+  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
   if (value) strncpy(string,value,len);
   else MEMSET(string,0,len);
   return 1; 

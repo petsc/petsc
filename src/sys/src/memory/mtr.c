@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.11 1995/04/15 18:10:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.12 1995/05/14 16:32:28 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -18,25 +18,37 @@ static char vcid[] = "$Id: tr.c,v 1.11 1995/04/15 18:10:40 bsmith Exp bsmith $";
 #endif
 #include "petscfix.h"
 
-#if defined(PETSC_MALLOC)
+void *TrMalloc(unsigned int, int, char *);
+int TrFree( void *, int, char * );
+
+
 /*
    Experimental code for checking if a pointer is out of the range 
   of malloced memory. This will only work on flat memory models and 
   even then is suspicious.
 */
-void *PetscLow = (void *) 0xEEEEEEEE  , *PetscHigh = (void *) 0x0;
+void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
+
+int PetscSetUseTrMalloc_Private()
+{
+  PetscLow = (void *) 0xEEEEEEEE;
+  PetscHigh = (void *) 0x0;
+  PetscSetMalloc_Private((void *(*)(int,...))TrMalloc,
+                         (int(*)(void*,...))TrFree);
+  return 0;
+}
 
 /*D
     Trspace - Routines for tracing space usage.
 
     Description:
-    Trmalloc replaces malloc and Trfree replaces free.  These routines
+    TrMalloc replaces malloc and TrFree replaces free.  These routines
     have the same syntax and semantics as the routines that they replace,
     In addition, there are routines to report statistics on the memory
     usage, and to report the currently allocated space.  These routines
     are built on top of malloc and free, and can be used together with
-    them as long as any space allocated with Trmalloc is only freed with
-    Trfree.
+    them as long as any space allocated with TrMalloc is only freed with
+    TrFree.
  D*/
 
 /* HEADER_DOUBLES is the number of doubles in a trSPACE header */
@@ -146,7 +158,7 @@ int Trvalid(int line,char *file )
 }
 
 /*@C
-    Trmalloc - Malloc with tracing.
+    TrMalloc - Malloc with tracing.
 
     Input Parameters:
 .   a   - number of bytes to allocate
@@ -157,7 +169,7 @@ int Trvalid(int line,char *file )
     double aligned pointer to requested storage, or null if not
     available.
  @*/
-void *Trmalloc(unsigned int a, int lineno, char *fname )
+void *TrMalloc(unsigned int a, int lineno, char *fname )
 {
   TRSPACE          *head;
   char             *inew;
@@ -217,14 +229,14 @@ void *Trmalloc(unsigned int a, int lineno, char *fname )
 
 
 /*@C
-   Trfree - Free with tracing.
+   TrFree - Free with tracing.
 
    Input Parameters:
-.  a    - pointer to a block allocated with Trmalloc
+.  a    - pointer to a block allocated with TrMalloc
 .  line - line in file where called
 .  file - Name of file where called
  @*/
-int Trfree( void *aa, int line, char *file )
+int TrFree( void *aa, int line, char *file )
 {
   char    *a = (char *) aa;
   TRSPACE *head;
@@ -245,7 +257,7 @@ int Trfree( void *aa, int line, char *file )
   if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %lx is corrupted; cannot free;\n\
-may be block not allocated with Trmalloc or MALLOC\n", a );
+may be block not allocated with TrMalloc or MALLOC\n", a );
     SETERR(1,0);
   }
   nend = (unsigned long *)(ahead + head->size);
@@ -447,7 +459,7 @@ int Trlevel( int level )
 
     Input Parameter:
 .   level - level of debugging.  Currently, either 0 (no checking) or 1
-    (use Trvalid at each Trmalloc or Trfree).
+    (use Trvalid at each TrMalloc or TrFree).
 @*/
 int  TrDebugLevel(int level )
 {
@@ -472,7 +484,7 @@ void *Trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
 {
   void *p;
 
-  p = Trmalloc( (unsigned)(nelem*elsize), lineno, fname );
+  p = TrMalloc( (unsigned)(nelem*elsize), lineno, fname );
   if (!p) {
     MEMSET(p,0,nelem*elsize);
   }
@@ -500,7 +512,7 @@ void *Trrealloc(void * p, int size, int lineno, char *fname )
   int     nsize;
   TRSPACE *head;
 
-  pnew = Trmalloc( (unsigned)size, lineno, fname );
+  pnew = TrMalloc( (unsigned)size, lineno, fname );
   if (!pnew) return p;
 
   /* We should really use the size of the old block... */
@@ -509,7 +521,7 @@ void *Trrealloc(void * p, int size, int lineno, char *fname )
   if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %lx is corrupted; cannot realloc;\n\
-may be block not allocated with Trmalloc or MALLOC\n", pa );
+may be block not allocated with TrMalloc or MALLOC\n", pa );
     return (void *) 0;
   }
   nsize = size;
@@ -629,8 +641,3 @@ int TrdumpGrouped(FILE *fp )
   return 0;
 }
 
-#else
-void super_dummy() { /* dummy so we don't have empty .o file */
-  fprintf(stderr,"A dummy function");
-}
-#endif

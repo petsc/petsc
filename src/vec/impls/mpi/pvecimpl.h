@@ -19,7 +19,7 @@ typedef struct {
     MPI_Request *send_waits,*recv_waits;
     int         nsends,nrecvs;
     Scalar      *svalues,*rvalues;
-    int         rmax,pad2;
+    int         rmax;
 } Vec_MPI;
 
 #endif
