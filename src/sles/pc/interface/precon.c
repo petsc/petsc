@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.114 1997/01/12 02:38:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.115 1997/01/12 20:19:43 curfman Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
 #include "src/pc/pcimpl.h"            /*I "pc.h" I*/
-#include "pinclude/pviewer.h"
+#include "pinclude/pviewer.h"         /*I "ksp.h"I*/
 
 extern int PCPrintTypes_Private(MPI_Comm,char*,char*);
 
