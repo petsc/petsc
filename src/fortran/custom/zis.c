@@ -3,6 +3,7 @@
 #include "src/fortran/custom/zpetsc.h"
 #include "petscis.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define isduplicate_           ISDUPLICATE
 #define ispartitioningcount_   ISPARTITIONINGCOUNT
 #define isdestroy_             ISDESTROY
 #define iscreatestride_        ISCREATESTRIDE
@@ -30,6 +31,7 @@
 #define islocaltoglobalmappingapply_  ISLOCALTOGLOBALMAPPINGAPPLY
 #define islocaltoglobalmappingview_  ISLOCALTOGLOBALMAPPINGVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define isduplicate_           isduplicate
 #define islocaltoglobalmappingview_   islocaltoglobalmappingview
 #define islocaltoglobalmappingapply_  islocaltoglobalmappingapply
 #define iscoloringview_        iscoloringview
@@ -59,6 +61,11 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL isduplicate_(IS *is,IS *newis,int *ierr)
+{
+  *ierr = ISDuplicate(*is,newis);
+}
 
 void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,int *ierr)
 {
