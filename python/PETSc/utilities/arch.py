@@ -26,7 +26,8 @@ class Configure(config.base.Configure):
         (self.dir, error, status) = self.executeShellCommand('cygpath -au '+self.dir)
       except RuntimeError:
         pass
-    self.addSubstitution('DIR', self.dir)
+    #  HMMm, not good a macro name DIR???
+    self.addMakeMacro('DIR', self.dir)
     self.addDefine('DIR', self.dir)
     self.framework.argDB['PETSC_DIR'] = self.dir
     return

@@ -117,17 +117,11 @@ class Configure(config.base.Configure):
         self.downLoadSowing()
         
       if hasattr(self, 'bfort'):
-        self.framework.addSubstitution('BFORT', self.bfort)
-        self.framework.addSubstitution('DOCTEXT', self.doctext)
-        self.framework.addSubstitution('MAPNAMES', self.mapnames)
-        self.framework.addSubstitution('BIB2HTML', self.bib2html)        
-
         self.framework.getExecutable('pdflatex', getFullPath = 1)
         if hasattr(self.framework, 'pdflatex'):
           self.pdflatex = self.framework.pdflatex
         else:
           self.pdflatex = 'CouldNotFind'
-        self.framework.addSubstitution('PDFLATEX', self.pdflatex)
       else:
         message = 'See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\nto obtain Sowing\n'
         self.framework.log.write(message)

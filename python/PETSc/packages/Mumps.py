@@ -404,20 +404,12 @@ framework.log)[0]
     return
 
   def setFoundOutput(self):
-    self.addSubstitution(self.PACKAGE+'_INCLUDE',' '.join(['-I'+inc for inc in self.include]))
-    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib+self.scalapacklib+self.blacslib)))
     self.addDefine('HAVE_'+self.PACKAGE,1)
     self.framework.packages.append(self)
             
-  def setEmptyOutput(self):
-    self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
-    self.addSubstitution(self.PACKAGE+'_LIB', '')
-    return
-
   def configure(self):
     if self.framework.argDB['download-'+self.package]: self.framework.argDB['with-'+self.package] = 1
     if not self.framework.argDB['with-'+self.package] or self.framework.argDB['with-64-bit-ints']:
-      self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)
     return

@@ -69,7 +69,6 @@ class Configure(config.base.Configure):
             matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
 
             self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+matlab_arch+'\n')
-            self.addDefine('HAVE_MATLAB', 1)
             self.mex = os.path.join(matlab,'bin','mex')
             self.cc = '${CC}'
             self.command = os.path.join(matlab,'bin','matlab')
@@ -83,7 +82,7 @@ class Configure(config.base.Configure):
               matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
             else:
               matlab_sys = ''
-            self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'bin',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
+            self.lib = ['${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys,'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-L'+os.path.join(matlab,'bin',matlab_arch),'-leng','-lmx','-lmat','-lut'+matlab_dl]
             self.framework.packages.append(self)
             return
       except RuntimeError:

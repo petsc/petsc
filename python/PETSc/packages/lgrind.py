@@ -80,9 +80,7 @@ class Configure(config.base.Configure):
       self.framework.log.write('BitKeeper clone of PETSc, checking for Lgrind\n')
       self.downLoadLgrind()
         
-      if hasattr(self, 'lgrind'):
-        self.framework.addSubstitution('LGRIND', self.lgrind)
-      else:
+      if not hasattr(self, 'lgrind'):
         raise RuntimeError('Could not install Lgrind\n')
     else:
       self.framework.log.write("Not BitKeeper clone of PETSc, don't need Lgrind\n")

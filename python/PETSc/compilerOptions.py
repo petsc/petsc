@@ -2,7 +2,7 @@ import config.base
 import os
 import re
 
-class Options(config.base.Configure):
+class compilerOptions(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
     return

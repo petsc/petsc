@@ -1,1 +1,1 @@
-all = ['Configure', 'packages']
+all = ['Configure', 'packages','utilities']

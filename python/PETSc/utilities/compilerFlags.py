@@ -43,15 +43,15 @@ class Configure(config.base.Configure):
     '''Get all compiler flags from the Petsc database'''
     options = None
     try:
-      mod     = __import__('PETSc.Options', locals(), globals(), ['Options'])
-      options = mod.Options(self.framework)
+      mod     = __import__('PETSc.compilerOptions', locals(), globals(), ['compilerOptions'])
+      options = mod.compilerOptions(self.framework)
     except ImportError:
       self.framework.log.write('Failed to load generic options\n')
       print 'Failed to load generic options'
     try:
       if self.framework.argDB.has_key('optionsModule'):
-        mod     = __import__(self.framework.argDB['optionsModule'], locals(), globals(), ['Options'])
-        options = mod.Options(self.framework)
+        mod     = __import__(self.framework.argDB['optionsModule'], locals(), globals(), ['compilerOptions'])
+        options = mod.compilerOptions(self.framework)
     except ImportError:
       self.framework.log.write('Failed to load custom options\n')
       print 'Failed to load custom options'

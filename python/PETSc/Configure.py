@@ -21,13 +21,18 @@ class Configure(config.base.Configure):
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlopen','dlsym','erf']
     libraries1 = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers',   self)
+    print 'fuck'
+    self.framework.require('PETSc.utilities.update', self.setCompilers)
+    print 'fuck'
+
     self.compilers    = self.framework.require('config.compilers',      self)
+    self.framework.require('PETSc.utilities.compilerFlags', self.compilers)
     self.types        = self.framework.require('config.types',          self)
     self.headers      = self.framework.require('config.headers',        self)
     self.functions    = self.framework.require('config.functions',      self)
     self.libraries    = self.framework.require('config.libraries',      self)
-    self.update       = self.framework.require('PETSc.packages.update', self)
-    self.make         = self.framework.require('PETSc.packages.Make',   self)    
+    self.update       = self.framework.require('PETSc.utilities.update', self)
+    self.make         = self.framework.require('PETSc.utilities.Make',   self)    
     self.x11          = self.framework.require('PETSc.packages.X11',    self)
     self.sowing       = self.framework.require('PETSc.packages.Sowing', self)
     self.c2html       = self.framework.require('PETSc.packages.C2HTML', self)
@@ -40,18 +45,26 @@ class Configure(config.base.Configure):
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries1)
-    # Check for packages
-    import PETSc.packages
 
-    for package in os.listdir(os.path.dirname(PETSc.packages.__file__)):
+    import PETSc.packages
+    import PETSc.utilities    
+
+    for utility in os.listdir(os.path.join('python','PETSc','utilities')):
+      (utilityName, ext) = os.path.splitext(utility)
+      if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
+        print utilityName
+        utilityObj              = self.framework.require('PETSc.utilities.'+utilityName, self)
+        utilityObj.headerPrefix = self.headerPrefix
+        setattr(self, utilityName.lower(), utilityObj)
+
+    for package in os.listdir(os.path.join('python','PETSc','packages')):
       (packageName, ext) = os.path.splitext(package)
       if not packageName.startswith('.') and not packageName.startswith('#') and ext == '.py' and not packageName == '__init__':
         packageObj              = self.framework.require('PETSc.packages.'+packageName, self)
         packageObj.headerPrefix = self.headerPrefix
         setattr(self, packageName.lower(), packageObj)
+
     # Put in dependencies
-    self.framework.require('PETSc.packages.update', self.setCompilers)
-    self.framework.require('PETSc.packages.compilerFlags', self.compilers)
 
     # List of packages actually found
     self.framework.packages = []

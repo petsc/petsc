@@ -12,13 +12,6 @@ class Configure(config.base.Configure):
     '''Find a PLAPACK installation and check if it can work with PETSc'''
     return
 
-  def setOutput(self):
-    #self.addDefine('HAVE_PLAPACK', 0)
-    self.addSubstitution('PLAPACK_INCLUDE', '')
-    self.addSubstitution('PLAPACK_LIB', '')
-    return
-
   def configure(self):
     self.executeTest(self.configureLibrary)
-    self.setOutput()
     return

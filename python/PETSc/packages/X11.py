@@ -11,7 +11,7 @@ class Configure(config.autoconf.Configure):
     self.substPrefix  = ''
     self.foundX11     = 0
     self.compilers    = self.framework.require('config.compilers',    self)
-    self.make         = self.framework.require('PETSc.packages.Make', self)
+    self.make         = self.framework.require('PETSc.utilities.Make', self)
     self.name         = 'X11'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
@@ -199,32 +199,16 @@ acfindx:
       else:
         self.lib     = '-lX11'
 
-      self.addDefine('HAVE_X11', 1)
       self.addSubstitution('X_CFLAGS',     self.include)
       self.addSubstitution('X_LIBS',       self.lib)
       self.addSubstitution('X_PRE_LIBS',   '')
       self.addSubstitution('X_EXTRA_LIBS', '')
-      self.addSubstitution('X11_INCLUDE',  self.include)
-      self.addSubstitution('X11_LIB',      self.lib)
       self.framework.packages.append(self)
     return
 
-  def emptySubstitutions(self):
-    self.framework.log.write('Configuring PETSc to not use X\n')
-    self.addDefine('HAVE_X11', 0)
-    self.addSubstitution('X_CFLAGS',     '')
-    self.addSubstitution('X_PRE_LIBS',   '')
-    self.addSubstitution('X_LIBS',       '')
-    self.addSubstitution('X_EXTRA_LIBS', '')
-    self.addSubstitution('X11_INCLUDE',  '')
-    self.addSubstitution('X11_LIB',      '')
-    return
-
   def configure(self):
-    if not self.framework.argDB['with-x']:
-      self.executeTest(self.emptySubstitutions)
-      return
-    self.executeTest(self.configureLibrary)
+    if self.framework.argDB['with-x']:
+      self.executeTest(self.configureLibrary)
     return
 
 if __name__ == '__main__':

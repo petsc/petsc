@@ -129,26 +129,14 @@ class Configure(config.base.Configure):
           break
     else:
       self.framework.log.write('Could not find a functional '+self.name+' or AMD \n')
-      self.setEmptyOutput()
     return
 
   def setFoundOutput(self):
-    incl_str = ''
-    for i in range(len(self.include)):
-      incl_str += self.include[i]+ ' '
-    self.addSubstitution(self.PACKAGE+'_INCLUDE','-I' +incl_str)
-    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
-    self.addDefine('HAVE_'+self.PACKAGE,1)
     self.framework.packages.append(self)
     
-  def setEmptyOutput(self):
-    self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
-    self.addSubstitution(self.PACKAGE+'_LIB', '')
-    return
 
   def configure(self):
     if not 'with-'+self.package in self.framework.argDB  or self.framework.argDB['with-64-bit-ints']:
-      self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)
     return

@@ -287,36 +287,10 @@ class Configure(config.base.Configure):
       self.framework.logPrint('Could not locate any functional ParMetis')
     return
 
-  def setOutput(self):
-    '''Add defines and substitutions
-       - HAVE_PARMETIS is defined if a working ParMetis is found
-       - PARMETIS_INCLUDE and PARMETIS are command line arguments for the compile and link
-       - PARMETIS_INCLUDE_DIR is the directory containing metis.h
-       - PARMETIS_LIBRARY is the list of ParMetis libraries'''
-    if self.found:
-      self.addDefine('HAVE_PARMETIS', 1)
-      if self.include:
-        self.addSubstitution('PARMETIS_INCLUDE',     ' '.join(['-I'+inc for inc in self.include]))
-        self.addSubstitution('PARMETIS_INCLUDE_DIR', self.include[0])
-      else:
-        self.addSubstitution('PARMETIS_INCLUDE',     '')
-        self.addSubstitution('PARMETIS_INCLUDE_DIR', '')
-      if self.lib:
-        self.addSubstitution('PARMETIS_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
-        self.addSubstitution('PARMETIS_LIBRARY', self.lib)
-      else:
-        self.addSubstitution('PARMETIS_LIB',     '')
-        self.addSubstitution('PARMETIS_LIBRARY', '')
-    else:
-      self.addSubstitution('PARMETIS_INCLUDE', '')
-      self.addSubstitution('PARMETIS_LIB', '')
-#    self.framework.packages.append(self)
-    return
-
   def configure(self):
     if (self.framework.argDB['with-parmetis'] or self.framework.argDB['download-parmetis'] == 1)  and not self.framework.argDB['with-64-bit-ints']:
       self.executeTest(self.configureLibrary)
-    self.setOutput()
+      self.framework.packages.append(self)
     return
 
 if __name__ == '__main__':

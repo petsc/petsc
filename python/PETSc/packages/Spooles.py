@@ -120,24 +120,11 @@ class Configure(config.base.Configure):
     return
 
   def setFoundOutput(self):
-    incl_str = ''
-    for i in range(len(self.include)):
-      incl_str += self.include[i]+ ' '
-    self.addSubstitution(self.PACKAGE+'_INCLUDE','-I' +incl_str)
-    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
-    self.addDefine('HAVE_'+self.PACKAGE,1)
     self.framework.packages.append(self)
     
-  def setEmptyOutput(self):
-    self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
-    self.addSubstitution(self.PACKAGE+'_LIB', '')
-    return
-
   def configure(self):
     if self.framework.argDB['with-'+self.package] and self.mpi.foundMPI and self.framework.argDB['with-external-packages']:
       self.executeTest(self.configureLibrary)
-    else:
-      self.setEmptyOutput()
     return
 
 if __name__ == '__main__':

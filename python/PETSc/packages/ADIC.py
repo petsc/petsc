@@ -34,19 +34,14 @@ class Configure(config.base.Configure):
   def configureLibrary(self):
     '''Find an ADIC installation and check if it can work with PETSc'''
     for adic in self.generateGuesses():
-      self.addSubstitution('ADIC_DEFINES', '')
-      self.addSubstitution('ADIC_CC',self.adiC+' -a -d gradient')
+      self.addMakeMacro('ADIC_DEFINES', '')
+      self.addMakeMacro('ADIC_CC',self.adiC+' -a -d gradient')
       self.addDefine('HAVE_ADIC', 1)
       self.foundADIC = 1
       return
-    self.addSubstitution('ADIC_DEFINES', '')
-    self.addSubstitution('ADIC_CC', '')
     return
 
   def configure(self):
     if self.framework.argDB['with-adic'] and self.framework.argDB['with-external-packages']:
       self.executeTest(self.configureLibrary)
-    else:
-      self.addSubstitution('ADIC_DEFINES', '')
-      self.addSubstitution('ADIC_CC', '')
     return

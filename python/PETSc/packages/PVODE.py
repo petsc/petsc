@@ -13,16 +13,13 @@ class Configure(config.base.Configure):
 
   def configureLibrary(self):
     '''Find a PVODE installation and check if it can work with PETSc'''
+#    self.framework.packages.append(self)
     return
 
-  def setOutput(self):
-    #self.addDefine('HAVE_PVODE', 0)
-    self.addSubstitution('PVODE_INCLUDE', '')
-    self.addSubstitution('PVODE_LIB', '')
-#    self.framework.packages.append(self)
+
+
     return
 
   def configure(self):
     self.executeTest(self.configureLibrary)
-    self.setOutput()
     return

@@ -6,12 +6,14 @@ import re
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
+    print 'dmanit'
     self.headerPrefix  = 'PETSC'
     self.substPrefix   = 'PETSC'
     self.updated       = 0
     self.strmsg        = ''
     self.datafilespath = ''
-    self.arch          = self.framework.require('PETSc.packages.arch', self)
+    print 'dmanit'
+    self.arch          = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def __str__(self):
