@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.60 1998/12/03 04:07:00 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.61 1999/01/12 23:18:23 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -11,7 +11,6 @@
 /* types of draw contexts */
 #define DRAW_X    "x"
 #define DRAW_NULL "null"
-#define DRAW_VRML "vrml"
  
 typedef struct _p_Draw* Draw;
 
@@ -74,7 +73,6 @@ extern int DrawSetFromOptions(Draw);
 
 
 extern int DrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
-extern int DrawOpenVRML( MPI_Comm,const char[],const char[], Draw* );
 
 extern int DrawOpenNull(MPI_Comm,Draw *);
 extern int DrawDestroy(Draw);
@@ -205,16 +203,6 @@ int DrawMeshCreateSimple( DrawMesh *, double *, double *, double *,
 			  int, int, int, int, double *, int );
 int DrawMeshDestroy( DrawMesh * );
 
-/* Color spectrum managment */
-typedef void (*VRMLGetHue_fcn)( double, void *, int, double *, double *, 
-				double * );
-
-void *VRMLFindHue_setup( DrawMesh, int );
-void VRMLFindHue( double, void *, int, double *, double *, double * );
-void VRMLFindHue_destroy( void * );
-void *VRMLGetHue_setup( DrawMesh, int );
-void VRMLGetHue( double, void *, int, double *, double *, double * );
-void VRMLGetHue_destroy( void * );
 
 
 int DrawTensorSurfaceContour(Draw,DrawMesh,VRMLGetHue_fcn, void *, int );

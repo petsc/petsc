@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.21 1998/06/15 15:53:00 balay Exp bsmith $
+# $Id: makefile,v 1.22 1999/01/12 23:16:41 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetsc
-DIRS     = x vrml
+DIRS     = x
 LOCDIR   = src/draw/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
