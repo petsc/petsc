@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.147 1996/02/13 23:27:29 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.148 1996/02/14 15:59:03 balay Exp balay $";
 #endif
 
 /*
@@ -1196,6 +1196,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         }
       }
     }
+    ierr = SYIsort(isz, nidx); CHKERRQ(ierr);
     ierr = ISCreateSeq(MPI_COMM_SELF, isz, nidx, (is+i)); CHKERRQ(ierr);
   }
   PetscFree(table);
