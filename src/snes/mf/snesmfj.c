@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.76 1998/12/09 16:08:05 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.77 1998/12/17 22:12:27 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -354,7 +354,7 @@ int MatCreateSNESFDMF(SNES snes,Vec x, Mat *J)
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&nloc); CHKERRQ(ierr);
-  ierr = MatCreateShell(comm,nloc,n,n,n,mfctx,J); CHKERRQ(ierr);
+  ierr = MatCreateShell(comm,nloc,nloc,n,n,mfctx,J); CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void*)MatSNESFDMFMult_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void *)MatSNESFDMFDestroy_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)MatSNESFDMFView_Private); CHKERRQ(ierr);
