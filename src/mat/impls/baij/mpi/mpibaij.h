@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.26 2000/04/15 04:16:32 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.27 2000/05/04 16:25:39 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -9,8 +9,6 @@
 typedef struct {
   int           *rowners,*cowners;      /* ranges owned by each processor */
   int           *rowners_bs;            /* rowners*bs */
-  int           m,n;                   /* local rows and columns */
-  int           M,N;                   /* global rows and columns */
   int           rstart,rend;           /* starting and ending owned rows */
   int           cstart,cend;           /* starting and ending owned columns */
   Mat           A,B;                   /* local submatrices: A (diag part),
