@@ -120,6 +120,8 @@ EXTERN int VecPointwiseMult(Vec,Vec,Vec);
 EXTERN int VecPointwiseDivide(Vec,Vec,Vec);    
 EXTERN int VecShift(const PetscScalar*,Vec);
 EXTERN int VecReciprocal(Vec);
+EXTERN int VecPermute(Vec, IS, PetscTruth);
+EXTERN int VecSqrt(Vec);
 EXTERN int VecAbs(Vec);
 EXTERN int VecDuplicate(Vec,Vec*);          
 EXTERN int VecDuplicateVecs(Vec,int,Vec*[]);         

@@ -598,6 +598,40 @@ int VecReciprocal_Default(Vec v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "VecSqrt"
+/*@
+  VecSqrt - Replaces each component of a vector by the square root of its magnitude.
+
+  Not collective
+
+  Input Parameter:
+. v - The vector
+
+  Output Parameter:
+. v - The vector square root
+
+  Note: The actual function is sqrt(|x_i|)
+
+.keywords: vector, sqrt, square root
+@*/
+int VecSqrt(Vec v)
+{
+  PetscScalar *x;
+  int         i, n;
+  int         ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_COOKIE);
+  ierr = VecGetLocalSize(v, &n);                                                                          CHKERRQ(ierr);
+  ierr = VecGetArray(v, &x);                                                                              CHKERRQ(ierr);
+  for(i = 0; i < n; i++) {
+    x[i] = PetscSqrtScalar(PetscAbsScalar(x[i]));
+  }
+  ierr = VecRestoreArray(v, &x);                                                                          CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecSum"
 /*@
@@ -701,6 +735,49 @@ int VecAbs(Vec v)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "VecPermute"
+/*@
+  VecPermute - Permutes a vector in place using the given ordering.
+
+  Input Parameters:
++ vec   - The vector
+. order - The ordering
+- inv   - The flag for inverting the permutation
+
+  Note: This function does not yet support parallel Index Sets
+
+.seealso: MatPermute()
+.keywords: vec, permute
+@*/
+int VecPermute(Vec x, IS row, PetscTruth inv)
+{
+  PetscScalar *array, *newArray;
+  int         *idx;
+  int          i;
+  int          ierr;
+
+  PetscFunctionBegin;
+  ierr = ISGetIndices(row, &idx);                                                                         CHKERRQ(ierr);
+  ierr = VecGetArray(x, &array);                                                                          CHKERRQ(ierr);
+  ierr = PetscMalloc((x->n+1) * sizeof(PetscScalar), &newArray);                                          CHKERRQ(ierr);
+#ifdef PETSC_USE_BOPT_g
+  for(i = 0; i < x->n; i++) {
+    if ((idx[i] < 0) || (idx[i] >= x->n)) {
+      SETERRQ2(PETSC_ERR_ARG_CORRUPT, "Permutation index %d is out of bounds: %d", i, idx[i]);
+    }
+  }
+#endif
+  if (inv == PETSC_FALSE) {
+    for(i = 0; i < x->n; i++) newArray[i]      = array[idx[i]];
+  } else {
+    for(i = 0; i < x->n; i++) newArray[idx[i]] = array[i];
+  }
+  ierr = VecRestoreArray(x, &array);                                                                      CHKERRQ(ierr);
+  ierr = ISRestoreIndices(row, &idx);                                                                     CHKERRQ(ierr);
+  ierr = VecReplaceArray(x, newArray);                                                                    CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecEqual"

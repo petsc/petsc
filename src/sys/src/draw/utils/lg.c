@@ -358,6 +358,42 @@ int PetscDrawLGDraw(PetscDrawLG lg)
   ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
+
+#undef __FUNC__  
+#define __FUNC__ "PetscDrawLGPrint"
+/*@
+  PetscDrawLGPrint - Prints a line graph.
+
+  Not collective
+
+  Input Parameter:
+. lg - the line graph context
+
+  Level: beginner
+
+  Contributed by Matthew Knepley
+
+.keywords:  draw, line, graph
+@*/
+int PetscDrawLGPrint(PetscDrawLG lg)
+{
+  PetscReal xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
+  int       i, j, dim = lg->dim, nopts = lg->nopts;
+
+  PetscFunctionBegin;
+  if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg, DRAWLG_COOKIE);
+  if (nopts < 1)                  PetscFunctionReturn(0);
+  if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
+
+  for(i = 0; i < dim; i++) {
+    PetscPrintf(lg->comm, "Line %d\n", i);
+    for(j = 0; j < nopts; j++) {
+      PetscPrintf(lg->comm, "  X: %lf Y: %lf\n", lg->x[j*dim+i], lg->y[j*dim+i]);
+    }
+  }
+  PetscFunctionReturn(0);
+}
  
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLGSetLimits" 

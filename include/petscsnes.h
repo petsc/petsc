@@ -36,6 +36,21 @@ E*/
 #define SNESUMTR          "umtr"
 typedef char *SNESType;
 
+#ifdef PETSC_USE_NEW_LOGGING
+/* Logging support */
+extern int SNES_COOKIE;
+enum {SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_MinimizationFunctionEval, SNES_GradientEval,
+      SNES_HessianEval, SNES_KrylovOrthogonalization, SNES_MAX_EVENTS};
+extern int SNESEvents[SNES_MAX_EVENTS];
+#define SNESLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(SNESEvents[e],o1,o2,o3,o4)
+#define SNESLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(SNESEvents[e],o1,o2,o3,o4)
+
+#else
+
+#define SNESLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(e,o1,o2,o3,o4)
+#define SNESLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(e,o1,o2,o3,o4)
+#endif
+
 /*E
     SNESProblemType - Determines the type of problem this SNES object is to be used to solve
 
