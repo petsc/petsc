@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: matv.c,v 1.3 1997/10/11 18:39:18 curfman Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
-#include "src/inline/bitarray.h"
+#include "bitarray.h"
 
 extern int MatView_Hybrid(Mat A,Viewer viewer)
 {
