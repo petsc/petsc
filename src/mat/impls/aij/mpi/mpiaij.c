@@ -2861,6 +2861,7 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 }
 
 #include "src/mat/utils/freespace.h"
+#include "petscbt.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge_SeqsToMPI"
 /*@C
@@ -2895,6 +2896,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
   MPI_Status        *status;
   MatScalar         *ba,*aa=a->a,**abuf_r,*abuf_i,*ba_i;
   FreeSpaceList     free_space=PETSC_NULL,current_space=PETSC_NULL;
+  PetscBT           lnkbt;
   Mat_Merge_SeqsToMPI *merge;
 
   PetscFunctionBegin;
@@ -3030,8 +3032,9 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
     ierr = PetscMalloc((m+1)*sizeof(int),&bi);CHKERRQ(ierr);
     bi[0] = 0;
 
-    ierr = PetscMalloc((N+1)*sizeof(int),&lnk);CHKERRQ(ierr);
-    ierr = PetscLLInitialize(N,N);CHKERRQ(ierr); 
+    /* create and initialize a linked list */
+    nlnk = N+1;
+    ierr = PetscLLCreate(N,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
   
     /* initial FreeSpace size is (nproc)*(num of local nnz(seqmat)) */
     len = 0;
@@ -3046,7 +3049,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
       arow   = owners[rank] + i;
       anzi   = ai[arow+1] - ai[arow];
       aj     = a->j + ai[arow]; 
-      ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk);CHKERRQ(ierr);
+      ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       bnzi += nlnk;
       /* add received col data into lnk */
       for (k=0; k<merge->nrecv; k++){ /* k-th received message */
@@ -3058,7 +3061,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
           anzi = *(ijbuf_r[k]+i) - *(ijbuf_r[k]+i-1);
           aj   = ijbuf_r[k]+m + *(ijbuf_r[k]+i-1); 
         }
-        ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk);CHKERRQ(ierr);
+        ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
         bnzi += nlnk;
       }
 
@@ -3068,7 +3071,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
         nspacedouble++;
       }
       /* copy data into free space, then initialize lnk */
-      ierr = PetscLLClean(N,N,bnzi,lnk,current_space->array);CHKERRQ(ierr);
+      ierr = PetscLLClean(N,N,bnzi,lnk,current_space->array,lnkbt);CHKERRQ(ierr);
       current_space->array           += bnzi;
       current_space->local_used      += bnzi;
       current_space->local_remaining -= bnzi;
@@ -3077,8 +3080,8 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
     }
     ierr = PetscMalloc((bi[m]+1)*sizeof(int),&bj);CHKERRQ(ierr);
     ierr = MakeSpaceContiguous(&free_space,bj);CHKERRQ(ierr);
- 
-    ierr = PetscFree(lnk);CHKERRQ(ierr);
+   
+    ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     ierr = PetscFree(len_r);CHKERRQ(ierr);
 
     /* allocate space for ba */

@@ -213,13 +213,20 @@ M*/
 EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
 
 /* 
-  Initialize a linked list 
+  Create and initialize a linked list 
   Input Parameters:
     idx_start - starting index of the list
     lnk_max   - max value of lnk indicating the end of the list
+    nlnk      - max length of the list
+  Output Parameters:
+    lnk       - list initialized
+    bt        - PetscBT (bitarray) with all bits set to false
 */
-#define PetscLLInitialize(idx_start,lnk_max) 0;\
+#define PetscLLCreate(idx_start,lnk_max,nlnk,lnk,bt) 0;\
 {\
+  PetscMalloc(nlnk*sizeof(int),&lnk);\
+  PetscBTCreate(nlnk,bt);\
+  ierr = PetscBTMemzero(nlnk,bt);\
   lnk[idx_start] = lnk_max;\
 }
 
@@ -230,28 +237,32 @@ EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataT
     indices   - interger array
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
     nlnk      - number of newly added indices
     lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    bt        - updated PetscBT (bitarray) 
 */
-#define PetscLLAdd(nidx,indices,idx_start,nlnk,lnk) 0;\
+#define PetscLLAdd(nidx,indices,idx_start,nlnk,lnk,bt) 0;\
 {\
   int _k,_entry,_location,_lnkdata;\
   nlnk = 0;\
   _k=nidx;\
   while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
     _entry = indices[--_k];\
-    /* search for insertion location */\
-    _lnkdata  = idx_start;\
-    do {\
-      _location = _lnkdata;\
-      _lnkdata  = lnk[_location];\
-    } while (_entry > _lnkdata);\
-    /* insertion location is found, add entry into lnk if it is new */\
-    if (_entry <  _lnkdata){/* new entry */\
-      lnk[_location] = _entry;\
-      lnk[_entry]    = _lnkdata;\
-      nlnk++;\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      _lnkdata  = idx_start;\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk if it is new */\
+      if (_entry <  _lnkdata){/* new entry */\
+        lnk[_location] = _entry;\
+        lnk[_entry]    = _lnkdata;\
+        nlnk++;\
+      }\
     }\
   }\
 }
@@ -262,17 +273,29 @@ EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataT
     lnk_max   - max value of lnk indicating the end of the list 
     nlnk      - number of data on the list to be copied
     lnk       - linked list
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
     indices   - array that contains the copied data
+    lnk       -llinked list that is cleaned and initialize
+    bt        - PetscBT (bitarray) with all bits set to false
 */
-#define PetscLLClean(idx_start,lnk_max,nlnk,lnk,indices) 0;\
+#define PetscLLClean(idx_start,lnk_max,nlnk,lnk,indices,bt) 0;\
 {\
   int _j,_idx=idx_start;\
   for (_j=0; _j<nlnk; _j++){\
     _idx = lnk[_idx];\
     *(indices+_j) = _idx;\
+    PetscBTClear(bt,_idx);\
   }\
   lnk[idx_start] = lnk_max;\
+}
+/*
+  Free memories used by the list
+*/
+#define PetscLLDestroy(lnk,bt) 0;\
+{\
+  PetscFree(lnk);\
+  PetscBTDestroy(bt);\
 }
 
 PETSC_EXTERN_CXX_END

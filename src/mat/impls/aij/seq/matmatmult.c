@@ -6,6 +6,7 @@
 #include "src/mat/impls/aij/seq/aij.h" /*I "petscmat.h" I*/
 #include "src/mat/utils/freespace.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "petscbt.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult"
@@ -244,11 +245,11 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscErrorCode ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
-  int            *ci,*cj,*lnk;
+  int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci,*cj;
   int            am=A->M,bn=B->N,bm=B->M;
-  int            i,j,anzi,brow,bnzj,cnzi,nlnk,nspacedouble=0;
+  int            i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,nspacedouble=0;
   MatScalar      *ca;
+  PetscBT        lnkbt;
 
   PetscFunctionBegin;
   /* Set up */
@@ -257,9 +258,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscMalloc(((am+1)+1)*sizeof(int),&ci);CHKERRQ(ierr);
   ci[0] = 0;
   
-  /* create and initialize a linked list for symbolic product */
-  ierr = PetscMalloc((bn+1)*sizeof(int),&lnk);CHKERRQ(ierr);
-  ierr = PetscLLInitialize(bn,bn);CHKERRQ(ierr);
+  /* create and initialize a linked list */
+  nlnk = bn+1;
+  ierr = PetscLLCreate(bn,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = GetMoreSpace((int)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
@@ -277,7 +278,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
-      ierr = PetscLLAdd(bnzj,bjj,bn,nlnk,lnk);CHKERRQ(ierr);
+      ierr = PetscLLAdd(bnzj,bjj,bn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       cnzi += nlnk;
     }
 
@@ -289,7 +290,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
     }
 
     /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLClean(bn,bn,cnzi,lnk,current_space->array);CHKERRQ(ierr);
+    ierr = PetscLLClean(bn,bn,cnzi,lnk,current_space->array,lnkbt);CHKERRQ(ierr);
     current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;
@@ -302,7 +303,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[am]+1)*sizeof(int),&cj);CHKERRQ(ierr);
   ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscFree(lnk);CHKERRQ(ierr);
+  ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
     
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
@@ -317,7 +318,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->freedata = PETSC_TRUE;
   c->nonew    = 0;
 
-  PetscLogInfo((PetscObject)(*C),"Number of calls to GetMoreSpace(): %d\n",nspacedouble);
+  if (nspacedouble){
+    PetscLogInfo((PetscObject)(*C),"MatMatMultSymbolic_SeqAIJ_SeqAIJ: nspacedouble:%d, nnz(A):%d, nnz(B):%d, fill:%g, nnz(C):%d\n",nspacedouble,ai[am],bi[bm],fill,ci[am]);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -528,6 +531,9 @@ PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  int rank;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  printf(" [%d] MatMatMultTranspose_SeqAIJ_SeqAIJ is called\n",rank);
   if (scall == MAT_INITIAL_MATRIX){
     ierr = MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
   }
