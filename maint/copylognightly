@@ -11,11 +11,11 @@ foreach CONF ($*)
   set SCP=scp
   source $dir/confignightly/${CONF}
 
-  $SCP $USR@${MACH}:$LOC/build.log /home/petsc/logs/nightly/build_$CONF.$MACH.log &
-  $SCP $USR@${MACH}:$LOC/examples.log /home/petsc/logs/nightly/examples_$CONF.$MACH.log &
-  $SCP $USR@${MACH}:$LOC/configure.log /home/petsc/logs/nightly/configure__$CONF.$MACH.log &
+  $SCP $USR@${MACH}:$LOC/build.log /home/petsc/logs/nightly/build_$CONF.$MACH.log ;/bin/chmod a+r /home/petsc/logs/nightly/build_$CONF.$MACH.log &
+  $SCP $USR@${MACH}:$LOC/examples.log /home/petsc/logs/nightly/examples_$CONF.$MACH.log ;/bin/chmod a+r /home/petsc/logs/nightly/examples_$CONF.$MACH.log &
+  $SCP $USR@${MACH}:$LOC/configure.log /home/petsc/logs/nightly/configure__$CONF.$MACH.log ;/bin/chmod a+r /home/petsc/logs/nightly/configure__$CONF.$MACH.log &
 end
 sleep 300
-chmod ugo+r /home/petsc/logs/nightly/*
+/bin/chmod a+r /home/petsc/logs/nightly/*
 wait
-chmod ugo+r /home/petsc/logs/nightly/*
+/bin/chmod a+r /home/petsc/logs/nightly/*
