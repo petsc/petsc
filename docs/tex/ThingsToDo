@@ -9,8 +9,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
- - make clean copy of emacs stuff for mud to give to all summer visitors, ALICE folks etc.
 
+Barry  - Have PetscFinalize() free linked list of malloced memory in Fortran stubs.
+
+  - make clean copy of emacs stuff for mud to give to all summer visitors, ALICE folks etc.
 
  - Add support to DA so that Global to Local and Local to Global uninterlaces
    multicomponent vectors.
