@@ -1,11 +1,17 @@
-% $Id: developers.tex,v 1.13 1998/10/12 18:58:18 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.14 1999/03/11 04:03:12 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
 % manual_tex.tex is the base file for LaTeX format, while manual.tex is
 % the corresponding base HTML format file.
 %
-\documentstyle[twoside,psfig,../sty/verbatim,../sty/tpage,../sty/here,../sty/anlhelper]{../sty/report_petsc} 
+\documentclass[twoside,12pt]{../sty/report_petsc}
+\usepackage{psfig}
+\usepackage{../sty/verbatim}
+\usepackage{../sty/tpage}
+\usepackage{../sty/here}
+\usepackage{../sty/anlhelper}
+
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0.0in}
 \setlength{\evensidemargin}{0.0in}
@@ -951,6 +957,8 @@ or
    }
 \end{verbatim}
 \item {\em No} tabs are allowed in {\em any} of the source code.
+\item The open bracket \{ should be on the same line as the {\em if ()} test, {\em for ()}, etc. never on 
+      its own line. The closing bracket \} should {\bf always} be on its own line. 
 \end{itemize}
 
 \section{Option Names}
