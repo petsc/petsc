@@ -196,6 +196,25 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   PetscFunctionBegin;	
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */ 
+    /* get input parameters */
+    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
+
+    (*F)->ops->solve   = MatSolve_MPIAIJ_Spooles;
+    (*F)->ops->destroy = MatDestroy_MPIAIJ_Spooles;  
+    (*F)->assembled    = PETSC_TRUE;
+
+    /* to be used by MatSolve() */
+    lu->mtxY = DenseMtx_new() ;  
+    lu->mtxX = DenseMtx_new() ;
+    lu->scat = PETSC_NULL;  
+
+    IVzero(20, lu->stats) ; 
+    DVzero(20, lu->cpus) ;
+
+    lu->mtxA = InpMtx_new() ; 
+  }
   
   /* copy A to Spooles' InpMtx object */ 
   if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
@@ -218,7 +237,6 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     garray     = mat->garray;
   } 
       
-  if(lu->flg == DIFFERENT_NONZERO_PATTERN) { lu->mtxA = InpMtx_new() ; }
   InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ; 
   row   = InpMtx_ivec1(lu->mtxA); 
   col   = InpMtx_ivec2(lu->mtxA); 
@@ -278,31 +296,14 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   InpMtx_inputRealTriples(lu->mtxA, nz, row, col, val); 
 #endif
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-  
+  if ( lu->options.msglvl > 0 ) {
+    printf("[%d] input matrix\n",rank);
+    fprintf(lu->options.msgFile, "\n\n [%d] input matrix\n",rank) ;
+    InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
+  }
+
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
-
-    (*F)->ops->solve   = MatSolve_MPIAIJ_Spooles;
-    (*F)->ops->destroy = MatDestroy_MPIAIJ_Spooles;  
-    (*F)->assembled    = PETSC_TRUE;
-
-    /* to be used by MatSolve() */
-    lu->mtxY = DenseMtx_new() ;  
-    lu->mtxX = DenseMtx_new() ;
-    lu->scat = PETSC_NULL;  
-
-    IVzero(20, lu->stats) ; 
-    DVzero(20, lu->cpus) ;
-    
-    /* get input parameters */
-    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
-
-    if ( lu->options.msglvl > 0 ) {
-      printf("[%d] input matrix\n",rank);
-      fprintf(lu->options.msgFile, "\n\n [%d] input matrix\n",rank) ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
-      fflush(lu->options.msgFile) ;
-    }
-
     /*
       find a low-fill ordering
       (1) create the Graph object

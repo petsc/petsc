@@ -351,13 +351,13 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SUPERLU) && !defined(PETSC_USE_SINGLE) 
      ierr = MatSeqAIJFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
      ierr = MatMPIAIJFactorInfo_SuperLu(A,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
      ierr = MatFactorInfo_Spooles(A,viewer);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_UMFPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)

@@ -132,8 +132,19 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
 #endif
   
   PetscFunctionBegin;
+  if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
+    (*F)->ops->solve   = MatSolve_SeqAIJ_Spooles;
+    (*F)->ops->destroy = MatDestroy_SeqAIJ_Spooles;  
+    (*F)->assembled    = PETSC_TRUE; 
+    
+    /* set Spooles options */
+    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr); 
+
+    lu->mtxA = InpMtx_new() ;
+  }
+
   /* copy A to Spooles' InpMtx object */
-  if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) {
+  if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
     nz=mat->nz;
     ai=mat->i; aj=mat->j;  
@@ -143,7 +154,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     ai=mat->i; aj=mat->j; av=mat->a;
     nz=mat->s_nz;
   }
-  if (lu->flg == DIFFERENT_NONZERO_PATTERN) lu->mtxA = InpMtx_new() ;
+  
   InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ;
 #if !defined(PETSC_USE_COMPLEX)
   ivec1 = InpMtx_ivec1(lu->mtxA);  
@@ -167,22 +178,14 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   }
 #endif
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
+  if ( lu->options.msglvl > 0 ) {
+    printf("\n\n input matrix") ;
+    fprintf(lu->options.msgFile, "\n\n input matrix") ;
+    InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
+  }
 
-  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
-    
-    (*F)->ops->solve   = MatSolve_SeqAIJ_Spooles;
-    (*F)->ops->destroy = MatDestroy_SeqAIJ_Spooles;  
-    (*F)->assembled    = PETSC_TRUE; 
-    
-    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr); 
-
-    if ( lu->options.msglvl > 0 ) {
-      printf("\n\n input matrix") ;
-      fprintf(lu->options.msgFile, "\n\n input matrix") ;
-      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
-      fflush(lu->options.msgFile) ;
-    }
-
+  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */  
     /*---------------------------------------------------
     find a low-fill ordering
          (1) create the Graph object
@@ -316,7 +319,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
                 lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;   
   }
 
-  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {  /* || SPOOLES_HERMITIAN ? */
     if ( lu->options.patchAndGoFlag == 1 ) {
       lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
       PatchAndGoInfo_init(lu->frontmtx->patchinfo, 1, lu->options.toosmall, lu->options.fudge,
@@ -382,7 +385,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     fflush(lu->options.msgFile) ;
   }
 
-  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) { /* || SPOOLES_HERMITIAN ? */
     if ( lu->options.patchAndGoFlag == 1 ) {
       if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
         if (lu->options.msglvl > 0 ){

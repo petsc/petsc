@@ -15,11 +15,16 @@
 int SetSpoolesOptions(Mat A, Spooles_options *options)
 {
   int          ierr;
-  char         buff[32],*ordertype[]={"BestOfNDandMS","MMD","MS","ND"}; 
+  char         buff[32],*ordertype[]={"BestOfNDandMS","MMD","MS","ND"};
   PetscTruth   flg;
 
   PetscFunctionBegin;	
   /* set default input parameters */ 
+#if defined(PETSC_USE_COMPLEX)
+  options->typeflag       = SPOOLES_COMPLEX;
+#else
+  options->typeflag       = SPOOLES_REAL;
+#endif
   options->msglvl         = 0;
   options->msgFile        = 0;
   options->tau            = 100.; 
@@ -29,7 +34,7 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
   options->maxzeros       = 1000;
   options->maxsize        = 96;   
   options->FrontMtxInfo   = PETSC_FALSE; 
-  if ( options->symflag == SPOOLES_SYMMETRIC ) {
+  if ( options->symflag == SPOOLES_SYMMETRIC ) { /* || SPOOLES_HERMITIAN */
     options->patchAndGoFlag = 0;  /* no patch */
     options->storeids       = 1; 
     options->storevalues    = 1;
@@ -92,6 +97,9 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
     if (flg) options->FrontMtxInfo = PETSC_TRUE; 
 
     if ( options->symflag == SPOOLES_SYMMETRIC ) {
+      ierr = PetscOptionsInt("-mat_spooles_symmetryflag","matrix type","None", \
+                           options->symflag,&options->symflag,PETSC_NULL);CHKERRQ(ierr);
+
       ierr = PetscOptionsInt("-mat_spooles_patchAndGoFlag","patchAndGoFlag","None", \
                            options->patchAndGoFlag,&options->patchAndGoFlag,PETSC_NULL);CHKERRQ(ierr);
       
@@ -132,6 +140,7 @@ int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
 
   switch (lu->options.symflag) {
   case 0: s = "SPOOLES_SYMMETRIC"; break;
+  case 1: s = "SPOOLES_HERMITIAN"; break;
   case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
   ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:   %s \n",s);CHKERRQ(ierr);
 
