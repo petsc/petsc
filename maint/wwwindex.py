@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.28 2000/07/14 16:06:00 bsmith Exp bsmith $ 
+# $Id: wwwindex.py,v 1.29 2000/07/14 16:06:14 bsmith Exp bsmith $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -178,7 +178,7 @@ def modifylevel(filename,secname):
       tmpbuf = re_loc.sub('<P><B><FONT COLOR="#CC3333">Level:</FONT></B>' + level + r'\n<BR>\1',tmpbuf)
 
       re_loc = re.compile('</BODY></HTML>')
-      outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
+      outbuf = re_loc.sub('<BR><A HREF="./index.html">Index of all ' + secname + ' routines</A>\n<BR><A HREF="../../index.html">Table of Contents for all manual pages</A>\n<BR><A HREF="../singleindex.html">Index of all manual pages</A>\n</BODY></HTML>',tmpbuf)
 
       # write the modified manpage
       try:
