@@ -185,24 +185,24 @@ class DArgs:
 
   def loop(self):
     # wish there was a better way to get a usable socket
-    flag = "nosocket"
+    flag = 'nosocket'
     p    = 1
-    while p < 1000 and flag == "nosocket":
+    while p < 1000 and flag == 'nosocket':
       try:
-        server = SocketServer.TCPServer((socket.gethostname(),6000+p),ProcessHandler)
-        flag   = "socket"
+        server = SocketServer.TCPServer((socket.gethostname(), 6000+p), ProcessHandler)
+        flag   = 'socket'
       except Exception, e:
         p = p + 1
-    if flag == "nosocket":
+    if flag == 'nosocket':
       p = 1
-      while p < 1000 and flag == "nosocket":
+      while p < 1000 and flag == 'nosocket':
         try:
           server = SocketServer.TCPServer(('localhost', 6000+p), ProcessHandler)
-          flag   = "socket"
+          flag   = 'socket'
         except Exception, e:
           p = p + 1
-    if flag == "nosocket":
-      raise RuntimeError,"Cannot get available socket"
+    if flag == 'nosocket':
+      raise RuntimeError,'Cannot get available socket'
         
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
     if os.path.exists(filename):
@@ -210,17 +210,18 @@ class DArgs:
       running = 1
       try: RArgs().dicts()
       except: running = 0
-      if running: raise RuntimeError, "Server already running"
+      if running: raise RuntimeError, 'Server already running'
     f = open(filename, 'w')
     cPickle.dump(server.server_address, f)
     f.close()
 
     atexit.register(self.shutdown)
-    self.logfile.write("Started server"+time.asctime(time.localtime())+'\n')
+    self.logfile.write('Started server'+time.asctime(time.localtime())+'\n')
     self.logfile.flush()
     server.dargs = self
     server.serve_forever()
-    
+    return
+
 # =============================================================================================
 
 #  This is the client end of a remote dictionary

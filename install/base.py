@@ -50,6 +50,7 @@ class Base (maker.Maker):
       if project.getUrl() == url:
         self.debugPrint('Already installed '+project.getName()+'('+url+')', 3, 'install')
         return project
+    self.debugPrint('Have not installed '+url, 3, 'install')
     return None
 
   def getRepositoryName(self, url):
@@ -96,6 +97,8 @@ class Base (maker.Maker):
 
   def getMappedUrl(self, url):
     '''Return a new URL produced by a URL map function. Users can register new maps by adding to the list self.urlMaps'''
+    # We do not allow BuildSystem to be mapped
+    if url == 'bk://sidl.bkbits.net/BuildSystem': return url
     for map in self.urlMaps:
       ret, newUrl = map(url)
       if ret: return newUrl
