@@ -110,10 +110,11 @@ class Configure:
       status = -1
       self.framework.log.write(error)
     else:
-      if len(output) < 200:
+      if len(output) < 600:
         self.framework.log.write('sh: '+output+'\n')
       else:
-        self.framework.log.write('sh: '+output[:200]+'...\n')
+        self.framework.log.write('sh: '+output[:600]+'...\n')
+        self.framework.log.write('... '+output[-600:]+'\n')
     if checkCommand:
       checkCommand(command, status, output, error)
     else:
