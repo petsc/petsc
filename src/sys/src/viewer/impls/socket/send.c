@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.68 1998/04/03 20:58:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.69 1998/04/13 17:54:03 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -61,7 +61,7 @@ extern int close(int);
 extern int socket(int,int,int);
 #if !defined(PARCH_hpux) && !defined(PARCH_alpha) && !defined(PARCH_solaris)
 /*
-    Some IBM rs6000 machines running AIX 3.2 please uncomment the prototype 
+    For some IBM rs6000 machines running AIX 3.2 uncomment the prototype 
    below for connect()
 */
 /*
