@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.30 1997/02/21 17:29:46 balay Exp balay $ */
+/* $Id: ptime.h,v 1.31 1997/02/21 17:34:08 balay Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -6,6 +6,8 @@
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
+
+#include "petsc.h"
 
 /*
    PetscTime - Returns the current time of day in seconds.  

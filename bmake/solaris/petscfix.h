@@ -9,6 +9,8 @@
 #if !defined(_PETSFIX_H)
 #define _PETSCFIX_H
 
+#include "petsc.h"
+
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
 #endif
