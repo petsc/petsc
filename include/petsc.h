@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.263 2000/01/11 21:04:04 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.264 2000/01/12 20:05:00 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -43,10 +43,22 @@
 */     
 #define PetscFortranAddr   long
 
-extern MPI_Comm PETSC_COMM_WORLD;
-extern MPI_Comm PETSC_COMM_SELF;
-extern int      PetscInitializedCalled;
-extern int      PetscSetCommWorld(MPI_Comm);
+/*
+       Basic PETSc constants
+*/
+typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
+#define PETSC_YES            PETSC_TRUE
+#define PETSC_NO             PETSC_FALSE
+#define PETSC_NULL           0
+#define PETSC_IGNORE         PETSC_NULL
+#define PETSC_DECIDE         -1
+#define PETSC_DETERMINE      PETSC_DECIDE
+#define PETSC_DEFAULT        -2
+
+extern MPI_Comm   PETSC_COMM_WORLD;
+extern MPI_Comm   PETSC_COMM_SELF;
+extern PetscTruth PetscInitializeCalled;
+extern int        PetscSetCommWorld(MPI_Comm);
 
 /*
     Defines the malloc employed by PETSc. Users may use these routines as well. 
@@ -102,17 +114,6 @@ extern int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 extern int PetscDataTypeGetSize(PetscDataType,int*);
 extern int PetscDataTypeGetName(PetscDataType,char*[]);
 
-/*
-       Basic PETSc constants
-*/
-typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
-#define PETSC_YES            PETSC_TRUE
-#define PETSC_NO             PETSC_FALSE
-#define PETSC_NULL           0
-#define PETSC_IGNORE         PETSC_NULL
-#define PETSC_DECIDE         -1
-#define PETSC_DETERMINE      PETSC_DECIDE
-#define PETSC_DEFAULT        -2
 
 /*
     Basic memory and string operations. These are usually simple wrappers
@@ -134,11 +135,12 @@ extern int   PetscStrcat(char[],const char[]);
 extern int   PetscStrncat(char[],const char[],int);
 extern int   PetscStrncpy(char[],const char[],int);
 extern int   PetscStrchr(const char[],char,char **);
+extern int   PetscStrtolower(char[]);
 extern int   PetscStrrchr(const char[],char,char **);
 extern int   PetscStrstr(const char[],const char[],char **);
 extern int   PetscStrtok(const char[],const char[],char **);
 extern int   PetscStrallocpy(const char[],char **);
-extern int   PetscStrreplace(const char[],char*,int,char **,char **);
+extern int   PetscStrreplace(MPI_Comm,const char[],char*,int,char **,char **);
 #define PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
 
 extern MPI_Op PetscMaxSum_Op;
