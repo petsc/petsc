@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.94 1998/01/12 17:10:22 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.95 1998/01/12 17:17:31 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -445,7 +445,10 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
   double      * HT  = baij->ht;
   Scalar      ** HD = (Scalar **)(HT + size),*value,*baij_a;
  
-  
+  PetscFunctionBegin;
+
+  if(((Mat_SeqBAIJ*)baij->A->data)->nonew !=1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");  
+
   if (roworiented) { 
     stepval = (n-1)*bs;
   } else {
@@ -695,7 +698,7 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-int CreateHashTable(Mat mat,double factor)
+int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Mat         A = baij->A, B=baij->B;
@@ -845,7 +848,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = OptionsHasName(PETSC_NULL,"-use_hash",&flg); CHKERRQ(ierr);
   if (flg && !baij->ht && mode== MAT_FINAL_ASSEMBLY) {
     double fact = 1.39;
-    CreateHashTable(mat,fact);
+    MatCreateHashTable_MPIBAIJ_Private(mat,fact);
     mat->ops.setvalues        = MatSetValues_MPIBAIJ_HT;
     mat->ops.setvaluesblocked = MatSetValuesBlocked_MPIBAIJ_HT;
   }
