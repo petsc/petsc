@@ -6,7 +6,8 @@
 #if defined (PETSC_HAVE_LIMITS_H)
 #include <limits.h>
 #endif
-#define HASHT(ta,x) ((3*x)%ta->tablesize)
+#define HASH_FACT 79943
+#define HASHT(ta,x) ((unsigned long)((HASH_FACT*(unsigned long)x)%ta->tablesize))
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTableCreate"
