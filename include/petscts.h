@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.23 1998/03/06 00:21:12 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.24 1998/03/23 21:27:32 bsmith Exp balay $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -91,12 +91,13 @@ extern int TSLGMonitorDestroy(DrawLG);
 /*
        PETSc interface to PVode
 */
+#define PVODE_UNMODIFIED_GS PVODE_CLASSICAL_GS
 typedef enum { PVODE_ADAMS, PVODE_BDF } TSPVodeType;
+typedef enum { PVODE_MODIFIED_GS = 0, PVODE_CLASSICAL_GS = 1 } TSPVodeGramSchmidtType;
 extern int TSPVodeSetType(TS,TSPVodeType);
 extern int TSPVodeGetPC(TS,PC*);
 extern int TSPVodeSetTolerance(TS,double,double);
-typedef enum { PVODE_MODIFIED_GS = 0, PVODE_CLASSICAL_GS = 1 } TSPVodeGramSchmidtType;
-#define PVODE_UNMODIFIED_GS PVODE_CLASSICAL_GS
+extern int TSPVodeGetIterations(TS,int *,int *);
 extern int TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
 extern int TSPVodeSetGMRESRestart(TS,int);
 extern int TSPVodeSetLinearTolerance(TS,double);
