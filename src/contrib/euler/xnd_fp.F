@@ -1,5 +1,5 @@
 c
-c  "$Id: xnd_fp.F,v 1.6 1997/10/12 20:54:59 keyes Exp curfman $";
+c  "$Id: xnd_fp.F,v 1.7 1997/10/13 02:12:20 curfman Exp $";
 c
 c ----------------------------------------------------------------
 c  Full potential initial condition
@@ -40,6 +40,14 @@ c
       if (model .gt. MMFP) goto 40
       READ (15,100) CFL,FSMACH,ALPHA,BETA_dummy,PHI
       read (15,200) limit,psi,order,isgs,ifreq_dummy
+      alpha = zero
+      beta  = zero
+      phi   = zero
+      CONV=ACOS(-1.0d0)/180.
+c      CONV=ACOS(PetscDoubleExp(-1.0,0))/180.
+      ALPHA=ALPHA*CONV
+      BETA=BETA*CONV
+      PHI=PHI*CONV
 c LIMIT chooses the limiter (see below)
 c PSI blends discretization stencils for desired ORDER (see DEK for reference)
 c ORDER is discretization order
@@ -63,11 +71,6 @@ C   LIMIT=3 (VAN LEER), LIMIT=4 (VAN ALBADA), LIMIT=5 (NO LIMITERS)
    21   FORMAT (5X,'LIMIT       PSI   ORDER')
    31   FORMAT (I10,F10.4,F8.2,/)
       endif
-      CONV=ACOS(-1.0d0)/180.
-c      CONV=ACOS(PetscDoubleExp(-1.0,0))/180.
-      ALPHA=ALPHA*CONV
-      BETA=BETA*CONV
-      PHI=PHI*CONV
 c
    40 continue
 c
@@ -77,11 +80,9 @@ c and constant of integration equal to zero (so PHI is zero at the origin
 c of coordinates and along the line normal to the freestream flow through
 c the origin).
 c
-      RUINIT=FSMACH*COS(ALPHA)*COS(BETA)
-      RVINIT=FSMACH*(SIN(PHI)*SIN(ALPHA)*COS(BETA)
-     1   -COS(PHI)*SIN(BETA))
-      RWINIT=FSMACH*(SIN(ALPHA)*COS(BETA)
-     1  +SIN(PHI)*COS(ALPHA)*SIN(BETA))
+      RUINIT=FSMACH
+      RVINIT=zero
+      RWINIT=zero
       do 2 k=gzsf1,gzefp1
       do 2 j=gysf1,gyefp1
       do 2 i=gxsf1,gxefp1
