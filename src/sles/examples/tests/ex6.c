@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.12 1995/10/25 22:13:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.13 1995/10/26 22:40:01 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -30,7 +30,6 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   OptionsGetString(0,"-f",file,127);
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
-  mtype = MATSEQAIJ; /* default matrix type */
   ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
@@ -55,7 +54,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,&norm); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_WORLD,"Number of iterations = %3d\n",its);
   MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
-  MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f\n",time);
+  MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time);
 
   /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
