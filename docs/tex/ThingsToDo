@@ -9,7 +9,12 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+  - Add to MatCreateXXX() man pages clear indicattion of optional 
+    preallocation arguments.
 
+  - Provide support for user defining a class of their events and
+    turning them all off???? Maybe not. Currently PETsc itself does
+    this by turning off events one at a time for its own classes.
 
   - Add feature in nightly builds to remove old libraries (maybe?)
 
