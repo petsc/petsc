@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.102 1996/04/26 00:51:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.103 1996/05/03 19:26:53 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1017,7 +1017,10 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
   if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
     int nline = PetscMin(10,a->nd), k, nk, np;
-    fprintf(fd,"  block size=%d, number of diagonals=%d\n",nb,a->nd);
+    if (a->user_alloc)
+      fprintf(fd,"  block size=%d, number of diagonals=%d, user-allocated storage\n",nb,a->nd);
+    else
+      fprintf(fd,"  block size=%d, number of diagonals=%d, PETSc-allocated storage\n",nb,a->nd);
     nk = (a->nd-1)/nline + 1;
     for (k=0; k<nk; k++) {
       fprintf(fd,"  diag numbers:");
