@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.71 1996/06/12 20:22:32 bsmith Exp curfman $ */
+/* $Id: plog.h,v 1.72 1996/06/12 20:31:11 curfman Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -9,9 +9,12 @@
 #include "petsc.h"  
 
 /*
-  If you add an event here, make sure you add to petsc/bin/petscview.cfg,
-  petsc/bin/petscview, petsc/src/plog/src/plog.c, and 
-  petsc/src/plog/src/plogmpe.c!!!
+  If you add an event here, make sure you add it to 
+  petsc/bin/petscview.cfg,
+  petsc/bin/petscview,
+  petsc/src/plog/src/plog.c,  
+  petsc/src/plog/src/plogmpe.c and
+  petsc/include/FINCLUDE/plog.h!!!
 */
 #define MAT_Mult                                0
 #define MAT_MatrixFreeMult                      1
@@ -121,7 +124,7 @@ extern int PLogInfoActivateClass(int);
 
 #if defined(PETSC_LOG)  /* --------------------------------------------*/
 
-#define PLogFlops(n) {_TotalFlops += n;}
+#define PLogFlops(n) {_TotalFlops += (n);}
 
 #if defined (HAVE_MPE)
 #include "mpe.h"

@@ -5,11 +5,11 @@ ALL: lib
 CFLAGS	 = 
 SOURCEC	 =
 SOURCEF	 =
-SOURCEH	 = isimpl.h
+SOURCEH	 = aoimpl.h
 OBJSC	 =
 OBJSF	 =
 LIBBASE	 = libpetscvec
-DIRS	 = interface impls  examples utils
+DIRS	 = interface impls  examples 
 LOCDIR   = src/is/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

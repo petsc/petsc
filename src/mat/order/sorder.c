@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.19 1996/03/08 05:47:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.20 1996/03/19 21:26:46 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -14,7 +14,7 @@ static NRList *__MatReorderingList = 0;
 PetscTruth MatReorderingRequiresSymmetric[25];
 int        MatReorderingIndexShift[25];
 
-int MatGetReordering_IJ(int n,int *ia,int* ja,MatOrdering type,IS *rperm, IS *cperm)
+int MatGetReordering_IJ(int n,int *ia,int* ja,MatReordering type,IS *rperm,IS *cperm)
 {
   int  ierr,*permr,*permc,(*r)(int*,int*,int*,int*,int*);
 
@@ -104,7 +104,7 @@ extern int MatOrder_Natural(int*,int*,int*,int*,int*);
 
 .seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
 @*/
-int  MatReorderingRegister(MatOrdering *name,char *sname,PetscTruth sym,int shift,
+int  MatReorderingRegister(MatReordering *name,char *sname,PetscTruth sym,int shift,
                            int (*order)(int*,int*,int*,int*,int*))
 {
   int         ierr;
@@ -125,7 +125,7 @@ int  MatReorderingRegister(MatOrdering *name,char *sname,PetscTruth sym,int shif
     MatReorderingRegisterAll();
   }
 
-  *name = (MatOrdering) numberregistered++;
+  *name = (MatReordering) numberregistered++;
   ierr = NRRegister(__MatReorderingList,(int)*name,sname,(int (*)(void*))order);
   CHKERRQ(ierr);
   MatReorderingRequiresSymmetric[(int)*name] = sym;
@@ -172,7 +172,7 @@ $    -mat_order rcm, -mat_order qmd
 
 .seealso: MatGetReordering()
 @*/
-int MatGetReorderingTypeFromOptions(char *prefix,MatOrdering *type)
+int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
 {
   char sbuf[50];
   int  ierr,flg;
@@ -180,7 +180,7 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatOrdering *type)
   ierr = OptionsGetString(prefix,"-mat_order", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
     if (!__MatReorderingList) MatReorderingRegisterAll();
-    *type = (MatOrdering)NRFindID( __MatReorderingList, sbuf );
+    *type = (MatReordering)NRFindID( __MatReorderingList, sbuf );
   }
   return 0;
 }
@@ -196,10 +196,18 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatOrdering *type)
 
 .keywords: PC, get, method, name, type
 @*/
-int MatReorderingGetName(MatOrdering meth,char **name)
+int MatReorderingGetName(MatReordering meth,char **name)
 {
   int ierr;
   if (!__MatReorderingList) {ierr = MatReorderingRegisterAll(); CHKERRQ(ierr);}
    *name = NRFindName( __MatReorderingList, (int)meth );
   return 0;
 }
+
+
+
+
+
+
+
+

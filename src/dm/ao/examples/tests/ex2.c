@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.1 1996/06/26 03:09:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.1 1996/06/26 15:33:32 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests application ordering\n\n";
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
 
   /* create the orderings */
-  ispetsc = (int *) PetscMalloc( 2*n*sizeof(int) ); CHKERRA(ierr);
+  ispetsc = (int *) PetscMalloc( 2*n*sizeof(int) ); CHKPTRA(ispetsc);
   isapp   = ispetsc + n;
 
   MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);

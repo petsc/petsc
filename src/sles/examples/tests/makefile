@@ -26,7 +26,9 @@ TESTEXAMPLES_4  = ex1.PETSc runex1 runex1_3 runex1_5 ex1.rm ex2.PETSc runex2\
 		  ex11.rm ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_5  = ex17.PETSc ex17.rm clean
 TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 runex6_5 \
-		  runex6_6 ex6.rm ex8.PETSc runex8_3 runex8_4 ex8.rm 
+		  ex6.rm clean
+TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm ex8.PETSc runex8_3 runex8_4 \
+                  ex8.rm clean
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc\
 		  ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex19.PETSc ex19.rm clean
 BUILDEXAMPLES_2 = ex10.PETSc ex10.rm ex11.PETSc ex11.rm ex13.PETSc ex13.rm ex14.PETSc\
@@ -38,6 +40,7 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc \
 		  ex11.rm ex19.PETSc ex19.rm clean
 BUILDEXAMPLES_5 = ex17.PETSc ex17.rm clean
 BUILDEXAMPLES_6 = ex6.PETSc ex6.rm ex8.PETSc ex8.rm  clean
+BUILDEXAMPLES_7 = ex6.PETSc ex6.rm ex8.PETSc  ex8.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c\
 		  ex11.c ex13.c ex14.c ex15.c ex17.c ex19.c

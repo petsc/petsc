@@ -1,14 +1,35 @@
 #ifndef lint
-static char vcid[] = "$Id: inherit.c,v 1.5 1996/04/16 01:27:52 curfman Exp curfman $";
+static char vcid[] = "$Id: inherit.c,v 1.6 1996/04/17 20:01:44 curfman Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
+/*
+    The default copy simply copies the pointer and adds one to the 
+  reference counter.
+
+*/
 static int PetscObjectInherit_DefaultCopy(void *in, void **out)
 {
+  PetscObject obj = (PetscObject) in;
+
+  obj->refct++;
   *out = in;
+  return 0;
+}
+
+/*
+    The default destroy treats it as a PETSc object and calls 
+  its destroy routine.
+*/
+static int PetscObjectInherit_DefaultDestroy(void *in)
+{
+  int         ierr;
+  PetscObject obj = (PetscObject) in;
+
+  ierr = (*obj->destroy)(obj); CHKERRQ(ierr);
   return 0;
 }
 
@@ -32,13 +53,18 @@ static int PetscObjectInherit_DefaultCopy(void *in, void **out)
 
 .seealso: PetscObjectGetChild()
 @*/
-int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **))
+int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),
+                       int (*destroy)(void*))
 {
-  /* Should test to see if child has already been set? */
-  /*  if (obj->child) SETERRQ(1,"PetscObjectInherit:Child already set; object can have only 1 child."); */
+/*
+  if (obj->child) 
+    SETERRQ(1,"PetscObjectInherit:Child already set;object can have only 1 child");
+*/
   obj->child = ptr;
   if (copy == PETSC_NULL) copy = PetscObjectInherit_DefaultCopy;
-  obj->childcopy = copy;
+  obj->childcopy    = copy;
+  if (destroy == PETSC_NULL) destroy = PetscObjectInherit_DefaultDestroy;
+  obj->childdestroy = destroy;
   return 0;
 }
 

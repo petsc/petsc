@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.59 1996/04/20 04:18:39 bsmith Exp balay $";
+static char vcid[] = "$Id: vscat.c,v 1.60 1996/04/25 23:31:30 balay Exp bsmith $";
 #endif
 
 /*
@@ -858,9 +858,7 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
 {
   VecScatter_General *to   = (VecScatter_General *)scat->todata;
-/*   VecScatter_General *from = (VecScatter_General *)scat->fromdata; */
-  VecScatter_MPI     *mto   = (VecScatter_MPI *)scat->todata;
-/*  VecScatter_MPI     *mfrom = (VecScatter_MPI *)scat->fromdata; */
+  VecScatter_MPI     *mto  = (VecScatter_MPI *)scat->todata;
   int                i;
 
   

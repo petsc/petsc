@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.26 1996/03/19 21:22:48 bsmith Exp curfman $ */
+/* $Id: vecimpl.h,v 1.27 1996/04/07 22:46:49 curfman Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -91,6 +91,11 @@ typedef struct {
                                    we do not use MPI packing */
   VecScatter_General local;    /* any part that happens to be local */
   MPI_Status         *sstatus;
+  int                local_is_matching; 
+                               /* Indicates that the slots[] of the in and out local
+                                  "scatters" are identical, this is used to avoid 
+                                  an unnecessary copy when the input and output vectors
+                                  are identical */
 } VecScatter_MPI;
 
 struct _VecScatter {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.147 1996/07/01 23:20:49 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.148 1996/07/02 02:38:51 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -443,11 +443,11 @@ static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr,nt;
 
-  ierr = VecGetLocalSize(xx,nt);  CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xx,&nt);  CHKERRQ(ierr);
   if (nt != a->n) {
     SETERRQ(1,"MatMult_MPIAIJ:Incompatiable parition of A and xx");
   }
-  ierr = VecGetLocalSize(yy,nt);  CHKERRQ(ierr);
+  ierr = VecGetLocalSize(yy,&nt);  CHKERRQ(ierr);
   if (nt != a->m) {
     SETERRQ(1,"MatMult_MPIAIJ:Incompatiable parition of A and yy");
   }

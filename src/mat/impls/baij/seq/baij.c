@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.52 1996/06/25 16:03:11 balay Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.53 1996/06/26 18:11:49 curfman Exp bsmith $";
 #endif
 
 /*
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: baij.c,v 1.52 1996/06/25 16:03:11 balay Exp curfman $
 
 extern   int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
-static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
+static int MatGetReordering_SeqBAIJ(Mat A,MatReordering type,IS *rperm,IS *cperm)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         ierr, *ia, *ja,n = a->mbs,*idx,i,ishift,oshift;

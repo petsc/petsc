@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.57 1996/03/19 21:25:33 bsmith Exp curfman $ */
+/* $Id: matimpl.h,v 1.58 1996/04/07 22:47:28 curfman Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -37,7 +37,7 @@ struct _MatOps {
             (*setoption)(Mat,MatOption),
             (*zeroentries)(Mat),
             (*zerorows)(Mat,IS,Scalar *),
-            (*getreordering)(Mat,MatOrdering,IS*,IS*),
+            (*getreordering)(Mat,MatReordering,IS*,IS*),
             (*lufactorsymbolic)(Mat,IS,IS,double,Mat *),
             (*lufactornumeric)(Mat,Mat* ),
             (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
@@ -65,7 +65,8 @@ struct _MatOps {
             (*printhelp)(Mat),
             (*scale)(Scalar *,Mat),
             (*shift)(Scalar *,Mat),
-            (*diagonalshift)(Vec,Mat);
+            (*diagonalshift)(Vec,Mat),
+            (*iludtfactor)(Mat,double,int,IS,IS,Mat *);
 };
 
 #define FACTOR_LU       1
@@ -109,7 +110,7 @@ extern int StashInfo_Private(Stash*);
 /*
   Reorderings for sequential IJ format. By default uses SparsePak routines.
 */
-extern int MatGetReordering_IJ(int,int*,int*,MatOrdering,IS *,IS*);
+extern int MatGetReordering_IJ(int,int*,int*,MatReordering,IS *,IS*);
 
 
 extern int MatConvert_Basic(Mat,MatType,Mat*);

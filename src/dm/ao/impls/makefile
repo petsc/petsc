@@ -9,8 +9,8 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = seq
-LOCDIR   = src/is/impls/
+DIRS     = debug
+LOCDIR   = src/ao/impls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

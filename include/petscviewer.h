@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.28 1996/04/12 00:07:43 curfman Exp bsmith $ */
+/* $Id: viewer.h,v 1.29 1996/05/03 19:28:48 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -16,6 +16,7 @@ extern int ViewerFileOpenBinary(MPI_Comm,char*,ViewerBinaryType,Viewer *);
 extern int ViewerMatlabOpen(MPI_Comm,char*,int,Viewer *);
 extern int ViewerStringOpen(MPI_Comm,char *,int, Viewer *);
 extern int ViewerDrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Viewer*);
+extern int ViewerDrawOpenVRML(MPI_Comm,char *,char *,Viewer*);
 
 extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerDestroy(Viewer);

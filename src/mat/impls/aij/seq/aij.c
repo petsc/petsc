@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.172 1996/06/26 18:11:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.173 1996/06/27 02:46:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,13 +13,46 @@ static char vcid[] = "$Id: aij.c,v 1.172 1996/06/26 18:11:42 curfman Exp bsmith 
 #include "petsc.h"
 #include "src/inline/bitarray.h"
 
+/*
+    Basic AIJ format ILU based on drop tolerance 
+*/
+int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
+{
+  /* Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; */
+  int        ierr = 1;
+
+  SETERRQ(ierr,"MatILUDTFactor_SeqAIJ:Not implemented");
+}
+
+/*
+     Basic flow based reordering routine for AIJ storage format
+*/
+int MatGetReordering_SeqAIJ_Flow(Mat A,IS *rperm,IS *cperm)
+{
+  /* Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; */
+  int        ierr = 1;
+
+  SETERRQ(ierr,"MatGetReordering_SeqAIJ_Flow:Not implemented");
+}
+
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
-static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
+static int MatGetReordering_SeqAIJ(Mat A,MatReordering type,IS *rperm, IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr, *ia, *ja,n,*idx,i,oshift,ishift;
 
+  /*
+     This is tacky. The problem is we cannot use the registered ordering 
+    routines since they only work on nozero patterns. To have general
+    registration means you register a particular ordering method for a 
+    particular data structure; hence something like a two dimensional 
+    look up table.
+  */
+  if (type == ORDER_FLOW) {
+     return MatGetReordering_SeqAIJ_Flow(A,rperm,cperm);
+  }
+ 
   /* 
      this is tacky: In the future when we have written special factorization
      and solve routines for the identity permutation we should use a 
@@ -1315,7 +1348,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,0,
        MatPrintHelp_SeqAIJ,
-       MatScale_SeqAIJ};
+       MatScale_SeqAIJ,0,0,MatILUDTFactor};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);

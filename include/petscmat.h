@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.105 1996/06/04 20:25:39 balay Exp curfman $ */
+/* $Id: mat.h,v 1.106 1996/06/17 14:39:52 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -105,28 +105,32 @@ extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 */
 
 typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
-              ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_APPLICATION_1,
-              ORDER_APPLICATION_2} MatOrdering;
-extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
-extern int MatGetReorderingTypeFromOptions(char *,MatOrdering*);
-extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
-extern int MatReorderingRegister(MatOrdering *,char*,PetscTruth,int,
+              ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_FLOW,
+              ORDER_APPLICATION_1,ORDER_APPLICATION_2} MatReordering;
+extern int MatGetReordering(Mat,MatReordering,IS*,IS*);
+extern int MatGetReorderingTypeFromOptions(char *,MatReordering*);
+extern int MatReorderingRegister(MatReordering *,char*,PetscTruth,int,
                                  int (*)(int*,int*,int*,int*,int*));
 extern int MatReorderingRegisterAll();
 extern int MatReorderingRegisterDestroy();
-extern int MatReorderingGetName(MatOrdering,char **);
+extern int MatReorderingGetName(MatReordering,char **);
 extern PetscTruth MatReorderingRequiresSymmetric[];
 extern int MatReorderingIndexShift[];
 
+extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
+
+extern int MatCholeskyFactor(Mat,IS,double);
+extern int MatCholeskyFactorSymbolic(Mat,IS,double,Mat*);
+extern int MatCholeskyFactorNumeric(Mat,Mat*);
+
 extern int MatLUFactor(Mat,IS,IS,double);
 extern int MatILUFactor(Mat,IS,IS,double,int);
-extern int MatCholeskyFactor(Mat,IS,double);
 extern int MatLUFactorSymbolic(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic(Mat,IS,IS,double,int,Mat*);
-extern int MatCholeskyFactorSymbolic(Mat,IS,double,Mat*);
 extern int MatIncompleteCholeskyFactorSymbolic(Mat,IS,double,int,Mat*);
 extern int MatLUFactorNumeric(Mat,Mat*);
-extern int MatCholeskyFactorNumeric(Mat,Mat*);
+extern int MatILUDTFactor(Mat,double,int,IS,IS,Mat *);
+
 
 extern int MatSolve(Mat,Vec,Vec);
 extern int MatForwardSolve(Mat,Vec,Vec);

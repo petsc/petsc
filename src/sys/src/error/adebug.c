@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.43 1996/04/20 04:19:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.44 1996/06/11 22:03:52 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -236,6 +236,11 @@ int PetscAttachDebugger()
       double x = 1.0;
       int i=10000000;
         while (i--) x++ ; /* cannot attach to sleeper */
+    }
+#elif defined(PARCH_rs6000)
+    {
+      int left = 10;
+      while (left > 0) {left = sleep(left) - 1;}
     }
 #else
     sleep(5);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.83 1996/04/09 20:24:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.84 1996/04/20 04:19:32 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -141,9 +141,9 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  PLogEventBegin(PC_ApplySymmLeft,pc,x,y,0);
+  PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);
   ierr = (*pc->applysymmetricleft)(pc,x,y); CHKERRQ(ierr);
-  PLogEventEnd(PC_ApplySymmLeft,pc,x,y,0);
+  PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);
   return 0;
 }
 
@@ -168,9 +168,9 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  PLogEventBegin(PC_ApplySymmRight,pc,x,y,0);
+  PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);
   ierr = (*pc->applysymmetricright)(pc,x,y); CHKERRQ(ierr);
-  PLogEventEnd(PC_ApplySymmRight,pc,x,y,0);
+  PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);
   return 0;
 }
 

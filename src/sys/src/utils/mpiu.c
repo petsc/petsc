@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.44 1996/06/13 21:35:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiu.c,v 1.45 1996/06/13 21:55:19 curfman Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -85,48 +85,63 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
   return 0;
 }
 
+static char PetscDisplay[128];
+
 /*
      PetscSetDisplay - Tries to set the display variable for all processors.
 
+*/
+int PetscSetDisplay()
+{
+  int  size,rank,len,ierr,flag;
+  char *string,*str;
+
+  ierr = OptionsGetString(0,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
+  if (flag) return 0;
+
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);  
+  if (!rank) {
+    str = getenv("DISPLAY");
+    if (!str || (str[0] == ':' && size > 1)) {
+      string = (char *) PetscMalloc( 256*sizeof(char) ); CHKPTRQ(string);
+      MPI_Get_processor_name(string,&len);
+      PetscStrncpy(PetscDisplay,string,128-4); PetscFree(string);
+      PetscStrcat(PetscDisplay,":0.0");
+    }
+    else {
+      len = PetscStrlen(str);
+      PetscStrncpy(PetscDisplay,str,128);
+    }
+    len = PetscStrlen(PetscDisplay);
+    MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
+    MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,MPI_COMM_WORLD);
+  }
+  else {
+    MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
+    MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,MPI_COMM_WORLD);
+    PetscDisplay[len] = 0;
+  }
+  return 0;  
+}
+
+/*
+     PetscGtDisplay - Gets the display variable for all processors.
+
   Input Parameters:
-.   comm - the communicatior, probably MPI_COMM_WORLD
 .   n - length of string display
 
   Output Parameters:
 .   display - the display string, may (and should) be freed.
 
 */
-int PetscSetDisplay(MPI_Comm comm,char *display,int n)
+int PetscGetDisplay(char *display,int n)
 {
-  int  size,rank,len;
-  char *string,*str;
-
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);  
-  if (!rank) {
-    str = getenv("DISPLAY");
-    if (!str || (str[0] == ':' && size > 1)) {
-      string = (char *) PetscMalloc( 256*sizeof(char) ); CHKPTRQ(string);
-      MPI_Get_processor_name(string,&len);
-      PetscStrncpy(display,string,n-4); PetscFree(string);
-      PetscStrcat(display,":0.0");
-    }
-    else {
-      len = PetscStrlen(str);
-      PetscStrncpy(display,str,n);
-    }
-    len = PetscStrlen(display);
-    MPI_Bcast(&len,1,MPI_INT,0,comm);
-    MPI_Bcast(display,len,MPI_CHAR,0,comm);
-  }
-  else {
-    MPI_Bcast(&len,1,MPI_INT,0,comm);
-    MPI_Bcast(display,len,MPI_CHAR,0,comm);
-    display[len] = 0;
-  }
+  PetscStrncpy(display,PetscDisplay,n);
   return 0;  
 }
 
+/* ---------------------------------------------------------------------*/
 static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
 
 /*@

@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.20 1996/03/23 00:33:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.21 1996/06/09 23:27:23 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Creates a 1-dimensional wave equation.\n\n";
+static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
 #include "petsc.h"
 #include "da.h"
@@ -16,12 +16,12 @@ int main(int argc,char **argv)
 {
   int       rank, size, M = 60, ierr,  time_steps = 100,flg;
   DA        da;
-  Viewer    viewer;
+  Viewer    viewer,viewer_private;
   Draw      draw;
   Vec       local, global, copy;
   Scalar    *localptr, *copyptr;
   double    a, h, k;
-  int       localsize, j, i, mybase, myend;
+  int       localsize, j, i, mybase, myend, width, xbase;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
@@ -35,10 +35,20 @@ int main(int argc,char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size); 
 
-  /* Set up display to show wave graph */
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",80,480,500,160,&viewer); CHKERRA(ierr);
+  /* Set up display to show combined wave graph */
+  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"Entire Solution",20,480,1000,200,
+                         &viewer);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
+
+  /* set up display to show my portion of the wave */
+  xbase = rank*(1000.0/size) + 20;
+  width = 1000.0/size;
+  ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,"Local Portion of Solution",xbase,200,
+                         width,200,&viewer_private);CHKERRA(ierr);
+  ierr = ViewerDrawGetDraw(viewer_private,&draw); CHKERRQ(ierr);
+  ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
+
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);
@@ -86,12 +96,16 @@ int main(int argc,char **argv)
     /* Local to Global */
     ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global); CHKERRA(ierr);
   
-    /* View Wave */ 
+    /* View my part of Wave */ 
+    ierr = VecView(copy,viewer_private); CHKERRA(ierr);
+
+    /* View global Wave */ 
     ierr = VecView(global,viewer); CHKERRA(ierr);
   }
 
   ierr = DADestroy(da); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
+  ierr = ViewerDestroy(viewer_private); CHKERRA(ierr);
   ierr = VecDestroy(copy); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.47 1996/03/19 21:28:22 bsmith Exp gropp $";
+static char vcid[] = "$Id: xops.c,v 1.48 1996/06/30 17:35:27 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -363,34 +363,21 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   PetscMemzero(Xwin,sizeof(Draw_X));
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
+
+  if (!display) {
+    PetscGetDisplay(string,128);
+    display = string;
+  }
   if (rank == 0) {
-    ierr = OptionsGetString(PETSC_NULL,"-display",string,128,&flg); CHKERRQ(ierr);
-    if (!display && flg) {
-      display = string;
-    }
-    if (!display) {
-      display = (char *) PetscMalloc( 128*sizeof(char) ); CHKPTRQ(display);
-      PetscSetDisplay(comm,display,128);
-    }
     if (x < 0 || y < 0) SETERRQ(1,"DrawOpenX:Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(1,"DrawOpenX:Negative width or hight of window");
     ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERRQ(ierr);
-    if (display != string) PetscFree(display);
     MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);
   }
   else {
     unsigned long win;
-    ierr = OptionsGetString(PETSC_NULL,"-display",string,128,&flg); CHKERRQ(ierr);
-    if (!display && flg) {
-      display = string;
-    }
-    if (!display) {
-      display = (char *) PetscMalloc( 128*sizeof(char) ); CHKPTRQ(display);
-      PetscSetDisplay(comm,display,128);
-    }
     MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);
     ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);
-    if (display != string) PetscFree(display);
   }
  
   ctx->data    = (void *) Xwin;

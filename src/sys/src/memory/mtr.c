@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.56 1996/05/03 19:25:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.57 1996/05/11 04:04:03 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -19,8 +19,8 @@ static char vcid[] = "$Id: mtr.c,v 1.56 1996/05/03 19:25:58 bsmith Exp bsmith $"
 #endif
 #include "pinclude/petscfix.h"
 
-void *PetscTrMalloc(unsigned int, int, char *);
-int  PetscTrFree( void *, int, char * );
+void *PetscTrMallocDefault(unsigned int, int, char *);
+int  PetscTrFreeDefault( void *, int, char * );
 
 /*
   Code for checking if a pointer is out of the range 
@@ -35,7 +35,7 @@ int PetscSetUseTrMalloc_Private()
   int ierr;
   PetscLow  = (void *) 0xEEEEEEEE;
   PetscHigh = (void *) 0x0;
-  ierr = PetscSetMalloc(PetscTrMalloc,PetscTrFree); CHKERRQ(ierr);
+  ierr = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
   TrMallocUsed = 1;
   return 0;
 }
@@ -170,7 +170,7 @@ int PetscTrValid(int line,char *file )
 }
 
 /*
-    PetscTrMalloc - Malloc with tracing.
+    PetscTrMallocDefault - Malloc with tracing.
 
     Input Parameters:
 .   a   - number of bytes to allocate
@@ -181,7 +181,7 @@ int PetscTrValid(int line,char *file )
     double aligned pointer to requested storage, or null if not
     available.
  */
-void *PetscTrMalloc(unsigned int a, int lineno, char *fname )
+void *PetscTrMallocDefault(unsigned int a, int lineno, char *fname )
 {
   TRSPACE          *head;
   char             *inew;
@@ -240,14 +240,14 @@ void *PetscTrMalloc(unsigned int a, int lineno, char *fname )
 
 
 /*
-   PetscTrFree - Free with tracing.
+   PetscTrFreeDefault - Free with tracing.
 
    Input Parameters:
 .  a    - pointer to a block allocated with PetscTrMalloc
 .  line - line in file where called
 .  file - Name of file where called
  */
-int PetscTrFree( void *aa, int line, char *file )
+int PetscTrFreeDefault( void *aa, int line, char *file )
 {
   char     *a = (char *) aa;
   TRSPACE  *head;
@@ -453,14 +453,24 @@ int PetscTrSummary( FILE *fp )
   of twalk is changed to (void (*)(const void*,VISIT,int)) so change it 
   below if it is not compiling correctly on your machine.
 */
-  twalk( (char *)root, (void (*)(void*,VISIT,int))PetscTrPrintSum );
-  fprintf(fp,"The maximum space allocated was %lx bytes [%lx]\n",TRMaxMem,TRMaxMemId);
+/*
+    On the Sun Solaris 5.3 (maybe 5.4) the twalk() prototype is 
+  void twalk(char *, void (*)( void *, VISIT, int));
+  so put a (char *) cast in the first argument below and change the 
+  second cast by removing the const, i.e.
+*/
+#if defined(PARCH_solaris)
+  twalk(root, (void (*)(const void*,VISIT,int))PetscTrPrintSum );
+#else
+  twalk((char *)root, (void (*)(void*,VISIT,int))PetscTrPrintSum );
+#endif
+  fprintf(fp,"Maximum space allocated %lx bytes [%lx]\n",TRMaxMem,TRMaxMemId);
   return 0;
 }
 #else
 int PetscTrSummary(FILE* fp )
 {
-  fprintf(fp,"The maximum space allocated was %ld bytes [%ld]\n",TRMaxMem,TRMaxMemId);
+  fprintf(fp,"Maximum space allocated %ld bytes [%ld]\n",TRMaxMem,TRMaxMemId);
   return 0;
 }	
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.52 1996/06/11 15:39:57 balay Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.53 1996/06/11 15:42:22 balay Exp bsmith $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -637,6 +637,35 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
 
+  /* 
+     Build the natural ordering to PETSc ordering mappings.
+  */
+  {
+    IS  ispetsc, isnatural;
+    int *lidx,lict = 0, Nlocal = (da->xe-da->xs)*(da->ye-da->ys);
+
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,Nlocal,da->base,1,&ispetsc);
+           CHKERRQ(ierr);
+
+    lidx = (int *) PetscMalloc(Nlocal*sizeof(int)); CHKPTRQ(lidx);
+    for (j=ys; j<ye; j++) {
+      for (i=xs; i<xe; i++) {
+        /*  global number in natural ordering */
+        lidx[lict++] = i + j*M*w;
+      }
+    }
+    ierr = ISCreateSeq(MPI_COMM_SELF,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
+    PetscFree(lidx);
+
+    ierr = AOCreateDebugIS(comm,isnatural,ispetsc,&da->ao); CHKERRQ(ierr);
+    ierr = ISDestroy(ispetsc); CHKERRQ(ierr);
+    ierr = ISDestroy(isnatural); CHKERRQ(ierr);
+  }
+
+  /*
+     Note the following will be removed soon. Since the functionality 
+    is replaced by the above.
+  */
   /* Construct the mapping from current global ordering to global
      ordering that would be used if only 1 processor were employed.
      This mapping is intended only for internal use by discrete

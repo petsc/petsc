@@ -3,13 +3,13 @@ PETSC_DIR = ../../..
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS)  -I..  $(CONF) -D__DIR__='"$(LOCDIR)"'
-SOURCEC  = index.c 
+SOURCEC  = ao.c 
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = index.o 
+OBJSC    = ao.o 
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 6
-LOCDIR   = src/is/interface/
+LOCDIR   = src/ao/interface/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

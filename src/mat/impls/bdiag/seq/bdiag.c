@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.105 1996/05/11 04:04:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.106 1996/06/14 22:02:15 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -233,19 +233,8 @@ static int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
   return 0;
 }
 
-
-int MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec yy,Vec zz)
-{ 
-  SETERRQ(1,"not here");
-}
-
-int MatMultTransAdd_SeqBDiag_N(Mat A,Vec xx,Vec yy,Vec zz)
-{ 
-  SETERRQ(1,"not here");
-}
-
 /*
-
+    MatMults for blocksize 1 to 5 and N -------------------------------
  */
 int MatMult_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 { 
@@ -470,7 +459,238 @@ int MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 }
 
 /*
+    MatMultAdds for blocksize 1 to 5 and N -------------------------------
+ */
+int MatMultAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
+{ 
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             ierr, nd = a->nd, diag,*a_diag = a->diag,*a_bdlen = a->bdlen;
+  Scalar          *vin, *vout,**a_diagv = a->diagv;
+  register Scalar *pvin, *pvout, *dv;
+  register int    d, j, len;
 
+  if (zz != yy) {ierr = VecCopy(zz,yy); CHKERRQ(ierr);}
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout); 
+  for (d=0; d<nd; d++) {
+    dv   = a_diagv[d];
+    diag = a_diag[d];
+    len  = a_bdlen[d];
+    if (diag > 0) {	     /* lower triangle */
+      pvin  = vin;
+      pvout = vout + diag;
+      dv    = dv   + diag;
+    } else {		     /* upper triangle, including main diagonal */
+      pvin  = vin - diag;
+      pvout = vout;
+    }
+    for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
+    PLogFlops(2*len);
+  }
+  VecRestoreArray(xx,&vin); 
+  VecRestoreArray(yy,&vout);
+  return 0;
+}
+
+int MatMultAdd_SeqBDiag_2(Mat A,Vec xx,Vec zz,Vec yy)
+{ 
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             ierr, nd = a->nd,nb_diag;
+  int             *a_diag = a->diag,*a_bdlen = a->bdlen;
+  Scalar          *vin, *vout,**a_diagv = a->diagv;
+  register Scalar *pvin, *pvout, *dv, pvin0, pvin1;
+  register int    d,  k, len;
+
+  if (zz != yy) {ierr = VecCopy(zz,yy); CHKERRQ(ierr);}
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout); 
+  for (d=0; d<nd; d++) {
+    dv      = a_diagv[d];
+    nb_diag = 2*a_diag[d];
+    len     = a_bdlen[d];
+    if (nb_diag > 0) {	        /* lower triangle */
+      pvin  = vin;
+      pvout = vout + nb_diag;
+      dv    = dv   + 2*nb_diag;
+    } else {		       /* upper triangle, including main diagonal */
+      pvin  = vin - nb_diag;
+      pvout = vout;
+    }
+    for (k=0; k<len; k++) {
+      pvin0 = pvin[0]; pvin1 = pvin[1];
+
+      pvout[0] += dv[0]*pvin0 + dv[2]*pvin1;
+      pvout[1] += dv[1]*pvin0 + dv[3]*pvin1;
+
+      pvout += 2; pvin += 2; dv += 4; 
+    }
+    PLogFlops(8*len);
+  }
+  VecRestoreArray(xx,&vin); 
+  VecRestoreArray(yy,&vout);
+  return 0;
+}
+
+int MatMultAdd_SeqBDiag_3(Mat A,Vec xx,Vec zz,Vec yy)
+{ 
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             ierr, nd = a->nd,nb_diag;
+  int             *a_diag = a->diag,*a_bdlen = a->bdlen;
+  Scalar          *vin, *vout,**a_diagv = a->diagv;
+  register Scalar *pvin, *pvout, *dv, pvin0, pvin1,pvin2;
+  register int    d,  k, len;
+
+  if (zz != yy) {ierr = VecCopy(zz,yy); CHKERRQ(ierr);}
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout); 
+  for (d=0; d<nd; d++) {
+    dv      = a_diagv[d];
+    nb_diag = 3*a_diag[d];
+    len     = a_bdlen[d];
+    if (nb_diag > 0) {	        /* lower triangle */
+      pvin  = vin;
+      pvout = vout + nb_diag;
+      dv    = dv   + 3*nb_diag;
+    } else {		       /* upper triangle, including main diagonal */
+      pvin  = vin - nb_diag;
+      pvout = vout;
+    }
+    for (k=0; k<len; k++) {
+      pvin0 = pvin[0]; pvin1 = pvin[1]; pvin2 = pvin[2];
+
+      pvout[0] += dv[0]*pvin0 + dv[3]*pvin1  + dv[6]*pvin2;
+      pvout[1] += dv[1]*pvin0 + dv[4]*pvin1  + dv[7]*pvin2;
+      pvout[2] += dv[2]*pvin0 + dv[5]*pvin1  + dv[8]*pvin2;
+
+      pvout += 3; pvin += 3; dv += 9; 
+    }
+    PLogFlops(18*len);
+  }
+  VecRestoreArray(xx,&vin); 
+  VecRestoreArray(yy,&vout);
+  return 0;
+}
+
+int MatMultAdd_SeqBDiag_4(Mat A,Vec xx,Vec zz,Vec yy)
+{ 
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             ierr, nd = a->nd,nb_diag;
+  int             *a_diag = a->diag,*a_bdlen = a->bdlen;
+  Scalar          *vin, *vout,**a_diagv = a->diagv;
+  register Scalar *pvin, *pvout, *dv, pvin0, pvin1,pvin2,pvin3;
+  register int    d,  k, len;
+
+  if (zz != yy) {ierr = VecCopy(zz,yy); CHKERRQ(ierr);}
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout); 
+  for (d=0; d<nd; d++) {
+    dv      = a_diagv[d];
+    nb_diag = 4*a_diag[d];
+    len     = a_bdlen[d];
+    if (nb_diag > 0) {	        /* lower triangle */
+      pvin  = vin;
+      pvout = vout + nb_diag;
+      dv    = dv   + 4*nb_diag;
+    } else {		       /* upper triangle, including main diagonal */
+      pvin  = vin - nb_diag;
+      pvout = vout;
+    }
+    for (k=0; k<len; k++) {
+      pvin0 = pvin[0]; pvin1 = pvin[1]; pvin2 = pvin[2]; pvin3 = pvin[3];
+
+      pvout[0] += dv[0]*pvin0 + dv[4]*pvin1  + dv[8]*pvin2 + dv[12]*pvin3;
+      pvout[1] += dv[1]*pvin0 + dv[5]*pvin1  + dv[9]*pvin2 + dv[13]*pvin3;
+      pvout[2] += dv[2]*pvin0 + dv[6]*pvin1  + dv[10]*pvin2 + dv[14]*pvin3;
+      pvout[3] += dv[3]*pvin0 + dv[7]*pvin1  + dv[11]*pvin2 + dv[15]*pvin3;
+
+      pvout += 4; pvin += 4; dv += 16; 
+    }
+    PLogFlops(32*len);
+  }
+  VecRestoreArray(xx,&vin); 
+  VecRestoreArray(yy,&vout);
+  return 0;
+}
+
+int MatMultAdd_SeqBDiag_5(Mat A,Vec xx,Vec zz,Vec yy)
+{ 
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             ierr, nd = a->nd,nb_diag;
+  int             *a_diag = a->diag,*a_bdlen = a->bdlen;
+  Scalar          *vin, *vout,**a_diagv = a->diagv;
+  register Scalar *pvin, *pvout, *dv, pvin0, pvin1,pvin2,pvin3,pvin4;
+  register int    d,  k, len;
+
+  if (zz != yy) {ierr = VecCopy(zz,yy); CHKERRQ(ierr);}
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout); 
+  for (d=0; d<nd; d++) {
+    dv      = a_diagv[d];
+    nb_diag = 5*a_diag[d];
+    len     = a_bdlen[d];
+    if (nb_diag > 0) {	        /* lower triangle */
+      pvin  = vin;
+      pvout = vout + nb_diag;
+      dv    = dv   + 5*nb_diag;
+    } else {		       /* upper triangle, including main diagonal */
+      pvin  = vin - nb_diag;
+      pvout = vout;
+    }
+    for (k=0; k<len; k++) {
+      pvin0 = pvin[0]; pvin1 = pvin[1]; pvin2 = pvin[2]; pvin3 = pvin[3]; pvin4 = pvin[4];
+
+      pvout[0] += dv[0]*pvin0 + dv[5]*pvin1  + dv[10]*pvin2 + dv[15]*pvin3 + dv[20]*pvin4;
+      pvout[1] += dv[1]*pvin0 + dv[6]*pvin1  + dv[11]*pvin2 + dv[16]*pvin3 + dv[21]*pvin4;
+      pvout[2] += dv[2]*pvin0 + dv[7]*pvin1  + dv[12]*pvin2 + dv[17]*pvin3 + dv[22]*pvin4;
+      pvout[3] += dv[3]*pvin0 + dv[8]*pvin1  + dv[13]*pvin2 + dv[18]*pvin3 + dv[23]*pvin4;
+      pvout[4] += dv[4]*pvin0 + dv[9]*pvin1  + dv[14]*pvin2 + dv[19]*pvin3 + dv[24]*pvin4;
+
+      pvout += 5; pvin += 5; dv += 25; 
+    }
+    PLogFlops(50*len);
+  }
+  VecRestoreArray(xx,&vin); 
+  VecRestoreArray(yy,&vout);
+  return 0;
+}
+
+int MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
+{ 
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             ierr, nd = a->nd, nb = a->nb, nb_diag,nb_nb = nb*nb;
+  int             *a_diag = a->diag,*a_bdlen = a->bdlen;
+  Scalar          *vin, *vout,**a_diagv = a->diagv;
+  register Scalar *pvin, *pvout, *dv;
+  register int    d,  k, len;
+
+  if (zz != yy) {ierr = VecCopy(zz,yy); CHKERRQ(ierr);}
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout); 
+  for (d=0; d<nd; d++) {
+    dv      = a_diagv[d];
+    nb_diag = nb*a_diag[d];
+    len     = a_bdlen[d];
+    if (nb_diag > 0) {	        /* lower triangle */
+      pvin  = vin;
+      pvout = vout + nb_diag;
+      dv    = dv   + nb*nb_diag;
+    } else {		       /* upper triangle, including main diagonal */
+      pvin  = vin - nb_diag;
+      pvout = vout;
+    }
+    for (k=0; k<len; k++) {
+      Kernel_v_gets_v_plus_A_times_w(nb,pvout,dv,pvin);
+      pvout += nb; pvin += nb; dv += nb_nb; 
+    }
+    PLogFlops(2*nb_nb*len);
+  }
+  VecRestoreArray(xx,&vin); 
+  VecRestoreArray(yy,&vout);
+  return 0;
+}
+
+/*
+     MatMultTrans ----------------------------------------------
  */
 int MatMultTrans_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
@@ -480,7 +700,8 @@ int MatMultTrans_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   register int    d, j, len;
   Scalar          *vin, *vout;
   
-  VecGetArray(xx,&vin); VecGetArray(yy,&vout);
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout);PetscMemzero(vout,a->n*sizeof(Scalar));
   for (d=0; d<nd; d++) {
     dv   = a->diagv[d];
     diag = a->diag[d];
@@ -495,7 +716,7 @@ int MatMultTrans_SeqBDiag_1(Mat A,Vec xx,Vec yy)
       pvout = vout;
       dv    = dv + diag;
     }
-    for (j=0; j<len; j++) pvout[j] = dv[j] * pvin[j];
+    for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
   }
   return 0;
 }
@@ -508,7 +729,8 @@ int MatMultTrans_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   register int    d, i, j, k, len;
   Scalar          *vin, *vout;
   
-  VecGetArray(xx,&vin); VecGetArray(yy,&vout);
+  VecGetArray(xx,&vin);
+  VecGetArray(yy,&vout);PetscMemzero(vout,a->n*sizeof(Scalar));
   for (d=0; d<nd; d++) {
     dv   = a->diagv[d];
     diag = a->diag[d];
@@ -527,7 +749,77 @@ int MatMultTrans_SeqBDiag_N(Mat A,Vec xx,Vec yy)
       kloc = k*nb; kshift = kloc*nb;
       for (i=0; i<nb; i++) {	 /* i = local column of transpose */
         for (j=0; j<nb; j++) {   /* j = local row of transpose */
-          pvout[kloc + j] = dv[kshift + j*nb + i] * pvin[kloc + i];
+          pvout[kloc + j] += dv[kshift + j*nb + i] * pvin[kloc + i];
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+/*
+     MatMultTransAdd ----------------------------------------------
+ */
+int MatMultTransAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
+{
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             ierr, nd = a->nd, diag;
+  register Scalar *pvin, *pvout, *dv;
+  register int    d, j, len;
+  Scalar          *vin, *vout;
+  
+  if (zz != yy) {ierr = VecCopy(zz,yy); CHKERRQ(ierr);}
+  VecGetArray(xx,&vin); 
+  VecGetArray(yy,&vout);
+  for (d=0; d<nd; d++) {
+    dv   = a->diagv[d];
+    diag = a->diag[d];
+    len  = a->bdlen[d];
+      /* diag of original matrix is (row/nb - col/nb) */
+      /* diag of transpose matrix is (col/nb - row/nb) */
+    if (diag < 0) {	/* transpose is lower triangle */
+      pvin  = vin;
+      pvout = vout - diag;
+    } else {	/* transpose is upper triangle, including main diagonal */
+      pvin  = vin + diag;
+      pvout = vout;
+      dv    = dv + diag;
+    }
+    for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
+  }
+  return 0;
+}
+
+int MatMultTransAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
+{
+  Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
+  int             ierr, nd = a->nd, nb = a->nb, diag,kshift, kloc;
+  register Scalar *pvin, *pvout, *dv;
+  register int    d, i, j, k, len;
+  Scalar          *vin, *vout;
+  
+  if (zz != yy) {ierr = VecCopy(zz,yy); CHKERRQ(ierr);}
+  VecGetArray(xx,&vin);
+  VecGetArray(yy,&vout);
+  for (d=0; d<nd; d++) {
+    dv   = a->diagv[d];
+    diag = a->diag[d];
+    len  = a->bdlen[d];
+      /* diag of original matrix is (row/nb - col/nb) */
+      /* diag of transpose matrix is (col/nb - row/nb) */
+    if (diag < 0) {	/* transpose is lower triangle */
+      pvin  = vin;
+      pvout = vout - nb*diag;
+    } else {	/* transpose is upper triangle, including main diagonal */
+      pvin  = vin + nb*diag;
+      pvout = vout;
+      dv    = dv + diag;
+    }
+    for (k=0; k<len; k++) {
+      kloc = k*nb; kshift = kloc*nb;
+      for (i=0; i<nb; i++) {	 /* i = local column of transpose */
+        for (j=0; j<nb; j++) {   /* j = local row of transpose */
+          pvout[kloc + j] += dv[kshift + j*nb + i] * pvin[kloc + i];
         }
       }
     }
@@ -1064,7 +1356,7 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data, *anew;
   Mat          tmat;
   int          i, j, k, d, ierr, nd = a->nd, *diag = a->diag, *diagnew;
-  int          nb = a->nb, kshift;
+  int          nb = a->nb, kshift,shifto,shiftn;
   Scalar       *dwork, *dvnew;
 
   diagnew = (int *) PetscMalloc(nd*sizeof(int)); CHKPTRQ(diagnew);
@@ -1079,14 +1371,18 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     dwork = a->diagv[nd-d-1];
     if (anew->bdlen[d] != a->bdlen[nd-d-1])
       SETERRQ(1,"MatTranspose_SeqBDiag:Incompatible diagonal lengths");
+    shifto = a->diag[nd-d-1];
+    shiftn = anew->diag[d];
+    if (shifto > 0)  shifto = nb*nb*shifto; else shifto = 0;
+    if (shiftn > 0)  shiftn = nb*nb*shiftn; else shiftn = 0;
     if (nb == 1) {
-      for (k=0; k<anew->bdlen[d]; k++) dvnew[k] = dwork[k];
+      for (k=0; k<anew->bdlen[d]; k++) dvnew[shiftn+k] = dwork[shifto+k];
     } else {
       for (k=0; k<anew->bdlen[d]; k++) {
         kshift = k*nb*nb;
         for (i=0; i<nb; i++) {	/* i = local row */
           for (j=0; j<nb; j++) {	/* j = local column */
-            dvnew[kshift + j + i*nb] = dwork[kshift + j*nb + i];
+            dvnew[shiftn + kshift + j + i*nb] = dwork[shifto + kshift + j*nb + i];
           }
         }
       }
@@ -1094,14 +1390,19 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   }
   ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-
   if (matout != PETSC_NULL) {
     *matout = tmat;
   } else {
     /* This isn't really an in-place transpose ... but free data 
        structures from a.  We should fix this. */
     if (!a->user_alloc) { /* Free the actual diagonals */
-      for (i=0; i<a->nd; i++) PetscFree( a->diagv[i] );
+      for (i=0; i<a->nd; i++) {
+        if (a->diag[i] > 0) {
+          PetscFree( a->diagv[i] + nb*nb*a->diag[i]  );
+        } else {
+          PetscFree( a->diagv[i] );
+        }
+      }
     }
     if (a->pivot) PetscFree(a->pivot);
     PetscFree(a->diagv); PetscFree(a->diag);
@@ -1211,7 +1512,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   } 
   else if (format == ASCII_FORMAT_IMPL) {
     if (nb == 1) { /* diagonal format */
-      for (i=0; i< a->nd; i++) {
+      for (i=0; i<a->nd; i++) {
         dv   = a->diagv[i];
         diag = a->diag[i];
         fprintf(fd,"\n<diagonal %d>\n",diag);
@@ -1221,11 +1522,11 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
           for (j=0; j<len; j++) {
             if (dv[diag+j] != zero) {
 #if defined(PETSC_COMPLEX)
-              if (imag(dv[j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
-                                         j+diag,j,real(dv[j]),imag(dv[j]));
-              else fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,real(dv[j]));
+              if (imag(dv[diag+j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
+                                     j+diag,j,real(dv[diag+j]),imag(dv[diag+j]));
+              else fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,real(dv[diag+j]));
 #else
-              fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,dv[j]);
+              fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,dv[diag+j]);
 
 #endif
             }
@@ -1473,8 +1774,7 @@ int MatPrintHelp_SeqBDiag(Mat A)
   if (called) return 0; else called = 1;
   PetscPrintf(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
   PetscPrintf(comm,"  -mat_block_size <block_size>\n");
-  PetscPrintf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
-  PetscPrintf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
+  PetscPrintf(comm,"  -mat_bdiag_diags <d1,d2,d3,...> (diagonal numbers)\n"); 
   PetscPrintf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
   return 0;
 }
@@ -1612,10 +1912,15 @@ static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
 int MatScale_SeqBDiag(Scalar *alpha,Mat inA)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) inA->data;
-  int          one = 1, i, len;
+  int          one = 1, i, len, nb = a->nb;
+
   for (i=0; i<a->nd; i++) {
-    len = a->nb * a->nb * a->bdlen[i];
-    BLscal_( &len, alpha, a->diagv[i], &one );
+    len = nb*nb*a->bdlen[i];
+    if (a->diag[i] > 0) {
+      BLscal_( &len, alpha, a->diagv[i] + nb*nb*a->diag[i], &one );
+    } else {
+      BLscal_( &len, alpha, a->diagv[i], &one );
+    }
   }
   PLogFlops(a->nz);
   return 0;
@@ -1676,8 +1981,8 @@ extern int MatSolve_SeqBDiag_N(Mat,Vec,Vec);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
        MatGetRow_SeqBDiag,MatRestoreRow_SeqBDiag,
-       MatMult_SeqBDiag_N,0, 
-       MatMultTrans_SeqBDiag_N,0, 
+       MatMult_SeqBDiag_N,MatMultAdd_SeqBDiag_N, 
+       MatMultTrans_SeqBDiag_N,MatMultTransAdd_SeqBDiag_N, 
        MatSolve_SeqBDiag_N,0,
        0,0,
        MatLUFactor_SeqBDiag,0,
@@ -1718,6 +2023,10 @@ $     as needed.
    Output Parameters:
 .  A - the matrix
 
+   Options database:
+.  -mat_blocksize bs
+.  -mat_bdiag_diags s1,s2,s3,...
+
    Notes:
    See the users manual for further details regarding this storage format.
 
@@ -1733,22 +2042,17 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
 {
   Mat          B;
   Mat_SeqBDiag *b;
-  int          i, nda, sizetot, ierr, dset = 0, nd2,flg1,flg2;
+  int          i, nda, sizetot, ierr,  nd2 = 128,flg1,idiag[128];
 
   *A = 0;
   if (nb == PETSC_DEFAULT) nb = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg1);CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals",&flg2); CHKERRQ(ierr);
-  if (nd && diag == PETSC_NULL) {
-    diag = (int *)PetscMalloc(nd * sizeof(int)); CHKPTRQ(diag);
-    nd2 = nd; dset = 1;
-    ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2,&flg1);CHKERRQ(ierr);
-    if (nd2 != nd)
-      SETERRQ(1,"MatCreateSeqBDiag:Incompatible number of diags and diagonal vals");
-  } else if (flg2) {
-    SETERRQ(1,"MatCreate:Must specify number of diagonals with -mat_bdiag_ndiag");
+  ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_diags",idiag,&nd2,&flg1);
+         CHKERRQ(ierr);
+  if (flg1) {
+    diag = idiag;
+    nd   = nd2;
   }
 
   if ((n%nb) || (m%nb)) SETERRQ(1,"MatCreateSeqBDiag:Invalid block size");
@@ -1771,25 +2075,31 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
         B->ops.getvalues       = MatGetValues_SeqBDiag_1;
         B->ops.getdiagonal     = MatGetDiagonal_SeqBDiag_1;
         B->ops.mult            = MatMult_SeqBDiag_1;
+        B->ops.multadd         = MatMultAdd_SeqBDiag_1;
         B->ops.multtrans       = MatMultTrans_SeqBDiag_1;
+        B->ops.multtransadd    = MatMultTransAdd_SeqBDiag_1;
         B->ops.relax           = MatRelax_SeqBDiag_1;
         B->ops.solve           = MatSolve_SeqBDiag_1;
         B->ops.lufactornumeric = MatLUFactorNumeric_SeqBDiag_1;
         break;
       case 2:
 	B->ops.mult            = MatMult_SeqBDiag_2; 
+        B->ops.multadd         = MatMultAdd_SeqBDiag_2;
         B->ops.solve           = MatSolve_SeqBDiag_2;
         break;
       case 3:
 	B->ops.mult            = MatMult_SeqBDiag_3; 
+        B->ops.multadd         = MatMultAdd_SeqBDiag_3;
 	B->ops.solve           = MatSolve_SeqBDiag_3; 
         break;
       case 4:
 	B->ops.mult            = MatMult_SeqBDiag_4; 
+        B->ops.multadd         = MatMultAdd_SeqBDiag_4;
 	B->ops.solve           = MatSolve_SeqBDiag_4; 
         break;
       case 5:
 	B->ops.mult            = MatMult_SeqBDiag_5; 
+        B->ops.multadd         = MatMultAdd_SeqBDiag_5;
 	B->ops.solve           = MatSolve_SeqBDiag_5; 
         break;
    }
@@ -1855,7 +2165,6 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   b->roworiented = 1;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = MatPrintHelp(B); CHKERRQ(ierr);}
-  if (dset) PetscFree(diag);
   *A = B;
   return 0;
 }
@@ -1892,8 +2201,9 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 {
   Mat_SeqBDiag *a;
   Mat          B;
-  int          *scols, i, nz, ierr, fd, header[4], size;
-  int          bs, *rowlengths = 0,M,N,*cols,flg,extra_rows;
+  int          *scols, i, nz, ierr, fd, header[4], size,nd = 128;
+  int          bs, *rowlengths = 0,M,N,*cols,flg,extra_rows,*diag = 0;
+  int          idiag[128];
   Scalar       *vals, *svals;
   MPI_Comm     comm;
   
@@ -1922,8 +2232,15 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   ierr = PetscBinaryRead(fd,rowlengths,M,BINARY_INT); CHKERRQ(ierr);
   for ( i=0; i<extra_rows; i++ ) rowlengths[M+i] = 1;
 
+  /* load information about diagonals */
+  ierr = OptionsGetIntArray(PETSC_NULL,"-matload_bdiag_diags",idiag,&nd,&flg);
+         CHKERRQ(ierr);
+  if (flg) {
+    diag = idiag;
+  }
+
   /* create our matrix */
-  ierr = MatCreateSeqBDiag(comm,M+extra_rows,M+extra_rows,0,bs,PETSC_NULL,
+  ierr = MatCreateSeqBDiag(comm,M+extra_rows,M+extra_rows,nd,bs,diag,
                            PETSC_NULL,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBDiag *) B->data;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.49 1996/05/10 23:57:16 balay Exp balay $";
+static char vcid[] = "$Id: vpscat.c,v 1.50 1996/05/15 16:41:40 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -58,6 +58,25 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   PetscSequentialPhaseEnd(ctx->comm,1);
   return 0;
 }  
+
+/*
+    The next routine determines if the local part of the scatter is an
+exact copy of values into their current location. We check this here and
+then know that we need not perform that portion of the scatter.
+*/
+int VecScatterDetermineLocalIsMatching_Private(VecScatter_MPI *gen_to,VecScatter_MPI *gen_from)
+{
+  if (!PetscMemcmp(gen_to->local.slots,gen_from->local.slots,gen_to->local.n*sizeof(int))) {
+    gen_to->local_is_matching   = 1;
+    gen_from->local_is_matching = 1;
+  }
+  else {
+    gen_to->local_is_matching   = -1;
+    gen_from->local_is_matching = -1;
+  }
+  return 0;
+}
+
 /*
      Even though the next routines are written with parallel 
   vectors, either xin or yin (but not both) may be Seq
@@ -159,9 +178,19 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
     }
     /* take care of local scatters */
     if (gen_to->local.n && addv == INSERT_VALUES) {
-      int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
-      int n = gen_to->local.n;
-      for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[tslots[i]];}
+      if (yv == xv && !gen_to->local_is_matching) {
+        int ierr;
+        ierr = VecScatterDetermineLocalIsMatching_Private(gen_to,gen_from);
+      }
+      if (yv != xv || gen_to->local_is_matching == -1) {
+        int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
+        int n = gen_to->local.n;
+        for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[tslots[i]];}
+      } 
+      /* 
+        In the other case, it is copying the values into there old 
+        locations, thus we can skip it.
+      */
     }
     else if (gen_to->local.n) {
       int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.35 1996/04/18 15:00:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.36 1996/06/17 20:07:38 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -89,12 +89,12 @@ extern int close(int);
 typedef struct { int onoff; int time; } Linger;
 static int ViewerDestroy_Matlab(PetscObject obj)
 {
-  Linger linger;
+  Linger locallinger;
   Viewer viewer = (Viewer) obj; 
-  linger.onoff = 1;
-  linger.time  = 0;
+  locallinger.onoff = 1;
+  locallinger.time  = 0;
 
-  if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) 
+  if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&locallinger,sizeof(Linger))) 
     SETERRQ(1,"ViewerDestroy_Matlab:System error setting linger");
   if (close(viewer->port)) 
     SETERRQ(1,"ViewerDestroy_Matlab:System error closing socket");

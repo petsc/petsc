@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.43 1996/02/08 18:27:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.44 1996/03/19 21:27:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -115,6 +115,7 @@ int main(int argc,char **args)
 
   ierr = MatZeroRows(C,is,&one); CHKERRA(ierr);
   ierr = ISDestroy(is); CHKERRA(ierr);
+
 
   { Mat A;
   ierr = MatConvert(C,MATSAME,&A); CHKERRA(ierr);

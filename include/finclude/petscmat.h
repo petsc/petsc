@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.14 1996/04/16 13:17:41 balay Exp balay $;
+C  $Id: mat.h,v 1.15 1996/06/04 20:16:10 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -7,7 +7,7 @@ C
 #define MatType             integer
 #define MatOption           integer 
 #define MatAssemblyType     integer
-#define MatOrdering         integer
+#define MatReordering       integer
 #define MATSORType          integer
 #define MatInfoType         integer
 #define MatGetSubMatrixCall integer

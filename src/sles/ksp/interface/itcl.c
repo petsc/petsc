@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.67 1996/04/09 23:07:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.68 1996/04/10 04:28:25 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -36,15 +36,15 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg);  CHKERRQ(ierr);
   if (flg) { KSPPrintHelp(ksp);  }
   if (KSPGetTypeFromOptions_Private(ksp,&method)) {
-    KSPSetType(ksp,method);
+    ierr = KSPSetType(ksp,method);CHKERRQ(ierr);
   }
   ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg);CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_rtol",&ksp->rtol, &flg);CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_atol",&ksp->atol, &flg);CHKERRQ(ierr);
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_divtol",&ksp->divtol, &flg);CHKERRQ(ierr);
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_preallocate", &flg);CHKERRQ(ierr);
-  if(flg){
-    KSPGMRESSetPreAllocateVectors(ksp);
+  if (flg){
+    ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);
   }
   /* -----------------------------------------------------------------------*/
   /*

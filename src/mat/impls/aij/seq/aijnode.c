@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.45 1996/05/07 20:56:07 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.46 1996/05/19 23:28:09 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -165,7 +165,7 @@ static int MatToIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja,
   return 0;
 }
 
-static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *cperm)
+static int MatGetReordering_SeqAIJ_Inode(Mat A,MatReordering type,IS *rperm, IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr, *ia, *ja,n = a->n,*idx,i,j,*ridx,*cidx,ishift,oshift;

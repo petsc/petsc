@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.20 1996/04/10 04:31:14 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.21 1996/04/20 04:22:10 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -210,7 +210,7 @@ Cray T3D.  Yet another reason to hate ...
 #define BLasum_  dzasum_
 #endif
 
-#if defined(USES_CTOPFCD)
+#if defined(USES_CPTOFCD)
 #define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) ZTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
                               _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
 #define LApotrf_(a,b,c,d,e)       ZPOTRF(_cptofcd((a),1),(b),(c),(d),(e))

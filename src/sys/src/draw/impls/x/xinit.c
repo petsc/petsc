@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.15 1995/12/13 04:18:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.16 1996/03/04 05:16:47 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -29,7 +29,10 @@ extern int XiFontFixed(Draw_X*,int,int,XiFont** );
 int XiOpenDisplay(Draw_X* XiWin,char *display_name )
 {
   XiWin->disp = XOpenDisplay( display_name );
-  if (!XiWin->disp)  return 1;
+  if (!XiWin->disp) {
+    fprintf(stderr,"Unable to on window on %s\n",display_name);
+    return 1;
+  }
   XiWin->screen = DefaultScreen( XiWin->disp );
   return 0;
 }

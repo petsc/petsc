@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daindex.c,v 1.3 1996/04/09 23:14:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: daindex.c,v 1.4 1996/06/21 03:16:32 curfman Exp bsmith $";
 #endif
  
 /*
@@ -26,7 +26,7 @@ static char vcid[] = "$Id: daindex.c,v 1.3 1996/04/09 23:14:21 bsmith Exp curfma
 .keywords: distributed array, get, global, indices, local to global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocal(), DALocalToLocal() 
+          DAGlobalToLocal(), DALocalToLocal(),DAGetAO()  
 @*/
 int DAGetGlobalIndices(DA da, int *n,int **idx)
 {
@@ -36,3 +36,26 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
   return 0;
 }
 
+
+/*@C
+   DAGetAO - Gets the application ordering context for a distributed array.
+     The AO in this case maps to the natural grid ordering.
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
+.  ao - the application ordering context for natural ordering
+
+
+.keywords: distributed array, get, global, indices, local to global
+
+.seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
+          DAGlobalToLocal(), DALocalToLocal(), DAGetGlobalIndices()
+@*/
+int DAGetAO(DA da, AO *ao)
+{
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  *ao = da->ao;
+  return 0;
+}

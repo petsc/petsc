@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.86 1996/05/07 15:11:43 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.87 1996/06/12 20:32:43 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -153,10 +153,9 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
-    int rank,size;
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    int size;
     MPI_Comm_size(MPI_COMM_WORLD,&size);
-    PLogInfo(0,"PETSc successfully started: procs %d\n",rank,size);
+    PLogInfo(0,"PETSc successfully started: number procs %d\n",size);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (help && flg) {
@@ -333,6 +332,7 @@ int OptionsCheckInitial_Private()
     malloc_debug(2);
 #endif
   }
+  ierr = PetscSetDisplay(); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-v",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-version",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg3); CHKERRQ(ierr);
@@ -358,7 +358,7 @@ int OptionsCheckInitial_Private()
                           &flg1); CHKERRQ(ierr);
   if (flg1) {
     char *debugger = 0, *display = 0;
-    int  xterm     = 1, sfree = 0;
+    int  xterm     = 1;
     if (PetscStrstr(string,"noxterm")) xterm = 0;
 #if defined(PARCH_hpux)
     if (PetscStrstr(string,"xdb"))     debugger = "xdb";
@@ -370,22 +370,15 @@ int OptionsCheckInitial_Private()
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (PetscStrstr(string,"ups"))     debugger = "ups";
-    ierr = OptionsGetString(PETSC_NULL,"-display",string,64,&flg1);CHKERRQ(ierr);
-    if (flg1){
-      display = string;
-    }
-    if (!display) {
-      display = (char *) malloc(128*sizeof(char)); CHKPTRQ(display);
-      PetscSetDisplay(comm,display,128); sfree = 1;
-    } 
+    display = (char *) malloc(128*sizeof(char)); CHKPTRQ(display);
+    PetscGetDisplay(display,128);
     PetscSetDebugger(debugger,xterm,display);
-    if (sfree) free(display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
   ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
     char           *debugger = 0, *display = 0;
-    int            xterm     = 1, sfree = 0,size = 1;
+    int            xterm     = 1,size = 1;
     MPI_Errhandler abort_handler;
     /*
        we have to make sure that all processors have opened 
@@ -416,16 +409,9 @@ int OptionsCheckInitial_Private()
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (PetscStrstr(string,"ups"))     debugger = "ups";
     ierr = OptionsGetString(PETSC_NULL,"-display",string,64,&flg1);CHKERRQ(ierr);
-    if (flg1){
-      display = string;
-    }
-    if (!display) {
-      display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
-      PetscSetDisplay(comm,display,128);
-      sfree = 1;
-    } 
+    display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
+    PetscGetDisplay(display,128);
     PetscSetDebugger(debugger,xterm,display);
-    if (sfree) free(display);
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
     PetscAttachDebugger();
     MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);
@@ -437,7 +423,7 @@ int OptionsCheckInitial_Private()
   {
     char mname[256];
     mname[0] = 0;
-    ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1); CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-log_history",mname,256, &flg1);CHKERRQ(ierr);
     if(flg1) {
       if (mname[0]) {
         ierr = PLogOpenHistoryFile(mname,&petsc_history); CHKERRQ(ierr);
@@ -451,7 +437,7 @@ int OptionsCheckInitial_Private()
   if (flg1) { 
     char mname[256];
     PLogInfoAllow(PETSC_TRUE); 
-    ierr = OptionsGetString(PETSC_NULL,"-log_info",mname,256, &flg1); CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-log_info",mname,256, &flg1);CHKERRQ(ierr);
     if (flg1) {
       if (PetscStrstr(mname,"no_mat")) {
         PLogInfoDeactivateClass(MAT_COOKIE);
@@ -945,12 +931,18 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
 @*/
 int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *flg)
 {
-  char *value;
-  int  n = 0,ierr;
-   
+  char *value,*cpy;
+  int  n = 0,ierr,len;
 
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
   if (!*flg)  {*nmax = 0; return 0;}
+
+  /* make a copy of the values, otherwise we destroy the old values */
+  len = PetscStrlen(value) + 1; 
+  cpy = (char *) PetscMalloc(len*sizeof(char*));
+  PetscStrcpy(cpy,value);
+  value = cpy;
+
   value = PetscStrtok(value,",");
   while (n < *nmax) {
     if (!value) break;
@@ -959,6 +951,7 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
     n++;
   }
   *nmax = n;
+  PetscFree(cpy);
   return 0; 
 } 
 
@@ -984,11 +977,18 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
 @*/
 int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 {
-  char *value;
-  int  n = 0,ierr;
+  char *value,*cpy;
+  int  n = 0,ierr,len;
 
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
   if (!*flg) {*nmax = 0; return 0;}
+
+  /* make a copy of the values, otherwise we destroy the old values */
+  len = PetscStrlen(value) + 1; 
+  cpy = (char *) PetscMalloc(len*sizeof(char*));
+  PetscStrcpy(cpy,value);
+  value = cpy;
+
   value = PetscStrtok(value,",");
   while (n < *nmax) {
     if (!value) break;
@@ -997,6 +997,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
     n++;
   }
   *nmax = n;
+  PetscFree(cpy);
   return 0; 
 } 
 

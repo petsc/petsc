@@ -12,7 +12,8 @@ LIBBASE	        = libpetscsnes
 LOCDIR          = src/snes/examples/
 TESTEXAMPLES_1  = ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_2 \
 		  ex4.rm ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc runex6\
-		  runex6_2 runex6_3 runex6_4 runex6_5 runex6_6 ex6.rm clean
+		  runex6_2 runex6_3 runex6_4 runex6_5 runex6_6 runex6_7 \
+                  ex6.rm clean
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex7.PETSc\
 		  runex7 ex7.rm ex8.PETSc runex8 runex8_2 ex8.rm ex9.PETSc\
 		  runex9 ex9.rm ex13.PETSc ex13.rm  clean
@@ -163,6 +164,11 @@ runex6_6:
 	   if (diff output/ex6_6.out ex6_6.tmp) then true; \
 	   else echo "Possible problem with ex6_6, diffs above"; fi; \
 	   $(RM) -f ex6_6.tmp
+runex6_7:
+	-@$(MPIRUN) -np 3 ex6 -snes_fd  -snes_smonitor > ex6_7.tmp 2>&1;\
+	   if (diff output/ex6_7.out ex6_7.tmp) then true; \
+	   else echo "Possible problem with ex6_7, diffs above"; fi; \
+	   $(RM) -f ex6_7.tmp
 runex7:
 	-@$(MPIRUN) ex7 -snes_smonitor	> ex7_1.tmp 2>&1;   \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \

@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.29 1996/03/19 21:30:28 bsmith Exp curfman $ */
+/* $Id: phead.h,v 1.30 1996/04/13 18:23:27 curfman Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -22,21 +22,22 @@ extern int PetscRegisterCookie(int *);
    PetscCheckSameType() checks if your PETSc structures are of same type.
 */
 
-#define PETSCHEADER                        \
-  double      flops,time,mem;              \
-  int         cookie;                      \
-  int         type;                        \
-  int         id;                          \
-  int         refct;                       \
-  int         tag;                         \
-  int         (*destroy)(PetscObject);     \
-  int         (*view)(PetscObject,Viewer); \
-  MPI_Comm    comm;                        \
-  PetscObject parent;                      \
-  char*       name;                        \
-  char        *prefix;                     \
-  void *      child;                       \
-  int         (*childcopy)(void *,void**);     
+#define PETSCHEADER                         \
+  double      flops,time,mem;               \
+  int         cookie;                       \
+  int         type;                         \
+  int         id;                           \
+  int         refct;                        \
+  int         tag;                          \
+  int         (*destroy)(PetscObject);      \
+  int         (*view)(PetscObject,Viewer);  \
+  MPI_Comm    comm;                         \
+  PetscObject parent;                       \
+  char*       name;                         \
+  char        *prefix;                      \
+  void *      child;                        \
+  int         (*childcopy)(void *,void**);  \
+  int         (*childdestroy)(void *);     
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1

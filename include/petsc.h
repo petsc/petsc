@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.118 1996/05/22 21:30:14 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.119 1996/05/28 21:27:58 balay Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -12,7 +12,11 @@
 #include "mpi.h"
 
 #if defined(PETSC_COMPLEX)
+#if defined(PARCH_t3d)
+#include "/usr/include/mpp/CC/complex.h"
+#else
 #include <complex.h>
+#endif
 extern  MPI_Datatype      MPIU_COMPLEX;
 #define MPIU_SCALAR       MPIU_COMPLEX
 #define PetscReal(a)      real(a)
@@ -119,7 +123,8 @@ extern int PetscObjectGetChild(PetscObject,void **child);
 extern int PetscObjectGetType(PetscObject,int *type);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
-extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **));
+extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),
+                              int (*)(void*));
 #define PetscObjectChild(a) (((PetscObject) (a))->child)
 
 extern int PetscTraceBackErrorHandler(int,char*,char*,int,char*,void*);

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.57 1996/03/19 22:26:54 bsmith Exp balay $ */
+/* $Id: pc.h,v 1.58 1996/04/16 00:22:12 balay Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -84,6 +84,10 @@ extern int PCShellGetName(PC,char**);
 extern int PCLUSetUseInPlace(PC);
 extern int PCILUSetUseInPlace(PC);
 extern int PCILUSetLevels(PC,int);
+extern int PCILUSetReuseReordering(PC,PetscTruth);
+extern int PCILUSetUseDropTolerance(PC,double,int);
+extern int PCILUSetReuseFill(PC,PetscTruth);
+
 extern int PCEisenstatUseDiagonalScaling(PC);
 
 extern int PCASMSetLocalSubdomains(PC, int, IS *);

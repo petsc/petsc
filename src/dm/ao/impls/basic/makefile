@@ -2,15 +2,15 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = 
-SOURCEC  =
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../..
+SOURCEC  = aodebug.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    =
+OBJSC    = aodebug.o
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = general stride
-LOCDIR   = src/is/impls/seq/
+DIRS     = 
+LOCDIR   = src/ao/impls/debug/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

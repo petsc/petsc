@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sregis.c,v 1.9 1996/03/07 18:24:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.10 1996/03/08 05:47:37 bsmith Exp bsmith $";
 #endif
 
 #include "../../matimpl.h"     /*I       "mat.h"   I*/
@@ -21,7 +21,7 @@ $   1.  Copy this routine and modify it to incorporate
 $       a call to MatReorderRegister() for the new method.  
 $   2.  Modify the file "PETSCDIR/include/mat.h"
 $       by appending the method's identifier as an
-$       enumerator of the MatOrdering enumeration.
+$       enumerator of the MatReordering enumeration.
 $       As long as the enumerator is appended to
 $       the existing list, only the MatReorderRegisterAll()
 $       routine requires recompilation.
@@ -38,7 +38,7 @@ $       routine requires recompilation.
 @*/
 int MatReorderingRegisterAll()
 {
-  MatOrdering name;
+  MatReordering name;
   static int  called = 0;
   if (called) return 0; else called = 1;
 
@@ -52,6 +52,7 @@ int MatReorderingRegisterAll()
   MatReorderingRegister(&name,"rcm"    ,PETSC_TRUE,1,MatOrder_RCM);
   MatReorderingRegister(&name,"qmd"    ,PETSC_TRUE,1,MatOrder_QMD);
   MatReorderingRegister(&name,"rl"     ,PETSC_FALSE,0,MatOrder_RowLength);
+  MatReorderingRegister(&name,"flow"   ,PETSC_FALSE,0,0);
   return 0;
 }
 

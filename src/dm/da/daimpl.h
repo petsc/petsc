@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.13 1996/05/01 22:33:11 curfman Exp bsmith $ */
+/* $Id: daimpl.h,v 1.14 1996/06/26 15:37:21 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -7,7 +7,6 @@
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
 #include "da.h"
-#include "ao.h"
 #include "dfvec.h"
 
 struct _DA {
@@ -18,6 +17,7 @@ struct _DA {
   int            s;                 /* stencil width */
   int            xs,xe,ys,ye,zs,ze; /* range of local values */
   int            Xs,Xe,Ys,Ye,Zs,Ze; /* range including ghost values */
+                                    /* values above already scaled by w */
   int            *idx,Nl;           /* local to global map */
   int            base;              /* global number of 1st local node */
   DAPeriodicType wrap;              /* indicates type of periodic boundaries */

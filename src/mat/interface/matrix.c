@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.174 1996/06/11 20:52:28 balay Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.175 1996/06/21 03:17:23 curfman Exp bsmith $";
 #endif
 
 /*
@@ -48,7 +48,7 @@ $    -mat_order rcm, -mat_order qmd
 
 .seealso:  MatGetReorderingTypeFromOptions(), MatReorderingRegister()
 @*/
-int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
+int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
 {
   int         ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -465,6 +465,37 @@ int MatGetInfo(Mat mat,MatInfoType flag,int *nz,int *nzalloc,int *mem)
   return  (*mat->ops.getinfo)(mat,flag,nz,nzalloc,mem);
 }   
 /* ----------------------------------------------------------*/
+/*@  
+   MatILUDTFactor - Performs a drop tolerance ILU factorization.
+
+   Input Parameters:
+.  mat - the matrix
+.  dt  - the drop tolerance
+.  maxnz - the maximum number of nonzeros per row allowed?
+.  row - row permutation
+.  col - column permutation
+
+   Output Parameters:
+.  fact - the factored matrix
+
+.keywords: matrix, factor, LU, in-place
+
+.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
+@*/
+int MatILUDTFactor(Mat mat,double dt,int maxnz,IS row,IS col,Mat *fact)
+{
+  int ierr;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!mat->ops.iludtfactor) SETERRQ(PETSC_ERR_SUP,"MatILUDTFactor");
+  if (!mat->assembled) SETERRQ(1,"MatILUDTFactor:Not for unassembled matrix");
+
+  PLogEventBegin(MAT_ILUFactor,mat,row,col,0); 
+  ierr = (*mat->ops.iludtfactor)(mat,dt,maxnz,row,col,fact); CHKERRQ(ierr);
+  PLogEventEnd(MAT_ILUFactor,mat,row,col,0);
+
+  return 0;
+}
+
 /*@  
    MatLUFactor - Performs in-place LU factorization of matrix.
 

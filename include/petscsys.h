@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.16 1996/03/21 00:07:38 curfman Exp bsmith $ */
+/* $Id: sys.h,v 1.17 1996/04/20 04:22:06 bsmith Exp bsmith $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -16,7 +16,8 @@ extern int  PetscSortInt(int,int*);
 extern int  PetscSortIntWithPermutation(int,int*,int*);
 extern int  PetscSortDouble(int,double*);
 
-extern int  PetscSetDisplay(MPI_Comm,char *,int);
+extern int  PetscSetDisplay();
+extern int  PetscGetDisplay(char *,int);
 
 #define RANDOM_COOKIE PETSC_COOKIE+19
 

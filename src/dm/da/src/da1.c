@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.40 1996/05/30 20:55:24 balay Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.41 1996/06/11 15:26:47 balay Exp bsmith $";
 #endif
 
 /* 
@@ -137,13 +137,13 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   if ((M-1) < s) SETERRQ(1,"DACreate1d:Array is too small for stencil!");
 
 
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
   if (flg1) {  /* Block Comm type Distribution */
     xs = rank*M/m;
     x = (rank + 1)*M/m - xs;
   }
-  else if (flg2) { /* The odd nodes are evenly distriuted across the last k nodes */
+  else if (flg2) { /* The odd nodes are evenly distributed across last nodes */
     x = (M + rank)/m;
     
     if (M/m == x) { xs = rank*x; }
@@ -194,7 +194,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
-
   ierr=ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
   idx = (int *) PetscMalloc( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
@@ -257,7 +256,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   /* 
       We simply remap the values in the from part of 
     global to local to read from an array with the ghost values 
-    rather then from the plan array.
+    rather then from the plain array.
   */
   ierr = VecScatterCopy(gtol,&da->ltol); CHKERRQ(ierr);
   PLogObjectParent(da,da->ltol);
@@ -270,6 +269,22 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
 
+  /* 
+     Build the natural ordering to PETSc ordering mappings.
+  */
+  {
+    IS is;
+    
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,da->xe-da->xs,da->base,1,&is);
+           CHKERRQ(ierr);
+    ierr = AOCreateDebugIS(comm,is,is,&da->ao); CHKERRQ(ierr);
+    ierr = ISDestroy(is); CHKERRQ(ierr);
+  }
+
+  /*
+     Note the following will be removed soon. Since the functionality 
+    is replaced by the above.
+  */
   /* Construct the mapping from current global ordering to global
      ordering that would be used if only 1 processor were employed.
      This mapping is intended only for internal use by discrete

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.63 1996/03/24 15:39:12 curfman Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.64 1996/03/26 22:21:22 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -10,10 +10,10 @@ static char vcid[] = "$Id: lu.c,v 1.63 1996/03/24 15:39:12 curfman Exp curfman $
 #include "pinclude/pviewer.h"
 
 typedef struct {
-  Mat         fact;       /* factored matrix */
-  int         inplace;    /* flag indicating in-place factorization */
-  IS          row, col;   /* index sets used for reordering */
-  MatOrdering ordering;   /* matrix ordering */
+  Mat           fact;       /* factored matrix */
+  int           inplace;    /* flag indicating in-place factorization */
+  IS            row, col;   /* index sets used for reordering */
+  MatReordering ordering;   /* matrix ordering */
 } PC_LU;
 
 /*@

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.7 1996/04/18 14:33:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.8 1996/04/18 14:37:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ static char help[] = "Solves 1D heat equation.\n\n";
 #include <math.h>
 #include "ts.h"
 
-#define PI 3.14159265358979
+#define PETSC_PI 3.14159265358979
 typedef struct {
   Vec    localwork,solution;
   DA     da;
@@ -218,7 +218,7 @@ int Initial(Vec global, void *ctx)
   /* Initialize the array */
   ierr = VecGetArray(global,&localptr); CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
-    localptr[i-mybase] = sin(PI*i*6.*h) + 3.*sin(PI*i*2.*h);
+    localptr[i-mybase] = sin(PETSC_PI*i*6.*h) + 3.*sin(PETSC_PI*i*2.*h);
   }
   ierr = VecRestoreArray(global,&localptr); CHKERRQ(ierr);
   return 0;
@@ -233,8 +233,8 @@ int Solution(double t,Vec solution, void *ctx)
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(solution,&mybase,&myend); CHKERRQ(ierr);
 
-  ex1 = exp(-36.*PI*PI*t); ex2 = exp(-4.*PI*PI*t);
-  sc1 = PI*6.*h;           sc2 = PI*2.*h;
+  ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
+  sc1 = PETSC_PI*6.*h;           sc2 = PETSC_PI*2.*h;
   ierr = VecGetArray(solution,&localptr); CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
     localptr[i-mybase] = sin(i*sc1)*ex1 + 3.*sin(i*sc2)*ex2;

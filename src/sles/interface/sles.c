@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.60 1996/04/05 05:59:13 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.61 1996/04/25 18:42:47 balay Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -149,9 +149,11 @@ int SLESGetOptionsPrefix(SLES sles,char **prefix)
 @*/
 int SLESSetFromOptions(SLES sles)
 {
+  int ierr;
+
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  KSPSetFromOptions(sles->ksp);
-  PCSetFromOptions(sles->pc);
+  ierr = KSPSetFromOptions(sles->ksp); CHKERRQ(ierr);
+  ierr = PCSetFromOptions(sles->pc); CHKERRQ(ierr);
   return 0;
 }
 /*@C
