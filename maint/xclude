@@ -16,9 +16,12 @@ petsc/src/gvec/impls/rectangular/3d/dcimpls/RCS
 petsc/src/gvec/impls/rectangular/3d/dcimpls/linear/RCS
 petsc/src/gvec/impls/rectangular/3d/dcimpls/quadratic/RCS
 petsc/docs/man
+petsc/src/contrib/RCS
+petsc/src/contrib/euler
+petsc/src/contrib/pfull
 petsc/src/contrib/vankat
 petsc/src/contrib/vrmltest
-petsc/src/contrib/euler
+petsc/src/contrib/ysmp
 petsc/src/da/examples/tests/scripts
 petsc/docs/www/www.cit
 petsc/docs/www/petsc.cit
@@ -37,10 +40,6 @@ petsc/bmake/sun4_f90
 petsc/bmake/rs6000_gnu
 petsc/include/finclude/generateincludes
 petsc/include/finclude/RCS
-petsc/src/contrib/RCS
-petsc/src/contrib/ysmp
-petsc/src/contrib/pfull
-petsc/src/contrib/venkat
 petsc/src/dfvec/RCS
 petsc/src/dfvec/interface/RCS
 petsc/src/dfvec/impls/RCS
