@@ -3488,10 +3488,6 @@ int MatZeroEntries(Mat mat)
    those in the communicator used for matrix creation) MUST call this
    routine, regardless of whether any rows being zeroed are owned by
    them.
-
-   For the SBAIJ matrix (since only the upper triangular half of the matrix
-   is stored) the effect of this call is to also zero the corresponding 
-   column.
   
    Level: intermediate
 
