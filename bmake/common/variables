@@ -147,7 +147,7 @@ SUPERLUDIST_DIRS   = src/mat/impls/aij
 SUPERLU_DIRS       = src/mat/impls/aij/seq
 TRIANGLE_DIRS      = src/mesh/impls/triangular/2d
 PLAPACK_DIRS       = src/sys/src/utils src/sles/pc/impls/ml
-HYPRE_DIRS         = src/sles/pc/impls/hypre
+HYPRE_DIRS         = src/sles/pc/impls/hypre src/vec/impls/hypre src/mat/impls/hypre src/sles/pc/interface
 SPOOLES_DIR        = src/mat/impls/aij src/mat/impls/sbaij
 ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/custom
 
