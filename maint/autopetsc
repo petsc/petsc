@@ -112,7 +112,7 @@ proc mud_biff {swho gety} {
 #  Other things Petsc should do:
 #    respond to @anitsocial acts upon PETSc in a graceful way
 #    tell us about nightly build problems
-#    tell us were members of the PETSc team are
+#    tell us where members of the PETSc team are
 #
 
 
