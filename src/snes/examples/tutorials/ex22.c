@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.14 2001/01/23 18:47:19 balay Exp balay $*/
+/*$Id: ex22.c,v 1.15 2001/01/23 20:57:12 balay Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -103,6 +103,11 @@ int main(int argc,char **argv)
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
+
+typedef struct {
+  Scalar u;
+  Scalar lambda;
+} ULambda;
  
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
@@ -115,7 +120,8 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   DMMG    dmmg = (DMMG)dummy;
   int     ierr,xs,xm,i,N,nredundant;
-  Scalar  **u_lambda,*w,*fw,**fu_lambda,d,h;
+  ULambda *u_lambda,*fu_lambda;
+  Scalar  d,h,*w,*fw;
   Vec     vu_lambda,vfu_lambda;
   DA      da;
   VecPack packer = (VecPack)dmmg->dm;
@@ -140,23 +146,23 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   /* derivative of L() w.r.t. w */
   if (xs == 0) { /* only first processor computes this */
-    fw[0] = -2.0*d*lambda(0);
+    fw[0] = -2.0*d*u_lambda[0].lambda;
   }
 
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu(0)   =    h*u(0)   + 2.*d*lambda(0)   - d*lambda(1);
-    else if (i == 1)   fu(1)   = 2.*h*u(1)   + 2.*d*lambda(1)   - d*lambda(2);
-    else if (i == N-1) fu(N-1) =    h*u(N-1) + 2.*d*lambda(N-1) - d*lambda(N-2);
-    else if (i == N-2) fu(N-2) = 2.*h*u(N-2) + 2.*d*lambda(N-2) - d*lambda(N-3);
-    else               fu(i)   = 2.*h*u(i)   - d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1));
+    if      (i == 0)   fu_lambda[0].lambda   =    h*u_lambda[0].u   + 2.*d*u_lambda[0].lambda   - d*u_lambda[1].lambda;
+    else if (i == 1)   fu_lambda[1].lambda   = 2.*h*u_lambda[1].u   + 2.*d*u_lambda[1].lambda   - d*u_lambda[2].lambda;
+    else if (i == N-1) fu_lambda[N-1].lambda =    h*u_lambda[N-1].u + 2.*d*u_lambda[N-1].lambda - d*u_lambda[N-2].lambda;
+    else if (i == N-2) fu_lambda[N-2].lambda = 2.*h*u_lambda[N-2].u + 2.*d*u_lambda[N-2].lambda - d*u_lambda[N-3].lambda;
+    else               fu_lambda[i].lambda   = 2.*h*u_lambda[i].u   - d*(u_lambda[i+1].lambda - 2.0*u_lambda[i].lambda + u_lambda[i-1].lambda);
   } 
 
   /* derivative of L() w.r.t. lambda */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   flambda(0)   = 2.0*d*(u(0) - w[0]);
-    else if (i == N-1) flambda(N-1) = 2.0*d*u(N-1);
-    else               flambda(i)   = -(d*(u(i+1) - 2.0*u(i) + u(i-1)) - 2.0*h);
+    if      (i == 0)   fu_lambda[0].u   = 2.0*d*(u_lambda[0].u - w[0]);
+    else if (i == N-1) fu_lambda[N-1].u = 2.0*d*u_lambda[N-1].u;
+    else               fu_lambda[i].u   = -(d*(u_lambda[i+1].u - 2.0*u_lambda[i].u + u_lambda[i-1].u) - 2.0*h);
   } 
 
   ierr = DAVecRestoreArray(da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
@@ -200,7 +206,7 @@ int ExactSolution(VecPack packer,Vec U)
     ierr = DAGetCoordinates(da,&x);CHKERRQ(ierr);
   }
   ierr = VecPackGetAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
-  w[0] = .25;
+  if (w) w[0] = .25;
   ierr = PFApplyVec(pf,x,u_global);CHKERRQ(ierr);
   ierr = PFDestroy(pf);CHKERRQ(ierr);
   ierr = VecPackRestoreAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
@@ -238,7 +244,7 @@ int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
   ierr = VecPackGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
   norm = norm/sqrt(N-1.);
-  ierr = PetscPrintf(dmmg->comm,"Norm of error %g Error at x = 0 %g\n",norm,dw[0]);CHKERRQ(ierr);
+  if (dw) ierr = PetscPrintf(dmmg->comm,"Norm of error %g Error at x = 0 %g\n",norm,dw[0]);CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
   ierr = VecPackRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecDestroy(Uexact);CHKERRQ(ierr);
