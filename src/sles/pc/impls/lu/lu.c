@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.61 1996/03/19 21:25:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.62 1996/03/23 18:33:36 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -62,7 +62,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCLU preconditioner:\n");
   PetscPrintf(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
-  PetscPrintf(pc->comm," -mat_order name: ordering to reduce fill",p);
+  PetscPrintf(pc->comm," -mat_order <name>: ordering to reduce fill",p);
   PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   return 0;
 }
