@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.83 1997/04/10 00:00:47 bsmith Exp balay $";
+static char vcid[] = "$Id: itfunc.c,v 1.84 1997/07/09 20:50:16 balay Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -142,8 +142,9 @@ $      divergence or breakdown was detected.
 @*/
 int KSPSolve(KSP ksp, int *its) 
 {
-  int    ierr,flag1,flag2,rank;
-  Scalar zero = 0.0;
+  int        ierr,flag1,flag2,rank;
+  static int doublecount = 0;
+  Scalar     zero = 0.0;
 
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidIntPointer(its);
