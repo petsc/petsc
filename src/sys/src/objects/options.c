@@ -15,6 +15,7 @@
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
+#include "sys/param.h"
 #include "petscfix.h"
 
 /* 
@@ -29,7 +30,7 @@ typedef struct {
   char       *aliases1[MAXALIASES],*aliases2[MAXALIASES];
   int        used[MAXOPTIONS];
   PetscTruth namegiven;
-  char       programname[256]; /* HP includes entire path in name */
+  char       programname[MAXPATHLEN]; /* HP includes entire path in name */
 } PetscOptionsTable;
 
 static PetscOptionsTable *options = 0;
@@ -126,7 +127,7 @@ int PetscOptionsAtod(const char name[],PetscReal *a)
     Notes:
     The name of the program is copied into the user-provided character
     array of length len.  On some machines the program name includes 
-    its entire path, so one should generally set len >= 256.
+    its entire path, so one should generally set len >= MAXPATHLEN.
 @*/
 int PetscGetProgramName(char name[],int len)
 {
@@ -143,14 +144,11 @@ int PetscGetProgramName(char name[],int len)
 #define __FUNCT__ "PetscSetProgramName"
 int PetscSetProgramName(const char name[])
 { 
-  char *sname = 0;
-  int  ierr;
+  int ierr;
 
   PetscFunctionBegin;
   options->namegiven = PETSC_TRUE;
-  /* Now strip away the path, if absulute path is specified */
-  ierr = PetscStrrchr(name,'/',&sname);CHKERRQ(ierr);
-  ierr  = PetscStrncpy(options->programname,sname,256);CHKERRQ(ierr);
+  ierr  = PetscStrncpy(options->programname,name,MAXPATHLEN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
