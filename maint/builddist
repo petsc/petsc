@@ -38,6 +38,9 @@ fi
 # Update the bk repository
 export PETSC_ARCH=linux
 export PETSC_DIR=/sandbox/petsc/petsc-dist
+cd $PETSC_DIR/python/BuildSystem
+bk pull
+bk -r co -q
 cd $PETSC_DIR
 bk pull
 bk -r co -q
@@ -76,7 +79,8 @@ cd $tmpdir/petsc
 
 # eliminate .html files in src/contrib
 /usr/bin/find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
-
+# eliminate .pyc files if any
+/usr/bin/find . -type f -name "*.pyc" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS
 make etags etags_examples TAGSDIR=`pwd`
 # Update project files
