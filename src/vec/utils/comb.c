@@ -70,7 +70,6 @@ int VecSplitReductionApply(VecSplitReduction *sr)
 {
   int        ierr,i,numops = sr->numopsbegin, *reducetype = sr->reducetype;
   Scalar     *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  Vec        *invecs = sr->invecs;
   PetscTruth sum = PETSC_FALSE, abs = PETSC_FALSE;
   MPI_Comm   comm = sr->comm;
 

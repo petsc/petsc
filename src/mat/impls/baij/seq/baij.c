@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.158 1999/02/12 23:34:52 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.159 1999/02/13 00:02:25 balay Exp balay $";
 #endif
 
 /*
@@ -918,6 +918,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 
   for ( i=0,j=0; i<bs_max; j+=sizes[i],i++ ) {
     row   = rows[j];
+    if (row < 0 || row > m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"row %d out of range",row);
     count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
     aa    = baij->a + baij->i[row/bs]*bs2 + (row%bs);
     if (sizes[i] == bs) {
