@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.156 2000/04/12 04:22:10 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.157 2000/05/01 23:05:16 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -1376,8 +1376,9 @@ int VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter 
 
    Notes:
    The vectors x and y need not be the same vectors used in the call 
-   to VecScatterCreate(), but they must have the same parallel data layout;
-   for example, they could have been obtained from VecDuplicate().
+   to VecScatterCreate(), but x must have the same parallel data layout
+   as that passed in as the x to VecScatterCreate(), similarly for the y.
+   Most likely they have been obtained from VecDuplicate().
 
    You cannot change the values in the input vector between the calls to VecScatterBegin()
    and VecScatterEnd().
