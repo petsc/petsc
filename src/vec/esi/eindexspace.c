@@ -149,7 +149,7 @@ gov::cca::Component *create_esi_petsc_indexspacefactory(void)
 #else
 ::esi::IndexSpaceFactory<int> *create_esi_petsc_indexspacefactory(void)
 {
-  return dynamic_cast<::esi::IndexSpaceFactory<int>*>(new esi::petsc::IndexSpaceFactory<int>);
+  return dynamic_cast< ::esi::IndexSpaceFactory<int>*>(new esi::petsc::IndexSpaceFactory<int>);
 }
 #endif
 EXTERN_C_END
