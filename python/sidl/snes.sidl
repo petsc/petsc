@@ -21,7 +21,7 @@ package PETSc {
     void view(in PETSc.PetscViewer viewer);
   }
 
-  class Base implements ASE.ProjectState {
+  class Base implements PetscObject, ASE.ProjectState {
   }
 
   class PetscViewer implements PetscObject {
