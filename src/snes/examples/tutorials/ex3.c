@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.51 1998/12/03 04:05:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.52 1999/01/27 19:49:35 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -48,6 +48,7 @@ int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int FormFunction(SNES,Vec,Vec,void*);
 int FormInitialGuess(Vec);
 int Monitor(SNES,int,double,void *);
+int StepCheck(SNES,void *,Vec,PetscTruth *);
 
 /* 
    User-defined application context
@@ -55,7 +56,7 @@ int Monitor(SNES,int,double,void *);
 typedef struct {
    DA     da;     /* distributed array */
    Vec    F;      /* right-hand-side of PDE */
-   Vec    xlocal;     /* local work vector */
+   Vec    xlocal; /* local work vector */
    int    rank;   /* rank of processor */
    int    size;   /* size of communicator */
    double h;      /* mesh spacing */
@@ -65,8 +66,17 @@ typedef struct {
    User-defined context for monitoring
 */
 typedef struct {
-   Viewer viewer;
+   Viewer viewer; 
 } MonitorCtx;
+
+/*
+   User-defined context for checking candidate iterates that are 
+   determined by line search methods
+*/
+typedef struct {
+   Vec    last_step;  /* previous iterate */
+   double tolerance;  /* tolerance for changes between successive iterates */
+} StepCheckCtx;
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -77,6 +87,9 @@ int main( int argc, char **argv )
   ApplicationCtx ctx;                  /* user-defined context */
   Vec            x, r, U, F;           /* vectors */
   MonitorCtx     monP;                 /* monitoring context */
+  StepCheckCtx   checkP;               /* step-checking context */
+  int            step_check;           /* flag indicating whether we're checking
+                                          candidate iterates */
   Scalar         xp, *FF, *UU, none = -1.0;
   int            ierr, its, N = 5, i, flg, maxit, maxf, xs, xm;
   double         atol, rtol, stol, norm;
@@ -145,7 +158,7 @@ int main( int argc, char **argv )
   /* 
      Set an optional user-defined monitoring routine
   */
-  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
+  ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr); 
 
   /*
@@ -153,6 +166,19 @@ int main( int argc, char **argv )
   */
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   PetscObjectSetName((PetscObject)U,"Exact Solution");
+
+  /* 
+     Set an optional user-defined routine to check the validity of candidate 
+     iterates that are determined by line search methods
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-check_iterates",&step_check); CHKERRA(ierr);
+  if (step_check) {
+    PetscPrintf(PETSC_COMM_WORLD,"Activating step checking routine\n");
+    ierr = SNESSetLineSearchCheck(snes,StepCheck,(void*)&checkP); CHKERRA(ierr); 
+    ierr = VecDuplicate(x,&(checkP.last_step)); CHKERRA(ierr); 
+    checkP.tolerance = 1.0;
+    ierr = OptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,&flg); CHKERRA(ierr);
+  }
 
   /* 
      Set SNES/SLES/KSP/PC runtime options, e.g.,
@@ -235,6 +261,7 @@ int main( int argc, char **argv )
      are no longer needed.
   */
   ierr = ViewerDestroy(monP.viewer);  CHKERRA(ierr);
+  if (step_check) {ierr = VecDestroy(checkP.last_step); CHKERRA(ierr);}
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(ctx.xlocal); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);
@@ -442,8 +469,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
 #undef __FUNC__
 #define __FUNC__ "Monitor"
 /*
-   Monitor - User-defined monitoring routine that views the
-   current iterate with an x-window plot.
+   Monitor - Optional user-defined monitoring routine that views the
+   current iterate with an x-window plot. Set by SNESSetMonitor().
 
    Input Parameters:
    snes - the SNES context
@@ -465,6 +492,61 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
   PetscPrintf(PETSC_COMM_WORLD,"iter = %d, SNES Function norm %g\n",its,fnorm);
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer); CHKERRQ(ierr);
+  return 0;
+}
+/* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "StepCheck"
+/*
+   StepCheck - Optional user-defined routine that checks the validity
+   of candidate steps of a line search method.  Set by
+   SNESSetLineSearchCheck().
+
+   Input Parameters:
+   snes - the SNES context
+   ctx  - optional user-defined context for private data for the 
+          monitor routine, as set by SNESSetLineSearchCheck()
+   x    - the new candidate iterate
+
+   Output Parameters:
+   x    - current iterate (possibly modified)
+   flag - flag indicating whether x has been modified (either
+          PETSC_TRUE of PETSC_FALSE)
+ */
+int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
+{
+  int            ierr, i, iter, ldim;
+  ApplicationCtx *user;
+  StepCheckCtx   *check = (StepCheckCtx*) ctx;
+  Scalar         *xa, *xa_last, rdiff;
+
+  *flag = PETSC_FALSE;
+  ierr = SNESGetApplicationContext(snes,(void*)&user); CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration = %d with tolerance %g\n",iter,check->tolerance);
+
+  /* Access local array data */
+  ierr = VecGetArray(check->last_step,&xa_last); CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&ldim); CHKERRQ(ierr);
+
+  /* 
+     If we fail the user-defined check for validity of the candidate iterate,
+     then modify the iterate as we like.  (Note that the particular modification 
+     below is intended simply to demonstrate how to manipulate this data, not
+     as a meaningful or even appropriate choice.)
+  */
+  for (i=0; i<ldim; i++) {
+    rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
+    if (rdiff > check->tolerance) {
+      xa[i] = (xa[i] + xa_last[i])/2.0;
+      *flag = PETSC_TRUE;
+      PetscPrintf(PETSC_COMM_WORLD,"  Altering entry = %i\n",i);
+    }
+  }
+  ierr = VecRestoreArray(check->last_step,&xa_last); CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+
   return 0;
 }
 
