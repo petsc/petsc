@@ -357,11 +357,11 @@ runex42:
 	   -nd 5 -ov 2 | sort -n > ex42_1.tmp 2>&1; \
 	   if (diff output/ex42_1.out ex42_1.tmp) then true; \
 	   else echo "Possible problem with ex42_1, diffs above"; fi; \
-#	   $(RM) -f ex42_1.tmp
+	   $(RM) -f ex42_1.tmp
 runex42_2:
 	-@$(MPIRUN)  ex42 -f matrices/arco1 -mat_aij_oneindex  \
 	   -nd 5 -ov 2 | sort -n > ex42_2.tmp 2>&1; \
 	   if (diff output/ex42_2.out ex42_2.tmp) then true; \
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
-#	   $(RM) -f ex42_2.tmp
+	   $(RM) -f ex42_2.tmp
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
