@@ -215,9 +215,6 @@ class Framework(base.Base):
     framework.argDB['log'] = os.path.join(root, 'configure.log')
     if not self.configureHeader is None:
       framework.header     = self.configureHeader
-    # Perhaps these initializations should just be local arguments
-    framework.argDB['CPPFLAGS'] = ''
-    framework.argDB['LIBS']     = ''
     # Load default configure module
     try:
       framework.children.append(self.getMakeModule(root, 'configure').Configure(framework))

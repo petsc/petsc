@@ -15,6 +15,11 @@ class Framework(config.base.Configure):
     self.substPrefix  = ''
     self.warningRE    = re.compile('warning', re.I)
     self.setupChildren()
+    # Perhaps these initializations should just be local temporary arguments
+    self.argDB['CPPFLAGS']   = ''
+    self.argDB['LIBS']       = ''
+    if not 'LDFLAGS' in self.argDB:
+      self.argDB['LDFLAGS']  = ''
     return
 
   def setupArgDB(self, clArgs, initDB):
@@ -195,16 +200,16 @@ class Framework(config.base.Configure):
   def storeSubstitutions(self, argDB):
     '''Store all the substitutions in the argument database'''
     argDB.update(self.subst)
-    argDB.update(dict(map(lambda k: (k, argDB[self.argSubst[k]]), self.argSubst)))
+    argDB.update(dict(map(lambda k: (k, self.argDB[self.argSubst[k]]), self.argSubst)))
     for child in self.children:
       if not hasattr(child, 'subst') or not isinstance(child.subst, dict): continue
       substPrefix = self.getSubstitutionPrefix(child)
       if substPrefix:
         argDB.update(dict(map(lambda k: (substPrefix+'_'+k, child.subst[k]), child.subst)))
-        argDB.update(dict(map(lambda k: (substPrefix+'_'+k, argDB[child.argSubst[k]]), child.argSubst)))
+        argDB.update(dict(map(lambda k: (substPrefix+'_'+k, self.argDB[child.argSubst[k]]), child.argSubst)))
       else:
         argDB.update(child.subst)
-        argDB.update(dict(map(lambda k: (k, argDB[child.argSubst[k]]), child.argSubst)))
+        argDB.update(dict(map(lambda k: (k, self.argDB[child.argSubst[k]]), child.argSubst)))
     return
 
   def outputDefine(self, f, name, value = None, comment = ''):
