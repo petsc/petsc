@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.106 1998/12/03 04:06:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.107 1998/12/17 22:12:48 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -123,7 +123,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
   if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
 
   ierr = VecGetType(v,&type);CHKERRQ(ierr);
-  if (PetscTypeCompare(type,"Seq")) {
+  if (PetscTypeCompare(type,VEC_SEQ)) {
     ierr = DAGetGhostCorners(da,0,0,0,ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
     ends[shift+1] += starts[shift+1]-1;
@@ -134,7 +134,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
       AMS_Explain_error(ierr,&message);
       SETERRQ(ierr,1,message);
     }
-  } else if (PetscTypeCompare(type,"MPI")) {
+  } else if (PetscTypeCompare(type,VEC_MPI)) {
     ierr = DAGetCorners(da,starts+shift,starts+shift+1,starts+shift+2,
                            ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
