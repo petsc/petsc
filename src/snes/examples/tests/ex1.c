@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.55 1997/11/25 17:17:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.56 1998/03/23 21:25:37 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -174,7 +174,7 @@ int main( int argc, char **argv )
      Set Jacobian matrix data structure and default Jacobian evaluation
      routine.  Whenever the nonlinear solver needs to compute the
      Jacobian matrix, it will call this routine.
-      - Note that the final routineVIEWER_FORMAT_ASCII_INFO argument is the user-defined
+      - Note that the final routine argument is the user-defined
         context that provides application-specific data for the
         Jacobian evaluation routine.
       - The user can override with:
