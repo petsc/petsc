@@ -13,17 +13,18 @@
 int PetscSSEHardwareTest(PetscTruth *flag) {
   int  ierr;
   char *vendor;
-  char Gen[13]="GenuineIntel";
+  char Intel[13]="GenuineIntel";
+  char AMD[13]  ="AuthenticAMD";
 
   PetscFunctionBegin;
   ierr = PetscMalloc(13*sizeof(char),&vendor);CHKERRQ(ierr);
   strcpy(vendor,"************");
   CPUID_GET_VENDOR(vendor);
-  if (!strcmp(vendor,Gen)) { 
-    /* If GenuineIntel ... */
+  if (!strcmp(vendor,Intel) || !strcmp(vendor,AMD)) { 
+    /* Both Intel and AMD use bit 25 of CPUID_FEATURES */
+    /* to denote availability of SSE Support */
     unsigned long myeax,myebx,myecx,myedx;
     CPUID(CPUID_FEATURES,&myeax,&myebx,&myecx,&myedx);
-    /* SSE Feature is indicated by Bit 25 of the EDX register */
     if (myedx & SSE_FEATURE_FLAG) {
       *flag = PETSC_TRUE;
     } else {
