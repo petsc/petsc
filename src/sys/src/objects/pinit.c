@@ -83,7 +83,7 @@ int PetscInitializeNoArguments(void)
   PetscFunctionReturn(ierr);
 }
 
-EXTERN int        PetscOptionsCheckInitial(void);
+EXTERN int        PetscOptionsCheckInitial_Private(void);
 extern PetscTruth PetscBeganMPI;
 
 /*
@@ -399,7 +399,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   if (help && flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsCheckInitial();CHKERRQ(ierr); 
+  ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr); 
 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we od not print it out */
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);

@@ -242,7 +242,20 @@ int PetscViewerCreate_Socket(PetscViewer v)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSocketSetConnection" 
+#define __FUNCT__ "PetscViewerSocketSetConnection"
+/*@C
+      PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket 
+             viewer is to use
+
+  Collective on PetscViewer
+
+  Input Parameters:
++   v - viewer to connect
+.   machine - host to connect to
+-   port - the port on the machine one is connecting to
+
+.seealso: PetscViewerSocketOpen()
+@*/ 
 int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 {
   int                ierr,rank;

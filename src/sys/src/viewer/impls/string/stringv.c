@@ -165,6 +165,21 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerStringSetString" 
+/*@C
+
+   PetscViewerStringSetString - sets the string that a string viewer will print to
+
+   Collective on PetscViewer
+
+  Input Parameters:
++   viewer - string viewer you wish to attach string to
+.   string - the string to print data into
+-   len - the length of the string
+
+  Level: advanced
+
+.seealso: PetscViewerStringOpen()
+@*/
 int PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;

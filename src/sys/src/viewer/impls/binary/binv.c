@@ -287,10 +287,18 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryLoadInfo" 
-/*
-    PetscViewerBinaryLoadInfo options from the name.info file
-    if it exists.
-*/
+/*@
+    PetscViewerBinaryLoadInfo - Loads options from the name.info file
+       if it exists.
+
+   Collective on PetscViewer
+
+  Input Parameter:
+.    viewer - the binary viewer whose options you wish to load
+
+   Level: developer
+
+@*/
 int PetscViewerBinaryLoadInfo(PetscViewer viewer)
 {
   FILE       *file;

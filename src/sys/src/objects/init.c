@@ -372,8 +372,8 @@ int PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsCheckInitial"
-int PetscOptionsCheckInitial(void)
+#define __FUNCT__ "PetscOptionsCheckInitial_Private"
+int PetscOptionsCheckInitial_Private(void)
 {
   char       string[64],mname[256],*f;
   MPI_Comm   comm = PETSC_COMM_WORLD;

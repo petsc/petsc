@@ -5,7 +5,7 @@
 /*--------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketPutSparse_Private" 
-/*@C
+/*
    PetscViewerSocketPutSparse_Private - Passes a sparse matrix in AIJ format
              to a Socket PetscViewer. 
 
@@ -32,7 +32,7 @@ $     MatView(Mat matrix,PetscViewer viewer)
    Concepts: Sockets^sending data, sparse matrices
 
 .seealso: PetscViewerSocketOpen(), MatView()
-@*/
+*/
 int PetscViewerSocketPutSparse_Private(PetscViewer vw,int m,int n,int nnz,PetscScalar *v,int *r,int *c)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)vw->data;

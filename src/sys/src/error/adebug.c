@@ -60,7 +60,15 @@ int PetscSetDebugger(const char debugger[],PetscTruth xterm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSetDefaultDebugger" 
+#define __FUNCT__ "PetscSetDefaultDebugger"
+/*@
+    PetscSetDefaultDebugger - Causes PETSc to use its default 
+          debugger.
+
+   Not collective
+
+.seealso: PetscSetDebugger(), PetscSetDebuggerFromString()
+@*/
 int PetscSetDefaultDebugger(void)
 {
   int ierr;
@@ -77,8 +85,8 @@ int PetscSetDefaultDebugger(void)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "CheckForDefaultDebugger"
-static int CheckForDefaultDebugger(char *defaultDbg, char *string, char **debugger)
+#define __FUNCT__ "PetscCheckDebugger_Private"
+static int PetscCheckDebugger_Private(char *defaultDbg, char *string, char **debugger)
 {
   PetscTruth exists;
   char      *f;
@@ -102,6 +110,14 @@ static int CheckForDefaultDebugger(char *defaultDbg, char *string, char **debugg
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetDebuggerFromString" 
+/*@C
+    PetscSetDebuggerFromString - Set the complete path for the
+       debugger for PETSc to use.
+
+   Not collective
+
+.seealso: PetscSetDebugger(), PetscSetDefaultDebugger()
+@*/
 int PetscSetDebuggerFromString(char *string)
 {
   char      *debugger = PETSC_NULL;
@@ -112,14 +128,14 @@ int PetscSetDebuggerFromString(char *string)
   PetscFunctionBegin;
   ierr = PetscStrstr(string, "noxterm", &f);                                                              CHKERRQ(ierr);
   if (f) xterm = PETSC_FALSE;
-  ierr = CheckForDefaultDebugger("xdb",      string, &debugger);                                          CHKERRQ(ierr);
-  ierr = CheckForDefaultDebugger("dbx",      string, &debugger);                                          CHKERRQ(ierr);
-  ierr = CheckForDefaultDebugger("xldb",     string, &debugger);                                          CHKERRQ(ierr);
-  ierr = CheckForDefaultDebugger("gdb",      string, &debugger);                                          CHKERRQ(ierr);
-  ierr = CheckForDefaultDebugger("xxgdb",    string, &debugger);                                          CHKERRQ(ierr);
-  ierr = CheckForDefaultDebugger("ups",      string, &debugger);                                          CHKERRQ(ierr);
-  ierr = CheckForDefaultDebugger("workshop", string, &debugger);                                          CHKERRQ(ierr);
-  ierr = CheckForDefaultDebugger("pgdbg",    string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("xdb",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("dbx",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("xldb",     string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("gdb",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("xxgdb",    string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("ups",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("workshop", string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("pgdbg",    string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscSetDebugger(debugger, xterm);                                                               CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

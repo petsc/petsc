@@ -99,7 +99,7 @@ EXTERN_C_BEGIN
 extern void PetscMaxSum_Local(void *,void *,int *,MPI_Datatype *);
 EXTERN_C_END
 
-EXTERN int PetscOptionsCheckInitial(void);
+EXTERN int PetscOptionsCheckInitial_Private(void);
 EXTERN int PetscOptionsCheckInitial_Components(void);
 EXTERN int PetscInitialize_DynamicLibraries(void);
 EXTERN int PetscLogBegin_Private(void);
@@ -271,7 +271,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating options database");return;}
   *ierr = PetscFree(args);
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Freeing args");return;}
-  *ierr = PetscOptionsCheckInitial(); 
+  *ierr = PetscOptionsCheckInitial_Private(); 
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
   *ierr = PetscLogBegin_Private();
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize: intializing logging");return;}
