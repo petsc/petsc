@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.67 2001/04/26 20:20:53 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.68 2001/04/26 20:23:43 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -20,6 +20,7 @@ EXTERN int DAGetColoring3d_MPIBAIJ(DA,ISColoringType,ISColoring *,Mat *);
 
     Input Parameter:
 +   da - the distributed array
+.   ctype - IS_COLORING_LOCAL or IS_COLORING_GHOSTED
 -   mtype - either MATMPIAIJ or MATMPIBAIJ
 
     Output Parameters:
@@ -89,7 +90,7 @@ int DAGetColoring(DA da,ISColoringType ctype,MatType mtype,ISColoring *coloring,
     if (dim == 3) {
       ierr =  DAGetColoring3d_MPIBAIJ(da,ctype,coloring,J);CHKERRQ(ierr);
   } else {
-      SETERRQ1(1,"Not done for %d dimension, send use mail petsc-maint@mcs.anl.gov for code",dim);
+      SETERRQ1(1,"Not done for %d dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
     }
   }
   PetscFunctionReturn(0);
@@ -137,29 +138,36 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
     if (st == DA_STENCIL_STAR && s == 1) {
       ierr = DAGetColoring2d_5pt_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_LOCAL) {
-      ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
-      ii = 0;
-      for (j=ys; j<ys+ny; j++) {
-        for (i=xs; i<xs+nx; i++) {
-          for (k=0; k<nc; k++) {
-            colors[ii++] = k + nc*((i % col) + col*(j % col));
+      if (!da->localcoloring) {
+        ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
+        ii = 0;
+        for (j=ys; j<ys+ny; j++) {
+          for (i=xs; i<xs+nx; i++) {
+            for (k=0; k<nc; k++) {
+              colors[ii++] = k + nc*((i % col) + col*(j % col));
+            }
           }
         }
+        ierr = ISColoringCreate(comm,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
       }
-      ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
+      *coloring = da->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
-      ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
-      ii = 0;
-      for (j=gys; j<gys+gny; j++) {
-        for (i=gxs; i<gxs+gnx; i++) {
-          for (k=0; k<nc; k++) {
-            colors[ii++] = k + nc*((i % col) + col*(j % col));
+      if (!da->ghostedcoloring) {
+        ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
+        ii = 0;
+        for (j=gys; j<gys+gny; j++) {
+          for (i=gxs; i<gxs+gnx; i++) {
+            for (k=0; k<nc; k++) {
+              colors[ii++] = k + nc*((i % col) + col*(j % col));
+            }
           }
         }
+        ierr = ISColoringCreate(comm,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+        ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
-      ierr = ISColoringCreate(comm,nc*gnx*gny,colors,coloring);CHKERRQ(ierr);
-      ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      *coloring = da->ghostedcoloring;
     } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+    ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   }
 
   /* Create the matrix */
@@ -299,33 +307,40 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
   /* create the coloring */
   if (coloring) {
     if (ctype == IS_COLORING_LOCAL) {
-      ierr = PetscMalloc(nc*nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
-      ii = 0;
-      for (k=zs; k<zs+nz; k++) {
-        for (j=ys; j<ys+ny; j++) {
-          for (i=xs; i<xs+nx; i++) {
-            for (l=0; l<nc; l++) {
-              colors[ii++] = l + nc*((i % col) + col*(j % col) + col*col*(k % col));
+      if (!da->localcoloring) {
+        ierr = PetscMalloc(nc*nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
+        ii = 0;
+        for (k=zs; k<zs+nz; k++) {
+          for (j=ys; j<ys+ny; j++) {
+            for (i=xs; i<xs+nx; i++) {
+              for (l=0; l<nc; l++) {
+                colors[ii++] = l + nc*((i % col) + col*(j % col) + col*col*(k % col));
+              }
             }
           }
         }
+        ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,&da->localcoloring);CHKERRQ(ierr);
       }
-      ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,coloring);CHKERRQ(ierr);
+      *coloring = da->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
-      ierr = PetscMalloc(nc*gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
-      ii = 0;
-      for (k=gzs; k<gzs+gnz; k++) {
-        for (j=gys; j<gys+gny; j++) {
-          for (i=gxs; i<gxs+gnx; i++) {
-            for (l=0; l<nc; l++) {
-              colors[ii++] = l + nc*((i % col) + col*(j % col) + col*col*(k % col));
+      if (!da->ghostedcoloring) {
+        ierr = PetscMalloc(nc*gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
+        ii = 0;
+        for (k=gzs; k<gzs+gnz; k++) {
+          for (j=gys; j<gys+gny; j++) {
+            for (i=gxs; i<gxs+gnx; i++) {
+              for (l=0; l<nc; l++) {
+                colors[ii++] = l + nc*((i % col) + col*(j % col) + col*col*(k % col));
+              }
             }
           }
         }
+        ierr = ISColoringCreate(comm,nc*gnx*gny*gnz,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+        ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
-      ierr = ISColoringCreate(comm,nc*gnx*gny*gnz,colors,coloring);CHKERRQ(ierr);
-      ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      *coloring = da->ghostedcoloring;
     } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+    ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   }
 
   /* create the matrix */
@@ -465,25 +480,32 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
   /* create the coloring */
   if (coloring) {
     if (ctype == IS_COLORING_LOCAL) {
-      ierr = PetscMalloc(nc*nx*sizeof(int),&colors);CHKERRQ(ierr);
-      i1 = 0;
-      for (i=xs; i<xs+nx; i++) {
-        for (l=0; l<nc; l++) {
-          colors[i1++] = l + nc*(i % col);
+      if (!da->localcoloring) {
+        ierr = PetscMalloc(nc*nx*sizeof(int),&colors);CHKERRQ(ierr);
+        i1 = 0;
+        for (i=xs; i<xs+nx; i++) {
+          for (l=0; l<nc; l++) {
+            colors[i1++] = l + nc*(i % col);
+          }
         }
+        ierr = ISColoringCreate(comm,nc*nx,colors,&da->localcoloring);CHKERRQ(ierr);
       }
-      ierr = ISColoringCreate(comm,nc*nx,colors,coloring);CHKERRQ(ierr);
+      *coloring = da->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
-      ierr = PetscMalloc(nc*gnx*sizeof(int),&colors);CHKERRQ(ierr);
-      i1 = 0;
-      for (i=gxs; i<gxs+gnx; i++) {
-        for (l=0; l<nc; l++) {
-          colors[i1++] = l + nc*(i % col);
+      if (!da->ghostedcoloring) {
+        ierr = PetscMalloc(nc*gnx*sizeof(int),&colors);CHKERRQ(ierr);
+        i1 = 0;
+        for (i=gxs; i<gxs+gnx; i++) {
+          for (l=0; l<nc; l++) {
+            colors[i1++] = l + nc*(i % col);
+          }
         }
+        ierr = ISColoringCreate(comm,nc*gnx,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+        ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
-      ierr = ISColoringCreate(comm,nc*gnx,colors,coloring);CHKERRQ(ierr);
-      ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      *coloring = da->ghostedcoloring;
     } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+    ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   }
 
   /* create empty Jacobian matrix */
@@ -569,29 +591,36 @@ int DAGetColoring3d_MPIBAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat 
   /* create the coloring */
   if (coloring) {
     if (ctype == IS_COLORING_LOCAL) {
-      ierr = PetscMalloc(nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
-      ii   = 0;
-      for (k=zs; k<zs+nz; k++) {
-        for (j=ys; j<ys+ny; j++) {
-          for (i=xs; i<xs+nx; i++) {
-            colors[ii++] = (i % col) + col*(j % col) + col*col*(k % col);
+      if (!da->localcoloring) {
+        ierr = PetscMalloc(nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
+        ii   = 0;
+        for (k=zs; k<zs+nz; k++) {
+          for (j=ys; j<ys+ny; j++) {
+            for (i=xs; i<xs+nx; i++) {
+              colors[ii++] = (i % col) + col*(j % col) + col*col*(k % col);
+            }
           }
         }
+        ierr = ISColoringCreate(comm,nx*ny*nz,colors,&da->localcoloring);CHKERRQ(ierr);
       }
-      ierr = ISColoringCreate(comm,nx*ny*nz,colors,coloring);CHKERRQ(ierr);
+      *coloring = da->localcoloring;
     } else if (ctype == IS_COLORING_GHOSTED) {
-      ierr = PetscMalloc(gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
-      ii   = 0;
-      for (k=gzs; k<gzs+gnz; k++) {
-        for (j=gys; j<gys+gny; j++) {
-          for (i=gxs; i<gxs+gnx; i++) {
-            colors[ii++] = (i % col) + col*(j % col) + col*col*(k % col);
+      if (!da->ghostedcoloring) {
+        ierr = PetscMalloc(gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
+        ii   = 0;
+        for (k=gzs; k<gzs+gnz; k++) {
+          for (j=gys; j<gys+gny; j++) {
+            for (i=gxs; i<gxs+gnx; i++) {
+              colors[ii++] = (i % col) + col*(j % col) + col*col*(k % col);
+            }
           }
         }
+        ierr = ISColoringCreate(comm,gnx*gny*gnz,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+        ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
-      ierr = ISColoringCreate(comm,gnx*gny*gnz,colors,coloring);CHKERRQ(ierr);
-      ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+      *coloring = da->ghostedcoloring;
     } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+    ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   }
 
   /* create the matrix */
@@ -744,28 +773,35 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 
   /* create the coloring */
   if (ctype == IS_COLORING_LOCAL) {
-    ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
-    ii = 0;
-    for (j=ys; j<ys+ny; j++) {
-      for (i=xs; i<xs+nx; i++) {
-        for (k=0; k<nc; k++) {
-          colors[ii++] = k + nc*((3*j+i) % 5);
-        }
+    if (!da->localcoloring) {
+      ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
+      ii = 0;
+      for (j=ys; j<ys+ny; j++) {
+	for (i=xs; i<xs+nx; i++) {
+	  for (k=0; k<nc; k++) {
+	    colors[ii++] = k + nc*((3*j+i) % 5);
+	  }
+	}
       }
+      ierr = ISColoringCreate(comm,nc*nx*ny,colors,&da->localcoloring);CHKERRQ(ierr);
     }
-    ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
+    *coloring = da->localcoloring;
   } else if (ctype == IS_COLORING_GHOSTED) {
-    ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
-    ii = 0;
-    for (j=gys; j<gys+gny; j++) {
-      for (i=gxs; i<gxs+gnx; i++) {
-        for (k=0; k<nc; k++) {
-          colors[ii++] = k + nc*((3*j+i) % 5);
-        }
+    if (!da->localcoloring) {
+      ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
+      ii = 0;
+      for (j=gys; j<gys+gny; j++) {
+	for (i=gxs; i<gxs+gnx; i++) {
+	  for (k=0; k<nc; k++) {
+	    colors[ii++] = k + nc*((3*j+i) % 5);
+	  }
+	}
       }
+      ierr = ISColoringCreate(comm,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+      ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
-    ierr = ISColoringCreate(comm,nc*gnx*gny,colors,coloring);CHKERRQ(ierr);
-    ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+    *coloring = da->ghostedcoloring;
   } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
+  ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
