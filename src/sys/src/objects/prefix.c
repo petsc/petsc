@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: prefix.c,v 1.8 1997/04/12 19:13:49 bsmith Exp balay $";
+static char vcid[] = "$Id: prefix.c,v 1.9 1997/04/12 19:15:10 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -27,6 +27,8 @@ int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
 {
   if (obj->prefix) PetscFree(obj->prefix);
   if (prefix == PETSC_NULL) {obj->prefix = PETSC_NULL; return 0;}
+  if (prefix[0] == '-') SETERRQ(1,1,"Options prefix should not begin with a hypen");
+
   obj->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))* 
                 sizeof(char)); CHKPTRQ(obj->prefix);
   PetscStrcpy(obj->prefix,prefix);
@@ -55,6 +57,8 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
   char *buf = obj->prefix ;
   if (!prefix) {return 0;}
   if (!buf) return PetscObjectSetOptionsPrefix(obj, prefix);
+  if (prefix[0] == '-') SETERRQ(1,1,"Options prefix should not begin with a hypen");
+
   obj->prefix = (char*)PetscMalloc((1 + PetscStrlen(prefix) + PetscStrlen(buf))*
                 sizeof(char));  CHKPTRQ(obj->prefix);
   PetscStrcpy(obj->prefix,buf);
