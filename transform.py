@@ -27,16 +27,20 @@ class Transform (bs.Maker):
     self.products.append(source)
 
   def setExecute(self, sources):
+    for file in sources.getFiles():
+      self.fileExecute(file)
+    return self.products
+
+  def genericExecute(self, sources):
     if type(sources) == types.ListType:
       for set in sources:
-        self.setExecute(self, set)
-    else:
-      for file in sources.getFiles():
-        self.fileExecute(file)
+        self.genericExecute(set)
+    elif isinstance(sources, fileset.FileSet):
+      self.setExecute(sources)
     return self.products
 
   def execute(self):
-    return self.setExecute(self.sources)
+    return self.genericExecute(self.sources)
 
   def updateSourceDB(self, source):
     bs.sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time())
