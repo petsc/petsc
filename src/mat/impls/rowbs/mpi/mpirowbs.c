@@ -1900,7 +1900,7 @@ static int MatView_MPIRowbs_Factored(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncompleteCholeskyFactorSymbolic_MPIRowbs"
-int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,PetscReal f,int fill,Mat *newfact)
+int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,MatFactorInfo *info,Mat *newfact)
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat          newmat;
