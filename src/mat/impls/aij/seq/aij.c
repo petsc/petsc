@@ -2813,7 +2813,7 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqAIJ"
-int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
+int MatLoad_SeqAIJ(PetscViewer viewer,const MatType type,Mat *A)
 {
   Mat_SeqAIJ   *a;
   Mat          B;

@@ -2477,7 +2477,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIBAIJ"
-int MatLoad_MPIBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
+int MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat          A;
   int          i,nz,ierr,j,rstart,rend,fd;

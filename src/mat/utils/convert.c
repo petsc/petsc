@@ -10,7 +10,7 @@
 
   Does not do preallocation so in general will be slow
  */
-int MatConvert_Basic(Mat mat,MatType newtype,Mat *newmat) {
+int MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat) {
   Mat          M;
   PetscScalar  *vwork;
   int          ierr,i,nz,m,n,*cwork,rstart,rend,lm,ln;

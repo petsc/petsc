@@ -156,7 +156,7 @@ int  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_DSCPACK_Base"
-int MatConvert_DSCPACK_Base(Mat A,MatType type,Mat *newmat) {
+int MatConvert_DSCPACK_Base(Mat A,const MatType type,Mat *newmat) {
   int     ierr;
   Mat     B=*newmat;
   Mat_DSC *lu=(Mat_DSC*)A->spptr;
@@ -634,7 +634,7 @@ int MatView_DSCPACK(Mat A,PetscViewer viewer) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_DSCPACK"
-int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
+int MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATDSCPACK */
   /* from MATSEQBAIJ if A has a single process communicator */
   /* or MATMPIBAIJ otherwise, so we will ignore 'MatType type'. */

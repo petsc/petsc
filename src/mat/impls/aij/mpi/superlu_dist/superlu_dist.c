@@ -54,7 +54,7 @@ EXTERN int MatDuplicate_SuperLU_DIST(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_DIST_Base"
-int MatConvert_SuperLU_DIST_Base(Mat A,MatType type,Mat *newmat) {
+int MatConvert_SuperLU_DIST_Base(Mat A,const MatType type,Mat *newmat) {
   int              ierr;
   Mat              B=*newmat;
   Mat_SuperLU_DIST *lu=(Mat_SuperLU_DIST *)A->spptr;
@@ -583,7 +583,7 @@ int MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_SuperLU_DIST"
-int MatConvert_Base_SuperLU_DIST(Mat A,MatType type,Mat *newmat) {
+int MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATSUPERLU_DIST */
   /* from MATSEQAIJ if A has a single process communicator */
   /* or MATMPIAIJ otherwise, so we will ignore 'MatType type'. */

@@ -644,7 +644,7 @@ int MatGetValues_SeqDense(Mat A,int m,const int indexm[],int n,const int indexn[
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqDense"
-int MatLoad_SeqDense(PetscViewer viewer,MatType type,Mat *A)
+int MatLoad_SeqDense(PetscViewer viewer,const MatType type,Mat *A)
 {
   Mat_SeqDense *a;
   Mat          B;

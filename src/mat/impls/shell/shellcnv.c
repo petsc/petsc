@@ -5,7 +5,7 @@
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Shell"
-int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *newmat) {
+int MatConvert_Shell(Mat oldmat,const MatType newtype,Mat *newmat) {
   Mat           mat;
   Vec           in,out;
   int           ierr,i,M,m,*rows,start,end;

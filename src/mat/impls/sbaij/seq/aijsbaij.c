@@ -6,7 +6,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqSBAIJ"
-int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat *newmat) {
+int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) {
   Mat          B;
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqSBAIJ *b;

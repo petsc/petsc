@@ -90,7 +90,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqSBAIJSpooles"
-int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatType type,Mat *newmat) {
+int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert a MATSEQSBAIJ matrix */
   /* to a MATSEQSBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   int         ierr;

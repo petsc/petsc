@@ -1921,7 +1921,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIAIJ"
-int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
+int MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat          A;
   PetscScalar  *vals,*svals;

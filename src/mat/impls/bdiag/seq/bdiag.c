@@ -690,7 +690,7 @@ static int MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Mat *matout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqBDiag"
-int MatLoad_SeqBDiag(PetscViewer viewer,MatType type,Mat *A)
+int MatLoad_SeqBDiag(PetscViewer viewer,const MatType type,Mat *A)
 {
   Mat          B;
   int          *scols,i,nz,ierr,fd,header[4],size,nd = 128;

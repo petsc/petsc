@@ -69,7 +69,7 @@ int MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPISBAIJ_MPISBAIJSpooles"
-int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,MatType type,Mat *newmat) {
+int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert a MATMPISBAIJ matrix */
   /* to a MATMPISBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   int         ierr;

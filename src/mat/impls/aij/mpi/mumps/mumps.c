@@ -147,7 +147,7 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MUMPS_Base"
-int MatConvert_MUMPS_Base(Mat A,MatType type,Mat *newmat) {
+int MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) {
   int       ierr;
   Mat       B=*newmat;
   Mat_MUMPS *mumps=(Mat_MUMPS*)A->spptr;
@@ -687,7 +687,7 @@ int MatAssemblyEnd_AIJMUMPS(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_AIJMUMPS"
-int MatConvert_AIJ_AIJMUMPS(Mat A,MatType newtype,Mat *newmat) {
+int MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
   int       ierr,size;
   MPI_Comm  comm;
   Mat       B=*newmat;
@@ -831,7 +831,7 @@ int MatAssemblyEnd_SBAIJMUMPS(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SBAIJ_SBAIJMUMPS"
-int MatConvert_SBAIJ_SBAIJMUMPS(Mat A,MatType newtype,Mat *newmat) {
+int MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
   int       ierr,size;
   MPI_Comm  comm;
   Mat       B=*newmat;

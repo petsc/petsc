@@ -495,7 +495,7 @@ int MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
-int MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+int MatConvert_SuperLU_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   int                  ierr;
@@ -523,7 +523,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
-int MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,Mat *newmat) {
+int MatConvert_SeqAIJ_SuperLU(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATSUPERLU */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
   int         ierr;

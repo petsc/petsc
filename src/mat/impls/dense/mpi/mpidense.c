@@ -1297,7 +1297,7 @@ int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M,int N,Mat *newmat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense"
-int MatLoad_MPIDense(PetscViewer viewer,MatType type,Mat *newmat)
+int MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat          A;
   PetscScalar  *vals,*svals;

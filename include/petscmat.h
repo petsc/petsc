@@ -327,7 +327,7 @@ EXTERN int        MatConvertRegisterAll(const char[]);
 EXTERN int        MatConvertRegisterDestroy(void);
 extern PetscTruth MatConvertRegisterAllCalled;
 extern PetscFList MatConvertList;
-EXTERN int        MatConvert(Mat,MatType,Mat*);
+EXTERN int        MatConvert(Mat,const MatType,Mat*);
 EXTERN int        MatDuplicate(Mat,MatDuplicateOption,Mat*);
 
 /*E
@@ -344,7 +344,7 @@ typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
 EXTERN int MatCopy(Mat,Mat,MatStructure);
 EXTERN int MatView(Mat,PetscViewer);
 
-EXTERN int MatLoad(PetscViewer,MatType,Mat*);
+EXTERN int MatLoad(PetscViewer,const MatType,Mat*);
 EXTERN int MatMerge(MPI_Comm,Mat,Mat*);
 
 EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int *[],int *[],PetscTruth *);

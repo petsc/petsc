@@ -182,7 +182,7 @@ typedef struct  {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_LUSOL_SeqAIJ"
-int MatConvert_LUSOL_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+int MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert an unfactored PETSc-LUSOL matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   int       ierr;
@@ -469,7 +469,7 @@ int MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat *F) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_LUSOL"
-int MatConvert_SeqAIJ_LUSOL(Mat A,MatType type,Mat *newmat) {
+int MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat) {
   int       ierr, m, n;
   Mat_LUSOL *lusol;
   Mat       B=*newmat;

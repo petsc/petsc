@@ -113,13 +113,13 @@ and PetscWriteBinary() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
+int MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
 {
   Mat         factory;
   int         ierr;
   PetscTruth  isbinary,flg;
   MPI_Comm    comm;
-  int         (*r)(PetscViewer,MatType,Mat*);
+  int         (*r)(PetscViewer,const MatType,Mat*);
   char        mtype[256],*prefix;
 
   PetscFunctionBegin;

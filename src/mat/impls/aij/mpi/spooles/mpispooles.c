@@ -586,7 +586,7 @@ int MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJSpooles"
-int MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,MatType type,Mat *newmat) {
+int MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert a MATMPIAIJ matrix */
   /* to a MATMPIAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   int         ierr;

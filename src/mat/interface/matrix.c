@@ -2477,7 +2477,7 @@ int MatConvertRegister(const char sname[],const char path[],const char name[],in
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
-int MatConvert(Mat mat,MatType newtype,Mat *M)
+int MatConvert(Mat mat,const MatType newtype,Mat *M)
 {
   int        ierr;
   PetscTruth sametype,issame,flg;
@@ -2502,7 +2502,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   if ((sametype || issame) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    int (*conv)(Mat,MatType,Mat*)=PETSC_NULL;
+    int (*conv)(Mat,const MatType,Mat*)=PETSC_NULL;
     /* 
        Order of precedence:
        1) See if a specialized converter is known to the current matrix.

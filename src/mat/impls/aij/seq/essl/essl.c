@@ -31,7 +31,7 @@ EXTERN int MatDuplicate_Essl(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Essl_SeqAIJ"
-int MatConvert_Essl_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+int MatConvert_Essl_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
   int      ierr;
   Mat      B=*newmat;
   Mat_Essl *essl=(Mat_Essl*)A->spptr;
@@ -170,7 +170,7 @@ int MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Essl"
-int MatConvert_SeqAIJ_Essl(Mat A,MatType type,Mat *newmat) {
+int MatConvert_SeqAIJ_Essl(Mat A,const MatType type,Mat *newmat) {
   Mat      B=*newmat;
   int      ierr;
   Mat_Essl *essl;

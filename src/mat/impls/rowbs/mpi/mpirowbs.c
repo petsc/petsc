@@ -1769,7 +1769,7 @@ int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIRowbs"
-int MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
+int MatLoad_MPIRowbs(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat_MPIRowbs *a;
   BSspmat      *A;

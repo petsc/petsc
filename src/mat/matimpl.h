@@ -87,7 +87,7 @@ struct _MatOps {
             (*setvalueslocal)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
             (*zerorowslocal)(Mat,IS,const PetscScalar *),
 /*70*/      (*getrowmax)(Mat,Vec),
-            (*convert)(Mat,MatType,Mat*),
+            (*convert)(Mat,const MatType,Mat*),
             (*setcoloring)(Mat,ISColoring),
             (*setvaluesadic)(Mat,void*),
             (*setvaluesadifor)(Mat,int,void*),
@@ -101,7 +101,7 @@ struct _MatOps {
             (*mults)(Mat, Vecs, Vecs),
             (*solves)(Mat, Vecs, Vecs),
             (*getinertia)(Mat,int*,int*,int*),
-/*85*/      (*load)(PetscViewer,MatType,Mat*),
+/*85*/      (*load)(PetscViewer,const MatType,Mat*),
             (*issymmetric)(Mat,PetscTruth*),
             (*ishermitian)(Mat,PetscTruth*),
             (*isstructurallysymmetric)(Mat,PetscTruth*);
@@ -110,7 +110,7 @@ struct _MatOps {
 /*
    Utility private matrix routines
 */
-EXTERN int MatConvert_Basic(Mat,MatType,Mat*);
+EXTERN int MatConvert_Basic(Mat,const MatType,Mat*);
 EXTERN int MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN int MatView_Private(Mat);
 EXTERN int MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
