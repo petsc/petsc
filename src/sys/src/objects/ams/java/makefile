@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2000/02/27 03:47:51 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2000/03/31 04:03:17 bsmith Exp bsmith $ 
 
 #requirespackage  '-DPETSC_HAVE_JAVA'
 
@@ -26,7 +26,7 @@ amsoptions:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} amsoptions.java
 
 runamsoptions:
-	-@LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${AMS_HOME}/lib/lib$1/`${AMS_HOME}/bin/arch.sh`/ ; export LD_LIBRARY_PATH ; ${JAVA} -cp ${TCLASSPATH} amsoptions 
+	-@LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${AMS_LIBDIR}/; export LD_LIBRARY_PATH; ${JAVA} -cp ${TCLASSPATH} amsoptions 
 
 joe:
 	-@${JAVAC} -classpath ${TCLASSPATH} joe.java
