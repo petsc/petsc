@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.11 2000/09/15 14:02:26 hzhang Exp bsmith $*/
+/*$Id: sbaij2.c,v 1.12 2000/09/28 20:51:10 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -13,7 +13,7 @@
 int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS *is,int ov)
 {
   PetscFunctionBegin;
-  SETERRQ(1,1,"Function not yet written for SBAIJ format");
+  SETERRQ(1,"Function not yet written for SBAIJ format");
   /* PetscFunctionReturn(0); */
 }
 
@@ -1072,7 +1072,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultTranspose_SeqSBAIJ(Mat A,Vec xx,Vec zz)
 {
   PetscFunctionBegin;
-  SETERRQ(1,1,"Matrix is symmetric. Call MatMult().");
+  SETERRQ(1,"Matrix is symmetric. Call MatMult().");
   /* PetscFunctionReturn(0); */
 }
 
@@ -1082,7 +1082,7 @@ int MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
   PetscFunctionBegin;
-  SETERRQ(1,1,"Matrix is symmetric. Call MatMultAdd().");
+  SETERRQ(1,"Matrix is symmetric. Call MatMultAdd().");
   /* PetscFunctionReturn(0); */
 }
 
