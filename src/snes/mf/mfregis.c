@@ -21,7 +21,7 @@ EXTERN_C_END
 .seealso:  MatSNESMFRegisterDestroy(), MatSNESMFRegisterDynamic), MatSNESMFCreate(), 
            MatSNESMFSetType()
 @*/
-int MatSNESMFRegisterAll(char *path)
+int MatSNESMFRegisterAll(const char *path)
 {
   int ierr;
 

@@ -1,0 +1,16 @@
+-da_grid_x 5
+-da_grid_y 5
+-dmmg_nlevels 3
+
+-snes_atol 1.e-12
+
+-ksp_type gmres
+-ksp_atol 1.e-14
+-ksp_left_pc
+
+-mg_coarse_pc_type lu
+-mg_coarse_pc_lu_damping
+-mg_levels_pc_type sor
+-mg_levels_pc_sor_symmetric
+-mg_levels_ksp_type richardson
+
