@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.41 1996/02/08 18:28:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.42 1996/03/19 21:29:18 bsmith Exp bsmith $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -8,7 +8,6 @@ static char *help="Uses Newton's method to solve a two-variable system.\n";
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
-     FormInitialGuess(SNES,Vec),
      Monitor(SNES,int,double,void*);
 
 int main( int argc, char **argv )
@@ -17,6 +16,7 @@ int main( int argc, char **argv )
   Vec          x,r;                /* solution, residual vectors */
   Mat          J;                  /* Jacobian matrix */
   int          ierr, its;
+  Scalar       pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
 
@@ -34,8 +34,10 @@ int main( int argc, char **argv )
   ierr = SNESSetMonitor(snes,Monitor,0); CHKERRA(ierr);
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
+  /* set an initial guess of .5 */
+  ierr = VecSet(&pfive,x); CHKERRA(ierr);
+
   /* Solve nonlinear system */
-  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its);
 
@@ -56,13 +58,6 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
   ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr); 
-  return 0;
-}/* --------------------  Form initial approximation ----------------- */
-int FormInitialGuess(SNES snes,Vec x)
-{
-  int    ierr;
-  Scalar pfive = .50;
-  ierr = VecSet(&pfive,x); CHKERRQ(ierr);
   return 0;
 }/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
