@@ -97,27 +97,17 @@ extern double atof(const char*);
 
 /* ----------------------IBM RS6000 ----------------------------------------*/
 #if defined(PARCH_rs6000)
+/* Some of the following prototypes are present in AIX 4.2 but not in AIX 3.X */
 #if defined(__cplusplus)
 extern "C" {
 extern char   *mktemp(char *);
-extern char   *getcwd(char *,long unsigned int);
 extern char   *getwd(char *);
 extern int    getdomainname(char *,int);
-extern void   abort(void);
-extern int    atoi(const char*);
-extern void   exit(int);
-extern void   perror(const char *);
-extern double atof(const char *);
-extern void   free(void *);
-extern void   *malloc(long unsigned int );
 extern int    strcasecmp(const char *, const char *);
 extern int    getrusage(int,s_rusage);
-/* extern int    readlink(const char *,char *,size_t); */
 }
-
 #else
 extern char   *mktemp(char *);
-/* strcasecmp() is not in AIX 3.X but is in 4.2 */
 extern int    strcasecmp(const char *, const char *);
 extern int    getrusage(int,s_rusage);
 #endif
@@ -166,31 +156,6 @@ extern int    getpagesize();
 
 /* -----------------------SGI IRIX -----------------------------------------*/
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
-#if defined(__cplusplus)
-extern "C" {
-
-extern char   *mktemp(char *);
-extern char   *getwd(char *);
-extern int     getdomainname(char *,int);
-extern char   *getenv( char *);
-extern int    atoi(char*);
-extern void   perror(const char *);
-extern int    abort();
-extern double atof(const char *);
-extern int    free(void *);
-extern void   *malloc(long unsigned int );
-extern int    abort();
-extern void   exit(int);
-extern int    strcasecmp(const char *,const char *);
-extern void   *memalign(size_t, size_t);
-extern int    getrusage(int,s_rusage);
-}
-
-#else
-extern char   *getenv( char *);
-extern int    atoi(char*);
-extern int    getrusage(int,s_rusage);
-#endif
 #endif
 
 /* -----------------------DEC alpha ----------------------------------------*/
@@ -198,35 +163,14 @@ extern int    getrusage(int,s_rusage);
 #if defined(PARCH_alpha)
 #if defined(__cplusplus)
 extern "C" {
-extern char   *mktemp(char *);
-extern char   *getcwd(char *,long unsigned int);
-extern char   *getwd(char *);
 extern int    getdomainname(char *,int);
-extern void   perror(const char *);
-extern double atof(const char *);
-extern void   *malloc(long unsigned int );
-extern int    readlink(const char *,char *,int);
-extern void   usleep(unsigned int);
-extern unsigned int sleep(unsigned int);
-extern int    getrusage(int,s_rusage);
-extern int    getpagesize();
 }
-
 #else
-extern char   *mktemp(char *);
-extern void   *malloc(long unsigned int);
-extern char   *getenv( char *);
-extern void   perror(char *);
-extern double atof(char *);
-extern int    atoi(char*);
-extern int    getrusage(int,s_rusage);
-extern int    getpagesize();
 #endif
 #endif
 
 /* -------------------- HP UX --------------------------------*/
 #if defined(PARCH_hpux)
-
 #if defined(__cplusplus)
 extern "C" {
 extern int    getdomainname(char *,int);
@@ -246,21 +190,9 @@ extern char   *mktemp(char*);
 
 #if defined(__cplusplus)
 extern "C" {
-extern int    exit(int);
-extern int    abort();
-extern void   *malloc(long unsigned int );
-extern int    free(void *);
-extern char   *getenv( char *);
-/* extern double atof(char *); */
-extern int    atoi(char*);
-extern char   *mktemp(char *);
 extern int    close(int);
-extern unsigned int sleep(unsigned int);
 }
-
 #else
-extern char   *getenv( char *);
-extern char   *mktemp(char *);
 #endif
 #endif
 
