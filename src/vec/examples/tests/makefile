@@ -19,6 +19,78 @@ CEXAMPLES= ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
            ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c
 LINCLUDE = $(SOURCEH)
+	
+ex1: ex1.o  chkopts 
+	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
+	$(RM) -f ex1.o
+
+ex2: ex2.o  chkopts
+	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
+	$(RM) -f ex2.o
+
+ex3: ex3.o  chkopts
+	-$(CLINKER) -o ex3 ex3.o  $(SLES_LIB)
+	$(RM) -f ex3.o
+
+ex4: ex4.o  chkopts
+	-$(CLINKER) -o ex4 ex4.o  $(SLES_LIB)
+	$(RM) -f ex4.o
+
+ex5: ex5.o  chkopts
+	-$(CLINKER) -o ex5 ex5.o  $(SLES_LIB)
+	$(RM) -f ex5.o
+
+ex6: ex6.o  chkopts
+	-$(CLINKER) -o ex6 ex6.o  $(SLES_LIB)
+	$(RM) -f ex6.o
+
+ex7: ex7.o  chkopts
+	-$(CLINKER) -o ex7 ex7.o  $(SLES_LIB)
+	$(RM) -f ex7.o
+
+ex8: ex8.o  chkopts
+	-$(CLINKER) -o ex8 ex8.o  $(SLES_LIB)
+	$(RM) -f ex8.o
+
+ex9: ex9.o  chkopts
+	-$(CLINKER) -o ex9 ex9.o  $(SLES_LIB)
+	$(RM) -f ex9.o
+
+ex10: ex10.o  chkopts
+	-$(CLINKER) -o ex10 ex10.o  $(SLES_LIB)
+	$(RM) -f ex10.o
+
+ex11: ex11.o  chkopts
+	-$(CLINKER) -o ex11 ex11.o  $(SLES_LIB)
+	$(RM) -f ex11.o
+
+ex12: ex12.o  chkopts
+	-$(CLINKER) -o ex12 ex12.o  $(SLES_LIB)
+	$(RM) -f ex12.o
+
+ex13: ex13.o  chkopts
+	-$(CLINKER) -o ex13 ex13.o  $(SLES_LIB)
+	$(RM) -f ex13.o
+
+ex14: ex14.o  chkopts
+	-$(CLINKER) -o ex14 ex14.o  $(SLES_LIB)
+	$(RM) -f ex14.o
+
+ex15: ex15.o  chkopts
+	-$(CLINKER) -o ex15 ex15.o  $(SLES_LIB) 
+	$(RM) -f ex15.o
+
+ex16: ex16.o  chkopts
+	-$(CLINKER) -o ex16 ex16.o  $(SLES_LIB) 
+	$(RM) -f ex16.o
+
+ex17: ex17.o  chkopts
+	-$(CLINKER) -o ex17 ex17.o  $(SLES_LIB)
+	$(RM) -f ex17.o
+
+ex18: ex18.o  chkopts
+	-$(CLINKER) -o ex18 ex18.o  $(SLES_LIB)
+	$(RM) -f ex18.o
 
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
@@ -105,78 +177,6 @@ runex17:
            if (diff output/ex17_1.out ex17_1.tmp) then true; \
            else echo "Possible problem with ex17_1, diffs above"; fi;\
            $(RM) -f ex17_1.tmp
-	
-ex1: ex1.o  chkopts
-	-$(CLINKER) -o ex1 ex1.o  $(SLES_LIB)
-	$(RM) -f ex1.o
-
-ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
-	$(RM) -f ex2.o
-
-ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o  $(SLES_LIB)
-	$(RM) -f ex3.o
-
-ex4: ex4.o  chkopts
-	-$(CLINKER) -o ex4 ex4.o  $(SLES_LIB)
-	$(RM) -f ex4.o
-
-ex5: ex5.o  chkopts
-	-$(CLINKER) -o ex5 ex5.o  $(SLES_LIB)
-	$(RM) -f ex5.o
-
-ex6: ex6.o  chkopts
-	-$(CLINKER) -o ex6 ex6.o  $(SLES_LIB)
-	$(RM) -f ex6.o
-
-ex7: ex7.o  chkopts
-	-$(CLINKER) -o ex7 ex7.o  $(SLES_LIB)
-	$(RM) -f ex7.o
-
-ex8: ex8.o  chkopts
-	-$(CLINKER) -o ex8 ex8.o  $(SLES_LIB)
-	$(RM) -f ex8.o
-
-ex9: ex9.o  chkopts
-	-$(CLINKER) -o ex9 ex9.o  $(SLES_LIB)
-	$(RM) -f ex9.o
-
-ex10: ex10.o  chkopts
-	-$(CLINKER) -o ex10 ex10.o  $(SLES_LIB)
-	$(RM) -f ex10.o
-
-ex11: ex11.o  chkopts
-	-$(CLINKER) -o ex11 ex11.o  $(SLES_LIB)
-	$(RM) -f ex11.o
-
-ex12: ex12.o  chkopts
-	-$(CLINKER) -o ex12 ex12.o  $(SLES_LIB)
-	$(RM) -f ex12.o
-
-ex13: ex13.o  chkopts
-	-$(CLINKER) -o ex13 ex13.o  $(SLES_LIB)
-	$(RM) -f ex13.o
-
-ex14: ex14.o  chkopts
-	-$(CLINKER) -o ex14 ex14.o  $(SLES_LIB)
-	$(RM) -f ex14.o
-
-ex15: ex15.o  chkopts
-	-$(CLINKER) -o ex15 ex15.o  $(SLES_LIB) 
-	$(RM) -f ex15.o
-
-ex16: ex16.o  chkopts
-	-$(CLINKER) -o ex16 ex16.o  $(SLES_LIB) 
-	$(RM) -f ex16.o
-
-ex17: ex17.o  chkopts
-	-$(CLINKER) -o ex17 ex17.o  $(SLES_LIB)
-	$(RM) -f ex17.o
-
-ex18: ex18.o  chkopts
-	-$(CLINKER) -o ex18 ex18.o  $(SLES_LIB)
-	$(RM) -f ex18.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
