@@ -36,6 +36,7 @@ class Configure(config.base.Configure):
     help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-shared',         nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
     help.addArgument('MPI', '-with-mpi-compilers',      nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
+    help.addArgument('MPI', '-with-mpich',              nargs.ArgBool(None, 0, 'Install MPICH to provide MPI'))
     return
 
   def checkLib(self, libraries):
@@ -215,10 +216,53 @@ class Configure(config.base.Configure):
         pass
     return
 
+  def downLoadMPICH(self):
+    self.framework.log.write('Downloading MPICH')
+
+    self.foundMPI       = 1
+    ls   = os.listdir(self.framework.argDB['PETSC_DIR'])
+    dirs = []
+    for dir in ls:
+      if dir.startswith('mpich') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],dir)):
+        dirs.append(dir)
+
+    if len(dirs) == 0:   # MPICH has not yet been downloaded
+      import urllib
+      try:
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/mpi/mpich.tar.gz','mpich.tar.gz')
+      except:
+        raise RuntimeError('Error downloading MPICH')
+      try:
+        self.executeShellCommand('gunzip mpich.tar.gz')[0]
+      except:
+        raise RuntimeError('Error unzipping mpich.tar.gz')
+      try:
+        self.executeShellCommand('tar -xf mpich.tar')
+      except:
+        raise RuntimeError('Error doing tar -xf mpich.tar')
+      
+    # get the release number of MPICH
+    ls = os.listdir(self.framework.argDB['PETSC_DIR'])
+    releasename = None
+    for dir in ls:
+      if dir.startswith('mpich') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],dir)):
+        releasename = dir
+    if not releasename:
+      raise RuntimeError('Error locating MPICH directory')
+
+    libdir = os.path.join(self.framework.argDB['PETSC_DIR'],releasename,self.framework.argDB['PETSC_ARCH'])
+    if not os.path.isdir(libdir)
+      os.mkdir(libdir)
+
+      
   def configureLibrary(self):
     '''Find all working MPI libraries and then choose one'''
     functionalMPI = []
     nonsharedMPI  = []
+
+    if self.framework.argDB['with-mpich']:
+      self.downLoadMPICH()
+      
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
       self.framework.log.write('================================================================================\n')
       self.framework.log.write('Checking for a functional MPI in '+name+'\n')
@@ -244,6 +288,7 @@ class Configure(config.base.Configure):
       functionalMPI.append((name, self.lib, self.include, version))
       if not self.framework.argDB['with-alternatives']:
         break
+      
     # User chooses one or take first (sort by version)
     if self.foundMPI:
       self.name, self.lib, self.include, self.version = functionalMPI[0]
