@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.99 1998/01/13 00:07:02 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.100 1998/01/27 01:23:50 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -384,7 +384,7 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
   int         ierr,i,j,row,col;
   int         roworiented = baij->roworiented,rstart_orig=baij->rstart_bs ;
   int         rend_orig=baij->rend_bs,Nbs=baij->Nbs;
-  
+  int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
   int         h1,key,size=baij->ht_size,bs=baij->bs,*HT=baij->ht,idx;
   double      tmp;
   Scalar      ** HD = baij->hd,value;
@@ -408,6 +408,19 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
 
         
         idx = h1;
+#if defined(USE_PETSC_BOPT_g)
+        insert_ct++;
+        total_ct++;
+        if (HT[idx] != key) {
+          for ( idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++);
+          if (idx == size) {
+            for ( idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++);
+            if (idx == h1) {
+              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
+            }
+          }
+        }
+#else
         if (HT[idx] != key) {
           for ( idx=h1; (idx<size) && (HT[idx]!=key); idx++);
           if (idx == size) {
@@ -417,6 +430,7 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
             }
           }
         }
+#endif
         /* A HASH table entry is found, so insert the values at the correct address */
         if (addv == ADD_VALUES) *(HD[idx]+ (col % bs)*bs + (row % bs)) += value;
         else                    *(HD[idx]+ (col % bs)*bs + (row % bs))  = value;
@@ -435,6 +449,10 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
       }
     }
   }
+#if defined(USE_PETSC_BOPT_g)
+  baij->ht_total_ct = total_ct;
+  baij->ht_insert_ct = insert_ct;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -446,10 +464,11 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
   int         ierr,i,j,ii,jj,row,col,k,l;
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
   int         rend=baij->rend,stepval,bs=baij->bs,bs2=baij->bs2;
+  int         total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
 
   int         h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
   double      tmp;
-  Scalar      ** HD = baij->hd,*value,*baij_a;
+  Scalar      ** HD = baij->hd,*value,*v_t,*baij_a;
  
   PetscFunctionBegin;
 
@@ -463,7 +482,8 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (im[i] >= baij->Mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
-    row = im[i];
+    row   = im[i];
+    v_t   = v + i*bs2;
     if (row >= rstart && row < rend) {
       for ( j=0; j<n; j++ ) {
         col = in[j];          
@@ -473,6 +493,19 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
         h1  = HASH(size,key,tmp);
       
         idx = h1;
+#if defined(USE_PETSC_BOPT_g)
+        total_ct++;
+        insert_ct++;
+       if (HT[idx] != key) {
+          for ( idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++);
+          if (idx == size) {
+            for ( idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++);
+            if (idx == h1) {
+              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
+            }
+          }
+        }
+#else  
         if (HT[idx] != key) {
           for ( idx=h1; (idx<size) && (HT[idx]!=key); idx++);
           if (idx == size) {
@@ -482,10 +515,13 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
             }
           }
         }
+#endif
         baij_a = HD[idx];
         if (roworiented) { 
           /*value = v + i*(stepval+bs)*bs + j*bs;*/
-          value = v + (i*(stepval+bs)+j)*bs;
+          /* value = v + (i*(stepval+bs)+j)*bs; */
+          value = v_t;
+          v_t  += bs;
           if (addv == ADD_VALUES) {
             for ( ii=0; ii<bs; ii++,value+=stepval) {
               for ( jj=ii; jj<bs2; jj+=bs ) {
@@ -542,6 +578,10 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
       }
     }
   }
+#if defined(USE_PETSC_BOPT_g)
+  baij->ht_total_ct = total_ct;
+  baij->ht_insert_ct = insert_ct;
+#endif
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
@@ -579,7 +619,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
       SETERRQ(PETSC_ERR_SUP,0,"Only local values currently supported");
     }
   }
-  PetscFunctionReturn(0);
+ PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -708,7 +748,7 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFree(starts); PetscFree(nprocs);
 
   /* Free cache space */
-  PLogInfo(0,"[%d]MatAssemblyBegin_MPIBAIJ:Number of off-processor values %d\n",rank,baij->stash.n);
+  PLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Number of off-processor values %d\n",baij->stash.n);
   ierr = StashDestroy_Private(&baij->stash); CHKERRQ(ierr);
 
   baij->svalues    = svalues;    baij->rvalues    = rvalues;
@@ -734,8 +774,8 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
   Mat         A = baij->A, B=baij->B;
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data, *b=(Mat_SeqBAIJ *)B->data;
   int         i,j,k,nz=a->nz+b->nz,h1,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  int         size,ct=0,max1=0,max2=0,bs2=baij->bs2,rstart=baij->rstart;
-  int         cstart=baij->cstart,*garray=baij->garray,row,col;
+  int         size,ct=0,max=0,bs2=baij->bs2,rstart=baij->rstart;
+  int         cstart=baij->cstart,*garray=baij->garray,row,col,Nbs=baij->Nbs;
   int         *HT,key;
   Scalar      **HD;
   double      tmp;
@@ -764,18 +804,22 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
       row = i+rstart;
       col = aj[j]+cstart;
        
-      key = row*baij->Nbs + col + 1;
-      /* printf("[%d]row,col,key = %2d,%2d,%5.2f\n",PetscGlobalRank,row,col,key); */
+      key = row*Nbs + col + 1;
       h1  = HASH(size,key,tmp);
-      
       for ( k=0; k<size; k++ ){
         if (HT[(h1+k)%size] == 0.0) {
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = a->a + j*bs2;
           break;
-        } else ct++;
+#if defined(USE_PETSC_BOPT_g)
+        } else {
+          ct++;
+#endif
+        }
       }
-      if (k> max1) max1 = k;
+#if defined(USE_PETSC_BOPT_g)
+      if (k> max) max = k;
+#endif
     }
   }
   /* Loop Over B */
@@ -783,27 +827,32 @@ int MatCreateHashTable_MPIBAIJ_Private(Mat mat,double factor)
     for ( j=bi[i]; j<bi[i+1]; j++ ) {
       row = i+rstart;
       col = garray[bj[j]];
-      key = row*baij->Nbs + col + 1;
-      /* printf("[%d]row,col,key = %2d,%2d,%5.2f\n",PetscGlobalRank,row,col,key); */
+      key = row*Nbs + col + 1;
       h1  = HASH(size,key,tmp);
       for ( k=0; k<size; k++ ){
         if (HT[(h1+k)%size] == 0.0) {
           HT[(h1+k)%size] = key;
           HD[(h1+k)%size] = b->a + j*bs2;
           break;
-        } else ct++;
+#if defined(USE_PETSC_BOPT_g)
+        } else {
+          ct++;
+#endif
+        }
       }
-      if (k> max2) max2 = k;
+#if defined(USE_PETSC_BOPT_g)
+      if (k> max) max = k;
+#endif
     }
   }
   
   /* Print Summary */
+#if defined(USE_PETSC_BOPT_g)
   for ( i=0,j=0; i<size; i++) 
     if (HT[i]) {j++;}
-  
-  /*printf("[%d] fact = %3.2f max1 = %5d max2 = %5d Size %5d - Searches %5d Avg %5.2f Keys %5d\n", 
-         PetscGlobalRank,factor,max1,max2,size,ct+j,((float)ct+j),j); */
-  fflush(stdout);
+  PLogInfo(0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %d\n",
+           (j== 0)? 0.0:((double)(ct+j))/j,max);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -875,16 +924,25 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(baij->B,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode); CHKERRQ(ierr);
   
+#if defined(USE_PETSC_BOPT_g)
+  if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
+    PLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",
+             ((double)baij->ht_total_ct)/baij->ht_insert_ct);
+    baij->ht_total_ct  = 0;
+    baij->ht_insert_ct = 0;
+  }
+#endif
   ierr = OptionsHasName(PETSC_NULL,"-use_hash",&flg); CHKERRQ(ierr);
   if (flg && !baij->ht && mode== MAT_FINAL_ASSEMBLY) {
     double fact = 1.39;
     ierr = OptionsGetDouble(PETSC_NULL,"-use_hash",&fact,&flg); CHKERRQ(ierr);
     if (fact <= 1.0) fact = 1.39;
-    PLogInfo(0,"[%d]MatAssemblyEnd_MPIBAIJ:Hash table Factor used %5.2f\n",PetscGlobalRank,fact);
+    PLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Hash table Factor used %5.2f\n",fact);
     ierr = MatCreateHashTable_MPIBAIJ_Private(mat,fact); CHKERRQ(ierr);
     mat->ops.setvalues        = MatSetValues_MPIBAIJ_HT;
     mat->ops.setvaluesblocked = MatSetValuesBlocked_MPIBAIJ_HT;
   }
+
   if (baij->rowvalues) {PetscFree(baij->rowvalues); baij->rowvalues = 0;}
   PetscFunctionReturn(0);
 }
@@ -1907,8 +1965,11 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->getrowactive = PETSC_FALSE;
 
   /* hash table stuff */
-  b->ht          = 0;
-  b->ht_size     = 0;
+  b->ht           = 0;
+  b->hd           = 0;
+  b->ht_size      = 0;
+  b->ht_total_ct  = 0;
+  b->ht_insert_ct = 0;
 
   *A = B;
   PetscFunctionReturn(0);
