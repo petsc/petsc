@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.17 1996/02/24 22:22:42 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.18 1996/02/27 06:33:05 bsmith Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -240,7 +240,7 @@ int PCCreate_ASM(PC pc)
 .   pc - the preconditioner context
 .   n - the number of subdomains for this processor
 .   is - the index sets that define the subdomains for this processor
-         or PETSC_NULL for PETSc to determine
+         or PETSC_NULL for PETSc to determine. Default value is 1 per processor.
 @*/
 int PCASMSetSubdomains(PC pc, int n, IS *is)
 {
@@ -262,7 +262,7 @@ int PCASMSetSubdomains(PC pc, int n, IS *is)
   Input Parameters:
 .   pc  - the preconditioner context
 .   ovl - the amount of overlap 
-          >= 0
+          >= 0. Default value = 1
 @*/
 int PCASMSetOverlap(PC pc, int ovl)
 {
