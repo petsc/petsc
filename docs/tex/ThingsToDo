@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  add PetscSynchronizedBinaryRead() and Seek() and replace the horrible
+  if (rnk) {} broadcast nonsense in flow.;c
+
   Use macro for MatSetValuesBlock_SeqBAIJ() in MatSetValuesBlocked_MPIBAIJ()
 
   Add new MatSetValuesBlocked for BAIJ matrices for repeated same assembly.

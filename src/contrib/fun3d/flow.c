@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.28 2000/04/26 02:37:25 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.29 2000/04/26 02:45:03 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -433,10 +433,6 @@ int Update(SNES snes,void *ctx)
   cpuloc = time2-time1;            
   cpuglo = 0.0;
   ierr = MPI_Allreduce(&cpuloc,&cpuglo,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-
-  cpuloc = cpu_fin - cpu_ini;            
-  cpu_time = 0.0;
-  ierr = MPI_Allreduce(&cpuloc,&cpu_time,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);  */
   c_info->tot = cpuglo;    /* Total CPU time used upto this time step */
   
   ierr = VecScatterBegin(grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
@@ -837,6 +833,7 @@ int GetLocalOrdering(GRID *grid)
    readEdges = PetscMin(remEdges,nedgeLocEst); 
    if (!rank) {
     ierr = PetscBinaryRead(fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+   }
    ierr = MPI_Bcast(ftmp,readEdges,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
    for (j = 0; j < readEdges; j++) {
      if (edge_bit[k] == (i+j)) {
