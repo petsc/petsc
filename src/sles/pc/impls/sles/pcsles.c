@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.33 2000/09/02 02:48:55 bsmith Exp bsmith $*/
+/*$Id: pcsles.c,v 1.34 2000/09/11 15:19:40 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -101,7 +101,6 @@ static int PCView_SLES(PC pc,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCSetFromOptions_SLES"
 static int PCSetFromOptions_SLES(PC pc){
-  PC_SLES    *jac = (PC_SLES*)pc->data;
   int        ierr;
   PetscTruth flg;
 
