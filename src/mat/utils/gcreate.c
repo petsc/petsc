@@ -146,7 +146,6 @@ PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt
 PetscErrorCode MatSetFromOptions(Mat B)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
   char           mtype[256];
   PetscTruth     flg;
 
@@ -156,12 +155,7 @@ PetscErrorCode MatSetFromOptions(Mat B)
     ierr = MatSetType(B,mtype);CHKERRQ(ierr);
   }
   if (!B->type_name) {
-    ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
-    if (size == 1){
-      ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-    } else {
-      ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
-    }
+    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -213,6 +207,7 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   PetscOps       *Abops;
   MatOps         Aops;
   char           *mtype,*mname;
+  void           *spptr;
 
   PetscFunctionBegin;
   /* free all the interior data structures from mat */
@@ -227,6 +222,12 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   refct = A->refct;
   mtype = A->type_name;
   mname = A->name;
+  spptr = A->spptr;
+
+  if (C->spptr) {
+    ierr = PetscFree(C->spptr);CHKERRQ(ierr);
+    C->spptr = PETSC_NULL;
+  }
 
   /* copy C over to A */
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
@@ -238,6 +239,7 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   A->refct     = refct;
   A->type_name = mtype;
   A->name      = mname;
+  A->spptr     = spptr;
 
   ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
