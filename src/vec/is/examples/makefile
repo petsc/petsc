@@ -17,6 +17,8 @@ EXAMPLESC     = ex1.c ex2.c
 EXAMPLESF     = ex3.F
 EXAMPLES_3    = ex3
 RUNEXAMPLES_3 = runex3
+EXAMPLES_4    = ex1 ex2 
+RUNEXAMPLES_4 = runex1 runex2
 
 ex1: ex1.o chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(SLES_LIB)
