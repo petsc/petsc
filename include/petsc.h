@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.180 1997/10/01 22:47:58 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.181 1997/10/07 19:50:08 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -236,6 +236,9 @@ extern int  PetscFortranObjectToCObject(int,void *);
 extern int  MPICCommToFortranComm(MPI_Comm,int *);
 extern int  MPIFortranCommToCComm(int,MPI_Comm*);
 
+/*
+      Simple PETSc parallel IO for ASCII printing
+*/
 extern FILE *PetscFOpen(MPI_Comm,char *,char *);
 extern int  PetscFClose(MPI_Comm,FILE*);
 extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
