@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.146 2000/11/28 17:28:23 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.147 2000/11/30 16:43:05 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1147,7 +1147,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
     }
 
     if (ctx->packtogether) {
-      /* this version packs all the messages together and sends */
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
       len  = 4*sstarts[nsends];
       val  = svalues;
       for (i=0; i<len; i += 4) {
@@ -1160,7 +1160,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
       }
       ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
     } else {
-      /* this version packs and sends one at a time */
+      /* this version packs and sends one at a time, default */
       val  = svalues;
       for (i=0; i<nsends; i++) {
         iend = sstarts[i+1]-sstarts[i];
@@ -1261,44 +1261,81 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 
   /*  wait on receives */
   count = nrecvs;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    val      = rvalues + 4*rstarts[imdex];
-    lindices = indices + rstarts[imdex];
-    n        = rstarts[imdex+1] - rstarts[imdex];
+  if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
+    n        = rstarts[count+1] - rstarts[0];
+    val      = rvalues;
+    lindices = indices;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = val[0];
-        yv[idx+1] = val[1];
-        yv[idx+2] = val[2];
-        yv[idx+3] = val[3];
-        val      += 4;
+	idx       = lindices[i];
+	yv[idx]   = val[0];
+	yv[idx+1] = val[1];
+	yv[idx+2] = val[2];
+	yv[idx+3] = val[3];
+	val      += 4;
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   += val[0];
-        yv[idx+1] += val[1];
-        yv[idx+2] += val[2];
-        yv[idx+3] += val[3];
-        val       += 4;
+	idx       = lindices[i];
+	yv[idx]   += val[0];
+	yv[idx+1] += val[1];
+	yv[idx+2] += val[2];
+	yv[idx+3] += val[3];
+	val       += 4;
       }
 #if !defined(PETSC_USE_COMPLEX)
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {
-        idx       = lindices[i];
-        yv[idx]   = PetscMax(yv[idx],val[0]);
-        yv[idx+1] = PetscMax(yv[idx+1],val[1]);
-        yv[idx+2] = PetscMax(yv[idx+2],val[2]);
-        yv[idx+3] = PetscMax(yv[idx+3],val[3]);
-        val       += 4;
+	idx       = lindices[i];
+	yv[idx]   = PetscMax(yv[idx],val[0]);
+	yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+	yv[idx+3] = PetscMax(yv[idx+3],val[3]);
+	val       += 4;
       }
 #endif
     }  else {SETERRQ(1,"Wrong insert option");}
-    count--;
+  } else { /* unpack each message as it arrives, default version */
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      val      = rvalues + 4*rstarts[imdex];
+      lindices = indices + rstarts[imdex];
+      n        = rstarts[imdex+1] - rstarts[imdex];
+      if (addv == INSERT_VALUES) {
+        for (i=0; i<n; i++) {
+          idx       = lindices[i];
+          yv[idx]   = val[0];
+          yv[idx+1] = val[1];
+          yv[idx+2] = val[2];
+          yv[idx+3] = val[3];
+          val      += 4;
+        }
+      } else if (addv == ADD_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   += val[0];
+	  yv[idx+1] += val[1];
+	  yv[idx+2] += val[2];
+	  yv[idx+3] += val[3];
+	  val       += 4;
+	}
+#if !defined(PETSC_USE_COMPLEX)
+      } else if (addv == MAX_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx       = lindices[i];
+	  yv[idx]   = PetscMax(yv[idx],val[0]);
+	  yv[idx+1] = PetscMax(yv[idx+1],val[1]);
+	  yv[idx+2] = PetscMax(yv[idx+2],val[2]);
+	  yv[idx+3] = PetscMax(yv[idx+3],val[3]);
+	  val       += 4;
+	}
+#endif
+      }  else {SETERRQ(1,"Wrong insert option");}
+      count--;
+    }
   }
+
   /* wait on sends */
   if (nsends) {
     ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);
