@@ -141,6 +141,11 @@ for i in bmake/*/packages ; do
     sed "s/^DSCPACK_INCLUDE/#DSCPACK_INCLUDE/g" | sed "s/^DSCPACK_LIB/#DSCPACK_LIB/g" | \
     sed "s/^PETSC_HAVE_DSCPACK/#PETSC_HAVE_DSCPACK/g" | \
     sed "s/^HYPRE_INCLUDE/#HYPRE_INCLUDE/g" | sed "s/^HYPRE_LIB/#HYPRE_LIB/g" | sed "s/^PETSC_HAVE_HYPRE/#PETSC_HAVE_HYPRE/g" | \
+    sed "s/^UMFPACK_INCLUDE/#UMFPACK_INCLUDE/g" | sed "s/^UMFPACK_LIB/#UMFPACK_LIB/g" | sed "s/^PETSC_HAVE_UMFPACK/#PETSC_HAVE_UMFPACK/g" | \
+    sed "s/^PNETCDF_INCLUDE/#PNETCDF_INCLUDE/g" | sed "s/^PNETCDF_LIB/#PNETCDF_LIB/g" | sed "s/^PETSC_HAVE_PNETCDF/#PETSC_HAVE_PNETCDF/g" | \
+    sed "s/^HDF4_INCLUDE/#HDF4_INCLUDE/g" | sed "s/^HDF4_LIB/#HDF4_LIB/g" | sed "s/^PETSC_HAVE_HDF4/#PETSC_HAVE_HDF4/g" | \
+    sed "s/^MUMPS_INCLUDE/#MUMPS_INCLUDE/g" | sed "s/^MUMPS_LIB/#MUMPS_LIB/g" | sed "s/^PETSC_HAVE_MUMPS/#PETSC_HAVE_MUMPS/g" | \
+    sed "s/^SAMG_MOD/#SAMG_MOD/g" | sed "s/^SAMG_LIB/#SAMG_LIB/g" | sed "s/^PETSC_HAVE_SAMG/#PETSC_HAVE_SAMG/g" | \
     sed "s/^PCONF/#PCONF/g" > $i.tmp
   /bin/mv -f $i.tmp $i
 done
