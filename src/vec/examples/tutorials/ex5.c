@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.4 1995/08/21 16:05:48 curfman Exp curfman $";
+static char vcid[] = "$Id: ex20.c,v 1.5 1995/08/22 14:28:42 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -17,12 +17,13 @@ user-defined event logging.\n\n";
 
 int main(int argc,char **args)
 {
-  int     i, lm, m = 10, mytid, numtids, low, high, ldim, iglobal, ierr, fd;
+  int     i, lm, m = 10, mytid, numtids, low, high, ldim, iglobal, ierr;
   Scalar  v;
   Vec     u;
   IS      ind;
-  char    filename[10];
   VecType vtype;
+  Viewer  bview;
+  char    filename[10];
 
 #define VECTOR_GENERATE 76
 #define VECTOR_READ     77
@@ -48,15 +49,15 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
   ierr = VecAssemblyEnd(u); CHKERRA(ierr);
-  ierr = VecView(u,STDOUT_VIEWER); CHKERRA(ierr);
+  ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   MPIU_printf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
-/*  sprintf(filename,"vector.dat");
-  if ((fd = creat(filename, 0666)) == -1)
-    SETERRA(1,"Cannot create filename for writing."); */
-  ierr = PetscBinaryFileOpen("vector.dat",O_CREAT,&fd); CHKERRA(ierr);
-  ierr = VecViewBinary(u,fd); CHKERRA(ierr);
-  close(fd);
+
+  sprintf(filename,"vector.dat");
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,filename,BIN_CREAT,&bview); 
+  CHKERRA(ierr);
+  ierr = VecView(u,bview); CHKERRA(ierr);
+  ierr = ViewerDestroy(bview); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
   PLogEventEnd(VECTOR_GENERATE,0,0,0,0);
 
@@ -64,6 +65,7 @@ int main(int argc,char **args)
 
   /* All processors wait until test vector has been dumped */
   MPI_Barrier(MPI_COMM_WORLD);
+  PetscSleep(10);
 
   /* lm = number of locally owned vector elements */
   lm = m/numtids + ((m % numtids) > mytid);
@@ -74,17 +76,14 @@ int main(int argc,char **args)
   PLogEventRegister(VECTOR_READ,"Read Vector     ");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
-/*  sprintf(filename,"vector.dat");
-  if ((fd = open(filename, O_RDONLY, 0)) == -1) {
-    SETERRQ(1,"Cannot open filename for reading.");
-  } */
-  ierr = PetscBinaryFileOpen("vector.dat",O_RDONLY,&fd); CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,filename,BIN_RDONLY,&bview); 
+  CHKERRA(ierr);
   vtype = VECSEQ;
   if (OptionsHasName(0,"-mpi_objects") || numtids>1) vtype = VECMPI;
-  VecLoadBinary(MPI_COMM_WORLD,fd,vtype,ind,&u); CHKERRA(ierr);
-  close(fd);
+  ierr = VecLoad(MPI_COMM_WORLD,bview,vtype,ind,&u); CHKERRA(ierr);
+  ierr = ViewerDestroy(bview); CHKERRA(ierr);
   PLogEventEnd(VECTOR_READ,0,0,0,0);
-  VecView(u,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
+  ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = ISDestroy(ind); CHKERRA(ierr);
@@ -92,30 +91,3 @@ int main(int argc,char **args)
   return 0;
 }
 
-/*@
-   PetscBinaryFileOpen - Opens a file for binary input/output.
-
-   Input Parameters:
-.  name - name of file 
-.  type - type of file
-$    O_CREAT - create new file for binary output
-$    O_RDONLY - open existing file for binary input
-$    possibly others?
-
-   Output Parameter:
-.  fd - file descriptor
-
-.keywords - binary, file, open, input, output
-@*/
-PetscBinaryFileOpen(char *name,int type,int *fd)
-{
-  /* check for valid values of type? */
-  if ((*fd = open(name,type,0)) == -1) {
-    if (type == O_CREAT) {
-      SETERRQ(1,"PetscBinaryFileOpen: Cannot open file for writing");
-    } else if (type == O_RDONLY) {
-      SETERRQ(1,"PetscBinaryFileOpen: Cannot open file for reading");
-    } else SETERRQ(1,"PetscBinaryFileOpen: Cannot open file");
-  }
-  return 0;
-}
