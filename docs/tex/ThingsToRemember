@@ -93,7 +93,7 @@ brahma.ticam.utexas.edu
 
 SGI Power Challenge (IRIX64): 
 
-1) machine: davinci@nas.nasa.gov
+1) machine: davinci.nas.nasa.gov
    login ID: mcinnes
    password: petsc-password
    info: http://lovelace.nas.nasa.gov/Parallel/Cluster/
