@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.33 1998/12/03 03:57:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: xmon.c,v 1.34 1999/01/13 22:38:37 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -24,8 +24,6 @@ static char vcid[] = "$Id: xmon.c,v 1.33 1998/12/03 03:57:26 bsmith Exp curfman 
    Output Parameter:
 .  draw - the drawing context
 
-   Level: intermediate
-
    Options Database Key:
 .  -ksp_xmonitor - Sets line graph monitor
 
@@ -35,6 +33,8 @@ static char vcid[] = "$Id: xmon.c,v 1.33 1998/12/03 03:57:26 bsmith Exp curfman 
 .keywords: KSP, monitor, line graph, residual, create
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
+
+   Level: intermediate
 @*/
 int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
                        int n, DrawLG *draw)
@@ -79,11 +79,11 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
    Input Parameter:
 .  draw - the drawing context
 
-   Level: intermediate
-
 .keywords: KSP, monitor, line graph, destroy
 
 .seealso: KSPLGMonitorCreate(), KSPLGTrueMonitorDestroy(), KSPSetMonitor()
+
+   Level: intermediate
 @*/
 int KSPLGMonitorDestroy(DrawLG drawlg)
 {
@@ -115,8 +115,6 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
    Output Parameter:
 .  draw - the drawing context
 
-   Level: intermediate
-
    Options Database Key:
 .  -ksp_xtruemonitor - Sets true line graph monitor
 
@@ -127,6 +125,8 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
 .keywords: KSP, monitor, line graph, residual, create, true
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
+
+   Level: intermediate
 @*/
 int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,
                        int n, DrawLG *draw)
@@ -187,11 +187,11 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
    Input Parameter:
 .  draw - the drawing context
 
-   Level: intermediate
-
 .keywords: KSP, monitor, line graph, destroy, true
 
 .seealso: KSPLGTrueMonitorCreate(), KSPSetMonitor()
+
+   Level: intermediate
 @*/
 int KSPLGTrueMonitorDestroy(DrawLG drawlg)
 {
