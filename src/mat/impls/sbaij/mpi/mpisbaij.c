@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.13 2000/08/13 15:01:49 bsmith Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.14 2000/08/29 16:10:34 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2424,7 +2424,6 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
  
   PetscFunctionBegin;
   ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"matload_mpi is called \n");CHKERRA(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -2465,7 +2464,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
   for (i=0; i<=size;  i++) browners[i] = rowners[i]*bs;
   rstart = rowners[rank]; 
   rend   = rowners[rank+1]; 
-
+  
   /* distribute row lengths to all processors */
   locrowlens = (int*)PetscMalloc((rend-rstart)*bs*sizeof(int));CHKPTRQ(locrowlens);
   if (!rank) {
@@ -2479,7 +2478,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
   } else {
     ierr = MPI_Scatterv(0,0,0,MPI_INT,locrowlens,(rend-rstart)*bs,MPI_INT,0,comm);CHKERRQ(ierr);
   }
-
+  
   if (!rank) {
     /* calculate the number of nonzeros on each processor */
     procsnz = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(procsnz);
@@ -2533,7 +2532,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
     ierr = MPI_Get_count(&status,MPI_INT,&maxnz);CHKERRQ(ierr);
     if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"something is wrong with file");
   }
-  
+
   /* loop over local rows, determining number of off diagonal entries */
   dlens  = (int*)PetscMalloc(2*(rend-rstart+1)*sizeof(int));CHKPTRQ(dlens);
   odlens = dlens + (rend-rstart);
@@ -2565,10 +2564,9 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
     for (j=0; j<dcount; j++) mask[masked1[j]] = 0;
     for (j=0; j<odcount; j++) mask[masked2[j]] = 0; 
   }
-
+  
   /* create our matrix */
-  ierr = MatCreateMPISBAIJ(comm,bs,m,m,PETSC_DECIDE,PETSC_DECIDE,0,dlens,0,odlens,newmat);
-  /* ierr = MatCreateMPISBAIJ(comm,bs,m,PETSC_DECIDE,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat); */
+  ierr = MatCreateMPISBAIJ(comm,bs,m,m,PETSC_DETERMINE,PETSC_DETERMINE,0,dlens,0,odlens,newmat); 
   CHKERRQ(ierr);
   A = *newmat;
   MatSetOption(A,MAT_COLUMNS_SORTED); 
@@ -2586,11 +2584,12 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
     /* insert into matrix */
     jj      = rstart*bs;
     for (i=0; i<m; i++) {
-      ierr = MatSetValues_MPISBAIJ(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
       mycols += locrowlens[i];
       vals   += locrowlens[i];
       jj++;
     }
+
     /* read in other processors (except the last one) and ship out */
     for (i=1; i<size-1; i++) {
       nz   = procsnz[i];
@@ -2607,6 +2606,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
       ierr = MPI_Send(vals,nz+extra_rows,MPIU_SCALAR,size-1,A->tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
+
   } else {
     /* receive numeric values */
     buf = (Scalar*)PetscMalloc(nz*sizeof(Scalar));CHKPTRQ(buf);
@@ -2627,6 +2627,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
       jj++;
     }
   }
+
   ierr = PetscFree(locrowlens);CHKERRQ(ierr);
   ierr = PetscFree(buf);CHKERRQ(ierr);
   ierr = PetscFree(ibuf);CHKERRQ(ierr);
