@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.289 2001/05/15 02:51:07 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.290 2001/05/24 20:52:45 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -606,32 +606,6 @@ M*/
 */
 #if defined(hz)
 #undef hz
-#endif
-
-# define Scalar1 Scalar 
-
-#if defined(__cplusplus)
-
-  template <class C>    inline int PetscIndexOffPrecisionType(C a) {return 0;}
-  template <>           inline int PetscIndexOffPrecisionType <double>   (double a) {return 0;}
-  template <>           inline int PetscIndexOffPrecisionType <float>    (float a) {return 1;}
-//template <>           inline int PetscIndexOffPrecisionType <complex>  (complex a) {return 2;}
-//template <>           inline int PetscIndexOffPrecisionType <dcomplex> (dcomplex a) {return 3;}
-# define PETSCTEMPLATE1 template <> 
-# define PETSCTEMPLATE2 template <,> 
-# define PSCALAR1       <Scalar1>
-# define PETSCPTEMPLATEBEGIN1 template <class _Scalar1> inline
-# define PETSCPTEMPLATEEND    {return 0;} 
-
-#else
-# define PetscIndexOffPrecisionType(a) 0
-# define PETSCTEMPLATE1
-# define PETSCTEMPLATE2
-# define PSCALAR1
-# define PETSCPTEMPLATEBEGIN1 EXTERN
-# define PETSCPTEMPLATEEND    
-# define _Scalar1 Scalar
-
 #endif
 
 #endif

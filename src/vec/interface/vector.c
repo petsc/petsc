@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp balay $*/
+/*$Id: vector.c,v 1.229 2001/03/28 19:41:06 balay Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -383,16 +383,17 @@ $      x[i] = alpha * x[i], for i=1,...,n.
    Concepts: scaling^vector
 
 @*/
-int VecScale(const Scalar *alpha,Vec x)
+PETSCTEMPLATE1 int VecScale PSCALAR1 (const Scalar1 *alpha,Vec x)
 {
   int ierr;
+
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidScalarPointer(alpha);
   PetscValidType(x);
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->scale)(alpha,x);CHKERRQ(ierr);
+  ierr = (*x->ops->scale[PetscIndexOffPrecisionType(*alpha)])(alpha,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1088,7 +1089,7 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode 
    VecSetValue - Set a single entry into a vector.
 
    Synopsis:
-   void VecSetValue(Vec v,int row,Scalar value, InsertMode mode);
+   int VecSetValue(Vec v,int row,Scalar value, InsertMode mode);
 
    Not Collective
 
@@ -2165,7 +2166,7 @@ int VecReplaceArray(Vec vec,const Scalar array[])
     and makes them accessible via a Fortran90 pointer.
 
     Synopsis:
-    VecGetArrayF90(Vec x,int n,{Scalar, pointer :: y(:)},integer ierr)
+    VecDuplicateVecsF90(Vec x,int n,{Vec, pointer :: y(:)},integer ierr)
 
     Collective on Vec
 
@@ -2238,7 +2239,7 @@ M*/
     VecDestroyVecsF90 - Frees a block of vectors obtained with VecDuplicateVecsF90().
 
     Synopsis:
-    VecDestroyVecsF90({Scalar, pointer :: x(:)},integer n,integer ierr)
+    VecDestroyVecsF90({Vec, pointer :: x(:)},integer n,integer ierr)
 
     Input Parameters:
 +   x - pointer to array of vector pointers
@@ -2785,11 +2786,9 @@ int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,Scala
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       b[i*n+j] = aa + i*n*p + j*p - pstart;
-  CHKMEMQ;
     }
   }
   *a -= mstart;
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 

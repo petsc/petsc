@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.117 2001/03/28 19:40:58 balay Exp bsmith $ */
+/* $Id: petscvec.h,v 1.118 2001/04/18 14:36:07 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -104,7 +104,10 @@ EXTERN int VecNorm(Vec,NormType,PetscReal *);
 EXTERN int VecSum(Vec,Scalar*);
 EXTERN int VecMax(Vec,int*,PetscReal *);
 EXTERN int VecMin(Vec,int*,PetscReal *);
-EXTERN int VecScale(const Scalar*,Vec);    
+
+PETSCPTEMPLATEBEGIN1 int VecScale(const _Scalar1 *a,Vec v) PETSCPTEMPLATEEND;
+template <> int VecScale <double> (const double*,Vec);
+
 EXTERN int VecCopy(Vec,Vec);        
 EXTERN int VecSetRandom(PetscRandom,Vec);
 EXTERN int VecSet(const Scalar*,Vec);
@@ -150,7 +153,7 @@ EXTERN int VecAssemblyEnd(Vec);
 EXTERN int VecSetStashInitialSize(Vec,int,int);
 EXTERN int VecStashView(Vec,PetscViewer);
 
-#define VecSetValue(v,i,va,mode) \
+#define VecSetValue(v,i,va,mode) 0;\
 {int _ierr,_row = i; Scalar _va = va; \
   _ierr = VecSetValues(v,1,&_row,&_va,mode);CHKERRQ(_ierr); \
 }
