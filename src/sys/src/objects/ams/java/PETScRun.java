@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.4 2000/10/26 18:01:10 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.5 2000/11/03 21:30:37 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -50,19 +50,27 @@ public class PETScRun extends java.applet.Applet
 
     tpanel = new JPanel(new GridLayout(2,4));
     this.add(tpanel, BorderLayout.NORTH);
+      
       arch = new Choice();
-      arch.add("solaris");
-      arch.add("linux");
+      Enumeration keys = systems[MAXNP].keys();
+      while (keys.hasMoreElements()) {
+        arch.add((String)keys.nextElement());
+      }
       tpanel.add(arch);
         
       dir = new Choice();
-      dir.add("src/vec/examples/tutorials");
-      dir.add("src/snes/examples/tutorials");
+      keys = systems[EXAMPLES].keys();
+      while (keys.hasMoreElements()) {
+        dir.add((String)keys.nextElement());
+      }
       tpanel.add(dir);
 
       example = new Choice();
-      example.add("ex1");
-      example.add("ex1f");
+      ArrayList ex = (ArrayList)systems[EXAMPLES].get(systems[EXAMPLES].keys().nextElement());
+      Iterator its = ex.iterator();
+      while (its.hasNext()) {
+        example.add((String)its.next());
+      }
       tpanel.add(example);
 
       np = new Choice();
