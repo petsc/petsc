@@ -18,7 +18,8 @@ struct _p_PetscMap {
   PETSCHEADER(struct _PetscMapOps)
   PetscInt  n,N;         /* local, global vector size */
   PetscInt  rstart,rend; /* local start, local end + 1 */
-  PetscInt  *range;       /* the offset of each processor */
+  PetscInt  *range;      /* the offset of each processor */
+  PetscInt  bs;          /* number of elements in each block (generally for multi-component problems */
 };
 
 /* ----------------------------------------------------------------------------*/
