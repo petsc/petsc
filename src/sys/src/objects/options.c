@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.234 2000/04/27 03:06:18 bsmith Exp balay $*/
+/*$Id: options.c,v 1.235 2000/05/05 22:14:00 balay Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -721,23 +721,24 @@ int OptionsHasName(const char pre[],const char name[],PetscTruth *flg)
 {
   char       *value;
   int        ierr;
-  PetscTruth isfalse;
+  PetscTruth isfalse,flag;
 
   PetscFunctionBegin;
-  ierr = OptionsFindPair_Private(pre,name,&value,flg);CHKERRQ(ierr);
+  ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
 
   /* remove if turned off */
-  if (*flg) {    
+  if (flag) {    
     ierr = PetscStrcmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
-    if (isfalse) *flg = PETSC_FALSE;
+    if (isfalse) flag = PETSC_FALSE;
     ierr = PetscStrcmp(value,"NO",&isfalse);CHKERRQ(ierr);
-    if (isfalse) *flg = PETSC_FALSE;
+    if (isfalse) flag = PETSC_FALSE;
     ierr = PetscStrcmp(value,"0",&isfalse);CHKERRQ(ierr);
-    if (isfalse) *flg = PETSC_FALSE;
+    if (isfalse) flag = PETSC_FALSE;
     ierr = PetscStrcmp(value,"false",&isfalse);CHKERRQ(ierr);
-    if (isfalse) *flg = PETSC_FALSE;
+    if (isfalse) flag = PETSC_FALSE;
     ierr = PetscStrcmp(value,"no",&isfalse);CHKERRQ(ierr);
   }
+  if (flg) *flg = flag;
 
   PetscFunctionReturn(0);
 }
