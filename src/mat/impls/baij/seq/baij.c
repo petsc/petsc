@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.166 1999/03/04 22:35:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.167 1999/03/17 23:23:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -149,6 +149,7 @@ int MatDestroy_SeqBAIJ(Mat A)
   if (a->solve_work) PetscFree(a->solve_work);
   if (a->mult_work) PetscFree(a->mult_work);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
+  if (a->saved_values) PetscFree(a->saved_values);
   PetscFree(a); 
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
@@ -1333,6 +1334,52 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        0,
        MatGetMaps_Petsc};
 
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "MatStoreValues_SeqBAIJ"
+int MatStoreValues_SeqBAIJ(Mat mat)
+{
+  Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)mat->data;
+  int         nz = aij->i[aij->m]*aij->bs*aij->bs2;
+
+  PetscFunctionBegin;
+  if (aij->nonew != 1) {
+    SETERRQ(1,1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+  }
+
+  /* allocate space for values if not already there */
+  if (!aij->saved_values) {
+    aij->saved_values = (Scalar *) PetscMalloc(nz*sizeof(Scalar));CHKPTRQ(aij->saved_values);
+  }
+
+  /* copy values over */
+  PetscMemcpy(aij->saved_values,aij->a,nz*sizeof(Scalar));
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "MatRetrieveValues_SeqAIJ"
+int MatRetrieveValues_SeqAIJ(Mat mat)
+{
+  Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)mat->data;
+  int         nz = aij->i[aij->m]*aij->bs*aij->bs2;
+
+  PetscFunctionBegin;
+  if (aij->nonew != 1) {
+    SETERRQ(1,1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+  }
+  if (!aij->saved_values) {
+    SETERRQ(1,1,"Must call MatStoreValues(A);first");
+  }
+
+  /* copy values over */
+  PetscMemcpy(aij->a, aij->saved_values,nz*sizeof(Scalar));
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqBAIJ"
 /*@C
@@ -1452,6 +1499,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->col              = 0;
   b->icol             = 0;
   b->reallocs         = 0;
+  b->saved_values     = 0;
   
   b->m       = m; B->m = m; B->M = m;
   b->n       = n; B->n = n; B->N = n;
@@ -1509,6 +1557,12 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
 
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",
+                                     "MatStoreValues_SeqBAIJ",
+                                     (void*)MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
+                                     "MatRetrieveValues_SeqBAIJ",
+                                     (void*)MatRetrieveValues_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
                                      "MatSeqBAIJSetColumnIndices_SeqBAIJ",
                                      (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);

@@ -49,7 +49,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             | sed 's/bullet://g' \
             | sed 's/$$ //g' \
             > manual.html
-	-@/bin/rm  ../../splitmanual/*
+	-@/bin/rm -f ../../splitmanual/*
 	-mv manual.html *.xbm ../../manual
 	-@chmod ug+w www.cit ../../manual/*
 	rm -f  latex.err findex.tex sindex.tex tmp.html manual_html.html
@@ -65,7 +65,7 @@ manual/manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	       -mapref ../../manualpages/manualpages.cit 
 	-@chmod g+w manual.hux latex.err 
 	-@chmod -R ug+w splitmanual
-	-@/bin/rm -r ../../splitmanual
+	-@/bin/rm -rf ../../splitmanual
 	-mv manual splitmanual
 	-mv splitmanual ../..
 	-@chmod ug+w ../../splitmanual www.cit 
