@@ -775,22 +775,29 @@ int Update(DMMG *dmmg)
       SETERRQ1(1,"Saved solution at time %g",tsCtx->t);
     }
 
-    if (ts_monitor) {
-      ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-      ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRQ(ierr);
-      ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
-      ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
+    if (ts_monitor)
+    {
+      ierr = SNESGetIterationNumber(snes, &its); CHKERRQ(ierr);
+      ierr = SNESGetNumberLinearIterations(snes, &lits); CHKERRQ(ierr);
+      ierr = SNESGetNumberUnsuccessfulSteps(snes, &nfails); CHKERRQ(ierr);
+      ierr = SNESGetFunctionNorm(snes, &tsCtx->fnorm); CHKERRQ(ierr);
+
       nfailsCum += nfails;
-      if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Time Step %d time = %g Newton steps %d linear steps %d fnorm %g\n",
-			 tsCtx->itstep, tsCtx->t, its, lits, tsCtx->fnorm);
+      if (nfailsCum >= 2)
+        SETERRQ(1, "unable to find a newton step");
+
+      ierr = PetscPrintf(PETSC_COMM_WORLD,
+                         "time step = %d, time = %g, number of nonlinear steps = %d, "
+                         "number of linear steps = %d, norm of the function = %g\n",
+			 tsCtx->itstep + 1, tsCtx->t, its, lits, tsCtx->fnorm);
       CHKERRQ(ierr);
 
       /* send solution over to Matlab, to be visualized (using ex29.m) */
-      if (!user->param->PreLoading && tsCtx->socketviewer){
+      if (!user->param->PreLoading && tsCtx->socketviewer)
+      {
         Vec v;
-        ierr = SNESGetSolution(snes,&v);CHKERRQ(ierr);
-        ierr = VecView(v,tsCtx->socketviewer);CHKERRQ(ierr);
+        ierr = SNESGetSolution(snes, &v); CHKERRQ(ierr);
+        ierr = VecView(v, tsCtx->socketviewer); CHKERRQ(ierr);
       }
     }
 
@@ -800,7 +807,7 @@ int Update(DMMG *dmmg)
         CHKERRQ(ierr);
       }
 
-      if (0 && ts_monitor) {
+      if (1 && ts_monitor) {
 	/* compute maxima */
 	ComputeMaxima((DA) dmmg[param->mglevels-1]->dm,
                       dmmg[param->mglevels-1]->x,
