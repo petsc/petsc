@@ -47,7 +47,7 @@ X  Remove reference to PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_INFO fro
 
 X  Change tutorial examples that use DACreateLocalVector() to use DAGet/RestoreLocalVector()
 
-  add manual page info for all enums and public structs with /*S and /*E
+*  add manual page info for all enums and public structs with /*S and /*E
 
   firx baij, sbaij, and adj to print ASCII matrix out in matlab format.
 
