@@ -20,7 +20,7 @@ petsc/src/contrib/dfvec/examples/ex4.c
 petsc/src/contrib/dfvec/examples/ex5.c
 petsc/src/contrib/dfvec/examples/ex20.c
 petsc/mis
-petsc/bmake/sun4_umpi
+petsc/bmake/rs6000_lam
 petsc/bmake/rs6000_impi
 petsc/bmake/rs6000_mpif
 petsc/bmake/rs6000_p4
