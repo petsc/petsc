@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.19 1996/03/05 01:00:20 curfman Exp curfman $";
+static char vcid[] = "$Id: zmat.c,v 1.20 1996/03/06 14:00:12 curfman Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -94,6 +94,14 @@ void matgetarray_(Mat mat,Scalar *fa,int *ia, int *__ierr)
   Scalar *mm;
   *__ierr = MatGetArray((Mat)MPIR_ToPointer( *(int*)(mat) ),&mm);
   *ia = PetscScalarAddressToFortran(fa,mm);
+}
+
+void matrestorearray_(Mat mat,Scalar *fa,int *ia,int *__ierr)
+{
+  Mat    min = (Mat)MPIR_ToPointer( *(int*)(mat) );
+  Scalar *lx = PetscScalarAddressFromFortran(fa,*ia);
+
+  *__ierr = MatRestoreArray(min,&lx);
 }
 
 void mattranspose_(Mat mat,Mat *B, int *__ierr )
