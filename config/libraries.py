@@ -16,6 +16,8 @@ class Configure(config.base.Configure):
     '''Leave full library path arguments unchanged, otherwise return -l<name> form'''
     if len(libName) > 3 and libName[-4:] == '.lib':
       return libName
+    if not libName:
+      return libName
     return '-l'+libName
 
   def getDefineName(self, libName):
