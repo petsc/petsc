@@ -1,4 +1,4 @@
-/*$Id: xyt.c,v 1.3 2001/04/11 02:42:20 balay Exp balay $*/
+/*$Id: xyt.c,v 1.4 2001/04/11 13:30:39 balay Exp balay $*/
 /*************************************xyt.c************************************
 Module Name: xyt
 Module Info:
@@ -87,7 +87,6 @@ static int fn_xyt_handles=0;
 static xyt_ADT fhandles[MAX_FORTRAN_HANDLES+1];
 
 /* prototypes */
-double sqrt(double);
 static void do_xyt_solve(xyt_ADT xyt_handle, REAL *rhs);
 static void check_init(void);
 static void check_handle(xyt_ADT xyt_handle);
@@ -1239,18 +1238,24 @@ det_separators(xyt_ADT xyt_handle)
     {
       if (lhs[i]!=0.0)
 	{rsum[0]+=1.0/lhs[i]; rsum[1]+=lhs[i];}
+
+      if (lhs[i]!=1.0)
+	{
+          shared=TRUE;
+        }
     }
+
   grop_hc(rsum,rw,2,op,level);
   rsum[0]+=0.1;
   rsum[1]+=0.1;
-  /*   if (!my_id)
-    {
+
+  /*  
+      if (!my_id)
+      {
       printf("xyt n unique = %d (%g)\n",(int) rsum[0], rsum[0]);
       printf("xyt n shared = %d (%g)\n",(int) rsum[1], rsum[1]);
-      }  */
-
-  if (fabs(rsum[0]-rsum[1])>EPS)
-    {shared=TRUE;}
+      }
+  */
 
   xyt_handle->info->n_global=xyt_handle->info->m_global=(int) rsum[0];
   xyt_handle->mvi->n_global =xyt_handle->mvi->m_global =(int) rsum[0];
