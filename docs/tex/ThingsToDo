@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Man pages for PetscMalloc()/PetscFree()?
+
   Redue src/snes/examples/tutorials/ex5s.c and .F with OpenMP and merge with ex5.c
 
   Fix ex5f90.F to match ex5.c modern stuff
