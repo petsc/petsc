@@ -1,15 +1,15 @@
-#PETSC_DIR = ../../../..
+
 ALL: ex1
 
-CFLAGS 	        =	  $(CPPFLAGS)  -D__DIR__='"$(LOCDIR)"'
+CFLAGS 	        =	  $(CPPFLAGS)  -D__SDIR__='"$(LOCDIR)"'
 FFLAGS	        = 
 SOURCEC	        = 
 SOURCEF	        =
 SOURCEH	        =
 OBJSC	        =
 OBJSF	        =
-LIBBASE	        = libpetscmat
-LOCDIR          = src/mat/examples/tutorials/
+LIBBASE	        = 
+LOCDIR          = src/contrib/spai/examples/tutorials/
 TESTEXAMPLES_1  =
 TESTEXAMPLES_2  =
 TESTEXAMPLES_3  =
@@ -25,12 +25,18 @@ BUILDEXAMPLES_6 =
 BUILDEXAMPLES_7 =
 BUILDEXAMPLES_9 =
 
-EXAMPLESC      = 
-EXAMPLESF      =
+EXAMPLESC       = ex1.c ex2.c
+EXAMPLESF       =
+
+SPAI_LIB        = /home/bsmith/spai_1.1/lib/$(PETSC_ARCH)/libspai.a
 
 ex1: ex1.o  chkopts
-	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB) 
+	-$(CLINKER)  -o ex1 ex1.o $(PETSC_CONTRIB)  $(SPAI_LIB) $(PETSC_LIB) 
 	$(RM) ex1.o
+
+ex2: ex2.o  chkopts
+	-$(CLINKER)  -o ex2 ex2.o $(PETSC_CONTRIB)  $(SPAI_LIB) $(PETSC_LIB) 
+	$(RM) ex2.o
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
