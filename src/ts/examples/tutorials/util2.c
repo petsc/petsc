@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.10 1999/05/04 20:36:56 balay Exp bsmith $";
+static char vcid[] = "$Id: util2.c,v 1.11 1999/05/12 03:33:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -75,7 +75,7 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
 
   ierr = VecGetSize(xx1,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end);CHKERRQ(ierr);
-  VecGetArray(xx1,&xx);
+  ierr = VecGetArray(xx1,&xx);CHKERRQ(ierr);
   ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1);CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time.
