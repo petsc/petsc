@@ -37,7 +37,7 @@ extern void   *malloc(long unsigned int );
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern int    abort();
-extern int    exit(int);
+extern void   exit(int);
 }
 
 #else
