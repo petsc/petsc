@@ -1,4 +1,4 @@
-/* $Id: spops.h,v 1.2 1995/05/03 15:56:22 bsmith Exp $ */
+/* $Id: ilu.h,v 1.2 1997/03/26 01:34:10 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -9,9 +9,11 @@
 #define __ILU_H
 
 #include "pinclude/plapack.h"
-int  Linpack_DGEFA(Scalar *,int, int *);
-int  Linpack_DGEDI(Scalar *,int, int *,Scalar*);
-int  Kernel_A_gets_inverse_A_3(Scalar *);
+extern int  Linpack_DGEFA(Scalar *,int, int *);
+extern int  Linpack_DGEDI(Scalar *,int, int *,Scalar*);
+extern int  Kernel_A_gets_inverse_A_3(Scalar *);
+extern int  Kernel_A_gets_inverse_A_4(Scalar *);
+extern int  Kernel_A_gets_inverse_A_5(Scalar *);
 
 /*
       A = A * B   A_gets_A_times_B

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.122 1997/05/23 18:35:37 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.123 1997/06/05 12:57:14 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -188,6 +188,10 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold,&flg);CHKERRQ(ierr);
+
+  ierr = OptionsHasName(snes->prefix,"-snes_no_convergence_test",&flg); CHKERRQ(ierr);
+  if (flg) {snes->converged = 0;}
+
   ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
                                   alpha2,threshold); CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_cancelmonitors",&flg); CHKERRQ(ierr);
@@ -281,6 +285,7 @@ int SNESPrintHelp(SNES snes)
     PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian and user-provided preconditioning matrix\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_no_convergence_test: Do not test for convergence, always run to SNES max its\n",p);
     PetscPrintf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
     PetscPrintf(snes->comm,
      "     %ssnes_ksp_ew_version <version> (1 or 2, default is %d)\n",p,kctx->version);

@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.40 1997/04/10 00:08:29 bsmith Exp balay $;
+C  $Id: petsc.h,v 1.41 1997/04/16 15:19:24 balay Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -76,11 +76,13 @@ C
 #if defined(PETSC_COMPLEX)
 #define PetscReal(a) real(a)
 #if defined(PARCH_t3d)
-#define Scalar  complex
+#define Scalar        complex
 #define DoubleComplex complex
+#define MPIU_SCALAR   MPI_COMPLEX
 #else
-#define Scalar  double complex
+#define Scalar        double complex
 #define DoubleComplex double complex
+#define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
 #endif
 C
 C     Representation of complex i
@@ -90,9 +92,11 @@ C
 #else
 #define PetscReal(a) a
 #if defined(PARCH_t3d)
-#define Scalar  real
+#define Scalar       real
+#define MPIU_SCALAR  MPI_REAL
 #else
-#define Scalar  double precision
+#define Scalar       double precision
+#define MPIU_SCALAR  MPI_DOUBLE_PRECISION
 #endif
 #endif
 

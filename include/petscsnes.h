@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.59 1997/03/31 18:35:32 bsmith Exp balay $ */
+/* $Id: snes.h,v 1.60 1997/05/23 18:33:54 balay Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -84,6 +84,7 @@ extern int SNESConverged_EQ_LS(SNES,double,double,double,void*);
 extern int SNESConverged_EQ_TR(SNES,double,double,double,void*);
 extern int SNESSetLineSearch(SNES,int(*)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
+extern int SNESNoLineSearchNoNorms(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESCubicLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESQuadraticLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 

@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.21 1997/02/22 02:22:33 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.22 1997/06/12 22:09:51 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -65,8 +65,10 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
   } else if (type == NORM_1_AND_2) {
     double temp[2];
     VecNorm_Seq( xin, NORM_1, temp );
-    VecNorm_Seq( xin, NORM_2, temp+1 );
+    VecNorm_Seq( xin, NORM_2, temp+1 ); 
+    temp[1] = temp[1]*temp[1];
     MPI_Allreduce( temp, z,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+    z[1] = sqrt(z[1]);
   }
   return 0;
 }

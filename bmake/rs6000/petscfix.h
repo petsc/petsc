@@ -155,6 +155,7 @@ extern int    free(void *);
 extern void   *malloc(long unsigned int );
 extern int    abort();
 extern void   exit(int);
+extern int    strcasecmp(const char *,const char *);
 }
 
 #else
