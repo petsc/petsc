@@ -515,6 +515,7 @@ class Configure(config.base.Configure):
       self.include.append(' -DMPIUNI_USE_STDCALL')
     self.lib = ['-L${PETSC_DIR}/lib/${PETSC_ARCH}','-lmpiuni']
     self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
+    self.addMakeMacro('MPIRUN','${PETSC_DIR}/bin/mpirun.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)

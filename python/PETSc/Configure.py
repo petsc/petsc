@@ -107,11 +107,11 @@ class Configure(config.base.Configure):
 
     if 'FC' in self.framework.argDB:
 
+      self.setCompilers.pushLanguage('FC')
       # need FPPFLAGS in config/setCompilers
       self.addMakeMacro('FPP_FLAGS',self.setCompilers.CPPFLAGS)
     
       # compiler values
-      self.setCompilers.pushLanguage('FC')
       self.addMakeMacro('FC',self.setCompilers.getCompiler())
       self.addMakeMacro('FC_FLAGS',self.setCompilers.getCompilerFlags())    
       self.setCompilers.popLanguage()

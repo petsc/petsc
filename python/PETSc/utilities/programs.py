@@ -33,9 +33,11 @@ class Configure(config.base.Configure):
 
   def configurePrograms(self):
     '''Check for the programs needed to build and run PETSc'''
+    # should generate error if cannot locate one
     self.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
     self.getExecutable('sed',  getFullPath = 1)
     self.getExecutable('mv',   getFullPath = 1)
+    self.getExecutable('cp',   getFullPath = 1)
     self.getExecutable('diff', getFullPath = 1)
     self.getExecutable('rm -f',getFullPath = 1, resultName = 'RM')
     # check if diff supports -w option for ignoring whitespace

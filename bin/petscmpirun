@@ -4,6 +4,10 @@
 #    Uses PETSC_ARCH and PETSC_DIR plus the MPIRUN command in
 #  packages to run mpirun
 #
+if ( ! $?PETSC_ARCH ) then
+  set PETSC_ARCH = `grep PETSC_ARCH ${PETSC_DIR}/bmake/petscconf | cut -f2 -d=`
+endif
+
 set MPI_BUILD_HOME = `grep MPI_BUILD_HOME ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | grep -v mpirun | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
 set MPI_HOME = `grep "MPI_HOME " ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
 set run = `grep MPIRUN ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | grep -v "#MPIRUN" | cut -f2 -d=`

@@ -461,8 +461,8 @@ EXTERN PetscErrorCode MatGetVecs(Mat,Vec*,Vec*);
 
    Input Parameters:
 +  comm - the communicator that will share the eventually allocated matrix
-.  nrows - the number of rows in the matrix
--  ncols - the number of columns in the matrix
+.  nrows - the number of LOCAL rows in the matrix
+-  ncols - the number of LOCAL columns in the matrix
 
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
@@ -502,8 +502,8 @@ M*/
 
    Input Parameters:
 +  comm - the communicator that will share the eventually allocated matrix
-.  nrows - the number of rows in the matrix
--  ncols - the number of columns in the matrix
+.  nrows - the number of LOCAL rows in the matrix
+-  ncols - the number of LOCAL columns in the matrix
 
    Output Parameters:
 +  dnz - the array that will be passed to the matrix preallocation routines
