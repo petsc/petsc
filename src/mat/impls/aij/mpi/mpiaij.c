@@ -648,12 +648,18 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
   int        M,N,first,last,*notme,i, ierr;
 
   PetscFunctionBegin;
+
+  /* Compatible types */
   ierr = MatGetType(Bmat,&type); CHKERRQ(ierr);
   ierr = PetscStrcmp(type,MATMPIAIJ,f); CHKERRQ(ierr);
-  if (!*f) SETERRQ(1,"Second matrix needs to be SeqAIJ too");
+  if (!*f) SETERRQ(1,"Second matrix needs to be MPIAIJ too");
+
+  /* Easy test: symmetric diagonal block */
+  Bij = (Mat_MPIAIJ *) Bmat->data; B = Bij->B;
   ierr = MatIsSymmetric(A,B,f); CHKERRQ(ierr);
   if (!*f) PetscFunctionReturn(0);
-  Bij = (Mat_MPIAIJ *) Bmat->data; B = Bij->B;
+
+  /* Hard test: off-diagonal block. This takes a MatGetSubMatrix. */
   ierr = MatGetSize(Amat,&M,&N); CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&first,&last); CHKERRQ(ierr);
   ierr = PetscMalloc((N-last+first)*sizeof(int),&notme); CHKERRQ(ierr);
@@ -667,6 +673,9 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
     (B,Notme,Me,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Boff); CHKERRQ(ierr);
   ierr = MatIsSymmetric(Aoff,Boff,f); CHKERRQ(ierr);
   ierr = MatDestroy(Boff); CHKERRQ(ierr);
+  ierr = ISDestroy(Me); CHKERRQ(ierr);
+  ierr = ISDestroy(Notme); CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
