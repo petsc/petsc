@@ -46,7 +46,7 @@ int PetscViewerFlush_Draw(PetscViewer v)
 
     Not collective (but PetscDraw returned will be parallel object if PetscViewer is)
 
-    Input Parameter:
+    Input Parameters:
 +  viewer - the PetscViewer (created with PetscViewerDrawOpen()
 -   windownumber - indicates which subwindow (usually 0)
 

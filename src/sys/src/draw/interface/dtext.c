@@ -13,7 +13,8 @@
 
    Input Parameters:
 +  draw - the drawing context
-.  xl,yl - the coordinates of lower left corner of text
+.  xl - the coordinates of lower left corner of text
+.  yl - the coordinates of lower left corner of text
 .  cl - the color of the text
 -  text - the text to draw
 

@@ -502,7 +502,7 @@ void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,vo
 {
   *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,*ctx,mat);
   if (*ierr) return;
-  *ierr = PetscMalloc(sizeof(void *),&((PetscObject)*mat)->fortran_func_pointers);
+  *ierr = PetscMalloc(4*sizeof(void *),&((PetscObject)*mat)->fortran_func_pointers);
 }
 
 static int ourmult(Mat mat,Vec x,Vec y)
@@ -512,11 +512,41 @@ static int ourmult(Mat mat,Vec x,Vec y)
   return ierr;
 }
 
+static int ourmulttranspose(Mat mat,Vec x,Vec y)
+{
+  int              ierr = 0;
+  (*(int (PETSC_STDCALL *)(Mat*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[2]))(&mat,&x,&y,&ierr);
+  return ierr;
+}
+
+static int ourmultadd(Mat mat,Vec x,Vec y,Vec z)
+{
+  int              ierr = 0;
+  (*(int (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[1]))(&mat,&x,&y,&z,&ierr);
+  return ierr;
+}
+
+static int ourmulttransposeadd(Mat mat,Vec x,Vec y,Vec z)
+{
+  int              ierr = 0;
+  (*(int (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[3]))(&mat,&x,&y,&z,&ierr);
+  return ierr;
+}
+
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,int (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,int*),int *ierr)
 {
   if (*op == MATOP_MULT) {
     *ierr = MatShellSetOperation(*mat,*op,(void(*)())ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (void(*)())f;
+  } else if (*op == MATOP_MULT_TRANSPOSE) {
+    *ierr = MatShellSetOperation(*mat,*op,(void(*)())ourmulttranspose);
+    ((PetscObject)*mat)->fortran_func_pointers[2] = (void(*)())f;
+  } else if (*op == MATOP_MULT_ADD) {
+    *ierr = MatShellSetOperation(*mat,*op,(void(*)())ourmultadd);
+    ((PetscObject)*mat)->fortran_func_pointers[1] = (void(*)())f;
+  } else if (*op == MATOP_MULT_TRANSPOSE_ADD) {
+    *ierr = MatShellSetOperation(*mat,*op,(void(*)())ourmulttransposeadd);
+    ((PetscObject)*mat)->fortran_func_pointers[3] = (void(*)())f;
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");
