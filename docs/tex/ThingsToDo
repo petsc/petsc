@@ -7,8 +7,6 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  - Heavily comment the CG code like the pc/impls/jacobi code is, to make it
-    easy for people to clone
 
   - Crank-Nicholson - finish TS implementation!! done only for linear constant coeff case!
 
@@ -1074,3 +1072,5 @@ are drawn on top of the contour plots (that's a separate problem).
 
  X add in the vecpipeline stuff in vec/utils
 
+ X Heavily comment the CG code like the pc/impls/jacobi code is, to make it
+    easy for people to clone
