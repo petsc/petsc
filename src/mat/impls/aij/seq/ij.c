@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.4 1995/03/06 04:03:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: ij.c,v 1.5 1995/03/23 22:01:19 curfman Exp curfman $";
 #endif
-
 
 #include "aij.h"
 
 /*
-  SpToSymmetricIJ - Convert a sparse AIJ matrix to IJ format 
+  SpToSymmetricIJ_AIJ - Convert a sparse AIJ matrix to IJ format 
            (ignore the "A" part)
            Allocates the space needed. Uses only the lower triangular 
            part of the matrix.
@@ -30,7 +29,7 @@ static char vcid[] = "$Id: ij.c,v 1.4 1995/03/06 04:03:09 bsmith Exp curfman $";
     those routines call SparsePak routines that expect a symmetric 
     matrix.
 */
-int SpToSymmetricIJ( Mat_AIJ *Matrix, int **iia, int **jja )
+int SpToSymmetricIJ_AIJ( Mat_AIJ *Matrix, int **iia, int **jja )
 {
   int          *work,*ia,*ja,*j,i, nz, n, row, wr;
   register int col;
