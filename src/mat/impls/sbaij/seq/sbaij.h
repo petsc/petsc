@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.15 2000/10/24 20:26:00 bsmith Exp hzhang $ */
+/* $Id: sbaij.h,v 1.16 2000/10/28 19:24:42 hzhang Exp hzhang $ */
 
 #include "src/mat/matimpl.h"
 
@@ -46,7 +46,6 @@ extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 extern int MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat,Mat*);
-extern int MatSolve_SeqSBAIJ_2(Mat,Vec,Vec);
 extern int MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
 
