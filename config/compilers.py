@@ -429,7 +429,16 @@ class Configure(config.base.Configure):
       flag = '-g'
       if self.checkCompilerFlag(flag):
         self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS']+' '+flag
+      # see if compiler (ifc) bitches about real*8, if so try using -w90 -w to eliminate bitch
+      (output, returnCode) = self.outputCompile('', '      real*8 variable', 1)
+      if output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
+        flag = self.framework.argDB['FFLAGS']
+        self.framework.argDB['FFLAGS'] += ' -w90 -w'
+        (output, returnCode) = self.outputCompile('', '      real*8 variable', 1)
+        if returnCode or output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
+          self.framework.argDB['FFLAGS'] = flag          
       self.popLanguage()
+
     self.addSubstitution('FFLAGS', self.framework.argDB['FFLAGS'])
     return
 
@@ -666,12 +675,18 @@ class Configure(config.base.Configure):
 
     # check these monster libraries work from C++
     if self.framework.argDB['CXX']:
-      oldLibs = self.framework.argDB['LIBS']
-      self.framework.argDB['LIBS'] += ' '+self.flibs
+      self.framework.argDB['LIBS'] += oldLibs+self.flibs
       try:
         self.checkCompiler('C++')
       except:
-        raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
+        # try removing this one causes grief with gnu g++ and Intel Fortran
+        self.flibs = re.sub('-lintrins','',self.flibs)
+        self.framework.argDB['LIBS'] = oldLibs+self.flibs
+        try:
+          self.checkCompiler('C++')
+        except:
+          raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
+
 
     self.framework.argDB['LIBS'] = oldLibs
     self.addSubstitution('FLIBS', self.flibs)
