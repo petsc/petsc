@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.79 2000/09/26 17:57:07 bsmith Exp bsmith $ 
+# $Id: builddist,v 1.80 2000/11/27 16:30:22 bsmith Exp bsmith $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -36,6 +36,7 @@ setenv PETSC_DIR /home/bsmith/petsc
 cd /home/bsmith/petsc
 make ACTION=clean tree
 \rm -f bmake/*/petscmachineinfo.h
+\rm -f bin/matlab/*
 #
 #/bin/rm -f ~/petsc
 #
