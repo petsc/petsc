@@ -1,27 +1,31 @@
 
 /*
-       Defines some simple data structures for writing cell (element) based PDE codes.
+       Defines some simple data structures for writing cell (element) based PDE code
+    for solving multi-component nonlinear PDE like Burgers equation.
 
-    Generally one would write a code by starting with the data structures below and 
-    and to them and deleting from them unneeded information. 
 */
 #if !defined(__APPCTX_H)
 #define __APPCTX_H
 
-#include "ao.h"
-#include "snes.h"
-#include "bitarray.h"
+#include "petscao.h"        /* allows using the PETSc AOData-base routines for grid information */
+#include "petscsnes.h"      /* allows using PETSc nonlinear solvers */
+#include "petscba.h"       /* allows using PETSc's logical bit arrays */
 
+/*--------------------------------------------------------------------
+
+    The AppGrid data structure:
+      contains all the information about the grid cells, vertices boundaries etc. 
+      It is created by Appload() (see appload.c) from the AO database.
+*/
 /*
-        cell_n               - number of cells on this processor 
+
         cell_vertex          - vertices of the cells (in local numbering)
         cell_global          - global number of each cell on this processor
-        cell_cell            - neighbors of the cell.  (-1) indicates no neighbor.
-                               ordering cycles clockwise from left
+        cell_cell            - 
         vertex_n             - number of unique vertices on this processor 
         vertex_n_ghosted     - number of vertices including ghost ones
         vertex_global        - global number of each vertex on this processor
-        vertex_value         - x,y coordinates of vertices on this processor
+        vertex_value         - 
         vertex_boundary      - list of on processor vertices (including ghosts)
                                that are on the boundary
        vertex_global_blocked       - the list of vertices expanded by a facter of 
@@ -37,14 +41,25 @@
 */
         
 typedef struct {
-  int                    cell_n;
+  /********* Data structures for cells ************/
+  int                    cell_n;          /* number of cells on this process */
+
+  /* ---- index  for each of the 4 vertices of a given cell in the local (per processor) numbering */
   int                    *cell_vertex;
+
   IS                     cell_global;
-  int                    *cell_cell;
-  int                    vertex_n,vertex_n_ghosted;
+
+  /* neighbors of the cell.  (-1) indicates no neighbor. ordering cycles clockwise */
+  int                    *cell_neighbors;
+
+  /********* Data structures for vertices ************/
+  int                    vertex_n; /* number of distinct vertices on local cells, including ghost vertices*/
+  int                    vertex_local_n; /* number of distinct vertices on local cells, excluding ghost vertices */
+
   IS                     vertex_global;
 
-  double                 *vertex_value;
+  double                 *vertex_coords; /* x,y coordinates of vertices on this processor */
+
   PetscBT                vertex_boundary_flag;
   IS                     vertex_boundary;
   IS                     vertex_global_blocked;  /* for 2 degrees of freedom */
@@ -147,27 +162,27 @@ extern int AppCtxGraphics(AppCtx *);
 extern int AppCtxViewMatlab(AppCtx*);
 
 
- double f(double, double); 
- double g(double, double); 
- double bc1(double, double); 
- double bc2(double, double); 
-double soln(double, double);
+ double pde_f(double, double); 
+ double pde_g(double, double); 
+ double pde_bc1(double, double); 
+ double pde_bc2(double, double); 
+double pde_soln(double, double);
 
 int AppCtxSetRhs(AppCtx*);
 int AppCtxCreateVector(AppCtx*);
 int AppCtxSetMatrix(AppCtx*);
 int AppCtxCreateMatrix(AppCtx*);
-int FormFunction(SNES snes, Vec x, Vec f, void *appctx);
-int FormJacobian(SNES snes, Vec x, Mat *jac, Mat *B, MatStructure *flag, void *dappctx);
-int SetNonlinearFunction(Vec x, AppCtx *appctx, Vec f);
+int FormFunction(SNES, Vec, Vec, void *);
+int FormJacobian(SNES, Vec , Mat *, Mat *, MatStructure *, void *);
+int SetNonlinearFunction(Vec, AppCtx *, Vec);
 
 extern int AppCtxSetReferenceElement(AppCtx*);
 extern int AppCtxSetFunctions(AppCtx*);
-extern int SetLocalElement(AppElement *phi, double *coords);
-extern int ComputeRHS( DFP f, DFP g, AppElement *phi, double *integrals);
-extern int ComputeMatrix( AppElement *phi, double *result);
-extern int ComputeNonlinear(AppElement *phi, double *uvvals, double *result);
-extern int ComputeJacobian(AppElement *phi, double *uvvals, double *result);
+extern int SetLocalElement(AppElement *, double *);
+extern int ComputeRHS( DFP, DFP, AppElement *, double *);
+extern int ComputeMatrix( AppElement *, double *);
+extern int ComputeNonlinear(AppElement *, double *, double *);
+extern int ComputeJacobian(AppElement *, double *, double *);
 
 extern int FormInitialGuess(AppCtx *);
 extern int SetJacobian(Vec,AppCtx *,Mat*);
