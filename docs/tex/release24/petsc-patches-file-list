@@ -22,3 +22,5 @@ src/pc/impls/eisens/eisen.c
 src/mat/impls/aij/mpi/mpiaij.c
 src/mat/impls/aij/seq/aij.c
 src/mat/impls/aij/seq/aij.h
+src/mat/matimpl.h
+src/mat/utils/stash.c

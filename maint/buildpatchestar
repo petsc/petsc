@@ -5,6 +5,7 @@
 # This generated tarfile should be copied over to
 # the PETSc ftp directory.
 #
-#/bin/rm  /home/ftp/pub/petsc/petsc-patches.tar.gz
-tar cf ~/petsc/petsc-patches.tar -I /home/bsmith/petsc/docs/tex/petsc-patches-file-list
-gzip ~petsc/petsc-patches.tar
+/bin/rm -f ~/petsc-patches.tar.gz
+cd /mcs/www-unix/petsc
+tar cf ~/petsc-patches.tar -I /home/bsmith/petsc/docs/tex/petsc-patches-file-list
+gzip ~/petsc-patches.tar
