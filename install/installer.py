@@ -27,7 +27,7 @@ def runinstaller(opts = []):
       if installer.checkBootstrap():
         booter = installerclass.Installer(argDB = installer.argDB)
         # Must build and install BuildSystem
-        booter.builder.build(os.path.dirname(booter.builder.getRoot()))
+        booter.builder.build(self.retriever.retrieve('bk://sidl.bkbits.net/BuildSystem'))
         # Install Compiler and Runtime
         booter.bootstrapInstall(compilerUrl, installer.argDB)
       if installer.checkBootstrap():
