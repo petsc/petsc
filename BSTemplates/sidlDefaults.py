@@ -106,8 +106,9 @@ class UsingSIDL (logging.Logger):
 
   def setupIncludeDirectories(self):
     rootDir = self.getRootDir()
+    print 'rootDir: '+rootDir
     for lang in SIDLConstants.getLanguages():
-      self.includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = rootDir))
+      self.includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = os.path.join(rootDir, 'server')))
       if self.compilerDefaults.generatesAllStubs():
         self.includeDirs[lang].append(self.getClientRootDir(lang, root = rootDir))
     # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
@@ -184,8 +185,8 @@ class UsingSIDL (logging.Logger):
 
   def getServerRootDir(self, lang, package = None, root = None):
     '''Returns an absolute path if root is given, otherwise a relative path'''
-    dir = self.compilerDefaults.getServerRootDir(lang, package, self.serverBaseDir)
-    if root: dir = os.path.abspath(os.path.join(root, dir))
+    if not root: root = self.serverBaseDir
+    dir = self.compilerDefaults.getServerRootDir(lang, package, root)
     return dir
 
   def getClientRootDir(self, lang, root = None):
