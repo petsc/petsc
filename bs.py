@@ -48,7 +48,7 @@ class Maker (logging.Logger):
       
     stats     = os.statvfs(mainTmp)
     freeSpace = stats[statvfs.F_BAVAIL]*stats[statvfs.F_FRSIZE]
-    if freeSpace < 1086701569:
+    if freeSpace < 50*1024*1024:
       del argDB['TMPDIR']
       argDB.setHelp('TMPDIR', 'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory')
       newTmp = argDB['TMPDIR']
