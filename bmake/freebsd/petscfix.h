@@ -53,7 +53,11 @@ extern void   twalk(char *,void (*)(void*,VISIT,int));
 extern int    fclose(FILE *);
 extern void   perror(const char *);
 extern int    vfprintf (FILE *, const char *, char * );
-extern int    vsprintf (char *, const char *, char * );
+/*
+   On some machines the following prototype might be
+   extern int vsprintf(char *, const char *, char * );
+*/
+extern char   *vsprintf (char *, const char *, char * );
 #endif
 #endif
 
