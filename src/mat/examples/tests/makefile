@@ -269,7 +269,7 @@ runex19:
            else echo "Possible problem with ex19_1, diffs above"; fi; \
            $(RM) -f ex19_1.tmp
 runex20:
-	-@$(MPIRUN)  ex20 > -mat_row -conv_mat_bdiag ex20_1.tmp 2>&1;   \
+	-@$(MPIRUN)  ex20 -mat_row -conv_mat_bdiag > ex20_1.tmp 2>&1;   \
            if (diff output/ex20_1.out ex20_1.tmp) then true; \
            else echo "Possible problem with ex20_1, diffs above"; fi; \
            $(RM) -f ex20_1.tmp
