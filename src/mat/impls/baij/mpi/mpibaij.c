@@ -799,7 +799,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_MPIBAIJ"
-int MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *norm)
+int MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
   Mat_SeqBAIJ *amat = (Mat_SeqBAIJ*)baij->A->data,*bmat = (Mat_SeqBAIJ*)baij->B->data;
@@ -809,7 +809,7 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *norm)
 
   PetscFunctionBegin;
   if (baij->size == 1) {
-    ierr =  MatNorm(baij->A,type,norm);CHKERRQ(ierr);
+    ierr =  MatNorm(baij->A,type,nrm);CHKERRQ(ierr);
   } else {
     if (type == NORM_FROBENIUS) {
       v = amat->a;
@@ -828,8 +828,8 @@ int MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *norm)
         sum += (*v)*(*v); v++;
 #endif
       }
-      ierr = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
-      *norm = sqrt(*norm);
+      ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
+      *nrm = sqrt(*nrm);
     } else {
       SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
     }

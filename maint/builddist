@@ -110,8 +110,6 @@ for i in bmake/*/packages ; do
     sed "s/^PETSC_HAVE_SPAI/#PETSC_HAVE_SPAI/g" | \
     sed "s/^PETSC_HAVE_LUSOL/#PETSC_HAVE_LUSOL/g" | \
     sed "s/^LUSOL_LIB/#LUSOL_LIB/g" | \
-    sed "s/^ESI_INCLUDE/#ESI_INCLUDE/g" | \
-    sed "s/^PETSC_HAVE_ESI/#PETSC_HAVE_ESI/g" | \
     sed "s/^TRILINOS_INCLUDE/#TRILINOS_INCLUDE/g" | \
     sed "s/^PETSC_HAVE_TRILINOS/#PETSC_HAVE_TRILINOS/g" | \
     sed "s/^TRILINOS_LIB/#TRILINOS_LIB/g" | \

@@ -253,7 +253,7 @@ int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_SeqBDiag"
-int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
+int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *nrm)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscReal    sum = 0.0,*tmp;
@@ -284,19 +284,19 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
         }
       }
     }
-    *norm = sqrt(sum);
+    *nrm = sqrt(sum);
   } else if (type == NORM_1) { /* max column norm */
     ierr = PetscMalloc((A->n+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
     ierr = MatNorm_SeqBDiag_Columns(A,tmp,A->n);CHKERRQ(ierr);
-    *norm = 0.0;
+    *nrm = 0.0;
     for (j=0; j<A->n; j++) {
-      if (tmp[j] > *norm) *norm = tmp[j];
+      if (tmp[j] > *nrm) *nrm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) { /* max row norm */
     ierr = PetscMalloc((A->m+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
     ierr = PetscMemzero(tmp,A->m*sizeof(PetscReal));CHKERRQ(ierr);
-    *norm = 0.0;
+    *nrm = 0.0;
     if (bs == 1) {
       for (d=0; d<nd; d++) {
         dv   = a->diagv[d];
@@ -339,7 +339,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
       }
     }
     for (j=0; j<A->m; j++) {
-      if (tmp[j] > *norm) *norm = tmp[j];
+      if (tmp[j] > *nrm) *nrm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
   } else {

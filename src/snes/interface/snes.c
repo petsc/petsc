@@ -2170,28 +2170,27 @@ int SNESDefaultUpdate(SNES snes, int step)
 
 .keywords: SNES, nonlinear, scale, step
 */
-int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,
-                          PetscReal *gpnorm,PetscReal *ynorm)
+int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,PetscReal *gpnorm,PetscReal *ynorm)
 {
-  PetscReal norm;
+  PetscReal   nrm;
   PetscScalar cnorm;
-  int    ierr;
+  int         ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscCheckSameComm(snes,y);
 
-  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > *delta) {
-     norm = *delta/norm;
-     *gpnorm = (1.0 - norm)*(*fnorm);
-     cnorm = norm;
+  ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
+  if (nrm > *delta) {
+     nrm = *delta/nrm;
+     *gpnorm = (1.0 - nrm)*(*fnorm);
+     cnorm = nrm;
      ierr = VecScale(&cnorm,y);CHKERRQ(ierr);
      *ynorm = *delta;
   } else {
      *gpnorm = 0.0;
-     *ynorm = norm;
+     *ynorm = nrm;
   }
   PetscFunctionReturn(0);
 }

@@ -136,7 +136,8 @@ PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #SUPERLU_INCLUDE    = -I/home/petsc/software/SuperLU/SRC
 #PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
 #
-#  Location of SuperLU_DIST
+#  Location of SuperLU_DIST with the current release of SuperLU and SuperLU_Dist
+# you cannot link both into the same PETSc library.
 #
 SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
 SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux_gcc_pgf90.a

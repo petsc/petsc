@@ -1,13 +1,12 @@
 # $Id: makefile,v 1.2 2001/09/07 20:09:03 bsmith Exp bsmith $ 
 
-#requirespackage  'PETSC_HAVE_ESI'
 #requireslanguage  CPP
 #requiresscalar    real 
 #requiresprecision double
 
 ALL: lib
 
-CFLAGS   = ${ESI_INCLUDE}  ${CCA_INCLUDE}
+CFLAGS   = ${CCA_INCLUDE}
 FFLAGS   =
 SOURCEC  = ebvec1.c
 SOURCEF  =

@@ -282,7 +282,7 @@ int PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   }
 
   /* Look for CCA components in the library */
-#if defined(PETSC_HAVE_ESI) && defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
+#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
   char **(*gcl)(void) = (char **(*)(void)) dlsym(*handle,"getComponentList");
   if (gcl) {
     char       **list = (*gcl)(),*sname,*rname;

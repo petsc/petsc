@@ -284,34 +284,6 @@ chkpetsc_path:
           fi; \
 	fi
 
-# RCS file check-in
-ci: chkpetsc_path
-	@-/usr/bin/ci -u -q -mAutoCheckin ${SOURCEH} ${DOCS} ${SOURCE} \
-	  ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} \
-	  ${TESTSC} ${TESTSF} ${SCRIPTS} ${BMAKEFILES} makefile
-
-# RCS file check-out
-co: chkpetsc_path
-	@-/usr/bin/co -l -q ${SOURCEH} ${DOCS} ${SOURCE} \
-	  ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} \
-	  ${TESTSC} ${TESTSF} ${SCRIPTS} ${BMAKEFILES} makefile
-
-# Add another person to RCS access
-add: chkpetsc_path
-	@-rcs -a${NEW_RCS_USER} -q ${SOURCEH} ${DOCS} ${SOURCE} \
-	  ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} \
-	  ${TESTSC} ${TESTSF} ${SCRIPTS} ${BMAKEFILES} makefile
-
-# Remove person from RCS access
-remove: chkpetsc_path
-	@-rcs -e${NEW_RCS_USER} -q ${SOURCEH} ${DOCS} ${SOURCE} \
-	  ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} \
-	  ${TESTSC} ${TESTSF} ${SCRIPTS} ${BMAKEFILES} makefile
-
-rcslabel: chkpetsc_path
-	@-rcs -n${NEW_RCS_LABEL}: -q ${SOURCEH} ${DOCS} ${SOURCE} \
-	  ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} \
-	  ${TESTSC} ${TESTSF} ${SCRIPTS} ${BMAKEFILES} makefile
 
 # Builds Fortran-77 wrappers 
 # Source of bfort is in ~gropp/sowing/src/bfort

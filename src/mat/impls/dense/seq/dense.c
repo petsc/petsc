@@ -1105,7 +1105,7 @@ int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_SeqDense"
-int MatNorm_SeqDense(Mat A,NormType type,PetscReal *norm)
+int MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   PetscScalar  *v = mat->v;
@@ -1121,27 +1121,27 @@ int MatNorm_SeqDense(Mat A,NormType type,PetscReal *norm)
       sum += (*v)*(*v); v++;
 #endif
     }
-    *norm = sqrt(sum);
+    *nrm = sqrt(sum);
     PetscLogFlops(2*A->n*A->m);
   } else if (type == NORM_1) {
-    *norm = 0.0;
+    *nrm = 0.0;
     for (j=0; j<A->n; j++) {
       sum = 0.0;
       for (i=0; i<A->m; i++) {
         sum += PetscAbsScalar(*v);  v++;
       }
-      if (sum > *norm) *norm = sum;
+      if (sum > *nrm) *nrm = sum;
     }
     PetscLogFlops(A->n*A->m);
   } else if (type == NORM_INFINITY) {
-    *norm = 0.0;
+    *nrm = 0.0;
     for (j=0; j<A->m; j++) {
       v = mat->v + j;
       sum = 0.0;
       for (i=0; i<A->n; i++) {
         sum += PetscAbsScalar(*v); v += A->m;
       }
-      if (sum > *norm) *norm = sum;
+      if (sum > *nrm) *nrm = sum;
     }
     PetscLogFlops(A->n*A->m);
   } else {

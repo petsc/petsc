@@ -19,7 +19,7 @@ int SNESSolve_Test(SNES snes,int *its)
   int          ierr,i;
   MatStructure flg;
   PetscScalar  mone = -1.0,one = 1.0;
-  PetscReal    norm,gnorm;
+  PetscReal    nrm,gnorm;
   SNES_Test    *neP = (SNES_Test*)snes->data;
 
   PetscFunctionBegin;
@@ -50,13 +50,13 @@ int SNESSolve_Test(SNES snes,int *its)
     }
     /* compare */
     ierr = MatAXPY(&mone,A,B);CHKERRQ(ierr);
-    ierr = MatNorm(B,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+    ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {
       ierr = PetscPrintf(snes->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
       ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",nrm/gnorm,nrm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);

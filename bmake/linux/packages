@@ -91,10 +91,6 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB
 #
-#  Location of ESI include files
-#
-ESI_INCLUDE    = -I/home/alice/software/esi/cxx/include
-PETSC_HAVE_ESI = -DPETSC_HAVE_ESI
 #
 #  Location of Trilinos
 #

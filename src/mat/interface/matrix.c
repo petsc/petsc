@@ -2344,7 +2344,7 @@ int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 .  B - where the copy is put
 
    Notes:
-   If you use SAME_NONZERO_PATTERN then the zero matrices had better have the 
+   If you use SAME_NONZERO_PATTERN then the two matrices had better have the 
    same nonzero pattern or the routine will crash.
 
    MatCopy() copies the matrix entries of a matrix to another existing
@@ -2933,14 +2933,14 @@ int MatScale(PetscScalar *a,Mat mat)
 -  type - the type of norm, NORM_1, NORM_2, NORM_FROBENIUS, NORM_INFINITY
 
    Output Parameters:
-.  norm - the resulting norm 
+.  nrm - the resulting norm 
 
    Level: intermediate
 
    Concepts: matrices^norm
    Concepts: norm^of matrix
 @*/
-int MatNorm(Mat mat,NormType type,PetscReal *norm)
+int MatNorm(Mat mat,NormType type,PetscReal *nrm)
 {
   int ierr;
 
@@ -2948,12 +2948,12 @@ int MatNorm(Mat mat,NormType type,PetscReal *norm)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidType(mat);
   MatPreallocated(mat);
-  PetscValidScalarPointer(norm);
+  PetscValidScalarPointer(nrm);
 
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->norm) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
-  ierr = (*mat->ops->norm)(mat,type,norm);CHKERRQ(ierr);
+  ierr = (*mat->ops->norm)(mat,type,nrm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
