@@ -412,7 +412,7 @@ class Archiver(Linker):
     return self.output
 
 class SharedLinker(Linker):
-  '''A SharedLinker processes any FileSet oflibraries, and outputs a FileSet of shared libraries
+  '''A SharedLinker processes any FileSet of libraries, and outputs a FileSet of shared libraries
      - This linker now works correctly with Cygwin'''
   def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
     if not isinstance(inputTag, list): inputTag = [inputTag]
@@ -478,14 +478,71 @@ class SharedLinker(Linker):
       return ['-o '+output_library_name+' -Wl,--out-implib='+output_library_name+'.a']
     return super(SharedLinker, self).getOutputFlags(source)
 
+class ExceptionSharedLinker(SharedLinker):
+  '''An ExceptionSharedLinker processes any FileSet of libraries, and outputs a FileSet of shared libraries'''
+  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
+    SharedLinker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
+    self.exceptions     = build.fileset.FileSet()
+    self.exceptions.tag = outputTag+' exception'
+    return
+
+  def processFile(self, source, set):
+    '''Link "source"'''
+    if source.find('Exception') >= 0:
+      self.debugPrint('Linking exception '+source, 3, 'link')
+      build.transform.Transform.handleFile(self, source, self.exceptions)
+      return self.processFileSet(build.fileset.FileSet([source], tag = set.tag))
+    else:
+      # Leave this set unchanged
+      build.transform.Transform.handleFile(self, source, set)
+      self.debugPrint('Ignoring non-exception '+source, 3, 'link')
+    return
+
+  def processFileSet(self, set):
+    '''Link all the files in "set"'''
+    if len(set) == 0: return self.output
+    isException = 0
+    for source in set:
+      if source.find('Exception') >= 0:
+        isException = 1
+    if isException:
+      self.debugPrint('Linking exception '+source, 3, 'compile')
+      for f in set:
+        build.transform.Transform.handleFile(self, f, self.exceptions)
+      library = self.getLibrary(set)
+      if not os.path.exists(library):
+        os.makedirs(library)
+      self.debugPrint('Linking '+str(set)+' into '+library, 3, 'compile')
+      command = ' '.join([self.getProcessor()]+set+self.getFlags(set))
+      output  = self.executeShellCommand(command, self.handleErrors)
+      self.output.extend(map(lambda f: os.path.join(library, os.path.basename(f)), set))
+    else:
+      self.debugPrint('Ignoring non-exception '+source, 3, 'compile')
+      # Leave this set unchanged
+      for f in set:
+        build.transform.Transform.handleFile(self, f, set)
+    return self.output
+
+  def processOldFile(self, f, set):
+    '''Output old library'''
+    if f.find('Exception') >= 0:
+      self.debugPrint('Reporting old exception '+f, 3, 'compile')
+      self.oldOutput.append(self.getLibrary(f))
+    else:
+      # Leave this set unchanged
+      build.transform.Transform.handleFile(self, f, set)
+      self.debugPrint('Ignoring non-exception '+f, 3, 'link')
+    return self.output
+
 class LibraryAdder (build.transform.Transform):
   '''A LibraryAdder adds every library matching inputTag to the extraLibraries member of linker'''
-  def __init__(self, inputTag, linker):
+  def __init__(self, inputTag, linker, prepend = 0):
     build.transform.Transform.__init__(self)
     self.inputTag = inputTag
     if not isinstance(self.inputTag, list):
       self.inputTag = [self.inputTag]
-    self.linker = linker
+    self.linker  = linker
+    self.prepend = prepend
     return
 
   def __str__(self):
@@ -494,5 +551,8 @@ class LibraryAdder (build.transform.Transform):
   def handleFile(self, f, set):
     '''Put all libraries matching inputTag in linker.extraLibraries'''
     if self.inputTag is None or set.tag in self.inputTag:
-      self.linker.extraLibraries.append(f)
+      if self.prepend:
+        self.linker.extraLibraries.insert(0, f)
+      else:
+        self.linker.extraLibraries.append(f)
     return build.transform.Transform.handleFile(self, f, set)

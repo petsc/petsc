@@ -144,11 +144,17 @@ class UsingCxx (base.Base):
       return build.buildGraph.BuildGraph()
     (target, compiler) = self.getGenericCompileTarget(['client'])
     sharedTag    = self.language.lower()+' client shared library'
+    exceptionTag = self.language.lower()+' exception shared library'
     linker       = build.buildGraph.BuildGraph()
+    exceptionLinker = build.processor.ExceptionSharedLinker(self.sourceDB, self.linker, compiler.output.tag, exceptionTag)
+    exceptionLinker.extraLibraries.extend(self.extraLibraries)
     sharedLinker = build.processor.SharedLinker(self.sourceDB, self.linker, compiler.output.tag, sharedTag)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
-    linker.addVertex(sharedLinker)
-    linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])
+    sharedAdder  = build.processor.LibraryAdder([exceptionTag, 'old '+exceptionTag], sharedLinker, prepend = 1)
+    linker.addVertex(exceptionLinker)
+    linker.addEdges(sharedAdder,  [exceptionLinker])
+    linker.addEdges(sharedLinker, [sharedAdder])
+    linker.addEdges(build.transform.Remover([compiler.output.tag, compiler.output.tag+' exception']), [sharedLinker])
     target.appendGraph(linker)
     return target
 
