@@ -1,7 +1,5 @@
 /*$Id: $*/
 
-/* mpiexec ./ex27 -da_grid_x 48 -da_grid_y 48 -max_st 10000 -deltat .1 -print -options_left -ksp_monitor -snes_monitor -snes_view -dmmg_nlevels 1 */
-
 /* solve the equations for the perturbed magnetic field only */
 #define EQ 
 
