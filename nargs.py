@@ -266,9 +266,11 @@ class ArgDir(Arg):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     import os
     # Should check whether it is a well-formed path
+    if not isinstance(value, str):
+      raise TypeError('Invalid directory: '+str(value)+' for key '+str(self.key))
     value = os.path.expanduser(value)
     if self.mustExist and not os.path.isdir(value):
-      raise TypeError('Invalid directory: '+str(value)+' for key '+str(self.key))
+      raise TypeError('Nonexistent directory: '+str(value)+' for key '+str(self.key))
     self.value = value
     return
 
