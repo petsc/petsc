@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.49 1996/04/07 22:44:30 curfman Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.50 1996/04/09 02:23:59 curfman Exp bsmith $";
 #endif
 
 /*
@@ -35,8 +35,11 @@ $  -pc_eisenstat_diagonal_scaling
 @*/
 int PCEisenstatUseDiagonalScaling(PC pc)
 {
-  PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
+  PC_Eisenstat *eis;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCEISENSTAT) return 0;
+
+  eis = (PC_Eisenstat *) pc->data;
   eis->usediag = 1;
   return 0;
 }
@@ -242,6 +245,7 @@ int PCEisenstatSetOmega(PC pc,double omega)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCEISENSTAT) return 0;
   if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"PCEisenstatSetOmega:Relaxation out of range");
+
   eis = (PC_Eisenstat *) pc->data;
   eis->omega = omega;
   return 0;
