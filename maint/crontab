@@ -1,1 +1,7 @@
+#
+#  Crontab for PETSc 2.0 nightly build
+#
+#  command is run every night at 2am.
+# run crontab crontab to install the nightly build
+# crontab -r to remove it
 0 2 * * * /home/bsmith/petsc/maint/buildtest
