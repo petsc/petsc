@@ -1888,7 +1888,7 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   /* create our matrix */
   ierr = MatCreate(comm,M+extra_rows,N+extra_rows,M+extra_rows,N+extra_rows,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,type);CHKERRQ(ierr);
-  ierr = MatSetSBAIJSetPreallocation(B,bs,0,s_browlengths);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(B,bs,0,s_browlengths);CHKERRQ(ierr);
   a = (Mat_SeqSBAIJ*)B->data;
 
   /* set matrix "i" values */
