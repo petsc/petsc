@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.26 1998/12/03 04:02:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.27 1999/01/31 16:09:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -60,7 +60,6 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg); CHKERRA(ierr);
-printf("flag %d\n",flg);fflush(stdout);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
   ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg); CHKERRA(ierr);
   if (!flg) {loops = 1;} /* don't bother with second system */
