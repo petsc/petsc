@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.47 2000/06/26 19:47:21 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.48 2000/06/26 20:18:29 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -644,8 +644,8 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     starts3[i+1] = starts3[i] + lens2[i];
   }
   recvs2     = (int*)PetscMalloc((nt+1)*sizeof(int));CHKPTRQ(recvs2);
-  recv_waits = (MPI_Request*)PetscMalloc((nrecvs+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
-  for (i=0; i<nrecvs; i++) {
+  recv_waits = (MPI_Request*)PetscMalloc((nrecvs2+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
+  for (i=0; i<nrecvs2; i++) {
     ierr = MPI_Irecv(recvs2+starts3[i],lens2[i],MPI_INT,dest[i],tag-2,comm,recv_waits+i);CHKERRQ(ierr);
   }
   
@@ -656,7 +656,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   }
 
   /* wait on receives */
-  recv_statuses = (MPI_Status*)PetscMalloc((nrecvs+1)*sizeof(MPI_Status));CHKPTRQ(recv_statuses);
+  recv_statuses = (MPI_Status*)PetscMalloc((nrecvs2+1)*sizeof(MPI_Status));CHKPTRQ(recv_statuses);
   ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
   ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
   ierr = PetscFree(recv_waits);CHKERRQ(ierr);
