@@ -1,9 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.28 1995/07/08 14:43:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.29 1995/07/08 15:09:22 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
 #include "ls.h"
+#include "pviewer.h"
 
 /*
      Implements a line search variant of Newton's Method 
@@ -13,12 +14,9 @@ static char vcid[] = "$Id: ls.c,v 1.28 1995/07/08 14:43:39 bsmith Exp bsmith $";
 .   snes - nonlinear context obtained from SNESCreate()
 
     Output Parameters:
-.   its  - Number of global iterations until termination.
+.   outits  - Number of global iterations until termination.
 
     Notes:
-    See SNESCreate() and SNESSetUp() for information on the definition and
-    initialization of the nonlinear solver context.  
-
     This implements essentially a truncated Newton method with a
     line search.  By default a cubic backtracking line search 
     is employed, as described in the text "Numerical Methods for
@@ -26,7 +24,7 @@ static char vcid[] = "$Id: ls.c,v 1.28 1995/07/08 14:43:39 bsmith Exp bsmith $";
     and Schnabel.  See the examples in src/snes/examples.
 */
 
-int SNESSolve_LS( SNES snes, int *outits )
+int SNESSolve_LS(SNES snes,int *outits)
 {
   SNES_LS      *neP = (SNES_LS *) snes->data;
   int          maxits, i, history_len, ierr, lits, lsfail;
@@ -37,19 +35,20 @@ int SNESSolve_LS( SNES snes, int *outits )
   history	= snes->conv_hist;	/* convergence history */
   history_len	= snes->conv_hist_len;	/* convergence history length */
   maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;		/* solution vector */
-  F		= snes->vec_func;		/* residual vector */
-  Y		= snes->work[0];		/* work vectors */
+  X		= snes->vec_sol;	/* solution vector */
+  F		= snes->vec_func;	/* residual vector */
+  Y		= snes->work[0];	/* work vectors */
   G		= snes->work[1];
   W		= snes->work[2];
 
-  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);  /* X <- X_0 */
-  VecNorm( X, &xnorm );		       /* xnorm = || X || */
-  ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr); /* (+/-) F(X) */
-  VecNorm(F, &fnorm );	        	/* fnorm <- || F || */  
+  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr); /* X <- X_0 */
+  VecNorm(X,&xnorm);		                         /* xnorm = || X || */
+  ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);   /* (+/-) F(X) */
+  VecNorm(F,&fnorm);	        	                 /* fnorm <- ||F|| */
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
-  if (snes->Monitor) (*snes->Monitor)(snes,0,fnorm,snes->monP);
+  if (snes->Monitor) 
+    {ierr = (*snes->Monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
         
   for ( i=0; i<maxits; i++ ) {
        snes->iter = i+1;
@@ -57,7 +56,8 @@ int SNESSolve_LS( SNES snes, int *outits )
        /* Solve J Y = -F, where J is Jacobian matrix */
        ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
                                 &flg,snes->jacP); CHKERRQ(ierr);
-       ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
+       ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
+                                flg); CHKERRQ(ierr);
        ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERRQ(ierr);
        ierr = VecCopy(Y,snes->vec_sol_update_always); CHKERRQ(ierr);
        ierr = (*neP->LineSearch)(snes,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);
@@ -70,13 +70,14 @@ int SNESSolve_LS( SNES snes, int *outits )
 
        snes->norm = fnorm;
        if (history && history_len > i+1) history[i+1] = fnorm;
-       VecNorm( X, &xnorm );		/* xnorm = || X || */
-       if (snes->Monitor) (*snes->Monitor)(snes,i+1,fnorm,snes->monP);
+       VecNorm(X,&xnorm);		/* xnorm = || X || */
+       if (snes->Monitor) 
+         {(*snes->Monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
 
        /* Test for convergence */
-       if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
+       if ((*snes->Converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
            if (X != snes->vec_sol) {
-             VecCopy( X, snes->vec_sol );
+             VecCopy(X,snes->vec_sol);
              snes->vec_sol_always = snes->vec_sol;
              snes->vec_func_always = snes->vec_func;
            }
@@ -92,7 +93,7 @@ int SNESSetUp_LS(SNES snes )
 {
   int ierr;
   snes->nwork = 4;
-  ierr = VecGetVecs( snes->vec_sol, snes->nwork,&snes->work ); CHKERRQ(ierr);
+  ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work); CHKERRQ(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work ); 
   snes->vec_sol_update_always = snes->work[3];
   return 0;
@@ -123,7 +124,7 @@ int SNESDestroy_LS(PetscObject obj)
 
 .seealso: SNESSetMonitor()
 @*/
-int SNESDefaultMonitor(SNES snes,int its, double fnorm,void *dummy)
+int SNESDefaultMonitor(SNES snes,int its,double fnorm,void *dummy)
 {
   MPIU_printf(snes->comm, "iter = %d, Function norm %g \n",its,fnorm);
   return 0;
@@ -224,7 +225,7 @@ $  -snes_line_search basic
 .keywords: SNES, nonlinear, line search, cubic
 
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
-.seealso: SNESSetLineSearchRoutine()
+          SNESSetLineSearchRoutine()
 @*/
 int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
               double fnorm, double *ynorm, double *gnorm,int *flag )
@@ -233,10 +234,10 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   Scalar one = 1.0;
   *flag = 0;
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
-  VecNorm(y, ynorm );	/* ynorm = || y ||    */
-  VecAXPY(&one, x, y );	/* y <- x + y         */
+  VecNorm(y,ynorm);                            /* ynorm = || y || */
+  VecAXPY(&one,x,y);	                       /* y <- x + y      */
   ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr);
-  VecNorm( g, gnorm ); 	/* gnorm = || g ||    */
+  VecNorm(g,gnorm); 	                       /* gnorm = || g || */
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }
@@ -565,6 +566,27 @@ static int SNESPrintHelp_LS(SNES snes)
   return 0;
 }
 
+static int SNESView_LS(PetscObject obj,Viewer viewer)
+{
+  SNES    snes = (SNES)obj;
+  SNES_LS *ls = (SNES_LS *)snes->data;
+  FILE    *fd = ViewerFileGetPointer_Private(viewer);
+  char    *cstring;
+  
+  if (ls->LineSearch == SNESNoLineSearch) 
+    cstring = "SNESNoLineSearch";
+  else if (ls->LineSearch == SNESQuadraticLineSearch) 
+    cstring = "SNESQuadraticLineSearch";
+  else if (ls->LineSearch == SNESCubicLineSearch) 
+    cstring = "SNESCubicLineSearch";
+  else
+    cstring = "unknown";
+  MPIU_fprintf(snes->comm,fd,"    line search variant: %s\n",cstring);
+  MPIU_fprintf(snes->comm,fd,"    alpha=%g, maxstep=%g, steptol=%g\n",
+     ls->alpha,ls->maxstep,ls->steptol);
+  return 0;
+}
+
 static int SNESSetFromOptions_LS(SNES snes)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
@@ -601,12 +623,14 @@ int SNESCreate_LS(SNES  snes )
   SNES_LS *neP;
 
   snes->type		= SNES_NLS;
+  snes->method_class	= SNES_T;
   snes->setup		= SNESSetUp_LS;
   snes->solve		= SNESSolve_LS;
   snes->destroy		= SNESDestroy_LS;
   snes->Converged	= SNESDefaultConverged;
   snes->printhelp       = SNESPrintHelp_LS;
   snes->setfromoptions  = SNESSetFromOptions_LS;
+  snes->view            = SNESView_LS;
 
   neP			= PETSCNEW(SNES_LS);   CHKPTRQ(neP);
   snes->data    	= (void *) neP;

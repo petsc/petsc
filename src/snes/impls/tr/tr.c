@@ -1,9 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.12 1995/06/08 03:11:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.13 1995/06/13 02:24:21 curfman Exp curfman $";
 #endif
 
 #include <math.h>
 #include "tr.h"
+#include "pviewer.h"
 
 /*
       This convergence test determines if the two norm of the 
@@ -26,11 +27,12 @@ int TRConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   if ( rnorm <= neP->ttol )      return 1;
   if ( rnorm >= dtol*neP->rnorm0 || rnorm != rnorm) return -1;
 
-  /* determine norm of solution */
+  /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x); CHKERRQ(ierr);
   ierr = VecNorm(x,&norm); CHKERRQ(ierr);
   if (norm >= neP->delta) {
-    PLogInfo((PetscObject)snes,"Ending linear iteration early, delta %g length %g\n",neP->delta,norm);
+    PLogInfo((PetscObject)snes,
+      "Ending linear iteration early, delta %g length %g\n",neP->delta,norm);
     return 1; 
   }
   return(0);
@@ -85,9 +87,10 @@ static int SNESSolve_TR(SNES snes, int *its )
   if (history && history_len > 0) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
-  if (snes->Monitor)(*snes->Monitor)(snes,0,fnorm,snes->monP);
+  if (snes->Monitor)
+    {ierr = (*snes->Monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
 
-  /* et the stopping criteria to use the More' trick. */
+  /* Set the stopping criteria to use the More' trick. */
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
   ierr = KSPSetConvergenceTest(ksp,TRConverged_Private,(void *) snes);
@@ -98,7 +101,8 @@ static int SNESSolve_TR(SNES snes, int *its )
 
      ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
                                              &flg,snes->jacP); CHKERRQ(ierr);
-     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);
+     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
+                            flg); CHKERRQ(ierr);
      ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
      VecNorm( Ytmp, &norm );
      while(1) {
@@ -147,7 +151,8 @@ static int SNESSolve_TR(SNES snes, int *its )
      TMP = F; F = G; snes->vec_func_always = F; G = TMP;
      TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
      VecNorm(X, &xnorm );		/* xnorm = || X || */
-     if (snes->Monitor) (*snes->Monitor)(snes,i+1,fnorm,snes->monP);
+     if (snes->Monitor) 
+       {(*snes->Monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
 
      /* Test for convergence */
      if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
@@ -212,17 +217,33 @@ static int SNESPrintHelp_TR(SNES snes)
   return 0;
 }
 
+static int SNESView_TR(PetscObject obj,Viewer viewer)
+{
+  SNES    snes = (SNES)obj;
+  SNES_TR *tr = (SNES_TR *)snes->data;
+  FILE    *fd = ViewerFileGetPointer_Private(viewer);
+  
+  MPIU_fprintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",
+    tr->mu,tr->eta,tr->sigma);
+  MPIU_fprintf(snes->comm,fd,
+    "    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
+    tr->delta0,tr->delta1,tr->delta2,tr->delta3);
+  return 0;
+}
+
 int SNESCreate_TR(SNES snes )
 {
   SNES_TR *neP;
 
   snes->type 		= SNES_NTR;
+  snes->method_class	= SNES_T;
   snes->setup		= SNESSetUp_TR;
   snes->solve		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;
   snes->Converged	= SNESDefaultConverged;
   snes->printhelp       = SNESPrintHelp_TR;
   snes->setfromoptions  = SNESSetFromOptions_TR;
+  snes->view            = SNESView_TR;
 
   neP			= PETSCNEW(SNES_TR); CHKPTRQ(neP);
   snes->data	        = (void *) neP;
