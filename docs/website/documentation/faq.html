@@ -109,6 +109,7 @@
       <li><a href="faq.html#start_in_debugger-doesnotwork">How do I debug if -start_in_debugger
         does not work on my machine?</a></li>
       <li><a href="faq.html#debug-hang">How can I see where my code is hanging?</a></li>
+      <li><a href="faq.html#debug-inspect">How can I inspect Vec and Mat values when in the debugger?</a></li>
     </menu>
     <h4><a href="faq.html#Shared Libraries">Shared Libraries</a></h4>
     <menu>
@@ -424,6 +425,17 @@ Note that this simply concatenates in the
     will come up in its own xterm). Then use cont (for continue) in each xterm. Once you are sure
     that the program is hanging, hit control-c in each xterm and then use 'where' to print a stack
     trace for each process.</p>
+    <p><a name="debug-inspect"><font color="#FF0000"><strong>How can I inspect Vec and Mat values when in the debugger?</strong>
+    </font></a></p>
+    <p>I will illustrate this with gdb, but it should be similar on other debuggers. You can look at
+    local Vec values directly by obtaining the array. For a Vec v, we can print all local values using</p>
+    <p>(gdb) p ((Vec_Seq*) v->data)->array[0]@v->n</p>
+    <p>However, this becomes much more complicated for a matrix. Therefore, it is advisable to use the
+    default viewer to look at the object. For a Vec v and a Mat m, this would be</p>
+    <p>(gdb) call VecView(v, 0)</p>
+    <p>(gdb) call MatView(m, 0)</p>
+    <p>or with a communicator other than MPI_COMM_WORLD,</p>
+    <p>(gdb) call MatView(m, PETSC_VIEWER_STDOUT_(m->comm))</p>
     <hr>
     <h3><a name="Shared Libraries">Shared Libraries</a></h3>
     <p><font color="#FF0000"><strong><a name="install-shared">Can I install PETSc libraries as
