@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.9 2001/07/18 03:30:48 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.10 2001/07/18 04:00:31 bsmith Exp bsmith $ 
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -53,13 +53,19 @@ def setupfunctionC(filename):
                         reg = re.compile('^[ ]*}[ ]*AppCtx[ ]*;')
                         fl = reg.search(line)
                         if fl:
-                                print "Extracting AppCtx structure"
+                                print "Extracting structure AppCtx"
                                 reg = re.compile('\n[ ]*Scalar ')
                                 struct = reg.sub('\nPassiveScalar ',struct)
                                 reg = re.compile('\n[ ]*double ')
                                 struct = reg.sub('\nPassiveDouble ',struct)
                                 reg = re.compile('\n[ ]*PetscReal ')
                                 struct = reg.sub('\nPassiveDouble ',struct)
+                        else:
+                                reg = re.compile('^[ ]*}[ ]*')
+                                line = reg.sub('',line)
+                                reg = re.compile('[ ]*;\n')
+                                line = reg.sub('',line)
+                                print "Extracting structure "+line
                         g.write(struct)
 		line = f.readline()
 	f.close()
