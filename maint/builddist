@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.52 1998/04/23 22:43:42 balay Exp balay $ 
+# $Id: builddist,v 1.53 1998/04/23 22:55:19 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -63,7 +63,7 @@ endif
 
 tar cf /mcs/tmp/petsc$version.tar petsc$version
 /bin/rm -r -f /mcs/tmp/petsc$version
-gzip /mcs/tmp/petsc$version.tar
+gzip -f /mcs/tmp/petsc$version.tar
 /bin/cp /mcs/tmp/petsc$version.tar.gz ~/
 /bin/rm -f /mcs/tmp/petsc$version.tar.gz
 chmod ug+w ~/petsc.tar.gz
