@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: MPI_Wtime.c,v 1.3 1996/03/06 17:40:32 balay Exp $";
+static char vcid[] = "$Id: PetscMemcmp.c,v 1.2 1996/03/06 17:41:51 balay Exp balay $";
 #endif
 
 #include "stdio.h"
@@ -46,7 +46,7 @@ int main( int argc, char **argv)
 
   fprintf(stderr,"%s : \n","PetscMemcmp");
   fprintf(stderr,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stderr,"    %-11s : %e sec\n","Per byte",(2*y-x-z)/100000.0);
+  fprintf(stderr,"    %-11s : %e sec\n","Per byte",(2*y-x-z)/(sizeof(int)*100000));
 
   PetscFinalize();
   return 0;
