@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.41 2000/01/11 21:01:23 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.42 2000/01/30 15:37:11 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
 
@@ -282,7 +282,7 @@ int MatPartitioningDestroy(MatPartitioning part)
 
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetAdjacency()
 @*/
-int MatPartitioningSetAdjacency(MatPartitioning part,int *weights)
+int MatPartitioningSetVertexWeights(MatPartitioning part,int *weights)
 {
   int ierr;
 
