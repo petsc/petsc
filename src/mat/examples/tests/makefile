@@ -13,7 +13,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
-                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c
+                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F
 
 include ${PETSC_DIR}/bmake/common/base
@@ -367,6 +367,10 @@ ex98: ex98.o chkopts
 ex99: ex99.o chkopts
 	-${CLINKER} -o ex99 ex99.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
 	${RM} ex99.o
+
+ex100: ex100.o chkopts
+	-${CLINKER} -o ex100 ex100.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
+	${RM} ex100.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -894,6 +898,19 @@ runex98:
 	   else echo "Possible problem with ex98, diffs above"; fi; \
 	   ${RM} -f ex98.tmp
 
+NPROCS    = 1 3 
+DOF       = 2 3 4 5 6 8 9 16
+runex100:
+	-@touch ex100.tmp;\
+	for np in ${NPROCS}; do \
+	  for dof in ${DOF}; do \
+	    ${MPIRUN} -np $$np ex100 -f ${DATAFILESPATH}/matrices/arco1 -dof $$dof -load_ignore_info > ex100.tmp 2>&1; \
+	  done; \
+	done; \
+	if (${DIFF} output/ex100.out ex100.tmp) then true; \
+	else echo "Possible problem with ex100, diffs above"; fi; \
+	${RM} -f ex100.tmp
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
 		   runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm \
@@ -901,8 +918,9 @@ TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex14 ex14.rm \
 		   ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
 		   ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
-                   ex16.PETSc runex16 ex16.rm ex59.PETSc runex59 runex59_2 runex59_3 \
-                   ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm \
+                   ex16.PETSc runex16 ex16.rm ex55.PETSc runex55_1 runex55_2 ex55.rm \
+		   ex59.PETSc runex59 runex59_2 runex59_3 ex59.rm\
+                   ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm \
                    ex65.PETSc ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm
 TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc \
 		   runex7 ex7.rm ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm \
@@ -931,7 +949,8 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 	           ex95.PETSc  ex95.rm 
 TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm \
 	           ex42.PETSc runex42 ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm  \
-	           ex50.PETSc ex50.rm ex53.PETSc runex53 ex53.rm ex94.PETSc runex94 runex94_2 ex94.rm
+	           ex50.PETSc ex50.rm ex53.PETSc runex53 ex53.rm ex94.PETSc runex94 runex94_2 ex94.rm \
+                   ex100.PETSc runex100 ex100.rm
 TESTEXAMPLES_BLOCKSOLVE	 = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm
 TESTEXAMPLES_8	 = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex79f ex79f.rm 
 TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm 
