@@ -20,6 +20,7 @@
 #define HAVE_UNAME 
 #define HAVE_SYS_TIME_H
 #define HAVE_GETCWD
+#define HAVE_SLEEP
 
 #define BITS_PER_BYTE 8
 

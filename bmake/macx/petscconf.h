@@ -11,6 +11,7 @@
 #define PETSC_ARCH_NAME "macx"
 
 #define HAVE_POPEN
+#define HAVE_SLEEP
 
 #define HAVE_SYS_WAIT_H 1
 #define RETSIGTYPE void

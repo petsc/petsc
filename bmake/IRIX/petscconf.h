@@ -23,7 +23,7 @@
 #define HAVE_SYS_TIME_H
 #define HAVE_SYS_UTSNAME_H
 #define HAVE_GETCWD
-
+#define HAVE_SLEEP
 
 #define PETSC_HAVE_FORTRAN_UNDERSCORE 
 

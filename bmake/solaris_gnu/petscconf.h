@@ -9,6 +9,7 @@
 #define PARCH_solaris 
 #define PETSC_ARCH_NAME "solaris"
 
+#define HAVE_SLEEP
 #define HAVE_POPEN
 #define PETSC_HAVE_FORTRAN_UNDERSCORE 
 #define HAVE_SYS_WAIT_H

@@ -34,6 +34,7 @@
 #define HAVE_UNISTD_H
 #define HAVE_SWAPPED_BYTES
 #define HAVE_SYS_RESOURCE_H
+#define HAVE_SLEEP
 
 #define BITS_PER_BYTE 8
 

@@ -23,6 +23,7 @@
 #define HAVE_SYS_TIME_H 
 #define HAVE_UNAME  
 #define HAVE_GETCWD
+#define HAVE_SLEEP
 
 #define SIZEOF_VOID_P 8
 #define SIZEOF_INT 4

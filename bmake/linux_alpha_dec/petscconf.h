@@ -9,6 +9,7 @@
 #define PARCH_linux
 #define PETSC_ARCH_NAME "linux"
 
+#define HAVE_SLEEP
 #define HAVE_SYS_WAIT_H 1
 #define TIME_WITH_SYS_TIME 1
 #define PETSC_HAVE_FORTRAN_UNDERSCORE 1

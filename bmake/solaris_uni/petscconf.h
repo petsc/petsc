@@ -20,6 +20,7 @@
 #define HAVE_UNISTD_H 
 #define HAVE_DRAND48 
 #define HAVE_GETCWD
+#define HAVE_SLEEP
 
 #define HAVE_SYS_TIME_H
 #define HAVE_SYS_SYSTEMINFO_H

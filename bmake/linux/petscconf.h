@@ -41,5 +41,5 @@
 #define PETSC_HAVE_RTLD_GLOBAL 1
 
 #define HAVE_SYS_UTSNAME_H
-
+#define HAVE_SLEEP
 #endif

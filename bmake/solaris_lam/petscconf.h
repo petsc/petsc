@@ -9,6 +9,7 @@
 #define PARCH_solaris 
 #define PETSC_ARCH_NAME "solaris"
 
+#define HAVE_SLEEP
 #define HAVE_POPEN
 #define PETSC_USE_CTABLE
 #define HAVE_LIMITS_H

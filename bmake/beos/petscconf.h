@@ -9,6 +9,7 @@
 #define PARCH_beos
 #define PETSC_ARCH_NAME "beos"
 
+#define HAVE_SLEEP
 #define HAVE_POPEN
 #define HAVE_SYS_WAIT_H
 #define HAVE_VPRINTF
