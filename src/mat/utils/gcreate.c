@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.93 1996/07/08 01:32:07 curfman Exp balay $";
+static char vcid[] = "$Id: gcreate.c,v 1.94 1996/07/10 16:33:13 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -223,7 +223,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *A)
     break;
   case MATMPIBAIJ:
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRQ(ierr);
-    ierr = MatCreateMPIBAIJ(comm,bs,PETSC_NULL,PETSC_NULL,m,n,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A); CHKERRQ(ierr);
+    ierr = MatCreateMPIBAIJ(comm,bs,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A); CHKERRQ(ierr);
     break;
   default:
     ierr = MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,A); CHKERRQ(ierr);
