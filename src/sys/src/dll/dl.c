@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.40 1999/01/27 19:46:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.41 1999/02/16 19:42:22 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -86,6 +86,8 @@ int DLLibraryPrintPath()
    Input Parameters:
 .   handle - library handle returned by DLLibraryOpen()
 
+   Level: developer
+
 @*/
 int DLLibraryGetInfo(void *handle,char *type,char **mess)
 {
@@ -115,6 +117,8 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
 
    Output Parameter:
 .   handle - library handle 
+
+   Level: developer
 
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
@@ -204,6 +208,8 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
 
    Output Parameter:
 .   handle - library handle 
+
+   Level: developer
 
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
@@ -302,6 +308,8 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 
    Output Parameter:
 .  value 
+
+   Level: developer
 
    Notes: Symbol can be of the form
         [/path/libname[.so.1.0]:]functionname[()] where items in [] denote optional 
@@ -406,6 +414,8 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
      Output Parameter:
 .     outlist - list of libraries
 
+     Level: developer
+
      Notes: if library is already in path will not add it.
 @*/
 int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
@@ -457,6 +467,8 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
      Output Parameter:
 .     outlist - list of libraries
 
+     Level: developer
+
      Notes: If library is already in path will remove old reference.
 
 @*/
@@ -505,6 +517,8 @@ int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
 
     Input Parameter:
 .     next - library list
+
+     Level: developer
 
 @*/
 int DLLibraryClose(DLLibraryList next)

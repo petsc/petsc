@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.160 1999/03/12 22:03:12 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.161 1999/03/16 03:57:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -2427,6 +2427,8 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
 .  fact - factor
 
    Collective on Mat
+
+   Level: advanced
 
   Notes:
    This can also be set by the command line option: -mat_use_hash_table fact

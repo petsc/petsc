@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.161 1999/03/12 00:21:55 balay Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.162 1999/03/16 03:50:44 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -1049,6 +1049,8 @@ $     diag = i/bs - j/bs  (integer division)
    Set diag=PETSC_NULL on input for PETSc to dynamically allocate memory as 
    needed (expensive).
 -  diagv - pointer to actual diagonals (in same order as diag array), 
+
+   Level: advanced
 
    Notes:
    See the users manual for further details regarding this storage format.
