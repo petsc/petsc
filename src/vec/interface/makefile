@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vector.c map.c vnake.c
+SOURCEC  = map.c vector.c veccreate.c vecreg.c vecregall.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vector.o map.o vnake.o
+OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = Vec

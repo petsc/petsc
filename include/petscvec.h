@@ -69,17 +69,38 @@ E*/
 #define VEC_PETSCESI    "petscesi"
 typedef char*  VecType;
 
+#define VEC_SER_SEQ_BINARY "seq_binary"
+#define VEC_SER_MPI_BINARY "mpi_binary"
+typedef char *VecSerializeType;
+
+#ifdef PETSC_USE_NEW_LOGGING
+/* Logging support */
+extern int VEC_COOKIE;
+extern int MAP_COOKIE;
+extern int VEC_SCATTER_COOKIE;
+enum {VEC_ScatterBarrier, VEC_Dot, VEC_Norm, VEC_Max, VEC_Min, VEC_TDot, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX,
+      VEC_Swap, VEC_WAXPY, VEC_AssemblyBegin, VEC_AssemblyEnd, VEC_MTDot, VEC_MDot, VEC_MAXPY, VEC_PMult, VEC_SetValues,
+      VEC_Load, VEC_View, VEC_ScatterBarrierBegin, VEC_ScatterBegin, VEC_ScatterEnd, VEC_SetRandom,
+      VEC_NormBarrier, VEC_NormComm, VEC_DotBarrier, VEC_DotComm, VEC_MDotBarrier, VEC_MDotComm, VEC_ReduceArithmetic,
+      VEC_ReduceCommunication, VEC_ReduceBarrier, VEC_ReduceCommOnly, VEC_MAX_EVENTS};
+extern int VecEvents[VEC_MAX_EVENTS];
+#define VecLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(VecEvents[e],o1,o2,o3,o4)
+#define VecLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(VecEvents[e],o1,o2,o3,o4)
+#endif
+
 EXTERN int VecCreateSeq(MPI_Comm,int,Vec*);
 EXTERN int PetscMapCreateMPI(MPI_Comm,int,int,PetscMap*);  
 EXTERN int VecCreateMPI(MPI_Comm,int,int,Vec*);  
 EXTERN int VecCreateSeqWithArray(MPI_Comm,int,const PetscScalar[],Vec*);  
 EXTERN int VecCreateMPIWithArray(MPI_Comm,int,int,const PetscScalar[],Vec*);  
 EXTERN int VecCreateShared(MPI_Comm,int,int,Vec*);  
-EXTERN int VecCreate(MPI_Comm,int,int,Vec*); 
+EXTERN int VecCreate(MPI_Comm, Vec *); 
 EXTERN int VecSetType(Vec,VecType); 
 EXTERN int VecSetFromOptions(Vec);
-
+EXTERN int VecPrintHelp(Vec);
 EXTERN int VecDestroy(Vec);        
+
+EXTERN int VecSetSize(Vec, int, int);
 
 EXTERN int PetscMapDestroy(PetscMap);
 EXTERN int PetscMapGetLocalSize(PetscMap,int *);
@@ -150,15 +171,32 @@ EXTERN int VecSetBlockSize(Vec,int);
 EXTERN int VecGetBlockSize(Vec,int*);
 EXTERN int VecSetValuesBlocked(Vec,int,const int[],const PetscScalar[],InsertMode);
 
-extern PetscTruth VecRegisterAllCalled;
-EXTERN int        VecRegisterAll(const char []);
-EXTERN int        VecRegister(const char[],const char[],const char[],int(*)(Vec));
+/* Dynamic creation and loading functions */
+extern PetscFList VecList;
+extern int VecRegisterAllCalled;
+extern int VecSetType(Vec, VecType);
+extern int VecGetType(Vec, VecType *);
+extern int VecRegister(const char[],const char[],const char[],int(*)(Vec, ParameterDict));
+extern int VecRegisterAll(const char []);
+extern int VecRegisterDestroy(void);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,0)
 #else
 #define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,d)
 #endif
 
+extern PetscFList VecSerializeList;
+extern int VecSerializeRegisterAllCalled;
+extern int VecSetSerializeType(Vec, VecSerializeType);
+extern int VecGetSerializeType(Vec, VecSerializeType *);
+extern int VecSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, Vec *, PetscViewer, PetscTruth));
+extern int VecSerializeRegisterAll(const char []);
+extern int VecSerializeRegisterDestroy(void);
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define VecSerializeRegisterDynamic(a,b,c,d) VecSerializeRegister(a,b,c,0)
+#else
+#define VecSerializeRegisterDynamic(a,b,c,d) VecSerializeRegister(a,b,c,d)
+#endif
 
 EXTERN int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
 EXTERN int VecScatterPostRecvs(Vec,Vec,InsertMode,ScatterMode,VecScatter);
@@ -207,8 +245,8 @@ EXTERN int VecLoad(PetscViewer,Vec*);
 EXTERN int VecLoadIntoVector(PetscViewer,Vec);
 
 EXTERN int VecGetSize(Vec,int*);
-EXTERN int VecGetType(Vec,VecType*);
 EXTERN int VecGetLocalSize(Vec,int*);
+EXTERN int VecGetType(Vec,VecType*);
 EXTERN int VecGetOwnershipRange(Vec,int*,int*);
 
 EXTERN int VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);

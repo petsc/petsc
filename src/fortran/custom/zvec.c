@@ -271,9 +271,9 @@ void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,PetscScal
   *ierr = VecCreateMPIWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,s,V);
 }
 
-void PETSC_STDCALL veccreate_(MPI_Comm *comm,int *n,int *N,Vec *V,int *ierr)
+void PETSC_STDCALL veccreate_(MPI_Comm *comm,Vec *V,int *ierr)
 {
-  *ierr = VecCreate((MPI_Comm)PetscToPointerComm(*comm),*n,*N,V);
+  *ierr = VecCreate((MPI_Comm)PetscToPointerComm(*comm),V);
 }
 
 void PETSC_STDCALL vecduplicate_(Vec *v,Vec *newv,int *ierr)

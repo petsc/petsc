@@ -50,7 +50,7 @@ int VecDuplicate_Shared(Vec win,Vec *v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Shared"
-int VecCreate_Shared(Vec vv)
+int VecCreate_Shared(Vec vv, ParameterDict dict)
 {
   int          ierr;
   PetscScalar  *array;
@@ -278,7 +278,8 @@ int VecCreateShared(MPI_Comm comm,int n,int N,Vec *v)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreate(comm,n,N,v);CHKERRQ(ierr);
+  ierr = VecCreate(comm,v);CHKERRQ(ierr);
+  ierr = VecSetSize(*v,n,N);CHKERRQ(ierr);
   ierr = VecSetType(*v,VEC_SHARED);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

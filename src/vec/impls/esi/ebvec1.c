@@ -405,7 +405,7 @@ int VecDestroy_ESI(Vec v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_PetscESI"
-int VecCreate_PetscESI(Vec V)
+int VecCreate_PetscESI(Vec V, ParameterDict dict)
 {
   int                            ierr;
   Vec                            v;
@@ -490,7 +490,7 @@ int VecESISetFromOptions(Vec V)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_ESI"
-int VecCreate_ESI(Vec V)
+int VecCreate_ESI(Vec V, ParameterDict dict)
 {
   Vec_ESI      *s;
   int          ierr;

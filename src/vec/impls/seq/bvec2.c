@@ -482,7 +482,8 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,const PetscScalar array[],Vec *V)
   int  ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreate(comm,n,n,V);CHKERRQ(ierr);
+  ierr = VecCreate(comm,V);CHKERRQ(ierr);
+  ierr = VecSetSize(*V,n,n);CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(*V,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -490,7 +491,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,const PetscScalar array[],Vec *V)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Seq"
-int VecCreate_Seq(Vec V)
+int VecCreate_Seq(Vec V, ParameterDict dict)
 {
   Vec_Seq      *s;
   PetscScalar  *array;

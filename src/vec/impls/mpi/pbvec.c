@@ -200,7 +200,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI"
-int VecCreate_MPI(Vec vv)
+int VecCreate_MPI(Vec vv, ParameterDict dict)
 {
   int ierr;
 
@@ -259,7 +259,8 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const PetscScalar array[],Ve
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must set local size of vector");
   }
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
-  ierr = VecCreate(comm,n,N,vv);CHKERRQ(ierr);
+  ierr = VecCreate(comm,vv);CHKERRQ(ierr);
+  ierr = VecSetSize(*vv,n,N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -516,7 +517,8 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
   if (nghost < 0)             SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
-  ierr = VecCreate(comm,n,N,vv);CHKERRQ(ierr);
+  ierr = VecCreate(comm,vv);CHKERRQ(ierr);
+  ierr = VecSetSize(*vv,n,N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*vv,nghost,array,PETSC_NULL);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
@@ -593,7 +595,8 @@ int VecDuplicate_MPI(Vec win,Vec *v)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecCreate(win->comm,win->n,win->N,v);CHKERRQ(ierr);
+  ierr = VecCreate(win->comm,v);CHKERRQ(ierr);
+  ierr = VecSetSize(*v,win->n,win->N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,0,win->map);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
@@ -693,7 +696,8 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
   if (nghost < 0)             SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
-  ierr = VecCreate(comm,n,N,vv);CHKERRQ(ierr);
+  ierr = VecCreate(comm,vv);CHKERRQ(ierr);
+  ierr = VecSetSize(*vv,n,N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*vv,nghost*bs,array,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;

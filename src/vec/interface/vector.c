@@ -6,6 +6,169 @@
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecSetTypeFromOptions"
+/*@
+  VecSetTypeFromOptions - Sets the type of vector from user options. Defaults to a PETSc sequential vector on one
+  processor and a PETSc MPI vector on more than one processor.
+
+  Collective on Vec
+
+  Input Parameter:
+. vec - The vector
+
+  Level: intermediate
+
+.keywords: Vec, set, options, database, type
+.seealso: VecSetFromOptions(), VecSetType()
+@*/
+static int VecSetTypeFromOptions(Vec vec)
+{
+  PetscTruth opt;
+  char      *defaultType;
+  char       typeName[256];
+  int        numProcs;
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (vec->type_name != PETSC_NULL) {
+    defaultType = vec->type_name;
+  } else {
+    ierr = MPI_Comm_size(vec->comm, &numProcs);                                                           CHKERRQ(ierr);
+    if (numProcs > 1) {
+      defaultType = VEC_MPI;
+    } else {
+      defaultType = VEC_SEQ;
+    }
+  }
+
+  if (!VecRegisterAllCalled) {
+    ierr = VecRegisterAll(PETSC_NULL);                                                                    CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsList("-vec_type", "Vector type"," VecSetType", VecList, defaultType, typeName, 256, &opt);
+  CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = VecSetType(vec, typeName);                                                                     CHKERRQ(ierr);
+  } else {
+    ierr = VecSetType(vec, defaultType);                                                                  CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetFromOptions"
+/*@C
+   VecSetFromOptions - Sets the vector type from the options database.
+
+   Collective on Vec
+
+   Input Parameter:
+.  vec - the vector
+
+  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+          Must be called after VecCreate() but before the vector is used.
+
+  Level: intermediate
+
+  Concepts: vectors^setting options
+  Concepts: vectors^setting type
+
+.keywords: Vec, set, options, database
+.seealso: VecCreate(), VecPrintHelp(), VechSetOptionsPrefix()
+@*/
+int VecSetFromOptions(Vec vec)
+{
+  PetscTruth opt;
+  int        ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+
+  ierr = PetscOptionsBegin(vec->comm, vec->prefix, "Vector options", "Vec");                              CHKERRQ(ierr);
+
+  /* Handle generic vector options */
+  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);                                                  CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = VecPrintHelp(vec);                                                                             CHKERRQ(ierr);
+  }
+
+  /* Handle vector type options */
+  ierr = VecSetTypeFromOptions(vec);                                                                      CHKERRQ(ierr);
+
+  /* Handle specific vector options */
+  if (vec->ops->setfromoptions != PETSC_NULL) {
+    ierr = (*vec->ops->setfromoptions)(vec);                                                              CHKERRQ(ierr);
+  }
+#if defined(PETSC_HAVE_ESI) && defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
+  ierr = VecESISetFromOptions(vec);                                                                       CHKERRQ(ierr);
+#endif
+
+  ierr = PetscOptionsEnd();                                                                               CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPrintHelp"
+/*@
+  VecPrintHelp - Prints all options for the Vec.
+
+  Input Parameter:
+. vec - The vector
+
+  Options Database Keys:
+$  -help, -h
+
+  Level: intermediate
+
+.keywords: Vec, help
+.seealso: VecSetFromOptions()
+@*/
+int VecPrintHelp(Vec vec)
+{
+  char p[64];
+  int  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec, VEC_COOKIE);
+
+  ierr = PetscStrcpy(p, "-");                                                                             CHKERRQ(ierr);
+  if (vec->prefix != PETSC_NULL) {
+    ierr = PetscStrcat(p, vec->prefix);                                                                   CHKERRQ(ierr);
+  }
+
+  (*PetscHelpPrintf)(vec->comm, "Vec options ------------------------------------------------\n");
+  (*PetscHelpPrintf)(vec->comm,"   %svec_type <typename> : Sets the vector type\n", p);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSetSize"
+/*@
+  VecSetSize - Sets the local and global sizes, and checks to determine compatibility
+
+  Collective on Vec
+
+  Input Parameter:
++ v - the vector
+- bs - the blocksize
+
+  Level: intermediate
+
+.seealso: VecGetSize()
+@*/
+int VecSetSize(Vec v, int n, int N)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_COOKIE); 
+  v->n = n;
+  v->N = N;
+  ierr = PetscSplitOwnership(v->comm, &v->n, &v->N);                                                      CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecSetBlockSize"
 /*@
    VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()

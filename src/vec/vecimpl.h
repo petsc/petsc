@@ -73,7 +73,8 @@ struct _VecOps {
        (*conjugate)(Vec),
        (*setlocaltoglobalmapping)(Vec,ISLocalToGlobalMapping),
        (*setvalueslocal)(Vec,int,const int *,const PetscScalar *,InsertMode),
-       (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
+       (*resetarray)(Vec),      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
+       (*setfromoptions)(Vec);
 };
 
 /* 
