@@ -65,7 +65,9 @@ add to it).
     Added PCLUSetReuseReordering() and PCLUSetReuseFill() so that SLES can reuse the 
     reordering and fill information for a new factorization of a slightly different nonzero
     structure matrix from the previous factorization. Command line options -pc_lu_reuse_reordering
-    and -pc_lu_reuse_fill
+    and -pc_lu_reuse_fill These two options only have an effect when the SLESSetOperators option
+    of DIFFERENT_NONZERO_PATTERN is used, otherwise the ordering and fill information is always 
+    reused.
 
   AO
 
