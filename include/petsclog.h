@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.15 1995/08/17 18:07:21 curfman Exp bsmith $ */
+/* $Id: plog.h,v 1.16 1995/09/02 04:02:04 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -39,6 +39,8 @@
 #define MAT_SetValues                           24
 #define MAT_ForwardSolve                        25
 #define MAT_BackwardSolve                       26
+#define MAT_Load                                27
+#define MAT_View                                28
 
 #define VEC_Dot                                 30
 #define VEC_Norm                                31
@@ -61,6 +63,8 @@
 #define VEC_MAXPY                               48
 #define VEC_PMult                               49
 #define VEC_SetValues                           50
+#define VEC_Load                                51
+#define VEC_View                                52
 
 #define SLES_Solve                              55
 #define PC_SetUp                                56
