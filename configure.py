@@ -19,6 +19,8 @@ class Configure(config.base.Configure):
   def checkCompiler(self):
     '''Make sure the compiler is recent enough'''
     if self.compilers.isGCXX:
+      import commands
+
       (status,output) = commands.getstatusoutput(self.framework.argDB['CXX']+' -dumpversion')
       if not status == 0:
         raise RuntimeError('g++ is not in your path; please make sure that you have a g++ of at least version 3 installed in your path. Get gcc/g++ at http://gcc.gnu.com')
@@ -30,5 +32,6 @@ class Configure(config.base.Configure):
   def configure(self):
     import os
 
+    self.executeTest(self.checkCompiler)
     self.executeTest(self.configureCygwin)
     return
