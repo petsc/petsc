@@ -32,5 +32,5 @@ include ${PETSC_DIR}/bmake/common/test
 # petscapps* get built with 'builddist' and 'rsync'ed over to www-fp via the crontab
 bib2html:
 	${RM} website/publications/petscapps.html website/publications/petscapps-bib.html
-	/home/gropp/public_html/bib/bib2html -group tex/doctext/petsc.group -listfile website/publications/petscapps.html -listconfig tex/doctext/petscapp.cfg tex/petscapp.bib -nospecials > website/publications/petscapps-bib.html
+	bib2html -group tex/doctext/petsc.group -listfile website/publications/petscapps.html -listconfig tex/doctext/petscapp.cfg tex/petscapp.bib -nospecials > website/publications/petscapps-bib.html
 
