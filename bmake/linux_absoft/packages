@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.6 2000/02/02 20:07:23 bsmith Exp balay $ 
+# $Id: base.site,v 1.7 2000/08/02 21:15:48 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -38,11 +38,10 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 # Location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
 #
-#MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
-#MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
-MPE_INCLUDE   = -I${MPI_HOME}/mpe 
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
+MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux_absoft
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
 # Location of BlockSolve (MPI version)
 #
