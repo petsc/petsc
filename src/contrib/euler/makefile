@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.30 1998/06/12 19:53:51 curfman Exp balay $ 
+# $Id: makefile,v 1.31 1998/06/12 21:53:47 balay Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -42,14 +42,19 @@
 # ACTIVATE_PVAR - Flag to indicate that we compile the pvar() routine
 #    for computing physical data.  We can deactivate this to save a
 #    bit of memory.
+#         -DACTIVATE_PVAR 
 #
 # ACTIVATE_OLD_ASSEMBLY - Flag to indicate that we activate old-style
 #    matrix and vector assembly options
 #
 # Additional compiler/preprocessor flags
+# CPPFLAGS     - Basic compiler flags, as specified by petsc/bmake/common
+# USERCPPFLAGS - Additional compiler/preprocessor flags for Fortran
 #
-CFLAGS    =
-CPPFLAGS  = -DACTIVATE_PVAR 
+# USERCPPFLAGS  =
+CFLAGS    = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
+LOCDIR    = src/contrib/euler/
+
 
 # -----------------------------------------------------------------------
 # Define application source code
