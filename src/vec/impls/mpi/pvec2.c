@@ -1,6 +1,9 @@
 
-/* $Id: pvec2.c,v 1.12 1995/11/01 19:08:38 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.13 1995/11/01 23:14:39 bsmith Exp bsmith $ */
 
+/*
+     Code for some of the parallel vector primatives.
+*/
 #include <math.h>
 #include "pvecimpl.h" 
 #include "inline/dot.h"
@@ -8,6 +11,7 @@
 static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {
   Scalar *work;
+
   work = (Scalar *)PetscMalloc( nv * sizeof(Scalar) );  CHKPTRQ(work);
   VecMDot_Seq(  nv, xin, y, work );
 #if defined(PETSC_COMPLEX)
@@ -22,9 +26,9 @@ static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 
 static int VecNorm_MPI(  Vec xin,NormType type, double *z )
 {
-  Vec_MPI *x = (Vec_MPI *) xin->data;
-  double sum, work = 0.0;
-  Scalar  *xx = x->array;
+  Vec_MPI      *x = (Vec_MPI *) xin->data;
+  double       sum, work = 0.0;
+  Scalar       *xx = x->array;
   register int n = x->n;
 
   if (type == NORM_2) {
@@ -62,6 +66,7 @@ static int VecNorm_MPI(  Vec xin,NormType type, double *z )
 static int VecMax_MPI( Vec xin, int *idx, double *z )
 {
   double work;
+
   /* Find the local max */
   VecMax_Seq( xin, idx, &work );
 
@@ -79,6 +84,7 @@ static int VecMax_MPI( Vec xin, int *idx, double *z )
 static int VecMin_MPI( Vec xin, int *idx, double *z )
 {
   double work;
+
   /* Find the local Min */
   VecMin_Seq( xin, idx, &work );
 

@@ -1,7 +1,6 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.43 1995/10/24 21:45:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.44 1995/11/01 23:17:58 bsmith Exp bsmith $";
 #endif
-
 
 #include "aij.h"
 #include "inline/spops.h"
@@ -145,13 +144,13 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   IS         iscol = b->col, isrow = b->row, isicol;
   int        *r,*ic, ierr, i, j, n = a->m, *ai = b->i, *aj = b->j;
   int        *ajtmpold, *ajtmp, nz, row, *ics, shift = a->indexshift;
+  int        *diag_offset = b->diag;
   Scalar     *rtmp,*v, *pc, multiplier; 
   /* These declarations are for optimizations.  They reduce the number of
      memory references that are made by locally storing information; the
      word "register" used here with pointers can be viewed as "private" or 
      "known only to me"
    */
-  int             *diag_offset = b->diag;
   register Scalar *pv, *rtmps;
   register int    *pj;
 
@@ -603,3 +602,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   (*fact)->factor   = FACTOR_LU;
   return 0; 
 }
+
+
+
+

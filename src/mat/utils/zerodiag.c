@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.5 1995/07/30 14:58:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.6 1995/11/01 19:11:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: zerodiag.c,v 1.5 1995/07/30 14:58:13 bsmith Exp bsmit
 
 /* Given a current row and current permutation, find a column permutation
    that removes a zero diagonal */
-int SpiZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
+int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
                            double atol,int* rc,double* rcv )
 {
   int      k, nz, repl, *j, kk, nnz, *jj;
@@ -90,7 +90,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
 	       to pivot with a previous column.  To do this, we need
 	       to be sure that we don't introduce a zero in a previous
 	       diagonal */
-        if (!SpiZeroFindPre_Private(mat,prow,row,col,repla,atol,&repl,&repla)){
+        if (!MatZeroFindPre_Private(mat,prow,row,col,repla,atol,&repl,&repla)){
 	  SETERRQ(1,"MatReorderForNonzeroDiagonal:Can not reorder matrix");
 	}
       }

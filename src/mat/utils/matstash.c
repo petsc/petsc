@@ -4,7 +4,8 @@
 #define CHUNCKSIZE   100
 /*
    This stash is currently used for all the parallel matrix implementations.
-   Perhaps this code ultimately should be moved elsewhere.
+   The stash is where elements of a matrix destined to be stored on other 
+   processors are kept until matrix assembly is done.
 
    This is a simple minded stash. Do a linear search to determine if
    in stash, if not add to end.
@@ -77,3 +78,5 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,
   }
   return 0;
 }
+
+

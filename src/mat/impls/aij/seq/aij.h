@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.15 1995/10/17 21:41:57 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.16 1995/10/24 21:45:28 bsmith Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -9,7 +9,7 @@
 /*  
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format), compatible with Fortran.  The i[] and j[] arrays start at 1,
-  not or 0, depending on the value of shift.  For example, in Fortran 
+  or 0, depending on the value of shift.  For example, in Fortran 
   j[i[k]+p+shift] is the pth column in row k.
 */
 

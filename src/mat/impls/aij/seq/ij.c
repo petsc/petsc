@@ -1,14 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.12 1995/11/01 19:10:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.13 1995/11/01 23:17:58 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
 
 /*
   MatToSymmetricIJ_SeqAIJ - Convert a sparse AIJ matrix to IJ format 
-           (ignore the "A" part)
-           Allocates the space needed. Uses only the lower triangular 
-           part of the matrix.
+           (ignore the "A" part) Allocates the space needed. Uses only 
+           the lower triangular part of the matrix.
 
     Description:
     Take the data in the row-oriented sparse storage and build the
@@ -24,7 +23,7 @@ static char vcid[] = "$Id: ij.c,v 1.12 1995/11/01 19:10:07 bsmith Exp bsmith $";
 .   ja     - ja part (column indices)
 
     Notes:
-$    Both ia and ja maybe freed with PetscFree();
+$    Both ia and ja may be freed with PetscFree();
 $    This routine is provided for ordering routines that require a 
 $    symmetric structure.  It is used in SpOrder (and derivatives) since
 $    those routines call SparsePak routines that expect a symmetric 
@@ -68,14 +67,16 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
     nz = A->i[row+1] - A->i[row];
     j  = A->j + A->i[row] + shift;
     while (nz--) {
-       col = *j++ + shift;
-       if ( col > row ) { break;}
-       if (col != row) {wr = work[col]; work[col] = wr + 1; ja[wr] = row + 1; }
-       wr = work[row]; work[row] = wr + 1;
-       ja[wr] = col + 1;
+      col = *j++ + shift;
+      if ( col > row ) { break;}
+      if (col != row) {wr = work[col]; work[col] = wr + 1; ja[wr] = row + 1; }
+      wr = work[row]; work[row] = wr + 1;
+      ja[wr] = col + 1;
     }
   }
   PetscFree(work);
   return 0;
 }
+
+
 

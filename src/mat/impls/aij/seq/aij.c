@@ -1,7 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.107 1995/11/01 19:10:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.108 1995/11/01 23:17:58 bsmith Exp bsmith $";
 #endif
 
+/*
+    Defines the basic matrix operations for the AIJ (compressed row)
+  matrix storage format.
+*/
 #include "aij.h"
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
@@ -29,9 +33,8 @@ static int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inser
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax, N, sorted = a->sorted;
   int        *imax = a->imax, *ai = a->i, *ailen = a->ilen;
-  int        *aj = a->j, nonew = a->nonew;
+  int        *aj = a->j, nonew = a->nonew,shift = a->indexshift;
   Scalar     *ap,value, *aa = a->a;
-  int        shift = a->indexshift;
 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k];   
@@ -383,6 +386,7 @@ int MatDestroy_SeqAIJ(PetscObject obj)
 {
   Mat        A  = (Mat) obj;
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
@@ -468,6 +472,7 @@ static int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
   PLogFlops(2*a->nz - a->n);
   return 0;
 }
+
 static int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -564,8 +569,7 @@ static int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb;
-  int        ierr, *idx, *diag,n = a->n, m = a->m, i;
-  int        shift = a->indexshift;
+  int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
 
   VecGetArray(xx,&x); VecGetArray(bb,&b);
   if (!a->diag) {if ((ierr = MatMarkDiag_SeqAIJ(A))) return ierr;}
@@ -694,8 +698,7 @@ static int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
   return 0;
 } 
 
-static int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,int *nz,
-                             int *nzalloc,int *mem)
+static int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   *nz      = a->nz;
@@ -842,8 +845,8 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Mat        C;
   int        i, ierr, *aj = a->j, *ai = a->i, m = a->m, len, *col;
-  Scalar     *array = a->a;
   int        shift = a->indexshift;
+  Scalar     *array = a->a;
 
   if (!B && m != a->n) SETERRQ(1,"MatTranspose_SeqAIJ:Not for rectangular mat in place");
   col = (int *) PetscMalloc((1+a->n)*sizeof(int)); CHKPTRQ(col);
@@ -887,8 +890,7 @@ static int MatScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *l,*r,x,*v;
-  int        i,j,m = a->m, n = a->n, M, nz = a->nz, *jj;
-  int        shift = a->indexshift;
+  int        i,j,m = a->m, n = a->n, M, nz = a->nz, *jj,shift = a->indexshift;
 
   if (!a->assembled) SETERRQ(1,"MatScale_SeqAIJ:Not for unassembled matrix");
   if (ll) {
@@ -1134,6 +1136,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   Mat        B;
   Mat_SeqAIJ *b;
   int        i,len,ierr;
+
   *A      = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQAIJ,comm);
   PLogObjectCreate(B);

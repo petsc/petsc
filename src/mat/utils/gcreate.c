@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.55 1995/10/26 21:39:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.56 1995/11/01 23:19:34 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -29,6 +29,7 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
   int size;
   char *p = "-";
+
   if (pre) p = pre;
   MPI_Comm_size(comm,&size);
   if (OptionsHasName(0,"-help")) {
@@ -225,6 +226,7 @@ int MatGetName(Mat mat,char **name)
 {
   int  itype = (int)mat->type;
   char *matname[10];
+
   /* Note:  Be sure that this list corresponds to the enum in mat.h */
   matname[0] = "MATSEQDENSE";
   matname[1] = "MATSEQAIJ";
@@ -241,3 +243,5 @@ int MatGetName(Mat mat,char **name)
   return 0;
 }
  
+
+

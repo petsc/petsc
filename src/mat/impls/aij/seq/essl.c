@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.5 1995/10/19 15:47:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.6 1995/11/01 23:17:58 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: essl.c,v 1.5 1995/10/19 15:47:17 curfman Exp bsmith $
 #include "aij.h"
 
 #if defined(HAVE_ESSL) && !defined(__cplusplus)
-/* #include <essl.h>  */
+/* #include <essl.h> This doesn't work!  */
 #include <math.h>
 
 typedef struct {
@@ -29,8 +29,7 @@ typedef struct {
 
 extern int MatDestroy_SeqAIJ(PetscObject);
 
-static int MatGetReordering_SeqAIJ_Essl(Mat mat,MatOrdering type,
-                                               IS *rperm,IS *cperm)
+static int MatGetReordering_SeqAIJ_Essl(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 {
   *rperm = *cperm = 0;
   return 0;
@@ -58,8 +57,7 @@ static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
   ierr = VecCopy(b,x); CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
 
-  dgss(&zero, &a->n, essl->a, essl->ia, essl->ja,&essl->lna,xx,essl->aux,
-              &essl->naux);
+  dgss(&zero, &a->n, essl->a, essl->ia, essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
 
   return 0;
 }
@@ -71,8 +69,7 @@ static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   int             ierr, *ridx, *cidx,i, len;
   Mat_SeqAIJ_Essl *essl;
 
-  if (a->m != a->n) 
-    SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ_Essl:matrix must be square"); 
+  if (a->m != a->n) SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ_Essl:matrix must be square"); 
   ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,0,F); CHKERRQ(ierr);
   B             = *F;
   B->ops.solve  = MatSolve_SeqAIJ_Essl;
@@ -151,3 +148,4 @@ int MatUseEssl_SeqAIJ(Mat A)
 }
 
 #endif
+

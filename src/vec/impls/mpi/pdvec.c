@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.32 1995/11/01 23:14:39 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.33 1995/11/02 04:13:14 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -16,7 +16,7 @@ static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high)
 
 static int VecDestroy_MPI(PetscObject obj )
 {
-  Vec       v = (Vec ) obj;
+  Vec     v = (Vec ) obj;
   Vec_MPI *x = (Vec_MPI *) v->data;
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Length=%d",x->N);
@@ -34,6 +34,7 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,ierr;
   FILE        *fd;
+
   ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
 
   MPI_Comm_rank(xin->comm,&rank); 
@@ -59,10 +60,9 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
 static int VecView_MPI_Files(Vec xin, Viewer ptr )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank;
+  int         i,rank,len, work = x->n,n,j,size,ierr;
   MPI_Status  status;
   FILE        *fd;
-  int         len, work = x->n,n,j,size,ierr;
   Scalar      *values;
 
   ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
@@ -201,11 +201,9 @@ static int VecView_MPI_DrawCtx(Vec xin, DrawCtx win )
   if (rank) { /* receive value from right */
     MPI_Recv(&tmp,1,MPI_DOUBLE,rank-1,xin->tag,xin->comm,&status);
 #if !defined(PETSC_COMPLEX)
-    DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],
-                   DRAW_RED);
+    DrawLine(win,(double)start-1,tmp,(double)start,x->array[0],DRAW_RED);
 #else
-    DrawLine(win,(double)start-1,tmp,(double)start,real(x->array[0]),
-                    DRAW_RED);
+    DrawLine(win,(double)start-1,tmp,(double)start,real(x->array[0]),DRAW_RED);
 #endif
   }
   DrawSyncFlush(win);

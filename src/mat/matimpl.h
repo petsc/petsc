@@ -1,8 +1,13 @@
-/* $Id: matimpl.h,v 1.34 1995/10/30 04:25:37 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.35 1995/11/01 19:09:54 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
 #include "mat.h"
+
+/*
+     Defines the part of the matrix data structure shared by 
+  all matrix types.
+*/
 
 struct _MatOps {
   int       (*setvalues)(Mat,int,int*,int,int*,Scalar*,InsertMode),
