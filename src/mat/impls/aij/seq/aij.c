@@ -2380,7 +2380,7 @@ int MatRetrieveValues(Mat mat)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatlabEnginePut_SeqAIJ"
-int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
+int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine)
 {
   int         ierr,i,*ai,*aj;
   Mat         B = (Mat)obj;
@@ -2407,7 +2407,7 @@ int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
   }
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   mxSetName(mat,obj->name);
-  engPutArray((Engine *)engine,mat);
+  engPutArray((Engine *)mengine,mat);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2415,7 +2415,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatlabEngineGet_SeqAIJ"
-int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *engine)
+int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *mengine)
 {
   int        ierr,ii;
   Mat        mat = (Mat)obj;
@@ -2426,7 +2426,7 @@ int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *engine)
   ierr = PetscFree(aij->a);CHKERRQ(ierr);
   aij->indexshift = 0;
 
-  mmat = engGetArray((Engine *)engine,obj->name);
+  mmat = engGetArray((Engine *)mengine,obj->name);
 
   aij->nz           = (mxGetJc(mmat))[mat->m];
   ierr              = PetscMalloc(((size_t) aij->nz)*(sizeof(int)+sizeof(PetscScalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);

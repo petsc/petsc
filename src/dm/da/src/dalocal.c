@@ -15,13 +15,13 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEnginePut_DA2d"
-int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
+int VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 {
-  int     ierr,n,m;
-  Vec     vec = (Vec)obj;
+  int          ierr,n,m;
+  Vec          vec = (Vec)obj;
   PetscScalar  *array;
-  mxArray *mat;
-  DA      da;
+  mxArray      *mat;
+  DA           da;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
@@ -37,7 +37,7 @@ int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
   ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   mxSetName(mat,obj->name);
-  engPutArray((Engine *)engine,mat);
+  engPutArray((Engine *)mengine,mat);
   
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
