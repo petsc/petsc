@@ -1,5 +1,5 @@
 C
-C  "$Id: somefort.F,v 1.13 1997/05/02 19:34:46 bsmith Exp $";
+C  "$Id: snesdnest.F,v 1.3 1997/07/05 16:30:11 curfman Exp curfman $";
 C
 C  Noise estimation routine, written by Jorge More'.  Details are below.
 C
@@ -7,7 +7,7 @@ C
       subroutine dnest(nf,fval,h,fnoise,fder2,hopt,info,eps)
       implicit none
 
-#include "../../../include/FINCLUDE/petsc.h"
+#include "../../../../include/FINCLUDE/petsc.h"
 
       integer nf, info
       Double h, fnoise, fder2, hopt
