@@ -10,7 +10,7 @@ SOURCEH  = dvecimpl.h
 OBJSC    =  
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = seq mpi shared esi
+DIRS     = seq mpi shared esi hypre
 LOCDIR   = src/vec/impls/
 
 include ${PETSC_DIR}/bmake/common/base

@@ -30,6 +30,9 @@ EXTERN int PCCreate_mILU(PC);
 EXTERN int PCCreate_PetscESI(PC);
 EXTERN int PCCreate_ESI(PC);
 EXTERN int PCCreate_Mat(PC);
+#if defined(PETSC_HAVE_HYPRE)
+EXTERN int PCCreate_HYPRE(PC);
+#endif
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -83,6 +86,9 @@ int PCRegisterAll(char *path)
 #if defined(__cplusplus) && !defined(PETSC_USE_SINGLE) && !defined (PETSC_USE_COMPLEX) && defined(PETSC_HAVE_CXX_NAMESPACE)
   ierr = PCRegisterDynamic(PCESI          ,path,"PCCreate_ESI",PCCreate_ESI);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCPETSCESI     ,path,"PCCreate_PetscESI",PCCreate_PetscESI);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  ierr = PCRegisterDynamic(PCHYPRE        ,path,"PCCreate_HYPRE",PCCreate_HYPRE);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

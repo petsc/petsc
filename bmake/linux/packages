@@ -106,7 +106,15 @@ PETSC_HAVE_CCA = -DPETSC_HAVE_CCA
 #  Location of hypre
 #
 HYPRE_INCLUDE    = -I/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/include
-HYPRE_LIB        = -L/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/lib
+HYPRE_LIB        = -L/home/petsc/software/hypre-1.6.0/hypre-1.6.0/src/hypre/lib  -lHYPRE_parcsr_ls  \
+                   -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI \
+                   -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver \
+                   -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid \
+                   -lHYPRE_parcsr_ls  \
+                   -lHYPRE_DistributedMatrix -lHYPRE_parcsr_mv  -lHYPRE_FEI \
+                   -lHYPRE_seq_mv -lHYPRE_IJ_mv -lkrylov -lHYPRE_DistributedMatrixPilutSolver \
+                   -lHYPRE_utilities  -lHYPRE_MatrixMatrix -lHYPRE_ParaSails -lHYPRE_Euclid 
+
 PETSC_HAVE_HYPRE = -DPETSC_HAVE_HYPRE
 
 # ------------------------------------------------------------------------------

@@ -39,9 +39,9 @@ def main():
           lines[i] = "!"+lines[i][1:]
 
 #     move number right one position
-      if len(lines[i]) > 0:
-        if (lines[i][0] != ' ') & (lines[i][0] != '!') & (lines[i][0] != '#'):
-          lines[i] = " "+lines[i]
+#      if len(lines[i]) > 0:
+#        if (lines[i][0] != ' ') & (lines[i][0] != '!') & (lines[i][0] != '#'):
+#          lines[i] = " "+lines[i]
 
 #     replace continuation indicator with &
       if len(lines[i]) > 6:

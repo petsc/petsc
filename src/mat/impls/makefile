@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = dense aij shell rowbs bdiag  baij adj maij is sbaij adic esi
+DIRS     = dense aij shell rowbs bdiag  baij adj maij is sbaij adic esi hypre
 LOCDIR   = src/mat/impls/
 
 include ${PETSC_DIR}/bmake/common/base

@@ -16,7 +16,7 @@
 #   13 - Examples that should only be compiled.
 #   14 - requires Matlab - src/dm/da/examples/tests
 #   17 - requires PYTHON or wget and Unix (uses urlget) and popen()
-#   18 - requires C++ and dynamic libraries
+#   18 - requires C++ and dynamic libraries (for ESI)
 
 testexamples_1: ${TESTEXAMPLES_1} clean
 testexamples_2: ${TESTEXAMPLES_2} clean

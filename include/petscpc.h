@@ -59,6 +59,7 @@ E*/
 #define PCESI        "esi"
 #define PCPETSCESI   "petscesi"
 #define PCMAT        "mat"
+#define PCHYPRE      "hypre"
 
 /* Logging support */
 extern int PC_COOKIE;

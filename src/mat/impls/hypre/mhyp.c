@@ -4,8 +4,10 @@
 */
 
 #include "src/mat/matimpl.h"          /*I "petscvec.h" I*/
+EXTERN_C_BEGIN
 #include "HYPRE.h"
 #include "IJ_mv.h"
+EXTERN_C_END
 
 int MatHYPRE_IJMatrixCreate(Mat v,HYPRE_IJMatrix *ij)
 {
@@ -14,7 +16,7 @@ int MatHYPRE_IJMatrixCreate(Mat v,HYPRE_IJMatrix *ij)
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   ierr = PetscMapGetLocalRange(v->cmap,&cstart,&cend);CHKERRQ(ierr);
-  ierr = HYPRE_IJMatrixCreate(v->comm,rstart,rend,cstart,cend,ij);CHKERRQ(ierr);
+  ierr = HYPRE_IJMatrixCreate(v->comm,rstart,rend-1,cstart,cend-1,ij);CHKERRQ(ierr);
   ierr = HYPRE_IJMatrixSetObjectType(*ij,HYPRE_PARCSR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

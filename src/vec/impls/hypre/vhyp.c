@@ -4,16 +4,20 @@
 */
 
 #include "src/vec/vecimpl.h"          /*I "petscvec.h" I*/
+EXTERN_C_BEGIN
 #include "HYPRE.h"
 #include "IJ_mv.h"
+EXTERN_C_END
 
 int VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
 {
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = HYPRE_IJVectorCreate(v->comm,v->map->rstart,v->map->rend,ij);CHKERRQ(ierr);
+  ierr = HYPRE_IJVectorCreate(v->comm,v->map->rstart,v->map->rend-1,ij);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorSetObjectType(*ij,HYPRE_PARCSR);CHKERRQ(ierr);
+  ierr = HYPRE_IJVectorInitialize(*ij);CHKERRQ(ierr);
+  ierr = HYPRE_IJVectorAssemble(*ij);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -28,5 +32,17 @@ int VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
   ierr = HYPRE_IJVectorSetValues(ij,v->map->n,PETSC_NULL,array);CHKERRQ(ierr);
   ierr = VecRestoreArrayFast(v,&array);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorAssemble(ij);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+int VecHYPRE_IJVectorCopyFrom(HYPRE_IJVector ij,Vec v)
+{
+  int         ierr;
+  PetscScalar *array;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayFast(v,&array);CHKERRQ(ierr);
+  ierr = HYPRE_IJVectorGetValues(ij,v->map->n,PETSC_NULL,array);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
