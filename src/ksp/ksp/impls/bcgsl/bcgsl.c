@@ -100,7 +100,9 @@ int bcgsl_dot_i(int m, PetscScalar *x, PetscScalar *y,PetscScalar *w)
 #define __FUNCT__ "bcgsl_cleanup_i" 
 int bcgsl_cleanup_i(KSP ksp)
 {
+#if 0
   KSP_BiCGStabL   *bcgsl = (KSP_BiCGStabL *)ksp->data;
+#endif
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -372,25 +374,23 @@ static int  KSPSolve_BCGSL(KSP ksp)
       ierr = bcgsl_dot_i(LDZc,AY0c,AYtc,&kappa0);CHKERRQ(ierr);
       
       /* round-off can cause negative kappa's */
-      if ( kappa0<0 ) kappa0 = -kappa0;
+      if (PetscRealPart(kappa0) < 0) kappa0 = -kappa0;
       kappa0 = PetscSqrtScalar(kappa0); 
       
       ierr = bcgsl_dot_i(LDZc,AYlc,AYtc,&kappaA);CHKERRQ(ierr);
       ierr = bcgsl_mvmul_i(LDZc,MZc,LDZc,AYlc, AYtc);CHKERRQ(ierr);
       ierr = bcgsl_dot_i(LDZc,AYlc,AYtc,&kappa1);CHKERRQ(ierr);
       
-      if ( kappa1<0 ) kappa1 = -kappa1;
+      if (PetscRealPart(kappa1) < 0) kappa1 = -kappa1;
       kappa1 = PetscSqrtScalar(kappa1); 
       
-      if ( kappa0 && kappa1) {
-	if ( kappaA<0.7*kappa0*kappa1 ){
-	  ghat = ( kappaA<0.0 ) ?
-	    -0.7*kappa0/kappa1 :
-	    0.7*kappa0/kappa1  ; 
+      if (PetscRealPart(kappa0) > 0.0 && PetscRealPart(kappa1) > 0.0) {
+	if (PetscRealPart(kappaA) < 0.7*PetscAbsScalar(kappa0)*PetscAbsScalar(kappa1)){
+	  ghat = (PetscRealPart(kappaA) < 0.0) ? -0.7*PetscRealPart(kappa0)/PetscRealPart(kappa1) : 0.7*PetscRealPart(kappa0)/PetscRealPart(kappa1);
 	}else{
-	  ghat = kappaA/(kappa1*kappa1);
+	  ghat = PetscRealPart(kappaA)/(PetscRealPart(kappa1)*PetscRealPart(kappa1));
 	}
-	
+
 	for ( i=0; i<=bcgsl->ell; i++ ){
 	  AY0c[i] = AY0c[i] - ghat* AYlc[i];
 	}
