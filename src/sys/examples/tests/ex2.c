@@ -1,12 +1,7 @@
-#ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.7 1995/03/10 04:45:17 bsmith Exp $";
-#endif
-
 /*
-      Tests the signal handler.
+      This example tests the signal handler.
 */
 #include "petsc.h"
-#include "options.h"
 #include <stdio.h>
 
 int CreateError(int n)

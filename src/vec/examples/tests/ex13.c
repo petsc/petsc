@@ -7,7 +7,6 @@ this case each local vector is as long as the entire parallel vector.\n";
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "options.h"
 #include "sysio.h"
 #include <math.h>
 

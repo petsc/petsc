@@ -1,8 +1,8 @@
 
-static char help[] = "Tests catching of floating point exceptions";
+static char help[] = 
+"This example tests catching of floating point exceptions.\n\n";
 
 #include "petsc.h"
-#include "options.h"
 #include <stdio.h>
 
 int CreateError(double x)

@@ -5,7 +5,6 @@ static char help[] = "This example tests various vector routines\n\n";
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "options.h"
 #include "sysio.h"
 #include <math.h>
 

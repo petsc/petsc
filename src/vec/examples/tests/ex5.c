@@ -8,7 +8,6 @@ parallel vector.\n\n";
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
-#include "options.h"
 #include "sysio.h"
 #include <math.h>
 
