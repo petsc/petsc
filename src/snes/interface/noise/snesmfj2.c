@@ -124,7 +124,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
         ctx->error_rel = sqrt(noise);
         PetscLogInfo(snes,"SNESMatrixFreeMult2_Private: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",noise,ctx->error_rel,h);
         ctx->compute_err_iter = iter;
-        ctx->need_err = 0;
+        ctx->need_err = PETSC_FALSE;
       }
 
       ierr = VecDotBegin(U,a,&dot);CHKERRQ(ierr);
@@ -244,9 +244,9 @@ PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   ierr = PetscOptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
-    mfctx->compute_err = 1; 
+    mfctx->compute_err = PETSC_TRUE; 
   }
-  if (mfctx->compute_err == 1) mfctx->need_err = 1;
+  if (mfctx->compute_err == PETSC_TRUE) mfctx->need_err = PETSC_TRUE;
   if (mfctx->jorge || mfctx->compute_err) {
     ierr = DiffParameterCreate_More(snes,x,&mfctx->data);CHKERRQ(ierr);
   } else mfctx->data = 0;

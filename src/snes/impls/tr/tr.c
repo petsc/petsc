@@ -141,7 +141,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       if (rho > neP->sigma) break;
       PetscLogInfo(snes,"SNESSolve_TR: Trying again in smaller region\n");
       /* check to see if progress is hopeless */
-      neP->itflag = 0;
+      neP->itflag = PETSC_FALSE;
       ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         /* We're not progressing, so return with the current iterate */
@@ -164,7 +164,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       SNESMonitor(snes,i+1,fnorm);
 
       /* Test for convergence */
-      neP->itflag = 1;
+      neP->itflag = PETSC_TRUE;
       ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         break;
@@ -382,7 +382,7 @@ PetscErrorCode SNESCreate_TR(SNES snes)
   neP->delta2		= 0.75;
   neP->delta3		= 2.0;
   neP->sigma		= 0.0001;
-  neP->itflag		= 0;
+  neP->itflag		= PETSC_FALSE;
   neP->rnorm0		= 0;
   neP->ttol		= 0;
   PetscFunctionReturn(0);

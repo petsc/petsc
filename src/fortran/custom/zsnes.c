@@ -115,12 +115,12 @@ static void (PETSC_STDCALL *f8)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConve
 static void (PETSC_STDCALL *f2)(SNES*,Vec*,Vec*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f11)(SNES*,Vec*,Vec*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*);
-static void (PETSC_STDCALL *f73)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,PetscErrorCode*);
+static void (PETSC_STDCALL *f73)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*);
 static void (PETSC_STDCALL *f74)(SNES*,void *,Vec*,PetscTruth*,PetscErrorCode*);
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,int *flag)
+PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr = 0;
   (*f73)(&snes,(void*)&ctx,&x,&f,&g,&y,&w,&fnorm,ynorm,gnorm,flag,&ierr);CHKERRQ(ierr);
@@ -351,28 +351,28 @@ void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,i
 
 /* -----------------------------------------------------------------------------------------------------*/
 void snescubiclinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
-                                        PetscReal *ynorm,PetscReal *gnorm,int *flag,PetscErrorCode *ierr)
+                                        PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
   *ierr = SNESCubicLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 void snesquadraticlinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
-                                        PetscReal *ynorm,PetscReal *gnorm,int *flag,PetscErrorCode *ierr)
+                                        PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
   *ierr = SNESQuadraticLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 void snesnolinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
-                                        PetscReal *ynorm,PetscReal *gnorm,int *flag,PetscErrorCode *ierr)
+                                        PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
   *ierr = SNESNoLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 void snesnolinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,PetscReal*fnorm,
-                                        PetscReal *ynorm,PetscReal *gnorm,int *flag,PetscErrorCode *ierr)
+                                        PetscReal *ynorm,PetscReal *gnorm,PetscTruth *flag,PetscErrorCode *ierr)
 {
   *ierr = SNESNoLineSearchNoNorms(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);
 }
 
 
-void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   if ((FCNVOID)f == (FCNVOID)snescubiclinesearch_) {
     *ierr = SNESSetLineSearch(*snes,SNESCubicLineSearch,ctx);
