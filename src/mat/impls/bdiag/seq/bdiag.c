@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.22 1995/06/11 00:19:49 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.23 1995/06/14 15:24:11 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -965,9 +965,12 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->ndim   = 0;
   mat->mainbd = -1;
 
-  mat->diag   = (int *)PETSCMALLOC( (2+nb)*nda * sizeof(int) ); CHKPTRQ(mat->diag);
+  mat->diag   = (int *)PETSCMALLOC( (2+nb)*nda * sizeof(int) ); 
+  CHKPTRQ(mat->diag);
   mat->bdlen  = mat->diag + nda;
   mat->colloc = mat->bdlen + nda;
+  mat->diagv  = (Scalar **)PETSCMALLOC(nda * sizeof(Scalar*)); 
+  CHKPTRQ(mat->diagv);
   sizetot = 0;
   if (diagv) { /* user allocated space */
     mat->user_alloc = 1;
@@ -1011,7 +1014,6 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   if (nda != nd) sizetot += 1;
   mat->maxnz  = sizetot;
   mat->dvalue = (Scalar *)PETSCMALLOC(nb*nda * sizeof(Scalar)); CHKPTRQ(mat->dvalue);
-  mat->diagv  = (Scalar **)PETSCMALLOC(nda * sizeof(Scalar*)); CHKPTRQ(mat->diagv);
   mat->mem    = (nda*(nb+2)) * sizeof(int) + nb*nda * sizeof(Scalar)
                  + nda * sizeof(Scalar*) + sizeof(Mat_BDiag)
                  + sizetot * sizeof(Scalar);
