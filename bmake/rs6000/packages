@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.41 2000/12/20 20:34:21 balay Exp balay $ 
+# $Id: base.site,v 1.42 2001/03/27 22:17:30 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -12,7 +12,7 @@
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-BLASLAPACK_LIB         = -lesslp2 -L/home/petsc/software/blaslapack/rs6000 -lflapack -lblas
+BLASLAPACK_LIB         = -lessl -L/home/petsc/software/blaslapack/rs6000 -lflapack -lblas
 #PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_ESSL_ONLY
 #
 # Location of MPI (Message Passing Interface) software
