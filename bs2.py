@@ -9,9 +9,18 @@ echo = 2
 
 class Maker:
   def __init__(self):
-    self.tmpDir = os.path.join(os.environ['TMPDIR'], 'bs')
+    self.setupTmpDir()
 
   def setupTmpDir(self):
+    try:
+      self.tmpDir = os.path.join(os.environ['TMPDIR'], 'bs')
+    except KeyError:
+      if (os.path.exists('/tmp')):
+        self.tmpDir = os.path.join('/tmp', 'bs')
+      else:
+        raise RuntimeError('Please set the TMPDIR variable')
+
+  def cleanupTmpDir(self):
     if not os.path.exists(self.tmpDir): os.makedirs(self.tmpDir)
     oldDir = os.getcwd()
     os.chdir(self.tmpDir)
@@ -189,15 +198,15 @@ class NewerThanLibraryObject (FileCompare):
       return 0
 
 class Action (Transform):
-  def __init__(self, program, sources = FileGroup(), flags = '', filter = lambda file: 1, allAtOnce = 0):
+  def __init__(self, program, sources = FileGroup(), flags = '', fileFilter = lambda file: 1, allAtOnce = 0):
     Transform.__init__(self, sources)
-    self.program   = program
-    self.flags     = flags
-    self.filter    = filter
-    self.allAtOnce = allAtOnce
+    self.program    = program
+    self.flags      = flags
+    self.fileFilter = fileFilter
+    self.allAtOnce  = allAtOnce
 
   def doFunction(self):
-    files = filter(self.filter, self.sources.getFiles())
+    files = filter(self.fileFilter, self.sources.getFiles())
     if echo: print 'Applying '+str(self.program)+' to '+str(files)
     if (self.allAtOnce):
       self.program(FileGroup(files))
@@ -211,12 +220,12 @@ class Action (Transform):
       files   = self.sources.getFiles()
       if (not files): return ''
       for file in files:
-        if (self.filter(file)): command += ' '+file
+        if (self.fileFilter(file)): command += ' '+file
       return self.executeShellCommand(command)
     else:
       output = ''
       for file in self.sources.getFiles():
-        if (self.filter(file)):
+        if (self.fileFilter(file)):
           command = commandBase+' '+file
           output += self.executeShellCommand(command)
       return output
@@ -246,16 +255,16 @@ class ArchiveObjects (Action):
     return Action.execute(self)
 
 class BKEditFiles (Action):
-  def __init__(self, sources = FileGroup(), extraSources = None, flags = '', filter = lambda file: 1):
-    Action.__init__(self, 'bk', sources, 'edit '+flags, filter, 1)
+  def __init__(self, sources = FileGroup(), extraSources = None, flags = '', fileFilter = lambda file: 1):
+    Action.__init__(self, 'bk', sources, 'edit '+flags, fileFilter, 1)
 
   def execute(self):
     if self.sources: self.sources.extend(self.extraSources)
     return Action.execute(self)
 
 class BKCloseFiles (Action):
-  def __init__(self, sources = TreeFileGroup(), flags = '', filter = lambda file: 1):
-    Action.__init__(self, 'bk', sources, flags, filter, 1)
+  def __init__(self, sources = TreeFileGroup(), flags = '', fileFilter = lambda file: 1):
+    Action.__init__(self, 'bk', sources, flags, fileFilter, 1)
 
   def execute(self):
     oldFlags   = self.flags
@@ -282,8 +291,8 @@ class BKCloseFiles (Action):
     return oldSources
 
 class CompileFiles (Action):
-  def __init__(self, library, sources, filter, compiler, compilerFlags, archiver, archiverFlags, allAtOnce = 0):
-    Action.__init__(self, self.fullCompile, sources, '', filter, allAtOnce)
+  def __init__(self, library, sources, fileFilter, compiler, compilerFlags, archiver, archiverFlags, allAtOnce = 0):
+    Action.__init__(self, self.fullCompile, sources, '', fileFilter, allAtOnce)
     if (library):
       self.library     = library.getFiles()[0]
     else:
@@ -316,7 +325,7 @@ class CompileFiles (Action):
     os.remove(object)
 
   def fullCompile(self, source):
-    self.setupTmpDir()
+    self.cleanupTmpDir()
     if (isinstance(source, FileGroup)):
       files   = source.getFiles()
       if (not files): return
@@ -339,6 +348,7 @@ class CompileCFiles (CompileFiles):
   def __init__(self, library, sources = FileGroup(), compiler='gcc', compilerFlags='-c -g -Wall', archiver = 'ar', archiverFlags = 'crv', allAtOnce = 0):
     CompileFiles.__init__(self, library, sources, self.cFilter, compiler, compilerFlags, archiver, archiverFlags, allAtOnce)
     self.includeDirs.append('.')
+    self.products = library
 
   def cFilter(self, source):
     (dir, file) = os.path.split(source)
@@ -352,6 +362,7 @@ class CompileCxxFiles (CompileFiles):
   def __init__(self, library, sources = FileGroup(), compiler='g++', compilerFlags='-c -g -Wall', archiver = 'ar', archiverFlags = 'crv', allAtOnce = 0):
     CompileFiles.__init__(self, library, sources, self.cxxFilter, compiler, compilerFlags, archiver, archiverFlags, allAtOnce)
     self.includeDirs.append('.')
+    self.products = library
 
   def cxxFilter(self, source):
     (dir, file) = os.path.split(source)
@@ -376,6 +387,23 @@ class CompileSIDLFiles (CompileFiles):
   def getObjectName(self, source): pass
 
   def archive(self, source): pass
+
+class LinkExecutable (Action):
+  def __init__(self, executable, sources = FileGroup(), linker = 'g++', linkerFlags = '', extraLibraries = FileGroup()):
+    Action.__init__(self, linker, sources, '-o '+executable.getFiles()[0]+' '+linkerFlags, allAtOnce = 1)
+    self.executable  = executable
+    self.linker      = linker
+    self.linkerFlags = linkerFlags
+    self.extraLibraries = extraLibraries
+    self.products    = executable
+
+  def execute(self):
+    if (self.executable):
+      (dir, file) = os.path.split(self.executable.getFiles()[0])
+      if not os.path.exists(dir): os.makedirs(dir)
+    if (self.sources):
+      self.sources.extend(self.extraLibraries)
+      return Action.execute(self)
 
 class Target (Transform):
   def __init__(self, sources, transforms = []):
