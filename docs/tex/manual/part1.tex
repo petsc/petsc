@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.92 1996/12/15 16:43:20 curfman Exp bsmith $ 
+% $Id: part1.tex,v 1.93 1997/01/06 20:45:04 bsmith Exp gropp $ 
 
 % --------------------------------------------------------------------
 %
@@ -134,7 +134,7 @@ manual and the man pages in PostScript and HTML
 formats. Note that one can also view the man pages in HTML format
 by loading the file {\tt \$(PETSC\_DIR)/docs/www/www.html}
 into a HTML browser session that has been independently initiated.
-\findex{petscman} \sindex{man pages} Emacs users may find the
+\findex{petscman}\sindex{man pages}Emacs users may find the
 {\em etags} option to be extremely useful for exploring the PETSc
 source code.  Details of this feature are provided in
 Section~\ref{sec:emacs}. Similarly, VI users may find the
@@ -161,7 +161,7 @@ troubleshooting guide, and a FAQ list for frequently asked questions.
 \label{sec:running}
 
 Before using PETSc, the user must first set the environmental variable
-{\tt PETSC\_DIR}, indicating the full path of the PETSc home
+{\tt PETSC\_DIR}, \findex{PETSC_DIR} indicating the full path of the PETSc home
 directory.  For example, under the UNIX C shell a command of the form
 {\tt setenv PETSC\_DIR \$HOME/petsc} can be placed in the user's {\tt
 .cshrc} file.  In addition, the user must set the environmental
@@ -174,13 +174,6 @@ sun4, solaris, etc.)  on which PETSc is being used.  The utility {\tt
 can be placed in a .cshrc file.  Thus, even if several machines of different
 types share the same filesystem, {\tt PETSC\_ARCH} will be set correctly
 when logging into any of them. 
-
-You must also set the environmental variable {\tt PETSC\_DIR} to 
-indicate the location of the PETSc root directory, for example, \findex{PETSC_DIR}
-\begin{verbatim}
-   setenv PETSC_DIR /home/bsmith/petsc
-\end{verbatim}
-
 
 All PETSc programs use the MPI (Message Passing Interface) standard
 for message-passing communication \cite{MPI-final}.  Thus, to execute
