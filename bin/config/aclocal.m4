@@ -127,3 +127,21 @@ fi
 rm -f conftest*
 FFLAGS="$FFLAGSSAV"
 ])
+dnl PAC_MACRO_NAME_IN_MACRO([action if ok],[action if failed])
+dnl
+dnl Note that we can't put a pound sign into the msg_checking macro because
+dnl it confuses autoconf
+AC_DEFUN([PAC_MACRO_NAME_IN_MACRO],
+[AC_REQUIRE([AC_PROG_CC])dnl
+AC_CACHE_CHECK([that compiler allows recursive definitions],
+ac_cv_prog_cpp_recursive,
+[AC_TRY_COMPILE([
+void a(i,j)int i,j;{}
+#define a(b) a(b,__LINE__)],[
+a(0);return 0;],ac_cv_prog_cpp_recursive="yes",ac_cv_prog_cpp_recursive="no")])
+if test $ac_cv_prog_cpp_recursive = "yes" ; then
+    ifelse([$1],,:,[$1])
+else
+    ifelse([$2],,:,[$2])
+fi
+])
