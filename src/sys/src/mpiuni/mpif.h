@@ -1,10 +1,10 @@
+!
+!     static char vcid[] = "$Id: mpif.h,v 1.7 1996/04/03 16:47:58 balay Exp balay $";
+!
 
-C     static char vcid[] = "$Id: mpif.h,v 1.6 1995/12/19 21:58:49 balay Exp balay $";
+!     Trying to provide as little support for fortran code in petsc as needed
 
-
-C     Trying to provide as little support for fortran code in petsc as needed
-
-C     External objects outside of MPI calls 
+!     External objects outside of MPI calls 
        integer MPI_COMM_WORLD
        parameter (MPI_COMM_WORLD = 1)
        integer MPI_COMM_SELF
@@ -28,7 +28,7 @@ C     External objects outside of MPI calls
        PARAMETER(MPI_SOURCE=2, MPI_TAG=3, MPI_ERROR=4)
 
      
-C     Data Types. Same Values used in mpi.c
+!     Data Types. Same Values used in mpi.c
        integer MPI_INTEGER, MPI_REAL, MPI_DOUBLE_PRECISION
        integer MPI_COMPLEX,  MPI_CHARACTER
 
@@ -39,5 +39,5 @@ C     Data Types. Same Values used in mpi.c
        parameter (MPI_CHARACTER=4)
 
 
-C     External types 
+!     External types 
        external MPI_WTIME, MPI_WTICK
