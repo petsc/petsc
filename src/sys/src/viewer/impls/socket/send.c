@@ -1,15 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.58 1997/08/22 15:17:31 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.59 1997/09/03 22:26:04 balay Exp gropp $";
 #endif
 
+/* Include incase petscconf.h is used to pick up options/features */
+#include "petsc.h"
+
 /* 
- 
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
 #if defined(PARCH_paragon) ||  defined(PARCH_alpha)
-/* include files are all messed up on rs6000, IBM likes to 
-pretend they conform to all standards like ANSI C, POSIX, X Open,
-etc. but they do a half-assed job of organizing their include files */
+/* Some systems have inconsistent include files that use but don't
+   ensure that the following definitions are made */
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;
 typedef unsigned short  ushort;
