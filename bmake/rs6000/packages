@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1998/01/06 16:32:22 balay Exp balay $ 
+# $Id: base.site,v 1.10 1998/02/05 19:39:52 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -29,7 +29,7 @@ LAPACK_LIB     = -lessl /home/bsmith/libraries/blaslapack/lapack_rs6000_p4.a
 
 MPI_LIB        = /home/petsc/mpich/lib/rs6000/ch_p4/libmpi.a 
 MPI_INCLUDE    = -I/home/petsc/mpich/include
-MPIRUN         = /home/petsc/mpich/lib/rs6000/ch_p4/mpirun
+MPIRUN         = /home/petsc/mpich/lib/rs6000/ch_p4/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 
 #
 # Location of X-windows software
