@@ -128,6 +128,8 @@
 
    (Priority 1) Test support for requesting 32 bit or 64 bit code
 
+   (Priority 1) Test that the preprocessor actually preprocesses somehow
+
    We should have performance benchmarking to make sure code performance is not decreased by changes
 
   -------------

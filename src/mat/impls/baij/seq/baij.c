@@ -1888,7 +1888,7 @@ EXTERN_C_END
   of the MatSetValues() operation.
 
     You MUST have set the correct numbers of nonzeros per row in the call to 
-  MatCreateSeqBAIJ().
+  MatCreateSeqBAIJ(), and the columns indices MUST be sorted.
 
     MUST be called before any calls to MatSetValues();
 
@@ -2659,6 +2659,8 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer,const MatType type,Mat *A)
    Level: intermediate
 
    Notes:
+   The number of rows and columns must be divisible by blocksize.
+
    If the nnz parameter is given then the nz parameter is ignored
 
    A nonzero block is any block that as 1 or more nonzeros in it

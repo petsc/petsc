@@ -1814,6 +1814,8 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const
                (defaults to using SeqBAIJ format on one processor)
 
    Notes:
+   The number of rows and columns must be divisible by blocksize.
+
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 

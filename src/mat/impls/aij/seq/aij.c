@@ -2321,7 +2321,7 @@ EXTERN_C_END
   of the MatSetValues() operation.
 
     You MUST have set the correct numbers of nonzeros per row in the call to 
-  MatCreateSeqAIJ().
+  MatCreateSeqAIJ(), and the columns indices MUST be sorted.
 
     MUST be called before any calls to MatSetValues();
 
