@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.9 2001/01/15 21:48:24 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.10 2001/01/17 22:26:53 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -184,11 +184,11 @@ EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 @*/
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
-  int        ierr,i,nlevels = dmmg[0]->nlevels;
-  PetscTruth usefd,snesmonitor;
-  SLES       sles;
-  PetscViewer     ascii;
-  MPI_Comm   comm;
+  int         ierr,i,nlevels = dmmg[0]->nlevels;
+  PetscTruth  usefd,snesmonitor;
+  SLES        sles;
+  PetscViewer ascii;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -225,7 +225,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   if ((!jacobian && !dmmg[0]->matrixfree) || usefd) {
     ISColoring iscoloring;
     for (i=0; i<nlevels; i++) {
-      ierr = DMGetColoring(dmmg[i]->dm,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,MATMPIAIJ,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(dmmg[i]->J,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(int(*)(void))function,dmmg[i]);CHKERRQ(ierr);
