@@ -1,4 +1,4 @@
-/*$Id: getcolv.c,v 1.20 2001/03/23 23:22:45 balay Exp balay $*/
+/*$Id: getcolv.c,v 1.21 2001/08/07 03:03:20 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -15,6 +15,12 @@
 -  c - the column requested (in global numbering)
 
    Level: advanced
+
+   Notes:
+   Each processor for which this is called gets the values for its rows.
+
+   Since PETSc matrices are usually stored in compressed row format, this routine
+   will generally be slow.
 
    Contributed by: Denis Vanderstraeten
 
