@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.24 1996/02/15 22:13:59 curfman Exp curfman $";
+static char vcid[] = "$Id: da3.c,v 1.25 1996/02/20 23:26:40 curfman Exp curfman $";
 #endif
 
 /*
@@ -34,12 +34,12 @@ int DAView_3d(PetscObject dain,Viewer ptr)
       MPIU_Seq_begin(da->comm,1);
       fprintf(fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
                  rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);
-      fprintf(fd,"X range %d %d Y range %d %d\n",da->xs,da->xe,da->ys,da->ye);
+      fprintf(fd,"X range: %d %d, Y: range %d %d, Z range: %d %d\n",
+                 da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);
       fflush(fd);
       MPIU_Seq_end(da->comm,1);
     }
     else if (vobj->type == ASCII_FILES_VIEWER) {
-
       if (!rank) {
       }
       else {
