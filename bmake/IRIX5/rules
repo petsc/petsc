@@ -34,13 +34,13 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .c.o: 
-	$(CC) -c -DPARCH_IRIX $(CFLAGS) $(BASEOPT) $*.c
+	$(CC) -c $(CFLAGS) $(BASEOPT) $*.c
 .C.a: 
 	$(CC) -c $(CFLAGS) $(BASEOPT) $*.C
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 .C.o: 
-	$(CC) -c -DPARCH_IRIX $(CFLAGS) $(BASEOPT) $*.C
+	$(CC) -c $(CFLAGS) $(BASEOPT) $*.C
 .f.o: 
 	$(FC) -c $(FFLAGS) $(BASEOPTF) $*.f
 

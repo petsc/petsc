@@ -1,40 +1,33 @@
-/* $Id: petsc.h,v 1.109 1996/04/15 17:56:43 curfman Exp curfman $ */
+/* $Id: petsc.h,v 1.110 1996/04/16 01:28:01 curfman Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.13, Released ???, 1996."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.13, Released April 18, 1996."
 
 #include <stdio.h>
 
-/* MPI interface */
 #include "mpi.h"
-#if defined(PETSC_COMPLEX)
-extern MPI_Datatype MPIU_COMPLEX;
-#define MPIU_SCALAR MPIU_COMPLEX
-#else
-#define MPIU_SCALAR MPI_DOUBLE
-#endif
 
 #if defined(PETSC_COMPLEX)
-/* work around for bug in alpha g++ compiler */
-#if defined(PARCH_alpha) 
-#define hypot(a,b) (double) sqrt((a)*(a)+(b)*(b)) 
-#endif
 #include <complex.h>
-#define PetscReal(a) real(a)
-#define Scalar       complex
+extern  MPI_Datatype      MPIU_COMPLEX;
+#define MPIU_SCALAR       MPIU_COMPLEX
+#define PetscReal(a)      real(a)
+#define PetscAbsScalar(a) abs(a)
+#define Scalar            complex
 #else
-#define PetscReal(a) a
-#define Scalar       double
+#define MPIU_SCALAR       MPI_DOUBLE
+#define PetscReal(a)      a
+#define PetscAbsScalar(a) ( ((a)<0.0)   ? -(a) : (a) )
+#define Scalar            double
 #endif
 
 extern void *(*PetscMalloc)(unsigned int,int,char*);
 extern int  (*PetscFree)(void *,int,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
-
 #define PetscMalloc(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
 #define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscFree)(a,__LINE__,__FILE__)
@@ -64,14 +57,10 @@ extern char* PetscStrrtok(char*,char*);
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
 #define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
 
-#define PETSC_NULL          0
 typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
-
-#if defined(PETSC_COMPLEX)
-#define PetscAbsScalar(a)     abs(a)
-#else
-#define PetscAbsScalar(a)     ( ((a)<0.0)   ? -(a) : (a) )
-#endif
+#define PETSC_NULL            0
+#define PETSC_DECIDE         -1
+#define PETSC_DEFAULT        -2
 
 /*  Macros for error checking */
 #if !defined(__DIR__)
@@ -110,13 +99,9 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define LARGEST_PETSC_COOKIE_STATIC PETSC_COOKIE + 30
 extern int LARGEST_PETSC_COOKIE;
 
-#define PETSC_DECIDE         -1
-#define PETSC_DEFAULT        -2
-
 #include "viewer.h"
 #include "options.h"
 
-extern int    PetscGetHostName(char *,int);
 extern double PetscGetTime();
 extern double PetscGetFlops();
 extern void   PetscSleep(int);
@@ -144,9 +129,6 @@ extern int PetscError(int,char*,char*,int,char*);
 extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),void*);
 extern int PetscPopErrorHandler();
 
-extern int PetscSetDebugger(char *,int,char *);
-extern int PetscAttachDebugger();
-
 extern int PetscDefaultSignalHandler(int,void*);
 extern int PetscPushSignalHandler(int (*)(int,void *),void*);
 extern int PetscPopSignalHandler();
@@ -155,15 +137,18 @@ extern int PetscPopSignalHandler();
 #define FP_TRAP_ALWAYS 2
 extern int PetscSetFPTrap(int);
 
-
 #include "phead.h"
 #include "plog.h"
 
+extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
+extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
 #define PetscBarrier(A) \
-  {PetscValidHeader(A); \
-   PLogEventBegin(Petsc_Barrier,A,0,0,0); \
-   MPI_Barrier(((PetscObject)A)->comm); \
-   PLogEventEnd(Petsc_Barrier,A,0,0,0);}
+  { \
+    PetscValidHeader(A); \
+    PLogEventBegin(Petsc_Barrier,A,0,0,0); \
+    MPI_Barrier(((PetscObject)A)->comm); \
+    PLogEventEnd(Petsc_Barrier,A,0,0,0); \
+  }
 
 /*
       This code allows one to pass a PETSc object in C
@@ -177,10 +162,5 @@ extern FILE *PetscFOpen(MPI_Comm,char *,char *);
 extern int  PetscFClose(MPI_Comm,FILE*);
 extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscPrintf(MPI_Comm,char *,...);
-
-extern int  PetscSetDisplay(MPI_Comm,char *,int);
-
-extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
-extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
 
 #endif
