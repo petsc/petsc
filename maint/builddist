@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.71 1999/06/02 20:00:40 balay Exp balay $ 
+# $Id: builddist,v 1.72 1999/10/04 17:43:06 balay Exp bsmith $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -66,7 +66,7 @@ make etags etags_examples TAGSDIR=`pwd`
 # Clean up the external Packages from base.site files
 foreach i (bmake/*/base.site)
   cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | sed "s/^MPE_LIB/#MPE_LIB/g" | \
-    sed "s/^BS_INCLUDE/#BS_INCLUDE/g" | sed "s/^BS_LIB/#BS_LIB/g" | \
+    sed "s/^BLOCKSOLVE_INCLUDE/#BLOCKSOLVE_INCLUDE/g" | sed "s/^BLOCKSOLVE_LIB/#BLOCKSOLVE_LIB/g" | \
     sed "s/^MCC/#MCC/g" | sed "s/^MATLABCOMMAND/#MATLABCOMMAND/g" | \
     sed "s/^CMEX/#CMEX/g" | \
     sed "s/^ADIC_INCLUDE/#ADIC_INCLUDE/g" | sed "s/^ADIC_LIB/#ADIC_LIB/g" | \
