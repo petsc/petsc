@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.16 2000/01/11 21:01:18 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.17 2000/05/05 22:16:34 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -13,10 +13,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
 
 /*T
    Concepts: Mat^Ordering a matrix - loading a binary matrix and vector;
-   Concepts: PLog^Profiling multiple stages of code;
-   Routines: MatGetOrdering();
-   Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops();
-   Routines: PetscBarrier(); PetscGetTime();
+   Concepts: PLog^Preloading executable
+   Routines: MatGetOrdering(); PreLoadBegin(); PreLoadEnd(); PreLoadStage();
    Routines: MatGetTypeFromOptions(); MatLoad(); VecLoad();
    Routines: ViewerBinaryOpen(); ViewerDestroy();
    Processors: 1
@@ -39,11 +37,10 @@ int main(int argc,char **args)
   Mat               A;                /* matrix */
   Viewer            fd;               /* viewer */
   char              file[2][128];     /* input file name */
-  char              stagename[4][16]; /* names of profiling stages */
   IS                isrow,iscol;      /* row and column permutations */
-  int               ierr,i,loops  = 2;
+  int               ierr,i;
   MatOrderingType   rtype = MATORDERING_RCM;
-  PetscTruth        set,flg;
+  PetscTruth        set,flg,PreLoad = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -55,7 +52,7 @@ int main(int argc,char **args)
   ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
   ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg);CHKERRA(ierr);
-  if (!flg) {loops = 1;} /* don't bother with second system */
+  if (flg) PreLoad = PETSC_TRUE;
 
   /* -----------------------------------------------------------
                   Beginning of loop
@@ -69,24 +66,17 @@ int main(int argc,char **args)
         -log_summary) can be done with the larger one (that actually
         is the system of interest). 
   */
-  for (i=0; i<loops; i++) {
+  PreLoadBegin(PreLoad,"Load");
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Load system i
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /*
-       Begin profiling next stage
-    */
-    PLogStagePush(2*i);
-    sprintf(stagename[2*i],"Load System %d",i);
-    ierr = PLogStageRegister(2*i,stagename[2*i]);CHKERRA(ierr);
-
     /* 
        Open binary file.  Note that we use BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);CHKERRA(ierr);
+    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],BINARY_RDONLY,&fd);CHKERRA(ierr);
 
     /* 
        Determine matrix format to be used (specified at runtime).
@@ -102,29 +92,10 @@ int main(int argc,char **args)
 
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-                      Setup loop i
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /*
-       Conclude profiling last stage; begin profiling next stage.
-    */
-    /*    PLogStagePop(); */
-    ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
-    PLogStagePush(2*i+1);
-    sprintf(stagename[2*i+1],"SLESSetUp %d",i);
-    ierr = PLogStageRegister(2*i+1,stagename[2*i+1]);CHKERRA(ierr);
-
+    PreLoadStage("Reordering");
     ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRA(ierr);
-
-    /*
-       Conclude profiling this stage
-    */
-    PLogStagePop();
-
-    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-                           Solve system i
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
 
     /* 
        Free work space.  All PETSc objects should be destroyed when they
@@ -133,10 +104,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(A);CHKERRA(ierr);
     ierr = ISDestroy(isrow);CHKERRA(ierr);
     ierr = ISDestroy(iscol);CHKERRA(ierr);
-  }
-  /* -----------------------------------------------------------
-                      End of reordering loop
-     ----------------------------------------------------------- */
+  PreLoadEnd();
 
   PetscFinalize();
   return 0;

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.15 1999/01/31 16:07:54 bsmith Exp balay $ 
+# $Id: makefile,v 1.16 1999/04/01 17:10:02 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -8,7 +8,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
 
-TESTEXAMPLES_1  = 
+TESTEXAMPLES_1  = ex1.PETSc ex1.rm clean
 TESTEXAMPLES_2  =
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
