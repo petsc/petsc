@@ -51,8 +51,6 @@ int main(int argc, char **argv)
     
   strcat (command, resolved_path);
   printf("command:%s\n",command);
-  system(command);
-  return 0;
-
+  return system(command);
 }
     
