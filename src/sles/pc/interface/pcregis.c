@@ -26,6 +26,9 @@ EXTERN int PCCreate_SPAI(PC);
 #if defined(PETSC_HAVE_RAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN int PCCreate_RAMG(PC);
 #endif
+#if defined(PETSC_HAVE_SAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+EXTERN int PCCreate_SAMG(PC);
+#endif
 EXTERN int PCCreate_mILU(PC);
 EXTERN int PCCreate_PetscESI(PC);
 EXTERN int PCCreate_ESI(PC);
@@ -81,6 +84,9 @@ int PCRegisterAll(char *path)
 #endif
 #if defined(PETSC_HAVE_RAMG) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCRAMG         ,path,"PCCreate_RAMG",PCCreate_RAMG);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SAMG) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  ierr = PCRegisterDynamic(PCSAMG         ,path,"PCCreate_SAMG",PCCreate_SAMG);CHKERRQ(ierr);
 #endif
   ierr = PCRegisterDynamic(PCMILU         ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);
 #if defined(__cplusplus) && !defined(PETSC_USE_SINGLE) && !defined (PETSC_USE_COMPLEX) && defined(PETSC_HAVE_CXX_NAMESPACE)

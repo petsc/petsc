@@ -120,13 +120,18 @@ PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 LUSOL_LIB        = /home/petsc/software/lusol/liblusol_linux_pgf90.a
 PETSC_HAVE_LUSOL = -DPETSC_HAVE_LUSOL
 #
-#
 # Location of the AMG library
 #
 RAMG_LIB        = /home/petsc/software/ramg/libramg_linux_pgf90.a
 PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG
 #
-# Location of SPAI;
+# Location of the SAMG library
+#
+SAMG_LIB        = /home/petsc/software/20b1/samg/libamg_linux_pgf90.a
+PETSC_HAVE_SAMG = -DPETSC_HAVE_SAMG
+SAMG_MOD        = -module/home/petsc/software/20b1/samg/
+#
+#  Location of SPAI;
 #
 SPAI_INCLUDE    = -I/home/petsc/software/spai_3.0/lib
 SPAI_LIB        = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a

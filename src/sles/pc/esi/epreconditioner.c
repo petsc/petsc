@@ -4,11 +4,11 @@
 
 #include "esi/petsc/preconditioner.h"
 
-esi::petsc::Preconditioner<double,int>::Preconditioner(MPI_Comm comm)
+esi::petsc::Preconditioner<double,int>::Preconditioner(MPI_Comm icomm)
 {
   int      ierr;
 
-  ierr = PCCreate(comm,&this->pc);if (ierr) return;
+  ierr = PCCreate(icomm,&this->pc);if (ierr) return;
   ierr = PetscObjectSetOptionsPrefix((PetscObject)this->pc,"esi_");
   ierr = PCSetFromOptions(this->pc);
 
@@ -147,12 +147,12 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operato
   return 0;
 }
 
-::esi::ErrorCode esi::petsc::Preconditioner<double,int>::Factory::create(char *commname,void *comm,::esi::Preconditioner<double,int>*&v)
+::esi::ErrorCode esi::petsc::Preconditioner<double,int>::Factory::create(char *commname,void *icomm,::esi::Preconditioner<double,int>*&v)
 {
    PetscTruth flg;
    int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
    if (!flg) SETERRQ1(1,"Does not support %s, only supports MPI",commname);
-   v = new esi::petsc::Preconditioner<double,int>(*(MPI_Comm*)comm);
+   v = new esi::petsc::Preconditioner<double,int>(*(MPI_Comm*)icomm);
    return 0;
 };
 

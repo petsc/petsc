@@ -241,9 +241,9 @@ esi::petsc::Vector<double,int>::~Vector()
   return VecPlaceArray(this->vec,pointer);
 }
 
-::esi::ErrorCode esi::petsc::Vector<double,int>::Factory::create(::esi::IndexSpace<int>&map,::esi::Vector<double,int>*&v)
+::esi::ErrorCode esi::petsc::Vector<double,int>::Factory::create(::esi::IndexSpace<int>&imap,::esi::Vector<double,int>*&v)
 {
-  v = new esi::petsc::Vector<double,int>(&map);
+  v = new esi::petsc::Vector<double,int>(&imap);
   return 0;
 };
 

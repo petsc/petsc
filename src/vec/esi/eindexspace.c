@@ -111,12 +111,12 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
   /* -------------------------------------------------------------------------*/
 
     // Construct a IndexSpace
-::esi::ErrorCode esi::petsc::IndexSpace<int>::Factory::create(const char * name,void *comm,int m,int N,int base,::esi::IndexSpace<int>*&v)
+::esi::ErrorCode esi::petsc::IndexSpace<int>::Factory::create(const char * name,void *icomm,int m,int N,int base,::esi::IndexSpace<int>*&v)
 {
   PetscTruth ismpi;
   int        ierr = PetscStrcmp(name,"MPI",&ismpi);CHKERRQ(ierr);
   if (!ismpi) SETERRQ1(1,"%s not supported, only MPI supported as RunTimeModel",name);
-  v = new esi::petsc::IndexSpace<int>(*(MPI_Comm*)comm,m,N);
+  v = new esi::petsc::IndexSpace<int>(*(MPI_Comm*)icomm,m,N);
   return 0;
 };
 

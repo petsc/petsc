@@ -270,9 +270,9 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>
 
 /* ------------------------------------------------------------------------------------------------*/
 
-::esi::ErrorCode esi::petsc::Matrix<double,int>::Factory::create(::esi::IndexSpace<int>&rmap,::esi::IndexSpace<int>&cmap,::esi::Operator<double,int>*&v)
+::esi::ErrorCode esi::petsc::Matrix<double,int>::Factory::create(::esi::IndexSpace<int>&irmap,::esi::IndexSpace<int>&icmap,::esi::Operator<double,int>*&v)
 {
-  v = new esi::petsc::Matrix<double,int>(&rmap,&cmap);
+  v = new esi::petsc::Matrix<double,int>(&irmap,&icmap);
   return 0;
 };
 

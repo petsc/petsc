@@ -1,7 +1,6 @@
 #ifndef SAMGFUNC_H
 #define SAMGFUNC_H
 
-#include "have_underscore.h" 
 
 /*..Structure to hold SAMG parameters..*/ 
 struct SAMG_PARAM{
@@ -36,7 +35,8 @@ struct SAMG_PARAM{
 /*..We'll use underscores in the name giving of the routines as the 
   Fortran compiler does not distinguish between lower and upper case..*/ 
 
-#ifdef underscore
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define SAMGPETSC_apply_shift            samgpetsc_apply_shift_ 
 #define SAMGPETSC_get_levels             samgpetsc_get_levels_
 #define SAMGPETSC_get_dim_operator       samgpetsc_get_dim_operator_
@@ -46,8 +46,8 @@ struct SAMG_PARAM{
 #else
 #define SAMGPETSC_apply_shift            samgpetsc_apply_shift
 #define SAMGPETSC_get_levels             samgpetsc_get_levels
-#define SAMGPETSC_get_dim_operator       samgpetsc_get_dim_operator_
-#define SAMGPETSC_get_operator           samgpetsc_get_operator_
+#define SAMGPETSC_get_dim_operator       samgpetsc_get_dim_operator
+#define SAMGPETSC_get_operator           samgpetsc_get_operator
 #define SAMGPETSC_get_dim_interpol       samgpetsc_get_dim_interpol
 #define SAMGPETSC_get_interpol           samgpetsc_get_interpol
 #endif 

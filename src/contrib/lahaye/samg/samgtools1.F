@@ -1,4 +1,5 @@
-      subroutine samgpetsc_apply_shift(ia, nnu, ia_shift, ja, nna, ja_shift)
+      subroutine samgpetsc_apply_shift(ia, nnu, ia_shift, ja, nna,       &
+     &                                 ja_shift)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! This routine applies a ia_shift to all elements in the ia array,! 
 ! and a ja_shift to all elements in the ja array.                 ! 

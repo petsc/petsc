@@ -2,6 +2,14 @@
 #include "petscsles.h"
 #include "samgfunc.h"
 #include "petscfunc.h"
+#include "externc.h"
+
+EXTERN_C_BEGIN
+void USER_coo(int * i,int * ndim, double * x, double * y, double * z)
+{
+  printf("in user_coo");
+}
+EXTERN_C_END
 
 static  double Machine_Precision_Eps = 2.e-16;
 /* ------------------------------------------------------------------- */
@@ -393,7 +401,7 @@ int MatMatMult(Mat Fact1, Mat Fact2, Mat* Prod)
 
    /*..Check input..*/ 
    if (cols1 != rows2){
-      Die("\n Error in MatMatMult: cols1 <> rows2 \n\n"); 
+      SETERRQ(1,"Error in MatMatMult: cols1 <> rows2"); 
    }
  
    /*..Create product matrix..*/ 
@@ -468,7 +476,7 @@ int MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
 
    /*..Check input..*/ 
    if ( (cols1 != rows1) || (cols2 != rows2) ){
-      Die("\n Error in MatMatMult: cols1 <> rows1 or cols1 <> rows1 \n\n"); 
+      SETERRQ(1,"Error in MatMatMult: cols1 <> rows1 or cols1 <> rows1"); 
    }
 
    /*..Create difference matrix..*/ 

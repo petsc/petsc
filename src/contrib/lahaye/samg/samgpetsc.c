@@ -1,9 +1,9 @@
+#include "petscsles.h"
+#include "src/mat/impls/aij/seq/aij.h"
 #include "global.h"
 #include "externc.h"
 #include "samgfunc.h"
 #include "petscfunc.h"
-#include "petscsles.h"
-#include "src/mat/impls/aij/seq/aij.h"
 
 /**************************************************************************/
 /*                                                                        */

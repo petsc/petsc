@@ -53,6 +53,7 @@ E*/
 #define PCNN        "nn"
 #define PCCHOLESKY  "cholesky"
 #define PCRAMG      "ramg"
+#define PCSAMG      "samg"
 #define PCPBJACOBI  "pbjacobi"
 #define PCMULTILEVEL "multilevel"
 #define PCSCHUR      "schur"

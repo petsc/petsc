@@ -5,11 +5,11 @@
 #include "esi/petsc/solveriterative.h"
 #include "esi/petsc/preconditioner.h"
 
-esi::petsc::SolverIterative<double,int>::SolverIterative(MPI_Comm comm)
+esi::petsc::SolverIterative<double,int>::SolverIterative(MPI_Comm icomm)
 {
   int      ierr;
 
-  ierr = SLESCreate(comm,&this->sles);if (ierr) return;
+  ierr = SLESCreate(icomm,&this->sles);if (ierr) return;
   ierr = SLESSetOptionsPrefix(this->sles,"esi_");
   ierr = SLESSetFromOptions(this->sles);
 
@@ -86,15 +86,15 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::setup()
   return 0;
 }
 
-esi::ErrorCode esi::petsc::SolverIterative<double,int>::setOperator( esi::Operator<double,int> &op)
+esi::ErrorCode esi::petsc::SolverIterative<double,int>::setOperator( esi::Operator<double,int> &iop)
 {
   /*
         For now require Operator to be a PETSc Mat
   */
   Mat A;
-  this->op = &op;
-  op.addReference();
-  int ierr = op.getInterface("Mat",reinterpret_cast<void*&>(A));CHKERRQ(ierr);
+  this->op = &iop;
+  iop.addReference();
+  int ierr = iop.getInterface("Mat",reinterpret_cast<void*&>(A));CHKERRQ(ierr);
   if (!A) {
     /* ierr = MatCreate( &A);if (ierr) return ierr;
        ierr = MatSetType(A,MATESI);if (ierr) return ierr;
@@ -104,33 +104,33 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::setOperator( esi::Operat
   return 0;
 }
 
-esi::ErrorCode esi::petsc::SolverIterative<double,int>::getOperator( esi::Operator<double,int> *&op)
+esi::ErrorCode esi::petsc::SolverIterative<double,int>::getOperator( esi::Operator<double,int> *&iop)
 {
-  op = this->op;
+  iop = this->op;
   return 0;
 }
 
-esi::ErrorCode esi::petsc::SolverIterative<double,int>::getPreconditioner( esi::Preconditioner<double,int> *&pre)
+esi::ErrorCode esi::petsc::SolverIterative<double,int>::getPreconditioner( esi::Preconditioner<double,int> *&ipre)
 {
   if (!this->pre) {
     PC  pc;
     int ierr  = SLESGetPC(this->sles,&pc);if (ierr) return ierr;
     this->pre = new ::esi::petsc::Preconditioner<double,int>(pc); 
   }
-  pre = this->pre;
+  ipre = this->pre;
   return 0;
 }
 
-esi::ErrorCode esi::petsc::SolverIterative<double,int>::setPreconditioner( esi::Preconditioner<double,int> &pre)
+esi::ErrorCode esi::petsc::SolverIterative<double,int>::setPreconditioner( esi::Preconditioner<double,int> &ipre)
 {
   int ierr;
   PC  pc;
   ierr = SLESGetPC(this->sles,&pc);if (ierr) return ierr;
   ierr = PCSetType(pc,PCESI);if (ierr) return ierr;
-  ierr = PCESISetPreconditioner(pc,&pre);if (ierr) return ierr;
+  ierr = PCESISetPreconditioner(pc,&ipre);if (ierr) return ierr;
   if (this->pre) {ierr = this->pre->deleteReference();if (ierr) return ierr;}
-  this->pre = &pre;
-  ierr = pre.addReference();
+  this->pre = &ipre;
+  ierr = ipre.addReference();
   return 0;
 }
 
@@ -185,11 +185,11 @@ esi::ErrorCode esi::petsc::SolverIterative<double,int>::getNumIterationsTaken(in
 }
 
 // --------------------------------------------------------------------------
-::esi::ErrorCode esi::petsc::SolverIterative<double,int>::Factory::create (char *commname,void *comm,::esi::SolverIterative<double,int>*&v)
+::esi::ErrorCode esi::petsc::SolverIterative<double,int>::Factory::create (char *commname,void *icomm,::esi::SolverIterative<double,int>*&v)
 {
   PetscTruth flg;
   int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
-  v = new esi::petsc::SolverIterative<double,int>(*(MPI_Comm*)comm);
+  v = new esi::petsc::SolverIterative<double,int>(*(MPI_Comm*)icomm);
   return 0;
 };
 
