@@ -28,17 +28,17 @@ differential equations.
       block Jacobi, overlapping additive Schwarz methods and (through
       BlockSolve95) ILU(0) and ICC(0).
   
-<li><tt>KSP</tt> - Parallel implementations of  
-      many popular Krylov subspace iterative methods, including GMRES, CG, CGS,
-      Bi-CG-Stab, two variants of TFQMR, CR, and LSQR.  All are coded so that
-      they are immediately usable with any preconditioners and any matrix data 
-      structures, including matrix-free methods.
+<li><tt>KSP</tt> - Parallel implementations of many popular Krylov subspace
+      iterative methods, including GMRES, CG, CGS, Bi-CG-Stab, two variants
+      of TFQMR, CR, and LSQR.  All are coded so that they are immediately usable
+      with any preconditioners and any matrix data structures, including
+      matrix-free methods.
  
 <li><tt>SNES</tt> - Data-structure-neutral implementations of Newton-like  
       methods for nonlinear systems. Includes both line search and trust 
-      region techniques with a single interface.  Employs the above
-      (uniprocessor and parallel)  data structures and linear solvers.
-      Users can set custom monitoring routines, convergence criteria, etc.
+      region techniques with a single interface.  Employs by default the above
+      data structures and linear solvers. Users can set custom monitoring
+      routines, convergence criteria, etc.
   
 <li><tt>TS</tt> - Code for the time evolution of solutions of PDEs. In addition,
       provides pseudo-transient continuation techniques for computing
