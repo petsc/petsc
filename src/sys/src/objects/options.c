@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.218 1999/10/04 18:49:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.219 1999/10/05 19:52:35 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -192,7 +192,7 @@ int OptionsInsert(int *argc,char ***args,const char file[])
   options->args     = (args) ? *args : 0;
 
   if (file) {
-  ierr = OptionsInsertFile(file);CHKERRQ(ierr);
+    ierr = OptionsInsertFile(file);CHKERRQ(ierr);
   } else {
     ierr = PetscGetHomeDirectory(pfile,240);CHKERRQ(ierr);
     ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
@@ -241,7 +241,6 @@ int OptionsInsert(int *argc,char ***args,const char file[])
     while (left) {
       isoptions_file = !PetscStrcmp(eargs[0],"-options_file");
       isp4           = !PetscStrcmp(eargs[0],"-p4pg");
-      isp4           = isp4 || tisp4;
       tisp4          = !PetscStrcmp(eargs[0],"-p4wd");
       isp4           = isp4 || tisp4;
       tisp4          = !PetscStrcmp(eargs[0],"-p4amslave");
@@ -417,11 +416,12 @@ int OptionsDestroy(void)
 @*/
 int OptionsSetValue(const char iname[],const char value[])
 {
-  int  len, N, n, i,ierr,match;
-  char **names, *name = (char*) iname;
+  int        len, N, n, i,ierr,match;
+  char       **names, *name = (char*) iname;
+  PetscTruth gt;
 
   PetscFunctionBegin;
-  if (!options) OptionsInsert(0,0,0);
+  if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
 
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
   match = !PetscStrcmp(name,"-h");
@@ -443,6 +443,7 @@ int OptionsSetValue(const char iname[],const char value[])
  
   for ( i=0; i<N; i++ ) {
     match = !PetscStrcmp(names[i],name);
+    ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
       ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
@@ -451,7 +452,7 @@ int OptionsSetValue(const char iname[],const char value[])
         ierr = PetscStrcpy(options->values[i],value);CHKERRQ(ierr);
       } else { options->values[i] = 0;}
       PetscFunctionReturn(0);
-    } else if (PetscStrcmp(names[i],name) > 0) {
+    } else if (gt) {
       n = i;
       break;
     }
@@ -499,8 +500,9 @@ int OptionsSetValue(const char iname[],const char value[])
 @*/
 int OptionsClearValue(const char iname[])
 {
-  int  N, n, i,ierr,match;
-  char **names,*name=(char*)iname;
+  int        N, n, i,ierr,match;
+  char       **names,*name=(char*)iname;
+  PetscTruth gt;
 
   PetscFunctionBegin;
   if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
@@ -512,10 +514,11 @@ int OptionsClearValue(const char iname[])
  
   for ( i=0; i<N; i++ ) {
     match = !PetscStrcmp(names[i],name);
+    ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
       break;
-    } else if (PetscStrcmp(names[i],name) > 0) {
+    } else if (gt) {
       PetscFunctionReturn(0); /* it was not listed */
     }
     n++;
@@ -574,7 +577,9 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
     ierr = PetscStrncpy(tmp,pre,256);CHKERRQ(ierr);
     ierr = PetscStrlen(tmp,&len);CHKERRQ(ierr);
     ierr = PetscStrncat(tmp,name+1,256-len-1);CHKERRQ(ierr);
-  } else {ierr = PetscStrncpy(tmp,name+1,256);CHKERRQ(ierr);}
+  } else {
+    ierr = PetscStrncpy(tmp,name+1,256);CHKERRQ(ierr);
+  }
 
   /* slow search */
   *flg = 0;
@@ -720,23 +725,42 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,int *flg)
 int OptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,int *flg)
 {
   char *value;
-  int  flag,ierr;
+  int  flag,ierr,istrue,isfalse;
 
   PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (flg) *flg = 0; *ivalue = PETSC_TRUE;}
     else        {
-      if (flg) *flg = 1; 
-      if (!PetscStrcmp(value,"TRUE") || !PetscStrcmp(value,"YES") || !PetscStrcmp(value,"1") ||
-          !PetscStrcmp(value,"true") || !PetscStrcmp(value,"yes")) {
-        *ivalue = PETSC_TRUE;
-      } else if (!PetscStrcmp(value,"FALSE") || !PetscStrcmp(value,"NO") || !PetscStrcmp(value,"0") ||
-          !PetscStrcmp(value,"false") || !PetscStrcmp(value,"no")) {
-        *ivalue = PETSC_FALSE;
-      } else {
-        SETERRQ1(1,1,"Unknown logical value: %s",value);
-      }
+      if (flg) *flg = 1;
+
+      *ivalue = PETSC_TRUE;
+      istrue = !PetscStrcmp(value,"TRUE");
+      if (istrue) PetscFunctionReturn(0);
+      istrue = !PetscStrcmp(value,"YES");
+      if (istrue) PetscFunctionReturn(0);
+      istrue = !PetscStrcmp(value,"YES");
+      if (istrue) PetscFunctionReturn(0);
+      istrue = !PetscStrcmp(value,"1");
+      if (istrue) PetscFunctionReturn(0);
+      istrue = !PetscStrcmp(value,"true");
+      if (istrue) PetscFunctionReturn(0);
+      istrue = !PetscStrcmp(value,"yes");
+      if (istrue) PetscFunctionReturn(0);
+
+      *ivalue = PETSC_FALSE;
+      isfalse = !PetscStrcmp(value,"FALSE");
+      if (isfalse) PetscFunctionReturn(0);
+      isfalse = !PetscStrcmp(value,"NO");
+      if (isfalse) PetscFunctionReturn(0);
+      isfalse = !PetscStrcmp(value,"0");
+      if (isfalse) PetscFunctionReturn(0);
+      isfalse = !PetscStrcmp(value,"false");
+      if (isfalse) PetscFunctionReturn(0);
+      isfalse = !PetscStrcmp(value,"no");
+      if (isfalse) PetscFunctionReturn(0);
+
+      SETERRQ1(1,1,"Unknown logical value: %s",value);
     }
   } else {
     if (flg) *flg = 0;
