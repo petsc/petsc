@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.232 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.233 2000/04/18 02:30:57 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -1256,7 +1256,7 @@ int OptionsLeft(void)
 
 */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"OptionsCreate"
+#define __FUNC__ /*<a name="OptionsCreate"></a>*/"OptionsCreate"
 int OptionsCreate(void)
 {
   int ierr;
