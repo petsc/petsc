@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.8 2000/07/26 15:42:02 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.9 2000/07/31 15:42:11 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -24,20 +24,20 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
 
   PetscFunctionBegin;
   isrow = iscol;   /* remove isrow later! */
-  PetscValidHeaderSpecific(isrow,IS_COOKIE); 
+  /* PetscValidHeaderSpecific(isrow,IS_COOKIE); */
   PetscValidHeaderSpecific(iscol,IS_COOKIE); 
   /* if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");*/
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrow,&rip);CHKERRQ(ierr); 
+  ierr = ISGetIndices(iscol,&rip);CHKERRQ(ierr); 
   ierr = ISGetIndices(isicol,&riip);CHKERRQ(ierr);
-  
+  /*
   for (k=0; k<mbs; k++) {
     if ( rip[k] - riip[k] != 0 ) {
       printf("Non-symm. permutation, use symm. permutation or general matrix format\n");
       break;
     }
   }
- 
+  */
   /* initialization */
   /* Don't know how many column pointers are needed so estimate. 
      Use Modified Sparse Row storage for u and ju, see Sasd pp.85 */
@@ -143,7 +143,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
      PLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n");
   }
 
-  ierr = ISRestoreIndices(isrow,&rip);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&rip);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&riip);CHKERRQ(ierr);
 
   ierr = PetscFree(q);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,PetscReal f,Mat *B)
   b->diag       = 0;
   b->ilen       = 0;
   b->imax       = 0;
-  b->row        = isrow;
+  b->row        = iscol;
   b->col        = iscol;
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
