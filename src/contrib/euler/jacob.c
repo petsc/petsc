@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.11 1997/10/17 02:16:06 curfman Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.12 1998/03/20 13:43:18 curfman Exp balay $";
 #endif
 
 #include "user.h"
@@ -411,11 +411,12 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
  */
 int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *ptr)
 {
-  Euler  *app = (Euler *)ptr;
-  int    iter;                   /* nonlinear solver iteration number */
-  int    fortmat, flg, ierr, i, rstart, rend;
-  Vec    fvec;
-  Scalar *fvec_array, one = 1.0;
+  Euler            *app = (Euler *)ptr;
+  int              iter;                   /* nonlinear solver iteration number */
+  int              flg, ierr, i, rstart, rend;
+  Vec              fvec;
+  Scalar           *fvec_array, one = 1.0;
+  PetscFortranAddr fortmat;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set some options; do some preliminary work

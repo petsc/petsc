@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.257 1998/03/20 22:54:45 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.258 1998/03/27 22:15:20 balay Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4707,8 +4707,8 @@ To pass a PETSc object from a C routine to a Fortran routine, one must
 first convert the C pointer to a Fortran integer with {\tt
 PetscCObjectToFortranObject(PetscObject,PetscFortranAddr *)}, for example,
 \begin{verbatim}
-   int fmat;
-   Mat mat;
+   PetscFortranAddr fmat;
+   Mat              mat;
     ....
    ierr = PetscCObjectToFortranObject(mat,&fmat);
    fortranroutine(&fmat,...other arguments);
@@ -4720,7 +4720,7 @@ pointer conversion within the C routine using
 {\tt PetscFortranObjectToCObject(PetscFortranAddr,PetscObject *)}, for example,
 \findex{PetscFortranObjectToCObject()}
 \begin{verbatim}
-   int cfunction(int *fmat,....)
+   int cfunction(PetscFortranAddr *fmat,....)
    Mat mat;
    ierr = PetscFortranObjectToCObject(*fmat,&mat);
 \end{verbatim}

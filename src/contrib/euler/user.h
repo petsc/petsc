@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.37 1997/10/20 17:39:35 curfman Exp curfman $ */
+/* $Id: user.h,v 1.38 1998/03/31 17:01:15 balay Exp balay $ */
 
 /* Include file for 3D Euler application code */
 
@@ -46,7 +46,6 @@ typedef struct {
     DA       da;                 /* distributed array for X, F */ 
     DA       da1;                /* distributed array for pressure */ 
     Mat      J;                  /* Jacobian (preconditioner) matrix */
-    MatFDColoring fdcoloring;    /* coloring context for FD Jacobian approx (optional) */
     Mat      Jmf;                /* matrix-free Jacobian context */
     KSP      ksp;                /* Krylov context */
     Vec      X, Xbc, F;          /* global solution, residual vectors */
@@ -54,7 +53,8 @@ typedef struct {
     Vec      localX, localDX;    /* local solution, dx vectors */
     Vec      localXBC;           /* local BC vector */
     Scalar   *xx, *dxx, *xx_bc;  /* corresponding local arrays */
-    int      fort_ao;            /* Fortran pointer to AO context */
+    MatFDColoring    fdcoloring; /* coloring context for FD Jacobian approx (optional) */
+    PetscFortranAddr fort_ao;    /* Fortran pointer to AO context */
 
   /* ----------------- General parameters and flags ------------------- */
 
