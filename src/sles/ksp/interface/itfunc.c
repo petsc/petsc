@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.11 1995/04/12 18:37:52 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.12 1995/04/13 15:18:02 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -374,7 +374,8 @@ int KSPSetSolution(KSP itP, Vec x)
 
 /*@
    KSPGetSolution - Gets the location of the solution for the 
-   linear system to be solved.
+   linear system to be solved. Note that this may not be were the solution
+   is stored during the iterative process, see KSPBuildSolution().
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
