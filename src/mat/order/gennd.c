@@ -63,8 +63,7 @@ int gennd(int *neqns, int *xadj, int *adjncy,
     /* Local variables */
     static int nsep, root, i;
     extern int fndsep(int *, int *, int *, 
-	    int *, int *, int *, int *, int *), revrse(
-	    int *, int *);
+	    int *, int *, int *, int *, int *);
     static int num;
 
     /* Parameter adjustments */
