@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.13 1998/12/03 03:57:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmres2.c,v 1.14 1999/01/13 22:53:47 curfman Exp curfman $";
 #endif
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: gmres2.c,v 1.13 1998/12/03 03:57:42 bsmith Exp curfma
     Note:
     The default value of max_k = 30.
 
-.keywords: GMRES, set, restart
+.keywords: KSP, GMRES, set, restart
 
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
 @*/
@@ -72,7 +72,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 +  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization()
 -  -ksp_gmres_irorthog - Activates KSPGMRESIROrthogonalization()
 
-.keywords: GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
+.keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetPreallocateVectors()
 @*/

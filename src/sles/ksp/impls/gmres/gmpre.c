@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.14 1998/08/03 16:14:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmpre.c,v 1.15 1998/08/03 16:19:52 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -18,6 +18,8 @@ static char vcid[] = "$Id: gmpre.c,v 1.14 1998/08/03 16:14:24 bsmith Exp bsmith 
 
     Options Database Key:
 .   -ksp_gmres_preallocate - Activates KSPGmresSetPreAllocateVectors()
+
+    Level: intermediate
 
 .keywords: GMRES, preallocate, vectors
 
