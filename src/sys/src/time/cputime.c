@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.5 1997/05/16 19:34:38 balay Exp balay $";
+static char vcid[] = "$Id: cputime.c,v 1.6 1997/07/09 20:51:14 balay Exp balay $";
 #endif
 
 /*
@@ -28,8 +28,10 @@ PLogDouble PetscGetCPUTime()
 #include <limits.h>
 #else
 #include <sys/types.h>
+#if !defined(PARCH_nt)
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -62,7 +64,7 @@ PLogDouble PetscGetCPUTime()
   struct tms temp;
   times(&temp);
   return  ((double) temp.tms_utime)/((double) CLK_TCK);
-#elif defined(PARCH_hpux)
+#elif defined(PARCH_hpux) || defined (PARCH_nt)
 return  ((double)clock()) / ((double)CLOCKS_PER_SEC);
 #else
   static struct rusage temp;
