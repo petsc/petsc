@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildremotetest,v 1.51 2000/01/22 17:28:16 balay Exp balay $ 
+# $Id: buildremotetest,v 1.52 2000/06/30 19:05:11 balay Exp balay $ 
 
 # 
 # Builds and transports the petsc.tar.gz file for remote 
@@ -15,7 +15,7 @@ chmod 660 nightlylogs/ftp.log
 builddist >>& /dev/null
 /bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
 #autoftp eris.disturbed.net petsc put ~/petsc.tar.gz petsc.tar.gz >>& nightlylogs/ftp.log
-autoscp ~/petsc.tar.gz petsc@eris.disturbed.net:~/  >>& nightlylogs/ftp.log
+scp ~/petsc.tar.gz petsc@eris.disturbed.net:~/  >>& nightlylogs/ftp.log
 /bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
 #
 #  Wait 6.5 hours then retrieve the results
@@ -25,7 +25,7 @@ sleep 30000
 echo done sleeping >> nightlylogs/ftp.log
 /bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S' >>& nightlylogs/ftp.log
 #autoftp eris.disturbed.net petsc get buildtest.log /home/bsmith/petsc/maint/nightlylogs/freebsd.log >>& nightlylogs/ftp.log
-autoscp  petsc@eris.disturbed.net:~/buildtest.log /home/bsmith/petsc/maint/nightlylogs/freebsd.log >>& nightlylogs/ftp.log
+scp  petsc@eris.disturbed.net:~/buildtest.log /home/bsmith/petsc/maint/nightlylogs/freebsd.log >>& nightlylogs/ftp.log
 echo "ftp logging complete: `date` " >> nightlylogs/ftp.log
 
 
