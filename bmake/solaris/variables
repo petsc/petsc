@@ -23,7 +23,7 @@ C_CLINKER	   = cc
 C_FLINKER	   = f90
 C_CCV		   = cc -V -c
 C_FCV		   = f90 -V
-C_SYS_LIB	   = -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl  -lm
+C_SYS_LIB	   = -L/opt/SUNWspro/WS6U2/lib -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl  -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
@@ -39,7 +39,7 @@ CXX_FLINKER_SLFLAG = -R
 CXX_CLINKER	   = CC
 CXX_FLINKER	   = CC
 CXX_CCV		   = CC    -V -c
-CXX_SYS_LIB	   = -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl -lm
+CXX_SYS_LIB	   = -L/opt/SUNWspro/WS6U2/lib -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl -lm
 # older versions of the compiler may require -lcomplex before the -ldl
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g  -xs

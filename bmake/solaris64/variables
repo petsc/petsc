@@ -23,7 +23,7 @@ C_FLINKER_SLFLAG   = -R
 C_CLINKER	   = cc -xarch=v9
 C_FLINKER	   = f90 -xarch=v9
 C_CCV		   = cc    -V -c
-C_SYS_LIB	   = -lfui -lfai -lfai2 -lfsumai -lfprodai -lfminlai -lfmaxlai -lfminvai -lfmaxvai -lfsu -lsunmath -lm -ldl -lc
+C_SYS_LIB	   = -L/opt/SUNWspro/WS6U2/lib/v9 -lfui -lfai -lfai2 -lfsumai -lfprodai -lfminlai -lfmaxlai -lfminvai -lfmaxvai -lfsu -lsunmath -lm -ldl -lc
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
@@ -39,7 +39,7 @@ CXX_FLINKER_SLFLAG = -R
 CXX_CLINKER	   = CC -xarch=v9
 CXX_FLINKER	   = CC -xarch=v9
 CXX_CCV		   = CC    -V -c
-CXX_SYS_LIB	   =  -lfui -lfai -lfai2 -lfsumai -lfprodai -lfminlai -lfmaxlai -lfminvai -lfmaxvai -lfsu -lsunmath -lm -ldl -lc
+CXX_SYS_LIB	   =  -L/opt/SUNWspro/WS6U2/lib/v9 -lfui -lfai -lfai2 -lfsumai -lfprodai -lfminlai -lfmaxlai -lfminvai -lfmaxvai -lfsu -lsunmath -lm -ldl -lc
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g  -xs
 GCXX_FOPTFLAGS	   = -g  -xs
