@@ -163,7 +163,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   PETSCFREE(rowkeep);
   ierr = MatDestroy(mat); CHKERRA(ierr);
 
-  /* Convert storage formats -- just to demonstrate block diagonal format */
+  /* Convert storage formats -- just to demonstrate conversion to various
+     formats (in particular, block diagonal storage) */
   { MatType type = MATBDIAG;
   if (OptionsHasName(0,"-mat_row")) type = MATROW; 
   if (OptionsHasName(0,"-mat_aij")) type = MATSAME;
@@ -180,9 +181,6 @@ int GetElasticityMatrix(int m,Mat *newmat)
   MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
   printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
           nz,nzalloc,mem);
-
-  MatView(*newmat,STDOUT_VIEWER);
-  
   return 0;
 }
 /* -------------------------------------------------------------------- */
