@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: aij.c,v 1.153 1996/03/04 05:15:52 bsmith Exp bsmith $";
+#endif
+
 #include "stdio.h"
 #include "petsc.h"
 
