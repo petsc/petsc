@@ -10,6 +10,9 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Add a searchable index for the man pages (Jeff Scroggs Complaint)
+  - Check out the performance of VecOps ( noticed tnem to be extremely bad (Satish)
+
   - Fix this:
     > VecNorm with a NORM_MAX option returns 0 if the
     > vector has NaN's. It seems to me that it should return
