@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.191 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.192 2000/05/17 02:45:02 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -486,7 +486,20 @@ EXTERN int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,Scalar
 EXTERN int MatMPIBAIJSetHashTableFactor(Mat,double);
 EXTERN int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);
 
+typedef char* MATType;
+EXTERN int MATCreate(MPI_Comm,int,int,int,int,Mat*);
+EXTERN int MatSetType(Mat,MATType);
+EXTERN int MatRegisterAll(char*);
+EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,0)
+#else
+#define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
+#endif
 
+EXTERN int MatCreateMAIJ(Mat,int,Mat*);
+
+#define MATSEQMAIJ "seqaij"
 #endif
 
 

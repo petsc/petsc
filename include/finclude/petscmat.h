@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.61 2000/04/27 17:40:52 balay Exp balay $;
+!  $Id: petscmat.h,v 1.62 2000/05/08 15:10:00 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -21,6 +21,7 @@
 #define MatColoringType     character*(80)
 #define MatInfo             double precision
 #define MatILUInfo          double precision
+#define MatLUInfo           double precision
 #define MatDuplicateOption  integer      
 #define MatStructure        integer
 #define MatPartitioningType character*(80)
@@ -175,6 +176,20 @@
       parameter (MAT_ILUINFO_DT = 4)
       parameter (MAT_ILUINFO_DTCOL = 5)
       parameter (MAT_ILUINFO_DTCOUNT = 6)
+
+!
+!  Note: MAT_LUINFO_SIZE must equal # elements in MatLUInfo structure
+!  (See petsc/include/petscmat.h)
+!
+      integer   MAT_LUINFO_SIZE
+
+      parameter (MAT_LUINFO_SIZE=2)
+
+      integer MAT_LUINFO_FILL
+      integer MAT_LUINFO_DTCOL
+
+      parameter (MAT_LUINFO_FILL  = 1)
+      parameter (MAT_LUINFO_DTCOL = 2)
 
 !
 !  Options for SOR and SSOR
