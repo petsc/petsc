@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.78 2000/08/17 04:50:57 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.79 2000/11/28 17:28:11 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -32,7 +32,7 @@ struct _VecOps {
   int  (*duplicate)(Vec,Vec*),              /* get single vector */
        (*duplicatevecs)(Vec,int,Vec**),     /* get array of vectors */
        (*destroyvecs)(const Vec[],int),     /* free array of vectors */
-       (*dot)(Vec,Vec,Scalar*),              /* z = x^H * y */
+       (*dot)(Vec,Vec,Scalar*),             /* z = x^H * y */
        (*mdot)(int,Vec,const Vec[],Scalar*), /* z[j] = x dot y[j] */
        (*norm)(Vec,NormType,double*),        /* z = sqrt(x^H * x) */
        (*tdot)(Vec,Vec,Scalar*),             /* x'*y */
@@ -56,8 +56,8 @@ struct _VecOps {
        (*getlocalsize)(Vec,int*),
        (*getownershiprange)(Vec,int*,int*),
        (*restorearray)(Vec,Scalar**),        /* restore data array */
-       (*max)(Vec,int*,double*),             /* z = max(x); idx=index of max(x) */
-       (*min)(Vec,int*,double*),             /* z = min(x); idx=index of min(x) */
+       (*max)(Vec,int*,double*),      /* z = max(x); idx=index of max(x) */
+       (*min)(Vec,int*,double*),      /* z = min(x); idx=index of min(x) */
        (*setrandom)(PetscRandom,Vec),        /* set y[j] = random numbers */
        (*setoption)(Vec,VecOption),
        (*setvaluesblocked)(Vec,int,const int[],const Scalar[],InsertMode),
@@ -190,7 +190,7 @@ typedef struct {
   MPI_Request            *requests,*rev_requests;
   Scalar                 *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
-  MPI_Status             *sstatus;
+  MPI_Status             *sstatus,*rstatus;
   PetscTruth             use_readyreceiver;
   int                    bs;
   PetscTruth             sendfirst;
