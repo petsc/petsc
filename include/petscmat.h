@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: mat.h,v 1.39 1995/06/07 16:31:27 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -6,7 +6,8 @@
 #define __MAT_PACKAGE
 #include "vec.h"
 
-#define MAT_COOKIE PETSC_COOKIE+5
+#define MAT_COOKIE         PETSC_COOKIE+5
+#define MAT_SCATTER_COOKIE PETSC_COOKIE+15
 
 typedef struct _Mat*           Mat;
 typedef struct _MatScatterCtx* MatScatterCtx;
@@ -94,11 +95,13 @@ typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
 
 extern int MatGetInfo(Mat,MatInfoType,int*,int*,int*);
 extern int MatGetDiagonal(Mat,Vec);
-extern int MatTranspose(Mat);
+extern int MatTranspose(Mat,Mat*);
 extern int MatScale(Mat,Vec,Vec);
 extern int MatEqual(Mat,Mat);
-extern int MatScatterBegin(Mat,IS,IS,Mat,IS,IS,InsertMode,MatScatterCtx*);
-extern int MatScatterEnd(Mat,IS,IS,Mat,IS,IS,InsertMode,MatScatterCtx*);
+extern int MatScatterBegin(Mat,Mat,InsertMode,MatScatterCtx);
+extern int MatScatterEnd(Mat,Mat,InsertMode,MatScatterCtx);
+extern int MatScatterCtxCreate(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
+extern int MatScatterCtxDestroy(MatScatterCtx);
 
 typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4} MatNormType;
 extern int MatNorm(Mat,MatNormType,double *);
