@@ -1,17 +1,16 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.10 1995/09/30 19:29:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.11 1995/11/01 23:19:07 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "order.h"
 
 /*
-    MatOrderQMD - Find the Quotient Minimum Degree ordering of a given matrix.
+    MatOrder_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
 */    
-int MatOrderQMD( int *Nrow, int *ia, int *ja, int *perm,int *permc )
+int MatOrder_QMD( int *Nrow, int *ia, int *ja, int *perm,int *permc )
 {
-  int i,   *deg, *marker, *rchset, *nbrhd, *qsize,
-      *qlink, nofsub, *iperm, nrow = *Nrow;
+  int i,   *deg, *marker, *rchset, *nbrhd, *qsize, *qlink, nofsub, *iperm, nrow = *Nrow;
 
   iperm = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(iperm);
   deg    = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(deg);
@@ -21,8 +20,7 @@ int MatOrderQMD( int *Nrow, int *ia, int *ja, int *perm,int *permc )
   qsize  = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(qsize);
   qlink  = (int *)PetscMalloc( nrow * sizeof(int) ); CHKPTRQ(qlink);
   /* WARNING - genqmd trashes ja */    
-  genqmd( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,
-	 qlink, &nofsub );
+  genqmd( &nrow, ia, ja, perm, iperm, deg, marker, rchset, nbrhd, qsize,qlink, &nofsub );
   PetscFree( deg ); PetscFree( marker ); PetscFree( rchset ); 
   PetscFree( nbrhd ); PetscFree( qsize );
   PetscFree( qlink ); PetscFree(iperm);

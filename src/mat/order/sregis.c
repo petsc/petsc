@@ -1,14 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: sp1wd.c,v 1.10 1995/09/30 19:29:19 bsmith Exp $";
+static char vcid[] = "$Id: sregis.c,v 1.7 1995/10/12 04:16:18 bsmith Exp bsmith $";
 #endif
 
 #include "../../matimpl.h"     /*I       "mat.h"   I*/
 
-extern int MatOrderNatural(int*,int*,int*,int*,int*);
-extern int MatOrderND(int*,int*,int*,int*,int*);
-extern int MatOrder1WD(int*,int*,int*,int*,int*);
-extern int MatOrderQMD(int*,int*,int*,int*,int*);
-extern int MatOrderRCM(int*,int*,int*,int*,int*);
+extern int MatOrder_Natural(int*,int*,int*,int*,int*);
+extern int MatOrder_ND(int*,int*,int*,int*,int*);
+extern int MatOrder_1WD(int*,int*,int*,int*,int*);
+extern int MatOrder_QMD(int*,int*,int*,int*,int*);
+extern int MatOrder_RCM(int*,int*,int*,int*,int*);
 
 /*@C
   MatReorderingRegisterAll - Registers all of the sequential matrix 
@@ -37,11 +37,11 @@ $       routine requires recompilation.
 @*/
 int MatReorderingRegisterAll()
 {
-  MatReorderingRegister(ORDER_NATURAL   , "natural"  ,MatOrderNatural);
-  MatReorderingRegister(ORDER_ND        , "nd"       ,MatOrderND);
-  MatReorderingRegister(ORDER_1WD       , "1wd"      ,MatOrder1WD);
-  MatReorderingRegister(ORDER_RCM       , "rcm"      ,MatOrderRCM);
-  MatReorderingRegister(ORDER_QMD       , "qmd"      ,MatOrderQMD);
+  MatReorderingRegister(ORDER_NATURAL   , "natural"  ,MatOrder_Natural);
+  MatReorderingRegister(ORDER_ND        , "nd"       ,MatOrder_ND);
+  MatReorderingRegister(ORDER_1WD       , "1wd"      ,MatOrder_1WD);
+  MatReorderingRegister(ORDER_RCM       , "rcm"      ,MatOrder_RCM);
+  MatReorderingRegister(ORDER_QMD       , "qmd"      ,MatOrder_QMD);
   return 0;
 }
 
