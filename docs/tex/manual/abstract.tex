@@ -26,23 +26,34 @@ using techniques of object-oriented programming, PETSc provides
 enormous flexibility for users.
 
 PETSc is a sophisticated set of software tools; as such, for some
-users it initially has a much steeper learning curve than a
-simple subroutine library. In particular, for individuals without some
-computer science background or experience programming in C,
-Pascal, or C++, it may require a significant amount of time to take full
-advantage of the features that enable efficient software use.
-However, the power of the PETSc design and
-the algorithms it incorporates make the efficient implementation of
-many application codes much simpler than ``rolling them'' yourself.
-For many simple (or even relatively complicated) tasks a package such as
-Matlab is often the best tool; PETSc is not intended for the classes
-of problems for which effective Matlab code can be written.
+users it initially has a much steeper learning curve than a simple
+subroutine library. In particular, for individuals without some
+computer science background or experience programming in C or C++, it
+may require a significant amount of time to take full advantage of the
+features that enable efficient software use.  However, the power of
+the PETSc design and the algorithms it incorporates may make the efficient
+implementation of many application codes simpler than ``rolling
+them'' yourself.
+\begin{itemize}
+\item  For many simple (or even relatively complicated)
+tasks a package such as Matlab is often the best tool; PETSc is not
+intended for the classes of problems for which effective Matlab code
+can be written.
+\item PETSc is not, cannot, and should not be used to attempt to provide
+a ``{\bf parallel linear solver}'' in an otherwise sequential code. This is 
+fruitless exercise which the PETSc team does not condone or support. Certainly
+all parts of a previously sequential code need not be parallelized but the 
+matrix generation portion must be to expect any kind of reasonable performance.
+Do not expect to generate your matrix sequentially and then ``use PETSc'' to solve
+the linear system in parallel.
+\end{itemize}
 
-Since PETSc is still under development, small changes in usage and
+Since PETSc is under continued development, small changes in usage and
 calling sequences of routines may occur.  PETSc is supported; see the
-{\tt readme.html} in the PETSc distribution directory or the web site
-{\tt http://www.mcs.anl.gov/petsc} for information on contacting support.
+web site {\tt http://www.mcs.anl.gov/petsc} for information on
+contacting support.
 
 \medskip \medskip
+
 
 
