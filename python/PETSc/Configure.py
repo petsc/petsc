@@ -66,15 +66,17 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-fortran-kernels', 'Use Fortran for linear algebra kernels', nargs.ArgBool)
 
-    self.framework.argDB['PETSCFLAGS']    = ''
-    self.framework.argDB['COPTFLAGS']     = ''
-    self.framework.argDB['FOPTFLAGS']     = ''
-    self.framework.argDB['with-bopt']     = 'g'
-    self.framework.argDB['enable-debug']  = 1
-    self.framework.argDB['enable-log']    = 1
-    self.framework.argDB['enable-stack']  = 1
-    self.framework.argDB['enable-shared'] = 0
+    self.framework.argDB['PETSCFLAGS']             = ''
+    self.framework.argDB['COPTFLAGS']              = ''
+    self.framework.argDB['FOPTFLAGS']              = ''
+    self.framework.argDB['with-bopt']              = 'g'
+    self.framework.argDB['enable-debug']           = 1
+    self.framework.argDB['enable-log']             = 1
+    self.framework.argDB['enable-stack']           = 1
+    self.framework.argDB['enable-shared']          = 0
+    self.framework.argDB['enable-fortran-kernels'] = 0
     return
 
   def defineAutoconfMacros(self):
@@ -984,9 +986,11 @@ fi
   def configureDirectories(self):
     '''Sets PETSC_DIR'''
     if self.framework.argDB.has_key('PETSC_DIR'):
-      self.dir = self.framework.argDB['PETSC_DIR']
-    else:
-      self.dir = os.getcwd()
+      self.framework.argDB['PETSC_DIR'] = os.getcwd()
+    self.dir = self.framework.argDB['PETSC_DIR']
+    # Check for version
+    if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
+      raise RuntimeError('Invalid PETSc directory '+str(self.dir))
     self.addSubstitution('DIR', self.dir)
     self.addDefine('DIR', self.dir)
     return
@@ -1037,7 +1041,7 @@ fi
     return
 
   def configureLibraryOptions(self):
-    '''Sets bopt, PETSC_USE_DEBUG, PETSC_USE_LOG, and PETSC_USE_STACK'''
+    '''Sets bopt, PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
     self.bopt     = self.framework.argDB['with-bopt']
     self.useDebug = self.framework.argDB['enable-debug']
     self.addDefine('USE_DEBUG', self.useDebug)
@@ -1045,6 +1049,8 @@ fi
     self.addDefine('USE_LOG',   self.useLog)
     self.useStack = self.framework.argDB['enable-stack']
     self.addDefine('USE_STACK', self.useStack)
+    self.useFortranKernels = self.framework.argDB['enable-fortran-kernels']
+    self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
     return
 
   def getCompilerFlags(self, langName, compiler):
