@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.8 1996/08/08 14:41:26 bsmith Exp gropp $";
+static char vcid[] = "$Id: fhost.c,v 1.9 1996/08/21 19:22:16 gropp Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -24,16 +24,14 @@ static char vcid[] = "$Id: fhost.c,v 1.8 1996/08/08 14:41:26 bsmith Exp gropp $"
 @*/
 int PetscGetHostName( char *name, int nlen )
 {
-/* The "1" in this test is for eventual elimination when all of the "base"
-   files specify HAVE_UNAME (if they should!) */
-#if 1 || defined(HAVE_UNAME)
+#if defined(HAVE_UNAME)
   struct utsname utname;
   /* Note we do not use gethostname since that is not POSIX */
   uname(&utname); PetscStrncpy(name,utname.nodename,nlen);
 #elif defined(HAVE_GETHOSTNAME)
-    gethostname(name, nlen);
+  gethostname(name, nlen);
 #elif defined(HAVE_SYSINFO)
-    sysinfo(SI_HOSTNAME, name, nlen);
+  sysinfo(SI_HOSTNAME, name, nlen);
 #endif
   /* See if this name includes the domain */
   if (!PetscStrchr(name,'.')) {
@@ -50,7 +48,7 @@ int PetscGetHostName( char *name, int nlen )
        Some machines (Linx) default to (none) if not
        configured with a particular domain name.
     */
-    if (PetscStrncmp(name+l,"(none)",6)) {
+    if (!PetscStrncmp(name+l,"(none)",6)) {
       name[l-1] = 0;
     }
   }
