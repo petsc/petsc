@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.101 2001/01/17 19:45:44 balay Exp balay $*/
+/*$Id: iterativ.c,v 1.102 2001/03/23 23:23:29 balay Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -158,8 +158,8 @@ int KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 @*/
 int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 {
-  int    ierr;
-  Vec    x;
+  int         ierr;
+  Vec         x;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
@@ -196,7 +196,7 @@ int KSPVecViewMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 @*/
 int KSPDefaultMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
-  int    ierr;
+  int         ierr;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
@@ -243,7 +243,7 @@ int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   PetscReal    scnorm;
   PC           pc;
   Mat          A,B;
-  PetscViewer       viewer = (PetscViewer) dummy;
+  PetscViewer  viewer = (PetscViewer) dummy;
   
   PetscFunctionBegin;
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ int KSPTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 */
 int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 {
-  int    ierr;
+  int         ierr;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
