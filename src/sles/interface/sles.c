@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.108 1998/12/21 01:01:58 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.109 1999/01/26 21:30:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -623,7 +623,8 @@ $      Pmat does not have the same nonzero structure.
 
 .keywords: SLES, set, operators, matrix, preconditioner, linear system
 
-.seealso: SLESSolve()
+.seealso: SLESSolve(), SLESGetPC(), PCGetOperators()
+
 @*/
 int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 {
