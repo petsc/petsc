@@ -172,10 +172,8 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'lib', 'libmpi.a')]      
       yield [os.path.join(root, 'lib', 'libmpich.a'), os.path.join(root, 'lib', 'libpmpich.a')]
       yield [os.path.join(root, 'lib', 'mpich.lib'),'ws2_32.lib']
-      # cygwin
-      yield [os.path.join(root, 'SDK.gcc', 'lib', 'libmpich.a')]
       # MS Windows
-      yield [os.path.join(root, 'SDK','lib','mpich.lib'),'ws2_32.lib']
+      yield [os.path.join(root, 'lib','mpich.lib'),'ws2_32.lib']
     else:
       yield ['']
       yeild ['fmpich','mpich']
@@ -209,8 +207,8 @@ class Configure(config.base.Configure):
     if 'with-mpi-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-      yield ('User specified installation root for cygwin', self.libraryGuesses(dir),[[os.path.join(dir,'SDK.gcc','include')]])
-      yield ('User specified installation root for MS Windows', self.libraryGuesses(dir),[[os.path.join(dir,'SDK','include')]])
+      yield ('User specified installation root for cygwin', self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
+      yield ('User specified installation root for MS Windows', self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])
       raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # May not need to list anything
     yield ('Default compiler locations', [''], [[]])
