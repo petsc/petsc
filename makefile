@@ -137,7 +137,7 @@ etags:
 	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex docs/tex/manual_tex.tex
 	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex docs/tex/part2.tex
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
-	etags -a -f TAGS src/*/examples/*.F
+	etags -a -f TAGS src/*/examples/*.F src/fortran/custom/*.F
 	chmod g+w TAGS
 
 # Builds the etags file that excludes the examples directories
@@ -167,7 +167,7 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/routin.tex  docs/tex/manual.tex
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/intro.tex  docs/tex/part1.tex
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/*.c
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c 
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c src/fortran/custom/*.F
 	chmod g+w TAGS_NO_EXAMPLES
 
 # Builds the etags file for makefiles
@@ -175,7 +175,7 @@ etags_makefiles:
 	$(RM) TAGS_MAKEFILES
 	etags -a -f TAGS_MAKEFILES bmake/common
 	etags -a -f TAGS_MAKEFILES makefile src/*/src/makefile 
-	etags -a -f TAGS_MAKEFILES src/*/interface/makefile src/makefile 
+	etags -a -f TAGS_MAKEFILES src/*/interface/makefile src/makefile
 	etags -a -f TAGS_MAKEFILES src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_MAKEFILES src/*/utils/makefile src/*/interface/makefile
 	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile

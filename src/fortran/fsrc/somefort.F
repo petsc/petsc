@@ -1,5 +1,5 @@
 C
-C  "$Id: somefort.F,v 1.5 1995/11/23 04:15:38 bsmith Exp curfman $";
+C  "$Id: somefort.F,v 1.6 1995/11/29 21:59:15 curfman Exp curfman $";
 C
 C  Utility routine used to set some values into a Fortran common block
 
@@ -12,7 +12,7 @@ C  Utility routine used to set some values into a Fortran common block
       STDERR_VIEWER_SELF  = s2
       STDOUT_VIEWER_WORLD = s3
 
-      call PetscSetFortranBasePointers(PetscNull)
+      call PetscSetFortranBasePointers(PETSC_NULL)
 
       return
       end
