@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.44 1998/12/03 03:58:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.45 1998/12/17 22:09:25 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -24,6 +24,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,char *class_name
                               int (*des)(PetscObject),int (*vie)(PetscObject,Viewer))
 {
   static int idcnt = 1;
+  int        ierr;
 
   PetscFunctionBegin;
   h->cookie                 = cookie;
@@ -43,7 +44,7 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,char *class_name
   h->bops->queryfunction    = PetscObjectQueryFunction_Petsc;
   h->bops->querylanguage    = PetscObjectQueryLanguage_Petsc;
   h->bops->composelanguage  = PetscObjectComposeLanguage_Petsc;
-  PetscCommDuplicate_Private(comm,&h->comm,&h->tag);
+  ierr = PetscCommDuplicate_Private(comm,&h->comm,&h->tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
