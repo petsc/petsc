@@ -107,8 +107,7 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
 
   *mem = (PetscLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
 
-#elif defined(PETSC_USE_PROC_FOR_SIZE)
-
+#elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
   sprintf(proc,"/proc/%d/statm",(int)getpid());
   if (!(file = fopen(proc,"r"))) {
     SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
