@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.9 1995/04/15 03:27:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.10 1995/04/16 03:43:14 curfman Exp curfman $";
 #endif
 
 /*
@@ -75,19 +75,25 @@ int PCCreate_Shell(PC pc)
 
    Input Parameters:
 .  pc - the preconditioner context
-.  mult - the application routine
-.  ptr - pointer to data needed by application multiply routine
+.  apply - the application-provided preconditioning routine
+.  ptr - pointer to data needed by this routine
+
+   Calling sequence of apply:
+   int apply (void *ptr,Vec xin,Vec xout)
+.  ptr - the application context
+.  xin - input vector
+.  xout - output vector
 
 .keywords: PC, shell, set, apply, user-provided
 
 .seealso: PCShellSetApplyRichardson()
 @*/
-int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ptr)
+int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 {
   PC_Shell *shell;
   VALIDHEADER(pc,PC_COOKIE);
   shell        = (PC_Shell *) pc->data;
-  shell->apply = mult;
+  shell->apply = apply;
   shell->ctx   = ptr;
   return 0;
 }
@@ -96,23 +102,31 @@ int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ptr)
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
    in Richardson iteration.
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
-.  mult - the application routine
-.  ptr - pointer to data needed by application multiply routine
+.  apply - the application-provided preconditioning routine
+.  ptr - pointer to data needed by this routine
+
+   Calling sequence of apply:
+   int apply (void *ptr,Vec x,Vec b,Vec r,int maxits)
+.  ptr - the application context
+.  x - current iterate
+.  b - right-hand-side
+.  r - residual
+.  maxits - maximum number of iterations
 
 .keywords: PC, shell, set, apply, Richardson, user-provided
 
 .seealso: PCShellSetApply()
 @*/
-int PCShellSetApplyRichardson(PC pc, int (*mult)(void*,Vec,Vec,Vec,int),
+int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),
                               void *ptr)
 {
   PC_Shell *shell;
   VALIDHEADER(pc,PC_COOKIE);
   shell            = (PC_Shell *) pc->data;
   pc->applyrich    = PCApplyRichardson_Shell;
-  shell->applyrich = mult;
+  shell->applyrich = apply;
   shell->ctxrich   = ptr;
   return 0;
 }

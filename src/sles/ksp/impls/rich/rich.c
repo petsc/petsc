@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.13 1995/05/06 18:06:44 curfman Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.14 1995/05/10 00:16:34 bsmith Exp curfman $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -26,13 +26,15 @@ int KSPSetUp_Richardson(KSP itP)
 }
 
 /*@
-    KSPRichardsonSetScale - Called after KSPCreate(KSPRICHARDSON), sets
-    the "damping" factor; if this routine is not called, the  
-    factor defaults to 1.0.
+    KSPRichardsonSetScale - Called after KSPCreate(KSPRICHARDSON) to set
+    the damping factor; if this routine is not called, the factor 
+    defaults to 1.0.
 
     Input Parameters:
 .   itP - the iterative context
 .   scale - the relaxation factor
+
+.keywords: KSP, Richardson, set, scale
 @*/
 int KSPRichardsonSetScale(KSP itP,double scale)
 {
