@@ -21,7 +21,7 @@ class Configure(config.base.Configure):
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
-                 'uname','_snprintf']
+                 'uname','snprintf','_snprintf']
     libraries1 = [(['socket', 'nsl'], 'socket')]
     libraries2 = [(['rt','aio'],'exit')]
     self.setCompilers = self.framework.require('config.setCompilers', self)
