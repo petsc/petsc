@@ -13,6 +13,7 @@ class Configure(config.base.Configure):
     self.argDB          = framework.argDB
     self.foundLib       = 0
     self.foundInclude   = 0
+    self.isPOE          = 0
     self.compilers      = self.framework.require('config.compilers', self)
     self.types          = self.framework.require('config.types',     self)
     self.libraries      = self.framework.require('config.libraries', self)
@@ -227,8 +228,10 @@ class Configure(config.base.Configure):
     dir = os.path.abspath(os.path.join('/opt', 'mpich'))
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try IBM
+    self.isPOE = 1
     dir = os.path.abspath(os.path.join('/usr', 'lpp', 'ppe.poe'))
-    yield ('IBM location (/usr/lpp/ppe.poe)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+    yield ('IBM location (/usr/lpp/ppe.poe)', [[os.path.join(dir, 'lib', 'libmpi_r.a')]], [[os.path.join(dir, 'include')]])
+    self.isPOE = 0
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
     yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
@@ -250,9 +253,6 @@ class Configure(config.base.Configure):
     dir = os.path.join('/cygdrive','c','Program\\ Files','MPICH')
     yield('Default MPICH install location (C:\Program Files\MPICH with MS compatible SDK',self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])
     yield('Default MPICH install location (C:\Program Files\MPICH with SDK.gcc',self.libraryGuesses(os.path.join(dir,'SDK.gcc')),[[os.path.join(dir,'SDK.gcc','include')]])
-    # Try AIX location
-    dir = os.path.abspath(os.path.join('/usr', 'lpp', 'ppe.poe'))
-    yield ('Default AIX location', [[os.path.join(dir, 'lib', 'libmpi_r.a')]], [[os.path.join(dir, 'include')]])
     
     # Try PETSc location
     PETSC_DIR  = None
@@ -436,6 +436,10 @@ class Configure(config.base.Configure):
     '''Checking for mpirun
        - If --can-execute=0, then no checking is done'''
     if not self.framework.argDB['can-execute']: return
+    if self.isPOE:
+      self.mpirun = os.path.join(self.framework.argDB['PETSC_DIR'], 'bin', 'mpirun.poe')
+      sel.addSubstitution('MPIRUN', self.mpirun)
+      return
     if 'with-mpirun' in self.framework.argDB:
       self.mpirun = self.framework.argDB['with-mpirun']
     else:
