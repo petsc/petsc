@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.6 1995/05/25 22:47:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.7 1995/05/26 19:23:39 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -10,7 +10,7 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  int        ierr, i, j, row, col, rstart = mbd->rstart, rend = mbd->rend;
+  int        ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
   if (mbd->insertmode != NOTSETVALUES && mbd->insertmode != addv) {
     SETERR(1,"You cannot mix inserts and adds");
@@ -244,7 +244,6 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
 static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
-  int          ierr;
   if (!A->assembled) 
     SETERR(1,"MatGetDiag_MPIBDiag: Must assemble matrix first.");
   return MatGetDiagonal(A->A,v);
@@ -274,7 +273,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  int          ierr, *cols;
+  int          ierr;
   PetscObject  vobj = (PetscObject) viewer;
 
   if (!mbd->assembled)
@@ -301,7 +300,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
     else {
       /* assemble the entire matrix onto first processor. */
       Mat       A;
-      int       M = mbd->M, N = mbd->N,m,row,i,j, nz, *cols;
+      int       M = mbd->M, N = mbd->N,m,row,i, nz, *cols;
       Scalar    *vals;
       Mat_BDiag *Ambd = (Mat_BDiag*) mbd->A->data;
 
@@ -453,7 +452,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   Mat          mat;
   Mat_MPIBDiag *mbd;
   Mat_BDiag    *mlocal;
-  int          ierr, i, k, *ldiag, sum[2], work[2];
+  int          ierr, i, k, *ldiag;
 
   *newmat       = 0;
   if ((N%nb)) SETERR(1,"Invalid block size.  Bad column number.");
