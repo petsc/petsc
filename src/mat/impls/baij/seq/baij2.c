@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.64 2000/08/16 15:15:06 balay Exp balay $*/
+/*$Id: baij2.c,v 1.65 2000/08/18 18:35:46 balay Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1242,7 +1242,7 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
   }  else if (type == NORM_INFINITY) { /* maximum row sum */
     *norm = 0.0;
     for (k=0; k<bs; k++) {
-      for (j=0; j<a->m; j++) {
+      for (j=0; j<a->mbs; j++) {
         v = a->a + bs2*a->i[j] + k;
         sum = 0.0;
         for (i=0; i<a->i[j+1]-a->i[j]; i++) {
