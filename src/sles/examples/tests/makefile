@@ -1,6 +1,4 @@
-# $Id: makefile,v 1.166 1999/11/24 21:55:03 bsmith Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.167 2000/04/09 03:10:45 bsmith Exp bsmith $ 
 
 CFLAGS	  = 
 FFLAGS    =
@@ -8,33 +6,6 @@ CPPFLAGS  =
 FPPFLAGS  =
 LOCDIR    = src/sles/examples/tests/
 NOADIC    = true
-
-TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
-                  ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
-		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm clean 
-TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex15.PETSc ex15.rm clean
-TESTEXAMPLES_3  = ex12.PETSc ex12.rm clean
-TESTEXAMPLES_9  = ex12.PETSc ex12.rm clean
-TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm ex4.PETSc \
-		  runex4 ex4.rm clean
-TESTEXAMPLES_5  = ex17.PETSc runex17 ex17.rm clean
-TESTEXAMPLES_11 = ex17.PETSc runex17 ex17.rm clean
-TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
-		  ex6.rm clean
-TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm clean
-TESTEXAMPLES_8  = ex16.PETSc ex16.rm clean
-TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc ex20.rm ex5f.PETSc ex5f.rm clean
-BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
-BUILDEXAMPLES_2 = ex10.PETSc ex10.rm ex15.PETSc ex15.rm clean
-BUILDEXAMPLES_3 = ex12.PETSc ex12.rm ex16.PETSc ex16.rm clean
-BUILDEXAMPLES_4 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
-BUILDEXAMPLES_5 = ex17.PETSc ex17.rm clean
-BUILDEXAMPLES_11= ex17.PETSc ex17.rm clean
-BUILDEXAMPLES_6 = ex6.PETSc ex6.rm clean
-BUILDEXAMPLES_7 = ex6.PETSc ex6.rm clean
-BUILDEXAMPLES_8 = ex16.PETSc ex16.rm clean
-BUILDEXAMPLES_9 = ex12.PETSc ex12.rm clean
-
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex10.c \
 		  ex15.c ex17.c ex18.c ex19.c ex20.c
 EXAMPLESCH      = 
@@ -134,6 +105,7 @@ ex22: ex22.o  chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_SLES_LIB}
 	${RM} ex22.o
 
+#------------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -pc_type jacobi -ksp_smonitor -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -330,3 +302,21 @@ runex22_2:
 	   else echo "Possible problem with ex22_2, diffs above"; fi; \
 	   ${RM} -f ex22_2.tmp
 
+
+TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
+                  ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
+		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm 
+TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex15.PETSc ex15.rm
+TESTEXAMPLES_3  = ex12.PETSc ex12.rm
+TESTEXAMPLES_9  = ex12.PETSc ex12.rm
+TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm ex4.PETSc \
+		  runex4 ex4.rm
+TESTEXAMPLES_5  = ex17.PETSc runex17 ex17.rm
+TESTEXAMPLES_11 = ex17.PETSc runex17 ex17.rm
+TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
+		  ex6.rm
+TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm
+TESTEXAMPLES_8  = ex16.PETSc ex16.rm
+TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc ex20.rm ex5f.PETSc ex5f.rm
+
+include ${PETSC_DIR}/bmake/common_test

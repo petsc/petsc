@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2000/04/09 03:11:43 bsmith Exp bsmith $
+# $Id: makefile,v 1.4 2000/08/01 20:58:27 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -14,4 +14,5 @@ DIRS     = constant string matlab
 LOCDIR   = src/pf/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 

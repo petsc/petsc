@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 1998/07/27 03:25:17 curfman Exp balay $ 
+# $Id: makefile,v 1.2 1999/02/02 21:30:30 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -14,4 +14,5 @@ MANSEC   = TS
 LOCDIR   = src/ts/impls/implicit/cn/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.34 1999/02/02 21:22:54 balay Exp bsmith $
+# $Id: makefile,v 1.35 1999/11/24 21:52:58 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -14,3 +14,4 @@ MANSEC   = Draw
 LOCDIR   = src/sys/src/draw/utils/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

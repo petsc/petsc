@@ -1,27 +1,12 @@
-# $Id: makefile,v 1.21 1999/04/01 17:08:52 balay Exp balay $ 
+# $Id: makefile,v 1.22 1999/07/16 14:17:18 balay Exp bsmith $ 
 
-ALL: ex1
+
 
 CFLAGS	         =
 FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         = 
 LOCDIR           = src/vec/is/examples/tutorials/
-
-TESTEXAMPLES_1   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-                   runex3 ex3.rm clean
-TESTEXAMPLES_2   = 
-TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm clean
-TESTEXAMPLES_9   = 
-TESTEXAMPLES_4   =
-TESTEXAMPLES_12  = ex1f90.PETSc runex1f90 ex1f90.rm ex3f90.PETSc runex3f90 ex3f90.rm clean
-TESTEXAMPLES_13  = ex4.PETSc ex4.rm clean
-BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_2  = 
-BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm clean
-BUILDEXAMPLES_9  = 
-BUILDEXAMPLES_4  = 
-BUILDEXAMPLES_12 = ex1f90 ex3f90
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF        = ex1f.F ex2f.F ex1f90.F ex3f90.F
 
@@ -58,7 +43,7 @@ ex3f90: ex3f90.o chkopts
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_VEC_LIB}
 	${RM} -f ex4.o
-
+#------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1  ex1  > ex1.tmp 2>&1;\
 	   if (diff output/ex1.out ex1.tmp) then true; \
@@ -100,3 +85,14 @@ runex3f90:
 	   if (diff output/ex3f90.out ex3f90.tmp) then true; \
 	   else echo "Possible problem with ex3f90, diffs above"; fi ;\
 	   ${RM} -f ex3f90.tmp
+
+TESTEXAMPLES_1   = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+                   runex3 ex3.rm
+TESTEXAMPLES_2   = 
+TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
+TESTEXAMPLES_9   = 
+TESTEXAMPLES_4   =
+TESTEXAMPLES_12  = ex1f90.PETSc runex1f90 ex1f90.rm ex3f90.PETSc runex3f90 ex3f90.rm
+TESTEXAMPLES_13  = ex4.PETSc ex4.rm
+
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 2000/04/04 21:54:02 balay Exp $ 
+# $Id: base_variables,v 1.1 2000/04/18 23:26:42 balay Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -53,7 +53,7 @@ OCOMP_FOPTFLAGS	   = -O
 #
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
                      -DPETSC_USE_STACK
-O_PETSCFLAGS	   = -DUSE_FOR_KERNELS -DPETSC_USE_LOG -DPETSC_USE_DEBUG  \
+O_PETSCFLAGS	   = -DPETSC_USE_FOR_KERNELS -DPETSC_USE_LOG -DPETSC_USE_DEBUG  \
 	             -DPETSC_USE_BOPT_O
 GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
                      -DPETSC_USE_STACK 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.44 1999/02/02 21:21:25 balay Exp bsmith $ 
+# $Id: makefile,v 1.45 1999/06/30 22:48:48 bsmith Exp bsmith $ 
 
 #
 #
@@ -19,6 +19,6 @@ LOCDIR    = src/sys/src/viewer/impls/socket/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
+include ${PETSC_DIR}/bmake/common_test
 
 

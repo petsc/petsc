@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.50 2000/05/10 16:41:33 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.51 2000/06/03 14:44:03 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -280,7 +280,7 @@ int MatColoringRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatColoringList) {
-    ierr = FListDestroy(MatColoringList);CHKERRQ(ierr);
+    ierr = FListDestroy(&MatColoringList);CHKERRQ(ierr);
     MatColoringList = 0;
   }
   PetscFunctionReturn(0);

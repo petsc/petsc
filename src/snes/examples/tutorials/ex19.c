@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.2 2000/07/13 18:47:30 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.3 2000/08/01 20:57:32 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES and multigrid.\n\
   \n\
@@ -129,7 +129,7 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
   */
 
-  ierr = DAMGSetGrid(damg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,1,4);CHKERRQ(ierr);
+  ierr = DAMGSetGrid(damg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,4,1);CHKERRQ(ierr);
   ierr = DASetFieldName(DAMGGetDA(damg),0,"x-velocity");CHKERRQ(ierr);
   ierr = DASetFieldName(DAMGGetDA(damg),1,"y-velocity");CHKERRQ(ierr);
   ierr = DASetFieldName(DAMGGetDA(damg),2,"Omega");CHKERRQ(ierr);

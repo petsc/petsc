@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.12 1999/02/03 04:30:23 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.13 1999/03/01 04:54:34 bsmith Exp bsmith $ 
 
 ALL:
 
@@ -7,3 +7,4 @@ LOCDIR   = src/mat/examples/
 DIRS     = tests tutorials
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

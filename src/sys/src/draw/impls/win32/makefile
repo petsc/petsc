@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.37 1999/11/05 14:43:58 bsmith Exp $
+# $Id: makefile,v 1.1 2000/06/07 17:44:52 balay Exp bsmith $
 
 #requirespackage '-DPETSC_HAVE_WIN32'
 
@@ -19,3 +19,4 @@ LOCDIR    = src/sys/src/draw/impls/win32/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

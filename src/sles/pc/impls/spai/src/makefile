@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 1999/04/07 02:46:27 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 1999/11/05 14:48:08 bsmith Exp bsmith $ 
 
 ALL: lib
 #
@@ -17,5 +17,6 @@ DIRS     =
 LOCDIR   = src/contrib/pc/spai/src/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 

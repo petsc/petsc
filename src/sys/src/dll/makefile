@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1999/02/02 21:23:40 balay Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/02/06 15:46:22 bsmith Exp bsmith $ 
 
 ALL: lib 
 CFLAGS    = -DPETSC_BOPT='"${BOPT}"' -DPETSC_LDIR='"${LDIR}"' \
@@ -16,6 +16,6 @@ DIRS	  =
 LOCDIR	  = src/sys/src/dll/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
+include ${PETSC_DIR}/bmake/common_test
 
 

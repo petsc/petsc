@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.275 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.276 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -243,7 +243,7 @@ EXTERN int OListDuplicate(OList,OList *);
   link libraries that will be loaded as needed.
 */
 EXTERN int FListAdd(FList*,const char[],const char[],int (*)(void *));
-EXTERN int FListDestroy(FList);
+EXTERN int FListDestroy(FList*);
 EXTERN int FListFind(MPI_Comm,FList,const char[],int (**)(void*));
 EXTERN int FListPrintTypes(MPI_Comm,FILE*,const char[],const char[],FList);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)

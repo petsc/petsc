@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.3 2000/05/24 21:13:24 balay Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.4 2000/07/10 03:39:27 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -83,7 +83,7 @@ int MatRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatList) {
-    ierr = FListDestroy(MatList);CHKERRQ(ierr);
+    ierr = FListDestroy(&MatList);CHKERRQ(ierr);
     MatList = 0;
   }
   MatRegisterAllCalled = 0;

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.13 1998/06/15 16:12:58 balay Exp balay $ 
+# $Id: makefile,v 1.14 1999/02/02 21:30:26 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -14,4 +14,5 @@ MANSEC   = TS
 LOCDIR   = src/ts/impls/implicit/beuler/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 

@@ -1,43 +1,11 @@
-# $Id: makefile,v 1.82 2000/05/16 23:12:17 bsmith Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.83 2000/07/26 15:31:35 bsmith Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
-
-TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
-		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
-		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc  \
-                   ex5.rm ex5d.PETSc ex5d.rm ex8.PETSc runex8 runex8_3 ex8.rm ex12.PETSc ex12.rm \
-                   ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc ex15.rm clean
-TESTEXAMPLES_2	 = ex5.PETSc runex5_8 runex5_9 \
-		   runex5_10 ex5.rm ex5d.PETSc runex5d_8 runex5d_9 \
-		   runex5d_10 ex5d.rm ex8.PETSc runex8_2 ex8.rm ex9.PETSc ex9.rm clean
-TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f_2 runex4f_3 ex4f.rm clean
-TESTEXAMPLES_6   = ex16.PETSc ex16.rm clean
-TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
-TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm clean
-TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-		   runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
-		   ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc ex5.rm \
-                   ex14.PETSc ex14.rm ex15.PETSc ex15.rm clean
-TESTEXAMPLES_6   = ex16.PETSc runex16 runex16_2 ex16.rm 
-TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm clean
-TESTEXAMPLES_13  = ex7.PETSc ex7.rm ex13.PETSc ex13.rm clean
-TESTEXAMPLES_14  = ex5m.PETSc runex5m runex5m_2 ex5m.rm clean
-TESTEXAMPLES_15  = ex12.PETSc runex12 runex12_2 ex12.rm clean
-BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
-		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex16.PETSc ex16.rm clean \
-		   ex12.PETSc ex12.rm clean
-BUILDEXAMPLES_2	 = ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_3	 = ex1f.PETSc ex1f.rm clean
-BUILDEXAMPLES_4	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
-		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean
-BUILDEXAMPLES_8	 = ex5f.PETSc ex5f.rm clean
-BUILDEXAMPLES_12 = ex5f90.PETSc ex5f90.rm clean
+MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5c.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
                    common8and9.c ex12.c ex13.c ex14.c ex15.c ex16.c ex5d.c ex5s.c ex5m.c ex18.c ex19.c ex20.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5fs.F 
@@ -45,6 +13,7 @@ EXAMPLESCH	 = ex8and9.h
 EXAMPLESFH       = ex5f.h
 DOCS		 = readme ex5m.m
 DIRS		 = ex10d
+TUTORIALS        = ex5.c ex5f.F ex5f90.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -136,6 +105,7 @@ ex19: ex19.o chkopts
 ex20: ex20.o chkopts
 	-${CLINKER} -o ex20 ex20.o ${PETSC_SNES_LIB}
 	${RM} ex20.o
+#--------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog -snes_smonitor > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -379,4 +349,26 @@ runex16_2:
 	   else echo "Possible problem with ex16_2, diffs above"; fi; \
 	   ${RM} -f ex16_2.tmp
 
+TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
+		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
+		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc  \
+                   ex5.rm ex5d.PETSc ex5d.rm ex8.PETSc runex8 runex8_3 ex8.rm ex12.PETSc ex12.rm \
+                   ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc ex15.rm
+TESTEXAMPLES_2	 = ex5.PETSc runex5_8 runex5_9 \
+		   runex5_10 ex5.rm ex5d.PETSc runex5d_8 runex5d_9 \
+		   runex5d_10 ex5d.rm ex8.PETSc runex8_2 ex8.rm ex9.PETSc ex9.rm
+TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f_2 runex4f_3 ex4f.rm
+TESTEXAMPLES_6   = ex16.PETSc ex16.rm
+TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm
+TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm
+TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+		   runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
+		   ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc ex5.rm \
+                   ex14.PETSc ex14.rm ex15.PETSc ex15.rm
+TESTEXAMPLES_6   = ex16.PETSc runex16 runex16_2 ex16.rm 
+TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm
+TESTEXAMPLES_13  = ex7.PETSc ex7.rm ex13.PETSc ex13.rm
+TESTEXAMPLES_14  = ex5m.PETSc runex5m runex5m_2 ex5m.rm
+TESTEXAMPLES_15  = ex12.PETSc runex12 runex12_2 ex12.rm
 
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 1999/11/15 19:46:45 bsmith Exp bsmith $
+# $Id: makefile,v 1.2 1999/11/24 21:52:54 bsmith Exp bsmith $
 
 ALL: lib 
 
@@ -17,3 +17,4 @@ LOCDIR    = src/sys/src/draw/impls/ps/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.149 2000/05/16 22:54:03 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.150 2000/08/01 20:03:08 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -17,7 +17,7 @@ int PCILUSetDamping_ILU(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_ILU*)pc->data;
   dir->info.damping = damping;
-  dir->info.damp    = PETSC_TRUE;
+  dir->info.damp    = 1.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -755,7 +755,7 @@ int PCCreate_ILU(PC pc)
   ilu->info.dt            = PETSC_DEFAULT;
   ilu->info.dtcount       = PETSC_DEFAULT;
   ilu->info.dtcol         = PETSC_DEFAULT;
-  ilu->info.damp          = PETSC_FALSE;
+  ilu->info.damp          = 0.0;
   ilu->info.damping       = 0.0;
   ilu->reusefill          = PETSC_FALSE;
   ilu->info.diagonal_fill = 0;

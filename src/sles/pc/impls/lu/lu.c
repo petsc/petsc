@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.133 2000/06/21 03:42:45 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.134 2000/07/06 01:03:36 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -283,7 +283,7 @@ int PCLUSetDamping_LU(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
   dir->info.damping = damping;
-  dir->info.damp    = PETSC_TRUE;
+  dir->info.damp    = 1.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -603,7 +603,7 @@ int PCCreate_LU(PC pc)
   dir->info.fill        = 5.0;
   dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
   dir->info.damping     = 0.0;
-  dir->info.damp        = PETSC_FALSE;
+  dir->info.damp        = 0.0;
   dir->col              = 0;
   dir->row              = 0;
   ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);

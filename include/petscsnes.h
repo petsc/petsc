@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.102 2000/07/21 19:42:25 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.103 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -58,6 +58,9 @@ EXTERN int SNESAddOptionsChecker(int (*)(SNES));
 #define MATSNESMF_DEFAULT "default"
 #define MATSNESMF_WP      "wp"
 EXTERN int MatCreateSNESMF(SNES,Vec,Mat*);
+EXTERN int MatCreateMF(Vec,Mat*);
+EXTERN int MatSNESMFSetBase(Mat,Vec);
+EXTERN int MatSNESMFFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void *);
 EXTERN int MatSNESMFAddNullSpace(Mat,MatNullSpace);
 EXTERN int MatSNESMFSetHHistory(Mat,Scalar *,int);

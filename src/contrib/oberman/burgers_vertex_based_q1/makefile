@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1999/11/24 21:55:46 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2000/05/10 16:43:54 bsmith Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify user-defined compiler flags
@@ -13,7 +13,6 @@ ALL: main
 
 LOCDIR     = src/usg/2d/constant_bilinear/
 
-TESTEXAMPLES_1 = main.PETSc main.rm
 EXAMPLESC      = main.c appview.c appload.c functions.c integrator.c
 EXAMPLESCH     = appctx.h
 
@@ -23,3 +22,5 @@ main: chkopts main.o appview.o appload.o functions.o integrator.o
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
+TESTEXAMPLES_1 = main.PETSc main.rm
+include $(PETSC_DIR)/bmake/common_test

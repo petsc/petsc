@@ -1,35 +1,13 @@
-# $Id: makefile,v 1.101 1999/11/24 21:55:15 bsmith Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.102 2000/04/09 03:10:56 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/snes/examples/tests/
-
-TESTEXAMPLES_1  = 
-TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
-		  runex9 ex9.rm ex13.PETSc ex13.rm  clean
-TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm clean
-TESTEXAMPLES_4  = ex7.PETSc ex7.rm ex9.PETSc ex9.rm clean
-TESTEXAMPLES_8  = 
-TESTEXAMPLES_9  = 
-BUILDEXAMPLES_1 = 
-BUILDEXAMPLES_2 = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex13.PETSc ex13.rm  clean
-BUILDEXAMPLES_3 = ex12.PETSc ex12.rm clean
-BUILDEXAMPLES_4 = ex7.PETSc ex7.rm ex9.PETSc ex9.rm clean
-BUILDEXAMPLES_8 = 
-BUILDEXAMPLES_9 = 
-
 EXAMPLESC       = ex4.c ex5.c ex7.c ex9.c ex13.c
 EXAMPLESF       = ex12.F
 DIRS	        = umin
-
-#
-#  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
-# they require too many processors
-#
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -84,7 +62,7 @@ ex13: ex13.o  chkopts
 ex14: ex14.o  chkopts
 	-${FLINKER} -o ex14 ex14.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex14.o
-
+#--------------------------------------------------------------------------
 runex2:
 	-@${MPIRUN} -np 1 ex2	-ksp_gmres_irorthog > ex2_1.tmp 2>&1;   \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
@@ -218,3 +196,16 @@ runex14_3:
 	   else echo "Possible problem with ex14_3, diffs above"; fi; \
 	   ${RM} -f ex14_3.tmp
 
+#
+#  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
+# they require too many processors
+#
+TESTEXAMPLES_1  = 
+TESTEXAMPLES_2  = ex7.PETSc runex7 ex7.rm ex9.PETSc \
+		  runex9 ex9.rm ex13.PETSc ex13.rm 
+TESTEXAMPLES_3  = ex12.PETSc runex12 ex12.rm
+TESTEXAMPLES_4  = ex7.PETSc ex7.rm ex9.PETSc ex9.rm
+TESTEXAMPLES_8  = 
+TESTEXAMPLES_9  = 
+
+include ${PETSC_DIR}/bmake/common_test

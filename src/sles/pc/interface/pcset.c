@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.103 2000/04/12 04:24:31 bsmith Exp balay $*/
+/*$Id: pcset.c,v 1.104 2000/05/05 22:16:59 balay Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -65,6 +65,7 @@ int PCSetType(PC pc,PCType type)
   if (match) PetscFunctionReturn(0);
 
   if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
+  ierr = FListDestroy(&pc->qlist);CHKERRQ(ierr);
   pc->data        = 0;
   pc->setupcalled = 0;
 
@@ -122,7 +123,7 @@ int PCRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (PCList) {
-    ierr = FListDestroy(PCList);CHKERRQ(ierr);
+    ierr = FListDestroy(&PCList);CHKERRQ(ierr);
     PCList = 0;
   }
   PCRegisterAllCalled = PETSC_FALSE;

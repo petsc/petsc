@@ -1,26 +1,13 @@
-# $Id: makefile,v 1.67 2000/03/13 17:11:04 bsmith Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.68 2000/03/14 14:45:19 bsmith Exp bsmith $ 
 
 CFLAGS          = 
 FFLAGS          = 
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/umin/
-
-TESTEXAMPLES_1  = ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm ex3.PETSc\
-		  runex3 ex3.rm clean
-TESTEXAMPLES_2  = ex3.PETSc runex3_2 ex3.rm clean
-TESTEXAMPLES_8  = 
-TESTEXAMPLES_13 = 
-BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_2 = ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_8 = 
-
 EXAMPLESC       = ex2.c ex3.c
 EXAMPLESF       = 
 DOCS            = readme
-DIRS            = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -31,7 +18,7 @@ ex2: ex2.o chkopts
 ex3: ex3.o chkopts
 	-${CLINKER} -o ex3 ex3.o ${PETSC_LIB}
 	${RM} ex3.o
-
+#---------------------------------------------------------------------------------
 runex2:
 	-@${MPIRUN} -np 1 ex2 -p 1 -snes_smonitor > ex2_1.tmp 2>&1;   \
            if (diff output/ex2_1.out ex2_1.tmp) then true; \
@@ -62,3 +49,11 @@ runex3_3:
            if (diff output/ex3_3.out ex3_3.tmp) then true; \
            else echo "Possible problem with ex3_3, diffs above"; fi;\
 	   ${RM} -f ex3_3.tmp
+
+TESTEXAMPLES_1  = ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm ex3.PETSc\
+		  runex3 ex3.rm
+TESTEXAMPLES_2  = ex3.PETSc runex3_2 ex3.rm
+TESTEXAMPLES_8  = 
+TESTEXAMPLES_13 = 
+
+include ${PETSC_DIR}/bmake/common_test

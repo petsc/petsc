@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.36 2000/05/05 22:17:20 balay Exp bsmith $*/
+/*$Id: composite.c,v 1.37 2000/08/12 05:02:25 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -16,6 +16,7 @@ typedef struct {
   PCCompositeType  type;
   Vec              work1;
   Vec              work2;
+  Scalar           alpha;
   PetscTruth       use_true_matrix;
 } PC_Composite;
 
@@ -244,6 +245,18 @@ static int PCView_Composite(PC pc,Viewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeSpecialSetAlpha_Composite"
+int PCCompositeSpecialSetAlpha_Composite(PC pc,Scalar alpha)
+{
+  PC_Composite *jac = (PC_Composite*)pc->data;
+  PetscFunctionBegin;
+  jac->alpha = alpha;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCCompositeSetType_Composite"
 int PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
@@ -364,6 +377,35 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSetType_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,type);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCCompositeSpecialSetAlpha"
+/*@C
+   PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner
+     for alphaI + R + S
+   
+   Collective on PC
+
+   Input Parameter:
++  pc - the preconditioner context
+-  alpha - scale on identity
+
+   Level: Developer
+
+.keywords: PC, set, type, composite preconditioner, additive, multiplicative
+@*/
+int PCCompositeSpecialSetAlpha(PC pc,Scalar alpha)
+{
+  int ierr,(*f)(PC,Scalar);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,alpha);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -503,6 +545,8 @@ int PCCreate_Composite(PC pc)
                     PCCompositeGetPC_Composite);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeSetUseTrue_C","PCCompositeSetUseTrue_Composite",
                     PCCompositeSetUseTrue_Composite);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCompositeSpecialSetAlpha_C","PCCompositeSpecialSetAlpha_Composite",
+                    PCCompositeSpecialSetAlpha_Composite);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

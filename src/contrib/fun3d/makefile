@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.16 2000/08/02 15:27:50 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.17 2000/08/11 20:41:42 bsmith Exp bsmith $ 
 
 #requiresscalar real
 
@@ -19,7 +19,6 @@ OBJSF	         = user.o userJac.o
 CLEANFILES       = flow.exe flow.o flow
 DIRS             = 
 LOCDIR           = src/contrib/fun3d/
-TESTEXAMPLES_3	 = flow.PETSc runflow1 runflow4 flow.rm
 EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
 #
@@ -44,13 +43,9 @@ runflow4:
 runflow64:
 	-@${MPIRUN} -np 64 flow -options_file 1Grid/petsc.opt -mesh 1Grid/uns3d.msh -partition 1Grid/Pmetis/part_vec.part.64 
 
-tags:
-	etags -f TAGS *.F *.c *.h
+TESTEXAMPLES_3	 = flow.PETSc runflow1 runflow4 flow.rm
 
-#.F.o:
-#	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} ${USERCPPFLAGS} $*.F
-
-
+include $(PETSC_DIR)/bmake/common_test
 
 
 

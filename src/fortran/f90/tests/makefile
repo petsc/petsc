@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 1999/02/01 21:45:25 balay Exp balay $ 
+# $Id: makefile,v 1.10 1999/02/02 21:36:15 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -12,7 +12,7 @@ LOCDIR     = src/fortran/f90/tests
 TESTS      = test_IRIX
 CLEANFILES =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
+include ${PETSC_DIR}/bmake/common_test
 
 test_IRIX: test_IRIX.o test_IRIXf90.o
 	-${FLINKER} -o test_IRIX test_IRIX.o test_IRIXf90.o

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.34 1999/03/17 23:23:07 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.35 1999/11/05 14:46:06 bsmith Exp bsmith $ 
 #
 #  All the Sparspak routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -20,6 +20,7 @@ DOCS     = readme
 LOCDIR   = src/mat/order/
 MANSEC   = MatOrderings
 
-runexamples:
+
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.152 2000/06/23 18:52:11 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.153 2000/08/01 20:02:01 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -407,7 +407,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   b->row        = isrow;
   b->col        = iscol;
   if (info) {
-    b->lu_damp    = info->damp;
+    b->lu_damp    = (PetscTruth) ((int)info->damp);
     b->lu_damping = info->damping;
   } else {
     b->lu_damp    = PETSC_FALSE;
@@ -905,7 +905,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     b->col              = iscol;
     b->icol             = isicol;
     if (info) {
-      b->lu_damp    = info->damp;
+      b->lu_damp    = (PetscTruth)((int)info->damp);
       b->lu_damping = info->damping;
     } else {
       b->lu_damp    = PETSC_FALSE;
@@ -1083,7 +1083,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   PLogObjectMemory(*fact,(ainew[n]+shift-n) * (sizeof(int)+sizeof(Scalar)));
   b->maxnz          = b->nz = ainew[n] + shift;
   if (info) {
-    b->lu_damp    = info->damp;
+    b->lu_damp    = (PetscTruth)((int)info->damp);
     b->lu_damping = info->damping;
   } else {
     b->lu_damp    = PETSC_FALSE;

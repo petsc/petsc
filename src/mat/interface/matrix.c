@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.376 2000/07/28 14:07:13 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.377 2000/08/01 20:01:52 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3838,6 +3838,8 @@ M*/
 .   newmat - the new submatrix, of the same type as the old
 
     Level: advanced
+
+    Notes: the iscol argument MST be the same on each processor
 
 .keywords: matrix, get, submatrix, submatrices
 

@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.60 2000/04/12 04:21:29 bsmith Exp bsmith $*/
+/*$Id: inherit.c,v 1.61 2000/05/10 16:39:22 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -33,6 +33,8 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,char *class_name
   h->amem                   = -1;
   h->id                     = idcnt++;
   h->parentid               = 0;
+  h->qlist                  = 0;
+  h->olist                  = 0;
   h->bops->destroy          = des;
   h->bops->view             = vie;
   h->bops->getcomm          = PetscObjectGetComm_Petsc;
@@ -65,7 +67,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFree(h->ops);CHKERRQ(ierr);
   ierr = OListDestroy(&h->olist);CHKERRQ(ierr);
-  ierr = FListDestroy(h->qlist);CHKERRQ(ierr);
+  ierr = FListDestroy(&h->qlist);CHKERRQ(ierr);
   ierr = PetscStrfree(h->type_name);CHKERRQ(ierr);
   ierr = PetscStrfree(h->name);CHKERRQ(ierr);
   h->cookie = PETSCFREEDHEADER;

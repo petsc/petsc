@@ -1,8 +1,8 @@
-/*$Id: ex1.c,v 1.59 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.60 2000/05/05 22:15:21 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
-static char help[] = "Demonstrates various vector routines.\n\n";
+static char help[] = "Basic vector routines.\n\n";
 
 /*T
    Concepts: Vectors^Using basic vector routines;

@@ -1,35 +1,17 @@
-# $Id: makefile,v 1.11 1998/06/12 21:02:54 balay Exp balay $ 
+# $Id: makefile,v 1.12 1999/07/16 14:14:39 balay Exp bsmith $ 
 
 
-ALL: ex1
+
 
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        = 
 LOCDIR          = src/sys/src/draw/examples/tutorials/
-
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  =
-TESTEXAMPLES_4  =
-BUILDEXAMPLES_2 =
-BUILDEXAMPLES_3 =
-BUILDEXAMPLES_4 =
 EXAMPLESC       =
 EXAMPLESF       =
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
-runex1:
-	-@${MPIRUN} -np 1 ex1
-runex2:
-	-@${MPIRUN} -np 1 ex2
-runex3:
-	-@${MPIRUN} -np 1 ex3
-runex4:
-	-@${MPIRUN} -np 1 ex4
-runex4_2:
-	-@${MPIRUN} -np 2 ex4
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -55,4 +37,20 @@ ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_LIB}
 	${RM} -f ex6.o
 
+#------------------------------------------------------------------
+runex1:
+	-@${MPIRUN} -np 1 ex1
+runex2:
+	-@${MPIRUN} -np 1 ex2
+runex3:
+	-@${MPIRUN} -np 1 ex3
+runex4:
+	-@${MPIRUN} -np 1 ex4
+runex4_2:
+	-@${MPIRUN} -np 2 ex4
 
+TESTEXAMPLES_2  = 
+TESTEXAMPLES_3  =
+TESTEXAMPLES_4  =
+
+include ${PETSC_DIR}/bmake/common_test

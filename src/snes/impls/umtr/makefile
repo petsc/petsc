@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.21 1998/06/15 16:07:45 balay Exp balay $ 
+# $Id: makefile,v 1.22 1999/02/02 21:33:06 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -14,4 +14,5 @@ MANSEC   = SNES
 LOCDIR   = src/snes/impls/umtr/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 

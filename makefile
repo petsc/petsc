@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.314 2000/08/16 19:18:32 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.315 2000/08/16 19:20:34 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -9,6 +9,7 @@ ALL: all
 DIRS	   = src include docs 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 #
 # Basic targets to build PETSc libraries.

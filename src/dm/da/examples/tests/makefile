@@ -1,38 +1,13 @@
-# $Id: makefile,v 1.59 2000/04/21 16:37:42 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.60 2000/08/01 20:58:08 bsmith Exp bsmith $ 
 
-ALL: ex1
-
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm clean
-TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\
-		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm \
-                  ex14.PETSc runex14 ex14.rm ex13.PETSc runex13 ex13.rm clean
-TESTEXAMPLES_3  =
-TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
-		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
-		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm clean
-TESTEXAMPLES_5  =
-TESTEXAMPLES_13 = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm \
-		  ex11.PETSc ex11.rm clean
-TESTEXAMPLES_14 = ex12.PETSc runex12 ex12.rm
-
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex4.PETSc ex4.rm clean
-BUILDEXAMPLES_2 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex5.PETSc\
-		  ex5.rm ex6.PETSc ex6.rm ex7.PETSc ex7.rm clean
-BUILDEXAMPLES_3 =
-BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
-		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
-		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm clean
-BUILDEXAMPLES_5 =
-
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
-                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c
-EXAMPLESF       = 
 CFLAGS	        = 
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/dm/da/examples/tests/
-
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
+                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c
+EXAMPLESF       = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -103,7 +78,7 @@ ex16: ex16.o   chkopts
 ex17: ex17.o   chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_DM_LIB}
 	${RM} -f ex17.o
-
+#-------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -126,7 +101,7 @@ runex5:
 runex6:
 	-@${MPIRUN} -np 6 ex6 -test_order
 runex12:
-	-@echo "path([getenv('PETSC_DIR') '/src/sys/src/viewer/impls/socket/matlab'],path); ex12(2) ; exit" | ${MATLABCOMMAND} -display twister:0.0 > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (diff output/ex12_1.out ex12_1.tmp2) then true; \
+	-@echo "path([getenv('PETSC_DIR') '/src/sys/src/viewer/impls/socket/matlab'],path); ex12(2) ; exit" | ${MATLABCOMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (diff output/ex12_1.out ex12_1.tmp2) then true; \
 	   else echo "Possible problem with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp ex12_1.tmp2
 
@@ -137,3 +112,17 @@ runex13:
 runex14:
 	-@${MPIRUN} -np 4 ex14 
 
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm
+TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\
+		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm \
+                  ex14.PETSc runex14 ex14.rm ex13.PETSc runex13 ex13.rm
+TESTEXAMPLES_3  =
+TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
+		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
+		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm
+TESTEXAMPLES_5  =
+TESTEXAMPLES_13 = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm \
+		  ex11.PETSc ex11.rm
+TESTEXAMPLES_14 = ex12.PETSc runex12 ex12.rm
+
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 2000/05/06 19:58:56 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/08/01 20:58:18 bsmith Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify  user-defined compiler flags
@@ -11,9 +11,7 @@ CFLAGS    =
 
 ALL: main
 
-LOCDIR     = src/contrib/oberman/laplacian_q1
-
-TESTEXAMPLES_1 = main.PETSc main.rm
+LOCDIR         = src/contrib/oberman/laplacian_q1
 EXAMPLESC      = main.c appview.c appload.c appalgebra.c appelement.c
 EXAMPLESO      = main.o appview.o appload.o appalgebra.o appelement.o
 EXAMPLECH      = appctx.h
@@ -31,6 +29,8 @@ finput: chkopts finput.o
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
+TESTEXAMPLES_1 = main.PETSc main.rm
 
+include $(PETSC_DIR)/bmake/common_test
 
 

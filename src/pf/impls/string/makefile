@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2000/02/02 21:28:09 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 2000/02/09 19:38:27 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -14,6 +14,7 @@ MANSEC   = Vec
 LOCDIR   = src/pf/impls/string/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 #
 #  This rule is called by the function PFStringCreateFunction() and creates a dynamic

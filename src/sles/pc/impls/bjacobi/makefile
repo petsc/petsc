@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.33 1999/01/31 16:08:12 bsmith Exp balay $ 
+# $Id: makefile,v 1.34 1999/02/02 21:27:59 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -15,3 +15,4 @@ MANSEC   = PC
 LOCDIR   = src/sles/pc/impls/bjacobi/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

@@ -1,38 +1,16 @@
-# $Id: makefile,v 1.72 1999/09/09 16:03:57 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.73 1999/09/12 15:58:49 bsmith Exp bsmith $ 
 
-ALL: ex1
+
 
 CFLAGS	        = 
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/src/draw/examples/tests/
-
-TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSc runex4 ex4.rm \
-		  clean
-TESTEXAMPLES_3  = ex4f.PETSc ex4f.rm ex5.PETSc ex5.rm clean
-TESTEXAMPLES_4  = ex1.PETSc ex1.rm clean
-TESTEXAMPLES_13 = ex9.PETSc ex9.rm clean
-BUILDEXAMPLES_2 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc \
-		  ex3.rm clean
-BUILDEXAMPLES_3 = ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex9.c ex10.c
 EXAMPLESF       = ex4f.F ex5.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
-runex1:
-	-@${MPIRUN} -np 1 ex1
-runex2:
-	-@${MPIRUN} -np 1 ex2
-runex3:
-	-@${MPIRUN} -np 1 ex3
-runex4:
-	-@${MPIRUN} -np 1 ex4
-runex10:
-	-@${MPIRUN} -np 1 ex10
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -78,3 +56,22 @@ ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_SYS_LIB}
 	${RM} -f ex10.o
 
+#------------------------------------------------------------------------
+runex1:
+	-@${MPIRUN} -np 1 ex1
+runex2:
+	-@${MPIRUN} -np 1 ex2
+runex3:
+	-@${MPIRUN} -np 1 ex3
+runex4:
+	-@${MPIRUN} -np 1 ex4
+runex10:
+	-@${MPIRUN} -np 1 ex10
+
+TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSc runex4 ex4.rm
+TESTEXAMPLES_3  = ex4f.PETSc ex4f.rm ex5.PETSc ex5.rm 
+TESTEXAMPLES_4  = ex1.PETSc ex1.rm 
+TESTEXAMPLES_13 = ex9.PETSc ex9.rm 
+
+include ${PETSC_DIR}/bmake/common_test

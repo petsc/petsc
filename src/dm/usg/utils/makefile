@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 2000/01/27 16:34:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 2000/01/27 16:35:23 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -20,7 +20,6 @@ LOCDIR    = src/dm/usg/utils/
 #
 # Note: "make clean" removes the files
 #    *.o 
-#    CLEANFILES - variable to specify other files to delete via "make clean"
 #    
 
 SOURCEC        = inpututils.c
@@ -28,9 +27,7 @@ SOURCEF        =
 SOURCEH        = 
 OBJSC          = inpututils.o
 DOCS           = readme
-CLEANFILES     = 
 EXAMPLESC      = input.c triconvert.c
-TESTEXAMPLES_1 = input.PETSc input.rm triconvert.PETSc triconvert.rm
 
 input: chkopts input.o
 	-${CLINKER} -o input input.o ${PETSC_LIB}
@@ -42,6 +39,8 @@ triconvert: chkopts triconvert.o
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
+#--------------------------------------------------
+TESTEXAMPLES_1 = input.PETSc input.rm triconvert.PETSc triconvert.rm
 
-
+include ${PETSC_DIR}/bmake/common_test
 

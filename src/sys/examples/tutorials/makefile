@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1999/02/03 04:29:40 bsmith Exp balay $ 
+# $Id: makefile,v 1.24 1999/04/01 17:08:40 balay Exp bsmith $ 
 
 ALL:
 
@@ -7,18 +7,6 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/
-
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-                   ex3.PETSc runex3 ex3.rm clean
-TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
-                   ex3.PETSc runex3 ex3.rm clean
-TESTEXAMPLES_3  = ex3f.PETSc runex3f ex3f.rm clean
-TESTEXAMPLES_13 = ex4.PETSc ex4.rm clean
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm \
-                  ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_3 = ex3f.PETSc ex3f.rm clean
-
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF       = ex3f.F
 
@@ -64,5 +52,12 @@ runex3:
 runex3f:
 	-@${MPIRUN} -np 1 ex3f
 
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+                   ex3.PETSc runex3 ex3.rm
+TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+                   ex3.PETSc runex3 ex3.rm
+TESTEXAMPLES_3  = ex3f.PETSc runex3f ex3f.rm
+TESTEXAMPLES_13 = ex4.PETSc ex4.rm
 
+include ${PETSC_DIR}/bmake/common_test
 

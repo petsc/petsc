@@ -1,26 +1,10 @@
-# $Id: makefile,v 1.29 1999/04/01 17:11:54 balay Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.30 1999/11/05 14:47:47 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/dm/ao/examples/tests/
-
-TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm \
-                  ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
-                  ex3.PETSc runex3 ex3.rm \
-                  ex5.PETSc runex5 ex5.rm ex7.PETSc runex7 ex7.rm clean
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  = 
-TESTEXAMPLES_4  = 
-TESTEXAMPLES_13 = ex4.PETSc ex4.rm ex6.PETSc ex6.rm
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm  ex2.PETSc ex2.rm
-BUILDEXAMPLES_2 = 
-BUILDEXAMPLES_3 = 
-BUILDEXAMPLES_4 = 
-
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
 EXAMPLESF       = 
 
@@ -53,7 +37,7 @@ ex6: ex6.o  chkopts
 ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
 	${RM} -f ex7.o
-
+#-------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -103,3 +87,13 @@ runex7:
 	   if (diff output/ex7_1.out ex7_1.tmp) then true ;  \
 	   else echo "Possible problem with ex7_1, diffs above"; fi ;\
 	   ${RM} -f ex7_1.tmp
+TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm \
+                  ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
+                  ex3.PETSc runex3 ex3.rm \
+                  ex5.PETSc runex5 ex5.rm ex7.PETSc runex7 ex7.rm
+TESTEXAMPLES_2  = 
+TESTEXAMPLES_3  = 
+TESTEXAMPLES_4  = 
+TESTEXAMPLES_13 = ex4.PETSc ex4.rm ex6.PETSc ex6.rm
+
+include ${PETSC_DIR}/bmake/common_test

@@ -1,8 +1,8 @@
-/*$Id: ex5.c,v 1.117 2000/04/09 03:10:58 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.118 2000/05/05 22:18:34 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
-static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
+static char help[] = "Solves nonlinear system in parallel.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
 domain, using distributed arrays (DAs) to partition the parallel grid.\n\
 The command line options include:\n\

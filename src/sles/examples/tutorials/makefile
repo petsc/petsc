@@ -1,62 +1,13 @@
-# $Id: makefile,v 1.79 2000/05/22 12:49:44 bsmith Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.80 2000/08/01 20:57:12 bsmith Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/sles/examples/tutorials/
-
-TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
-		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
-		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
-		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
-                   ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
-                   ex14.PETSc runex14 runex14_2 ex14.rm \
-                   ex15.PETSc runex15 ex15.rm \
-                   ex16.PETSc runex16 ex16.rm ex18.PETSc runex18 ex18.rm \
-                   ex20.PETSc runex20 runex20_2 ex20.rm clean	
-TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
-	           runex5_5 ex5.rm ex8.rm clean 
-TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
-                   ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm\
-                   ex21f.PETSc ex21f.rm clean
-TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
-TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
-		   runex2_3 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
-		   ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm clean
-TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm clean
-TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
-                   ex10.PETSc runex10_7 runex10_8 runex10_9 \
-                   runex10_5 runex10_6 runex10_8 runex10_10 ex10.rm clean
-TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
-TESTEXAMPLES_8   = 
-TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
-TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm clean
-TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm clean
-TESTEXAMPLES_14  = ex10.PETSc runex10_12  ex10.rm clean
-TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
-BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
-		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm \
-		   ex13.PETSc ex13.rm ex14.PETSc ex14.rm \
-                   ex15.PETSc ex15.rm ex16.PETSc ex16.rm clean
-BUILDEXAMPLES_2  = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
-BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm \
-                   ex14f.PETSc ex14f.rm ex15f.PETSc ex15f.rm clean
-BUILDEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
-		   ex5.PETSc ex5.rm ex4.PETSc ex4.rm ex9.PETSc ex9.rm clean
-BUILDEXAMPLES_5  = ex11.PETSc ex11.rm clean
-BUILDEXAMPLES_11 = ex11.PETSc ex11.rm clean
-BUILDEXAMPLES_6  = ex5.PETSc ex5.rm ex10.PETSc ex10.rm clean
-BUILDEXAMPLES_7  = ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_8  = 
-BUILDEXAMPLES_9  = ex1f.PETSc ex1f.rm clean
-BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
-
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                  ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c
-EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
+EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
+                   ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c
+EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -173,6 +124,8 @@ ex21f: ex21f.o  chkopts
 ex22: ex22.o  chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_SLES_LIB}
 	${RM} ex22.o
+
+#----------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_smonitor -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -440,3 +393,34 @@ runex20_2:
 	   ${RM} -f ex20_2.tmp
 
 
+TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
+		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
+		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
+		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
+                   ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
+                   ex14.PETSc runex14 runex14_2 ex14.rm \
+                   ex15.PETSc runex15 ex15.rm \
+                   ex16.PETSc runex16 ex16.rm ex18.PETSc runex18 ex18.rm \
+                   ex20.PETSc runex20 runex20_2 ex20.rm	
+TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
+	           runex5_5 ex5.rm ex8.rm 
+TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
+                   ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm\
+                   ex21f.PETSc ex21f.rm
+TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
+TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
+		   runex2_3 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
+		   ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm
+TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
+TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
+                   ex10.PETSc runex10_7 runex10_8 runex10_9 \
+                   runex10_5 runex10_6 runex10_8 runex10_10 ex10.rm
+TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm
+TESTEXAMPLES_8   = 
+TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm
+TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm
+TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
+TESTEXAMPLES_14  = ex10.PETSc runex10_12  ex10.rm
+TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
+
+include ${PETSC_DIR}/bmake/common_test

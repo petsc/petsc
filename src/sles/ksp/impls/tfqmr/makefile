@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.31 1998/06/15 15:56:51 balay Exp bsmith $ 
+# $Id: makefile,v 1.32 1999/01/31 16:09:04 bsmith Exp bsmith $ 
 
 ALL: lib 
 
@@ -12,3 +12,4 @@ LIBBASE  = libpetscsles
 LOCDIR   = src/sles/ksp/impls/tfqmr/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

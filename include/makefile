@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.48 2000/05/18 17:50:43 bsmith Exp balay $ 
+# $Id: makefile,v 1.49 2000/08/16 15:08:04 balay Exp bsmith $ 
 
 CFLAGS   =
 FFLAGS   =
@@ -16,5 +16,4 @@ LOCDIR   = include/
 MANSEC   = Profiling
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
-runexamples:
+include ${PETSC_DIR}/bmake/common_test

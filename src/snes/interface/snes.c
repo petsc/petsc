@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.215 2000/07/13 17:28:22 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.216 2000/08/01 20:57:16 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -1403,10 +1403,10 @@ int SNESSetUp(SNES snes,Vec x)
     PLogObjectParent(snes,J);
     snes->mfshell = J;
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetJacobian(snes,J,J,0,snes->funP);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,J,J,MatSNESMFFormJacobian,snes->funP);CHKERRQ(ierr);
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free Jacobian routines\n");
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-      ierr = SNESSetHessian(snes,J,J,0,snes->funP);CHKERRQ(ierr);
+      ierr = SNESSetHessian(snes,J,J,MatSNESMFFormJacobian,snes->funP);CHKERRQ(ierr);
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free Hessian routines\n");
     } else {
       SETERRQ(PETSC_ERR_SUP,0,"Method class doesn't support matrix-free option");
@@ -2128,7 +2128,7 @@ int SNESRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (SNESList) {
-    ierr = FListDestroy(SNESList);CHKERRQ(ierr);
+    ierr = FListDestroy(&SNESList);CHKERRQ(ierr);
     SNESList = 0;
   }
   SNESRegisterAllCalled = PETSC_FALSE;

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 2000/07/18 20:57:58 balay Exp balay $ 
+# $Id: makefile,v 1.21 2000/07/21 01:10:52 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -20,5 +20,6 @@ DIRS     = tests
 LOCDIR   = src/fortran/f90/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 

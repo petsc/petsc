@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.30 2000/05/05 03:21:13 bsmith Exp balay $*/
+/*$Id: mpiuopen.c,v 1.31 2000/05/05 22:13:54 balay Exp bsmith $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
@@ -146,7 +146,7 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
 @*/
 int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE **fp)
 {
-  int  ierr,rank;
+  int  ierr,rank,i,len,cnt;
   FILE *fd;
   char commandt[1024],command[1024];
 
@@ -156,8 +156,20 @@ int PetscPOpen(MPI_Comm comm,char *machine,char *program,const char mode[],FILE 
   if (machine && machine[0]) {
     ierr = PetscStrcpy(command,"rsh ");CHKERRQ(ierr);
     ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
-    ierr = PetscStrcat(command," ");CHKERRQ(ierr);
-    ierr = PetscStrcat(command,program);CHKERRQ(ierr);
+    ierr = PetscStrcat(command," \" setenv DISPLAY ${DISPLAY}; ");CHKERRQ(ierr);
+    /*
+        Copy program into command but protect the " with a \ in front of it 
+    */
+    ierr = PetscStrlen(command,&cnt);CHKERRQ(ierr);
+    ierr = PetscStrlen(program,&len);CHKERRQ(ierr);
+    for (i=0; i<len; i++) {
+      if (program[i] == '\"') {
+        command[cnt++] = '\\';
+      }
+      command[cnt++] = program[i];
+    }
+    command[cnt] = 0; 
+    ierr = PetscStrcat(command,"\"");CHKERRQ(ierr);
   } else {
     ierr = PetscStrcpy(command,program);CHKERRQ(ierr);
   }

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 1998/06/15 16:29:06 balay Exp bsmith $ 
+# $Id: makefile,v 1.11 1999/11/05 18:02:35 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -7,3 +7,4 @@ LOCDIR   = src/contrib/sda/
 NOADIC   = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.144 2000/05/10 16:39:21 bsmith Exp balay $*/
+/*$Id: mtr.c,v 1.145 2000/06/29 15:28:34 balay Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -596,7 +596,7 @@ int PetscTrLogDump(FILE *fp)
 
   ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Memory usage sorted by function\n",rank);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] %d %s()\n",rank,shortlength[i],shortfunction[i]);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] % 9d %s()\n",rank,shortlength[i],shortfunction[i]);CHKERRQ(ierr);
   }
   free(shortlength);
   free(shortfunction);

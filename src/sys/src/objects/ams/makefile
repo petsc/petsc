@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 2000/02/16 03:57:11 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.5 2000/04/09 03:09:16 bsmith Exp bsmith $ 
 
 #requirespackage  '-DPETSC_HAVE_AMS'
 
@@ -18,5 +18,5 @@ DIRS	  = java
 LOCDIR	  = src/sys/src/objects/ams/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
+include ${PETSC_DIR}/bmake/common_test
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.34 2000/05/17 02:09:04 bsmith Exp bsmith $
+# $Id: makefile,v 1.35 2000/06/15 17:26:15 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -7,3 +7,4 @@ DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc asm sles composite
 LOCDIR   = src/sles/pc/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 2000/01/11 20:59:00 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/04/09 03:08:56 bsmith Exp bsmith $ 
 
 #requirespackage  '-DPETSC_HAVE_AMS'
 
@@ -17,7 +17,7 @@ DIRS     =
 LOCDIR   = src/sys/src/viewer/impls/ams/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
+include ${PETSC_DIR}/bmake/common_test
 
 
 

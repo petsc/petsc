@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.25 1998/10/30 23:30:31 bsmith Exp balay $ 
+# $Id: makefile,v 1.26 1999/02/02 21:35:49 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -18,5 +18,6 @@ MANSEC   = Sys
 LOCDIR   = src/fortran/custom/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 1998/06/15 15:57:05 balay Exp bsmith $ 
+# $Id: makefile,v 1.18 1999/02/03 04:30:00 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -6,3 +6,4 @@ DIRS     = seq mpi
 LOCDIR   = src/mat/impls/bdiag/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

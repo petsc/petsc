@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.48 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zsnes.c,v 1.49 2000/08/01 20:58:32 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -41,6 +41,7 @@
 #define snessetoptionsprefix_        SNESSETOPTIONSPREFIX 
 #define snesappendoptionsprefix_     SNESAPPENDOPTIONSPREFIX 
 #define matcreatesnesmf_             MATCREATESNESMF
+#define matcreatemf_                 MATCREATEMF
 #define snessettype_                 SNESSETTYPE
 #define snesgetconvergencehistory_   SNESGETCONVERGENCEHISTORY
 #define snesdefaultcomputejacobian_  SNESDEFAULTCOMPUTEJACOBIAN
@@ -94,6 +95,7 @@
 #define snessetoptionsprefix_        snessetoptionsprefix 
 #define snesappendoptionsprefix_     snesappendoptionsprefix
 #define matcreatesnesmf_             matcreatesnesmf
+#define matcreatemf_                 matcreatemf
 #define snessettype_                 snessettype
 #define snesgetconvergencehistory_   snesgetconvergencehistory
 #define snesdefaultcomputejacobian_  snesdefaultcomputejacobian
@@ -176,9 +178,14 @@ void PETSC_STDCALL snesappendoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_L
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL matcreatesnewsmf_(SNES *snes,Vec *x,Mat *J,int *ierr)
+void PETSC_STDCALL matcreatesnesmf_(SNES *snes,Vec *x,Mat *J,int *ierr)
 {
   *ierr = MatCreateSNESMF(*snes,*x,J);
+}
+
+void PETSC_STDCALL matcreatemf_(Vec *x,Mat *J,int *ierr)
+{
+  *ierr = MatCreateMF(*x,J);
 }
 
 /* functions, hence no STDCALL */

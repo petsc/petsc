@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.36 1999/02/02 21:22:49 balay Exp bsmith $
+# $Id: makefile,v 1.37 1999/11/05 14:43:58 bsmith Exp bsmith $
 
 #requirespackage '-DPETSC_HAVE_X11'
 
@@ -19,3 +19,4 @@ LOCDIR    = src/sys/src/draw/impls/x/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.139 2000/05/05 22:15:06 balay Exp bsmith $*/
+/* $Id: pdvec.c,v 1.140 2000/07/10 03:39:19 bsmith Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -567,9 +567,9 @@ int VecAssemblyBegin_MPI(Vec xin)
   }
   ierr = VecStashScatterBegin_Private(&xin->stash,owners);CHKERRQ(ierr);
   ierr = VecStashScatterBegin_Private(&xin->bstash,bowners);CHKERRQ(ierr);
-  ierr  = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs);CHKERRQ(ierr);
+  ierr = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs);CHKERRQ(ierr);
   PLogInfo(0,"VecAssemblyBegin_MPI:Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);
-  ierr  = VecStashGetInfo_Private(&xin->bstash,&nstash,&reallocs);CHKERRQ(ierr);
+  ierr = VecStashGetInfo_Private(&xin->bstash,&nstash,&reallocs);CHKERRQ(ierr);
   PLogInfo(0,"VecAssemblyBegin_MPI:Block-Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);
 
   PetscFunctionReturn(0);

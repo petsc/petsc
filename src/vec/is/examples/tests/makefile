@@ -1,24 +1,12 @@
-# $Id: makefile,v 1.22 1999/07/16 14:17:51 balay Exp bsmith $ 
+# $Id: makefile,v 1.23 2000/06/26 21:25:48 bsmith Exp bsmith $ 
 
-ALL: ex1
+
 
 CFLAGS	        = 
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/vec/is/examples/tests/
-
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm clean 
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm clean
-TESTEXAMPLES_9  = 
-TESTEXAMPLES_4  = 
-TESTEXAMPLES_13 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean 
-BUILDEXAMPLES_1 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm clean
-BUILDEXAMPLES_2 = 
-BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc  ex2f.rm clean
-BUILDEXAMPLES_9 = 
-BUILDEXAMPLES_4 =
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF       = ex1f.F ex2f.F
 
@@ -52,6 +40,7 @@ ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_VEC_LIB}
 	${RM} -f ex5.o
 
+#-------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1  ex1 
 
@@ -67,3 +56,12 @@ runex2f:
 
 runex5:
 	-@${MPIRUN} -np 3  ex5 
+
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm 
+TESTEXAMPLES_2  = 
+TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
+TESTEXAMPLES_9  = 
+TESTEXAMPLES_4  = 
+TESTEXAMPLES_13 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm 
+
+include ${PETSC_DIR}/bmake/common_test

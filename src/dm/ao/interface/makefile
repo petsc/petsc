@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.18 1999/02/03 17:06:51 balay Exp bsmith $ 
+# $Id: makefile,v 1.19 1999/10/01 21:22:53 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -14,3 +14,4 @@ MANSEC   = AO
 LOCDIR   = src/dm/ao/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

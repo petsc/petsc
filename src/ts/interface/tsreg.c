@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.60 2000/04/12 04:25:55 bsmith Exp balay $*/
+/*$Id: tsreg.c,v 1.61 2000/05/05 22:18:49 balay Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
@@ -93,7 +93,7 @@ int TSRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (TSList) {
-    ierr = FListDestroy(TSList);CHKERRQ(ierr);
+    ierr = FListDestroy(&TSList);CHKERRQ(ierr);
     TSList = 0;
   }
   TSRegisterAllCalled = PETSC_FALSE;

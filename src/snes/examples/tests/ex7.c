@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.50 2000/01/11 21:02:41 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.51 2000/05/05 22:18:29 balay Exp bsmith $*/
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
@@ -15,7 +15,8 @@ typedef struct {
 } MonitorCtx;
 
 typedef struct {
-  Mat precond;
+  Mat        precond;
+  PetscTruth variant;
 } AppCtx;
 
 #undef __FUNC__
@@ -24,8 +25,8 @@ int main(int argc,char **argv)
 {
   SNES         snes;                 /* SNES context */
   SNESType     type = SNESEQLS;      /* default nonlinear solution method */
-  Vec          x,r,F,U;           /* vectors */
-  Mat          J,B;                 /* Jacobian matrix-free, explicit preconditioner */
+  Vec          x,r,F,U,work;         /* vectors */
+  Mat          J,B;                  /* Jacobian matrix-free, explicit preconditioner */
   MonitorCtx   monP;                 /* monitoring context */
   AppCtx       user;                 /* user-defined work context */
   Scalar       h,xp = 0.0,v;
@@ -33,6 +34,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-variant",&user.variant);CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* Set up data structures */
@@ -61,8 +63,14 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetType(snes,type);CHKERRA(ierr);
 
-  /* create matrix free matrix for Jacobian */
-  ierr = MatCreateSNESMF(snes,x,&J);CHKERRA(ierr);
+  if (user.variant) {
+    ierr = MatCreateMF(x,&J);CHKERRA(ierr);
+    ierr = VecDuplicate(x,&work);CHKERRQ(ierr);
+    ierr = MatSNESMFSetFunction(J,work,FormFunction,F);CHKERRQ(ierr);
+  } else {
+    /* create matrix free matrix for Jacobian */
+    ierr = MatCreateSNESMF(snes,x,&J);CHKERRA(ierr);
+  }
 
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRA(ierr);
@@ -76,6 +84,9 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
 
   /* Free data structures */
+  if (user.variant) {
+    ierr = VecDestroy(work);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(x);CHKERRA(ierr);  ierr = VecDestroy(r);CHKERRA(ierr);
   ierr = VecDestroy(U);CHKERRA(ierr);  ierr = VecDestroy(F);CHKERRA(ierr);
   ierr = MatDestroy(J);CHKERRA(ierr);  ierr = MatDestroy(B);CHKERRA(ierr);
@@ -141,7 +152,6 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     ierr = VecGetSize(x,&n);CHKERRQ(ierr);
     d = (double)(n - 1); d = d*d;
 
-    /* do nothing with Jac since it is Matrix-free */
     i = 0; A[0] = 1.0; 
     ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
     for (i=1; i<n-1; i++) {
@@ -159,7 +169,11 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     printf("iter=%d, using old preconditioning matrix\n",iter+1);
     *flag = SAME_PRECONDITIONER;
   }
-
+  if (user->variant) {
+    ierr = MatSNESMFSetBase(*jac,x);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;
 }
 /* --------------------  User-defined monitor ----------------------- */

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.12 1999/01/29 20:47:46 balay Exp bsmith $ 
+# $Id: makefile,v 1.13 1999/05/12 03:35:27 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -7,4 +7,5 @@ XDIRS    = auto
 LOCDIR   = src/fortran/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 

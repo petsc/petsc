@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.26 1998/06/15 15:45:32 balay Exp bsmith $ 
+# $Id: makefile,v 1.27 1999/01/31 16:03:22 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -10,4 +10,5 @@ DIRS	 = interface impls  examples utils
 LOCDIR   = src/vec/is/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 

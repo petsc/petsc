@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 1999/11/02 21:01:49 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1999/11/05 14:46:06 bsmith Exp bsmith $ 
 #
 ALL: lib
 
@@ -15,6 +15,7 @@ LIBBASE  = libpetscmat
 LOCDIR   = src/mat/partition/impls/pmetis/partition/
 MANSEC   = MatOrderings
 
-runexamples:
+
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

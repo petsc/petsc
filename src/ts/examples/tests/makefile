@@ -1,21 +1,10 @@
-# $Id: makefile,v 1.33 1999/04/01 17:11:36 balay Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.34 2000/03/14 14:48:44 bsmith Exp bsmith $ 
 
 CFLAGS	        = 
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tests/
-
-TESTEXAMPLES_1  = ex1.PETSc  runex1  ex1.rm 
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_4  = 
-TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm clean 
-BUILDEXAMPLES_1 = ex1.PETSc   ex1.rm
-BUILDEXAMPLES_3 = ex1f.PETSc  ex1f.rm
-
 EXAMPLESC       = ex1.c ex2.c ex4.c
 EXAMPLESF       = ex1f.F
 
@@ -72,7 +61,7 @@ ex11: ex11.o  chkopts
 ex12: ex12.o  chkopts
 	-${FLINKER} -o ex12 ex12.o ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
 	${RM} ex12.o
-
+#----------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler  -linear_no_matrix
 	-@${MPIRUN} -np 1 ex1 -test -nox -ts_type euler -nonlinear_no_jacobian 
@@ -97,3 +86,10 @@ runex1f:
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ex1f -test -nox -ts_type beuler -ksp_gmres_irorthog -nonlinear_jacobian 
 
+TESTEXAMPLES_1  = ex1.PETSc  runex1  ex1.rm 
+TESTEXAMPLES_2  = 
+TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_4  = 
+TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm 
+
+include ${PETSC_DIR}/bmake/common_test

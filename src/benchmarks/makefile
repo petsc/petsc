@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.24 1999/03/01 04:58:52 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.25 1999/04/07 02:41:53 bsmith Exp bsmith $ 
 
 ALL: 
 
@@ -7,15 +7,6 @@ FFLAGS	      =
 CPPFLAGS      =
 FPPFLAGS      =
 LOCDIR        = src/benchmarks/
-
-EXAMPLES_1    = 
-RUNEXAMPLES_1 = 
-EXAMPLES_2    = 
-RUNEXAMPLES_2 = 
-EXAMPLES_3    = 
-RUNEXAMPLES_3 = 
-EXAMPLES_4    = 
-RUNEXAMPLES_4 = 
 EXAMPLESC     = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c \
 		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c PetscVecNorm.c \
 		PetscGetCPUTime.c
@@ -26,6 +17,7 @@ TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscGetCPUTime
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 PetscTime: PetscTime.o  chkopts 
 	-${CLINKER} -o PetscTime PetscTime.o ${PETSC_LIB}

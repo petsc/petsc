@@ -1,6 +1,6 @@
-/*$Id: ex3.c,v 1.41 2000/01/11 21:00:24 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.42 2000/05/05 22:15:21 balay Exp bsmith $*/
 
-static char help[] = "Displays a vector visually.\n\n";
+static char help[] = "Displays a vector.\n\n";
 
 /*T
    Concepts: Vectors^Drawing vectors;

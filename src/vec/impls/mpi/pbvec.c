@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.158 2000/06/23 18:15:06 buschelm Exp buschelm $*/
+/*$Id: pbvec.c,v 1.159 2000/06/23 20:15:50 buschelm Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -603,7 +603,9 @@ int VecDuplicate_MPI(Vec win,Vec *v)
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     PLogObjectParent(*v,vw->localrep);
     vw->localupdate = w->localupdate;
-    ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
+    if (vw->localupdate) {
+      ierr = PetscObjectReference((PetscObject)vw->localupdate);CHKERRQ(ierr);
+    }
   }    
 
   /* New vector should inherit stashing property of parent */
@@ -673,8 +675,7 @@ int VecDuplicate_MPI(Vec win,Vec *v)
           VecCreateGhostWithArray(), VecCreateGhostBlocked()
 
 @*/ 
-int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],
-                            const Scalar array[],Vec *vv)
+int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],const Scalar array[],Vec *vv)
 {
   int     ierr;
   Vec_MPI *w;
@@ -761,7 +762,66 @@ int VecCreateGhostBlock(MPI_Comm comm,int bs,int n,int N,int nghost,const int gh
   PetscFunctionReturn(0);
 }
 
+/*
+    These introduce a ghosted vector where the ghosting is determined by the call to 
+  VecSetLocalToGlobalMapping()
+*/
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"VecSetLocalToGlobalMapping_FETI"
+int VecSetLocalToGlobalMapping_FETI(Vec vv,ISLocalToGlobalMapping map)
+{
+  int     ierr;
+  Vec_MPI *v = (Vec_MPI *)vv->data;
+
+  PetscFunctionBegin;
+  v->nghost = map->n - vv->n;
+
+  /* we need to make longer the array space that was allocated when the vector was created */
+  ierr = PetscFree(v->array_allocated);CHKERRQ(ierr);
+  v->array = v->array_allocated = (Scalar*)PetscMalloc(map->n*sizeof(Scalar));CHKPTRQ(v->array);
+  
+  /* Create local representation */
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,map->n,v->array,&v->localrep);CHKERRQ(ierr);
+  PLogObjectParent(vv,v->localrep);
+
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"VecSetValuesLocal_FETI"
+int VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const Scalar *values,InsertMode mode)
+{
+  int      ierr;
+  Vec_MPI *v = (Vec_MPI *)vv->data;
+
+  PetscFunctionBegin;
+  ierr = VecSetValues(v->localrep,n,ix,values,mode);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"VecCreate_FETI"
+int VecCreate_FETI(Vec vv)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = VecSetType(vv,VEC_MPI);CHKERRQ(ierr);
+  
+  /* overwrite the functions to handle setting values locally */
+  vv->ops->setlocaltoglobalmapping = VecSetLocalToGlobalMapping_FETI;
+  vv->ops->setvalueslocal          = VecSetValuesLocal_FETI;
+  vv->ops->assemblybegin           = 0;
+  vv->ops->assemblyend             = 0;
+  vv->ops->setvaluesblocked        = 0;
+  vv->ops->setvaluesblocked        = 0;
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 
 

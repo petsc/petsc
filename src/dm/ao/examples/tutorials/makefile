@@ -1,25 +1,10 @@
-# $Id: makefile,v 1.18 1999/11/05 14:47:48 bsmith Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.19 2000/06/07 16:31:41 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/dm/ao/examples/tutorials/
-
-TESTEXAMPLES_1  =
-TESTEXAMPLES_2  =
-TESTEXAMPLES_3  =
-TESTEXAMPLES_4  =
-TESTEXAMPLES_16 = ex2.PETSc runex2 runex2_2 ex2.rm 
-TESTEXAMPLES_13 = ex1.PETSc ex1.rm clean
-BUILDEXAMPLES_1 =
-BUILDEXAMPLES_2 = 
-BUILDEXAMPLES_3 = 
-BUILDEXAMPLES_4 = 
-BUILDEXAMPLES_6 = ex2.PETSc ex2.rm 
-
 EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       = 
 
@@ -40,7 +25,7 @@ ex3: ex3.o  chkopts
 ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
 	${RM} -f ex4.o
-
+#----------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -70,3 +55,11 @@ runex2_2:
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 
+TESTEXAMPLES_1  =
+TESTEXAMPLES_2  =
+TESTEXAMPLES_3  =
+TESTEXAMPLES_4  =
+TESTEXAMPLES_16 = ex2.PETSc runex2 runex2_2 ex2.rm 
+TESTEXAMPLES_13 = ex1.PETSc ex1.rm
+
+include ${PETSC_DIR}/bmake/common_test

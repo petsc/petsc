@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.104 2000/07/26 15:20:16 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.105 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -140,7 +140,7 @@ EXTERN int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 EXTERN int PCASMSetUseInPlace(PC);
 EXTERN int PCASMGetLocalSubdomains(PC,int*,IS**);
 
-typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE} PCCompositeType;
+typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL} PCCompositeType;
 EXTERN int PCCompositeSetType(PC,PCCompositeType);
 EXTERN int PCCompositeAddPC(PC,PCType);
 EXTERN int PCCompositeGetPC(PC pc,int n,PC *);

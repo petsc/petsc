@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 2000/05/18 17:24:55 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 2000/08/01 20:58:29 bsmith Exp bsmith $ 
 
 #requirespackage  '-DPETSC_HAVE_MATLAB'
 #requiresscalar real 
@@ -17,5 +17,6 @@ MANSEC   = Vec
 LOCDIR   = src/pf/impls/matlab/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 

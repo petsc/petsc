@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.39 2000/01/11 21:02:41 bsmith Exp balay $*/
+/*$Id: ex9.c,v 1.40 2000/05/05 22:18:29 balay Exp bsmith $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user);CHKERRA(ierr);
   ierr = MatCreateSNESMF(snes,x,&J);CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,J,J,0,(void *)&user);CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,J,MatSNESMFFormJacobian,&user);CHKERRA(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
 
   /* Force no preconditioning to be used.  Note that this overrides whatever

@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.16 2000/05/04 14:04:04 balay Exp balay $*/
+/*$Id: snesmfjdef.c,v 1.17 2000/05/05 22:18:16 balay Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -154,7 +154,7 @@ static int MatSNESMFPrintHelp_Default(MatSNESMFCtx ctx)
   int              ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx,&p);CHKERRQ(ierr);
   if (!p) p = "";
   ierr = (*PetscHelpPrintf)(ctx->comm,"   -%ssnes_mf_umin <umin> see users manual (default %g)\n",p,hctx->umin);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -178,7 +178,7 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
   PetscReal  umin;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx,&p);CHKERRQ(ierr);
   ierr = OptionsGetDouble(p,"-snes_mf_umin",&umin,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = MatSNESMFDefaultSetUmin(ctx->mat,umin);CHKERRQ(ierr);

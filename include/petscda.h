@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.55 2000/07/15 03:19:45 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.56 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -133,6 +133,7 @@ EXTERN int DAMGView(DAMG*,Viewer);
 EXTERN int DAMGSolve(DAMG*);
 
 #define DAMGGetb(ctx) (ctx)[(ctx)[0]->nlevels-1]->b
+#define DAMGGetr(ctx) (ctx)[(ctx)[0]->nlevels-1]->r
 #define DAMGGetx(ctx) (ctx)[(ctx)[0]->nlevels-1]->x
 #define DAMGGetJ(ctx) (ctx)[(ctx)[0]->nlevels-1]->J
 #define DAMGGetB(ctx) (ctx)[(ctx)[0]->nlevels-1]->B

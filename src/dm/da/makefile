@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.20 1999/01/26 02:30:23 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.21 1999/01/31 16:11:26 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -7,4 +7,5 @@ DIRS     = src  examples utils
 LOCDIR   = src/dm/da/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 

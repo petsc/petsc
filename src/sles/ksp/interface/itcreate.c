@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.187 2000/05/10 16:42:00 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.188 2000/08/01 20:56:48 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -313,7 +313,7 @@ int KSPRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (KSPList) {
-    ierr = FListDestroy(KSPList);CHKERRQ(ierr);
+    ierr = FListDestroy(&KSPList);CHKERRQ(ierr);
     KSPList = 0;
   }
   KSPRegisterAllCalled = PETSC_FALSE;

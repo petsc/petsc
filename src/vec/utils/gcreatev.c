@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.77 2000/05/10 16:40:00 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.78 2000/07/10 03:39:13 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -59,7 +59,7 @@ int VecRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (VecList) {
-    ierr = FListDestroy(VecList);CHKERRQ(ierr);
+    ierr = FListDestroy(&VecList);CHKERRQ(ierr);
     VecList = 0;
   }
   VecRegisterAllCalled = PETSC_FALSE;

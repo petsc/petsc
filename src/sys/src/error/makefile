@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.8 1999/02/02 21:23:35 balay Exp bsmith $ 
+# $Id: makefile,v 1.9 2000/02/02 20:08:13 bsmith Exp bsmith $ 
 
 ALL: lib 
 
@@ -15,7 +15,7 @@ DIRS	  =
 LOCDIR	  = src/sys/src/error/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
+include ${PETSC_DIR}/bmake/common_test
 
 
 

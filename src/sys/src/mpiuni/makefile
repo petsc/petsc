@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.21 1999/02/01 20:38:19 balay Exp balay $ 
+# $Id: makefile,v 1.22 1999/02/01 21:54:26 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -14,3 +14,4 @@ LIBBASE	 = libmpiuni
 LOCDIR   = src/sys/src/mpiuni/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

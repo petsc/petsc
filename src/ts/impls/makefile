@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.12 1999/01/27 19:48:36 bsmith Exp bsmith $
+# $Id: makefile,v 1.13 1999/02/03 04:31:39 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -6,5 +6,6 @@ DIRS     = explicit implicit pseudo
 LOCDIR   = src/ts/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 

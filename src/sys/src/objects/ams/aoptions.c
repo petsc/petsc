@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.8 2000/05/04 16:24:48 bsmith Exp balay $*/
+/*$Id: aoptions.c,v 1.9 2000/05/05 22:14:08 balay Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -19,7 +19,7 @@
 
     Eventually we'll attach this beast to a MPI_Comm
 */
-typedef enum {PETSC_OPTION_INT,PETSC_OPTION_LOGICAL,PETSC_OPTION_DOUBLE,PETSC_OPTION_LIST} PetscOptionType;
+typedef enum {PETSC_OPTION_INT,PETSC_OPTION_LOGICAL,PETSC_OPTION_DOUBLE,PETSC_OPTION_LIST,PETSC_OPTION_STRING} PetscOptionType;
 typedef struct _p_PetscOptionsAMS* PetscOptionsAMS;
 struct _p_PetscOptionsAMS {
   char            *option;
@@ -103,6 +103,9 @@ int OptionsSelectEnd(MPI_Comm comm)
           sprintf(value,"%d",*(int*)amspub.next->data);
           break;
         case PETSC_OPTION_LIST:
+          ierr = PetscStrcpy(value,*(char**)amspub.next->data);CHKERRQ(ierr);
+          break;
+        case PETSC_OPTION_STRING:
           ierr = PetscStrcpy(value,*(char**)amspub.next->data);CHKERRQ(ierr);
           break;
       }
@@ -213,7 +216,7 @@ int OptionsSelectName(MPI_Comm comm,char *opt,char *text)
   amsopt->data        = (void *)PetscMalloc(sizeof(int));CHKERRQ(ierr);
   *(int*)amsopt->data = 0;
 
-  ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

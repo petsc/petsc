@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.21 1998/06/15 15:54:14 balay Exp bsmith $
+# $Id: makefile,v 1.22 1999/01/31 16:03:25 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -7,4 +7,5 @@ DIRS     = general stride block
 LOCDIR   = src/vec/is/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 

@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.5 2000/07/14 18:16:14 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.6 2000/08/01 20:57:12 bsmith Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -33,10 +33,11 @@ extern int ComputeRHS(DAMG,Vec);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int    ierr,i,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
-  DAMG   *damg;
-  SLES   sles;
-  Scalar one = 1.0;
+  int       ierr,i,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
+  DAMG      *damg;
+  SLES      sles;
+  Scalar    one = 1.0, mone = -1.0;
+  PetscReal norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = OptionsGetInt(0,"-stencil_width",&sw,0);CHKERRQ(ierr);
@@ -49,6 +50,11 @@ int main(int argc,char **argv)
   ierr = DAMGSetSLES(damg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
 
   ierr = DAMGSolve(damg);CHKERRQ(ierr);
+
+  ierr = MatMult(DAMGGetJ(damg),DAMGGetx(damg),DAMGGetr(damg));CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,DAMGGetb(damg),DAMGGetr(damg));CHKERRQ(ierr);
+  ierr = VecNorm(DAMGGetr(damg),NORM_2,&norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",norm);CHKERRQ(ierr);
 
   ierr = DAMGDestroy(damg);CHKERRQ(ierr);
   PetscFinalize();
@@ -111,3 +117,5 @@ int ComputeJacobian(DAMG damg,Mat jac)
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   return 0;
 }
+
+

@@ -1,26 +1,11 @@
-# $Id: makefile,v 1.64 1999/04/16 16:08:34 bsmith Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.65 2000/02/02 20:09:42 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS          =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sles/pc/examples/tests/
-
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-		  runex3 ex3.rm ex4.PETSc runex4 ex4.rm  clean
-TESTEXAMPLES_2  = ex5.PETSc runex5 ex5.rm clean
-TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-		  runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 ex5.rm clean
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc \
-		  ex3.rm ex4.PETSc ex4.rm  ex6.PETSc ex6.rm ex7.PETSc ex7.rm clean
-BUILDEXAMPLES_2 = ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc \
-		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm clean
-
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
-DOCS            = 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -52,6 +37,7 @@ ex7: ex7.o   chkopts
 	-${CLINKER} -o ex7 ex7.o ${PETSC_LIB}
 	${RM} ex7.o
 
+#------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -85,3 +71,11 @@ runex6:
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
+
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+		  runex3 ex3.rm ex4.PETSc runex4 ex4.rm 
+TESTEXAMPLES_2  = ex5.PETSc runex5 ex5.rm
+TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+		  runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 ex5.rm
+
+include ${PETSC_DIR}/bmake/common_test

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 2000/02/22 14:55:36 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 2000/02/27 03:40:58 bsmith Exp bsmith $ 
 
 #
 #requirespackage  '-DPETSC_HAVE_MATLAB'
@@ -29,6 +29,7 @@ LOCDIR    = src/sys/src/viewer/impls/socket/matlab
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
 
 # CMEX and MCC are defined in bmake/${PETSC_ARCH}/base.site
 #

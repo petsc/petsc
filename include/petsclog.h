@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.142 2000/07/03 14:35:37 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.143 2000/07/21 20:45:51 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -313,19 +313,19 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define MPI_Startall_irecv(count,number,requests)                                     \
 (\
   PETSC_DUMMY = MPI_Startall(number,requests),                                                    \
-  irecv_ct += (PLogDouble)(number),irecv_len += ((PLogDouble) (count*sizeof(Scalar))),PETSC_DUMMY \
+  irecv_ct += (PLogDouble)(number),irecv_len += ((PLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY \
 )
 
 #define MPI_Startall_isend(count,number,requests)                                    \
 (\
   PETSC_DUMMY = MPI_Startall(number,requests),                                                   \
-  isend_ct += (PLogDouble)(number),isend_len += ((PLogDouble) (count*sizeof(Scalar))),PETSC_DUMMY \
+  isend_ct += (PLogDouble)(number),isend_len += ((PLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY \
 )
 
 #define MPI_Start_isend(count, requests)\
 (\
   PETSC_DUMMY = MPI_Start(requests),\
-  isend_ct++,isend_len += ((PLogDouble) (count*sizeof(Scalar))),PETSC_DUMMY\
+  isend_ct++,isend_len += ((PLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY\
 )
 
 #define MPI_Recv(buf,count, datatype,source,tag,comm,status)           \
@@ -438,9 +438,11 @@ EXTERN int PLogObjectState(PetscObject,const char[],...);
 
 #endif   /* PETSC_USE_LOG */
 
+extern PetscTruth PetscPreLoadingUsed;
+
 #define PreLoadBegin(flag,name) {PetscTruth PreLoading = flag; int PreLoadMax,PreLoadIt,__ierr;\
                                  __ierr = OptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(__ierr);\
-                                 PreLoadMax = (int)(PreLoading);\
+                                 PreLoadMax = (int)(PreLoading);PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
                                  for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
                                    __ierr = PetscBarrier(PETSC_NULL);CHKERRQ(__ierr);\
                                    __ierr = PLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\

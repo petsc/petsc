@@ -1,5 +1,5 @@
 
-/*$Id: damgsnes.c,v 1.4 2000/07/17 03:51:36 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.5 2000/07/24 14:03:30 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -86,7 +86,7 @@ EXTERN int DAMGSetUpLevel(DAMG*,SLES,int);
 
     Level: advanced
 
-.seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA(), DAMGSetSLES()
+.seealso DAMGCreate(), DAMGDestroy, DAMGSetSLES()
 
 @*/
 int DAMGSetSNES(DAMG *damg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
@@ -156,7 +156,7 @@ int DAMGSetSNES(DAMG *damg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 
     Level: advanced
 
-.seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA(), DAMGSetSLES()
+.seealso DAMGCreate(), DAMGDestroy, DAMGSetSLES()
 
 @*/
 int DAMGSetInitialGuess(DAMG *damg,int (*guess)(SNES,Vec,void*))

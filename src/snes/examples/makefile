@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 1998/06/15 16:18:39 balay Exp bsmith $ 
+# $Id: makefile,v 1.11 1999/02/03 04:32:19 bsmith Exp bsmith $ 
 
 ALL:
 
@@ -6,3 +6,4 @@ LOCDIR	 = src/snes/examples/
 DIRS	 = tests tutorials
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

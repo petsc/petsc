@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.36 2000/05/05 22:13:14 balay Exp bsmith $*/
+/*$Id: ams.c,v 1.37 2000/05/10 16:38:45 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -41,7 +41,7 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
   if (flg) {
     ierr = OptionsHasName(PETSC_NULL,"-ams_publish_options",&flg2);CHKERRQ(ierr);
     if (flg2) {
-      ierr = PetscPOpen(v->comm,m,"cd ${PETSC_DIR}/src/sys/src/objects/ams/java;make runamsoptions","r",PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscPOpen(v->comm,m,"cd ${PETSC_DIR}/src/sys/src/objects/ams/java;make runamsoptions AMS_OPTIONS=\"-ams_server ${HOSTNAME}\"","r",PETSC_NULL);CHKERRQ(ierr);
     }
 
     ierr = OptionsHasName(PETSC_NULL,"-ams_publish_objects",&flg2);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.24 2000/05/05 22:13:21 balay Exp bsmith $*/
+/*$Id: viewreg.c,v 1.25 2000/07/10 03:38:34 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -116,7 +116,7 @@ int ViewerRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (ViewerList) {
-    ierr = FListDestroy(ViewerList);CHKERRQ(ierr);
+    ierr = FListDestroy(&ViewerList);CHKERRQ(ierr);
     ViewerList = 0;
   }
   PetscFunctionReturn(0);

@@ -1,23 +1,10 @@
-# $Id: makefile,v 1.23 1999/07/26 18:47:48 curfman Exp bsmith $ 
-
-ALL: ex1
+# $Id: makefile,v 1.24 2000/04/09 03:11:12 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
-
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm
-TESTEXAMPLES_2  = 
-TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_4  =  
-TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
-		  ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_1 = ex2.PETSc ex4.PETSc
-BUILDEXAMPLES_3 = ex2f.PETSc 
-BUILDEXAMPLES_4 = 
-
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c util2.c
 EXAMPLESF       = ex1f.F ex2f.F ex2f.h
 
@@ -54,7 +41,7 @@ ex5: ex5.o  chkopts
 ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_TS_LIB}
 	${RM} ex6.o
-
+#---------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog  > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -67,3 +54,11 @@ runex1f:
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm
+TESTEXAMPLES_2  = 
+TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_4  =  
+TESTEXAMPLES_13 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
+		  ex5.PETSc ex5.rm
+
+include ${PETSC_DIR}/bmake/common_test

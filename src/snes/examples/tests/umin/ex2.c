@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.58 2000/01/11 21:02:43 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.59 2000/05/05 22:18:32 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -96,8 +96,8 @@ int main(int argc,char **argv)
   ierr = SNESSetType(snes,type);CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,(void *)&user);CHKERRA(ierr);
-  ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user);CHKERRA(ierr);
+  ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,&user);CHKERRA(ierr);
+  ierr = SNESSetGradient(snes,g,FormGradient,&user);CHKERRA(ierr);
 
   /* Form Hessian matrix approx, using one of three methods:
       (default)   : explicitly form Hessian approximation
@@ -107,8 +107,7 @@ int main(int argc,char **argv)
    */
   ierr = OptionsHasName(PETSC_NULL,"-my_snes_mf",&flg);CHKERRA(ierr);
   if (flg) {
-    ierr = MatCreateShell(PETSC_COMM_SELF,ldim,user.ndim,user.ndim,user.ndim,
-           (void*)&user,&H);CHKERRA(ierr);
+    ierr = MatCreateShell(PETSC_COMM_SELF,ldim,user.ndim,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
     if (user.problem == 1) {
       ierr = MatShellSetOperation(H,MATOP_MULT,(void *)HessianProductMat1);CHKERRA(ierr);
     } else if (user.problem == 2) {
@@ -242,11 +241,14 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
  */
 int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
 {
-  AppCtx     *user = (AppCtx*)ptr;
-
+  AppCtx  *user = (AppCtx*)ptr;
+  int     ierr;
   /* Sets location of vector for use in computing matrix-vector products
      of the form H(X)*y  */
   user->xvec = X;   
+  ierr = MatAssemblyBegin(*H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSNESMFSetBase(*H,X);CHKERRQ(ierr);
   return 0;
 }
 
@@ -514,8 +516,7 @@ int FormInitialGuess2(AppCtx *user,Vec X)
 
 #undef __FUNC__
 #define __FUNC__ "EvalFunctionGradient2"
-int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
-                         AppCtx *user)
+int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCtx *user)
 {
   int    ierr,nx = user->mx,ny = user->my,ind,i,j,k;
   Scalar one = 1.0,p5 = 0.5,hx = user->hx,hy = user->hy,fl,fu,area;
@@ -887,5 +888,8 @@ int BoundaryValues(AppCtx *user)
   }
   return 0;
 }
+
+
+
 
 

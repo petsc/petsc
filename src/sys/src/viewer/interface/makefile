@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 1999/04/19 22:08:46 bsmith Exp bsmith $
+# $Id: makefile,v 1.31 1999/10/22 23:57:59 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -14,4 +14,4 @@ MANSEC   = Viewer
 LOCDIR   = src/sys/src/viewer/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
+include ${PETSC_DIR}/bmake/common_test

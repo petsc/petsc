@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 1999/01/19 22:51:09 bsmith Exp balay $ 
+# $Id: makefile,v 1.18 1999/02/02 21:26:57 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -15,3 +15,4 @@ MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/baij/mpi/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test

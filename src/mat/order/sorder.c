@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.73 2000/05/10 16:41:27 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.74 2000/07/10 03:40:03 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -184,7 +184,7 @@ int MatOrderingRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatOrderingList) {
-    ierr = FListDestroy(MatOrderingList);CHKERRQ(ierr);
+    ierr = FListDestroy(&MatOrderingList);CHKERRQ(ierr);
     MatOrderingList = 0;
   }
   PetscFunctionReturn(0);
