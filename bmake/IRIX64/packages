@@ -30,7 +30,7 @@ X11_LIB        = -lX11
 # below if it is there. You cannot use Blocksolve with complex
 #
 BS_INCLUDE = -I/u/usi/usilcm/BlockSolve95/include
-BS_LIB     = /u/usi/usilcm/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = /u/usi/usilcm/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -lpetscmat
 #
 # Location of MPI (Message Passing Interface) software
 #
