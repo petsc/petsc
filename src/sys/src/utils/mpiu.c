@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.60 1996/10/03 19:53:36 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.61 1996/12/08 20:50:08 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -30,7 +30,7 @@ struct _PrintfQueue {
 static PrintfQueue queue       = 0,queuebase = 0;
 static int         queuelength = 0;
 
-/*@
+/*@C
     PetscSynchronizedPrintf - Prints output from several processors that
         is synchronized so that printed by first processor is followed by 
         second etc.
@@ -91,7 +91,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
   return 0;
 }
  
-/*@
+/*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors 
         involved in previous PetscSynchronizedPrintf() calls.
 
