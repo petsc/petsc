@@ -102,7 +102,7 @@ int main(int argc,char **args)
     */
     ierr  = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
     ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
-    ierrp = VecLoad(fd,&b);
+    ierrp = VecLoad(fd,PETSC_NULL,&b);
     ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
     if (ierrp) { /* if file contains no RHS, then use a vector of all ones */
       int         m;

@@ -187,11 +187,13 @@ void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),int *ierr 
 
 }
 
-void PETSC_STDCALL vecload_(PetscViewer *viewer,Vec *newvec,int *ierr)
+void PETSC_STDCALL vecload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len),Vec *newvec,int *ierr PETSC_END_LEN(len))
 { 
+  char *t;
   PetscViewer v;
+  FIXCHAR(outtype,len,t);
   PetscPatchDefaultViewers_Fortran(viewer,v);
-  *ierr = VecLoad(v,newvec);
+  *ierr = VecLoad(v,t,newvec);
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */

@@ -65,7 +65,7 @@ int main(int argc,char **args)
        Load the matrix and vector; then destroy the viewer.
   */
   ierr = MatLoad(viewer,mtype,&A); CHKERRA(ierr);
-  ierr = VecLoad(viewer,&b); CHKERRA(ierr);
+  ierr = VecLoad(viewer,PETSC_NULL,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
 
   fd = fopen("example_matrix","w");

@@ -6288,7 +6288,7 @@ particular, matrix and vector binary input is handled by the
 following routines: \findex{MatLoad()} \findex{VecLoad()}
 \begin{tabbing}
   MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat);\\
-  VecLoad(PetscViewer viewer,Vec *newvec);
+  VecLoad(PetscViewer viewer,VecType outtype,Vec *newvec);
 \end{tabbing}
 These routines generate parallel matrices and vectors if the viewer's
 communicator has more than one process.  The particular matrix and

@@ -44,7 +44,7 @@
 !
 !  Load the vector
 !
-       Call VecLoad(v,x,ierr)
+       Call VecLoad(v,PETSC_NULL_CHARACTER,x,ierr)
        call PetscViewerDestroy(v,ierr)
 !
 !  Print the vector

@@ -48,7 +48,7 @@
      &  info(MAT_INFO_MALLOCS)
 
  100  format(11(g7.1,1x))
-      call VecLoad(fd,b,ierr)
+      call VecLoad(fd,PETSC_NULL_CHARACTER,b,ierr)
       call PetscViewerDestroy(fd,ierr)
 
 ! Set up solution

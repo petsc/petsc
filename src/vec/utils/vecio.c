@@ -9,12 +9,13 @@
 #include "petsc.h"
 #include "petscsys.h"
 #include "petscvec.h"         /*I  "petscvec.h"  I*/
+#include "src/vec/vecimpl.h"
 #if defined(PETSC_HAVE_PNETCDF)
 EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
 #endif
-int VecLoad_Binary(PetscViewer, Vec*);
+int VecLoad_Binary(PetscViewer,const VecType, Vec*);
 int VecLoad_Netcdf(PetscViewer, Vec*);
 int VecLoadIntoVector_Binary(PetscViewer, Vec);
 int VecLoadIntoVector_Netcdf(PetscViewer, Vec);
@@ -28,8 +29,9 @@ int VecLoadIntoVector_Netcdf(PetscViewer, Vec);
   Collective on PetscViewer 
 
   Input Parameters:
-. viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
++ viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            NetCDF file viewer, obtained from PetscViewerNetcdfOpen()
+- outtype - the type of vector VECSEQ or VECMPI or PETSC_NULL
 
   Output Parameter:
 . newvec - the newly loaded vector
@@ -68,10 +70,11 @@ and PetscWriteBinary() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  
-int VecLoad(PetscViewer viewer,Vec *newvec)
+int VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
 {
   int         ierr;
-  PetscTruth  isbinary,isnetcdf;
+  PetscTruth  isbinary,isnetcdf,flg;
+  char        vtype[256],*prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -85,7 +88,32 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   if (isnetcdf) {
     ierr = VecLoad_Netcdf(viewer,newvec); CHKERRQ(ierr);
   } else {
-    ierr = VecLoad_Binary(viewer,newvec); CHKERRQ(ierr);
+    Vec      factory;
+    MPI_Comm comm;
+    int      (*r)(PetscViewer,const VecType,Vec*),size;
+
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      outtype = vtype;
+    }
+    ierr = PetscOptionsGetString(prefix,"-vecload_type",vtype,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      outtype = vtype;
+    }
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);  
+    if (!outtype) {
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      outtype = (size > 1) ? VECMPI : VECSEQ;
+    }
+
+    ierr = VecCreate(comm,&factory);CHKERRQ(ierr);
+    ierr = VecSetSizes(factory,1,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = VecSetType(factory,outtype);CHKERRQ(ierr);
+    r = factory->ops->load;
+    ierr = VecDestroy(factory);
+    if (!r) SETERRQ1(PETSC_ERR_SUP,"VecLoad is not supported for type: %s",outtype);
+    ierr = (*r)(viewer,outtype,newvec); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -139,7 +167,7 @@ int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"
-int VecLoad_Binary(PetscViewer viewer,Vec *newvec)
+int VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,nierr;
   Vec         vec;

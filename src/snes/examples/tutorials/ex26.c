@@ -295,7 +295,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
     ierr = PetscOptionsGetString(PETSC_NULL,"-initialGuess",filename,256,&flg); CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_FILE_RDONLY,&view_in); CHKERRQ(ierr);
-      ierr = VecLoad(view_in,&Y); CHKERRQ(ierr);
+      ierr = VecLoad(view_in,PETSC_NULL,&Y); CHKERRQ(ierr);
       ierr = PetscViewerDestroy(view_in); CHKERRQ(ierr);
       ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy); CHKERRQ(ierr);
       ierr = SNESDAFormFunction(PETSC_NULL,Y,user->r,(void*)user);CHKERRQ(ierr);

@@ -25,7 +25,7 @@ int main(int argc,char **args)
   if (!flg) SETERRQ(1,help);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = VecLoad(fd,&x);CHKERRQ(ierr);
+  ierr = VecLoad(fd,PETSC_NULL,&x);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Write matrix and vector */

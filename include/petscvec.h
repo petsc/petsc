@@ -405,7 +405,7 @@ EXTERN int VecValid(Vec,PetscTruth*);
 EXTERN int VecView(Vec,PetscViewer);
 EXTERN int VecViewFromOptions(Vec, char *);
 EXTERN int VecEqual(Vec,Vec,PetscTruth*);
-EXTERN int VecLoad(PetscViewer,Vec*);
+EXTERN int VecLoad(PetscViewer,const VecType,Vec*);
 EXTERN int VecLoadIntoVector(PetscViewer,Vec);
 
 EXTERN int VecGetSize(Vec,int*);

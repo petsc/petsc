@@ -101,6 +101,8 @@ int VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
+extern int VecLoad_Binary(PetscViewer,const VecType, Vec*);
+
 static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
@@ -147,7 +149,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             0,
             VecResetArray_Seq,
             0,
-            VecMaxPointwiseDivide_Seq};
+            VecMaxPointwiseDivide_Seq,
+            VecLoad_Binary};
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI_Private"

@@ -469,6 +469,8 @@ static int VecPublish_Seq(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
+extern int VecLoad_Binary(PetscViewer,const VecType, Vec*);
+
 static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default,
@@ -512,7 +514,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
 	    0,
             VecResetArray_Seq,
             0,
-            VecMaxPointwiseDivide_Seq};
+            VecMaxPointwiseDivide_Seq,
+            VecLoad_Binary};
 
 
 /*
@@ -603,7 +606,7 @@ int VecCreate_Seq(Vec V)
 
   PetscFunctionBegin;
   ierr = PetscMalloc( ( n > 0 ? n : 1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-  ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(array,( n > 0 ? n : 1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
   s    = (Vec_Seq*)V->data;
   s->array_allocated = array;

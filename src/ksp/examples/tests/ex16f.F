@@ -53,7 +53,7 @@
         SETERRQ(1,' ',ierr)
       endif
 
-      call VecLoad(fd,b,ierr)
+      call VecLoad(fd,PETSC_NULL_CHARACTER,b,ierr)
       call PetscViewerDestroy(fd,ierr)
 
 ! Set up solution
