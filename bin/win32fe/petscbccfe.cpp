@@ -121,7 +121,7 @@ void bcc::FoundL(LI &i) {
   string temp = *i;
   if (temp[2]!='\"') {
     temp = i->substr(2,string::npos);
-    temp = "-I\"" + temp + "\"";
+    temp = "-L\"" + temp + "\"";
   }
   ReplaceSlashWithBackslash(temp);
   linkarg.push_back(temp);
