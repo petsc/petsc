@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.139 1996/01/24 05:45:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.140 1996/01/26 04:33:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1345,8 +1345,11 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->inode.max_limit  = 5;
 
   *A = B;
+  /*  SuperLU is not currently supported through PETSc */
+#if defined(HAVE_SUPERLU)
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_superlu", &flg); CHKERRQ(ierr);
   if (flg) { ierr = MatUseSuperLU_SeqAIJ(B); CHKERRQ(ierr); }
+#endif
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_essl", &flg); CHKERRQ(ierr);
   if (flg) { ierr = MatUseEssl_SeqAIJ(B); CHKERRQ(ierr); }
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_dxml", &flg); CHKERRQ(ierr);
