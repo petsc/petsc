@@ -22,7 +22,7 @@ EXTERN_C_BEGIN
 extern void petscsetcommonblock_(Viewer*,Viewer*,Viewer*,int*,int*);
 EXTERN_C_END
 
-/*@
+/*@C
    PetscInitializeFortran - Routine that should be called from C after
    the call to PetscInitialize() if one is using a C main program
    that calls Fortran routines that in turn call PETSc routines.

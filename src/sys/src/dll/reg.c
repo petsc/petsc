@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.30 1999/01/27 19:46:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.31 1999/02/03 04:29:19 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -37,9 +37,6 @@ int FListGetPathAndFunction(const char name[],char *path[],char *function[])
     This is the list used by the DLRegister routines
 */
 DLLibraryList DLLibrariesLoaded = 0;
-
-
-extern int DLLibraryRegister_Petsc(char *);
 
 #undef __FUNC__  
 #define __FUNC__ "PetscInitialize_DynamicLibraries"
@@ -136,7 +133,9 @@ int PetscFinalize_DynamicLibraries(void)
   PetscFunctionReturn(0);
 }
 
-#else
+#else /* not using dynamic libraries */
+
+extern int DLLibraryRegister_Petsc(char *);
 
 #undef __FUNC__  
 #define __FUNC__ "PetscInitalize_DynamicLibraries"

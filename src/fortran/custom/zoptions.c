@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.52 1998/10/29 23:22:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.53 1998/12/03 03:53:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -342,7 +342,7 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
   return 0;
 }
 
-/*@
+/*@C
     MPICCommToFortranComm - Converts a MPI_Comm represented
     in C to one appropriate to pass to a Fortran routine.
 
@@ -370,7 +370,7 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
     MPIFortranCommToCComm - Converts a MPI_Comm represented
     int Fortran (as an integer) to a MPI_Comm in C.
 
