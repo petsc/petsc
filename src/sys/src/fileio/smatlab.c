@@ -1,4 +1,4 @@
-/* $Id: smatlab.c,v 1.6 2000/04/12 04:21:24 bsmith Exp balay $ */
+/* $Id: smatlab.c,v 1.7 2000/05/05 22:13:54 balay Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -8,7 +8,7 @@
 /*@C
     PetscStartMatlab - starts up Matlab with a Matlab script
 
-    Not collective, but only processor zero in the communicator does anything
+    Collective on MPI_Comm, but only processor zero in the communicator does anything
 
     Input Parameters:
 +     comm - MPI communicator
@@ -55,7 +55,7 @@ int PetscStartMatlab(MPI_Comm comm,char *machine,char *script,FILE **fp)
 
   /* the remote machine won't know about current directory, so add it to Matlab path */
   /* the extra \" are to protect possible () in the script command from the shell */
-  sprintf(command,"echo \"path(path,'${WORKINGDIRECTORY}'); %s \" > ${HOMEDIRECTORY}/matlab/startup.m",script);
+  sprintf(command,"echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m",script);
   ierr = PetscPOpen(comm,machine,command,"r",&fd);CHKERRQ(ierr);
   ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
 
