@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.38 1996/01/26 04:32:27 bsmith Exp curfman $ */
+/* $Id: pdvec.c,v 1.39 1996/02/13 20:28:51 curfman Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -46,10 +46,10 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
       fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
     }
     else {
-      fprintf(fd,"%g \n",real(x->array[i]));
+      fprintf(fd,"%g\n",real(x->array[i]));
     }
 #else
-    fprintf(fd,"%g \n",x->array[i]);
+    fprintf(fd,"%g\n",x->array[i]);
 #endif
   }
   fflush(fd);
