@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.25 1996/06/22 14:54:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.26 1996/07/08 22:18:45 bsmith Exp curfman $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -216,11 +216,11 @@ static int PCDestroy_ASM(PetscObject obj)
 static int PCPrintHelp_ASM(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCASM preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_asm_blocks blks: total subdomain blocks\n",p);
-  PetscPrintf(pc->comm, " %spc_asm_overlap ovl: amount of overlap between subdomains\n",p); 
+  PetscPrintf(pc->comm," %spc_asm_blocks <blks>: total subdomain blocks\n",p);
+  PetscPrintf(pc->comm, " %spc_asm_overlap <ovl>: amount of overlap between subdomains\n",p); 
   PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
- Add before the \n      usual KSP and PC option names (i.e., %ssub_ksp_type\
- <meth>)\n",p,p);
+ Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
+ <method>)\n",p,p);
   return 0;
 }
 

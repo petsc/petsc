@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.73 1996/04/26 00:15:32 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.74 1996/07/08 22:22:53 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -245,7 +245,7 @@ int SNESPrintHelp(SNES snes)
     PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
   }
-  PetscPrintf(snes->comm," Run program with %ssnes_type method -help for help on ",p);
+  PetscPrintf(snes->comm," Run program with %ssnes_type <method> -help for help on ",p);
   PetscPrintf(snes->comm,"a particular method\n");
   if (snes->printhelp) (*snes->printhelp)(snes,p);
   return 0;

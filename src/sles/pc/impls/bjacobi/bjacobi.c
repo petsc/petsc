@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.76 1996/06/25 18:38:38 balay Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.77 1996/07/08 22:18:33 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -232,25 +232,25 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCBJACOBI preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_bjacobi_blocks blks: blocks in preconditioner\n",p);
+  PetscPrintf(pc->comm," %spc_bjacobi_blocks <blks>: total blocks in preconditioner\n",p);
   PetscPrintf(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
   PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
- Add before the \n      usual KSP and PC option names (i.e., %ssub_ksp_type\
- <meth>)\n",p,p);
+ Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
+ <kspmethod>)\n",p,p);
   return 0;
 }
 
 static int PCPrintHelp_BGS(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCBGS preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_bgs_blocks blks: blocks in preconditioner\n",p);
+  PetscPrintf(pc->comm," %spc_bgs_blocks <blks>: total blocks in preconditioner\n",p);
   PetscPrintf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
-  PetscPrintf(pc->comm, " %spc_bgs_symmetric: use both, a forward and backward sweep\n",p);
+  PetscPrintf(pc->comm, " %spc_bgs_symmetric: use both a forward and backward sweep\n",p);
   PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
- Add before the \n      usual KSP and PC option names (i.e., %ssub_ksp_type\
- <meth>)\n",p,p);
+ Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
+ <kspmethod>)\n",p,p);
   return 0;
 }
 
