@@ -8,97 +8,33 @@ add to it).
 
   VEC
 
-   The command line names for changing the vector type in VecCreate()
-   are now -vec_type mpi or -vec_type shared rather than -vec_mpi or -vec_shared
-   Also extended VecCreate() by allowing registration of new vector types
-   with VecRegister() see the manual pages
+   
 
-   Changed the VecType variable type from an enum type to a string
-
-   Changed the calling sequence for VecGetType(), see the manual page.
-
-   Added VecCreateWithType() that allows you to indicate the vector type
-   in the function call (in addition to setting it from the options database)
-
-   If the option VEC_IGNORE_OFF_PROC_ENTRIES is used the VecAssemblyBegin()
-   and End() will not cause any parallel communication or synchronization
-   (previously it still did a barrier in VecAssemblyBegin()).
-
-   Added  VIEWER_FORMAT_ASCII_INDEX which causes 
-   the index for each vector entry to be printed with the vector values
-
-   Added three new vector scatter options; -vecscatter_merge and -vecscatter_ssend
-   -vecscatter_sendfirst this may improve performance a great deal when using MPICH for MPI
-   on ethernet or fast ethernet
-
-   changed VecGhostGetLocalRepresentation() and VecGhostRestoreLocalRepresentation(),
-   to VecGhostGetLocalForm() and VecGhostRestoreLocalForm(), the other names had
-   too many characters for some machines.
-
-   added VecStrideNorm() and VecStrideScatter(), VecStrideGather()
+  
 
   MAT
 
-   Added an additional argument to MatCopy(); SAME_NONZERO_PATTERN or DIFFERENT_NONZERO_PATTERN
+   
 
-   Added an additional argument to MatDuplicate() MAT_COPY_VALUES or MAT_DO_NOT_COPY_VALUES
-
-   Added MatSeqAIJSetColumnIndices() and MatSeqBAIJSetColumnIndices().
-
-   If the option MAT_IGNORE_OFF_PROC_ENTRIES is used the MatAssemblyBegin()
-    and End() will not cause any parallel communication or synchronization.
-
-   If the option MAT_NO_NEW_NONZERO_LOCATIONS is used, one less collective
-   call will be made in the MatAssemblyEnd routines for MPIAIJ and MPIBAIJ.
+   
 
   KSP
 
-    Changed KSPGmres to use Gram-Schmidt with one optional step of iterative
-    refinement as the default orthogonalization, instead of modified Gram-Schmidt.
-    This was urged by Rich Lehoucq. It could cause very minor differences in convergence
-    rates for codes run before and after this change.
-
-    Added the function KSPSetAvoidNorms() and option -ksp_avoid_norms. For the 
-    methods CG, Richardson, Bi-CG-stab, CR, and CGS this eliminates the computation
-    of the residual norm at each iteration (which is an expensive, collective 
-    operation). Then the convergence criteria depends only on the maximum number
-    of iterations you set with KSPSetTolerances(). This is useful when using the 
-    Krylov method as a smoother with a fixed, say 3, iterations.
-
-    Changed the calling sequence of KSPComputeEigenvalues(KSP,int,double*,double*,int *neig);
-    to return as the final value the number of eigenvalues computed; see the manual
-    page for more details.
-
-    Added the KSP type of KSPBICG (contributed by Victor Eijkhout) and added support
-    to some of the preconditioners to apply the preconditioner transpose (required by 
-    KSPBICG).
-
+    
+    
   PC
 
-    Added PCLUSetReuseReordering() and PCLUSetReuseFill() so that SLES can reuse the 
-    reordering and fill information for a new factorization of a slightly different nonzero
-    structure matrix from the previous factorization. Command line options -pc_lu_reuse_reordering
-    and -pc_lu_reuse_fill These two options only have an effect when the SLESSetOperators option
-    of DIFFERENT_NONZERO_PATTERN is used, otherwise the ordering and fill information is always 
-    reused.
-
-    Added PCGetVector(), not expected to be used by end programmers.
+    
 
   AO
 
-    AOPetscToApplicationIS() and AOApplicationToPetscIS(), that use to crash
-    when passed a stride index set, now handle them correctly.
+    
 
   IS
 
-    Added ISStrideToGeneral(), converts a stride type index set to a general type
+    
 
   General
 
-    Add OptionsGetAll().
-
-    Added support for Sun Solaris running on Intel processors; PETSC_ARCH solaris_x86
-
-    Added option -optionsleft_off so BOPT=g version of code will not print warnings
-    about unused options
+    
 
