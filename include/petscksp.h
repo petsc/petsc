@@ -33,6 +33,7 @@ extern int KSPGetMethodFromContext(KSP,KSPMethod *);
 extern int KSPSetRelativeTolerance(KSP,double);
 extern int KSPSetAbsoluteTolerance(KSP,double);
 extern int KSPSetDivergenceTolerance(KSP,double);
+extern int KSPGetTolerances(KSP,double*,double*,double*);
 extern int KSPSetCalculateResidual(KSP,PetscTruth);
 extern int KSPSetUsePreconditionedResidual(KSP);
 extern int KSPSetInitialGuessNonzero(KSP);
