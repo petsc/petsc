@@ -6,6 +6,7 @@
 
 #define PARCH_sun4 
 
+#define HAVE_STDLIB_H
 #define HAVE_STROPTS_H 
 #define HAVE_SEARCH_H 
 #define HAVE_PWD_H 
