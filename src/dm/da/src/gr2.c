@@ -18,7 +18,7 @@ EXTERN_C_END
         The data that is passed into the graphics callback
 */
 typedef struct {
-  PetscInt          m,n,step,k;
+  PetscInt     m,n,step,k;
   PetscReal    min,max,scale;
   PetscScalar  *xy,*v;
   PetscTruth   showgrid;
@@ -33,11 +33,11 @@ typedef struct {
 #define __FUNCT__ "VecView_MPI_Draw_DA2d_Zoom"
 PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
-  ZoomCtx     *zctx = (ZoomCtx*)ctx;
+  ZoomCtx        *zctx = (ZoomCtx*)ctx;
   PetscErrorCode ierr;
-  PetscInt m,n,i,j,k,step,id,c1,c2,c3,c4;
-  PetscReal   s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
-  PetscScalar *v,*xy;
+  PetscInt       m,n,i,j,k,step,id,c1,c2,c3,c4;
+  PetscReal      s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
+  PetscScalar   *v,*xy;
 
   PetscFunctionBegin; 
   m    = zctx->m;
@@ -262,9 +262,9 @@ EXTERN PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, PetscInt d,
 PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscInt dims[2];
-  DA  da;
-  Vec natural;
+  PetscInt       dims[2];
+  DA             da;
+  Vec            natural;
 
   PetscFunctionBegin;
 
@@ -289,10 +289,10 @@ PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscInt ncid,xstart,xdim_num=1;
-  PetscInt            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
-  PetscInt            xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
-  PetscInt            *lx,*ly,*lz;
+  PetscInt       ncid,xstart,xdim_num=1;
+  PetscInt       i,j,len,dim,m,n,p,dof,swidth,M,N,P;
+  PetscInt       xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
+  PetscInt       *lx,*ly,*lz;
   PetscScalar    *xarray;
   DA             da,dac;
   Vec            natural,xyz;

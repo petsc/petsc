@@ -342,10 +342,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
       PetscMPIInt dummy;
       MPI_Status  status;
       for (i=0; i<size; i++) {
-        ierr = MPI_Send(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD);CHKERRQ(ierr);
+        if (rank != i) {
+          ierr = MPI_Send(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD);CHKERRQ(ierr);
+        }
       }
       for (i=0; i<size; i++) {
-        ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
+        if (rank != i) {
+          ierr = MPI_Recv(&dummy,1,MPI_INT,i,109,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
+        }
       }
     }
     /* check if this processor node should be in debugger */
