@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.64 1998/05/14 15:19:11 balay Exp balay $ */
+/* $Id: mpi.h,v 1.65 1998/05/14 19:24:25 balay Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -501,6 +501,7 @@ extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 #define MPI_Error_string(errorcode, string, result_len) MPI_SUCCESS
 #define MPI_Error_class(errorcode, errorclass) MPI_SUCCESS
 #define MPI_Wtick() 1.0
+#define MPI_Wtime() 0.0
 #define MPI_Init(argc, argv) MPI_SUCCESS
 extern int MPI_Finalize(void);
 #define MPI_Pcontrol(level) MPI_SUCCESS

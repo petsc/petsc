@@ -1,5 +1,5 @@
 !
-!     static char vcid[] = "$Id: mpif.h,v 1.7 1996/04/03 16:47:58 balay Exp balay $";
+!     static char vcid[] = "$Id: mpif.h,v 1.8 1998/03/25 17:29:22 balay Exp balay $";
 !
 
 !     Trying to provide as little support for fortran code in petsc as needed
@@ -39,5 +39,3 @@
        parameter (MPI_CHARACTER=4)
 
 
-!     External types 
-       external MPI_WTIME, MPI_WTICK

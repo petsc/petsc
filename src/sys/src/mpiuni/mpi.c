@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.45 1998/04/01 00:21:03 balay Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.46 1998/05/14 15:19:14 balay Exp balay $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -11,17 +11,9 @@ static char vcid[] = "$Id: mpi.c,v 1.45 1998/04/01 00:21:03 balay Exp balay $";
 #endif
 #include "pinclude/petscfix.h" 
 #define MPI_SUCCESS 0
-void    *MPIUNI_TMP   = 0;
+void    *MPIUNI_TMP        = 0;
 int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
                                2*sizeof(double),sizeof(char)};
-
-PLogDouble MPI_Wtime(void)
-{
-  PLogDouble d;
-  PetscGetTime(&d);
-  return d;
-}
-
 /*
        With MPI Uni there is only one communicator, which is called 1.
 */
@@ -36,6 +28,18 @@ typedef struct {
 
 static MPI_Attr attr[MAX_ATTR];
 static int      num_attr = 1,mpi_tag_ub = 100000000;
+
+/* 
+   To avoid any reference to libpetscsys.a memcpy is duplicated here 
+*/
+static int MPIUNI_Memcpy(void *a,void* b,int n) {
+  int  i;
+  char *aa= (char*)a;
+  char *bb= (char*)b;
+
+  for ( i=0; i<n; i++ ) aa[i] = bb[i];
+  return 0;
+}
 
 /*
    Used to set the built-in MPI_TAG_UB attribute
@@ -115,7 +119,6 @@ int MPI_Comm_free(MPI_Comm *comm)
 
 int MPI_Abort(MPI_Comm comm,int errorcode) 
 {
-  PetscError(__LINE__,"mpi_abort",__FILE__,__SDIR__,errorcode,0,"[0] Aborting program!");
   exit(errorcode); 
   return MPI_SUCCESS;
 }
@@ -215,85 +218,27 @@ void MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
   *ierr=MPI_SUCCESS;
 }
 
-/******mpi_wtick*******/
-PLogDouble mpi_wtick(void) 
-{
-  (*PetscErrorPrintf)("MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
-}
-
-PLogDouble mpi_wtick_(void) 
-{
-  (*PetscErrorPrintf)("MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
-}
-
-PLogDouble mpi_wtick__(void) 
-{
-  (*PetscErrorPrintf)("MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
-}
-
-PLogDouble MPI_WTICK(void) 
-{
-  (*PetscErrorPrintf)("MPI_Wtime: use PetscGetTime instead.\n");
-  return 0.0;
-}
-
-/*******mpi_wtime******/
-PLogDouble mpi_wtime(void)
-{
-  PLogDouble d;
-  PetscGetTime(&d);
-  return d;
-}
-
-PLogDouble mpi_wtime_(void)
-{
-  PLogDouble d;
-  PetscGetTime(&d);
-  return d;
-}
-
-PLogDouble mpi_wtime__(void)
-{
-  PLogDouble d;
-  PetscGetTime(&d);
-  return d;
-}
-
-PLogDouble MPI_WTIME(void)
-{
-  PLogDouble d;
-  PetscGetTime(&d);
-  return d;
-}
-
 /*******mpi_abort******/
 void mpi_abort(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  PetscError(__LINE__,"mpi_abort",__FILE__,__SDIR__,*errorcode,0,"[0] Aborting program!");
   exit(*errorcode); 
   *ierr = MPI_SUCCESS;
 }
 
 void mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  PetscError(__LINE__,"mpi_abort",__FILE__,__SDIR__,*errorcode,0,"[0] Aborting program!");
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
 void mpi_abort__(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  PetscError(__LINE__,"mpi_abort",__FILE__,__SDIR__,*errorcode,0,"[0] Aborting program!");
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
 void MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  PetscError(__LINE__,"mpi_abort",__FILE__,__SDIR__,*errorcode,0,"[0] Aborting program!");
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
@@ -301,25 +246,25 @@ void MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr)
 void mpi_allreduce(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
-  PetscMemcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
+  MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 void mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
-  PetscMemcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
+  MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 void mpi_allreduce__(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
-  PetscMemcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
+  MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 void MPI_ALLREDUCE(void *sendbuf,void *recvbuf,int *count,int *datatype,
                    int *op,int *comm,int *ierr) 
 {
-  PetscMemcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
+  MPIUNI_Memcpy( recvbuf, sendbuf, (*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 
