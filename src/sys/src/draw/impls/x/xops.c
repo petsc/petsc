@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.88 1997/08/06 22:14:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.89 1997/08/07 14:41:05 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -363,7 +363,8 @@ static int DrawSetTitle_X(Draw draw,char *title)
 static int DrawResizeWindow_X(Draw draw,int w,int h)
 {
   Draw_X       *win = (Draw_X *) draw->data;
-  unsigned int ww, hh, border, depth,x,y;
+  unsigned int ww, hh, border, depth;
+  int          x,y;
   int          ierr;
   Window       root;
 
