@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.96 1998/03/16 18:51:28 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.97 1998/03/20 22:48:47 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -36,6 +36,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
   
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  PLogObjectParent(*B,isicol);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
   /* get new row pointers */
@@ -607,6 +608,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
  
   PetscFunctionBegin;
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  PLogObjectParent(*fact,isicol);
 
   /* special case that simply copies fill pattern */
   ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);

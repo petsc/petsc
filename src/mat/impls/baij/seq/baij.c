@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.127 1998/03/13 19:06:03 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.128 1998/03/26 22:11:13 balay Exp balay $";
 #endif
 
 /*
@@ -1089,6 +1089,7 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
 
   /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
   ierr = ISInvertPermutation(col,&(a->icol)); CHKERRQ(ierr);
+  PLogObjectParent(inA,a->icol);
 
   if (!a->solve_work) {
     a->solve_work = (Scalar *) PetscMalloc((a->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.5 1998/03/20 22:49:31 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact2.c,v 1.6 1998/03/26 22:11:26 balay Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -609,6 +609,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
 
   PetscFunctionBegin;
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  PLogObjectParent(*fact,isicol);
 
   /* special case that simply copies fill pattern */
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
