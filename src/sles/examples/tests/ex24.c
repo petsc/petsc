@@ -1,7 +1,7 @@
-/*$Id: ex24.c,v 1.3 2000/09/23 14:58:28 balay Exp bsmith $*/
+/*$Id: ex24.c,v 1.4 2000/09/24 18:25:07 bsmith Exp hzhang $*/
 
 static char help[] = 
-"Tests CG, MINRES and SYMMLQ on symmetric matrice with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
+"Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
 
 #include "petscsles.h"
 
@@ -46,7 +46,7 @@ int main(int argc,char **args)
   /* ierr = MatShift(&alpha, C);CHKERRA(ierr); */
   /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
 
-  /* PART 3: Setup and solve for system */
+  /* Setup and solve for system */
     
   /* Create vectors.  */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&x);CHKERRA(ierr);
