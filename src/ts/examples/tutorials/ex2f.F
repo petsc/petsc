@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.5 1997/04/19 16:55:26 curfman Exp curfman $";
+C "$Id: ex2f.F,v 1.6 1997/04/19 18:12:21 curfman Exp curfman $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -92,6 +92,7 @@ C  MUST be declared as external.
 
       external Monitor, RHSFunction
       external InitialConditions, RHSJacobian, RHSJacobianFD
+      external RHSJacobianFD
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                 Beginning of program
@@ -164,7 +165,12 @@ C  Set the solution method to be backward Euler.
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call MatCreate(comm,M,M,A,ierr)
-      call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
+      if (flg .eq. 1) then
+         call SetCRoutineFromFortran(ts,A,A,ierr)
+      else
+         call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL,ierr)
+      endif
       call TSSetType(ts,TS_BEULER,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: util3.c,v 1.1 1997/06/09 01:43:06 curfman Exp $";
+static char vcid[] = "$Id: util2.c,v 1.1 1997/06/09 01:46:16 curfman Exp curfman $";
 #endif
 
 /*
@@ -10,8 +10,26 @@ static char vcid[] = "$Id: util3.c,v 1.1 1997/06/09 01:43:06 curfman Exp $";
 */
 #include "src/ts/tsimpl.h"
 #include "src/snes/snesimpl.h"
+#include "src/fortran/custom/zpetsc.h"
 
-extern int RHSFunction(TS,double,Vec,Vec,void*);
+int RHSFunction(TS,double,Vec,Vec,void*);
+int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+
+/* -------------------------------------------------------------------*/
+
+/* Temporary interface routine; this will be eliminated soon! */
+#ifdef HAVE_FORTRAN_CAPS
+#define setcroutinefromfortran_ SETCROUTINEFROMFORTRAN
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define setcroutinefromfortran_ setcroutinefromfortran
+#endif
+
+void setcroutinefromfortran_(TS ts,Mat A,Mat B,int *__ierr )
+{
+    *__ierr = TSSetRHSJacobian((TS)PetscToPointer( *(int*)(ts) ),
+	                       (Mat)PetscToPointer( *(int*)(A) ),
+	                       (Mat)PetscToPointer( *(int*)(B) ),RHSJacobianFD,PETSC_NULL);
+}
 
 /* -------------------------------------------------------------------*/
 /*
@@ -81,7 +99,7 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
     else {
       wscale = 0.0;
     }
-    ierr = RHSFunction(ts,t,xx2,jj2,ctx); CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,t,xx2,jj2); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,jj1,jj2); CHKERRQ(ierr);
     /* Communicate scale to all processors */
 #if !defined(PETSC_COMPLEX)
