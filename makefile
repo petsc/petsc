@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.252 1998/12/04 23:22:05 bsmith Exp balay $ 
+# $Id: makefile,v 1.253 1999/01/20 00:08:11 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -6,7 +6,7 @@
 #
 ALL: all
 
-DIRS	 = src include docs 
+DIRS	   = src include docs 
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -189,6 +189,10 @@ deletelibs: chkopts_basic
 # All remaining actions are intended for PETSc developers only.
 # PETSc users should not generally need to use these commands.
 #
+
+MAKEFILES  = makefile
+BMAKEFILES = bmake/common* bmake/*/base* bmake/*/petscconf.h
+DOCS       = bmake/readme bmake/petscconf.defs
 
 
 # To access the tags in EMACS, type M-x visit-tags-table and specify
