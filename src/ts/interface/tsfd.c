@@ -94,6 +94,7 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
   PetscReal   amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
   PetscReal   dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm    comm;
+  PetscTruth  assembled;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
@@ -101,7 +102,10 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
   ierr = VecDuplicate(xx1,&xx2);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xx1,&comm);CHKERRQ(ierr);
-  ierr = MatZeroEntries(*J);CHKERRQ(ierr);
+  ierr = MatAssembled(*J,&assembled);CHKERRQ(ierr);
+  if (assembled) {
+    ierr = MatZeroEntries(*J);CHKERRQ(ierr);
+  }
 
   ierr = VecGetSize(xx1,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end);CHKERRQ(ierr);

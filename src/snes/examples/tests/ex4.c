@@ -429,6 +429,7 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
   PetscScalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   PetscScalar  val,four = 4.0, three = 3.0,*x;
   PetscReal    hx, hy,hx2, hy2, hxhy2;
+  PetscTruth   assembled;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -439,8 +440,11 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
   hxhy2  = hx2*hy2;
   rey    = user->param;
 
-  MatZeroEntries(*J);
-  VecGetArray(X,&x); 
+  ierr = MatAssembled(*J,&assembled); CHKERRQ(ierr);
+  if (assembled) {
+    ierr = MatZeroEntries(*J);CHKERRQ(ierr);
+  }
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;

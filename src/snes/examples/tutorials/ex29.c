@@ -942,7 +942,7 @@ int AttachNullSpace(KSP ksp,Vec model)
   }
   ierr  = VecRestoreArray(v,&vx);CHKERRQ(ierr);
   vs[0] = v;
-  ierr  = MatNullSpaceCreate(PETSC_COMM_WORLD,0,1,vs,&sp);CHKERRQ(ierr);
+  ierr  = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,1,vs,&sp);CHKERRQ(ierr);
   ierr  = VecDestroy(v);CHKERRQ(ierr);
   ierr  = KSPSetNullSpace(ksp,sp);CHKERRQ(ierr);
   ierr  = MatNullSpaceDestroy(sp);CHKERRQ(ierr);

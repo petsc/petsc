@@ -388,9 +388,13 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   PetscScalar  v[6],hx,dhx,*x;
   PetscReal    r, u, psi_0=0.0, psi_a=1.0;
   int          imin, imax;
+  PetscTruth   assembled;
 
   PetscFunctionBegin;
-  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  ierr = MatAssembled(*B,&assembled); CHKERRQ(ierr);
+  if (assembled) {
+    ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+  }
 
   ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);
   ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,

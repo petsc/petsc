@@ -4,9 +4,9 @@
 # Run as buildtest ARCH where ARCH is one of the default PETSc archs
 # of a configure arch
 #
-# Example usage: ${PETSC_DIR}/maint/newbuildtest solaris
-#                ./maint/newbuildtest solaris
-#                ./maint/newbuildtest 
+# Example usage: ${PETSC_DIR}/maint/buildtest solaris
+#                ./maint/buildtest solaris
+#                ./maint/buildtest 
 #
 set day=`date | cut -f1 -d" "`
 #

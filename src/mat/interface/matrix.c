@@ -2525,7 +2525,9 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
   const PetscScalar *vwork;
 
   PetscFunctionBegin;
-  ierr = MatZeroEntries(B);CHKERRQ(ierr);
+  if (B->assembled) {
+    ierr = MatZeroEntries(B);CHKERRQ(ierr);
+  }
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);

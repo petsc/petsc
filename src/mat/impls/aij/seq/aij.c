@@ -1957,7 +1957,11 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   if (flg) {
     PetscLogInfo(coloring,"MatFDColoringApply_SeqAIJ: Not calling MatZeroEntries()\n");
   } else {
-    ierr = MatZeroEntries(J);CHKERRQ(ierr);
+    PetscTruth assembled;
+    ierr = MatAssembled(J,&assembled);CHKERRQ(ierr);
+    if (assembled) {
+      ierr = MatZeroEntries(J);CHKERRQ(ierr);
+    }
   }
 
   ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
