@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cholbs.c,v 1.47 1997/10/19 03:25:37 bsmith Exp balay $";
+static char vcid[] = "$Id: cholbs.c,v 1.48 1998/03/24 20:58:47 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -105,34 +105,33 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
+    ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y); CHKERRQ(ierr);
   } else {
     ierr = VecCopy(x,y); CHKERRQ(ierr);
   }
+
   ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
-
-  if (mbs->procinfo->single)
-    /* Use BlockSolve routine for no cliques/inodes */
-    BSfor_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);
-  else
-    BSfor_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);
-  CHKERRBS(0);
-
   if (mbs->procinfo->single) {
     /* Use BlockSolve routine for no cliques/inodes */
+    BSfor_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
     BSback_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   } else {
+    BSfor_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo); CHKERRBS(0);
     BSback_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   }
+  ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
     ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);  CHKERRQ(ierr);
+    ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
+    ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
-    ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
+    ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
 #if defined(USE_PETSC_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
@@ -159,22 +158,22 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecGetArray(x,&xa); CHKERRQ(ierr);
     ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
-    ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y); CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
     ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
+    ierr = VecPointwiseMult(mbs->diag,mbs->xwork,y); CHKERRQ(ierr);
   } else {
     ierr = VecCopy(x,y); CHKERRQ(ierr);
   }
-  ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
 
+  ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
   if (mbs->procinfo->single){
     /* Use BlockSolve routine for no cliques/inodes */
     BSfor_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   } else {
     BSfor_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   }
-  
   ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
+
 #if defined(USE_PETSC_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
@@ -198,23 +197,25 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 
   PetscFunctionBegin;  
   ierr = VecCopy(x,y); CHKERRQ(ierr);
-  ierr = VecGetArray(y,&ya);   CHKERRQ(ierr);
-  ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
 
+  ierr = VecGetArray(y,&ya); CHKERRQ(ierr);
   if (mbs->procinfo->single) {
     /* Use BlockSolve routine for no cliques/inodes */
     BSback_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   } else {
     BSback_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   }
+  ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
 
   /* Apply diagonal scaling and unpermute, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
     ierr = VecPointwiseMult(y,mbs->diag,mbs->xwork);  CHKERRQ(ierr);
+    ierr = VecGetArray(y,&ya);   CHKERRQ(ierr);
+    ierr = VecGetArray(mbs->xwork,&xworka); CHKERRQ(ierr);
     BSiperm_dvec(xworka,ya,mbs->pA->perm); CHKERRBS(0);
+    ierr = VecRestoreArray(y,&ya);   CHKERRQ(ierr);
+    ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(y,&ya);   CHKERRQ(ierr);
-  ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
 #if defined (USE_PETSC_LOG)
   PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
