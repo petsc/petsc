@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.34 1999/06/30 23:49:32 balay Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.35 1999/07/07 00:45:46 bsmith Exp bsmith $";
 #endif
 /*
       Utilites routines to add simple ASCII IO capability.
@@ -418,7 +418,9 @@ int PetscErrorPrintfDefault(const char format[],...)
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
-    it may be called by PetscStackView()
+    it may be called by PetscStackView().
+
+      This function does not do error checking because it is called by the error handlers.
   */
 
   if (!PetscErrorPrintfCalled) {
