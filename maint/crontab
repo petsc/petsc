@@ -9,7 +9,7 @@
 #
 40 0 * * * /home/bsmith/petsc/maint/buildremotetest
 15 1 * * * /home/bsmith/petsc/maint/buildtest bsmith
-15 1 * * * /home/bsmith/petsc/maint/buildtest curfman
+#15 1 * * * /home/bsmith/petsc/maint/buildtest curfman
 #15 1 * * * /home/bsmith/petsc/maint/buildtest petsc
 #15 1 * * * /home/bsmith/petsc/maint/buildtest balay
 #
