@@ -18,7 +18,6 @@ class Framework(base.Base):
     self.filesets        = {}
     self.configureHeader = None
     self.builder         = build.builder.Builder(None)
-    self.setupDependencies()
     self.createTmpDir()
     return
 
@@ -247,6 +246,7 @@ class Framework(base.Base):
           try:
             maker     = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
             maker.setupProject()
+            maker.setupDependencies()
             maker.setupSourceDB(maker.project)
             maker.setupBuild()
             (depGraph, depInput) = maker.getCompileGraph()
@@ -271,6 +271,7 @@ class Framework(base.Base):
       try:
         maker = self.getMakeModule(v.getRoot()).PetscMake(sys.argv[1:], self.argDB)
         maker.setupProject()
+        maker.setupDependencies()
         maker.setupSourceDB(maker.project)
         maker.setupBuild()
         depGraphs.append(maker.executeTarget('sidlCheckpoint'))
@@ -335,11 +336,8 @@ class Framework(base.Base):
     return self.project
 
   def t_default(self):
-    '''Configure, build, and install this project'''
-    self.executeTarget('activate')
-    self.executeTarget('configure')
-    self.executeTarget('compile')
-    return self.executeTarget('install')
+    '''Activate, configure, build, and install this project'''
+    return ['activate', 'configure', 'compile', 'install']
 
   def t_printTargets(self):
     '''Prints a list of all the targets available'''
@@ -429,10 +427,15 @@ class Framework(base.Base):
         target = target[:]
       if not isinstance(target, list): target = [target]
 
+      if 'default' in target:
+        idx = target.index('default')
+        target[idx:idx] = self.executeTarget('default')
+        target.remove('default')
       self.setupProject()
       if 'activate' in target:
         self.executeTarget('activate')
         target.remove('activate')
+      self.setupDependencies()
       self.setupSourceDB(self.project)
       if 'configure' in target:
         self.executeTarget('configure')
