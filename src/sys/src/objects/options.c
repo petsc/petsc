@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.34 1995/08/16 22:23:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.35 1995/08/18 15:36:11 bsmith Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -71,7 +71,7 @@ MPI_Datatype  MPIU_COMPLEX;
    If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
 
-   In FORTRAN this takes one integer argument!
+   In FORTRAN this routine takes one integer argument!
 
 .keywords: initialize, options, database, startup
 
@@ -90,9 +90,9 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
 #endif
-  ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   ierr = OptionsCreate_Private(argc,args,file,env); CHKERRQ(ierr);
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
+  ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   return 0;
 }
 
@@ -165,6 +165,7 @@ int PetscFinalize()
   }
   if (OptionsHasName(0,"-trdump")) {
     OptionsDestroy_Private();
+    ViewerDestroy_Private();
     NRDestroyAll();
     MPIU_Seq_begin(MPI_COMM_WORLD,1);
       ierr = TrDump(stderr); CHKERRQ(ierr);
@@ -172,6 +173,7 @@ int PetscFinalize()
   }
   else {
     OptionsDestroy_Private();
+    ViewerDestroy_Private();
     NRDestroyAll(); 
   }
   if (PetscBeganMPI) {
