@@ -2251,7 +2251,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A,Vec bb,Vec xx)
 #if defined (PETSC_HAVE_SSE)
 
 #include PETSC_HAVE_SSE
-
+#include "src/vec/vecimpl.h" /* to allow VecGetArrayFast() */
 #undef __FUNCT__
 #define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion"
 int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
@@ -2271,8 +2271,8 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
   */
   PREFETCH_NTA(aa+16*ai[1]);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr); 
   {
     MatScalar     *v;
     int           jdx,idt,idx,nz,*vi,i,ai16;
@@ -2441,8 +2441,8 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A,Vec bb,Vec xx)
       idt -= 4;
     }
   }
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr); 
   PetscLogFlops(2*16*(a->nz) - 4*A->n);
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
