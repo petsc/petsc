@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2001/04/11 07:49:14 buschelm Exp $ 
+# $Id: makefile,v 1.3 2001/04/17 15:26:31 buschelm Exp buschelm $ 
 CXX       = cl
 CXX_FLAGS = -nologo -GX -GR -MD
 CXXFLAGS  =
@@ -10,11 +10,11 @@ RM        = cmd /C del
 
 SOURCES = compilerfe.cpp bccfe.cpp clfe.cpp \
           archiverfe.cpp libfe.cpp tlibfe.cpp \
-          create.cpp toolfe.cpp fe.cpp
+          createfe.cpp toolfe.cpp fe.cpp
 
 OBJECTS = compilerfe.obj bccfe.obj clfe.obj \
           archiverfe.obj libfe.obj tlibfe.obj \
-          create.obj toolfe.obj fe.obj
+          createfe.obj toolfe.obj fe.obj
 
 INCLUDEPATHS = -Iinclude
 
