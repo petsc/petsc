@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.130 1999/12/16 15:57:45 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.131 1999/12/16 23:06:22 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -111,10 +111,6 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   if (reorder) {ierr = ISIdentity(iscol,&reorder);CHKERRQ(ierr);}
   reorder = PetscNot(reorder);
 
-  ierr = ISGetIndices(iscol,&c);           CHKERRQ(ierr);
-  ierr = ISGetIndices(isrow,&r);           CHKERRQ(ierr);
-  ierr = ISGetIndices(isicol,&ic);          CHKERRQ(ierr);
-  ierr = ISGetIndices(isirow,&ir);          CHKERRQ(ierr);
   
   /* storage for ilu factor */
   new_i = (int *)    PetscMalloc((n+1)*sizeof(int));   CHKPTRQ(new_i);
@@ -144,16 +140,22 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   }; 
   
 
-  for(i=0;i<n;i++) {
-    r[i]  = r[i]+1;
-    c[i]  = c[i]+1;
-    ir[i] = ir[i]+1;
-    ic[i] = ic[i]+1;
-  }
 
   if (reorder) {
     job = 3;
+    ierr = ISGetIndices(iscol,&c);           CHKERRQ(ierr);
+    ierr = ISGetIndices(isrow,&r);           CHKERRQ(ierr);
+    for(i=0;i<n;i++) {
+      r[i]  = r[i]+1;
+      c[i]  = c[i]+1;
+    }
     dperm_(&n,old_a,old_j,old_i,old_a2,old_j2,old_i2,r,c,&job);
+    for (i=0;i<n;i++) {
+      r[i]  = r[i]-1;
+      c[i]  = c[i]-1;
+    }
+    ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
     o_a = old_a2;
     o_j = old_j2;
     o_i = old_i2;
@@ -240,27 +242,19 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     }
   }
 
-  for (i=0;i<n;i++) {
-    r[i]  = r[i]-1;
-    c[i]  = c[i]-1;
-    ir[i] = ir[i]-1;
-    ic[i] = ic[i]-1;
-  }
 
   /*-- due to the pivoting, we need to reorder iscol to correctly --*/
   /*-- permute the right-hand-side and solution vectors           --*/
+  ierr = ISGetIndices(isicol,&ic);          CHKERRQ(ierr);
+  ierr = ISGetIndices(isirow,&ir);          CHKERRQ(ierr);
   for(i=0; i<n; i++) {
     ordcol[i] = ic[iperm[i]-1];  
     ordrow[i] = ir[i]; 
   };       
-  
-  ierr = PetscFree(iperm);CHKERRQ(ierr);
-
-  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isirow,&ir); CHKERRQ(ierr);
+  
+  ierr = PetscFree(iperm);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, n, ordcol, &iscolf); 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ordrow,&isrowf);
