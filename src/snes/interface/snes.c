@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.171 1999/02/16 22:57:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.172 1999/02/27 04:48:56 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1754,7 +1754,7 @@ int SNESSetConvergenceHistory(SNES snes, double *a, int *its,int na,PetscTruth r
 
 #undef __FUNC__  
 #define __FUNC__ "SNESGetConvergenceHistory"
-/*@
+/*@C
    SNESGetConvergenceHistory - Gets the array used to hold the convergence history.
 
    Collective on SNES

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.5 1999/02/25 22:55:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.6 1999/02/27 16:17:37 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -16,7 +16,6 @@ int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double 
   Vec            xcoor;
   DAPeriodicType periodic;
   Scalar         *coors;
-  DA             coorda;
 
   PetscFunctionBegin;
   if (xmax <= xmin) SETERRQ2(1,1,"Xmax must be larger than xmin %d %d",xmin,xmax);

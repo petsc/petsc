@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.8 1999/02/25 22:56:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.9 1999/02/25 23:37:07 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -15,12 +15,11 @@ EXTERN_C_BEGIN
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 {
   DA             da,dac,dag;
-  int            i,rank,size,ierr,igstart,N,step,s,M;
+  int            i,rank,ierr,igstart,N,step,s,M;
   int            istart,isize,j,jgstart;
   int            c1, c2, c3, c4, k,id,n,m,*lx,*ly;
   double         coors[4],ymin,ymax,min,max,xmin,xmax;
   double         x1, x2, x3, x4, y_1, y2, y3, y4,scale;
-  double         minw,maxw;
   Scalar         *v,*xy;
   Draw           draw,popup;
   PetscTruth     isnull;
@@ -56,7 +55,15 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     }
     /* create local vector for holding ghosted values used in graphics */
     ierr = DACreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
-    if (dac != da) {ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);}
+    if (dac != da) {
+      /* don't keep any public reference of this DA, is is only available through xlocal */
+      ierr = DADestroy(dac);CHKERRQ(ierr);
+    } else {
+      /* remove association btween xlocal and da, because below we compose in the opposite
+         direction and if we left this connect we'd get a loop, so the objects could 
+         never be destroyed */
+      ierr = PetscObjectCompose((PetscObject)xlocal,"DA",0); CHKERRQ(ierr);
+    }
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
@@ -100,7 +107,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     PLogInfo(dag,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics coordinates ghost points\n");
     ierr = DACreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)dag);CHKERRQ(ierr);
+    ierr = DADestroy(dag);CHKERRQ(ierr);/* dereference dag */
     ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectQuery((PetscObject)xcoorl,"DA",(PetscObject*) &dag);CHKERRQ(ierr);
