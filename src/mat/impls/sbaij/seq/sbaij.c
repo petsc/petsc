@@ -54,9 +54,9 @@ static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,in
   int         n = a->mbs,i;
 
   PetscFunctionBegin;
+  *nn = n;
   if (!ia) PetscFunctionReturn(0);
 
-  *nn = n;
   if (oshift == 1) {
     /* temporarily add 1 to i and j indices */
     int s_nz = a->i[n]; 
