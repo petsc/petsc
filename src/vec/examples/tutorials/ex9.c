@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.6 1997/07/09 20:50:03 balay Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.7 1997/07/25 00:45:37 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
@@ -8,10 +8,12 @@ static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
    Concepts: Vectors^Assembling vectors; Ghost padding
    Routines: VecCreateGhost(); VecGetSize(); VecSet(); VecSetValues();
    Routines: VecView(); VecDestroy(); PetscSynchronizedPrintf();
+   Routines: VecGhostGetLocalRepresentation(); VecGhostUpdateEnd();
+   Routines: VecGhostRestoreLocalRepresentation(); VecGhostUpdateBegin();
    Routines: PetscSynchronizedFlush();
    Processors: n
 
-   Comment: Ghost padding is a good way to handle local calculations that
+   Comment: Ghost padding is one way to handle local calculations that
       involve values from other processors. VecCreateGhost() provides
       a way to create vectors with extra room at the end of the vector 
       array to contain the needed ghost values from other processors, 
@@ -29,11 +31,9 @@ T*/
 
 int main(int argc,char **argv)
 {
-  int        rank,nlocal = 6,nghost = 2,ito[2],ifrom[2],size,ierr,i,rstart,rend;
-  Scalar     value,*array;
-  Vec        lx,gx;
-  IS         isfrom,isto;
-  VecScatter scatter;
+  int        rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend,flag;
+  Scalar     value,*array,*tarray;
+  Vec        lx,gx,gxs;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank); 
@@ -61,27 +61,35 @@ int main(int argc,char **argv)
 
   */
 
-  /*
-     Create the vector with two slots for ghost points. Note that both 
-     the local vector (lx) and the global vector (gx) share the same 
-     array for storing vector values.
-  */
-  ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,nlocal+nghost,PETSC_DECIDE,&lx,&gx);
-
-  /*
-     Create a scatter context to move over the two ghost values
-  */
   if (rank == 0) {
     ifrom[0] = 11; ifrom[1] = 6; 
   } else {
     ifrom[0] = 0;  ifrom[1] = 5; 
   }
-  ito[0] = 6; ito[1] = 7;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,ifrom,&isfrom);CHKERRA(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,ito,&isto);CHKERRA(ierr);
-  ierr = VecScatterCreate(gx,isfrom,lx,isto,&scatter);CHKERRA(ierr);
-  ierr = ISDestroy(isfrom); CHKERRA(ierr);
-  ierr = ISDestroy(isto); CHKERRA(ierr);
+
+  /*
+     Create the vector with two slots for ghost points. Note that both 
+     the local vector (lx) and the global vector (gx) share the same 
+     array for storing vector values.
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-allocate",&flag); CHKERRA(ierr);
+  if (flag) {
+    tarray = (Scalar *) PetscMalloc( (nlocal+nghost)*sizeof(Scalar));CHKPTRA(tarray);
+    ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRA(ierr);
+  } else {
+    ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRA(ierr);
+  }
+
+  /*
+      Test VecDuplicate()
+  */
+  ierr = VecDuplicate(gxs,&gx); CHKERRA(ierr);
+  ierr = VecDestroy(gxs); CHKERRA(ierr);
+
+  /*
+     Access the local representation
+  */
+  ierr = VecGhostGetLocalRepresentation(gx,&lx); CHKERRA(ierr);
 
   /*
      Set the values from 0 to 12 into the "global" vector 
@@ -94,11 +102,9 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(gx); CHKERRA(ierr);
   ierr = VecAssemblyEnd(gx); CHKERRA(ierr);
 
-  ierr = VecScatterBegin(gx,lx,INSERT_VALUES,SCATTER_FORWARD,scatter); CHKERRA(ierr);
-  ierr = VecScatterEnd(gx,lx,INSERT_VALUES,SCATTER_FORWARD,scatter); CHKERRA(ierr);
+  ierr = VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD); CHKERRA(ierr);
+  ierr = VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD); CHKERRA(ierr);
 
-
-  ierr = VecScatterDestroy(scatter); CHKERRA(ierr);
   /*
      Print out each vector, including the ghost padding region. 
   */
@@ -109,8 +115,9 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(lx,&array);CHKERRA(ierr);
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
 
+  ierr = VecGhostRestoreLocalRepresentation(gx,&lx);CHKERRA(ierr); 
   ierr = VecDestroy(gx);CHKERRA(ierr);
-  ierr = VecDestroy(lx);CHKERRA(ierr);
+  if (flag) {PetscFree(tarray); }
   PetscFinalize();
   return 0;
 }

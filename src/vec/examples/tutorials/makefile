@@ -15,7 +15,7 @@ LOCDIR          = src/vec/examples/tutorials/
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
 		  runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                   ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
-                  ex9.PETSc runex9 ex9.rm clean 
+                  ex9.PETSc runex9 runex9_2 ex9.rm clean 
 TESTEXAMPLES_2  = ex3.PETSc runex3 ex3.rm clean
 TESTEXAMPLES_3  = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm \
 		  ex4f.PETSc runex4f ex4f.rm ex3f.PETSc runex3f ex3f.rm \
@@ -173,13 +173,16 @@ runex8:
 	   if (diff output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi;\
 	   $(RM) -f ex8_1.tmp
-
 runex9:
 	-@$(MPIRUN) -np 2 ex9 > ex9_1.tmp 2>&1;\
 	   if (diff output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi;\
 	   $(RM) -f ex9_1.tmp
-
+runex9_2:
+	-@$(MPIRUN) -np 2 ex9 -allocate > ex9_2.tmp 2>&1;\
+	   if (diff output/ex9_1.out ex9_2.tmp) then true; \
+	   else echo "Possible problem with ex9_2, diffs above"; fi;\
+	   $(RM) -f ex9_2.tmp
 
 
 
