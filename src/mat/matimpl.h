@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.53 1996/01/31 03:04:05 bsmith Exp balay $ */
+/* $Id: matimpl.h,v 1.54 1996/02/14 15:46:02 balay Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -64,6 +64,7 @@ struct _MatOps {
             (*copy)(Mat,Mat),
             (*printhelp)(Mat),
             (*scale)(Scalar *,Mat),
+            (*diagonalshift)(Vec,Mat),
             (*shift)(Scalar *,Mat);
 };
 

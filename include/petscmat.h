@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.92 1996/02/14 15:31:43 balay Exp curfman $ */
+/* $Id: mat.h,v 1.93 1996/02/22 16:33:58 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -71,8 +71,9 @@ typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
 extern int MatGetInfo(Mat,MatInfoType,int*,int*,int*);
 extern int MatValidMatrix(Mat,int*);
 extern int MatGetDiagonal(Mat,Vec);
-extern int MatTranspose(Mat,Mat*);
-extern int MatDiagonalScale(Mat,Vec,Vec);
+extern int MatTranspose(Mat,Mat*)
+extern int MatDiagonalScale(Mat,Vec,Vec)
+extern int MatDiagonalShift(Mat,Vec);
 extern int MatEqual(Mat,Mat, int*);
 
 extern int MatNorm(Mat,NormType,double *);
