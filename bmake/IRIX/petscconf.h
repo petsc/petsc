@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.3 1998/04/09 21:14:55 balay Exp bsmith $ */
+/* $Id: petscconf.h,v 1.4 1998/04/14 14:37:13 bsmith Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -23,7 +23,5 @@
 
 #define HAVE_MEMMOVE
 #define NEEDS_GETTIMEOFDAY_PROTO
-
-#define HAVE_MEMALIGN
 
 #endif
