@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.96 1995/10/11 17:54:54 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.97 1995/10/11 21:35:23 curfman Exp curfman $";
 #endif
 
 /*
@@ -128,6 +128,8 @@ $       data to the first processor to print.
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpenASCII() - output to a specified file
+$    ViewerFileOpenBinary() - output in binary to a
+$         specified file; corresponding input uses MatLoad()
 $    DrawOpenX() - output nonzero matrix structure to 
 $         an X window display
 $    ViewerMatlabOpen() - output matrix to Matlab viewer.
@@ -135,19 +137,20 @@ $         Currently only the sequential dense and AIJ
 $         matrix types support the Matlab viewer.
 
    The user can call ViewerFileSetFormat() to specify the output
-   format.  Available formats include
+   format of ASCII printed objects (when using STDOUT_VIEWER_SELF,
+   STDOUT_VIEWER_WORLD and ViewerFileOpenASCII).  Available formats include
 $    FILE_FORMAT_DEFAULT - default, prints matrix contents
 $    FILE_FORMAT_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
 $    FILE_FORMAT_INFO - basic information about the matrix
 $      size and structure (not the matrix entries)
 
-.keywords: matrix, view, visualize
+.keywords: matrix, view, visualize, output, print, write, draw
 
 .seealso: ViewerFileSetFormat(), ViewerFileOpenASCII(), DrawOpenX(), 
-          ViewerMatlabOpen()
+          ViewerMatlabOpen(), MatLoad()
 @*/
-int MatView(Mat mat,Viewer ptr)
+intint MatView(Mat mat,Viewer ptr)
 {
   int format, ierr, rows, cols,nz, nzalloc, mem;
   FILE *fd;

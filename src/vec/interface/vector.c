@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.50 1995/09/30 19:26:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.51 1995/10/01 21:51:16 bsmith Exp curfman $";
 #endif
 
 #include "vecimpl.h"    /*I "vec.h" I*/
@@ -737,13 +737,16 @@ $       data to the first processor to print.
 
    The user can open alternative vistualization contexts with
 $    ViewerFileOpenASCII() - output vector to a specified file
+$    ViewerFileOpenBinary() - output in binary to a
+$         specified file; corresponding input uses VecLoad()
 $    DrawOpenX() - output vector to an X window display
 $    DrawLGCreate() - output vector as a line graph to an X window display
 $    ViewerMatlabOpen() - output vector to Matlab viewer
 
-.keywords: Vec, view, visualize
+.keywords: Vec, view, visualize, output, print, write, draw
 
-.seealso: ViewerFileOpenASCII(), DrawOpenX(), DrawLGCreate(), ViewerMatlabOpen()
+.seealso: ViewerFileOpenASCII(), DrawOpenX(), DrawLGCreate(),
+          ViewerMatlabOpen(), VecLoad()
 @*/
 int VecView(Vec v,Viewer ptr)
 {
