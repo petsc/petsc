@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.86 1996/08/21 17:34:45 gropp Exp gropp $ */
+/* $Id: plog.h,v 1.87 1996/08/29 00:17:33 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -49,7 +49,7 @@
 #define MAT_Load                                28
 #define MAT_View                                29
 #define MAT_ILUFactor                           30
-
+#define MAT_GetColoring                         31
 #define MAT_GetSubMatrices                      32
 #define MAT_GetValues                           33
 #define MAT_IncreaseOverlap                     34
@@ -145,8 +145,8 @@ extern int PLogEventMPEDeactivate(int);
 extern int PLogEventActivate(int);
 extern int PLogEventDeactivate(int);
 
-extern int PLogEventActivateClass();
-extern int PLogEventDeactivateClass();
+extern int PLogEventActivateClass(int);
+extern int PLogEventDeactivateClass(int);
 
 extern int PLogEventFlags[];
 extern int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
