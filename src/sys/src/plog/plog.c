@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.61 1996/01/15 15:50:25 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.62 1996/01/15 23:48:01 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -952,7 +952,7 @@ double PetscGetTime()
 }
   
 
-/*@
+/*@C
    PetscGetFlops - Returns the number of flops used on this processor 
    since the program began. 
 
