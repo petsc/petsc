@@ -26,8 +26,8 @@ runex1:
 	${MPIRUN} ex1 -f0 ${DATAFILESPATH}/matrices/medium
 
 #-------------------------------------------------------------
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc ex4.rm
-TESTEXAMPLES_2  = ex2.PETSc ex2.rm
+TESTEXAMPLES_1  = ex4.PETSc ex4.rm
+TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc ex2.rm
 TESTEXAMPLES_3  = 
 TESTEXAMPLES_4  =
 TESTEXAMPLES_6  = 
