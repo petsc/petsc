@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.47 1999/03/24 19:10:16 balay Exp balay $ 
+# $Id: base.site,v 1.48 1999/04/24 00:21:33 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -109,4 +109,4 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}  ${AMS_LIB}
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}:
+DYLIBPATH     = /home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH}:
