@@ -3262,13 +3262,14 @@ int MatCompress(Mat mat)
    ignored.  Thus, if memory has not alredy been allocated for this particular 
    data, then the insertion is ignored. For dense matrices, in which
    the entire array is allocated, no entries are ever ignored. 
+   Set after the first MatAssemblyEnd()
 
    MAT_NEW_NONZERO_LOCATION_ERR indicates that any add or insertion 
    that would generate a new entry in the nonzero structure instead produces 
    an error. (Currently supported for AIJ and BAIJ formats only.)
    This is a useful flag when using SAME_NONZERO_PATTERN in calling
    SLESSetOperators() to ensure that the nonzero pattern truely does 
-   remain unchanged.
+   remain unchanged. Set after the first MatAssemblyEnd()
 
    MAT_NEW_NONZERO_ALLOCATION_ERR indicates that any add or insertion 
    that would generate a new entry that has not been preallocated will 
