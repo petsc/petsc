@@ -24,9 +24,9 @@ void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,MatScalar *v,
 {
   Mat         A = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-  int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,m = *mm,n = *nn;
+  int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,N,m = *mm,n = *nn;
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
-  int         *aj=a->j,nonew=a->nonew,stepval,ierr;
+  int         *aj=a->j,stepval;
   MatScalar   *value = v,*ap,*aa = a->a,*bap;
 
   PetscFunctionBegin;
@@ -35,7 +35,6 @@ void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,MatScalar *v,
     row  = im[k]; 
     rp   = aj + ai[row]; 
     ap   = aa + 16*ai[row];
-    rmax = imax[row]; 
     nrow = ailen[row]; 
     low  = 0;
     for (l=0; l<n; l++) { /* loop over added columns */
@@ -63,10 +62,10 @@ void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,MatScalar *v,
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
         rp[ii+1] = rp[ii];
-        ierr = PetscMemcpy(ap+16*(ii+1),ap+16*(ii),16*sizeof(MatScalar));
+        PetscMemcpy(ap+16*(ii+1),ap+16*(ii),16*sizeof(MatScalar));
       }
       if (N >= i) {
-        ierr = PetscMemzero(ap+16*i,16*sizeof(MatScalar));
+        PetscMemzero(ap+16*i,16*sizeof(MatScalar));
       }
       rp[i] = col; 
       bap   = ap +  16*i;
@@ -90,11 +89,11 @@ void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,MatScalar *v,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues4_"
-int matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v,InsertMode *is,int *err)
+void matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v,InsertMode *is,int *err)
 {
   Mat         A = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-  int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted,n = *nn,m = *mm;
+  int         *rp,k,low,high,t,ii,row,nrow,i,col,l,N,n = *nn,m = *mm;
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
   int         *aj=a->j,brow,bcol;
   int         ridx,cidx,ierr;
@@ -105,7 +104,6 @@ int matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v,Insert
     row  = im[k]; brow = row/4;  
     rp   = aj + ai[brow]; 
     ap   = aa + 16*ai[brow];
-    rmax = imax[brow]; 
     nrow = ailen[brow]; 
     low  = 0;
     for (l=0; l<n; l++) { /* loop over added columns */
@@ -130,10 +128,10 @@ int matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v,Insert
       /* shift up all the later entries in this row */
       for (ii=N; ii>=i; ii--) {
         rp[ii+1] = rp[ii];
-        ierr     = PetscMemcpy(ap+16*(ii+1),ap+16*(ii),16*sizeof(MatScalar));CHKERRQ(ierr);
+        PetscMemcpy(ap+16*(ii+1),ap+16*(ii),16*sizeof(MatScalar));
       }
       if (N>=i) {
-        ierr = PetscMemzero(ap+16*i,16*sizeof(MatScalar));CHKERRQ(ierr);
+        PetscMemzero(ap+16*i,16*sizeof(MatScalar));
       }
       rp[i]                    = bcol; 
       ap[16*i + 4*cidx + ridx] = value; 

@@ -34,23 +34,3 @@ row 32: (25, 0.00333333)  (26, -0.01)  (27, 0.00333333)  (31, -0.005)  (32, 0.01
 row 33: (26, 0.00333333)  (27, -0.01)  (28, 0.00333333)  (32, -0.005)  (33, 0.0133333)  (34, -0.005) 
 row 34: (27, 0.00333333)  (28, -0.01)  (29, 0.00333333)  (33, -0.005)  (34, 0.0133333)  (35, -0.005) 
 row 35: (28, 0.00333333)  (29, -0.005)  (34, -0.005)  (35, 0.00666667) 
-  0 KSP Residual norm 2.60288 
-  1 KSP Residual norm 0.843222 
-  2 KSP Residual norm 0.340092 
-  3 KSP Residual norm 0.235524 
-  4 KSP Residual norm 0.118368 
-  5 KSP Residual norm 0.0821253 
-  6 KSP Residual norm 0.0500761 
-  7 KSP Residual norm 0.0339952 
-  8 KSP Residual norm 0.0248065 
-  9 KSP Residual norm 0.0150748 
- 10 KSP Residual norm 0.0113207 
- 11 KSP Residual norm 0.00882835 
- 12 KSP Residual norm 0.00730865 
- 13 KSP Residual norm 0.00623434 
- 14 KSP Residual norm 0.00250349 
- 15 KSP Residual norm 0.00173078 
- 16 KSP Residual norm 0.000954938 
- 17 KSP Residual norm 0.000283478 
- 18 KSP Residual norm 4.62489e-05 
- 19 KSP Residual norm < 1.e-11

@@ -27,14 +27,13 @@ int main(int argc,char **args)
   int          i,m = 5,rank,size,N,start,end,M,its;
   int          ierr,idx[4];
   PetscTruth   flg;
-  PetscScalar  zero = 0.0,Ke[16];
+  PetscScalar  zero = 0.0,Ke[16], one = 1.0;
   PetscReal    h;
   Vec          u,b;
   SLES         sles;
   KSP          ksp;
   MatNullSpace nullsp;
   PC           pc;
-  PetscRandom  rand;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -70,9 +69,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_REAL,&rand);CHKERRQ(ierr);
-  ierr = VecSetRandom(rand,u);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = VecSet(&one,u);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecSet(&zero,u);CHKERRQ(ierr);
 
