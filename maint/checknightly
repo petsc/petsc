@@ -8,8 +8,7 @@
 cd /home/bsmith/petsc/maint/nightlylogs
 set tmpfileid [ open tmpfile w ]
 set files [ glob examples_*]
-#set machines {snake eagle cyan elvis doc ptera maverick}
-set machines {snake cyan elvis ptera maverick tiamat}
+set machines {snake cyan elvis ptera maverick}
 foreach machine $machines {
     if { [ string first $machine $files ] < 0 } { #file dos'nt exist
         set mesg "No build on: $machine"
@@ -29,7 +28,7 @@ set day(Fri) Thu
 set day(Sat) Fri
 set today [exec date +%a ]
 
-set files {linux.log t3d.log}
+set files {solaris.log linux.log t3d.log}
 foreach file $files {
     if { [file exists $file ] == 0 } {
         set mesg "$file: File does not exist"

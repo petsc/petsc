@@ -83,9 +83,11 @@ ANL Solaris machine: tiamat
 UT account:
   use seaboard.pe.utexas.edu (also have brazos.pe.utexas.edu  and frankfort)
   login ID: bsmith
-   password: petsc-password
+  password: petsc-password
  
-brahma.ticam.utexas.edu id bsmith passwd:petsc-password 
+brahma.ticam.utexas.edu 
+  id: bsmith passwd:petsc-password 
+  id: sbalay passwd:petsc-password 
 ---------
 
 SGI Power Challenge (IRIX64): 
