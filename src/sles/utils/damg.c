@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.8 2000/07/13 15:37:38 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.9 2000/07/13 17:10:52 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -128,6 +128,7 @@ int DAMGSetCoarseDA(DAMG *damg,DA da)
   DAPeriodicType pt;
   DAStencilType  st;
   char           *name;
+  Vec            xyz,txyz;
 
   PetscFunctionBegin;
   if (!damg) SETERRQ(1,1,"Passing null as DAMG");
@@ -178,43 +179,6 @@ int DAMGSetCoarseDA(DAMG *damg,DA da)
     ierr = DAGetInterpolation(damg[i-1]->da,damg[i]->da,&damg[i]->R,PETSC_NULL);CHKERRA(ierr);
   }
 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="DAMGSetSLES"></a>*/"DAMGSetSLES"
-/*@C
-    DAMGSetSLES - Sets the linear solver object that will use the grid hierarchy
-
-    Collective on DAMG and SLES
-
-    Input Parameter:
-+   damg - the context
-.   sles - the linear solver object
--   func - function to compute linear system matrix on each grid level
-
-    Level: advanced
-
-.seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA()
-
-@*/
-int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
-{
-  int        ierr,i,j,nlevels = damg[0]->nlevels,flag,m,n,p,Nt,dim;
-  MPI_Comm   comm;
-  PC         pc;
-  Vec        xyz,txyz;
-  PetscTruth flg,ismg;
-
-  PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
-  PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  ierr = PetscObjectGetComm((PetscObject)sles,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
-  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
-    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the SLES");
-  }
-
   /* If coarsest grid has coordinate information then interpolate it for finer grids */
   ierr = DAGetCoordinates(damg[0]->da,&xyz);CHKERRQ(ierr);
   if (xyz) {
@@ -245,6 +209,41 @@ int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
         xyz  = txyz;
       }
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DAMGSetSLES"></a>*/"DAMGSetSLES"
+/*@C
+    DAMGSetSLES - Sets the linear solver object that will use the grid hierarchy
+
+    Collective on DAMG and SLES
+
+    Input Parameter:
++   damg - the context
+.   sles - the linear solver object
+-   func - function to compute linear system matrix on each grid level
+
+    Level: advanced
+
+.seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA()
+
+@*/
+int DAMGSetSLES(DAMG *damg,SLES sles,int (*func)(DAMG,Mat))
+{
+  int        ierr,i,j,nlevels = damg[0]->nlevels,flag,m,n,p,Nt,dim;
+  MPI_Comm   comm;
+  PC         pc;
+  PetscTruth flg,ismg;
+
+  PetscFunctionBegin;
+  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+  PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  ierr = PetscObjectGetComm((PetscObject)sles,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
+  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
+    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the SLES");
   }
 
   ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
