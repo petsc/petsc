@@ -100,13 +100,13 @@ void PETSC_STDCALL kspview_(KSP *ksp,PetscViewer *viewer, int *ierr)
 
 void kspdefaultconverged_(KSP *ksp,int *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
 {
-  if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
+  CHKFORTRANNULLOBJECT(dummy);
   *ierr = KSPDefaultConverged(*ksp,*n,*rnorm,flag,dummy);
 }
 
 void kspskipconverged_(KSP *ksp,int *n,PetscReal *rnorm,KSPConvergedReason *flag,void *dummy,int *ierr)
 {
-  if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
+  CHKFORTRANNULLOBJECT(dummy);
   *ierr = KSPSkipConverged(*ksp,*n,*rnorm,flag,dummy);
 }
 

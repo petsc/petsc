@@ -180,7 +180,7 @@ void PETSC_STDCALL darefine_(DA *da,MPI_Comm *comm,DA *daref, int *ierr)
 
 void PETSC_STDCALL dagetinterpolation_(DA *dac,DA *daf,Mat *A,Vec *scale,int *ierr)
 {
-  if (FORTRANNULLOBJECT(scale)) scale = PETSC_NULL;
+  CHKFORTRANNULLOBJECT(scale);
   *ierr = DAGetInterpolation(*dac,*daf,A,scale);
 }
 
@@ -272,9 +272,9 @@ void PETSC_STDCALL darestorelocalvector_(DA *da,Vec* l,int *ierr)
 
 void PETSC_STDCALL dagetscatter_(DA *da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,int *ierr)
 {
-  if (!FORTRANNULLINTEGER(ltog)) ltog = PETSC_NULL;
-  if (!FORTRANNULLINTEGER(gtol)) gtol = PETSC_NULL;
-  if (!FORTRANNULLINTEGER(ltol)) ltol = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(ltog);
+  CHKFORTRANNULLINTEGER(gtol);
+  CHKFORTRANNULLINTEGER(ltol);
   *ierr = DAGetScatter(*da,ltog,gtol,ltol);
 }
 
@@ -287,8 +287,8 @@ void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                   *stencil_type,int *M,int *N,int *m,int *n,int *w,
                   int *s,int *lx,int *ly,DA *inra,int *ierr)
 {
-  if (FORTRANNULLINTEGER(lx)) lx = PETSC_NULL;
-  if (FORTRANNULLINTEGER(ly)) ly = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(lx);
+  CHKFORTRANNULLINTEGER(ly);
   *ierr = DACreate2d((MPI_Comm)PetscToPointerComm(*comm),*wrap,
                        *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
@@ -296,7 +296,7 @@ void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
 void PETSC_STDCALL dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
                  int *lc,DA *inra,int *ierr)
 {
-  if (FORTRANNULLINTEGER(lc)) lc = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(lc);
   *ierr = DACreate1d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,inra);
 }
 
@@ -304,9 +304,9 @@ void PETSC_STDCALL dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                  *stencil_type,int *M,int *N,int *P,int *m,int *n,int *p,
                  int *w,int *s,int *lx,int *ly,int *lz,DA *inra,int *ierr)
 {
-  if (FORTRANNULLINTEGER(lx)) lx = PETSC_NULL;
-  if (FORTRANNULLINTEGER(ly)) ly = PETSC_NULL;
-  if (FORTRANNULLINTEGER(lz)) lz = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(lx);
+  CHKFORTRANNULLINTEGER(ly);
+  CHKFORTRANNULLINTEGER(lz);
   *ierr = DACreate3d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
                         *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,inra);
 }
@@ -314,17 +314,17 @@ void PETSC_STDCALL dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
 void PETSC_STDCALL dagetinfo_(DA *da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,
                 DAPeriodicType *wrap,DAStencilType *st,int *ierr)
 {
-  if (FORTRANNULLINTEGER(dim)) dim  = PETSC_NULL;
-  if (FORTRANNULLINTEGER(M))   M    = PETSC_NULL;
-  if (FORTRANNULLINTEGER(N))   N    = PETSC_NULL;
-  if (FORTRANNULLINTEGER(P))   P    = PETSC_NULL;
-  if (FORTRANNULLINTEGER(m))   m    = PETSC_NULL;
-  if (FORTRANNULLINTEGER(n))   n    = PETSC_NULL;
-  if (FORTRANNULLINTEGER(p))   p    = PETSC_NULL;
-  if (FORTRANNULLINTEGER(w))   w    = PETSC_NULL;
-  if (FORTRANNULLINTEGER(s))   s    = PETSC_NULL;
-  if (FORTRANNULLINTEGER(wrap))wrap = PETSC_NULL;
-  if (FORTRANNULLINTEGER(st))  st   = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(dim);
+  CHKFORTRANNULLINTEGER(M);
+  CHKFORTRANNULLINTEGER(N);
+  CHKFORTRANNULLINTEGER(P);
+  CHKFORTRANNULLINTEGER(m);
+  CHKFORTRANNULLINTEGER(n);
+  CHKFORTRANNULLINTEGER(p);
+  CHKFORTRANNULLINTEGER(w);
+  CHKFORTRANNULLINTEGER(s);
+  CHKFORTRANNULLINTEGER(wrap);
+  CHKFORTRANNULLINTEGER(st);
   *ierr = DAGetInfo(*da,dim,M,N,P,m,n,p,w,s,wrap,st);
 }
 

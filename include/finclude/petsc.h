@@ -121,6 +121,7 @@
       PetscChar(80)       PETSC_NULL_CHARACTER
       PetscFortranInt     PETSC_NULL_INTEGER
       PetscFortranDouble  PETSC_NULL_DOUBLE
+      PetscFortranInt     PETSC_NULL
 !
 !      A PETSC_NULL_FUNCTION pointer
 !
@@ -136,10 +137,11 @@
 !  
       common /petscfortran1/ PETSC_NULL_CHARACTER
       common /petscfortran2/ PETSC_NULL_INTEGER
-      common /petscfortran3/ PETSC_NULL_SCALAR
-      common /petscfortran4/ PETSC_NULL_DOUBLE
-      common /petscfortran5/ PETSC_NULL_REAL
-      common /petscfortran6/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+      common /petscfortran3/ PETSC_NULL
+      common /petscfortran4/ PETSC_NULL_SCALAR
+      common /petscfortran5/ PETSC_NULL_DOUBLE
+      common /petscfortran6/ PETSC_NULL_REAL
+      common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
 
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------

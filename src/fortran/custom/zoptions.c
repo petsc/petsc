@@ -199,6 +199,7 @@ EXTERN_C_END
 */
 char   *PETSC_NULL_CHARACTER_Fortran;
 void   *PETSC_NULL_INTEGER_Fortran;
+void   *PETSC_NULL_Fortran;
 void   *PETSC_NULL_SCALAR_Fortran;
 void   *PETSC_NULL_DOUBLE_Fortran;
 void   *PETSC_NULL_REAL_Fortran;

@@ -68,11 +68,12 @@ void PETSC_STDCALL petscinitializefortran_(int *ierr)
 
 #if defined(PETSC_USES_CPTOFCD)
 void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
-                                  void *fnull_scalar,void * fnull_double, void *fnull_real,
+                                  void* fnull,void *fnull_scalar,void * fnull_double, void *fnull_real,
                                   void (*fnull_function)(void))
 {
   PETSC_NULL_CHARACTER_Fortran  = _fcdtocp(fnull_character);
   PETSC_NULL_INTEGER_Fortran    = fnull_integer;
+  PETSC_NULL_Fortran            = fnull;
   PETSC_NULL_SCALAR_Fortran     = fnull_scalar;
   PETSC_NULL_DOUBLE_Fortran     = fnull_double;
   PETSC_NULL_REAL_Fortran       = fnull_real;

@@ -11,6 +11,7 @@ EXTERN long    PetscIntAddressToFortran(int*,int*);
 EXTERN int    *PetscIntAddressFromFortran(int*,long); 
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 extern void   *PETSC_NULL_INTEGER_Fortran;
+extern void   *PETSC_NULL_Fortran;
 extern void   *PETSC_NULL_SCALAR_Fortran;
 extern void   *PETSC_NULL_DOUBLE_Fortran;
 extern void   *PETSC_NULL_REAL_Fortran;
@@ -95,14 +96,41 @@ EXTERN_C_END
 
 #endif
 
-
-
+#define FORTRANNULL(a)         (((void*)a) == PETSC_NULL_Fortran)
 #define FORTRANNULLINTEGER(a)  (((void*)a) == PETSC_NULL_INTEGER_Fortran)
-#define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_INTEGER_Fortran)
 #define FORTRANNULLSCALAR(a)   (((void*)a) == PETSC_NULL_SCALAR_Fortran)
 #define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
 #define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
+
+#define FORTRANNULLOBJECT FORTRANNULLINTEGER
+
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))a) == PETSC_NULL_FUNCTION_Fortran)
+
+
+
+#define CHKFORTRANNULLINTEGER(a)  \
+if (FORTRANNULL(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a)) { \
+  (*PetscErrorPrintf)("PETSC ERROR: Illegal PETSC_NULL used. Use PETSC_NULL_INTEGER or PETSC_NULL_OBJECT"); *ierr = 1; return; } \
+else if (FORTRANNULLINTEGER(a)) { a = PETSC_NULL; }
+
+#define CHKFORTRANNULLSCALAR(a)  \
+  if (FORTRANNULL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a)) { \
+    (*PetscErrorPrintf)("PETSC ERROR: Illegal PETSC_NULL used. Use PETSC_NULL_INTEGER"); *ierr = 1; return; } \
+  else if (FORTRANNULLSCALAR(a)) { a = PETSC_NULL; }
+
+#define CHKFORTRANNULLDOUBLE(a)  \
+  if (FORTRANNULL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a)) { \
+    (*PetscErrorPrintf)("PETSC ERROR: Illegal PETSC_NULL used. Use PETSC_NULL_INTEGER"); *ierr = 1; return; } \
+  else if (FORTRANNULLDOUBLE(a)) { a = PETSC_NULL; }
+
+#define CHKFORTRANNULLREAL(a)  \
+  if (FORTRANNULL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a)) { \
+    (*PetscErrorPrintf)("PETSC ERROR: Illegal PETSC_NULL used. Use PETSC_NULL_INTEGER"); *ierr = 1; return; } \
+  else if (FORTRANNULLREAL(a)) { a = PETSC_NULL; }
+  
+#define CHKFORTRANNULLOBJECT CHKFORTRANNULLINTEGER
+
+
 /*
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.
