@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.46 1995/05/28 17:38:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.47 1995/05/29 00:02:24 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -276,7 +276,8 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
-  if (!l->assembled) SETERR(1,"MatZeroRows_MPIAIJ: must assemble matrix first");
+  if (!l->assembled) 
+    SETERR(1,"MatZeroRows_MPIAIJ: Must assemble matrix first");
   ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
   ierr = ISGetIndices(is,&rows); CHKERR(ierr);
 
@@ -292,7 +293,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERR(1,"Imdex out of range");
+    if (!found) SETERR(1,"Index out of range.");
   }
   nsends = 0;  for ( i=0; i<numtids; i++ ) { nsends += procs[i];} 
 
