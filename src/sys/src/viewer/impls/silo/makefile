@@ -1,4 +1,6 @@
 
+#requirespackage   'PETSC_HAVE_SILO'
+
 ALL: lib 
 
 CFLAGS    =

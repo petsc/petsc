@@ -275,34 +275,6 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im
   ierr = MatSetValuesBlocked_MPISBAIJ_MatScalar(mat,m,im,n,in,vsingle,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValues_MPISBAIJ_HT"
-PetscErrorCode MatSetValues_MPISBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
-{
-  Mat_MPIBAIJ    *b = (Mat_MPIBAIJ*)mat->data;
-  PetscErrorCode ierr;
-  PetscInt       i,N = m*n;
-  MatScalar      *vsingle;
-
-  PetscFunctionBegin;  
-  SETERRQ(PETSC_ERR_SUP,"Function not yet written for SBAIJ format");
-  /* PetscFunctionReturn(0); */
-} 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_HT"
-PetscErrorCode MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
-{
-  Mat_MPIBAIJ    *b = (Mat_MPIBAIJ*)mat->data;
-  PetscErrorCode ierr;
-  PetscInt       i,N = m*n*b->bs2;
-  MatScalar      *vsingle;
-
-  PetscFunctionBegin;  
-  SETERRQ(PETSC_ERR_SUP,"Function not yet written for SBAIJ format"); 
-  /* PetscFunctionReturn(0); */
-} 
 #endif
 
 /* Only add/insert a(i,j) with i<=j (blocks). 
@@ -521,28 +493,6 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const P
   PetscFunctionReturn(0); 
 }
 
-#define HASH_KEY 0.6180339887
-#define HASH(size,key,tmp) (tmp = (key)*HASH_KEY,(PetscInt)((size)*(tmp-(PetscInt)tmp)))
-/* #define HASH(size,key) ((PetscInt)((size)*fmod(((key)*HASH_KEY),1))) */
-/* #define HASH(size,key,tmp) ((PetscInt)((size)*fmod(((key)*HASH_KEY),1))) */
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValues_MPISBAIJ_HT_MatScalar"
-PetscErrorCode MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const MatScalar v[],InsertMode addv)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Function not yet written for SBAIJ format"); 
-  /* PetscFunctionReturn(0); */
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_HT_MatScalar"
-PetscErrorCode MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const MatScalar v[],InsertMode addv)
-{ 
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Function not yet written for SBAIJ format"); 
-  /* PetscFunctionReturn(0); */
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPISBAIJ"
 PetscErrorCode MatGetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
@@ -614,22 +564,6 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
     }
   }
   PetscFunctionReturn(0);
-}
-
-/*
-  Creates the hash table, and sets the table 
-  This table is created only once. 
-  If new entried need to be added to the matrix
-  then the hash table has to be destroyed and
-  recreated.
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateHashTable_MPISBAIJ_Private"
-PetscErrorCode MatCreateHashTable_MPISBAIJ_Private(Mat mat,PetscReal factor)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Function not yet written for SBAIJ format");
-  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNCT__  
@@ -745,19 +679,6 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   
-#if defined(PETSC_USE_BOPT_g)
-  if (baij->ht && mode== MAT_FINAL_ASSEMBLY) {
-    PetscLogInfo(0,"MatAssemblyEnd_MPISBAIJ:Average Hash Table Search in MatSetValues = %5.2f\n",((PetscReal)baij->ht_total_ct)/baij->ht_insert_ct);
-    baij->ht_total_ct  = 0;
-    baij->ht_insert_ct = 0;
-  }
-#endif
-  if (baij->ht_flag && !baij->ht && mode == MAT_FINAL_ASSEMBLY) {
-    ierr = MatCreateHashTable_MPISBAIJ_Private(mat,baij->ht_fact);CHKERRQ(ierr);
-    mat->ops->setvalues        = MatSetValues_MPISBAIJ_HT;
-    mat->ops->setvaluesblocked = MatSetValuesBlocked_MPISBAIJ_HT;
-  }
-
   if (baij->rowvalues) {
     ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);
     baij->rowvalues = 0;
@@ -1399,14 +1320,6 @@ PetscErrorCode MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatZeroRows_MPISBAIJ"
-PetscErrorCode MatZeroRows_MPISBAIJ(Mat A,IS is,const PetscScalar *diag)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"No support for this function yet");
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatPrintHelp_MPISBAIJ"
 PetscErrorCode MatPrintHelp_MPISBAIJ(Mat A)
 {
@@ -1518,7 +1431,7 @@ static struct _MatOps MatOps_Values = {
        0,
        MatSetOption_MPISBAIJ,
        MatZeroEntries_MPISBAIJ,
-/*25*/ MatZeroRows_MPISBAIJ,
+/*25*/ 0,
        0,
        0,
        0,
@@ -2396,7 +2309,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPISBAIJSetHashTableFactor"
-/*@
+/*XXXXX@
    MatMPISBAIJSetHashTableFactor - Sets the factor required to compute the size of the HashTable.
 
    Input Parameters:
@@ -2413,13 +2326,8 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newma
 .keywords: matrix, hashtable, factor, HT
 
 .seealso: MatSetOption()
-@*/
-PetscErrorCode MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Function not yet written for SBAIJ format"); 
-  /* PetscFunctionReturn(0); */
-}
+@XXXXX*/
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowMax_MPISBAIJ"

@@ -2247,7 +2247,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 /*70*/ 0,
        0,
        MatSetColoring_SeqAIJ,
+#if defined(PETSC_HAVE_ADIC)
        MatSetValuesAdic_SeqAIJ,
+#else
+       0,
+#endif
        MatSetValuesAdifor_SeqAIJ,
 /*75*/ MatFDColoringApply_SeqAIJ,
        0,
@@ -3096,7 +3100,7 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_ADIC)
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"
 EXTERN_C_END
@@ -3125,17 +3129,6 @@ PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
   }
   PetscFunctionReturn(0);
 }
-
-#else
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesAdic_SeqAIJ"
-PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat A,void *advalues)
-{
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP_SYS,"PETSc installed without ADIC");
-}
-
 #endif
 
 #undef __FUNCT__  
