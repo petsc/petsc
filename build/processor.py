@@ -216,7 +216,7 @@ class Compiler(Processor):
 
 class Linker(Processor):
   '''A Linker processes any FileSet with intermediate object files, and outputs a FileSet of libraries.'''
-  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = ''):
+  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = None):
     Processor.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType)
     self.library        = library
     self.libExt         = libExt
