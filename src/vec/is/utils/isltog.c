@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.11 1997/07/09 20:49:26 balay Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.12 1997/08/22 15:10:18 bsmith Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: isltog.c,v 1.11 1997/07/09 20:49:26 balay Exp bsmith 
 
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingCreate"
-/*@
+/*@C
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
     ordering and a global parallel ordering.
 
