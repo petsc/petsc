@@ -126,8 +126,8 @@ PetscErrorCode SOCKCall_Private(char *hostname,int portnum,int *t)
     else flg = PETSC_FALSE;
   }
   *t = s;
-#endif
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__  
