@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.20 1995/07/17 20:40:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: cheby.c,v 1.21 1995/07/26 01:08:25 curfman Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -31,7 +31,7 @@ int KSPSetUp_Chebychev(KSP itP)
 int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev *) itP->MethodPrivate;
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->type != KSPCHEBYCHEV) return 0;
   chebychevP->emax = emax;
   chebychevP->emin = emin;

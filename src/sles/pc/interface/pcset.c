@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.20 1995/07/08 18:05:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.21 1995/07/20 03:58:43 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -34,7 +34,7 @@ $      (for instance, jacobi or bjacobi)
 int PCSetMethod(PC ctx,PCMethod method)
 {
   int ierr,(*r)(PC);
-  VALIDHEADER(ctx,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ctx,PC_COOKIE);
   if (ctx->setupcalled) {
     if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
     else {if (ctx->data) PETSCFREE(ctx->data);}
@@ -172,7 +172,7 @@ int PCPrintMethods_Private(char *prefix,char *name)
 int PCSetFromOptions(PC pc)
 {
   PCMethod method;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
 
   if (PCGetMethodFromOptions_Private(pc,&method)) {
     PCSetMethod(pc,method);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.7 1995/05/12 21:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.8 1995/06/08 03:07:27 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -20,7 +20,7 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 {
   KSPIGUESS *itg;
   *ITG = 0;
-  VALIDHEADER(itctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itctx,KSP_COOKIE);
   itg  = (KSPIGUESS* ) PETSCMALLOC(sizeof(KSPIGUESS)); CHKPTRQ(itg);
   itg->curl = 0;
   itg->maxl = maxl;
@@ -35,7 +35,7 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 
 int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
-  VALIDHEADER(itctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itctx,KSP_COOKIE);
   PETSCFREE( itg->alpha );
   VecFreeVecs( itg->btilde, itg->maxl );
   VecFreeVecs( itg->xtilde, itg->maxl );
@@ -47,7 +47,7 @@ int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 {
   int i;
   Scalar tmp;
-  VALIDHEADER(itctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itctx,KSP_COOKIE);
   for (i=1; i<=itg->curl; i++) {
     VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));
     tmp = -itg->alpha[i-1];
@@ -59,7 +59,7 @@ int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
 {
   int i;
-  VALIDHEADER(itctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itctx,KSP_COOKIE);
   VecCopy(x,itg->xtilde[itg->curl]);
   for (i=1; i<=itg->curl; i++) {
     VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],x);
@@ -75,7 +75,7 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
   int          curl = itg->curl, i;
   Mat          Amat, Pmat;
 
-  VALIDHEADER(itctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itctx,KSP_COOKIE);
   PCGetOperators(itctx->B,&Amat,&Pmat,&pflag);
   if (curl == itg->maxl) {
     MatMult(Amat,x,itg->btilde[0] );

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.46 1995/07/20 04:23:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.47 1995/07/30 14:56:59 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -130,7 +130,7 @@ $      (for instance, cg or gmres)
 int KSPSetMethod(KSP ctx,KSPMethod itmethod)
 {
   int ierr,(*r)(KSP);
-  VALIDHEADER(ctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
   if (ctx->setupcalled) {
     /* destroy the old private KSP context */
     ierr = (*(ctx)->destroy)((PetscObject)ctx); CHKERRQ(ierr);

@@ -17,7 +17,7 @@ static int DAView_2d(PetscObject dain,Viewer ptr)
   DA          da = (DA) dain;
   PetscObject vobj = (PetscObject)ptr;
   int         mytid;
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&mytid); 
 
@@ -496,7 +496,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 @*/
 int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   *x = da->xs; *m = da->xe - da->xs;
   if (y) *y = da->ys; if (n) *n = da->ye - da->ys;
   if (z) *z = da->zs; if (p) *p = da->ze - da->zs; 
@@ -520,7 +520,7 @@ int DAGetCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 @*/
 int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   *x = da->Xs; *m = da->Xe - da->Xs;
   if (y) *y = da->Ys; if (n) *n = da->Ye - da->Ys;
   if (z) *z = da->Zs; if (p) *p = da->Ze - da->Zs; 
@@ -539,7 +539,7 @@ int DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m, int *n, int *p)
 @*/
 int DADestroy(DA da)
 {
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   PLogObjectDestroy(da);
   PETSCFREE(da->idx);
   VecScatterCtxDestroy(da->ltog);
@@ -567,7 +567,7 @@ int DADestroy(DA da)
 int DALocalToGlobal(DA da,Vec l, InsertMode mode,Vec g)
 {
   int ierr;
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   ierr = VecScatterBegin(l,g,mode,SCATTERALL,da->ltog); CHKERRQ(ierr);
   ierr = VecScatterEnd(l,g,mode,SCATTERALL,da->ltog); CHKERRQ(ierr);
   return 0;
@@ -593,7 +593,7 @@ int DALocalToGlobal(DA da,Vec l, InsertMode mode,Vec g)
 int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 {
   int ierr;
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   ierr = VecScatterBegin(g,l,mode,SCATTERALL,da->gtol); CHKERRQ(ierr);
   return 0;
 }
@@ -618,7 +618,7 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 {
   int ierr;
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   ierr = VecScatterEnd(g,l,mode,SCATTERALL,da->gtol); CHKERRQ(ierr);
   return 0;
 }
@@ -640,7 +640,7 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 @*/
 int   DAGetDistributedVector(DA da,Vec* g)
 {
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   *g = da->global;
   return 0;
 }
@@ -662,7 +662,7 @@ int   DAGetDistributedVector(DA da,Vec* g)
 @*/
 int   DAGetLocalVector(DA da,Vec* l)
 {
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   *l = da->local;
   return 0;
 }
@@ -696,7 +696,7 @@ $         an X window display
 @*/
 int DAView(DA da, Viewer v)
 {
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   return (*da->view)((PetscObject)da,v);
 }  
 
@@ -718,7 +718,7 @@ int DAView(DA da, Viewer v)
 @*/
 int DAGetGlobalIndices(DA da, int *n,int **idx)
 {
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   *n   = da->Nl;
   *idx = da->idx;
   return 0;
@@ -742,7 +742,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 @*/
 int DAGetScatterCtx(DA da, VecScatterCtx *ltog,VecScatterCtx *gtol)
 {
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
   *ltog = da->ltog;
   *gtol = da->gtol;
   return 0;

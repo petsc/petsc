@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.29 1995/08/04 01:50:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.30 1995/08/04 14:12:22 curfman Exp bsmith $";
 #endif
 
 /*
@@ -364,8 +364,8 @@ $    SCATTERREVERSE, SCATTERALLREVERSE
 int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode, 
                                                    VecScatterCtx inctx)
 {
-  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
   return (*(inctx)->scatterbegin)(x,y,addv,mode,inctx);
 }
@@ -398,8 +398,8 @@ $    SCATTERREVERSE, SCATTERALLREVERSE
 int VecScatterEnd(Vec x,Vec y,InsertMode addv, 
                   ScatterMode mode, VecScatterCtx ctx)
 {
-  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ctx,VEC_SCATTER_COOKIE);
   ctx->inuse = 0;
   if ((ctx)->scatterend) return (*(ctx)->scatterend)(x,y,addv,mode,ctx);
   else return 0;
@@ -475,8 +475,8 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,
                      PipelineMode mode,VecScatterCtx inctx)
 {
   int numtid;
-  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  VALIDHEADER(inctx,VEC_SCATTER_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(inctx,VEC_SCATTER_COOKIE);
   MPI_Comm_size(inctx->comm,&numtid);
   if (numtid == 1) return 0;
   if (!inctx->pipelinebegin) 
@@ -514,8 +514,8 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,
                    PipelineMode mode,VecScatterCtx ctx)
 {
   int numtid;
-  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  VALIDHEADER(ctx,VEC_SCATTER_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE); PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ctx,VEC_SCATTER_COOKIE);
   MPI_Comm_size(ctx->comm,&numtid);
   if (numtid == 1) return 0;
   if ((ctx)->pipelineend) return (*(ctx)->pipelineend)(x,y,addv,mode,ctx);

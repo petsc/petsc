@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.30 1995/07/20 04:27:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.31 1995/07/26 21:40:38 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -51,7 +51,7 @@ int SLESView(SLES sles,Viewer viewer)
 @*/
 int SLESPrintHelp(SLES sles)
 {
-  VALIDHEADER(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   MPIU_printf(sles->comm,"SLES options:\n");
   KSPPrintHelp(sles->ksp);
   PCPrintHelp(sles->pc);
@@ -75,7 +75,7 @@ int SLESPrintHelp(SLES sles)
 @*/
 int SLESSetOptionsPrefix(SLES sles,char *prefix)
 {
-  VALIDHEADER(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   KSPSetOptionsPrefix(sles->ksp,prefix);
   PCSetOptionsPrefix(sles->pc,prefix);
   return 0;
@@ -94,7 +94,7 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
 @*/
 int SLESSetFromOptions(SLES sles)
 {
-  VALIDHEADER(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   KSPSetFromOptions(sles->ksp);
   PCSetFromOptions(sles->pc);
   return 0;
@@ -141,7 +141,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 int SLESDestroy(SLES sles)
 {
   int ierr;
-  VALIDHEADER(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   ierr = KSPDestroy(sles->ksp); CHKERRQ(ierr);
   ierr = PCDestroy(sles->pc); CHKERRQ(ierr);
   PLogObjectDestroy(sles);
@@ -176,7 +176,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   int ierr;
   KSP ksp;
   PC  pc;
-  VALIDHEADER(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   PLogEventBegin(SLES_SetUp,sles,b,x,0);
   ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
@@ -211,7 +211,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   int ierr;
   KSP ksp;
   PC  pc;
-  VALIDHEADER(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   PLogEventBegin(SLES_Solve,sles,b,x,0);
   ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
@@ -247,7 +247,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 @*/
 int SLESGetKSP(SLES sles,KSP *ksp)
 {
-  VALIDHEADER(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   *ksp = sles->ksp;
   return 0;
 }
@@ -270,7 +270,7 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 @*/
 int SLESGetPC(SLES sles,PC *pc)
 {
-  VALIDHEADER(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   *pc = sles->pc;
   return 0;
 }
@@ -310,9 +310,9 @@ $       Neither Amat nor Pmat has same nonzero structure
 @*/
 int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 {
-  VALIDHEADER(sles,SLES_COOKIE);
-  VALIDHEADER(Amat,MAT_COOKIE);
-  if (Pmat) {VALIDHEADER(Pmat,MAT_COOKIE);}
+  PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(Amat,MAT_COOKIE);
+  if (Pmat) {PETSCVALIDHEADERSPECIFIC(Pmat,MAT_COOKIE);}
   PCSetOperators(sles->pc,Amat,Pmat,flag);
   sles->setupcalled = 0;  /* so that next solve call will call setup */
   return 0;

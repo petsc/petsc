@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.7 1995/07/21 23:44:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.8 1995/07/30 14:57:20 bsmith Exp bsmith $";
 #endif
 #include "ptscimpl.h"  /*I   "petsc.h"    I*/
 
@@ -53,6 +53,6 @@ int PetscObjectExists(PetscObject obj,int *exists)
 {
   *exists = 0;
   if (!obj) return 0;
-  if (obj->cookie != FREEDHEADER) *exists = 1;
+  if (obj->cookie != PETSCFREEDHEADER) *exists = 1;
   return 0;
 }

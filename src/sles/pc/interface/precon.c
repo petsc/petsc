@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.37 1995/07/20 03:58:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.38 1995/07/21 23:40:05 curfman Exp bsmith $";
 #endif
 
 /*  
@@ -44,7 +44,7 @@ int PCPrintHelp(PC pc)
 int PCDestroy(PC pc)
 {
   int ierr = 0;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->destroy) ierr =  (*pc->destroy)((PetscObject)pc);
   else {if (pc->data) PETSCFREE(pc->data);}
   PLogObjectDestroy(pc);
@@ -109,7 +109,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 int PCApply(PC pc,Vec x,Vec y)
 {
   int ierr;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_Apply,pc,x,y,0);
@@ -131,7 +131,7 @@ int PCApply(PC pc,Vec x,Vec y)
 @*/
 int PCApplyTrans(PC pc,Vec x,Vec y)
 {
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->applytrans) return (*pc->applytrans)(pc,x,y);
   SETERRQ(1,"PCApplyTrans: No transpose for this precondition");
 }
@@ -155,7 +155,7 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
 {
   int ierr;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->applyBA)  return (*pc->applyBA)(pc,right,x,y,work);
   if (right) {
     ierr = PCApply(pc,x,work); CHKERRQ(ierr);
@@ -184,7 +184,7 @@ int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
 int PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work)
 {
   int ierr;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,right,x,y,work);
   if (right) {
     ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
@@ -234,7 +234,7 @@ int PCApplyRichardsonExists(PC pc)
 @*/
 int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 {
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   return (*pc->applyrich)(pc,x,y,w,its);
 }
 
@@ -301,7 +301,7 @@ $       Neither Amat nor Pmat has same nonzero structure
 
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   pc->mat         = Amat;
   if (pc->setupcalled == 0 && !Pmat) {
     pc->pmat = Amat;
@@ -339,7 +339,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 @*/
 int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   *mat  = pc->mat;
   *pmat = pc->pmat;
   *flag = pc->flag;
@@ -361,7 +361,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 @*/
 int PCSetVector(PC pc,Vec vec)
 {
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   pc->vec = vec;
   return 0;
 }
@@ -382,7 +382,7 @@ int PCSetVector(PC pc,Vec vec)
 @*/
 int PCGetMethodFromContext(PC pc,PCMethod *method)
 {
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   *method = (PCMethod) pc->type;
   return 0;
 }
@@ -402,7 +402,7 @@ int PCGetMethodFromContext(PC pc,PCMethod *method)
 @*/
 int PCGetFactoredMatrix(PC pc,Mat *mat)
 {
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->getfactmat) return (*pc->getfactmat)(pc,mat);
   return 0;
 }

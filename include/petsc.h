@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.52 1995/08/03 18:01:29 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.53 1995/08/03 21:53:38 curfman Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -75,7 +75,7 @@ extern int  TrGetMaximumAllocated(double*);
 #endif
 
 typedef struct _PetscObject* PetscObject;
-#define PETSC_COOKIE         0x12121212
+#define PETSC_COOKIE         1211211
 #define PETSC_DECIDE         -1
 #define PETSC_DEFAULT        -2
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.33 1995/07/28 17:43:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.34 1995/07/30 14:57:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -493,7 +493,7 @@ $   -ksp_gmres_restart  max_k
 int KSPGMRESSetRestart(KSP itP,int max_k )
 {
   KSP_GMRES *gmresP;
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   gmresP = (KSP_GMRES *)itP->MethodPrivate;
   if (itP->type != KSPGMRES) return 0;
   gmresP->max_k = max_k;
@@ -543,7 +543,7 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
 */
 int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->type == KSPGMRES) {
     ((KSP_GMRES *)itP->MethodPrivate)->orthog = fcn;
   }

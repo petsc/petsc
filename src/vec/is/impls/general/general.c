@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.24 1995/08/02 04:14:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.25 1995/08/04 01:50:49 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -144,7 +144,7 @@ int ISAddStrideSequential(IS *is,int n,int first,int step)
   int        N, *old,size,min,max,*idx,i;
   IS         Newis;
   IS_General *sub;
-  if (*is) VALIDHEADER(*is,IS_COOKIE);
+  if (*is) PETSCVALIDHEADERSPECIFIC(*is,IS_COOKIE);
 
   PETSCHEADERCREATE(Newis, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
   PLogObjectCreate(Newis);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.18 1995/07/26 15:42:17 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.19 1995/07/29 04:32:03 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -746,7 +746,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
   Mat_MPIBDiag *pdmat;
   Mat_BDiag *dmat;
 
-  VALIDHEADER(mat,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (mat->type == MATBDIAG) {
     dmat = (Mat_BDiag *) mat->data;
   } else if (mat->type == MATMPIBDIAG) {

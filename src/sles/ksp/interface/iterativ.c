@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.26 1995/07/26 15:27:19 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.27 1995/07/27 21:15:54 curfman Exp bsmith $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: iterativ.c,v 1.26 1995/07/26 15:27:19 curfman Exp cur
  */
 int KSPiDefaultFreeWork( KSP itP )
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->work)  return VecFreeVecs(itP->work,itP->nwork);
   return 0;
 }
@@ -38,7 +38,7 @@ int KSPiDefaultFreeWork( KSP itP )
  @*/
 int KSPCheckDef( KSP itP )
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (!itP->vec_sol) {
     SETERRQ(1,"KSPCheckDef: Solution vector not specified"); 
   }
@@ -120,7 +120,7 @@ $        rnorm_0 = initial residual norm
 @*/
 int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if ( n == 0 ) {
     itP->ttol   = PETSCMAX(itP->rtol*rnorm,itP->atol);
     itP->rnorm0 = rnorm;
@@ -238,7 +238,7 @@ Input Parameters:
 int KSPiDefaultDestroy(PetscObject obj)
 {
   KSP itP = (KSP) obj;
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->MethodPrivate) PETSCFREE(itP->MethodPrivate);
 
   /* free work vectors */

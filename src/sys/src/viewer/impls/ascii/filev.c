@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.12 1995/06/13 17:04:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.13 1995/07/17 20:42:44 bsmith Exp bsmith $";
 #endif
 
 
@@ -161,7 +161,7 @@ $      (which is in many cases the same as the default)
 @*/
 int ViewerFileSetFormat(Viewer v,int format,char *name)
 {
-  VALIDHEADER(v,VIEWER_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
   if (v->type == FILES_VIEWER || v->type == FILE_VIEWER) {
     v->format = format;
     v->outputname = name;

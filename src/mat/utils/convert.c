@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.20 1995/07/17 20:41:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.21 1995/07/28 04:22:53 bsmith Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -33,7 +33,7 @@ int MatDetermineDiagonals_Private(Mat mat,int nb,int newr,int newc,
   int    i, j, k, jdiag, cshift, row, dnew, temp;
   Scalar *v;
 
-  VALIDHEADER(mat,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if ((newr%nb) || (newc%nb))
     SETERRQ(1,"MatDetermineDiagonals_Private:Invalid block size");
   cfirst = colrange[0];

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.9 1995/06/23 12:39:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.10 1995/07/28 04:14:12 bsmith Exp bsmith $";
 #endif
 
 #include "vec.h"   /*I "vec.h" I*/
@@ -20,7 +20,7 @@ int VecReciprocal(Vec v)
 {
   int    ierr, i,n;
   Scalar *x;
-  VALIDHEADER(v,VEC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
@@ -46,7 +46,7 @@ int VecSum(Vec v,Scalar *sum)
 {
   int    ierr, i,n;
   Scalar *x,lsum = 0.0;
-  VALIDHEADER(v,VEC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
@@ -77,7 +77,7 @@ int VecShift(Scalar *shift,Vec v)
 {
   int    ierr, i,n;
   Scalar *x,lsum = *shift;
-  VALIDHEADER(v,VEC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
@@ -97,7 +97,7 @@ int VecAbs(Vec v)
 {
   int    ierr, i,n;
   Scalar *x;
-  VALIDHEADER(v,VEC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n); CHKERRQ(ierr);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.11 1995/05/12 21:28:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.12 1995/07/07 17:15:09 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"   /*I "ksp.h" I*/
@@ -29,7 +29,7 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   MatStructure  pflag;
   Mat           Amat, Pmat;
 
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
   if (itP->right_pre) {
     if (vbinvf) VecCopy(vb,vbinvf);
@@ -83,7 +83,7 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 @*/
 int KSPUnwindPre( KSP itP, Vec vsoln, Vec vt1 )
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->right_pre) {
     PCApply(itP->B, vsoln, vt1 );
     VecCopy( vt1, vsoln );

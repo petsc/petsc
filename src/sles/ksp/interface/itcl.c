@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.30 1995/07/07 17:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.31 1995/07/20 03:58:17 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -27,7 +27,7 @@ int KSPSetFromOptions(KSP ctx)
 {
   KSPMethod method;
   int       restart;
-  VALIDHEADER(ctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
 
   if (OptionsHasName(0,"-help")) {
     KSPPrintHelp(ctx);
@@ -109,7 +109,7 @@ int KSPPrintHelp(KSP ctx)
   if (!mytid) {
     if (ctx->prefix) p = ctx->prefix;
     else             p = "-";
-    VALIDHEADER(ctx,KSP_COOKIE);
+    PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
     printf("KSP Options -------------------------------------\n");
     KSPPrintMethods_Private(p,"ksp_method");
     printf(" %sksp_rtol tol: relative tolerance, defaults to %g\n",

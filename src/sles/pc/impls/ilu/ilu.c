@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.26 1995/07/21 17:49:28 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.27 1995/07/26 02:24:45 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -35,7 +35,7 @@ $  -pc_ilu_levels  levels
 int PCILUSetLevels(PC pc,int levels)
 {
   PC_ILU *dir;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCILU) return 0;
   if (levels < 0) SETERRQ(1,"PCILUSetLevels: levels cannot be negative");
   dir = (PC_ILU *) pc->data;
@@ -67,7 +67,7 @@ $     natural, nd, 1wd, rcm, qmd
 int PCILUSetOrdering(PC pc,MatOrdering ordering)
 {
   PC_ILU *dir;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   dir = (PC_ILU *) pc->data;
   if (pc->type != PCILU) return 0;
   dir->ordering = ordering;

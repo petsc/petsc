@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.26 1995/08/02 23:33:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.27 1995/08/04 01:51:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -219,7 +219,7 @@ $    -pc_method  sor  -pc_sor_symmetric
 int PCEisenstatSetOmega(PC pc,double omega)
 {
   PC_Eisenstat  *eis;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCEISENSTAT) return 0;
   eis = (PC_Eisenstat *) pc->data;
   eis->omega = omega;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.13 1995/07/27 21:42:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.14 1995/07/28 04:14:54 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -44,7 +44,7 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
   KSP_CG *cgP;
   double *d, *e, *dd, *ee;
   int    ii,j;
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->type != KSPCG) {SETERRQ(3,"KSPCGGetEigenvalues: Method not CG");}
   if (!itP->calc_eigs) {
     SETERRQ(4,"KSPCGGetEigenvalues: Eigenvalues not requested in CG Setup");}
@@ -91,7 +91,7 @@ int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
   KSP_CG *cgP;
   double    c;
   int ierr;
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (!itP->calc_eigs) {
     printf("%d %14.12e \n",n,rnorm);
   }

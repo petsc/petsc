@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.13 1995/07/07 16:16:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: shellpc.c,v 1.14 1995/07/26 01:37:07 curfman Exp bsmith $";
 #endif
 
 /*
@@ -90,7 +90,7 @@ int PCCreate_Shell(PC pc)
 int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 {
   PC_Shell *shell;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   shell        = (PC_Shell *) pc->data;
   shell->apply = apply;
   shell->ctx   = ptr;
@@ -122,7 +122,7 @@ int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),
                               void *ptr)
 {
   PC_Shell *shell;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   shell            = (PC_Shell *) pc->data;
   pc->applyrich    = PCApplyRichardson_Shell;
   shell->applyrich = apply;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mscat.c,v 1.2 1995/07/06 17:20:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mscat.c,v 1.3 1995/07/17 20:41:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -60,7 +60,7 @@ int MatScatterCtxCreate(Mat X,IS xr,IS xc,Mat Y,IS yr,IS yc,
   MatScatterCtx     scat;
   MatScatterCtx_MPISendRows *mpisend;
   MatScatterCtx_MPIRecvRows *mpirecv;
-  VALIDHEADER(X,MAT_COOKIE); VALIDHEADER(Y,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(X,MAT_COOKIE); PETSCVALIDHEADERSPECIFIC(Y,MAT_COOKIE);
 
   MPI_Comm_size(comm,&numtids);
   MPI_Comm_rank(comm,&mytid);
@@ -242,8 +242,8 @@ fprintf(stderr,"received %d slots %d\n",n,values[0]);
 */
 int MatScatterBegin(Mat x,Mat y,InsertMode addv,MatScatterCtx inctx)
 {
-  VALIDHEADER(x,MAT_COOKIE); VALIDHEADER(y,MAT_COOKIE);
-  VALIDHEADER(inctx,MAT_SCATTER_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(x,MAT_COOKIE); PETSCVALIDHEADERSPECIFIC(y,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(inctx,MAT_SCATTER_COOKIE);
   if (inctx->inuse) 
     SETERRQ(1,"MatScatterBegin:Scatter ctx already in use");
   return (*(inctx)->begin)(x,y,addv,inctx);
@@ -259,8 +259,8 @@ int MatScatterBegin(Mat x,Mat y,InsertMode addv,MatScatterCtx inctx)
 */
 int MatScatterEnd(Mat x,Mat y,InsertMode addv,MatScatterCtx ctx)
 {
-  VALIDHEADER(x,MAT_COOKIE); VALIDHEADER(y,MAT_COOKIE);
-  VALIDHEADER(ctx,MAT_SCATTER_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(x,MAT_COOKIE); PETSCVALIDHEADERSPECIFIC(y,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ctx,MAT_SCATTER_COOKIE);
   ctx->inuse = 0;
   if ((ctx)->end) return (*(ctx)->end)(x,y,addv,ctx);
   else return 0;

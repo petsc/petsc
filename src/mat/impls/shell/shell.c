@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.12 1995/08/02 04:16:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.13 1995/08/04 01:52:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -127,7 +127,7 @@ int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 {
   Mat_Shell *shell;
-  VALIDHEADER(mat,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   shell = (Mat_Shell *) mat->data;
   shell->mult = mult;
   return 0;
@@ -153,7 +153,7 @@ int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 {
   Mat_Shell *shell;
-  VALIDHEADER(mat,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   shell               = (Mat_Shell *) mat->data;
   shell->multtransadd = mult;
   return 0;
@@ -178,7 +178,7 @@ int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 int MatShellSetDestroy(Mat mat,int (*destroy)(void*))
 {
   Mat_Shell *shell;
-  VALIDHEADER(mat,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   shell = (Mat_Shell *) mat->data;
   shell->destroy = destroy;
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.38 1995/08/03 02:24:19 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.39 1995/08/05 21:55:54 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -80,7 +80,7 @@ $  -pc_bjacobi_truelocal
 int PCBJacobiSetUseTrueLocal(PC pc)
 {
   PC_BJacobi   *jac;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
   jac = (PC_BJacobi *) pc->data;
   jac->use_true_local = 1;
@@ -110,7 +110,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 {
   PC_BJacobi   *jac;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
   if (!pc->setupcalled) SETERRQ(1,
     "PCBJacobiGetSubSLES: SLESSetUp must be called before this routine");
@@ -214,7 +214,7 @@ $  -pc_bjacobi_blocks  blocks
 int PCBJacobiSetBlocks(PC pc, int blocks)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
   jac->n = blocks;
   return 0;

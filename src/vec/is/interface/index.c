@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.13 1995/07/07 17:14:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.14 1995/07/30 14:56:38 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -35,7 +35,7 @@ int ISIsPermutation(IS is)
 @*/
 int ISSetPermutation(IS is)
 {
-  VALIDHEADER(is,IS_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   is->isperm = 1;
   return 0;
 }
@@ -52,7 +52,7 @@ int ISSetPermutation(IS is)
 @*/
 int ISDestroy(IS is)
 {
-  VALIDHEADER(is,IS_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   return (*is->destroy)((PetscObject) is);
 }
 
@@ -70,7 +70,7 @@ int ISDestroy(IS is)
 @*/
 int ISInvertPermutation(IS is,IS *isout)
 {
-  VALIDHEADER(is,IS_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   if (!is->isperm) SETERRQ(1,"ISInvertPermutation: not permutation");
   return (*is->ops->invertpermutation)(is,isout);
 }
@@ -90,7 +90,7 @@ int ISInvertPermutation(IS is,IS *isout)
 @*/
 int ISGetSize(IS is,int *size)
 {
-  VALIDHEADER(is,IS_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   return (*is->ops->getsize)(is,size);
 }
 /*@
@@ -108,7 +108,7 @@ int ISGetSize(IS is,int *size)
 @*/
 int ISGetLocalSize(IS is,int *size)
 {
-  VALIDHEADER(is,IS_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   return (*is->ops->getlocalsize)(is,size);
 }
 
@@ -133,7 +133,7 @@ int ISGetLocalSize(IS is,int *size)
 @*/
 int ISGetIndices(IS is,int **ptr)
 {
-  VALIDHEADER(is,IS_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   return (*is->ops->getindices)(is,ptr);
 } 
 
@@ -151,7 +151,7 @@ int ISGetIndices(IS is,int **ptr)
 @*/
 int ISRestoreIndices(IS is,int **ptr)
 {
-  VALIDHEADER(is,IS_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   if (is->ops->restoreindices) return (*is->ops->restoreindices)(is,ptr);
   else return 0;
 }
@@ -167,6 +167,6 @@ int ISRestoreIndices(IS is,int **ptr)
 @*/
 int ISView(IS is, Viewer viewer)
 {
-  VALIDHEADER(is,IS_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(is,IS_COOKIE);
   return (*is->view)((PetscObject)is,viewer);
 }

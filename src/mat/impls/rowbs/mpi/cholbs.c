@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.14 1995/07/17 20:41:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.15 1995/08/04 19:09:24 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -16,7 +16,7 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-  VALIDHEADER(mat,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   /* Copy permuted matrix */
   mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0);
 
@@ -35,7 +35,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-  VALIDHEADER(mat,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (mat != *factp) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:factored\
                                  matrix must be same context as mat");
 

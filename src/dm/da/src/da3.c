@@ -14,7 +14,7 @@ int DAView_3d(PetscObject dain,Viewer ptr)
   DA da = (DA) dain;
   PetscObject vobj = (PetscObject)ptr;
   int         mytid;
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&mytid); 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.31 1995/07/24 20:46:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.32 1995/07/28 17:44:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: itfunc.c,v 1.31 1995/07/24 20:46:39 curfman Exp bsmit
 @*/
 int KSPSetUp(KSP itP)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->setupcalled) return 0;
   if (itP->type == -1) {
     SETERRQ(1,"KSPSetUp: Method must be set first");
@@ -50,7 +50,7 @@ int KSPSolve(KSP itP, int *its)
 {
   int    ierr;
   Scalar zero = 0.0;
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (!itP->setupcalled){ ierr = KSPSetUp(itP); CHKERRQ(ierr);}
   if (itP->guess_zero) { VecSet(&zero,itP->vec_sol);}
   return (*(itP)->solver)(itP,its);
@@ -69,7 +69,7 @@ int KSPSolve(KSP itP, int *its)
 int KSPDestroy(KSP itP)
 {
   int ierr;
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   ierr = (*(itP)->destroy)((PetscObject)itP); CHKERRQ(ierr);
   PLogObjectDestroy(itP);
   PETSCHEADERDESTROY(itP);
@@ -98,7 +98,7 @@ $  -ksp_right_pc
 @*/
 int KSPSetRightPreconditioner(KSP itP)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->right_pre  = 1;
   return 0;
 }
@@ -121,7 +121,7 @@ $      side = 0:  left preconditioning (default)
 @*/
 int KSPGetPreconditionerSide(KSP itP, int *side) 
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   *side = (itP)->right_pre;
   return 0;
 }
@@ -141,7 +141,7 @@ int KSPGetPreconditionerSide(KSP itP, int *side)
 @*/
 int KSPGetMethodFromContext( KSP itP, KSPMethod *method )
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   *method = (KSPMethod) itP->type;
   return 0;
 }
@@ -167,7 +167,7 @@ int KSPGetMethodFromContext( KSP itP, KSPMethod *method )
 int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,
                      int *maxits)
 {
-  VALIDHEADER(ksp,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
   *atol   = ksp->atol;
   *rtol   = ksp->rtol;
   *dtol   = ksp->divtol;
@@ -209,7 +209,7 @@ $  -ksp_max_it  maxits  (maximum iterations)
 @*/
 int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
 {
-  VALIDHEADER(ksp,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
   if (atol != PETSC_DEFAULT)   ksp->atol   = atol;
   if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
   if (dtol != PETSC_DEFAULT)   ksp->divtol = dtol;
@@ -232,7 +232,7 @@ int KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits)
 @*/
 int KSPSetCalculateResidual(KSP itP,PetscTruth flag)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->calc_res   = flag;
   return 0;
 }
@@ -258,7 +258,7 @@ $  -ksp_preres
 @*/
 int KSPSetUsePreconditionedResidual(KSP itP)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->use_pres   = 1;
   return 0;
 }
@@ -297,7 +297,7 @@ $  -ksp_eigen
 @*/
 int KSPSetCalculateEigenvalues(KSP itP)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->calc_eigs  = 1;
   return 0;
 }
@@ -316,7 +316,7 @@ int KSPSetCalculateEigenvalues(KSP itP)
 @*/
 int KSPSetRhs(KSP itP,Vec b)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->vec_rhs    = (b);
   return 0;
 }
@@ -337,7 +337,7 @@ int KSPSetRhs(KSP itP,Vec b)
 @*/
 int KSPGetRhs(KSP itP,Vec *r)
 {   
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   *r = (itP)->vec_rhs; return 0;
 } 
 
@@ -355,7 +355,7 @@ int KSPGetRhs(KSP itP,Vec *r)
 @*/
 int KSPSetSolution(KSP itP, Vec x)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->vec_sol    = (x);
   return 0;
 }
@@ -377,7 +377,7 @@ int KSPSetSolution(KSP itP, Vec x)
 @*/
 int KSPGetSolution(KSP itP, Vec *v)
 {
-  VALIDHEADER(itP,KSP_COOKIE);  *v = (itP)->vec_sol; return 0;
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);  *v = (itP)->vec_sol; return 0;
 }
 
 /*@
@@ -398,7 +398,7 @@ int KSPGetSolution(KSP itP, Vec *v)
 @*/
 int KSPSetBinv(KSP itP,PC B)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->B = B;
   return 0;
 }
@@ -419,7 +419,7 @@ int KSPSetBinv(KSP itP,PC B)
 @*/
 int KSPGetBinv(KSP itP, PC *B)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   *B = (itP)->B; return 0;
 }
 
@@ -458,7 +458,7 @@ $  -ksp_monitor   : key for setting KSPDefaultMonitor()
 @*/
 int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->monitor = monitor;(itP)->monP = (void*)mctx;
   return 0;
 }
@@ -479,7 +479,7 @@ int KSPSetMonitor(KSP itP, int (*monitor)(KSP,int,double,void*), void *mctx)
 @*/
 int KSPGetMonitorContext(KSP itP, void **ctx)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   *ctx =      ((itP)->monP);
   return 0;
 }
@@ -498,7 +498,7 @@ int KSPGetMonitorContext(KSP itP, void **ctx)
 @*/
 int KSPSetResidualHistory(KSP itP, double *a, int na)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->residual_history = a; (itP)->res_hist_size    = na;
   return 0;
 }
@@ -541,7 +541,7 @@ int KSPSetResidualHistory(KSP itP, double *a, int na)
 int KSPSetConvergenceTest(KSP itP, int (*converge)(KSP,int,double,void*), 
                           void *cctx)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->converged = converge;	(itP)->cnvP = (void*)cctx;
   return 0;
 }
@@ -562,7 +562,7 @@ int KSPSetConvergenceTest(KSP itP, int (*converge)(KSP,int,double,void*),
 @*/
 int KSPGetConvergenceContext(KSP itP, void **ctx)
 {
-  VALIDHEADER(itP,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   *ctx = ((itP)->cnvP);
   return 0;
 }
@@ -589,7 +589,7 @@ int KSPGetConvergenceContext(KSP itP, void **ctx)
 @*/
 int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 {
-  VALIDHEADER(ctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
   return (*ctx->buildsolution)(ctx,v,V);
 }
 
@@ -617,7 +617,7 @@ int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
 {
   int flag = 0, ierr;
   Vec w = v, tt = t;
-  VALIDHEADER(ctx,KSP_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
   if (!w) {
     ierr = VecDuplicate(ctx->vec_rhs,&w); CHKERRQ(ierr);
     PLogObjectParent((PetscObject)ctx,w);

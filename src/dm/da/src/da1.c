@@ -16,7 +16,7 @@ static int DAView_1d(PetscObject pobj,Viewer ptr)
   DA da  = (DA) pobj;
   PetscObject vobj = (PetscObject)ptr;
   int         mytid;
-  VALIDHEADER(da,DA_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
 
   MPI_Comm_rank(da->comm,&mytid); 
 

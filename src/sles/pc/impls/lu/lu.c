@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.35 1995/07/29 03:51:21 curfman Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.36 1995/07/29 04:10:35 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -44,7 +44,7 @@ $      natural, nd, 1wd, rcm, qmd
 int PCLUSetOrdering(PC pc,MatOrdering ordering)
 {
   PC_LU *dir;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   dir = (PC_LU *) pc->data;
   if (pc->type != PCLU) return 0;
   dir->ordering = ordering;
@@ -74,7 +74,7 @@ $  -pc_lu_in_place
 int PCLUSetUseInplace(PC pc)
 {
   PC_LU *dir;
-  VALIDHEADER(pc,PC_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   dir = (PC_LU *) pc->data;
   if (pc->type != PCLU) return 0;
   dir->inplace = 1;
