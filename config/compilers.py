@@ -105,6 +105,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('C compiler you provided with -with-cc='+self.framework.argDB['with-cc']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicc')
+      raise RuntimeError('bin/mpicc you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work')
     else:
       if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
         if Configure.isGNU('mpicc') and self.framework.argDB['with-gnu-compilers']:
@@ -173,9 +174,6 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         import os
 
-        print str(e)+' You may specify another preprocessor with --with-cpp.'
-        if os.path.basename(self.framework.argDB['CPP']) == 'mpicc':
-          print '  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.'
         self.popLanguage()
         self.framework.argDB['CPP'] = None
     if 'CPP' in self.framework.argDB and not self.framework.argDB['CPP'] is None:
@@ -232,11 +230,16 @@ class Configure(config.base.Configure):
       yield self.framework.argDB['CXX']
       raise RuntimeError('C++ compiler you provided with -CXX='+self.framework.argDB['CXX']+' does not work')
     elif self.framework.argDB.has_key('with-cxx'):
-      yield self.framework.argDB['with-cxx']
-      raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
+      if self.framework.argDB['with-cxx'] == '0':
+        return
+      else:
+        yield self.framework.argDB['with-cxx']
+        raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpiCC')
+      if os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx')) or os.path.isdir((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpicxx'))):
+        raise RuntimeError('bin/mpiCC[cxx] you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with -with-cxx=0 if you wish to use this MPI and disable C++')
     else:
       if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
         if Configure.isGNU('mpicxx') and self.framework.argDB['with-gnu-compilers']:
@@ -368,6 +371,8 @@ class Configure(config.base.Configure):
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(self.framework.argDB['with-mpi-dir']) and self.framework.argDB['with-mpi-compilers']:
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77')
+      if os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif90')) or os.path.isdir((os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpif77'))):
+        raise RuntimeError('bin/mpif90[f77] you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work\nRun with -with-fc=0 if you wish to use this MPI and disable Fortran')
     else:
       if self.framework.argDB['with-mpi'] and self.framework.argDB['with-mpi-compilers']:
         if Configure.isGNU('mpif90') and self.framework.argDB['with-gnu-compilers']:
