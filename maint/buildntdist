@@ -1,9 +1,10 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.35 1999/04/07 19:30:14 balay Exp balay $ 
+# $Id: buildntdist,v 1.36 1999/04/13 20:53:20 balay Exp balay $ 
 # 
 set    SHORTHOST = "`hostname | sed -e 's/\..*//' | sed -e 's/[0-9][0-9]//'`"
 if ($SHORTHOST != fire) then
     echo "---Error! This script should be run only on fire.mcs.anl.gov"
+    exit
 endif
 
 if ($#argv == 1) then

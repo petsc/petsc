@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: nt_time.c,v 1.12 1998/12/17 21:56:35 balay Exp $";
+static char vcid[] = "$Id: rs6000_time.c,v 1.1 1999/04/13 20:36:15 balay Exp balay $";
 #endif
 
 #include <petsc.h>
@@ -9,12 +9,12 @@ static char vcid[] = "$Id: nt_time.c,v 1.12 1998/12/17 21:56:35 balay Exp $";
 
 #undef __FUNC__  
 #define __FUNC__ "rs6000_time"
-PlogDouble rs6000_time(void) 
+PLogDouble rs6000_time(void) 
 {
    timebasestruct_t t;
    PLogDouble time;
 
-   PetscFunctionBegin();
+   PetscFunctionBegin;
 
    /* read in the register values */
    read_real_time(&t, TIMEBASE_SZ);
