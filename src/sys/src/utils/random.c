@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.36 1998/04/13 17:30:26 bsmith Exp balay $";
+static char vcid[] = "$Id: random.c,v 1.37 1998/04/16 16:21:14 balay Exp balay $";
 #endif
 
 /*
@@ -234,6 +234,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   int      rank;
 
   PetscFunctionBegin;
+  PLogInfo(0,"PetscRandomCreate: using rand(). not as efficinet as dran48\n");
   *r = 0;
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL 
                              && type != RANDOM_DEFAULT_IMAGINARY)
