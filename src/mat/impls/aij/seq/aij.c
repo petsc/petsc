@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.362 2001/01/19 23:20:29 balay Exp bsmith $*/
+/*$Id: aij.c,v 1.363 2001/01/20 03:34:42 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1773,7 +1773,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
 #if defined(PETSC_HAVE_LUSOL)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_lusol: Use the Stanford LUSOL sparse factorization and solve.\n");CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_matlab: Use Matlab engine sparse LU factorization and solve.\n");CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -1972,7 +1972,7 @@ int MatStoreValues_SeqAIJ(Mat mat)
 
   /* allocate space for values if not already there */
   if (!aij->saved_values) {
-    ierr = PetscMalloc(nz*sizeof(Scalar),&aij->saved_values);CHKERRQ(ierr);
+    ierr = PetscMalloc((nz+1)*sizeof(Scalar),&aij->saved_values);CHKERRQ(ierr);
   }
 
   /* copy values over */
@@ -2105,7 +2105,7 @@ int MatRetrieveValues(Mat mat)
 /*
    This allows SeqAIJ matrices to be passed to the matlab engine
 */
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -2113,21 +2113,18 @@ EXTERN_C_BEGIN
 #define __FUNC__ "MatMatlabEnginePut_SeqAIJ"
 int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 {
-  int        ierr,i,*aj,*ai;
+  int        ierr,i,*ai,*aj;
   Mat        B = (Mat)obj;
   Scalar     *array;
   mxArray    *mat; 
   Mat_SeqAIJ *aij = (Mat_SeqAIJ*)B->data;
 
-
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->n,B->m,aij->nz,mxREAL);
   ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(Scalar));CHKERRQ(ierr);
   /* Matlab stores by column, not row so we pass in the transpose of the matrix */
-  ai   = mxGetJc(mat);
-  aj   = mxGetIr(mat);
-  ierr = PetscMemcpy(aj,aij->j,aij->nz*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(ai,aij->i,(B->m+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(mxGetIr(mat),aij->j,aij->nz*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(mxGetJc(mat),aij->i,(B->m+1)*sizeof(int));CHKERRQ(ierr);
 
   /* Matlab indices start at 0 for sparse (what a surprise) */
   if (aij->indexshift) {
@@ -2141,6 +2138,44 @@ int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   mxSetName(mat,obj->name);
   engPutArray((Engine *)engine,mat);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "MatMatlabEngineGet_SeqAIJ"
+int MatMatlabEngineGet_SeqAIJ(PetscObject obj,void *engine)
+{
+  int        ierr,ii;
+  Mat        mat = (Mat)obj;
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ*)mat->data;
+  mxArray    *mmat; 
+
+  ierr = PetscFree(aij->a);CHKERRQ(ierr);
+  aij->indexshift = 0;
+
+  mmat = engGetArray((Engine *)engine,obj->name);
+
+  aij->nz           = mxGetNumberOfElements(mmat);
+  ierr              = PetscMalloc(aij->nz*(sizeof(int)+sizeof(Scalar))+(mat->m+1)*sizeof(int),&aij->a);CHKERRQ(ierr);
+  aij->j            = (int*)(aij->a + aij->nz);
+  aij->i            = aij->j + aij->nz;
+  aij->singlemalloc = PETSC_TRUE;
+  aij->freedata     = PETSC_TRUE;
+
+  ierr = PetscMemcpy(aij->a,amxGetPr(mmat),ij->nz*sizeof(Scalar));CHKERRQ(ierr);
+  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
+  ierr = PetscMemcpy(aij->j,mxGetIr(mmat),aij->nz*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(aij->i,mxGetJc(mmat),(mat->m+1)*sizeof(int));CHKERRQ(ierr);
+
+  for (ii=0; ii<mat->m; ii++) {
+    aij->ilen[ii] = aij->imax[ii] = aij->i[ii+1] - aij->i[ii];
+  }
+
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2394,8 +2429,9 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
                                      MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
