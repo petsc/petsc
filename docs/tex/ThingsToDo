@@ -102,6 +102,8 @@ Lois  - Add SLES example showing multiple linear solves with same matrices but
   To do sometime soon:
 -----------------------------------------------------------------------
 
+ - Provide tools that help with imposing BCs but retaining matrix symmetry.
+
  - Fix VRML vector viewer interface; add documentation about VRML.
 
 
