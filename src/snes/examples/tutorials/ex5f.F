@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.64 2001/05/03 16:21:06 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.65 2001/05/03 16:22:59 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -66,6 +66,7 @@
 !  MUST be declared as external.
 
       external FormFunction,FormInitialGuess,FormJacobian
+      external FormFunctionLocal
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -139,7 +140,9 @@
 
 !  Set function evaluation routine and vector
 
-      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
+!      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL_OBJECT,ierr)
+      call DASetLocalFunction(da,FormFunctionLocal,0,ierr)
+      call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine
