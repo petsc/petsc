@@ -1,4 +1,4 @@
-/*$Id: zf90vec.c,v 1.7 2000/05/24 18:17:15 balay Exp balay $*/
+/*$Id: zf90vec.c,v 1.8 2000/05/24 22:17:56 balay Exp bsmith $*/
 
 #include "src/fortran/f90/zf90.h"
 #include "petscis.h"
@@ -39,7 +39,7 @@ void isgetindicesf90_(IS *x,array1d *ptr,int *__ierr)
   int    *fa;
   int    len;
   *__ierr = ISGetIndices(*x,&fa); if (*__ierr) return;
-  *__ierr = ISGetSize(*x,&len);   if (*__ierr) return;
+  *__ierr = ISGetLocalSize(*x,&len);   if (*__ierr) return;
   *__ierr = PetscF90Create1dArrayInt(fa,len,ptr);
 }
 void isrestoreindicesf90_(IS *x,array1d *ptr,int *__ierr)
