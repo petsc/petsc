@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.25 2001/04/25 03:31:42 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.26 2001/04/25 16:13:33 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -384,7 +384,17 @@ void ad_AD_Final();
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetStructArray2d"
-static int PetscGetStructArray2d(DALocalInfo *info,PetscTruth ghosted,void ***ptr,void **array_start)
+/*
+    Input Parameter:
++    info - information about my local patch
+-    ghosted - do you want arrays for the ghosted or nonghosted patch
+
+    Output Parameters:
++    ptr - array data structured to be passed to ad_FormFunctionLocal()
+.    array_start - actual start of 1d array of all values that adiC can access directly
+-    tdof - total number of degrees of freedom represented in array_start
+*/
+static int PetscGetStructArray2d(DALocalInfo *info,PetscTruth ghosted,void ***ptr,void **array_start,int *tdof)
 {
   int  ierr,j,deriv_type_size,xs,ys,xm,ym;
   void *tmpptr;
@@ -401,6 +411,8 @@ static int PetscGetStructArray2d(DALocalInfo *info,PetscTruth ghosted,void ***pt
     xm = info->xm*info->dof;
     ym = info->ym;
   }
+  *tdof = xm*ym;
+
   deriv_type_size = my_AD_GetDerivTypeSize();
 
   ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*deriv_type_size,(void **)array_start);CHKERRQ(ierr);
@@ -423,18 +435,12 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 {
   DMMG           dmmg = (DMMG) ptr;
   int            ierr,i,j,k,l,*colors = dmmg->iscoloring->colors;
-  int            xs,ys,xm,ym;
-  int            gxs,gys,gxm,gym;
-  int            mx,my,*colorptr;
+  int            *colorptr,size,gtdof,tdof;
   Vec            localX;
   Scalar         *xstart;
   DALocalInfo    info;
-  void           **ad_x,**ad_f;
-  int            dim,dof,stencil_width,size;
-  DAStencilType  stencil_type;
-  DAPeriodicType periodicity;
+  void           **ad_x,**ad_f,*ad_xstart,*ad_fstart;
   DA             da = (DA) dmmg->dm;
-  void           *ad_xstart,*ad_fstart;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(dmmg->comm,&size);CHKERRQ(ierr);
@@ -444,36 +450,22 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
-
-  ierr = DAGetInfo(da,&dim,&mx,&my,0,0,0,0,&dof,&stencil_width,&periodicity,&stencil_type);CHKERRQ(ierr);
-
-  /*
-     Get local grid boundaries
-  */
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
-
-  /*
-     Get pointer to vector data
-  */
-
-
   /* allocate space for derivative objects.  */
-  ierr = PetscGetStructArray2d(&info,PETSC_TRUE,(void ***)&ad_x,&ad_xstart);CHKERRQ(ierr);
-  ierr = PetscGetStructArray2d(&info,PETSC_FALSE,(void ***)&ad_f,&ad_fstart);CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(&info,PETSC_TRUE,(void ***)&ad_x,&ad_xstart,&gtdof);CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(&info,PETSC_FALSE,(void ***)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
 
   /* copy over function inputs to derivate enhanced variable */
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&xstart);CHKERRQ(ierr);
-  my_AD_SetValArray(ad_xstart,gxm*gym*dof,xstart);
+  my_AD_SetValArray(ad_xstart,gtdof,xstart);
   ierr = VecRestoreArray(localX,&xstart);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
 
   my_AD_ResetIndep();
-  my_AD_SetIndepArrayColored(ad_xstart,gxm*gym*dof,colors);
+  my_AD_SetIndepArrayColored(ad_xstart,gtdof,colors);
   my_AD_IncrementTotalGradSize(dmmg->iscoloring->n);
   my_AD_SetIndepDone();
 
