@@ -124,7 +124,7 @@ struct _p_Vec {
 };
 
 #define VecGetArrayFast(x,a)     ((x)->petscnative ? (*(a) = *((PetscScalar **)(x)->data),0) : VecGetArray((x),(a)))
-#define VecRestoreArrayFast(x,a) ((x)->petscnative ? 0 : VecRestoreArray((x),(a)))
+#define VecRestoreArrayFast(x,a) ((x)->petscnative ? PetscObjectIncreaseState((PetscObject)x) : VecRestoreArray((x),(a)))
 
 /*
      Common header shared by array based vectors, 

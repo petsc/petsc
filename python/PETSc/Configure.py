@@ -440,16 +440,25 @@ class Configure(config.base.Configure):
     if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'include','petscvec.h.html')):
       self.framework.log.write('WARNING: document files have not been created\n')
       self.framework.getExecutable('doctext', getFullPath = 1)
+      if not hasattr(self.framework,'doctext') and hasattr(self.framework,'sowingDir') and os.path.isfile(os.path.join(self.framework.sowingDir,'doctext')):
+        self.framework.doctext = os.path.join(self.framework.sowingDir,'doctext')
       self.framework.getExecutable('mapnames', getFullPath = 1)
+      if not hasattr(self.framework,'mapnames') and hasattr(self.framework,'sowingDir') and os.path.isfile(os.path.join(self.framework.sowingDir,'mapnames')):
+        self.framework.mapnames = os.path.join(self.framework.sowingDir,'mapnames')
       self.framework.getExecutable('c2html', getFullPath = 1)
       self.framework.getExecutable('pdflatex', getFullPath = 1)
-      if hasattr(self.framework, 'doctext') and hasattr(self.framework, 'mapnames') and hasattr(self.framework, 'c2html') and hasattr(self.framework, 'pdflatex'):
+      if not hasattr(self.framework, 'doctext'): self.framework.doctext = ''
+      if not hasattr(self.framework, 'mapnames'): self.framework.mapnames = ''
+      self.framework.addSubstitution('DOCTEXT', self.framework.doctext)
+      self.framework.addSubstitution('MAPNAMES', self.framework.mapnames)
+
+      if self.framework.doctext and self.framework.mapnames and hasattr(self.framework, 'c2html') and hasattr(self.framework, 'pdflatex'):
         self.framework.log.write('           You can run "make alldoc LOC=${PETSC_DIR}" to generate all the documentation\n')
         self.framework.log.write('           WARNING!!! This will take several HOURS to run\n')
       else:
         self.framework.log.write('           You are missing')
-        if not hasattr(self.framework, 'doctext'): self.framework.log.write(' doctext')
-        if not hasattr(self.framework, 'mapnames'):self.framework.log.write(' mapnames')
+        if not self.framework.doctext:             self.framework.log.write(' doctext')
+        if not self.framework.mapnames:            self.framework.log.write(' mapnames')
         if not hasattr(self.framework, 'c2html'):  self.framework.log.write(' c2html')
         if not hasattr(self.framework, 'pdflatex'):self.framework.log.write(' pdflatex')
         self.framework.log.write('\n')

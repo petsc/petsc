@@ -162,10 +162,11 @@ SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes 
 #
 #   These should really be defined in each of the bmake/${PETSC_ARCH}/variables files but
 #   it is easier to have defaults which work on most machines (overwritable in ${PETSC_ARCH}/variables)
-MV    = mv
-CP    = cp
-BFORT = bfort
-
+MV       = mv
+CP       = cp
+BFORT    = bfort
+DOCTEXT  = doctext
+MAPNAMES = mapnames
 #
 # The following include files set customized site, optimization, and version
 # options.  Do NOT remove any of these include files.  You should generally

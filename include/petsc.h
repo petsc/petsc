@@ -184,6 +184,8 @@ extern MPI_Comm   PETSC_COMM_SELF;
 extern PetscTruth PetscInitializeCalled;
 EXTERN int        PetscSetCommWorld(MPI_Comm);
 EXTERN int        PetscSetHelpVersionFunctions(int (*)(MPI_Comm),int (*)(MPI_Comm));
+EXTERN int        PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
+EXTERN int        PetscCommDestroy(MPI_Comm*);
 
 /*MC
    PetscMalloc - Allocates memory

@@ -75,12 +75,12 @@ hints</a></li>
           csh/tcsh shell<br>
           <font color="#ff0000">setenv <a href="#PETSC_DIR">PETSC_DIR</a> `pwd`</font></li>
         <li> <font color="#ff0000">make update</font></li>
-        <li><font color="#ff0000">./configure</font></li>
+        <li><font color="#ff0000">./config/configure.py</font></li>
         <li> <font color="#ff0000">make all</font></li>
         <li><font color="#ff0000">make test</font></li>
         <li>Encounter problems? 
           <ul> 
-             <li> <strong>Read the error message from ./configure!</strong> </li>
+             <li> <strong>Read the error message from ./config/configure.py!</strong> </li>
                <ul> 
                  <li><a href="#BLAS/LAPACK"> BLAS and LAPACK problems</a> </li>
                  <li><a href="#MPI:"> MPI problems</a>. I <a href="#I%20don%27t%20want%20to%20use%20MPI:">Don't want MPI</a></li>
@@ -106,7 +106,7 @@ LAPACK, MPICH software are installed at the specified locations:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
 PETSC_DIR=/home/petsc/petsc-2.1.6<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./configure
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py
 --with-blas-lapack-dir=/usr/local/lib --with-mpi-dir=/usr/local/mpich<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make test </font></li>
@@ -115,22 +115,22 @@ PETSC_DIR=/home/petsc/petsc-2.1.6<br>
  and no MPI:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">setenv PETSC_DIR /home/petsc/petsc-2.1.6<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./configure --with-c-blas-lapack-if-needed --with-mpi=0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py --with-c-blas-lapack-if-needed --with-mpi=0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make test </font></li>
         <li>Install PETSc with default BLAS, LAPACK  and MPI using the GNU compilers, build the optimized version of the 
 libraries:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">./configure --with-vendor-compilers=0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">./config/configure.py --with-vendor-compilers=0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=O<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=O test </font></li>        
         <li>Using csh shell, install PETSc on Linux with two different sets of compilers:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">bin/petscarch --suggest<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; setenv PETSC_ARCH linux-gnu<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./configure --with-vendor-compilers=0 --with-mpi-dir=/usr/local/mpich-gnu<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py --with-vendor-compilers=0 --with-mpi-dir=/usr/local/mpich-gnu<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=O<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=O test<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; setenv PETSC_ARCH linux-gnu-intel<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./configure --with-vendor-compilers=intel --with-gnu-compilers=0 --with-blas-lapack-dir=/usr/local/mkl --with-mpi-dir=/usr/local/mpich-intel<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./config/configure.py --with-vendor-compilers=intel --with-gnu-compilers=0 --with-blas-lapack-dir=/usr/local/mkl --with-mpi-dir=/usr/local/mpich-intel<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=O<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=O test </font></li>    
       </ul>
@@ -150,7 +150,7 @@ in bmake/${PETSC_ARCH}. Multiple variants of PETSc libraries can be
 installed - each variant corresponding to a different PETSC_ARCH. One
 can switch between using these variants - by changing the value of
 PETSC_ARCH. If PETSC_ARCH is not set, the configuration from the last time 
-you ran <font color="#551a8b">./configure</font> will be used.</p>
+you ran <font color="#551a8b">./config/configure.py</font> will be used.</p>
       <p><b><font color="#551a8b">BOPT</font></b>: this
 environment/make variable is used to distinguish debug/optimized or
 c/c++/complex versions of PETSc libraries. One can install, any/all
@@ -282,20 +282,19 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
       <p><font color="#551a8b"><b><a name="BLAS/LAPACK">BLAS/LAPACK</a>:</b></font>
 these packages provide some basic numeric kernels used by PETSc.</p>
       <ul>
-        <li>If  <font color="##ff0000">./configure</font> cannot locate BLAS and LAPACK you can use the options
+        <li>If  <font color="##ff0000">./config/configure.py</font> cannot locate BLAS and LAPACK you can use the options
              <font color="##ff0000">--with-blas-lapack_dir=directory</font> or <font color="##ff0000">--with-blas=BLASlibrary</font>
              and <font color="##ff0000">--with-lapack=LAPACKlibrary</font> or <font color="##ff0000">--with-blas-lapack=library</font>
              to indicate the location of the libraries.
         <ul>
           <li>on Microsoft Windows and Linux, one can use Intel MKL</li>
-          <li>On AIX boxes, ESSL, on OSF (alpha) DXML, on Solaris Sunperf, on SGI libcomplib.sgimath libraries
-               provide this functionality</li>
+          <li>On AIX (IBM) ESSL, on OSF (Compaq/alpha) DXML, on Solaris Sunperf, on SGI libcomplib.sgimath.</li>
           <li>On some Linux boxes, regular blas/lapack is installed
               [/usr/lib/liblapack.a   /usr/lib/libblas.a ]</li>
           <li>Alternatively download the source distribution fblaslapack
                or cblaslapack   from <a href="http://www.mcs.anl.gov/petsc/petsc-2/download">PETSc download</a>page</li>
         </ul>
-        <li>Use the <font color="##ff0000">./configure</font> options <font color="##ff0000">--with-c-blas-lapack</font>,
+        <li>Use the <font color="##ff0000">./config/configure.py</font> options <font color="##ff0000">--with-c-blas-lapack</font>,
          <font color="##ff0000">--with-f-blas-lapack</font>,
          <font color="##ff0000">--with-c-blas-lapack-if-needed</font> or <font color="##ff0000">--with-f-blas-lapack-if-needed</font> 
          then PETSc will download and install a BLAS and LAPACK for you. Note that the c and f BLAS and LAPACK will, in general,
@@ -305,14 +304,6 @@ these packages provide some basic numeric kernels used by PETSc.</p>
  style="border-collapse: collapse;" bordercolor="#111111" width="72%"
  id="AutoNumber1">
         <tbody>
-          <tr>
-            <td width="23%">&nbsp;BLAS</td>
-            <td width="77%">&nbsp;<a href="http://www.netlib.org/blas">http://www.netlib.org/blas</a></td>
-          </tr>
-          <tr>
-            <td width="23%">&nbsp;LAPACK&nbsp;&nbsp;&nbsp; </td>
-            <td width="77%">&nbsp;<a href="http://www.netlib.org/lapack">http://www.netlib.org/lapack</a></td>
-          </tr>
           <tr>
             <td width="23%">&nbsp;Intel MKL</td>
             <td width="77%">&nbsp;<a
@@ -337,7 +328,7 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
       <p><font color="#551a8b"><b><a name="MPI:">MPI:</a></b></font>
 This software provides the parallel functionality for PETSc. </p>
       <ul>
-        <li> If <font color="##ff0000">./configure</font> cannot locate MPI you can indicate its location with
+        <li> If <font color="##ff0000">./config/configure.py</font> cannot locate MPI you can indicate its location with
              <font color="##ff0000">--with-mpi-dir=directory</font> or <font color="##ff0000">--with-mpi-include=directory</font>
              <font color="##ff0000">--with-mpi-lib=libraryname</font> <font color="##ff0000">--with-mpi-run=pathofmpirun</font>
            </li>
@@ -347,7 +338,7 @@ This software provides the parallel functionality for PETSc. </p>
              <li>If vendor provided MPI is not available, it can be
                    installed from sources.     We recommend MPICH</li>
            </ul>
-     <li>Use the <font color="##ff0000">./configure</font> option <font color="##ff0000">--with-mpich</font> 
+     <li>Use the <font color="##ff0000">./config/configure.py</font> option <font color="##ff0000">--with-mpich</font> 
          then PETSc will download and install MPICH for you.
       </ul>
       <table border="1" cellpadding="0" cellspacing="0"
@@ -397,7 +388,7 @@ to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual"
 don't want to use MPI:</a></b></font> You can build (sequential) PETSc
 without an MPI.</p>
       <ul>
-        <li>If building PETSc with configure run <font color="#ff0000">./configure
+        <li>If building PETSc with configure run <font color="#ff0000">./config/configure.py
 --with-mpi=0 ....</font></li>
         <li>Otherwise edit<font color="#ff0000"> </font><b><font
  color="#551a8b"><a name="bmake/${PETSC_ARCH}/packages">bmake/${PETSC_ARCH}/packages</a> </font> </b>and
@@ -449,6 +440,8 @@ and other UNIX tools. For additional info, run
 ${PETSC_DIR}/bin/win32/win32fe without any options.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
 to         Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp<a href="#Manual">  Return to  Manual Installation Instructions</a></b></font></p>
+      <hr> 	
+      <hr> 	
       <hr> 	
   <h4><font color="#551a8b"><a name="Manual">Manual Installation:</a></font>
   <ul>

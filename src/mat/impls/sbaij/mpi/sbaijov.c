@@ -128,8 +128,7 @@ static int MatExpandIndices_MPISBAIJ(Mat C,int imax,const IS is_in[],IS is_out[]
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ"
 int MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
 {
-  Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
-  int           i,ierr,size;
+  int           i,ierr;
   IS            *is_new;
 
   PetscFunctionBegin;
@@ -147,7 +146,7 @@ int MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
   PetscFunctionReturn(0);
 }
 
-typedef enum {MINE,OTHER} whose;
+typedef enum {MINE,OTHER} WhoseOwner;
 /*  data1, odata1 and odata2 are packed in the format (for communication):
        data[0]          = is_max, no of is 
        data[1]          = size of is[0]
@@ -447,7 +446,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int **dat
       nidx_i += isz; /* ptr to output is[i+1] array */
     }
     nidx[1+i] = isz; /* size of new is[i] */
-  } /* /* for each is */
+  } /* for each is */
   *data_new = nidx;
   ierr = PetscBTDestroy(table0);CHKERRQ(ierr); 
   

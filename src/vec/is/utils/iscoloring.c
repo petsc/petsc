@@ -34,7 +34,7 @@ int ISColoringDestroy(ISColoring iscoloring)
   if (iscoloring->colors) {
     ierr = PetscFree(iscoloring->colors);CHKERRQ(ierr);
   }
-  PetscCommDestroy_Private(&iscoloring->comm);
+  PetscCommDestroy(&iscoloring->comm);
   ierr = PetscFree(iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -214,7 +214,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors[],ISColori
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_ISColoring,iscoloring);CHKERRQ(ierr);
-  ierr = PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   comm = (*iscoloring)->comm;
 
   /* compute the number of the first node on my processor */

@@ -332,11 +332,7 @@ etags_scripts:
 # PETSc users should not generally need to use these commands.
 #
 #
-# External tools required - from sowing & c2html packages
-# Currently installed in ~petsc/bin/linux-2
-#
-DOCTEXT  = doctext
-MAPNAMES = mapnames
+# External tools required for HMTL version of source
 C2HTML   = c2html
 
 # Builds Fortran-77 wrappers 
