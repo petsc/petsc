@@ -27,7 +27,7 @@ EXTERN int VecAYPX_Seq(const PetscScalar *,Vec,Vec);
 EXTERN int VecWAXPY_Seq(const PetscScalar*,Vec,Vec,Vec);
 EXTERN int VecPointwiseMult_Seq(Vec,Vec,Vec);
 EXTERN int VecPointwiseDivide_Seq(Vec,Vec,Vec);
-EXTERN int VecMaxPointwiseDivide_Seq(Vec,Vec,PetscScalar*);
+EXTERN int VecMaxPointwiseDivide_Seq(Vec,Vec,PetscReal*);
 EXTERN int VecGetArray_Seq(Vec,PetscScalar *[]);
 EXTERN int VecRestoreArray_Seq(Vec,PetscScalar *[]);
 EXTERN int VecPlaceArray_Seq(Vec,const PetscScalar *);

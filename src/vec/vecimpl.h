@@ -73,7 +73,7 @@ struct _VecOps {
        (*setvalueslocal)(Vec,int,const int *,const PetscScalar *,InsertMode),
        (*resetarray)(Vec),      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
        (*setfromoptions)(Vec),
-       (*maxpointwisedivide)(Vec,Vec,PetscScalar*);      /* m = max abs(x ./ y) */
+       (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
 };
 
 /* 
