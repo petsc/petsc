@@ -208,7 +208,7 @@ EXTERN_C_END
 #define __FUNCT__ "MatDuplicate_Essl"
 int MatDuplicate_Essl(Mat A, MatDuplicateOption op, Mat *M) {
   int      ierr;
-  Mat_Essl *lu-(Mat_Essl *)A->spptr;
+  Mat_Essl *lu = (Mat_Essl *)A->spptr;
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
