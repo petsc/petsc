@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.7 1995/11/16 19:30:56 balay Exp curfman $";
+static char vcid[] = "$Id: sysio.c,v 1.8 1995/12/13 15:02:55 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -192,28 +192,5 @@ int SYWrite(int fd,void *p,int n,SYIOType type,int istemp)
   }
 #endif
 
-  return 0;
-}
-/* --------------------------------------------------------- */
-/* 
-   SYReadBuffer - Reads data from a file fd at:
-
-   startloc + (nr+1) * sizeof(int) + (so-1)*sizeof(int)        into ja
-   startloc + (nr+1 + nz)* sizeof(int) + (so-1)*sizeof(double) into a
-
-   For a first pass, we just seek and read.  Eventually, we want to buffer 
-   and reuse (should make buffers lie on 4k boundaries relative to 0, not
-   to startloc)
-
-   An fd = -1 clears the existing buffers 
-
-   Returns 1 on failure, 0 on success OR fd == -1
- */
-int SYReadBuffer(int fd,long startloc,int n,void *p,SYIOType type)
-{
-  int ierr;
-  if (fd < 0) return 0;
-  lseek( fd, startloc, SEEK_SET );
-  ierr = SYRead(fd,p,n,type); CHKERRQ(ierr);
   return 0;
 }
