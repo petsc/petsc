@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.17 1995/04/27 20:13:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.18 1995/04/27 21:45:26 bsmith Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
@@ -101,17 +101,19 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
 }
 
 /*@
-     VecCreateMPI - Creates parallel vector.
+   VecCreateMPI - Creates parallel vector.
 
-  Input Parameters:
-.   comm - the MPI communicator to use
-.   n - length of local piece of vector (or -1 if N is given)
-.   N - global lenght of vector (or -1 if n is given)
+   Input Parameters:
+.  comm - the MPI communicator to use
+.  n - length of local piece of vector (or PETSC_DECIDE if N is given)
+.  N - global length of vector (or PETSC_DECIDE if n is given)
 
-  Output Parameter:
+   Output Parameter:
 .  vv - the vector
  
-  Keywords: vector, create, MPI
+.keywords: vector, create, MPI
+
+.seealso: VecCreateSequential(), VecCreateInitialVector()
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {
