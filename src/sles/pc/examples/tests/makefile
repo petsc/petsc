@@ -11,8 +11,8 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-EXAMPLES = ex1 ex2 ex3 ex4 ex5
-EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c
+EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6
+EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 SYSLIB   = $(SLES_LIB) -lm
 LINCLUDE = $(SOURCEH)
 

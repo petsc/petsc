@@ -10,8 +10,8 @@ OBJSC     =
 WOBJS     = 
 OBJSF     =
 LIBBASE   = libpetscsnes
-EXAMPLES  = ex1 ex2 ex3
-EXAMPLESC = ex1.c ex2.c ex3.c
+EXAMPLES  = ex1 ex2 ex3 ex4
+EXAMPLESC = ex1.c ex2.c ex3.c ex4.c
 SYSLIB    = $(PETSC_LIB)
 LINCLUDE  = $(SOURCEH)
 
