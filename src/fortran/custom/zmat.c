@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.5 1995/10/26 22:01:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: zmat.c,v 1.6 1995/10/26 22:38:53 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -62,7 +62,7 @@ static char vcid[] = "$Id: zmat.c,v 1.5 1995/10/26 22:01:47 bsmith Exp curfman $
 void matgetformatfromoptions_(MPI_Comm comm,char *prefix,MatType *type,int *set,int *__ierr,int len){
   char *t;
   if (prefix[len] != 0) {
-    t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
     PetscStrncpy(t,prefix,len);
     t[len] = 0;
   }
@@ -86,13 +86,14 @@ void matload_(Viewer bview,MatType *outtype,Mat *newmat, int *__ierr )
   *(int*) newmat = MPIR_FromPointer(mm);
 }
 
-void matgetsubmatrix_(Mat mat,IS irow,IS icol,Mat *submat, int *__ierr )
+void matgetsubmatrix_(Mat mat,IS irow,IS icol,MatGetSubMatrixCall *scall,
+                      Mat *submat, int *__ierr )
 {
   Mat mm;
   *__ierr = MatGetSubMatrix(
 	(Mat)MPIR_ToPointer( *(int*)(mat) ),
 	(IS)MPIR_ToPointer( *(int*)(irow) ),
-	(IS)MPIR_ToPointer( *(int*)(icol) ),&mm);
+	(IS)MPIR_ToPointer( *(int*)(icol) ),*scall,&mm);
   *(int*) submat = MPIR_FromPointer(mm);
 }
 
@@ -109,7 +110,7 @@ void matreorderingregister_(MatOrdering *name, char* sname,
 {
   char *t;
   if (sname[len] != 0) {
-    t = (char *) PETSCMALLOC( (len+1)*sizeof(char) ); 
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
     PetscStrncpy(t,sname,len);
     t[len] = 0;
   }
@@ -117,7 +118,7 @@ void matreorderingregister_(MatOrdering *name, char* sname,
   f5 = order;
 
   *__ierr = MatReorderingRegister(*name,t,ourorder);
-  if (t != sname) PETSCFREE(t);
+  if (t != sname) PetscFree(t);
 }			       
 
 
