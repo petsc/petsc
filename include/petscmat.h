@@ -1270,6 +1270,8 @@ EXTERN int PetscViewerMathematicaPutMatrix(PetscViewer, int, int, PetscReal *);
 EXTERN int PetscViewerMathematicaPutCSRMatrix(PetscViewer, int, int, int *, int *, PetscReal *);
 
 EXTERN int MatSeqAIJPtAP(Mat,Mat,Mat*);
+EXTERN int MatSeqAIJPtAPSymbolic(Mat,Mat,Mat*);
+EXTERN int MatSeqAIJPtAPNumeric(Mat,Mat,Mat);
 
 PETSC_EXTERN_CXX_END
 #endif
