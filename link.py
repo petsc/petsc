@@ -3,6 +3,8 @@ import action
 import fileset
 import transform
 
+import BS.LinkCheckerI.Checker
+
 import os
 
 class TagLibrary (transform.GenericTag):
@@ -28,6 +30,9 @@ class LinkSharedLibrary (action.Action):
     (base, ext) = os.path.splitext(libName)
     return base+'.so'
 
+  def checkLibrary(self, source):
+    BS.LinkCheckerI.Checker.Checker().openLibrary(source)
+
   def link(self, source):
     linkDir = os.path.join(self.tmpDir, 'link')
     oldDir  = os.getcwd()
@@ -48,6 +53,7 @@ class LinkSharedLibrary (action.Action):
     self.updateSourceDB(source)
     os.chdir(oldDir)
     self.cleanupDir(linkDir, remove = 1)
+    self.checkLibrary(sharedLibrary)
     return self.products
 
   def setExecute(self, set):

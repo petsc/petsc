@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import bs
 import compile
 import transform
 
@@ -67,10 +68,20 @@ class CompileSIDLClient (CompileSIDL):
     CompileSIDL.constructArgs(self)
 
 class PythonModuleFixup (transform.Transform):
-  def __init__(self, library):
+  def __init__(self, library, pythonDir):
     transform.Transform.__init__(self)
-    (base, ext)  = os.path.splitext(library[0])
-    self.libName = base+'.so'
+    (base, ext)    = os.path.splitext(library[0])
+    self.libName   = base+'.so'
+    self.pythonDir = pythonDir
+
+  def copySIDLInterface(self):
+    babelPythonDir = os.path.join(bs.argDB['BABEL_DIR'], 'python', 'SIDL')
+    sidlDir        = os.path.join(self.pythonDir, 'SIDL')
+    if not os.path.exists(sidlDir): os.makedirs(sidlDir)
+    for file in os.listdir(babelPythonDir):
+      if file[-2:] == '.h':
+        command = 'cp '+os.path.join(babelPythonDir, file)+' '+sidlDir
+        self.executeShellCommand(command)
 
   def fileExecute(self, source):
     (dir, file) = os.path.split(source)
@@ -79,5 +90,10 @@ class PythonModuleFixup (transform.Transform):
     package     = base[:-7]
     moduleName  = os.path.join(dir, package+'module.so')
     self.debugPrint('Symlinking '+self.libName+' to '+moduleName, 3, 'compile')
-    if os.path.exists(moduleName): os.remove(moduleName)
+    if os.path.exists(moduleName) or os.path.islink(moduleName):
+      os.remove(moduleName)
     os.symlink(self.libName, moduleName)
+
+  def execute(self):
+    self.copySIDLInterface()
+    return transform.Transform.execute(self)
