@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.72 2000/05/05 22:14:36 balay Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.73 2000/05/10 16:39:48 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -268,7 +268,7 @@ EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
 
 EXTERN int VecReciprocal_Default(Vec);
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
 EXTERN_C_BEGIN
 EXTERN int VecMatlabEnginePut_Default(PetscObject,void*);
 EXTERN int VecMatlabEngineGet_Default(PetscObject,void*);

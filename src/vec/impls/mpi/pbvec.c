@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.155 2000/05/10 16:40:09 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.156 2000/05/15 18:43:02 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -49,10 +49,7 @@ int VecDot_MPI(Vec xin,Vec yin,Scalar *z)
 
   PetscFunctionBegin;
   ierr = VecDot_Seq(xin,yin,&work);CHKERRQ(ierr);
-
-  PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
   ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
-  PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
   PetscFunctionReturn(0);
 }
@@ -66,10 +63,7 @@ int VecTDot_MPI(Vec xin,Vec yin,Scalar *z)
 
   PetscFunctionBegin;
   ierr = VecTDot_Seq(xin,yin,&work);CHKERRQ(ierr);
-
-  PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
   ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
-  PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
   PetscFunctionReturn(0);
 }
@@ -192,12 +186,12 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
   s->donotstash  = 0;
                                                         
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
-  PetscPublishAll(v);
+  ierr = PetscPublishAll(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -532,7 +526,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
   if (ghosts) {
     IS from,to;
   
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,nghost,ghosts,&from);CHKERRQ(ierr);   
+    ierr = ISCreateGeneral(comm,nghost,ghosts,&from);CHKERRQ(ierr);   
     ierr = ISCreateStride(PETSC_COMM_SELF,nghost,n,1,&to);CHKERRQ(ierr);
     ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
     PLogObjectParent(*vv,w->localupdate);
@@ -709,7 +703,7 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
   if (ghosts) {
     IS from,to;
   
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,nghost,ghosts,&from);CHKERRQ(ierr);   
+    ierr = ISCreateBlock(comm,bs,nghost,ghosts,&from);CHKERRQ(ierr);   
     ierr = ISCreateStride(PETSC_COMM_SELF,bs*nghost,n,1,&to);CHKERRQ(ierr);
     ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
     PLogObjectParent(*vv,w->localupdate);

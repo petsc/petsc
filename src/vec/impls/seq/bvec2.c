@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.179 2000/05/10 16:40:08 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.180 2000/05/18 18:06:44 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -233,7 +233,7 @@ int VecView_Seq(Vec xin,Viewer viewer)
   } else if (isascii){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {
-    ierr = ViewerSocketPutScalar_Private(viewer,xin->n,1,x->array);CHKERRQ(ierr);
+    ierr = ViewerSocketPutScalar(viewer,xin->n,1,x->array);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else {
@@ -433,11 +433,11 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
     ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_SEQ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
-  PetscPublishAll(v);
+  ierr = PetscPublishAll(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

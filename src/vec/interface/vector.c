@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.206 2000/06/14 15:02:32 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.207 2000/06/15 22:00:05 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -731,6 +731,8 @@ int VecWAXPY(const Scalar *alpha,Vec x,Vec y,Vec w)
 
    Level: advanced
 
+   Notes: any subset of the x, y, and w may be the same vector.
+
 .keywords: vector, multiply, componentwise, pointwise
 
 .seealso: VecPointwiseDivide()
@@ -771,6 +773,8 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
 .  w - the result
 
    Level: advanced
+
+   Notes: any subset of the x, y, and w may be the same vector.
 
 .keywords: vector, divide, componentwise, pointwise
 
