@@ -38,18 +38,20 @@ Additional Capabilities that PETSc Needs:
       - Crank-Nicholson
       - Multi-stage explicit methods
 
- - Suggestion by Carl - provide SNES example showing user computing most
-   of Jacobian in function eval routine.
-
  - Fix VRML vector viewer interface; add documentation about VRML.
-    
- - Finish converting examples to tutorials/tests formats
-
- - Add SLES example showing multiple linear solves with same matrices but
-   difference RHS.
 
  - Add feature to SNESDefatulComputeJacobian() for user to set differencing
    parameter (similar to matrix-free stuff)
+
+ - Finish converting examples to tutorials/tests formats
+
+    - Suggestion by Carl - provide SNES example showing user computing most
+      of Jacobian in function eval routine.
+
+    - Add SLES example showing multiple linear solves with same matrices but
+      difference RHS.
+
+    - Write an example of using MatCreateShell().
 
 
 -----------------------------------------------------------------------
