@@ -95,6 +95,8 @@ class Script(logging.Logger):
       output = pipe.fromchild
       err    = pipe.childerr
     else:
+      import os
+
       (input, output, err) = os.popen3(command)
     return (input, output, err, pipe)
   openPipe = staticmethod(openPipe)
