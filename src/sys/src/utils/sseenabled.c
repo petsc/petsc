@@ -143,9 +143,9 @@ int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   global_flag = PETSC_FALSE;
   ierr = PetscOptionsName("-disable_sse","Disable use of Intel SSE instructions.","PetscSSEIsEnabled",&disabled);CHKERRQ(ierr);
   if (!disabled) {
-    ierr = PetscSSEHardwareTest(local_flag);CHKERRQ(ierr);
+    ierr = PetscSSEHardwareTest(&local_flag);CHKERRQ(ierr);
     if (local_flag) {
-      ierr = PetscSSEOSEnabledTest(local_flag);CHKERRQ(ierr);
+      ierr = PetscSSEOSEnabledTest(&local_flag);CHKERRQ(ierr);
     }
     if (gflag) {
       ierr = MPI_Allreduce(&local_flag,&global_flag,1,MPI_INT,MPI_LAND,comm);CHKERRQ(ierr);
