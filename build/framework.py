@@ -159,6 +159,8 @@ class Framework(base.Base):
       import build.templates.SIDL
 
       self._sidlTemplate = build.templates.SIDL.Template(self.sourceDB, self.project, self.dependenceGraph)
+      # Add default client languages
+      map(self._sidlTemplate.addClient, self.argDB['clientLanguages'])
     return self._sidlTemplate
   sidlTemplate = property(getSIDLTemplate, doc = 'This is the default template for SIDL operations')
 
