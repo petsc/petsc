@@ -35,8 +35,6 @@ petsc/bmake/rs6000_impi
 petsc/bmake/rs6000_mpif
 petsc/bmake/rs6000_local
 petsc/bmake/rs6000_p4
-petsc/bin/configure
-petsc/bin/config.status
 petsc/src/snes/impls/trdl
 petsc/src/mat/examples/matrices
 petsc/src/grid
@@ -102,6 +100,8 @@ petsc/src/grid/examples/RCS/
 petsc/src/grid/impls/RCS/
 petsc/src/grid/src/RCS/
 petsc/src/is/examples/RCS/
+petsc/src/is/examples/tests/RCS/
+petsc/src/is/examples/tutorials/RCS/
 petsc/src/is/impls/RCS/
 petsc/src/is/src/RCS/
 petsc/src/is/utils/RCS/
@@ -116,6 +116,8 @@ petsc/src/pc/examples/RCS/
 petsc/src/pc/impls/RCS/
 petsc/src/pc/src/RCS/
 petsc/src/sles/examples/RCS/
+petsc/src/sles/examples/tests/RCS/
+petsc/src/sles/examples/tutorials/RCS/
 petsc/src/sles/src/RCS/
 petsc/src/stencil/examples/RCS/
 petsc/src/stencil/impls/RCS/
