@@ -1,4 +1,4 @@
-/* $Id: f90_rs6000.h,v 1.1 1998/03/23 20:02:46 balay Exp balay $ */
+/* $Id: f90_rs6000.h,v 1.2 1998/03/23 21:06:02 balay Exp balay $ */
 
 typedef struct {
   long lower;   /* starting index of the fortran array */
@@ -12,10 +12,17 @@ typedef struct {
   if these constants are not set in
   the f90 pointer
 */
-#define F90_CHAR_ID   770
-#define F90_INT_ID    781
-#define F90_DOUBLE_ID 782
-#define F90_COOKIE    20481
+#define F90_CHAR_ID    770
+#define F90_INT_ID     781
+#define F90_DOUBLE_ID  782
+#define F90_COMPLEX_ID 783
+#define F90_COOKIE     20481
+
+#if !defined (PETSC_COMPLEX)
+#define F90_SCALAR_ID F90_DOULBE_ID
+#else
+#define F90_SCALAR_ID F90_COMPLEX_ID
+#endif
 
 #define f90_header() \
 void* addr;    /* Pointer to the data/array */ \       

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_rs6000.c,v 1.6 1998/04/07 00:24:17 balay Exp balay $";
+static char vcid[] = "$Id: f90_rs6000.c,v 1.7 1998/04/24 14:09:28 balay Exp balay $";
 #endif
 
 #include "src/fortran/f90/zf90.h"
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: f90_rs6000.c,v 1.6 1998/04/07 00:24:17 balay Exp bala
 int PetscF90Create1dArrayScalar(Scalar *array,int len, array1d *ptr)
 {
   ptr->addr          = (void *)array;
-  ptr->id            = F90_DOUBLE_ID;
+  ptr->id            = F90_SCALAR_ID;
   ptr->cookie        = F90_COOKIE;
   ptr->sd            = sizeof(Scalar);
   ptr->ndim          = 1;
@@ -78,7 +78,7 @@ int PetscF90Destroy1dArrayScalar(array1d *ptr)
 int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
 {
   ptr->addr          = (void *)array;
-  ptr->id            = F90_DOUBLE_ID;
+  ptr->id            = F90_SCALAR_ID;
   ptr->cookie        = F90_COOKIE;
   ptr->sd            = sizeof(Scalar);
   ptr->ndim          = 2;
