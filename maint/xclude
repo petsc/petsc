@@ -55,6 +55,7 @@ petsc/src/inline/RCS
 petsc/src/is/RCS
 petsc/src/ksp/RCS
 petsc/src/mat/RCS
+petsc/src/mat/impls/dense/mpi/mdnfact.c
 petsc/src/pc/RCS
 petsc/src/sles/RCS
 petsc/src/stencil/RCS
