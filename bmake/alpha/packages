@@ -42,9 +42,13 @@ MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a
 MPI_INCLUDE    = -I/usr/local/mpi/include
 MPIRUN         = /usr/local/mpi/bin/mpirun
 #
-# PCONF - indicates which external packages are available at your site
-# Make sure that the next line below does not have -DHAVE_BLOCKSOLVE
-# unless you have BlockSolve installed.
+# ----------------------------------------------------------------------------------------  
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated. If you do not have the package then
+# comment out the locations indicated for that package.
+#
 # Make sure that you have the DEC alpha dxml library installed on your 
 # machine and -ldxml in the BLAS_LIB line above if you define 
 # HAVE_DXML below.
@@ -52,7 +56,7 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 PCONF      =  -DHAVE_DXML -DHAVE_BLOCKSOLVE
 #
 #   If you are not using BlockSolve then comment out or remove the next
-#  two lines.
+#  two lines and make sure -DHAVE_BLOCKSOLVE is not defined above
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
 BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
