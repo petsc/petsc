@@ -13,6 +13,12 @@ class Hooks(ihooks.Hooks, maker.Maker):
     self.usingSIDL = BSTemplates.sidlDefaults.UsingSIDL(bs.Project('', ''), [], argDB = self.argDB)
     return
 
+  def getProjects(self):
+    projects = []
+    if self.argDB.has_key('installedprojects'):
+      projects = map(lambda proj: self.usingSIDL.getClientRootDir('Python', root = proj.getRoot()), self.argDB['installedprojects'])
+    return projects
+
   def getImplementations(self):
     dirs = []
 ##    for proj in self.argDB['installedprojects']:
@@ -30,8 +36,7 @@ class Hooks(ihooks.Hooks, maker.Maker):
   # sys interface replacement
   def default_path(self):
     import sys
-    projects = map(lambda proj: self.usingSIDL.getClientRootDir('Python', root = proj.getRoot()), self.argDB['installedprojects'])
-    return sys.path+projects+self.getImplementations()
+    return sys.path+self.getProjects()+self.getImplementations()
 
 class Loader(ihooks.FancyModuleLoader):
   def find_module(self, name, path = None):

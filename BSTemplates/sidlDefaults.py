@@ -46,10 +46,6 @@ class UsingSIDL (maker.Maker):
     # Flags for the SIDL compiler
     self.serverCompilerFlags = sidlStructs.SIDLLanguageDict(self)
     self.clientCompilerFlags = sidlStructs.SIDLLanguageDict(self)
-    self.includeDirs         = sidlStructs.SIDLPackageDict(self)
-    self.extraLibraries      = sidlStructs.SIDLPackageDict(self)
-    self.setupIncludeDirectories()
-    self.setupExtraLibraries()
     return
 
   def setupArgDB(self):
@@ -62,16 +58,6 @@ class UsingSIDL (maker.Maker):
     if not self.argDB.has_key('babelCrap'): self.argDB['babelCrap'] = 0
     return
 
-  def setupIncludeDirectories(self):
-    rootDir = self.getRuntimeProject().getRoot()
-    for lang in sidlStructs.SIDLConstants.getLanguages():
-      self.includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = os.path.join(rootDir, 'server')))
-      if not self.compilerDefaults.generatesAllStubs() and not lang == self.getBaseLanguage():
-        self.includeDirs[lang].append(self.getClientRootDir(lang, root = rootDir))
-    # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
-    self.includeDirs['Python'].append(os.path.join(rootDir, 'python'))
-    return self.includeDirs
-
   def getRuntimeProject(self):
     projects = [self.project]
     if self.argDB.has_key('installedprojects'):
@@ -81,19 +67,41 @@ class UsingSIDL (maker.Maker):
         return project
     raise ImportError('Could not find runtime project')
 
-  def setupExtraLibraries(self):
-    runtimeProject = self.getRuntimeProject()
-    using     = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self, argDB = self.argDB)
-    serverLib = using.getServerLibrary(runtimeProject, self.getBaseLanguage(), self.getBasePackage(), isArchive = 0)
-    self.extraLibraries['executable'].extend(serverLib)
+  def setupIncludeDirectories(self):
+    includeDirs = sidlStructs.SIDLPackageDict(self)
+    rootDir     = self.getRuntimeProject().getRoot()
     for lang in sidlStructs.SIDLConstants.getLanguages():
-      self.extraLibraries[lang].extend(serverLib)
+      includeDirs[lang].append(self.getServerRootDir(self.getBaseLanguage(), self.getBasePackage(), root = os.path.join(rootDir, 'server')))
+      if not self.compilerDefaults.generatesAllStubs() and not lang == self.getBaseLanguage():
+        includeDirs[lang].append(self.getClientRootDir(lang, root = rootDir))
+    # TODO: Fix this debacle by generating SIDLObjA and SIDLPyArrays
+    includeDirs['Python'].append(os.path.join(rootDir, 'python'))
+    return includeDirs
+
+  def getIncludeDirs(self):
+    if not hasattr(self, 'includeDirs'):
+      self.includeDirs = self.setupIncludeDirectories()
+    return self.includeDirs
+
+  def setupExtraLibraries(self):
+    extraLibraries = sidlStructs.SIDLPackageDict(self)
+    runtimeProject = self.getRuntimeProject()
+    using          = getattr(compileDefaults, 'Using'+self.getBaseLanguage().replace('+', 'x'))(self, argDB = self.argDB)
+    serverLib      = using.getServerLibrary(runtimeProject, self.getBaseLanguage(), self.getBasePackage(), isArchive = 0)
+    extraLibraries['executable'].extend(serverLib)
+    for lang in sidlStructs.SIDLConstants.getLanguages():
+      extraLibraries[lang].extend(serverLib)
       if not self.project == runtimeProject and not lang == self.getBaseLanguage():
         using = getattr(compileDefaults, 'Using'+lang.replace('+', 'x'))(self, argDB = self.argDB)
-        self.extraLibraries[lang].extend(using.getClientLibrary(runtimeProject, lang, isArchive = 0))
+        extraLibraries[lang].extend(using.getClientLibrary(runtimeProject, lang, isArchive = 0))
     for package in self.getPackages():
       if not self.project == runtimeProject or not package in self.bootstrapPackages:
-        self.extraLibraries[package].extend(serverLib)
+        extraLibraries[package].extend(serverLib)
+    return extraLibraries
+
+  def getExtraLibraries(self):
+    if not hasattr(self, 'extraLibraries'):
+      self.extraLibraries = self.setupExtraLibraries()
     return self.extraLibraries
 
   def getLanguage(self):

@@ -55,7 +55,7 @@ class UsingCompiler(maker.Maker):
     for compiler in compilers:
       compiler.defines.extend(self.getDefines())
       compiler.includeDirs.append(sourceDir)
-      compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+      compiler.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
       compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
       for dir in self.usingSIDL.repositoryDirs:
         includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
@@ -66,7 +66,7 @@ class UsingCompiler(maker.Maker):
 
   def getClientLinkTarget(self, project, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
+    libraries.extend(self.usingSIDL.getExtraLibraries()[self.getLanguage()])
     libraries.extend(self.extraLibraries[self.getLanguage()])
     for dir in self.usingSIDL.repositoryDirs:
       for lib in self.getClientLibrary(self.guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
@@ -78,7 +78,7 @@ class UsingCompiler(maker.Maker):
 
   def getServerLinkTarget(self, project, package, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[package])
+    libraries.extend(self.usingSIDL.getExtraLibraries()[package])
     if not self.getLanguage() in self.usingSIDL.internalClientLanguages[package]:
       libraries.extend(self.getClientLibrary(project, self.getLanguage()))
     libraries.extend(self.extraLibraries[package])
@@ -97,7 +97,7 @@ class UsingCompiler(maker.Maker):
     # Might be all internal clients
     if os.path.isdir(self.usingSIDL.getClientRootDir(self.getLanguage())):
       compiler.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compiler.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compiler.includeDirs.extend(self.includeDirs['executable'])
     for dir in self.usingSIDL.repositoryDirs:
       includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
@@ -111,7 +111,7 @@ class UsingCompiler(maker.Maker):
     if os.path.isfile(self.getClientLibrary(project, self.getLanguage())[0]):
       libraries.extend(self.getClientLibrary(project, self.getLanguage()))
     libraries.extend(self.extraLibraries['executable'])
-    libraries.extend(self.usingSIDL.extraLibraries['executable'])
+    libraries.extend(self.usingSIDL.getExtraLibraries()['executable'])
     for dir in self.usingSIDL.repositoryDirs:
       for lib in self.getClientLibrary(self.guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
@@ -145,7 +145,7 @@ class UsingC (UsingCompiler):
     compiler = compile.CompileC(self.usingSIDL.sourceDB, library)
     compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(rootDir)
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compiler.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     # Server specific flags
     compiler.includeDirs.append(stubDir)
     compiler.includeDirs.extend(self.includeDirs[package])
@@ -185,14 +185,14 @@ class UsingCxx (UsingCompiler):
     compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
-    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileC.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     # Server Filter
     serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
     # Server compiler
     compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
     compileCxx.defines.extend(self.getDefines())
     compileCxx.includeDirs.append(rootDir)
-    compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileCxx.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileCxx.includeDirs.append(stubDir)
     compileCxx.includeDirs.extend(self.includeDirs[package])
     compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
@@ -283,7 +283,7 @@ class UsingPython(UsingCompiler):
     compiler = compile.CompileC(self.usingSIDL.sourceDB, library)
     compiler.defines.extend(self.getDefines())
     compiler.includeDirs.append(rootDir)
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compiler.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     # Server specific flags
     compiler.includeDirs.append(stubDir)
     compiler.includeDirs.extend(self.includeDirs[package])
@@ -347,14 +347,14 @@ class UsingMathematica(UsingCompiler):
     compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
-    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileC.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     # Server Filter
     serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
     # Server compiler
     compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
     compileCxx.defines.extend(self.getDefines())
     compileCxx.includeDirs.append(rootDir)
-    compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileCxx.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileCxx.includeDirs.append(stubDir)
     compileCxx.includeDirs.extend(self.includeDirs[package])
     compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
@@ -393,12 +393,12 @@ class UsingF77 (UsingCompiler):
     compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
-    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileC.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     # Server compiler
     compileF77 = compile.CompileF77(self.usingSIDL.sourceDB, library)
     compileF77.defines.extend(self.getDefines())
     compileF77.includeDirs.append(rootDir)
-    compileF77.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileF77.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileF77.includeDirs.append(stubDir)
     compileF77.includeDirs.extend(self.includeDirs[package])
     compileF77.includeDirs.extend(self.includeDirs[self.getLanguage()])
@@ -409,7 +409,7 @@ class UsingF77 (UsingCompiler):
     library  = fileset.FileSet([os.path.join(project.getRoot(), 'lib', 'lib'+baseName+'.a')])
     compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
-    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileC.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileC.includeDirs.extend(self.includeDirs['executable'])
     return [compile.TagC(self.usingSIDL.sourceDB), compileC, compile.TagF77(self.usingSIDL.sourceDB), compile.CompileF77(self.usingSIDL.sourceDB, library)]
 
@@ -457,14 +457,14 @@ class UsingF90 (UsingCompiler):
     compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
-    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileC.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     # Server compiler
     compilers = self.getCompiler(library)
     if not isinstance(compilers, list): compilers = [compilers]
     for compiler in compilers:
       compiler.defines.extend(self.getDefines())
       compiler.includeDirs.append(rootDir)
-      compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+      compiler.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
       compiler.includeDirs.append(stubDir)
       compiler.includeDirs.extend(self.includeDirs[package])
       compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
@@ -476,11 +476,11 @@ class UsingF90 (UsingCompiler):
     library  = fileset.FileSet([os.path.join(project.getRoot(), 'lib', 'lib'+baseName+'.a')])
     compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
     compileCxx.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
-    compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileCxx.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileCxx.includeDirs.extend(self.includeDirs['executable'])
     compileF90 = compile.CompileF90(self.usingSIDL.sourceDB, library)
     compileF90.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
-    compileF90.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileF90.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileF90.includeDirs.extend(self.includeDirs['executable'])
     return [compile.TagCxx(self.usingSIDL.sourceDB), compileCxx, compile.TagF90(self.usingSIDL.sourceDB), compileF90]
 
@@ -538,7 +538,7 @@ class UsingJava (UsingCompiler):
     compileJava = compile.CompileJava(self.usingSIDL.sourceDB, self.getClientLibrary(project, self.getLanguage()))
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(sourceDir)
-    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileC.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileC.includeDirs.extend(self.includeDirs[self.getLanguage()])
     compileJava.includeDirs.extend(self.getSIDLRuntimeLibraries())
     compileJava.archiverRoot = sourceDir
@@ -604,7 +604,7 @@ class UsingMatlab(UsingCompiler):
 
   def getClientLinkTarget(self, project, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
-    libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
+    libraries.extend(self.usingSIDL.getExtraLibraries()[self.getLanguage()])
     libraries.extend(self.extraLibraries[self.getLanguage()])
     for dir in self.usingSIDL.repositoryDirs:
       for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
@@ -625,14 +625,14 @@ class UsingMatlab(UsingCompiler):
     compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
     compileC.defines.extend(self.getDefines())
     compileC.includeDirs.append(rootDir)
-    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileC.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     # Server Filter
     serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
     # Server compiler
     compileCxx = compile.CompileMatlabCxx(self.usingSIDL.sourceDB, library)
     compileCxx.defines.extend(self.getDefines())
     compileCxx.includeDirs.append(rootDir)
-    compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileCxx.includeDirs.extend(self.usingSIDL.getIncludeDirs()[self.getLanguage()])
     compileCxx.includeDirs.append(stubDir)
     compileCxx.includeDirs.extend(self.includeDirs[package])
     compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
