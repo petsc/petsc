@@ -1,4 +1,4 @@
-# $Id: variables,v 1.7 2001/03/29 16:33:52 balay Exp balay $ 
+# $Id: variables,v 1.8 2001/08/22 17:58:22 balay Exp balay $ 
 #
 #     See the file bmake/variables.defs for a complete explanation of all these fields
 #
@@ -28,7 +28,7 @@ C_SYS_LIB          = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnr
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops
+O_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -funroll-all-loops
 O_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 # ########################## C++ compiler ##################################
 #
@@ -44,13 +44,13 @@ CXX_SYS_LIB	   = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
-OCXX_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops 
+OCXX_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -funroll-all-loops 
 OCXX_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -malign-double -funroll-all-loops
+OCOMP_COPTFLAGS	   = -O6 -Wshadow  -fomit-frame-pointer -funroll-all-loops
 OCOMP_FOPTFLAGS	   = -fast -tp p6 -Mnoframe
 # ########################### PETSc install options ###########################
 #
