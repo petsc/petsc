@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.100 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.101 2000/07/21 19:40:49 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -120,7 +120,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_MAX_IT             = -5,
               SNES_DIVERGED_LS_FAILURE         = -6,
               SNES_DIVERGED_TR_REDUCTION       = -7,
-              SNES_DIVERGED_LOCAL_MIN          = -8,
+              SNES_DIVERGED_LOCAL_MIN          = -8,  /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
 
 EXTERN int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,SNESConvergedReason*,void*),void*);
