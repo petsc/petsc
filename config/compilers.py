@@ -38,6 +38,8 @@ class Configure(config.base.Configure):
     return
 
   def checkCCompiler(self):
+    '''Determine the C compiler using --with-cc, then CC, then a search
+    - Also determines the preprocessor from --with-cpp, then CPP, then the C compiler'''
     if self.framework.argDB.has_key('with-cc'):
       self.CC = self.framework.argDB['with-cc']
     elif self.framework.argDB.has_key('CC'):
@@ -58,12 +60,36 @@ class Configure(config.base.Configure):
     self.addSubstitution('CPP', self.CPP)
     return
 
-  def checkFormatting(self):
+  def checkCRestrict(self):
+    '''Check for the C restrict keyword'''
+    keyword = 'unsupported'
+    self.pushLanguage('C')
+    # Try the official restrict keyword, then gcc's __restrict__, then
+    # SGI's __restrict.  __restrict has slightly different semantics than
+    # restrict (it's a bit stronger, in that __restrict pointers can't
+    # overlap even with non __restrict pointers), but I think it should be
+    # okay under the circumstances where restrict is normally used.
+    for kw in ['restrict', ' __restrict__', '__restrict']:
+      if self.checkCompile('', 'float * '+kw+' x;'):
+        keyword = kw
+        break
+    self.popLanguage()
+    # Define to equivalent of C99 restrict keyword, or to nothing if this is not supported.  Do not define if restrict is supported directly.
+    if not keyword == 'restrict':
+      if keyword == 'unsupported':
+        keyword = ''
+      self.framework.addDefine('restrict', keyword)
+    return
+
+  def checkCFormatting(self):
+    '''Activate format string checking if using the GNU compilers'''
     if self.CC  == "gcc":
       self.addDefine('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
     return
 
   def checkCxxCompiler(self):
+    '''Determine the C++ compiler using --with-cxx, then CXX, then a search
+    - Also determines the preprocessor from --with-cxxcpp, then CXXCPP, then the C++ compiler'''
     if self.framework.argDB.has_key('with-cxx'):
       self.CXX = self.framework.argDB['with-cxx']
     elif self.framework.argDB.has_key('CXX'):
@@ -93,6 +119,7 @@ class Configure(config.base.Configure):
     return
 
   def checkFortranCompiler(self):
+    '''Determine the Fortran compiler using --with-fc, then FC, then a search'''
     if self.framework.argDB.has_key('with-fc'):
       self.FC = self.framework.argDB['with-fc']
     elif self.framework.argDB.has_key('FC'):
@@ -179,11 +206,11 @@ class Configure(config.base.Configure):
     if os.path.isfile(cobj[0]): os.remove(cobj[0])
     self.framework.argDB['LIBS'] = oldLIBS
     self.popLanguage()
-
     return
 
 
   def checkFortran90Compiler(self):
+    '''Determine the Fortran 90 compiler using --with-f90, then F90, then a search'''
     if self.framework.argDB.has_key('with-f90'):
       self.F90 = self.framework.argDB['with-f90']
     elif self.framework.argDB.has_key('F90'):
@@ -197,6 +224,7 @@ class Configure(config.base.Configure):
     return
 
   def checkFortran90Interface(self):
+    '''Check for custom F90 interfaces, such as that provided by PETSc'''
     if self.framework.argDB.has_key('with-f90-header'):
       self.addDefine('PETSC_HAVE_F90_H', self.framework.argDB['with-f90-header'])
     if self.framework.argDB.has_key('with-f90-source'):
@@ -328,7 +356,8 @@ class Configure(config.base.Configure):
 
   def configure(self):
     self.executeTest(self.checkCCompiler)
-    self.executeTest(self.checkFormatting)
+    self.executeTest(self.checkCRestrict)
+    self.executeTest(self.checkCFormatting)
     self.executeTest(self.checkCxxCompiler)
     self.executeTest(self.checkCxxNamespace)
     self.executeTest(self.checkFortranCompiler)

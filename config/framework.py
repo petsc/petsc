@@ -165,7 +165,7 @@ class Framework(config.base.Configure):
       return self.argDB[self.argSubst[name]]
     else:
       for child in self.children:
-        if not hasattr(child, 'subst') or not isinstance(child.defines, dict):
+        if not hasattr(child, 'subst') or not isinstance(child.subst, dict):
           continue
         if prefix is None:
           substPrefix = self.getSubstitutionPrefix(child)
@@ -208,7 +208,7 @@ class Framework(config.base.Configure):
     for pair in self.argSubst.items():
       print pair[0]+'  --->  '+self.argDB[pair[1]]
     for child in self.children:
-      if not hasattr(child, 'subst') or not isinstance(child.defines, dict): continue
+      if not hasattr(child, 'subst') or not isinstance(child.subst, dict): continue
       substPrefix = self.getSubstitutionPrefix(child)
       for pair in child.subst.items():
         if substPrefix:
@@ -224,7 +224,6 @@ class Framework(config.base.Configure):
 
   def outputDefine(self, f, name, value = None, comment = ''):
     '''Define "name" to "value" in the configuration header'''
-    name  = name.upper()
     guard = re.match(r'^(\w+)(\([\w,]+\))?', name).group(1)
     if comment:
       for line in comment.split('\n'):
