@@ -11,6 +11,8 @@ import RDict
 
 #===============================================================================
 def parseValue(arg):
+  # Should I replace this with a lexer?
+  if arg: arg = arg.strip()
   if arg and arg[0] == '[' and arg[-1] == ']':
     if len(arg) > 2: arg = arg[1:-1].split(',')
     else:            arg = []
