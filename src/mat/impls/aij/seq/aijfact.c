@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.103 1998/07/13 18:49:48 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.104 1998/07/14 14:48:33 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -36,19 +36,20 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
   
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
-  ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
+  ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
 
   /* get new row pointers */
-  ainew = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
+  ainew    = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
   ainew[0] = -shift;
   /* don't know how many column pointers are needed so estimate */
-  jmax = (int) (f*ai[n]+(!shift));
+  jmax  = (int) (f*ai[n]+(!shift));
   ajnew = (int *) PetscMalloc( (jmax)*sizeof(int) ); CHKPTRQ(ajnew);
   /* fill is a linked list of nonzeros in active row */
   fill = (int *) PetscMalloc( (2*n+1)*sizeof(int)); CHKPTRQ(fill);
-  im = fill + n + 1;
+  im   = fill + n + 1;
   /* idnew is location of diagonal in factor */
-  idnew = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(idnew);
+  idnew    = (int *) PetscMalloc( (n+1)*sizeof(int)); CHKPTRQ(idnew);
   idnew[0] = -shift;
 
   for ( i=0; i<n; i++ ) {

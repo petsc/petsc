@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.93 1998/04/24 21:21:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.94 1998/05/29 20:36:34 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -267,7 +267,9 @@ int PCLUSetFill(PC pc,double fill)
 .  -pc_lu_in_place - Activates in-place factorization
 
    Note:
-   PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY.
+   PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY or when 
+   a different matrix is provided for the multiply and the preconditioner in 
+   a call to SLESSetOperators().
    This is because the Krylov space methods require an application of the 
    matrix multiplication, which is not possible here because the matrix has 
    been factored in-place, replacing the original matrix.
