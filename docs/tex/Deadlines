@@ -1,7 +1,13 @@
 
-  MPI Developers conference abstracts May 29, 1995
-  MPI Developers conference paper     June 21, 1995
-  MPI Developers conference June 21 - 23, 1995
-  MPI Developers conference registration, June 2, 1995
+  This is a schedule of PETSc related deadlines and events.
 
-  NSF Multidisciplinary Challenges program (Keyes, Cai, etc.) June 9,1995
+May 29, 1995 :  MPI Developers conference abstracts due
+June 2, 1995 :  MPI Developers conference registration due
+June 21, 1995 :  MPI Developers conference paper due
+June 21-23, 1995 :  MPI Developers conference
+
+June 9,1995 :  NSF Multidisciplinary Challenges proposal (Keyes, Cai,...) due
+
+
+  If we are real clever we will set up a simple system that automatically 
+mails us reminders if we have not taken care of them in a timely manner.

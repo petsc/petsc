@@ -1,15 +1,24 @@
 
-design.dvi: design.tex routines.red
-	latex design
-	bibtex design
-	latex design
-	latex design
+manual.dvi: manual.tex routines.red
+	latex manual
+	bibtex manual
+	latex manual
+	latex manual
 	chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
 
-design.ps: 
-	dvips design
-	mv design.ps ..
-	chmod g+w ../design.ps
+manual.ps: 
+	dvips manual
+	mv manual.ps ..
+	chmod g+w ../manual.ps
+
+manual.html: manual.tex
+	tohtml -mapman ../www/www.cit manual.tex
+	tohtml  -mapman ../www/www.cit manual.tex
+	mv *.html ..
+	mv *.xbm ..
+
+clean:
+	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err
 
 routines.red: routines.tex rsum/rsum1.tex rsum/rsum2.tex rsum/rsum3.tex \
               rsum/rsum4.tex rsum/rsum5.tex rsum/rsum6.tex rsum/rsum7.tex \
@@ -33,5 +42,3 @@ routines.ps: routines.dvi
 	dvips routines.dvi
 	chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
 
-clean:
-	rm -f routines.ps design.ps *.dvi *.aux *.log *.bbl *.blg *.toc
