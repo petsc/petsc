@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.13 1996/04/16 04:54:08 bsmith Exp balay $;
+C  $Id: mat.h,v 1.14 1996/04/16 13:17:41 balay Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -17,12 +17,13 @@ C  Matrix types
 C
       integer MATSAME,MATSEQDENSE,MATSEQAIJ,MATMPIAIJ, 
      *        MATSHELL,MATMPIROWBS,MATSEQBDIAG,
-     *        MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ
+     *        MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ,
+     *        MATMPIBAIJ
 
       parameter (MATSAME=-1,MATSEQDENSE = 0,MATSEQAIJ = 1,
      *           MATMPIAIJ = 2,MATSHELL = 3, MATMPIROWBS = 4,
      *           MATSEQBDIAG = 5,MATMPIBDIAG = 6,MATMPIDENSE = 7,
-     *           MATSEQBAIJ = 8)
+     *           MATSEQBAIJ = 8, MATMPIBAIJ = 9)
 C
 C  Flag for matrix assembly
 C
