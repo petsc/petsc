@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.28 1997/09/26 02:18:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.29 1997/10/01 22:44:39 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -178,9 +178,9 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
    PetscBinaryWrite - Writes to a binary file.
 
    Input Parameters:
-.  fd - the file
-.  p - the buffer
-.  n  - the number of items to read 
+.  fd   - the file
+.  p    - the buffer
+.  n    - the number of items to read 
 .  type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
    Notes: 
@@ -188,7 +188,6 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
-
 
 .keywords: binary, output, write
 
@@ -215,7 +214,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 #if defined(HAVE_64BIT_INT)
   if (type == PETSC_INT){
     /* 
-       integers on the Cray T#d are 64 bits so we copy the big
+      integers on the Cray T3d/e are 64 bits so we copy the big
       integers into a short array and write those out.
     */
     int   *p_int = (int *) p,i;
