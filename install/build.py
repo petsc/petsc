@@ -15,7 +15,6 @@ class Builder(install.base.Base):
     maker = self.getMakeModule(root).PetscMake(sys.argv[1:])
     for url in maker.executeTarget('getDependencies'):
       self.debugPrint('  Building dependency '+url, 3, 'install')
-      if not self.getInstalledProject(url) is None: continue
       self.build(self.retriever.retrieve(url))
     self.debugPrint('Compiling in '+maker.getRoot(), 3, 'install')
     return maker.main(target)

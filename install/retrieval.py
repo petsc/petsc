@@ -24,20 +24,15 @@ class Retriever(install.base.Base):
 
   def genericRetrieve(self, url, root, canExist = 0):
     localFile = root+'.tar.gz'
-    if os.path.exists(root): raise RuntimeError('Root directory '+root+' already exists')
-    if os.path.exists(localFile): raise RuntimeError('File '+localFile+' already exists')
+    if os.path.exists(root):
+      if canExist:
+        return root
+      else:
+        raise RuntimeError('Root directory '+root+' already exists')
+    if os.path.exists(localFile):
+      os.remove(localFile)
     urllib.urlretrieve(url, localFile)
     output = self.executeShellCommand('tar -zxf '+localFile)
-    return root
-
-  def bkRetrieve(self, url, root, canExist = 0):
-    self.debugPrint('Retrieving '+url+' --> '+root+' via bk', 3, 'install')
-    if os.path.exists(root):
-      if not canExist:
-        raise RuntimeError('Root directory '+root+' already exists')
-      else:
-        return root
-    output = self.executeShellCommand('bk clone '+url+' '+root)
     return root
 
   def ftpRetrieve(self, url, root, canExist = 0):
@@ -48,10 +43,23 @@ class Retriever(install.base.Base):
     self.debugPrint('Retrieving '+url+' --> '+root+' via http', 3, 'install')
     return self.genericRetrieve(url, root, canExist)
 
+  def bkRetrieve(self, url, root, canExist = 0):
+    self.debugPrint('Retrieving '+url+' --> '+root+' via bk', 3, 'install')
+    if os.path.exists(root):
+      output = self.executeShellCommand('cd '+root+'; bk pull')
+    else:
+      output = self.executeShellCommand('bk clone '+url+' '+root)
+    return root
+
   def sshRetrieve(self, url, root, canExist = 0):
     self.debugPrint('Retrieving '+url+' --> '+root+' via ssh', 3, 'install')
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     (dir, project) = os.path.split(path)
+    if os.path.exists(root):
+      if canExist:
+        return root
+      else:
+        raise RuntimeError('Root directory '+root+' already exists')
     command        = 'ssh '+location+' "tar -C '+dir+' -zc '+project+'" | tar -C '+root+' -zx'
     output         = self.executeShellCommand(command)
     return root
@@ -64,6 +72,8 @@ class Retriever(install.base.Base):
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     try:
       if self.argDB.has_key('retrievalCanExist') and int(self.argDB['retrievalCanExist']):
+        canExist = 1
+      if not self.getInstalledProject(url) is None:
         canExist = 1
       return getattr(self, scheme+'Retrieve')(url, os.path.abspath(root), canExist)
     except AttributeError:
