@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.49 2000/08/08 16:32:39 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.50 2000/08/09 18:27:19 kaushik Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -544,6 +544,8 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
              grid->area,grid->xyzn,&tsCtx->cfl,
             &rank,&grid->nvertices);
   ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
