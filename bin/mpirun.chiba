@@ -219,11 +219,10 @@ echo " "
 echo -n "PBS Job $pbs_job_id Job no longer running "
 date
 #
-status="E"
-while [ "$status" = "E" ] ; do
-  sleep 1
-  lstatus=`qstat $pbs_job_id 2> /dev/null`
-  status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
+outstat=""
+while [ "$outstat" != "Unknown Job" ] ; do
+  sleep 2
+  outstat=`qstat $pbs_job_id 2>&1 | sed -e 's/^.*Unknown Job.*$/Unknown Job/'`
   echo -n "."
 done
 echo " "
