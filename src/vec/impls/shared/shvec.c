@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.33 1999/11/05 14:44:57 bsmith Exp bsmith $*/
+/*$Id: shvec.c,v 1.34 1999/11/24 21:53:33 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -103,7 +103,7 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "pinclude/petscfix.h"
+#include "petscfix.h"
 
 static int Petsc_Shared_keyval = MPI_KEYVAL_INVALID;
 static int Petsc_Shared_size   = 100000000;

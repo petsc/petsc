@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.36 1999/10/24 14:01:32 bsmith Exp bsmith $*/
+/*$Id: str.c,v 1.37 1999/11/10 03:18:08 bsmith Exp bsmith $*/
 /*
     We define the string operations here. The reason we just don't use 
   the standard string routines in the PETSc code is that on some machines 
@@ -145,8 +145,8 @@ int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 #else
   else c = strcasecmp(a,b);
 #endif
-  if (c == 0) *t = PETSC_TRUE;
-  else        *t = PETSC_FALSE;
+  if (!c) *t = PETSC_TRUE;
+  else    *t = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -162,8 +162,8 @@ int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
 
   PetscFunctionBegin;
   c = strncmp(a,b,n);
-  if (c == 0) *t = PETSC_TRUE;
-  else        *t = PETSC_FALSE;
+  if (!c) *t = PETSC_TRUE;
+  else    *t = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

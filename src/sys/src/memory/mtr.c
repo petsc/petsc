@@ -1,4 +1,5 @@
-/*$Id: mtr.c,v 1.134 1999/10/24 14:01:27 bsmith Exp bsmith $*/
+
+/*$Id: mtr.c,v 1.135 1999/11/10 03:18:00 bsmith Exp bsmith $*/
 /*
      PETSc's interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -229,7 +230,7 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
     ierr = PetscTrValid(lineno,function,filename,dir); if (ierr) PetscFunctionReturn(0);
   }
 
-  if (a == 0) {
+  if (!a) {
     (*PetscErrorPrintf)("PETSC ERROR: PetscTrMalloc: malloc zero length, this is illegal!\n");
     PetscFunctionReturn(0);
   }
