@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.196 2000/05/25 16:00:59 balay Exp balay $ */
+/* $Id: petscmat.h,v 1.197 2000/05/26 18:05:09 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -142,7 +142,7 @@ EXTERN int MatGetDiagonal(Mat,Vec);
 EXTERN int MatTranspose(Mat,Mat*);
 EXTERN int MatPermute(Mat,IS,IS,Mat *);
 EXTERN int MatDiagonalScale(Mat,Vec,Vec);
-EXTERN int MatDiagonalShift(Mat,Vec);
+EXTERN int MatDiagonalSet(Mat,Vec,InsertMode);
 EXTERN int MatEqual(Mat,Mat,PetscTruth*);
 
 EXTERN int MatNorm(Mat,NormType,double *);
@@ -501,7 +501,7 @@ EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
 EXTERN int MatCreateMAIJ(Mat,int,Mat*);
 EXTERN int MatSetTypeFromOptions(Mat);
 
-#define MATSEQMAIJ "seqaij"
+#define MATMAIJ "maij"
 #endif
 
 
