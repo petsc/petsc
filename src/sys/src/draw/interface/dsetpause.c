@@ -29,7 +29,7 @@
 int PetscDrawSetPause(PetscDraw draw,int lpause)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   draw->pause = lpause;
   PetscFunctionReturn(0);
 }

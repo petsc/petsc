@@ -121,7 +121,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
 int PetscObjectReference(PetscObject obj)
 {
   PetscFunctionBegin;
-  PetscValidHeader(obj);
+  PetscValidHeader(obj,1);
   obj->refct++;
   PetscFunctionReturn(0);
 }
@@ -148,7 +148,8 @@ int PetscObjectReference(PetscObject obj)
 int PetscObjectGetReference(PetscObject obj,int *cnt)
 {
   PetscFunctionBegin;
-  PetscValidHeader(obj);
+  PetscValidHeader(obj,1);
+  PetscValidIntPointer(cnt,2);
   *cnt = obj->refct;
   PetscFunctionReturn(0);
 }
@@ -175,7 +176,7 @@ int PetscObjectDereference(PetscObject obj)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj);
+  PetscValidHeader(obj,1);
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else if (!--obj->refct) {
@@ -480,7 +481,7 @@ int PetscObjectSetParameterDict(PetscObject obj, ParameterDict dict) {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj);
+  PetscValidHeader(obj,1);
   if (obj->dict != PETSC_NULL) {
     ierr = PetscObjectDereference((PetscObject) obj->dict);                                               CHKERRQ(ierr);
   }
@@ -508,8 +509,8 @@ int PetscObjectSetParameterDict(PetscObject obj, ParameterDict dict) {
 @*/
 int PetscObjectGetParameterDict(PetscObject obj, ParameterDict *dict) {
   PetscFunctionBegin;
-  PetscValidHeader(obj);
-  PetscValidPointer(dict);
+  PetscValidHeader(obj,1);
+  PetscValidPointer(dict,2);
   *dict = obj->dict;
   PetscFunctionReturn(0);
 }

@@ -475,7 +475,7 @@ int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
   MG  *mg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
 
   if (pc->data) {
     SETERRQ(1,"Number levels already set for MG\n\
@@ -512,7 +512,8 @@ int MGGetLevels(PC pc,int *levels)
   MG  *mg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidIntPointer(levels,2);
 
   mg      = (MG*)pc->data;
   *levels = mg[0]->levels;
@@ -547,7 +548,7 @@ int MGSetType(PC pc,MGType form)
   MG *mg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   mg = (MG*)pc->data;
 
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
@@ -584,7 +585,7 @@ int MGSetCycles(PC pc,int n)
   int i,levels;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   mg     = (MG*)pc->data;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;
@@ -616,7 +617,7 @@ int MGCheck(PC pc)
   int i,n,count = 0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   mg = (MG*)pc->data;
 
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
@@ -681,7 +682,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
   int i,levels,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   mg     = (MG*)pc->data;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;
@@ -727,7 +728,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   int i,levels,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   mg     = (MG*)pc->data;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;

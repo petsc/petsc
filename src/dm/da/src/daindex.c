@@ -55,7 +55,7 @@
 int DAGetGlobalIndices(DA da,int *n,int **idx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (n)   *n   = da->Nl;
   if (idx) *idx = da->idx;
   PetscFunctionReturn(0);
@@ -140,7 +140,8 @@ int DAGetNatural_Private(DA da,int *outNlocal,IS *isnatural)
 int DAGetAO(DA da,AO *ao)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(ao,2);
 
   /* 
      Build the natural ordering to PETSc ordering mappings.

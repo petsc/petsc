@@ -28,7 +28,7 @@ int PetscObjectDestroy(PetscObject obj)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj);
+  PetscValidHeader(obj,1);
 
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
@@ -59,9 +59,9 @@ int PetscObjectView(PetscObject obj,PetscViewer viewer)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj);
+  PetscValidHeader(obj,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(obj->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   if (obj->bops->view) {
     ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
@@ -108,8 +108,9 @@ int PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
   } else if (type_name == PETSC_NULL || obj->type_name == PETSC_NULL) {
     *same = PETSC_FALSE;
   } else {
-    PetscValidHeader(obj);
-    PetscValidCharPointer(type_name);
+    PetscValidHeader(obj,1);
+    PetscValidCharPointer(type_name,2);
+    PetscValidPointer(same,3);
     ierr = PetscStrcmp((char*)(obj->type_name),type_name,same);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -142,7 +143,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[128];
 int PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
-  PetscValidHeader(obj);
+  PetscValidHeader(obj,1);
   PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
   PetscFunctionReturn(0);
 }

@@ -75,10 +75,6 @@ int MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
   IS          icis;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  PetscValidHeaderSpecific(ris,IS_COOKIE);
-  PetscValidHeaderSpecific(cis,IS_COOKIE);
-  
   ierr = ISGetIndices(ris,&row);CHKERRQ(ierr);
   ierr = ISGetIndices(cis,&col);CHKERRQ(ierr);
   ierr = ISInvertPermutation(cis,PETSC_DECIDE,&icis);CHKERRQ(ierr);

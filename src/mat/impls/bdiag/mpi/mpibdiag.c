@@ -1200,7 +1200,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *bs,int *diag[],int *bdlen[],PetscScalar
   int          ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)mat,MATSEQBDIAG,&isseq);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIBDIAG,&ismpi);CHKERRQ(ierr);
   if (isseq) {

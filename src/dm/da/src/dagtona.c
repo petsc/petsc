@@ -39,7 +39,8 @@ int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
   AO  ao;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(scatter,2);
   ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
@@ -86,7 +87,8 @@ int DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
   AO  ao;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(scatter,2);
   ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */

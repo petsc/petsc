@@ -24,7 +24,7 @@ int PetscDrawSynchronizedClear(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->synchronizedclear) {
     ierr = (*draw->ops->synchronizedclear)(draw);CHKERRQ(ierr);
   }

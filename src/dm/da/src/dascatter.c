@@ -39,7 +39,7 @@ int DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (ltog) *ltog = da->ltog;
   if (gtol) *gtol = da->gtol;
   if (ltol) {

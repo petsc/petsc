@@ -522,8 +522,10 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   DAStencilType  stc,stf;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac,DA_COOKIE);
-  PetscValidHeaderSpecific(daf,DA_COOKIE);
+  PetscValidHeaderSpecific(dac,DA_COOKIE,1);
+  PetscValidHeaderSpecific(daf,DA_COOKIE,2);
+  PetscValidPointer(A,3);
+  if (scale) PetscValidPointer(scale,4);
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
@@ -660,8 +662,9 @@ int DAGetInjection(DA dac,DA daf,VecScatter *inject)
   DAStencilType  stc,stf;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac,DA_COOKIE);
-  PetscValidHeaderSpecific(daf,DA_COOKIE);
+  PetscValidHeaderSpecific(dac,DA_COOKIE,1);
+  PetscValidHeaderSpecific(daf,DA_COOKIE,2);
+  PetscValidPointer(inject,3);
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
   ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);

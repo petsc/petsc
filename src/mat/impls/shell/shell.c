@@ -46,7 +46,8 @@ int MatShellGetContext(Mat mat,void **ctx)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE); 
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidPointer(ctx,2); 
   ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
   if (!flg) *ctx = 0; 
   else      *ctx = ((Mat_Shell*)(mat->data))->ctx; 
@@ -369,7 +370,7 @@ int MatShellSetContext(Mat mat,void *ctx)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
@@ -423,7 +424,7 @@ int MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   if (op == MATOP_DESTROY) {
     ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -479,7 +480,7 @@ int MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   if (op == MATOP_DESTROY) {
     ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {

@@ -254,9 +254,9 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
   PetscTruth sorted = PETSC_TRUE;
 
   PetscFunctionBegin;
-  PetscValidPointer(is);
+  PetscValidPointer(is,5);
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
-  if (n) {PetscValidIntPointer(idx);}
+  if (n) {PetscValidIntPointer(idx,4);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
@@ -315,8 +315,8 @@ int ISBlockGetIndices(IS in,int *idx[])
   IS_Block *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(in,IS_COOKIE);
-  PetscValidPointer(idx);
+  PetscValidHeaderSpecific(in,IS_COOKIE,1);
+  PetscValidPointer(idx,2);
   if (in->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block*)in->data;
@@ -348,8 +348,8 @@ int ISBlockGetIndices(IS in,int *idx[])
 int ISBlockRestoreIndices(IS is,int *idx[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidPointer(idx);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(idx,2);
   if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
   PetscFunctionReturn(0);
 }
@@ -379,8 +379,8 @@ int ISBlockGetBlockSize(IS is,int *size)
   IS_Block *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(size);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
   if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block *)is->data;
@@ -411,8 +411,8 @@ int ISBlockGetBlockSize(IS is,int *size)
 int ISBlock(IS is,PetscTruth *flag)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(flag);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(flag,2);
   if (is->type != IS_BLOCK) *flag = PETSC_FALSE;
   else                          *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -443,8 +443,8 @@ int ISBlockGetSize(IS is,int *size)
   IS_Block *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(size);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
   if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block *)is->data;

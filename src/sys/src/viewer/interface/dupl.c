@@ -33,8 +33,8 @@ int PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
   int ierr,size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidPointer(outviewer);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(outviewer,2);
   ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     *outviewer = viewer;
@@ -69,7 +69,7 @@ int PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
   int ierr,size;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
 
   ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {

@@ -36,7 +36,10 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
   int           ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(vres,VEC_COOKIE,5);
+  PetscValidHeaderSpecific(vb,VEC_COOKIE,6);
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
   if (!ksp->guess_zero) {
     /* skip right scaling since current guess already has it */
@@ -94,7 +97,8 @@ int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
   if (ksp->pc_side == PC_RIGHT) {
     ierr = KSP_PCApply(ksp,ksp->B,vsoln,vt1);CHKERRQ(ierr);
     ierr = PCDiagonalScaleRight(ksp->B,vt1,vsoln);CHKERRQ(ierr);

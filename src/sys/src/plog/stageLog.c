@@ -88,8 +88,8 @@ int StageLogRegister(StageLog stageLog, const char sname[], int *stage) {
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(sname);
-  PetscValidIntPointer(stage);
+  PetscValidCharPointer(sname,2);
+  PetscValidIntPointer(stage,3);
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
     ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(StageInfo), &stageInfo);                            CHKERRQ(ierr);
@@ -321,7 +321,7 @@ int StageLogGetCurrent(StageLog stageLog, int *stage) {
 int StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
 {
   PetscFunctionBegin;
-  PetscValidPointer(classLog);
+  PetscValidPointer(classLog,2);
   *classLog = stageLog->classLog;
   PetscFunctionReturn(0);
 }
@@ -346,7 +346,7 @@ int StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
 @*/
 int StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog) {
   PetscFunctionBegin;
-  PetscValidPointer(eventLog);
+  PetscValidPointer(eventLog,2);
   *eventLog = stageLog->eventLog;
   PetscFunctionReturn(0);
 }
@@ -370,9 +370,10 @@ int StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog) {
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog) {
+int StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog)
+{
   PetscFunctionBegin;
-  PetscValidPointer(classLog);
+  PetscValidPointer(classLog,2);
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
@@ -399,9 +400,10 @@ int StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog) {
+int StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog)
+{
   PetscFunctionBegin;
-  PetscValidPointer(eventLog);
+  PetscValidPointer(eventLog,3);
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
@@ -454,12 +456,13 @@ int StageLogSetActive(StageLog stageLog, int stage, PetscTruth isActive) {
 .keywords: log, visible, stage
 .seealso: StageLogSetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogGetActive(StageLog stageLog, int stage, PetscTruth *isActive) {
+int StageLogGetActive(StageLog stageLog, int stage, PetscTruth *isActive)
+{
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
-  PetscValidIntPointer(isActive);
+  PetscValidIntPointer(isActive,3);
   *isActive = stageLog->stageInfo[stage].perfInfo.active;
   PetscFunctionReturn(0);
 }
@@ -515,12 +518,13 @@ int StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible) {
 .keywords: log, visible, stage
 .seealso: StageLogSetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible) {
+int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible)
+{
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
   }
-  PetscValidIntPointer(isVisible);
+  PetscValidIntPointer(isVisible,3);
   *isVisible = stageLog->stageInfo[stage].perfInfo.visible;
   PetscFunctionReturn(0);
 }
@@ -544,13 +548,15 @@ int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible) {
 .keywords: log, stage
 .seealso: StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogGetStage(StageLog stageLog, const char name[], int *stage) {
+int StageLogGetStage(StageLog stageLog, const char name[], int *stage)
+{
   PetscTruth match;
   int        s;
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name);
+  PetscValidCharPointer(name,2);
+  PetscValidIntPointer(stage,3);
   *stage = -1;
   for(s = 0; s < stageLog->numStages; s++) {
     ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);                                    CHKERRQ(ierr);

@@ -30,8 +30,8 @@
 int PetscDrawGetPause(PetscDraw draw,int *lpause)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
-  PetscValidIntPointer(lpause);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidIntPointer(lpause,2);
   *lpause = draw->pause;
   PetscFunctionReturn(0);
 }

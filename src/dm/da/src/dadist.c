@@ -37,7 +37,8 @@ int DACreateGlobalVector(DA da,Vec* g)
   int ierr;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(g,2);
   ierr = VecCreateMPI(da->comm,da->Nlocal,PETSC_DETERMINE,g);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
@@ -83,7 +84,8 @@ int DACreateNaturalVector(DA da,Vec* g)
   int cnt,ierr;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(g,2);
   if (da->natural) {
     ierr = PetscObjectGetReference((PetscObject)da->natural,&cnt);CHKERRQ(ierr);
     if (cnt == 1) { /* object is not currently used by anyone */

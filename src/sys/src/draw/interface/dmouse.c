@@ -33,7 +33,7 @@ int PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   *button = BUTTON_NONE;
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
@@ -68,7 +68,7 @@ int PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,P
   int       ierr,rank;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscDrawGetMouseButton(draw,button,x_user,y_user,x_phys,y_phys);CHKERRQ(ierr);

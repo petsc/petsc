@@ -29,7 +29,7 @@ int PetscDrawLineSetWidth(PetscDraw draw,PetscReal width)
   PetscTruth isdrawnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->linesetwidth)(draw,width);CHKERRQ(ierr);

@@ -22,7 +22,7 @@ int ISColoringDestroy(ISColoring iscoloring)
   int i,ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring);
+  PetscValidPointer(iscoloring,1);
   if (--iscoloring->refct > 0) PetscFunctionReturn(0);
 
   if (iscoloring->is) {
@@ -61,9 +61,9 @@ int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   IS         *is;
 
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring);
+  PetscValidPointer(iscoloring,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(iscoloring->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
@@ -108,7 +108,7 @@ int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring);
+  PetscValidPointer(iscoloring,1);
 
   if (nn)  *nn  = iscoloring->n;
   if (isis) {
@@ -170,7 +170,7 @@ int ISColoringGetIS(ISColoring iscoloring,int *nn,IS *isis[])
 int ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 {
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring);
+  PetscValidPointer(iscoloring,1);
   
   /* currently nothing is done here */
 
@@ -437,7 +437,8 @@ int ISAllGather(IS is,IS *isout)
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(isout,2);
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

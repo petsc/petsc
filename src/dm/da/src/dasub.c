@@ -38,7 +38,7 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   int       ierr,i,ict,flag,size,*ranks,*owners,xs,xm,ys,ym,zs,zm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   flag = 0; 
   ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);

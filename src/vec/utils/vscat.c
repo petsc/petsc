@@ -1358,8 +1358,8 @@ int VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter 
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE,5);
 
   if (inctx->postrecvs) {
     ierr = (*inctx->postrecvs)(x,y,addv,mode,inctx);CHKERRQ(ierr);
@@ -1420,9 +1420,9 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE,5);
   if (inctx->inuse) SETERRQ(PETSC_ERR_ARG_WRONGSTATE," Scatter ctx already in use");
 #if defined(PETSC_USE_BOPT_g)
   /*
@@ -1486,9 +1486,9 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,5);
   ctx->inuse = PETSC_FALSE;
   if (!ctx->end) PetscFunctionReturn(0);
   if (!ctx->beginandendtogether) {
@@ -1519,7 +1519,7 @@ int VecScatterDestroy(VecScatter ctx)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
   if (--ctx->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -1551,8 +1551,8 @@ int VecScatterCopy(VecScatter sctx,VecScatter *ctx)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sctx,VEC_SCATTER_COOKIE);
-  PetscValidPointer(ctx);
+  PetscValidHeaderSpecific(sctx,VEC_SCATTER_COOKIE,1);
+  PetscValidPointer(ctx,2);
   if (!sctx->copy) SETERRQ(PETSC_ERR_SUP,"Cannot copy this type");
   PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",sctx->comm,VecScatterDestroy,VecScatterView);
   PetscLogObjectCreate(*ctx);
@@ -1584,9 +1584,9 @@ int VecScatterView(VecScatter ctx,PetscViewer viewer)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ctx->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   if (!ctx->view) SETERRQ(PETSC_ERR_SUP,"Cannot view this type of scatter context yet");
 
   ierr = (*ctx->view)(ctx,viewer);CHKERRQ(ierr);
@@ -1624,9 +1624,9 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
   int                    i;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(scat,VEC_SCATTER_COOKIE);
-  if (rto)   {PetscValidIntPointer(rto);}
-  if (rfrom) {PetscValidIntPointer(rfrom);}
+  PetscValidHeaderSpecific(scat,VEC_SCATTER_COOKIE,1);
+  if (rto)   {PetscValidIntPointer(rto,2);}
+  if (rfrom) {PetscValidIntPointer(rfrom,3);}
 
   from = (VecScatter_Seq_General *)scat->fromdata;
   mto  = (VecScatter_MPI_General *)scat->todata;

@@ -22,7 +22,7 @@ int DALocalToLocalCreate(DA da)
   int *idx,left,j,ierr,count,up,down,i,bottom,top,k;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
 
   if (da->ltol) PetscFunctionReturn(0);
   /* 
@@ -102,7 +102,7 @@ int DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (!da->ltol) {
     ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
   }
@@ -145,7 +145,9 @@ int DALocalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
   ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->ltol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

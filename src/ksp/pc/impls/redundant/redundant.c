@@ -209,7 +209,9 @@ int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
   int ierr,(*f)(PC,VecScatter,VecScatter);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(in,VEC_SCATTER_COOKIE,2);
+  PetscValidHeaderSpecific(out,VEC_SCATTER_COOKIE,3);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetScatter_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,in,out);CHKERRQ(ierr);
@@ -252,7 +254,8 @@ int PCRedundantGetPC(PC pc,PC *innerpc)
   int ierr,(*f)(PC,PC*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidPointer(innerpc,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetPC_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,innerpc);CHKERRQ(ierr);
@@ -297,7 +300,9 @@ int PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
   int ierr,(*f)(PC,Mat*,Mat*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (mat)  PetscValidPointer(mat,2);
+  if (pmat) PetscValidPointer(pmat,3); 
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetOperators_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,mat,pmat);CHKERRQ(ierr);

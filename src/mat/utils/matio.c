@@ -123,8 +123,8 @@ int MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
   char        mtype[256],*prefix;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(newmat,3);
   *newmat = 0;
 
   ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);

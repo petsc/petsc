@@ -2760,7 +2760,6 @@ int MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
   Mat_MPIBAIJ *baij;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   baij = (Mat_MPIBAIJ*)mat->data;
   baij->ht_fact = fact;
   PetscFunctionReturn(0);

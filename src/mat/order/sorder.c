@@ -183,7 +183,9 @@ int MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
   PetscTruth  flg,isseqdense,ismpidense;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidPointer(rperm,2);
+  PetscValidPointer(cperm,3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 

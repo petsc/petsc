@@ -29,7 +29,7 @@ int PetscMapCreate(MPI_Comm comm, PetscMap *map)
   int      ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(map);
+  PetscValidPointer(map,2);
   *map = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);

@@ -167,7 +167,7 @@ static const char *PetscErrorStrings[] = {
     "Argument aliasing not permitted",
     "Invalid argument",
   /*63 */    "Argument out of range",
-    "Null or corrupt argument",
+    "Corrupt argument: see http://www.mcs.anl.gov/petsc/",
     "Unable to open file",
     "Read from file failed",
     "Write to file failed",
@@ -184,7 +184,11 @@ static const char *PetscErrorStrings[] = {
     "Memory corruption",
     "Unexpected data in file",
   /*80 */ "Arguments must have same communicators",
-  /*81 */ "Detected zero pivot in Cholesky factorization"};
+  /*81 */ "Detected zero pivot in Cholesky factorization",
+          "  ",
+          "  ",
+          "  ",
+  /*85 */ "Null argument, when expecting valid pointer"};
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorMessage" 
@@ -324,8 +328,8 @@ int PetscIntView(int N,int idx[],PetscViewer viewer)
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidIntPointer(idx);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,3);
+  PetscValidIntPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -404,8 +408,8 @@ int PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidScalarPointer(idx);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,3);
+  PetscValidScalarPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -485,8 +489,8 @@ int PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeader(viewer);
-  PetscValidScalarPointer(idx);
+  PetscValidHeader(viewer,3);
+  PetscValidScalarPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);

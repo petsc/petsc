@@ -25,3 +25,7 @@ Fortran
 
 PC/KSP
    Add manual pages for all the KSP types and for the PC types that are missing
+
+SNES
+   Remove its from SNESSolve() and put in seperate function
+

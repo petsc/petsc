@@ -418,7 +418,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
@@ -462,7 +462,7 @@ int PCBJacobiGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[])
   int ierr,(*f)(PC,int *,int *,KSP **);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
@@ -503,7 +503,7 @@ int PCBJacobiSetTotalBlocks(PC pc,int blocks,const int lens[])
   int ierr,(*f)(PC,int,const int[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (blocks <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have positive blocks");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -538,8 +538,8 @@ int PCBJacobiGetTotalBlocks(PC pc, int *blocks, const int *lens[])
   int ierr,(*f)(PC,int*, const int *[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc, PC_COOKIE);
-  PetscValidIntPointer(blocks);
+  PetscValidHeaderSpecific(pc, PC_COOKIE,1);
+  PetscValidIntPointer(blocks,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetTotalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
@@ -574,7 +574,7 @@ int PCBJacobiSetLocalBlocks(PC pc,int blocks,const int lens[])
   int ierr,(*f)(PC,int,const int []);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have nonegative blocks");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -610,8 +610,8 @@ int PCBJacobiGetLocalBlocks(PC pc, int *blocks, const int *lens[])
   int ierr,(*f)(PC,int*, const int *[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc, PC_COOKIE);
-  PetscValidIntPointer(blocks);
+  PetscValidHeaderSpecific(pc, PC_COOKIE,1);
+  PetscValidIntPointer(blocks,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetLocalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);

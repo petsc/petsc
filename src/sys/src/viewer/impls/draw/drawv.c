@@ -70,8 +70,8 @@ int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
   char             *title;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidPointer(draw);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(draw,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
@@ -144,8 +144,8 @@ int PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *dr
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidPointer(drawlg);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(drawlg,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
@@ -194,8 +194,8 @@ int PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidPointer(drawaxis);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(drawaxis,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");

@@ -42,9 +42,9 @@ int AOView(AO ao,PetscViewer viewer)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE);
+  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ao->comm);
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   ierr = (*ao->ops->view)(ao,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -71,7 +71,7 @@ int AODestroy(AO ao)
 
   PetscFunctionBegin;
   if (!ao) PetscFunctionReturn(0);
-  PetscValidHeaderSpecific(ao,AO_COOKIE);
+  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
   if (--ao->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -118,7 +118,8 @@ int AOPetscToApplicationIS(AO ao,IS is)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE);
+  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,2);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(1,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
@@ -165,7 +166,8 @@ int AOApplicationToPetscIS(AO ao,IS is)
   PetscTruth flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE);
+  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidHeaderSpecific(is,IS_COOKIE,2);
   ierr = ISBlock(is,&flag);CHKERRQ(ierr);
   if (flag) SETERRQ(1,"Cannot translate block index sets");
   ierr = ISStride(is,&flag);CHKERRQ(ierr);
@@ -210,7 +212,8 @@ int AOPetscToApplication(AO ao,int n,int ia[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE);
+  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidIntPointer(ia,3);
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -245,7 +248,8 @@ int AOApplicationToPetsc(AO ao,int n,int ia[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_COOKIE);
+  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidIntPointer(ia,3);
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -273,7 +277,8 @@ int AOPetscToApplicationPermuteInt(AO ao, int block, int array[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE);
+  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidIntPointer(array,3);
   ierr = (*ao->ops->petsctoapplicationpermuteint)(ao, block, array);                                      CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -302,7 +307,8 @@ int AOApplicationToPetscPermuteInt(AO ao, int block, int array[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE);
+  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidIntPointer(array,3);
   ierr = (*ao->ops->applicationtopetscpermuteint)(ao, block, array);                                      CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -331,7 +337,8 @@ int AOPetscToApplicationPermuteReal(AO ao, int block, double array[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE);
+  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidIntPointer(array,3);
   ierr = (*ao->ops->petsctoapplicationpermutereal)(ao, block, array);                                     CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -360,7 +367,8 @@ int AOApplicationToPetscPermuteReal(AO ao, int block, double array[])
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao, AO_COOKIE);
+  PetscValidHeaderSpecific(ao, AO_COOKIE,1);
+  PetscValidIntPointer(array,3);
   ierr = (*ao->ops->applicationtopetscpermutereal)(ao, block, array);                                     CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -44,7 +44,7 @@ int MatSetType(Mat mat,const MatType matype)
   PetscTruth sametype;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
 
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (!sametype) {

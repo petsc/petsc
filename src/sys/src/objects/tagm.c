@@ -78,8 +78,8 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj);
-  PetscValidIntPointer(tag);
+  PetscValidHeader(obj,1);
+  PetscValidIntPointer(tag,2);
 
   ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator in PETSc object, likely memory corruption");
@@ -127,7 +127,7 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(tag);
+  PetscValidIntPointer(tag,2);
 
   ierr = MPI_Attr_get(comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");

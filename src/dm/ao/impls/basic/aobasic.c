@@ -217,7 +217,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(aoout);
+  PetscValidPointer(aoout,5);
   *aoout = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);

@@ -183,7 +183,8 @@ int PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(fd);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(fd,2);
   *fd = vu->fd;
   PetscFunctionReturn(0);
 }
@@ -263,7 +264,8 @@ int PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidPointer(vecSeen);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(vecSeen,2);
   *vecSeen = vu->vecSeen;
   PetscFunctionReturn(0);
 }
