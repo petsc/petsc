@@ -8,8 +8,8 @@
 [<A HREF="../manual.html#Node46"> Chapter 4 of Users Manual</A>]
 </H2>
 
-To solve linear systems, most users should employ the
-Simplified Linear Equations Solvers (SLES)
+To solve linear systems, users should employ the
+Scalable Linear Equations Solvers (SLES)
 component, which provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the
 <A HREF="man5.html">KSP</A> and 
