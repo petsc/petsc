@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.80 1998/12/23 22:51:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.81 1999/01/13 23:47:07 curfman Exp bsmith $";
 #endif
 
 /*
@@ -51,10 +51,9 @@ static int PCApply_Eisenstat(PC pc,Vec x,Vec y)
 
 #undef __FUNC__  
 #define __FUNC__ "PCPre_Eisenstat"
-static int PCPre_Eisenstat(PC pc,KSP ksp)
+static int PCPre_Eisenstat(PC pc,KSP ksp,Vec x, Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
-  Vec          b,x;
   int          ierr;
 
   PetscFunctionBegin;
@@ -64,7 +63,6 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   eis->A    = pc->mat;
   pc->mat   = eis->shell;
 
-  ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
   if (!eis->b) {
     ierr = VecDuplicate(b,&eis->b); CHKERRQ(ierr);
     PLogObjectParent(pc,eis->b);
@@ -75,7 +73,6 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
 
   /* if nonzero initial guess, modify x */
   if (!ksp->guess_zero) {
-    ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
     ierr = MatRelax(eis->A,x,eis->omega,SOR_APPLY_UPPER,0.0,1,x);CHKERRQ(ierr);
   }
 
@@ -87,19 +84,16 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ "PCPost_Eisenstat"
-static int PCPost_Eisenstat(PC pc,KSP ksp)
+static int PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) pc->data;
-  Vec          x,b;
   int          ierr;
 
   PetscFunctionBegin;
-  KSPGetSolution(ksp,&x);
   ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
                                  SOR_BACKWARD_SWEEP),0.0,1,x); CHKERRQ(ierr);
   pc->mat = eis->A;
   /* get back true b */
-  KSPGetRhs(ksp,&b);
   VecCopy(eis->b,b);
   PetscFunctionReturn(0);
 }
