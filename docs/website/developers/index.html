@@ -60,14 +60,14 @@ To obtain development version of PETSc,       download and install <b>BitKeeper<
 from <a href="http://bitkeeper.com"> bitkeeper.com</a>. This is a free
 download, but registration might be       required. This is a version
 control software similar to <a href="http://www.cvshome.org">CVS</a>.
-Using bitkeeper, invoke the       following command to obtain PETSc.
+Using BitKeeper, invoke the       following command to obtain PETSc.
 (This creates a local directory with       the name petsc-dev)</p>
       <ul>
         <li><font color="#800000">bk&nbsp; clone&nbsp;        
 http://petsc.bkbits.net/petsc-dev&nbsp;&nbsp; petsc-dev</font></li>
         <li><font color="#800000">bk -r co -q</font></li>
       </ul>
-For additional help         on using BitKeeper you can use<br>
+For additional help         on using BitKeeper you can use
       <ul>
         <li><font color="#800000">bk helptool</font></li>
       </ul>
@@ -83,13 +83,16 @@ you don't have to edit sources in BitKeeer.<br>
       </ul>
 Note: do not use '<span style="color: rgb(128, 0, 0);">bk cp</span>' or
 '<span style="color: rgb(128, 0, 0);">cp -r'</span> as these would be
-messing with the version control files in the bitkeeper repository.<br>
+messing with the version control files in the BitKeeper repository.
+      <p>You can make the tags file by doing <b>make alletag</b>s in the PETSc
+      root directory<br>
       <br>
       <big style="font-weight: bold;">Updating PETSc:<br>
       <br>
       </big>The next time you         need to update your copy of PETSc
 with the changes we made (since your         last update), you can do
 the following:<br>
+      </p>
       <ul>
         <li><font color="#800000">cd petsc-dev</font></li>
         <li><font color="#800000">bk pull</font></li>
