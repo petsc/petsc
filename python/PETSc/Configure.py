@@ -160,6 +160,8 @@ class Configure(config.base.Configure):
        - There needs to be a test that checks that the functionality is actually working'''
     if not self.useDynamic:
       return
+    if self.framework.argDB['PETSC_BASE_ARCH'].startswith('hpux') and not Configure.isGNU(self.framework.argDB['C']):
+      return
     languages = ['C']
     if 'CXX' in self.framework.argDB:
       languages.append('C++')
