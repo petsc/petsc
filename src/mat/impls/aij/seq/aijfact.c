@@ -407,7 +407,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   } else {
     (*B)->info.fill_ratio_needed = 0.0;
   }
-  ierr = MatLUFactorSymbolic_Inode(A,isrow,iscol,info,B);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic_Inode(A,isrow,iscol,info,B);CHKERRQ(ierr); 
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   PetscFunctionReturn(0); 
 }
@@ -1046,7 +1046,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
 
-  ierr = MatILUFactorSymbolic_Inode(A,isrow,iscol,info,fact);CHKERRQ(ierr);
+  ierr = MatILUFactorSymbolic_Inode(A,info,isrow,iscol,fact);CHKERRQ(ierr);
   (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
   PetscFunctionReturn(0); 
