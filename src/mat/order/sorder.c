@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.85 2001/01/16 18:18:38 balay Exp balay $*/
+/*$Id: sorder.c,v 1.86 2001/01/19 23:21:02 balay Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -196,7 +196,15 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 -  cperm - column permutation indices
 
 
+   Options Database:
+. -mat_view_ordering_draw - plots matrix nonzero structure in new ordering
+
    Level: intermediate
+   
+   Notes:
+      This DOES NOT actually reorder the matrix; it merely returns two index sets
+   that define a reordering. This is usually not used directly, rather use the 
+   options PCLUSetMatOrdering() or PCILUSetMatOrdering().
 
    The user can define additional orderings; see MatOrderingRegisterDynamic().
 
@@ -205,7 +213,7 @@ $      MATORDERING_QMD - Quotient Minimum Degree
            One-way Dissection, Cholesky, Reverse Cuthill-McKee, 
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegisterDynamic()
+.seealso:   MatOrderingRegisterDynamic(), PCLUSetMatOrdering(), PCILUSetMatOrdering()
 @*/
 int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
