@@ -14,7 +14,6 @@ c        C code (xefp2,gxefp2) -> Fortran code (xefp1,gxefp1)
 c        Seems most natural for both parts of application,
 c          although admittedly somewhat confusing.
 c
-c      integer function parsetup(Acomm, Axcomm, Aprintg, 
       integer function parsetup(Acomm, Aprintg, 
      &        Ano_output, Abctype, Arank, Asize, Aproblem,
      &        Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef, 
@@ -26,11 +25,11 @@ c      integer function parsetup(Acomm, Axcomm, Aprintg,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm,
      &        Axef01, Ayef01, Azef01, 
-     &        Agxef01, Agyef01, Agzef01, Anc)
+     &        Agxef01, Agyef01, Agzef01, Anc, Aggrid)
 
 #include "param.h"
 
-      integer Aprintg, Acomm, Axcomm, Arank, Asize, Abctype, 
+      integer Aprintg, Acomm, Arank, Asize, Abctype, 
      &        Aproblem, Agxsf, Agysf, Agzsf, Agxef, Agyef, Agzef,
      &        Axsf, Aysf, Azsf, Axef, Ayef, Azef, 
      &        Axefm1, Ayefm1, Azefm1, Axefp1, Ayefp1, Azefp1, 
@@ -38,14 +37,13 @@ c      integer function parsetup(Acomm, Axcomm, Aprintg,
      &        Axsf1, Aysf1, Azsf1, Agxsf1, Agysf1, Agzsf1,
      &        Axsf2, Aysf2, Azsf2, Agxsf2, Agysf2, Agzsf2,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
-     &        Agxm, Agym, Agzm, ierr, Ano_output, Anc,
+     &        Agxm, Agym, Agzm, ierr, Ano_output, Anc, Aggrid,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01, Agzef01
 
 c  in param.h: Common block, pgrid, for local grid data:
 
       parsetup  = 0
       comm      = Acomm
-      xcomm     = Axcomm
       printg    = Aprintg
       bctype    = Abctype
       rank      = Arank
@@ -184,6 +182,24 @@ c  in param.h: Common block, pgrid, for local grid data:
         gzsf1w = Agzsfw
       endif
 
+      if (Aggrid .eq. 1) then
+c       Using global grid     
+        cx1 = 1
+        cxn = ni
+        cy1 = 1
+        cyn = nj
+        cz1 = 1
+        czn = nk
+      else
+c       Using local grid     
+        cx1 = gxsf1
+        cxn = gxef01
+        cy1 = gysf1
+        cyn = gyef01
+        cz1 = gzsf1
+        czn = gzef01
+      endif
+
       if (printg .eq. 1) then
       if (rank .eq. 0) write(6,*) 'Problem is ',problem,', nc = ',nc
       call PetscSequentialPhaseBegin(comm,1,ierr)
@@ -221,119 +237,6 @@ c  in param.h: Common block, pgrid, for local grid data:
 #endif
       call PetscSequentialPhaseEnd(comm,1,ierr)
       endif
-
-      return
-      end
-
-c -------------------------------------------------------------------
-
-      integer function jform2(eps,epsi,ltog,nloc,mat,d,dt,
-     &                       xx,p,
-     &                       br,bl,be,sadai,sadaj,sadak,
-     &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c
-c jform2 - Forms the Jacobian matrix, J(x), with direct assembly 
-c          of the matrix into the PETSc formats via calls to
-c          MatSetValues().  This version uses explicit boundary
-c          conditions.  This approach of direct matrix assembly 
-c          is recommended -- rather than the use of the intermediate
-c          Eagle format as in the routine jform().
-c
-c          This routine is called by FormJacobian().
-c
-#include "param.h"
-#include "dt.h"
-#include "varbls.h"
-#include "consts.h"
-#include "freq.h"
-#include "es.h"
-#include "sada.h"
-#include "avctrs.h"
-#include "diag.h"
-#include "fv.h"
-#include "sigma.h"
-
-c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
-c      COMMON /CONST2/ PINIT
-c      COMMON /FREQ/ IFREQ,ISGS
-      Double  qer(5),qel(5),eps,epsi,dti
-      integer nloc,ltog(0:nloc-1)
-      integer m,ierr,nd2,ijk,jk,rc(5),i,j,k
-      Mat     mat
-
-      jform2 = 0
-      do 10 m=1,5
-         qel(m)=zero
-         qer(m)=zero
- 10   continue
-
-      do 30 m=1,5
-      qel(m)=eps
-c Form Jacobian elements in left part of matrix
-      ierr = nd2 (m,epsi,qer,qel,1,mat,ltog,nloc,d,
-     &         xx,p,
-     &         br,bl,be,sadai,sadaj,sadak,
-     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-      if (ierr .ne. 0) then
-         jform2 = -1
-         return 
-      endif
-      qel(m)=zero
-   30 continue
-
-      do 31 m=1,5
-      qer(m)=eps
-c Form Jacobian elements in right part of matrix
-      ierr = nd2 (m,epsi,qer,qel,2,mat,ltog,nloc,d,
-     &         xx,p,
-     &         br,bl,be,sadai,sadaj,sadak,
-     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-
-      if (ierr .ne. 0) then
-         jform2 = -1
-         return 
-      endif
-      qer(m)=zero
-   31 continue
-
-c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
-c But really need to recalculate dt only when the iterates change. 
-      call eigenv(dt,xx,p,sadai,sadaj,sadak,
-     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-
-c We must specify that we are inserting matrix blocks by columns, since
-c the PETSc default is row-oriented input.
-      call MatSetOption(mat,MAT_COLUMN_ORIENTED,ierr)
-
-      do 21 k=zsf2,zef01
-      do 21 j=ysf2,yef01
-       jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
-      do 21 i=xsf2,xef01
-c      dql=B1(L,M,I,J,K)+B2(L,M,I,J,K)+B3(L,M,I,J,K)
-c      dqr=B4(L,M,I-1,J,K)+B5(L,M,I,J-1,K)+B6(L,M,I,J,K-1)
-c      D(L,M,I,J,K)=dql-dqr
-c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
-       ijk = ltog(nc * (i-gxsf + jk))
-       rc(1) = ijk
-       rc(2) = ijk + 1
-       rc(3) = ijk + 2
-       rc(4) = ijk + 3
-       rc(5) = ijk + 4
-       dti = one/DT(I,J,K)
-       D(1,1,I,J,K)=D(1,1,I,J,K) + dti
-       D(2,2,I,J,K)=D(2,2,I,J,K) + dti
-       D(3,3,I,J,K)=D(3,3,I,J,K) + dti
-       D(4,4,I,J,K)=D(4,4,I,J,K) + dti
-       D(5,5,I,J,K)=D(5,5,I,J,K) + dti
-       call MatSetValues(mat,nc,rc,nc,rc,d(1,1,i,j,k),
-     &                   INSERT_VALUES,ierr)
-   21 CONTINUE
-
-C  The rest of the input is row-oriented.
-      call MatSetOption(mat,MAT_ROW_ORIENTED,ierr)
 
       return
       end
@@ -577,7 +480,7 @@ c -------------------------------------------------------------------
 
       subroutine printbjul(xx,p,base)
 c
-c printjul - Prints grid points (exterior/interior and ghost points)
+c printjul - Prints boundary grid points
 c
 #include "param.h"
 #include "varbls.h"
@@ -605,44 +508,14 @@ c
 
       return
       end
-
-c -------------------------------------------------------------------
-c
-c   rscale - Scales input vector by dt.
-c
-      integer function rscale( dt, dxx )
-
-#include "param.h"
-#include "dt.h"
-#include "dvarbls.h"
-
-      integer i,j,k
-
-      rscale = 0
-      do 100 k=zsf2,zef01
-      do 100 j=ysf2,yef01
-      do 100 i=xsf2,xef01
-c      do 100 k=2,nk
-c      do 100 j=2,nj
-c      do 100 i=2,ni
-         dr(i,j,k)  = dt(i,j,k)*dr(i,j,k)
-         dru(i,j,k) = dt(i,j,k)*dru(i,j,k)
-         drv(i,j,k) = dt(i,j,k)*drv(i,j,k)
-         drw(i,j,k) = dt(i,j,k)*drw(i,j,k)
-         de(i,j,k)  = dt(i,j,k)*de(i,j,k)
- 100  continue
-
-      return
-      end
-
 c -------------------------------------------------------------------
 c
 c   readmesh - Reads mesh and wing parameters
 c
-c  Use these arrays only temporarily for parallel case.  Each processor
-c  reads all input data, and then later copies only its local piece and
-c  frees the global mesh.  The input file for a particular mesh size is
-c  opened in the routine parsetup().
+c  By deault, we use these global arrays only temporarily for parallel
+c  case.  Each processor reads all input data, and then later copies
+c  only its local piece and frees the global mesh.  The input file for
+c  a particular mesh size is opened in the routine parsetup().
 c
       integer function readmesh(itlA,ituA,ileA,ktipA,x,y,z)
 
