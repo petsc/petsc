@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.44 2001/01/18 17:26:44 bsmith Exp balay $*/
+/*$Id: zpc.c,v 1.45 2001/02/28 18:55:33 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -32,6 +32,10 @@
 #define matnullspacecreate_        MATNULLSPACECREATE
 #define pcview_                    PCVIEW
 #define mgsetlevels_               MGSETLEVELS
+#define pccompositesettype_        PCCOMPOSITESETTYPE
+#define pccompositeaddpc_          PCCOMPOSITEADDPC
+#define pccompositegetpc_          PCCOMPOSITEGETPC
+#define pccompositespecialsetalpha_  PCCOMPOSITESETALPHA
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mgdefaultresidual_         mgdefaultresidual
 #define mgsetresidual_             mgsetresidual
@@ -60,15 +64,43 @@
 #define pcgetoptionsprefix_        pcgetoptionsprefix
 #define pcview_                    pcview
 #define mgsetlevels_               mgsetlevels
+#define pccompositesettype_        pccompositesettype
+#define pccompositeaddpc_          pccompositeaddpc
+#define pccompositegetpc_          pccompositegetpc
+#define pccompositespecialsetalpha_  pccompositespecialsetalpha
 #endif
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *__ierr)
+void PETSC_STDCALL pccompositespecialsetalpha_(PC *pc,Scalar *alpha,int *ierr)
+{
+  *ierr = PCCompositeSpecialSetAlpha(*pc,*alpha);
+}
+
+void PETSC_STDCALL pccompositesettype_(PC *pc,PCCompositeType *type,int *ierr)
+{
+  *ierr = PCCompositeSetType(*pc,*type);
+}
+
+void PETSC_STDCALL pccompositeaddpc_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+{
+  char *t;
+
+  FIXCHAR(type,len,t);
+  *ierr = PCCompositeAddPC(*pc,t);
+  FREECHAR(type,t);
+}
+
+void PETSC_STDCALL pccompositegetpc_(PC *pc,int *n,PC *subpc,int *ierr)
+{
+  *ierr = PCCompositeGetPC(*pc,*n,subpc);
+}
+
+void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *ierr)
 {
   MPI_Comm *comm = comms;
   if (FORTRANNULLOBJECT(comms)) comm = 0;
-  *__ierr = MGSetLevels(*pc,*levels,comm);
+  *ierr = MGSetLevels(*pc,*levels,comm);
 }
 
 void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, int *ierr)
