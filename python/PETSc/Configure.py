@@ -148,13 +148,20 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
 
-    for language in ['C', 'CXX', 'F77']:
-      flagName = language.upper()+'_LINKER_SLFLAG'
-      if flagName in self.framework.argDB:
-        slflag = self.framework.argDB[flagName]
+    if self.setCompilers.CSharedLinkerFlag is None:
+      self.addSubstitution('C_LINKER_SLFLAG', '-L')
+    else:
+      self.addSubstitution('C_LINKER_SLFLAG', self.setCompilers.CSharedLinkerFlag)
+    if 'CXX' in self.framework.argDB:
+      if self.setCompilers.CxxSharedLinkerFlag is None:
+        self.addSubstitution('CXX_LINKER_SLFLAG', '-L')
       else:
-        slflag = '-L'
-      self.addSubstitution(flagName, slflag)
+        self.addSubstitution('CXX_LINKER_SLFLAG', self.setCompilers.CxxSharedLinkerFlag)
+    if 'FC' in self.framework.argDB:
+      if self.setCompilers.F77SharedLinkerFlag is None:
+        self.addSubstitution('F77_LINKER_SLFLAG', '-L')
+      else:
+        self.addSubstitution('F77_LINKER_SLFLAG', self.setCompilers.F77SharedLinkerFlag)
     return
 
   def configurePIC(self):
@@ -366,11 +373,14 @@ class Configure(config.base.Configure):
     '''Solaris specific stuff'''
     if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
       if os.path.isdir(os.path.join('/usr','ucblib')):
-        flagName = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
-        if flagName in self.framework.argDB:
-          self.framework.argDB['LIBS'] += ' '+self.framework.argDB[flagName]+'/usr/ucblib'
-        else:
+        try:
+          flag = getattr(self.setCompilers, self.language[-1].replace('+', 'x')+'SharedLinkerFlag')
+        except AttributeError:
+          flag = None
+        if flag is None:
           self.framework.argDB['LIBS'] += ' -L/usr/ucblib'
+        else:
+          self.framework.argDB['LIBS'] += ' '+flag+'/usr/ucblib'
     return
 
   def configureLinux(self):
