@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.15 1995/04/25 18:03:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.16 1995/04/27 20:11:05 bsmith Exp curfman $";
 #endif
 
 
@@ -397,7 +397,7 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
   return 0;
 }
 /* ----------------------------------------------------------------*/
-int MatILU_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
+int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew;
   IS      isicol;
