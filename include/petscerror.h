@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.40 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.41 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -73,8 +73,10 @@
 #define PETSC_ERR_MAT_CH_ZRPVT    71   /* detected a zero pivot during Cholesky factorization */
 
 #if defined(PETSC_USE_DEBUG)
-#define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
-                          MPI_Abort(PETSC_COMM_WORLD,_ierr);}
+#define SETERRA(n,p,s)     {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);\
+                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
+#define SETERRA1(n,p,s,a1) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1);\
+                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define SETERRQ(n,p,s)              {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
 #define SETERRQ1(n,p,s,a1)          {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1);}
 #define SETERRQ2(n,p,s,a1,a2)       {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s,a1,a2);}

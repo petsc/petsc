@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.9 1999/11/05 14:44:06 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.10 2000/01/11 20:59:24 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -40,12 +40,22 @@ $     SETERRQ(number,p,mess)
  @*/
 int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
-  PLogDouble mem,rss;
-  int        rank,ierr;
-  PetscTruth flg1,flg2;
+  PLogDouble        mem,rss;
+  int               rank,ierr;
+  PetscTruth        flg1,flg2;
+  static PetscTruth hit = PETSC_FALSE;
 
   PetscFunctionBegin;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+
+  if (0 && !hit && !rank) { /* use this only the first time through */
+    char command[1024];
+    FILE *fp;
+    sprintf(command,"emacsclient +%d %s/%s%s\n",line,PETSC_DIR,dir,file);
+    PetscPOpen(MPI_COMM_WORLD,0,command,"r",&fp);
+    PetscFClose(MPI_COMM_WORLD,fp);
+  }
+  hit = PETSC_TRUE;
 
   (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
   switch(n)
