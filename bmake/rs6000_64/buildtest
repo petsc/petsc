@@ -12,8 +12,6 @@ set ARCH=aix5.1.0.0
 set TEST=buildexamples_
 set RSH='ssh -P'
 set RCP='scp -q -B -o UsePrivilegedPort=no'
-set CONFIGURE='no'
-
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
