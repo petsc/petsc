@@ -10,7 +10,8 @@ OBJSC	        =
 OBJSF	        = 
 LIBBASE	        = libpetscvec
 LOCDIR          = src/is/examples/tutorial/
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm clean
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
+                  runex3 ex3.rm clean
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm clean
 TESTEXAMPLES_9  = 
@@ -50,7 +51,7 @@ runex1:
 	   $(RM) -f ex1.tmp
 
 runex1f:
-	-@$(MPIRUN)  ex1f  > ex1f.tmp 2>&1;\
+	-@$(MPIRUN)  ex1f  | sort > ex1f.tmp 2>&1;\
 	   if (diff output/ex1f.out ex1f.tmp) then true; \
 	   else echo "Possible problem with ex1f, diffs above"; fi ;\
 	   $(RM) -f ex1f.tmp
