@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: regmpimat.c,v 1.3 1997/05/08 02:26:10 curfman Exp balay $";
+static char vcid[] = "$Id: regmpimat.c,v 1.4 1997/07/09 21:39:24 balay Exp bsmith $";
 #endif
 
 /* 
@@ -31,7 +31,7 @@ int MatViewDFVec_MPIAIJ(Mat mat,DFVec dfv,Viewer viewer)
   ViewerType  vtype;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILES_VIEWER || vtype == ASCII_FILE_VIEWER) { 
+  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
     ierr = ViewerGetFormat(viewer,&format);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
@@ -59,84 +59,68 @@ int MatViewDFVec_MPIAIJ(Mat mat,DFVec dfv,Viewer viewer)
     }
   }
 
-  if (vtype == DRAW_VIEWER) {
+  if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
     Draw       draw;
     PetscTruth isnull;
-    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
   }
 
-  if (vtype == ASCII_FILE_VIEWER) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscSequentialPhaseBegin(mat->comm,1);
-    fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
-           aij->rank,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
-           aij->cend);
+  /* int size = aij->size; */
+  rank = aij->rank;
+  /*    if (size == 1) {
     ierr = MatView(aij->A,viewer); CHKERRQ(ierr);
-    ierr = MatView(aij->B,viewer); CHKERRQ(ierr);
-    fflush(fd);
-    PetscSequentialPhaseEnd(mat->comm,1);
   }
   else {
-    /* int size = aij->size; */
-    rank = aij->rank;
-    /*    if (size == 1) {
-      ierr = MatView(aij->A,viewer); CHKERRQ(ierr);
+  */
+  {
+    /* assemble the entire matrix onto first processor. */
+    Mat         A;
+    Mat_SeqAIJ *Aloc;
+    int         M = aij->M, N = aij->N,m,*ai,*aj,row,*cols,i,*ct,*gtog1;
+    Scalar      *a;
+    DF          df;
+
+    ierr = DFVecGetDFShell(dfv,&df); CHKERRQ(ierr);
+    ierr = DAGetGlobalToGlobal1_Private(df->da_user,&gtog1); CHKERRQ(ierr);
+    if (!rank) {
+      ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,35,PETSC_NULL,35,PETSC_NULL,&A);
+               CHKERRQ(ierr);
     }
     else {
-    */
-    {
-      /* assemble the entire matrix onto first processor. */
-      Mat         A;
-      Mat_SeqAIJ *Aloc;
-      int         M = aij->M, N = aij->N,m,*ai,*aj,row,*cols,i,*ct,*gtog1;
-      Scalar      *a;
-      DF          df;
-
-      ierr = DFVecGetDFShell(dfv,&df); CHKERRQ(ierr);
-      ierr = DAGetGlobalToGlobal1_Private(df->da_user,&gtog1); CHKERRQ(ierr);
-
-      if (!rank) {
-	/* ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);
-               CHKERRQ(ierr); */
-        ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,35,PETSC_NULL,35,PETSC_NULL,&A);
+      ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);
                CHKERRQ(ierr);
-      }
-      else {
-        ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);
-               CHKERRQ(ierr);
-      }
-      PLogObjectParent(mat,A);
+    }
+    PLogObjectParent(mat,A);
 
-      /* copy over the A part */
-      Aloc = (Mat_SeqAIJ*) aij->A->data;
-      m = Aloc->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-      row = aij->rstart;
-      ct = cols = (int *) PetscMalloc( (ai[m]+1)*sizeof(int) ); CHKPTRQ(cols);
-      for ( i=0; i<ai[m]+shift; i++ ) {cols[i] = gtog1[aj[i] + aij->cstart + shift];}
-      for ( i=0; i<m; i++ ) {
-        grow = gtog1[row];
-        ierr = MatSetValues(A,1,&grow,ai[i+1]-ai[i],cols,a,INSERT_VALUES); CHKERRQ(ierr);
-        row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
-      } 
-      aj = Aloc->j;
-
-      /* copy over the B part */
-      Aloc = (Mat_SeqAIJ*) aij->B->data;
-      m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-      row = aij->rstart;
-      cols = ct;
-      for ( i=0; i<ai[m]+shift; i++ ) {cols[i] = gtog1[aij->garray[aj[i]+shift]];}
-      for ( i=0; i<m; i++ ) {
-        grow = gtog1[row];
-        ierr = MatSetValues(A,1,&grow,ai[i+1]-ai[i],cols,a,INSERT_VALUES);CHKERRQ(ierr);
-        row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
-      } 
-      /*      PetscFree(ct); */
-      ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-      if (!rank) {
-        ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERRQ(ierr);
+    /* copy over the A part */
+    Aloc = (Mat_SeqAIJ*) aij->A->data;
+    m = Aloc->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+    row = aij->rstart;
+    ct = cols = (int *) PetscMalloc( (ai[m]+1)*sizeof(int) ); CHKPTRQ(cols);
+    for ( i=0; i<ai[m]+shift; i++ ) {cols[i] = gtog1[aj[i] + aij->cstart + shift];}
+    for ( i=0; i<m; i++ ) {
+      grow = gtog1[row];
+      ierr = MatSetValues(A,1,&grow,ai[i+1]-ai[i],cols,a,INSERT_VALUES); CHKERRQ(ierr);
+      row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
+    } 
+    aj = Aloc->j;
+    /* copy over the B part */
+    Aloc = (Mat_SeqAIJ*) aij->B->data;
+    m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+    row = aij->rstart;
+    cols = ct;
+    for ( i=0; i<ai[m]+shift; i++ ) {cols[i] = gtog1[aij->garray[aj[i]+shift]];}
+    for ( i=0; i<m; i++ ) {
+      grow = gtog1[row];
+      ierr = MatSetValues(A,1,&grow,ai[i+1]-ai[i],cols,a,INSERT_VALUES);CHKERRQ(ierr);
+      row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
+    } 
+    /*      PetscFree(ct); */
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    if (!rank) {
+      ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERRQ(ierr);
       }
       ierr = MatDestroy(A); CHKERRQ(ierr);
     }
@@ -188,7 +172,7 @@ int MatViewDFVec_MPIBAIJ(Mat mat,DFVec dfv,Viewer viewer)
   if (vtype == DRAW_VIEWER) {
     Draw       draw;
     PetscTruth isnull;
-    ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+    ierr = ViewerDrawGetDraw(viewer,0 &draw); CHKERRQ(ierr);
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
   }
 
