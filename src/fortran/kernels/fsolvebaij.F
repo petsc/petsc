@@ -1,5 +1,5 @@
 !
-!  "$Id: fsolvebaij.F,v 1.1 1998/10/07 16:24:34 bsmith Exp bsmith $";
+!  "$Id: fsolvebaij.F,v 1.2 1998/10/07 20:07:24 bsmith Exp bsmith $";
 !
 !    Fortran kernel for sparse triangular solve in the BAIJ matrix format
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
@@ -22,7 +22,6 @@
       x(1) = b(1)
       x(2) = b(2)
       x(3) = b(3)
-      print*,'x',x(0),x(1),x(2),x(3)
       idx  = 0
       do 20 i=1,n-1
          jstart = ai(i)
@@ -33,7 +32,6 @@
          s2     = b(idx+1)
          s3     = b(idx+2)
          s4     = b(idx+3)
-      print*,'sum',s1,s2,s3,s4
          do 30 j=jstart,jend
            jdx   = 4*aj(j)
             
@@ -41,12 +39,10 @@
            x2    = x(jdx+1)
            x3    = x(jdx+2)
            x4    = x(jdx+3)
-       print*,'x in',x1,x2,x3,x4
            s1 = s1-(a(adx)*x1  +a(adx+4)*x2+a(adx+8)*x3 +a(adx+12)*x4)
            s2 = s2-(a(adx+1)*x1+a(adx+5)*x2+a(adx+9)*x3 +a(adx+13)*x4)
            s3 = s3-(a(adx+2)*x1+a(adx+6)*x2+a(adx+10)*x3+a(adx+14)*x4)
            s4 = s4-(a(adx+3)*x1+a(adx+7)*x2+a(adx+11)*x3+a(adx+15)*x4)
-      print*,'sum in ',s1,s2,s3,s4
            adx = adx + 16
  30      continue
          x(idx)   = s1
@@ -66,28 +62,24 @@
          s2      = x(idx+1)
          s3      = x(idx+2)
          s4      = x(idx+3)
-      print*,'sum after',s1,s2,s3,s4
          do 50 j=jstart,jend
            jdx   = 4*aj(j)
            x1    = x(jdx)
            x2    = x(jdx+1)
            x3    = x(jdx+2)
            x4    = x(jdx+3)
-       print*,'x after in ',x1,x2,x3,x4,jdx
            s1 = s1-(a(adx)*x1  +a(adx+4)*x2+a(adx+8)*x3 +a(adx+12)*x4)
            s2 = s2-(a(adx+1)*x1+a(adx+5)*x2+a(adx+9)*x3 +a(adx+13)*x4)
            s3 = s3-(a(adx+2)*x1+a(adx+6)*x2+a(adx+10)*x3+a(adx+14)*x4)
            s4 = s4-(a(adx+3)*x1+a(adx+7)*x2+a(adx+11)*x3+a(adx+15)*x4)
            adx = adx + 16
-      print*,'sum after in',s1,s2,s3,s4
  50      continue
          adx      = 16*adiag(i)
          x(idx)   = a(adx)*s1  +a(adx+4)*s2+a(adx+8)*s3 +a(adx+12)*s4
          x(idx+1) = a(adx+1)*s1+a(adx+5)*s2+a(adx+9)*s3 +a(adx+13)*s4
          x(idx+2) = a(adx+2)*s1+a(adx+6)*s2+a(adx+10)*s3+a(adx+14)*s4
          x(idx+3) = a(adx+3)*s1+a(adx+7)*s2+a(adx+11)*s3+a(adx+15)*s4
-       print*,'x after',x(idx),x(idx+1),x(idx+2),x(idx+3)
-         idx     = idx - 4
+         idx      = idx - 4
  40   continue
       return
       end
