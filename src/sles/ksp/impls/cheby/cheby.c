@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.28 1995/11/01 19:09:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.29 1995/11/01 23:15:28 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -40,18 +40,15 @@ int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 
 int  KSPSolve_Chebychev(KSP itP,int *its)
 {
-  int              k,kp1,km1,maxit,ktmp,i = 0,pres;
-  int              hist_len,cerr,ierr;
-  Scalar           alpha,omegaprod;
-  Scalar           mu,omega,Gamma,c[3],scale;
+  int              k,kp1,km1,maxit,ktmp,i = 0,pres,hist_len,cerr,ierr;
+  Scalar           alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0, tmp;
   double           rnorm,*history;
   Vec              x,b,p[3],r;
   KSP_Chebychev    *chebychevP = (KSP_Chebychev *) itP->data;
-  Scalar           mone = -1.0, tmp;
   Mat              Amat, Pmat;
   MatStructure     pflag;
 
-  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr    = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   history = itP->residual_history;
   hist_len= itP->res_hist_size;
   maxit   = itP->max_it;
@@ -60,25 +57,25 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
 
   /* These three point to the three active solutions, we
      rotate these three at each solution update */
-  km1 = 0; k = 1; kp1 = 2;
-  x = itP->vec_sol;
-  b = itP->vec_rhs;
+  km1    = 0; k = 1; kp1 = 2;
+  x      = itP->vec_sol;
+  b      = itP->vec_rhs;
   p[km1] = x;
   p[k]   = itP->work[0];
   p[kp1] = itP->work[1];
   r      = itP->work[2];
 
   /* use scale*B as our preconditioner */
-  scale = 2.0/( chebychevP->emax + chebychevP->emin );
+  scale  = 2.0/( chebychevP->emax + chebychevP->emin );
 
   /*   -alpha <=  scale*lambda(B^{-1}A) <= alpha   */
-  alpha = 1.0 - scale*(chebychevP->emin); ;
-  Gamma = 1.0;
-  mu = 1.0/alpha; 
+  alpha  = 1.0 - scale*(chebychevP->emin); ;
+  Gamma  = 1.0;
+  mu     = 1.0/alpha; 
   omegaprod = 2.0/alpha;
 
   c[km1] = 1.0;
-  c[k] = mu;
+  c[k]   = mu;
 
   if (!itP->guess_zero) {
     ierr = MatMult(Amat,x,r); CHKERRQ(ierr);     /*  r = b - Ax     */
@@ -109,9 +106,9 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
     }
 
     /* y^{k+1} = omega( y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
-    tmp = omega*Gamma*scale;
+    tmp  = omega*Gamma*scale;
     ierr = VecScale(&tmp,p[kp1]); CHKERRQ(ierr);
-    tmp = 1.0-omega; VecAXPY(&tmp,p[km1],p[kp1]);
+    tmp  = 1.0-omega; VecAXPY(&tmp,p[km1],p[kp1]);
     ierr = VecAXPY(&omega,p[k],p[kp1]); CHKERRQ(ierr);
 
     ktmp = km1;
@@ -152,20 +149,17 @@ static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
 
-  MPIU_fprintf(itP->comm,fd,
-    "    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",
-    cheb->emin,cheb->emax);
+  MPIU_fprintf(itP->comm,fd,"    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",
+               cheb->emin,cheb->emax);
   return 0;
 }
 
 int KSPCreate_Chebychev(KSP itP)
 {
-  KSP_Chebychev *chebychevP;
-
-  chebychevP=(KSP_Chebychev*)PetscMalloc(sizeof(KSP_Chebychev));CHKPTRQ(chebychevP);
+  KSP_Chebychev *chebychevP = PetscNew(KSP_Chebychev);CHKPTRQ(chebychevP);
   PLogObjectMemory(itP,sizeof(KSP_Chebychev));
-  itP->data = (void *) chebychevP;
 
+  itP->data                 = (void *) chebychevP;
   itP->type                 = KSPCHEBYCHEV;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

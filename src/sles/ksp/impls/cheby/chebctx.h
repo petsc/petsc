@@ -1,12 +1,12 @@
 /*  
-    Private Context Structure for Chebychev Iteration 
+    Private data structure for Chebychev Iteration 
 */
 
 #if !defined(__CHEBY)
 #define __CHEBY
 
 typedef struct {
-  double emin,emax;            
+  double emin,emax;   /* store user provided estimates of extreme eigenvalues */
 } KSP_Chebychev;
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.29 1995/11/01 19:09:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.30 1995/11/01 23:15:29 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -52,10 +52,9 @@ int  KSPSolve_Richardson(KSP itP,int *its)
   Scalar             scale, mone = -1.0;
   Vec                x,b,r,z;
   Mat                Amat, Pmat;
-  KSP_Richardson     *richardsonP;
-  richardsonP = (KSP_Richardson *) itP->data;
+  KSP_Richardson     *richardsonP = (KSP_Richardson *) itP->data;
 
-  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr    = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   x       = itP->vec_sol;
   b       = itP->vec_rhs;
   r       = itP->work[0];
@@ -120,33 +119,35 @@ int  KSPSolve_Richardson(KSP itP,int *its)
 
 static int KSPView_Richardson(PetscObject obj,Viewer viewer)
 {
-  KSP       itP = (KSP)obj;
+  KSP            itP = (KSP)obj;
   KSP_Richardson *richardsonP = (KSP_Richardson *) itP->data;
-  FILE      *fd;
-  int       ierr;
+  FILE           *fd;
+  int            ierr;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
 
-  MPIU_fprintf(itP->comm,fd,
-    "    Richardson: damping factor=%g\n",richardsonP->scale);
+  MPIU_fprintf(itP->comm,fd,"    Richardson: damping factor=%g\n",richardsonP->scale);
   return 0;
 }
 
 int KSPCreate_Richardson(KSP itP)
 {
-  KSP_Richardson *richardsonP;
-  richardsonP = PetscNew(KSP_Richardson); CHKPTRQ(richardsonP);
-  itP->data = (void *) richardsonP;
-  itP->type                 = KSPRICHARDSON;
-  richardsonP->scale        = 1.0;
-  itP->setup                = KSPSetUp_Richardson;
-  itP->solver               = KSPSolve_Richardson;
-  itP->adjustwork           = KSPiDefaultAdjustWork;
-  itP->destroy              = KSPiDefaultDestroy;
-  itP->calc_res             = 1;
-  itP->converged            = KSPDefaultConverged;
-  itP->buildsolution        = KSPDefaultBuildSolution;
-  itP->buildresidual        = KSPDefaultBuildResidual;
-  itP->view                 = KSPView_Richardson;
+  KSP_Richardson *richardsonP = PetscNew(KSP_Richardson); CHKPTRQ(richardsonP);
+  itP->data                   = (void *) richardsonP;
+  itP->type                   = KSPRICHARDSON;
+  richardsonP->scale          = 1.0;
+  itP->setup                  = KSPSetUp_Richardson;
+  itP->solver                 = KSPSolve_Richardson;
+  itP->adjustwork             = KSPiDefaultAdjustWork;
+  itP->destroy                = KSPiDefaultDestroy;
+  itP->calc_res               = 1;
+  itP->converged              = KSPDefaultConverged;
+  itP->buildsolution          = KSPDefaultBuildSolution;
+  itP->buildresidual          = KSPDefaultBuildResidual;
+  itP->view                   = KSPView_Richardson;
   return 0;
 }
+
+
+
+

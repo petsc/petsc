@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.16 1995/10/17 21:41:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.17 1995/11/01 19:09:10 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -16,22 +16,21 @@ static char vcid[] = "$Id: lsqr.c,v 1.16 1995/10/17 21:41:10 bsmith Exp bsmith $
 static int KSPSetUp_LSQR(KSP itP)
 {
   int ierr;
-  if ((ierr = KSPCheckDef( itP ))) return ierr;
-  ierr = KSPiDefaultGetWork( itP,  6 );
-  return ierr;
+  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
+  ierr = KSPiDefaultGetWork( itP,  6 ); CHKERRQ(ierr);
+  return 0;
 }
 
 static int KSPSolve_LSQR(KSP itP,int *its)
 {
   int          i = 0, maxit, hist_len, cerr = 0, ierr;
-  Scalar       rho, rhobar, phi, phibar, theta, c, s;
+  Scalar       rho, rhobar, phi, phibar, theta, c, s,tmp, zero = 0.0;
   double       beta, alpha, rnorm, *history;
-  Scalar       tmp, zero = 0.0;
   Vec          X,B,V,V1,U,U1,TMP,W,BINVF;
   Mat          Amat, Pmat;
   MatStructure pflag;
 
-  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr     = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   maxit    = itP->max_it;
   history  = itP->residual_history;
   hist_len = itP->res_hist_size;
@@ -67,14 +66,14 @@ static int KSPSolve_LSQR(KSP itP,int *its)
   rhobar = alpha;
   for (i=0; i<maxit; i++) {
     ierr = MatMult(Amat,V,U1); CHKERRQ(ierr);
-    tmp = -alpha; ierr = VecAXPY(&tmp,U,U1); CHKERRQ(ierr);
+    tmp  = -alpha; ierr = VecAXPY(&tmp,U,U1); CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta); CHKERRQ(ierr);
-    tmp = 1.0/beta; ierr = VecScale(&tmp,U1); CHKERRQ(ierr);
+    tmp  = 1.0/beta; ierr = VecScale(&tmp,U1); CHKERRQ(ierr);
 
     ierr = MatMultTrans(Amat,U1,V1); CHKERRQ(ierr);
-    tmp = -beta; ierr = VecAXPY(&tmp,V,V1); CHKERRQ(ierr);
+    tmp  = -beta; ierr = VecAXPY(&tmp,V,V1); CHKERRQ(ierr);
     ierr = VecNorm(V1,NORM_2,&alpha); CHKERRQ(ierr);
-    tmp = 1.0 / alpha; ierr = VecScale(&tmp,V1); CHKERRQ(ierr);
+    tmp  = 1.0 / alpha; ierr = VecScale(&tmp,V1); CHKERRQ(ierr);
 
     rho    = sqrt(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
@@ -84,9 +83,9 @@ static int KSPSolve_LSQR(KSP itP,int *its)
     phi    = c * phibar;
     phibar = s * phibar;
 
-    tmp = phi/rho; 
+    tmp  = phi/rho; 
     ierr = VecAXPY(&tmp,W,X); CHKERRQ(ierr);  /*    x <- x + (phi/rho) w   */
-    tmp = -theta/rho; 
+    tmp  = -theta/rho; 
     ierr = VecAYPX(&tmp,V1,W); CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
 #if defined(PETSC_COMPLEX)
@@ -113,7 +112,7 @@ static int KSPSolve_LSQR(KSP itP,int *its)
 
 int KSPCreate_LSQR(KSP itP)
 {
-  itP->data        = (void *) 0;
+  itP->data                 = (void *) 0;
   itP->type                 = KSPLSQR;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.14 1995/10/17 21:41:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.15 1995/11/01 19:09:15 bsmith Exp bsmith $";
 #endif
 
 /*                       
-       This implements TFQMR
+       This implements TFQMR of Freund and Nactigal.
 */
 #include <stdio.h>
 #include <math.h>
@@ -13,16 +13,15 @@ static char vcid[] = "$Id: tfqmr.c,v 1.14 1995/10/17 21:41:15 bsmith Exp bsmith 
 static int KSPSetUp_TFQMR(KSP itP)
 {
   int ierr;
-  if ((ierr = KSPCheckDef( itP ))) return ierr;
-  if ((ierr = KSPiDefaultGetWork( itP,  10 ))) return ierr;
+  ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
+  ierr = KSPiDefaultGetWork( itP,  10 ); CHKERRQ(ierr);
   return 0;
 }
 
 static int  KSPSolve_TFQMR(KSP itP,int *its)
 {
   int       i = 0, maxit, m, conv, hist_len, cerr = 0, ierr;
-  Scalar    rho, rhoold, a, s, b, eta,
-            etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
+  Scalar    rho, rhoold, a, s, b, eta,etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
   double    *history,dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 
@@ -107,8 +106,7 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
     ierr = VecWAXPY(&b,Q,R,U); CHKERRQ(ierr);       /* u <- r + b q        */
     ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);
     ierr = VecWAXPY(&b,Q,U,P); CHKERRQ(ierr);       /* p <- u + b(q + b p) */
-    ierr = PCApplyBAorAB(itP->B,itP->right_pre,
-                         P,V,Q); CHKERRQ(ierr);     /* v <- K p            */
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q); CHKERRQ(ierr); /* v <- K p  */
 
     rhoold = rho;
     dpold  = dp;
@@ -124,7 +122,7 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
 
 int KSPCreate_TFQMR(KSP itP)
 {
-  itP->data        = (void *) 0;
+  itP->data                 = (void *) 0;
   itP->type                 = KSPTFQMR;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

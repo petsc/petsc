@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.19 1995/10/01 21:51:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.20 1995/11/01 19:08:50 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -17,7 +17,7 @@ static int KSPSetUp_CR(KSP itP)
     SETERRQ(2,"KSPSetUp_CR:no right preconditioning for CR");
   }
   ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
-  ierr = KSPiDefaultGetWork( itP, 9  );
+  ierr = KSPiDefaultGetWork( itP, 9  ); CHKERRQ(ierr);
   return ierr;
 }
 
@@ -72,22 +72,22 @@ static int  KSPSolve_CR(KSP itP,int *its)
   ierr = MatMult(Amat,P,Q); CHKERRQ(ierr);      /*    q <- A p          */
 
   for ( i=0; i<maxit; i++) {
-    ierr = PCApply(itP->B,Q,S); CHKERRQ(ierr);  /*     s <- Bq          */
-    ierr = VecDot(R,S,&btop); CHKERRQ(ierr);    /*                      */
-    ierr = VecDot(Q,S,&bbot); CHKERRQ(ierr);    /*     lambda =         */
+    ierr   = PCApply(itP->B,Q,S); CHKERRQ(ierr);  /*     s <- Bq          */
+    ierr   = VecDot(R,S,&btop); CHKERRQ(ierr);    /*                      */
+    ierr   = VecDot(Q,S,&bbot); CHKERRQ(ierr);    /*     lambda =         */
     lambda = btop/bbot;
-    ierr = VecAXPY(&lambda,P,X); CHKERRQ(ierr); /*   x <- x + lambda p  */
-    tmp = -lambda; 
-    ierr =VecAXPY(&tmp,Q,R); CHKERRQ(ierr);     /*   r <- r - lambda q  */
-    ierr =VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
+    ierr   = VecAXPY(&lambda,P,X); CHKERRQ(ierr); /*   x <- x + lambda p  */
+    tmp    = -lambda; 
+    ierr   = VecAXPY(&tmp,Q,R); CHKERRQ(ierr);     /*   r <- r - lambda q  */
+    ierr   = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*   dp <- r'*r         */
     if (history && hist_len > i + 1) history[i+1] = dp;
     MONITOR(itP,dp,i+1);
-    cerr = (*itP->converged)(itP,i+1,dp,itP->cnvP);
+    cerr   = (*itP->converged)(itP,i+1,dp,itP->cnvP);
     if (cerr) break;
-    ierr = MatMult(Amat,S,T); CHKERRQ(ierr);    /*   T <-   As          */
-    ierr = VecDot(T,S,&btop); CHKERRQ(ierr);
+    ierr   = MatMult(Amat,S,T); CHKERRQ(ierr);    /*   T <-   As          */
+    ierr   = VecDot(T,S,&btop); CHKERRQ(ierr);
     alpha0 = btop/bbot;
-    ierr = VecDot(T,Sm1,&btop); CHKERRQ(ierr);       
+    ierr   = VecDot(T,Sm1,&btop); CHKERRQ(ierr);       
     alpha1 = btop/bbotold; 
 
     tmp = -alpha0; ierr = VecWAXPY(&tmp,P,S,Pp1); CHKERRQ(ierr);
@@ -97,7 +97,7 @@ static int  KSPSolve_CR(KSP itP,int *its)
     tmp = -alpha1; ierr = VecAXPY(&tmp,Qm1,Qp1); CHKERRQ(ierr);
     /* scale the search direction !! Not mentioned in any reference */
     ierr = VecNorm(Pp1,NORM_2,&dp); CHKERRQ(ierr);
-    tmp = 1.0/dp; ierr = VecScale(&tmp,Pp1); CHKERRQ(ierr);
+    tmp  = 1.0/dp; ierr = VecScale(&tmp,Pp1); CHKERRQ(ierr);
     ierr = VecScale(&tmp,Qp1); CHKERRQ(ierr);
     /* rotate work vectors */
     Tmp = Sm1; Sm1 = S; S = Tmp;
@@ -108,7 +108,7 @@ static int  KSPSolve_CR(KSP itP,int *its)
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
   if (cerr <= 0) *its = -(i+1);
-  else          *its = i + 1;
+  else           *its = i + 1;
   return 0;
 }
 

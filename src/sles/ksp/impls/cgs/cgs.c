@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.17 1995/10/17 21:41:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.18 1995/11/01 19:08:57 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -74,7 +74,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
     if (cerr) break;
 
     ierr = VecDot(RP,R,&rho); CHKERRQ(ierr);         /* newrho <- rp' r      */
-    b = rho / rhoold;                                /* b <- rho / rhoold    */
+    b    = rho / rhoold;                                /* b <- rho / rhoold    */
     ierr = VecWAXPY(&b,Q,R,U); CHKERRQ(ierr);        /* u <- r + b q         */
     ierr = VecAXPY(&b,P,Q); CHKERRQ(ierr);
     ierr = VecWAXPY(&b,Q,U,P); CHKERRQ(ierr);        /* p <- u + b(q + b p)  */
@@ -93,7 +93,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
 
 int KSPCreate_CGS(KSP itP)
 {
-  itP->data        = (void *) 0;
+  itP->data                 = (void *) 0;
   itP->type                 = KSPCGS;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

@@ -1,5 +1,5 @@
 /*
-      Private context for Richardson Iteration 
+      Private data structure for Richardson Iteration 
 */
 
 #if !defined(__RICH_H)
