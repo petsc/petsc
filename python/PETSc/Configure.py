@@ -61,7 +61,6 @@ class Configure(config.base.Configure):
 
     help.addOption('PETSc', 'PETSC_DIR', 'The root directory of the PETSc installation')
     help.addOption('PETSc', 'PETSC_ARCH', 'The machine architecture')
-    help.addOption('PETSc', '-with-bopt=<g,O,...>', 'Specify the build option, e.g. g for debuggin, O for optimized, etc.')
     help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', nargs.ArgBool)
     help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
@@ -71,7 +70,6 @@ class Configure(config.base.Configure):
     self.framework.argDB['PETSCFLAGS']             = ''
     self.framework.argDB['COPTFLAGS']              = ''
     self.framework.argDB['FOPTFLAGS']              = ''
-    self.framework.argDB['with-bopt']              = 'g'
     self.framework.argDB['enable-debug']           = 1
     self.framework.argDB['enable-log']             = 1
     self.framework.argDB['enable-stack']           = 1
@@ -985,7 +983,7 @@ fi
 
   def configureDirectories(self):
     '''Sets PETSC_DIR'''
-    if self.framework.argDB.has_key('PETSC_DIR'):
+    if not self.framework.argDB.has_key('PETSC_DIR'):
       self.framework.argDB['PETSC_DIR'] = os.getcwd()
     self.dir = self.framework.argDB['PETSC_DIR']
     # Check for version
@@ -1041,8 +1039,7 @@ fi
     return
 
   def configureLibraryOptions(self):
-    '''Sets bopt, PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
-    self.bopt     = self.framework.argDB['with-bopt']
+    '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
     self.useDebug = self.framework.argDB['enable-debug']
     self.addDefine('USE_DEBUG', self.useDebug)
     self.useLog   = self.framework.argDB['enable-log']
@@ -1312,11 +1309,11 @@ fi
     self.executeTest(self.checkRequirements)
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureArchitecture)
-    self.framework.header = 'bmake/'+self.arch+'-test/petscconf.h'
-    self.framework.addSubstitutionFile('bmake/config-test/packages.in',   'bmake/'+self.arch+'-test/packages')
-    self.framework.addSubstitutionFile('bmake/config-test/rules.in',      'bmake/'+self.arch+'-test/rules')
-    self.framework.addSubstitutionFile('bmake/config-test/variables.in',  'bmake/'+self.arch+'-test/variables')
-    self.framework.addSubstitutionFile('bmake/config-test/petscfix.h.in', 'bmake/'+self.arch+'-test/petscfix.h')
+    self.framework.header = 'bmake/'+self.arch+'/petscconf.h'
+    self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.arch+'/packages')
+    self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.arch+'/rules')
+    self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.arch+'/variables')
+    self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.arch+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureCompilerFlags)
     self.executeTest(self.configureFortranPIC)
