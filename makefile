@@ -365,11 +365,11 @@ deletemanualpages: chk_loc
 # Builds all the documentation - should be done every night
 alldoc: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
-	cd docs/tex/manual; ${OMAKE} manual.pdf
-	-${OMAKE} ACTION=manualpages tree_basic  LOC=${LOC}
+	cd docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
+	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
 	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
-	-${OMAKE} ACTION=manexamples tree  LOC=${LOC}
-	-${OMAKE} manconcepts  LOC=${LOC}
+	-${OMAKE} ACTION=manexamples tree LOC=${LOC}
+	-${OMAKE} manconcepts LOC=${LOC}
 	-${OMAKE} ACTION=getexlist tree LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree LOC=${LOC}
 	-maint/helpindex.py ${PETSC_DIR} ${LOC}
@@ -382,7 +382,7 @@ allcleanhtml:
 	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} tree
 
 chk_concepts_dir: chk_loc
-	@if [ ! -d "${LOC}/docs/manualpages/concepts}" ]; then \
+	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 # Builds Fortran stub files
 allfortranstubs:

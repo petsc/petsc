@@ -266,6 +266,7 @@
 /*     If there is cancelllation on the third and fourth column */
 /*     then h is too small */
     *info = 2;
+    return 0;
 /*      if (cancel .or. dsgn(3)) then */
 /*         info = 2 */
 /*      else */

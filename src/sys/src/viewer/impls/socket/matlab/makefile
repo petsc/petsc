@@ -14,7 +14,7 @@ SPECIALFASTLIB = yes
 speciallib:
 	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
 	-@${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
-	-@mkdir  ${PETSC_DIR}/bin/matlab
+	-@if [ ! -d "${PETSC_DIR}/bin/matlab" ] ; then ${MKDIR}  ${PETSC_DIR}/bin/matlab; fi
 	-@${MV} receive.mex* openport.mex* closeport.mex* launch.mex* readinvecs.mex* ${PETSC_DIR}/bin/matlab
 specialfastlib: speciallib
 
