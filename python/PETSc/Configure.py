@@ -97,10 +97,9 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CC_LINKER',self.setCompilers.getLinker())
     self.addMakeMacro('CC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
-    # -rpath or -R or -L etc
-    if not self.setCompilers.CSharedLinkerFlag: value = '-L'
-    else: value = self.setCompilers.CSharedLinkerFlag
-    self.addMakeMacro('CC_LINKER_SLFLAG',value)    
+    # Must have a valid linker flag due to makefile setup
+    if not self.setCompilers.CSharedLinkerFlag:
+      self.setCompilers.addMakeMacro('CC_LINKER_SLFLAG', '-L')
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
     self.addMakeMacro('CC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.libraries.toString(self.compilers.flibs))
@@ -123,10 +122,9 @@ class Configure(config.base.Configure):
       self.addMakeMacro('FC_LINKER',self.setCompilers.getLinker())
       self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       self.setCompilers.popLanguage()
-      # -rpath or -R or -L etc
-      if not self.setCompilers.FCSharedLinkerFlag: value = '-L'
-      else: value = self.setCompilers.FCSharedLinkerFlag
-      self.addMakeMacro('FC_LINKER_SLFLAG',value)    
+      # Must have a valid linker flag due to makefile setup
+      if not self.setCompilers.FCSharedLinkerFlag:
+        self.setCompilers.addMakeMacro('FC_LINKER_SLFLAG', '-L')
       # '' for Unix, .exe for Windows
       self.addMakeMacro('FC_LINKER_SUFFIX','')
       self.addMakeMacro('FC_LINKER_LIBS',self.framework.argDB['LIBS']+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
