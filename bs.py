@@ -2,6 +2,7 @@
 import commands
 import os.path
 import string
+import time
 
 echo = 1
 
@@ -13,7 +14,7 @@ class Maker:
     return output
 
 class FileGroup (Maker):
-  def __init__(self, data=[], func=None, children=[]):
+  def __init__(self, data = [], func = None, children = []):
     self.data     = data
     self.func     = func
     self.children = children
@@ -22,6 +23,7 @@ class FileGroup (Maker):
     self.data.append(item)
 
   def getFiles(self):
+    funcData = []
     if (self.func):
       funcData = self.func(self)
     childData = []
@@ -110,6 +112,28 @@ class NewerThan (Precondition):
         return 1
     return 0
 
+class LibraryOlderThan (OlderThan):
+  def __nonzero__(self):
+    if (not os.path.exists(self.target)): return 1
+    files = self.sources.getFiles()
+    if (not len(files)): return 1
+    for source in files:
+      (dir, file) = os.path.split(source)
+      (base, ext) = os.path.splitext(file)
+      object      = base+'.o'
+
+      output      = self.executeShellCommand('ar tv '+self.target+' '+object)
+      if (output[0:8] != 'no entry'):
+        objectTime = time.strptime(output[25:42], "%b %d %H:%M %Y")
+      else:
+        objectTime = 0
+
+      sourceTime = os.path.getmtime(source)
+      if (objectTime < sourceTime):
+        print self.target+'('+object+')'+' is older than '+source
+        return 1
+    return 0
+
 class CompileFiles (Action):
   def __init__(self, compiler, compilerFlags, sources):
     self.compiler      = compiler
@@ -184,7 +208,10 @@ class RemoveFiles (Action):
   def __init__(self, files):
     self.files = files
 
+  def forceRemove(self, file):
+    if (os.path.exists(file)): os.remove(file)
+
   def execute(self):
     files = self.files.getFiles()
     if echo: print 'Removing '+str(files)
-    map(os.remove, files)
+    map(self.forceRemove, files)
