@@ -1336,10 +1336,11 @@ PetscErrorCode MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
 #define __FUNCT__ "MatNorm_SeqBAIJ"
 PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-  MatScalar   *v = a->a;
-  PetscReal   sum = 0.0;
-  PetscInt    i,j,k,bs = A->bs,nz=a->nz,bs2=a->bs2,k1;
+  PetscErrorCode ierr;
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
+  MatScalar      *v = a->a;
+  PetscReal      sum = 0.0;
+  PetscInt       i,j,k,bs=A->bs,nz=a->nz,bs2=a->bs2,k1;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -1351,7 +1352,26 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
 #endif
     }
     *norm = sqrt(sum);
-  }  else if (type == NORM_INFINITY) { /* maximum row sum */
+  } else if (type == NORM_1) { /* maximum column sum */
+    PetscReal *tmp;
+    PetscInt  *bcol = a->j;
+    ierr = PetscMalloc((A->n+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
+    ierr = PetscMemzero(tmp,A->n*sizeof(PetscReal));CHKERRQ(ierr);
+    for (i=0; i<nz; i++){
+      for (j=0; j<bs; j++){
+        k1 = bs*(*bcol) + j; /* column index */
+        for (k=0; k<bs; k++){
+          tmp[k1] += PetscAbsScalar(*v); v++;
+        }
+      }
+      bcol++;
+    }
+    *norm = 0.0;
+    for (j=0; j<A->n; j++) {
+      if (tmp[j] > *norm) *norm = tmp[j];
+    }
+    ierr = PetscFree(tmp);CHKERRQ(ierr);
+  } else if (type == NORM_INFINITY) { /* maximum row sum */
     *norm = 0.0;
     for (k=0; k<bs; k++) {
       for (j=0; j<a->mbs; j++) {

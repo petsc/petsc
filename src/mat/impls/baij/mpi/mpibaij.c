@@ -814,7 +814,7 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
   Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*)mat->data;
   Mat_SeqBAIJ    *amat = (Mat_SeqBAIJ*)baij->A->data,*bmat = (Mat_SeqBAIJ*)baij->B->data;
   PetscErrorCode ierr;
-  PetscInt       i,bs2=baij->bs2;
+  PetscInt       i,j,bs2=baij->bs2,bs=baij->A->bs,nz,row,col;
   PetscReal      sum = 0.0;
   MatScalar      *v;
 
@@ -824,7 +824,8 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
   } else {
     if (type == NORM_FROBENIUS) {
       v = amat->a;
-      for (i=0; i<amat->nz*bs2; i++) {
+      nz = amat->nz*bs2;
+      for (i=0; i<nz; i++) {
 #if defined(PETSC_USE_COMPLEX)
         sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
 #else
@@ -832,7 +833,8 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
 #endif
       }
       v = bmat->a;
-      for (i=0; i<bmat->nz*bs2; i++) {
+      nz = bmat->nz*bs2;
+      for (i=0; i<nz; i++) {
 #if defined(PETSC_USE_COMPLEX)
         sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
 #else
@@ -841,13 +843,72 @@ PetscErrorCode MatNorm_MPIBAIJ(Mat mat,NormType type,PetscReal *nrm)
       }
       ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
       *nrm = sqrt(*nrm);
+    } else if (type == NORM_1) { /* max column sum */
+      PetscReal *tmp,*tmp2;
+      PetscInt  *jj,*garray=baij->garray,cstart=baij->cstart;
+      ierr = PetscMalloc((2*mat->N+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
+      tmp2 = tmp + mat->N;
+      ierr = PetscMemzero(tmp,mat->N*sizeof(PetscReal));CHKERRQ(ierr);
+      v = amat->a; jj = amat->j;
+      for (i=0; i<amat->nz; i++) {
+        for (j=0; j<bs; j++){
+          col = bs*(cstart + *jj) + j; /* column index */
+          for (row=0; row<bs; row++){
+            tmp[col] += PetscAbsScalar(*v);  v++;
+          }
+        }
+        jj++;
+      }
+      v = bmat->a; jj = bmat->j;
+      for (i=0; i<bmat->nz; i++) {
+        for (j=0; j<bs; j++){
+          col = bs*garray[*jj] + j;
+          for (row=0; row<bs; row++){
+            tmp[col] += PetscAbsScalar(*v); v++;
+          }
+        }
+        jj++;
+      }
+      ierr = MPI_Allreduce(tmp,tmp2,mat->N,MPIU_REAL,MPI_SUM,mat->comm);CHKERRQ(ierr);
+      *nrm = 0.0;
+      for (j=0; j<mat->N; j++) {
+        if (tmp2[j] > *nrm) *nrm = tmp2[j];
+      }
+      ierr = PetscFree(tmp);CHKERRQ(ierr);
+    } else if (type == NORM_INFINITY) { /* max row sum */
+      PetscReal sums[bs];
+      sum = 0.0;
+      for (j=0; j<amat->mbs; j++) {
+        for (row=0; row<bs; row++) sums[row] = 0.0;
+        v = amat->a + bs2*amat->i[j];
+        nz = amat->i[j+1]-amat->i[j];
+        for (i=0; i<nz; i++) { 
+          for (col=0; col<bs; col++){ 
+            for (row=0; row<bs; row++){
+              sums[row] += PetscAbsScalar(*v); v++;
+            }
+          }
+        }
+        v = bmat->a + bs2*bmat->i[j];
+        nz = bmat->i[j+1]-bmat->i[j];
+        for (i=0; i<nz; i++) {
+          for (col=0; col<bs; col++){ 
+            for (row=0; row<bs; row++){
+              sums[row] += PetscAbsScalar(*v); v++;
+            }
+          }
+        }
+        for (row=0; row<bs; row++){
+          if (sums[row] > sum) sum = sums[row];
+        }
+      }
+      ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_MAX,mat->comm);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"No support for this norm yet");
     }
   }
   PetscFunctionReturn(0);
 }
-
 
 /*
   Creates the hash table, and sets the table 

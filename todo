@@ -42,8 +42,6 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
      ------------------------------------------------------------
      + (Satish) Convert the Tufo-Fischer parallel direct solver to its own PC extend to other matrix types
 
-     Add norms for BAIJ matrices
-
      Add support for MatLoad() for Matlab .mat files; we already have the view.
 
   -----------------
