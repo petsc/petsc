@@ -29,7 +29,7 @@ from parseargs import *
 #
 #  Copies structs from filename to filename.tmp
     
-def setupfunctionC(filename):
+def setupfunctionC(filename,g = None):
         import re
         regtypedef  = re.compile('typedef [ ]*struct')
         reginclude  = re.compile('#include [ ]*"([a-zA-Z_0-9]*.h)"')
@@ -39,10 +39,11 @@ def setupfunctionC(filename):
         regEXTERN   = re.compile('EXTERN')
         regif       = re.compile('#if')
         regendif    = re.compile('#endif')
-	newfile = filename + ".tmp"
 	f = open(filename)
-	g = open(newfile,"w")
-        g.write("#include <math.h>\n")
+	if not g:
+		newfile = filename + ".tmp"
+		g = open(newfile,"w")
+		g.write("#include <math.h>\n")
 	line = f.readline()
 	while line:
 #                line = lstrip(line)+" "
@@ -87,8 +88,9 @@ def setupfunctionC(filename):
                         g.write(line)
 			
 		if reginclude.search(line):
-			print reginclude.find(line)
-                        g.write(line)
+			fname = reginclude.match(line).group(1)
+			if os.path.exists(fname):
+				setupfunctionC(fname,g)
 
                 fl = regif.search(line)
                 if fl:
