@@ -287,7 +287,7 @@ class Configure(config.base.Configure):
     if name.find('MacOSX') >= 0 and 'FC' in self.framework.argDB:
       self.setcompilers.pushLanguage('F77')
       if self.setcompilers.getCompiler().find('xlf') >= 0 or self.setcompilers.getCompiler().find('xlF') >= 0:
-        self.compilers.fortranMangling == 'underscore'
+        self.compilers.fortranMangling = 'underscore'
 #        flags = self.framework.getCompilerObject(self.language[-1]).getFlags()+' -qextname'
         self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS'] + ' -qextname'
 #        self.framework.getCompilerObject(self.language[-1]).setFlags(flags)
