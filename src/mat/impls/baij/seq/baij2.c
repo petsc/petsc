@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.32 1998/12/17 22:10:39 bsmith Exp balay $";
+static char vcid[] = "$Id: baij2.c,v 1.33 1998/12/23 22:20:35 balay Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -912,7 +912,7 @@ int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
         n     = ii[1] - ii[0]; ii++;
         ncols = n*bs;
         PetscMemzero(work,ncols*sizeof(Scalar));
-        Kernel_w_gets_w_plus_Ar_times_v(bs,ncols,x,v,work);
+        Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,work);
         /* LAgemv_("T",&bs,&ncols,&_DOne,v,&bs,x,&_One,&_DOne,work,&_One); */
         v += n*bs2;
         x += bs;
