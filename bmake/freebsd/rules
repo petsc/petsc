@@ -39,13 +39,13 @@ libf: $(LIBNAME)($(OBJSF))
 	$(RM) $*.o
 .F.o:
 	$(RM) $*.f
-	-cpp $(COPTFLAGS) $*.F > $*.f 
+	-cpp $(CFLAGS)  $*.F > $*.f 
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 
 .F.a: 
 	$(RM) $*.f
-	-cpp $(COPTFLAGS) $*.F  > $*.f
+	-cpp $(CFLAGS) $*.F  > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f
 	$(AR) cr $(LIBNAME) $*.o
