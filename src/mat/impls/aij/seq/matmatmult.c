@@ -229,7 +229,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
 
   /* create mpi matrix C by concatinating C_seq */
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
-  ierr = MatMerge(A->comm,mult->C_seq,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
+  ierr = MatMerge(A->comm,mult->C_seq,B->n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
  
   /* attach the supporting struct to C for reuse of symbolic C */
   (*C)->spptr         = (void*)mult;
@@ -406,7 +406,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->aseq[0],mult->bseq[0],MAT_REUSE_MATRIX,0.0,&mult->C_seq);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); 
-  ierr = MatMerge(A->comm,mult->C_seq,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
+  ierr = MatMerge(A->comm,mult->C_seq,B->n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }

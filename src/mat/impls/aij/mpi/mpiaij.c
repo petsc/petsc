@@ -2722,6 +2722,7 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
    Input Parameters:
 +    comm - the communicators the parallel matrix will live on
 .    inmat - the input sequential matrices
+.    n - number of local columns (or PETSC_DECIDE)
 -    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -2732,24 +2733,26 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
    Notes: The number of columns of the matrix in EACH processor MUST be the same.
 
 @*/
-PetscErrorCode MatMerge(MPI_Comm comm,Mat inmat,MatReuse scall,Mat *outmat)
+PetscErrorCode MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *outmat)
 {
   PetscErrorCode ierr;
-  int               m,n,i,rstart,nnz,I,*dnz,*onz;
+  int               m,N,i,rstart,nnz,I,*dnz,*onz;
   const int         *indx;
   const PetscScalar *values;
   PetscMap          columnmap,rowmap;
 
   PetscFunctionBegin;
 
-  ierr = MatGetSize(inmat,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(inmat,&m,&N);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){ 
     /* count nonzeros in each row, for diagonal and off diagonal portion of matrix */
-    ierr = PetscMapCreate(comm,&columnmap);CHKERRQ(ierr);
-    ierr = PetscMapSetSize(columnmap,n);CHKERRQ(ierr);
-    ierr = PetscMapSetType(columnmap,MAP_MPI);CHKERRQ(ierr);
-    ierr = PetscMapGetLocalSize(columnmap,&n);CHKERRQ(ierr);
-    ierr = PetscMapDestroy(columnmap);CHKERRQ(ierr);
+    if (n == PETSC_DECIDE){ 
+      ierr = PetscMapCreate(comm,&columnmap);CHKERRQ(ierr);
+      ierr = PetscMapSetSize(columnmap,N);CHKERRQ(ierr);
+      ierr = PetscMapSetType(columnmap,MAP_MPI);CHKERRQ(ierr);
+      ierr = PetscMapGetLocalSize(columnmap,&n);CHKERRQ(ierr);
+      ierr = PetscMapDestroy(columnmap);CHKERRQ(ierr);
+    } 
 
     ierr = PetscMapCreate(comm,&rowmap);CHKERRQ(ierr);
     ierr = PetscMapSetLocalSize(rowmap,m);CHKERRQ(ierr);
@@ -2874,6 +2877,8 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
    Input Parameters:
 +    comm - the communicators the parallel matrix will live on
 .    seqmat - the input sequential matrices
+.    m - number of local rows (or PETSC_DECIDE)
+.    n - number of local columns (or PETSC_DECIDE)
 -    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
@@ -2885,13 +2890,13 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
       MUST be the same.
 
 @*/
-PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *mpimat)
+PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat) 
 {
   PetscErrorCode    ierr; 
   Mat               B_seq,B_mpi;
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)seqmat->data;
   PetscMPIInt       size,rank;
-  int               M=seqmat->m,N=seqmat->n,m,i,j,*owners,*ai=a->i,*aj=a->j,tag,taga,len,len_a = 0,*len_s,*len_sa,proc,*len_r,*len_ra;
+  int               M=seqmat->m,N=seqmat->n,i,j,*owners,*ai=a->i,*aj=a->j,tag,taga,len,len_a = 0,*len_s,*len_sa,proc,*len_r,*len_ra;
   int               **ijbuf_r,*ijbuf_s,*nnz_ptr,k,anzi,*bj_i,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj;                  
   MPI_Request       *s_waits,*r_waits,*s_waitsa,*r_waitsa;
   MPI_Status        *status;
@@ -2920,12 +2925,16 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
   /*---------------------------------------------------------*/
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscMapCreate(comm,&merge->rowmap);CHKERRQ(ierr);
-    ierr = PetscMapSetSize(merge->rowmap,M);CHKERRQ(ierr);
+    if (m == PETSC_DECIDE) {
+      ierr = PetscMapSetSize(merge->rowmap,M);CHKERRQ(ierr);
+    } else {
+      ierr = PetscMapSetLocalSize(merge->rowmap,m);CHKERRQ(ierr); 
+    } 
     ierr = PetscMapSetType(merge->rowmap,MAP_MPI);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(int),&len_s);CHKERRQ(ierr);
     ierr = PetscMalloc(2*size*sizeof(int),&merge->len_sra);CHKERRQ(ierr);
   }
-  ierr = PetscMapGetLocalSize(merge->rowmap,&m);CHKERRQ(ierr);
+  if (m == PETSC_DECIDE) ierr = PetscMapGetLocalSize(merge->rowmap,&m);CHKERRQ(ierr); 
   ierr = PetscMapGetGlobalRange(merge->rowmap,&owners);CHKERRQ(ierr);
   
   len_sa  = merge->len_sra;
@@ -3101,7 +3110,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
 
     /* create symbolic parallel matrix B_mpi by concatinating B_seq */
     /*--------------------------------------------------------------*/
-    ierr = MatMerge(comm,B_seq,scall,&B_mpi);CHKERRQ(ierr); 
+    ierr = MatMerge(comm,B_seq,n,scall,&B_mpi);CHKERRQ(ierr); 
   } /* endof if (scall == MAT_INITIAL_MATRIX) */
 
   /* insert mat values of B_mpi */

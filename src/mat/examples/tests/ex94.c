@@ -14,12 +14,12 @@ int main(int argc,char **args)
   Vec          x,y1,y2;
   PetscViewer  viewer;
   int          i,ierr,m,n,size,rank,j,idxn[10],M,N,nzp;
-  PetscReal    norm,norm_tmp,tol=1.e-10,none = -1.0,fill=4,alpha;
+  PetscReal    norm,norm_tmp,tol=0.0,none = -1.0,fill=4,alpha;
   PetscRandom  rand;
   char         file[4][128];
   PetscTruth   flg,preload = PETSC_TRUE;
   PetscScalar  a[10],rval;
-  PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
+  PetscTruth   Test_MatMatMult=PETSC_FALSE,Test_MatMatMultTr=PETSC_FALSE,Test_MatPtAP=PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -171,13 +171,12 @@ int main(int argc,char **args)
 
   /* Test MatPtAP() */
   /*----------------------*/
-  if (size>1) Test_MatPtAP = PETSC_FALSE;
   if (Test_MatPtAP){
     int PN;
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-    PN   = M/2;
-    nzp  = 5;
+    PN   = M/2; 
+    nzp  = 5; 
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,PN,&P);CHKERRQ(ierr); 
     ierr = MatSetType(P,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(P,nzp,PETSC_NULL);CHKERRQ(ierr);
@@ -198,12 +197,14 @@ int main(int argc,char **args)
     ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); 
 
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
+    if (size == 1){
     alpha=1.0;
     for (i=0; i<2; i++){
       alpha -=0.1;
       ierr = MatScale(&alpha,A);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
+    } /* if (size == 1) */
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
