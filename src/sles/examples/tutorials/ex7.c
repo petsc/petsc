@@ -1,26 +1,43 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.21 1996/03/19 21:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.22 1996/07/08 22:20:55 bsmith Exp $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\
 procedure for using different linear solvers on the individual blocks.\n\n";
 
+/*T
+   Concepts: SLES; solving linear equations
+   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions()
+   Routines: SLESSolve(); SLESView()
+   Processors: n
+T*/
+
+/* 
+  Include "sles.h" so that we can use SLES solvers.  Note that this file
+  automatically includes:
+     petsc.h  - base PETSc routines   vec.h - vectors
+     sys.h    - system routines       mat.h - matrices
+     is.h     - index sets            ksp.h - Krylov subspace methods
+     viewer.h - viewers               pc.h  - preconditioners
+*/
 #include "sles.h"
 #include <stdio.h>
 
 int main(int argc,char **args)
 {
+  Vec     x, b, u;      /* approx solution, RHS, exact solution */
+  Mat     A;            /* linear system matrix */
+  SLES    sles;         /* SLES context */
+  SLES    *subsles;     /* array of local SLES contexts on this processor */
+  PC      pc;           /* PC context */
+  PC      subpc;        /* PC context for subdomain */
+  KSP     subksp;       /* KSP context for subdomain */
+  PCType  pctype;       /* preconditioning technique */
+  double  norm;         /* norm of solution error */
   int       i, j, I, J, ierr, m = 3, n = 2;
   int       rank, size, its, nlocal, first, Istart, Iend,flg;
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
-  Vec       x, u, b;
-  Mat       A; 
-  SLES      sles, *subsles;
-  PC        pc, subpc;
-  KSP       subksp;
-  double    norm;
-  PCType    pcmethod;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
@@ -66,8 +83,8 @@ int main(int argc,char **args)
      a simple illustration of setting different linear solvers for the
      individual blocks.  These choices are obviously not recommended for
      solving this particular problem. */
-  ierr = PCGetType(pc,&pcmethod,PETSC_NULL); CHKERRA(ierr);
-  if (pcmethod == PCBJACOBI) {
+  ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRA(ierr);
+  if (pctype == PCBJACOBI) {
     /* Note that SLESSetUp() MUST be called before PCBJacobiGetSubSLES(). */
     ierr = SLESSetUp(sles,x,b); CHKERRA(ierr);
     ierr = PCBJacobiGetSubSLES(pc,&nlocal,&first,&subsles); CHKERRA(ierr);

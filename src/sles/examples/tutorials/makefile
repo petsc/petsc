@@ -12,13 +12,14 @@ LIBBASE	        = libpetscsles
 LOCDIR          = src/sles/examples/tutorials/
 TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 runex1_5\
 		  ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_5 \
-		  ex2.rm ex8.PETSc runex8 runex8_2 ex8.rm\
+		  ex2.rm ex5.PETSc runex5 ex5.rm \
+                  ex8.PETSc runex8 runex8_2 ex8.rm\
 		  ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_2  = ex11.PETSc ex11.rm clean
 TESTEXAMPLES_3  = ex7.PETSc runex7 ex7.rm ex20.PETSc clean
 TESTEXAMPLES_9  = ex20.PETSc runex20 ex20.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 runex1_3 runex1_5 ex1.rm ex2.PETSc runex2\
-		  runex2_3 runex2_5 ex2.rm ex8.PETSc ex8.rm ex11.PETSc \
+		  runex2_3 runex2_5 ex2.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex11.PETSc \
 		  ex11.rm ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_5  = ex22.PETSc runex22 runex22_2 runex22_3 ex22.rm clean
 TESTEXAMPLES_6  = 
@@ -26,11 +27,11 @@ TESTEXAMPLES_7  = ex8.PETSc runex8_3 runex8_4 ex8.rm clean
 TESTEXAMPLES_8  = 
 BUILDEXAMPLES_9 = ex20.PETSc runex20 ex20.rm clean
 
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm \
+BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex5.PETSc ex5.rm \
 		  ex8.PETSc ex8.rm ex19.PETSc ex19.rm clean
 BUILDEXAMPLES_2 = ex11.PETSc ex11.rm clean
 BUILDEXAMPLES_3 = ex7.PETSc ex7.rm ex20.PETSc ex20.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm \
+BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex5.PETSc ex5.rm \
 		  ex8.PETSc ex8.rm ex11.PETSc \
 		  ex11.rm ex19.PETSc ex19.rm clean
 BUILDEXAMPLES_5 = ex22.PETSc ex22.rm clean
@@ -38,7 +39,7 @@ BUILDEXAMPLES_6 = ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_7 = ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_8 = 
 
-EXAMPLESC       = ex1.c ex2.c ex8.c ex11.c ex19.c ex22.c
+EXAMPLESC       = ex1.c ex2.c ex5.c ex8.c ex11.c ex19.c ex22.c
 EXAMPLESF       = ex7.F ex20.F
 
 ex1: ex1.o  chkopts

@@ -11,34 +11,31 @@ OBJSF	        =
 LIBBASE	        = libpetscsles
 LOCDIR          = src/sles/examples/tests/
 TESTEXAMPLES_1  = ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
-		  runex4 runex4_3 runex4_5 ex4.rm\
-		  ex5.PETSc runex5 ex5.rm clean
+		  runex4 runex4_3 runex4_5 ex4.rm clean
 TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex13.PETSc runex13 \
 		  ex13.rm ex14.PETSc ex14.rm ex15.PETSc ex15.rm clean
 TESTEXAMPLES_3  = ex12.PETSc ex12.rm clean
 TESTEXAMPLES_9  = ex12.PETSc ex12.rm clean
 TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm ex4.PETSc \
-		  runex4 ex4.rm ex5.PETSc ex5.rm clean
+		  runex4 ex4.rm clean
 TESTEXAMPLES_5  = ex17.PETSc runex17 ex17.rm clean
 TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 runex6_4 runex6_5 \
 		  ex6.rm clean
 TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm clean
 TESTEXAMPLES_8  = ex16.PETSc runex16 ex16.rm clean
 
-BUILDEXAMPLES_1 = ex3.PETSc ex3.rm ex4.PETSc\
-		  ex4.rm ex5.PETSc ex5.rm clean
+BUILDEXAMPLES_1 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
 BUILDEXAMPLES_2 = ex10.PETSc ex10.rm ex13.PETSc ex13.rm ex14.PETSc\
 		  ex14.rm ex15.PETSc ex15.rm clean
 BUILDEXAMPLES_3 = ex12.PETSc ex12.rm ex16.PETSc ex16.rm clean
-BUILDEXAMPLES_4 = ex3.PETSc ex3.rm ex4.PETSc \
-		  ex4.rm ex5.PETSc ex5.rm clean
+BUILDEXAMPLES_4 = ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
 BUILDEXAMPLES_5 = ex17.PETSc ex17.rm clean
 BUILDEXAMPLES_6 = ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_7 = ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_8 = ex16.PETSc ex16.rm clean
 BUILDEXAMPLES_9 = ex12.PETSc ex12.rm clean
 
-EXAMPLESC       = ex3.c ex4.c ex5.c ex6.c ex9.c ex10.c \
+EXAMPLESC       = ex3.c ex4.c ex6.c ex9.c ex10.c \
 		  ex13.c ex14.c ex15.c ex17.c
 EXAMPLESF       = ex12.F ex16.F
 
