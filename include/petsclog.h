@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.49 1996/02/23 15:05:25 balay Exp balay $ */
+/* $Id: plog.h,v 1.50 1996/02/26 02:57:21 balay Exp balay $ */
 
 /*
     Defines high level logging in PETSc.
@@ -148,9 +148,12 @@ M*/
 extern int PLogPrint(MPI_Comm,FILE *);
 extern int PLogBegin();
 extern int PLogAllBegin();
+extern int PLogDump(char*);
+
+#if defined (HAVE_MPE)
 extern int PLogUpshotBegin();
 extern int PLogAllUpshotBegin();
-extern int PLogDump(char*);
+#endif
 
 #if defined(PETSC_LOG)
 

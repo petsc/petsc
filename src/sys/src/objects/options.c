@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.69 1996/02/08 18:26:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.70 1996/02/15 18:21:44 curfman Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -295,18 +295,14 @@ int OptionsCheckInitial_Private()
 
 #if defined(PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-notrmalloc", &flg1); CHKERRQ(ierr);
-  if (!flg1) {
-    ierr = PetscSetUseTrMalloc_Private(); CHKERRQ(ierr);
-  }
+  if (!flg1) { ierr = PetscSetUseTrMalloc_Private(); CHKERRQ(ierr); }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2); CHKERRQ(ierr);
-  if (flg1 || flg2) {
-    ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr);
-  }
+  if (flg1 || flg2) { ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); }
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-malloc_debug",&flg1); CHKERRQ(ierr);
-  if (flg1) {
+  if (flg1) { 
     ierr = TrDebugLevel(1);CHKERRQ(ierr);
 #if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
     malloc_debug(2);
@@ -328,17 +324,11 @@ int OptionsCheckInitial_Private()
 ---------------------------\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-fp_trap",&flg1); CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscSetFPTrap(FP_TRAP_ALWAYS); CHKERRQ(ierr);
-  }
+  if (flg1) { ierr = PetscSetFPTrap(FP_TRAP_ALWAYS); CHKERRQ(ierr); }
   ierr = OptionsHasName(PETSC_NULL,"-on_error_abort",&flg1); CHKERRQ(ierr);
-  if (flg1) {
-    PetscPushErrorHandler(PetscAbortErrorHandler,0);
-  } 
+  if (flg1) { PetscPushErrorHandler(PetscAbortErrorHandler,0); } 
   ierr = OptionsHasName(PETSC_NULL,"-on_error_stop",&flg1); CHKERRQ(ierr);
-  if (flg1) {
-    PetscPushErrorHandler(PetscStopErrorHandler,0);
-  }
+  if (flg1) { PetscPushErrorHandler(PetscStopErrorHandler,0); }
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64, 
                           &flg1); CHKERRQ(ierr);
   if (flg1) {
@@ -417,9 +407,7 @@ int OptionsCheckInitial_Private()
     MPI_Errhandler_set(comm,abort_handler);
   }
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler", &flg1); CHKERRQ(ierr);
-  if (!flg1) {
-    PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
-  }
+  if (!flg1) { PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0); }
 #if defined(PETSC_LOG)
   {
     char mname[256];
@@ -435,18 +423,19 @@ int OptionsCheckInitial_Private()
     }
   }
   ierr = OptionsHasName(PETSC_NULL,"-info", &flg1); CHKERRQ(ierr);
-  if (flg1) {
-    PLogAllowInfo(PETSC_TRUE);
-  }
+  if (flg1) { PLogAllowInfo(PETSC_TRUE);  }
   ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
-  if (flg1) {
-    PLogAllBegin();
-  }
-  else if (flg2 || flg3) {
-    PLogBegin();
-  }
+  if (flg1) {  PLogAllBegin();  }
+  else if (flg2 || flg3) {  PLogBegin(); }
+#if defined (HAVE_MPE)
+  ierr = OptionsHasName(PETSC_NULL,"-log_all_upshot", &flg1); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-log_upshot", &flg2); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-log_summary_upshot", &flg3); CHKERRQ(ierr);
+  if (flg1) {  PLogAllUpshotBegin();  }
+  else if (flg2 || flg3) {  PLogUpshotBegin(); }
+#endif
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {
@@ -468,7 +457,7 @@ int OptionsCheckInitial_Private()
     MPIU_printf(comm," -notrmalloc: don't use error checking malloc\n");
     MPIU_printf(comm," -optionstable: dump list of options inputted\n");
     MPIU_printf(comm," -optionsleft: dump list of unused options\n");
-    MPIU_printf(comm," -log[_all _summary]: logging objects and events\n");
+    MPIU_printf(comm," -log[_all _summary][_upshot]: logging objects and events\n");
     MPIU_printf(comm," -v: prints PETSc version number and release date\n");
     MPIU_printf(comm,"-----------------------------------------------\n");
   }
