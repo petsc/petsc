@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.43 1997/07/10 23:14:39 balay Exp balay $;
+C  $Id: petsc.h,v 1.44 1997/07/11 20:31:51 balay Exp balay $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -20,7 +20,7 @@ C
 
       parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1,
      *           PETSC_DEFAULT_INTEGER = -2,
-     *           PETSC_DEFAULT_DOUBLE_PRECISION=2.0d0)
+     *           PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
       parameter (PETSC_FP_TRAP_OFF = 0, PETSC_FP_TRAP_ON = 1) 
 
 C

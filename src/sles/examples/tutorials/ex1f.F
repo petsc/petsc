@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.12 1996/12/10 23:24:00 curfman Exp bsmith $";
+C    "$Id: ex1f.F,v 1.13 1997/01/01 03:39:14 bsmith Exp balay $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -168,7 +168,7 @@ C     SLESSetFromOptions();
       call SLESGetKSP(sles,ksp,ierr)
       call SLESGetPC(sles,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
-      tol = 1.e-7
+      tol = 1.d-7
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
