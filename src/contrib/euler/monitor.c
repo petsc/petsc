@@ -225,6 +225,16 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     }
   }
 
+    /* Calculate physical quantities of interest */
+  if (app->pvar && !(its%5)) {
+    if (app->size == 1) {
+      int pprint = 0;
+      ierr = pvar_(app->xx,app->p,
+         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+         app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint); CHKERRA(ierr);
+    }
+  }
+
   app->iter = its+1;
   return 0;
 }
@@ -764,7 +774,7 @@ int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *
       /* printf("   iter = %d, f_avg = %g \n",iter,favg[iter]); */
   
       /* Test for stagnation over the past 10 iterations */
-      if (iter >=1000) {
+      if (iter >=3000) {
         last_k = 10;
         for (i=iter-last_k; i<iter; i++) {
           if (PetscAbsScalar(favg[i] - favg[iter])/favg[iter] < app->fstagnate_ratio) fstagnate++;
