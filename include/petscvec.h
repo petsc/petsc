@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.123 2001/08/06 21:14:30 bsmith Exp balay $ */
+/* $Id: petscvec.h,v 1.124 2001/08/07 03:02:14 balay Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -65,7 +65,8 @@ E*/
 #define VEC_MPI    "mpi"
 #define VEC_FETI   "feti"
 #define VEC_SHARED "shared"
-typedef char*                  VecType;
+#define VEC_ESI    "esi"
+typedef char*  VecType;
 
 EXTERN int VecCreateSeq(MPI_Comm,int,Vec*);
 EXTERN int PetscMapCreateMPI(MPI_Comm,int,int,PetscMap*);  
