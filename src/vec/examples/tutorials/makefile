@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.42 2000/09/22 20:43:24 bsmith Exp balay $ 
+# $Id: makefile,v 1.43 2001/03/29 16:35:03 balay Exp bsmith $ 
 #
 CFLAGS		 = 
 FFLAGS		 = 
@@ -6,7 +6,6 @@ CPPFLAGS         =
 FPPFLAGS         =
 MANSEC           = Vec
 LOCDIR		 = src/vec/examples/tutorials/
-TUTORIALS        = ex3.c ex3f.F ex1.c ex1f.F ex1f90.F 
 EXAMPLESC	 = ex1.c ex1e.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c
 EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F ex14f.F
 

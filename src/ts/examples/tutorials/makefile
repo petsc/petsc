@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.28 2001/03/29 15:39:45 bsmith Exp balay $ 
+# $Id: makefile,v 1.29 2001/03/29 16:36:42 balay Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
@@ -7,7 +7,6 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c util2.c ex7.c
 EXAMPLESF       = ex1f.F ex2f.F ex2f.h
-TUTORIALS       = ex2.c ex2f.F ex2f.h
 MANSEC          = TS
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
