@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.103 1998/07/29 03:49:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.104 1998/07/29 04:03:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -217,7 +217,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(ierr);
 
   if (!restart) {
-    ksp->ttol = PetscMax(ksp->rtol*res_norm,rtol);
+    ksp->ttol = PetscMax(ksp->rtol*res_norm,ksp->atol);
   }
   rtol      = ksp->ttol;
   gmres->it = (it - 1);
@@ -259,6 +259,13 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   ksp->rnorm = res;
   if (nres && hist_len > ksp->its) nres[ksp->its]   = res; 
   if (nres) ksp->res_act_size = (hist_len < ksp->its) ? hist_len : ksp->its+1;
+
+  /*
+     Monitor if we know that we will not return for a restart */
+  if (*converged || ksp->its >= max_it) {
+    KSPMonitor( ksp,  ksp->its, res );
+  }
+
   if (itcount) *itcount    = it;
 
 
