@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.29 1998/06/06 15:24:22 curfman Exp curfman $";
+static char vcid[] = "$Id: iscoloring.c,v 1.30 1998/06/07 19:36:05 curfman Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -95,10 +95,6 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 @*/
 int ISColoringGetIS(ISColoring iscoloring,int *n,IS **is)
 {
-  int        i,ierr;
-  ViewerType vtype;
-  FILE       *fd;
-
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
 

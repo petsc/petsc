@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.44 1998/04/24 02:18:23 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.45 1998/06/07 19:29:06 curfman Exp curfman $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -92,6 +92,7 @@ typedef struct _p_ISColoring* ISColoring;
 extern int ISColoringDestroy(ISColoring);
 extern int ISColoringView(ISColoring,Viewer);
 extern int ISColoringCreate(MPI_Comm,int,int*,ISColoring*);
+extern int ISColoringGetIS(ISColoring,int*,IS**);
 
 /* --------------------------------------------------------------------------*/
 
