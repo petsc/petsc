@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.61 1999/01/29 20:47:05 balay Exp balay $ 
+# $Id: builddist,v 1.62 1999/02/03 22:43:31 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -60,6 +60,21 @@ chmod -R a-w petsc
 chmod -R u+w petsc
 chmod -R a+r petsc
 find petsc -type d -name "*" -exec chmod a+x {} \;
+
+# Clean up the external Packages from base.site files
+foreach i (bmake/*/base.site)
+  cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | sed "s/^MPE_LIB/#MPE_LIB/g" | \
+    sed "s/^BS_INCLUDE/#BS_INCLUDE/g" | sed "s/^BS_LIB/#BS_LIB/g" | \
+    sed "s/^CMEX/#CMEX/g" | sed "s/^MCC/#MCC/g" | \
+    sed "s/^ADIC_INCLUDE/#ADIC_INCLUDE/g" | sed "s/^ADIC_LIB/#ADIC_LIB/g" | \
+    sed "s/^ADIC_CC/#ADIC_CC/g" | \
+    sed "s/^PVODE_INCLUDE/#PVODE_INCLUDE/g" | sed "s/^PVODE_LIB/#PVODE_LIB/g" | 
+    sed "s/^PARMETIS_INCLUDE/#PARMETIS_INCLUDE/g" | sed "s/^PARMETIS_LIB/#PARMETIS_LIB/g" | \
+    sed "s/^AMS_INCLUDE/#AMS_INCLUDE/g" | sed "s/^AMS_LIB/#AMS_LIB/g" | \
+    sed "s/^PCONF/#PCONF/g" > $i.tmp
+  /bin/mv -i $i.tmp $i
+end
+
 
 /bin/rm -f /mcs/tmp/petsc.tar
 if ($#argv == 1) then
