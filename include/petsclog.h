@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.141 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.142 2000/07/03 14:35:37 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -95,6 +95,7 @@
 
 #define KSP_GMRESOrthogonalization              72
 
+#define PC_ApplyCoarse                          73
 #define PC_ModifySubMatrices                    74
 #define PC_SetUp                                75
 #define PC_SetUpOnBlocks                        76

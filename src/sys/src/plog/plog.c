@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.239 2000/07/02 15:12:07 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.240 2000/07/10 03:38:58 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -320,7 +320,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "SLESSolve       ",
                          "SLESSetUp       ",
                          "KSPGMRESOrthog  ",
-                         "                ",
+                         "PCApplyCoarse   ",
                          "PCModifySubMat  ",
                          "PCSetUp         ",
                          "PCSetUpOnBlocks ",
