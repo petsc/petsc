@@ -44,5 +44,5 @@ shared: chkopts
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \
 	for LIBNAME in $(SHLIBS) ; \
-	  do $(LD) -Bshareable -Bforcearchive -o $$LIBNAME.so.1.0 $$LIBNAME.a >&/dev/null ; \
+	  do $(LD) -Bshareable -Bforcearchive -o $$LIBNAME.so.1.0 $$LIBNAME.a >& /dev/null ; \
 	done
