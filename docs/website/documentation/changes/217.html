@@ -6,3 +6,8 @@
   eliminated PetscViewerXXXXType and PetscViewerXXXSetType() replaced with
    PetscViewerFileType and PetscViewerSetFileType()
 
+  If you use MAT_SYMMETRIC as option for MatSetOption() you will likely
+need to also use the option MAT_SYMMETRY_ETERNAL otherwise at the next MatAssembly
+the matrix will likly lose the symmetry flag.
+
+
