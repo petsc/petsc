@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.132 2000/05/20 20:27:58 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.133 2000/06/21 03:42:45 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -67,6 +67,11 @@ static int PCSetFromOptions_LU(PC pc)
   ierr = OptionsGetDouble(pc->prefix,"-pc_lu_damping",&damping,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCLUSetDamping(pc,damping);CHKERRQ(ierr);
+  } else {
+    ierr = OptionsHasName(pc->prefix,"-pc_lu_damping",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCLUSetDamping(pc,0.0);CHKERRQ(ierr);
+    }
   }
   ierr = OptionsHasName(pc->prefix,"-pc_lu_reuse_fill",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -278,6 +283,7 @@ int PCLUSetDamping_LU(PC pc,PetscReal damping)
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
   dir->info.damping = damping;
+  dir->info.damp    = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -456,7 +462,7 @@ int PCLUSetFill(PC pc,PetscReal fill)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCILUSetFill()
+.seealso: PCILUSetFill(), PCILUSetDamp()
 @*/
 int PCLUSetDamping(PC pc,PetscReal damping)
 {
@@ -597,6 +603,7 @@ int PCCreate_LU(PC pc)
   dir->info.fill        = 5.0;
   dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
   dir->info.damping     = 0.0;
+  dir->info.damp        = PETSC_FALSE;
   dir->col              = 0;
   dir->row              = 0;
   ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
