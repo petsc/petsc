@@ -14,6 +14,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     self.setcompilers = self.framework.require('config.setCompilers', self)    
     self.libraries    = self.framework.require('config.libraries', self)
+    self.programs     = self.framework.require('PETSc.utilities.programs', self)
     self.framework.require('PETSc.packages.Sowing', self)
     self.name         = 'BlasLapack'
     self.PACKAGE      = self.name.upper()
@@ -275,18 +276,20 @@ class Configure(config.base.Configure):
             fc = os.path.join(os.path.dirname(fc),'xlf')
             self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling BLAS/LAPACK\n')
         line = 'FC = '+fc+'\n'
-      if line.startswith('  '):
-        line = 'FOPTFLAGS  = '+self.framework.argDB['FFLAGS']+'\n'
-      if line.startswith('  '):
+      if line.startswith('FOPTFLAGS '):
+        self.setcompilers.pushLanguage('FC')
+        line = 'FOPTFLAGS  = '+self.setcompilers.getCompilerFlags()+'\n'
+        self.setcompilers.popLanguage()
+      if line.startswith('AR  '):
         line = 'AR      = '+self.setcompilers.AR+'\n'
-      if line.startswith('  '):
+      if line.startswith('AR_FLAGS  '):
         line = 'AR_FLAGS      = '+self.setcompilers.AR_FLAGS+'\n'
-      if line.startswith('  '):
-        line = 'LIB_SUFFIX = '+self.framework.argDB['LIB_SUFFIX']+'\n'
-      if line.startswith('  '):
-        line = 'RANLIB = '+self.framework.argDB['RANLIB']+'\n'
-      if line.startswith('  '):
-        line = 'RM = '+self.framework.argDB['RM']+'\n'
+      if line.startswith('LIB_SUFFIX  '):
+        line = 'LIB_SUFFIX = '+self.programs.LIB_SUFFIX+'\n'
+      if line.startswith('RANLIB  '):
+        line = 'RANLIB = '+self.setcompilers.RANLIB+'\n'
+      if line.startswith('RM  '):
+        line = 'RM = '+self.programs.RM+'\n'
 
       if line.startswith('include'):
         line = '\n'
@@ -298,6 +301,7 @@ class Configure(config.base.Configure):
       self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
       return libdir
     try:
+      self.logPrint("Running make on FBLASLAPACK; this may take several minutes\n", debugSection='screen')
       output  = config.base.Configure.executeShellCommand('cd '+blasDir+';make -f tmpmakefile', timeout=800, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error running make on fblaslapack: '+str(e))

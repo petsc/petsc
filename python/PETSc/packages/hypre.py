@@ -50,8 +50,7 @@ class Configure(config.base.Configure):
   def checkInclude(self,incl,hfile):
     incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in incl:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
@@ -172,12 +171,17 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build HYPRE
-    args = ['--prefix='+installDir, '--with-CC="'+self.framework.argDB['CC']+' '+self.framework.argDB['CFLAGS']+'"']
+    self.framework.pushLanguage('C')
+    args = ['--prefix='+installDir, '--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    self.framework.popLanguage()
     if 'CXX' in self.framework.argDB:
-      args.append('--with-CXX="'+self.framework.argDB['CXX']+' '+self.framework.argDB['CXXFLAGS']+'"')
+      self.framework.pushLanguage('Cxx')
+      args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
     if 'FC' in self.framework.argDB:
-      args.append('--with-F77="'+self.framework.argDB['FC']+' '+self.framework.argDB['FFLAGS']+'"')
-    #
+      self.framework.pushLanguage('FC')
+      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
     if self.mpi.include:
       if len(self.mpi.include) > 1:
         raise RuntimeError("hypre assumes there is a single MPI include directory")
@@ -214,10 +218,12 @@ class Configure(config.base.Configure):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild HYPRE oldargs = '+oldargs+' new args '+args+'\n')
       try:
+        self.logPrint("Configuring hypre; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
+        self.logPrint("Compiling hypre; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))

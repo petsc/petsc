@@ -20,10 +20,8 @@ class Configure(config.base.Configure):
 
   def configureMkdir(self):
     '''Make sure we can have mkdir automatically make intermediate directories'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('mkdir', getFullPath = 1)
-    if hasattr(self.framework, 'mkdir'):
-      self.mkdir = self.framework.mkdir
+    self.getExecutable('mkdir', getFullPath = 1)
+    if hasattr(self, 'mkdir'):
       if os.path.exists('.conftest'): os.rmdir('.conftest')
       try:
         (output, error, status) = config.base.Configure.executeShellCommand(self.mkdir+' -p .conftest/.tmp', log = self.framework.log)
@@ -35,12 +33,11 @@ class Configure(config.base.Configure):
 
   def configurePrograms(self):
     '''Check for the programs needed to build and run PETSc'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
-    self.framework.getExecutable('sed',  getFullPath = 1)
-    self.framework.getExecutable('mv',   getFullPath = 1)
-    self.framework.getExecutable('diff', getFullPath = 1)
-    self.framework.getExecutable('rm -f',getFullPath = 1)
+    self.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
+    self.getExecutable('sed',  getFullPath = 1)
+    self.getExecutable('mv',   getFullPath = 1)
+    self.getExecutable('diff', getFullPath = 1)
+    self.getExecutable('rm -f',getFullPath = 1, resultName = 'RM')
     # check if diff supports -w option for ignoring whitespace
     f = file('diff1', 'w')
     f.write('diff\n')
@@ -48,17 +45,17 @@ class Configure(config.base.Configure):
     f = file('diff2', 'w')
     f.write('diff  \n')
     f.close()
-    (out,err,status) = Configure.executeShellCommand(getattr(self.framework, 'diff')+' -w diff1 diff2')
+    (out,err,status) = Configure.executeShellCommand(getattr(self, 'diff')+' -w diff1 diff2')
     os.unlink('diff1')
     os.unlink('diff2')
     if not status:    
-      self.framework.diff = self.framework.diff + ' -w'
+      self.diff = self.diff + ' -w'
       
-    self.framework.getExecutable('ps',   path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
-    if hasattr(self.framework, 'UCBPS'):
+    self.getExecutable('ps',   path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
+    if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
-    self.framework.getExecutable('gzip',getFullPath=1, resultName = 'GZIP')
-    if hasattr(self.framework, 'GZIP'):
+    self.getExecutable('gzip',getFullPath=1, resultName = 'GZIP')
+    if hasattr(self, 'GZIP'):
       self.addDefine('HAVE_GZIP',1)
     return
 

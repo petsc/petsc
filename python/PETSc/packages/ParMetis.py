@@ -52,8 +52,7 @@ class Configure(config.base.Configure):
   def checkInclude(self, includeDir):
     '''Check that parmetis.h is present'''
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in includeDir+self.mpi.include:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir+self.mpi.include])
     found = self.checkPreprocess('#include <parmetis.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     return found
@@ -187,9 +186,11 @@ class Configure(config.base.Configure):
 
       packages = self.framework.argDB['with-external-packages-dir']
       if hasattr(self.sourceControl, 'bk'):
+        self.logPrint("Retrieving ParMetis; this may take several minutes\n", debugSection='screen')
         config.base.Configure.executeShellCommand('bk clone bk://parmetis.bkbits.net/ParMetis-dev '+os.path.join(packages,'ParMetis'), log = self.framework.log, timeout= 600.0)
       else:
         try:
+          self.logPrint("Retrieving ParMetis; this may take several minutes\n", debugSection='screen')
           urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
         except Exception, e:
           raise RuntimeError('Error downloading ParMetis: '+str(e))
@@ -209,7 +210,9 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build ParMetis
-    args = ['--prefix='+installDir, '--with-cc='+self.framework.argDB['CC'], '-PETSC_DIR='+self.arch.dir]
+    self.framework.pushLanguage('C')
+    args = ['--prefix='+installDir, '--with-cc="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"', '-PETSC_DIR='+self.arch.dir]
+    self.framework.popLanguage()
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))
@@ -219,6 +222,7 @@ class Configure(config.base.Configure):
       oldargs = ''
     if not oldargs == args:
       self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldargs+' new args '+args+'\n')
+      self.logPrint("Configuring and compiling ParMetis; this may take several minutes\n", debugSection='screen')
       try:
         import logging
         # Split Graphs into its own repository
@@ -227,9 +231,9 @@ class Configure(config.base.Configure):
         oldLog = logging.Logger.defaultLog
         logging.Logger.defaultLog = file(os.path.join(parmetisDir, 'build.log'), 'w')
         oldLevel = self.argDB['debugLevel']
-        self.argDB['debugLevel'] = 0
+        #self.argDB['debugLevel'] = 0
         oldIgnore = self.argDB['ignoreCompileOutput']
-        self.argDB['ignoreCompileOutput'] = 1
+        #self.argDB['ignoreCompileOutput'] = 1
         if os.path.exists('RDict.db'):
           os.remove('RDict.db')
         if os.path.exists('bsSource.db'):

@@ -57,7 +57,7 @@ class Configure(config.base.Configure):
         packageObj              = self.framework.require('PETSc.packages.'+packageName, self)
         packageObj.headerPrefix = self.headerPrefix
         setattr(self, packageName.lower(), packageObj)
-
+        
     # List of packages actually found
     self.framework.packages = []
     return
