@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.19 1995/12/12 22:46:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.20 1996/01/01 01:02:41 bsmith Exp curfman $";
 #endif
 
 /*
@@ -11,9 +11,10 @@ static char vcid[] = "$Id: shellpc.c,v 1.19 1995/12/12 22:46:29 curfman Exp bsmi
 #include "vec/vecimpl.h"  
 
 typedef struct {
-  void *ctx,*ctxrich;             /* user provided contexts for preconditioner */
+  void *ctx, *ctxrich;    /* user provided contexts for preconditioner */
   int  (*apply)(void *,Vec,Vec);
   int  (*applyrich)(void *,Vec,Vec,Vec,int);
+  char *name;
 } PC_Shell;
 
 static int PCApply_Shell(PC pc,Vec x,Vec y)
@@ -33,6 +34,17 @@ static int PCDestroy_Shell(PetscObject obj)
   PC       pc = (PC) obj;
   PC_Shell *shell = (PC_Shell *) pc->data;
   PetscFree(shell);
+  return 0;
+}
+static int PCView_Shell(PetscObject obj,Viewer viewer)
+{
+  PC         pc = (PC)obj;
+  PC_Shell   *jac = (PC_Shell *) pc->data;
+  FILE       *fd;
+  int        ierr;
+
+  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+  if (jac->name) MPIU_fprintf(pc->comm,fd,"    Shell: %s\n", jac->name);
   return 0;
 }
 
@@ -61,7 +73,8 @@ int PCCreate_Shell(PC pc)
   pc->applyrich  = 0;
   pc->setup      = 0;
   pc->type       = PCSHELL;
-  pc->view       = 0;
+  pc->view       = PCView_Shell;
+  pc->name       = 0;
   shell->apply   = 0;
   return 0;
 }
@@ -91,6 +104,50 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
   shell        = (PC_Shell *) pc->data;
   shell->apply = apply;
   shell->ctx   = ptr;
+  return 0;
+}
+
+/*@C
+   PCShellSetName - Sets an optional name to associate with a shell
+   preconditioner.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  name - character string describing shell preconditioner
+
+.keywords: PC, shell, set, name, user-provided
+
+.seealso: PCShellGetName()
+@*/
+int PCShellSetName(PC pc,char *name)
+{
+  PC_Shell *shell;
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  shell       = (PC_Shell *) pc->data;
+  shell->name = name;
+  return 0;
+}
+
+/*@C
+   PCShellGetName - Gets an optional name that the user has set for a shell
+   preconditioner.
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  name - character string describing shell preconditioner
+
+.keywords: PC, shell, get, name, user-provided
+
+.seealso: PCShellSetName()
+@*/
+int PCShellGetName(PC pc,char **name)
+{
+  PC_Shell *shell;
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  shell = (PC_Shell *) pc->data;
+  *name  = shell->name;
   return 0;
 }
 

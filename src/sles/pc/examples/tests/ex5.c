@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.36 1996/01/12 22:06:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.37 1996/01/23 00:18:37 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -42,6 +42,7 @@ int main(int Argc, char **Args)
   Mat         cmat,mat[20],fmat;
   SLES        csles,sles[20],slesmg;
   double      e[3]; /* l_2 error, max error, residual */
+  char        *shellname;
   int         ierr,its;
   Vec         x,solution,X[20],R[20],B[20];
   Scalar      zero = 0.0;
@@ -100,6 +101,10 @@ int main(int Argc, char **Args)
     ierr = MGGetSmoother(pcmg,levels - 1 - i,&sles[i]); CHKERRA(ierr);
     ierr = SLESGetPC(sles[i],&pc); CHKERRA(ierr);
     ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
+    ierr = PCShellSetName(pc,"user_precond"); CHKERRA(ierr);
+    ierr = PCShellGetName(pc,&shellname); CHKERRA(ierr);
+    MPIU_printf(MPI_COMM_SELF,"level=%d, PCShell name is %s\n",i,shellname);
+
     /* this is a dummy! */
     ierr = SLESSetOperators(sles[i],mat[i],mat[i],
            ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
