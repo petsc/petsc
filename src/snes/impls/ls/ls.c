@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.108 1998/04/22 23:59:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.109 1998/04/24 04:53:10 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -621,9 +621,10 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 -   -snes_eq_ls_steptol <steptol> - Sets steptol
 
    Calling sequence of func:
-   func (SNES snes, Vec x, Vec f, Vec g, Vec y,
-         Vec w, double fnorm, double *ynorm, 
-         double *gnorm, *flag)
+.vb
+   func (SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
+         double fnorm, double *ynorm, double *gnorm, *flag)
+.ve
 
     Input parameters for func:
 +   snes - nonlinear context
