@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1998/06/12 21:35:03 balay Exp balay $
+# $Id: makefile,v 1.8 1998/06/15 15:49:11 balay Exp bsmith $
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = fdda.o
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscdm
 MANSEC   = 6
 LOCDIR   = src/da/utils/
 

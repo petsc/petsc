@@ -1,15 +1,8 @@
-# $Id: makefile,v 1.18 1998/06/12 21:32:02 balay Exp balay $ 
+# $Id: makefile,v 1.19 1998/06/15 15:44:37 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
 SOURCEH  = daimpl.h
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
 DIRS     = src  examples utils
 LOCDIR   = src/da/
 

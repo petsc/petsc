@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 1998/06/12 21:34:59 balay Exp balay $
+# $Id: makefile,v 1.7 1998/06/15 15:49:05 balay Exp bsmith $
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = aopart.o
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscdm
 MANSEC   = 6
 LOCDIR   = src/ao/utils/
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 1998/12/23 19:32:19 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.31 1999/01/12 23:18:00 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEC  = da2.c da1.c da3.c daghost.c dacorn.c dagtol.c daltol.c \
 OBJSC    = da2.o da1.o da3.o daghost.o dacorn.o dagtol.o daltol.o \
            daltog.o daindex.o dascatter.o dadestroy.o dalocal.o \
            dadist.o daview.o dasub.o gr1.o gr2.o
-LIBBASE  = libpetsc
+LIBBASE  = libpetscdm
 MANSEC   = 6
 LOCDIR   = src/da/src/
 

@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.7 1998/06/12 21:36:53 balay Exp balay $
+# $Id: makefile,v 1.8 1998/06/15 15:52:46 balay Exp bsmith $
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =
-OBJSF    =
-LIBBASE  = libpetscvec
 DIRS     = basic
 LOCDIR   = src/ao/impls/
 
