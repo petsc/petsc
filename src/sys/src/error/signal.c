@@ -124,7 +124,7 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   ierr = PetscStrcat(buf,"PETSC ERROR: compile, link, and run with BOPT=g or g_c++ or g_complex\n");CHKERRQ(ierr);
   ierr = PetscStrcat(buf,"PETSC ERROR: to get more information on the crash.\n");CHKERRQ(ierr);
 #endif
-  ierr =  PetscError(0,"unknownfunction","Unknown file","Unknown directory",PETSC_ERR_SIG,1,buf);
+  ierr =  PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_SIG,1,buf);
   MPI_Abort(PETSC_COMM_WORLD,ierr);
   PetscFunctionReturn(0);
 }

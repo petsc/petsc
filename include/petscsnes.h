@@ -199,6 +199,8 @@ EXTERN int SNESSetLineSearchCheck(SNES,int(*)(SNES,void*,Vec,PetscTruth*),void*)
 EXTERN int SNESSetLineSearchParams(SNES,PetscReal,PetscReal,PetscReal);
 EXTERN int SNESGetLineSearchParams(SNES,PetscReal*,PetscReal*,PetscReal*);
 
+EXTERN int SNESTestLocalMin(SNES snes);
+
 /* Should this routine be private? */
 EXTERN int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
