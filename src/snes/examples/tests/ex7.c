@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.38 1998/12/03 04:05:44 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.39 1999/02/16 23:00:16 balay Exp balay $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -131,7 +131,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
 
   if (iter%2 ==0) { /* Compute new preconditioner matrix */
-    printf("iter=%d, computing new preconditioning matrix\n",iter);
+    printf("iter=%d, computing new preconditioning matrix\n",iter+1);
     *B = user->precond;
     ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
     ierr = VecGetSize(x,&n); CHKERRQ(ierr);
@@ -153,7 +153,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     *flag = SAME_NONZERO_PATTERN;
   }
   else { /* reuse preconditioner from last iteration */
-    printf("iter=%d, using old preconditioning matrix\n",iter);
+    printf("iter=%d, using old preconditioning matrix\n",iter+1);
     *flag = SAME_PRECONDITIONER;
   }
 
