@@ -209,7 +209,7 @@ void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(SNES*,Vec*,
 
 #endif
 
-#if defined (PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined (PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 void PETSC_STDCALL matregisterdaad_(int *ierr)
 {
   *ierr = MatRegisterDAAD();

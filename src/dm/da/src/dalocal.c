@@ -295,7 +295,7 @@ int DARestoreGlobalVector(DA da,Vec* g)
 }
 
 /* ------------------------------------------------------------------- */
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"

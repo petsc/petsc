@@ -6,7 +6,8 @@
 # are for systems where Fortran does not use cpp
 #
 .F.o .F90.o:
-	-@if [ "${PETSC_HAVE_ADIFOR}" != "" ]; then \
+	-@complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
+          if [ "${PETSC_HAVE_ADIFOR}" != ""  -a  "foo$${complex}" = "foo" ]; then \
 	   egrep "Process adifor" $< > /dev/null ; \
               if [ "$$?" = 0 ]; then \
                 r=`grep "Process adifor" $< | sed -e "s?![ ]*Process adifor: \([a-zA-Z0-9]\)[ ]*?\1?g"`;\
