@@ -83,7 +83,7 @@ proc updatesource { token sourcebuff } {
     if { $start != 0 } {
         set startchar [ string range $buf [expr $start - 1 ] [expr $start - 1 ]  ]
 
-        if { [ regexp {[" "|\n|\t|,|\"]} $startchar ] != 1 } {
+        if { [ regexp {[" "|\n|\t|,|(|)\"]} $startchar ] != 1 } {
             set startflag 0
         }
     }
@@ -91,7 +91,7 @@ proc updatesource { token sourcebuff } {
     # Check the char after the end char to see if it is valid char [' ',',',\t,\n,'(']
     if { $end !=  [ string length $buf] } {
         set endchar [ string range $buf $end $end ]
-        if { [ regexp {[" "|\n|\t|,|(|\"]} $endchar ] != 1 } {
+        if { [ regexp {[" "|\n|\t|,|(|)|\"]} $endchar ] != 1 } {
             set endflag 0
         }
     }
@@ -127,7 +127,7 @@ proc updatesource { token sourcebuff } {
 ####                main()                   #####    
 ##################################################
 
-proc main {tokenfilename sourcefilename} {
+proc processfile {tokenfilename sourcefilename} {
     global suffix
     set suffix _Single
     #
@@ -166,19 +166,23 @@ proc main {tokenfilename sourcefilename} {
     }
 
     #
-    # Write back the modified buffer to a new file */
+    # Write back the modified buffer to a new file
     #
-    set ext [file extension $sourcefilename]
-    set root [ file root $sourcefilename]
-    set sourcefilename  $root$suffix$ext
-    set sourcefileid [ open $sourcefilename w ]
+    set outputsourcefilename  s$sourcefilename
+    set sourcefileid [ open $outputsourcefilename w ]
     puts $sourcefileid $sourcefilebuff
     close $sourcefileid
     
     return 0
 }
 
+
 set tokenfilename  [lindex $argv 0]
 set sourcefilename [lindex $argv 1]
-
-main $tokenfilename $sourcefilename
+set head           [string range $sourcefilename 0 0]
+if { $head != "s" } {
+  puts -stderr "Filename does not begin with s $sourcefilename"
+} else {
+  set sourcefilename [string range $sourcefilename 1 end]
+  processfile $tokenfilename $sourcefilename
+}
