@@ -83,9 +83,9 @@ int VecConvertMPIToMPIZero(Vec vin,Vec *vout)
   ierr = MPI_Comm_rank(vin->comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {
-    ierr = VecCreateMPI(vin->comm,N,N,vout);
+    ierr = VecCreateMPI(vin->comm,N,N,vout);CHKERRQ(ierr);
   } else {
-    ierr = VecCreateMPI(vin->comm,0,N,vout);
+    ierr = VecCreateMPI(vin->comm,0,N,vout);CHKERRQ(ierr);
   }
 
   /* Create the VecScatter ctx with the communication info */
