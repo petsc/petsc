@@ -174,7 +174,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 @*/
 int PFApplyVec(PF pf,Vec x,Vec y)
 {
-  int        ierr,i,rstart,rend;
+  int        ierr,i,rstart,rend,n,p;
   PetscTruth nox = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -196,11 +196,16 @@ int PFApplyVec(PF pf,Vec x,Vec y)
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   }
 
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(y,&p);CHKERRQ(ierr);
+  if (pf->dimin*(n/pf->dimin) != n) SETERRQ2(PETSC_ERR_ARG_IDN,"Local input vector length %d not divisible by dimin %d of function",n,pf->dimin);
+  if (pf->dimout*(p/pf->dimout) != p) SETERRQ2(PETSC_ERR_ARG_IDN,"Local output vector length %d not divisible by dimout %d of function",p,pf->dimout);
+  if (n/pf->dimin != p/pf->dimout) SETERRQ4(PETSC_ERR_ARG_IDN,"Local vector lengths %d %d are wrong for dimin and dimout %d %d of function",n,p,pf->dimin,pf->dimout);
+
   if (pf->ops->applyvec) {
     ierr = (*pf->ops->applyvec)(pf->data,x,y);CHKERRQ(ierr);
   } else {
     PetscScalar *xx,*yy;
-    int    n;
 
     ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
     n    = n/pf->dimin;
