@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.45 2001/06/26 20:24:08 curfman Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.46 2001/07/05 04:10:24 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -541,7 +541,7 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 
     Notes: 
     If ADIC or ADIFOR have been installed, this routine can use ADIC or ADIFOR to compute
-    the derivative; however, the the function cannot call other functions except those in
+    the derivative; however, that function cannot call other functions except those in
     standard C math libraries.
 
     If ADIC/ADIFOR have not been installed and the Jacobian is not provided, this routine
@@ -553,8 +553,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
-int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,
-                             DALocalFunction1 admf_function)
+int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,DALocalFunction1 admf_function)
 {
   int ierr,i,nlevels = dmmg[0]->nlevels;
   int (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = 0;
@@ -576,6 +575,54 @@ int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunctio
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGFunctioni"
+static int DMMGFunctioni(int i,Vec u,Scalar* r,void* ctx)
+{
+  DMMG       dmmg = (DMMG)ctx;
+  Vec        U = dmmg->lwork1;
+  int        ierr;
+  VecScatter gtol;
+
+  PetscFunctionBegin;
+  /* copy u into interior part of U */
+  ierr = DAGetScatter((DA)dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
+  ierr = VecScatterBegin(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
+  ierr = VecScatterEnd(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
+
+  ierr = DAFormFunctioni1((DA)dmmg->dm,i,U,r,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGFunctioniBase"
+static int DMMGFunctioniBase(Vec u,void* ctx)
+{
+  DMMG dmmg = (DMMG)ctx;
+  Vec  U = dmmg->lwork1;
+  int  ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGlobalToLocalBegin((DA)dmmg->dm,u,INSERT_VALUES,U);CHKERRQ(ierr);  
+  ierr = DAGlobalToLocalEnd((DA)dmmg->dm,u,INSERT_VALUES,U);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSNESLocali"
+int DMMGSetSNESLocali(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,Vec,Scalar*,void*))
+{
+  int ierr,i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  for (i=0; i<nlevels; i++) {
+    ierr = DASetLocalFunctioni((DA)dmmg[i]->dm,functioni);CHKERRQ(ierr);
+    ierr = MatSNESMFSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
+    ierr = MatSNESMFSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
+    ierr = DACreateLocalVector((DA)dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 
 

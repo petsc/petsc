@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.6 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex23.c,v 1.7 2001/06/21 21:18:53 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Solves PDE problem from ex22.c\n\n";
 /*
 
        In this example the PDE is 
-                             Uxx = 2, 
+                             Uxx + U^2 = 2, 
                             u(0) = .25
                             u(1) = 0
 
@@ -17,7 +17,6 @@ static char help[] = "Solves PDE problem from ex22.c\n\n";
 
        Use the usual centered finite differences.
 
-       Note we treat the problem as non-linear though it happens to be linear
 
        See ex22.c for a design optimization problem
 
@@ -29,6 +28,7 @@ typedef struct {
 } UserCtx;
 
 extern int FormFunction(SNES,Vec,Vec,void*);
+extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Scalar*,Scalar*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -69,6 +69,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
@@ -115,5 +116,22 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DAVecRestoreArray(da,FU,(void**)&fu);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
   PetscLogFlops(9*N);
+  PetscFunctionReturn(0);
+}
+
+int FormFunctionLocali(DALocalInfo *info,MatStencil *pt,Scalar *u,Scalar *fu,void* dummy)
+{
+  int     ierr,i,N = info->mx;
+  Scalar  d,h;
+
+  PetscFunctionBegin;
+  d    = N-1.0;
+  h    = 1.0/d;
+
+  i = pt->i;
+  if      (i == 0)   *fu = 2.0*d*(u[0] - .25) + h*u[0]*u[0];
+  else if (i == N-1) *fu = 2.0*d*u[N-1] + h*u[N-1]*u[N-1];
+  else               *fu = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h) + h*u[i]*u[i];
+
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.169 2001/06/21 21:19:09 bsmith Exp curfman $*/
+/*$Id: da2.c,v 1.170 2001/07/04 18:08:43 curfman Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1213,13 +1213,38 @@ int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 
 .keywords:  distributed array, refine
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunctioni()
 @*/
 int DASetLocalFunction(DA da,DALocalFunction1 lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   da->lf    = lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DASetLocalFunctioni"
+/*@C
+       DASetLocalFunctioni - Caches in a DA a local function that evaluates a single component
+
+   Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+-  lfi - the local function
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction()
+@*/
+int DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,Vec,Scalar*,void*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  da->lfi = lfi;
   PetscFunctionReturn(0);
 }
 
@@ -1371,6 +1396,49 @@ int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DAFormFunctioni1"
+/*@
+    DAFormFunctioni1 - Evaluates a user provided function
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    i - the component of the function we wish to compute (must be local)
+.    vu - input vector
+.    vfu - output value
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu upon entry
+
+    Level: advanced
+
+.seealso: DAComputeJacobian1WithAdic()
+
+@*/
+int DAFormFunctioni1(DA da,int i,Vec vu,Scalar *vfu,void *w)
+{
+  int         ierr;
+  void        *u,*fu;
+  DALocalInfo info;
+  MatStencil  stencil;
+  
+  PetscFunctionBegin;
+
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
+
+  /* figure out stencil value from i */
+  stencil.c = i % info.dof;
+  stencil.i = (i % (info.xm*info.dof))/info.dof;
+  stencil.j = (i % (info.xm*info.ym*info.dof))/(info.xm*info.dof);
+  stencil.k = i/(info.xm*info.ym*info.dof);
+
+  ierr = (*da->lfi)(&info,&stencil,u,vfu,w);CHKERRQ(ierr);
+
+  ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
