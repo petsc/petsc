@@ -67,11 +67,20 @@
 #
        set last [exec ls /mcs/adm/request/petsc-maint/active | sort -n | tail -1]
        if {$last > $last_petsc_maint} {
-          send "say Another pesky petsc-maint has arrived\r"
           set last_petsc_maint $last
           set subject [exec grep Subject: /mcs/adm/request/petsc-maint/active/$last]
           set from [exec grep From: /mcs/adm/request/petsc-maint/active/$last]
+          send "say Another pesky petsc-maint has arrived\r"
+          send "say $subject\r"
+          send "say $from\r"
        }
     }
 
     send "@quit\r"
+
+#
+#  Other things Petsc should do:
+#    respond to @anitsocial acts upon PETSc in a graceful way
+#    tell us about nightly build problems
+#    tell us were members of the PETSc team are
+#
