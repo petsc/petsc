@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stringv.c,v 1.12 1997/01/06 20:29:34 balay Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.13 1997/02/22 02:28:29 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: stringv.c,v 1.12 1997/01/06 20:29:34 balay Exp bsmith
 #endif
 #include "pinclude/petscfix.h"
 
-struct _Viewer {
+struct _p_Viewer {
   VIEWERHEADER
   char         *string;   /* string where info is stored */
   char         *head;     /* pointer to begining of unused portion */
@@ -93,7 +93,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 int ViewerStringOpen(MPI_Comm comm,char *string,int len, Viewer *lab)
 {
   Viewer v;
-  PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,STRING_VIEWER,comm);
+  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,STRING_VIEWER,comm);
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_String;
 

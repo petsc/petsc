@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.32 1996/11/07 15:12:51 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.33 1996/11/19 16:34:06 bsmith Exp balay $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -10,7 +10,7 @@
 
 #define IS_COOKIE PETSC_COOKIE+2
 
-typedef struct _IS* IS;
+typedef struct _p_IS* IS;
 
 /*
     Default index set data structures that PETSc provides.
@@ -50,12 +50,12 @@ extern int   ISStrideGetInfo(IS,int *,int*);
   local ordering from 0 to n-1 to a global PETSc ordering 
   used by a vector or matrix
 */
-struct _ISLocalToGlobalMapping{
+struct _p_ISLocalToGlobalMapping{
   int n;
   int *indices;
   int refcnt;
 };
-typedef struct _ISLocalToGlobalMapping* ISLocalToGlobalMapping;
+typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
 extern int ISLocalToGlobalMappingCreate(int, int*, ISLocalToGlobalMapping*);
 extern int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
@@ -73,12 +73,12 @@ extern int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
      ISColorings are sets of IS's that define a coloring
    of the underlying indices
 */
-struct _ISColoring {
+struct _p_ISColoring {
   int      n;
   IS       *is;
   MPI_Comm comm;
 };
-typedef struct _ISColoring* ISColoring;
+typedef struct _p_ISColoring* ISColoring;
 
 extern int ISColoringDestroy(ISColoring);
 extern int ISColoringView(ISColoring,Viewer);

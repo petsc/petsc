@@ -16,8 +16,6 @@ Meta priorities:
   - Decide what to do about MAT_NEW_NONZERO_ALLOCATION_ERROR; then update
     manpage and Changes file and parallel macros for MatSetValues().
 
-  - DrawText(), _PC, conflict with definitions in .h files in MS Visual C++. (Satish)
-
   - Edit snes/examples/tutorials/ex5f90.F  to use MatSetValuesLocal().
     Add routine MatSetLocalToGlobalMappingDA(Mat,DA) to alleviate the 2-step
     process used in ex5f.F.
@@ -805,3 +803,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
  X     Maybe, like, say, test one or two BDiag routines before making a release?
        More test cases that involve, zero size vectors, matrices, IS's etc.
+
+ X DrawText(), _PC, conflict with definitions in .h files in MS Visual C++. (Satish)
+

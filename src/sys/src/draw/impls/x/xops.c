@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.81 1997/05/23 16:27:27 balay Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.82 1997/05/23 16:30:58 balay Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -675,7 +675,7 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
   Viewer ctx;
 
   *viewer = 0;
-  PetscHeaderCreate(ctx,_Viewer,VIEWER_COOKIE,DRAW_VIEWER,comm);
+  PetscHeaderCreate(ctx,_p_Viewer,VIEWER_COOKIE,DRAW_VIEWER,comm);
   PLogObjectCreate(ctx);
   ierr = DrawOpenX(comm,display,title,x,y,w,h,&ctx->draw);CHKERRQ(ierr);
   PLogObjectParent(ctx,ctx->draw);

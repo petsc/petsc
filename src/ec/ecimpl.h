@@ -1,4 +1,4 @@
-/* $Id: ecimpl.h,v 1.1 1997/01/07 17:15:13 bsmith Exp bsmith $ */
+/* $Id: ecimpl.h,v 1.2 1997/01/22 18:46:07 bsmith Exp balay $ */
 
 #ifndef _ECIMPL
 #define _ECIMPL
@@ -14,7 +14,7 @@
 /*
    Defines the KSP data structure.
 */
-struct _EC {
+struct _p_EC {
   PETSCHEADER
 
   ECProblemType     problemtype;       /* generalized or plain eigenvalue problem */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcnull.c,v 1.8 1997/01/06 20:23:25 balay Exp bsmith $";
+static char vcid[] = "$Id: pcnull.c,v 1.9 1997/02/22 02:23:59 bsmith Exp balay $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -35,9 +35,9 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
 {
   PCNullSpace sp;
 
-  PetscHeaderCreate(sp,_PCNullSpace,PCNULLSPACE_COOKIE,0,comm);
+  PetscHeaderCreate(sp,_p_PCNullSpace,PCNULLSPACE_COOKIE,0,comm);
   PLogObjectCreate(sp);
-  PLogObjectMemory(sp,sizeof(struct _PCNullSpace));
+  PLogObjectMemory(sp,sizeof(struct _p_PCNullSpace));
 
   sp->has_cnst = has_cnst; 
   sp->n        = n;

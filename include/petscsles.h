@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.20 1996/03/19 21:30:28 bsmith Exp bsmith $ */
+/* $Id: sles.h,v 1.21 1997/04/02 21:03:40 bsmith Exp balay $ */
 /*
    Defines interface to the linear solvers.
 */
@@ -9,7 +9,7 @@
 
 #define SLES_COOKIE PETSC_COOKIE+10
 
-typedef struct _SLES* SLES;
+typedef struct _p_SLES* SLES;
 
 extern int SLESCreate(MPI_Comm,SLES*);
 extern int SLESDestroy(SLES);

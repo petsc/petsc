@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.116 1997/04/10 00:03:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.117 1997/05/03 21:12:33 curfman Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -913,7 +913,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
 
   if (bs <= 0) SETERRQ(1,0,"Blocksize must be positive");
   if ((N%bs)) SETERRQ(1,0,"Invalid block size - bad column number");
-  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
   PLogObjectCreate(B);
   B->data	= (void *) (b = PetscNew(Mat_MPIBDiag)); CHKPTRQ(b);
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
@@ -961,7 +961,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   b->gdiag = (int *) PetscMalloc(len*sizeof(int)); CHKPTRQ(b->gdiag);
   k = 0;
   PLogObjectMemory(B,(nd+1)*sizeof(int) + (b->size+2)*sizeof(int)
-                        + sizeof(struct _Mat) + sizeof(Mat_MPIBDiag));
+                        + sizeof(struct _p_Mat) + sizeof(Mat_MPIBDiag));
   if (diagv != PETSC_NULL) {
     ldiagv = (Scalar **)PetscMalloc((nd+1)*sizeof(Scalar*)); CHKPTRQ(ldiagv); 
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.54 1997/03/29 16:08:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.55 1997/03/31 14:02:31 bsmith Exp balay $";
 #endif
 
 /* 
@@ -205,7 +205,7 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
   int    t,rank;
 
   if (port <= 0) port = DEFAULTPORT;
-  PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,comm);
+  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,comm);
   PLogObjectCreate(v);
   MPI_Comm_rank(comm,&rank);
   if (!rank) {

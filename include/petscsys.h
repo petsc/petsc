@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.25 1997/03/03 18:29:44 balay Exp bsmith $ */
+/* $Id: sys.h,v 1.26 1997/04/02 21:03:40 bsmith Exp balay $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -26,7 +26,7 @@ extern int  PetscGetDisplay(char *,int);
 typedef enum { RANDOM_DEFAULT, RANDOM_DEFAULT_REAL, 
                RANDOM_DEFAULT_IMAGINARY } PetscRandomType;
 
-typedef struct _PetscRandom*   PetscRandom;
+typedef struct _p_PetscRandom*   PetscRandom;
 
 extern int PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
 extern int PetscRandomGetValue(PetscRandom,Scalar*);

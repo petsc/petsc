@@ -7,7 +7,7 @@
 #endif
 
 #include "src/adic/src/adpetsc.h"
-typedef struct _PetscADICFunction   *PetscADICFunction;
+typedef struct _p_PetscADICFunction   *PetscADICFunction;
 
 #define SETERRQ(n,p,s) {return ad_PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
 #define CHKERRQ(n)     {if (n) SETERRQ(n,0,(char *)0);}

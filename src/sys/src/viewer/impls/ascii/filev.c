@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.56 1997/03/13 16:36:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.57 1997/04/10 00:05:58 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: filev.c,v 1.56 1997/03/13 16:36:03 curfman Exp bsmith
 #include "pinclude/petscfix.h"
 #include <stdarg.h>
 
-struct _Viewer {
+struct _p_Viewer {
   VIEWERHEADER
   FILE          *fd;
   char          *outputname,*outputnames[10];
@@ -143,9 +143,9 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
   Viewer v;
   if (comm == PETSC_COMM_SELF) {
-    PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm);
+    PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm);
   } else {
-    PetscHeaderCreate(v,_Viewer,VIEWER_COOKIE,ASCII_FILES_VIEWER,comm);
+    PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILES_VIEWER,comm);
   }
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_File;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.77 1997/04/10 13:17:41 bsmith Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.78 1997/04/10 15:40:43 balay Exp balay $";
 #endif
 
 /*
@@ -75,9 +75,9 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int nghost,int N,int size,in
   *vv = 0;
 
   mem           = sizeof(Vec_MPI)+(size+1)*sizeof(int);
-  PetscHeaderCreate(v,_Vec,VEC_COOKIE,VECMPI,comm);
+  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECMPI,comm);
   PLogObjectCreate(v);
-  PLogObjectMemory(v,mem + sizeof(struct _Vec) + (n+1)*sizeof(Scalar));
+  PLogObjectMemory(v,mem + sizeof(struct _p_Vec) + (n+1)*sizeof(Scalar));
   s              = (Vec_MPI *) PetscMalloc(mem); CHKPTRQ(s);
   PetscMemcpy(&v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;

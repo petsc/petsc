@@ -1,4 +1,4 @@
-/* $Id: petscadic.h,v 1.2 1997/04/02 22:42:49 bsmith Exp bsmith $ */
+/* $Id: petscadic.h,v 1.3 1997/05/23 18:07:10 balay Exp balay $ */
 
 /*
         EXPERIMENTAL CODE - Use at your own risk.
@@ -17,7 +17,7 @@ extern int ad_PetscFinalize();
 extern int ad_AD_Init();
 extern int ad_AD_Final();
 
-typedef struct _PetscADICFunction *PetscADICFunction;
+typedef struct _p_PetscADICFunction *PetscADICFunction;
 
 extern int PetscADICFunctionCreate(Vec,Vec,int (*)(Vec,Vec),int (*)(void **),PetscADICFunction*);
 extern int PetscADICFunctionInitialize(PetscADICFunction);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iscoloring.c,v 1.6 1997/02/22 02:22:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.7 1997/04/10 00:00:07 bsmith Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -83,7 +83,7 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
   MPI_Status status;
   IS         *is;
 
-  *iscoloring = (ISColoring) PetscMalloc(sizeof(struct _ISColoring));CHKPTRQ(*iscoloring);
+  *iscoloring = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
   PetscCommDup_Private(comm,&(*iscoloring)->comm,&tag);
   comm = (*iscoloring)->comm;
 

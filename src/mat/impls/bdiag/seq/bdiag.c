@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.134 1997/04/10 00:03:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.135 1997/05/03 21:10:27 curfman Exp balay $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1460,7 +1460,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     PetscFree(a->diagv); PetscFree(a->diag);
     PetscFree(a->colloc); PetscFree(a->dvalue);
     PetscFree(a);
-    PetscMemcpy(A,tmat,sizeof(struct _Mat)); 
+    PetscMemcpy(A,tmat,sizeof(struct _p_Mat)); 
     PetscHeaderDestroy(tmat);
   }
   return 0;
@@ -2176,7 +2176,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
   if ((n%bs) || (m%bs)) SETERRQ(1,0,"Invalid block size");
   if (!nd) nda = nd + 1;
   else     nda = nd;
-  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQBDIAG,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQBDIAG,comm);
   PLogObjectCreate(B);
   B->data    = (void *) (b = PetscNew(Mat_SeqBDiag)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBDiag));
@@ -2260,7 +2260,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
   b->dvalue = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar)); CHKPTRQ(b->dvalue);
   PLogObjectMemory(B,(nda*(bs+2))*sizeof(int) + bs*nda*sizeof(Scalar)
                     + nda*sizeof(Scalar*) + sizeof(Mat_SeqBDiag)
-                    + sizeof(struct _Mat) + sizetot*sizeof(Scalar));
+                    + sizeof(struct _p_Mat) + sizetot*sizeof(Scalar));
 
   if (!b->user_alloc) {
     for (i=0; i<nd; i++) {

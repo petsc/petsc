@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.60 1997/04/02 21:03:40 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.61 1997/05/20 03:16:22 bsmith Exp balay $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -15,8 +15,8 @@
 
 typedef enum {VECSAME=-1, VECSEQ, VECMPI} VecType;
 
-typedef struct _Vec*         Vec;
-typedef struct _VecScatter*  VecScatter;
+typedef struct _p_Vec*         Vec;
+typedef struct _p_VecScatter*  VecScatter;
 
 extern int VecCreateSeq(MPI_Comm,int,Vec*);  
 extern int VecCreateMPI(MPI_Comm,int,int,Vec*);  

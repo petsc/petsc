@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.35 1997/01/22 18:41:22 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.36 1997/05/23 02:30:18 bsmith Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -44,7 +44,7 @@ struct _VeOps {
        (*setoption)(Vec,VecOption);
 };
 
-struct _Vec {
+struct _p_Vec {
   PETSCHEADER                              /* general PETSc header */
   struct _VeOps          ops;              /* vector operations */
   void                   *data;            /* implementation-specific data */
@@ -136,7 +136,7 @@ typedef struct {
   int                    use_readyreceiver;
 } VecScatter_MPI_General;
 
-struct _VecScatter {
+struct _p_VecScatter {
   PETSCHEADER
   int     to_n,from_n;
   int     inuse;   /* prevents corruption from mixing two scatters */

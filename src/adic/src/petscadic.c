@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: petscadic.c,v 1.1 1997/03/28 04:08:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscadic.c,v 1.2 1997/05/23 18:02:40 balay Exp balay $";
 #endif
 
 #include "petscadic.h"
@@ -35,7 +35,7 @@ int PetscADICFunctionCreate(Vec in,Vec out,int (*ad_Function)(Vec,Vec),
 {
   int ierr;
  
-  *ctx = PetscNew(struct _PetscADICFunction); CHKPTRQ(*ctx);
+  *ctx = PetscNew(struct _p_PetscADICFunction); CHKPTRQ(*ctx);
   (*ctx)->Function              = 0;
   (*ctx)->FunctionInitialize    = 0;
   (*ctx)->ad_Function           = ad_Function;

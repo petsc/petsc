@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.18 1997/03/26 01:36:43 bsmith Exp balay $ */
+/* $Id: drawimpl.h,v 1.19 1997/05/23 16:31:18 balay Exp balay $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -50,7 +50,7 @@ struct _p_Draw {
      This is for the Draw version of the viewer
 */
 #include "pinclude/pviewer.h"
-struct _Viewer {
+struct _p_Viewer {
   VIEWERHEADER
   Draw         draw;
   DrawLG       drawlg;

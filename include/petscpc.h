@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.70 1997/05/23 15:52:48 balay Exp balay $ */
+/* $Id: pc.h,v 1.71 1997/05/23 15:55:16 balay Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -17,7 +17,7 @@ typedef struct _p_PC* PC;
 /*
       Null space code is not yet developed 
 */
-typedef struct _PCNullSpace* PCNullSpace;
+typedef struct _p_PCNullSpace* PCNullSpace;
 #define PCNULLSPACE_COOKIE    PETSC_COOKIE+17
 
 typedef enum { PC_LEFT, PC_RIGHT, PC_SYMMETRIC } PCSide;

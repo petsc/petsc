@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.126 1997/04/03 17:06:53 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.127 1997/04/10 00:02:31 bsmith Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1145,7 +1145,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
 
   *A            = 0;
-  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQDENSE,comm);
   PLogObjectCreate(B);
   b             = (Mat_SeqDense *) PetscMalloc(sizeof(Mat_SeqDense)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqDense));
@@ -1154,7 +1154,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   B->view       = MatView_SeqDense;
   B->factor     = 0;
   B->mapping    = 0;
-  PLogObjectMemory(B,sizeof(struct _Mat));
+  PLogObjectMemory(B,sizeof(struct _p_Mat));
   B->data       = (void *) b;
 
   b->m = m;  B->m = m; B->M = m;

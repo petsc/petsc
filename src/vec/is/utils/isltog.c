@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: isltog.c,v 1.8 1997/04/10 00:00:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: isltog.c,v 1.9 1997/04/25 21:56:05 curfman Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -27,7 +27,7 @@ int ISLocalToGlobalMappingCreate(int n, int *indices,ISLocalToGlobalMapping *map
   PetscValidIntPointer(indices);
   PetscValidPointer(mapping);
 
-  *mapping = PetscNew(struct _ISLocalToGlobalMapping); CHKPTRQ(*mapping);
+  *mapping = PetscNew(struct _p_ISLocalToGlobalMapping); CHKPTRQ(*mapping);
   (*mapping)->refcnt  = 1;
   (*mapping)->indices = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ((*mapping)->indices);
   PetscMemcpy((*mapping)->indices,indices,n*sizeof(int));

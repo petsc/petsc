@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.217 1997/05/03 21:11:07 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.218 1997/05/03 22:48:31 curfman Exp balay $";
 #endif
 
 /*
@@ -1202,7 +1202,7 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
     if (a->solve_work) PetscFree(a->solve_work);
     if (a->inode.size) PetscFree(a->inode.size);
     PetscFree(a); 
-    PetscMemcpy(A,C,sizeof(struct _Mat)); 
+    PetscMemcpy(A,C,sizeof(struct _p_Mat)); 
     PetscHeaderDestroy(C);
   }
   return 0;
@@ -1655,7 +1655,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
 
   *A                  = 0;
-  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQAIJ,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQAIJ,comm);
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqAIJ));
@@ -1706,7 +1706,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
 
   /* b->ilen will count nonzeros in each row so far. */
   b->ilen = (int *) PetscMalloc((m+1)*sizeof(int)); 
-  PLogObjectMemory(B,len+2*(m+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_SeqAIJ));
+  PLogObjectMemory(B,len+2*(m+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqAIJ));
   for ( i=0; i<b->m; i++ ) { b->ilen[i] = 0;}
 
   b->nz               = 0;
@@ -1751,7 +1751,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   int        i,len, m = a->m,shift = a->indexshift;
 
   *B = 0;
-  PetscHeaderCreate(C,_Mat,MAT_COOKIE,MATSEQAIJ,A->comm);
+  PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQAIJ,A->comm);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
   PetscMemcpy(&C->ops,&A->ops,sizeof(struct _MatOps));
@@ -1789,7 +1789,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
     }
   }
 
-  PLogObjectMemory(C,len+2*(m+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_SeqAIJ));  
+  PLogObjectMemory(C,len+2*(m+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqAIJ));  
   c->sorted      = a->sorted;
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.17 1997/04/04 01:54:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.18 1997/04/10 00:03:40 bsmith Exp balay $";
 #endif
  
 /*
@@ -171,7 +171,7 @@ int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
 
   ierr = MatGetSize(mat,&N,&N); CHKERRQ(ierr);
   is  = (IS *) PetscMalloc( N*sizeof(IS*) ); CHKPTRQ(is); 
-  *iscoloring       = (ISColoring) PetscMalloc(sizeof(struct _ISColoring));CHKPTRQ(*iscoloring);
+  *iscoloring       = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
   (*iscoloring)->n  = N;
   (*iscoloring)->is = is;
   

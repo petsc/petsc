@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.41 1997/02/26 00:06:53 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.42 1997/03/01 16:00:14 bsmith Exp balay $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -6,7 +6,7 @@
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
 
-typedef struct _Viewer*            Viewer;
+typedef struct _p_Viewer*            Viewer;
 
 /*
     petsc.h must be included AFTER the definition of Viewer for ADIC to 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.14 1997/03/13 16:32:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.15 1997/04/09 23:59:58 bsmith Exp balay $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -180,10 +180,10 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
   IS_Block *sub;
 
   *is = 0;
-  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_BLOCK,comm); 
+  PetscHeaderCreate(Nindex, _p_IS,IS_COOKIE,IS_BLOCK,comm); 
   PLogObjectCreate(Nindex);
   sub            = PetscNew(IS_Block); CHKPTRQ(sub);
-  PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _IS));
+  PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _p_IS));
   sub->idx       = (int *) PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sub->idx);
   sub->n         = n;
   for ( i=1; i<n; i++ ) {

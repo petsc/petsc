@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.39 1997/01/21 21:05:36 curfman Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.40 1997/03/26 01:37:40 bsmith Exp balay $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -10,7 +10,7 @@
  */
 #define MAXSNESMONITORS 5
 
-struct _SNES {
+struct _p_SNES {
   PETSCHEADER
 
   /*  ------------------------ User-provided stuff -------------------------------*/

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.100 1997/05/03 22:46:30 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.101 1997/05/03 22:48:36 curfman Exp balay $";
 #endif
 
 /*
@@ -732,7 +732,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
     if (a->imax) PetscFree(a->imax);
     if (a->solve_work) PetscFree(a->solve_work);
     PetscFree(a); 
-    PetscMemcpy(A,C,sizeof(struct _Mat)); 
+    PetscMemcpy(A,C,sizeof(struct _p_Mat)); 
     PetscHeaderDestroy(C);
   }
   return 0;
@@ -2075,7 +2075,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
     SETERRQ(1,0,"Number rows, cols must be divisible by blocksize");
 
   *A = 0;
-  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQBAIJ,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQBAIJ,comm);
   PLogObjectCreate(B);
   B->data = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBAIJ));
@@ -2161,7 +2161,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 
   /* b->ilen will count nonzeros in each block row so far. */
   b->ilen = (int *) PetscMalloc((mbs+1)*sizeof(int)); 
-  PLogObjectMemory(B,len+2*(mbs+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_SeqBAIJ));
+  PLogObjectMemory(B,len+2*(mbs+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqBAIJ));
   for ( i=0; i<mbs; i++ ) { b->ilen[i] = 0;}
 
   b->bs               = bs;
@@ -2195,7 +2195,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   if (a->i[mbs] != nz) SETERRQ(1,0,"Corrupt matrix");
 
   *B = 0;
-  PetscHeaderCreate(C,_Mat,MAT_COOKIE,MATSEQBAIJ,A->comm);
+  PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQBAIJ,A->comm);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(c);
   PetscMemcpy(&C->ops,&A->ops,sizeof(struct _MatOps));
@@ -2237,7 +2237,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
     }
   }
 
-  PLogObjectMemory(C,len+2*(mbs+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_SeqBAIJ));  
+  PLogObjectMemory(C,len+2*(mbs+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqBAIJ));  
   c->sorted      = a->sorted;
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;

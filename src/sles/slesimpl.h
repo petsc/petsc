@@ -3,7 +3,7 @@
 #define _SLESIMPL_H
 #include "sles.h"
 
-struct _SLES {
+struct _p_SLES {
   PETSCHEADER
   int setupcalled;
   PC  pc;

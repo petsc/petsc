@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.54 1997/03/13 16:32:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.55 1997/04/09 23:59:56 bsmith Exp balay $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -222,9 +222,9 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   if (n < 0) SETERRQ(1,0,"Number of indices < 0");
   if (step == 0) SETERRQ(1,0,"Step must be nonzero");
 
-  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_STRIDE,comm); 
+  PetscHeaderCreate(Nindex, _p_IS,IS_COOKIE,IS_STRIDE,comm); 
   PLogObjectCreate(Nindex);
-  PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _IS));
+  PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
   sub            = PetscNew(IS_Stride); CHKPTRQ(sub);
   sub->n         = n;
   sub->first     = first;

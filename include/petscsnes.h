@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.58 1997/03/26 01:38:58 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.59 1997/03/31 18:35:32 bsmith Exp balay $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -6,7 +6,7 @@
 #define __SNES_PACKAGE
 #include "sles.h"
 
-typedef struct _SNES* SNES;
+typedef struct _p_SNES* SNES;
 #define SNES_COOKIE PETSC_COOKIE+13
 
 typedef enum { SNES_UNKNOWN_METHOD=-1,

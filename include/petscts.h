@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.12 1997/02/03 06:03:27 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.13 1997/05/23 18:09:16 balay Exp balay $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -7,7 +7,7 @@
 #define __TS_PACKAGE
 #include "snes.h"
 
-typedef struct _TS* TS;
+typedef struct _p_TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
 
 typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO, TS_CVODE, TS_NEW} TSType;

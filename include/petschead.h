@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.45 1997/02/27 23:36:11 balay Exp bsmith $ */
+/* $Id: petschead.h,v 1.46 1997/03/26 01:38:58 bsmith Exp balay $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -162,7 +162,7 @@ extern void *PetscLow,*PetscHigh;
    the specific object. In C++ this could be a base abstract class
    from which all objects are derived.
 */
-struct _PetscObject {
+struct _p_PetscObject {
   PETSCHEADER
 };
 

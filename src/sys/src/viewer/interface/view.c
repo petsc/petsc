@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: view.c,v 1.16 1997/01/06 20:29:41 balay Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.17 1997/02/22 02:28:34 bsmith Exp balay $";
 #endif
 
 #include "petsc.h" /*I "petsc.h" I*/
 
-struct _Viewer {
+struct _p_Viewer {
    PETSCHEADER
    int         (*flush)(Viewer);
 };

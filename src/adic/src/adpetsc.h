@@ -1,10 +1,10 @@
 
-/* static char vcid[] = "$Id: petscadic.c,v 1.1 1997/03/28 04:08:42 bsmith Exp bsmith $"; */
+/* static char vcid[] = "$Id: adpetsc.h,v 1.2 1997/05/23 17:20:26 balay Exp balay $"; */
 
 #if !defined(__ADPETSC_H)
 #define __ADPETSC_H
 
-struct _PetscADICFunction{
+struct _p_PetscADICFunction{
   MPI_Comm comm;
   int      m,n;
   Vec      din, dout;

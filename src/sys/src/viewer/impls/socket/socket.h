@@ -1,4 +1,4 @@
-/* $Id: matlab.h,v 1.10 1996/03/19 21:28:40 bsmith Exp bsmith $ */
+/* $Id: matlab.h,v 1.11 1997/02/22 02:28:23 bsmith Exp balay $ */
 /* 
      This is the definition of the Matlab viewer structure. Note: 
   each viewer has a different data structure.
@@ -8,7 +8,7 @@
 #include "pinclude/pviewer.h"
 #include "sys.h" 
 
-struct _Viewer {
+struct _p_Viewer {
   VIEWERHEADER
   int           port;
 };

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.45 1997/02/22 02:25:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.46 1997/03/13 16:34:06 curfman Exp balay $";
 #endif
 
 /*
@@ -190,7 +190,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   Mat       B;
   Mat_Shell *b;
 
-  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSHELL,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSHELL,comm);
   PLogObjectCreate(B);
   B->factor    = 0;
   B->destroy   = MatDestroy_Shell;

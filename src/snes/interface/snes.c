@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.120 1997/04/12 19:16:00 bsmith Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.121 1997/04/12 19:22:21 balay Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -554,7 +554,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   *outsnes = 0;
   if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS)
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"incorrect method type"); 
-  PetscHeaderCreate(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
+  PetscHeaderCreate(snes,_p_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
   PLogObjectCreate(snes);
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.69 1997/04/10 00:02:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.70 1997/05/03 21:11:31 curfman Exp balay $";
 #endif
 
 /*
@@ -822,7 +822,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
     if (a->lvec) VecDestroy(a->lvec);
     if (a->Mvctx) VecScatterDestroy(a->Mvctx);
     PetscFree(a); 
-    PetscMemcpy(A,B,sizeof(struct _Mat)); 
+    PetscMemcpy(A,B,sizeof(struct _p_Mat)); 
     PetscHeaderDestroy(B);
   }
   return 0;
@@ -919,7 +919,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
    allocates the local dense storage space.  We should add error checking. */
 
   *A = 0;
-  PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIDENSE,comm);
+  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIDENSE,comm);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
@@ -948,7 +948,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   /* build local table of row and column ownerships */
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
   a->cowners = a->rowners + a->size + 1;
-  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIDense));
+  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
   MPI_Allgather(&m,1,MPI_INT,a->rowners+1,1,MPI_INT,comm);
   a->rowners[0] = 0;
   for ( i=2; i<=a->size; i++ ) {
@@ -991,7 +991,7 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   FactorCtx    *factor;
 
   *newmat       = 0;
-  PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIDENSE,A->comm);
+  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIDENSE,A->comm);
   PLogObjectCreate(mat);
   mat->data      = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
@@ -1016,7 +1016,7 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   mat->insertmode = NOT_SET_VALUES;
 
   a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
-  PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIDense));
+  PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
   PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(int));
   ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);
   

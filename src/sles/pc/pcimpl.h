@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.16 1996/08/19 23:03:09 curfman Exp balay $ */
+/* $Id: pcimpl.h,v 1.17 1997/05/23 15:46:15 balay Exp balay $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -30,7 +30,7 @@ struct _p_PC {
   void         *modifysubmatricesP;
 };
 
-struct _PCNullSpace {
+struct _p_PCNullSpace {
   PETSCHEADER
   int         has_cnst;
   int         n;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.80 1997/05/23 15:56:59 balay Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.81 1997/05/23 15:59:48 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -302,7 +302,7 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   if (mat->inode.size) PetscFree(mat->inode.size);
   PetscFree(mat);
 
-  PetscMemcpy(A,C,sizeof(struct _Mat));
+  PetscMemcpy(A,C,sizeof(struct _p_Mat));
   PetscHeaderDestroy(C);
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.161 1997/05/22 20:44:31 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.162 1997/05/22 20:44:44 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -147,7 +147,7 @@ extern void   PetscInitializeFortran();
 /*
     Functions that can act on any PETSc object.
 */
-typedef struct _PetscObject* PetscObject;
+typedef struct _p_PetscObject* PetscObject;
 extern int PetscObjectDestroy(PetscObject);
 extern int PetscObjectExists(PetscObject,int*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);

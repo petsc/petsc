@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.205 1997/05/09 22:30:43 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.206 1997/05/09 22:34:48 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1361,7 +1361,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     if (a->lvec) VecDestroy(a->lvec);
     if (a->Mvctx) VecScatterDestroy(a->Mvctx);
     PetscFree(a); 
-    PetscMemcpy(A,B,sizeof(struct _Mat)); 
+    PetscMemcpy(A,B,sizeof(struct _p_Mat)); 
     PetscHeaderDestroy(B);
   }
   return 0;
@@ -1562,7 +1562,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   int          ierr, i,sum[2],work[2],size;
 
   *A = 0;
-  PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATMPIAIJ,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIAIJ,comm);
   PLogObjectCreate(B);
   B->data       = (void *) (b = PetscNew(Mat_MPIAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAIJ));
@@ -1608,7 +1608,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 
   /* build local table of row and column ownerships */
   b->rowners = (int *) PetscMalloc(2*(b->size+2)*sizeof(int)); CHKPTRQ(b->rowners);
-  PLogObjectMemory(B,2*(b->size+2)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIAIJ));
+  PLogObjectMemory(B,2*(b->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));
   b->cowners = b->rowners + b->size + 2;
   MPI_Allgather(&m,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);
   b->rowners[0] = 0;
@@ -1661,7 +1661,7 @@ int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   int        ierr, len=0, flg;
 
   *newmat       = 0;
-  PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm);
+  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIAIJ)); CHKPTRQ(a);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
@@ -1686,7 +1686,7 @@ int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   a->getrowactive = PETSC_FALSE;
 
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
-  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIAIJ));
+  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));
   a->cowners = a->rowners + a->size + 2;
   PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
   ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);

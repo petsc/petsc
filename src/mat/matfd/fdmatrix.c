@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdmatrix.c,v 1.8 1997/02/11 19:46:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.9 1997/02/22 02:24:34 bsmith Exp balay $";
 #endif
 
 /*
@@ -167,7 +167,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
   PetscObjectGetComm((PetscObject)mat,&comm);
-  PetscHeaderCreate(c,_MatFDColoring,MAT_FDCOLORING_COOKIE,0,comm);
+  PetscHeaderCreate(c,_p_MatFDColoring,MAT_FDCOLORING_COOKIE,0,comm);
   PLogObjectCreate(c);
 
   if (mat->ops.fdcoloringcreate) {
