@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -37,7 +39,7 @@
           
 
 @*/
-PetscErrorCode DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 
@@ -80,7 +82,7 @@ PetscErrorCode DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
           DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalEnd()
 
 @*/
-PetscErrorCode DALocalToGlobalBegin(DA da,Vec l,Vec g)
+PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalBegin(DA da,Vec l,Vec g)
 {
   PetscErrorCode ierr;
 
@@ -123,7 +125,7 @@ PetscErrorCode DALocalToGlobalBegin(DA da,Vec l,Vec g)
           DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalBegin()
 
 @*/
-PetscErrorCode DALocalToGlobalEnd(DA da,Vec l,Vec g)
+PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalEnd(DA da,Vec l,Vec g)
 {
   PetscErrorCode ierr;
 
@@ -165,7 +167,7 @@ PetscErrorCode DALocalToGlobalEnd(DA da,Vec l,Vec g)
 .seealso: DAGlobalToLocalBegin(), DALocalToGlobal(), DACreate2d(),
      DALocalToLocalBegin(), DALocalToLocalEnd(), DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
-PetscErrorCode DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 
@@ -258,7 +260,7 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
           DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
-PetscErrorCode DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 
@@ -304,7 +306,7 @@ PetscErrorCode DAGlobalToNaturalBegin(DA da,Vec g,InsertMode mode,Vec l)
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector(),
           DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
-PetscErrorCode DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 
@@ -348,7 +350,7 @@ PetscErrorCode DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mode,Vec l)
           DALocalToGlobalBegin(), DALocalToGlobalEnd()
 
 @*/
-PetscErrorCode DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 
@@ -395,7 +397,7 @@ PetscErrorCode DANaturalToGlobalBegin(DA da,Vec g,InsertMode mode,Vec l)
           DALocalToGlobalBegin(), DALocalToGlobalEnd()
 
 @*/
-PetscErrorCode DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
 

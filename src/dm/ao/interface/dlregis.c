@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 
 #include "petscao.h"
 #include "petscda.h"
@@ -17,7 +18,7 @@
 .keywords: AO, DA, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode DMInitializePackage(const char path[]) {
+PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;
@@ -77,7 +78,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
 */
-PetscErrorCode PetscDLLibraryRegister(char *path)
+PetscErrorCode PETSCDM_DLLEXPORT PetscDLLibraryRegister(char *path)
 {
   PetscErrorCode ierr;
 

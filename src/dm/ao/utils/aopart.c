@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 
 #include "petscao.h"       /*I  "petscao.h"  I*/
 
@@ -17,7 +18,7 @@
 
 .seealso: AODataSegmentPartition()
 @*/
-PetscErrorCode AODataKeyPartition(AOData aodata,const char key[])
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyPartition(AOData aodata,const char key[])
 {
   AO              ao;
   Mat             adj;

@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 
 #include "petscao.h"       /*I  "petscao.h"  I*/
 
@@ -29,7 +30,7 @@
 
 .seealso: AODataKeyParition(), AODataSegmentPartition()
 @*/
-PetscErrorCode AODataPartitionAndSetupLocal(AOData ao,const char keyname[],const char segmentname[],IS *iskey,IS *issegment,ISLocalToGlobalMapping *ltog)
+PetscErrorCode PETSCDM_DLLEXPORT AODataPartitionAndSetupLocal(AOData ao,const char keyname[],const char segmentname[],IS *iskey,IS *issegment,ISLocalToGlobalMapping *ltog)
 {
   ISLocalToGlobalMapping ltogkey;
   PetscErrorCode         ierr;

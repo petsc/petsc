@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
  
 #include "src/dm/da/daimpl.h"     /*I      "petscda.h"     I*/
 
@@ -25,7 +26,7 @@
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode DMDestroy(DM dm)
+PetscErrorCode PETSCDM_DLLEXPORT DMDestroy(DM dm)
 {
   PetscErrorCode ierr;
 
@@ -50,7 +51,7 @@ PetscErrorCode DMDestroy(DM dm)
 .seealso DMDestroy(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode DMView(DM dm,PetscViewer v)
+PetscErrorCode PETSCDM_DLLEXPORT DMView(DM dm,PetscViewer v)
 {
   PetscErrorCode ierr;
 
@@ -79,7 +80,7 @@ PetscErrorCode DMView(DM dm,PetscViewer v)
 .seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode DMCreateGlobalVector(DM dm,Vec *vec)
+PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
 {
   PetscErrorCode ierr;
 
@@ -108,7 +109,7 @@ PetscErrorCode DMCreateGlobalVector(DM dm,Vec *vec)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   PetscErrorCode ierr;
 
@@ -136,7 +137,7 @@ PetscErrorCode DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMGetInterpolation()
 
 @*/
-PetscErrorCode DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 {
   PetscErrorCode ierr;
 
@@ -164,7 +165,7 @@ PetscErrorCode DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
 
@@ -193,7 +194,7 @@ PetscErrorCode DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
 
@@ -221,7 +222,7 @@ PetscErrorCode DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode DMRefine(DM dm,MPI_Comm comm,DM *dmf)
+PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   The most basic AOData routines. These store the entire database on each processor.
   These routines are very simple; note that we do not even use a private data structure
@@ -890,7 +892,7 @@ static struct _AODataOps myops = {AODataSegmentAdd_Basic,
 
 .seealso: AODataSegmentAdd(), AODataDestroy()
 @*/
-PetscErrorCode AODataCreateBasic(MPI_Comm comm,AOData *aoout)
+PetscErrorCode PETSCDM_DLLEXPORT AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 {
   AOData         ao;
   PetscErrorCode ierr;
@@ -940,7 +942,7 @@ PetscErrorCode AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 
 .seealso: AODataSegmentAdd(), AODataDestroy(), AODataCreateBasic(), AODataView() 
 @*/
-PetscErrorCode AODataLoadBasic(PetscViewer viewer,AOData *aoout)
+PetscErrorCode PETSCDM_DLLEXPORT AODataLoadBasic(PetscViewer viewer,AOData *aoout)
 {
   AOData        ao;
   PetscErrorCode ierr;

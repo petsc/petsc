@@ -124,7 +124,7 @@ ex21f: ex21f.o  chkopts
 	${RM} ex21f.o
 
 ex22: ex22.o  chkopts
-	-${CLINKER} -o ex22 ex22.o  ${PETSC_KSP_LIB}
+	-${CLINKER} -o ex22 ex22.o  ${PETSC_SNES_LIB}
 	${RM} ex22.o
 
 ex22f: ex22f.o  chkopts
@@ -136,7 +136,7 @@ ex23: ex23.o  chkopts
 	${RM} ex23.o
 
 ex25: ex25.o  chkopts
-	-${CLINKER} -o ex25 ex25.o  ${PETSC_KSP_LIB}
+	-${CLINKER} -o ex25 ex25.o  ${PETSC_SNES_LIB}
 	${RM} ex25.o
 
 ex26: ex26.o  chkopts
@@ -148,11 +148,11 @@ ex27: ex27.o  chkopts
 	${RM} ex27.o
 
 ex28: ex28.o  chkopts
-	-${CLINKER} -o ex28 ex28.o  ${PETSC_KSP_LIB}
+	-${CLINKER} -o ex28 ex28.o  ${PETSC_SNES_LIB}
 	${RM} ex28.o
 
 ex29: ex29.o  chkopts
-	-${CLINKER} -o ex29 ex29.o  ${PETSC_KSP_LIB}
+	-${CLINKER} -o ex29 ex29.o  ${PETSC_SNES_LIB}
 	${RM} ex29.o
 
 ex30: ex30.o  chkopts

@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 
 #include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 
@@ -19,7 +20,7 @@
    Level: intermediate
 
 @*/
-PetscErrorCode DALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DA *da)
+PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DA *da)
 {
   PetscErrorCode ierr;
   PetscInt       info[8],nmax = 8,i;

@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -13,7 +15,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEnginePut_DA2d"
-PetscErrorCode VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
+PetscErrorCode PETSCDM_DLLEXPORT VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
   PetscInt n,m;
@@ -70,7 +72,7 @@ EXTERN_C_END
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DAGetLocalVector(), DARestoreLocalVector()
 @*/
-PetscErrorCode DACreateLocalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
 
@@ -120,7 +122,7 @@ PetscErrorCode DACreateLocalVector(DA da,Vec* g)
           DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DARestoreLocalVector(),
           VecStrideMax(), VecStrideMin(), VecStrideNorm()
 @*/
-PetscErrorCode DAGetLocalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr,i;
 
@@ -167,7 +169,7 @@ PetscErrorCode DAGetLocalVector(DA da,Vec* g)
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DAGetLocalVector()
 @*/
-PetscErrorCode DARestoreLocalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreLocalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt i,j;
@@ -224,7 +226,7 @@ PetscErrorCode DARestoreLocalVector(DA da,Vec* g)
           VecStrideMax(), VecStrideMin(), VecStrideNorm()
 
 @*/
-PetscErrorCode DAGetGlobalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt i;
@@ -272,7 +274,7 @@ PetscErrorCode DAGetGlobalVector(DA da,Vec* g)
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToGlobalBegin(),
           DAGlobalToGlobalEnd(), DAGlobalToGlobal(), DACreateLocalVector(), DAGetGlobalVector()
 @*/
-PetscErrorCode DARestoreGlobalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreGlobalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt i,j;
@@ -329,7 +331,7 @@ EXTERN_C_END
 .seealso: DARestoreAdicArray()
 
 @*/
-PetscErrorCode DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
@@ -468,7 +470,7 @@ PetscErrorCode DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_
 .seealso: DAGetAdicArray()
 
 @*/
-PetscErrorCode DARestoreAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscInt  i;
   void *iarray_start = 0;
@@ -515,7 +517,7 @@ PetscErrorCode DARestoreAdicArray(DA da,PetscTruth ghosted,void **iptr,void **ar
 
 #undef __FUNCT__
 #define __FUNCT__ "ad_DAGetArray"
-PetscErrorCode ad_DAGetArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT ad_DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -525,7 +527,7 @@ PetscErrorCode ad_DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "ad_DARestoreArray"
-PetscErrorCode ad_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -555,7 +557,7 @@ PetscErrorCode ad_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 .seealso: DARestoreArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode DAGetArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscErrorCode ierr;
   PetscInt j,i,xs,ys,xm,ym,zs,zm;
@@ -678,7 +680,7 @@ PetscErrorCode DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 .seealso: DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscInt  i;
   void *iarray_start = 0;
@@ -747,7 +749,7 @@ PetscErrorCode DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 .seealso: DARestoreAdicMFArray(), DAGetArray(), DAGetAdicArray()
 
 @*/
-PetscErrorCode DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
   PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
@@ -884,7 +886,7 @@ PetscErrorCode DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **arra
 .seealso: DAGetAdicArray()
 
 @*/
-PetscErrorCode DARestoreAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
+PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscInt  i;
   void *iarray_start = 0;
@@ -931,7 +933,7 @@ PetscErrorCode DARestoreAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **
 
 #undef __FUNCT__
 #define __FUNCT__ "admf_DAGetArray"
-PetscErrorCode admf_DAGetArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT admf_DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -941,7 +943,7 @@ PetscErrorCode admf_DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "admf_DARestoreArray"
-PetscErrorCode admf_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
+PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

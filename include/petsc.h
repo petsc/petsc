@@ -49,6 +49,10 @@
 #if !defined(PETSC_TEMPLATE)
 #define PETSC_TEMPLATE
 #endif
+#if !defined(PETSC_HAVE_DLL_EXPORT)
+#define PETSC_DLL_EXPORT
+#define PETSC_DLL_IMPORT
+#endif
 #if !defined(PETSC_DLLEXPORT)
 #define PETSC_DLLEXPORT
 #endif
@@ -73,6 +77,7 @@
 #if !defined(PETSCFORTRAN_DLLEXPORT)
 #define PETSCFORTRAN_DLLEXPORT
 #endif
+
 /* ========================================================================== */
 
 /*

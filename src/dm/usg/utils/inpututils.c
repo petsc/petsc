@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
 */
@@ -31,7 +33,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOData2dGridToAOData"
-PetscErrorCode AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
 {
   PetscErrorCode ierr;
   PetscInt       *keys,nmax,i;
@@ -68,7 +70,7 @@ PetscErrorCode AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
 /*
        User input the cell by drawing them one at a time
 */
-PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
 {
   PetscDraw       popup;                           /* help window */
   PetscDrawButton button;                          /* mouse button pressed */
@@ -169,7 +171,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
    Changes the node numbering for the cell to make sure they are all in 
    clockwise ordering
 */
-PetscErrorCode AOData2dGridFlipCells(AOData2dGrid agrid)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridFlipCells(AOData2dGrid agrid)
 {
   PetscInt       i,*cell = agrid->cell_vertex, cell_n = agrid->cell_n;
   PetscReal *vertex = agrid->vertex, sign;
@@ -204,7 +206,7 @@ PetscErrorCode AOData2dGridFlipCells(AOData2dGrid agrid)
 /*
      AOData2dGridAddNode - Maintains a list of nodes given so far
 */
-PetscErrorCode AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal cy, PetscInt *cn)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal cy, PetscInt *cn)
 {
   PetscInt i;
 
@@ -228,7 +230,7 @@ PetscErrorCode AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal c
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOData2dGridComputeNeighbors"
-PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid agrid)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 {
   PetscErrorCode ierr;
   PetscInt  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e;
@@ -337,7 +339,7 @@ PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOData2dGridComputeVertexBoundary"
-PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 {
   PetscErrorCode ierr;
   PetscInt  i,j,*count,*cell_vertex = agrid->cell_vertex;
@@ -386,7 +388,7 @@ PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 /*
      Show the numbering of the vertex, cell and edge
 */
-PetscErrorCode AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscInt       i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex;
@@ -439,7 +441,7 @@ PetscErrorCode AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
 /*
     Frees all the memory space allocated in AGrid
 */
-PetscErrorCode AOData2dGridDestroy(AOData2dGrid agrid)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridDestroy(AOData2dGrid agrid)
 {
    PetscErrorCode ierr;
 
@@ -460,7 +462,7 @@ PetscErrorCode AOData2dGridDestroy(AOData2dGrid agrid)
 /*
     
 */
-PetscErrorCode AOData2dGridCreate(AOData2dGrid *agrid)
+PetscErrorCode PETSCDM_DLLEXPORT AOData2dGridCreate(AOData2dGrid *agrid)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

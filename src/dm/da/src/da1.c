@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
    This file was created by Peter Mell   6/30/95    
@@ -120,7 +121,7 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
-PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt dof,PetscInt s,PetscInt *lc,DA *inra)
+PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt dof,PetscInt s,PetscInt *lc,DA *inra)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;

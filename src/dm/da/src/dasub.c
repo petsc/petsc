@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -32,7 +34,7 @@
 
 .keywords: distributed array, get, processor subset
 @*/
-PetscErrorCode DAGetProcessorSubset(DA da,DADirection dir,PetscInt gp,MPI_Comm *comm)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,PetscInt gp,MPI_Comm *comm)
 {
   MPI_Group      group,subgroup;
   PetscErrorCode ierr;

@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*  
    Defines the abstract operations on AOData
 */
@@ -24,7 +26,7 @@
 
 .seealso:  AODataSegmentGetInfo()
 @*/ 
-PetscErrorCode AODataGetInfo(AOData ao,PetscInt *nkeys,char ***keys)
+PetscErrorCode PETSCDM_DLLEXPORT AODataGetInfo(AOData ao,PetscInt *nkeys,char ***keys)
 {
   PetscErrorCode ierr;
   PetscInt       n,i;
@@ -116,7 +118,7 @@ PetscErrorCode AODataKeyFind_Private(AOData aodata,const char keyname[],PetscTru
    Level: advanced
 
 @*/
-PetscErrorCode AODataKeyExists(AOData aodata,const char keyname[],PetscTruth *flag)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyExists(AOData aodata,const char keyname[],PetscTruth *flag)
 {
   PetscErrorCode ierr;
   PetscTruth     iflag;
@@ -212,7 +214,7 @@ PetscErrorCode AODataSegmentFind_Private(AOData aodata,const char keyname[],cons
    Level: advanced
 
 @*/
-PetscErrorCode AODataSegmentExists(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentExists(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag)
 {
   PetscErrorCode ierr;
   PetscTruth    iflag;
@@ -255,7 +257,7 @@ PetscErrorCode AODataSegmentExists(AOData aodata,const char keyname[],const char
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-PetscErrorCode AODataKeyGetActive(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,PetscInt wl,IS *is)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetActive(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,PetscInt wl,IS *is)
 {
   PetscErrorCode ierr;
 
@@ -290,7 +292,7 @@ PetscErrorCode AODataKeyGetActive(AOData aodata,const char name[],const char seg
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-PetscErrorCode AODataKeyGetActiveIS(AOData aodata,const char name[],const char segname[],IS in,PetscInt wl,IS *is)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetActiveIS(AOData aodata,const char name[],const char segname[],IS in,PetscInt wl,IS *is)
 {
   PetscErrorCode ierr;
   PetscInt       n,*keys;
@@ -329,7 +331,7 @@ PetscErrorCode AODataKeyGetActiveIS(AOData aodata,const char name[],const char s
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-PetscErrorCode AODataKeyGetActiveLocal(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,PetscInt wl,IS *is)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetActiveLocal(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,PetscInt wl,IS *is)
 {
   PetscErrorCode ierr;
 
@@ -364,7 +366,7 @@ PetscErrorCode AODataKeyGetActiveLocal(AOData aodata,const char name[],const cha
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-PetscErrorCode AODataKeyGetActiveLocalIS(AOData aodata,const char name[],const char segname[],IS in,PetscInt wl,IS *is)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetActiveLocalIS(AOData aodata,const char name[],const char segname[],IS in,PetscInt wl,IS *is)
 {
   PetscErrorCode ierr;
   PetscInt       n,*keys;
@@ -404,7 +406,7 @@ PetscErrorCode AODataKeyGetActiveLocalIS(AOData aodata,const char name[],const c
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-PetscErrorCode AODataSegmentGet(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,void **data)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGet(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,void **data)
 {
   PetscErrorCode ierr;
 
@@ -437,7 +439,7 @@ PetscErrorCode AODataSegmentGet(AOData aodata,const char name[],const char segme
 
 .seealso: AODataSegmentRestoreIS()
 @*/
-PetscErrorCode AODataSegmentRestore(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,void **data)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestore(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,void **data)
 {
   PetscErrorCode ierr;
 
@@ -468,7 +470,7 @@ PetscErrorCode AODataSegmentRestore(AOData aodata,const char name[],const char s
 .keywords: database transactions
 
 @*/
-PetscErrorCode AODataSegmentGetIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
   PetscErrorCode ierr;
   PetscInt       n,*keys;
@@ -506,7 +508,7 @@ PetscErrorCode AODataSegmentGetIS(AOData aodata,const char name[],const char seg
 
 .seealso: AODataSegmentRestore()
 @*/
-PetscErrorCode AODataSegmentRestoreIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestoreIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
   PetscErrorCode ierr;
 
@@ -545,7 +547,7 @@ PetscErrorCode AODataSegmentRestoreIS(AOData aodata,const char name[],const char
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-PetscErrorCode AODataSegmentGetLocal(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,void **data)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetLocal(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,void **data)
 {
   PetscErrorCode ierr;
 
@@ -577,7 +579,7 @@ PetscErrorCode AODataSegmentGetLocal(AOData aodata,const char name[],const char 
 .keywords: database transactions
 
 @*/
-PetscErrorCode AODataSegmentRestoreLocal(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,void **data)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestoreLocal(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,void **data)
 {
   PetscErrorCode ierr;
 
@@ -610,7 +612,7 @@ PetscErrorCode AODataSegmentRestoreLocal(AOData aodata,const char name[],const c
 
 .seealso: AODataSegmentRestoreLocalIS()
 @*/
-PetscErrorCode AODataSegmentGetLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
   PetscErrorCode ierr;
   PetscInt       n,*keys;
@@ -648,7 +650,7 @@ PetscErrorCode AODataSegmentGetLocalIS(AOData aodata,const char name[],const cha
 
 .seealso: AODataSegmentGetLocalIS()
 @*/
-PetscErrorCode AODataSegmentRestoreLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestoreLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
   PetscErrorCode ierr;
 
@@ -687,7 +689,7 @@ PetscErrorCode AODataSegmentRestoreLocalIS(AOData aodata,const char name[],const
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd(), 
           AODataKeyGetNeighborsIS()
 @*/
-PetscErrorCode AODataKeyGetNeighbors(AOData aodata,const char name[],PetscInt n,PetscInt *keys,IS *is)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetNeighbors(AOData aodata,const char name[],PetscInt n,PetscInt *keys,IS *is)
 {
   PetscErrorCode ierr;
   IS             reduced;
@@ -731,7 +733,7 @@ PetscErrorCode AODataKeyGetNeighbors(AOData aodata,const char name[],PetscInt n,
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd(), 
           AODataKeyGetNeighbors()
 @*/
-PetscErrorCode AODataKeyGetNeighborsIS(AOData aodata,const char name[],IS keys,IS *is)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetNeighborsIS(AOData aodata,const char name[],IS keys,IS *is)
 {
   PetscErrorCode ierr;
   IS             reduced;
@@ -781,7 +783,7 @@ PetscErrorCode AODataKeyGetNeighborsIS(AOData aodata,const char name[],IS keys,I
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-PetscErrorCode AODataSegmentGetReduced(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,IS *is)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetReduced(AOData aodata,const char name[],const char segment[],PetscInt n,PetscInt *keys,IS *is)
 {
   PetscErrorCode ierr;
 
@@ -815,7 +817,7 @@ PetscErrorCode AODataSegmentGetReduced(AOData aodata,const char name[],const cha
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-PetscErrorCode AODataSegmentGetExtrema(AOData aodata,const char name[],const char segment[],void *vmax,void *vmin)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetExtrema(AOData aodata,const char name[],const char segment[],void *vmax,void *vmin)
 {
   PetscErrorCode ierr;
 
@@ -856,7 +858,7 @@ PetscErrorCode AODataSegmentGetExtrema(AOData aodata,const char name[],const cha
 
 .seealso:
 @*/
-PetscErrorCode AODataSegmentGetReducedIS(AOData aodata,const char name[],const char segment[],IS is,IS *isout)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetReducedIS(AOData aodata,const char name[],const char segment[],IS is,IS *isout)
 {
   PetscErrorCode ierr;
   PetscInt       n,*keys;
@@ -893,7 +895,7 @@ PetscErrorCode AODataSegmentGetReducedIS(AOData aodata,const char name[],const c
 
 .seealso: AODataKeyGetLocalToGlobalMapping()
 @*/
-PetscErrorCode AODataKeySetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping map)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeySetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping map)
 {
   PetscErrorCode ierr;
   PetscTruth     flag;
@@ -936,7 +938,7 @@ PetscErrorCode AODataKeySetLocalToGlobalMapping(AOData aodata,const char name[],
 
 .seealso: AODataKeySetLocalToGlobalMapping()
 @*/
-PetscErrorCode AODataKeyGetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping *map)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping *map)
 {
   PetscErrorCode ierr;
   PetscTruth     flag;
@@ -974,7 +976,7 @@ PetscErrorCode AODataKeyGetLocalToGlobalMapping(AOData aodata,const char name[],
 
 .seealso: AODataKeyGetInfo()
 @*/
-PetscErrorCode AODataKeyGetOwnershipRange(AOData aodata,const char name[],PetscInt *rstart,PetscInt *rend)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetOwnershipRange(AOData aodata,const char name[],PetscInt *rstart,PetscInt *rend)
 {
   PetscErrorCode ierr;
   PetscTruth     flag;
@@ -1015,7 +1017,7 @@ PetscErrorCode AODataKeyGetOwnershipRange(AOData aodata,const char name[],PetscI
 
 .seealso: AODataKeyGetOwnershipRange()
 @*/
-PetscErrorCode AODataKeyGetInfo(AOData aodata,const char name[],PetscInt *nglobal,PetscInt *nlocal,PetscInt *nsegments,char ***segnames)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetInfo(AOData aodata,const char name[],PetscInt *nglobal,PetscInt *nlocal,PetscInt *nsegments,char ***segnames)
 {
   PetscErrorCode ierr;
   PetscInt       i,n=0;
@@ -1067,7 +1069,7 @@ PetscErrorCode AODataKeyGetInfo(AOData aodata,const char name[],PetscInt *ngloba
 
 .seealso:  AODataGetInfo()
 @*/
-PetscErrorCode AODataSegmentGetInfo(AOData aodata,const char keyname[],const char segname[],PetscInt *bs,PetscDataType *dtype)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetInfo(AOData aodata,const char keyname[],const char segname[],PetscInt *bs,PetscDataType *dtype)
 {
   PetscErrorCode ierr;
   PetscTruth    flag;
@@ -1113,7 +1115,7 @@ PetscErrorCode AODataSegmentGetInfo(AOData aodata,const char keyname[],const cha
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode AODataView(AOData aodata,PetscViewer viewer)
+PetscErrorCode PETSCDM_DLLEXPORT AODataView(AOData aodata,PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -1151,7 +1153,10 @@ static PetscErrorCode AODataAliasDestroy_Private(AODataAlias *aliases)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataAliasAdd" 
-PetscErrorCode AODataAliasAdd(AOData aodata,const char alias[],const char name[])
+/*@C
+  AODataAliasAdd - Man page needed.
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT AODataAliasAdd(AOData aodata,const char alias[],const char name[])
 {
   AODataAlias *t = aodata->aliases;
   PetscErrorCode ierr;
@@ -1187,7 +1192,7 @@ PetscErrorCode AODataAliasAdd(AOData aodata,const char alias[],const char name[]
 
 .seealso: AODataCreateBasic()
 @*/
-PetscErrorCode AODataDestroy(AOData aodata)
+PetscErrorCode PETSCDM_DLLEXPORT AODataDestroy(AOData aodata)
 {
   PetscErrorCode ierr;
 
@@ -1223,7 +1228,7 @@ PetscErrorCode AODataDestroy(AOData aodata)
 
 .seealso: AODataKeyGetAdjacency()
 @*/
-PetscErrorCode AODataKeyRemap(AOData aodata,const char key[],AO ao)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyRemap(AOData aodata,const char key[],AO ao)
 {
   PetscErrorCode ierr;
 
@@ -1254,7 +1259,7 @@ PetscErrorCode AODataKeyRemap(AOData aodata,const char key[],AO ao)
 
 .seealso: AODataKeyRemap()
 @*/
-PetscErrorCode AODataKeyGetAdjacency(AOData aodata,const char key[],Mat *adj)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetAdjacency(AOData aodata,const char key[],Mat *adj)
 {
   PetscErrorCode ierr;
 
@@ -1283,7 +1288,7 @@ PetscErrorCode AODataKeyGetAdjacency(AOData aodata,const char key[],Mat *adj)
 .seealso: AODataKeyPartition(), AODataPartitionAndSetupLocal()
 
 @*/
-PetscErrorCode AODataSegmentPartition(AOData aodata,const char key[],const char seg[])
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentPartition(AOData aodata,const char key[],const char seg[])
 {
   PetscErrorCode ierr;
 
@@ -1318,7 +1323,7 @@ PetscErrorCode AODataPublish_Petsc(PetscObject obj)
 
 .seealso:
 @*/
-PetscErrorCode AODataKeyRemove(AOData aodata,const char name[])
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyRemove(AOData aodata,const char name[])
 {
   PetscErrorCode ierr;
 
@@ -1346,7 +1351,7 @@ PetscErrorCode AODataKeyRemove(AOData aodata,const char name[])
 
 .seealso:
 @*/
-PetscErrorCode AODataSegmentRemove(AOData aodata,const char name[],const char segname[])
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRemove(AOData aodata,const char name[],const char segname[])
 {
   PetscErrorCode ierr;
 
@@ -1375,7 +1380,7 @@ PetscErrorCode AODataSegmentRemove(AOData aodata,const char name[],const char se
 
 .seealso:
 @*/
-PetscErrorCode AODataKeyAdd(AOData aodata,const char name[],PetscInt nlocal,PetscInt N)
+PetscErrorCode PETSCDM_DLLEXPORT AODataKeyAdd(AOData aodata,const char name[],PetscInt nlocal,PetscInt N)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -1446,7 +1451,7 @@ PetscErrorCode AODataKeyAdd(AOData aodata,const char name[],PetscInt nlocal,Pets
 
 .seealso: AODataSegmentAddIS()
 @*/
-PetscErrorCode AODataSegmentAdd(AOData aodata,const char name[],const char segment[],PetscInt bs,PetscInt n,PetscInt *keys,void *data,PetscDataType dtype)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentAdd(AOData aodata,const char name[],const char segment[],PetscInt bs,PetscInt n,PetscInt *keys,void *data,PetscDataType dtype)
 {
   PetscErrorCode ierr;
 
@@ -1492,7 +1497,7 @@ PetscErrorCode AODataSegmentAdd(AOData aodata,const char name[],const char segme
 
 .seealso: AODataSegmentAdd()
 @*/
-PetscErrorCode AODataSegmentAddIS(AOData aodata,const char name[],const char segment[],PetscInt bs,IS is,void *data,PetscDataType dtype)
+PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentAddIS(AOData aodata,const char name[],const char segment[],PetscInt bs,IS is,void *data,PetscDataType dtype)
 {
   PetscErrorCode ierr;
   PetscInt       n,*keys;

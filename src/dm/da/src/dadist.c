@@ -1,3 +1,5 @@
+#define PETSCDM_DLL
+
 /*
   Code for manipulating distributed regular arrays in parallel.
 */
@@ -30,7 +32,7 @@
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateNaturalVector()
 @*/
-PetscErrorCode DACreateGlobalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
 
@@ -77,7 +79,7 @@ PetscErrorCode DACreateGlobalVector(DA da,Vec* g)
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal()
 @*/
-PetscErrorCode DACreateNaturalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DACreateNaturalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt cnt;

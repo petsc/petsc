@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
    File created by Peter Mell  7/14/95
@@ -197,7 +198,7 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
-PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
+PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DA *inra)
 {
   PetscErrorCode ierr;
@@ -1767,7 +1768,7 @@ PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
 
 @*/
-PetscErrorCode DACreate(MPI_Comm comm,PetscInt dim,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
+PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm,PetscInt dim,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
          PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DA *inra)
 {
   PetscErrorCode ierr;

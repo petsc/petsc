@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -23,7 +24,7 @@
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DACreateGlobalVector()
 @*/
-PetscErrorCode DACreatePF(DA da,PF *pf)
+PetscErrorCode PETSCDM_DLLEXPORT DACreatePF(DA da,PF *pf)
 {
   PetscErrorCode ierr;
 

@@ -1,3 +1,4 @@
+#define PETSCDM_DLL
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -56,7 +57,7 @@ struct _p_VecPack {
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackCreate(MPI_Comm comm,VecPack *packer)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackCreate(MPI_Comm comm,VecPack *packer)
 {
   PetscErrorCode ierr;
   VecPack        p;
@@ -100,7 +101,7 @@ PetscErrorCode VecPackCreate(MPI_Comm comm,VecPack *packer)
          VecPackGather(), VecPackCreateGlobalVector(), VecPackGetGlobalIndices(), VecPackGetAccess()
 
 @*/
-PetscErrorCode VecPackDestroy(VecPack packer)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackDestroy(VecPack packer)
 {
   PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next,*prev;
@@ -281,7 +282,7 @@ PetscErrorCode VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,
          VecPackRestoreAccess(), VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackGetAccess(VecPack packer,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetAccess(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
   PetscErrorCode     ierr;
@@ -332,7 +333,7 @@ PetscErrorCode VecPackGetAccess(VecPack packer,Vec gvec,...)
          VecPackRestoreAccess()
 
 @*/
-PetscErrorCode VecPackRestoreAccess(VecPack packer,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackRestoreAccess(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
   PetscErrorCode     ierr;
@@ -382,7 +383,7 @@ PetscErrorCode VecPackRestoreAccess(VecPack packer,Vec gvec,...)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackScatter(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
   PetscErrorCode     ierr;
@@ -433,7 +434,7 @@ PetscErrorCode VecPackScatter(VecPack packer,Vec gvec,...)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackGather(VecPack packer,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGather(VecPack packer,Vec gvec,...)
 {
   va_list            Argp;
   PetscErrorCode     ierr;
@@ -484,7 +485,7 @@ PetscErrorCode VecPackGather(VecPack packer,Vec gvec,...)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackAddArray(VecPack packer,PetscInt n)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscInt n)
 {
   struct VecPackLink *mine,*next = packer->next;
   PetscErrorCode     ierr;
@@ -531,7 +532,7 @@ PetscErrorCode VecPackAddArray(VecPack packer,PetscInt n)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackAddDA(VecPack packer,DA da)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackAddDA(VecPack packer,DA da)
 {
   PetscErrorCode     ierr;
   PetscInt           n;
@@ -589,7 +590,7 @@ PetscErrorCode VecPackAddDA(VecPack packer,DA da)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
 {
   PetscErrorCode     ierr;
   PetscInt           nprev = 0;
@@ -642,7 +643,7 @@ PetscErrorCode VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackGetGlobalIndices(VecPack packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetGlobalIndices(VecPack packer,...)
 {
   va_list            Argp;
   PetscErrorCode     ierr;
@@ -772,7 +773,7 @@ PetscErrorCode VecPackRestoreLocalVectors_DA(VecPack packer,struct VecPackLink *
          VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackGetLocalVectors(VecPack packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetLocalVectors(VecPack packer,...)
 {
   va_list            Argp;
   PetscErrorCode     ierr;
@@ -821,7 +822,7 @@ PetscErrorCode VecPackGetLocalVectors(VecPack packer,...)
          VecPackGetLocalVectors()
 
 @*/
-PetscErrorCode VecPackRestoreLocalVectors(VecPack packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackRestoreLocalVectors(VecPack packer,...)
 {
   va_list            Argp;
   PetscErrorCode     ierr;
@@ -890,7 +891,7 @@ PetscErrorCode VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackGetEntries(VecPack packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetEntries(VecPack packer,...)
 {
   va_list            Argp;
   PetscErrorCode     ierr;
@@ -939,7 +940,7 @@ PetscErrorCode VecPackGetEntries(VecPack packer,...)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackRefine(VecPack packer,MPI_Comm comm,VecPack *fine)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackRefine(VecPack packer,MPI_Comm comm,VecPack *fine)
 {
   PetscErrorCode     ierr;
   struct VecPackLink *next = packer->next;
@@ -1152,7 +1153,7 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v)
 {
   PetscErrorCode     ierr;
   PetscInt           m,n,M,N;
