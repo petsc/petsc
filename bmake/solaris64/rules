@@ -1,4 +1,4 @@
-# $Id: base,v 1.28 1998/03/24 17:06:59 balay Exp balay $ 
+# $Id: base,v 1.29 1998/03/26 19:28:15 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -76,6 +76,7 @@ shared: chkopts_basic
 	      flag="true"; \
 	  fi; \
           if [ "$$flag" != "" ]; then \
+	    echo "building $$LIBNAME.${SLSUFFIX}"; \
 	    ${AR} x ../$$LIBNAME.a ;\
 	    ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
 	    ${RM} -f * ; \
