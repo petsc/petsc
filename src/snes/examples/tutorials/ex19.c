@@ -1,11 +1,11 @@
-/*$Id: ex19.c,v 1.19 2001/04/10 19:37:05 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.20 2001/04/19 20:29:26 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
 The flow can be driven with the lid or with bouyancy or both:\n\
   -lidvelocity <lid>, where <lid> = dimensionless velocity of lid\n\
-  -grashof <gr>, where <gr> = dimensionless temperature gradient\n\
+  -grashof <gr>, where <gr> = dimensionless temperature gradent\n\
   -prandtl <pr>, where <pr> = dimensionless thermal/momentum diffusity ratio\n\
   -contours : draw contour plots of solution\n\n";
 
@@ -75,13 +75,10 @@ typedef struct {
 extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormFunctionLocal(Field**x,Field**f,DALocalInfo*info,void*);
-#if defined(PETSC_HAVE_ADIC)
-extern int ad_FormFunctionLocal(Field**x,Field**f,DALocalInfo*info,void*);
-#endif
 
 typedef struct {
-   double     lidvelocity,prandtl,grashof;  /* physical parameters */
-   PetscTruth draw_contours;                /* flag - 1 indicates drawing contours */
+   PassiveDouble  lidvelocity,prandtl,grashof;  /* physical parameters */
+   PetscTruth     draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
 #undef __FUNCT__
@@ -142,17 +139,9 @@ int main(int argc,char **argv)
 
     ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
     if (localfunction) {
-      ierr = DMMGSetSNESLocal(dmmg,(int(*)(Scalar**,Scalar**,DALocalInfo*,void*))FormFunctionLocal,0);CHKERRQ(ierr);
+      ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0);CHKERRQ(ierr);
     } else {
-#if defined(PETSC_HAVE_ADIC)
-      PetscTruth localad = PETSC_FALSE;
-      ierr = PetscOptionsGetLogical(PETSC_NULL,"-localad",&localad,PETSC_IGNORE);CHKERRQ(ierr);
-      if (localad) {
-        ierr = DMMGSetSNESLocalWithAD(dmmg,(int(*)(Scalar**,Scalar**,DALocalInfo*,void*))FormFunctionLocal,
-                                           (int(*)(Scalar**,Scalar**,DALocalInfo*,void*))ad_FormFunctionLocal);CHKERRQ(ierr);
-      } else 
-#endif
-      {ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);}
+      ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
     }
 
     ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
@@ -467,6 +456,8 @@ int FormFunctionLocal(Field **x,Field **f,DALocalInfo *info,void *ptr)
   hxdhy = hx*dhy;                 hydhx = hy*dhx;
 
   xints = info->xs; xinte = info->xs+info->xm; yints = info->ys; yinte = info->ys+info->ym;
+
+  f[-10][-100].u = 2.0;
 
   /* Test whether we are on the bottom edge of the global array */
   if (yints == 0) {
