@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.28 1997/09/10 18:08:28 balay Exp bsmith $ 
 
 PARCH    = IRIX
 CC       = cc -32 -DPARCH_IRIX
@@ -6,6 +6,12 @@ CC       = cc -32 -DPARCH_IRIX
 # For IRIX version 5.* please use the following
 #
 #CC       = cc -32 -DPARCH_IRIX -DPARCH_IRIX5
+#
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then use: unknown
+#
+CCV      = unknown
 #
 FC       = f77 -32
 AR       = ar

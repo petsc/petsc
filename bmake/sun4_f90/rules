@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.6 1997/09/10 18:40:42 balay Exp bsmith $ 
 
 
 #
@@ -10,6 +10,12 @@
 #
 PARCH    = sun4
 CC       = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__ -fPIC
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then use: unknown
+#
+CCV      = $(CC) --version
+#
 FC       = f90 -f77 -mismatch
 AR       = ar
 RM       = rm -f

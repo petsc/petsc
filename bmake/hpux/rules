@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.30 1997/09/10 18:13:12 balay Exp bsmith $ 
 
 PARCH    = hpux
 #
@@ -11,6 +11,12 @@ CC       = cc -DPARCH_hpux -Aa +z
 # You MUST use +z for shared libraries.
 # CC       = cc -DPARCH_hpux -Aa +z
 # Do similar modifcations for other base.* files which define "CC"
+#
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then use: unknown
+#
+CCV      = unknown
 #
 #   Fortran compiler to use
 #

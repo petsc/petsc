@@ -1,7 +1,13 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.25 1997/09/10 18:18:07 balay Exp bsmith $ 
 
 PARCH    = t3d
 CC       = cc -DPARCH_t3d -h jump
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then use: unknown
+#
+CCV      = unknown
+#
 FC       = cf77 -dp
 AR       = ar
 RM       = rm

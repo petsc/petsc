@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.184 1997/09/10 16:23:37 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.185 1997/09/15 16:22:07 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -28,7 +28,7 @@ all: chkpetsc_dir
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
 	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
-	-@if [ "$(CCV)" != "" ] ; then \
+	-@if [ "$(CCV)" != "unknown" ] ; then \
 	  echo "Compiler version:" ; \
           $(CCV) ; fi
 	-@echo "-----------------------------------------"

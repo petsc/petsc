@@ -1,10 +1,22 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.g_complex,v 1.8 1997/09/10 18:10:29 balay Exp bsmith $ 
 
 CLINKER    = g++ $(COPTFLAGS)
 FLINKER    = g++ $(COPTFLAGS)
 CC         = g++ -DPARCH_sun4  -fPIC
+#
+#   This version links in the Fortran kernels for several low level computational
+# Kernels rather then using the potentially slower C++ versions with complex.
+#
 PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g -DPETSC_COMPLEX  \
-             -DUSES_TEMPLATED_COMPLEX
+             -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS
+KERNEL_LIB = -lpetsckernels
+#
+#   This version uses the default C++ kernels
+#
+#PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g -DPETSC_COMPLEX  \
+#             -DUSES_TEMPLATED_COMPLEX 
 COPTFLAGS  = -g 
 FOPTFLAGS  = -g -dalign -DPARCH_sun4
-SYS_LIB  = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
+SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o
+
+

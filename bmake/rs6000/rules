@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.23 1997/09/10 18:16:29 balay Exp bsmith $ 
 
 #
 #   If you do not have the XlC compiler then use the xlc compiler below
@@ -6,6 +6,12 @@
 #
 PARCH    = rs6000
 CC       = xlc -DPARCH_rs6000 
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then use: unknown
+#
+CCV      = unknown
+#
 FC       = xlf 
 AR       = ar
 RM       = rm -f

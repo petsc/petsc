@@ -1,7 +1,13 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base,v 1.27 1997/09/10 18:15:18 balay Exp bsmith $ 
 
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then use: unknown
+#
+CCV      = unknown
+#
 FC       = f77 -64
 AR       = ar
 RM       = rm -f

@@ -1,4 +1,4 @@
-# $Id: common,v 1.190 1997/08/19 16:09:35 balay Exp balay $ 
+# $Id: common,v 1.191 1997/09/11 21:51:01 balay Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -31,7 +31,7 @@ CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(PETSC_PARCH)
 #
 PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes  -lpetscsles \
 		-lpetscmat -lpetscvec -lpetscsys  \
-		$(EXTERNAL_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
+		$(EXTERNAL_LIB) $(KERNEL_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(X11_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #
 # Defines all libraries needed for using linear solvers and all lower
