@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.4 1994/12/23 20:25:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.5 1995/02/18 05:33:57 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -88,14 +88,20 @@ int  KSPiCGSolve(KSP itP,int *its)
      }
      else {
          b = beta/betaold;
-         if (eigs) e[i] = sqrt(b)/a;  
+         if (eigs) {
+           if (b<0.0) SETERR(1,"Nonsymmetric or bad preconditioner");
+           e[i] = sqrt(b)/a;  
+         }
          ierr = VecAYPX(&b,Z,P); CHKERR(ierr)    /*     p <- z + b* p   */
      }
      betaold = beta;
      MatMult(itP->A,P,Z);                          /*     z <- Kp         */
      VecDot(P,Z,&dpi);
      a = beta/dpi;                             /*     a = beta/p'z    */
-     if (eigs)  d[i] = sqrt(b)*e[i] + 1.0/a;
+     if (eigs) {
+       if (b<0.0) SETERR(1,"Nonsymmetric or bad preconditioner");
+       d[i] = sqrt(b)*e[i] + 1.0/a;
+     }
      VecAXPY(&a,P,X);                           /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                 /*     r <- r - az     */
      if (pres) {
