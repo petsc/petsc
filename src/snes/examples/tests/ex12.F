@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.22 1996/01/12 22:09:58 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.23 1996/01/23 00:20:15 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -72,15 +72,14 @@ C Store right-hand-side of PDE and exact solution
 C Create nonlinear solver
       call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
-C Set various routines
-      call FormInitialGuess(snes,x,ierr)
+C Set various routines and options
       call SNESSetSolution(snes,x,ierr)
       call SNESSetFunction(snes,r,FormFunction,ctx,ierr)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
-
-C Set up nonlinear solver; then execute it
       call SNESSetFromOptions(snes,ierr)
-      call SNESSetUp(snes,ierr)
+
+C Solve nonlinear system
+      call FormInitialGuess(snes,x,ierr)
       call SNESSolve(snes,its,ierr)
 
 C Write results if first processor

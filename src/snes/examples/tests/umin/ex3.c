@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.18 1996/01/12 22:10:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.19 1996/01/23 00:20:35 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -61,16 +61,16 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,0,0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);
-  OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
     SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;
-  OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);
-  OptionsGetInt(PETSC_NULL,"-my",&my,&flg);
-  OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg); CHKERRA(ierr);
   user.ndim = mx * my;
   user.mx = mx;
   user.my = my;
@@ -93,14 +93,13 @@ int main(int argc,char **argv)
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = FormInitialGuess(snes,x,&user); CHKERRA(ierr);
   ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
          (void *)&user); CHKERRA(ierr);
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  OptionsHasName(PETSC_NULL,"-snes_mf",&flg);
+  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = MatCreateShell(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
     ierr = MatShellSetMult(H,HessianProduct); CHKERRA(ierr);
@@ -117,9 +116,9 @@ int main(int argc,char **argv)
     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
   }
 
-  /* Set up nonlinear solver; then execute it */
+  /* Set options; then solve minimization problem */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSetUp(snes); CHKERRA(ierr);
+  ierr = FormInitialGuess(snes,x,&user); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);

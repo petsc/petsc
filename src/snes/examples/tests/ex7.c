@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.21 1996/01/12 22:09:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.22 1996/01/23 00:20:15 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -29,7 +29,7 @@ int main( int argc, char **argv )
   MonitorCtx   monP;                  /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* Set up data structures */
@@ -60,26 +60,22 @@ int main( int argc, char **argv )
   /* create matrix free matrix for Jacobian */
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
 
-  /* Set various routines */
-  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
+  /* Set various routines and options */
   ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,B,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr);
-
-  /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSetUp(snes); CHKERRA(ierr);
+
+  /* Solve nonlinear system */
+  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = VecDestroy(U); CHKERRA(ierr);
-  ierr = VecDestroy(F); CHKERRA(ierr);
-  ierr = MatDestroy(J); CHKERRA(ierr);
-  ierr = MatDestroy(B); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = VecDestroy(U); CHKERRA(ierr);  ierr = VecDestroy(F); CHKERRA(ierr);
+  ierr = MatDestroy(J); CHKERRA(ierr);  ierr = MatDestroy(B); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
   ierr = DrawDestroy(monP.win1); CHKERRA(ierr);
   PetscFinalize();

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.42 1996/01/12 22:09:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.43 1996/01/23 00:20:15 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -27,7 +27,7 @@ int main( int argc, char **argv )
   MonitorCtx   monP;               /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   h = 1.0/(n-1);
 
   /* Set up data structures */
@@ -52,27 +52,23 @@ int main( int argc, char **argv )
   /* Create nonlinear solver */  
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
-  /* Set various routines */
-  ierr = FormInitialGuess(snes,x); CHKERRA(ierr); CHKERRA(ierr);
+  /* Set various routines and options */
   ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);  CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr);
-
-  /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSetUp(snes); CHKERRA(ierr);
+
+  /* Solve nonlinear system */
+  ierr = FormInitialGuess(snes,x); CHKERRA(ierr); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = VecDestroy(U); CHKERRA(ierr);
-  ierr = VecDestroy(F); CHKERRA(ierr);
-  ierr = MatDestroy(J); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = VecDestroy(U); CHKERRA(ierr);  ierr = VecDestroy(F); CHKERRA(ierr);
+  ierr = MatDestroy(J); CHKERRA(ierr);  ierr = SNESDestroy(snes); CHKERRA(ierr);
   ierr = DrawDestroy(monP.win1); CHKERRA(ierr);
   PetscFinalize();
 

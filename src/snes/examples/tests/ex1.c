@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.31 1996/01/12 22:09:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.32 1996/01/23 00:20:15 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -69,14 +69,14 @@ int main( int argc, char **argv )
   user.mx    = 4;
   user.my    = 4;
   user.param = 6.0;
-  OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);
-  OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);
-  OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);
-  OptionsHasName(PETSC_NULL,"-cavity",&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-cavity",&flg); CHKERRA(ierr);
   if (!flg && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERRA(1,"Lambda is out of range");
   }
-  N          = user.mx*user.my;
+  N = user.mx*user.my;
   
   /* Set up data structures */
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
@@ -87,8 +87,8 @@ int main( int argc, char **argv )
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
-  /* Set various routines */
-  OptionsHasName(PETSC_NULL,"-cavity",&flg);
+  /* Set various routines and compute initial guess for nonlinear solver */
+  ierr = OptionsHasName(PETSC_NULL,"-cavity",&flg); CHKERRA(ierr);
   if (flg){
     ierr = FormInitialGuess2(snes,x,&user); CHKERRA(ierr);
     ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
@@ -102,9 +102,8 @@ int main( int argc, char **argv )
     ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);CHKERRA(ierr);
   }
 
-  /* Set up nonlinear solver; then execute it */
+  /* Set options and solve nonlinear system */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);  CHKERRA(ierr);
 
@@ -115,10 +114,8 @@ int main( int argc, char **argv )
   DrawPause(win);
 
   /* Free data structures */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = MatDestroy(J); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = MatDestroy(J); CHKERRA(ierr);  ierr = SNESDestroy(snes); CHKERRA(ierr);
   ierr = DrawDestroy(win); CHKERRA(ierr);
   PetscFinalize();
 

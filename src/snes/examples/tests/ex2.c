@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.36 1996/01/11 20:15:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.37 1996/01/23 00:20:15 bsmith Exp curfman $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -28,24 +28,21 @@ int main( int argc, char **argv )
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
-  /* Set various routines */
-  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
+  /* Set various routines and options */
   ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,0);CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,0); CHKERRA(ierr);
-
-  /* Set up nonlinear solver; then execute it */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSetUp(snes); CHKERRA(ierr);
+
+  /* Solve nonlinear system */
+  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its); CHKERRA(ierr);
   MPIU_printf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its);
 
   /* Free data structures */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = MatDestroy(J); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = MatDestroy(J); CHKERRA(ierr);  ierr = SNESDestroy(snes); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }/* --------------------  Evaluate Function F(x) --------------------- */
