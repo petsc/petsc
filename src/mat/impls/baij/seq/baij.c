@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.11 1996/03/10 17:28:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.12 1996/03/14 21:39:09 curfman Exp curfman $";
 #endif
 
 /*
@@ -103,7 +103,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   int         i, fd, *col_lens, ierr, bs = a->bs,count,*jj,j,k,l;
   Scalar      *aa;
 
-  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   col_lens = (int *) PetscMalloc((4+a->m)*sizeof(int));CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
   col_lens[1] = a->m;
@@ -725,7 +725,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
 
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqBAIJ:view must have one processor");
-  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBAIJ:not Mat object");
   M = header[1]; N = header[2]; nz = header[3];
