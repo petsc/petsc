@@ -152,6 +152,7 @@ class Framework(base.Base):
     self.dependenceGraph.addVertex(self.project)
     self.dependenceGraph.clearEdges(self.project, outOnly = 1)
     self.dependenceGraph.addEdges(self.project, outputs = map(self.getInstalledProject, self.executeTarget('getDependencies')))
+    self.argDB['projectDependenceGraph'] = self.dependenceGraph
     return self.dependenceGraph
 
   def getSIDLTemplate(self):
@@ -223,6 +224,17 @@ class Framework(base.Base):
   def t_sidl(self):
     '''Recompile the SIDL for this project'''
     return self.executeGraph(self.sidlTemplate.getTarget(), input = self.filesets['sidl'])
+
+  def checkClients(self):
+    for lang in self.compileTemplate.usingSIDL.clientLanguages+self.compileTemplate.clientLanguages:
+      clientDir = self.compileTemplate.usingSIDL.getClientRootDir(lang)
+      for v in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
+        if not os.path.isdir(os.path.join(v.getRoot(), clientDir)):
+          # Build the client
+          print 'Missing '+lang+' client in '+v.getRoot()
+          target = self.compileTemplate.getClientTarget(lang)
+          self.executeGraph(target, input = self.filesets['sidl'])
+    return
 
   def getCompileGraph(self):
     if 'checkpoint' in self.argDB:
