@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.9 1996/09/14 03:33:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.10 1996/09/14 12:43:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -65,7 +65,7 @@ int OptionsCheckInitial_Private(),
 extern "C" {
 #endif
 extern void mpi_init_(int*);
-extern void petscsetcommonblock_(int*,int*,int*);
+extern void petscsetcommonblock_(int*,int*,int*,int*);
 extern int  iargc_();
 extern void getarg_(int*,char*,int);
 #if defined(PARCH_t3d)
