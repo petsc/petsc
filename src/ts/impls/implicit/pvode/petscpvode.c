@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.24 1998/04/13 17:51:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.25 1998/04/29 18:38:34 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -509,6 +509,12 @@ int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
 
 .keywords: non-linear iterations, linear iterations
 
+.seealso: TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(),
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC(),
+          TSPVodeSetExactFinalTime()
+
 @*/
 int TSPVodeGetIterations(TS ts, int *nonlin,int *lin )
 {
@@ -537,6 +543,11 @@ int TSPVodeGetIterations(TS ts, int *nonlin,int *lin )
 
 .keywords: Adams, backward differentiation formula
 
+.seealso: TSPVodeGetIterations(),  TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(),
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC(),
+          TSPVodeSetExactFinalTime()
 @*/
 int TSPVodeSetType(TS ts, TSPVodeType type)
 {
@@ -564,6 +575,12 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
 -    restart - number of direction vectors (the restart size).
 
 .keywords: GMRES, restart
+
+.seealso: TSPVodeGetIterations(), TSPVodeSetType(), 
+          TSPVodeSetLinearTolerance(), TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(),
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC(),
+          TSPVodeSetExactFinalTime()
 
 @*/
 int TSPVodeSetGMRESRestart(TS ts, int restart)
@@ -595,6 +612,12 @@ int TSPVodeSetGMRESRestart(TS ts, int restart)
 
 .keywords: GMRES, linear convergence tolerance, PVODE
 
+.seealso: TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(),
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC(),
+          TSPVodeSetExactFinalTime()
+
 @*/
 int TSPVodeSetLinearTolerance(TS ts, double tol)
 {
@@ -621,6 +644,12 @@ int TSPVodeSetLinearTolerance(TS ts, double tol)
 -    type - either PVODE_MODIFIED_GS or PVODE_CLASSICAL_GS
 
 .keywords: PVode, orthogonalization
+
+.seealso: TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(),  TSPVodeSetTolerance(),
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC(),
+          TSPVodeSetExactFinalTime()
 
 @*/
 int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
@@ -652,6 +681,12 @@ int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
 
 .keywords: PVode, tolerance
 
+.seealso: TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetGramSchmidtType(), 
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC(),
+          TSPVodeSetExactFinalTime()
+
 @*/
 int TSPVodeSetTolerance(TS ts, double aabs, double rel)
 {
@@ -667,7 +702,7 @@ int TSPVodeSetTolerance(TS ts, double aabs, double rel)
 
 #undef __FUNC__  
 #define __FUNC__ "TSPVodeGetPC"
-/*
+/*@
    TSPVodeGetPC - Extract the PC context from a time-step context for PVode.
 
    Input Parameter:
@@ -678,8 +713,11 @@ int TSPVodeSetTolerance(TS ts, double aabs, double rel)
 
     Contributed by: Liyang Xu
 
-.seealso: 
-*/
+.seealso: TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(),
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance()
+@*/
 int TSPVodeGetPC(TS ts, PC *pc)
 { 
   int ierr, (*f)(TS,PC *);  
@@ -697,17 +735,20 @@ int TSPVodeGetPC(TS ts, PC *pc)
 
 #undef __FUNC__  
 #define __FUNC__ "TSPVodeSetExactFinalTime"
-/*
+/*@
    TSPVodeSetExactFinalTime - Determines if PVode interpolates solution to the 
       exact final time requested by the user or just returns it at the final time
       it computed. (Defaults to true).
 
    Input Parameter:
-.    ts - the time-step context
-.    ft - PETSC_TRUE if interpolates, else PETSC_FALSE
++   ts - the time-step context
+-   ft - PETSC_TRUE if interpolates, else PETSC_FALSE
 
-.seealso: 
-*/
+.seealso:TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetGramSchmidtType(), TSPVodeSetTolerance(),
+          TSPVodeGetIterations(), TSPVodeSetType(), TSPVodeSetGMRESRestart(),
+          TSPVodeSetLinearTolerance(), TSPVodeSetTolerance(), TSPVodeGetPC() 
+@*/
 int TSPVodeSetExactFinalTime(TS ts, PetscTruth ft)
 { 
   int ierr, (*f)(TS,PetscTruth);  
