@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.44 1995/07/12 20:22:00 curfman Exp curfman $ */
+/* $Id: mat.h,v 1.45 1995/07/14 20:39:35 curfman Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -44,10 +44,7 @@ typedef enum {ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
               COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
               YES_NEW_NONZERO_LOCATIONS=32} MatOption;
 
-extern int MatGetBDiagData(Mat,int*,int*,int**,Scalar***);
-
 extern int MatSetOption(Mat,MatOption);
-
 extern int MatGetType(Mat,MatType*);
 extern int MatGetName(Mat,char**);
 extern int MatGetValues(Mat,int,int*,int,int*,Scalar*);
@@ -126,6 +123,9 @@ extern int MatGetSubMatrix(Mat,IS,IS,Mat*);
 extern int MatGetSubMatrixInPlace(Mat,IS,IS);
 
 extern int MatAXPY(Scalar *,Mat,Mat);
+
+/* Routines unique to particular data structures */
+extern int MatBDiagGetData(Mat,int*,int*,int**,Scalar***);
 
 #endif
 
