@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.35 1995/08/28 21:56:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.36 1995/09/04 17:05:59 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -57,6 +57,12 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   }
   if (OptionsHasName(0,"-mat_bdiag")) {
     int nb = 1, ndiag = 0, ndiag2,  *d, ierr;
+    if (OptionsHasName(0,"-help")) {
+      MPIU_printf(comm,"Options with -mat_bdiag: -mat_bdiag_bsize block_size\n");
+      MPIU_printf(comm,"  -mat_bdiag_ndiag number_diags \n"); 
+      MPIU_printf(comm,"  -mat_bdiag_dvals d1,d2,d3... (diagonal numbers)\n"); 
+      MPIU_printf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
+    }
     OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
     OptionsGetInt(0,"-mat_bdiag_ndiag",&ndiag);
     if (!ndiag) SETERRQ(1,"MatCreate:Must set diagonals before creating mat");
@@ -72,10 +78,6 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
       ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); 
     CHKERRQ(ierr);
     if (d) PETSCFREE(d);
-    MPIU_printf(comm,"Options with -mat_bdiag: -mat_bdiag_bsize block_size\n");
-    MPIU_printf(comm,"  -mat_bdiag_ndiag number_diags \n"); 
-    MPIU_printf(comm,"  -mat_bdiag_dvals d1,d2,d3...  \n"); 
-    MPIU_printf(comm,"(for example)  -mat_bdiag_dvals -5,-1,0,1,5  \n"); 
     return ierr;
   }
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
