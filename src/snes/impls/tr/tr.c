@@ -1,10 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.7 1995/05/12 04:18:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.8 1995/05/14 16:35:07 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
 #include "tr.h"
-
 
 /*
       Implements Newton's Method with a very simple trust region 
@@ -144,7 +143,6 @@ static int SNESDestroy_TR(PetscObject obj )
 }
 /*------------------------------------------------------------*/
 
-#include "options.h"
 static int SNESSetFromOptions_TR(SNES snes)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;

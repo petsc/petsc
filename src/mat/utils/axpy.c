@@ -1,10 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.1 1995/05/09 02:08:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.2 1995/05/12 04:17:09 bsmith Exp curfman $";
 #endif
 
-
 #include "matimpl.h"
-#include "options.h"
 
 /*@
    MatAXPY - Y = a*X + Y

@@ -1,11 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.14 1995/05/05 15:57:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.15 1995/05/14 16:33:49 bsmith Exp curfman $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
 
 #include "mpiaij.h"
-#include "options.h"
 #define  ABS(a) ((a > 0) ? a : -a)
 
 /* Determines the block diagonals within a subset of a matrix */

@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.20 1995/05/10 00:23:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.21 1995/05/10 02:43:25 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
-#include "options.h"
 #include "sysio.h"
 #include "mat.h"
 
