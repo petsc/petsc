@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.206 2001/01/19 23:21:07 balay Exp bsmith $*/
+/*$Id: precon.c,v 1.207 2001/01/20 03:35:20 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -69,10 +69,175 @@ int PCDestroy(PC pc)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
 
-  if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
-  if (pc->nullsp) {ierr = MatNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}
+  if (pc->ops->destroy)       {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
+  if (pc->nullsp)             {ierr = MatNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}
+  if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
+  if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
+
   PetscLogObjectDestroy(pc);
   PetscHeaderDestroy(pc);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCDiagonalScale"
+/*@C
+   PCDiagonalScale - Indicates if the preconditioner applies an additional left and right
+      scaling as needed by certain time-stepping codes.
+
+   Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  flag - PETSC_TRUE if it applies the scaling
+
+   Level: developer
+
+   Notes: If this returns PETSC_TRUE then the system solved via the Krylov method is
+$           D M A D^{-1} y = D M b  for left preconditioning or
+$           D A M D^{-1} z = D b for right preconditioning
+
+.keywords: PC
+
+.seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCDiagonalScaleSet()
+@*/
+int PCDiagonalScale(PC pc,PetscTruth *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  *flag = pc->diagonalscale;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCDiagonalScaleSet"
+/*@C
+   PCDiagonalScaleSet - Indicates the left scaling to use to apply an additional left and right
+      scaling as needed by certain time-stepping codes.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  s - scaling vector
+
+   Level: intermediate
+
+   Notes: The system solved via the Krylov method is
+$           D M A D^{-1} y = D M b  for left preconditioning or
+$           D A M D^{-1} z = D b for right preconditioning
+
+   PCDiagonalScaleLeft() scales a vector by D. PCDiagonalScaleRight() scales a vector by D^{-1}.
+
+.keywords: PC
+
+.seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleRight(), PCDiagonalScale()
+@*/
+int PCDiagonalScaleSet(PC pc,Vec s)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(s,VEC_COOKIE);
+  pc->diagonalscale     = PETSC_TRUE;
+  if (pc->diagonalscaleleft) {
+    ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);
+  }
+  pc->diagonalscaleleft = s;
+  ierr                  = PetscObjectReference((PetscObject)s);CHKERRQ(ierr);
+  if (!pc->diagonalscaleright) {
+    ierr = VecDuplicate(s,&pc->diagonalscaleright);CHKERRQ(ierr);
+  }
+  ierr = VecCopy(s,pc->diagonalscaleright);CHKERRQ(ierr);
+  ierr = VecReciprocal(pc->diagonalscaleright);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCDiagonalScaleLeft"
+/*@C
+   PCDiagonalScaleLeft - Indicates the left scaling to use to apply an additional left and right
+      scaling as needed by certain time-stepping codes.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+.  in - input vector
++  out - scaled vector (maybe the same as in)
+
+   Level: intermediate
+
+   Notes: The system solved via the Krylov method is
+$           D M A D^{-1} y = D M b  for left preconditioning or
+$           D A M D^{-1} z = D b for right preconditioning
+
+   PCDiagonalScaleLeft() scales a vector by D. PCDiagonalScaleRight() scales a vector by D^{-1}.
+
+   If diagonal scaling is turned off and in is not out then in is copied to out
+
+.keywords: PC
+
+.seealso: PCCreate(), PCSetUp(), PCDiagonalScaleSet(), PCDiagonalScaleRight(), PCDiagonalScale()
+@*/
+int PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(in,VEC_COOKIE);
+  PetscValidHeaderSpecific(out,VEC_COOKIE);
+  if (pc->diagonalscale) {
+    ierr = VecPointwiseMult(pc->diagonalscaleleft,in,out);CHKERRQ(ierr);
+  } else if (in != out) {
+    ierr = VecCopy(in,out);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCDiagonalScaleRight"
+/*@C
+   PCDiagonalScaleRight - Scales a vector by the right scaling as needed by certain time-stepping codes.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+.  in - input vector
++  out - scaled vector (maybe the same as in)
+
+   Level: intermediate
+
+   Notes: The system solved via the Krylov method is
+$           D M A D^{-1} y = D M b  for left preconditioning or
+$           D A M D^{-1} z = D b for right preconditioning
+
+   PCDiagonalScaleLeft() scales a vector by D. PCDiagonalScaleRight() scales a vector by D^{-1}.
+
+   If diagonal scaling is turned off and in is not out then in is copied to out
+
+.keywords: PC
+
+.seealso: PCCreate(), PCSetUp(), PCDiagonalScaleLeft(), PCDiagonalScaleSet(), PCDiagonalScale()
+@*/
+int PCDiagonalScaleRight(PC pc,Vec in,Vec out)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(in,VEC_COOKIE);
+  PetscValidHeaderSpecific(out,VEC_COOKIE);
+  if (pc->diagonalscale) {
+    ierr = VecPointwiseMult(pc->diagonalscaleright,in,out);CHKERRQ(ierr);
+  } else if (in != out) {
+    ierr = VecCopy(in,out);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -137,6 +302,9 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->setupcalled        = 0;
   pc->nullsp             = 0;
   pc->data               = 0;
+  pc->diagonalscale      = PETSC_FALSE;
+  pc->diagonalscaleleft  = 0;
+  pc->diagonalscaleright = 0;
 
   pc->ops->destroy             = 0;
   pc->ops->apply               = 0;
@@ -360,7 +528,7 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
 @*/
 int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
-  int ierr;
+  int        ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -371,33 +539,53 @@ int PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
   }
+  if (pc->diagonalscale && side == PC_SYMMETRIC) {
+    SETERRQ(1,"Cannot include diagonal scaling with symmetric preconditioner application");
+  }
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  if (pc->ops->applyBA) {
-    ierr = (*pc->ops->applyBA)(pc,side,x,y,work);CHKERRQ(ierr);
-  } else if (side == PC_RIGHT) {
-    ierr = PCApply(pc,x,work);CHKERRQ(ierr);
-    ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else if (side == PC_LEFT) {
-    ierr = MatMult(pc->mat,x,work);CHKERRQ(ierr);
-    ierr = PCApply(pc,work,y);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  } else if (side == PC_SYMMETRIC) {
-    /* There's an extra copy here; maybe should provide 2 work vectors instead? */
-    ierr = PCApplySymmetricRight(pc,x,work);CHKERRQ(ierr);
-    ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
-    ierr = VecCopy(y,work);CHKERRQ(ierr);
-    ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  if (pc->diagonalscale) {
+    if (pc->ops->applyBA) {
+      Vec work2; /* this is expensive, but to fix requires a second work vector argument to PCApplyBAorAB() */
+      ierr = VecDuplicate(x,&work2);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleRight(pc,x,work2);CHKERRQ(ierr);
+      ierr = (*pc->ops->applyBA)(pc,side,work2,y,work);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
+      ierr = VecDestroy(work2);CHKERRQ(ierr);
+    } else if (side == PC_RIGHT) {
+      ierr = PCDiagonalScaleRight(pc,x,y);CHKERRQ(ierr);
+      ierr = PCApply(pc,y,work);CHKERRQ(ierr);
+      ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
+    } else if (side == PC_LEFT) {
+      ierr = PCDiagonalScaleRight(pc,x,y);CHKERRQ(ierr);
+      ierr = MatMult(pc->mat,y,work);CHKERRQ(ierr);
+      ierr = PCApply(pc,work,y);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
+    } else if (side == PC_SYMMETRIC) {
+      SETERRQ(1,"Cannot provide diagonal scaling with symmetric application of preconditioner");
+    }
+  } else {
+    if (pc->ops->applyBA) {
+      ierr = (*pc->ops->applyBA)(pc,side,x,y,work);CHKERRQ(ierr);
+    } else if (side == PC_RIGHT) {
+      ierr = PCApply(pc,x,work);CHKERRQ(ierr);
+      ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
+    } else if (side == PC_LEFT) {
+      ierr = MatMult(pc->mat,x,work);CHKERRQ(ierr);
+      ierr = PCApply(pc,work,y);CHKERRQ(ierr);
+    } else if (side == PC_SYMMETRIC) {
+      /* There's an extra copy here; maybe should provide 2 work vectors instead? */
+      ierr = PCApplySymmetricRight(pc,x,work);CHKERRQ(ierr);
+      ierr = MatMult(pc->mat,work,y);CHKERRQ(ierr);
+      ierr = VecCopy(y,work);CHKERRQ(ierr);
+      ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
+    }
   }
-  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid preconditioner side");
-#if !defined(PETSC_USE_DEBUG)
-  PetscFunctionReturn(0);   /* so we get no warning message about no return code */
-#endif
+  PetscFunctionReturn(0)
 }
 
 #undef __FUNC__  
