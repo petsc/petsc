@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.2 1996/08/04 23:10:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.3 1996/08/08 14:39:58 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -131,7 +131,8 @@ static struct _ISOps myops = { ISGetSize_Block,
                                ISSorted_Block };
 /*@C
    ISCreateBlockSeq - Creates a data structure for an index set 
-   containing a list of integers.
+      containing a list of integers. The indices are relative to entries
+      not blocks. 
 
    Input Parameters:
 .  n - the length of the index set
@@ -141,6 +142,10 @@ static struct _ISOps myops = { ISGetSize_Block,
 
    Output Parameter:
 .  is - the new index set
+
+   Example:
+$       You wish to index 0,1,4,5 then use
+$   a block size of 2 and idx of 0,4.
 
 .keywords: IS, sequential, index set, create, blocks
 
@@ -181,31 +186,110 @@ int ISCreateBlockSeq(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 }
 
 
+/*@
+     ISBlockGetIndices - Gets the indices associated with each block.
+
+  Input Parameter:
+.  is - the index set
+
+  Output Parameter:
+. idx - the integer indices
+
+.seealso: ISGetIndices(), ISBlockRestoreIndices()
+@*/
 int ISBlockGetIndices(IS in,int **idx)
 {
   IS_Block *sub;
   PetscValidHeaderSpecific(in,IS_COOKIE);
   PetscValidPointer(idx);
+  if (in->type != IS_BLOCK_SEQ) SETERRQ(1,"ISBlockGetIndices:Not a block index set");
 
   sub = (IS_Block *) in->data;
   *idx = sub->idx; 
   return 0;
 }
 
-int ISBlockRestoreIndices(IS in,int **idx)
+/*@
+     ISBlockRestoreIndices - Restores the indices associated with each block.
+
+  Input Parameter:
+.  is - the index set
+
+  Output Parameter:
+. idx - the integer indices
+
+.seealso: ISRestoreIndices(), ISBlockGetIndices()
+@*/
+int ISBlockRestoreIndices(IS is,int **idx)
 {
-  PetscValidHeaderSpecific(in,IS_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(idx);
+  if (is->type != IS_BLOCK_SEQ) SETERRQ(1,"ISBlockRestoreIndices:Not a block index set");
   return 0;
 }
 
-int ISGetBlockSize(IS is,int *size)
+/*@
+     ISBlockGetBlockSize - Returns the number of elements in a block.
+
+  Input Parameter:
+.  is - the index set
+
+  Output Parameter:
+. size - the number of elements in a block
+
+.seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlockSeq()
+@*/
+int ISBlockGetBlockSize(IS is,int *size)
 {
   IS_Block *sub;
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidPointer(size);
+  PetscValidIntPointer(size);
+  if (is->type != IS_BLOCK_SEQ) SETERRQ(1,"ISBlockGetSize:Not a block index set");
+
   sub = (IS_Block *)is->data;
   *size = sub->bs; 
   return 0;
 }
 
+/*@
+     ISBlock - Checks if an index set is blocked.
+
+  Input Parameter:
+.  is - the index set
+
+  Output Parameter:
+. flag - PETSC_TRUE if a block index set, else PETSC_FALSE
+
+.seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlockSeq()
+@*/
+int ISBlock(IS is,PetscTruth *flag)
+{
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(flag);
+  if (is->type != IS_BLOCK_SEQ) *flag = PETSC_FALSE;
+  else                          *flag = PETSC_TRUE;
+  return 0;
+}
+
+/*@
+     ISBlockGetSize - Returns the number of blocks in the index set.
+
+  Input Parameter:
+.  is - the index set
+
+  Output Parameter:
+. size - the number of blocks
+
+.seealso: ISBlockGetBlockSize(), ISGetSize(), ISBlock(), ISCreateBlockSeq()
+@*/
+int ISBlockGetSize(IS is,int *size)
+{
+  IS_Block *sub;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(size);
+  if (is->type != IS_BLOCK_SEQ) SETERRQ(1,"ISBlockGetSize:Not a block index set");
+
+  sub = (IS_Block *)is->data;
+  *size = sub->n; 
+  return 0;
+}
