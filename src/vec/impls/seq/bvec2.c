@@ -2,7 +2,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.77 1996/11/07 15:07:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.78 1996/11/19 16:29:39 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -210,13 +210,17 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 
   if (m == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
+#if defined(PETSC_BOPT_g)
       if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq:Out of range");
+#endif
       xx[ix[i]] = y[i];
     }
   }
   else {
     for ( i=0; i<ni; i++ ) {
+#if defined(PETSC_BOPT_g)
       if (ix[i] < 0 || ix[i] >= x->n) SETERRQ(1,"VecSetValues_Seq:Out of range");
+#endif
       xx[ix[i]] += y[i];
     }  
   }  
