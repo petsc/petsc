@@ -553,66 +553,66 @@ int MatRestoreRow_SeqDense(Mat A,int row,int *ncols,int **cols,PetscScalar **val
 int MatSetValues_SeqDense(Mat A,int m,const int indexm[],int n,const int indexn[],const PetscScalar v[],InsertMode addv)
 { 
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
-  int          i,j;
+  int          i,j,idx=0;
  
   PetscFunctionBegin;
   if (!mat->roworiented) {
     if (addv == INSERT_VALUES) {
       for (j=0; j<n; j++) {
-        if (indexn[j] < 0) {v += m; continue;}
+        if (indexn[j] < 0) {idx += m; continue;}
 #if defined(PETSC_USE_BOPT_g)  
         if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[j],A->n-1);
 #endif
         for (i=0; i<m; i++) {
-          if (indexm[i] < 0) {v++; continue;}
+          if (indexm[i] < 0) {idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
           if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[i],A->m-1);
 #endif
-          mat->v[indexn[j]*mat->lda + indexm[i]] = *v++;
+          mat->v[indexn[j]*mat->lda + indexm[i]] = v[idx++];
         }
       }
     } else {
       for (j=0; j<n; j++) {
-        if (indexn[j] < 0) {v += m; continue;}
+        if (indexn[j] < 0) {idx += m; continue;}
 #if defined(PETSC_USE_BOPT_g)  
         if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[j],A->n-1);
 #endif
         for (i=0; i<m; i++) {
-          if (indexm[i] < 0) {v++; continue;}
+          if (indexm[i] < 0) {idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
           if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[i],A->m-1);
 #endif
-          mat->v[indexn[j]*mat->lda + indexm[i]] += *v++;
+          mat->v[indexn[j]*mat->lda + indexm[i]] += v[idx++];
         }
       }
     }
   } else {
     if (addv == INSERT_VALUES) {
       for (i=0; i<m; i++) {
-        if (indexm[i] < 0) { v += n; continue;}
+        if (indexm[i] < 0) { idx += n; continue;}
 #if defined(PETSC_USE_BOPT_g)  
         if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[j],A->m-1);
 #endif
         for (j=0; j<n; j++) {
-          if (indexn[j] < 0) { v++; continue;}
+          if (indexn[j] < 0) { idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
           if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[i],A->n-1);
 #endif
-          mat->v[indexn[j]*mat->lda + indexm[i]] = *v++;
+          mat->v[indexn[j]*mat->lda + indexm[i]] = v[idx++];
         }
       }
     } else {
       for (i=0; i<m; i++) {
-        if (indexm[i] < 0) { v += n; continue;}
+        if (indexm[i] < 0) { idx += n; continue;}
 #if defined(PETSC_USE_BOPT_g)  
         if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[j],A->m-1);
 #endif
         for (j=0; j<n; j++) {
-          if (indexn[j] < 0) { v++; continue;}
+          if (indexn[j] < 0) { idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
           if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[i],A->n-1);
 #endif
-          mat->v[indexn[j]*mat->lda + indexm[i]] += *v++;
+          mat->v[indexn[j]*mat->lda + indexm[i]] += v[idx++];
         }
       }
     }

@@ -101,7 +101,7 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const int in[],cons
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          kk,ldiag,shift,row,newnz,*bdlen_new,ierr;
-  int          j,k,bs = a->bs,*diag_new;
+  int          j,k,bs = a->bs,*diag_new,idx=0;
   PetscTruth   roworiented = a->roworiented,dfound;
   PetscScalar  value,**diagv_new;
 
@@ -115,7 +115,7 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const int in[],cons
       ldiag  = row/bs - in[j]/bs; /* block diagonal */
       dfound = PETSC_FALSE;
       if (roworiented) {
-        value = *v++; 
+        value = v[idx++]; 
       } else {
         value = v[kk + j*m];
       }

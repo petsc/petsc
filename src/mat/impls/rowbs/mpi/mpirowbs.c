@@ -74,7 +74,7 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
   BSsprow      *vs;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((m+1)*sizeof(int),&nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(int),&tnnz);CHKERRQ(ierr);
   if (!nnz) {
     if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
     if (nz <= 0)             nz = 1;
@@ -642,7 +642,7 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   BSspmat      *A = a->A;
   BSsprow      *vs;
   int          size,rank,M,rstart,tag,i,j,*rtable,*w1,*w3,*w4,len,proc,nrqs;
-  int          msz,*pa,bsz,nrqr,**rbuf1,**sbuf1,**ptr,*tmp,*ctr,col,index,row;
+  int          msz,*pa,bsz,nrqr,**rbuf1,**sbuf1,**ptr,*tmp,*ctr,col,idx,row;
   int          ctr_j,*sbuf1_j,k,ierr;
   PetscScalar  val=0.0;
   MPI_Comm     comm;
@@ -800,12 +800,12 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   /* Receive messages*/
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&r_status);CHKERRQ(ierr);
   for (i=0; i<nrqr; ++i) {
-    ierr = MPI_Waitany(nrqr,r_waits1,&index,r_status+i);CHKERRQ(ierr);
+    ierr = MPI_Waitany(nrqr,r_waits1,&idx,r_status+i);CHKERRQ(ierr);
     /* Process the Message */
     {
       int    *rbuf1_i,n_row,ct1;
 
-      rbuf1_i = rbuf1[index];
+      rbuf1_i = rbuf1[idx];
       n_row   = rbuf1_i[0];
       ct1     = 2*n_row+1;
       val     = 0.0;
@@ -989,7 +989,7 @@ int MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
   ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
   ierr   = PetscMalloc((N+1)*sizeof(int),&owner);CHKERRQ(ierr); /* see note*/
   for (i=0; i<N; i++) {
-    idx = rows[i];
+    idx   = rows[i];
     found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
@@ -1540,7 +1540,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatMPIRowbsSetPreallocation_MPIRowbs"
 int MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,const int nnz[])
 {
-  PetscTruth ismpirowbs;
   int        ierr;
 
   PetscFunctionBegin;
@@ -2140,31 +2139,9 @@ EXTERN int MatGetSubMatrices_MPIRowbs_Local(Mat,int,const IS[],const IS[],MatReu
 #define __FUNCT__ "MatGetSubMatrices_MPIRowbs" 
 int MatGetSubMatrices_MPIRowbs(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
-  int         nmax,nstages_local,nstages,i,pos,max_no,ierr,nrow,ncol;
-  PetscTruth  rowflag,colflag,wantallmatrix = PETSC_FALSE,twantallmatrix;
+  int         nmax,nstages_local,nstages,i,pos,max_no,ierr;
 
   PetscFunctionBegin;
-  /*
-       Check for special case each processor gets entire matrix
-  */
-  /* When MatGetSubMatrix_Rowbs_All will be done you can use this code: */
-  /*
-  if (ismax == 1 && C->M == C->N) {
-    ierr = ISIdentity(*isrow,&rowflag);CHKERRQ(ierr);
-    ierr = ISIdentity(*iscol,&colflag);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(*isrow,&nrow);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(*iscol,&ncol);CHKERRQ(ierr);
-    if (rowflag && colflag && nrow == C->M && ncol == C->N) {
-      wantallmatrix = PETSC_TRUE;
-      ierr = PetscOptionsGetLogical(C->prefix,"-use_fast_submatrix",&wantallmatrix,PETSC_NULL);CHKERRQ(ierr);
-    }
-  }
-  ierr = MPI_Allreduce(&wantallmatrix,&twantallmatrix,1,MPI_INT,MPI_MIN,C->comm);CHKERRQ(ierr);
-  if (twantallmatrix) {
-    ierr = MatGetSubMatrix_Rowbs_All(C,scall,submat);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-  */
 
   /* Allocate memory to hold all the submatrices */
   if (scall != MAT_REUSE_MATRIX) {
@@ -2201,7 +2178,7 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
   Mat_SeqAIJ    *mat;
   int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
   int         **sbuf1,**sbuf2,rank,m,i,j,k,l,ct1,ct2,ierr,**rbuf1,row,proc;
-  int         nrqs,msz,**ptr,index,*req_size,*ctr,*pa,*tmp,tcol,nrqr;
+  int         nrqs,msz,**ptr,idx,*req_size,*ctr,*pa,*tmp,tcol,nrqr;
   int         **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2,**rmap;
   int         **cmap,**lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
   int         len,ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*cmap_i,*lens_i;
@@ -2397,24 +2374,24 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
     int        *sbuf2_i;
 
     for (i=0; i<nrqr; ++i) {
-      ierr = MPI_Waitany(nrqr,r_waits1,&index,r_status1+i);CHKERRQ(ierr);
-      req_size[index] = 0;
-      rbuf1_i         = rbuf1[index];
+      ierr = MPI_Waitany(nrqr,r_waits1,&idx,r_status1+i);CHKERRQ(ierr);
+      req_size[idx]   = 0;
+      rbuf1_i         = rbuf1[idx];
       start           = 2*rbuf1_i[0] + 1;
       ierr            = MPI_Get_count(r_status1+i,MPI_INT,&end);CHKERRQ(ierr);
-      ierr            = PetscMalloc((end+1)*sizeof(int),&sbuf2[index]);CHKERRQ(ierr);
-      sbuf2_i         = sbuf2[index];
+      ierr            = PetscMalloc((end+1)*sizeof(int),&sbuf2[idx]);CHKERRQ(ierr);
+      sbuf2_i         = sbuf2[idx];
       for (j=start; j<end; j++) {
         id               = rbuf1_i[j] - rstart;
         ncols            = (sAi[id])->length;
         sbuf2_i[j]       = ncols;
-        req_size[index] += ncols;
+        req_size[idx]   += ncols;
       }
-      req_source[index] = r_status1[i].MPI_SOURCE;
+      req_source[idx] = r_status1[i].MPI_SOURCE;
       /* form the header */
-      sbuf2_i[0]   = req_size[index];
+      sbuf2_i[0]   = req_size[idx];
       for (j=1; j<start; j++) { sbuf2_i[j] = rbuf1_i[j]; }
-      ierr = MPI_Isend(sbuf2_i,end,MPI_INT,req_source[index],tag1,comm,s_waits2+i);CHKERRQ(ierr);
+      ierr = MPI_Isend(sbuf2_i,end,MPI_INT,req_source[idx],tag1,comm,s_waits2+i);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(r_status1);CHKERRQ(ierr);
@@ -2430,14 +2407,14 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&r_status2);CHKERRQ(ierr);
 
   for (i=0; i<nrqs; ++i) {
-    ierr = MPI_Waitany(nrqs,r_waits2,&index,r_status2+i);CHKERRQ(ierr);
-    ierr = PetscMalloc((rbuf2[index][0]+1)*sizeof(int),&rbuf3[index]);CHKERRQ(ierr);
-    ierr = PetscMalloc((rbuf2[index][0]+1)*sizeof(FLOAT),&rbuf4[index]);CHKERRQ(ierr);
-    ierr = MPI_Irecv(rbuf3[index],rbuf2[index][0],MPI_INT,r_status2[i].MPI_SOURCE,tag2,comm,r_waits3+index);CHKERRQ(ierr);
+    ierr = MPI_Waitany(nrqs,r_waits2,&idx,r_status2+i);CHKERRQ(ierr);
+    ierr = PetscMalloc((rbuf2[idx][0]+1)*sizeof(int),&rbuf3[idx]);CHKERRQ(ierr);
+    ierr = PetscMalloc((rbuf2[idx][0]+1)*sizeof(FLOAT),&rbuf4[idx]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rbuf3[idx],rbuf2[idx][0],MPI_INT,r_status2[i].MPI_SOURCE,tag2,comm,r_waits3+idx);CHKERRQ(ierr);
 #if FLOAT == double      
-    ierr = MPI_Irecv(rbuf4[index],rbuf2[index][0],MPI_DOUBLE,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+index);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPI_DOUBLE,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
 #elif FLOAT == float      
-    ierr = MPI_Irecv(rbuf4[index],rbuf2[index][0],MPI_FLOAT,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+index);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPI_FLOAT,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
 #endif
   } 
   ierr = PetscFree(r_status2);CHKERRQ(ierr);
@@ -2462,7 +2439,7 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
   
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits3);CHKERRQ(ierr);
   {
-    BSsprow *row;
+    BSsprow *brow;
     int *Acol;
     int rstart = c->rstart;
 
@@ -2474,9 +2451,9 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
       for (j=1,max1=rbuf1_i[0]; j<=max1; j++) { 
         kmax = rbuf1[i][2*j];
         for (k=0; k<kmax; k++,ct1++) {
-          row    = A->rows[rbuf1_i[ct1] - rstart];
-          ncols  = row->length;
-          Acol   = row->col;
+          brow   = A->rows[rbuf1_i[ct1] - rstart];
+          ncols  = brow->length;
+          Acol   = brow->col;
           /* load the column indices for this row into cols*/
           cols  = sbuf_aj_i + ct2;
           ierr = PetscMemcpy(cols,Acol,ncols*sizeof(int));CHKERRQ(ierr);
@@ -2499,7 +2476,7 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
   
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits4);CHKERRQ(ierr);
   {
-    BSsprow *row;
+    BSsprow *brow;
     FLOAT *Aval;
     int rstart = c->rstart;
     
@@ -2511,9 +2488,9 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
       for (j=1,max1=rbuf1_i[0]; j<=max1; j++) {
         kmax = rbuf1_i[2*j];
         for (k=0; k<kmax; k++,ct1++) {
-          row    = A->rows[rbuf1_i[ct1] - rstart];
-          ncols  = row->length; 
-          Aval = row->nz;
+          brow  = A->rows[rbuf1_i[ct1] - rstart];
+          ncols = brow->length; 
+          Aval  = brow->nz;
           /* load the column values for this row into vals*/
           vals  = sbuf_aa_i+ct2;
           ierr = PetscMemcpy(vals,Aval,ncols*sizeof(FLOAT));CHKERRQ(ierr);
@@ -2602,8 +2579,8 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
 
     for (tmp2=0; tmp2<nrqs; tmp2++) {
       ierr = MPI_Waitany(nrqs,r_waits3,&i,r_status3+tmp2);CHKERRQ(ierr);
-      index   = pa[i];
-      sbuf1_i = sbuf1[index];
+      idx     = pa[i];
+      sbuf1_i = sbuf1[idx];
       jmax    = sbuf1_i[0];
       ct1     = 2*jmax+1; 
       ct2     = 0;               
@@ -2718,8 +2695,8 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
     
     for (tmp2=0; tmp2<nrqs; tmp2++) {
       ierr = MPI_Waitany(nrqs,r_waits4,&i,r_status4+tmp2);CHKERRQ(ierr);
-      index   = pa[i];
-      sbuf1_i = sbuf1[index];
+      idx     = pa[i];
+      sbuf1_i = sbuf1[idx];
       jmax    = sbuf1_i[0];           
       ct1     = 2*jmax + 1; 
       ct2     = 0;    
@@ -2817,16 +2794,14 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   Mat_SeqAIJ    *matA,*matB; /* on prac , off proc part of submat */
   Mat_MPIAIJ    *mat;  /* submat->data */
   int    *irow,*icol,nrow,ncol,*rtable,size,rank,tag0,tag1,tag2,tag3;
-  int    *w1,*w2,*pa,nrqs,nrqr,msz;
-  int    i,j,k,l,ierr,len,jmax,proc,row,index;
+  int    *w1,*w2,*pa,nrqs,nrqr,msz,row_t;
+  int    i,j,k,l,ierr,len,jmax,proc,idx;
   int    **sbuf1,**sbuf2,**rbuf1,**rbuf2,*req_size,**sbuf3,**rbuf3;
   FLOAT  **rbuf4,**sbuf4; /* FLOAT is from Block Solve 95 library */
 
-  int    *cmap,*rmap,nlocal,*o_nz,*d_nz,cstart,cend,rstart,rend;
-  
-  int        tcol;
-  int         *req_source,*sbuf_aj,ashift,max1,max2;
-  int         is_no,ncols,*cols,mat_i,*mat_j,tmp2,*irow_i;
+  int    *cmap,*rmap,nlocal,*o_nz,*d_nz,cstart,cend;
+  int    *req_source;
+  int    ncols_t;
   
   
   MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
@@ -2835,7 +2810,6 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   MPI_Status  *r_status1,*r_status2,*s_status1,*s_status3,*s_status2;
   MPI_Status  *r_status3,*r_status4,*s_status4;
   MPI_Comm    comm;
-  PetscScalar *mat_a;
 
   PetscFunctionBegin;
 
@@ -2843,7 +2817,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   tag0   = C->tag;
   size   = c->size;
   rank   = c->rank;
-  /** ashift = a->indexshift; **/
+
   if (size==1) {
     if (scall == MAT_REUSE_MATRIX) {
       ierr=MatGetSubMatrices(C,1,&isrow,&iscol,MAT_REUSE_MATRIX,&submat);CHKERRQ(ierr);
@@ -2896,8 +2870,8 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   w2     = w1 + size;      /* if w2[i] marked, then a message to proc i*/
   ierr   = PetscMemzero(w1,size*2*sizeof(int));CHKERRQ(ierr); /* initialize work vector*/
   for (j=0; j<nrow; j++) {
-    row  = irow[j];
-    proc = rtable[row];
+    row_t  = irow[j];
+    proc   = rtable[row_t];
     w1[proc]++;
   }
   nrqs     = 0;              /* no of outgoing messages */
@@ -2950,11 +2924,11 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   
   /* Parse the isrow and copy data into outbuf */
   for (j=0; j<nrow; j++) {  
-    row  = irow[j];
-    proc = rtable[row];
+    row_t  = irow[j];
+    proc = rtable[row_t];
     if (proc != rank) { /* copy to the outgoing buf*/
       sbuf1[proc][0]++;
-      *ptr[proc] = row;
+      *ptr[proc] = row_t;
       ptr[proc]++;
     }
   }
@@ -3001,22 +2975,22 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
     int        *sbuf2_i,*rbuf1_i,end;
 
     for (i=0; i<nrqr; ++i) {
-      ierr = MPI_Waitany(nrqr,r_waits1,&index,r_status1+i);CHKERRQ(ierr);
-      req_size[index] = 0;
-      rbuf1_i         = rbuf1[index];
+      ierr = MPI_Waitany(nrqr,r_waits1,&idx,r_status1+i);CHKERRQ(ierr);
+      req_size[idx]   = 0;
+      rbuf1_i         = rbuf1[idx];
       ierr            = MPI_Get_count(r_status1+i,MPI_INT,&end);CHKERRQ(ierr);
-      ierr            = PetscMalloc((end+1)*sizeof(int),&sbuf2[index]);CHKERRQ(ierr);
-      sbuf2_i         = sbuf2[index];
+      ierr            = PetscMalloc((end+1)*sizeof(int),&sbuf2[idx]);CHKERRQ(ierr);
+      sbuf2_i         = sbuf2[idx];
       for (j=1; j<end; j++) {
         id               = rbuf1_i[j] - rstart;
-        ncols            = (sAi[id])->length;
-        sbuf2_i[j]       = ncols;
-        req_size[index] += ncols;
+        ncols_t          = (sAi[id])->length;
+        sbuf2_i[j]       = ncols_t;
+        req_size[idx]   += ncols_t;
       }
-      req_source[index] = r_status1[i].MPI_SOURCE;
+      req_source[idx] = r_status1[i].MPI_SOURCE;
       /* form the header */
-      sbuf2_i[0]   = req_size[index];
-      ierr = MPI_Isend(sbuf2_i,end,MPI_INT,req_source[index],tag1,comm,s_waits2+i);CHKERRQ(ierr);
+      sbuf2_i[0]   = req_size[idx];
+      ierr = MPI_Isend(sbuf2_i,end,MPI_INT,req_source[idx],tag1,comm,s_waits2+i);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(r_status1);CHKERRQ(ierr);
@@ -3032,14 +3006,14 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&r_status2);CHKERRQ(ierr);
 
   for (i=0; i<nrqs; ++i) {
-    ierr = MPI_Waitany(nrqs,r_waits2,&index,r_status2+i);CHKERRQ(ierr);
-    ierr = PetscMalloc((rbuf2[index][0]+1)*sizeof(int),&rbuf3[index]);CHKERRQ(ierr);
-    ierr = PetscMalloc((rbuf2[index][0]+1)*sizeof(FLOAT),&rbuf4[index]);CHKERRQ(ierr);
-    ierr = MPI_Irecv(rbuf3[index],rbuf2[index][0],MPI_INT,r_status2[i].MPI_SOURCE,tag2,comm,r_waits3+index);CHKERRQ(ierr);
+    ierr = MPI_Waitany(nrqs,r_waits2,&idx,r_status2+i);CHKERRQ(ierr);
+    ierr = PetscMalloc((rbuf2[idx][0]+1)*sizeof(int),&rbuf3[idx]);CHKERRQ(ierr);
+    ierr = PetscMalloc((rbuf2[idx][0]+1)*sizeof(FLOAT),&rbuf4[idx]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rbuf3[idx],rbuf2[idx][0],MPI_INT,r_status2[i].MPI_SOURCE,tag2,comm,r_waits3+idx);CHKERRQ(ierr);
 #if FLOAT == double      
-    ierr = MPI_Irecv(rbuf4[index],rbuf2[index][0],MPI_DOUBLE,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+index);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPI_DOUBLE,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
 #elif FLOAT == float      
-    ierr = MPI_Irecv(rbuf4[index],rbuf2[index][0],MPI_FLOAT,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+index);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rbuf4[idx],rbuf2[idx][0],MPI_FLOAT,r_status2[i].MPI_SOURCE,tag3,comm,r_waits4+idx);CHKERRQ(ierr);
 #endif
   } 
   ierr = PetscFree(r_status2);CHKERRQ(ierr);
@@ -3161,7 +3135,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   }
   {
     int ncols,*cols,olen,dlen,thecol;
-    int *rbuf2_i,*rbuf3_i,*sbuf1_i,row,kmax,cindex;
+    int *rbuf2_i,*rbuf3_i,*sbuf1_i,row,kmax,cidx;
   
     ierr   = MPI_Scan(&nlocal,&cend,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     cstart = cend - nlocal;
@@ -3182,7 +3156,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
         cols=Arow->col;
         olen=dlen=0;
         for (k=0; k<ncols; k++) {
-          if (thecol=cmap[cols[k]]) { 
+          if ((thecol=cmap[cols[k]])) { 
   /*          printf("row: %i ncols: %i k: %i thecol:
    *          %i\n",row,ncols,k,thecol);*/
             if (cstart<thecol && thecol<=cend) dlen++; /* thecol is from 1 */
@@ -3200,14 +3174,14 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
       ierr = MPI_Waitany(nrqs,r_waits3,&i,r_status3+j);CHKERRQ(ierr);
       proc   = pa[i];
       sbuf1_i = sbuf1[proc];
-      cindex  = 0;               
+      cidx    = 0;               
       rbuf2_i = rbuf2[i];
       rbuf3_i = rbuf3[i];
       kmax    = sbuf1_i[0]; /*num of rq. rows*/
       for (k=1; k<=kmax; k++) { 
         row  = rmap[sbuf1_i[k]]; /* the val in the new matrix to be */
-        for (l=0; l<rbuf2_i[k]; l++,cindex++) {
-          if (thecol=cmap[rbuf3_i[cindex]]) {
+        for (l=0; l<rbuf2_i[k]; l++,cidx++) {
+          if ((thecol=cmap[rbuf3_i[cidx]])) {
             
             if (cstart<thecol && thecol<=cend) d_nz[row]++; /* thecol is from 1 */
             else o_nz[row]++;
@@ -3267,7 +3241,6 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
   
   } 
   ierr = PetscFree(d_nz);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(*submat,&rstart,&rend);CHKERRQ(ierr);
 
   /* Assemble the matrix */
   /* First assemble from local rows */
@@ -3294,7 +3267,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
         matB_a = matB->a + i_row;
         matB_j = matB->j + i_row;
         for (k=0,ilenA=0,ilenB=0; k<ncols; k++) {
-          if (tcol = cmap[cols[k]]) { 
+          if ((tcol = cmap[cols[k]])) { 
             if (tcol<=cstart) {
               *matB_j++ = tcol-1;
               *matB_a++ = vals[k];
@@ -3319,7 +3292,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
 
   /*   Now assemble the off proc rows*/
   {
-    int  *sbuf1_i,*rbuf2_i,*rbuf3_i,cindex,kmax,row,i_row;
+    int  *sbuf1_i,*rbuf2_i,*rbuf3_i,cidx,kmax,row,i_row;
     int  *matA_j,*matB_j,lmax,tcol,ilenA,ilenB;
     PetscScalar *matA_a,*matB_a;
     FLOAT *rbuf4_i;
@@ -3329,7 +3302,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
       proc   = pa[i];
       sbuf1_i = sbuf1[proc];
       
-      cindex  = 0;    
+      cidx    = 0;    
       rbuf2_i = rbuf2[i];
       rbuf3_i = rbuf3[i];
       rbuf4_i = rbuf4[i];
@@ -3345,19 +3318,19 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
         matB_j = matB->j + i_row;
         
         lmax = rbuf2_i[k];
-        for (l=0,ilenA=0,ilenB=0; l<lmax; l++,cindex++) {
-          if (tcol = cmap[rbuf3_i[cindex]]) { 
+        for (l=0,ilenA=0,ilenB=0; l<lmax; l++,cidx++) {
+          if ((tcol = cmap[rbuf3_i[cidx]])) { 
             if (tcol<=cstart) {
               *matB_j++ = tcol-1;
-              *matB_a++ = (PetscScalar)(rbuf4_i[cindex]);;
+              *matB_a++ = (PetscScalar)(rbuf4_i[cidx]);;
               ilenB++;
             } else if (tcol<=cend) {
               *matA_j++ = (tcol-1)-cstart;
-              *matA_a++ = (PetscScalar)(rbuf4_i[cindex]);
+              *matA_a++ = (PetscScalar)(rbuf4_i[cidx]);
               ilenA++;
             } else { 
               *matB_j++ = tcol-1;
-              *matB_a++ = (PetscScalar)(rbuf4_i[cindex]);
+              *matB_a++ = (PetscScalar)(rbuf4_i[cidx]);
               ilenB++;
             }  
           }
