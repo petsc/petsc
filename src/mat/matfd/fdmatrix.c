@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.63 2000/05/13 14:20:06 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.64 2000/05/14 03:51:17 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -543,11 +543,35 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   ierr = (*f)(sctx,x1,w1,fctx);CHKERRQ(ierr);
 
   ierr = PetscMemzero(wscale,N*sizeof(Scalar));CHKERRQ(ierr);
+  /* 
+      Compute all the scale factors and share with other processors
+  */
+  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
+  for (k=0; k<coloring->ncolors; k++) { 
+    /*
+       Loop over each column associated with color adding the 
+       perturbation to the vector w3.
+    */
+    for (l=0; l<coloring->ncolumns[k]; l++) {
+      col = coloring->columns[k][l];    /* column of the matrix we are probing for */
+      dx  = xx[col];
+      if (dx == 0.0) dx = 1.0;
+#if !defined(PETSC_USE_COMPLEX)
+      if (dx < umin && dx >= 0.0)      dx = umin;
+      else if (dx < 0.0 && dx > -umin) dx = -umin;
+#else
+      if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
+      else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
+#endif
+      dx            *= epsilon;
+      wscale[col]   = 1.0/dx;
+    }
+  } 
+  ierr = MPI_Allreduce(wscale,scale,N,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
+
   /*
       Loop over each color
   */
-
-  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
   for (k=0; k<coloring->ncolors; k++) { 
     ierr = VecCopy(x1,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
@@ -567,7 +591,6 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx            *= epsilon;
-      wscale[col]   = 1.0/dx;
       w3_array[col] += dx;
     } 
     w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
@@ -577,8 +600,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     */
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
-    /* Communicate scale to all processors */
-    ierr = MPI_Allreduce(wscale,scale,N,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
+
     /*
        Loop over rows of vector, putting results into Jacobian matrix
     */
