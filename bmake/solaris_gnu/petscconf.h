@@ -70,5 +70,6 @@
 #define PETSC_HAVE_SYS_TIMES_H
 
 #define PETSC_HAVE_UCBPS
+#define PETSC_HAVE_NAMESPACE
 
 #endif

@@ -67,5 +67,5 @@
 #define PETSC_SIGNAL_CAST (void (*)(int))
 #endif
 #define PETSC_HAVE_IRIX_STYLE_FPTRAP
-
+#define PETSC_HAVE_NAMESPACE
 #endif

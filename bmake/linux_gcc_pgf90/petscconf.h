@@ -50,5 +50,6 @@
 #define PETSC_HAVE_SYS_UTSNAME_H
 
 #define PETSC_MISSING_SIGSYS
+#define PETSC_HAVE_NAMESPACE
 #endif
 

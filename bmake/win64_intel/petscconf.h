@@ -57,5 +57,6 @@
 #  define PETSC_MEMALIGN 16
 #  define PETSC_HAVE_SSE "iclsse.h"
 #endif
+#define PETSC_HAVE_NAMESPACE
 
 #endif

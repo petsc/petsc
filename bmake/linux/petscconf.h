@@ -48,4 +48,6 @@
 
 #define PETSC_HAVE_SYS_UTSNAME_H
 #define PETSC_HAVE_SLEEP
+
+#define PETSC_HAVE_NAMESPACE
 #endif

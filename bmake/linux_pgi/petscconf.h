@@ -47,5 +47,6 @@
 #define PETSC_HAVE_RTLD_GLOBAL 1
 
 #define PETSC_MISSING_SIGSYS
+#define PETSC_HAVE_NAMESPACE
 
 #endif

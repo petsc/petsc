@@ -45,6 +45,7 @@
 
 #define PETSC_HAVE_DOS_H
 #define PETSC_HAVE_ACCESS
+#define PETSC_HAVE_NAMESPACE
 
 #endif
 
