@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.10 1995/11/03 02:59:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.11 1995/11/09 22:28:45 bsmith Exp curfman $";
 #endif
 
 /*
@@ -480,10 +480,10 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
       Mat_SeqDense *Amdn = (Mat_SeqDense*) mdn->A->data;
 
       if (!rank) {
-        ierr = MatCreateMPIDense(mat->comm,M,M,N,N,&A); CHKERRQ(ierr);
+        ierr = MatCreateMPIDense(mat->comm,M,M,N,N,0,&A); CHKERRQ(ierr);
       }
       else {
-        ierr = MatCreateMPIDense(mat->comm,0,M,N,N,&A); CHKERRQ(ierr);
+        ierr = MatCreateMPIDense(mat->comm,0,M,N,N,0,&A); CHKERRQ(ierr);
       }
       PLogObjectParent(mat,A);
 
@@ -679,7 +679,7 @@ static int MatTranspose_MPIDense(Mat A,Mat *matout)
 
   if (!matout && M != N)
     SETERRQ(1,"MatTranspose_MPIDense:Supports square matrix only in-place");
-  ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,&B); CHKERRQ(ierr);
+  ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,&B); CHKERRQ(ierr);
 
   m = Aloc->m; n = Aloc->n; v = Aloc->v;
   rwork = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(rwork);
@@ -739,13 +739,19 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DECIDE to have calculated 
            if n is given)
+.  data - optional location of matrix data.  Set data=0 for PETSc to
+   control all matrix memory allocation.
 
    Output Parameter:
-.  newmat - the matrix 
+.  newmat - the matrix
 
    Notes:
    The dense format is fully compatible with standard Fortran 77
    storage by columns.
+
+   The data input variable is intended primarily for Fortran programmers
+   who wish to allocate their own matrix memory space.  Most users should
+   set data=0.
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
@@ -757,11 +763,14 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
 @*/
-int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Mat *newmat)
+int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *newmat)
 {
   Mat          mat;
   Mat_MPIDense *a;
   int          ierr, i;
+
+/* Note:  for now, this assumes that the user knows what he's doing if
+   data is specified above.  */
 
   *newmat         = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIDENSE,comm);
@@ -806,7 +815,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Mat *newmat)
     a->cowners[i] += a->cowners[i-1];
   }
 
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,m,N,&a->A); CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,m,N,data,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
 
   /* build cache for off array entries formed */
@@ -973,7 +982,7 @@ int MatLoad_MPIDense(Viewer bview,MatType type,Mat *newmat)
     ourlens[i] -= offlens[i];
   }
   if (type == MATMPIDENSE) {
-    ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,newmat);CHKERRQ(ierr);
+    ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,0,newmat); CHKERRQ(ierr);
   }
   A = *newmat;
   for ( i=0; i<m; i++ ) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.73 1995/11/03 02:44:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.74 1995/11/03 02:47:26 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -349,7 +349,7 @@ static int MatCopyPrivate_SeqDense(Mat A,Mat *newmat,int cpvalues)
   int          ierr;
   Mat          newi;
 
-  ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,&newi); CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,0,&newi); CHKERRQ(ierr);
   l = (Mat_SeqDense *) newi->data;
   if (cpvalues == COPY_VALUES) {
     PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
@@ -382,7 +382,7 @@ int MatLoad_SeqDense(Viewer bview,MatType type,Mat *A)
   ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
 
   /* create our matrix */
-  ierr = MatCreateSeqDense(comm,M,N,A); CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(comm,M,N,0,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqDense *) B->data;
   v = a->v;
@@ -538,7 +538,7 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
     Mat          tmat;
     Mat_SeqDense *tmatd;
     Scalar       *v2;
-    ierr = MatCreateSeqDense(A->comm,mat->n,mat->m,&tmat); CHKERRQ(ierr);
+    ierr = MatCreateSeqDense(A->comm,mat->n,mat->m,0,&tmat); CHKERRQ(ierr);
     tmatd = (Mat_SeqDense *) tmat->data;
     v = mat->v; v2 = tmatd->v;
     for ( j=0; j<n; j++ ) {
@@ -752,7 +752,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
 
   /* Create and fill new matrix */
-  ierr = MatCreateSeqDense(A->comm,nrows,ncols,&newmat);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(A->comm,nrows,ncols,0,&newmat);CHKERRQ(ierr);
   for (i=0; i<nrows; i++) {
     nznew = 0;
     val   = mat->v + irow[i];
@@ -806,39 +806,52 @@ static struct _MatOps MatOps = {MatInsert_SeqDense,
    Input Parameters:
 .  comm - MPI communicator, set to MPI_COMM_SELF
 .  m - number of rows
-.  n - number of column
+.  n - number of columns
+.  data - optional location of matrix data.  Set data=0 for PETSc to
+   control all matrix memory allocation.
 
    Output Parameter:
 .  newmat - the matrix
+
+  Notes:
+  The data input variable is intended primarily for Fortran programmers
+  who wish to allocate their own matrix memory space.  Most users should
+  set data=0.
 
 .keywords: dense, matrix, LAPACK, BLAS
 
 .seealso: MatCreate(), MatSetValues()
 @*/
-int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
+int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *newmat)
 {
   int          size = sizeof(Mat_SeqDense) + m*n*sizeof(Scalar);
   Mat          mat;
   Mat_SeqDense *l;
 
   *newmat        = 0;
+
+  if (!data) size = sizeof(Mat_SeqDense) + m*n*sizeof(Scalar);
+  else       size = sizeof(Mat_SeqDense);
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
   PLogObjectCreate(mat);
-  l              = (Mat_SeqDense *) PetscMalloc(size); CHKPTRQ(l);
+  l               = (Mat_SeqDense *) PetscMalloc(size); CHKPTRQ(l);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
-  mat->destroy   = MatDestroy_SeqDense;
-  mat->view      = MatView_SeqDense;
-  mat->data      = (void *) l;
-  mat->factor    = 0;
+  mat->destroy    = MatDestroy_SeqDense;
+  mat->view       = MatView_SeqDense;
+  mat->factor     = 0;
   PLogObjectMemory(mat,sizeof(struct _Mat) + size);
+  mat->data       = (void *) l;
 
-  l->m           = m;
-  l->n           = n;
-  l->v           = (Scalar *) (l + 1);
-  l->pivots      = 0;
-  l->roworiented = 1;
+  l->m            = m;
+  l->n            = n;
+  l->pivots       = 0;
+  l->roworiented  = 1;
+  if (!data) {
+    l->v = (Scalar *) (l + 1);
+    PetscMemzero(l->v,m*n*sizeof(Scalar));
+  } 
+  else l->v = data; /* user-allocated storage */
 
-  PetscMemzero(l->v,m*n*sizeof(Scalar));
   *newmat = mat;
   return 0;
 }
@@ -846,5 +859,5 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
 int MatCreate_SeqDense(Mat A,Mat *newmat)
 {
   Mat_SeqDense *m = (Mat_SeqDense *) A->data;
-  return MatCreateSeqDense(A->comm,m->m,m->n,newmat);
+  return MatCreateSeqDense(A->comm,m->m,m->n,0,newmat);
 }
