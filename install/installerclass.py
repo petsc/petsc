@@ -42,7 +42,7 @@ class Installer(install.urlMapping.UrlMapping):
     try:
       import Numeric
     except ImportError, e:
-      raise RuntimeError('BuildSystem requires Numeric Python (http://www.pfdubois.com/numpy) to be installed: '+str(e))
+      raise RuntimeError('BuildSystem requires Numeric Python. Select numpy version 23.0 at http://sourceforge.net/projects/numpy')
     header = os.path.join(distutils.sysconfig.get_python_inc(), 'Numeric', 'arrayobject.h')
     if not os.path.exists(header):
       raise RuntimeError('The include files from the Numeric are misplaced: Cannot find '+header)
