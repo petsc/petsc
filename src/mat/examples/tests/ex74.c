@@ -1,8 +1,8 @@
-/*$Id: ex74.c,v 1.3 2000/07/07 20:51:26 balay Exp balay $*/
+/*$Id: ex74.c,v 1.4 2000/07/07 20:52:04 balay Exp balay $*/
 
 static char help[] = "Tests the vatious routines in MatSBAIJ format.\n";
 
-#include "petcmath.h"
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
