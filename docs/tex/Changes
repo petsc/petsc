@@ -4,8 +4,6 @@ transported into the docs/changes.html file. (Because it
 is a pain to always check that file out of SourceSafe to 
 add to it).
 
-  Add two new PC types PCCOMPOSITE and PCSLES that easily allow building new
-PC's by combining two or more preconditioners and allow using any SLES as 
-a preconditioner.
+ 
 
 
