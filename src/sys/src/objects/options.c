@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.109 1996/11/19 16:30:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.110 1996/11/19 21:16:44 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -49,9 +49,9 @@ static int OptionsDestroy_Private();
 
 #if defined(PETSC_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
-Scalar PETSC_i(0.0,1.0);
+Scalar PETSC_i; 
 #else
-Scalar PETSC_i = 0.0;
+Scalar PETSC_i = 0.0; 
 #endif
 
 /* 
@@ -227,6 +227,14 @@ int PetscInitializeOptions()
 {
   options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
   PetscMemzero(options->used,MAXOPTIONS*sizeof(int));
+  options->namegiven = 0;
+  return 0;
+}
+
+int OptionsSetProgramName(char *name)
+{ 
+  options->namegiven = 1;
+  PetscStrncpy(options->programname,name,256);
   return 0;
 }
 
@@ -291,11 +299,8 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
      on the first processor.
   */
   if (argc && *argc) {
-    options->namegiven = 1;
-    PetscStrncpy(options->programname,**args,256);
+    OptionsSetProgramName(**args);
   }
-  else {options->namegiven = 0;}
-
 
   MPI_Initialized(&flag);
   if (!flag) {
@@ -316,7 +321,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   */
   {
     Scalar ic(0.0,1.0);
-    PETSC_i = ic;
+    PETSC_i = ic; 
   }
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
@@ -723,6 +728,7 @@ char *OptionsGetProgramName()
   if (!options->namegiven) return (char *) 0;
   return options->programname;
 }
+
 
 /*
     Reads options from a file and adds to options database
