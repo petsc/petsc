@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.137 2000/08/31 15:28:39 bsmith Exp $*/
+/*$Id: cholesky.c,v 1.1 2000/09/01 03:36:30 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -13,20 +13,20 @@ typedef struct {
   IS              row,col;          /* index sets used for reordering */
   MatOrderingType ordering;         /* matrix ordering */
   PetscTruth      reuseordering;    /* reuses previous reordering computed */
-  PetscTruth      reusefill;        /* reuse fill from previous LU */
-  MatLUInfo       info;
-} PC_LU;
+  PetscTruth      reusefill;        /* reuse fill from previous Cholesky */
+  MatCholeskyInfo       info;
+} PC_Cholesky;
 
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetReuseOrdering_LU"></a>*/"PCLUSetReuseOrdering_LU"
-int PCLUSetReuseOrdering_LU(PC pc,PetscTruth flag)
+#define __FUNC__ /*<a name="PCCholeskySetReuseOrdering_Cholesky"></a>*/"PCCholeskySetReuseOrdering_Cholesky"
+int PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
 {
-  PC_LU *lu;
+  PC_Cholesky *lu;
 
   PetscFunctionBegin;
-  lu               = (PC_LU*)pc->data;
+  lu               = (PC_Cholesky*)pc->data;
   lu->reuseordering = flag;
   PetscFunctionReturn(0);
 }
@@ -34,23 +34,23 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetReuseFill_LU"></a>*/"PCLUSetReuseFill_LU"
-int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
+#define __FUNC__ /*<a name="PCCholeskySetReuseFill_Cholesky"></a>*/"PCCholeskySetReuseFill_Cholesky"
+int PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
 {
-  PC_LU *lu;
+  PC_Cholesky *lu;
 
   PetscFunctionBegin;
-  lu = (PC_LU*)pc->data;
+  lu = (PC_Cholesky*)pc->data;
   lu->reusefill = flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCSetFromOptions_LU"></a>*/"PCSetFromOptions_LU"
-static int PCSetFromOptions_LU(PC pc)
+#define __FUNC__ /*<a name="PCSetFromOptions_Cholesky"></a>*/"PCSetFromOptions_Cholesky"
+static int PCSetFromOptions_Cholesky(PC pc)
 {
-  PC_LU      *lu = (PC_LU*)pc->data;
+  PC_Cholesky      *lu = (PC_Cholesky*)pc->data;
   int        ierr;
   PetscTruth flg;
   char       tname[256];
@@ -59,44 +59,43 @@ static int PCSetFromOptions_LU(PC pc)
   if (!MatOrderingRegisterAllCalled) {
     ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = OptionsHead("LU options");CHKERRQ(ierr);
-    ierr = OptionsName("-pc_lu_in_place","Form LU in the same memory as the matrix","PCLUSetUseInPlace",&flg);CHKERRQ(ierr);
+  ierr = OptionsHead("Cholesky options");CHKERRQ(ierr);
+    ierr = OptionsName("-pc_cholesky_in_place","Form Cholesky in the same memory as the matrix","PCCholeskySetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetUseInPlace(pc);CHKERRQ(ierr);
+      ierr = PCCholeskySetUseInPlace(pc);CHKERRQ(ierr);
     }
-    ierr = OptionsDouble("-pc_lu_fill","Expected non-zeros in LU/non-zeros in matrix","PCLUSetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_cholesky_fill","Expected non-zeros in Cholesky/non-zeros in matrix","PCCholeskySetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
 
-    ierr = OptionsHasName(pc->prefix,"-pc_lu_damping",&flg);CHKERRQ(ierr);
+    ierr = OptionsHasName(pc->prefix,"-pc_cholesky_damping",&flg);CHKERRQ(ierr);
     if (flg) {
-        ierr = PCLUSetDamping(pc,0.0);CHKERRQ(ierr);
+        ierr = PCCholeskySetDamping(pc,0.0);CHKERRQ(ierr);
     }
-    ierr = OptionsDouble("-pc_lu_damping","Damping added to diagonal","PCLUSetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_cholesky_damping","Damping added to diagonal","PCCholeskySetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
 
-    ierr = OptionsName("-pc_lu_reuse_fill","Use fill from previous factorization","PCLUSetReuseFill",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-pc_cholesky_reuse_fill","Use fill from previous factorization","PCCholeskySetReuseFill",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PCCholeskySetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = OptionsName("-pc_lu_reuse_ordering","Reuse ordering from previous factorization","PCLUSetReuseOrdering",&flg);CHKERRQ(ierr);
+    ierr = OptionsName("-pc_cholesky_reuse_ordering","Reuse ordering from previous factorization","PCCholeskySetReuseOrdering",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PCCholeskySetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
 
-    ierr = OptionsList("-pc_lu_mat_ordering_type","Reordering to reduce nonzeros in LU","PCLUSetMatOrdering",MatOrderingList,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = OptionsList("-pc_cholesky_mat_ordering_type","Reordering to reduce nonzeros in Cholesky","PCCholeskySetMatOrdering",MatOrderingList,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
+      ierr = PCCholeskySetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
-    ierr = OptionsDouble("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
+    ierr = OptionsDouble("-pc_cholesky_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
 
-    ierr = OptionsDouble("-pc_lu_column_pivoting","Column pivoting tolerance (not used)","PCLUSetColumnPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
   ierr = OptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCView_LU"></a>*/"PCView_LU"
-static int PCView_LU(PC pc,Viewer viewer)
+#define __FUNC__ /*<a name="PCView_Cholesky"></a>*/"PCView_Cholesky"
+static int PCView_Cholesky(PC pc,Viewer viewer)
 {
-  PC_LU      *lu = (PC_LU*)pc->data;
+  PC_Cholesky      *lu = (PC_Cholesky*)pc->data;
   int        ierr;
   PetscTruth isascii,isstring;
 
@@ -106,28 +105,28 @@ static int PCView_LU(PC pc,Viewer viewer)
   if (isascii) {
     MatInfo info;
 
-    if (lu->inplace) {ierr = ViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");CHKERRQ(ierr);}
-    else             {ierr = ViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");CHKERRQ(ierr);}
+    if (lu->inplace) {ierr = ViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);}
+    else             {ierr = ViewerASCIIPrintf(viewer,"  Cholesky: out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = ViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
-      ierr = ViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"    Cholesky nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
     }
     if (lu->reusefill)    {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
     if (lu->reuseordering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PCLU",((PetscObject)viewer)->type_name);
+    SETERRQ1(1,1,"Viewer type %s not supported for PCCholesky",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCGetFactoredMatrix_LU"></a>*/"PCGetFactoredMatrix_LU"
-static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
+#define __FUNC__ /*<a name="PCGetFactoredMatrix_Cholesky"></a>*/"PCGetFactoredMatrix_Cholesky"
+static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
 
   PetscFunctionBegin;
   if (!dir->fact) SETERRQ(1,1,"Matrix not yet factored; call after SLESSetUp() or PCSetUp()");
@@ -136,12 +135,12 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCSetUp_LU"></a>*/"PCSetUp_LU"
-static int PCSetUp_LU(PC pc)
+#define __FUNC__ /*<a name="PCSetUp_Cholesky"></a>*/"PCSetUp_Cholesky"
+static int PCSetUp_Cholesky(PC pc)
 {
   int        ierr;
   PetscTruth flg;
-  PC_LU      *dir = (PC_LU*)pc->data;
+  PC_Cholesky      *dir = (PC_Cholesky*)pc->data;
 
   PetscFunctionBegin;
   if (dir->reusefill && pc->setupcalled) dir->info.fill = dir->actualfill;
@@ -151,20 +150,20 @@ static int PCSetUp_LU(PC pc)
     if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
     ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&dir->info);CHKERRQ(ierr);
+    ierr = MatCholeskyFactor(pc->pmat,dir->row,dir->col,&dir->info);CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
     MatInfo info;
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-      ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
+      ierr = OptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;
-        ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+        ierr = OptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
@@ -173,30 +172,30 @@ static int PCSetUp_LU(PC pc)
         if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
         if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
         ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-        ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
+        ierr = OptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           PetscReal tol = 1.e-10;
-          ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+          ierr = OptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
         }
         if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
       PLogObjectParent(pc,dir->fact);
     }
-    ierr = MatLUFactorNumeric(pc->pmat,&dir->fact);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(pc->pmat,&dir->fact);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCDestroy_LU"></a>*/"PCDestroy_LU"
-static int PCDestroy_LU(PC pc)
+#define __FUNC__ /*<a name="PCDestroy_Cholesky"></a>*/"PCDestroy_Cholesky"
+static int PCDestroy_Cholesky(PC pc)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   int   ierr;
 
   PetscFunctionBegin;
@@ -209,10 +208,10 @@ static int PCDestroy_LU(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCApply_LU"></a>*/"PCApply_LU"
-static int PCApply_LU(PC pc,Vec x,Vec y)
+#define __FUNC__ /*<a name="PCApply_Cholesky"></a>*/"PCApply_Cholesky"
+static int PCApply_Cholesky(PC pc,Vec x,Vec y)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   int   ierr;
 
   PetscFunctionBegin;
@@ -222,10 +221,10 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCApplyTranspose_LU"></a>*/"PCApplyTranspose_LU"
-static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
+#define __FUNC__ /*<a name="PCApplyTranspose_Cholesky"></a>*/"PCApplyTranspose_Cholesky"
+static int PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   int   ierr;
 
   PetscFunctionBegin;
@@ -238,13 +237,13 @@ static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetFill_LU"></a>*/"PCLUSetFill_LU"
-int PCLUSetFill_LU(PC pc,PetscReal fill)
+#define __FUNC__ /*<a name="PCCholeskySetFill_Cholesky"></a>*/"PCCholeskySetFill_Cholesky"
+int PCCholeskySetFill_Cholesky(PC pc,PetscReal fill)
 {
-  PC_LU *dir;
+  PC_Cholesky *dir;
 
   PetscFunctionBegin;
-  dir = (PC_LU*)pc->data;
+  dir = (PC_Cholesky*)pc->data;
   dir->info.fill = fill;
   PetscFunctionReturn(0);
 }
@@ -252,13 +251,13 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetDamping_LU"></a>*/"PCLUSetDamping_LU"
-int PCLUSetDamping_LU(PC pc,PetscReal damping)
+#define __FUNC__ /*<a name="PCCholeskySetDamping_Cholesky"></a>*/"PCCholeskySetDamping_Cholesky"
+int PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
 {
-  PC_LU *dir;
+  PC_Cholesky *dir;
 
   PetscFunctionBegin;
-  dir = (PC_LU*)pc->data;
+  dir = (PC_Cholesky*)pc->data;
   dir->info.damping = damping;
   dir->info.damp    = 1.0;
   PetscFunctionReturn(0);
@@ -267,13 +266,13 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetUseInPlace_LU"></a>*/"PCLUSetUseInPlace_LU"
-int PCLUSetUseInPlace_LU(PC pc)
+#define __FUNC__ /*<a name="PCCholeskySetUseInPlace_Cholesky"></a>*/"PCCholeskySetUseInPlace_Cholesky"
+int PCCholeskySetUseInPlace_Cholesky(PC pc)
 {
-  PC_LU *dir;
+  PC_Cholesky *dir;
 
   PetscFunctionBegin;
-  dir = (PC_LU*)pc->data;
+  dir = (PC_Cholesky*)pc->data;
   dir->inplace = 1;
   PetscFunctionReturn(0);
 }
@@ -281,10 +280,10 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetMatOrdering_LU"></a>*/"PCLUSetMatOrdering_LU"
-int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
+#define __FUNC__ /*<a name="PCCholeskySetMatOrdering_Cholesky"></a>*/"PCCholeskySetMatOrdering_Cholesky"
+int PCCholeskySetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
 {
-  PC_LU *dir = (PC_LU*)pc->data;
+  PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   int   ierr;
 
   PetscFunctionBegin;
@@ -294,28 +293,14 @@ int PCLUSetMatOrdering_LU(PC pc,MatOrderingType ordering)
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetColumnPivoting_LU"></a>*/"PCLUSetColumnPivoting_LU"
-int PCLUSetColumnPivoting_LU(PC pc,PetscReal dtcol)
-{
-  PC_LU *dir = (PC_LU*)pc->data;
-
-  PetscFunctionBegin;
-  if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(1,1,"Column pivot tolerance is %g must be between 0 and 1",dtcol);
-  dir->info.dtcol = dtcol;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 /* -----------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetReuseOrdering"></a>*/"PCLUSetReuseOrdering"
+#define __FUNC__ /*<a name="PCCholeskySetReuseOrdering"></a>*/"PCCholeskySetReuseOrdering"
 /*@
-   PCLUSetReuseOrdering - When similar matrices are factored, this
+   PCCholeskySetReuseOrdering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
-   following factors; applies to both fill and drop tolerance LUs.
+   following factors.
 
    Collective on PC
 
@@ -324,21 +309,21 @@ EXTERN_C_END
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
 
    Options Database Key:
-.  -pc_lu_reuse_ordering - Activate PCLUSetReuseOrdering()
+.  -pc_cholesky_reuse_ordering - Activate PCCholeskySetReuseOrdering()
 
    Level: intermediate
 
 .keywords: PC, levels, reordering, factorization, incomplete, LU
 
-.seealso: PCLUSetReuseFill(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill()
+.seealso: PCCholeskySetReuseFill(), PCICholeskySetReuseOrdering(), PCICholeskyDTSetReuseFill()
 @*/
-int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
+int PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
 {
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetReuseOrdering_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetReuseOrdering_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -346,9 +331,9 @@ int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetReuseFill"></a>*/"PCLUSetReuseFill"
+#define __FUNC__ /*<a name="PCCholeskySetReuseFill"></a>*/"PCCholeskySetReuseFill"
 /*@
-   PCLUSetReuseFill - When matrices with same nonzero structure are LU factored,
+   PCCholeskySetReuseFill - When matrices with same nonzero structure are Cholesky factored,
    this causes later ones to use the fill computed in the initial factorization.
 
    Collective on PC
@@ -358,21 +343,21 @@ int PCLUSetReuseOrdering(PC pc,PetscTruth flag)
 -  flag - PETSC_TRUE to reuse else PETSC_FALSE
 
    Options Database Key:
-.  -pc_lu_reuse_fill - Activates PCLUSetReuseFill()
+.  -pc_cholesky_reuse_fill - Activates PCCholeskySetReuseFill()
 
    Level: intermediate
 
-.keywords: PC, levels, reordering, factorization, incomplete, LU
+.keywords: PC, levels, reordering, factorization, incomplete, Cholesky
 
-.seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCILUDTSetReuseFill()
+.seealso: PCICholeskySetReuseOrdering(), PCCholeskySetReuseOrdering(), PCICholeskyDTSetReuseFill()
 @*/
-int PCLUSetReuseFill(PC pc,PetscTruth flag)
+int PCCholeskySetReuseFill(PC pc,PetscTruth flag)
 {
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetReuseFill_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetReuseFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -380,9 +365,9 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetFill"></a>*/"PCLUSetFill"
+#define __FUNC__ /*<a name="PCCholeskySetFill"></a>*/"PCCholeskySetFill"
 /*@
-   PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
+   PCCholeskySetFill - Indicate the amount of fill you expect in the factored matrix,
    fill = number nonzeros in factor/number nonzeros in original matrix.
 
    Collective on PC
@@ -392,7 +377,7 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
 -  fill - amount of expected fill
 
    Options Database Key:
-.  -pc_lu_fill <fill> - Sets fill amount
+.  -pc_cholesky_fill <fill> - Sets fill amount
 
    Level: intermediate
 
@@ -406,14 +391,14 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetFill()
 @*/
-int PCLUSetFill(PC pc,PetscReal fill)
+int PCCholeskySetFill(PC pc,PetscReal fill)
 {
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetFill_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetFill_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -421,10 +406,10 @@ int PCLUSetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetDamping"></a>*/"PCLUSetDamping"
+#define __FUNC__ /*<a name="PCCholeskySetDamping"></a>*/"PCCholeskySetDamping"
 /*@
-   PCLUSetDamping - adds this quantity to the diagonal of the matrix during the 
-     LU numerical factorization
+   PCCholeskySetDamping - adds this quantity to the diagonal of the matrix during the 
+     Cholesky numerical factorization
 
    Collective on PC
    
@@ -433,21 +418,21 @@ int PCLUSetFill(PC pc,PetscReal fill)
 -  damping - amount of damping
 
    Options Database Key:
-.  -pc_lu_damping <damping> - Sets damping amount
+.  -pc_cholesky_damping <damping> - Sets damping amount
 
    Level: intermediate
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCILUSetFill(), PCILUSetDamp()
+.seealso: PCICholeskySetFill(), PCILUSetDamp()
 @*/
-int PCLUSetDamping(PC pc,PetscReal damping)
+int PCCholeskySetDamping(PC pc,PetscReal damping)
 {
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetDamping_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetDamping_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,damping);CHKERRQ(ierr);
   } 
@@ -455,9 +440,9 @@ int PCLUSetDamping(PC pc,PetscReal damping)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetUseInPlace"></a>*/"PCLUSetUseInPlace"
+#define __FUNC__ /*<a name="PCCholeskySetUseInPlace"></a>*/"PCCholeskySetUseInPlace"
 /*@
-   PCLUSetUseInPlace - Tells the system to do an in-place factorization.
+   PCCholeskySetUseInPlace - Tells the system to do an in-place factorization.
    For dense matrices, this enables the solution of much larger problems. 
    For sparse matrices the factorization cannot be done truly in-place 
    so this does not save memory during the factorization, but after the matrix
@@ -470,10 +455,10 @@ int PCLUSetDamping(PC pc,PetscReal damping)
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_lu_in_place - Activates in-place factorization
+.  -pc_cholesky_in_place - Activates in-place factorization
 
    Notes:
-   PCLUSetUseInplace() can only be used with the KSP method KSPPREONLY or when 
+   PCCholeskySetUseInplace() can only be used with the KSP method KSPPREONLY or when 
    a different matrix is provided for the multiply and the preconditioner in 
    a call to SLESSetOperators().
    This is because the Krylov space methods require an application of the 
@@ -482,17 +467,17 @@ int PCLUSetDamping(PC pc,PetscReal damping)
 
    Level: intermediate
 
-.keywords: PC, set, factorization, direct, inplace, in-place, LU
+.keywords: PC, set, factorization, direct, inplace, in-place, Cholesky
 
-.seealso: PCILUSetUseInPlace()
+.seealso: PCICholeskySetUseInPlace()
 @*/
-int PCLUSetUseInPlace(PC pc)
+int PCCholeskySetUseInPlace(PC pc)
 {
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetUseInPlace_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetUseInPlace_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -500,10 +485,10 @@ int PCLUSetUseInPlace(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetMatOrdering"></a>*/"PCLUSetMatOrdering"
+#define __FUNC__ /*<a name="PCCholeskySetMatOrdering"></a>*/"PCCholeskySetMatOrdering"
 /*@
-    PCLUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
-    be used it the LU factorization.
+    PCCholeskySetMatOrdering - Sets the ordering routine (to reduce fill) to 
+    be used it the Cholesky factorization.
 
     Collective on PC
 
@@ -512,52 +497,20 @@ int PCLUSetUseInPlace(PC pc)
 -   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
 
     Options Database Key:
-.   -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
+.   -pc_cholesky_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
     Level: intermediate
 
-.seealso: PCILUSetMatOrdering()
+.seealso: PCICholeskySetMatOrdering()
 @*/
-int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
+int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 {
   int ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetMatOrdering_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetMatOrdering_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="PCLUSetColumnPivoting"></a>*/"PCLUSetColumnPivoting"
-/*@
-    PCLUSetColumnPivoting - Determines when column pivoting is done during LU. 
-      For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
-      it is never done. For the Matlab factorization this is used.
-
-    Collective on PC
-
-    Input Parameters:
-+   pc - the preconditioner context
--   dtcol - 0.0 implies no pivoting, 1.0 complete column pivoting (slower, requires more memory but more stable)
-
-    Options Database Key:
-.   -pc_lu_column_pivoting - dttol
-
-    Level: intermediate
-
-.seealso: PCILUSetMatOrdering()
-@*/
-int PCLUSetColumnPivoting(PC pc,PetscReal dtcol)
-{
-  int ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetColumnPivoting_C",(void **)&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,dtcol);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -566,19 +519,19 @@ int PCLUSetColumnPivoting(PC pc,PetscReal dtcol)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="PCCreate_LU"></a>*/"PCCreate_LU"
-int PCCreate_LU(PC pc)
+#define __FUNC__ /*<a name="PCCreate_Cholesky"></a>*/"PCCreate_Cholesky"
+int PCCreate_Cholesky(PC pc)
 {
   int   ierr;
-  PC_LU *dir     = PetscNew(PC_LU);CHKPTRQ(dir);
+  PC_Cholesky *dir     = PetscNew(PC_Cholesky);CHKPTRQ(dir);
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_LU));
+  PLogObjectMemory(pc,sizeof(PC_Cholesky));
 
   dir->fact             = 0;
   dir->inplace          = 0;
   dir->info.fill        = 5.0;
-  dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
+  dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc Cholesky supports */
   dir->info.damping     = 0.0;
   dir->info.damp        = 0.0;
   dir->col              = 0;
@@ -588,29 +541,29 @@ int PCCreate_LU(PC pc)
   dir->reuseordering    = PETSC_FALSE;
   pc->data              = (void*)dir;
 
-  pc->ops->destroy           = PCDestroy_LU;
-  pc->ops->apply             = PCApply_LU;
-  pc->ops->applytranspose    = PCApplyTranspose_LU;
-  pc->ops->setup             = PCSetUp_LU;
-  pc->ops->setfromoptions    = PCSetFromOptions_LU;
-  pc->ops->view              = PCView_LU;
+  pc->ops->destroy           = PCDestroy_Cholesky;
+  pc->ops->apply             = PCApply_Cholesky;
+  pc->ops->applytranspose    = PCApplyTranspose_Cholesky;
+  pc->ops->setup             = PCSetUp_Cholesky;
+  pc->ops->setfromoptions    = PCSetFromOptions_Cholesky;
+  pc->ops->view              = PCView_Cholesky;
   pc->ops->applyrichardson   = 0;
-  pc->ops->getfactoredmatrix = PCGetFactoredMatrix_LU;
+  pc->ops->getfactoredmatrix = PCGetFactoredMatrix_Cholesky;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetFill_C","PCLUSetFill_LU",
-                    PCLUSetFill_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetDamping_C","PCLUSetDamping_LU",
-                    PCLUSetDamping_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetUseInPlace_C","PCLUSetUseInPlace_LU",
-                    PCLUSetUseInPlace_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetMatOrdering_C","PCLUSetMatOrdering_LU",
-                    PCLUSetMatOrdering_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseOrdering_C","PCLUSetReuseOrdering_LU",
-                    PCLUSetReuseOrdering_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetReuseFill_C","PCLUSetReuseFill_LU",
-                    PCLUSetReuseFill_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetColumnPivoting_C","PCLUSetColumnPivoting_LU",
-                    PCLUSetColumnPivoting_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetFill_C","PCCholeskySetFill_Cholesky",
+                    PCCholeskySetFill_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetDamping_C","PCCholeskySetDamping_Cholesky",
+                    PCCholeskySetDamping_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetUseInPlace_C","PCCholeskySetUseInPlace_Cholesky",
+                    PCCholeskySetUseInPlace_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetMatOrdering_C","PCCholeskySetMatOrdering_Cholesky",
+                    PCCholeskySetMatOrdering_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetReuseOrdering_C","PCCholeskySetReuseOrdering_Cholesky",
+                    PCCholeskySetReuseOrdering_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetReuseFill_C","PCCholeskySetReuseFill_Cholesky",
+                    PCCholeskySetReuseFill_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetCoCholeskymnPivoting_C","PCCholeskySetCoCholeskymnPivoting_Cholesky",
+                    PCCholeskySetColumnPivoting_Cholesky);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
