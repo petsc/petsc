@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.170 2001/07/04 18:08:43 curfman Exp bsmith $*/
+/*$Id: da2.c,v 1.171 2001/07/07 03:28:44 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1421,7 +1421,7 @@ int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 int DAFormFunctioni1(DA da,int i,Vec vu,Scalar *vfu,void *w)
 {
   int         ierr;
-  void        *u,*fu;
+  void        *u;
   DALocalInfo info;
   MatStencil  stencil;
   
