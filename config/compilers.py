@@ -644,10 +644,9 @@ class Configure(config.base.Configure):
     # Change to string
     self.flibs = ''
     for lib in flibs:
-      if lib.startswith('-L'):
-        self.flibs += ' ${CLINKER_SLFLAG}'+lib[2:0]
+      if self.slpath and lib.startswith('-L'):
+        self.flibs += ' '+self.slpath+lib[2:]
       self.flibs += ' '+lib
-      
     # Append run path
     if ldRunPath: self.flibs = ldRunPath+self.flibs
     
@@ -699,6 +698,7 @@ class Configure(config.base.Configure):
     if not self.checkLinkerFlag(flag):
       flag = ''
     self.addSubstitution('RPATH', flag)
+    self.slpath = flag
     return
 
   def configure(self):
@@ -712,6 +712,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkCxxFlags)
     self.executeTest(self.checkCxxNamespace)
 
+    self.executeTest(self.checkSharedLinkerPaths)
     self.executeTest(self.checkFortranCompiler)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranFlags)
@@ -721,5 +722,4 @@ class Configure(config.base.Configure):
 
     self.executeTest(self.checkLinkerFlags)
     self.executeTest(self.checkSharedLinkerFlag)
-    self.executeTest(self.checkSharedLinkerPaths)
     return
