@@ -60,6 +60,7 @@ C     Prototypes for functions which return a value.
 C
       external PetscGetTime, PetscGetFlops
 
+C     On the Cray T3D this should be real not double precision!
 #if defined(PARCH_t3d)
       real PetscGetTime, PetscGetFlops
 #else
