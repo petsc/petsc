@@ -13,8 +13,9 @@ PARCH            = @PETSC_ARCH@
 C_CC       = @CC@ -DPARCH_@PETSC_ARCH@ @CC_SHARED_OPT@
 C_FC       = @FC@ @FC_SHARED_OPT@
 # SLFLAG=? (-R on solaris)
-C_CLINKER_SLFLAG   = 
-C_FLINKER_SLFLAG   = 
+# For now, assume that this is the linker dir flag
+C_CLINKER_SLFLAG   = -L
+C_FLINKER_SLFLAG   = -L
 C_CLINKER  = @CC@
 C_FLINKER  = @FC@
 # What is CCV? Solaris base is cc -V -c | head -1
