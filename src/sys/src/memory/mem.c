@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mem.c,v 1.5 1997/03/26 16:05:04 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.6 1997/03/26 16:06:42 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -45,7 +45,7 @@ extern int getpagesize();
 @*/
 int PetscGetResidentSetSize(PLogDouble *foo)
 {
-#if !defined(PARCH_solaris) && !defined(PARCH_hpux)
+#if !defined(PARCH_solaris) && !defined(PARCH_hpux) && !defined(PARCH_t3d)
   static struct rusage temp;
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PARCH_rs6000)
