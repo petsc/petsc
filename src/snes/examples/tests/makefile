@@ -17,8 +17,8 @@ RUNEXAMPLES_2 = runex1 runex2 runex7 runex8 runex9
 EXAMPLES_3    = ex12
 RUNEXAMPLES_3 = runex12
 EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9
-RUNEXAMPLES_4 = runex1 runex2 runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6\
-		runex6_2 runex6_3 runex7 runex8 runex9
+RUNEXAMPLES_4 = runex1 runex2 runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 \
+		runex6_2 runex7 
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c
 EXAMPLESF     = ex12.F
 DIRS	      = umin
