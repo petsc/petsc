@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.87 1996/06/18 20:33:41 balay Exp balay $";
+static char vcid[] = "$Id: gcreate.c,v 1.88 1996/06/18 20:42:26 balay Exp balay $";
 #endif
 
 #include "sys.h"
@@ -102,7 +102,7 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   } 
   else if (flg14){
     if (size == 1) *type = MATSEQBAIJ;
-    else *type = MATMPIAIJ;
+    else *type = MATMPIBAIJ;
     *set = 1;
   }  
   else {
