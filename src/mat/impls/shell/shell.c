@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.27 1996/03/26 04:46:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.28 1996/03/28 22:00:13 curfman Exp curfman $";
 #endif
 
 /*
@@ -19,15 +19,21 @@ typedef struct {
 } Mat_Shell;      
 
 /*@
-    MatShellGetContext - Returns the user provided context associated 
-         with a MatShell.
+    MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
-  Input Parameter:
+    Input Parameter:
 .   mat - the matrix, should have been created with MatCreateShell()
 
-  Output Parameter:
+    Output Parameter:
 .   ctx - the user provided context
 
+    Notes:
+    This routine is intended for use within various shell matrix routines,
+    as set with MatShellSetOperation().
+    
+.keywords: matrix, shell, get, context
+
+.seealso: MatCreateShell(), MatShellSetOperation()
 @*/
 int MatShellGetContext(Mat mat,void **ctx)
 {
@@ -51,7 +57,7 @@ static int MatDestroy_Shell(PetscObject obj)
   Mat_Shell *shell;
 
   shell = (Mat_Shell *) mat->data;
-  if (shell->destroy) {ierr = (*shell->destroy)(shell->ctx);CHKERRQ(ierr);}
+  if (shell->destroy) {ierr = (*shell->destroy)(obj);CHKERRQ(ierr);}
   PetscFree(shell); 
   return 0;
 }
@@ -91,9 +97,11 @@ static struct _MatOps MatOps = {0,0,
    with KSP (such as, for use with matrix-free methods). You should not
    use the shell type if you plan to define a complete matrix class.
 
-  Usage:
+   Usage:
 $   MatCreateShell(m,n,ctx,&mat);
-$   MatSetOperation(mat,MAT_MULT,mult);
+$   MatShellSetOperation(mat,MAT_MULT,mult);
+$   [ Use matrix for operations that have been set ]
+$   MatDestroy(mat);
 
 .keywords: matrix, shell, create
 
@@ -122,28 +130,52 @@ int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 }
 
 /*@
-    MatShellSetOperation - Allows use to set a matrix operation for a shell matrix.
+    MatShellSetOperation - Allows user to set a matrix operation for a shell matrix.
 
-  Input Parameters:
+    Input Parameters:
 .   mat - the shell matrix
 .   op - the name of the operation
 .   f - the function that provides the operation.
 
-  Usage:
-   extern int mult(Mat,Vec,Vec);
-   ierr = MatCreateShell(comm,m,m,ctx,&A);
-   ierr = MatSetOperation(A,MAT_MULT,mult);
+    Usage:
+$      extern int usermult(Mat,Vec,Vec);
+$      ierr = MatCreateShell(comm,m,m,ctx,&A);
+$      ierr = MatShellSetOperation(A,MAT_MULT,usermult);
 
-   In the user provided function, use MatShellGetContext() to obtain the 
-context passed into MatCreateShell().
+    Notes:
+    See the file petsc/include/mat.h for a complete list of matrix
+    operations, which all have the form MAT_<OPERATION>, where
+    <OPERATION> is the name (in all capital letters) of the
+    user interface routine (e.g., MatMult() -> MAT_MULT).
+
+    All user-provided functions should have the same calling
+    sequence as the usual matrix interface routines, e.g., 
+$       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
+    since they are intended to be accessed via the usual
+    matrix interface routines.
+
+    Within each user-defined routine, the user should call
+    MatShellGetContext() to obtain the user-defined context that was
+    set by MatCreateShell().
+
+.keywords: matrix, shell, set, operation
+
+.seealso: MatCreateShell(), MatShellGetContext()
 @*/
 int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
 
-  if (op == MAT_DESTROY)   mat->destroy              = (int (*)(PetscObject)) f;
-  else if (op == MAT_VIEW) mat->view                 = (int (*)(PetscObject,Viewer)) f;
-  else                     (((void **)&mat->ops)[op])= f;
+  if (op == MAT_DESTROY) {
+    if (mat->type == MATSHELL) {
+       Mat_Shell *shell = (Mat_Shell *) mat->data;
+       shell->destroy                                 = (int (*)(void*)) f;
+    } 
+    else mat->destroy                                 = (int (*)(PetscObject)) f;
+  } 
+  else if (op == MAT_VIEW) mat->view                  = (int (*)(PetscObject,Viewer)) f;
+  else                     (((void **)&mat->ops)[op]) = f;
+
   return 0;
 }
 
