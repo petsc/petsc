@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.83 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.84 2000/09/28 21:13:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\
@@ -98,7 +98,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   IS         iskeep;
   double     **K,norm;
   Mat        mat,submat = 0,*submatb;
-  MatType    type;
+  MatType    type = MATSEQBAIJ;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
@@ -169,7 +169,6 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set);CHKERRQ(ierr);
   ierr = MatConvert(submat,type,newmat);CHKERRQ(ierr);
   ierr = MatDestroy(submat);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.22 2000/09/02 02:49:58 bsmith Exp bsmith $*/
+/*$Id: cn.c,v 1.23 2000/09/28 21:14:54 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -106,10 +106,10 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
 #define __FUNC__ /*<a name=""></a>*/"TSStep_CN_Linear_Variable_Matrix"
 static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 {
-  TS_CN    *cn = (TS_CN*)ts->data;
-  Vec      sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
-  int      ierr,i,max_steps = ts->max_steps,its;
-  Scalar   dt = ts->time_step,two = 2.0,neg_dt = -1.0*ts->time_step;
+  TS_CN        *cn = (TS_CN*)ts->data;
+  Vec          sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
+  int          ierr,i,max_steps = ts->max_steps,its;
+  Scalar       dt = ts->time_step,two = 2.0,neg_dt = -1.0*ts->time_step;
   MatStructure str;
 
   PetscFunctionBegin;
@@ -271,23 +271,23 @@ int TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 #define __FUNC__ /*<a name=""></a>*/"TSCnJacobian"
 int TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS      ts = (TS) ctx;
-  int     ierr;
-  Scalar  mone = -1.0,mdt = 1.0/ts->time_step;
-  MatType mtype;
+  TS         ts = (TS) ctx;
+  int        ierr;
+  Scalar     mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth isshell;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian, if not matrix-free */
-  ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);
-  if (mtype != MATSHELL) {
+  ierr = PetscTypeCompare((PetscObject)*AA,MATSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) {
     ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
   }
-  ierr = MatGetType(*BB,&mtype,PETSC_NULL);CHKERRQ(ierr);
-  if (*BB != *AA && *str != SAME_PRECONDITIONER && mtype != MATSHELL) {
+  ierr = PetscTypeCompare((PetscObject)*BB,MATSHELL,&isshell);CHKERRQ(ierr);
+  if (*BB != *AA && *str != SAME_PRECONDITIONER && !isshell) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
@@ -406,10 +406,10 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name=""></a>*/"TSCreate_CN"
 int TSCreate_CN(TS ts)
 {
-  TS_CN     *cn;
-  int       ierr;
-  KSP       ksp;
-  MatType   mtype;
+  TS_CN      *cn;
+  int        ierr;
+  KSP        ksp;
+  PetscTruth isshell;
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_CN;
@@ -419,16 +419,15 @@ int TSCreate_CN(TS ts)
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
-    ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
     if (!ts->rhsmatrix) {
-      if (mtype == MATSHELL) {
+      if (isshell) {
         ts->Ashell = ts->A;
       }
       ts->setup  = TSSetUp_CN_Linear_Constant_Matrix;
       ts->step   = TSStep_CN_Linear_Constant_Matrix;
-    }
-    else {
-      if (mtype == MATSHELL) {
+    } else {
+      if (isshell) {
         ts->Ashell = ts->A;
       }
       ts->setup  = TSSetUp_CN_Linear_Variable_Matrix;  
@@ -442,8 +441,8 @@ int TSCreate_CN(TS ts)
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian for nonlinear problem");
     }
-    ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
-    if (mtype == MATSHELL) {
+    ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
+    if (isshell) {
       ts->Ashell = ts->A;
     }
     ts->setup           = TSSetUp_CN_Nonlinear;  

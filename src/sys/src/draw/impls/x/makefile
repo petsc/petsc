@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.38 2000/08/17 04:50:31 bsmith Exp balay $
+# $Id: makefile,v 1.39 2000/08/17 19:56:38 balay Exp bsmith $
 
-#requirespackage '-DPETSC_HAVE_X11'
+#requirespackage 'PETSC_HAVE_X11'
 
 ALL: lib 
 

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.20 2000/05/04 03:19:45 bsmith Exp balay $*/
+/*$Id: ex19.c,v 1.21 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
 To test the parallel matrix assembly, this example intentionally lays out\n\
@@ -43,6 +43,7 @@ int main(int argc,char **args)
 
   /* Create stiffness matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
 
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank); 

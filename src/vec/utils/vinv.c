@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.63 2000/05/05 22:14:53 balay Exp bsmith $*/
+/*$Id: vinv.c,v 1.64 2000/09/28 21:10:10 bsmith Exp bsmith $*/
 /*
      Some useful vector utility functions.
 */
@@ -35,7 +35,8 @@
 
    Level: advanced
 
-.keywords: vector, subvector norm, norm
+   Concepts: norm^on stride of vector
+   Concepts: stride^norm
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
@@ -121,7 +122,8 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *norm)
 
    Level: advanced
 
-.keywords: vector, subvector maximum, maximum
+   Concepts: maximum^on stride of vector
+   Concepts: stride^maximum
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
@@ -200,7 +202,8 @@ int VecStrideMax(Vec v,int start,int *index,PetscReal *norm)
    the pressure is stored (interlaced) with other variables, e.g., density, etc.
    This will only work if the desire subvector is a stride subvector.
 
-.keywords: vector, subvector minimum, minimum
+   Concepts: minimum^on stride of vector
+   Concepts: stride^minimum
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
@@ -277,7 +280,7 @@ int VecStrideMin(Vec v,int start,int *index,PetscReal *norm)
 
    Level: advanced
 
-.keywords: vector, subvector
+   Concepts: gather^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
@@ -360,7 +363,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 
    Level: advanced
 
-.keywords: vector, subvector
+   Concepts:  scatter^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
@@ -448,7 +451,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 
    Level: advanced
 
-.keywords: vector, subvector
+   Concepts: gather^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
@@ -524,7 +527,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 
    Level: advanced
 
-.keywords: vector, subvector
+   Concepts: scatter^into strided vector
 
 .seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
           VecStrideScatterAll()
@@ -610,7 +613,7 @@ int VecReciprocal_Default(Vec v)
 
    Level: beginner
 
-.keywords: vector, sum
+   Concepts: sum^of vector entries
 
 .seealso: VecNorm()
 @*/
@@ -648,7 +651,8 @@ int VecSum(Vec v,Scalar *sum)
 
    Level: intermediate
 
-.keywords: vector, shift
+   Concepts: vector^adding constant
+
 @*/
 int VecShift(const Scalar *shift,Vec v)
 {
@@ -678,7 +682,8 @@ int VecShift(const Scalar *shift,Vec v)
 
    Level: intermediate
 
-.keywords: vector,absolute value
+   Concepts: vector^absolute value
+
 @*/
 int VecAbs(Vec v)
 {
@@ -713,7 +718,9 @@ int VecAbs(Vec v)
 
    Level: intermediate
 
-.keywords: vec, equal, equivalent
+   Concepts: equal^two vectors
+   Concepts: vector^equality
+
 @*/
 int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {

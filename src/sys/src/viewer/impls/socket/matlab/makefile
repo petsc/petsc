@@ -1,7 +1,7 @@
-# $Id: makefile,v 1.7 2000/02/27 03:40:58 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/08/17 04:50:20 bsmith Exp bsmith $ 
 
 #
-#requirespackage  '-DPETSC_HAVE_MATLAB'
+#requirespackage  'PETSC_HAVE_MATLAB'
 #requiresscalar real 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects

@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.28 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex11.c,v 1.29 2000/09/28 21:13:46 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -72,6 +72,7 @@ int main(int argc,char **args)
      determined by PETSc at runtime.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.57 2000/08/08 21:51:55 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.58 2000/09/28 21:10:07 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -18,7 +18,7 @@
 
     Level: advanced
 
-.keywords: IS, local-to-global mapping, create
+    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
@@ -43,7 +43,7 @@ int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int *n)
 
     Level: advanced
 
-.keywords: IS, local-to-global mapping, create
+    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
@@ -88,7 +88,7 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
 
     Level: advanced
 
-.keywords: IS, local-to-global mapping, create
+    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
@@ -127,7 +127,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 
     Level: advanced
 
-.keywords: IS, local-to-global mapping, create
+    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS()
 @*/
@@ -169,8 +169,6 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
 
    Level: advanced
 
-.keywords: IS, local-to-global mapping, destroy
-
 .seealso: ISLocalToGlobalMappingCreate()
 @*/
 int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
@@ -208,7 +206,7 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 
     Level: advanced
 
-.keywords: IS, local-to-global mapping, apply
+    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy(), ISGlobalToLocalMappingApply()
@@ -263,7 +261,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis
           ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
           AOPetscToApplication(), ISGlobalToLocalMappingApply()
 
-.keywords: local-to-global, mapping, apply
+    Concepts: mapping^local to global
 
 M*/
 
@@ -335,7 +333,7 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 
     Level: advanced
 
-.keywords: IS, global-to-local mapping, apply
+    Concepts: mapping^global to local
 
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
@@ -408,7 +406,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMa
 
     Level: advanced
 
-.keywords: IS, local-to-global mapping, neighbors
+    Concepts: mapping^local to global
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingRestoreInfo()
@@ -820,8 +818,6 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
 -   indices - indices of local nodes shared with neighbor (sorted by global numbering)
 
     Level: advanced
-
-.keywords: IS, local-to-global mapping, neighbors
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingGetInfo()

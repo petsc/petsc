@@ -1,4 +1,4 @@
-/*$Id: ex8.c,v 1.42 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex8.c,v 1.43 2000/09/28 21:13:46 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
@@ -74,6 +74,7 @@ int main(int argc,char **args)
      Assemble the matrix for the five point stencil, YET AGAIN 
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  
@@ -147,8 +148,7 @@ int main(int argc,char **args)
   if (!user_subdomains) { /* basic version */
     ierr = PCASMSetOverlap(pc,overlap);CHKERRA(ierr);
   } else { /* advanced version */
-    if (size != 1) SETERRA(1,0,
-      "PCASMCreateSubdomains() is currently a uniprocessor routine only!");
+    if (size != 1) SETERRA(1,"PCASMCreateSubdomains() is currently a uniprocessor routine only!");
     ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is);CHKERRA(ierr);
     ierr = PCASMSetLocalSubdomains(pc,Nsub,is);CHKERRA(ierr);
   }

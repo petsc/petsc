@@ -1,4 +1,4 @@
-/*$Id: ex31.c,v 1.19 2000/09/06 22:19:21 balay Exp bsmith $*/
+/*$Id: ex31.c,v 1.20 2000/09/08 17:56:29 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
@@ -33,6 +33,7 @@ int main(int argc,char **args)
 
   /* Generate matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRA(ierr);
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  

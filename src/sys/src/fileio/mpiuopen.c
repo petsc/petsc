@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.34 2000/09/26 19:36:34 balay Exp bsmith $*/
+/*$Id: mpiuopen.c,v 1.35 2000/09/28 21:09:02 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
@@ -11,7 +11,7 @@
 #include "petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscFOpen"
+#define __FUNC__ /*<a name="PetscFOpen"></a>*/"PetscFOpen"
 /*@C
     PetscFOpen - Has the first process in the communicator open a file;
     all others do nothing.
@@ -67,7 +67,7 @@ int PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscFClose"
+#define __FUNC__ /*<a name="PetscFClose"></a>*/"PetscFClose"
 /*@C
     PetscFClose - Has the first processor in the communicator close a 
     file; all others do nothing.
@@ -99,7 +99,7 @@ int PetscFClose(MPI_Comm comm,FILE *fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscPClose"
+#define __FUNC__ /*<a name="PetscPClose"></a>*/"PetscPClose"
 int PetscPClose(MPI_Comm comm,FILE *fd)
 {
   int  rank,ierr;
@@ -119,7 +119,7 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscPOpen"
+#define __FUNC__ /*<a name="PetscPOpen"></a>*/"PetscPOpen"
 /*@C
       PetscPOpen - Runs a program on processor zero and sends either its input or output to 
           a file.

@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.6 2000/07/10 03:40:19 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 2000/08/17 04:52:16 bsmith Exp bsmith $ 
 
-#requirespackage '-DPETSC_HAVE_SPAI'
+#requirespackage 'PETSC_HAVE_SPAI'
 #requireslanguage CONLY
 
 ALL: lib

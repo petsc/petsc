@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.20 2000/09/22 20:44:34 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.21 2000/09/28 21:12:11 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   IS                isrow,iscol;      /* row and column permutations */
   int               ierr;
   MatOrderingType   rtype = MATORDERING_RCM;
-  PetscTruth        set,flg,PreLoad = PETSC_FALSE;
+  PetscTruth        flg,PreLoad = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -76,12 +76,6 @@ int main(int argc,char **args)
        reading from this file.
     */
     ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],BINARY_RDONLY,&fd);CHKERRA(ierr);
-
-    /* 
-       Determine matrix format to be used (specified at runtime).
-       See the manpage for MatLoad() for available formats.
-    */
-    ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set);CHKERRA(ierr);
 
     /*
        Load the matrix; then destroy the viewer.

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.82 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.83 2000/09/28 21:13:46 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -68,6 +68,7 @@ int main(int argc,char **args)
      See the matrix chapter of the users manual for details.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   /* 
      Assemble matrix

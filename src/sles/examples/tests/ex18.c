@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.16 2000/01/11 21:02:16 bsmith Exp balay $*/
+/*$Id: ex18.c,v 1.17 2000/05/05 22:17:55 balay Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -22,7 +22,6 @@ int main(int argc,char **args)
   Scalar     zero = 0.0,none = -1.0;
   Vec        x,b,u;
   Mat        A;
-  MatType    mtype;
   SLES       sles;
   char       file[128]; 
   Viewer     fd;
@@ -32,8 +31,7 @@ int main(int argc,char **args)
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set);CHKERRQ(ierr);
-  ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);
+  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
   ierr = VecLoad(fd,&b);CHKERRA(ierr);
   ierr = ViewerDestroy(fd);CHKERRA(ierr);
 

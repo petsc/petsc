@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.80 2000/09/02 02:47:29 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.81 2000/09/28 21:10:10 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -21,8 +21,6 @@
 .  type - the vector type name
 
    Level: intermediate
-
-.keywords: vector, get, type, name
 
 .seealso: VecSetType()
 @*/
@@ -48,8 +46,6 @@ PetscTruth VecRegisterAllCalled = PETSC_FALSE;
    Not Collective
 
    Level: advanced
-
-.keywords: Vec, register, destroy
 
 .seealso: VecRegisterDynamic(), VecRegisterAll()
 @*/
@@ -108,7 +104,7 @@ int VecRegisterDestroy(void)
 
    Level: advanced
 
-.keywords: Vec, register
+   Concepts: vector^adding new type
 
 .seealso: VecRegisterAll(), VecRegisterDestroy()
 M*/
@@ -148,8 +144,6 @@ int VecRegister(const char sname[],const char path[],const char name[],int (*fun
     of the same type as an existing vector.
 
     Level: intermediate
-
-.keywords: vector, set, type
 
 .seealso: VecCreate()
 @*/

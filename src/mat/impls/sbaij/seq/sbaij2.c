@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.23 2000/10/17 15:22:57 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.24 2000/10/17 15:30:23 hzhang Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1420,7 +1420,8 @@ int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int          ierr,i,j,n,row,col,bs,*ai,*aj,mbs;
   PetscReal    atmp;
-  MatScalar    *aa,zero = 0.0,*x;
+  MatScalar    *aa;
+  Scalar       zero = 0.0,*x;
   int          ncols,brow,bcol,krow,kcol; 
 
   PetscFunctionBegin;

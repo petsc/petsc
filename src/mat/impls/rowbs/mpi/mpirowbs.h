@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.46 2000/05/10 16:40:44 bsmith Exp balay $ */
+/* $Id: mpirowbs.h,v 1.47 2000/05/24 21:05:06 balay Exp bsmith $ */
 
 #if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
@@ -17,19 +17,17 @@ EXTERN_C_END
 
 typedef struct {
   int         *rowners;           /* range of rows owned by each proc */
-  int         m,n;               /* local rows and columns */
-  int         M,N;               /* global rows and columns */
   int         rstart,rend;       /* starting and ending owned rows */
   int         size;               /* size of communicator */
   int         rank;               /* rank of proc in communicator */ 
   int         sorted;             /* if true, rows sorted by increasing cols */
-  int         roworiented;        /* if true, row-oriented storage */
+  PetscTruth  roworiented;        /* if true, row-oriented storage */
   int         nonew;              /* if true, no new elements allowed */
   int         nz,maxnz;          /* total nonzeros stored, allocated */
   int         *imax;              /* allocated matrix space per row */
 
   /*  The following variables are used in matrix assembly */
-  int         donotstash;         /* 1 if off processor entries dropped */
+  PetscTruth  donotstash;         /* 1 if off processor entries dropped */
   MPI_Request *send_waits;        /* array of send requests */
   MPI_Request *recv_waits;        /* array of receive requests */
   int         nsends,nrecvs;     /* numbers of sends and receives */

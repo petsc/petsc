@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.49 2000/09/06 22:19:29 balay Exp bsmith $";
+! "$Id: ex4f.F,v 1.50 2000/09/22 20:46:14 bsmith Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -114,7 +114,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRA(1,0,' ',ierr)
+         SETERRA(1,' ',ierr)
       endif
 
 !  Initialize problem parameters
@@ -129,7 +129,7 @@
       call OptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRA(1,0,' ',ierr)
+         SETERRA(1,' ',ierr)
       endif
       N       = mx*my
 

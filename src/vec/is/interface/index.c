@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.77 2000/09/22 20:42:51 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.78 2000/09/28 21:09:55 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -21,7 +21,7 @@
    Level: intermediate
 
    Concepts: identity mapping
-   Concepts: index set^is identity
+   Concepts: index sets^is identity
 
 .seealso: ISSetIdentity()
 @*/
@@ -53,7 +53,7 @@ int ISIdentity(IS is,PetscTruth *ident)
    Level: intermediate
 
    Concepts: identity mapping
-   Concepts: index set^is identity
+   Concepts: index sets^is identity
 
 .seealso: ISIdentity()
 @*/
@@ -82,7 +82,7 @@ int ISSetIdentity(IS is)
    Level: intermediate
 
   Concepts: permutation
-  Concepts: index set^is permutation
+  Concepts: index sets^is permutation
 
 .seealso: ISSetPermutation()
 @*/
@@ -108,7 +108,7 @@ int ISPermutation(IS is,PetscTruth *perm)
    Level: intermediate
 
   Concepts: permutation
-  Concepts: index set^permutation
+  Concepts: index sets^permutation
 
 .seealso: ISPermutation()
 @*/
@@ -172,7 +172,7 @@ int ISDestroy(IS is)
 
    Concepts: inverse permutation
    Concepts: permutation^inverse
-   Concepts: index set^invert
+   Concepts: index sets^inverting
 @*/
 int ISInvertPermutation(IS is,int nlocal,IS *isout)
 {
@@ -201,7 +201,7 @@ int ISInvertPermutation(IS is,int nlocal,IS *isout)
    Level: beginner
 
    Concepts: size^of index set
-   Concepts: index set^size
+   Concepts: index sets^size
 
 @*/
 int ISGetSize(IS is,int *size)
@@ -232,7 +232,7 @@ int ISGetSize(IS is,int *size)
 
    Concepts: size^of index set
    Concepts: local size^of index set
-   Concepts: index set^local size
+   Concepts: index sets^local size
   
 @*/
 int ISGetLocalSize(IS is,int *size)
@@ -280,7 +280,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    Level: intermediate
 
-   Concepts: index set^getting indices
+   Concepts: index sets^getting indices
    Concepts: indices of index set
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
@@ -383,8 +383,8 @@ int ISView(IS is,Viewer viewer)
 
    Level: intermediate
 
-   Concepts: index set^sorting
-   Concepts: sorting index set
+   Concepts: index sets^sorting
+   Concepts: sorting^index set
 
 .seealso: ISSorted()
 @*/
@@ -442,7 +442,7 @@ int ISSorted(IS is,PetscTruth *flg)
 
    Level: beginner
 
-   Concepts: index set^duplicating
+   Concepts: index sets^duplicating
 
 .seealso: ISCreateGeneral()
 @*/
@@ -491,7 +491,7 @@ int ISDuplicate(IS is,IS *newIS)
 
 .seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
-  Concepts: index set^getting indices in f90
+  Concepts: index sets^getting indices in f90
   Concepts: indices of index set in f90
 
 M*/
@@ -564,9 +564,9 @@ M*/
 .seealso:  ISBlockRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices(),
            ISRestoreIndices()
 
-  Concepts: index set^getting block indices in f90
+  Concepts: index sets^getting block indices in f90
   Concepts: indices of index set in f90
-  Concepts: block indices of index set in f90
+  Concepts: block^ indices of index set in f90
 
 M*/
 

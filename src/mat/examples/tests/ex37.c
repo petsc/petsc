@@ -1,4 +1,4 @@
-/*$Id: ex37.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex37.c,v 1.16 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 
@@ -17,7 +17,9 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
   for (i=1; i<n-1; i++){

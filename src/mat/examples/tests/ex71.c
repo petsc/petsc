@@ -1,4 +1,4 @@
-/*$Id: ex71.c,v 1.37 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex71.c,v 1.38 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 
@@ -20,6 +20,7 @@ int main(int argc,char **args)
 
   ierr = ViewerSocketOpen(PETSC_COMM_WORLD,"eagle",-1,&viewer);CHKERRA(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {

@@ -1,10 +1,10 @@
 !
-!      "$Id: ex3f90.F,v 1.13 2000/09/22 20:42:58 bsmith Exp bsmith $"; */
+!      "$Id: ex3f90.F,v 1.14 2000/09/27 20:06:10 bsmith Exp bsmith $"; */
 !
 !
 !/*T
-!    Concepts: Index sets^manipulating a block index set;
-!    Concepts: Fortran90;
+!    Concepts: index sets^manipulating a block index set;
+!    Concepts: Fortran90^accessing indices in index set;
 !
 !    Comment:  Creates an index set based on blocks of integers. Views that index set
 !    and then destroys it.

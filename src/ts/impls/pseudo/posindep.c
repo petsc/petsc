@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.48 2000/09/13 03:12:45 bsmith Exp bsmith $*/
+/*$Id: posindep.c,v 1.49 2000/09/28 21:14:57 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -255,23 +255,23 @@ int TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 #define __FUNC__ /*<a name=""></a>*/"TSPseudoJacobian"
 int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS      ts = (TS) ctx;
-  int     ierr;
-  Scalar  mone = -1.0,mdt = 1.0/ts->time_step;
-  MatType mtype;
+  TS         ts = (TS) ctx;
+  int        ierr;
+  Scalar     mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth isshell;
 
   PetscFunctionBegin;
   /* construct users Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian, if not a shell matrix */
-  ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);
-  if (mtype != MATSHELL) {
+  ierr = PetscTypeCompare((PetscObject)*AA,MATSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) {
     ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
   }
-  ierr = MatGetType(*BB,&mtype,PETSC_NULL);CHKERRQ(ierr);
-  if (*BB != *AA && *str != SAME_PRECONDITIONER && mtype != MATSHELL) {
+  ierr = PetscTypeCompare((PetscObject)*BB,MATSHELL,&isshell);CHKERRQ(ierr);
+  if (*BB != *AA && *str != SAME_PRECONDITIONER && !isshell) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
@@ -576,9 +576,9 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name=""></a>*/"TSCreate_Pseudo"
 int TSCreate_Pseudo(TS ts)
 {
-  TS_Pseudo *pseudo;
-  int       ierr;
-  MatType   mtype;
+  TS_Pseudo  *pseudo;
+  int        ierr;
+  PetscTruth isshell;
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_Pseudo;
@@ -590,8 +590,9 @@ int TSCreate_Pseudo(TS ts)
   if (!ts->A) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian");
   }
-  ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
-  if (mtype == MATSHELL) {
+
+  ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
+  if (isshell) {
     ts->Ashell = ts->A;
   }
   ts->setup           = TSSetUp_Pseudo;  

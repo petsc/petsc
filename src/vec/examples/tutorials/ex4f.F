@@ -1,11 +1,12 @@
 !
-!      "$Id: ex4f.F,v 1.24 2000/09/22 20:43:24 bsmith Exp bsmith $";
+!      "$Id: ex4f.F,v 1.25 2000/09/27 20:14:09 bsmith Exp bsmith $";
 !
 !  Description:  Illustrates the use of VecSetValues() to set
 !  multiple values at once; demonstrates VecGetArray().
 !
 !/*T
-!   Concepts: Vectors^Assembling vectors; Using vector arrays;
+!   Concepts: vectors^assembling
+!   Concepts: vector^arrays of vectors
 !   Processors: 1
 !T*/
 ! -----------------------------------------------------------------------

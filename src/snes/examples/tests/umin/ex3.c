@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.60 2000/05/05 22:18:32 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.61 2000/09/28 21:14:23 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
@@ -107,6 +107,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);
   } else {
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H);CHKERRA(ierr);
+    ierr = MatSetFromOptions(H);CHKERRA(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC);CHKERRA(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-defaultH",&flg);CHKERRA(ierr);
     if (flg) ierr = SNESSetHessian(snes,H,H,SNESDefaultComputeHessian,(void *)&user);

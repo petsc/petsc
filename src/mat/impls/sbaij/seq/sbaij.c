@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.36 2000/10/12 18:19:32 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.37 2000/10/19 18:54:23 hzhang Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -104,18 +104,6 @@ int MatDestroy_SeqSBAIJ(Mat A)
   int         ierr;
 
   PetscFunctionBegin;
-  if (A->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(A->mapping);CHKERRQ(ierr);
-  }
-  if (A->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
-  }
-  if (A->rmap) {
-    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
-  }
-  if (A->cmap) {
-    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
-  }
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)A,"Rows=%d, s_NZ=%d",A->m,a->s_nz);
 #endif
@@ -140,8 +128,6 @@ int MatDestroy_SeqSBAIJ(Mat A)
     a->inew = 0;
   }
   ierr = PetscFree(a);CHKERRQ(ierr);
-  PLogObjectDestroy(A);
-  PetscHeaderDestroy(A);
   PetscFunctionReturn(0);
 }
 
@@ -1132,6 +1118,17 @@ int MatSeqSBAIJSetColumnIndices(Mat mat,int *indices)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatSetUpPreallocation_SeqSBAIJ"></a>*/"MatSetUpPreallocation_SeqSBAIJ"
+int MatSetUpPreallocation_SeqSBAIJ(Mat A)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr =  MatSeqSBAIJSetPreallocation(A,1,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetRow_SeqSBAIJ,
@@ -1163,7 +1160,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        MatCholeskyFactorSymbolic_SeqSBAIJ,
        MatCholeskyFactorNumeric_SeqSBAIJ_N,
-       0,
+       MatSetUpPreallocation_SeqSBAIJ,
        0,
        MatGetOwnershipRange_SeqSBAIJ,
        0,
@@ -1267,6 +1264,8 @@ int MatCreate_SeqSBAIJ(Mat B)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
+  B->m = B->M = PetscMax(B->m,B->M);
+  B->n = B->N = PetscMax(B->n,B->N);
 
   B->data = (void*)(b = PetscNew(Mat_SeqSBAIJ));CHKPTRQ(b);
   ierr    = PetscMemzero(b,sizeof(Mat_SeqSBAIJ));CHKERRQ(ierr);
@@ -1313,9 +1312,9 @@ int MatCreate_SeqSBAIJ(Mat B)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "MatSeqSBAIJSetNonzeroStructure"
+#define __FUNC__ "MatSeqSBAIJSetPreallocation"
 /*@C
-   MatSeqSBAIJSetNonzeroStructure - Creates a sparse symmetric matrix in block AIJ (block
+   MatSeqSBAIJSetPreallocation - Creates a sparse symmetric matrix in block AIJ (block
    compressed row) format.  For good matrix assembly performance the
    user should preallocate the matrix storage by setting the parameter nz
    (or the array nnz).  By setting these parameters accurately, performance
@@ -1349,7 +1348,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
 @*/
-int MatSeqSBAIJSetNonzeroStructure(Mat B,int bs,int nz,int *nnz)
+int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
 {
   Mat_SeqSBAIJ *b = (Mat_SeqSBAIJ*)B->data;
   int          i,len,ierr,mbs,bs2,size;
@@ -1357,6 +1356,7 @@ int MatSeqSBAIJSetNonzeroStructure(Mat B,int bs,int nz,int *nnz)
   int          s_nz; 
 
   PetscFunctionBegin;
+  B->preallocated = PETSC_TRUE;
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
   mbs  = B->m/bs;
   bs2  = bs*bs;
@@ -1525,7 +1525,7 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,m,n,A);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetNonzeroStructure(*A,bs,nz,nnz);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(*A,bs,nz,nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1543,10 +1543,8 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   *B = 0;
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&C);CHKERRQ(ierr);
   ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
-  C->data           = (void*)(c = PetscNew(Mat_SeqSBAIJ));CHKPTRQ(c);
   ierr              = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  C->ops->destroy   = MatDestroy_SeqSBAIJ;
-  C->ops->view      = MatView_SeqSBAIJ;
+  C->preallocated   = PETSC_TRUE;
   C->factor         = A->factor;
   c->row            = 0;
   c->icol           = 0;

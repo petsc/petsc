@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.27 2000/01/11 21:00:48 bsmith Exp bsmith $ */
+/* $Id: bdiag.h,v 1.28 2000/05/10 16:40:47 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -14,28 +14,26 @@
 */
 
 typedef struct {
-  int    m,n;             /* rows, columns */
-  int    mblock,nblock;   /* block rows and columns */
-  int    nonew;            /* if true, no new nonzeros allowed in matrix */
-  int    nonew_diag;       /* if true, no new diagonals allowed in matrix */
-  int    nz,maxnz;         /* nonzeros, allocated nonzeros */
-  int    nd;               /* number of block diagonals */
-  int    mainbd;           /* the number of the main block diagonal */
-  int    bs;               /* Each diagonal element is an bs x bs matrix */
-  int    *diag;            /* value of (row-col)/bs for each diagonal */
-  int    *bdlen;           /* block-length of each diagonal */
-  int    ndim;             /* diagonals come from an ndim pde (if 0, ignore) */
-  int    ndims[3];         /* sizes of the mesh if ndim > 0 */
-  int    user_alloc;       /* true if the user provided the diagonals */
-  int    *colloc;          /* holds column locations if using MatGetRow */
-  Scalar **diagv;          /* The actual diagonals */
-  Scalar *dvalue;          /* Used to hold a row if MatGetRow is used */
-  int    *pivot;           /* pivots for LU factorization (temporary loc) */
-  int    roworiented;      /* inputs to MatSetValue() are row oriented (default = 1) */
-  int    reallocs;         /* number of allocations during MatSetValues */
+  int        mblock,nblock;   /* block rows and columns */
+  int        nonew;            /* if true, no new nonzeros allowed in matrix */
+  int        nonew_diag;       /* if true, no new diagonals allowed in matrix */
+  int        nz,maxnz;         /* nonzeros, allocated nonzeros */
+  int        nd;               /* number of block diagonals */
+  int        mainbd;           /* the number of the main block diagonal */
+  int        bs;               /* Each diagonal element is an bs x bs matrix */
+  int        *diag;            /* value of (row-col)/bs for each diagonal */
+  int        *bdlen;           /* block-length of each diagonal */
+  int        ndim;             /* diagonals come from an ndim pde (if 0, ignore) */
+  int        ndims[3];         /* sizes of the mesh if ndim > 0 */
+  PetscTruth user_alloc;       /* true if the user provided the diagonals */
+  int        *colloc;          /* holds column locations if using MatGetRow */
+  Scalar     **diagv;          /* The actual diagonals */
+  Scalar     *dvalue;          /* Used to hold a row if MatGetRow is used */
+  int        *pivot;           /* pivots for LU factorization (temporary loc) */
+  PetscTruth roworiented;      /* inputs to MatSetValue() are row oriented (default = 1) */
+  int        reallocs;         /* number of allocations during MatSetValues */
 } Mat_SeqBDiag;
 
-EXTERN int MatConvert_SeqBDiag(Mat,MatType,Mat *);
 EXTERN int MatNorm_SeqBDiag_Columns(Mat,double*,int);
 EXTERN int MatMult_SeqBDiag_N(Mat A,Vec,Vec);
 EXTERN int MatMultAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);

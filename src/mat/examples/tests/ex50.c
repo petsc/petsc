@@ -1,4 +1,4 @@
-/*$Id: ex50.c,v 1.19 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex50.c,v 1.20 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -36,6 +36,7 @@ int main(int argc,char **args)
   fscanf(file,"%d\n",&n);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b);CHKERRA(ierr);
   ierr = VecSetFromOptions(b);CHKERRA(ierr);
 

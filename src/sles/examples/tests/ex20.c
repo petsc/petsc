@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.8 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex20.c,v 1.9 2000/08/01 20:57:07 bsmith Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -47,6 +47,7 @@ int main(int argc,char **args)
 
   /* Create stiffness matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank); 
 

@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.63 2000/08/01 20:57:07 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.64 2000/09/28 21:13:39 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -19,7 +19,6 @@ int main(int argc,char **args)
   Scalar     zero = 0.0,none = -1.0;
   Vec        x,b,u;
   Mat        A;
-  MatType    mtype;
   SLES       sles;
   char       file[128];
   Viewer     fd;
@@ -37,8 +36,8 @@ int main(int argc,char **args)
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
   if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL,&mtype,&set);CHKERRA(ierr);
-  ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);
+
+  ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
   ierr = VecLoad(fd,&b);CHKERRA(ierr);
   ierr = ViewerDestroy(fd);CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: baijfact.c,v 1.83 2000/07/10 03:39:42 bsmith Exp bsmith $*/
+/*$Id: baijfact.c,v 1.84 2000/09/28 21:11:23 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -218,7 +218,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     while (row < i) {
       pc = rtmp + bs2*row;
 /*      if (*pc) { */
-      for (flg=0,k=0; k<bs2; k++) { if (pc[k]!=0.0) { flg =1; break; }}
+      for (flg=0,k=0; k<bs2; k++) { if (pc[k]!=0.0) { flg = 1; break; }}
       if (flg) {
         pv = ba + bs2*diag_offset[row];
         pj = bj + diag_offset[row] + 1;
@@ -2329,65 +2329,25 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PLogFlops(b->n);
+  PLogFlops(C->n);
   PetscFunctionReturn(0);
 }
+
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatLUFactor_SeqBAIJ"></a>*/"MatLUFactor_SeqBAIJ"
 int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatLUInfo *info)
 {
-  Mat_SeqBAIJ *mat = (Mat_SeqBAIJ*)A->data;
-  int         ierr,refct;
+  int         ierr;
   Mat         C;
-  PetscOps    *Abops;
-  MatOps      Aops;
 
   PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
-
-  /* free all the data structures from mat */
-  ierr = PetscFree(mat->a);CHKERRQ(ierr);
-  if (!mat->singlemalloc) {
-    ierr = PetscFree(mat->i);CHKERRQ(ierr);
-    ierr = PetscFree(mat->j);CHKERRQ(ierr);
-  }
-  if (mat->diag) {ierr = PetscFree(mat->diag);CHKERRQ(ierr);}
-  if (mat->ilen) {ierr = PetscFree(mat->ilen);CHKERRQ(ierr);}
-  if (mat->imax) {ierr = PetscFree(mat->imax);CHKERRQ(ierr);}
-  if (mat->solve_work) {ierr = PetscFree(mat->solve_work);CHKERRQ(ierr);}
-  if (mat->mult_work) {ierr = PetscFree(mat->mult_work);CHKERRQ(ierr);}
-  if (mat->icol) {ierr = ISDestroy(mat->icol);CHKERRQ(ierr);}
-  ierr = PetscFree(mat);CHKERRQ(ierr);
-
-  ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
-
-  /*
-       This is horrible,horrible code. We need to keep the 
-    A pointers for the bops and ops but copy everything 
-    else from C.
-  */
-  Abops = A->bops;
-  Aops  = A->ops;
-  refct = A->refct;
-  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  mat   = (Mat_SeqBAIJ*)A->data;
-  PLogObjectParent(A,mat->icol); 
-
-  A->bops  = Abops;
-  A->ops   = Aops;
-  A->qlist = 0;
-  A->refct = refct;
-  /* copy over the type_name and name */
-  ierr     = PetscStrallocpy(C->type_name,&A->type_name);CHKERRQ(ierr);
-  ierr     = PetscStrallocpy(C->name,&A->name);CHKERRQ(ierr);
-
-  PetscHeaderDestroy(C);
+  ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
+  PLogObjectParent(A,((Mat_SeqBAIJ*)(A->data))->icol); 
   PetscFunctionReturn(0);
 }
-
 
 

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.2 1999/11/05 14:46:06 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2000/08/17 04:51:58 bsmith Exp bsmith $ 
 #
 ALL: lib
 
-#requirespackage '-DPETSC_HAVE_PARMETIS'
+#requirespackage 'PETSC_HAVE_PARMETIS'
 
 CFLAGS   =
 FFLAGS   =

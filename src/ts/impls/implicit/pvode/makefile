@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.9 1999/11/05 14:47:34 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.10 2000/08/17 04:53:02 bsmith Exp bsmith $ 
 
 ALL: lib
 
-#requirespackage  '-DPETSC_HAVE_PVODE'
+#requirespackage  'PETSC_HAVE_PVODE'
 #requireslanguage CONLY
 
 CFLAGS   =

@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.6 2000/01/16 03:29:05 bsmith Exp $*/
+/*$Id: appalgebra.c,v 1.13 2000/08/24 22:43:38 bsmith Exp bsmith $*/
 #include "appctx.h"
 #include "math.h"
 
@@ -170,17 +170,10 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   AppGrid     *grid    = &appctx->grid;
   MPI_Comm    comm = appctx->comm;
   int         ierr;
-  PetscTruth  flg;
  
   PetscFunctionBegin;
-  ierr = OptionsHasName(PETSC_NULL,"-mat_type",&flg);CHKERRQ(ierr);
-  if (!flg) {
-    /* use very rough estimate for nonzeros on and off the diagonal */
-    ierr = MatCreateMPIAIJ(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,9,0,3,0,&algebra->A);CHKERRQ(ierr);
-  } else {
-    ierr = MATCreate(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
-    ierr = MatSetTypeFromOptions(algebra->A);CHKERRQ(ierr);
-  }
+  ierr = MatCreate(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,&algebra->A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(algebra->A);CHKERRQ(ierr);
 
   /* Allows one to set values into the matrix using the LOCAL numbering, via MatSetValuesLocal() */
   ierr = MatSetLocalToGlobalMapping(algebra->A,grid->ltog);  CHKERRQ(ierr);

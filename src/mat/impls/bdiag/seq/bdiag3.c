@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.23 2000/05/10 16:40:47 bsmith Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.24 2000/09/28 21:11:17 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -38,10 +38,10 @@ int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
 
   PetscFunctionBegin;
-  info->rows_global       = (double)a->m;
-  info->columns_global    = (double)a->n;
-  info->rows_local        = (double)a->m;
-  info->columns_local     = (double)a->n;
+  info->rows_global       = (double)A->m;
+  info->columns_global    = (double)A->n;
+  info->rows_local        = (double)A->m;
+  info->columns_local     = (double)A->n;
   info->block_size        = a->bs;
   info->nz_allocated      = (double)a->maxnz;
   info->nz_used           = (double)a->nz;
@@ -59,11 +59,9 @@ int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 #define __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_SeqBDiag" 
 int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-
   PetscFunctionBegin;
   if (m) *m = 0;
-  if (n) *n = a->m;
+  if (n) *n = A->m;
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +78,7 @@ int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          nd = a->nd,bs = a->bs;
-  int          nc = a->n,*diag = a->diag,pcol,shift,i,j,k;
+  int          nc = A->n,*diag = a->diag,pcol,shift,i,j,k;
 
   PetscFunctionBegin;
   /* For efficiency, if ((nz) && (col) && (v)) then do all at once */
@@ -217,7 +215,7 @@ int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
   Scalar       *dv;
 
   PetscFunctionBegin;
-  ierr = PetscMemzero(tmp,a->n*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemzero(tmp,A->n*sizeof(PetscReal));CHKERRQ(ierr);
   if (bs == 1) {
     for (d=0; d<nd; d++) {
       dv   = a->diagv[d];
@@ -298,16 +296,16 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
     }
     *norm = sqrt(sum);
   } else if (type == NORM_1) { /* max column norm */
-    tmp = (PetscReal*)PetscMalloc((a->n+1)*sizeof(PetscReal));CHKPTRQ(tmp);
-    ierr = MatNorm_SeqBDiag_Columns(A,tmp,a->n);CHKERRQ(ierr);
+    tmp = (PetscReal*)PetscMalloc((A->n+1)*sizeof(PetscReal));CHKPTRQ(tmp);
+    ierr = MatNorm_SeqBDiag_Columns(A,tmp,A->n);CHKERRQ(ierr);
     *norm = 0.0;
-    for (j=0; j<a->n; j++) {
+    for (j=0; j<A->n; j++) {
       if (tmp[j] > *norm) *norm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) { /* max row norm */
-    tmp = (PetscReal*)PetscMalloc((a->m+1)*sizeof(PetscReal));CHKPTRQ(tmp);
-    ierr = PetscMemzero(tmp,a->m*sizeof(PetscReal));CHKERRQ(ierr);
+    tmp = (PetscReal*)PetscMalloc((A->m+1)*sizeof(PetscReal));CHKPTRQ(tmp);
+    ierr = PetscMemzero(tmp,A->m*sizeof(PetscReal));CHKERRQ(ierr);
     *norm = 0.0;
     if (bs == 1) {
       for (d=0; d<nd; d++) {
@@ -350,7 +348,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
         }
       }
     }
-    for (j=0; j<a->m; j++) {
+    for (j=0; j<A->m; j++) {
       if (tmp[j] > *norm) *norm = tmp[j];
     }
     ierr = PetscFree(tmp);CHKERRQ(ierr);
@@ -375,7 +373,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   for (i=0; i<nd; i++) {
     diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
   }
-  ierr = MatCreateSeqBDiag(A->comm,a->n,a->m,nd,bs,diagnew,0,&tmat);CHKERRQ(ierr);
+  ierr = MatCreateSeqBDiag(A->comm,A->n,A->m,nd,bs,diagnew,0,&tmat);CHKERRQ(ierr);
   ierr = PetscFree(diagnew);CHKERRQ(ierr);
   anew = (Mat_SeqBDiag*)tmat->data;
   for (d=0; d<nd; d++) {
@@ -442,10 +440,10 @@ int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
 
   /* For MATSEQBDIAG format,maxnz = nz */
-  col_lens    = (int*)PetscMalloc((4+a->m)*sizeof(int));CHKPTRQ(col_lens);
+  col_lens    = (int*)PetscMalloc((4+A->m)*sizeof(int));CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
-  col_lens[1] = a->m;
-  col_lens[2] = a->n;
+  col_lens[1] = A->m;
+  col_lens[2] = A->n;
   col_lens[3] = a->maxnz;
 
   /* Should do translation using less memory; this is just a quick initial version */
@@ -453,7 +451,7 @@ int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
   anonz = (Scalar*)PetscMalloc((a->maxnz)*sizeof(Scalar));CHKPTRQ(anonz);
 
   ict = 0;
-  for (i=0; i<a->m; i++) {
+  for (i=0; i<A->m; i++) {
     ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     col_lens[4+i] = nz;
     ierr = PetscMemcpy(&cval[ict],col,nz*sizeof(int));CHKERRQ(ierr);
@@ -464,7 +462,7 @@ int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
   if (ict != a->maxnz) SETERRQ(PETSC_ERR_PLIB,"Error in nonzero count");
 
   /* Store lengths of each row and write (including header) to file */
-  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,PETSC_INT,1);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+A->m,PETSC_INT,1);CHKERRQ(ierr);
   ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
   /* Store column indices (zero start index) */
@@ -481,7 +479,7 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   char         *outputname;
-  int          ierr,*col,i,j,len,diag,nr = a->m,bs = a->bs,format,iprint,nz;
+  int          ierr,*col,i,j,len,diag,nr = A->m,bs = a->bs,format,iprint,nz;
   Scalar       *val,*dv,zero = 0.0;
 
   PetscFunctionBegin;
@@ -507,11 +505,11 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
     }
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"%% Size = %d %d \n",nr,a->n);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"%% Size = %d %d \n",nr,A->n);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"%% Nonzeros = %d \n",a->nz);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"zzz = zeros(%d,3);\n",a->nz);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"zzz = [\n");CHKERRQ(ierr);
-    for (i=0; i<a->m; i++) {
+    for (i=0; i<A->m; i++) {
       ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
       for (j=0; j<nz; j++) {
         if (val[j] != zero) {
@@ -634,7 +632,7 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   } else {
     ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     /* the usual row format (VIEWER_FORMAT_ASCII_NONZERO_ONLY) */
-    for (i=0; i<a->m; i++) {
+    for (i=0; i<A->m; i++) {
       ierr = ViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
       ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
       for (j=0; j<nz; j++) {
@@ -661,17 +659,16 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 #define __FUNC__ /*<a name=""></a>*/"MatView_SeqBDiag_Draw"
 static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 {
-  Mat_SeqBDiag  *a = (Mat_SeqBDiag*)A->data;
   Draw          draw;
   PetscReal     xl,yl,xr,yr,w,h;
-  int           ierr,nz,*col,i,j,nr = a->m;
+  int           ierr,nz,*col,i,j,nr = A->m;
   PetscTruth    isnull;
 
   PetscFunctionBegin;
   ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-  xr = a->n; yr = a->m; h = yr/10.0; w = xr/10.0;
+  xr = A->n; yr = A->m; h = yr/10.0; w = xr/10.0;
   xr += w; yr += h; xl = -w; yl = -h;
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
 

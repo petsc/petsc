@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.66 2000/08/18 18:45:24 balay Exp bsmith $*/
+/*$Id: baij2.c,v 1.67 2000/09/28 21:11:23 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -26,7 +26,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 
   ierr  = PetscBTCreate(m,table);CHKERRQ(ierr);
   nidx  = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(nidx); 
-  nidx2 = (int *)PetscMalloc((a->m+1)*sizeof(int));CHKPTRQ(nidx2);
+  nidx2 = (int *)PetscMalloc((A->m+1)*sizeof(int));CHKPTRQ(nidx2);
 
   for (i=0; i<is_max; i++) {
     /* Initialise the two local arrays */
@@ -248,7 +248,7 @@ int MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - a->m);
+  PLogFlops(2*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +284,7 @@ int MatMult_SeqBAIJ_2(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(8*a->nz - a->m);
+  PLogFlops(8*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -324,7 +324,7 @@ int MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(18*a->nz - a->m);
+  PLogFlops(18*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +362,7 @@ int MatMult_SeqBAIJ_4(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(32*a->nz - a->m);
+  PLogFlops(32*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -401,7 +401,7 @@ int MatMult_SeqBAIJ_5(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(50*a->nz - a->m);
+  PLogFlops(50*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +444,7 @@ int MatMult_SeqBAIJ_6(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(72*a->nz - a->m);
+  PLogFlops(72*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
@@ -486,7 +486,7 @@ int MatMult_SeqBAIJ_7(Mat A,Vec xx,Vec zz)
 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(98*a->nz - a->m);
+  PLogFlops(98*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -513,7 +513,7 @@ int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 
 
   if (!a->mult_work) {
-    k = PetscMax(a->m,a->n);
+    k = PetscMax(A->m,A->n);
     a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
   }
   work = a->mult_work;
@@ -533,7 +533,7 @@ int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  PLogFlops(2*a->nz*bs2 - a->m);
+  PLogFlops(2*a->nz*bs2 - A->m);
   PetscFunctionReturn(0);
 }
 
@@ -876,7 +876,7 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
 
   if (!a->mult_work) {
-    k = PetscMax(a->m,a->n);
+    k = PetscMax(A->m,A->n);
     a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
   }
   work = a->mult_work;
@@ -1041,7 +1041,7 @@ int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
       Scalar    *work,*workt;
 
       if (!a->mult_work) {
-        k = PetscMax(a->m,a->n);
+        k = PetscMax(A->m,A->n);
         a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
       }
       work = a->mult_work;
@@ -1064,7 +1064,7 @@ int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&xg);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zg);CHKERRQ(ierr);
-  PLogFlops(2*a->nz*a->bs2 - a->n);
+  PLogFlops(2*a->nz*a->bs2 - A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1171,7 +1171,7 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       Scalar    *work,*workt;
 
       if (!a->mult_work) {
-        k = PetscMax(a->m,a->n);
+        k = PetscMax(A->m,A->n);
         a->mult_work = (Scalar*)PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
       }
       work = a->mult_work;
@@ -1267,13 +1267,16 @@ int MatEqual_SeqBAIJ(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data,*b = (Mat_SeqBAIJ *)B->data;
   int         ierr;
+  PetscTruth  flag;
 
   PetscFunctionBegin;
-  if (B->type != MATSEQBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
+  ierr = PetscTypeCompare((PetscObject)B,MATSEQBAIJ,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
 
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
-  if ((a->m != b->m) || (a->n !=b->n) || (a->bs != b->bs)|| (a->nz != b->nz)) {
-    *flg = PETSC_FALSE; PetscFunctionReturn(0); 
+  if ((A->m != B->m) || (A->n != B->n) || (a->bs != b->bs)|| (a->nz != b->nz)) {
+    *flg = PETSC_FALSE;
+    PetscFunctionReturn(0); 
   }
   
   /* if the a->i are the same */
@@ -1314,7 +1317,7 @@ int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<ambs; i++) {
     for (j=ai[i]; j<ai[i+1]; j++) {
       if (aj[j] == i) {
@@ -1342,8 +1345,8 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   ai  = a->i;
   aj  = a->j;
   aa  = a->a;
-  m   = a->m;
-  n   = a->n;
+  m   = A->m;
+  n   = A->n;
   bs  = a->bs;
   mbs = a->mbs;
   bs2 = a->bs2;
@@ -1394,10 +1397,10 @@ int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
 
   PetscFunctionBegin;
-  info->rows_global    = (double)a->m;
-  info->columns_global = (double)a->n;
-  info->rows_local     = (double)a->m;
-  info->columns_local  = (double)a->n;
+  info->rows_global    = (double)A->m;
+  info->columns_global = (double)A->n;
+  info->rows_local     = (double)A->m;
+  info->columns_local  = (double)A->n;
   info->block_size     = a->bs2;
   info->nz_allocated   = a->maxnz;
   info->nz_used        = a->bs2*a->nz;

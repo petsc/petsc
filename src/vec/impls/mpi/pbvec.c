@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.160 2000/08/17 04:51:12 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.161 2000/09/28 21:10:24 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -76,7 +76,7 @@ int VecSetOption_MPI(Vec v,VecOption op)
 
   PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
-    w->donotstash = 1;
+    w->donotstash = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
@@ -186,7 +186,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   */
   ierr = VecStashCreate_Private(v->comm,1,&v->stash);CHKERRQ(ierr);
   ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
-  s->donotstash  = 0;
+  s->donotstash  = PETSC_FALSE;
                                                         
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ EXTERN_C_END
 
    Level: intermediate
 
-.keywords: vector, create, MPI
+   Concepts: vectors^creating with array
 
 .seealso: VecCreateSeqWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
@@ -286,7 +286,7 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const Scalar array[],Vec *vv
 
     Level: advanced
 
-.keywords:  ghost points, local representation
+   Concepts: vectors^ghost point access
 
 .seealso: VecCreateGhost(), VecGhostRestoreLocalForm(), VecCreateGhostWithArray()
 
@@ -333,8 +333,6 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
     and their current values.
 
     Level: advanced
-
-.keywords:  ghost points, local representation
 
 .seealso: VecCreateGhost(), VecGhostGetLocalForm(), VecCreateGhostWithArray()
 @*/
@@ -493,7 +491,8 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
 
    Level: advanced
 
-.keywords: vector, create, MPI, ghost points, ghost padding
+   Concepts: vectors^creating with array
+   Concepts: vectors^ghosted
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), 
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray()
@@ -562,7 +561,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
 
    Level: advanced
 
-.keywords: vector, create, MPI, ghost points, ghost padding
+   Concepts: vectors^ghosted
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), VecGhostUpdateBegin(),
@@ -668,7 +667,8 @@ int VecDuplicate_MPI(Vec win,Vec *v)
 
    Level: advanced
 
-.keywords: vector, create, MPI, ghost points, ghost padding
+   Concepts: vectors^creating ghosted
+   Concepts: vectors^creating with array
 
 .seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), 
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
@@ -746,7 +746,7 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
 
    Level: advanced
 
-.keywords: vector, create, MPI, ghost points, ghost padding
+   Concepts: vectors^ghosted
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
           VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),

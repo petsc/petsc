@@ -1,15 +1,15 @@
-/*$Id: zmat.c,v 1.84 2000/08/01 20:58:32 bsmith Exp balay $*/
+/*$Id: zmat.c,v 1.85 2000/09/26 19:11:19 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matsetfromoptions_               MATSETFROMOPTIONS
 #define matcreateseqaijwitharrays_       MATCREATESEQAIJWITHARRAYS
 #define matpartitioningdestroy_          MATPARTITIONINGDESTROY
 #define matsetvalue_                     MATSETVALUE
 #define matgetrow_                       MATGETROW
 #define matrestorerow_                   MATRESTOREROW
-#define matgettypefromoptions_           MATGETTYPEFROMOPTIONS
 #define matgetordering_                  MATGETORDERING
 #define matdestroy_                      MATDESTROY
 #define matcreatempiaij_                 MATCREATEMPIAIJ
@@ -59,7 +59,6 @@
 #define matview_                         matview
 #define matgetinfo_                      matgetinfo
 #define matgettype_                      matgettype
-#define matgettypefromoptions_           matgettypefromoptions
 #define matdestroy_                      matdestroy
 #define matcreatempiaij_                 matcreatempiaij
 #define matcreateseqaij_                 matcreateseqaij
@@ -95,9 +94,15 @@
 #define matpartitioningsetadjacency_     matpartitioningsetadjacency
 #define matpartitioningapply_            matpartitioningapply            
 #define matcreatempiadj_                 matcreatempiadj
+#define matsetfromoptions_               matsetfromoptions
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL matsetfromoptions_(Mat *B,int *ierr)
+{
+  *ierr = MatSetFromOptions(*B);
+}
 
 void PETSC_STDCALL matcreateseqaijwitharrays_(MPI_Comm *comm,int *m,int *n,int *i,int *j,Scalar *a,Mat *mat,int *ierr)
 {
@@ -138,7 +143,9 @@ void PETSC_STDCALL matpartitioningsetadjacency_(MatPartitioning *part,Mat *mat,i
 
 void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,Viewer *viewer, int *ierr)
 {
-  *ierr = MatPartitioningView(*part,*viewer);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = MatPartitioningView(*part,v);
 }
 
 void PETSC_STDCALL matpartitioningsettype_(MatPartitioning *part,CHAR type PETSC_MIXED_LEN(len),
@@ -251,16 +258,6 @@ void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *ier
   finfo[13] = info.factor_mallocs;
 }
 
-void PETSC_STDCALL matgettypefromoptions_(MPI_Comm *comm,CHAR prefix PETSC_MIXED_LEN(len),MatType *type,
-                              PetscTruth *set,int *ierr PETSC_END_LEN(len))
-{
-  char *t;
-  FIXCHAR(prefix,len,t);
-  *ierr = MatGetTypeFromOptions((MPI_Comm)PetscToPointerComm(*comm),t,type,set);
-  FREECHAR(prefix,t);
-}
-
-
 void PETSC_STDCALL matgetarray_(Mat *mat,Scalar *fa,long *ia,int *ierr)
 {
   Scalar *mm;
@@ -287,14 +284,22 @@ void PETSC_STDCALL mattranspose_(Mat *mat,Mat *B,int *ierr)
   *ierr = MatTranspose(*mat,B);
 }
 
-void PETSC_STDCALL matload_(Viewer *viewer,MatType *outtype,Mat *newmat,int *ierr)
+void PETSC_STDCALL matload_(Viewer *viewer,CHAR outtype PETSC_MIXED_LEN(len),Mat *newmat,int *ierr PETSC_END_LEN(len))
 {
-  *ierr = MatLoad(*viewer,*outtype,newmat);
+  char *t;
+  Viewer v;
+  FIXCHAR(outtype,len,t);
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = MatLoad(v,t,newmat);
+  FREECHAR(outtype,t);
 }
 
-void PETSC_STDCALL matconvert_(Mat *mat,MatType *newtype,Mat *M,int *ierr)
+void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),Mat *M,int *ierr PETSC_END_LEN(len))
 {
-  *ierr = MatConvert(*mat,*newtype,M);
+  char *t;
+  FIXCHAR(outtype,len,t);
+  *ierr = MatConvert(*mat,t,M);
+  FREECHAR(outtype,t);
 }
 
 void PETSC_STDCALL matcreateseqdense_(MPI_Comm *comm,int *m,int *n,Scalar *data,Mat *newmat,int *ierr)
@@ -349,13 +354,11 @@ void PETSC_STDCALL matorderingregisterdestroy_(int *ierr)
   *ierr = MatOrderingRegisterDestroy();
 }
 
-void PETSC_STDCALL matgettype_(Mat *mm,MatType *type,CHAR name PETSC_MIXED_LEN(len),
-                               int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
-  if (FORTRANNULLINTEGER(type)) type = PETSC_NULL;
-  *ierr = MatGetType(*mm,type,&tname);
+  *ierr = MatGetType(*mm,&tname);
 #if defined(PETSC_USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);

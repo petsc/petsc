@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.23 2000/09/06 22:20:08 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.24 2000/09/28 21:14:21 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
@@ -100,6 +100,7 @@ int main(int argc,char **argv)
     ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
     if (!matrix_free) {
       ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&J);CHKERRA(ierr);
+      ierr = MatSetFromOptions(J);CHKERRA(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user);CHKERRA(ierr);
     }
 

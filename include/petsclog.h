@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.146 2000/09/06 22:20:52 balay Exp balay $ */
+/* $Id: petsclog.h,v 1.147 2000/09/19 14:55:26 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -384,7 +384,7 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 
-#define PLogFlops(n)
+#define PLogFlops(n) 0
 
 /*
      With logging turned off, then MPE has to be turned off

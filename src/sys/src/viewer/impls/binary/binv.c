@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.92 2000/09/26 03:28:43 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.93 2000/09/28 21:08:13 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -190,7 +190,7 @@ $    BINARY_WRONLY - open existing file for binary output
    Concepts: ViewerBinary^creating
    Concepts: gzip
    Concepts: accessing remote file
-   Concepts: remote file, accessing
+   Concepts: remote file
 
 .seealso: ViewerASCIIOpen(), ViewerSetFormat(), ViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor(),

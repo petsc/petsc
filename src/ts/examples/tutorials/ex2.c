@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.30 2000/05/05 22:19:01 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.31 2000/09/22 20:46:37 bsmith Exp bsmith $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -149,6 +149,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-fdjac",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx);CHKERRA(ierr);

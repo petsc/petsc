@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.186 2000/09/22 20:43:10 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.187 2000/09/28 21:10:22 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -470,7 +470,7 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
 
    Level: intermediate
 
-.keywords: vector, sequential, create, BLAS
+   Concepts: vectors^creating with array
 
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()

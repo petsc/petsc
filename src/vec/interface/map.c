@@ -1,4 +1,4 @@
-/*$Id: map.c,v 1.10 2000/09/15 18:53:02 balay Exp balay $*/
+/*$Id: map.c,v 1.11 2000/09/15 18:53:37 balay Exp bsmith $*/
 /*
      Provides the interface functions for all map operations.
    These are the map functions the user calls.
@@ -22,7 +22,8 @@
 
 .seealso: MapGetSize(), MapGetLocalRange(), MapGetGlobalRange()
 
-.keywords: Map, get, local, size
+   Concepts: Map^local size
+
 @*/
 int MapGetLocalSize(Map m,int *n)
 {
@@ -51,7 +52,7 @@ int MapGetLocalSize(Map m,int *n)
 
 .seealso: MapGetLocalSize(), MapGetLocalRange(), MapGetGlobalRange()
 
-.keywords: Map, get, size
+   Concepts: Map^size
 @*/
 int MapGetSize(Map m,int *N)
 {
@@ -136,7 +137,6 @@ int MapGetGlobalRange(Map m,int *range[])
 
 .seealso: MapCreateMPI()
 
-.keywords: Map, destroy
 @*/
 int MapDestroy(Map m)
 {

@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.13 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex21.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
 parallel Row format. This also tests MatGetRow() and MatRestoreRow()\n\
@@ -20,8 +20,10 @@ int main(int argc,char **args)
   n = 2*size;
 
   /* create the matrix for the five point stencil, YET AGAIN*/
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-         m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(C,5,PETSC_NULL,5,PETSC_NULL);CHKERRA(ierr);
+  ierr = MatSeqAIJSetPreallocation(C,5,PETSC_NULL);CHKERRA(ierr);
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
@@ -55,7 +57,7 @@ int main(int argc,char **args)
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);CHKERRA(ierr);
 
-  ierr = MatConvert(C,MATMPIAIJ,&A);CHKERRA(ierr);
+  ierr = MatConvert(C,MATSAME,&A);CHKERRA(ierr);
   ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
   ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRA(ierr);

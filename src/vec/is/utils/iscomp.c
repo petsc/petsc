@@ -1,4 +1,4 @@
-/*$Id: iscomp.c,v 1.31 2000/08/23 22:46:13 bsmith Exp bsmith $*/
+/*$Id: iscomp.c,v 1.32 2000/08/24 02:07:42 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -31,7 +31,9 @@ $    is1 = {0, 1} {2, 3}
 $    is2 = {2, 3} {0, 1}
    will return false.
 
-.keywords: IS, index set, equal
+    Concepts: index sets^equal
+    Concepts: IS^equal
+
 @*/
 int ISEqual(IS is1,IS is2,PetscTruth *flg)
 {

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.42 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.43 2000/09/28 21:13:46 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -33,7 +33,6 @@ T*/
 int main(int argc,char **args)
 {
   SLES       sles;             /* linear solver context */
-  MatType    mtype;            /* matrix format */
   Mat        A;                /* matrix */
   Vec        x,b,u;          /* approx solution, RHS, exact solution */
   Viewer     fd;               /* viewer */
@@ -88,16 +87,10 @@ int main(int argc,char **args)
     */
     ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],BINARY_RDONLY,&fd);CHKERRA(ierr);
 
-    /* 
-       Determine matrix format to be used (specified at runtime).
-       See the manpage for MatLoad() for available formats.
-    */
-    ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set);CHKERRQ(ierr);
-
     /*
        Load the matrix and vector; then destroy the viewer.
     */
-    ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);
+    ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
     ierr = VecLoad(fd,&b);CHKERRA(ierr);
     ierr = ViewerDestroy(fd);CHKERRA(ierr);
 

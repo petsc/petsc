@@ -1,4 +1,4 @@
-/*$Id: ex34.c,v 1.10 1999/11/05 14:45:44 bsmith Exp balay $*/
+/*$Id: ex34.c,v 1.11 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a matrix and vector from a file and writes to another. Input options:\n\
@@ -23,7 +23,7 @@ int main(int argc,char **args)
 
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",file,255,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,help);
+  if (!flg) SETERRA(1,help);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
   ierr = VecLoad(fd,&x);CHKERRA(ierr);
@@ -31,7 +31,7 @@ int main(int argc,char **args)
 
   /* Write matrix and vector */
   ierr = OptionsGetString(PETSC_NULL,"-fout",file,255,&flg);CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,help);
+  if (!flg) SETERRA(1,help);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_CREATE,&fd);CHKERRA(ierr);
   ierr = MatView(A,fd);CHKERRA(ierr);
   ierr = VecView(x,fd);CHKERRA(ierr);

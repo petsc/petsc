@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.45 2000/05/05 22:18:00 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.46 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
 linear system matrix in the SLES solvers.  Note that different storage formats\n\
@@ -59,6 +59,7 @@ int main(int argc,char **args)
         parallel partitioning will be determined at runtime.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&B);CHKERRA(ierr);
+  ierr = MatSetFromOptions(B);CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.11 2000/01/11 21:02:16 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.12 2000/05/05 22:17:55 balay Exp bsmith $*/
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 
@@ -19,7 +19,7 @@ int main(int argc,char **args)
 
   /* create stiffness matrix */
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
-
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 

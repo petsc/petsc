@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.114 2000/09/02 02:47:45 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.115 2000/10/06 17:01:21 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -45,8 +45,8 @@ struct _MatOps {
             (*lufactornumeric)(Mat,Mat *),
             (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
             (*choleskyfactornumeric)(Mat,Mat *),
-/*30*/      (*getsize)(Mat,int *,int *),
-            (*getlocalsize)(Mat,int *,int *),
+/*30*/      (*setuppreallocation)(Mat),
+            (*dummy2)(Mat,int *,int *),
             (*getownershiprange)(Mat,int *,int *),
             (*ilufactorsymbolic)(Mat,IS,IS,MatILUInfo*,Mat *),
             (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
@@ -87,7 +87,8 @@ struct _MatOps {
             (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
             (*setvalueslocal)(Mat,int,int *,int,int *,Scalar *,InsertMode),
             (*zerorowslocal)(Mat,IS,Scalar *),
-            (*getrowmax)(Mat,Vec);
+            (*getrowmax)(Mat,Vec),
+            (*convert)(Mat,MatType,Mat*);
 };
 
 /*
@@ -97,6 +98,7 @@ EXTERN int MatConvert_Basic(Mat,MatType,Mat*);
 EXTERN int MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN int MatView_Private(Mat);
 EXTERN int MatGetMaps_Petsc(Mat,Map *,Map *);
+EXTERN int MatHeaderCopy(Mat,Mat);
 
 /* 
   The stash is used to temporarily store inserted matrix values that 
@@ -161,8 +163,10 @@ struct _p_Mat {
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
   MatNullSpace           nullsp;
+  PetscTruth             preallocated;
 };
 
+#define MatPreallocated(A) {int _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}
 
 /*
     Object for partitioning graphs

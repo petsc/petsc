@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.238 2000/09/22 20:42:24 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.239 2000/09/28 21:09:12 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -671,7 +671,7 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 
    Level: advanced
 
-   Concepts: options database^rejection option
+   Concepts: options database^rejecting option
 
 .seealso: OptionsGetInt(), OptionsGetDouble(),OptionsHasName(),
            OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()

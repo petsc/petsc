@@ -1,4 +1,4 @@
-/*$Id: mhas.c,v 1.20 2000/05/05 22:15:29 balay Exp bsmith $*/
+/*$Id: mhas.c,v 1.21 2000/08/01 20:01:52 bsmith Exp bsmith $*/
 
 
 #include "petsc.h"
@@ -35,6 +35,8 @@ int MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (((void **)mat->ops)[op]) {*has =  PETSC_TRUE;}
   else {*has = PETSC_FALSE;}
   PetscFunctionReturn(0);

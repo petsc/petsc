@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.30 2000/01/11 21:00:13 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.31 2000/05/10 16:40:09 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -12,7 +12,7 @@ typedef struct {
   VECHEADER
   int         size,rank;
   InsertMode  insertmode;
-  int         donotstash;               /* Flag indicates stash values should be ignored */
+  PetscTruth  donotstash;               /* Flag indicates stash values should be ignored */
   int         *browners;                /* block-row-ownership,used for assembly */
   MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
   int         nsends,nrecvs;

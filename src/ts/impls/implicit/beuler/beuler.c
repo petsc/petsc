@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.49 2000/09/08 17:55:08 bsmith Exp bsmith $*/
+/*$Id: beuler.c,v 1.50 2000/09/28 21:14:52 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -218,23 +218,23 @@ int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 #define __FUNC__ /*<a name="TSBEulerJacobian"></a>*/"TSBEulerJacobian"
 int TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS      ts = (TS) ctx;
-  int     ierr;
-  Scalar  mone = -1.0,mdt = 1.0/ts->time_step;
-  MatType mtype;
+  TS         ts = (TS) ctx;
+  int        ierr;
+  Scalar     mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth isshell;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian, if not matrix-free */
-  ierr = MatGetType(*AA,&mtype,PETSC_NULL);CHKERRQ(ierr);
-  if (mtype != MATSHELL) {
+  ierr = PetscTypeCompare((PetscObject)*AA,MATSHELL,&isshell);CHKERRQ(ierr);
+  if (!isshell) {
     ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
   }
-  ierr = MatGetType(*BB,&mtype,PETSC_NULL);CHKERRQ(ierr);
-  if (*BB != *AA && *str != SAME_PRECONDITIONER && mtype != MATSHELL) {
+  ierr = PetscTypeCompare((PetscObject)*BB,MATSHELL,&isshell);CHKERRQ(ierr);
+  if (*BB != *AA && *str != SAME_PRECONDITIONER && !isshell) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
@@ -350,10 +350,10 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name="TSCreate_BEuler"></a>*/"TSCreate_BEuler"
 int TSCreate_BEuler(TS ts)
 {
-  TS_BEuler *beuler;
-  int       ierr;
-  KSP       ksp;
-  MatType   mtype;
+  TS_BEuler  *beuler;
+  int        ierr;
+  KSP        ksp;
+  PetscTruth isshell;
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_BEuler;
@@ -363,15 +363,15 @@ int TSCreate_BEuler(TS ts)
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
-    ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
     if (!ts->rhsmatrix) {
-      if (mtype == MATSHELL) {
+      if (isshell) {
         ts->Ashell = ts->A;
       }
       ts->setup  = TSSetUp_BEuler_Linear_Constant_Matrix;
       ts->step   = TSStep_BEuler_Linear_Constant_Matrix;
     } else {
-      if (mtype == MATSHELL) {
+      if (isshell) {
         ts->Ashell = ts->A;
       }
       ts->setup  = TSSetUp_BEuler_Linear_Variable_Matrix;  
@@ -385,8 +385,8 @@ int TSCreate_BEuler(TS ts)
     if (!ts->A) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian for nonlinear problem");
     }
-    ierr = MatGetType(ts->A,&mtype,PETSC_NULL);CHKERRQ(ierr);
-    if (mtype == MATSHELL) {
+    ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
+    if (isshell) {
       ts->Ashell = ts->A;
     }
     ts->setup           = TSSetUp_BEuler_Nonlinear;  

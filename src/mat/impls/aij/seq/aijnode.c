@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.119 2000/09/28 21:11:00 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.120 2000/09/29 02:38:46 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -23,14 +23,15 @@ EXTERN int MatColoringPatch_SeqAIJ(Mat,int,int*,ISColoring*);
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"Mat_AIJ_CreateColInode"
-static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A,int* size,int ** ns)
+static int Mat_AIJ_CreateColInode(Mat A,int* size,int ** ns)
 {
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int i,count,m,n,min_mn,*ns_row,*ns_col;
 
   PetscFunctionBegin;  
   n      = A->n;
   m      = A->m;
-  ns_row = A->inode.size;
+  ns_row = a->inode.size;
   
   min_mn = (m < n) ? m : n;
   if (!ns) {
@@ -72,13 +73,14 @@ static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A,int* size,int ** ns)
 */
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetRowIJ_SeqAIJ_Inode_Symmetric"
-static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat_SeqAIJ *A,int **iia,int **jja,int ishift,int oshift)
+static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,int **iia,int **jja,int ishift,int oshift)
 {
-  int *work,*ia,*ja,*j,nz,nslim_row,nslim_col,m,row,col,*jmax,n,ierr;
-  int *tns,*tvc,*ns_row = A->inode.size,*ns_col,nsz,i1,i2,*ai= A->i,*aj = A->j;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
+  int        *work,*ia,*ja,*j,nz,nslim_row,nslim_col,m,row,col,*jmax,n,ierr;
+  int        *tns,*tvc,*ns_row = a->inode.size,*ns_col,nsz,i1,i2,*ai= a->i,*aj = a->j;
 
   PetscFunctionBegin;  
-  nslim_row = A->inode.node_count;
+  nslim_row = a->inode.node_count;
   m         = A->m;
   n         = A->n;
   if (m != n) SETERRA(1,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be square");
@@ -89,7 +91,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat_SeqAIJ *A,int **iia,int **jja,
 
   /* allocate space for reformated inode structure */
   tns = (int*)PetscMalloc((nslim_col +1)*sizeof(int));CHKPTRQ(tns);
-  tvc = (int*)PetscMalloc((n +1)*sizeof(int));CHKPTRQ(tvc);
+  tvc = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(tvc);
   for (i1=0,tns[0]=0; i1<nslim_col; ++i1) tns[i1+1] = tns[i1]+ ns_row[i1];
 
   for (i1=0,col=0; i1<nslim_col; ++i1){
@@ -160,13 +162,14 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat_SeqAIJ *A,int **iia,int **jja,
 */
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric"
-static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat_SeqAIJ *A,int **iia,int **jja,int ishift,int oshift)
+static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,int ishift,int oshift)
 {
-  int *work,*ia,*ja,*j,nz,nslim_row,n,row,col,ierr,*ns_col,nslim_col;
-  int *tns,*tvc,*ns_row = A->inode.size,nsz,i1,i2,*ai= A->i,*aj = A->j;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
+  int        *work,*ia,*ja,*j,nz,nslim_row,n,row,col,ierr,*ns_col,nslim_col;
+  int        *tns,*tvc,*ns_row = a->inode.size,nsz,i1,i2,*ai= a->i,*aj = a->j;
 
   PetscFunctionBegin;  
-  nslim_row = A->inode.node_count;
+  nslim_row = a->inode.node_count;
   n         = A->n;
 
   /* Create The column_inode for this matrix */
@@ -236,8 +239,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat_SeqAIJ *A,int **iia,int **j
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetRowIJ_SeqAIJ_Inode"
-static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
-                                 PetscTruth *done)
+static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int        ierr,ishift;
@@ -248,9 +250,9 @@ static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n
 
   ishift = a->indexshift;
   if (symmetric) {
-    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(A,ia,ja,ishift,oshift);CHKERRQ(ierr);
   } else {
-    ierr = MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(A,ia,ja,ishift,oshift);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -272,13 +274,14 @@ static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,in
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric" 
-static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat_SeqAIJ *A,int **iia,int **jja,int ishift,int oshift)
+static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,int ishift,int oshift)
 {
+  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int *work,*ia,*ja,*j,nz,nslim_row, n,row,col,ierr,*ns_col,nslim_col;
-  int *tns,*tvc,*ns_row = A->inode.size,nsz,i1,i2,*ai= A->i,*aj = A->j;
+  int *tns,*tvc,*ns_row = a->inode.size,nsz,i1,i2,*ai= a->i,*aj = a->j;
 
   PetscFunctionBegin;  
-  nslim_row = A->inode.node_count;
+  nslim_row = a->inode.node_count;
   n         = A->n;
 
   /* Create The column_inode for this matrix */
@@ -356,15 +359,15 @@ static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int
   int        ierr,ishift;
 
   PetscFunctionBegin;  
-  ierr = Mat_AIJ_CreateColInode(a,n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = Mat_AIJ_CreateColInode(A,n,PETSC_NULL);CHKERRQ(ierr);
   if (!ia) PetscFunctionReturn(0);
 
   ishift = a->indexshift;
   if (symmetric) {
     /* Since the indices are symmetric it does'nt matter */
-    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetRowIJ_SeqAIJ_Inode_Symmetric(A,ia,ja,ishift,oshift);CHKERRQ(ierr);
   } else {
-    ierr = MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(a,ia,ja,ishift,oshift);CHKERRQ(ierr);
+    ierr = MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(A,ia,ja,ishift,oshift);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -566,7 +569,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - a->m);
+  PLogFlops(2*a->nz - A->m);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
@@ -781,7 +784,7 @@ int Mat_AIJ_CheckInode(Mat A)
   if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not using Inode routines due to -mat_no_unroll\n");PetscFunctionReturn(0);}
   ierr = OptionsGetInt(A->prefix,"-mat_aij_inode_limit",&a->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
-  m = a->m;    
+  m = A->m;    
   if (a->inode.size) {ns = a->inode.size;}
   else {ns = (int *)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(ns);}
 
@@ -842,7 +845,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
   IS          iscol = a->col,isrow = a->row;
-  int         *r,*c,ierr,i,j,n = a->m,*ai = a->i,nz,shift = a->indexshift,*a_j = a->j;
+  int         *r,*c,ierr,i,j,n = A->m,*ai = a->i,nz,shift = a->indexshift,*a_j = a->j;
   int         node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1,*rout,*cout;
   Scalar      *x,*b,*a_a = a->a,*tmp,*tmps,*aa,tmp0,tmp1;
   Scalar      sum1,sum2,sum3,sum4,sum5,*v1,*v2,*v3,*v4,*v5;
@@ -1209,7 +1212,7 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - a->n);
+  PLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
 
@@ -1221,7 +1224,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   Mat        C = *B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
   IS         iscol = b->col,isrow = b->row,isicol = b->icol;
-  int        shift = a->indexshift,*r,*ic,*c,ierr,n = a->m,*bi = b->i; 
+  int        shift = a->indexshift,*r,*ic,*c,ierr,n = A->m,*bi = b->i; 
   int        *bj = b->j+shift,*nbj=b->j +(!shift),*ajtmp,*bjtmp,nz,row,prow;
   int        *ics,i,j,idx,*ai = a->i,*aj = a->j+shift,*bd = b->diag,node_max,nsz;
   int        *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj,ndamp = 0;
@@ -1612,7 +1615,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   if (ndamp || b->lu_damping) {
     PLogInfo(0,"MatLUFactorNumerical_SeqAIJ_Inode: number of damping tries %d damping value %g\n",ndamp,damping);
   }
-  PLogFlops(b->n);
+  PLogFlops(C->n);
   PetscFunctionReturn(0);
 }
 
@@ -1626,18 +1629,20 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        ierr,m = a->m,n = a->n,i,j,*ridx,*cidx,nslim_row = a->inode.node_count;
+  int        ierr,m = A->m,n = A->n,i,j,*ridx,*cidx,nslim_row = a->inode.node_count;
   int        row,col,*permr,*permc,*ns_row =  a->inode.size,*tns,start_val,end_val,indx;
   int        nslim_col,*ns_col;
   IS         ris = *rperm,cis = *cperm;
+  PetscTruth flg;
 
   PetscFunctionBegin;  
-  if (A->type != MATSEQAIJ) PetscFunctionReturn(0);
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
 
   if (!a->inode.size) PetscFunctionReturn(0); /* no inodes so return */
   if (a->inode.node_count == m) PetscFunctionReturn(0); /* all inodes are of size 1 */
 
-  ierr = Mat_AIJ_CreateColInode(a,&nslim_col,&ns_col);CHKERRQ(ierr);
+  ierr  = Mat_AIJ_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
   tns   = (int*)PetscMalloc((((nslim_row>nslim_col)?nslim_row:nslim_col)+1)*sizeof(int));CHKPTRQ(tns);
   permr = (int*)PetscMalloc((m+n+1)*sizeof(int));CHKPTRQ(permr);
   permc = permr + m;
@@ -1714,10 +1719,13 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 int MatSeqAIJGetInodeSizes(Mat A,int *node_count,int *sizes[],int *limit)
 {
   Mat_SeqAIJ *a;
+  PetscTruth flg;
+  int        ierr;
 
   PetscFunctionBegin;  
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  if (A->type != MATSEQAIJ) SETERRQ(PETSC_ERR_ARG_WRONG,"MatSeqAIJ only");
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_WRONG,"MatSeqAIJ only");
   a           = (Mat_SeqAIJ*)A->data; 
   *node_count = a->inode.node_count;
   *sizes      = a->inode.size;

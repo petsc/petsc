@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.47 2000/09/22 20:44:09 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.48 2000/09/28 21:11:35 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -11,7 +11,7 @@
 int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
 {
   Mat_MPIAdj  *a = (Mat_MPIAdj*)A->data;
-  int         ierr,i,j,m = a->m, format;
+  int         ierr,i,j,m = A->m, format;
   char        *outputname;
 
   PetscFunctionBegin;
@@ -59,20 +59,6 @@ int MatDestroy_MPIAdj(Mat mat)
   int        ierr;
 
   PetscFunctionBegin;
-
-  if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);
-  }
-  if (mat->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping);CHKERRQ(ierr);
-  }
-  if (mat->rmap) {
-    ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
-  }
-  if (mat->cmap) {
-    ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
-  }
-
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, NZ=%d",mat->m,mat->n,a->nz);
 #endif
@@ -84,9 +70,6 @@ int MatDestroy_MPIAdj(Mat mat)
   }
   ierr = PetscFree(a->rowners);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
-
-  PLogObjectDestroy(mat);
-  PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);
 }
 
@@ -115,12 +98,12 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
 int MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data; 
-  int        i,j,*diag,m = a->m;
+  int        i,j,*diag,m = A->m;
 
   PetscFunctionBegin;
   diag = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
-  for (i=0; i<a->m; i++) {
+  for (i=0; i<A->m; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
         diag[i] = j;
@@ -129,27 +112,6 @@ int MatMarkDiagonal_MPIAdj(Mat A)
     }
   }
   a->diag = diag;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSize_MPIAdj"
-int MatGetSize_MPIAdj(Mat A,int *m,int *n)
-{
-  PetscFunctionBegin;
-  if (m) *m = A->M;
-  if (n) *n = A->N;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSize_MPIAdj"
-int MatGetLocalSize_MPIAdj(Mat A,int *m,int *n)
-{
-  Mat_MPIAdj *a = (Mat_MPIAdj*)A->data; 
-  PetscFunctionBegin;
-  if (m) *m = a->m; 
-  if (n) *n = A->N;
   PetscFunctionReturn(0);
 }
 
@@ -174,7 +136,7 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
   PetscFunctionBegin;
   row -= a->rstart;
 
-  if (row < 0 || row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
+  if (row < 0 || row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = PETSC_NULL;
@@ -215,15 +177,16 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
   PetscTruth  flag;
 
   PetscFunctionBegin;
-  if (B->type != MATMPIADJ) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
+  ierr = PetscTypeCompare((PetscObject)B,MATMPIADJ,&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
 
   /* If the  matrix dimensions are not equal,or no of nonzeros */
-  if ((a->m != b->m) ||(a->nz != b->nz)) {
+  if ((A->m != B->m) ||(a->nz != b->nz)) {
     flag = PETSC_FALSE;
   }
   
   /* if the a->i are the same */
-  ierr = PetscMemcmp(a->i,b->i,(a->m+1)*sizeof(int),&flag);CHKERRQ(ierr);
+  ierr = PetscMemcmp(a->i,b->i,(A->m+1)*sizeof(int),&flag);CHKERRQ(ierr);
   
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(int),&flag);CHKERRQ(ierr);
@@ -264,8 +227,8 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       MatGetSize_MPIAdj,
-       MatGetLocalSize_MPIAdj,
+       0,
+       0,
        MatGetOwnershipRange_MPIAdj,
        0,
        0,
@@ -301,6 +264,89 @@ static struct _MatOps MatOps_Values = {0,
        MatView_MPIAdj,
        MatGetMaps_Petsc};
 
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatCreate_MPIAdj"
+int MatCreate_MPIAdj(Mat B)
+{
+  Mat_MPIAdj *b;
+  int        ii,ierr,size,rank;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(B->comm,&rank);CHKERRQ(ierr);
+
+  B->data             = (void*)(b = PetscNew(Mat_MPIAdj));CHKPTRQ(b);
+  ierr                = PetscMemzero(b,sizeof(Mat_MPIAdj));CHKERRQ(ierr);
+  ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  B->factor           = 0;
+  B->lupivotthreshold = 1.0;
+  B->mapping          = 0;
+  B->assembled        = PETSC_FALSE;
+  
+  ierr = MPI_Allreduce(&B->m,&B->M,1,MPI_INT,MPI_SUM,B->comm);CHKERRQ(ierr);
+  B->n = B->N;
+
+  /* the information in the maps duplicates the information computed below, eventually 
+     we should remove the duplicate information that is not contained in the maps */
+  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  /* we don't know the "local columns" so just use the row information :-(*/
+  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+
+  b->rowners = (int*)PetscMalloc((size+1)*sizeof(int));CHKPTRQ(b->rowners);
+  PLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
+  ierr = MPI_Allgather(&B->m,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
+  b->rowners[0] = 0;
+  for (ii=2; ii<=size; ii++) {
+    b->rowners[ii] += b->rowners[ii-1];
+  }
+  b->rstart = b->rowners[rank]; 
+  b->rend   = b->rowners[rank+1]; 
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatMPIAdjSetPreallocation"
+int MatMPIAdjSetPreallocation(Mat B,int *i,int *j,int *values)
+{
+  Mat_MPIAdj *b = (Mat_MPIAdj *)B->data;
+  int        ierr;
+#if defined(PETSC_USE_BOPT_g)
+  int        ii;
+#endif
+
+  PetscFunctionBegin;
+  B->preallocated = PETSC_TRUE;
+#if defined(PETSC_USE_BOPT_g)
+  if (i[0] != 0) SETERRQ1(1,"First i[] index must be zero, instead it is %d\n",i[0]);
+  for (ii=1; ii<B->m; ii++) {
+    if (i[ii] < 0 || i[ii] < i[ii-1]) {
+      SETERRQ4(1,"i[%d] index is out of range: i[%d]",ii,i[ii],ii-1,i[ii-1]);
+    }
+  }
+  for (ii=0; ii<i[B->m]; ii++) {
+    if (j[ii] < 0 || j[ii] >= B->N) {
+      SETERRQ2(1,"Column index %d out of range %d\n",ii,j[ii]);
+    }
+  } 
+#endif
+
+  b->j      = j;
+  b->i      = i;
+  b->values = values;
+
+  b->nz               = i[B->m];
+  b->diag             = 0;
+  b->symmetric        = PETSC_FALSE;
+  b->freeaij          = PETSC_TRUE;
+
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatCreateMPIAdj"
@@ -338,82 +384,19 @@ static struct _MatOps MatOps_Values = {0,
 @*/
 int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j,int *values,Mat *A)
 {
-  Mat        B;
-  Mat_MPIAdj *b;
-  int        ii,ierr,size,rank;
-  PetscTruth flg;
+  int        ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-
-  *A                  = 0;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIADJ,"Mat",comm,MatDestroy,MatView);
-  PLogObjectCreate(B);
-  B->data             = (void*)(b = PetscNew(Mat_MPIAdj));CHKPTRQ(b);
-  ierr                = PetscMemzero(b,sizeof(Mat_MPIAdj));CHKERRQ(ierr);
-  ierr                = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->factor           = 0;
-  B->lupivotthreshold = 1.0;
-  B->mapping          = 0;
-  B->assembled        = PETSC_FALSE;
-  
-  b->m = m; B->m = m; 
-  ierr = MPI_Allreduce(&m,&B->M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  B->n = n; B->N = n;
-
-  /* the information in the maps duplicates the information computed below, eventually 
-     we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(comm,m,B->M,&B->rmap);CHKERRQ(ierr);
-  /* we don't know the "local columns" so just use the row information :-(*/
-  ierr = MapCreateMPI(comm,m,B->M,&B->cmap);CHKERRQ(ierr);
-
-  b->rowners = (int*)PetscMalloc((size+1)*sizeof(int));CHKPTRQ(b->rowners);
-  PLogObjectMemory(B,(size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAdj));
-  ierr = MPI_Allgather(&m,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
-  b->rowners[0] = 0;
-  for (ii=2; ii<=size; ii++) {
-    b->rowners[ii] += b->rowners[ii-1];
-  }
-  b->rstart = b->rowners[rank]; 
-  b->rend   = b->rowners[rank+1]; 
-
-#if defined(PETSC_USE_BOPT_g)
-  if (i[0] != 0) SETERRQ1(1,"First i[] index must be zero, instead it is %d\n",i[0]);
-  for (ii=1; ii<m; ii++) {
-    if (i[ii] < 0 || i[ii] < i[ii-1]) {
-      SETERRQ4(1,"i[%d] index is out of range: i[%d]",ii,i[ii],ii-1,i[ii-1]);
-    }
-  }
-  for (ii=0; ii<i[m]; ii++) {
-    if (j[ii] < 0 || j[ii] >= B->N) {
-      SETERRQ2(1,"Column index %d out of range %d\n",ii,j[ii]);
-    }
-  } 
-#endif
-
-  b->j  = j;
-  b->i  = i;
-  b->values = values;
-
-  b->nz               = i[m];
-  b->diag             = 0;
-  b->symmetric        = PETSC_FALSE;
-  b->freeaij          = PETSC_TRUE;
-  *A = B;
-
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = MatPrintHelp(B);CHKERRQ(ierr); }
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,n,PETSC_DETERMINE,n,A);CHKERRQ(ierr);
+  ierr = MatSetType(*A,MATMPIADJ);CHKERRQ(ierr);
+  ierr = MatMPIAdjSetPreallocation(*A,i,j,values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-
-
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatConvert_MPIAdj"
-int MatConvert_MPIAdj(Mat A,MatType type,Mat *B)
+#define __FUNC__ /*<a name=""></a>*/"MatConvertTo_MPIAdj"
+int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
 {
   int      i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
   Scalar   *ra;
@@ -460,7 +443,7 @@ int MatConvert_MPIAdj(Mat A,MatType type,Mat *B)
 
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

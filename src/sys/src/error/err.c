@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.120 2000/10/04 14:58:13 balay Exp balay $*/
+/*$Id: err.c,v 1.121 2000/10/04 14:59:24 balay Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -19,7 +19,7 @@ struct _EH {
 static EH eh = 0;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscEmacsClientErrorHandler" 
+#define __FUNC__ /*<a name="PetscEmacsClientErrorHandler"></a>*/"PetscEmacsClientErrorHandler" 
 /*@C
    PetscEmacsClientErrorHandler - Error handler that uses the emacsclient program to 
     load the file where the error occured. Then calls the "previous" error handler.
@@ -78,7 +78,7 @@ int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,i
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscPushErrorHandler" 
+#define __FUNC__ /*<a name="PetscPushErrorHandler"></a>*/"PetscPushErrorHandler" 
 /*@C
    PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
@@ -127,7 +127,7 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscPopErrorHandler" 
+#define __FUNC__ /*<a name="PetscPopErrorHandler"></a>*/"PetscPopErrorHandler" 
 /*@C
    PetscPopErrorHandler - Removes the latest error handler that was 
    pushed with PetscPushErrorHandler().
@@ -160,7 +160,7 @@ int PetscPopErrorHandler(void)
 char PetscErrorBaseMessage[1024];
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscError" 
+#define __FUNC__ /*<a name="PetscError"></a>*/"PetscError" 
 /*@C
    PetscError - Routine that is called when an error has been detected, 
    usually called through the macro SETERRQ().
@@ -231,7 +231,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 /* -------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscIntView" 
+#define __FUNC__ /*<a name="PetscIntView"></a>*/"PetscIntView" 
 /*@C
     PetscIntView - Prints an array of integers; useful for debugging.
 
@@ -311,7 +311,7 @@ int PetscIntView(int N,int idx[],Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscDoubleView" 
+#define __FUNC__ /*<a name="PetscDoubleView"></a>*/"PetscDoubleView" 
 /*@C
     PetscDoubleView - Prints an array of doubles; useful for debugging.
 
@@ -392,7 +392,7 @@ int PetscDoubleView(int N,PetscReal idx[],Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscScalarView" 
+#define __FUNC__ /*<a name="PetscScalarView"></a>*/"PetscScalarView" 
 /*@C
     PetscScalarView - Prints an array of scalars; useful for debugging.
 

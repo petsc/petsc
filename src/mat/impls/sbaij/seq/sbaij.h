@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.13 2000/09/18 18:54:23 hzhang Exp hzhang $ */
+/* $Id: sbaij.h,v 1.14 2000/10/11 19:26:05 hzhang Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -16,7 +16,6 @@ typedef struct {
   int              nonew;        /* 1 don't add new nonzeros, -1 generate error on new */
   PetscTruth       singlemalloc; /* if true a, i, and j have been obtained with
                                         one big malloc */
-  int              m,n;          /* rows or columns */
   int              bs,bs2;       /* block size, square of block size */
   int              mbs,nbs;      /* rows/bs or columns/bs */
   int              s_nz,s_maxnz; /* total diagonal and superdiagonal nonzero blocks, 
@@ -41,7 +40,6 @@ typedef struct {
 } Mat_SeqSBAIJ;
 
 extern int MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat *);
-extern int MatConvert_SeqSBAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 

@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex20.c,v 1.15 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
 
@@ -10,9 +10,8 @@ int main(int argc,char **args)
 {
   Mat        C,A; 
   int        i,j,m = 5,n = 4,I,J,ierr,rank,size;
-  PetscTruth set;
   Scalar     v;
-  MatType    mtype;
+  char       mtype[256];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -23,6 +22,7 @@ int main(int argc,char **args)
 
  /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
@@ -41,7 +41,8 @@ int main(int argc,char **args)
   ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,"conv_",&mtype,&set);CHKERRQ(ierr);
+  ierr = PetscStrcpy(mtype,MATSAME);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-conv_mat_type",mtype,256,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatConvert(C,mtype,&A);CHKERRA(ierr);
   ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);

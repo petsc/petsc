@@ -1,4 +1,4 @@
-/*$Id: axpy.c,v 1.47 2000/05/28 15:21:54 bsmith Exp bsmith $*/
+/*$Id: axpy.c,v 1.48 2000/09/28 21:12:12 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -35,7 +35,8 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidScalarPointer(a);
 
-  MatGetSize(X,&m1,&n1);  MatGetSize(Y,&m2,&n2);
+  ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
+  ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %d %d %d %d",m1,m2,n1,n2);
 
   if (X->ops->axpy) {

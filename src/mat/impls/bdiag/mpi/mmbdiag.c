@@ -1,4 +1,4 @@
-/*$Id: mmbdiag.c,v 1.36 2000/04/12 04:23:30 bsmith Exp bsmith $*/
+/*$Id: mmbdiag.c,v 1.37 2000/07/10 03:39:41 bsmith Exp bsmith $*/
 
 /*
    Support for the MPIBDIAG matrix-vector multiply
@@ -12,7 +12,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag *lmbd = (Mat_SeqBDiag*)mbd->A->data;
-  int          ierr,N = mbd->N,*indices,*garray,ec=0;
+  int          ierr,N = mat->N,*indices,*garray,ec=0;
   int          bs = lmbd->bs,d,i,j,diag;
   IS           to,from;
   Vec          gvec;
@@ -78,7 +78,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   /*
      This is not correct for a rectangular matrix mbd->m? 
   */
-  ierr = VecCreateMPI(mat->comm,mbd->m,mbd->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mat->m,mat->N,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mbd->lvec,to,&mbd->Mvctx);CHKERRQ(ierr);

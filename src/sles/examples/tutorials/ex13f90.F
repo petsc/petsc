@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f90.F,v 1.19 2000/08/07 22:20:47 bsmith Exp bsmith $";
+!    "$Id: ex13f90.F,v 1.20 2000/09/22 20:45:46 bsmith Exp bsmith $";
 !
 !
 !/*T
@@ -84,7 +84,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRA(1,0,' ',ierr)
+         SETERRA(1,' ',ierr)
       endif
 
 !  The next two lines are for testing only; these allow the user to

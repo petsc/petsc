@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.102 2000/04/09 03:10:56 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.103 2000/08/17 04:52:48 bsmith Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
@@ -106,7 +106,7 @@ runex6:
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex6_2:
-	-@${MPIRUN} -np 4 ex6 -ksp_gmres_irorthog -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex6_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ex6 -ksp_gmres_irorthog -mat_type mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex6_2.tmp 2>&1; \
 	   if (diff output/ex6_2.out ex6_2.tmp) then true; \
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   ${RM} -f ex6_2.tmp
@@ -116,13 +116,13 @@ runex6_3:
 	   else echo "Possible problem with ex6_3, diffs above"; fi; \
 	   ${RM} -f ex6_3.tmp
 runex6_4:
-	-@${MPIRUN} -np 4 ex6 -ksp_gmres_irorthog -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type asm \
+	-@${MPIRUN} -np 4 ex6 -ksp_gmres_irorthog -mat_type mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type asm \
 	   -pc_asm_blocks 4 -pc_asm_overlap 1 > ex6_4.tmp 2>&1; \
 	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
 	   else echo "Possible problem with ex6_4, diffs above"; fi; \
 	   ${RM} -f ex6_4.tmp
 runex6_5:
-	-@${MPIRUN} -np 4 ex6 -ksp_gmres_irorthog -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type bjacobi \
+	-@${MPIRUN} -np 4 ex6 -ksp_gmres_irorthog -mat_type mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type bjacobi \
 	   -snes_view > ex6_5.tmp 2>&1; \
 	   if (diff output/ex6_5.out ex6_5.tmp) then true; \
 	   else echo "Possible problem with ex6_5, diffs above"; fi; \
@@ -148,7 +148,7 @@ runex8:
 	   else echo "Possible problem with ex8_1, diffs above"; fi; \
 	   ${RM} -f ex8_1.tmp
 runex8_2:
-	-@${MPIRUN} -np 3 ex8 -ksp_gmres_irorthog -pc_type asm  -mat_mpiaij -mat_aij_oneindex \
+	-@${MPIRUN} -np 3 ex8 -ksp_gmres_irorthog -pc_type asm  -mat_type mpiaij -mat_aij_oneindex \
 	   -snes_smonitor > ex8_2.tmp 2>&1; \
 	   if (diff output/ex8_2.out ex8_2.tmp) then true; \
 	   else echo "Possible problem with ex8_2, diffs above"; fi; \
@@ -186,7 +186,7 @@ runex14:
 	   else echo "Possible problem with ex14_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
 runex14_2:
-	-@${MPIRUN} -np 4 ex14 -ksp_gmres_irorthog -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex14_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ex14 -ksp_gmres_irorthog -mat_type mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex14_2.tmp 2>&1; \
 	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp

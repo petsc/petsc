@@ -1,4 +1,4 @@
-/*$Id: ex30.c,v 1.17 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex30.c,v 1.18 2000/07/10 03:39:52 bsmith Exp bsmith $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\
@@ -30,14 +30,10 @@ int main(int argc,char **args)
   ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&viewer1);CHKERRA(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,400,0,400,400,&viewer2);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag",&flg2);CHKERRA(ierr);
-  if (flg2) {
-    bs = 1;
-    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
-    ierr = MatCreateSeqBDiag(PETSC_COMM_SELF,m*n,m*n,0,bs,PETSC_NULL,PETSC_NULL,&C);CHKERRA(ierr);
-  } else {
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m*n,m*n,5,PETSC_NULL,&C);CHKERRA(ierr);
-  }
+  ierr = MatCreate(PETSC_COMM_SELF,m*n,m*n,m*n,m*n,&C);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  ierr = MatSeqBDiagSetPreallocation(C,0,bs,PETSC_NULL,PETSC_NULL);CHKERRA(ierr);
+  ierr = MatSeqAIJSetPreallocation(C,5,PETSC_NULL);CHKERRA(ierr);
 
   /* Create the matrix. (This is five-point stencil with some extra elements) */
   for (i=0; i<m; i++) {

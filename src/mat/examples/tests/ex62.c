@@ -1,4 +1,4 @@
-/*$Id: ex62.c,v 1.14 2000/07/10 03:39:52 bsmith Exp bsmith $*/
+/*$Id: ex62.c,v 1.15 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   Vec        x,u,b;
   double     norm;
   Viewer     fd;
-  MatType    mtype = MATSEQAIJ;
+  char       type[256];
   char       file[128];
   Scalar     one = 1.0,mone = -1.0;
   PetscTruth flg;
@@ -35,12 +35,13 @@ int main(int argc,char **args)
      Determine matrix format to be used (specified at runtime).
      See the manpage for MatLoad() for available formats.
   */
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscStrcpy(type,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-mat_type",type,256,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Load the matrix and vector; then destroy the viewer.
   */
-  ierr = MatLoad(fd,mtype,&C);CHKERRA(ierr);
+  ierr = MatLoad(fd,type,&C);CHKERRA(ierr);
   ierr = VecLoad(fd,&u);CHKERRA(ierr);
   ierr = ViewerDestroy(fd);CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.34 2000/04/09 03:11:09 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.35 2000/05/05 22:18:59 balay Exp bsmith $";
 !
 !       Formatted test for TS routines.
 !
@@ -169,6 +169,7 @@
 !    
          call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M, &
      &                  A,ierr) 
+         call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
          call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,                &
@@ -179,6 +180,7 @@
 !    
          call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M, &
      &                  A,ierr) 
+         call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
          call TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,PETSC_NULL_OBJECT,    &
@@ -202,6 +204,7 @@
      &                         ierr) 
          call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M,A &
      &                  ,ierr) 
+         call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,   &
      &        ierr)  
          call TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,                   &

@@ -1,4 +1,4 @@
-/*$Id: ex38.c,v 1.10 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex38.c,v 1.11 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatSetValues() for column oriented storage.\n\n"; 
 
@@ -17,6 +17,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRA(ierr);
   if (flg) {ierr = MatSetOption(C,MAT_COLUMN_ORIENTED);CHKERRA(ierr);}

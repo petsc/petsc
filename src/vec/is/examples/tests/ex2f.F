@@ -1,5 +1,5 @@
 !
-!  "$Id: ex2f.F,v 1.16 2000/08/03 20:15:22 balay Exp bsmith $"
+!  "$Id: ex2f.F,v 1.17 2000/09/27 20:05:34 bsmith Exp bsmith $"
 !
 !  Formatted Test for IS stride routines
 !
@@ -20,18 +20,18 @@
       call ISCreateStride(PETSC_COMM_SELF,0,0,2,is,ierr)
       call ISGetLocalSize(is,n,ierr)
       if (n .ne. 0) then 
-        SETERRA(1,0,0,ierr)
+        SETERRA(1,0,ierr)
       endif
       call ISStrideGetInfo(is,start,stride,ierr)
       if (start .ne. 0) then 
-         SETERRA(1,0,0,ierr)
+         SETERRA(1,0,ierr)
       endif
       if (stride .ne. 2) then
-        SETERRA(1,0,0,ierr)
+        SETERRA(1,0,ierr)
       endif
       call ISStride(is,flag,ierr)
       if (flag .ne. PETSC_TRUE) then 
-        SETERRA(1,0,0,ierr) 
+        SETERRA(1,0,ierr) 
       endif
       call ISGetIndices(is,ii,iis,ierr)
       call ISRestoreIndices(is,ii,iis,ierr)
@@ -44,7 +44,7 @@
       call ISGetIndices(is,ii,iis,ierr)
       do 10, i=1,10000
         if (ii(i+iis) .ne. -11 + 3*i) then 
-          SETERRA(1,0,0,ierr)
+          SETERRA(1,0,ierr)
         endif
  10   continue
       call ISRestoreIndices(is,ii,iis,ierr)

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.121 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.122 2000/09/28 21:14:25 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -182,6 +182,7 @@ int main(int argc,char **argv)
     ierr = OptionsHasName(PETSC_NULL,"-use_generic_matcreate",&usegenericmatcreate);CHKERRA(ierr);
     if (usegenericmatcreate) {
       ierr = MatCreate(PETSC_COMM_WORLD,m,m,N,N,&J);CHKERRA(ierr);
+      ierr = MatSetFromOptions(J);CHKERRA(ierr);
     } else {
       ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRA(ierr);
     }

@@ -1,5 +1,5 @@
 !
-!     "$Id: ex14f.F,v 1.4 2000/09/22 20:43:24 bsmith Exp bsmith $";
+!     "$Id: ex14f.F,v 1.5 2000/09/27 20:14:37 bsmith Exp bsmith $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !
@@ -42,7 +42,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr) 
 
       if (size .ne. 2) then
-       SETERRA(1,1,'Must run with two processors')
+       SETERRA(1,'Must run with two processors')
       endif
 
 !

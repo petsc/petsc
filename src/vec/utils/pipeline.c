@@ -1,4 +1,4 @@
-/*$Id: pipeline.c,v 1.24 2000/09/28 23:12:38 bsmith Exp bsmith $*/
+/*$Id: pipeline.c,v 1.25 2000/09/28 23:13:40 bsmith Exp bsmith $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed
@@ -545,7 +545,7 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
   {
     Mat_MPIAIJ  *Aij = (Mat_MPIAIJ*)mat->data;
     int *owners = Aij->rowners,*touch = Aij->garray;
-    int ntouch = ((Mat_SeqAIJ *)Aij->B->data)->n;
+    int ntouch = Aij->B->n;
     int *conn,*colr;
     int *colors = info->proc_colors,base = info->rank*size;
     int p,e;

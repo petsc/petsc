@@ -1,4 +1,4 @@
-/*$Id: ex59.c,v 1.11 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex59.c,v 1.12 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
 
@@ -12,24 +12,24 @@ int main(int argc,char **args)
   int         i,j,m = 3,n = 2,rank,size,ierr,rstart,rend;
   Scalar      v;
   IS          isrow,iscol;
-  PetscTruth  set;
-  MatType     type;
+  PetscTruth  flg;
+  char        type[256];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;
 
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set);CHKERRQ(ierr);
-  switch (type) {
-  case MATMPIDENSE:
+  ierr = PetscStrcpy(type,MATSAME);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-mat_type",type,256,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscStrcmp(type,MATMPIDENSE,&flg);CHKERRQ(ierr);
+  if (flg) {
     ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
            m*n,m*n,PETSC_NULL,&C);CHKERRA(ierr);
-    break;
-  default:
+  } else {
     ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
            m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
-    break;
   }
 
   /*

@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.7 2000/08/18 19:38:31 bsmith Exp bsmith $*/
+/*$Id: is.c,v 1.8 2000/08/24 22:42:00 bsmith Exp bsmith $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -38,7 +38,6 @@ int MatDestroy_IS(Mat A)
     ierr = ISLocalToGlobalMappingDestroy(b->mapping);CHKERRQ(ierr);
   }
   ierr = PetscFree(b);CHKERRQ(ierr);
-  PetscHeaderDestroy(A);
   PetscFunctionReturn(0);
 }
 
@@ -179,26 +178,6 @@ int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatGetSize_IS"></a>*/"MatGetSize_IS"
-int MatGetSize_IS(Mat A,int *m,int *n)
-{
-  PetscFunctionBegin;
-  if (m) *m = A->M; 
-  if (n) *n = A->N;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatGetLocalSize_IS"></a>*/"MatGetLocalSize_IS"
-int MatGetLocalSize_IS(Mat A,int *m,int *n)
-{
-  PetscFunctionBegin;
-  if (m) *m = A->m; 
-  if (n) *n = A->n;
-  PetscFunctionReturn(0);
-}
-
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatCreate_IS"></a>*/"MatCreate_IS" 
@@ -221,8 +200,6 @@ int MatCreate_IS(Mat A)
   A->ops->zerorowslocal           = MatZeroRowsLocal_IS;
   A->ops->assemblybegin           = MatAssemblyBegin_IS;
   A->ops->assemblyend             = MatAssemblyEnd_IS;
-  A->ops->getsize                 = MatGetSize_IS;
-  A->ops->getlocalsize            = MatGetLocalSize_IS;
 
   ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);

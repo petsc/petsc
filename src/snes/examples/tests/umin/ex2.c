@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.60 2000/08/17 04:52:50 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.61 2000/09/28 21:14:23 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -122,6 +122,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE);CHKERRA(ierr);
   } else {
     ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H);CHKERRA(ierr);
+    ierr = MatSetFromOptions(H);CHKERRA(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC);CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user);CHKERRA(ierr);
   }

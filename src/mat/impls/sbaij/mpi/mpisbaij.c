@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.30 2000/10/17 16:59:32 hzhang Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.31 2000/10/18 01:31:01 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -825,26 +825,11 @@ int MatDestroy_MPISBAIJ(Mat mat)
   int         ierr;
 
   PetscFunctionBegin;
-
-  if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);
-  }
-  if (mat->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping);CHKERRQ(ierr);
-  }
-  if (mat->rmap) {
-    ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
-  }
-  if (mat->cmap) {
-    ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
-  }
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d,Cols=%d",mat->M,mat->N);
 #endif
-
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->bstash);CHKERRQ(ierr);
-
   ierr = PetscFree(baij->rowners);CHKERRQ(ierr);
   ierr = MatDestroy(baij->A);CHKERRQ(ierr);
   ierr = MatDestroy(baij->B);CHKERRQ(ierr);
@@ -863,8 +848,6 @@ int MatDestroy_MPISBAIJ(Mat mat)
   if (baij->setvaluescopy) {ierr = PetscFree(baij->setvaluescopy);CHKERRQ(ierr);}
 #endif
   ierr = PetscFree(baij);CHKERRQ(ierr);
-  PLogObjectDestroy(mat);
-  PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);
 }
 
@@ -1448,6 +1431,16 @@ int MatEqual_MPISBAIJ(Mat A,Mat B,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatSetUpPreallocation_MPISBAIJ"></a>*/"MatSetUpPreallocation_MPISBAIJ"
+int MatSetUpPreallocation_MPISBAIJ(Mat A)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMPISBAIJSetPreallocation(A,1,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
   MatSetValues_MPISBAIJ,
@@ -1480,7 +1473,7 @@ static struct _MatOps MatOps_Values = {
   0,
   0,
   0,
-  0,
+  MatSetUpPreallocation_MPISBAIJ,
   0,
   MatGetOwnershipRange_MPISBAIJ,
   0,
@@ -1537,6 +1530,7 @@ int MatGetDiagonalBlock_MPISBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatCreate_MPISBAIJ"
 int MatCreate_MPISBAIJ(Mat B)
@@ -1546,6 +1540,8 @@ int MatCreate_MPISBAIJ(Mat B)
   PetscTruth   flg;
 
   PetscFunctionBegin;
+  ierr = PetscSplitOwnership(B->comm,&B->m,&B->M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(B->comm,&B->n,&B->N);CHKERRQ(ierr);
   if (B->M != B->N || B->m != B->n){ /* N and n are not used after this */
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"For symmetric format, set M=N and m=n");
   }
@@ -1574,6 +1570,8 @@ int MatCreate_MPISBAIJ(Mat B)
 
   /* build local table of row and column ownerships */
   b->rowners = (int*)PetscMalloc(3*(b->size+2)*sizeof(int));CHKPTRQ(b->rowners);
+  b->cowners    = b->rowners + b->size + 2;
+  b->rowners_bs = b->cowners + b->size + 2;
   PLogObjectMemory(B,3*(b->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPISBAIJ));
 
   /* build cache for off array entries formed */
@@ -1630,6 +1628,7 @@ int MatCreate_MPISBAIJ(Mat B)
                                      MatGetDiagonalBlock_MPISBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatMPISBAIJSetPreallocation"
@@ -1713,8 +1712,12 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
 {
   Mat_MPISBAIJ *b;
   int          ierr,i,mbs,Mbs=PETSC_DECIDE;
+  PetscTruth   flg2;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)B,MATMPISBAIJ,&flg2);CHKERRQ(ierr);
+  if (!flg2) PetscFunctionReturn(0);
+
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
 
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive");
@@ -1745,8 +1748,6 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
   b->Mbs = Mbs;
   b->Nbs = Mbs; 
 
-  b->cowners    = b->rowners + b->size + 2;
-  b->rowners_bs = b->cowners + b->size + 2;
   ierr = MPI_Allgather(&b->mbs,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0]    = 0;
   for (i=2; i<=b->size; i++) {
@@ -1759,11 +1760,11 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
   for (i=0; i<=b->size; i++) {
     b->rowners_bs[i] = b->rowners[i]*bs;
   }
-  b->rstart_bs = b->rstart * bs;
-  b->rend_bs   = b->rend * bs;
+  b->rstart_bs = b-> rstart*bs;
+  b->rend_bs   = b->rend*bs;
   
-  b->cstart_bs = b->cstart * bs;
-  b->cend_bs   = b->cend * bs;
+  b->cstart_bs = b->cstart*bs;
+  b->cend_bs   = b->cend*bs;
   
 
   if (d_nz == PETSC_DEFAULT) d_nz = 5;
@@ -1874,12 +1875,18 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o
 
 int MatCreateMPISBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A)
 {
-  int ierr;
+  int ierr,size;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
-  ierr = MatSetType(*A,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(*A,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) {
+    ierr = MatSetType(*A,MATMPISBAIJ);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(*A,bs,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(*A,MATSEQSBAIJ);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(*A,bs,d_nz,d_nnz);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1896,6 +1903,7 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
   *newmat       = 0;
   ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATMPISBAIJ);CHKERRQ(ierr);
+  mat->preallocated = PETSC_TRUE;
   a = (Mat_MPISBAIJ*)mat->data;
   a->bs  = oldmat->bs;
   a->bs2 = oldmat->bs2;
@@ -1968,6 +1976,7 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
 
 #include "petscsys.h"
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_MPISBAIJ"
 int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
@@ -2016,7 +2025,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
 
   /* determine ownership of all rows */
   mbs = Mbs/size + ((Mbs % size) > rank);
-  m   = mbs * bs;
+  m   = mbs*bs;
   rowners = (int*)PetscMalloc(2*(size+2)*sizeof(int));CHKPTRQ(rowners);
   browners = rowners + size + 1;
   ierr = MPI_Allgather(&mbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
@@ -2130,7 +2139,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
   ierr = MatCreateMPISBAIJ(comm,bs,m,m,PETSC_DETERMINE,PETSC_DETERMINE,0,dlens,0,odlens,newmat); 
   CHKERRQ(ierr);
   A = *newmat;
-  MatSetOption(A,MAT_COLUMNS_SORTED); 
+  ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
   if (!rank) {
     buf = (Scalar*)PetscMalloc(maxnz*sizeof(Scalar));CHKPTRQ(buf);
@@ -2199,6 +2208,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatMPISBAIJSetHashTableFactor"
@@ -2297,7 +2307,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     for (dest=rank+1; dest<size; dest++){
       svalues = work + rowners_bs[dest];
       count = rowners_bs[dest+1]-rowners_bs[dest];
-      MPI_Send(svalues,count,MPI_DOUBLE_PRECISION,dest,rank,PETSC_COMM_WORLD); 
+      ierr = MPI_Send(svalues,count,MPI_DOUBLE,dest,rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
       /*
       PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] sends %d values to [%d]\n",rank,count,dest); 
       PetscSynchronizedFlush(PETSC_COMM_WORLD);
@@ -2310,7 +2320,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     rvalues = work;
     count = rowners_bs[rank+1]-rowners_bs[rank];
     for (source=0; source<rank; source++){     
-      MPI_Recv(rvalues,count,MPI_DOUBLE_PRECISION,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&stat);     
+      ierr = MPI_Recv(rvalues,count,MPI_DOUBLE_PRECISION,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&stat);CHKERRQ(ierr);
       /* process values */     
       for (i=0; i<count; i++){
         if (PetscRealPart(va[i]) < rvalues[i]) va[i] = rvalues[i];

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.17 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.18 2000/05/05 22:16:17 balay Exp bsmith $*/
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
 MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
@@ -28,6 +28,7 @@ int main(int argc,char **args)
   /* ---------- Assemble matrix and vectors ----------- */
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRA(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&x);CHKERRA(ierr);
   ierr = VecSetFromOptions(x);CHKERRA(ierr);

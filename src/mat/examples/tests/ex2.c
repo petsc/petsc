@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.16 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   /* ------- Assemble matrix, test MatValid() --------- */
 
   ierr = MatCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,n,&mat);CHKERRA(ierr);
+  ierr = MatSetFromOptions(mat);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRA(ierr);
   for (i=rstart; i<rend; i++) { 
     for (j=0; j<n; j++) { 

@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.320 2000/09/06 22:24:54 balay Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.321 2000/09/28 21:11:06 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -23,19 +23,18 @@ has an order N integer array but is fast to acess.
 int CreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ *B = (Mat_SeqAIJ*)aij->B->data;
-  int        n = B->n,i,ierr;
+  int        n = aij->B->n,i,ierr;
 
   PetscFunctionBegin;
 #if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableCreate(aij->n,&aij->colmap);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(n,&aij->colmap);CHKERRQ(ierr); 
   for (i=0; i<n; i++){
     ierr = PetscTableAdd(aij->colmap,aij->garray[i]+1,i+1);CHKERRQ(ierr);
   }
 #else
-  aij->colmap = (int*)PetscMalloc((aij->N+1)*sizeof(int));CHKPTRQ(aij->colmap);
-  PLogObjectMemory(mat,aij->N*sizeof(int));
-  ierr = PetscMemzero(aij->colmap,aij->N*sizeof(int));CHKERRQ(ierr);
+  aij->colmap = (int*)PetscMalloc((mat->N+1)*sizeof(int));CHKPTRQ(aij->colmap);
+  PLogObjectMemory(mat,mat->N*sizeof(int));
+  ierr = PetscMemzero(aij->colmap,mat->N*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<n; i++) aij->colmap[aij->garray[i]] = i+1;
 #endif
   PetscFunctionReturn(0);
@@ -67,20 +66,20 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
       else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero into matrix"); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
-        int    new_nz = ai[a->m] + CHUNKSIZE,len,*new_i,*new_j; \
+        int    new_nz = ai[am] + CHUNKSIZE,len,*new_i,*new_j; \
         Scalar *new_a; \
  \
         if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix"); \
  \
         /* malloc new storage space */ \
-        len     = new_nz*(sizeof(int)+sizeof(Scalar))+(a->m+1)*sizeof(int); \
+        len     = new_nz*(sizeof(int)+sizeof(Scalar))+(am+1)*sizeof(int); \
         new_a   = (Scalar*)PetscMalloc(len);CHKPTRQ(new_a); \
         new_j   = (int*)(new_a + new_nz); \
         new_i   = new_j + new_nz; \
  \
         /* copy over old data into new slots */ \
         for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];} \
-        for (ii=row+1; ii<a->m+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;} \
+        for (ii=row+1; ii<am+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;} \
         ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow+shift)*sizeof(int));CHKERRQ(ierr); \
         len = (new_nz - CHUNKSIZE - ai[row] - nrow - shift); \
         ierr = PetscMemcpy(new_j+ai[row]+shift+nrow+CHUNKSIZE,aj+ai[row]+shift+nrow, \
@@ -141,20 +140,20 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
       else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero into matrix"); \
       if (nrow >= rmax) { \
         /* there is no extra room in row, therefore enlarge */ \
-        int    new_nz = bi[b->m] + CHUNKSIZE,len,*new_i,*new_j; \
+        int    new_nz = bi[bm] + CHUNKSIZE,len,*new_i,*new_j; \
         Scalar *new_a; \
  \
         if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero in the matrix"); \
  \
         /* malloc new storage space */ \
-        len     = new_nz*(sizeof(int)+sizeof(Scalar))+(b->m+1)*sizeof(int); \
+        len     = new_nz*(sizeof(int)+sizeof(Scalar))+(bm+1)*sizeof(int); \
         new_a   = (Scalar*)PetscMalloc(len);CHKPTRQ(new_a); \
         new_j   = (int*)(new_a + new_nz); \
         new_i   = new_j + new_nz; \
  \
         /* copy over old data into new slots */ \
         for (ii=0; ii<row+1; ii++) {new_i[ii] = bi[ii];} \
-        for (ii=row+1; ii<b->m+1; ii++) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
+        for (ii=row+1; ii<bm+1; ii++) {new_i[ii] = bi[ii]+CHUNKSIZE;} \
         ierr = PetscMemcpy(new_j,bj,(bi[row]+nrow+shift)*sizeof(int));CHKERRQ(ierr); \
         len = (new_nz - CHUNKSIZE - bi[row] - nrow - shift); \
         ierr = PetscMemcpy(new_j+bi[row]+shift+nrow+CHUNKSIZE,bj+bi[row]+shift+nrow, \
@@ -198,17 +197,17 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
   Scalar     value;
   int        ierr,i,j,rstart = aij->rstart,rend = aij->rend;
   int        cstart = aij->cstart,cend = aij->cend,row,col;
-  int        roworiented = aij->roworiented;
+  PetscTruth roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
   Mat        A = aij->A;
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data; 
   int        *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
   Scalar     *aa = a->a;
-  PetscTruth ignorezeroentries = (((a->ignorezeroentries) && (addv == ADD_VALUES)) ? PETSC_TRUE:PETSC_FALSE); 
+  PetscTruth ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
   Mat        B = aij->B;
   Mat_SeqAIJ *b = (Mat_SeqAIJ*)B->data; 
-  int        *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j;
+  int        *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->m,am = aij->A->m;
   Scalar     *ba = b->a;
 
   int        *rp,ii,nrow,_i,rmax,N,col1,low,high,t; 
@@ -219,7 +218,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-    if (im[i] >= aij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (im[i] >= mat->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
 #endif
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
@@ -230,10 +229,9 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
           if (ignorezeroentries && value == 0.0) continue;
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
-        }
-        else if (in[j] < 0) continue;
+        } else if (in[j] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-        else if (in[j] >= aij->N) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");}
+        else if (in[j] >= mat->N) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");}
 #endif
         else {
           if (mat->was_assembled) {
@@ -288,12 +286,12 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
     if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (idxm[i] >= aij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (idxm[i] >= mat->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
         if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
-        if (idxn[j] >= aij->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+        if (idxn[j] >= mat->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
         if (idxn[j] >= cstart && idxn[j] < cend){
           col = idxn[j] - cstart;
           ierr = MatGetValues(aij->A,1,&row,1,&col,v+i*n+j);CHKERRQ(ierr);
@@ -578,8 +576,8 @@ int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  if (nt != a->n) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%d) and xx (%d)",a->n,nt);
+  if (nt != A->n) {
+    SETERRQ2(PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%d) and xx (%d)",A->n,nt);
   }
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
@@ -657,7 +655,7 @@ int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
 
   PetscFunctionBegin;
-  if (a->M != a->N) SETERRQ(PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block");
+  if (A->M != A->N) SETERRQ(PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block");
   if (a->rstart != a->cstart || a->rend != a->cend) {
     SETERRQ(PETSC_ERR_ARG_SIZ,"row partition must equal col partition");  
   }
@@ -686,21 +684,8 @@ int MatDestroy_MPIAIJ(Mat mat)
   int        ierr;
 
   PetscFunctionBegin;
-
-  if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);
-  }
-  if (mat->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping);CHKERRQ(ierr);
-  }
-  if (mat->rmap) {
-    ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
-  }
-  if (mat->cmap) {
-    ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
-  }
 #if defined(PETSC_USE_LOG)
-  PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",aij->M,aij->N);
+  PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mat->M,mat->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = PetscFree(aij->rowners);CHKERRQ(ierr);
@@ -716,8 +701,6 @@ int MatDestroy_MPIAIJ(Mat mat)
   if (aij->Mvctx)  {ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr);}
   if (aij->rowvalues) {ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);}
   ierr = PetscFree(aij);CHKERRQ(ierr);
-  PLogObjectDestroy(mat);
-  PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);
 }
 
@@ -743,10 +726,10 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
       ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %d nz %d nz alloced %d mem %d, not using I-node routines\n",
-					      rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);
+					      rank,mat->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);
       } else {
         ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %d nz %d nz alloced %d mem %d, using I-node routines\n",
-		    rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);
+		    rank,mat->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);
       }
       ierr = MatGetInfo(aij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] on-diagonal part: nz %d \n",rank,(int)info.nz_used);CHKERRQ(ierr);
@@ -771,7 +754,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     /* assemble the entire matrix onto first processor. */
     Mat         A;
     Mat_SeqAIJ *Aloc;
-    int         M = aij->M,N = aij->N,m,*ai,*aj,row,*cols,i,*ct;
+    int         M = mat->M,N = mat->N,m,*ai,*aj,row,*cols,i,*ct;
     Scalar      *a;
 
     if (!rank) {
@@ -783,7 +766,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 
     /* copy over the A part */
     Aloc = (Mat_SeqAIJ*)aij->A->data;
-    m = Aloc->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+    m = aij->A->m; ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
     row = aij->rstart;
     for (i=0; i<ai[m]+shift; i++) {aj[i] += aij->cstart + shift;}
     for (i=0; i<m; i++) {
@@ -795,7 +778,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 
     /* copy over the B part */
     Aloc = (Mat_SeqAIJ*)aij->B->data;
-    m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
+    m = aij->B->m;  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
     row = aij->rstart;
     ct = cols = (int*)PetscMalloc((ai[m]+1)*sizeof(int));CHKPTRQ(cols);
     for (i=0; i<ai[m]+shift; i++) {cols[i] = aij->garray[aj[i]+shift];}
@@ -849,15 +832,14 @@ int MatView_MPIAIJ(Mat mat,Viewer viewer)
 */
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatRelax_MPIAIJ"
-int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
-                           PetscReal fshift,int its,Vec xx)
+int MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
   Mat        AA = mat->A,BB = mat->B;
   Mat_SeqAIJ *A = (Mat_SeqAIJ*)AA->data,*B = (Mat_SeqAIJ *)BB->data;
   Scalar     *b,*x,*xs,*ls,d,*v,sum;
   int        ierr,*idx,*diag;
-  int        n = mat->n,m = mat->m,i,shift = A->indexshift;
+  int        n = matin->n,m = matin->m,i,shift = A->indexshift;
 
   PetscFunctionBegin;
   if (!A->diag) {ierr = MatMarkDiagonal_SeqAIJ(AA);CHKERRQ(ierr);}
@@ -1030,10 +1012,10 @@ int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
-  info->rows_global       = (double)mat->M;
-  info->columns_global    = (double)mat->N;
-  info->rows_local        = (double)mat->m;
-  info->columns_local     = (double)mat->N;
+  info->rows_global       = (double)matin->M;
+  info->columns_global    = (double)matin->N;
+  info->rows_local        = (double)matin->m;
+  info->columns_local     = (double)matin->N;
 
   PetscFunctionReturn(0);
 }
@@ -1083,30 +1065,6 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSize_MPIAIJ"
-int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
-{
-  Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
-
-  PetscFunctionBegin;
-  if (m) *m = mat->M;
-  if (n) *n = mat->N;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetLocalSize_MPIAIJ"
-int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
-{
-  Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
-
-  PetscFunctionBegin;
-  if (m) *m = mat->m;
-  if (n) *n = mat->n;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_MPIAIJ"
 int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 {
@@ -1137,8 +1095,8 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         allocate enough space to hold information from the longest row.
     */
     Mat_SeqAIJ *Aa = (Mat_SeqAIJ*)mat->A->data,*Ba = (Mat_SeqAIJ*)mat->B->data; 
-    int     max = 1,m = mat->m,tmp;
-    for (i=0; i<m; i++) {
+    int     max = 1,tmp;
+    for (i=0; i<matin->m; i++) {
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
       if (max < tmp) { max = tmp; }
     }
@@ -1248,9 +1206,9 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
     } else if (type == NORM_1) { /* max column norm */
       PetscReal *tmp,*tmp2;
       int    *jj,*garray = aij->garray;
-      tmp  = (PetscReal*)PetscMalloc((aij->N+1)*sizeof(PetscReal));CHKPTRQ(tmp);
-      tmp2 = (PetscReal*)PetscMalloc((aij->N+1)*sizeof(PetscReal));CHKPTRQ(tmp2);
-      ierr = PetscMemzero(tmp,aij->N*sizeof(PetscReal));CHKERRQ(ierr);
+      tmp  = (PetscReal*)PetscMalloc((mat->N+1)*sizeof(PetscReal));CHKPTRQ(tmp);
+      tmp2 = (PetscReal*)PetscMalloc((mat->N+1)*sizeof(PetscReal));CHKPTRQ(tmp2);
+      ierr = PetscMemzero(tmp,mat->N*sizeof(PetscReal));CHKERRQ(ierr);
       *norm = 0.0;
       v = amat->a; jj = amat->j;
       for (j=0; j<amat->nz; j++) {
@@ -1260,15 +1218,15 @@ int MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
       for (j=0; j<bmat->nz; j++) {
         tmp[garray[*jj++ + shift]] += PetscAbsScalar(*v); v++;
       }
-      ierr = MPI_Allreduce(tmp,tmp2,aij->N,MPI_DOUBLE,MPI_SUM,mat->comm);CHKERRQ(ierr);
-      for (j=0; j<aij->N; j++) {
+      ierr = MPI_Allreduce(tmp,tmp2,mat->N,MPI_DOUBLE,MPI_SUM,mat->comm);CHKERRQ(ierr);
+      for (j=0; j<mat->N; j++) {
         if (tmp2[j] > *norm) *norm = tmp2[j];
       }
       ierr = PetscFree(tmp);CHKERRQ(ierr);
       ierr = PetscFree(tmp2);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp = 0.0;
-      for (j=0; j<amat->m; j++) {
+      for (j=0; j<aij->A->m; j++) {
         v = amat->a + amat->i[j] + shift;
         sum = 0.0;
         for (i=0; i<amat->i[j+1]-amat->i[j]; i++) {
@@ -1295,7 +1253,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ *Aloc = (Mat_SeqAIJ*)a->A->data;
   int        ierr,shift = Aloc->indexshift;
-  int        M = a->M,N = a->N,m,*ai,*aj,row,*cols,i,*ct;
+  int        M = A->M,N = A->N,m,*ai,*aj,row,*cols,i,*ct;
   Mat        B;
   Scalar     *array;
 
@@ -1304,11 +1262,11 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
   }
 
-  ierr = MatCreateMPIAIJ(A->comm,a->n,a->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(A->comm,A->n,A->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B);CHKERRQ(ierr);
 
   /* copy over the A part */
   Aloc = (Mat_SeqAIJ*)a->A->data;
-  m = Aloc->m; ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
+  m = a->A->m; ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
   row = a->rstart;
   for (i=0; i<ai[m]+shift; i++) {aj[i] += a->cstart + shift;}
   for (i=0; i<m; i++) {
@@ -1320,7 +1278,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 
   /* copy over the B part */
   Aloc = (Mat_SeqAIJ*)a->B->data;
-  m = Aloc->m;  ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
+  m = a->B->m;  ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
   row = a->rstart;
   ct = cols = (int*)PetscMalloc((1+ai[m]-shift)*sizeof(int));CHKPTRQ(cols);
   for (i=0; i<ai[m]+shift; i++) {cols[i] = a->garray[aj[i]+shift];}
@@ -1334,34 +1292,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   if (matout) {
     *matout = B;
   } else {
-    PetscOps       *Abops;
-    struct _MatOps *Aops;
-
-    /* This isn't really an in-place transpose .... but free data structures from a */
-    ierr = PetscFree(a->rowners);CHKERRQ(ierr);
-    ierr = MatDestroy(a->A);CHKERRQ(ierr);
-    ierr = MatDestroy(a->B);CHKERRQ(ierr);
-#if defined (PETSC_USE_CTABLE)
-    if (a->colmap) {ierr = PetscTableDelete(a->colmap);CHKERRQ(ierr);}
-#else
-    if (a->colmap) {ierr = PetscFree(a->colmap);CHKERRQ(ierr);}
-#endif
-    if (a->garray) {ierr = PetscFree(a->garray);CHKERRQ(ierr);}
-    if (a->lvec)   {ierr = VecDestroy(a->lvec);CHKERRQ(ierr);}
-    if (a->Mvctx)  {ierr = VecScatterDestroy(a->Mvctx);CHKERRQ(ierr);}
-    ierr = PetscFree(a);CHKERRQ(ierr);
-
-    /*
-       This is horrible, horrible code. We need to keep the 
-      A pointers for the bops and ops but copy everything 
-      else from C.
-    */
-    Abops   = A->bops;
-    Aops    = A->ops;
-    ierr    = PetscMemcpy(A,B,sizeof(struct _p_Mat));CHKERRQ(ierr);
-    A->bops = Abops;
-    A->ops  = Aops; 
-    PetscHeaderDestroy(B);
+    ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1444,7 +1375,8 @@ int MatEqual_MPIAIJ(Mat A,Mat B,PetscTruth *flag)
   int        ierr;
 
   PetscFunctionBegin;
-  if (B->type != MATMPIAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
+  ierr = PetscTypeCompare((PetscObject)B,MATMPIAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
   a = matA->A; b = matA->B;
   c = matB->A; d = matB->B;
 
@@ -1463,9 +1395,11 @@ int MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
   int        ierr;
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
   Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
+  PetscTruth flg;
 
   PetscFunctionBegin;
-  if (str != SAME_NONZERO_PATTERN || B->type != MATMPIAIJ) {
+  ierr = PetscTypeCompare((PetscObject)B,MATMPIAIJ,&flg);CHKERRQ(ierr);
+  if (str != SAME_NONZERO_PATTERN || !flg) {
     /* because of the column compression in the off-processor part of the matrix a->B,
        the number of columns in a->B and b->B may be different, hence we cannot call
        the MatCopy() directly on the two parts. If need be, we can provide a more 
@@ -1476,6 +1410,17 @@ int MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
     ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
     ierr = MatCopy(a->B,b->B,str);CHKERRQ(ierr);  
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatSetUpPreallocation_MPIAIJ"></a>*/"MatSetUpPreallocation_MPIAIJ"
+int MatSetUpPreallocation_MPIAIJ(Mat A)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr =  MatMPIAIJSetPreallocation(A,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1516,8 +1461,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        0,
-       MatGetSize_MPIAIJ,
-       MatGetLocalSize_MPIAIJ,
+       MatSetUpPreallocation_MPIAIJ,
+       0,
        MatGetOwnershipRange_MPIAIJ,
        0,
        0,
@@ -1590,201 +1535,17 @@ EXTERN_C_BEGIN
 EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreateMPIAIJ"
-/*@C
-   MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
-   (the default parallel PETSc format).  For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameters 
-   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
-   performance can be increased by more than a factor of 50.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - MPI communicator
-.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
-           This value should be the same as the local size used in creating the 
-           y vector for the matrix-vector product y = Ax.
-.  n - This value should be the same as the local size used in creating the 
-       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
-       calculated if N is given) For square matrices n is almost always m.
-.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
-.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
-           (same value is used for all local rows)
-.  d_nnz - array containing the number of nonzeros in the various rows of the 
-           DIAGONAL portion of the local submatrix (possibly different for each row)
-           or PETSC_NULL, if d_nz is used to specify the nonzero structure. 
-           The size of this array is equal to the number of local rows, i.e 'm'. 
-           You must leave room for the diagonal entry even if it is zero.
-.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
-           submatrix (same value is used for all local rows).
--  o_nnz - array containing the number of nonzeros in the various rows of the
-           OFF-DIAGONAL portion of the local submatrix (possibly different for
-           each row) or PETSC_NULL, if o_nz is used to specify the nonzero 
-           structure. The size of this array is equal to the number 
-           of local rows, i.e 'm'. 
-
-   Output Parameter:
-.  A - the matrix 
-
-   Notes:
-   m,n,M,N parameters specify the size of the matrix, and its partitioning across
-   processors, while d_nz,d_nnz,o_nz,o_nnz parameters specify the approximate
-   storage requirements for this matrix.
-
-   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one 
-   processor than it must be used on all processors that share the object for 
-   that argument.
-
-   The AIJ format (also called the Yale sparse matrix format or
-   compressed row storage), is fully compatible with standard Fortran 77
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users manual for details.
-
-   The user MUST specify either the local or global matrix dimensions
-   (possibly both).
-
-   The parallel matrix is partitioned such that the first m0 rows belong to 
-   process 0, the next m1 rows belong to process 1, the next m2 rows belong 
-   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
-
-   The DIAGONAL portion of the local submatrix of a processor can be defined 
-   as the submatrix which is obtained by extraction the part corresponding 
-   to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the 
-   first row that belongs to the processor, and r2 is the last row belonging 
-   to the this processor. This is a square mxm matrix. The remaining portion 
-   of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
-
-   If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
-
-   By default, this format uses inodes (identical nodes) when possible.
-   We search for consecutive rows with the same nonzero structure, thereby
-   reusing matrix information to achieve increased efficiency.
-
-   Options Database Keys:
-+  -mat_aij_no_inode  - Do not use inodes
-.  -mat_aij_inode_limit <limit> - Sets inode limit (max limit=5)
--  -mat_aij_oneindex - Internally use indexing starting at 1
-        rather than 0.  Note that when calling MatSetValues(),
-        the user still MUST index entries starting at 0!
-.   -mat_mpi - use the parallel matrix data structures even on one processor 
-               (defaults to using SeqBAIJ format on one processor)
-.   -mat_mpi - use the parallel matrix data structures even on one processor 
-               (defaults to using SeqAIJ format on one processor)
-
-
-   Example usage:
-  
-   Consider the following 8x8 matrix with 34 non-zero values, that is 
-   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
-   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown 
-   as follows:
-
-.vb
-            1  2  0  |  0  3  0  |  0  4
-    Proc0   0  5  6  |  7  0  0  |  8  0
-            9  0 10  | 11  0  0  | 12  0
-    -------------------------------------
-           13  0 14  | 15 16 17  |  0  0
-    Proc1   0 18  0  | 19 20 21  |  0  0 
-            0  0  0  | 22 23  0  | 24  0
-    -------------------------------------
-    Proc2  25 26 27  |  0  0 28  | 29  0
-           30  0  0  | 31 32 33  |  0 34
-.ve
-
-   This can be represented as a collection of submatrices as:
-
-.vb
-      A B C
-      D E F
-      G H I
-.ve
-
-   Where the submatrices A,B,C are owned by proc0, D,E,F are
-   owned by proc1, G,H,I are owned by proc2.
-
-   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
-   The 'M','N' parameters are 8,8, and have the same values on all procs.
-
-   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
-   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
-   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
-   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
-   part as SeqAIJ matrices. for eg: proc1 will store [E] as a SeqAIJ
-   matrix, ans [DF] as another SeqAIJ matrix.
-
-   When d_nz, o_nz parameters are specified, d_nz storage elements are
-   allocated for every row of the local diagonal submatrix, and o_nz
-   storage locations are allocated for every row of the OFF-DIAGONAL submat.
-   One way to choose d_nz and o_nz is to use the max nonzerors per local 
-   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices. 
-   In this case, the values of d_nz,o_nz are:
-.vb
-     proc0 : dnz = 2, o_nz = 2
-     proc1 : dnz = 3, o_nz = 2
-     proc2 : dnz = 1, o_nz = 4
-.ve
-   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
-   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
-   for proc3. i.e we are using 12+15+10=37 storage locations to store 
-   34 values.
-
-   When d_nnz, o_nnz parameters are specified, the storage is specified
-   for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
-   In the above case the values for d_nnz,o_nnz are:
-.vb
-     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
-     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
-     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
-.ve
-   Here the space allocated is sum of all the above values i.e 34, and
-   hence pre-allocation is perfect.
-
-   Level: intermediate
-
-.keywords: matrix, aij, compressed row, sparse, parallel
-
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
-@*/
-int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A)
+#define __FUNC__ /*<a name=""></a>*/"MatCreate_MPIAIJ"
+int MatCreate_MPIAIJ(Mat B)
 {
-  Mat          B;
   Mat_MPIAIJ   *b;
   int          ierr,i,size;
-  PetscTruth   flag1,flag2;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
 
-  if (d_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than -2: value %d",d_nz);
-  if (o_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than -2: value %d",o_nz);
-  if (d_nnz) {
-    for (i=0; i<m; i++) {
-      if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %d value %d",i,d_nnz[i]);
-    }
-  }
-  if (o_nnz) {
-    for (i=0; i<m; i++) {
-      if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %d value %d",i,o_nnz[i]);
-    }
-  }
-
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_mpiaij",&flag1);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-mat_mpi",&flag2);CHKERRQ(ierr);
-  if (!flag1 && !flag2 && size == 1) {
-    if (M == PETSC_DECIDE) M = m;
-    if (N == PETSC_DECIDE) N = n;
-    ierr = MatCreateSeqAIJ(comm,M,N,d_nz,d_nnz,A);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-
-  *A = 0;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIAIJ,"Mat",comm,MatDestroy,MatView);
-  PLogObjectCreate(B);
   B->data         = (void*)(b = PetscNew(Mat_MPIAIJ));CHKPTRQ(b);
   ierr            = PetscMemzero(b,sizeof(Mat_MPIAIJ));CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
@@ -1794,49 +1555,34 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 
   B->insertmode      = NOT_SET_VALUES;
   b->size            = size;
-  ierr = MPI_Comm_rank(comm,&b->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(B->comm,&b->rank);CHKERRQ(ierr);
 
-  if (m == PETSC_DECIDE && (d_nnz || o_nnz)) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
-  }
-
-  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
-  b->m = m; B->m = m;
-  b->n = n; B->n = n;
-  b->N = N; B->N = N;
-  b->M = M; B->M = M;
+  ierr = PetscSplitOwnership(B->comm,&B->m,&B->M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(B->comm,&B->n,&B->N);CHKERRQ(ierr);
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(B->comm,m,M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,n,N,&B->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   b->rowners = (int*)PetscMalloc(2*(b->size+2)*sizeof(int));CHKPTRQ(b->rowners);
   PLogObjectMemory(B,2*(b->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));
   b->cowners = b->rowners + b->size + 2;
-  ierr = MPI_Allgather(&m,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&B->m,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0] = 0;
   for (i=2; i<=b->size; i++) {
     b->rowners[i] += b->rowners[i-1];
   }
   b->rstart = b->rowners[b->rank]; 
   b->rend   = b->rowners[b->rank+1]; 
-  ierr = MPI_Allgather(&n,1,MPI_INT,b->cowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&B->n,1,MPI_INT,b->cowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
   b->cowners[0] = 0;
   for (i=2; i<=b->size; i++) {
     b->cowners[i] += b->cowners[i-1];
   }
   b->cstart = b->cowners[b->rank]; 
   b->cend   = b->cowners[b->rank+1]; 
-
-  if (d_nz == PETSC_DEFAULT) d_nz = 5;
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
-  PLogObjectParent(B,b->A);
-  if (o_nz == PETSC_DEFAULT) o_nz = 0;
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,N,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
-  PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(B->comm,1,&B->stash);CHKERRQ(ierr);
@@ -1863,9 +1609,9 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIAIJ",
                                      MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
-  *A = B;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatDuplicate_MPIAIJ"
@@ -1874,22 +1620,17 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   Mat        mat;
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ*)matin->data;
   int        ierr,len = 0;
-  PetscTruth flg;
 
   PetscFunctionBegin;
   *newmat       = 0;
-  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIAIJ,"Mat",matin->comm,MatDestroy,MatView);
-  PLogObjectCreate(mat);
-  mat->data         = (void*)(a = PetscNew(Mat_MPIAIJ));CHKPTRQ(a);
+  ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
+  ierr = MatSetType(mat,MATMPIAIJ);CHKERRQ(ierr);
+  a    = (Mat_MPIAIJ*)mat->data;
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   mat->factor       = matin->factor;
   mat->assembled    = PETSC_TRUE;
   mat->insertmode   = NOT_SET_VALUES;
-
-  a->m = mat->m   = oldmat->m;
-  a->n = mat->n   = oldmat->n;
-  a->M = mat->M   = oldmat->M;
-  a->N = mat->N   = oldmat->N;
+  mat->preallocated = PETSC_TRUE;
 
   a->rstart       = oldmat->rstart;
   a->rend         = oldmat->rend;
@@ -1903,22 +1644,19 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   a->rowvalues    = 0;
   a->getrowactive = PETSC_FALSE;
 
-  a->rowners = (int*)PetscMalloc(2*(a->size+2)*sizeof(int));CHKPTRQ(a->rowners);
-  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIAIJ));
-  a->cowners = a->rowners + a->size + 2;
   ierr       = PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));CHKERRQ(ierr);
   ierr       = MatStashCreate_Private(matin->comm,1,&mat->stash);CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (PETSC_USE_CTABLE)
     ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr);
 #else
-    a->colmap = (int*)PetscMalloc((a->N)*sizeof(int));CHKPTRQ(a->colmap);
-    PLogObjectMemory(mat,(a->N)*sizeof(int));
-    ierr      = PetscMemcpy(a->colmap,oldmat->colmap,(a->N)*sizeof(int));CHKERRQ(ierr);
+    a->colmap = (int*)PetscMalloc((mat->N)*sizeof(int));CHKPTRQ(a->colmap);
+    PLogObjectMemory(mat,(mat->N)*sizeof(int));
+    ierr      = PetscMemcpy(a->colmap,oldmat->colmap,(mat->N)*sizeof(int));CHKERRQ(ierr);
 #endif
   } else a->colmap = 0;
   if (oldmat->garray) {
-    len = ((Mat_SeqAIJ*)(oldmat->B->data))->n;
+    len = oldmat->B->n;
     a->garray = (int*)PetscMalloc((len+1)*sizeof(int));CHKPTRQ(a->garray);
     PLogObjectMemory(mat,len*sizeof(int));
     if (len) { ierr = PetscMemcpy(a->garray,oldmat->garray,len*sizeof(int));CHKERRQ(ierr); }
@@ -1932,10 +1670,6 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   PLogObjectParent(mat,a->A);
   ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatPrintHelp(mat);CHKERRQ(ierr);
-  }
   ierr = FListDuplicate(matin->qlist,&mat->qlist);CHKERRQ(ierr);
   *newmat = mat;
   PetscFunctionReturn(0);
@@ -1943,6 +1677,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 
 #include "petscsys.h"
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_MPIAIJ"
 int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
@@ -2125,6 +1860,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrix_MPIAIJ"
@@ -2242,5 +1978,347 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
     ierr = PetscObjectDereference((PetscObject)Mreuse);CHKERRQ(ierr);
   }
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatMPIAIJSetPreallocation"
+/*@C
+   MatMPIAIJSetPreallocation - Creates a sparse parallel matrix in AIJ format
+   (the default parallel PETSc format).  For good matrix assembly performance
+   the user should preallocate the matrix storage by setting the parameters 
+   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
+   performance can be increased by more than a factor of 50.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  A - the matrix 
+.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+           (same value is used for all local rows)
+.  d_nnz - array containing the number of nonzeros in the various rows of the 
+           DIAGONAL portion of the local submatrix (possibly different for each row)
+           or PETSC_NULL, if d_nz is used to specify the nonzero structure. 
+           The size of this array is equal to the number of local rows, i.e 'm'. 
+           You must leave room for the diagonal entry even if it is zero.
+.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+           submatrix (same value is used for all local rows).
+-  o_nnz - array containing the number of nonzeros in the various rows of the
+           OFF-DIAGONAL portion of the local submatrix (possibly different for
+           each row) or PETSC_NULL, if o_nz is used to specify the nonzero 
+           structure. The size of this array is equal to the number 
+           of local rows, i.e 'm'. 
+
+   The AIJ format (also called the Yale sparse matrix format or
+   compressed row storage), is fully compatible with standard Fortran 77
+   storage.  That is, the stored row and column indices can begin at
+   either one (as in Fortran) or zero.  See the users manual for details.
+
+   The user MUST specify either the local or global matrix dimensions
+   (possibly both).
+
+   The parallel matrix is partitioned such that the first m0 rows belong to 
+   process 0, the next m1 rows belong to process 1, the next m2 rows belong 
+   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
+
+   The DIAGONAL portion of the local submatrix of a processor can be defined 
+   as the submatrix which is obtained by extraction the part corresponding 
+   to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the 
+   first row that belongs to the processor, and r2 is the last row belonging 
+   to the this processor. This is a square mxm matrix. The remaining portion 
+   of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
+
+   If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
+
+   By default, this format uses inodes (identical nodes) when possible.
+   We search for consecutive rows with the same nonzero structure, thereby
+   reusing matrix information to achieve increased efficiency.
+
+   Options Database Keys:
++  -mat_aij_no_inode  - Do not use inodes
+.  -mat_aij_inode_limit <limit> - Sets inode limit (max limit=5)
+-  -mat_aij_oneindex - Internally use indexing starting at 1
+        rather than 0.  Note that when calling MatSetValues(),
+        the user still MUST index entries starting at 0!
+
+   Example usage:
+  
+   Consider the following 8x8 matrix with 34 non-zero values, that is 
+   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown 
+   as follows:
+
+.vb
+            1  2  0  |  0  3  0  |  0  4
+    Proc0   0  5  6  |  7  0  0  |  8  0
+            9  0 10  | 11  0  0  | 12  0
+    -------------------------------------
+           13  0 14  | 15 16 17  |  0  0
+    Proc1   0 18  0  | 19 20 21  |  0  0 
+            0  0  0  | 22 23  0  | 24  0
+    -------------------------------------
+    Proc2  25 26 27  |  0  0 28  | 29  0
+           30  0  0  | 31 32 33  |  0 34
+.ve
+
+   This can be represented as a collection of submatrices as:
+
+.vb
+      A B C
+      D E F
+      G H I
+.ve
+
+   Where the submatrices A,B,C are owned by proc0, D,E,F are
+   owned by proc1, G,H,I are owned by proc2.
+
+   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'M','N' parameters are 8,8, and have the same values on all procs.
+
+   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+   part as SeqAIJ matrices. for eg: proc1 will store [E] as a SeqAIJ
+   matrix, ans [DF] as another SeqAIJ matrix.
+
+   When d_nz, o_nz parameters are specified, d_nz storage elements are
+   allocated for every row of the local diagonal submatrix, and o_nz
+   storage locations are allocated for every row of the OFF-DIAGONAL submat.
+   One way to choose d_nz and o_nz is to use the max nonzerors per local 
+   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices. 
+   In this case, the values of d_nz,o_nz are:
+.vb
+     proc0 : dnz = 2, o_nz = 2
+     proc1 : dnz = 3, o_nz = 2
+     proc2 : dnz = 1, o_nz = 4
+.ve
+   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
+   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+   for proc3. i.e we are using 12+15+10=37 storage locations to store 
+   34 values.
+
+   When d_nnz, o_nnz parameters are specified, the storage is specified
+   for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   In the above case the values for d_nnz,o_nnz are:
+.vb
+     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
+     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
+     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
+.ve
+   Here the space allocated is sum of all the above values i.e 34, and
+   hence pre-allocation is perfect.
+
+   Level: intermediate
+
+.keywords: matrix, aij, compressed row, sparse, parallel
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
+@*/
+int MatMPIAIJSetPreallocation(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+{
+  Mat_MPIAIJ   *b;
+  int          ierr,i;
+  PetscTruth   flg2;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)B,MATMPIAIJ,&flg2);CHKERRQ(ierr);
+  if (!flg2) PetscFunctionReturn(0);
+  B->preallocated = PETSC_TRUE;
+  if (d_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than -2: value %d",d_nz);
+  if (o_nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than -2: value %d",o_nz);
+  if (d_nnz) {
+    for (i=0; i<B->m; i++) {
+      if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %d value %d",i,d_nnz[i]);
+    }
+  }
+  if (o_nnz) {
+    for (i=0; i<B->m; i++) {
+      if (o_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"o_nnz cannot be less than 0: local row %d value %d",i,o_nnz[i]);
+    }
+  }
+  b = (Mat_MPIAIJ*)B->data;
+
+  if (d_nz == PETSC_DEFAULT) d_nz = 5;
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->n,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
+  PLogObjectParent(B,b->A);
+  if (o_nz == PETSC_DEFAULT) o_nz = 0;
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->N,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
+  PLogObjectParent(B,b->B);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatCreateMPIAIJ"
+/*@C
+   MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
+   (the default parallel PETSc format).  For good matrix assembly performance
+   the user should preallocate the matrix storage by setting the parameters 
+   d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
+   performance can be increased by more than a factor of 50.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator
+.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+           This value should be the same as the local size used in creating the 
+           y vector for the matrix-vector product y = Ax.
+.  n - This value should be the same as the local size used in creating the 
+       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       calculated if N is given) For square matrices n is almost always m.
+.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
+.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+           (same value is used for all local rows)
+.  d_nnz - array containing the number of nonzeros in the various rows of the 
+           DIAGONAL portion of the local submatrix (possibly different for each row)
+           or PETSC_NULL, if d_nz is used to specify the nonzero structure. 
+           The size of this array is equal to the number of local rows, i.e 'm'. 
+           You must leave room for the diagonal entry even if it is zero.
+.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+           submatrix (same value is used for all local rows).
+-  o_nnz - array containing the number of nonzeros in the various rows of the
+           OFF-DIAGONAL portion of the local submatrix (possibly different for
+           each row) or PETSC_NULL, if o_nz is used to specify the nonzero 
+           structure. The size of this array is equal to the number 
+           of local rows, i.e 'm'. 
+
+   Output Parameter:
+.  A - the matrix 
+
+   Notes:
+   m,n,M,N parameters specify the size of the matrix, and its partitioning across
+   processors, while d_nz,d_nnz,o_nz,o_nnz parameters specify the approximate
+   storage requirements for this matrix.
+
+   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one 
+   processor than it must be used on all processors that share the object for 
+   that argument.
+
+   The AIJ format (also called the Yale sparse matrix format or
+   compressed row storage), is fully compatible with standard Fortran 77
+   storage.  That is, the stored row and column indices can begin at
+   either one (as in Fortran) or zero.  See the users manual for details.
+
+   The user MUST specify either the local or global matrix dimensions
+   (possibly both).
+
+   The parallel matrix is partitioned such that the first m0 rows belong to 
+   process 0, the next m1 rows belong to process 1, the next m2 rows belong 
+   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
+
+   The DIAGONAL portion of the local submatrix of a processor can be defined 
+   as the submatrix which is obtained by extraction the part corresponding 
+   to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the 
+   first row that belongs to the processor, and r2 is the last row belonging 
+   to the this processor. This is a square mxm matrix. The remaining portion 
+   of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
+
+   If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
+
+   By default, this format uses inodes (identical nodes) when possible.
+   We search for consecutive rows with the same nonzero structure, thereby
+   reusing matrix information to achieve increased efficiency.
+
+   Options Database Keys:
++  -mat_aij_no_inode  - Do not use inodes
+.  -mat_aij_inode_limit <limit> - Sets inode limit (max limit=5)
+-  -mat_aij_oneindex - Internally use indexing starting at 1
+        rather than 0.  Note that when calling MatSetValues(),
+        the user still MUST index entries starting at 0!
+
+
+   Example usage:
+  
+   Consider the following 8x8 matrix with 34 non-zero values, that is 
+   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown 
+   as follows:
+
+.vb
+            1  2  0  |  0  3  0  |  0  4
+    Proc0   0  5  6  |  7  0  0  |  8  0
+            9  0 10  | 11  0  0  | 12  0
+    -------------------------------------
+           13  0 14  | 15 16 17  |  0  0
+    Proc1   0 18  0  | 19 20 21  |  0  0 
+            0  0  0  | 22 23  0  | 24  0
+    -------------------------------------
+    Proc2  25 26 27  |  0  0 28  | 29  0
+           30  0  0  | 31 32 33  |  0 34
+.ve
+
+   This can be represented as a collection of submatrices as:
+
+.vb
+      A B C
+      D E F
+      G H I
+.ve
+
+   Where the submatrices A,B,C are owned by proc0, D,E,F are
+   owned by proc1, G,H,I are owned by proc2.
+
+   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'M','N' parameters are 8,8, and have the same values on all procs.
+
+   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+   part as SeqAIJ matrices. for eg: proc1 will store [E] as a SeqAIJ
+   matrix, ans [DF] as another SeqAIJ matrix.
+
+   When d_nz, o_nz parameters are specified, d_nz storage elements are
+   allocated for every row of the local diagonal submatrix, and o_nz
+   storage locations are allocated for every row of the OFF-DIAGONAL submat.
+   One way to choose d_nz and o_nz is to use the max nonzerors per local 
+   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices. 
+   In this case, the values of d_nz,o_nz are:
+.vb
+     proc0 : dnz = 2, o_nz = 2
+     proc1 : dnz = 3, o_nz = 2
+     proc2 : dnz = 1, o_nz = 4
+.ve
+   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
+   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+   for proc3. i.e we are using 12+15+10=37 storage locations to store 
+   34 values.
+
+   When d_nnz, o_nnz parameters are specified, the storage is specified
+   for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   In the above case the values for d_nnz,o_nnz are:
+.vb
+     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
+     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
+     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
+.ve
+   Here the space allocated is sum of all the above values i.e 34, and
+   hence pre-allocation is perfect.
+
+   Level: intermediate
+
+.keywords: matrix, aij, compressed row, sparse, parallel
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues()
+@*/
+int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,int o_nz,int *o_nnz,Mat *A)
+{
+  int ierr,size;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) {
+    ierr = MatSetType(*A,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(*A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(*A,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(*A,d_nz,d_nnz);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.143 2000/08/08 20:15:12 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.144 2000/09/28 21:10:10 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2349,8 +2349,8 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
 {
   int         *lens,rank,*owners = xin->map->range,size,found;
   int         *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work,*local_inidx,*local_inidy;
-  int         *owner,*starts,count,tag,slen,ierr,start;
-  int         *rvalues,*svalues,base,imdex,nmax,*values,last;
+  int         *owner,*starts,count,tag,slen,ierr;
+  int         *rvalues,*svalues,base,imdex,nmax,*values;
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits;
   MPI_Status  recv_status;
@@ -2472,6 +2472,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
      should sort and remove duplicates from local_inidx,local_inidy 
   */
 
+#if defined(do_it_slow)
   /* sort on the from index */
   ierr = PetscSortIntWithArray(slen,local_inidx,local_inidy);CHKERRQ(ierr);
   start = 0;
@@ -2501,6 +2502,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
     }
     start = count;
   }
+#endif
   if (duplicate) {
     PLogInfo(0,"VecScatterCreate_PtoP:Duplicate to from indices passed in VecScatterCreate(), they are ignored\n");
   }

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.25 2000/05/05 22:18:59 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.26 2000/08/01 20:57:47 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -60,6 +60,7 @@ int main(int argc,char **argv)
   */
   ierr = TSSetRHSFunction(ts,RHSFunction,NULL);CHKERRA(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
   ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL);CHKERRA(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL);CHKERRA(ierr);  
  

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.13 2000/05/05 22:18:00 balay Exp bsmith $";
+!    "$Id: ex15f.F,v 1.14 2000/09/22 20:45:46 bsmith Exp bsmith $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -90,6 +90,7 @@
 
       call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,    &
      &               m*n,A,ierr)
+      call MatSetFromOptions(A,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which

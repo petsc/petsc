@@ -1,4 +1,4 @@
-/*$Id: vecreg.c,v 1.16 2000/05/10 16:40:00 bsmith Exp bsmith $*/
+/*$Id: vecreg.c,v 1.17 2000/08/17 04:51:06 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"  /*I "petscvec.h" I*/
 
@@ -25,8 +25,6 @@ extern PetscTruth VecRegisterAllCalled;
   Not Collective
 
   Level: advanced
-
-.keywords: Vec, register, all
 
 .seealso:  VecRegisterDestroy()
 @*/

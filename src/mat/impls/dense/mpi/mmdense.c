@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.31 2000/07/10 03:39:30 bsmith Exp bsmith $*/
+/*$Id: mmdense.c,v 1.32 2000/09/28 21:10:58 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -17,16 +17,16 @@ int MatSetUpMultiply_MPIDense(Mat mat)
 
   PetscFunctionBegin;
   /* Create local vector that is used to scatter into */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,mdn->N,&mdn->lvec);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,mat->N,&mdn->lvec);CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(mat->comm,mdn->N,0,1,&from);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,mdn->N,0,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(mat->comm,mat->N,0,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,mat->N,0,1,&to);CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
   /* n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank]; */
 
-  ierr = VecCreateMPI(mat->comm,mdn->nvec,mdn->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mdn->nvec,mat->N,&gvec);CHKERRQ(ierr);
 
   /* Generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
@@ -47,7 +47,6 @@ EXTERN int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
 #define __FUNC__ /*<a name=""></a>*/"MatGetSubMatrices_MPIDense" 
 int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
 { 
-  Mat_MPIDense  *c = (Mat_MPIDense*)C->data;
   int           nmax,nstages_local,nstages,i,pos,max_no,ierr;
 
   PetscFunctionBegin;
@@ -56,7 +55,7 @@ int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scal
     *submat = (Mat *)PetscMalloc((ismax+1)*sizeof(Mat));CHKPTRQ(*submat);
   }
   /* Determine the number of stages through which submatrices are done */
-  nmax          = 20*1000000 / (c->N * sizeof(int));
+  nmax          = 20*1000000 / (C->N * sizeof(int));
   if (!nmax) nmax = 1;
   nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
 
@@ -79,9 +78,9 @@ int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scal
 int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
 { 
   Mat_MPIDense  *c = (Mat_MPIDense*)C->data;
-  Mat            A = c->A;
+  Mat           A = c->A;
   Mat_SeqDense  *a = (Mat_SeqDense*)A->data,*mat;
-  int           N = c->N,rstart = c->rstart,count;
+  int           N = C->N,rstart = c->rstart,count;
   int           **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
   int           **sbuf1,rank,m,i,j,k,l,ct1,ierr,**rbuf1,row,proc;
   int           nrqs,msz,**ptr,index,*ctr,*pa,*tmp,bsz,nrqr;
@@ -98,7 +97,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   tag0   = C->tag;
   size   = c->size;
   rank   = c->rank;
-  m      = c->M;
+  m      = C->M;
   
   /* Get some new tags to keep the communication clean */
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
@@ -291,7 +290,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
         v_start = a->v + row;
         for (k=0; k<N; k++) {
           sbuf2_i[0] = v_start[0];
-          sbuf2_i++; v_start+=a->m;
+          sbuf2_i++; v_start += C->m;
         }
       }
       /* Now send off the data */
@@ -310,10 +309,10 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   if (scall == MAT_REUSE_MATRIX) {
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqDense *)(submats[i]->data);
-      if ((mat->m != nrow[i]) || (mat->n != ncol[i])) {
+      if ((submats[i]->m != nrow[i]) || (submats[i]->n != ncol[i])) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
-      ierr = PetscMemzero(mat->v,mat->m*mat->n*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = PetscMemzero(mat->v,submats[i]->m*submats[i]->n*sizeof(Scalar));CHKERRQ(ierr);
       submats[i]->factor = C->factor;
     }
   } else {
@@ -342,7 +341,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
           imat_vi  = imat_v + j;
           for (k=0; k<ncol[i]; k++) {
             col = icol[i][k];
-            imat_vi[k*m] = mat_vi[col*a->m];
+            imat_vi[k*m] = mat_vi[col*C->m];
           }
         } 
       }
@@ -351,11 +350,11 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
 
   /* Create row map. This maps c->row to submat->row for each submat*/
   /* this is a very expensive operation wrt memory usage */
-  len     = (1+ismax)*sizeof(int*)+ ismax*c->M*sizeof(int);
+  len     = (1+ismax)*sizeof(int*)+ ismax*C->M*sizeof(int);
   rmap    = (int **)PetscMalloc(len);CHKPTRQ(rmap);
   rmap[0] = (int *)(rmap + ismax);
-  ierr    = PetscMemzero(rmap[0],ismax*c->M*sizeof(int));CHKERRQ(ierr);
-  for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + c->M;}
+  ierr    = PetscMemzero(rmap[0],ismax*C->M*sizeof(int));CHKERRQ(ierr);
+  for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->M;}
   for (i=0; i<ismax; i++) {
     rmap_i = rmap[i];
     irow_i = irow[i];

@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.200 2000/09/07 15:18:24 balay Exp bsmith $*/
+/*$Id: precon.c,v 1.201 2000/09/28 21:12:37 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -784,9 +784,8 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
  @*/
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
-  MatType    type;
   int        ierr;
-  PetscTruth isbjacobi,isshell,ismg;
+  PetscTruth isbjacobi,isshell,ismg,isrowbs,ismatshell;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -796,8 +795,8 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   /*
       BlockSolve95 cannot use default BJacobi preconditioning
   */
-  ierr = MatGetType(Amat,&type,PETSC_NULL);CHKERRQ(ierr);
-  if (type == MATMPIROWBS) {
+  ierr = PetscTypeCompare((PetscObject)Amat,MATMPIROWBS,&isrowbs);CHKERRQ(ierr);
+  if (isrowbs) {
     ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
     if (isbjacobi) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
@@ -807,10 +806,10 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   /*
       Shell matrix (probably) cannot support a preconditioner
   */
-  ierr = MatGetType(Pmat,&type,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
-  if (type == MATSHELL && !isshell && !ismg) {
+  ierr = PetscTypeCompare((PetscObject)Pmat,MATSHELL,&ismatshell);CHKERRQ(ierr);
+  if (ismatshell && !isshell && !ismg) {
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
     PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
     preconditioners (unless defined by the user)\n");

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.42 2000/09/08 17:49:40 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.43 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -82,6 +82,7 @@ int main(int argc,char **args)
         - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C1);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C1);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C1,&Istart,&Iend);CHKERRA(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRA(ierr);
   ierr = VecSetFromOptions(u);CHKERRA(ierr);
@@ -109,6 +110,7 @@ int main(int argc,char **args)
      Create data structures for second linear system.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C2);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C2);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2);CHKERRA(ierr);
   ierr = VecDuplicate(u,&b2);CHKERRA(ierr);
   ierr = VecDuplicate(u,&x2);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.110 2000/09/22 20:41:47 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.111 2000/09/28 21:08:12 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -103,7 +103,7 @@ int ViewerFlush_ASCII(Viewer viewer)
     This routine is not supported in Fortran.
 
   Concepts: Viewer^file pointer
-  Concepts: File pointer^getting from Viewer
+  Concepts: file pointer^getting from Viewer
 
 .seealso: ViewerASCIIOpen(), ViewerDestroy(), ViewerSetType(), ViewerCreate(), ViewerASCIIPrintf(),
           ViewerASCIISynchronizedPrintf(), ViewerFlush()

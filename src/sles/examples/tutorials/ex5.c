@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.83 2000/05/05 22:18:00 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.84 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -68,6 +68,7 @@ int main(int argc,char **args)
      determined by PETSc at runtime.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

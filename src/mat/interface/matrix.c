@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.381 2000/09/07 15:18:47 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.382 2000/09/28 21:10:52 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -65,7 +65,7 @@
 
    Level: advanced
 
-.keywords: matrix, row, get, extract
+   Concepts: matrices^row access
 
 .seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubmatrices(), MatGetDiagonal()
 @*/
@@ -76,6 +76,8 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidIntPointer(ncols);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->getrow) SETERRQ(PETSC_ERR_SUP,"");
@@ -117,8 +119,6 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
    before another call to MatGetRow() can be made.
 
    Level: advanced
-
-.keywords: matrix, row, restore
 
 .seealso:  MatGetRow()
 @*/
@@ -182,7 +182,9 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 
    Level: beginner
 
-.keywords: matrix, view, visualize, output, print, write, draw
+   Concepts: matrices^viewing
+   Concepts: matrices^plotting
+   Concepts: matrices^printing
 
 .seealso: ViewerSetFormat(), ViewerASCIIOpen(), ViewerDrawOpen(), 
           ViewerSocketOpen(), ViewerBinaryOpen(), MatLoad()
@@ -195,6 +197,8 @@ int MatView(Mat mat,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat); 
   if (!viewer) viewer = VIEWER_STDOUT_(mat->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscCheckSameComm(mat,viewer);
@@ -206,7 +210,7 @@ int MatView(Mat mat,Viewer viewer)
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       ierr = ViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = MatGetType(mat,PETSC_NULL,&cstr);CHKERRQ(ierr);
+      ierr = MatGetType(mat,&cstr);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
       ierr = ViewerASCIIPrintf(viewer,"type=%s, rows=%d, cols=%d\n",cstr,rows,cols);CHKERRQ(ierr);
       if (mat->ops->getinfo) {
@@ -257,7 +261,7 @@ int MatView(Mat mat,Viewer viewer)
 
    Level: Developer            
 
-.keywords: matrix, scale
+   Concepts: matrices^scaling
 
 .seealso: MatUseScaledForm(), MatUnScaleSystem()
 @*/
@@ -267,6 +271,8 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE);PetscCheckSameComm(mat,x);}
   if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE);PetscCheckSameComm(mat,b);}
 
@@ -300,8 +306,6 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
 
    Level: Developer            
 
-.keywords: matrix, scale
-
 .seealso: MatUseScaledForm(), MatScaleSystem()
 @*/
 int MatUnScaleSystem(Mat mat,Vec x,Vec b)
@@ -310,6 +314,8 @@ int MatUnScaleSystem(Mat mat,Vec x,Vec b)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (x) {PetscValidHeaderSpecific(x,VEC_COOKIE);PetscCheckSameComm(mat,x);}
   if (b) {PetscValidHeaderSpecific(b,VEC_COOKIE);PetscCheckSameComm(mat,b);}
   if (mat->ops->unscalesystem) {
@@ -339,8 +345,6 @@ int MatUnScaleSystem(Mat mat,Vec x,Vec b)
 
    Level: Developer            
 
-.keywords: matrix, scale
-
 .seealso: MatScaleSystem(), MatUnScaleSystem()
 @*/
 int MatUseScaledForm(Mat mat,PetscTruth scaled)
@@ -349,6 +353,8 @@ int MatUseScaledForm(Mat mat,PetscTruth scaled)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (mat->ops->usescaledform) {
     ierr = (*mat->ops->usescaledform)(mat,scaled);CHKERRQ(ierr);
   }
@@ -363,24 +369,39 @@ int MatUseScaledForm(Mat mat,PetscTruth scaled)
    Collective on Mat
 
    Input Parameter:
-.  mat - the matrix
+.  A - the matrix
 
    Level: beginner
 
-.keywords: matrix, destroy
 @*/
-int MatDestroy(Mat mat)
+int MatDestroy(Mat A)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (--mat->refct > 0) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidType(A);
+  MatPreallocated(A);
+  if (--A->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(mat);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(A);CHKERRQ(ierr);
+  if (A->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->mapping);CHKERRQ(ierr);
+  }
+  if (A->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
+  }
+  if (A->rmap) {
+    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
+  }
+  if (A->cmap) {
+    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
+  }
 
-  ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  PLogObjectDestroy(A);
+  PetscHeaderDestroy(A);
   PetscFunctionReturn(0);
 }
 
@@ -400,7 +421,7 @@ int MatDestroy(Mat mat)
 
    Level: developer
 
-.keywords: matrix, valid
+   Concepts: matrices^validity
 @*/
 int MatValid(Mat m,PetscTruth *flg)
 {
@@ -452,7 +473,7 @@ int MatValid(Mat m,PetscTruth *flg)
 
    Level: beginner
 
-.keywords: matrix, insert, add, set, values
+   Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
 @*/
@@ -463,6 +484,8 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
@@ -532,7 +555,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
 
    Level: intermediate
 
-.keywords: matrix, insert, add, set, values
+   Concepts: matrices^putting entries in blocked
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal()
 @*/
@@ -543,6 +566,8 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
   PetscFunctionBegin;
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
@@ -622,7 +647,7 @@ M*/
 
    Level: advanced
 
-.keywords: matrix, get, values
+   Concepts: matrices^accessing values
 
 .seealso: MatGetRow(), MatGetSubmatrices(), MatSetValues()
 @*/
@@ -632,6 +657,8 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
@@ -661,7 +688,8 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 
    Level: intermediate
 
-.keywords: matrix, set, values, local, global, mapping
+   Concepts: matrices^local to global mapping
+   Concepts: local to global mapping^for matrices
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal()
 @*/
@@ -670,6 +698,8 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_COOKIE);
+  PetscValidType(x);
+  MatPreallocated(x);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
   if (x->mapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
@@ -700,7 +730,8 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 
    Level: intermediate
 
-.keywords: matrix, set, values, local ordering
+   Concepts: matrices^local to global mapping blocked
+   Concepts: local to global mapping^for matrices, blocked
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
            MatSetValuesBlocked(), MatSetValuesLocal()
@@ -710,6 +741,8 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,MAT_COOKIE);
+  PetscValidType(x);
+  MatPreallocated(x);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
   if (x->bmapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
@@ -750,7 +783,7 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 
    Level: intermediate
 
-.keywords: matrix, set, values, local ordering
+   Concepts: matrices^putting entries in with local numbering
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping()
 @*/
@@ -760,6 +793,8 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,In
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidIntPointer(irow);
   PetscValidIntPointer(icol);
   PetscValidScalarPointer(y);
@@ -824,7 +859,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,In
 
    Level: intermediate
 
-.keywords: matrix, set, values, blocked, local
+   Concepts: matrices^putting blocked values in with local numbering
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
 @*/
@@ -834,6 +869,8 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidIntPointer(irow);
   PetscValidIntPointer(icol);
   PetscValidScalarPointer(y);
@@ -886,7 +923,7 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
 
    Level: beginner
 
-.keywords: matrix, multiply, matrix-vector product
+   Concepts: matrix-vector product
 
 .seealso: MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
@@ -896,6 +933,8 @@ int MatMult(Mat mat,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE); 
 
@@ -940,7 +979,7 @@ int MatMult(Mat mat,Vec x,Vec y)
 
    Level: beginner
 
-.keywords: matrix, multiply, matrix-vector product, transpose
+   Concepts: matrix vector product^transpose
 
 .seealso: MatMult(), MatMultAdd(), MatMultTransposeAdd()
 @*/
@@ -950,6 +989,8 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(x,VEC_COOKIE); 
   PetscValidHeaderSpecific(y,VEC_COOKIE);
 
@@ -985,7 +1026,7 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
 
     Level: beginner
 
-.keywords: matrix, multiply, matrix-vector product, add
+    Concepts: matrix vector product^addition
 
 .seealso: MatMultTranspose(), MatMult(), MatMultTransposeAdd()
 @*/
@@ -995,6 +1036,8 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(v1,VEC_COOKIE);
   PetscValidHeaderSpecific(v2,VEC_COOKIE); 
   PetscValidHeaderSpecific(v3,VEC_COOKIE);
@@ -1034,7 +1077,7 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
    Level: beginner
 
-.keywords: matrix, multiply, matrix-vector product, transpose, add
+   Concepts: matrix vector product^transpose and addition
 
 .seealso: MatMultTranspose(), MatMultAdd(), MatMult()
 @*/
@@ -1044,6 +1087,8 @@ int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(v1,VEC_COOKIE);
   PetscValidHeaderSpecific(v2,VEC_COOKIE);
   PetscValidHeaderSpecific(v3,VEC_COOKIE);
@@ -1119,8 +1164,9 @@ $       -log_info -mat_view_info
 .ve
 
     Level: intermediate
+
+    Concepts: matrices^getting information on
  
-.keywords: matrix, get, info, storage, nonzeros, memory, fill
 @*/
 int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 {
@@ -1128,6 +1174,8 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(info);
   if (!mat->ops->getinfo) SETERRQ(PETSC_ERR_SUP,"");
   ierr = (*mat->ops->getinfo)(mat,flag,info);CHKERRQ(ierr);
@@ -1163,7 +1211,7 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
    Matlab. SPARSEKIT2 is copyrighted by Yousef Saad with the GNU copyright
    and thus can be distributed with PETSc.
 
-.keywords: matrix, factor, LU, in-place
+    Concepts: matrices^ILUDT factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
@@ -1173,6 +1221,8 @@ int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(fact);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -1211,7 +1261,7 @@ $                   Run with the option -log_info to determine an optimal value 
 
    Level: developer
 
-.keywords: matrix, factor, LU, in-place
+   Concepts: matrices^LU factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(),
           MatGetOrdering(), MatSetUnfactored()
@@ -1223,6 +1273,8 @@ int MatLUFactor(Mat mat,IS row,IS col,MatLUInfo *info)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->lufactor) SETERRQ(PETSC_ERR_SUP,"");
@@ -1260,7 +1312,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 
    Level: developer
 
-.keywords: matrix, factor, ILU, in-place
+   Concepts: matrices^ILU factorization
 
 .seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
@@ -1270,6 +1322,8 @@ int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -1310,7 +1364,7 @@ $                   Run with the option -log_info to determine an optimal value 
 
    Level: developer
 
-.keywords: matrix, factor, LU, symbolic, fill
+   Concepts: matrices^LU symbolic factorization
 
 .seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
@@ -1320,6 +1374,8 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(fact);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -1353,7 +1409,7 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
 
    Level: developer
 
-.keywords: matrix, factor, LU, numeric
+   Concepts: matrices^LU numeric factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactor(), MatCholeskyFactor()
 @*/
@@ -1364,6 +1420,8 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(fact);
   PetscValidHeaderSpecific(*fact,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -1414,7 +1472,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
 
    Level: developer
 
-.keywords: matrix, factor, in-place, Cholesky
+   Concepts: matrices^Cholesky factorization
 
 .seealso: MatLUFactor(), MatCholeskyFactorSymbolic(), MatCholeskyFactorNumeric()
           MatGetOrdering()
@@ -1426,6 +1484,8 @@ int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -1463,7 +1523,7 @@ int MatCholeskyFactor(Mat mat,IS perm,PetscReal f)
 
    Level: developer
 
-.keywords: matrix, factor, factorization, symbolic, Cholesky
+   Concepts: matrices^Cholesky symbolic factorization
 
 .seealso: MatLUFactorSymbolic(), MatCholeskyFactor(), MatCholeskyFactorNumeric()
           MatGetOrdering()
@@ -1475,6 +1535,8 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,Mat *fact)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(fact);
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -1509,7 +1571,7 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,Mat *fact)
 
    Level: developer
 
-.keywords: matrix, factor, numeric, Cholesky
+   Concepts: matrices^Cholesky numeric factorization
 
 .seealso: MatCholeskyFactorSymbolic(), MatCholeskyFactor(), MatLUFactorNumeric()
 @*/
@@ -1519,6 +1581,8 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(fact);
   if (!mat->ops->choleskyfactornumeric) SETERRQ(PETSC_ERR_SUP,"");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -1559,7 +1623,7 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 
    Level: developer
 
-.keywords: matrix, linear system, solve, LU, Cholesky, triangular solve
+   Concepts: matrices^triangular solves
 
 .seealso: MatSolveAdd(), MatSolveTranspose(), MatSolveTransposeAdd()
 @*/
@@ -1569,6 +1633,8 @@ int MatSolve(Mat mat,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(b,VEC_COOKIE); 
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscCheckSameComm(mat,b);
@@ -1614,7 +1680,7 @@ int MatSolve(Mat mat,Vec b,Vec x)
 
    Level: developer
 
-.keywords: matrix, forward, LU, Cholesky, triangular solve
+   Concepts: matrices^forward solves
 
 .seealso: MatSolve(), MatBackwardSolve()
 @ */
@@ -1624,6 +1690,8 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(b,VEC_COOKIE); 
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscCheckSameComm(mat,b);
@@ -1668,7 +1736,7 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
 
    Level: developer
 
-.keywords: matrix, backward, LU, Cholesky, triangular solve
+   Concepts: matrices^backward solves
 
 .seealso: MatSolve(), MatForwardSolve()
 @ */
@@ -1678,6 +1746,8 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(b,VEC_COOKIE); 
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscCheckSameComm(mat,b);
@@ -1720,7 +1790,7 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
 
    Level: developer
 
-.keywords: matrix, linear system, solve, LU, Cholesky, add
+   Concepts: matrices^triangular solves
 
 .seealso: MatSolve(), MatSolveTranspose(), MatSolveTransposeAdd()
 @*/
@@ -1732,6 +1802,8 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  
   PetscValidHeaderSpecific(x,VEC_COOKIE);
@@ -1791,7 +1863,7 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 
    Level: developer
 
-.keywords: matrix, linear system, solve, LU, Cholesky, transpose
+   Concepts: matrices^triangular solves
 
 .seealso: MatSolve(), MatSolveAdd(), MatSolveTransposeAdd()
 @*/
@@ -1801,6 +1873,8 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(b,VEC_COOKIE); 
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscCheckSameComm(mat,b);
@@ -1843,7 +1917,7 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
 
    Level: developer
 
-.keywords: matrix, linear system, solve, LU, Cholesky, transpose, add  
+   Concepts: matrices^triangular solves
 
 .seealso: MatSolve(), MatSolveAdd(), MatSolveTranspose()
 @*/
@@ -1855,6 +1929,8 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  
   PetscValidHeaderSpecific(x,VEC_COOKIE);
@@ -1939,7 +2015,10 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 
    Level: developer
 
-.keywords: matrix, relax, relaxation, sweep
+   Concepts: matrices^relaxation
+   Concepts: matrices^SOR
+   Concepts: matrices^Gauss-Seidel
+
 @*/
 int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int its,Vec x)
 {
@@ -1947,6 +2026,8 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(b,VEC_COOKIE); 
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscCheckSameComm(mat,b);
@@ -2011,7 +2092,7 @@ int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 
    Level: intermediate
    
-.keywords: matrix, copy, convert
+   Concepts: matrices^copying
 
 .seealso: MatConvert()
 @*/
@@ -2022,6 +2103,10 @@ int MatCopy(Mat A,Mat B,MatStructure str)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
   PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscValidType(A);
+  MatPreallocated(A);
+  PetscValidType(B);
+  MatPreallocated(B);
   PetscCheckSameComm(A,B);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -2038,38 +2123,37 @@ int MatCopy(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-static int MatConvertersSet = 0;
-static int (*MatConverters[MAX_MATRIX_TYPES][MAX_MATRIX_TYPES])(Mat,MatType,Mat*) = 
-           {{0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0}};
+#include "petscsys.h"
+PetscTruth MatConvertRegisterAllCalled = PETSC_FALSE;
+FList      MatConvertList              = 0;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatConvertRegister"
 /*@C
-    MatConvertRegister - Allows one to register a routine that converts between
-    two matrix types.
+    MatConvertRegister - Allows one to register a routine that reads matrices
+        from a binary file for a particular matrix type.
 
-    Not Collective
+  Not Collective
 
-    Input Parameters:
-+   intype - the type of matrix (defined in include/petscmat.h), for example, MATSEQAIJ.
--   outtype - new matrix type, or MATSAME
+  Input Parameters:
++   type - the type of matrix (defined in include/petscmat.h), for example, MATSEQAIJ.
+-   Converter - the function that reads the matrix from the binary file.
 
-    Level: advanced
+  Level: developer
 
-.seealso: MatConvertRegisterAll()
+.seealso: MatConvertRegisterAll(), MatConvert()
+
 @*/
-int MatConvertRegister(MatType intype,MatType outtype,int (*converter)(Mat,MatType,Mat*))
+int MatConvertRegister(char *sname,char *path,char *name,int (*function)(Mat,MatType,Mat*))
 {
+  int  ierr;
+  char fullname[256];
+
   PetscFunctionBegin;
-  MatConverters[intype][outtype] = converter;
-  MatConvertersSet               = 1;
+  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = FListAdd(&MatConvertList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatConvert"
@@ -2094,44 +2178,63 @@ int MatConvertRegister(MatType intype,MatType outtype,int (*converter)(Mat,MatTy
 
    Level: intermediate
 
-.keywords: matrix, copy, convert
+   Concepts: matrices^converting between storage formats
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
 int MatConvert(Mat mat,MatType newtype,Mat *M)
 {
-  int ierr;
+  int        ierr;
+  PetscTruth sametype,issame,flg;
+  char       convname[256],mtype[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(M);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  if (newtype > MAX_MATRIX_TYPES || newtype < -1) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Not a valid matrix type");
+  ierr = OptionsGetString(PETSC_NULL,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    newtype = mtype;
   }
-  *M  = 0;
-
-  if (!MatConvertersSet) {
-    ierr = MatLoadRegisterAll();CHKERRQ(ierr);
-  }
-
   ierr = PLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
-  if ((newtype == mat->type || newtype == MATSAME) && mat->ops->duplicate) {
+  
+  ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
+  ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
+  if ((sametype || issame) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    if (!MatConvertersSet) {
-      ierr = MatConvertRegisterAll();CHKERRQ(ierr);
+    int (*conv)(Mat,MatType,Mat*);
+    ierr = PetscStrcpy(convname,"MatConvertTo_");CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+    ierr =  FListFind(mat->comm,MatConvertList,convname,(int(**)(void*))&conv);CHKERRQ(ierr);
+    if (conv) {
+      ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void**)&conv);CHKERRQ(ierr);
+      if (conv) {
+        ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
+      } else {
+        if (mat->ops->convert) {
+          ierr = (*mat->ops->convert)(mat,newtype,M);CHKERRQ(ierr);
+        } else {
+          ierr = MatConvert_Basic(mat,newtype,M);CHKERRQ(ierr);
+        }
+      }
     }
-    if (!MatConverters[mat->type][newtype]) {
-      SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid matrix type, or matrix converter not registered");
-    }
-    ierr = (*MatConverters[mat->type][newtype])(mat,newtype,M);CHKERRQ(ierr);
   }
   ierr = PLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatDuplicate"
@@ -2150,7 +2253,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 
    Level: intermediate
 
-.keywords: matrix, copy, convert, duplicate
+   Concepts: matrices^duplicating
 
 .seealso: MatCopy(), MatConvert()
 @*/
@@ -2160,6 +2263,8 @@ int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(M);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -2196,9 +2301,9 @@ int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 
    Level: intermediate
 
-.keywords: matrix, get, diagonal
+   Concepts: matrices^accessing diagonals
 
-.seealso: MatGetRow(), MatGetSubmatrices(), MatGetSubmatrix()
+.seealso: MatGetRow(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMax()
 @*/
 int MatGetDiagonal(Mat mat,Vec v)
 {
@@ -2206,12 +2311,51 @@ int MatGetDiagonal(Mat mat,Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(v,VEC_COOKIE);
   /* PetscCheckSameComm(mat,v); Could be MPI vector but Seq matrix cause of two submatrix storage */
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!mat->ops->getdiagonal) SETERRQ(PETSC_ERR_SUP,"");
 
   ierr = (*mat->ops->getdiagonal)(mat,v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatGetRowMax"
+/*@ 
+   MatGetRowMax - Gets the maximum value (in absolute value) of each
+        row of the matrix
+
+   Collective on Mat and Vec
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
+.  v - the vector for storing the maximums
+
+   Level: intermediate
+
+   Concepts: matrices^getting row maximums
+
+.seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix()
+@*/
+int MatGetRowMax(Mat mat,Vec v)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  /* PetscCheckSameComm(mat,v); Could be MPI vector but Seq matrix cause of two submatrix storage */
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!mat->ops->getrowmax) SETERRQ(PETSC_ERR_SUP,"");
+
+  ierr = (*mat->ops->getrowmax)(mat,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2230,7 +2374,7 @@ int MatGetDiagonal(Mat mat,Vec v)
 
    Level: intermediate
 
-.keywords: matrix, transpose
+   Concepts: matrices^transposing
 
 .seealso: MatMultTranspose(), MatMultTransposeAdd()
 @*/
@@ -2240,6 +2384,8 @@ int MatTranspose(Mat mat,Mat *B)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->transpose) SETERRQ(PETSC_ERR_SUP,""); 
@@ -2266,7 +2412,7 @@ int MatTranspose(Mat mat,Mat *B)
 
    Level: advanced
 
-.keywords: matrix, transpose
+   Concepts: matrices^permuting
 
 .seealso: MatGetOrdering()
 @*/
@@ -2276,6 +2422,8 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(row,IS_COOKIE);
   PetscValidHeaderSpecific(col,IS_COOKIE);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -2301,7 +2449,7 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
 
    Level: intermediate
 
-.keywords: matrix, equal, equivalent
+   Concepts: matrices^equality between
 @*/
 int MatEqual(Mat A,Mat B,PetscTruth *flg)
 {
@@ -2310,6 +2458,10 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE); 
   PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscValidType(A);
+  MatPreallocated(A);
+  PetscValidType(B);
+  MatPreallocated(B);
   PetscValidIntPointer(flg);
   PetscCheckSameComm(A,B);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -2341,7 +2493,8 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
 
    Level: intermediate
 
-.keywords: matrix, diagonal, scale
+   Concepts: matrices^diagonal scaling
+   Concepts: diagonal scaling of matrices
 
 .seealso: MatScale()
 @*/
@@ -2351,6 +2504,8 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (!mat->ops->diagonalscale) SETERRQ(PETSC_ERR_SUP,"");
   if (l) {PetscValidHeaderSpecific(l,VEC_COOKIE);PetscCheckSameComm(mat,l);}
   if (r) {PetscValidHeaderSpecific(r,VEC_COOKIE);PetscCheckSameComm(mat,r);}
@@ -2379,7 +2534,7 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 
     Level: intermediate
 
-.keywords: matrix, scale
+    Concepts: matrices^scaling all entries
 
 .seealso: MatDiagonalScale()
 @*/
@@ -2389,6 +2544,8 @@ int MatScale(Scalar *a,Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidScalarPointer(a);
   if (!mat->ops->scale) SETERRQ(PETSC_ERR_SUP,"");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -2416,7 +2573,8 @@ int MatScale(Scalar *a,Mat mat)
 
    Level: intermediate
 
-.keywords: matrix, norm, Frobenius
+   Concepts: matrices^norm
+   Concepts: norm^of matrix
 @*/
 int MatNorm(Mat mat,NormType type,PetscReal *norm)
 {
@@ -2424,6 +2582,8 @@ int MatNorm(Mat mat,NormType type,PetscReal *norm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidScalarPointer(norm);
 
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -2459,7 +2619,7 @@ static int MatAssemblyEnd_InUse = 0;
 
    Level: beginner
 
-.keywords: matrix, assembly, assemble, begin
+   Concepts: matrices^assembling
 
 .seealso: MatAssemblyEnd(), MatSetValues(), MatAssembled()
 @*/
@@ -2469,7 +2629,9 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix.\n did you forget to call MatSetUnfactored()?"); 
+  PetscValidType(mat);
+  MatPreallocated(mat);
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix.\nDid you forget to call MatSetUnfactored()?"); 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
@@ -2500,7 +2662,7 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 
    Level: advanced
 
-.keywords: matrix, assembly, assemble, begin
+   Concepts: matrices^assembled?
 
 .seealso: MatAssemblyEnd(), MatSetValues(), MatAssemblyBegin()
 @*/
@@ -2508,6 +2670,8 @@ int MatAssembled(Mat mat,PetscTruth *assembled)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   *assembled = mat->assembled;
   PetscFunctionReturn(0);
 }
@@ -2601,8 +2765,6 @@ int MatView_Private(Mat mat)
 
    Level: beginner
 
-.keywords: matrix, assembly, assemble, end
-
 .seealso: MatAssemblyBegin(), MatSetValues(), DrawOpenX(), MatView(), MatAssembled()
 @*/
 int MatAssemblyEnd(Mat mat,MatAssemblyType type)
@@ -2612,6 +2774,8 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
 
   inassm++;
   MatAssemblyEnd_InUse++;
@@ -2656,7 +2820,6 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 
    Level: advanced
 
-.keywords: matrix, compress
 @*/
 int MatCompress(Mat mat)
 {
@@ -2664,6 +2827,8 @@ int MatCompress(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (mat->ops->compress) {ierr = (*mat->ops->compress)(mat);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -2768,7 +2933,8 @@ int MatCompress(Mat mat)
 
    Level: intermediate
 
-.keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero
+   Concepts: matrices^setting options
+
 @*/
 int MatSetOption(Mat mat,MatOption op)
 {
@@ -2776,6 +2942,8 @@ int MatSetOption(Mat mat,MatOption op)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (mat->ops->setoption) {ierr = (*mat->ops->setoption)(mat,op);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -2793,7 +2961,7 @@ int MatSetOption(Mat mat,MatOption op)
 
    Level: intermediate
 
-.keywords: matrix, zero, entries
+   Concepts: matrices^zeroing
 
 .seealso: MatZeroRows()
 @*/
@@ -2803,6 +2971,8 @@ int MatZeroEntries(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->zeroentries) SETERRQ(PETSC_ERR_SUP,"");
 
@@ -2849,7 +3019,7 @@ int MatZeroEntries(Mat mat)
   
    Level: intermediate
 
-.keywords: matrix, zero, rows, boundary conditions 
+   Concepts: matrices^zeroing rows
 
 .seealso: MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
@@ -2859,6 +3029,8 @@ int MatZeroRows(Mat mat,IS is,Scalar *diag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (diag) PetscValidScalarPointer(diag);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -2900,7 +3072,7 @@ int MatZeroRows(Mat mat,IS is,Scalar *diag)
 
    Level: intermediate
 
-.keywords: matrix, zero, rows, boundary conditions 
+   Concepts: matrices^zeroing
 
 .seealso: MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
 @*/
@@ -2911,6 +3083,8 @@ int MatZeroRowsLocal(Mat mat,IS is,Scalar *diag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(is,IS_COOKIE);
   if (diag) PetscValidScalarPointer(diag);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -2943,17 +3117,16 @@ int MatZeroRowsLocal(Mat mat,IS is,Scalar *diag)
 
    Level: beginner
 
-.keywords: matrix, dimension, size, rows, columns, global, get
+   Concepts: matrices^size
 
 .seealso: MatGetLocalSize()
 @*/
 int MatGetSize(Mat mat,int *m,int* n)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = (*mat->ops->getsize)(mat,m,n);CHKERRQ(ierr);
+  if (m) *m = mat->M;
+  if (n) *n = mat->N;
   PetscFunctionReturn(0);
 }
 
@@ -2975,17 +3148,16 @@ int MatGetSize(Mat mat,int *m,int* n)
 
    Level: beginner
 
-.keywords: matrix, dimension, size, local, rows, columns, get
+   Concepts: matrices^local size
 
 .seealso: MatGetSize()
 @*/
 int MatGetLocalSize(Mat mat,int *m,int* n)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = (*mat->ops->getlocalsize)(mat,m,n);CHKERRQ(ierr);
+  if (m) *m = mat->m;
+  if (n) *n = mat->n;
   PetscFunctionReturn(0);
 }
 
@@ -3008,7 +3180,7 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
 
    Level: beginner
 
-.keywords: matrix, get, range, ownership
+   Concepts: matrices^row ownership
 @*/
 int MatGetOwnershipRange(Mat mat,int *m,int* n)
 {
@@ -3016,6 +3188,8 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (m) PetscValidIntPointer(m);
   if (n) PetscValidIntPointer(n);
   if (!mat->ops->getownershiprange) SETERRQ(PETSC_ERR_SUP,"");
@@ -3055,7 +3229,9 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 
    Level: developer
 
-.keywords: matrix, factor, incomplete, ILU, symbolic, fill
+  Concepts: matrices^symbolic LU factorization
+  Concepts: matrices^factorization
+  Concepts: LU^symbolic factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
           MatGetOrdering()
@@ -3067,6 +3243,8 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(fact);
   if (info && info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %d",info->levels);
   if (info && info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",info->fill);
@@ -3107,7 +3285,9 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 
    Level: developer
 
-.keywords: matrix, factor, incomplete, ICC, Cholesky, symbolic, fill
+  Concepts: matrices^symbolic incomplete Cholesky factorization
+  Concepts: matrices^factorization
+  Concepts: Cholsky^symbolic factorization
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor()
 @*/
@@ -3117,6 +3297,8 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(fact);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (fill < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Fill negative %d",fill);
@@ -3171,7 +3353,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat
 
    Level: advanced
 
-.keywords: matrix, array, elements, values
+   Concepts: matrices^access array
 
 .seealso: MatRestoreArray(), MatGetArrayF90()
 @*/
@@ -3181,6 +3363,8 @@ int MatGetArray(Mat mat,Scalar **v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(v);
   if (!mat->ops->getarray) SETERRQ(PETSC_ERR_SUP,"");
   ierr = (*mat->ops->getarray)(mat,v);CHKERRQ(ierr);
@@ -3220,8 +3404,6 @@ int MatGetArray(Mat mat,Scalar **v)
 
    Level: advanced
 
-.keywords: matrix, array, elements, values, restore
-
 .seealso: MatGetArray(), MatRestoreArrayF90()
 @*/
 int MatRestoreArray(Mat mat,Scalar **v)
@@ -3230,6 +3412,8 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidPointer(v);
   if (!mat->ops->restorearray) SETERRQ(PETSC_ERR_SUP,"");
   ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
@@ -3275,7 +3459,8 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
    Level: advanced
 
-.keywords: matrix, get, submatrix, submatrices
+   Concepts: matrices^accessing submatrices
+   Concepts: submatrices
 
 .seealso: MatDestroyMatrices(), MatGetSubMatrix(), MatGetRow(), MatGetDiagonal()
 @*/
@@ -3285,6 +3470,8 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (!mat->ops->getsubmatrices) SETERRQ(PETSC_ERR_SUP,"");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
@@ -3307,8 +3494,6 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
 -  mat - the matrices
 
    Level: advanced
-
-.keywords: matrix, destroy, submatrix, submatrices
 
 .seealso: MatGetSubMatrices()
 @*/
@@ -3344,7 +3529,8 @@ int MatDestroyMatrices(int n,Mat **mat)
 
    Level: developer
 
-.keywords: matrix, overlap, Schwarz
+   Concepts: overlap
+   Concepts: ASM^computing overlap
 
 .seealso: MatGetSubMatrices()
 @*/
@@ -3354,6 +3540,8 @@ int MatIncreaseOverlap(Mat mat,int n,IS *is,int ov)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor)     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
@@ -3381,8 +3569,6 @@ int MatIncreaseOverlap(Mat mat,int n,IS *is,int ov)
 
    Level: developer
 
-.keywords: mat, help
-
 .seealso: MatCreate(), MatCreateXXX()
 @*/
 int MatPrintHelp(Mat mat)
@@ -3393,6 +3579,8 @@ int MatPrintHelp(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
 
   comm = mat->comm;
   if (!called) {
@@ -3430,7 +3618,7 @@ int MatPrintHelp(Mat mat)
 
    Level: intermediate
 
-.keywords: matrix, get, block, size 
+   Concepts: matrices^block size
 
 .seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
@@ -3440,6 +3628,8 @@ int MatGetBlockSize(Mat mat,int *bs)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidIntPointer(bs);
   if (!mat->ops->getblocksize) SETERRQ(PETSC_ERR_SUP,"");
   ierr = (*mat->ops->getblocksize)(mat,bs);CHKERRQ(ierr);
@@ -3475,6 +3665,8 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (ia) PetscValidIntPointer(ia);
   if (ja) PetscValidIntPointer(ja);
   PetscValidIntPointer(done);
@@ -3515,6 +3707,8 @@ int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (ia) PetscValidIntPointer(ia);
   if (ja) PetscValidIntPointer(ja);
   PetscValidIntPointer(done);
@@ -3557,6 +3751,8 @@ int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int**
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (ia) PetscValidIntPointer(ia);
   if (ja) PetscValidIntPointer(ja);
   PetscValidIntPointer(done);
@@ -3599,6 +3795,8 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (ia) PetscValidIntPointer(ia);
   if (ja) PetscValidIntPointer(ja);
   PetscValidIntPointer(done);
@@ -3631,7 +3829,6 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
 
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
-.keywords: mat, coloring, patch
 @*/
 int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 {
@@ -3639,6 +3836,8 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidIntPointer(colorarray);
 
   if (!mat->ops->coloringpatch) {SETERRQ(PETSC_ERR_SUP,"");}
@@ -3687,7 +3886,8 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 
 .seealso: PCILUSetUseInPlace(), PCLUSetUseInPlace()
 
-.keywords: matrix-free, in-place ILU, in-place LU
+   Concepts: matrices^unfactored
+
 @*/
 int MatSetUnfactored(Mat mat)
 {
@@ -3695,60 +3895,11 @@ int MatSetUnfactored(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);  
+  PetscValidType(mat);
+  MatPreallocated(mat);
   mat->factor = 0;
   if (!mat->ops->setunfactored) PetscFunctionReturn(0);
   ierr = (*mat->ops->setunfactored)(mat);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetType"
-/*@C
-   MatGetType - Gets the matrix type and name (as a string) from the matrix.
-
-   Not Collective
-
-   Input Parameter:
-.  mat - the matrix
-
-   Output Parameter:
-+  type - the matrix type (or use PETSC_NULL)
--  name - name of matrix type (or use PETSC_NULL)
-
-   Level: intermediate
-
-.keywords: matrix, get, type, name
-@*/
-int MatGetType(Mat mat,MatType *type,char **name)
-{
-  int  itype = (int)mat->type;
-  char *matname[15];
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-
-  if (type) *type = (MatType) mat->type;
-  if (name) {
-    /* Note:  Be sure that this list corresponds to the enum in petscmat.h */
-    matname[0] = "MATSEQDENSE";
-    matname[1] = "MATSEQAIJ";
-    matname[2] = "MATMPIAIJ";
-    matname[3] = "MATSHELL";
-    matname[4] = "MATMPIROWBS";
-    matname[5] = "MATSEQBDIAG";
-    matname[6] = "MATMPIBDIAG";
-    matname[7] = "MATMPIDENSE";
-    matname[8] = "MATSEQBAIJ";
-    matname[9] = "MATMPIBAIJ";
-    matname[10] = "MATMPICSN";
-    matname[11] = "MATSEQCSN";
-    matname[12] = "MATMPIADJ";
-    matname[13] = "MATSEQSBAIJ";
-    matname[14] = "MATMPISBAIJ";
-    
-    if (itype < 0 || itype > 14) *name = "Unknown matrix type";
-    else                        *name = matname[itype];
-  }
   PetscFunctionReturn(0);
 }
 
@@ -3783,7 +3934,8 @@ int MatGetType(Mat mat,MatType *type,char **name)
 
 .seealso:  MatRestoreArrayF90(), MatGetArray(), MatRestoreArray()
 
-.keywords:  matrix, array, f90
+    Concepts: matrices^accessing array
+
 M*/
 
 /*MC
@@ -3818,7 +3970,6 @@ M*/
 
 .seealso:  MatGetArrayF90(), MatGetArray(), MatRestoreArray()
 
-.keywords:  matrix, array, f90
 M*/
 
 
@@ -3846,7 +3997,7 @@ M*/
 
     Notes: the iscol argument MST be the same on each processor
 
-.keywords: matrix, get, submatrix, submatrices
+    Concepts: matrices^submatrices
 
 .seealso: MatGetSubMatrices()
 @*/
@@ -3856,6 +4007,8 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
   Mat     *local;
 
   PetscFunctionBegin;
+  PetscValidType(mat);
+  MatPreallocated(mat);
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
 
   /* if original matrix is on just one processor then use submatrix generated */
@@ -3890,7 +4043,8 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
 
    Level: developer
 
-.keywords: matrix, get, map
+   Concepts: maps^getting from matrix
+
 @*/
 int MatGetMaps(Mat mat,Map *rmap,Map *cmap)
 {
@@ -3898,6 +4052,8 @@ int MatGetMaps(Mat mat,Map *rmap,Map *cmap)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   ierr = (*mat->ops->getmaps)(mat,rmap,cmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3945,7 +4101,9 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
      MatAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
      to determine the value, BMM to use for bsize
 
-.keywords: matrix, stash, assembly
+   Concepts: stash^setting matrix size
+   Concepts: matrices^stash
+
 @*/
 int MatSetStashInitialSize(Mat mat,int size, int bsize)
 {
@@ -3953,6 +4111,8 @@ int MatSetStashInitialSize(Mat mat,int size, int bsize)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   ierr = MatStashSetInitialSize_Private(&mat->stash,size);CHKERRQ(ierr);
   ierr = MatStashSetInitialSize_Private(&mat->bstash,bsize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3979,7 +4139,7 @@ int MatSetStashInitialSize(Mat mat,int size, int bsize)
     This allows one to use either the restriction or interpolation (its transpose)
     matrix to do the interpolation
 
-.keywords: interpolate, 
+    Concepts: interpolation
 
 .seealso: MatMultAdd(), MatMultTransposeAdd(), MatRestrict()
 
@@ -3989,6 +4149,8 @@ int MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
   int M,N,ierr;
 
   PetscFunctionBegin;
+  PetscValidType(A);
+  MatPreallocated(A);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   if (N > M) {
     ierr = MatMultTransposeAdd(A,x,y,w);CHKERRQ(ierr);
@@ -4016,7 +4178,7 @@ int MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
     This allows one to use either the restriction or interpolation (its transpose)
     matrix to do the interpolation
 
-.keywords: interpolate, 
+   Concepts: matrices^interpolation
 
 .seealso: MatMultAdd(), MatMultTransposeAdd(), MatRestrict()
 
@@ -4026,6 +4188,8 @@ int MatInterpolate(Mat A,Vec x,Vec y)
   int M,N,ierr;
 
   PetscFunctionBegin;
+  PetscValidType(A);
+  MatPreallocated(A);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   if (N > M) {
     ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
@@ -4052,7 +4216,7 @@ int MatInterpolate(Mat A,Vec x,Vec y)
     This allows one to use either the restriction or interpolation (its transpose)
     matrix to do the restriction
 
-.keywords: interpolate, 
+   Concepts: matrices^restriction
 
 .seealso: MatMultAdd(), MatMultTransposeAdd(), MatInterpolate()
 
@@ -4062,6 +4226,8 @@ int MatRestrict(Mat A,Vec x,Vec y)
   int M,N,ierr;
 
   PetscFunctionBegin;
+  PetscValidType(A);
+  MatPreallocated(A);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   if (N > M) {
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
@@ -4089,7 +4255,7 @@ int MatRestrict(Mat A,Vec x,Vec y)
    Notes:
       Overwrites any previous null space that may have been attached
 
-.keywords: Mat, destroy, null space
+   Concepts: null space^attaching to matrix
 
 .seealso: MatCreate(), MatNullSpaceCreate()
 @*/
@@ -4099,6 +4265,8 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   PetscValidHeaderSpecific(nullsp,MATNULLSPACE_COOKIE);
 
   if (mat->nullsp) {
@@ -4132,7 +4300,8 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 
    Level: developer
 
-.keywords: matrix, factor, incomplete Cholesky, in-place
+   Concepts: matrices^incomplete Cholesky factorization
+   Concepts: Cholesky factorization
 
 .seealso: MatIncompleteCholeskyFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
@@ -4142,6 +4311,8 @@ int MatIncompleteCholeskyFactor(Mat mat,IS row,PetscReal fill,int level)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  MatPreallocated(mat);
   if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 

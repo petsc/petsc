@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.33 2000/07/10 03:39:32 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.34 2000/09/28 21:11:00 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -160,8 +160,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 #define __FUNC__ /*<a name=""></a>*/"MatColoringPatch_SeqAIJ"
 int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscoloring)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)mat->data;
-  int        n = a->n,*sizes,i,**ii,ierr,tag;
+  int        n = mat->n,*sizes,i,**ii,ierr,tag;
   IS         *is;
 
   PetscFunctionBegin;
@@ -203,7 +202,7 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
 int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *iscoloring)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)mat->data;
-  int        n = a->n,ierr,m = a->inode.node_count,j,*ns = a->inode.size,row;
+  int        n = mat->n,ierr,m = a->inode.node_count,j,*ns = a->inode.size,row;
   int        *colorused,i,*newcolor;
 
   PetscFunctionBegin;

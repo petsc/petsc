@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.85 2000/09/06 22:19:40 balay Exp bsmith $ 
+# $Id: makefile,v 1.86 2000/09/22 20:46:14 bsmith Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -141,7 +141,7 @@ runex3:
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp
 runex3_2:
-	-@${MPIRUN} -np 3 ex3 -nox -pc_type asm -mat_mpiaij -mat_aij_oneindex \
+	-@${MPIRUN} -np 3 ex3 -nox -pc_type asm -mat_type mpiaij -mat_aij_oneindex \
 	   -snes_cancelmonitors -snes_smonitor -ksp_gmres_irorthog > ex3_2.tmp 2>&1; \
 	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \

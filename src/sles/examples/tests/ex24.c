@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.4 2000/09/24 18:25:07 bsmith Exp hzhang $*/
+/*$Id: ex24.c,v 1.5 2000/09/26 15:38:06 hzhang Exp bsmith $*/
 
 static char help[] = 
 "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
@@ -30,6 +30,7 @@ int main(int argc,char **args)
 
   /* Generate matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRA(ierr);
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  

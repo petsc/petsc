@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.69 2000/05/05 22:18:34 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.70 2000/09/22 20:46:14 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -136,6 +136,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&J);CHKERRA(ierr);
+  ierr = MatSetFromOptions(J);CHKERRA(ierr);
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation

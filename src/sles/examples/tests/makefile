@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.170 2000/09/21 19:44:17 bsmith Exp balay $ 
+# $Id: makefile,v 1.171 2000/09/23 14:56:38 balay Exp bsmith $ 
 
 CFLAGS	  = 
 FFLAGS    =
@@ -218,7 +218,7 @@ runex6_3:
 runex6_6:
 	-@${MPIRUN} -np 3 ex6  -ksp_gmres_irorthog -ksp_gmres_restart 100 \
 	   -f ${PETSC_DIR}/src/mat/examples/matrices/arco1_ns \
-	   -mat_mpirowbs -pc_type ilu -pc_ilu_factorpointwise 
+	   -mat_type mpirowbs -pc_type ilu -pc_ilu_factorpointwise 
 	-@echo "ex6_6: This program tested the ILU preconditioner in BlockSolve95."
 runex6_7:
 	-@${MPIRUN} -np 1 ex6 -ksp_gmres_irorthog -pc_type asm -pc_asm_blocks 6 \
@@ -248,14 +248,14 @@ runex8_2:
 # because the coloring heuristic is machine-dependent; convergence rates
 # may differ slightly on various architectures.
 runex8_3:
-	-@${MPIRUN} -np 2 ex8 -ksp_gmres_irorthog -pc_type icc -mat_mpirowbs -ksp_rtol .000001;\
+	-@${MPIRUN} -np 2 ex8 -ksp_gmres_irorthog -pc_type icc -mat_type mpirowbs -ksp_rtol .000001;\
 	echo "ex8_3: This program tested the ICC preconditioner in BlockSolve95."
 runex8_4:
-	-@${MPIRUN} -np 2 ex8 -ksp_gmres_irorthog -pc_type ilu -mat_nonsym -mat_mpirowbs \
+	-@${MPIRUN} -np 2 ex8 -ksp_gmres_irorthog -pc_type ilu -mat_nonsym -mat_type mpirowbs \
 	   -ksp_rtol .000001;\
 	echo "ex8_4: This program tested the ILU preconditioner in BlockSolve95."
 runex10:
-	-@${MPIRUN} -np 1 ex10 -mat_bdiag -ksp_smonitor -ksp_gmres_irorthog > ex10_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex10 -matconvert_type seqbdiag -ksp_smonitor >ex10_1.tmp 2>&1; \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
@@ -293,34 +293,34 @@ runex20:
 	   ${RM} -f ex20_1.tmp
 
 runex22:
-	-@${MPIRUN} -np 1 ex22 -ksp_gmres_irorthog -mat_aij -mat_view_info_detailed -ksp_smonitor > ex22_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex22 -ksp_gmres_irorthog -mat_type seqaij -mat_view_info_detailed -ksp_smonitor > ex22_1.tmp 2>&1; \
 	   if (diff output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 
 runex22_2:
-	-@${MPIRUN} -np 4 ex22 -ksp_gmres_irorthog -m_eta 10 -m_xi 11 -mat_aij -mat_view_info \
+	-@${MPIRUN} -np 4 ex22 -ksp_gmres_irorthog -m_eta 10 -m_xi 11 -mat_type seqaij -mat_view_info \
 	   -ksp_smonitor -pc_type bjacobi > ex22_2.tmp 2>&1;	  \
 	   if (diff output/ex22_2.out ex22_2.tmp) then true; \
 	   else echo "Possible problem with ex22_2, diffs above"; fi; \
 	   ${RM} -f ex22_2.tmp
 runex24:
-	-@${MPIRUN} -np 1 ex24 -pc_type icc -mat_sbaij > ex24_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex24 -pc_type icc -mat_type seqsbaij > ex24_1.tmp 2>&1; \
            if (diff output/ex24_1.out ex24_1.tmp) then true; \
            else echo "Possible problem with ex24_1, diffs above"; fi; \
-           ${RM} -f ex24_1.tmp
+           ${RM} -f ex24_1.tmp'
 runex24_2:
-	-@${MPIRUN} -np 1 ex24 -pc_type icc -pc_icc_levels 2  -mat_sbaij > ex24_2.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex24 -pc_type icc -pc_icc_levels 2  -mat_type seqsbaij > ex24_2.tmp 2>&1; \
            if (diff output/ex24_2.out ex24_2.tmp) then true; \
            else echo "Possible problem with ex24_2, diffs above"; fi; \
            ${RM} -f ex24_2.tmp
 runex24_3:
-	-@${MPIRUN} -np 2 ex24 -pc_type bjacobi -sub_pc_type icc  -mat_sbaij > ex24_3.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex24 -pc_type bjacobi -sub_pc_type icc  -mat_type seqsbaij > ex24_3.tmp 2>&1; \
            if (diff output/ex24_3.out ex24_3.tmp) then true; \
            else echo "Possible problem with ex24_3, diffs above"; fi; \
            ${RM} -f ex24_3.tmp
 runex24_4:
-	-@${MPIRUN} -np 2 ex24 -pc_type bjacobi -sub_pc_type icc -sub_pc_icc_levels 1 -mat_sbaij > ex24_4.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex24 -pc_type bjacobi -sub_pc_type icc -sub_pc_icc_levels 1 -mat_type seqsbaij > ex24_4.tmp 2>&1; \
            if (diff output/ex24_4.out ex24_4.tmp) then true; \
            else echo "Possible problem with ex24_4, diffs above"; fi; \
            ${RM} -f ex24_4.tmp   
@@ -330,7 +330,7 @@ TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
                   ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
 		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm \
                   ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
-TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex15.PETSc ex15.rm
+TESTEXAMPLES_2  = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_3  = ex12.PETSc ex12.rm
 TESTEXAMPLES_9  = ex12.PETSc ex12.rm
 TESTEXAMPLES_4  = ex3.PETSc runex3 ex3.rm ex4.PETSc \

@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.44 2000/09/06 22:58:01 balay Exp bsmith $*/
+/*$Id: shvec.c,v 1.45 2000/09/28 21:10:26 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -270,7 +270,7 @@ EXTERN_C_END
 
    Level: advanced
 
-.keywords: vector, create, shared
+   Concepts: vectors^creating with shared memory
 
 .seealso: VecCreateSeq(), VecCreate(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()

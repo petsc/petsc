@@ -1,4 +1,4 @@
-/*$Id: ex49.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex49.c,v 1.16 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -11,12 +11,11 @@ int main(int argc,char **argv)
   Mat        mat,tmat = 0;
   int        m = 4,n,i,j,ierr,size,rank;
   int        rstart,rend,rect = 0,nd,bs,*diag,*bdlen;
-  PetscTruth flg;
+  PetscTruth flg,isbdiag;
   Scalar     v,**diagv;
   double     normf,normi,norm1;
-  MatType    type;
   MatInfo    info;
-
+  
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
@@ -29,6 +28,7 @@ int main(int argc,char **argv)
 
   /* Create and assemble matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRA(ierr);
+  ierr = MatSetFromOptions(mat);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRA(ierr);
   for (i=rstart; i<rend; i++) { 
     for (j=0; j<n; j++) { 
@@ -55,8 +55,11 @@ int main(int argc,char **argv)
                      normf,norm1,normi);CHKERRA(ierr);
   ierr = MatView(mat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = MatGetType(mat,&type,PETSC_NULL);CHKERRA(ierr);
-  if (type == MATSEQBDIAG || type == MATMPIBDIAG) {
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBDIAG,&isbdiag);CHKERRQ(ierr);
+  if (!isbdiag) {
+    ierr = PetscTypeCompare((PetscObject)mat,MATMPIBDIAG,&isbdiag);CHKERRQ(ierr);
+  }
+  if (isbdiag) {
     ierr = MatBDiagGetData(mat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix: block diag format: %d diagonals, block size = %d\n",nd,bs);CHKERRA(ierr);
     for (i=0; i<nd; i++) {
@@ -84,7 +87,7 @@ int main(int argc,char **argv)
                      normf,norm1,normi);CHKERRA(ierr);
   ierr = MatView(tmat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  if (type == MATSEQBDIAG || type == MATMPIBDIAG) {
+  if (isbdiag) {
     ierr = MatBDiagGetData(tmat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix: block diag format: %d diagonals, block size = %d\n",nd,bs);CHKERRA(ierr);
     for (i=0; i<nd; i++) {

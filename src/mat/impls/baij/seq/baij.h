@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.25 2000/05/10 16:40:51 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.26 2000/09/06 18:34:16 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -16,7 +16,6 @@ typedef struct {
   int              nonew;        /* 1 don't add new nonzeros, -1 generate error on new */
   PetscTruth       singlemalloc; /* if true a, i, and j have been obtained with
                                         one big malloc */
-  int              m,n;          /* rows, columns */
   int              bs,bs2;       /* block size, square of block size */
   int              mbs,nbs;      /* rows/bs, columns/bs */
   int              nz,maxnz;     /* nonzeros, allocated nonzeros */
@@ -44,7 +43,6 @@ typedef struct {
 } Mat_SeqBAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
-EXTERN int MatConvert_SeqBAIJ(Mat,MatType,Mat *);
 EXTERN int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatMarkDiagonal_SeqBAIJ(Mat);
 

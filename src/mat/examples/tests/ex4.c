@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.13 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.14 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
 MatGetSubMatrices and MatZeroEntries.\n\n";
@@ -20,6 +20,7 @@ int main(int argc,char **argv)
   ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRA(ierr);
+  ierr = MatSetFromOptions(mat);CHKERRA(ierr);
   for (i=0; i<m; i++) {
     value = (double)i+1; tmp = i % 5; 
     ierr = MatSetValues(mat,1,&tmp,1,&i,&value,INSERT_VALUES);CHKERRA(ierr);

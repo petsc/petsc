@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.162 2000/09/07 15:19:01 balay Exp bsmith $*/
+/*$Id: vscat.c,v 1.163 2000/09/28 21:10:10 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -734,7 +734,8 @@ EXTERN int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
    context until the VecScatterEnd() has been called on the first VecScatterBegin().
    In this case a separate VecScatter is needed for each concurrent scatter.
 
-.keywords: vector, scatter, context, create
+   Concepts: scatter^between vectors
+   Concepts: gather^between vectors
 
 .seealso: VecScatterDestroy()
 @*/
@@ -1337,8 +1338,6 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
    single processor.  Similarly, if y is parallel and x sequential, the
    routine can scatter from one processor to many processors.
 
-.keywords: vector, scatter, gather, begin
-
 .seealso: VecScatterCreate(), VecScatterEnd(), VecScatterBegin()
 @*/
 int VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
@@ -1395,7 +1394,8 @@ int VecScatterPostRecvs(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter 
    single processor.  Similarly, if y is parallel and x sequential, the
    routine can scatter from one processor to many processors.
 
-.keywords: vector, scatter, gather, begin
+   Concepts: scatter^between vectors
+   Concepts: gather^between vectors
 
 .seealso: VecScatterCreate(), VecScatterEnd()
 @*/
@@ -1465,8 +1465,6 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
    the SCATTER_FORWARD.
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
-.keywords: vector, scatter, gather, end
-
 .seealso: VecScatterBegin(), VecScatterCreate()
 @*/
 int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
@@ -1499,8 +1497,6 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 
    Level: intermediate
 
-.keywords: vector, scatter, context, destroy
-
 .seealso: VecScatterCreate(), VecScatterCopy()
 @*/
 int VecScatterDestroy(VecScatter ctx)
@@ -1532,8 +1528,6 @@ int VecScatterDestroy(VecScatter ctx)
 .  ctx - the context copy
 
    Level: advanced
-
-.keywords: vector, scatter, copy, context
 
 .seealso: VecScatterCreate(), VecScatterDestroy()
 @*/
@@ -1569,7 +1563,6 @@ int VecScatterCopy(VecScatter sctx,VecScatter *ctx)
 
    Level: intermediate
 
-.keywords: vector, scatter, view
 @*/
 int VecScatterView(VecScatter ctx,Viewer viewer)
 {
@@ -1608,7 +1601,6 @@ int VecScatterView(VecScatter ctx,Viewer viewer)
           data is put and the fromdata is where it is taken from.
           This is backwards from the paralllel case! CRY! CRY! CRY!
 
-.keywords: Vec, scatter, remap
 @*/
 int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
 {

@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.211 2000/09/06 18:34:20 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.212 2000/09/28 21:11:23 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -139,20 +139,8 @@ int MatDestroy_SeqBAIJ(Mat A)
   int         ierr;
 
   PetscFunctionBegin;
-  if (A->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(A->mapping);CHKERRQ(ierr);
-  }
-  if (A->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(A->bmapping);CHKERRQ(ierr);
-  }
-  if (A->rmap) {
-    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
-  }
-  if (A->cmap) {
-    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
-  }
 #if defined(PETSC_USE_LOG)
-  PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
+  PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d",A->m,A->n,a->nz);
 #endif
   ierr = PetscFree(a->a);CHKERRQ(ierr);
   if (!a->singlemalloc) {
@@ -176,8 +164,6 @@ int MatDestroy_SeqBAIJ(Mat A)
   if (a->setvaluescopy) {ierr = PetscFree(a->setvaluescopy);CHKERRQ(ierr);}
 #endif
   ierr = PetscFree(a);CHKERRQ(ierr);
-  PLogObjectDestroy(A);
-  PetscHeaderDestroy(A);
   PetscFunctionReturn(0);
 }
 
@@ -213,28 +199,13 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSize_SeqBAIJ"
-int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-
-  PetscFunctionBegin;
-  if (m) *m = a->m; 
-  if (n) *n = a->n;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatGetOwnershipRange_SeqBAIJ"
 int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-
   PetscFunctionBegin;
   if (m) *m = 0;
-  if (n) *n = a->m;
+  if (n) *n = A->m;
   PetscFunctionReturn(0);
 }
 
@@ -254,7 +225,7 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   aa  = a->a;
   bs2 = a->bs2;
   
-  if (row < 0 || row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
+  if (row < 0 || row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row out of range");
   
   bn  = row/bs;   /* Block number */
   bp  = row % bs; /* Block Position */
@@ -306,7 +277,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
   Mat         C;
   int         i,j,k,ierr,*aj=a->j,*ai=a->i,bs=a->bs,mbs=a->mbs,nbs=a->nbs,len,*col;
-  int         *rows,*cols,bs2=a->bs2,refct;
+  int         *rows,*cols,bs2=a->bs2;
   Scalar      *array;
 
   PetscFunctionBegin;
@@ -322,7 +293,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
 #endif
 
   for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
-  ierr = MatCreateSeqBAIJ(A->comm,bs,a->n,a->m,PETSC_NULL,col,&C);CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(A->comm,bs,A->n,A->m,PETSC_NULL,col,&C);CHKERRQ(ierr);
   ierr = PetscFree(col);CHKERRQ(ierr);
   rows = (int*)PetscMalloc(2*bs*sizeof(int));CHKPTRQ(rows);
   cols = rows + bs;
@@ -348,40 +319,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   if (B) {
     *B = C;
   } else {
-    PetscOps *Abops;
-    MatOps   Aops;
-
-    /* This isn't really an in-place transpose */
-    ierr = PetscFree(a->a);CHKERRQ(ierr);
-    if (!a->singlemalloc) {
-      ierr = PetscFree(a->i);CHKERRQ(ierr);
-      ierr = PetscFree(a->j);CHKERRQ(ierr);
-    }
-    if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
-    if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
-    if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
-    if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
-    ierr = PetscFree(a);CHKERRQ(ierr);
-
-
-    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
-    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
-
-    /*
-       This is horrible, horrible code. We need to keep the 
-      A pointers for the bops and ops but copy everything 
-      else from C.
-    */
-    Abops    = A->bops;
-    Aops     = A->ops;
-    refct    = A->refct;
-    ierr     = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-    A->bops  = Abops;
-    A->ops   = Aops;
-    A->qlist = 0;
-    A->refct = refct;
-
-    PetscHeaderDestroy(C);
+    ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -397,11 +335,11 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
-  col_lens = (int*)PetscMalloc((4+a->m)*sizeof(int));CHKPTRQ(col_lens);
+  col_lens = (int*)PetscMalloc((4+A->m)*sizeof(int));CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
 
-  col_lens[1] = a->m;
-  col_lens[2] = a->n;
+  col_lens[1] = A->m;
+  col_lens[2] = A->n;
   col_lens[3] = a->nz*bs2;
 
   /* store lengths of each row and write (including header) to file */
@@ -411,7 +349,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
       col_lens[4+count++] = bs*(a->i[i+1] - a->i[i]);
     }
   }
-  ierr = PetscBinaryWrite(fd,col_lens,4+a->m,PETSC_INT,1);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fd,col_lens,4+A->m,PETSC_INT,1);CHKERRQ(ierr);
   ierr = PetscFree(col_lens);CHKERRQ(ierr);
 
   /* store column indices (zero start index) */
@@ -547,7 +485,7 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
   color = DRAW_BLUE;
   for (i=0,row=0; i<mbs; i++,row+=bs) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
-      y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+      y_l = A->m - row - 1.0; y_r = y_l + 1.0;
       x_l = a->j[j]*bs; x_r = x_l + 1.0;
       aa = a->a + j*bs2;
       for (k=0; k<bs; k++) {
@@ -561,7 +499,7 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
   color = DRAW_CYAN;
   for (i=0,row=0; i<mbs; i++,row+=bs) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
-      y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+      y_l = A->m - row - 1.0; y_r = y_l + 1.0;
       x_l = a->j[j]*bs; x_r = x_l + 1.0;
       aa = a->a + j*bs2;
       for (k=0; k<bs; k++) {
@@ -576,7 +514,7 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
   color = DRAW_RED;
   for (i=0,row=0; i<mbs; i++,row+=bs) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
-      y_l = a->m - row - 1.0; y_r = y_l + 1.0;
+      y_l = A->m - row - 1.0; y_r = y_l + 1.0;
       x_l = a->j[j]*bs; x_r = x_l + 1.0;
       aa = a->a + j*bs2;
       for (k=0; k<bs; k++) {
@@ -594,7 +532,6 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
 #define __FUNC__ /*<a name=""></a>*/"MatView_SeqBAIJ_Draw"
 static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 {
-  Mat_SeqBAIJ  *a=(Mat_SeqBAIJ*)A->data;
   int          ierr;
   PetscReal    xl,yl,xr,yr,w,h;
   Draw         draw;
@@ -606,7 +543,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
   ierr = DrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
-  xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
+  xr  = A->n; yr = A->m; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = DrawZoom(draw,MatView_SeqBAIJ_Draw_Zoom,A);CHKERRQ(ierr);
@@ -655,12 +592,12 @@ int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   for (k=0; k<m; k++) { /* loop over rows */
     row  = im[k]; brow = row/bs;  
     if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     rp   = aj + ai[brow] ; ap = aa + bs2*ai[brow] ;
     nrow = ailen[brow]; 
     for (l=0; l<n; l++) { /* loop over columns */
       if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
-      if (in[l] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+      if (in[l] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
       col  = in[l] ; 
       bcol = col/bs;
       cidx = col%bs; 
@@ -717,9 +654,10 @@ int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,int m,int *im,int n,int *in,MatS
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
-  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented; 
+  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
   int         *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=a->bs,stepval,ierr;
-  MatScalar      *value = v,*ap,*aa = a->a,*bap;
+  PetscTruth  roworiented=a->roworiented; 
+  MatScalar   *value = v,*ap,*aa = a->a,*bap;
 
   PetscFunctionBegin;
   if (roworiented) { 
@@ -870,7 +808,7 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int        fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax;
-  int        m = a->m,*ip,N,*ailen = a->ilen;
+  int        m = A->m,*ip,N,*ailen = a->ilen;
   int        mbs = a->mbs,bs2 = a->bs2,rmax = 0,ierr;
   MatScalar  *aa = a->a,*ap;
 
@@ -909,7 +847,7 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     a->diag = 0;
   } 
   PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Matrix size: %d X %d, block size %d; storage space: %d unneeded, %d used\n",
-           m,a->n,a->bs,fshift*bs2,a->nz*bs2);
+           m,A->n,a->bs,fshift*bs2,a->nz*bs2);
   PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues is %d\n",
            a->reallocs);
   PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Most nonzeros blocks in any row is %d\n",rmax);
@@ -996,7 +934,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is,Scalar *diag)
 
   for (i=0,j=0; i<bs_max; j+=sizes[i],i++) {
     row   = rows[j];
-    if (row < 0 || row > baij->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %d out of range",row);
+    if (row < 0 || row > A->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %d out of range",row);
     count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
     aa    = baij->a + baij->i[row/bs]*bs2 + (row%bs);
     if (sizes[i] == bs && !baij->keepzeroedrows) {
@@ -1038,9 +976,10 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
-  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
+  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
   int         *aj=a->j,nonew=a->nonew,bs=a->bs,brow,bcol;
   int         ridx,cidx,bs2=a->bs2,ierr;
+  PetscTruth  roworiented=a->roworiented;
   MatScalar   *ap,value,*aa=a->a,*bap;
 
   PetscFunctionBegin;
@@ -1048,7 +987,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
     row  = im[k]; brow = row/bs;  
     if (row < 0) continue;
 #if defined(PETSC_USE_BOPT_g)  
-    if (row >= a->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,a->m);
+    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m);
 #endif
     rp   = aj + ai[brow]; 
     ap   = aa + bs2*ai[brow];
@@ -1058,7 +997,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)  
-      if (in[l] >= a->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],a->n);
+      if (in[l] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],A->n);
 #endif
       col = in[l]; bcol = col/bs;
       ridx = row % bs; cidx = col % bs;
@@ -1278,8 +1217,8 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
     PLogObjectParent(inA,a->icol);
 
     if (!a->solve_work) {
-      a->solve_work = (Scalar*)PetscMalloc((a->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);
-      PLogObjectMemory(inA,(a->m+a->bs)*sizeof(Scalar));
+      a->solve_work = (Scalar*)PetscMalloc((inA->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);
+      PLogObjectMemory(inA,(inA->m+a->bs)*sizeof(Scalar));
     }
   }
 
@@ -1312,7 +1251,7 @@ int MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,int *indices)
 
   PetscFunctionBegin;
   nz = baij->maxnz;
-  n  = baij->n;
+  n  = mat->n;
   for (i=0; i<nz; i++) {
     baij->j[i] = indices[i];
   }
@@ -1363,6 +1302,60 @@ int MatSeqBAIJSetColumnIndices(Mat mat,int *indices)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatGetRowMax_SeqBAIJ"
+int MatGetRowMax_SeqBAIJ(Mat A,Vec v)
+{
+  Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data;
+  int          ierr,i,j,n,row,bs,*ai,*aj,mbs;
+  PetscReal    atmp;
+  Scalar       *x,zero = 0.0;
+  MatScalar    *aa;
+  int          ncols,brow,krow,kcol; 
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+  bs   = a->bs;
+  aa   = a->a;
+  ai   = a->i;
+  aj   = a->j;
+  mbs = a->mbs;
+
+  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  for (i=0; i<mbs; i++) {
+    ncols = ai[1] - ai[0]; ai++;
+    brow  = bs*i;
+    for (j=0; j<ncols; j++){
+      /* bcol = bs*(*aj); */
+      for (kcol=0; kcol<bs; kcol++){
+        for (krow=0; krow<bs; krow++){         
+          atmp = PetscAbsScalar(*aa); aa++;         
+          row = brow + krow;    /* row index */
+          /* printf("val[%d,%d]: %g\n",row,bcol+kcol,atmp); */
+          if (PetscAbsScalar(x[row]) < atmp) x[row] = atmp;
+        }
+      }
+      aj++;
+    }   
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatSetUpPreallocation_SeqBAIJ"></a>*/"MatSetUpPreallocation_SeqBAIJ"
+int MatSetUpPreallocation_SeqBAIJ(Mat A)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr =  MatSeqBAIJSetPreallocation(A,1,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,
@@ -1394,8 +1387,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatLUFactorNumeric_SeqBAIJ_N,
        0,
        0,
-       MatGetSize_SeqBAIJ,
-       MatGetSize_SeqBAIJ,
+       MatSetUpPreallocation_SeqBAIJ,
+       0,
        MatGetOwnershipRange_SeqBAIJ,
        MatILUFactorSymbolic_SeqBAIJ,
        0,
@@ -1429,7 +1422,15 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatGetSubMatrix_SeqBAIJ,
        MatDestroy_SeqBAIJ,
        MatView_SeqBAIJ,
-       MatGetMaps_Petsc};
+       MatGetMaps_Petsc,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetRowMax_SeqBAIJ,
+       MatConvert_Basic};
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -1437,7 +1438,7 @@ EXTERN_C_BEGIN
 int MatStoreValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)mat->data;
-  int         nz = aij->i[aij->m]*aij->bs*aij->bs2;
+  int         nz = aij->i[mat->m]*aij->bs*aij->bs2;
   int         ierr;
 
   PetscFunctionBegin;
@@ -1462,7 +1463,7 @@ EXTERN_C_BEGIN
 int MatRetrieveValues_SeqBAIJ(Mat mat)
 {
   Mat_SeqBAIJ *aij = (Mat_SeqBAIJ *)mat->data;
-  int         nz = aij->i[aij->m]*aij->bs*aij->bs2,ierr;
+  int         nz = aij->i[mat->m]*aij->bs*aij->bs2,ierr;
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
@@ -1478,138 +1479,27 @@ int MatRetrieveValues_SeqBAIJ(Mat mat)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+extern int MatConvert_SeqBAIJ_SeqAIJ(Mat,MatType,Mat*);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatCreateSeqBAIJ"
-/*@C
-   MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block
-   compressed row) format.  For good matrix assembly performance the
-   user should preallocate the matrix storage by setting the parameter nz
-   (or the array nnz).  By setting these parameters accurately, performance
-   during matrix assembly can be increased by more than a factor of 50.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
-.  bs - size of block
-.  m - number of rows
-.  n - number of columns
-.  nz - number of block nonzeros per block row (same for all rows)
--  nnz - array containing the number of block nonzeros in the various block rows 
-         (possibly different for each block row) or PETSC_NULL
-
-   Output Parameter:
-.  A - the matrix 
-
-   Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the 
-                     block calculations (much slower)
-.    -mat_block_size - size of the blocks to use
-
-   Level: intermediate
-
-   Notes:
-   The block AIJ format is fully compatible with standard Fortran 77
-   storage.  That is, the stored row and column indices can begin at
-   either one (as in Fortran) or zero.  See the users' manual for details.
-
-   Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
-   allocation.  For additional details, see the users manual chapter on
-   matrices.
-
-.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
-@*/
-int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
+#define __FUNC__ /*<a name=""></a>*/"MatCreate_SeqBAIJ"
+int MatCreate_SeqBAIJ(Mat B)
 {
-  Mat         B;
+  int         ierr,size;
   Mat_SeqBAIJ *b;
-  int         i,len,ierr,mbs,nbs,bs2,size,newbs = bs;
-  PetscTruth  flg;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&newbs,PETSC_NULL);CHKERRQ(ierr);
-  if (nnz && newbs != bs) {
-    SETERRQ(1,"Cannot change blocksize from command line if setting nnz");
-  }
-
-  mbs  = m/bs;
-  nbs  = n/bs;
-  bs2  = bs*bs;
-
-  if (mbs*bs!=m || nbs*bs!=n) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
-  }
-
-  if (nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than -2: value %d",nz);
-  if (nnz) {
-    for (i=0; i<mbs; i++) {
-      if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
-    }
-  }
-
-  *A = 0;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBAIJ,"Mat",comm,MatDestroy,MatView);
-  PLogObjectCreate(B);
+  B->m = B->M = PetscMax(B->m,B->M);
+  B->n = B->N = PetscMax(B->n,B->N);
   B->data = (void*)(b = PetscNew(Mat_SeqBAIJ));CHKPTRQ(b);
   ierr    = PetscMemzero(b,sizeof(Mat_SeqBAIJ));CHKERRQ(ierr);
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  ierr    = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg);CHKERRQ(ierr);
-  if (!flg) {
-    switch (bs) {
-    case 1:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
-      B->ops->solve           = MatSolve_SeqBAIJ_1;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1;
-      B->ops->mult            = MatMult_SeqBAIJ_1;
-      B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
-      break;
-    case 2:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
-      B->ops->solve           = MatSolve_SeqBAIJ_2;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2;
-      B->ops->mult            = MatMult_SeqBAIJ_2;
-      B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
-      break;
-    case 3:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
-      B->ops->solve           = MatSolve_SeqBAIJ_3;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3;
-      B->ops->mult            = MatMult_SeqBAIJ_3;
-      B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
-      break;
-    case 4:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
-      B->ops->solve           = MatSolve_SeqBAIJ_4;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4;
-      B->ops->mult            = MatMult_SeqBAIJ_4;
-      B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
-      break;
-    case 5:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
-      B->ops->solve           = MatSolve_SeqBAIJ_5; 
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5;
-      B->ops->mult            = MatMult_SeqBAIJ_5;
-      B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
-      break;
-    case 6:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;  
-      B->ops->solve           = MatSolve_SeqBAIJ_6; 
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6;
-      B->ops->mult            = MatMult_SeqBAIJ_6;
-      B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
-      break;
-    case 7:
-      B->ops->mult            = MatMult_SeqBAIJ_7; 
-      B->ops->solve           = MatSolve_SeqBAIJ_7;
-      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7;
-      B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
-      break;
-    }
-  }
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
@@ -1623,49 +1513,9 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   b->setvaluescopy    = PETSC_NULL;
 #endif
   
-  b->m       = m; B->m = m; B->M = m;
-  b->n       = n; B->n = n; B->N = n;
+  ierr = MapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
 
-  ierr = MapCreateMPI(comm,m,m,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(comm,n,n,&B->cmap);CHKERRQ(ierr);
-
-  b->mbs     = mbs;
-  b->nbs     = nbs;
-  b->imax    = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(b->imax);
-  if (!nnz) {
-    if (nz == PETSC_DEFAULT) nz = 5;
-    else if (nz <= 0)        nz = 1;
-    for (i=0; i<mbs; i++) b->imax[i] = nz;
-    nz = nz*mbs;
-  } else {
-    nz = 0;
-    for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
-  }
-
-  /* allocate the matrix space */
-  len   = nz*sizeof(int) + nz*bs2*sizeof(MatScalar) + (b->m+1)*sizeof(int);
-  b->a  = (MatScalar*)PetscMalloc(len);CHKPTRQ(b->a);
-  ierr = PetscMemzero(b->a,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
-  b->j  = (int*)(b->a + nz*bs2);
-  ierr = PetscMemzero(b->j,nz*sizeof(int));CHKERRQ(ierr);
-  b->i  = b->j + nz;
-  b->singlemalloc = PETSC_TRUE;
-
-  b->i[0] = 0;
-  for (i=1; i<mbs+1; i++) {
-    b->i[i] = b->i[i-1] + b->imax[i-1];
-  }
-
-  /* b->ilen will count nonzeros in each block row so far. */
-  b->ilen = (int*)PetscMalloc((mbs+1)*sizeof(int)); 
-  PLogObjectMemory(B,len+2*(mbs+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqBAIJ));
-  for (i=0; i<mbs; i++) { b->ilen[i] = 0;}
-
-  b->bs               = bs;
-  b->bs2              = bs2;
-  b->mbs              = mbs;
-  b->nz               = 0;
-  b->maxnz            = nz*bs2;
   b->sorted           = PETSC_FALSE;
   b->roworiented      = PETSC_TRUE;
   b->nonew            = 0;
@@ -1676,10 +1526,6 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   B->info.nz_unneeded = (PetscReal)b->maxnz;
   b->keepzeroedrows   = PETSC_FALSE;
 
-  *A = B;
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = MatPrintHelp(B);CHKERRQ(ierr); }
-
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqBAIJ",
                                       MatStoreValues_SeqBAIJ);CHKERRQ(ierr);
@@ -1689,8 +1535,12 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
                                      "MatSeqBAIJSetColumnIndices_SeqBAIJ",
                                       MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_SeqBAIJ_SeqAIJ_C",
+                                     "MatConvert_SeqBAIJ_SeqAIJ",
+                                      MatConvert_SeqBAIJ_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatDuplicate_SeqBAIJ"
@@ -1704,22 +1554,9 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,"Corrupt matrix");
 
   *B = 0;
-  PetscHeaderCreate(C,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBAIJ,"Mat",A->comm,MatDestroy,MatView);
-  PLogObjectCreate(C);
-  C->data           = (void*)(c = PetscNew(Mat_SeqBAIJ));CHKPTRQ(c);
-  ierr              = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  C->factor         = A->factor;
-  c->row            = 0;
-  c->col            = 0;
-  c->icol           = 0;
-  c->saved_values   = 0;
-  c->keepzeroedrows = a->keepzeroedrows;
-  C->assembled      = PETSC_TRUE;
-
-  c->m = C->m   = a->m;
-  c->n = C->n   = a->n;
-  C->M          = a->m;
-  C->N          = a->n;
+  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&C);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
+  c    = (Mat_SeqBAIJ*)C->data;
 
   c->bs         = a->bs;
   c->bs2        = a->bs2;
@@ -1766,11 +1603,14 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->solve_work         = 0;
   c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
   c->mult_work          = 0;
+  C->preallocated       = PETSC_TRUE;
+  C->assembled          = PETSC_TRUE;
   *B = C;
   ierr = FListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_SeqBAIJ"
 int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
@@ -1910,10 +1750,232 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   ierr = PetscFree(mask);CHKERRQ(ierr);
 
   B->assembled = PETSC_TRUE;
-
+  
   ierr = MatView_Private(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatCreateSeqBAIJ"
+/*@C
+   MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block
+   compressed row) format.  For good matrix assembly performance the
+   user should preallocate the matrix storage by setting the parameter nz
+   (or the array nnz).  By setting these parameters accurately, performance
+   during matrix assembly can be increased by more than a factor of 50.
 
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator, set to PETSC_COMM_SELF
+.  bs - size of block
+.  m - number of rows
+.  n - number of columns
+.  nz - number of block nonzeros per block row (same for all rows)
+-  nnz - array containing the number of block nonzeros in the various block rows 
+         (possibly different for each block row) or PETSC_NULL
+
+   Output Parameter:
+.  A - the matrix 
+
+   Options Database Keys:
+.   -mat_no_unroll - uses code that does not unroll the loops in the 
+                     block calculations (much slower)
+.    -mat_block_size - size of the blocks to use
+
+   Level: intermediate
+
+   Notes:
+   The block AIJ format is fully compatible with standard Fortran 77
+   storage.  That is, the stored row and column indices can begin at
+   either one (as in Fortran) or zero.  See the users' manual for details.
+
+   Specify the preallocated storage with either nz or nnz (not both).
+   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
+   allocation.  For additional details, see the users manual chapter on
+   matrices.
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
+@*/
+int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
+{
+  int ierr;
+ 
+  PetscFunctionBegin;
+  ierr = MatCreate(comm,m,n,m,n,A);CHKERRQ(ierr);
+  ierr = MatSetType(*A,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(*A,bs,nz,nnz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatSeqBAIJSetPreallocation"
+/*@C
+   MatSeqBAIJSetPreallocation - Sets the block size and expected nonzeros
+   per row in the matrix. For good matrix assembly performance the
+   user should preallocate the matrix storage by setting the parameter nz
+   (or the array nnz).  By setting these parameters accurately, performance
+   during matrix assembly can be increased by more than a factor of 50.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  A - the matrix
+.  bs - size of block
+.  nz - number of block nonzeros per block row (same for all rows)
+-  nnz - array containing the number of block nonzeros in the various block rows 
+         (possibly different for each block row) or PETSC_NULL
+
+   Options Database Keys:
+.   -mat_no_unroll - uses code that does not unroll the loops in the 
+                     block calculations (much slower)
+.    -mat_block_size - size of the blocks to use
+
+   Level: intermediate
+
+   Notes:
+   The block AIJ format is fully compatible with standard Fortran 77
+   storage.  That is, the stored row and column indices can begin at
+   either one (as in Fortran) or zero.  See the users' manual for details.
+
+   Specify the preallocated storage with either nz or nnz (not both).
+   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
+   allocation.  For additional details, see the users manual chapter on
+   matrices.
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
+@*/
+int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
+{
+  Mat_SeqBAIJ *b;
+  int         i,len,ierr,mbs,nbs,bs2,newbs = bs;
+  PetscTruth  flg;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)B,MATSEQBAIJ,&flg);CHKERRQ(ierr);
+  if (!flg) PetscFunctionReturn(0);
+
+  B->preallocated = PETSC_TRUE;
+  ierr = OptionsGetInt(B->prefix,"-mat_block_size",&newbs,PETSC_NULL);CHKERRQ(ierr);
+  if (nnz && newbs != bs) {
+    SETERRQ(1,"Cannot change blocksize from command line if setting nnz");
+  }
+  bs   = newbs;
+
+  mbs  = B->m/bs;
+  nbs  = B->n/bs;
+  bs2  = bs*bs;
+
+  if (mbs*bs!=B->m || nbs*bs!=B->n) {
+    SETERRQ(PETSC_ERR_ARG_SIZ,"Number rows, cols must be divisible by blocksize");
+  }
+
+  if (nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than -2: value %d",nz);
+  if (nnz) {
+    for (i=0; i<mbs; i++) {
+      if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
+    }
+  }
+
+  b       = (Mat_SeqBAIJ*)B->data;
+  ierr    = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg);CHKERRQ(ierr);
+  if (!flg) {
+    switch (bs) {
+    case 1:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
+      B->ops->solve           = MatSolve_SeqBAIJ_1;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1;
+      B->ops->mult            = MatMult_SeqBAIJ_1;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
+      break;
+    case 2:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
+      B->ops->solve           = MatSolve_SeqBAIJ_2;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2;
+      B->ops->mult            = MatMult_SeqBAIJ_2;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
+      break;
+    case 3:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
+      B->ops->solve           = MatSolve_SeqBAIJ_3;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3;
+      B->ops->mult            = MatMult_SeqBAIJ_3;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
+      break;
+    case 4:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
+      B->ops->solve           = MatSolve_SeqBAIJ_4;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4;
+      B->ops->mult            = MatMult_SeqBAIJ_4;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
+      break;
+    case 5:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
+      B->ops->solve           = MatSolve_SeqBAIJ_5; 
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5;
+      B->ops->mult            = MatMult_SeqBAIJ_5;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
+      break;
+    case 6:
+      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;  
+      B->ops->solve           = MatSolve_SeqBAIJ_6; 
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6;
+      B->ops->mult            = MatMult_SeqBAIJ_6;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
+      break;
+    case 7:
+      B->ops->mult            = MatMult_SeqBAIJ_7; 
+      B->ops->solve           = MatSolve_SeqBAIJ_7;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
+      break;
+    default:
+      B->ops->mult            = MatMult_SeqBAIJ_N; 
+      B->ops->solve           = MatSolve_SeqBAIJ_N;
+      B->ops->multadd         = MatMultAdd_SeqBAIJ_N;
+      break;
+    }
+  }
+  b->bs      = bs;
+  b->mbs     = mbs;
+  b->nbs     = nbs;
+  b->imax    = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(b->imax);
+  if (!nnz) {
+    if (nz == PETSC_DEFAULT) nz = 5;
+    else if (nz <= 0)        nz = 1;
+    for (i=0; i<mbs; i++) b->imax[i] = nz;
+    nz = nz*mbs;
+  } else {
+    nz = 0;
+    for (i=0; i<mbs; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
+  }
+
+  /* allocate the matrix space */
+  len   = nz*sizeof(int) + nz*bs2*sizeof(MatScalar) + (B->m+1)*sizeof(int);
+  b->a  = (MatScalar*)PetscMalloc(len);CHKPTRQ(b->a);
+  ierr = PetscMemzero(b->a,nz*bs2*sizeof(MatScalar));CHKERRQ(ierr);
+  b->j  = (int*)(b->a + nz*bs2);
+  ierr = PetscMemzero(b->j,nz*sizeof(int));CHKERRQ(ierr);
+  b->i  = b->j + nz;
+  b->singlemalloc = PETSC_TRUE;
+
+  b->i[0] = 0;
+  for (i=1; i<mbs+1; i++) {
+    b->i[i] = b->i[i-1] + b->imax[i-1];
+  }
+
+  /* b->ilen will count nonzeros in each block row so far. */
+  b->ilen = (int*)PetscMalloc((mbs+1)*sizeof(int)); 
+  PLogObjectMemory(B,len+2*(mbs+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqBAIJ));
+  for (i=0; i<mbs; i++) { b->ilen[i] = 0;}
+
+  b->bs               = bs;
+  b->bs2              = bs2;
+  b->mbs              = mbs;
+  b->nz               = 0;
+  b->maxnz            = nz*bs2;
+  B->info.nz_unneeded = (PetscReal)b->maxnz;
+  PetscFunctionReturn(0);
+}
 

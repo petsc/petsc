@@ -1,4 +1,4 @@
-/*$Id: vseqcr.c,v 1.14 2000/08/16 22:51:06 balay Exp bsmith $*/
+/*$Id: vseqcr.c,v 1.15 2000/09/28 21:10:22 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -26,7 +26,7 @@
 
    Level: intermediate
 
-.keywords: vector, sequential, create, BLAS
+   Concepts: vectors^creating sequential
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/

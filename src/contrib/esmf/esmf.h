@@ -7,10 +7,10 @@
 
 typedef struct _p_ESMFBase *ESMFBase;
 struct _p_ESMFBase {
-  char typename[64];
+  char type_name[64];
   int  refcount;
   int  fcomm;
-  int threadcount;
+  int  threadcount;
 };
 
 #endif

@@ -1,7 +1,7 @@
-/*$Id: gcreate.c,v 1.122 2000/09/01 19:09:14 balay Exp curfman $*/
+/*$Id: gcreate.c,v 1.123 2000/09/25 19:57:36 curfman Exp bsmith $*/
 
 #include "petscsys.h"
-#include "petscmat.h"       /*I "petscmat.h"  I*/
+#include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatCreate"
@@ -23,24 +23,16 @@
    Output Parameter:
 .  A - the matrix
 
-   Basic Options Database Keys:
-   These options use MatCreateSeqXXX or MatCreateMPIXXX,
-   depending on the communicator, comm.
-+    -mat_aij      - AIJ type
-.    -mat_baij     - block AIJ type
-.    -mat_dense    - dense type
--    -mat_bdiag    - block diagonal type
-
-   More Options Database Keys:
-+    -mat_seqaij   - AIJ type, uses MatCreateSeqAIJ()
-.    -mat_mpiaij   - AIJ type, uses MatCreateMPIAIJ()
-.    -mat_seqbdiag - block diagonal type, uses MatCreateSeqBDiag()
-.    -mat_mpibdiag - block diagonal type, uses MatCreateMPIBDiag()
-.    -mat_mpirowbs - rowbs type, uses MatCreateMPIRowbs()
-.    -mat_seqdense - dense type, uses MatCreateSeqDense()
-.    -mat_mpidense - dense type, uses MatCreateMPIDense()
-.    -mat_seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
--    -mat_mpibaij  - block AIJ type, uses MatCreateMPIBAIJ()
+   Options Database Keys:
++    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
+.    -mat_type mpiaij   - AIJ type, uses MatCreateMPIAIJ()
+.    -mat_type seqbdiag - block diagonal type, uses MatCreateSeqBDiag()
+.    -mat_type mpibdiag - block diagonal type, uses MatCreateMPIBDiag()
+.    -mat_type mpirowbs - rowbs type, uses MatCreateMPIRowbs()
+.    -mat_type seqdense - dense type, uses MatCreateSeqDense()
+.    -mat_type mpidense - dense type, uses MatCreateMPIDense()
+.    -mat_type seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
+-    -mat_type mpibaij  - block AIJ type, uses MatCreateMPIBAIJ()
 
    Even More Options Database Keys:
    See the manpages for particular formats (e.g., MatCreateSeqAIJ())
@@ -55,7 +47,63 @@
    Likewise, the 'n' used must match that used as the local size in
    VecCreateMPI() for 'x'.
 
-   This routine calls MatGetTypeFromOptions() to determine the matrix type.
+   Level: beginner
+
+.keywords: matrix, create
+
+.seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
+          MatCreateSeqBDiag(),MatCreateMPIBDiag(),
+          MatCreateSeqDense(), MatCreateMPIDense(), 
+          MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
+          MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
+          MatConvert()
+@*/
+int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
+{
+  Mat B;
+
+  PetscFunctionBegin;
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);
+  PLogObjectCreate(B);
+
+  B->m = m;
+  B->n = n;
+  B->M = M;
+  B->N = N;
+
+  B->preallocated = PETSC_FALSE;
+
+  *A = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatSetFromOptions"
+/*@C
+   MatSetFromOptions - Creates a matrix where the type is determined
+   from the options database. Generates a parallel MPI matrix if the
+   communicator has more than one processor.  The default matrix type is
+   AIJ, using the routines MatSetFromOptionsSeqAIJ() and MatSetFromOptionsMPIAIJ(). 
+
+   Collective on Mat
+
+   Input Parameter:
+.  A - the matrix
+
+   Options Database Keys:
++    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
+.    -mat_type mpiaij   - AIJ type, uses MatCreateMPIAIJ()
+.    -mat_type seqbdiag - block diagonal type, uses MatCreateSeqBDiag()
+.    -mat_type mpibdiag - block diagonal type, uses MatCreateMPIBDiag()
+.    -mat_type mpirowbs - rowbs type, uses MatCreateMPIRowbs()
+.    -mat_type seqdense - dense type, uses MatCreateSeqDense()
+.    -mat_type mpidense - dense type, uses MatCreateMPIDense()
+.    -mat_type seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
+-    -mat_type mpibaij  - block AIJ type, uses MatCreateMPIBAIJ()
+
+   Even More Options Database Keys:
+   See the manpages for particular formats (e.g., MatCreateSeqAIJ())
+   for additional format-specific options.
 
    Level: beginner
 
@@ -66,71 +114,102 @@
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
-          MatConvert(), MatGetTypeFromOptions()
+          MatConvert()
 @*/
-int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
+int MatSetFromOptions(Mat B)
 {
-  MatType    type;
-  PetscTruth set;
-  int        ierr,bs = 1;
+  int        ierr,size;
+  char       mtype[256];
+  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = MatGetTypeFromOptions(comm,0,&type,&set);CHKERRQ(ierr);
-  switch (type) {
-  case MATSEQDENSE:
-    m    = PetscMax(m,M);
-    n    = PetscMax(n,N);
-    ierr = MatCreateSeqDense(comm,m,n,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-  case MATMPIBDIAG:
-    ierr = MatCreateMPIBDiag(comm,m,M,N,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-  case MATSEQBDIAG:
-    m    = PetscMax(m,M);
-    n    = PetscMax(n,N);
-    ierr = MatCreateSeqBDiag(comm,m,n,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
-  case MATMPIROWBS:
-    ierr = MatCreateMPIRowbs(comm,m,M,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-#endif
-  case MATMPIDENSE:
-    ierr = MatCreateMPIDense(comm,m,n,M,N,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-  case MATMPIAIJ:
-    ierr = MatCreateMPIAIJ(comm,m,n,M,N,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-  case MATSEQBAIJ:
-    m    = PetscMax(m,M);
-    n    = PetscMax(n,N);
-    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatCreateSeqBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-  case MATMPIBAIJ:
-    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatCreateMPIBAIJ(comm,bs,m,n,M,N,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-  case MATSEQSBAIJ:
-    m    = PetscMax(m,M);
-    n    = PetscMax(n,N);
-    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatCreateSeqSBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-  case MATMPISBAIJ:
-    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatCreateMPISBAIJ(comm,bs,m,n,M,N,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
-  default:
-    m    = PetscMax(m,M);
-    n    = PetscMax(n,N);
-    ierr = MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
-    break;
+  ierr = OptionsGetString(B->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatSetType(B,mtype);CHKERRQ(ierr);
+  }
+  if (!B->type_name) {
+    ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
 
- 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatSetUpPreallocation"
+/*@C
+   MatSetUpPreallocation
 
+   Collective on Mat
 
+   Input Parameter:
+.  A - the matrix
 
+   Level: beginner
+
+.keywords: matrix, create
+
+.seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
+          MatCreateSeqBDiag(),MatCreateMPIBDiag(),
+          MatCreateSeqDense(), MatCreateMPIDense(), 
+          MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
+          MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
+          MatConvert()
+@*/
+int MatSetUpPreallocation(Mat B)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (B->ops->setuppreallocation) {
+    PLogInfo(B,"MatSetTpPreallocation: Warning not preallocating matrix storage");
+    ierr = (*B->ops->setuppreallocation)(B);CHKERRQ(ierr);
+    B->ops->setuppreallocation = 0;
+    B->preallocated            = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+        Copies from Cs header to A
+*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatHeaderCopy"></a>*/"MatHeaderCopy"
+int MatHeaderCopy(Mat A,Mat C)
+{
+  int         ierr,refct;
+  PetscOps    *Abops;
+  MatOps      Aops;
+  char        *mtype,*mname;
+
+  PetscFunctionBegin;
+  /* free all the interior data structures from mat */
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+
+  ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
+
+  /* save the parts of A we need */
+  Abops = A->bops;
+  Aops  = A->ops;
+  refct = A->refct;
+  mtype = A->type_name;
+  mname = A->name;
+
+  /* copy C over to A */
+  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+
+  /* return the parts of A we saved */
+  A->bops      = Abops;
+  A->ops       = Aops;
+  A->qlist     = 0;
+  A->refct     = refct;
+  A->type_name = mtype;
+  A->name      = mname;
+
+  PetscHeaderDestroy(C);
+  PetscFunctionReturn(0);
+}

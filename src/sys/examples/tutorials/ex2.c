@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.10 2000/09/22 20:42:48 bsmith Exp curfman $*/
+/*$Id: ex2.c,v 1.11 2000/09/25 15:25:17 curfman Exp bsmith $*/
 
 /* Program usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -7,9 +7,9 @@ static char help[] = "Synchronized printing.\n\n";
 /*T
    Concepts: introduction to PETSc;
    Concepts: printing^synchronized
-   Concepts: printing^parallel
+   Concepts: printing^in parallel
    Concepts: printf^synchronized
-   Concepts: printf^parallel
+   Concepts: printf^in parallel
    Processors: n
 T*/
  

@@ -1,8 +1,8 @@
 !
-!  "$Id: ex1f.F,v 1.21 2000/09/22 20:42:58 bsmith Exp bsmith $";
+!  "$Id: ex1f.F,v 1.22 2000/09/27 20:05:44 bsmith Exp bsmith $";
 !
 !/*T
-!    Concepts: Index sets^manipulating a general index set;
+!    Concepts: index sets^manipulating a general index set;
 !T*/
 !    
 !  Comment: Creates an index set based on a set of integers. Views that index set

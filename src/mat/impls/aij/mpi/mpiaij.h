@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.18 1999/11/24 21:53:50 bsmith Exp bsmith $ */
+/* $Id: mpiaij.h,v 1.19 2000/01/11 21:00:41 bsmith Exp bsmith $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
@@ -8,8 +8,6 @@
 
 typedef struct {
   int           *rowners,*cowners;     /* ranges owned by each processor */
-  int           m,n;                   /* local rows and columns */
-  int           M,N;                   /* global rows and columns */
   int           rstart,rend;           /* starting and ending owned rows */
   int           cstart,cend;           /* starting and ending owned columns */
   Mat           A,B;                   /* local submatrices: A (diag part),

@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.65 2000/05/25 16:00:56 balay Exp balay $;
+!  $Id: petscmat.h,v 1.66 2000/09/25 18:00:50 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -10,7 +10,7 @@
 #define MatFDColoring PetscFortranAddr
 #define MatPartitioning PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
-#define MatType integer
+#define MatType charactor*(80)
 #define MatOption integer 
 #define MatAssemblyType integer
 #define MatOrderingType character*(80)
@@ -43,27 +43,30 @@
 
 #endif
 
-#if !defined (PETSC_AVOID_DECLARATIONS)
-
 !
 !  Matrix types
 !
-      integer MAX_MATRIX_TYPES
-      parameter (MAX_MATRIX_TYPES = 14)
+#define MATSAME     'same'
+#define MATSEQMAIJ  'seqmaij'
+#define MATMPIMAIJ  'mpimaij'
+#define MATIS       'is'
+#define MATMPIROWBS 'mpirowbs'
+#define MATSEQDENSE 'seqdense'
+#define MATSEQAIJ   'seqaij'
+#define MATMPIAIJ   'mpiaij'
+#define MATSHELL    'shell'
+#define MATSEQBDIAG 'seqbdiag'
+#define MATMPIBDIAG 'mpibdiag'
+#define MATMPIDENSE 'mpidense'
+#define MATSEQBAIJ  'seqbaij'
+#define MATMPIBAIJ  'mpibaij'
+#define MATMPIADJ   'mpiadj'
+#define MATSEQSBAIJ 'seqsbaij'
+#define MATMPISBAIJ 'mpisbaij'
 
-      integer MATSAME,MATSEQDENSE,MATSEQAIJ,MATMPIAIJ
-      integer MATSHELL,MATMPIROWBS,MATSEQBDIAG
-      integer MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ
-      integer MATMPIBAIJ,MATMPICSN,MATSEQCSN,MATSEQADJ
-      integer MATMPIADJ,MATSEQSBAIJ,MATMPISBAIJ,MATLASTTYPE
 
-      parameter (MATSAME=-1,MATSEQDENSE = 0,MATSEQAIJ = 1)
-      parameter (MATMPIAIJ = 2,MATSHELL = 3,MATMPIROWBS = 4)
-      parameter (MATSEQBDIAG = 5,MATMPIBDIAG = 6,MATMPIDENSE = 7)
-      parameter (MATSEQBAIJ = 8,MATMPIBAIJ = 9,MATMPICSN = 10)
-      parameter (MATSEQCSN = 11,MATSEQADJ = 12,MATMPIADJ = 13)
-      parameter (MATSEQSBAIJ = 14,MATMPISBAIJ = 15)
-      parameter (MATLASTTYPE = 16)
+#if !defined (PETSC_AVOID_DECLARATIONS)
+
 !
 !  Flag for matrix assembly
 !

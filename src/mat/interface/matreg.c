@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.9 2000/09/26 15:24:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.10 2000/09/28 21:10:52 bsmith Exp bsmith $";
 #endif
 /*
      Mechanism for register PETSc matrix types
@@ -38,7 +38,7 @@ FList MatList = 0;
 
 .seealso: PCSetType(), VecSetType(), MatCreate()
 @*/
-int MatSetType(Mat mat,MATType matype)
+int MatSetType(Mat mat,MatType matype)
 {
   int        ierr,(*r)(Mat);
   PetscTruth sametype;
@@ -109,49 +109,10 @@ int MatRegisterDestroy(void)
 
 .seealso: MatSetType()
 @*/
-int MATGetType(Mat mat,MATType *type)
+int MatGetType(Mat mat,MatType *type)
 {
   PetscFunctionBegin;
   *type = mat->type_name;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatSetTypeFromOptions"
-/*@
-   MatSetTypeFromOptions - Sets Mat type from the options database, if not
-       given then sets default.
-
-   Collective on Mat
-
-   Input Parameters:
-.  Mat - the Krylov space context
-
-   Level: developer
-
-.keywords: Mat, set, from, options, database
-
-.seealso: MatSetFromOptions(), SLESSetFromOptions()
-@*/
-int MatSetTypeFromOptions(Mat mat)
-{
-  int        ierr;
-  char       method[256];
-  PetscTruth flg;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-
-  ierr = OptionsGetString(mat->prefix,"-mat_type",method,256,&flg);
-  if (flg){
-    ierr = MatSetType(mat,method);CHKERRQ(ierr);
-  }
-  /*
-    Set the type if it was never set.
-  */
-  if (!mat->type_name) {
-    ierr = MatSetType(mat,"mpiaij");CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -209,21 +170,12 @@ int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "MATCreate"
-int MATCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
-{
-  Mat B;
 
-  PetscFunctionBegin;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);
-  PLogObjectCreate(B);
 
-  B->m = m;
-  B->n = n;
-  B->M = M;
-  B->N = N;
 
-  *A = B;
-  PetscFunctionReturn(0);
-}
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.1 2000/01/26 22:01:01 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.2 2000/05/05 22:18:59 balay Exp bsmith $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -104,6 +104,7 @@ int main(int argc,char **argv)
     The user provides the RHS and Jacobian
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,mn,mn,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   /* Create SNES context  */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);

@@ -1,4 +1,4 @@
-/*$Id: zviewer.c,v 1.25 2000/06/24 18:51:35 bsmith Exp balay $*/
+/*$Id: zviewer.c,v 1.26 2000/06/25 15:39:14 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"
@@ -39,40 +39,48 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL viewersocketputscalar(Viewer *viewer,int *m,int *n,Scalar *s,int *ierr)
 {
-  *ierr = ViewerSocketPutScalar(*viewer,*m,*n,s);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = ViewerSocketPutScalar(v,*m,*n,s);
 }
 
 void PETSC_STDCALL viewersocketputreal(Viewer *viewer,int *m,int *n,PetscReal *s,int *ierr)
 {
-  *ierr = ViewerSocketPutReal(*viewer,*m,*n,s);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = ViewerSocketPutReal(v,*m,*n,s);
 }
 
 void PETSC_STDCALL viewersocketputint(Viewer *viewer,int *m,int *s,int *ierr)
 {
-  *ierr = ViewerSocketPutInt(*viewer,*m,s);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = ViewerSocketPutInt(v,*m,s);
 }
 
 void PETSC_STDCALL viewersetfilename_(Viewer *viewer,CHAR name PETSC_MIXED_LEN(len),
                                       int *ierr PETSC_END_LEN(len))
 {
   char   *c1;
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
   FIXCHAR(name,len,c1);
-  *ierr = ViewerSetFilename(*viewer,c1);
+  *ierr = ViewerSetFilename(v,c1);
   FREECHAR(name,c1);
 }
 
 void PETSC_STDCALL  viewerbinarysettype_(Viewer *viewer,ViewerBinaryType *type,int *ierr)
 {
-  *ierr = ViewerBinarySetType(*viewer,*type);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = ViewerBinarySetType(v,*type);
 }
 
-void PETSC_STDCALL viewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,Viewer *lab,
-                       int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL viewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,Viewer *lab,int *ierr PETSC_END_LEN(len))
 {
   char   *c1;
   FIXCHAR(name,len,c1);
-  *ierr = ViewerSocketOpen((MPI_Comm)PetscToPointerComm(*comm),
-     c1,*port,lab);
+  *ierr = ViewerSocketOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*port,lab);
   FREECHAR(name,c1);
 }
 

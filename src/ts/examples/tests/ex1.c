@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.36 2000/01/11 21:03:03 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.37 2000/05/05 22:18:59 balay Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -142,6 +142,7 @@ int main(int argc,char **argv)
          The user provides the RHS as a matrix
     */
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.M,appctx.M,&A);CHKERRA(ierr);
+    ierr = MatSetFromOptions(A);CHKERRA(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRA(ierr);
   } else if (problem == linear) {
@@ -149,6 +150,7 @@ int main(int argc,char **argv)
          The user provides the RHS as a time dependent matrix
     */
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.M,appctx.M,&A);CHKERRA(ierr);
+    ierr = MatSetFromOptions(A);CHKERRA(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx);CHKERRA(ierr);
   } else if (problem == nonlinear_no_jacobian) {
@@ -165,6 +167,7 @@ int main(int argc,char **argv)
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx);CHKERRA(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.M,appctx.M,&A);CHKERRA(ierr);
+    ierr = MatSetFromOptions(A);CHKERRA(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRA(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,&appctx);CHKERRA(ierr);  
   }

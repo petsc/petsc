@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.17 2000/09/28 18:35:45 gropp Exp bsmith $*/
+/*$Id: ex10.c,v 1.18 2000/09/28 21:14:41 bsmith Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -374,6 +374,7 @@ int main(int argc,char **argv)
      preallocation should always be done to expedite the matrix creation. 
   */
   ierr = MatCreate(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&Jac);CHKERRA(ierr);
+  ierr = MatSetFromOptions(Jac);CHKERRA(ierr);
 
   /* 
     The following routine allows us to set the matrix values in local ordering 

@@ -1,4 +1,4 @@
-/*$Id: lusol.c,v 1.3 2000/09/24 18:16:57 bsmith Exp bsmith $*/
+/*$Id: lusol.c,v 1.4 2000/09/24 18:17:45 bsmith Exp bsmith $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -253,32 +253,29 @@ int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
 #define __FUNC__ "MatLUFactorNumeric_SeqAIJ_LUSOL"
 int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 {
-     Mat_SeqAIJ *a;
+     Mat_SeqAIJ       *a;
      Mat_SeqAIJ_LUSOL *lusol = (Mat_SeqAIJ_LUSOL *)((Mat_SeqAIJ *)(*F)->data)->spptr;
-     MatType type;
-     int m, n, nz, nnz, status;
-     int i, rs, re,ierr;
-     int factorizations;
+     PetscTruth       flg;
+     int              m, n, nz, nnz, status;
+     int              i, rs, re,ierr;
+     int              factorizations;
 
      PetscFunctionBegin;
 
-     MatGetSize(A, &m, &n);
-     if (m != n) 
-     {
-	  SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square"); 
+     ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);CHKERRQ(ierr);
+     if (m != n) {
+       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square"); 
      }
 
-     MatGetType(A, &type, PETSC_NULL);
-     if (type != MATSEQAIJ)
-     {
+     ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
+     if (!flg) {
 	  SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be Seq_AIJ");
      }
 
      a = (Mat_SeqAIJ *)A->data;
 
-     if (m != lusol->n)
-     {
-	  SETERRQ(PETSC_ERR_ARG_SIZ, 0, "factorization struct inconsistent");
+     if (m != lusol->n) {
+       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "factorization struct inconsistent");
      }
 
      factorizations = 0;
@@ -404,9 +401,8 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      /************************************************************************/
 
      Mat_SeqAIJ_LUSOL *lusol;
-     MatType type;
-     int i, m, n, nz, nnz;
-     int ierr;
+     PetscTruth       flg;
+     int              ierr,i, m, n, nz, nnz;
 
      PetscFunctionBegin;
 	  
@@ -414,16 +410,14 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      /* Check the arguments.                                                 */
      /************************************************************************/
 
-     MatGetSize(A, &m, &n);
-     if (m != n)
-     {
-	  SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square"); 
+     ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);
+     if (m != n) {
+       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be square"); 
      }
 
-     MatGetType(A, &type, PETSC_NULL);
-     if (type != MATSEQAIJ)
-     {
-	  SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be Seq_AIJ");
+     ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
+     if (!flg) {
+       SETERRQ(PETSC_ERR_ARG_SIZ, 0, "matrix must be Seq_AIJ");
      }
 
      nz = ((Mat_SeqAIJ *)A->data)->nz;

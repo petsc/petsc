@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.18 2000/05/05 22:19:01 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.19 2000/09/22 20:46:37 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -174,6 +174,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,m,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg);CHKERRA(ierr);
   if (flg) {

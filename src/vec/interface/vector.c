@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.217 2000/09/23 03:16:26 buschelm Exp bsmith $*/
+/*$Id: vector.c,v 1.218 2000/09/28 21:10:18 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -63,7 +63,9 @@ int VecSetBlockSize(Vec v,int bs)
 
 .seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlocked(), VecSetBlockSize()
 
-.keywords: block size, vectors
+   Concepts: vector^block size
+   Concepts: block^vector
+
 @*/
 int VecGetBlockSize(Vec v,int *bs)
 {
@@ -89,7 +91,6 @@ int VecGetBlockSize(Vec v,int *bs)
 
    Level: developer
 
-.keywords: vector, valid
 @*/
 int VecValid(Vec v,PetscTruth *flg)
 {
@@ -131,7 +132,8 @@ $     val = (x,y) = y^T x,
 
    Level: intermediate
 
-.keywords: vector, dot product, inner product
+   Concepts: inner product
+   Concepts: vector^inner product
 
 .seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd()
 @*/
@@ -200,7 +202,8 @@ $     NORM_INFINITY denotes max_i |x_i|
  than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines 
  (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow. 
 
-.keywords: vector, norm
+   Concepts: norm
+   Concepts: vector^norm
 
 .seealso: VecDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd(), 
           VecNormBegin(), VecNormEnd()
@@ -248,7 +251,8 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
 
    Level: intermediate
 
-.keywords: vector, maximum
+   Concepts: maximum^of vector
+   Concepts: vector^maximum value
 
 .seealso: VecNorm(), VecMin()
 @*/
@@ -285,7 +289,8 @@ int VecMax(Vec x,int *p,PetscReal *val)
    Notes:
    Returns the value PETSC_MAX and p = -1 if the vector is of length 0.
 
-.keywords: vector, minimum
+   Concepts: minimum^of vector
+   Concepts: vector^minimum entry
 
 .seealso: VecMax()
 @*/
@@ -328,7 +333,9 @@ $     val = (x,y) = y^H x,
 
    Level: intermediate
 
-.keywords: vector, dot product, inner product
+   Concepts: inner product^non-Hermitian
+   Concepts: vector^inner product
+   Concepts: non-Hermitian inner product
 
 .seealso: VecDot(), VecMTDot()
 @*/
@@ -373,7 +380,9 @@ $      x[i] = alpha * x[i], for i=1,...,n.
 
    Level: intermediate
 
-.keywords: vector, scale
+   Concepts: vector^scaling
+   Concepts: scaling^vector
+
 @*/
 int VecScale(const Scalar *alpha,Vec x)
 {
@@ -407,8 +416,6 @@ int VecScale(const Scalar *alpha,Vec x)
    the same manner; local copies are done.
 
    Level: beginner
-
-.keywords: vector, copy
 
 .seealso: VecDuplicate()
 @*/
@@ -456,7 +463,8 @@ $     x[i] = alpha, for i=1,...,n,
 
 .seealso VecSetValues(), VecSetValuesBlocked(), VecSetRandom()
 
-.keywords: vector, set
+   Concepts: vector^setting to constant
+
 @*/
 int VecSet(const Scalar *alpha,Vec x) 
 {
@@ -497,7 +505,8 @@ int VecSet(const Scalar *alpha,Vec x)
 
    Level: intermediate
 
-.keywords: vector, set, random
+   Concepts: vector^setting to random
+   Concepts: random^vector
 
 .seealso: VecSet(), VecSetValues(), PetscRandomCreate(), PetscRandomDestroy()
 @*/
@@ -544,7 +553,8 @@ int VecSetRandom(PetscRandom rctx,Vec x)
 
    Level: intermediate
 
-.keywords: vector, saxpy
+   Concepts: vector^BLAS
+   Concepts: BLAS
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY()
 @*/
@@ -585,7 +595,8 @@ int VecAXPY(const Scalar *alpha,Vec x,Vec y)
 
    Level: intermediate
 
-.keywords: vector, saxpy
+   Concepts: BLAS
+   Concepts: vector^BLAS
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY()
 @*/
@@ -627,7 +638,8 @@ int VecAXPBY(const Scalar *alpha,const Scalar *beta,Vec x,Vec y)
 
    Level: intermediate
 
-.keywords: vector, saypx
+   Concepts: vector^BLAS
+   Concepts: BLAS
 
 .seealso: VecAXPY(), VecWAXPY()
 @*/
@@ -664,7 +676,8 @@ int VecAYPX(const Scalar *alpha,Vec x,Vec y)
 
    Level: advanced
 
-.keywords: vector, swap
+   Concepts: vector^swapping values
+
 @*/
 int VecSwap(Vec x,Vec y)
 {
@@ -702,7 +715,8 @@ int VecSwap(Vec x,Vec y)
 
    Level: intermediate
 
-.keywords: vector, waxpy
+   Concepts: vector^BLAS
+   Concepts: BLAS
 
 .seealso: VecAXPY(), VecAYPX()
 @*/
@@ -746,7 +760,7 @@ int VecWAXPY(const Scalar *alpha,Vec x,Vec y,Vec w)
 
    Notes: any subset of the x, y, and w may be the same vector.
 
-.keywords: vector, multiply, componentwise, pointwise
+   Concepts: vector^pointwise multiply
 
 .seealso: VecPointwiseDivide()
 @*/
@@ -789,7 +803,7 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
 
    Notes: any subset of the x, y, and w may be the same vector.
 
-.keywords: vector, divide, componentwise, pointwise
+   Concepts: vector^pointwise divide
 
 .seealso: VecPointwiseMult()
 @*/
@@ -835,8 +849,6 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 
    Level: beginner
 
-.keywords: vector, duplicate, create
-
 .seealso: VecDestroy(), VecDuplicateVecs(), VecCreate(), VecCopy()
 @*/
 int VecDuplicate(Vec x,Vec *newv) 
@@ -862,8 +874,6 @@ int VecDuplicate(Vec x,Vec *newv)
 .  v  - the vector
 
    Level: beginner
-
-.keywords: vector, destroy
 
 .seealso: VecDuplicate()
 @*/
@@ -918,8 +928,6 @@ int VecDestroy(Vec v)
 
    Level: intermediate
 
-.keywords: vector, duplicate
-
 .seealso:  VecDestroyVecs(), VecDuplicate(), VecCreate(), VecDuplicateVecsF90()
 @*/
 int VecDuplicateVecs(Vec v,int m,Vec *V[])  
@@ -951,8 +959,6 @@ int VecDuplicateVecs(Vec v,int m,Vec *V[])
    petsc/src/vec/examples for details.
 
    Level: intermediate
-
-.keywords: vector, destroy
 
 .seealso: VecDuplicateVecs(), VecDestroyVecsF90()
 @*/
@@ -1003,7 +1009,7 @@ int VecDestroyVecs(const Vec vv[],int m)
 
    Level: beginner
 
-.keywords: vector, set, values
+   Concepts: vector^setting values
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
            VecSetValue(), VecSetValuesBlocked()
@@ -1059,7 +1065,7 @@ int VecSetValues(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora)
 
    Level: intermediate
 
-.keywords: vector, set, values, blocked
+   Concepts: vector^setting values blocked
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(),
            VecSetValues()
@@ -1128,7 +1134,7 @@ M*/
 
    Level: intermediate
 
-.keywords: vector, set, values, local ordering
+   Concepts: vector^setting values with local numbering
 
 seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMappingBlocked(), VecSetValuesBlockedLocal()
@@ -1171,7 +1177,7 @@ int VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 
    Level: intermediate
 
-.keywords: vector, set, values, local ordering
+   Concepts: vector^setting values blocked with local numbering
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
            VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
@@ -1222,7 +1228,7 @@ int VecSetLocalToGlobalMappingBlocked(Vec x,ISLocalToGlobalMapping mapping)
 
    VecSetValuesLocal() uses 0-based indices in Fortran as well as in C.
 
-.keywords: vector, set, values, local ordering
+   Concepts: vector^setting values with local numbering
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping(),
            VecSetValuesBlockedLocal()
@@ -1290,7 +1296,7 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
    VecSetValuesBlockedLocal() uses 0-based indices in Fortran as well as in C.
 
 
-.keywords: vector, set, values, blocked, local ordering
+   Concepts: vector^setting values blocked with local numbering
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesBlocked(), 
            VecSetLocalToGlobalMappingBlocked()
@@ -1334,7 +1340,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
 
    Level: beginner
 
-.keywords: vector, begin, assembly, assemble
+   Concepts: assembly^vectors
 
 .seealso: VecAssemblyEnd(), VecSetValues()
 @*/
@@ -1381,8 +1387,6 @@ int VecAssemblyBegin(Vec vec)
 -  -vec_view_ams - Activates vector viewing using the ALICE Memory Snooper (AMS)
  
    Level: beginner
-
-.keywords: vector, end, assembly, assemble
 
 .seealso: VecAssemblyBegin(), VecSetValues()
 @*/
@@ -1467,7 +1471,8 @@ $      val = (x,y) = y^H x,
 
    Level: intermediate
 
-.keywords: vector, dot product, inner product, non-Hermitian, multiple
+   Concepts: inner product^multiple
+   Concepts: vector^multiple inner products
 
 .seealso: VecMDot(), VecTDot()
 @*/
@@ -1518,7 +1523,8 @@ $     val = (x,y) = y^T x,
 
    Level: intermediate
 
-.keywords: vector, dot product, inner product, multiple
+   Concepts: inner product^multiple
+   Concepts: vector^multiple inner products
 
 .seealso: VecMTDot(), VecDot()
 @*/
@@ -1558,7 +1564,7 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
 
    Level: intermediate
 
-.keywords: vector, saxpy, maxpy, multiple
+   Concepts: BLAS
 
 .seealso: VecAXPY(), VecWAXPY(), VecAYPX()
 @*/
@@ -1622,7 +1628,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
    Level: beginner
 
-.keywords: vector, get, array
+   Concepts: vector^accessing local values
 
 .seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
 @*/
@@ -1659,8 +1665,6 @@ int VecGetArray(Vec x,Scalar *a[])
    This routine is not supported in Fortran.
 
    Level: intermediate
-
-.keywords: vector, get, arrays
 
 .seealso: VecGetArray(), VecRestoreArrays()
 @*/
@@ -1704,8 +1708,6 @@ int VecGetArrays(const Vec x[],int n,Scalar **a[])
    This routine is not supported in Fortran.
 
    Level: intermediate
-
-.keywords: vector, restore, arrays
 
 .seealso: VecGetArrays(), VecRestoreArray()
 @*/
@@ -1765,8 +1767,6 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
    See the Fortran chapter of the users manual and 
    petsc/src/snes/examples/tutorials/ex5f.F for details.
    For Fortran 90 see VecRestoreArrayF90()
-
-.keywords: vector, restore, array
 
 .seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
 @*/
@@ -1829,7 +1829,8 @@ int VecRestoreArray(Vec x,Scalar *a[])
 
    Level: beginner
 
-.keywords: Vec, view, visualize, output, print, write, draw
+   Concepts: vector^printing
+   Concepts: vector^saving to disk
 
 .seealso: ViewerASCIIOpen(), ViewerDrawOpen(), DrawLGCreate(),
           ViewerSocketOpen(), ViewerBinaryOpen(), VecLoad(), ViewerCreate(),
@@ -1878,7 +1879,7 @@ int VecView(Vec vec,Viewer viewer)
 
    Level: beginner
 
-.keywords: vector, get, size, global, dimension
+   Concepts: vector^local size
 
 .seealso: VecGetLocalSize()
 @*/
@@ -1911,7 +1912,7 @@ int VecGetSize(Vec x,int *size)
 
    Level: beginner
 
-.keywords: vector, get, dimension, size, local
+   Concepts: vector^size
 
 .seealso: VecGetSize()
 @*/
@@ -1950,7 +1951,9 @@ int VecGetLocalSize(Vec x,int *size)
 
    Level: beginner
 
-.keywords: vector, get, range, ownership
+   Concepts: ownership^of vectors
+   Concepts: vector^ownership of elements
+
 @*/
 int VecGetOwnershipRange(Vec x,int *low,int *high)
 {
@@ -1982,7 +1985,6 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 
    Level: developer
 
-.keywords: vector, get, map
 @*/
 int VecGetMap(Vec x,Map *map)
 {
@@ -2013,7 +2015,6 @@ int VecGetMap(Vec x,Map *map)
 
    Level: intermediate
 
-.keywords: vector, options
 @*/
 int VecSetOption(Vec x,VecOption op)
 {
@@ -2082,7 +2083,6 @@ int VecDestroyVecs_Default(const Vec v[], int m)
 
 .seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray()
 
-.keywords: vec, place, array
 @*/
 int VecPlaceArray(Vec vec,const Scalar array[])
 {
@@ -2122,7 +2122,6 @@ int VecPlaceArray(Vec vec,const Scalar array[])
 
 .seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray()
 
-.keywords: vec, place, array
 @*/
 int VecReplaceArray(Vec vec,const Scalar array[])
 {
@@ -2177,7 +2176,6 @@ int VecReplaceArray(Vec vec,const Scalar array[])
 
 .seealso:  VecDestroyVecsF90(), VecDuplicateVecs()
 
-.keywords:  vector, duplicate, f90
 M*/
 
 /*MC
@@ -2212,7 +2210,6 @@ M*/
 
 .seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray()
 
-.keywords:  vector, array, f90
 M*/
 
 /*MC
@@ -2235,7 +2232,6 @@ M*/
 
 .seealso:  VecDestroyVecs(), VecDuplicateVecsF90()
 
-.keywords:  vector, destroy, f90
 M*/
 
 /*MC
@@ -2272,7 +2268,6 @@ M*/
 
 .seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray()
 
-.keywords:  vector, array, f90
 M*/
 
 #undef __FUNC__  
@@ -2319,7 +2314,7 @@ linux, nt and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscReadBinary()
 and PetscWriteBinary() to see how this may be done.
 
-.keywords: vector, load, binary, input
+   Concepts: vector^loading from file
 
 .seealso: ViewerBinaryOpen(), VecView(), MatLoad(), VecLoad() 
 @*/  
@@ -2353,7 +2348,8 @@ int VecLoadIntoVector(Viewer viewer,Vec vec)
 
    Level: intermediate
 
-.keywords: vector, reciprocal
+   Concepts: vector^reciprocal
+
 @*/
 int VecReciprocal(Vec vec)
 {
@@ -2413,7 +2409,8 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
      VecAssemblyBegin_MPIXXX:Block-Stash has BMM entries, uses nn mallocs.
      to determine the value, BMM to use for bsize
 
-.keywords: vector, stash, assembly
+   Concepts: vector^stash
+   Concepts: stash^vector
 
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked(), VecStashView()
 
@@ -2442,7 +2439,8 @@ int VecSetStashInitialSize(Vec vec,int size,int bsize)
 
    Level: advanced
 
-.keywords: vector, stash, assembly
+   Concepts: vector^stash
+   Concepts: stash^vector
 
 .seealso: VecSetBlockSize(), VecSetValues(), VecSetValuesBlocked()
 
@@ -2517,7 +2515,7 @@ int VecStashView(Vec v,Viewer viewer)
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
 
-.keywords: vector, get, array
+   Concepts: vector^accessing local values as 2d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
@@ -2567,8 +2565,6 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
 
    This routine actually zeros out the a pointer. 
 
-.keywords: vector, restore, array
-
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
           VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
@@ -2610,8 +2606,6 @@ int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
    DACreateGlobalVector() they are the corner indices from DAGetCorners(). 
    
    For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
-
-.keywords: vector, get, array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
@@ -2655,7 +2649,7 @@ int VecGetArray1d(Vec x,int m,int mstart,Scalar *a[])
 
    This routine actually zeros out the a pointer. 
 
-.keywords: vector, restore, array
+   Concepts: vector^accessing local values as 1d array
 
 .seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
@@ -2680,11 +2674,12 @@ int VecRestoreArray1d(Vec x,int m,int mstart,Scalar *a[])
    Collective on Vec
 
    Input Parameters:
-+  x - the vector
+.  x - the vector
 
    Level: intermediate
 
-.keywords: vector, conjugate, complex
+   Concepts: vector^conjugate
+
 @*/
 int VecConjugate(Vec x)
 {

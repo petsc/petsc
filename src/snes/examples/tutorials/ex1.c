@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.18 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.19 2000/09/28 21:14:25 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
@@ -64,6 +64,7 @@ int main(int argc,char **argv)
      Create Jacobian matrix data structure
   */
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,&J);CHKERRA(ierr);
+  ierr = MatSetFromOptions(J);CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
   if (!flg) {

@@ -1,4 +1,4 @@
-/*$Id: vmpicr.c,v 1.10 2000/05/05 22:15:06 balay Exp bsmith $*/
+/*$Id: vmpicr.c,v 1.11 2000/08/01 20:01:38 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -27,7 +27,7 @@
 
    Level: intermediate
 
-.keywords: vector, create, MPI
+   Concepts: vectors^creating parallel
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
           VecCreateMPIWithArray(), VecCreateGhostWithArray()

@@ -1,4 +1,4 @@
-/*$Id: zis.c,v 1.35 2000/09/28 21:16:19 bsmith Exp bsmith $*/
+/*$Id: zis.c,v 1.36 2000/09/29 02:33:07 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscis.h"
@@ -90,7 +90,9 @@ void PETSC_STDCALL iscoloringdestroy_(ISColoring *iscoloring,int *ierr)
 
 void PETSC_STDCALL iscoloringview_(ISColoring *iscoloring,Viewer *viewer,int *ierr)
 {
-  *ierr = ISColoringView(*iscoloring,*viewer);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = ISColoringView(*iscoloring,v);
 }
 
 void PETSC_STDCALL isview_(IS *is,Viewer *vin,int *ierr)

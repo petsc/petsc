@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.62 2000/07/10 03:39:12 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.63 2000/09/28 21:10:07 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -392,7 +392,9 @@ int ISPartitioningCount(IS part,int count[])
 
     Level: intermediate
 
-.keywords: IS, index set, gather
+    Concepts: gather^index sets
+    Concepts: index sets^gathering to all processors
+    Concepts: IS^gathering to all processors
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: vnake.c,v 1.20 2000/08/24 22:41:29 bsmith Exp bsmith $*/
+/*$Id: vnake.c,v 1.21 2000/09/22 20:43:08 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
@@ -29,7 +29,7 @@ extern FList VecList;
 
    Level: beginner
 
-.keywords: vector, sequential, create, BLAS
+   Concepts: vectors^creating
 
 .seealso: VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray(), VecSetType()
@@ -76,7 +76,8 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
 
    Level: developer
 
-.keywords: vector, set, from, options
+   Concepts: vectors^setting options
+   Concepts: vectors^setting type
 
 .seealso: VecCreate()
 @*/

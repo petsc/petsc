@@ -1,4 +1,4 @@
-/*$Id: hue.c,v 1.5 2000/04/12 04:21:18 bsmith Exp balay $*/
+/*$Id: hue.c,v 1.6 2000/04/12 15:52:35 balay Exp bsmith $*/
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
@@ -15,7 +15,7 @@
 static PetscReal Gamma = 2.0;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawUtilitySetGamma"  
+#define __FUNC__ /*<a name="DrawUtilitySetGamma"></a>*/"DrawUtilitySetGamma"  
 int DrawUtilitySetGamma(PetscReal g)
 {
   PetscFunctionBegin;
@@ -34,7 +34,7 @@ int DrawUtilitySetGamma(PetscReal g)
  *      r       g      b
  */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawUtilityHlsHelper" 
+#define __FUNC__ /*<a name="DrawUtilityHlsHelper"></a>*/"DrawUtilityHlsHelper" 
 static int DrawUtilityHlsHelper(int h,int n1,int n2)
 {
   PetscFunctionBegin;
@@ -47,7 +47,7 @@ static int DrawUtilityHlsHelper(int h,int n1,int n2)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawUtilityHlsToRgb" 
+#define __FUNC__ /*<a name="DrawUtilityHlsToRgb"></a>*/"DrawUtilityHlsToRgb" 
 static int DrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
 {
   int m1,m2;         /* in 0 to 100 */
@@ -71,7 +71,7 @@ static int DrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char 
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DrawUtilitySetCmapHue" 
+#define __FUNC__ /*<a name="DrawUtilitySetCmapHue"></a>*/"DrawUtilitySetCmapHue" 
 int DrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
 {
   int        ierr,i,hue,lightness,saturation;

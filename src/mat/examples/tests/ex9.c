@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.15 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.16 2000/09/28 21:11:49 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
@@ -9,37 +9,30 @@ static char help[] = "Tests MPI parallel matrix creation.\n\n";
 int main(int argc,char **args)
 {
   Mat        C; 
-  MatType    type;
   MatInfo    info;
   int        i,j,m = 3,n = 2,rank,size,low,high,iglobal;
   int        I,J,ierr,ldim;
-  PetscTruth set,flg;
+  PetscTruth flg;
   Scalar     v,one = 1.0;
   Vec        u,b;
+  int        bs,ndiag,diag[7];  bs = 1,ndiag = 5;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;
 
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&type,&set);CHKERRA(ierr);
-  if (type == MATMPIBDIAG || type == MATSEQBDIAG) {
-    int bs,ndiag,diag[7];  bs = 1,ndiag = 5;
-    diag[0] = n;
-    diag[1] = 1;
-    diag[2] = 0;
-    diag[3] = -1;
-    diag[4] = -n;
-    if (size>1) {ndiag = 7; diag[5] = 2; diag[6] = -2;}
-    ierr = MatCreateMPIBDiag(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
-           ndiag,bs,diag,PETSC_NULL,&C);CHKERRA(ierr);
-  } else if (type == MATMPIDENSE || type == MATSEQDENSE) {
-    ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-           m*n,m*n,PETSC_NULL,&C);CHKERRA(ierr);
-  } else if (type == MATMPIAIJ || type == MATSEQAIJ) {
-    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-           m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRA(ierr);
-  } else SETERRA(1,"Invalid matrix type for this example.");
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
+
+  diag[0] = n;
+  diag[1] = 1;
+  diag[2] = 0;
+  diag[3] = -1;
+  diag[4] = -n;
+  if (size>1) {ndiag = 7; diag[5] = 2; diag[6] = -2;}
+  ierr = MatMPIBDiagSetPreallocation(C,ndiag,bs,diag,PETSC_NULL);CHKERRA(ierr);
+  ierr = MatMPIAIJSetPreallocation(C,5,PETSC_NULL,5,PETSC_NULL);CHKERRA(ierr);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for (i=0; i<m; i++) { 

@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.34 2000/07/10 03:39:45 bsmith Exp bsmith $*/
+/*$Id: mmbaij.c,v 1.35 2000/07/27 22:26:47 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -27,7 +27,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
 
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
-  PetscTableCreate(B->mbs,&gid1_lid1); 
+  ierr = PetscTableCreate(B->mbs,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       int data,gid1 = aj[B->i[i]+j] + 1;
@@ -61,8 +61,8 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
       aj[B->i[i]+j] = lid;
     }
   }
-  B->nbs = ec;
-  B->n   = ec*B->bs;
+  B->nbs     = ec;
+  baij->B->n = ec*B->bs;
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
@@ -98,7 +98,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   }
   B->nbs = ec;
-  B->n   = ec*B->bs;
+  baij->B->n   = ec*B->bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
 
@@ -123,7 +123,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,baij->n,baij->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mat->n,mat->N,&gvec);CHKERRQ(ierr);
 
   /* gnerate the scatter context */
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
@@ -165,8 +165,8 @@ int DisAssemble_MPIBAIJ(Mat A)
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)A->data;
   Mat         B = baij->B,Bnew;
   Mat_SeqBAIJ *Bbaij = (Mat_SeqBAIJ*)B->data;
-  int         ierr,i,j,mbs=Bbaij->mbs,n = baij->N,col,*garray=baij->garray;
-  int         k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m=Bbaij->m;
+  int         ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
+  int         k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m = A->m;
   MatScalar   *a = Bbaij->a;
 #if defined(PETSC_USE_MAT_SINGLE)
   Scalar      *atmp = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar));

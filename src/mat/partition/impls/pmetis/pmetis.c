@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.40 2000/09/19 14:21:40 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.41 2000/09/28 21:12:21 bsmith Exp bsmith $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -33,6 +33,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   Mat                      mat = part->adj,newmat;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mat->data;
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
+  PetscTruth               flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
@@ -40,7 +41,8 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
     SETERRQ(PETSC_ERR_SUP,"Supports exactly one domain per processor");
   }
 
-  if (mat->type != MATMPIADJ) {
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
+  if (!flg) {
     ierr = MatConvert(mat,MATMPIADJ,&newmat);CHKERRQ(ierr);
     adj  = (Mat_MPIAdj *)newmat->data;
   }
@@ -65,16 +67,16 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   }
 #endif
 
-  locals = (int*)PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);
+  locals = (int*)PetscMalloc((mat->m+1)*sizeof(int));CHKPTRQ(locals);
 
   if (PLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   PARKMETIS(vtxdist,xadj,part->vertex_weights,adjncy,adj->values,locals,(int*)parmetis,part->comm);
   if (PLogPrintInfo) {parmetis->printout = itmp;}
 
-  ierr = ISCreateGeneral(part->comm,adj->m,locals,partitioning);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(part->comm,mat->m,locals,partitioning);CHKERRQ(ierr);
   ierr = PetscFree(locals);CHKERRQ(ierr);
 
-  if (mat->type != MATMPIADJ) {
+  if (!flg) {
     ierr = MatDestroy(newmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

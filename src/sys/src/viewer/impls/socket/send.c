@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.114 2000/09/22 20:41:42 bsmith Exp bsmith $ */
+/* $Id: send.c,v 1.115 2000/09/28 21:08:02 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -173,7 +173,7 @@ $    -viewer_socket_port <port>
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
    Concepts: Matlab^sending data
-   Concepts: Sockets^sending data
+   Concepts: sockets^sending data
 
 .seealso: MatView(), VecView(), ViewerDestroy(), ViewerCreate(), ViewerSetType(),
           ViewerSocketSetConnection()

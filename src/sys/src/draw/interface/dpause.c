@@ -1,4 +1,4 @@
-/*$Id: dpause.c,v 1.23 2000/07/10 03:38:37 bsmith Exp bsmith $*/
+/*$Id: dpause.c,v 1.24 2000/09/22 20:41:56 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -17,7 +17,7 @@
 
    Level: beginner
 
-   Concepts: waiting for user input
+   Concepts: waiting^for user input
    Concepts: drawing^waiting
    Concepts: graphics^waiting
 

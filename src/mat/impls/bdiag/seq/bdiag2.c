@@ -1,4 +1,4 @@
-/*$Id: bdiag2.c,v 1.14 2000/05/05 22:15:54 balay Exp bsmith $*/
+/*$Id: bdiag2.c,v 1.15 2000/09/28 21:11:17 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -13,17 +13,18 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          kk,ldiag,row,dfound,newnz,*bdlen_new;
-  int          j,k, *diag_new,roworiented = a->roworiented,ierr;
+  int          j,k, *diag_new,ierr;
+  PetscTruth   roworiented = a->roworiented;
   Scalar       value,**diagv_new;
 
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over added rows */
     row = im[kk];   
     if (row < 0) continue;
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row >= A->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     for (j=0; j<n; j++) {
       if (in[j] < 0) continue;
-      if (in[j] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+      if (in[j] >= A->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
       ldiag = row - in[j]; /* diagonal number */
       dfound = 0;
       if (roworiented) {
@@ -101,14 +102,15 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMo
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          kk,ldiag,shift,row,dfound,newnz,*bdlen_new,ierr;
-  int          j,k,bs = a->bs,*diag_new,roworiented = a->roworiented;
+  int          j,k,bs = a->bs,*diag_new;
+  PetscTruth   roworiented = a->roworiented;
   Scalar       value,**diagv_new;
 
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over added rows */
     row = im[kk];   
     if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
       ldiag = row/bs - in[j]/bs; /* block diagonal */
@@ -192,10 +194,10 @@ int MatGetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v)
   for (kk=0; kk<m; kk++) { /* loop over rows */
     row = im[kk];   
     if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     for (j=0; j<n; j++) {
       if (in[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
-      if (in[j] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+      if (in[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
       ldiag = row - in[j]; /* diagonal number */
       dfound = 0;
       for (k=0; k<a->nd; k++) {
@@ -223,7 +225,7 @@ int MatGetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,Scalar *v)
   for (kk=0; kk<m; kk++) { /* loop over rows */
     row = im[kk];   
     if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
       ldiag = row/bs - in[j]/bs; /* block diagonal */
@@ -257,7 +259,7 @@ int MatMult_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&vout);CHKERRQ(ierr);
-  ierr = PetscMemzero(vout,a->m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(vout,A->m*sizeof(Scalar));CHKERRQ(ierr);
   for (d=0; d<nd; d++) {
     dv   = a_diagv[d];
     diag = a_diag[d];
@@ -291,7 +293,7 @@ int MatMult_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr); 
   ierr = VecGetArray(yy,&vout);CHKERRQ(ierr);
-  ierr = PetscMemzero(vout,a->m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(vout,A->m*sizeof(Scalar));CHKERRQ(ierr);
   for (d=0; d<nd; d++) {
     dv      = a_diagv[d];
     nb_diag = 2*a_diag[d];
@@ -332,7 +334,7 @@ int MatMult_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&vout);CHKERRQ(ierr);
-  ierr = PetscMemzero(vout,a->m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(vout,A->m*sizeof(Scalar));CHKERRQ(ierr);
   for (d=0; d<nd; d++) {
     dv      = a_diagv[d];
     nb_diag = 3*a_diag[d];
@@ -374,7 +376,7 @@ int MatMult_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&vout);CHKERRQ(ierr);
-  ierr = PetscMemzero(vout,a->m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(vout,A->m*sizeof(Scalar));CHKERRQ(ierr);
   for (d=0; d<nd; d++) {
     dv      = a_diagv[d];
     nb_diag = 4*a_diag[d];
@@ -417,7 +419,7 @@ int MatMult_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&vout);CHKERRQ(ierr);
-  ierr = PetscMemzero(vout,a->m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(vout,A->m*sizeof(Scalar));CHKERRQ(ierr);
   for (d=0; d<nd; d++) {
     dv      = a_diagv[d];
     nb_diag = 5*a_diag[d];
@@ -461,7 +463,7 @@ int MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&vout);CHKERRQ(ierr);
-  ierr = PetscMemzero(vout,a->m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(vout,A->m*sizeof(Scalar));CHKERRQ(ierr);
   for (d=0; d<nd; d++) {
     dv      = a_diagv[d];
     nb_diag = bs*a_diag[d];
@@ -743,7 +745,7 @@ int MatMultTranspose_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&vout);CHKERRQ(ierr);
-  ierr = PetscMemzero(vout,a->n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(vout,A->n*sizeof(Scalar));CHKERRQ(ierr);
   for (d=0; d<nd; d++) {
     dv   = a->diagv[d];
     diag = a->diag[d];
@@ -777,7 +779,7 @@ int MatMultTranspose_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&vin);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&vout);CHKERRQ(ierr);
-  ierr = PetscMemzero(vout,a->n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(vout,A->n*sizeof(Scalar));CHKERRQ(ierr);
   for (d=0; d<nd; d++) {
     dv   = a->diagv[d];
     diag = a->diag[d];
@@ -1058,7 +1060,7 @@ int MatRelax_SeqBDiag_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   Scalar       *x,*b,*xb,*dd,dval,sum;
-  int          ierr,m = a->m,i,d,loc;
+  int          ierr,m = A->m,i,d,loc;
   int          mainbd = a->mainbd,diag;
 
   PetscFunctionBegin;

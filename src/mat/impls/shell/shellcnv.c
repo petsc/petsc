@@ -1,4 +1,4 @@
-/*$Id: shellcnv.c,v 1.14 2000/05/05 22:15:48 balay Exp bsmith $*/
+/*$Id: shellcnv.c,v 1.15 2000/09/28 21:11:11 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
@@ -8,20 +8,14 @@
 int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
 {
   Vec      in,out;
-  int      ierr,i,M,m,size,*rows,start,end;
+  int      ierr,i,M,m,*rows,start,end;
   MPI_Comm comm;
   Scalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(oldmat,MAT_COOKIE);
   PetscValidPointer(mat);
-
-  if (newtype != MATSEQDENSE && newtype != MATMPIDENSE) {
-    SETERRQ(PETSC_ERR_SUP,"Can only convert shell matrices to dense currently");
-  }
   comm = oldmat->comm;
-
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(oldmat,&start,&end);CHKERRQ(ierr);
   ierr = VecCreateMPI(comm,end-start,PETSC_DECIDE,&in);CHKERRQ(ierr);
@@ -31,12 +25,8 @@ int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
   rows = (int*)PetscMalloc((m+1)*sizeof(int));CHKPTRQ(rows);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
-  if (size == 1) {
-    ierr = MatCreateSeqDense(comm,M,M,PETSC_NULL,mat);CHKERRQ(ierr);
-  } else {
-    ierr = MatCreateMPIDense(comm,m,M,M,M,PETSC_NULL,mat);CHKERRQ(ierr); 
-    /* ierr = MatCreateMPIAIJ(comm,m,m,M,M,0,0,0,0,mat);CHKERRQ(ierr); */
-  }
+  ierr = MatCreate(comm,m,M,M,M,mat);CHKERRQ(ierr);
+  ierr = MatSetType(*mat,newtype);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
     ierr = VecSet(&zero,in);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: isdiff.c,v 1.20 2000/05/08 15:07:47 balay Exp bsmith $*/
+/*$Id: isdiff.c,v 1.21 2000/07/10 03:39:12 bsmith Exp bsmith $*/
 
 #include "petscis.h"                    /*I "petscis.h"  I*/
 #include "petsc.h"
@@ -25,9 +25,11 @@
 
    Level: intermediate
 
+   Concepts: index sets^difference
+   Concepts: IS^difference
+
 .seealso: ISDestroy(), ISView(), ISSum()
 
-.keywords: Index set, difference
 @*/
 int ISDifference(IS is1,IS is2,IS *isout)
 {
@@ -114,7 +116,9 @@ int ISDifference(IS is1,IS is2,IS *isout)
 
 .seealso: ISDestroy(), ISView(), ISDifference()
 
-.keywords: Index set, sum
+   Concepts: index sets^difference
+   Concepts: IS^difference
+
 @*/
 int ISSum(IS is1,IS is2,IS *isout)
 {

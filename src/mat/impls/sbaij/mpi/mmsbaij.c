@@ -1,4 +1,4 @@
-/*$Id: mmsbaij.c,v 1.1 2000/07/07 20:55:55 balay Exp balay $*/
+/*$Id: mmsbaij.c,v 1.2 2000/07/07 21:01:49 balay Exp bsmith $*/
 
 /*
    Support for the parallel SBAIJ matrix vector multiply
@@ -62,8 +62,8 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
       aj[B->i[i]+j] = lid;
     }
   }
-  B->nbs = ec;
-  B->n   = ec*B->bs;
+  B->nbs     = ec;
+  baij->B->n = ec*B->bs;
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
@@ -99,8 +99,8 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
       aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
     }
   }
-  B->nbs = ec;
-  B->n   = ec*B->bs;
+  B->nbs       = ec;
+  baij->B->n   = ec*B->bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
 
@@ -130,7 +130,7 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,baij->n,baij->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mat->n,mat->N,&gvec);CHKERRQ(ierr);
 
   /* gnerate the scatter context */
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
@@ -173,8 +173,8 @@ int DisAssemble_MPISBAIJ(Mat A)
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)A->data;
   Mat         B = baij->B,Bnew;
   Mat_SeqBAIJ *Bbaij = (Mat_SeqBAIJ*)B->data;
-  int         ierr,i,j,mbs=Bbaij->mbs,n = baij->N,col,*garray=baij->garray;
-  int         k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m=Bbaij->m;
+  int         ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
+  int         k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
   MatScalar   *a = Bbaij->a;
 #if defined(PETSC_USE_MAT_SINGLE)
   Scalar      *atmp = (Scalar*)PetscMalloc(baij->bs*sizeof(Scalar));

@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.61 2000/06/24 03:59:07 balay Exp balay $*/
+/*$Id: zvec.c,v 1.62 2000/07/11 20:30:14 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -92,7 +92,9 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL vecloadintovector_(Viewer *viewer,Vec *vec,int *ierr)
 {
-  *ierr = VecLoadIntoVector(*viewer,*vec);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = VecLoadIntoVector(v,*vec);
 }
 
 void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
@@ -185,7 +187,9 @@ void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),int *ierr 
 
 void PETSC_STDCALL vecload_(Viewer *viewer,Vec *newvec,int *ierr)
 { 
-  *ierr = VecLoad(*viewer,newvec);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = VecLoad(v,newvec);
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */

@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.206 2000/09/05 19:39:39 balay Exp curfman $ */
+/* $Id: petscmat.h,v 1.207 2000/09/25 18:43:53 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -10,20 +10,38 @@
 
 typedef struct _p_Mat*           Mat;
 
-#define MAX_MATRIX_TYPES 16
-/*
-   The default matrix data storage formats and routines to create them.
-  
-   MATLASTTYPE is "end-of-list" marker that can be used to check that
-   MAX_MATRIX_TYPES is large enough.  The rule is 
-   MAX_MATRIX_TYPES >= MATLASTTYPE .  
+#define MATSAME     "same"
+#define MATSEQMAIJ  "seqmaij"
+#define MATMPIMAIJ  "mpimaij"
+#define MATIS       "is"
+#define MATMPIROWBS "mpirowbs"
+#define MATSEQDENSE "seqdense"
+#define MATSEQAIJ   "seqaij"
+#define MATMPIAIJ   "mpiaij"
+#define MATSHELL    "shell"
+#define MATSEQBDIAG "seqbdiag"
+#define MATMPIBDIAG "mpibdiag"
+#define MATMPIDENSE "mpidense"
+#define MATSEQBAIJ  "seqbaij"
+#define MATMPIBAIJ  "mpibaij"
+#define MATMPIADJ   "mpiadj"
+#define MATSEQSBAIJ "seqsbaij"
+#define MATMPISBAIJ "mpisbaij"
 
-   To do: add a test program that checks the consistency of these values.
-*/
-typedef enum { MATSAME=-1,  MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,   MATSHELL, 
-               MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG, MATMPIDENSE, MATSEQBAIJ,
-               MATMPIBAIJ,  MATMPICSN,   MATSEQCSN,   MATMPIADJ, MATSEQSBAIJ,
-               MATMPISBAIJ, MATLASTTYPE } MatType;
+typedef char* MatType;
+EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
+EXTERN int MatSetType(Mat,MatType);
+EXTERN int MatSetFromOptions(Mat);
+EXTERN int MatSetUpPreallocation(Mat);
+EXTERN int MatRegisterAll(char*);
+EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,0)
+#else
+#define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
+#endif
+extern PetscTruth MatRegisterAllCalled;
+extern FList      MatList;
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 EXTERN int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
@@ -39,8 +57,6 @@ EXTERN int MatCreateMPIAdj(MPI_Comm,int,int,int*,int*,int *,Mat*);
 EXTERN int MatCreateSeqSBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
 EXTERN int MatCreateMPISBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
 
-
-EXTERN int MatSetTypeFromOptions(Mat);
 EXTERN int MatDestroy(Mat);
 
 EXTERN int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
@@ -81,8 +97,7 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_KEEP_ZEROED_ROWS=79,MAT_IGNORE_ZERO_ENTRIES=80,MAT_USE_INODES=81,
               MAT_DO_NOT_USE_INODES=82} MatOption;
 EXTERN int MatSetOption(Mat,MatOption);
-EXTERN int MatGetType(Mat,MatType*,char**);
-EXTERN int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,PetscTruth*);
+EXTERN int MatGetType(Mat,MatType*);
 
 EXTERN int MatGetValues(Mat,int,int*,int,int*,Scalar*);
 EXTERN int MatGetRow(Mat,int,int *,int **,Scalar**);
@@ -101,18 +116,35 @@ EXTERN int MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
+EXTERN int MatConvertRegister(char*,char*,char*,int (*)(Mat,MatType,Mat*));
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,0)
+#else
+#define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,d)
+#endif
+EXTERN int MatConvertRegisterAll(char*);
+EXTERN int MatConvertRegisterDestroy(void);
+extern PetscTruth MatConvertRegisterAllCalled;
+extern FList      MatConvertList;
 EXTERN int MatConvert(Mat,MatType,Mat*);
 EXTERN int MatDuplicate(Mat,MatDuplicateOption,Mat*);
-EXTERN int MatConvertRegister(MatType,MatType,int (*)(Mat,MatType,Mat*));
-EXTERN int MatConvertRegisterAll(void);
 
 typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
 
 EXTERN int MatCopy(Mat,Mat,MatStructure);
 EXTERN int MatView(Mat,Viewer);
+
+EXTERN int MatLoadRegister(char*,char*,char*,int (*)(Viewer,MatType,Mat*));
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MatLoadRegisterDynamic(a,b,c,d) MatLoadRegister(a,b,c,0)
+#else
+#define MatLoadRegisterDynamic(a,b,c,d) MatLoadRegister(a,b,c,d)
+#endif
+EXTERN int MatLoadRegisterAll(char*);
+EXTERN int MatLoadRegisterDestroy(void);
+extern PetscTruth MatLoadRegisterAllCalled;
+extern FList      MatLoadList;
 EXTERN int MatLoad(Viewer,MatType,Mat*);
-EXTERN int MatLoadRegister(MatType,int (*)(Viewer,MatType,Mat*));
-EXTERN int MatLoadRegisterAll(void);
 
 EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
 EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
@@ -140,6 +172,7 @@ typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
 EXTERN int MatGetInfo(Mat,MatInfoType,MatInfo*);
 EXTERN int MatValid(Mat,PetscTruth*);
 EXTERN int MatGetDiagonal(Mat,Vec);
+EXTERN int MatGetRowMax(Mat,Vec);
 EXTERN int MatTranspose(Mat,Mat*);
 EXTERN int MatPermute(Mat,IS,IS,Mat *);
 EXTERN int MatDiagonalScale(Mat,Vec,Vec);
@@ -221,6 +254,22 @@ EXTERN int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 EXTERN int MatSeqAIJSetColumnIndices(Mat,int *);
 EXTERN int MatSeqBAIJSetColumnIndices(Mat,int *);
 EXTERN int MatCreateSeqAIJWithArrays(MPI_Comm,int,int,int*,int*,Scalar *,Mat*);
+
+EXTERN int MatSeqBAIJSetPreallocation(Mat,int,int,int*);
+EXTERN int MatSeqSBAIJSetPreallocation(Mat,int,int,int*);
+EXTERN int MatSeqAIJSetPreallocation(Mat,int,int*);
+EXTERN int MatSeqDensePreallocation(Mat,Scalar*);
+EXTERN int MatSeqBDiagSetPreallocation(Mat,int,int,int*,Scalar**);
+EXTERN int MatSeqDenseSetPreallocation(Mat,Scalar*);
+
+EXTERN int MatMPIBAIJSetPreallocation(Mat,int,int,int*,int,int*);
+EXTERN int MatMPISBAIJSetPreallocation(Mat,int,int,int*,int,int*);
+EXTERN int MatMPIAIJSetPreallocation(Mat,int,int*,int,int*);
+EXTERN int MatMPIDensePreallocation(Mat,Scalar*);
+EXTERN int MatMPIBDiagSetPreallocation(Mat,int,int,int*,Scalar**);
+EXTERN int MatMPIAdjSetPreallocation(Mat,int*,int*,int*);
+EXTERN int MatMPIDenseSetPreallocation(Mat,Scalar*);
+EXTERN int MatMPIRowbsSetPreallocation(Mat,int,int*);
 
 EXTERN int MatStoreValues(Mat);
 EXTERN int MatRetrieveValues(Mat);
@@ -465,6 +514,7 @@ typedef enum { MATOP_SET_VALUES=0,
 EXTERN int MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN int MatShellSetOperation(Mat,MatOperation,void *);
 EXTERN int MatShellGetOperation(Mat,MatOperation,void **);
+EXTERN int MatShellSetContext(Mat,void*);
 
 /*
    Codes for matrices stored on disk. By default they are
@@ -517,28 +567,17 @@ EXTERN int MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 EXTERN int MatNullSpaceAttach(Mat,MatNullSpace);
 EXTERN int MatNullSpaceTest(MatNullSpace,Mat);
 
-typedef char* MATType;
-EXTERN int MATCreate(MPI_Comm,int,int,int,int,Mat*);
-EXTERN int MatSetType(Mat,MATType);
-EXTERN int MatRegisterAll(char*);
-EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,0)
-#else
-#define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
-#endif
+EXTERN int MatReorderingSeqSBAIJ(Mat A,IS isp);
+EXTERN int MatMPISBAIJSetHashTableFactor(Mat,PetscReal);
+EXTERN int MatSeqSBAIJSetColumnIndices(Mat,int *);
+
 
 EXTERN int MatCreateMAIJ(Mat,int,Mat*);
 EXTERN int MatMAIJRedimension(Mat,int,Mat*);
 EXTERN int MatMAIJGetAIJ(Mat,Mat*);
 
-EXTERN int MatReorderingSeqSBAIJ(Mat A,IS isp);
-EXTERN int MatMPISBAIJSetHashTableFactor(Mat,PetscReal);
-EXTERN int MatSeqSBAIJSetColumnIndices(Mat,int *);
+EXTERN int MatMPIAdjSetValues(Mat,int*,int*,int*);
 
-#define MATSEQMAIJ "seqmaij"
-#define MATMPIMAIJ "mpimaij"
-#define MATIS      "is"
 #endif
 
 

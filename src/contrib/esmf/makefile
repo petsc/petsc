@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.3 2000/09/11 17:47:42 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.4 2000/09/13 03:13:53 bsmith Exp bsmith $ 
 
 ALL: lib
 
-#requirespackage  '-DPETSC_HAVE_F90_C'
+#requirespackage  'PETSC_HAVE_F90_C'
 
 CFLAGS     =
 FFLAGS     =

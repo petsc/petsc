@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.74 2000/09/22 20:46:14 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.75 2000/09/28 21:14:25 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
 This example employs a user-defined monitoring routine.\n\n";
@@ -84,6 +84,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&J);CHKERRA(ierr);
+  ierr = MatSetFromOptions(J);CHKERRA(ierr);
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation

@@ -1,7 +1,8 @@
-/*$Id: aijbaij.c,v 1.1 2000/06/06 19:00:44 bsmith Exp bsmith $*/
+/*$Id: aijbaij.c,v 1.2 2000/07/10 03:39:42 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatConvert_SeqBAIJ_SeqAIJ"></a>*/"MatConvert_SeqBAI_SeqAIJ"
 int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
@@ -47,5 +48,5 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 

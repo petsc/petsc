@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.15 1999/08/21 18:43:05 bsmith Exp bsmith $ */
+/* $Id: mpidense.h,v 1.16 2000/01/11 21:00:35 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/dense/seq/dense.h"
 
@@ -32,8 +32,6 @@ typedef struct {
 
 typedef struct {
   int           *rowners,*cowners;     /* ranges owned by each processor */
-  int           m,n;                   /* local rows and columns */
-  int           M,N;                   /* global rows and columns */
                                         /* note n == N */
   int           nvec;                   /* this is the n size for the vector one multiplies with */
   int           rstart,rend;           /* starting and ending owned rows */
@@ -41,7 +39,7 @@ typedef struct {
   int           size;                   /* size of communicator */
   int           rank;                   /* rank of proc in communicator */ 
   /* The following variables are used for matrix assembly */
-  int           donotstash;             /* Flag indicationg if values should be stashed */
+  PetscTruth    donotstash;             /* Flag indicationg if values should be stashed */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends,nrecvs;         /* numbers of sends and receives */
@@ -53,6 +51,6 @@ typedef struct {
   Vec           lvec;                   /* local vector */
   VecScatter    Mvctx;                  /* scatter context for vector */
 
-  int           roworiented;            /* if true, row oriented input (default) */
+  PetscTruth    roworiented;            /* if true, row oriented input (default) */
   FactorCtx     *factor;                /* factorization context */
 } Mat_MPIDense;

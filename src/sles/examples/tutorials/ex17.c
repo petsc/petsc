@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.12 2000/09/22 20:45:46 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.13 2000/09/28 21:13:46 bsmith Exp bsmith $*/
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
 
@@ -78,6 +78,7 @@ int main(int argc,char **args)
      determined by PETSc at runtime.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

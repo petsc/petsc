@@ -1,5 +1,5 @@
 !
-!      "$Id: ex12.F,v 1.31 2000/05/05 22:17:55 balay Exp bsmith $";
+!      "$Id: ex12.F,v 1.32 2000/09/27 20:08:52 bsmith Exp bsmith $";
 !
       program main
        implicit none
@@ -25,7 +25,6 @@
       character*(128)  f 
       Viewer           fd
       MatInfo          info(MAT_INFO_SIZE)
-      MatType          mtype
       PLogDouble       time1,time2
 
       none = -1.0
@@ -36,9 +35,7 @@
       call ViewerBinaryOpen(PETSC_COMM_WORLD,f,BINARY_RDONLY,           &
      &     fd,ierr)
 
-      call MatGetTypeFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER, &
-     &                           mtype,set,ierr)
-      call MatLoad(fd,mtype,A,ierr)
+      call MatLoad(fd,MATSEQAIJ,A,ierr)
 
 ! Get information about matrix
       call MatGetInfo(A,MAT_GLOBAL_SUM,info,ierr)

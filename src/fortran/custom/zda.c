@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.36 2000/01/11 21:03:48 bsmith Exp balay $*/
+/*$Id: zda.c,v 1.37 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -74,7 +74,9 @@ void PETSC_STDCALL dagetfieldname(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),
 
 void PETSC_STDCALL daload_(Viewer *viewer,int *M,int *N,int *P,DA *da,int *ierr)
 {
-  *ierr = DALoad(*viewer,*M,*N,*P,da);
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = DALoad(v,*M,*N,*P,da);
 }
 
 void PETSC_STDCALL dagetislocaltoglobalmapping_(DA *da,ISLocalToGlobalMapping *map,int *ierr)

@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.79 2000/09/25 17:29:26 balay Exp bsmith $*/
+/*$Id: sorder.c,v 1.80 2000/09/28 21:12:22 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -15,13 +15,7 @@ EXTERN int MatOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
 #define __FUNC__ /*<a name=""></a>*/"MatOrdering_Flow"
 int MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
-  int ierr;
-
   PetscFunctionBegin;
-  if (mat->type == MATSEQAIJ) {
-    ierr = MatOrdering_Flow_SeqAIJ(mat,type,irow,icol);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   SETERRQ(PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
 #if !defined(PETSC_USE_DEBUG)
   PetscFunctionReturn(0);
@@ -35,12 +29,15 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   int        n,size,ierr,i,*ii;
   MPI_Comm   comm;
-  PetscTruth done;
+  PetscTruth done,isrowbs,isseqbdiag,ismpibdiag;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
 
-  if (mat->type == MATMPIROWBS || mat->type == MATSEQBDIAG || mat->type == MATMPIBDIAG) {
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIROWBS,&isrowbs);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBDIAG,&isseqbdiag);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBDIAG,&ismpibdiag);CHKERRQ(ierr);
+  if (isrowbs || isseqbdiag || ismpibdiag) {
     int start,end;
     /*
         BlockSolve Format doesn't really require the Ordering,but PETSc wants
@@ -229,23 +226,32 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 @*/
 int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
-  int         ierr,mmat,nmat,mis;
+  int         ierr,mmat,nmat,mis,m;
   int         (*r)(Mat,MatOrderingType,IS*,IS*);
-  PetscTruth  flg;
+  PetscTruth  flg,isseqdense,ismpidense;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  if (mat->type == MATSEQDENSE || mat->type == MATMPIDENSE) { 
+  ierr = PetscTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&ismpidense);CHKERRQ(ierr);
+  if (isseqdense || ismpidense) {
+    ierr = MatGetLocalSize(mat,&m,PETSC_NULL);CHKERRQ(ierr);
     /*
-       Dense matrices don't need the ordering
+       Dense matrices only give natural ordering
     */
-    *rperm = *cperm = 0; PetscFunctionReturn(0);
+    ierr = ISCreateStride(PETSC_COMM_SELF,0,m,1,cperm);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,0,m,1,rperm);CHKERRQ(ierr);
+    ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);
+    ierr = ISSetIdentity(*rperm);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
+    ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
 
-  if (!mat->M) {
+  if (!mat->M) { /* matrix has zero rows */
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,cperm);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,rperm);CHKERRQ(ierr);
     ierr = ISSetIdentity(*cperm);CHKERRQ(ierr);

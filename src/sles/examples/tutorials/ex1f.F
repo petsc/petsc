@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.25 2000/08/03 20:15:17 balay Exp bsmith $";
+!    "$Id: ex1f.F,v 1.26 2000/09/22 20:45:46 bsmith Exp bsmith $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -84,7 +84,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRA(1,0,' ',ierr)
+         SETERRA(1,' ',ierr)
       endif
       none = -1.0
       one  = 1.0
@@ -101,6 +101,7 @@
 
       call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,A,   &
      &               ierr)
+      call MatSetFromOptions(A,ierr)
 
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers

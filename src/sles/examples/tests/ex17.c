@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.34 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex17.c,v 1.35 2000/09/28 21:13:39 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -52,6 +52,7 @@ int main(int argc,char **args)
 
   /* Create and assemble matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
   ierr = FormTestMatrix(A,n,type);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-printout",&flg);CHKERRA(ierr);

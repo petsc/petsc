@@ -1,4 +1,4 @@
-/*$Id: ex70.c,v 1.6 1999/10/24 14:02:39 bsmith Exp balay $*/
+/*$Id: ex70.c,v 1.7 2000/05/05 22:16:17 balay Exp bsmith $*/
 
 static char help[] = "Tests Vec/MatSetValues() with negative row and column indices.\n\n"; 
 
@@ -17,6 +17,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,3,&x);CHKERRA(ierr);
   
   i[0] = 1; i[1] = -1; j[0] = 1; j[1] = 2;

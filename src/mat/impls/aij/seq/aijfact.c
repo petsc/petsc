@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.155 2000/09/28 18:50:54 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.156 2000/09/28 21:11:00 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -55,7 +55,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         iscolf,isicol,isirow;
   PetscTruth reorder;
-  int        *c,*r,*ic,ierr,i,n = a->m;
+  int        *c,*r,*ic,ierr,i,n = A->m;
   int        *old_i = a->i,*old_j = a->j,*new_i,*old_i2 = 0,*old_j2 = 0,*new_j;
   int        *ordcol,*iwk,*iperm,*jw;
   int        ishift = !a->indexshift;
@@ -270,7 +270,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;
-  int        *r,*ic,ierr,i,n = a->m,*ai = a->i,*aj = a->j;
+  int        *r,*ic,ierr,i,n = A->m,*ai = a->i,*aj = a->j;
   int        *ainew,*ajnew,jmax,*fill,*ajtmp,nz,shift = a->indexshift;
   int        *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
   PetscReal  f;
@@ -444,7 +444,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   Mat        C = *B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
   IS         isrow = b->row,isicol = b->icol;
-  int        *r,*ic,ierr,i,j,n = a->m,*ai = b->i,*aj = b->j;
+  int        *r,*ic,ierr,i,j,n = A->m,*ai = b->i,*aj = b->j;
   int        *ajtmpold,*ajtmp,nz,row,*ics,shift = a->indexshift;
   int        *diag_offset = b->diag,diag;
   int        *pj,ndamp = 0;
@@ -524,7 +524,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   ierr = Mat_AIJ_CheckInode(C);CHKERRQ(ierr);
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
-  PLogFlops(b->n);
+  PLogFlops(C->n);
   if (ndamp || b->lu_damping) {
     PLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of damping tries %d damping value %g\n",ndamp,damping);
   }
@@ -535,55 +535,13 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 #define __FUNC__ /*<a name="MatLUFactor_SeqAIJ"></a>*/"MatLUFactor_SeqAIJ"
 int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatLUInfo *info)
 {
-  Mat_SeqAIJ     *mat = (Mat_SeqAIJ*)A->data;
-  int            ierr,refct;
-  Mat            C;
-  PetscOps       *Abops;
-  MatOps         Aops;
+  int ierr;
+  Mat C;
 
   PetscFunctionBegin;
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
-
-  /* free all the data structures from mat */
-  ierr = PetscFree(mat->a);CHKERRQ(ierr);
-  if (!mat->singlemalloc) {
-    ierr = PetscFree(mat->i);CHKERRQ(ierr);
-    ierr = PetscFree(mat->j);CHKERRQ(ierr);
-  }
-  if (mat->diag) {ierr = PetscFree(mat->diag);CHKERRQ(ierr);}
-  if (mat->ilen) {ierr = PetscFree(mat->ilen);CHKERRQ(ierr);}
-  if (mat->imax) {ierr = PetscFree(mat->imax);CHKERRQ(ierr);}
-  if (mat->solve_work) {ierr = PetscFree(mat->solve_work);CHKERRQ(ierr);}
-  if (mat->inode.size) {ierr = PetscFree(mat->inode.size);CHKERRQ(ierr);}
-  if (mat->icol) {ierr = ISDestroy(mat->icol);CHKERRQ(ierr);}
-  ierr = PetscFree(mat);CHKERRQ(ierr);
-
-  ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
-
-  /*
-       This is horrible, horrible code. We need to keep the 
-    A pointers for the bops and ops but copy everything 
-    else from C.
-  */
-  Abops = A->bops;
-  Aops  = A->ops;
-  refct = A->refct;
-  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  mat   = (Mat_SeqAIJ*)A->data;
-  PLogObjectParent(A,mat->icol); 
-  
-  A->bops  = Abops;
-  A->ops   = Aops;
-  A->qlist = 0;
-  A->refct = refct;
-  /* copy over the type_name and name */
-  ierr     = PetscStrallocpy(C->type_name,&A->type_name);CHKERRQ(ierr);
-  ierr     = PetscStrallocpy(C->name,&A->name);CHKERRQ(ierr);
-
-  PetscHeaderDestroy(C);
-
+  ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
@@ -593,7 +551,7 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   IS         iscol = a->col,isrow = a->row;
-  int        *r,*c,ierr,i, n = a->m,*vi,*ai = a->i,*aj = a->j;
+  int        *r,*c,ierr,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
   int        nz,shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp,*tmps,*aa = a->a,sum,*v;
 
@@ -633,7 +591,7 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PLogFlops(2*a->nz - a->n);
+  PLogFlops(2*a->nz - A->n);
   PetscFunctionReturn(0);
 }
 
@@ -643,7 +601,7 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        n = a->m,*ai = a->i,*aj = a->j,*adiag = a->diag,ierr;
+  int        n = A->m,*ai = a->i,*aj = a->j,*adiag = a->diag,ierr;
   Scalar     *x,*b,*aa = a->a,sum;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   int        adiag_i,i,*vi,nz,ai_i;
@@ -686,7 +644,7 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[i]    = sum*aa[adiag_i];
   }
 #endif
-  PLogFlops(2*a->nz - a->n);
+  PLogFlops(2*a->nz - A->n);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -698,7 +656,7 @@ int MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   IS         iscol = a->col,isrow = a->row;
-  int        *r,*c,ierr,i, n = a->m,*vi,*ai = a->i,*aj = a->j;
+  int        *r,*c,ierr,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
   int        nz,shift = a->indexshift,*rout,*cout;
   Scalar     *x,*b,*tmp,*aa = a->a,sum,*v;
 
@@ -749,7 +707,7 @@ int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   IS         iscol = a->col,isrow = a->row;
-  int        *r,*c,ierr,i,n = a->m,*vi,*ai = a->i,*aj = a->j;
+  int        *r,*c,ierr,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
   int        nz,shift = a->indexshift,*rout,*cout,*diag = a->diag;
   Scalar     *x,*b,*tmp,*aa = a->a,*v,s1;
 
@@ -796,7 +754,7 @@ int MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
 
-  PLogFlops(2*a->nz-a->n);
+  PLogFlops(2*a->nz-A->n);
   PetscFunctionReturn(0);
 }
 
@@ -806,7 +764,7 @@ int MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   IS         iscol = a->col,isrow = a->row;
-  int        *r,*c,ierr,i,n = a->m,*vi,*ai = a->i,*aj = a->j;
+  int        *r,*c,ierr,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
   int        nz,shift = a->indexshift,*rout,*cout,*diag = a->diag;
   Scalar     *x,*b,*tmp,*aa = a->a,*v;
 
@@ -864,7 +822,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;
-  int        *r,*ic,ierr,prow,n = a->m,*ai = a->i,*aj = a->j;
+  int        *r,*ic,ierr,prow,n = A->m,*ai = a->i,*aj = a->j;
   int        *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
   int        *dloc,idx,row,m,fm,nzf,nzi,len, realloc = 0,dcount = 0;
   int        incrlev,nnz,i,shift = a->indexshift,levels,diagonal_fill;
@@ -911,7 +869,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
       b->lu_damp    = PETSC_FALSE;
       b->lu_damping = 0.0;
     }
-    b->solve_work       = (Scalar*)PetscMalloc((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+    b->solve_work       = (Scalar*)PetscMalloc(((*fact)->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr                = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);

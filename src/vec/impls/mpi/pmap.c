@@ -1,4 +1,4 @@
-/*$Id: pmap.c,v 1.16 2000/04/12 04:22:23 bsmith Exp balay $*/
+/*$Id: pmap.c,v 1.17 2000/05/05 22:15:06 balay Exp bsmith $*/
 
 /*
    This file contains routines for basic map object implementation.
@@ -85,7 +85,7 @@ static struct _MapOps DvOps = {
 
    Level: developer
 
-.keywords: Map, create, MPI
+   Concepts: maps^creating
 
 .seealso: MapDestroy(), MapGetLocalSize(), MapGetSize(), MapGetGlobalRange(),
           MapGetLocalRange()

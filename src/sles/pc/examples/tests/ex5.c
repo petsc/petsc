@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.65 2000/08/01 20:56:46 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.66 2000/09/28 21:13:05 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -144,7 +144,7 @@ int main(int Argc,char **Args)
   ierr = CalculateRhs(B[levels-1]);CHKERRA(ierr);
   ierr = VecSet(&zero,X[levels-1]);CHKERRA(ierr);
 
-  if (MGCheck(pcmg)) {SETERRA(1,0,0);}
+  if (MGCheck(pcmg)) {SETERRA(1,0);}
      
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: maij.c,v 1.9 2000/09/28 21:11:37 bsmith Exp bsmith $*/
+/*$Id: maij.c,v 1.10 2000/10/10 19:24:12 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the MAIJ  matrix storage format.
   This format is used for restriction and interpolation operations for 
@@ -80,7 +80,6 @@ int MatDestroy_SeqMAIJ(Mat A)
     ierr = MatDestroy(b->AIJ);CHKERRQ(ierr);
   }
   ierr = PetscFree(b);CHKERRQ(ierr);
-  PetscHeaderDestroy(A);
   PetscFunctionReturn(0);
 }
 
@@ -108,17 +107,6 @@ int MatDestroy_MPIMAIJ(Mat A)
     ierr = VecDestroy(b->w);CHKERRQ(ierr);
   }
   ierr = PetscFree(b);CHKERRQ(ierr);
-  PetscHeaderDestroy(A);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name="MatGetSize_MAIJ"></a>*/"MatGetSize_MAIJ"
-static int MatGetSize_MAIJ(Mat A,int *m,int *n)
-{
-  PetscFunctionBegin;
-  if (m) *m = A->M; 
-  if (n) *n = A->N;
   PetscFunctionReturn(0);
 }
 
@@ -134,7 +122,6 @@ int MatCreate_MAIJ(Mat A)
   A->data             = (void*)(b = PetscNew(Mat_MPIMAIJ));CHKPTRQ(b);
   ierr = PetscMemzero(b,sizeof(Mat_MPIMAIJ));CHKERRQ(ierr);
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  A->ops->getsize     = MatGetSize_MAIJ;
   A->factor           = 0;
   A->mapping          = 0;
 
@@ -155,7 +142,7 @@ int MatMult_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,sum1, sum2;
-  int         ierr,m = a->m,*idx,shift = a->indexshift,*ii;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
   int         n,i,jrow,j;
 
   PetscFunctionBegin;
@@ -195,7 +182,7 @@ int MatMultTranspose_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,alpha1,alpha2,zero = 0.0;
-  int         ierr,m = a->m,n,i,*idx,shift = a->indexshift;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
@@ -210,7 +197,7 @@ int MatMultTranspose_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
     alpha2 = x[2*i+1];
     while (n-->0) {y[2*(*idx)] += alpha1*(*v); y[2*(*idx)+1] += alpha2*(*v); idx++; v++;}
   }
-  PLogFlops(4*a->nz - 2*a->n);
+  PLogFlops(4*a->nz - 2*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -223,7 +210,7 @@ int MatMultAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,sum1, sum2;
-  int         ierr,m = a->m,*idx,shift = a->indexshift,*ii;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
   int         n,i,jrow,j;
 
   PetscFunctionBegin;
@@ -263,7 +250,7 @@ int MatMultTransposeAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,alpha1,alpha2;
-  int         ierr,m = a->m,n,i,*idx,shift = a->indexshift;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   if (yy != zz) {ierr = VecCopy(yy,zz);CHKERRQ(ierr);}
@@ -278,7 +265,7 @@ int MatMultTransposeAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     alpha2 = x[2*i+1];
     while (n-->0) {y[2*(*idx)] += alpha1*(*v); y[2*(*idx)+1] += alpha2*(*v); idx++; v++;}
   }
-  PLogFlops(4*a->nz - 2*a->n);
+  PLogFlops(4*a->nz - 2*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -291,7 +278,7 @@ int MatMult_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,sum1, sum2, sum3;
-  int         ierr,m = a->m,*idx,shift = a->indexshift,*ii;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
   int         n,i,jrow,j;
 
   PetscFunctionBegin;
@@ -334,7 +321,7 @@ int MatMultTranspose_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,alpha1,alpha2,alpha3,zero = 0.0;
-  int         ierr,m = a->m,n,i,*idx,shift = a->indexshift;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
@@ -355,7 +342,7 @@ int MatMultTranspose_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PLogFlops(6*a->nz - 3*a->n);
+  PLogFlops(6*a->nz - 3*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -368,7 +355,7 @@ int MatMultAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,sum1, sum2, sum3;
-  int         ierr,m = a->m,*idx,shift = a->indexshift,*ii;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
   int         n,i,jrow,j;
 
   PetscFunctionBegin;
@@ -411,7 +398,7 @@ int MatMultTransposeAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,alpha1,alpha2,alpha3;
-  int         ierr,m = a->m,n,i,*idx,shift = a->indexshift;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   if (yy != zz) {ierr = VecCopy(yy,zz);CHKERRQ(ierr);}
@@ -446,7 +433,7 @@ int MatMult_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,sum1, sum2, sum3, sum4;
-  int         ierr,m = a->m,*idx,shift = a->indexshift,*ii;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
   int         n,i,jrow,j;
 
   PetscFunctionBegin;
@@ -492,7 +479,7 @@ int MatMultTranspose_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,alpha1,alpha2,alpha3,alpha4,zero = 0.0;
-  int         ierr,m = a->m,n,i,*idx,shift = a->indexshift;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
@@ -515,7 +502,7 @@ int MatMultTranspose_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PLogFlops(8*a->nz - 4*a->n);
+  PLogFlops(8*a->nz - 4*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -528,7 +515,7 @@ int MatMultAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,sum1, sum2, sum3, sum4;
-  int         ierr,m = a->m,*idx,shift = a->indexshift,*ii;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
   int         n,i,jrow,j;
 
   PetscFunctionBegin;
@@ -574,7 +561,7 @@ int MatMultTransposeAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,alpha1,alpha2,alpha3,alpha4;
-  int         ierr,m = a->m,n,i,*idx,shift = a->indexshift;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   if (yy != zz) {ierr = VecCopy(yy,zz);CHKERRQ(ierr);}
@@ -597,7 +584,7 @@ int MatMultTransposeAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PLogFlops(8*a->nz - 4*a->n);
+  PLogFlops(8*a->nz - 4*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -612,7 +599,7 @@ int MatMult_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,sum1, sum2, sum3, sum4, sum5;
-  int         ierr,m = a->m,*idx,shift = a->indexshift,*ii;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
   int         n,i,jrow,j;
 
   PetscFunctionBegin;
@@ -661,7 +648,7 @@ int MatMultTranspose_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,alpha1,alpha2,alpha3,alpha4,alpha5,zero = 0.0;
-  int         ierr,m = a->m,n,i,*idx,shift = a->indexshift;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
@@ -686,7 +673,7 @@ int MatMultTranspose_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PLogFlops(10*a->nz - 5*a->n);
+  PLogFlops(10*a->nz - 5*b->AIJ->n);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -699,7 +686,7 @@ int MatMultAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,sum1, sum2, sum3, sum4, sum5;
-  int         ierr,m = a->m,*idx,shift = a->indexshift,*ii;
+  int         ierr,m = b->AIJ->m,*idx,shift = a->indexshift,*ii;
   int         n,i,jrow,j;
 
   PetscFunctionBegin;
@@ -749,7 +736,7 @@ int MatMultTransposeAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqMAIJ *b = (Mat_SeqMAIJ*)A->data;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)b->AIJ->data;
   Scalar      *x,*y,*v,alpha1,alpha2,alpha3,alpha4,alpha5;
-  int         ierr,m = a->m,n,i,*idx,shift = a->indexshift;
+  int         ierr,m = b->AIJ->m,n,i,*idx,shift = a->indexshift;
 
   PetscFunctionBegin; 
   if (yy != zz) {ierr = VecCopy(yy,zz);CHKERRQ(ierr);}

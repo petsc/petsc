@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.66 2000/09/07 15:18:58 balay Exp bsmith $*/
+/*$Id: vecio.c,v 1.67 2000/09/28 21:10:10 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -54,7 +54,7 @@ linux, nt and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscReadBinary()
 and PetscWriteBinary() to see how this may be done.
 
-.keywords: vector, load, binary, input
+  Concepts: vector^loading from file
 
 .seealso: ViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  

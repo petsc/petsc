@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.84 2000/09/12 21:33:35 balay Exp bsmith $ 
+# $Id: makefile,v 1.85 2000/09/22 20:45:46 bsmith Exp bsmith $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -209,14 +209,14 @@ runex5_2:
 # because the coloring heuristic is machine-dependent; convergence rates
 # may differ slightly on various architectures.
 runex5_3:
-	-@${MPIRUN} -np 2 ex5 -pc_type icc -ksp_type cg -mat_mpirowbs -ksp_rtol .000001;\
+	-@${MPIRUN} -np 2 ex5 -pc_type icc -ksp_type cg -mat_type mpirowbs -ksp_rtol .000001;\
 	echo "ex5_3: This program tested the ICC preconditioner in BlockSolve95."
 runex5_4:
-	-@${MPIRUN} -np 2 ex5 -pc_type ilu -mat_nonsym -mat_mpirowbs -ksp_gmres_irorthog\
+	-@${MPIRUN} -np 2 ex5 -pc_type ilu -mat_nonsym -mat_type mpirowbs -ksp_gmres_irorthog\
 	   -ksp_rtol .000001;\
 	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
 runex5_5:
-	-@${MPIRUN} -np 2 ex5 -mat_bdiag -mat_block_size 2 -ksp_gmres_irorthog > ex5_5.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex5 -mat_type mpibdiag -mat_block_size 2 -ksp_gmres_irorthog > ex5_5.tmp 2>&1; \
 	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp
@@ -277,16 +277,16 @@ runex10_7:
 	-@echo > ex10_7.tmp
 	-@for bs in ${BS}; do \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
-                    -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
+                    -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
                     1.0e-15 -ksp_smonitor >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
-                    -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
+                    -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
                     1.0e-15 -ksp_smonitor -pc_ilu_mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
-                    -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
+                    -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
                     1.0e-15 -ksp_smonitor -pc_ilu_levels 1 >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
-                    -mat_seqbaij -matload_block_size $$bs -ksp_type preonly \
+                    -mat_type seqbaij -matload_block_size $$bs -ksp_type preonly \
                     -ksp_smonitor -pc_type lu  >> ex10_7.tmp 2>&1 ; \
          done;
 	-@if (diff output/ex10_7.out ex10_7.tmp) then true; \

@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.39 2000/05/10 16:40:36 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.40 2000/07/10 03:39:32 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -29,7 +29,6 @@ typedef struct {
   PetscTruth       singlemalloc;     /* if true a, i, and j have been obtained with
                                           one big malloc */
   PetscTruth       freedata;        /* free the i,j,a data when the matrix is destroyed; true by default */
-  int              m,n;             /* rows, columns */
   int              nz,maxnz;        /* nonzeros, allocated nonzeros */
   int              *diag;            /* pointers to diagonal elements */
   int              *i;               /* pointer to beginning of each row */
@@ -57,7 +56,6 @@ typedef struct {
 } Mat_SeqAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
-EXTERN int MatConvert_SeqAIJ(Mat,MatType,Mat *);
 EXTERN int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatMarkDiagonal_SeqAIJ(Mat);
 

@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.62 2000/08/07 03:49:18 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.63 2000/09/28 21:09:00 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -362,6 +362,8 @@ int FListFind(MPI_Comm comm,FList fl,const char name[],int (**r)(void *))
   PetscTruth   flg,f1,f2,f3;
  
   PetscFunctionBegin;
+  if (!name) SETERRQ(1,"Trying to find routine with null name");
+
   *r = 0;
   ierr = FListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
 

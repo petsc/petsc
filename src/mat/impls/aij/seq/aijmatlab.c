@@ -1,4 +1,4 @@
-/*$Id: aijmatlab.c,v 1.6 2000/07/10 03:39:32 bsmith Exp bsmith $*/
+/*$Id: aijmatlab.c,v 1.7 2000/09/28 21:11:00 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface for the Matlab engine sparse solver
@@ -64,7 +64,7 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                       = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr                       = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab;
   (*F)->factor               = FACTOR_LU;
@@ -86,7 +86,7 @@ int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F
   if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
   if (info->dtcol == PETSC_DEFAULT)   info->dtcol   = .01;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr                       = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr                       = MatCreateSeqAIJ(A->comm,A->m,A->n,0,PETSC_NULL,F);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab;
   (*F)->factor               = FACTOR_LU;
   ierr = PetscMatlabEnginePut(MATLAB_ENGINE_(A->comm),(PetscObject)A);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.27 2000/08/03 20:15:13 balay Exp bsmith $";
+! "$Id: ex1f.F,v 1.28 2000/09/22 20:46:14 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SNES^basic uniprocessor example
@@ -91,7 +91,7 @@
          if (rank .eq. 0) then
             write(6,*) 'This is a uniprocessor example only!'
          endif
-         SETERRA(1,0,' ',ierr)
+         SETERRA(1,' ',ierr)
       endif
 
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -114,6 +114,7 @@
 
       call MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,J,   &
      &               ierr)
+      call MatSetFromOptions(J,ierr)
 
 !  Set function evaluation routine and vector
 

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.16 2000/09/22 20:46:37 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.17 2000/09/28 21:15:02 bsmith Exp bsmith $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -154,6 +154,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,m,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg);CHKERRA(ierr);
   if (flg) {

@@ -1,4 +1,4 @@
-/*$Id: mmaij.c,v 1.53 2000/04/12 04:23:11 bsmith Exp bsmith $*/
+/*$Id: mmaij.c,v 1.54 2000/07/10 03:39:35 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel AIJ matrix vector multiply
@@ -12,7 +12,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ         *B = (Mat_SeqAIJ*)(aij->B->data);  
-  int                N = aij->N,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
+  int                N = mat->N,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
   int                shift = B->indexshift;
   IS                 from,to;
   Vec                gvec;
@@ -26,8 +26,8 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams (this has not been tested with "shift") */
-  ierr = PetscTableCreate(B->m,&gid1_lid1);CHKERRQ(ierr);
-  for (i=0; i<B->m; i++) {
+  ierr = PetscTableCreate(aij->B->m,&gid1_lid1);CHKERRQ(ierr);
+  for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       int data,gid1 = aj[B->i[i] + shift + j] + 1 + shift;
       ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
@@ -52,7 +52,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
     ierr = PetscTableAdd(gid1_lid1,garray[i]+1,i+1);CHKERRQ(ierr); 
   }
   /* compact out the extra columns in B */
-  for (i=0; i<B->m; i++) {
+  for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       int gid1 = aj[B->i[i] + shift + j] + 1 + shift;
       ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
       aj[B->i[i] + shift + j]  = lid - shift;
     }
   }
-  B->n = aij->B->n = aij->B->N = ec;
+  aij->B->n = aij->B->N = ec;
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
@@ -68,7 +68,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   /* mark those columns that are in aij->B */
   indices = (int*)PetscMalloc((N+1)*sizeof(int));CHKPTRQ(indices);
   ierr = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
-  for (i=0; i<B->m; i++) {
+  for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] +shift + j] + shift]) ec++; 
       indices[aj[B->i[i] + shift + j] + shift] = 1;
@@ -88,12 +88,12 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   /* compact out the extra columns in B */
-  for (i=0; i<B->m; i++) {
+  for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       aj[B->i[i] + shift + j] = indices[aj[B->i[i] + shift + j]+shift];
     }
   }
-  B->n = aij->B->n = aij->B->N = ec;
+  aij->B->n = aij->B->N = ec;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
   /* create local vector that is used to scatter into */
@@ -107,7 +107,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,aij->n,aij->N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(mat->comm,mat->n,mat->N,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
@@ -140,7 +140,7 @@ int DisAssemble_MPIAIJ(Mat A)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
   Mat        B = aij->B,Bnew;
   Mat_SeqAIJ *Baij = (Mat_SeqAIJ*)B->data;
-  int        ierr,i,j,m = Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
+  int        ierr,i,j,m = B->m,n = A->N,col,ct = 0,*garray = aij->garray;
   int        *nz,ec,shift = Baij->indexshift;
   Scalar     v;
 
@@ -156,7 +156,7 @@ int DisAssemble_MPIAIJ(Mat A)
 #else
     ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
     aij->colmap = 0;
-    PLogObjectMemory(A,-Baij->n*sizeof(int));
+    PLogObjectMemory(A,-aij->B->n*sizeof(int));
 #endif
   }
 

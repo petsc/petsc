@@ -1,4 +1,4 @@
-/*$Id: block.c,v 1.49 2000/09/22 20:42:55 bsmith Exp bsmith $*/
+/*$Id: block.c,v 1.50 2000/09/28 21:09:58 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
@@ -242,8 +242,6 @@ static struct _ISOps myops = { ISGetSize_Block,
   Concepts: index sets^block
   Concepts: block^index set
 
-.keywords: IS, index set, create, block
-
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
 int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
@@ -296,7 +294,9 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 
    Level: intermediate
 
-.keywords: IS,index set, block, get, indices
+   Concepts: IS^block
+   Concepts: index sets^getting indices
+   Concepts: index sets^block
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
@@ -329,7 +329,9 @@ int ISBlockGetIndices(IS in,int *idx[])
 
    Level: intermediate
 
-.keywords: IS, index set, block, restore, indices
+   Concepts: IS^block
+   Concepts: index sets^getting indices
+   Concepts: index sets^block
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
@@ -357,7 +359,8 @@ int ISBlockRestoreIndices(IS is,int *idx[])
 
    Level: intermediate
 
-.keywords: IS, index set, block, get, size
+   Concepts: IS^block size
+   Concepts: index sets^block size
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
@@ -390,7 +393,8 @@ int ISBlockGetBlockSize(IS is,int *size)
 
    Level: intermediate
 
-.keywords: IS, index set, block
+   Concepts: IS^block
+   Concepts: index sets^block
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlock()
 @*/
@@ -419,7 +423,8 @@ int ISBlock(IS is,PetscTruth *flag)
 
    Level: intermediate
 
-.keywords: IS, index set, block, get, size
+   Concepts: IS^block sizes
+   Concepts: index sets^block sizes
 
 .seealso: ISBlockGetBlockSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/

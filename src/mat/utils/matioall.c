@@ -1,7 +1,8 @@
-/*$Id: matioall.c,v 1.18 2000/05/10 16:41:20 bsmith Exp balay $*/
+/*$Id: matioall.c,v 1.19 2000/09/01 20:35:59 balay Exp bsmith $*/
 
 #include "petscmat.h"
 
+EXTERN_C_BEGIN
 EXTERN int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
 EXTERN int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
 EXTERN int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
@@ -14,6 +15,9 @@ EXTERN int MatLoad_SeqAdj(Viewer,MatType,Mat*);
 EXTERN int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 EXTERN int MatLoad_SeqSBAIJ(Viewer,MatType,Mat*);
 EXTERN int MatLoad_MPISBAIJ(Viewer,MatType,Mat*);
+EXTERN int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
+EXTERN_C_END
+extern PetscTruth MatLoadRegisterAllCalled;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoadRegisterAll"
@@ -31,25 +35,53 @@ EXTERN int MatLoad_MPISBAIJ(Viewer,MatType,Mat*);
 .seealso: MatLoadRegister(), MatLoad()
 
 @*/
-int MatLoadRegisterAll(void)
+int MatLoadRegisterAll(char *path)
 {
   int ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
-  ierr = MatLoadRegister(MATMPIROWBS,MatLoad_MPIRowbs);CHKERRQ(ierr);
+  MatLoadRegisterAllCalled = PETSC_TRUE;
+  ierr = MatLoadRegisterDynamic(MATSEQAIJ,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATMPIAIJ,path,"MatLoad_MPIAIJ",MatLoad_MPIAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATSEQBDIAG,path,"MatLoad_SeqBDiag",MatLoad_SeqBDiag);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATMPIBDIAG,path,"MatLoad_MPIBDiag",MatLoad_MPIBDiag);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATSEQDENSE,path,"MatLoad_SeqDense",MatLoad_SeqDense);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATMPIDENSE,path,"MatLoad_MPIDense",MatLoad_MPIDense);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATSEQBAIJ,path,"MatLoad_SeqBAIJ",MatLoad_SeqBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATMPIBAIJ,path,"MatLoad_MPIBAIJ",MatLoad_MPIBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATSEQSBAIJ,path,"MatLoad_SeqSBAIJ",MatLoad_SeqSBAIJ);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATMPISBAIJ,path,"MatLoad_MPISBAIJ",MatLoad_MPISBAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_BLOCKSOLVE)
+  ierr = MatLoadRegisterDynamic(MATMPIROWBS,path,"MatLoad_MPIRowbs",MatLoad_MPIRowbs);CHKERRQ(ierr);
 #endif
-  ierr = MatLoadRegister(MATSEQAIJ,MatLoad_SeqAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATMPIAIJ,MatLoad_MPIAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATSEQBDIAG,MatLoad_SeqBDiag);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATMPIBDIAG,MatLoad_MPIBDiag);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATSEQDENSE,MatLoad_SeqDense);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATMPIDENSE,MatLoad_MPIDense);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATSEQBAIJ,MatLoad_SeqBAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATMPIBAIJ,MatLoad_MPIBAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATSEQSBAIJ,MatLoad_SeqSBAIJ);CHKERRQ(ierr);
-  ierr = MatLoadRegister(MATMPISBAIJ,MatLoad_MPISBAIJ);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }  
 
+EXTERN_C_BEGIN
+EXTERN int MatConvertTo_MPIAdj(Mat,MatType,Mat*);
+EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatConvertRegisterAll"
+/*@C
+    MatConvertRegisterAll - Registers all standard matrix type routines to convert to
+
+  Not Collective
+
+  Level: developer
+
+  Notes: To prevent registering all matrix types; copy this routine to 
+         your source code and comment out the versions below that you do not need.
+
+.seealso: MatLoadRegister(), MatLoad()
+
+@*/
+int MatConvertRegisterAll(char *path)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  MatConvertRegisterAllCalled = PETSC_TRUE;
+  ierr = MatConvertRegisterDynamic(MATMPIADJ,path,"MatConvertTo_MPIAdj",MatConvertTo_MPIAdj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}  

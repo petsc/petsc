@@ -1,4 +1,4 @@
-/*$Id: ex73.c,v 1.3 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex73.c,v 1.4 2000/09/22 20:44:16 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix from a file partitions it\n\n";
@@ -22,7 +22,7 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  MatType         mtype;            /* matrix format */
+  MatType         mtype = MATSEQSBAIJ;            /* matrix format */
   Mat             A,B;                /* matrix */
   Viewer          fd;               /* viewer */
   char            file[128];        /* input file name */
@@ -45,12 +45,6 @@ int main(int argc,char **args)
        reading from this file.
   */
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
-
-  /* 
-      Determine matrix format to be used (specified at runtime).
-      See the manpage for MatLoad() for available formats.
-  */
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,PETSC_NULL);CHKERRQ(ierr);
 
   /*
       Load the matrix and vector; then destroy the viewer.

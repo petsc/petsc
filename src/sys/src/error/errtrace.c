@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.18 2000/09/28 21:08:54 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.19 2000/10/03 19:26:07 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -34,7 +34,7 @@ static char *PetscErrorStrings[] = {
 extern char PetscErrorBaseMessage[1024];
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscErrorMessage" 
+#define __FUNC__ /*<a name="PetscErrorMessage"></a>*/"PetscErrorMessage" 
 /*@C
    PetscErrorMessage - returns the text string associated with a PETSc error code.
 
@@ -57,12 +57,10 @@ extern char PetscErrorBaseMessage[1024];
 int PetscErrorMessage(int errno,char **text,char **specific)
 {
   PetscFunctionBegin;
-  if (errno < PETSC_ERR_MEM || errno > PETSC_ERR_MAT_CH_ZRPVT) {
-    SETERRQ(1,"Unknown error code");
-  }
-  if (text) {
+  if (text && errno >= PETSC_ERR_MEM && errno <= PETSC_ERR_MAT_CH_ZRPVT) {
     *text = PetscErrorStrings[errno-PETSC_ERR_MEM];
-  }
+  } else if (text) *text = 0;
+
   if (specific) {
     *specific = PetscErrorBaseMessage;
   }
@@ -71,7 +69,7 @@ int PetscErrorMessage(int errno,char **text,char **specific)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTraceBackErrorHandler" 
+#define __FUNC__ /*<a name="PetscTraceBackErrorHandler"></a>*/"PetscTraceBackErrorHandler" 
 /*@C
    PetscTraceBackErrorHandler - Default error handler routine that generates
    a traceback on error detection.
@@ -110,37 +108,39 @@ $     SETERRQ(number,p,mess)
 int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
   PLogDouble        mem,rss;
-  int               rank,ierr;
+  int               rank;
   PetscTruth        flg1,flg2;
 
   PetscFunctionBegin;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-  if (n == PETSC_ERR_MEM) {
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
-    ierr = PetscTrSpace(&mem,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
-    OptionsHasName(PETSC_NULL,"-trdump",&flg1);
-    OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
-    if (flg2) {
-      ierr = PetscTrLogDump(stdout);CHKERRQ(ierr);
-    } else if (flg1) {
-      (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
-      ierr = PetscTrDump(stdout);CHKERRQ(ierr);
+  if (p == 1) {
+    if (n == PETSC_ERR_MEM) {
+      (*PetscErrorPrintf)("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
+      (*PetscErrorPrintf)("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
+      (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n",rank);
+      PetscTrSpace(&mem,PETSC_NULL,PETSC_NULL);
+      PetscGetResidentSetSize(&rss);
+      OptionsHasName(PETSC_NULL,"-trdump",&flg1);
+      OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
+      if (flg2) {
+        PetscTrLogDump(stdout);
+      } else if (flg1) {
+        (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
+        PetscTrDump(stdout);
+      } else {
+        (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
+        (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
+      }
     } else {
-      (*PetscErrorPrintf)("[%d]PETSC ERROR:   Memory allocated %d Memory used by process %d\n",rank,(int)mem,(int)rss);
-      (*PetscErrorPrintf)("[%d]PETSC ERROR:   Try running with -trdump or -trmalloc_log for info.\n",rank);
+        char *text;
+        PetscErrorMessage(n,&text,PETSC_NULL);
+        if (text) (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s!\n",rank,text);
     }
-  } else {
-    char *text;
-    PetscErrorMessage(n,&text,PETSC_NULL);
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s!\n",rank,text);
-  }
-  if (p == 1 && mess) {
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s\n",rank,mess);
+    if (mess) {
+      (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s!\n",rank,mess);
+    }
   }
   PetscFunctionReturn(n);
 }

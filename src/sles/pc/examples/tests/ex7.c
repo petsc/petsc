@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.6 1999/10/24 14:03:06 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.7 2000/05/05 22:17:23 balay Exp bsmith $*/
 
 static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n"; 
 
@@ -18,6 +18,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&C);CHKERRA(ierr);
+  ierr = MatSetFromOptions(C);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,3,&xtmp);CHKERRA(ierr);
   i = 0; j = 0; v = 4;
   ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);

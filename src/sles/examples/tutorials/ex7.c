@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.48 2000/05/05 22:18:00 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.49 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\
@@ -61,6 +61,7 @@ int main(int argc,char **args)
      Create and assemble parallel matrix
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
   for (I=Istart; I<Iend; I++) { 
     v = -1.0; i = I/n; j = I - i*n;  

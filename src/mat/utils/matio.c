@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.71 2000/09/07 15:18:44 balay Exp bsmith $*/
+/*$Id: matio.c,v 1.72 2000/09/28 21:12:12 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -7,9 +7,8 @@
 #include "petsc.h"
 #include "src/mat/matimpl.h"             /*I  "petscmat.h"  I*/
 #include "petscsys.h"
-
-static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*) = 
-           {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+PetscTruth MatLoadRegisterAllCalled = PETSC_FALSE;
+FList      MatLoadList              = 0;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoadRegister"
@@ -28,13 +27,16 @@ static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*
 .seealso: MatLoadRegisterAll(), MatLoad()
 
 @*/
-int MatLoadRegister(MatType type,int (*loader)(Viewer,MatType,Mat*))
+int MatLoadRegister(char *sname,char *path,char *name,int (*function)(Viewer,MatType,Mat*))
 {
+  int  ierr;
+  char fullname[256];
+
   PetscFunctionBegin;
-  MatLoaders[type] = loader;
-  MatLoadersSet    = 1;
+  ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = FListAdd(&MatLoadList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}  
+}
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoadPrintHelp_Private"
@@ -71,27 +73,15 @@ static int MatLoadPrintHelp_Private(Mat A)
 .  newmat - new matrix
 
    Basic Options Database Keys:
-   The following options will work if you first call MatGetTypeFromOptions()
-   and pass the resulting type to MatLoad().
-   These options use MatCreateSeqXXX or MatCreateMPIXXX,
-   depending on the communicator, comm.
-+    -mat_aij      - AIJ type
-.    -mat_baij     - block AIJ type
-.    -mat_dense    - dense type
-.    -mat_bdiag    - block diagonal type
-.    -mat_complex  - indicates the matrix has complex entries
--    -mat_double   - indicates the matrix has double entries
-
-   More Options Database Keys:
-+    -mat_seqaij   - AIJ type
-.    -mat_mpiaij   - parallel AIJ type
-.    -mat_seqbaij  - block AIJ type
-.    -mat_mpibaij  - parallel block AIJ type
-.    -mat_seqbdiag - block diagonal type
-.    -mat_mpibdiag - parallel block diagonal type
-.    -mat_mpirowbs - parallel rowbs type
-.    -mat_seqdense - dense type
--    -mat_mpidense - parallel dense type
++    -matload_type seqaij   - AIJ type
+.    -matload_type mpiaij   - parallel AIJ type
+.    -matload_type seqbaij  - block AIJ type
+.    -matload_type mpibaij  - parallel block AIJ type
+.    -matload_type seqbdiag - block diagonal type
+.    -matload_type mpibdiag - parallel block diagonal type
+.    -matload_type mpirowbs - parallel rowbs type
+.    -matload_type seqdense - dense type
+-    -matload_type mpidense - parallel dense type
 
    More Options Database Keys:
    Used with block matrix formats (MATSEQBAIJ, MATMPIBDIAG, ...) to specify
@@ -147,25 +137,23 @@ and PetscWriteBinary() to see how this may be done.
 .keywords: matrix, load, binary, input
 
 .seealso: ViewerBinaryOpen(), MatView(), VecLoad(), MatLoadRegister(),
-          MatLoadRegisterAll(), MatGetTypeFromOptions()
+          MatLoadRegisterAll()
 
  @*/  
 int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 {
   int         ierr;
-  PetscTruth  set,isbinary,flg;
-  MatType     type;
+  PetscTruth  isbinary,flg;
   MPI_Comm    comm;
+  int         (*r)(Viewer,MatType,Mat*);
+  char        mtype[256];
 
   PetscFunctionBegin;
-  if (outtype > MAX_MATRIX_TYPES || outtype < 0) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Not a valid matrix type");
-  }
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   *newmat  = 0;
 
-  if (!MatLoadersSet) {
-    ierr = MatLoadRegisterAll();CHKERRQ(ierr);
+  if (!MatLoadRegisterAllCalled) {
+    ierr = MatLoadRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
@@ -174,20 +162,20 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   }
 
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MatGetTypeFromOptions(comm,0,&type,&set);CHKERRQ(ierr);
-  if (!set) type = outtype;
+  ierr = OptionsGetString(PETSC_NULL,"-matload_type",mtype,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    outtype = mtype;
+  }
+  if (!outtype) outtype = MATMPIAIJ;
+  ierr =  FListFind(comm,MatLoadList,outtype,(int(**)(void*))&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);
 
   ierr = PLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
-
-  if (!MatLoaders[type]) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid matrix type, or matrix load not registered");
-  }
-
-  ierr = (*MatLoaders[type])(viewer,type,newmat);CHKERRQ(ierr);
+  ierr = (*r)(viewer,outtype,newmat);CHKERRQ(ierr);
+  ierr = PLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }
-  ierr = PLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

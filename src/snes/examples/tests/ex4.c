@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.53 2000/05/05 22:18:29 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.54 2000/09/28 21:14:21 bsmith Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -269,7 +269,7 @@ int FormInitialGuess2(AppCtx *user,Vec X)
   my	 = user->my;
 
   /* Test for invalid input parameters */
-  if ((mx <= 0) || (my <= 0)) SETERRQ(1,0,0);
+  if ((mx <= 0) || (my <= 0)) SETERRQ(1,0);
 
   hx    = 1.0 / (double)(mx-1);
   hy    = 1.0 / (double)(my-1);

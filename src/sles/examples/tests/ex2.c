@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.18 2000/05/10 16:42:22 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.19 2000/09/22 20:45:42 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
@@ -65,6 +65,7 @@ int slesex(int argc,char **args)
      determined by PETSc at runtime.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

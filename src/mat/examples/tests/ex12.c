@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.21 2000/05/05 22:16:17 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.22 2000/05/10 16:41:02 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
@@ -24,6 +24,7 @@ int main(int argc,char **args)
 
   /* create A Square matrix for the five point stencil,YET AGAIN*/
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;
@@ -53,6 +54,7 @@ int main(int argc,char **args)
    n+size is used so that this dimension is always divisible by size.
    This way, we can always use bs = size for any number of procs */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*(n+size),&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
   for (i=0; i<m; i++) { 
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  I = j + n*i;

@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.53 2000/09/06 22:19:27 balay Exp bsmith $";
+! "$Id: ex5f.F,v 1.54 2000/09/22 20:46:14 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -94,7 +94,7 @@
       call OptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
-         SETERRA(1,0,' ',ierr)
+         SETERRA(1,' ',ierr)
       endif
       N = mx*my
 
@@ -120,7 +120,7 @@
          if (rank .eq. 0)  then
             write(6,*) 'Incompatible number of procs: Nx * Ny != size'
          endif
-         SETERRA(1,0,' ',ierr)
+         SETERRA(1,' ',ierr)
       endif
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.

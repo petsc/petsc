@@ -9,8 +9,8 @@
 The Scalable Linear Equations Solvers (SLES)
 component provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the
-<A HREF="../KSP/index.html">KSP</A> and 
-<A HREF="../PC/index.html">PC</A> 
+<A HREF="${PETSC_DIR}docs/manualpages/KSP/index.html">KSP</A> and 
+<A HREF="${PETSC_DIR}docs/manualpages/PC/index.html">PC</A> 
 components, respectively) or a sequential direct solver. 
 SLES users can set various Krylov
 and preconditioning options at runtime via the options database (e.g., 
@@ -20,11 +20,11 @@ and preconditioning options at runtime via the options database (e.g.,
 ).  
 SLES users can also set KSP and PC options directly in application
 codes by first extracting the KSP and/or PC context from the SLES context via
-<A HREF="../SLES/SLESGetKSP.html">SLESGetKSP()</A>/
-<A HREF="../SLES/SLESGetPC.html">SLESGetPC()</A>
+<A HREF="${PETSC_DIR}docs/manualpages/SLES/SLESGetKSP.html">SLESGetKSP()</A>/
+<A HREF="${PETSC_DIR}docs/manualpages/SLES/SLESGetPC.html">SLESGetPC()</A>
 and then directly calling the KSP and PC routines (e.g., 
-<A HREF="../KSP/KSPSetType.html">KSPSetType()</A>/
-<A HREF="../PC/PCSetType.html">PCSetType()</A>
+<A HREF="${PETSC_DIR}docs/manualpages/KSP/KSPSetType.html">KSPSetType()</A>/
+<A HREF="${PETSC_DIR}docs/manualpages/PC/PCSetType.html">PCSetType()</A>
 ).
 Both KSP and PC components can be used directly to create and
 destroy solvers; this is not needed for users but

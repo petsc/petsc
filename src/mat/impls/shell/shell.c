@@ -1,4 +1,4 @@
-/*$Id: shell.c,v 1.81 2000/07/10 03:39:36 bsmith Exp bsmith $*/
+/*$Id: shell.c,v 1.82 2000/09/28 21:11:11 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -10,8 +10,6 @@
 #include "src/vec/vecimpl.h"  
 
 typedef struct {
-  int  M,N;                  /* number of global rows, columns */
-  int  m,n;                  /* number of local rows, columns */
   int  (*destroy)(Mat);
   void *ctx;
 } Mat_Shell;      
@@ -41,34 +39,14 @@ typedef struct {
 @*/
 int MatShellGetContext(Mat mat,void **ctx)
 {
+  int        ierr;
+  PetscTruth flg;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE); 
-  if (mat->type != MATSHELL) *ctx = 0; 
-  else                       *ctx = ((Mat_Shell*)(mat->data))->ctx; 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetSize_Shell"
-int MatGetSize_Shell(Mat mat,int *M,int *N)
-{
-  Mat_Shell *shell = (Mat_Shell*)mat->data;
-
-  PetscFunctionBegin;
-  if (M) *M = shell->M;
-  if (N) *N = shell->N;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetLocalSize_Shell"
-int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
-{
-  Mat_Shell *shell = (Mat_Shell*)mat->data;
-
-  PetscFunctionBegin;
-  if (m) *m = shell->m;
-  if (n) *n = shell->n;
+  ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+  if (!flg) *ctx = 0; 
+  else      *ctx = ((Mat_Shell*)(mat->data))->ctx; 
   PetscFunctionReturn(0);
 }
 
@@ -80,24 +58,9 @@ int MatDestroy_Shell(Mat mat)
   Mat_Shell *shell;
 
   PetscFunctionBegin;
-
-  if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping);CHKERRQ(ierr);
-  }
-  if (mat->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping);CHKERRQ(ierr);
-  }
-  if (mat->rmap) {
-    ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
-  }
-  if (mat->cmap) {
-    ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
-  }
   shell = (Mat_Shell*)mat->data;
   if (shell->destroy) {ierr = (*shell->destroy)(mat);CHKERRQ(ierr);}
   ierr = PetscFree(shell);CHKERRQ(ierr);
-  PLogObjectDestroy(mat);
-  PetscHeaderDestroy(mat);
   PetscFunctionReturn(0);
 }
 
@@ -113,6 +76,7 @@ int MatGetOwnershipRange_Shell(Mat mat,int *rstart,int *rend)
   if (rend)   *rend   = tmp;
   PetscFunctionReturn(0);
 }
+extern int MatConvert_Shell(Mat,MatType,Mat*);
 
 static struct _MatOps MatOps_Values = {0,
        0,
@@ -144,9 +108,9 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       MatGetSize_Shell,
-       MatGetLocalSize_Shell,
+       0,
        MatGetOwnershipRange_Shell,
+       0,
        0,
        0,
        0,
@@ -179,7 +143,48 @@ static struct _MatOps MatOps_Values = {0,
        0,
        MatDestroy_Shell,
        0,
-       MatGetMaps_Petsc};
+       MatGetMaps_Petsc,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatConvert_Shell};
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatCreate_Shell"
+int MatCreate_Shell(Mat A)
+{
+  Mat_Shell *b;
+  int       ierr;
+
+  PetscFunctionBegin;
+  ierr            = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+
+  b       = PetscNew(Mat_Shell);CHKPTRQ(b);
+  PLogObjectMemory(A,sizeof(struct _p_Mat)+sizeof(Mat_Shell));
+  ierr    = PetscMemzero(b,sizeof(Mat_Shell));CHKERRQ(ierr);
+  A->data = (void*)b;
+
+  if (A->m == PETSC_DECIDE || A->n == PETSC_DECIDE) {
+    SETERRQ(1,"Must give local row and column count for matrix");
+  }
+
+  ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);
+
+  ierr = MapCreateMPI(A->comm,A->m,A->M,&A->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(A->comm,A->n,A->N,&A->cmap);CHKERRQ(ierr);
+
+  b->ctx = 0;
+  A->assembled    = PETSC_TRUE;
+  A->preallocated = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatCreateShell"
@@ -246,38 +251,43 @@ $
 @*/
 int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 {
-  Mat       B;
-  Mat_Shell *b;
   int       ierr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSHELL,"Mat",comm,MatDestroy,MatView);
-  PLogObjectCreate(B);
-  B->factor       = 0;
-  B->assembled    = PETSC_TRUE;
-  ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
+  ierr = MatSetType(*A,MATSHELL);CHKERRQ(ierr);
+  ierr = MatShellSetContext(*A,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-  b       = PetscNew(Mat_Shell);CHKPTRQ(b);
-  PLogObjectMemory(B,sizeof(struct _p_Mat)+sizeof(Mat_Shell));
-  ierr    = PetscMemzero(b,sizeof(Mat_Shell));CHKERRQ(ierr);
-  B->data = (void*)b;
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatShellSetContext"
+/*@C
+    MatShellSetContext - sets the context for a shell matrix
 
-  if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
-    SETERRQ(1,"Must give local row and column count for matrix");
+   Collective on Mat
+
+    Input Parameters:
++   mat - the shell matrix
+-   ctx - the context
+
+   Level: advanced
+
+
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
+@*/
+int MatShellSetContext(Mat mat,void *ctx)
+{
+  Mat_Shell  *shell = (Mat_Shell*)mat->data;
+  int        ierr;
+  PetscTruth flg;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+  if (flg) {
+    shell->ctx = ctx;
   }
-
-  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
-  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
-  b->M = M; B->M = M;
-  b->N = N; B->N = N;
-  b->m = m; B->m = m;
-  b->n = n; B->n = n;
-
-  ierr = MapCreateMPI(comm,m,M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(comm,n,N,&B->cmap);CHKERRQ(ierr);
-
-  b->ctx = ctx;
-  *A     = B;
   PetscFunctionReturn(0);
 }
 
@@ -323,11 +333,14 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 @*/
 int MatShellSetOperation(Mat mat,MatOperation op,void *f)
 {
+  int        ierr;
+  PetscTruth flg;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-
   if (op == MATOP_DESTROY) {
-    if (mat->type == MATSHELL) {
+    ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+    if (flg) {
        Mat_Shell *shell = (Mat_Shell*)mat->data;
        shell->destroy                 = (int (*)(Mat)) f;
     } else mat->ops->destroy            = (int (*)(Mat)) f;
@@ -376,11 +389,14 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 @*/
 int MatShellGetOperation(Mat mat,MatOperation op,void **f)
 {
+  int        ierr;
+  PetscTruth flg;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-
   if (op == MATOP_DESTROY) {
-    if (mat->type == MATSHELL) {
+    ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
+    if (flg) {
       Mat_Shell *shell = (Mat_Shell*)mat->data;
       *f = (void*)shell->destroy;
     } else {

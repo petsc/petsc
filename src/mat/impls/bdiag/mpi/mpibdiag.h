@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.16 1999/03/25 21:23:14 balay Exp bsmith $ */
+/* $Id: mpibdiag.h,v 1.17 2000/01/11 21:00:50 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 
@@ -13,7 +13,6 @@
 
 typedef struct {
   int           *rowners;           /* row range owned by each processor */
-  int           m,n,M,N;            /* local rows, cols; global rows, cols */
   int           rstart,rend;        /* starting and ending local rows */
   int           brstart,brend;      /* block starting and ending local rows */
   Mat           A;                  /* local matrix */
@@ -23,14 +22,14 @@ typedef struct {
   int           rank;               /* rank of proc in communicator */ 
 
   /* The following variables are used for matrix assembly */
-  int           donotstash;             /* 1 if off processor entries dropped */
+  PetscTruth    donotstash;             /* 1 if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends,nrecvs;         /* numbers of sends and receives */
   Scalar        *svalues,*rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
   int           *garray;                /* work array */
-  int           roworiented;            /* indicates MatSetValues() input default 1*/
+  PetscTruth    roworiented;            /* indicates MatSetValues() input default 1*/
 
   /* The following variables are used for matrix-vector products */
 

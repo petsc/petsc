@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.3 2000/09/12 16:32:56 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.4 2000/09/22 20:45:46 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex23 [-help] [all PETSc options] */
 
@@ -78,6 +78,7 @@ int main(int argc,char **args)
      to have the same parallel layout as the vector created above.
   */
   ierr = MatCreate(PETSC_COMM_WORLD,nlocal,nlocal,n,n,&A);CHKERRA(ierr);
+  ierr = MatSetFromOptions(A);CHKERRA(ierr);
 
   /* 
      Assemble matrix.  
