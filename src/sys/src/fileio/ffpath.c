@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.21 1999/04/21 20:43:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ffpath.c,v 1.22 1999/05/04 20:29:01 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -87,7 +87,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     while (env) {
       /* Find next directory in env */
       cdir = env;
-      p    = PetscStrchr( env, ':' );
+      ierr = PetscStrchr( env, ':',&p );CHKERRQ(ierr);
       if (p) {
 	*p  = 0;
 	env = p + 1;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.38 1999/04/19 22:09:48 bsmith Exp balay $";
+static char vcid[] = "$Id: init.c,v 1.39 1999/05/04 20:29:12 balay Exp bsmith $";
 #endif
 /*
 
@@ -405,18 +405,26 @@ int OptionsCheckInitial_Alice(void)
 #endif
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    char *debugger = 0;
+    char *debugger = 0, *f;
     int  xterm     = 1;
-    if (PetscStrstr(string,"noxterm")) xterm = 0;
 
-    if (PetscStrstr(string,"xdb"))     debugger = "xdb";
-    if (PetscStrstr(string,"dbx"))     debugger = "dbx";
-    if (PetscStrstr(string,"xldb"))    debugger = "xldb";
-    if (PetscStrstr(string,"gdb"))     debugger = "gdb";
-    if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (PetscStrstr(string,"ups"))     debugger = "ups";
-    PetscSetDebugger(debugger,xterm);
-    PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
+    ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
+    if (f) xterm = 0;
+    ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
+    if (f)     debugger = "xdb";
+    ierr = PetscStrstr(string,"dbx",&f);CHKERRQ(ierr);
+    if (f)     debugger = "dbx";
+    ierr = PetscStrstr(string,"xldb",&f);CHKERRQ(ierr);
+    if (f)     debugger = "xldb";
+    ierr = PetscStrstr(string,"gdb",&f);CHKERRQ(ierr);
+    if (f)     debugger = "gdb";
+    ierr = PetscStrstr(string,"xxgdb",&f);CHKERRQ(ierr);
+    if (f)     debugger = "xxgdb";
+    ierr = PetscStrstr(string,"ups",&f);CHKERRQ(ierr);
+    if (f)     debugger = "ups";
+
+    ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
+    ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);CHKERRQ(ierr);
   }
   ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
   ierr = OptionsGetString(PETSC_NULL,"-stop_for_debugger",string,64,&flg2);CHKERRQ(ierr);
@@ -450,14 +458,22 @@ int OptionsCheckInitial_Alice(void)
       }
     }
     if (!flag) {        
-      if (PetscStrstr(string,"noxterm")) xterm = 0;
+      char *f;
 
-      if (PetscStrstr(string,"xdb"))     debugger = "xdb";
-      if (PetscStrstr(string,"dbx"))     debugger = "dbx";
-      if (PetscStrstr(string,"xldb"))    debugger = "xldb";
-      if (PetscStrstr(string,"gdb"))     debugger = "gdb";
-      if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
-      if (PetscStrstr(string,"ups"))     debugger = "ups";
+      ierr = PetscStrstr(string,"noxterm",&f);CHKERRQ(ierr);
+      if (f) xterm = 0;
+      ierr = PetscStrstr(string,"xdb",&f);CHKERRQ(ierr);
+      if (f)     debugger = "xdb";
+      ierr = PetscStrstr(string,"dbx",&f);CHKERRQ(ierr);
+      if (f)     debugger = "dbx";
+      ierr = PetscStrstr(string,"xldb",&f);CHKERRQ(ierr);
+      if (f)     debugger = "xldb";
+      ierr = PetscStrstr(string,"gdb",&f);CHKERRQ(ierr);
+      if (f)     debugger = "gdb";
+      ierr = PetscStrstr(string,"xxgdb",&f);CHKERRQ(ierr);
+      if (f)     debugger = "xxgdb";
+      ierr = PetscStrstr(string,"ups",&f);CHKERRQ(ierr);
+      if (f)     debugger = "ups";
 
       ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
       ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);

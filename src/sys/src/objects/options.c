@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.210 1999/05/03 00:49:19 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.211 1999/05/04 20:29:12 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -82,7 +82,7 @@ int PetscSetProgramName(const char name[])
   PetscFunctionBegin;
   options->namegiven = 1;
   /* Now strip away the path, if absulute path is specified */
-  sname = PetscStrrchr(name,'/');
+  ierr = PetscStrrchr(name,'/',&sname);CHKERRQ(ierr);
   ierr  = PetscStrncpy(options->programname,sname,256);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -127,8 +127,8 @@ int OptionsInsertFile(const char file[])
           string[i] = ' ';
         }
       }
-      first = PetscStrtok(string," ");
-      second = PetscStrtok(0," ");
+      ierr = PetscStrtok(string," ",&first);CHKERRQ(ierr);
+      ierr = PetscStrtok(0," ",&second);CHKERRQ(ierr);
       if (first && first[0] == '-') {
         if (second) {final = second;} else {final = first;}
         len = PetscStrlen(final);
@@ -137,7 +137,7 @@ int OptionsInsertFile(const char file[])
         }
         ierr = OptionsSetValue(first,second);CHKERRQ(ierr);
       } else if (first && !PetscStrcmp(first,"alias")) {
-        third = PetscStrtok(0," ");
+        ierr = PetscStrtok(0," ",&third);CHKERRQ(ierr);
         if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias missing (%s)",second);
         len = PetscStrlen(third); 
         if (third[len-1] == '\n') third[len-1] = 0;
@@ -207,16 +207,16 @@ int OptionsInsert(int *argc,char ***args,const char file[])
     if (len) {
       ierr          = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
       eoptions[len] = 0;
-      first         = PetscStrtok(eoptions," ");
+      ierr          =  PetscStrtok(eoptions," ",&first);CHKERRQ(ierr);
       while (first) {
-        if (first[0] != '-') {first = PetscStrtok(0," "); continue;}
-        second = PetscStrtok(0," ");
+        if (first[0] != '-') {ierr = PetscStrtok(0," ",&first);CHKERRQ(ierr); continue;}
+        ierr = PetscStrtok(0," ",&second);CHKERRQ(ierr);
         if ((!second) || ((second[0] == '-') && (second[1] > '9'))) {
-          OptionsSetValue(first,(char *)0);
+          ierr = OptionsSetValue(first,(char *)0);CHKERRQ(ierr);
           first = second;
         } else {
-          OptionsSetValue(first,second);
-          first = PetscStrtok(0," ");
+          ierr = OptionsSetValue(first,second);CHKERRQ(ierr);
+          ierr = PetscStrtok(0," ",&first);CHKERRQ(ierr);
         }
       }
       if (rank) PetscFree(eoptions);
@@ -806,10 +806,11 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,int *flg)
 #else
       double re=0.0,im=0.0;
       char   *tvalue = 0;
-      tvalue  = PetscStrtok(value,",");
+
+      ierr = PetscStrtok(value,",",&tvalue);CHKERRQ(ierr);
       if (!tvalue) { SETERRQ(1,0,"unknown string specified\n"); }
       re      = atof(tvalue);
-      tvalue  = PetscStrtok(0,",");
+      ierr    = PetscStrtok(0,",",&tvalue);CHKERRQ(ierr);
       if (!tvalue) { /* Unknown separator used. using only real value */
         *dvalue = re;
       } else {
@@ -868,11 +869,11 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], in
   ierr = PetscStrcpy(cpy,value);CHKERRQ(ierr);
   value = cpy;
 
-  value = PetscStrtok(value,",");
+  ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
     *dvalue++ = atof(value);
-    value = PetscStrtok(0,",");
+    ierr      = PetscStrtok(0,",",&value);CHKERRQ(ierr);
     n++;
   }
   *nmax = n;
@@ -923,11 +924,11 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
   ierr  = PetscStrcpy(cpy,value);CHKERRQ(ierr);
   value = cpy;
 
-  value = PetscStrtok(value,",");
+  ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
     *dvalue++ = atoi(value);
-    value = PetscStrtok(0,",");
+    ierr      = PetscStrtok(0,",",&value);CHKERRQ(ierr);
     n++;
   }
   *nmax = n;
@@ -1032,14 +1033,14 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
   ierr  = PetscStrcpy(cpy, value);CHKERRQ(ierr);
   value = cpy;
 
-  value = PetscStrtok(value, ",");
+  ierr = PetscStrtok(value, ",",&value);CHKERRQ(ierr);
   n = 0;
   while (n < *nmax) {
     if (!value) break;
     len        = PetscStrlen(value) + 1;
     strings[n] = (char *) PetscMalloc(len * sizeof(char));CHKPTRQ(strings[n]);
     ierr  = PetscStrcpy(strings[n], value);CHKERRQ(ierr);
-    value = PetscStrtok(0, ",");
+    ierr  = PetscStrtok(0, ",",&value);CHKERRQ(ierr);
     n++;
   }
   *nmax = n;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.31 1999/04/21 20:43:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.32 1999/04/22 20:24:36 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -52,6 +52,9 @@ static char vcid[] = "$Id: fhost.c,v 1.31 1999/04/21 20:43:38 bsmith Exp bsmith 
 @*/
 int PetscGetHostName( char name[], int nlen )
 {
+  char *domain;
+  int  ierr;
+
 #if defined(PARCH_win32) || defined(PARCH_win32_gnu)
   PetscFunctionBegin;
   GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
@@ -70,7 +73,8 @@ int PetscGetHostName( char name[], int nlen )
   sysinfo(SI_HOSTNAME, name, nlen);
 #endif
   /* See if this name includes the domain */
-  if (!PetscStrchr(name,'.')) {
+  ierr = PetscStrchr(name,'.',&domain);CHKERRQ(ierr);
+  if (!domain) {
     int  l;
     l = PetscStrlen(name);
     if (l == nlen) PetscFunctionReturn(0);

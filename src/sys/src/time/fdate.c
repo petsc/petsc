@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.27 1999/04/02 00:09:21 balay Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.28 1999/04/21 20:43:36 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -89,7 +89,7 @@ int PetscGetDate(char name[],int len)
   ierr = PetscStrncpy(name,asctime(localtime((time_t *) &tp.tv_sec)),len);CHKERRQ(ierr);
 #endif
   /* now strip out the new-line chars at the end of the string */
-  str = PetscStrstr(name,"\n");
+  ierr = PetscStrstr(name,"\n",&str);CHKERRQ(ierr);
   if (str) str[0] = 0;
   PetscFunctionReturn(0);
 }

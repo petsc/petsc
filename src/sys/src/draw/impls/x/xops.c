@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.130 1999/04/20 20:47:22 bsmith Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.131 1999/05/04 20:28:34 balay Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -106,7 +106,7 @@ static int DrawTriangle_X(Draw Win, double X1, double Y_1, double X2,
 #define __FUNC__ "DrawString_X" 
 static int DrawString_X(Draw Win,double x,double  y,int c,char *chrs )
 {
-  int     xx,yy;
+  int     xx,yy,ierr;
   Draw_X* XiWin = (Draw_X*) Win->data;
   char*   substr;
 
@@ -114,15 +114,15 @@ static int DrawString_X(Draw Win,double x,double  y,int c,char *chrs )
   xx = XTRANS(Win,XiWin,x);  yy = YTRANS(Win,XiWin,y);
   XiSetColor( XiWin, c );
   
-  substr = PetscStrtok(chrs,"\n");
+  ierr = PetscStrtok(chrs,"\n",&substr);CHKERRQ(ierr);
   XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
                xx, yy - XiWin->font->font_descent, substr, PetscStrlen(substr) );
-  substr = PetscStrtok(0,"\n");
+  ierr = PetscStrtok(0,"\n",&substr);CHKERRQ(ierr);
   while (substr) {
     yy += 4*XiWin->font->font_descent;
     XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
                  xx, yy - XiWin->font->font_descent, substr, PetscStrlen(substr) );
-    substr = PetscStrtok(0,"\n");
+    ierr = PetscStrtok(0,"\n",&substr);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -163,7 +163,7 @@ int DrawStringGetSize_X(Draw Win,double *x,double  *y)
 #define __FUNC__ "DrawStringVertical_X" 
 int DrawStringVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 {
-  int     xx,yy,n = PetscStrlen(chrs),i;
+  int     xx,yy,n = PetscStrlen(chrs),i,ierr;
   Draw_X* XiWin = (Draw_X*) Win->data;
   char    tmp[2];
   double  tw,th;
@@ -171,7 +171,7 @@ int DrawStringVertical_X(Draw Win,double x,double  y,int c,char *chrs )
   PetscFunctionBegin;
   tmp[1] = 0;
   XiSetColor( XiWin, c );
-  DrawStringGetSize_X(Win,&tw,&th);
+  ierr = DrawStringGetSize_X(Win,&tw,&th);CHKERRQ(ierr);
   xx = XTRANS(Win,XiWin,x);
   for ( i=0; i<n; i++ ) {
     tmp[0] = chrs[i];

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.35 1999/04/21 20:43:16 bsmith Exp balay $";
+static char vcid[] = "$Id: reg.c,v 1.36 1999/05/04 20:28:58 balay Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -16,7 +16,7 @@ int FListGetPathAndFunction(const char name[],char *path[],char *function[])
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(work,name,256);CHKERRQ(ierr);
-  lfunction = PetscStrrchr(work,':');
+  ierr = PetscStrrchr(work,':',&lfunction);CHKERRQ(ierr);
   if (lfunction != work) {
     lfunction[-1] = 0;
     *path = (char *) PetscMalloc( (PetscStrlen(work) + 1)*sizeof(char));CHKPTRQ(*path);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.16 1999/04/19 22:09:48 bsmith Exp balay $";
+static char vcid[] = "$Id: pinit.c,v 1.17 1999/05/04 20:29:12 balay Exp bsmith $";
 #endif
 /*
 
@@ -29,7 +29,7 @@ int OptionsCheckInitial_Components(void)
 {
   MPI_Comm comm = PETSC_COMM_WORLD;
   int      flg1,ierr;
-  char     mname[256];
+  char     *f,mname[256];
 
   PetscFunctionBegin;
   /*
@@ -49,34 +49,43 @@ int OptionsCheckInitial_Components(void)
 
   ierr = OptionsGetString(PETSC_NULL,"-log_info_exclude",mname,256, &flg1);CHKERRQ(ierr);
   if (flg1) {
-    if (PetscStrstr(mname,"null")) {
+    ierr = PetscStrstr(mname,"null",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
     }
-    if (PetscStrstr(mname,"vec")) {
+    ierr = PetscStrstr(mname,"vec",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
     }
-    if (PetscStrstr(mname,"mat")) {
+    ierr = PetscStrstr(mname,"mat",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogInfoDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
     }
-    if (PetscStrstr(mname,"sles")) {
+    ierr = PetscStrstr(mname,"sles",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogInfoDeactivateClass(SLES_COOKIE);CHKERRQ(ierr);
     }
-    if (PetscStrstr(mname,"snes")) {
+    ierr = PetscStrstr(mname,"snes",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
   ierr = OptionsGetString(PETSC_NULL,"-log_summary_exclude",mname,256, &flg1);CHKERRQ(ierr);
   if (flg1) {
-    if (PetscStrstr(mname,"vec")) {
+    ierr = PetscStrstr(mname,"vec",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogEventDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
     }
-    if (PetscStrstr(mname,"mat")) {
+    ierr = PetscStrstr(mname,"mat",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogEventDeactivateClass(MAT_COOKIE);CHKERRQ(ierr);
     }
-    if (PetscStrstr(mname,"sles")) {
+    ierr = PetscStrstr(mname,"sles",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogEventDeactivateClass(SLES_COOKIE);CHKERRQ(ierr);
     }
-    if (PetscStrstr(mname,"snes")) {
+    ierr = PetscStrstr(mname,"snes",&f);CHKERRQ(ierr);
+    if (f) {
       ierr = PLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.24 1999/04/22 20:23:49 bsmith Exp balay $";
+static char vcid[] = "$Id: grpath.c,v 1.25 1999/05/04 20:29:01 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -94,8 +94,8 @@ int PetscGetRealPath(char path[], char rpath[])
     if (n > 0) {
       tmp3[n] = 0; /* readlink does not automatically add 0 to string end */
       if (tmp3[0] != '/') {
-        tmp2 = PetscStrchr(tmp1,'/');
-        m = PetscStrlen(tmp1) - PetscStrlen(tmp2);
+        ierr = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
+        m    = PetscStrlen(tmp1) - PetscStrlen(tmp2);
         ierr = PetscStrncpy(tmp4,tmp1,m);CHKERRQ(ierr);
         tmp4[m] = 0;
         ierr = PetscStrncat(tmp4,"/",MAXPATHLEN - PetscStrlen(tmp4));CHKERRQ(ierr);
@@ -110,7 +110,7 @@ int PetscGetRealPath(char path[], char rpath[])
         PetscFunctionReturn(0);
       }
     }  
-    tmp2 = PetscStrchr(tmp1,'/');
+    ierr = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
     if (tmp2) N = PetscStrlen(tmp1) - PetscStrlen(tmp2);
     else N = PetscStrlen(tmp1);
   }

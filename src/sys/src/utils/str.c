@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.25 1999/03/17 23:21:54 bsmith Exp balay $";
+static char vcid[] = "$Id: str.c,v 1.26 1999/05/04 20:29:32 balay Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -147,13 +147,11 @@ int PetscStrncmp(const char a[],const char b[],int n)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrchr"
-char *PetscStrchr(const char a[],char b)
+int PetscStrchr(const char a[],char b,char **c)
 {
-  char *c;
-
   PetscFunctionBegin;
-  c = strchr(a,b);
-  PetscFunctionReturn(c);
+  *c = strchr(a,b);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -163,14 +161,12 @@ char *PetscStrchr(const char a[],char b)
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscStrrchr"
-char *PetscStrrchr(const char a[],char b)
+int PetscStrrchr(const char a[],char b,char **tmp)
 {
-  char *tmp;
-
   PetscFunctionBegin;
-  tmp = strrchr(a,b);
-  if (!tmp) tmp = (char*)a; else tmp = tmp + 1;
-  PetscFunctionReturn(tmp);
+  *tmp = strrchr(a,b);
+  if (!*tmp) *tmp = (char*)a; else *tmp = *tmp + 1;
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -186,40 +182,35 @@ char *PetscStrrchr(const char a[],char b)
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscStrtok"
-char *PetscStrtok(const char a[],const char b[])
+int PetscStrtok(const char a[],const char b[],char **result)
 {
   static char init[1024];
-  char        *tmp=0,*ptr=0;
+  char        *ptr=0;
   int         ierr,len;
          
 
   PetscFunctionBegin;
   if (a) {
-    len = strlen(a);
+    len = PetscStrlen(a);
     if (len > 1023) {
       ptr = (char *) PetscMalloc((len+1)*sizeof(char));
-      if (!ptr) {
-         PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,1,1,"Malloc failed");
-         PetscFunctionReturn(0);
-      }
+      if (!ptr) SETERRQ(1,1,"Malloc failed");
     } else {
       ptr = init;
     }
-    ierr = PetscStrncpy(ptr,a,1024);
+    ierr = PetscStrncpy(ptr,a,1024);CHKERRQ(ierr);
   }
-  tmp = strtok(ptr,b);
-  PetscFunctionReturn(tmp);
+  *result = strtok(ptr,b);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrstr"
-char *PetscStrstr(const char a[],const char b[])
+int PetscStrstr(const char a[],const char b[],char **tmp)
 {
-  char *tmp;
-
   PetscFunctionBegin;
-  tmp = strstr(a,b);
-  PetscFunctionReturn(tmp);
+  *tmp = strstr(a,b);
+  PetscFunctionReturn(0);
 }
 
 

@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.42 1999/03/16 16:42:39 bsmith Exp balay $";
+static char vcid[] = "$Id: dl.c,v 1.43 1999/03/16 16:43:38 balay Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -141,23 +141,23 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
   par2  = (char *) PetscMalloc((1024)*sizeof(char));CHKPTRQ(par2);
   ierr  = PetscStrcpy(par2,libname);CHKERRQ(ierr);
   
-  par3 = PetscStrstr(par2,"$PETSC_ARCH");
+  ierr = PetscStrstr(par2,"$PETSC_ARCH",&par3);CHKERRQ(ierr);
   while (par3) {
     *par3  =  0;
     par3  += 11;
     ierr   = PetscGetArchType(arch,10);
-    ierr = PetscStrcat(par2,arch);CHKERRQ(ierr);
-    ierr = PetscStrcat(par2,par3);CHKERRQ(ierr);
-    par3 = PetscStrstr(par2,"$PETSC_ARCH");
+    ierr   = PetscStrcat(par2,arch);CHKERRQ(ierr);
+    ierr   = PetscStrcat(par2,par3);CHKERRQ(ierr);
+    ierr   = PetscStrstr(par2,"$PETSC_ARCH",&par3);CHKERRQ(ierr);
   }
 
-  par3 = PetscStrstr(par2,"$BOPT");
+  ierr = PetscStrstr(par2,"$BOPT",&par3);CHKERRQ(ierr);
   while (par3) {
     *par3  =  0;
     par3  += 5;
-    ierr = PetscStrcat(par2,PETSC_BOPT);CHKERRQ(ierr);
-    ierr = PetscStrcat(par2,par3);CHKERRQ(ierr);
-    par3 = PetscStrstr(par2,"$BOPT");
+    ierr   = PetscStrcat(par2,PETSC_BOPT);CHKERRQ(ierr);
+    ierr   = PetscStrcat(par2,par3);CHKERRQ(ierr);
+    ierr   = PetscStrstr(par2,"$BOPT",&par3);CHKERRQ(ierr);
   }
 
   /* 
@@ -173,14 +173,16 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
   if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
 
   /* remove .gz if it ends library name */
-  if ((gz = PetscStrstr(par2,".gz")) && (PetscStrlen(gz) == 3)) {
+  ierr = PetscStrstr(par2,".gz",&gz);CHKERRQ(ierr);
+  if (gz && (PetscStrlen(gz) == 3)) {
     *gz = 0;
   }
 
   /* see if library name does already not have suffix attached */
   ierr = PetscStrcpy(buff,".");CHKERRQ(ierr);
   ierr = PetscStrcat(buff,PETSC_SLSUFFIX);CHKERRQ(ierr);
-  if (!(en = PetscStrstr(par2,buff)) || (PetscStrlen(en) != 1+PetscStrlen(PETSC_SLSUFFIX))) {
+  ierr = PetscStrstr(par2,buff,&en);CHKERRQ(ierr);
+  if (!en || (PetscStrlen(en) != 1+PetscStrlen(PETSC_SLSUFFIX))) {
     ierr = PetscStrcat(par2,".");CHKERRQ(ierr);
     ierr = PetscStrcat(par2,PETSC_SLSUFFIX);CHKERRQ(ierr);
   }
@@ -335,7 +337,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
   /* 
       If symbol contains () then replace with a NULL, to support functionname() 
   */
-  par1 = PetscStrchr(symbol,'(');
+  ierr = PetscStrchr(symbol,'(',&par1);CHKERRQ(ierr);
   if (par1) *par1 = 0;
 
 
