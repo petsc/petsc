@@ -19,3 +19,4 @@ bin/petscarch
 bmake/nt/base
 bmake/nt/petscconf.h
 src/pc/impls/eisens/eisen.c
+src/mat/impls/aij/mpi/mpiaij.c
