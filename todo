@@ -15,14 +15,14 @@
   -------------
   Optimizations
    ------------
-  Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
+  (Priority 1) Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
   the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
 
-   Check if indices passed into matsetvalues_xxx MatZeroRows_MPIAIJ,MPIBAIJ,mpibdiag, MPIDense,rowbs are locally sorted 
+   (Priority 0) Check if indices passed into matsetvalues_xxx MatZeroRows_MPIAIJ,MPIBAIJ,mpibdiag, MPIDense,rowbs are locally sorted 
    (often they will be); if they are then do much faster check to which processor owns them
    like I did with VecScatterCreate_xxxxx().
 
-    (Priority 0) Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
+    (Priority 1) Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
     in ASM.
 
     Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
@@ -72,7 +72,6 @@
   ---------------------
   Better user interface 
   ---------------------
-  (Priority 0) Have make in the root directory stop on error in any compile! Default behavior
 
   (Priority 1) Allow setting precision of printed numbers in ASCII viewers.
 
