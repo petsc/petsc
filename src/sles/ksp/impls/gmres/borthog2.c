@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog2.c,v 1.6 1997/07/09 20:50:40 balay Exp curfman $";
+static char vcid[] = "$Id: borthog2.c,v 1.7 1997/09/11 18:46:47 curfman Exp curfman $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -25,7 +25,7 @@ int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it )
   Scalar    *hh, *hes;
 
   PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
-  /* update hessenberg matrix and do unmodified Gram-Schmidt */
+  /* update Hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
 
