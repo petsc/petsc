@@ -70,8 +70,15 @@ PETSc</strong></a></li>
       <td width="75%" valign="top"><!--##begin-->
       <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
 in PETSc 2.2.1 </font></p>
-      <p><font size="4"><strong><u>General:<br>
-      </u></strong></font></p>
+      <p><font size="4"><strong><u>General:<br></u></strong></font></p>
+        <ul> <li> Introduced 4 new PETSc data types: PetscInt, PetscErrorCode, PetscMPIInt and PetscBLASInt. For 99% of users 
+            these are just int or integer*4 and you do <strong>not </strong> need to change your code. </li>
+          <li>For users with more than roughly 2 billion unknowns you can run configure with --with-64-bit-ints and 
+              then PetscInt will represent 64 bit integers, long long int in C and integer*8 in Fortran. But the 
+              the other 3 types remain 32 bit (i.e. int in C and integer*4 in Fortran). Now you can index into vectors and
+              matrices with virtually unlimited sizes.
+          </ul>
+
       <ul>  
 
       <p><u><b>Vec:</b></u><br>
