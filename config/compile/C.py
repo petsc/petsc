@@ -177,7 +177,3 @@ class StaticLinker(SharedLinker):
     else:
       base += '.'+self.argDB['AR_LIB_SUFFIX']
     return base
-
-  def getCommand(self, sourceFiles, outputFile = None):
-    self.libraries.clear()
-    return SharedLinker.getCommand(self, sourceFiles, outputFile)
