@@ -157,7 +157,8 @@ etags:
 	etags -a -f TAGS src/fortran/custom/makefile
 	etags -a -f TAGS include/makefile include/*/makefile 
 	etags -a -f TAGS bmake/common bmake/sun4/sun4* bmake/rs6000/rs6000* 
-	etags -a -f TAGS bmake/solaris/solaris*
+	etags -a -f TAGS bmake/solaris/solaris* bmake/sun4_local/sun4_local*
+	etags -a -f TAGS bmake/sun4_lam/sun4_lam* bmake/rs6000_lam/rs6000_lam
 	etags -a -f TAGS bmake/IRIX/IRIX* bmake/freebsd/freebsd*
 	etags -a -f TAGS bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
@@ -195,7 +196,8 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile 
 	etags -a -f TAGS_NO_EXAMPLES bmake/common bmake/sun4/sun4* 
 	etags -a -f TAGS_NO_EXAMPLES bmake/rs6000/rs6000* 
-	etags -a -f TAGS_NO_EXAMPLES bmake/solaris/solaris*
+	etags -a -f TAGS_NO_EXAMPLES bmake/solaris/solaris* bmake/sun4_local/sun4_local*
+	etags -a -f TAGS_NO_EXAMPLES bmake/sun4_lam/sun4_lam* bmake/rs6000_lam/rs6000_lam
 	etags -a -f TAGS_NO_EXAMPLES bmake/IRIX/IRIX* bmake/freebsd/freebsd*
 	etags -a -f TAGS_NO_EXAMPLES bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS_NO_EXAMPLES bmake/t3d/t3d* bmake/paragon/paragon*
