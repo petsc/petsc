@@ -107,7 +107,7 @@ def updatePatches():
     os.unlink(patches1)
     
   try:
-    (status1,output1) = commands.getstatusoutput('cd python/BuildSystem; '+patch+' -Np1 < '+patches2)
+    (status1,output1) = commands.getstatusoutput('cd python/BuildSystem; '+patch+' -Np1 < '+'../../'+patches2)
   except:
     raise RuntimeError('Unable to apply patch from '+patches2+' with '+patch) 
   if output1.find('FAILED') >= 0:
