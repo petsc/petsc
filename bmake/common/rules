@@ -128,13 +128,13 @@ runexamples_3:
 	  $(OMAKE) -f makefile $$ex; \
 	  done;) fi
 
-# Compiles examples_3: mpiuni examples
+# Compiles examples_4: mpiuni examples
 examples_4: chkopts
 	@-if [ "$(EXAMPLES_4)" != "" ] ; then \
 	  (for ex in $(EXAMPLES_4) foo ; do \
 	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
 	  > trashz 2>&1; \
-	  grep -v EXTERNAL trashz | \
+	  grep -v clog trashz | grep -v "information sections" | \
 	  egrep -i '(Error|warning|Can)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz;\
