@@ -1,4 +1,4 @@
-# $Id: base,v 1.1 1999/01/25 21:48:57 balay Exp balay $ 
+# $Id: base,v 1.2 1999/01/25 21:52:48 balay Exp balay $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -15,7 +15,7 @@ C_FC             = g77 -fPIC
 C_CLINKER        = gcc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 C_FLINKER        = g77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 C_CCV            = ${C_CC} --version
-C_SYS_LIB        = -lg2c
+C_SYS_LIB        = -lfor -lg2c
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g
 G_FOPTFLAGS      = -g
@@ -29,7 +29,7 @@ CXX_FC           = g77 -fPIC
 CXX_CLINKER      = g++ ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 CXX_FLINKER      = g77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 CXX_CCV          = ${CXX_CC} --version
-CXX_SYS_LIB      = -lg2c
+CXX_SYS_LIB      = -lfor -lg2c
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g
 GCXX_FOPTFLAGS   = -g
