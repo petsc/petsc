@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.13 2000/01/23 17:29:07 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.14 2000/01/23 18:37:05 bsmith Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -80,53 +80,10 @@ int main(int argc,char **args)
   GRID 		f_pntr;
   TstepCtx      tsCtx ;
   SNES          snes;                  /* SNES context */
-  SLES          sles;                  /* SLES context */
-  Vec           q, res, f ;            /* Unknown Vector, Residual,
-                                          forcing function on RHS of pde */
-  Vec           x;
-  Mat           A, Jac, Jpc;           /* Jacobian and Preconditioner matrices */
-  Scalar        none = -1.0, one = 1.0, zero = 0.0, value[3], temp[200];
-  Scalar        *qnode, *xx, *ff;
-  PC            pc;
-  double        norm, x_pert, f_pert;
-  double        ubar, num=0.0, den, rjac;
-  double        tiny = 1.0e-10, big = 1.0e+10;
-  char          str[256];
-  int     	ierr, in, n, its, ix[200];
-  int    	igrid = 0;
-  int 		solIt;
-  Scalar	totMem;
-  int		*iwork;
-  FILE          *fptr, *fptr1;
+  Mat           Jpc;                   /* Jacobian and Preconditioner matrices */
+  Scalar        *qnode;
+  int 		ierr,solIt;
   PETSCTRUTH    flg;
-
-  int  *miterj;
-  int  *nsrchj, *icyclej, *ilu0j;
-  REAL *gtolj;
-  int  i,j,iter,imesh,iseq;                    /* General counters           */
-  int  igrid1,igrid2,nintt,nintcell;
-  int  nelem,nelem2;
-  int  nbface;                                 /* Total faces on boundary    */
-  int  inside;                                 /* How many cells are inside  */
-  int  ileast;
-  int  gsign;
-/*
- * These are variables used for transition for Spalarts model
- */
-  int ispec[max_nbtran];
-/*
- * int ntran[max_nbtran];
- * REAL dxtran[max_nbtran];
- */
-  REAL xtran[max_nbtran];
-  REAL ytran[max_nbtran];
- 
-  int nsfaced, nvfaced;
-  int nlayer;                                 /* # of layers to shift with  */
-  int nnz;                                    /* No of nonzeros in matrix   */
-                                               /* viscous boundary           */
-  REAL *xin,*yin;
-  REAL cl;                                   /* Lift coefficient           */
   
   ierr = PetscInitialize(&argc,&args,"testgrid/petsc.opt",help);CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -347,9 +304,8 @@ int main(int argc,char **args)
 int FormInitialGuess(SNES snes, GRID *grid)
 /*---------------------------------------------------------------------*/
 {
-   int    i, j, in, in1, ierr;
-   Scalar zero = 0.0, one = 1.0;
-   Scalar *xx, *qnode;
+   int    ierr;
+   Scalar *qnode;
 
    PetscFunctionBegin;
    ierr = VecGetArray(grid->qnode,&qnode);CHKERRQ(ierr);
@@ -372,16 +328,15 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    AppCtx       *user = (AppCtx *) dummy;
    GRID         *grid = user->grid;
    TstepCtx     *tsCtx = user->tsCtx;
-   Scalar       *qnode, *res, *qold, *dq;
+   Scalar       *qnode, *res, *qold;
    Scalar       *grad;
    Scalar       temp;
    VecScatter   scatter = grid->scatter;
    VecScatter   gradScatter = grid->gradScatter;
    Vec          localX = grid->qnodeLoc;
    Vec          localGrad = grid->gradLoc;
-   int          i, j, in, in1, ierr, n, k;
+   int          i, j,in, ierr;
    int          nbface, ires;
-   int 		vecSize;
    Scalar	time_ini, time_fin;
  
    PetscFunctionBegin;
@@ -402,9 +357,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    ierr = VecRestoreArray(grid->grad,&grad);CHKERRQ(ierr);
 
    ierr = VecScatterBegin(grid->grad,localGrad,INSERT_VALUES,
-                        SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
+                          SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
    ierr = VecScatterEnd(grid->grad,localGrad,INSERT_VALUES,
-                        SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
+                          SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
 
    ierr = VecGetArray(localGrad,&grad);CHKERRQ(ierr);
    nbface = grid->nsface + grid->nvface + grid->nfface;
