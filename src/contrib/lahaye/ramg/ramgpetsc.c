@@ -121,11 +121,12 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ndig   = 8*nnu; 
 
    /*..Allocate memory for RAMG variables..*/ 
-   ierr = PetscMalloc(ndia * sizeof(int),&ia);CHKERRQ(ierr); 
-   ierr = PetscMalloc(ndja * sizeof(int),&ja);CHKERRQ(ierr); 
-   ierr = PetscMalloc(ndu  * sizeof(double),&u_approx);CHKERRQ(ierr); 
-   ierr = PetscMalloc(ndf  * sizeof(double),&rhs);CHKERRQ(ierr); 
-   ierr = PetscMalloc(ndig * sizeof(int),&ig);CHKERRQ(ierr); 
+   ierr = PetscMalloc(nda *sizeof(double),&Asky);CHKERRQ(ierr);
+   ierr = PetscMalloc(ndia*sizeof(int),&ia);CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndja*sizeof(int),&ja);CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndu *sizeof(double),&u_approx);CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndf *sizeof(double),&rhs);CHKERRQ(ierr); 
+   ierr = PetscMalloc(ndig*sizeof(int),&ig);CHKERRQ(ierr); 
 
    /*..Store PETSc matrix in compressed skyline format required by RAMG..*/ 
    nnz_count = 0;
