@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.69 1996/10/29 18:33:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.70 1996/11/06 22:28:56 bsmith Exp curfman $";
 #endif
 
 /*
@@ -735,7 +735,10 @@ $    SCATTER_ALL, SCATTER_REVERSE
 @*/
 int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inctx)
 {
-  int ierr,to_n,from_n;
+  int ierr;
+#if defined(PETSC_BOPT_g)
+  int to_n,from_n;
+#endif
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(1,"VecScatterBegin: Scatter ctx already in use");
