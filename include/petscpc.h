@@ -53,7 +53,7 @@ extern int PCICCSetBlockSolveIter(PC);
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 
-extern Mat PCGetMat(PC);
+extern int PCGetOperators(PC,Mat*,Mat*,int*);
 
 extern int PCDirectSetOrdering(PC,int);
 extern int PCDirectSetUseInplace(PC);
