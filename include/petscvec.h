@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.36 1995/10/24 21:55:05 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.37 1995/11/01 19:12:32 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -54,7 +54,7 @@ extern int VecPMult(Vec, Vec, Vec);
 extern int VecPDiv(Vec, Vec, Vec);    
 extern int VecDuplicate(Vec,Vec *);          
 extern int VecDestroy(Vec);        
-extern int VecGetVecs(Vec, int,Vec **);         
+extern int VecDuplicateVecs(Vec, int,Vec **);         
 extern int VecFreeVecs(Vec*,int); 
 
 typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES} InsertMode;
@@ -81,6 +81,7 @@ extern int VecPipelineEnd(Vec,Vec,InsertMode,PipelineMode,VecScatter);
 extern int VecShift(Scalar *,Vec);
 extern int VecGetArray(Vec,Scalar**);
 extern int VecRestoreArray(Vec,Scalar**);
+extern int VecPlaceArray(Vec,Scalar*);
 extern int VecGetArrays(Vec*,int,Scalar***);
 extern int VecRestoreArrays(Vec*,int,Scalar***);
 extern int VecValidVector(Vec);
@@ -90,6 +91,7 @@ extern int VecLoad(Viewer,Vec*);
 extern int VecGetSize(Vec,int *);
 extern int VecGetLocalSize(Vec,int *);
 extern int VecGetOwnershipRange(Vec,int*,int*);
+
 
 /* utility routines */
 extern int VecReciprocal(Vec);
