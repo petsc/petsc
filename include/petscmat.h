@@ -56,8 +56,8 @@ extern int MatMultAdd(Mat,Vec,Vec,Vec);
 extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
-typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,ORDER_RCM=3,
-              ORDER_QMD=4} MatOrdering;
+typedef enum {ORDER_DATABASE=-1,ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
+              ORDER_RCM=3,ORDER_QMD=4} MatOrdering;
 
 extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
 
