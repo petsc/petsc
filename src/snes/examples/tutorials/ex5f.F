@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.43 1998/04/16 04:02:28 curfman Exp balay $";
+! "$Id: ex5f.F,v 1.44 1998/04/21 18:33:39 balay Exp curfman $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -6,7 +6,7 @@
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
 !  domain, using distributed arrays (DAs) to partition the parallel grid.
 !  The command line options include:
-!    -par <parameter>, where <parameter> indicates the nonlinearity of the problem
+!    -par <param>, where <param> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 !    -mx <xg>, where <xg> = number of grid points in the x-direction
 !    -my <yg>, where <yg> = number of grid points in the y-direction

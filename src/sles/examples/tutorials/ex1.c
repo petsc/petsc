@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.66 1997/11/13 20:54:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.67 1997/11/28 16:20:38 bsmith Exp curfman $";
 #endif
 
-/* Usage:  mpirun ex1 [-help] [all PETSc options] */
+/* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
 
