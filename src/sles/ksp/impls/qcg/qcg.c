@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.16 1996/01/09 01:24:17 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.17 1996/01/09 03:06:51 curfman Exp curfman $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -271,9 +271,9 @@ static int KSPSetUp_QCG(KSP itP)
   int ierr;
 
   /* Check user parameters and functions */
-  if (itP->pc_side == KSP_RIGHT_PC) {
+  if (itP->pc_side == PC_RIGHT) {
     SETERRQ(2,"KSPSetUp_QCG:no right preconditioning for QCG");}
-  else if (itP->pc_side == KSP_LEFT_PC) {
+  else if (itP->pc_side == PC_LEFT) {
     SETERRQ(2,"KSPSetUp_QCG:no left preconditioning for QCG");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
 
@@ -300,7 +300,7 @@ int KSPCreate_QCG(KSP itP)
   PLogObjectMemory(itP,sizeof(KSP_QCG));
   itP->data                 = (void *) cgP;
   itP->type                 = KSPQCG;
-  itP->pc_side              = KSP_SYMMETRIC_PC;
+  itP->pc_side              = PC_SYMMETRIC;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_QCG;
   itP->solver               = KSPSolve_QCG;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.18 1995/11/05 18:50:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: tcqmr.c,v 1.19 1996/01/09 03:30:21 curfman Exp curfman $";
 #endif
 
 /*
@@ -147,7 +147,7 @@ static int KSPSolve_TCQMR(KSP itP,int *its )
 static int KSPSetUp_TCQMR(KSP itP)
 {
   int ierr;
-  if (itP->pc_side == KSP_SYMMETRIC_PC)
+  if (itP->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_TCQMR:no symmetric preconditioning for KSPTCQMR");}
   ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
   ierr = KSPiDefaultGetWork(itP,TCQMR_VECS); CHKERRQ(ierr);
@@ -158,6 +158,7 @@ int KSPCreate_TCQMR(KSP itP)
 {
   itP->data          = (void *) 0;
   itP->type          = KSPTCQMR;
+  itP->pc_side       = PC_LEFT;
   itP->converged     = KSPDefaultConverged;
   itP->buildsolution = KSPDefaultBuildSolution;
   itP->buildresidual = KSPDefaultBuildResidual;

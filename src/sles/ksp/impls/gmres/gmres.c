@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.50 1996/01/01 01:01:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.51 1996/01/09 03:12:58 curfman Exp curfman $";
 #endif
 
 /*
@@ -71,7 +71,7 @@ static int    KSPSetUp_GMRES(KSP itP )
   int       ierr,  max_k, k;
   KSP_GMRES *gmresP = (KSP_GMRES *)itP->data;
 
-  if (itP->pc_side == KSP_SYMMETRIC_PC)
+  if (itP->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_GMRES:no symmetric preconditioning for KSPGMRES");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
   max_k         = gmresP->max_k;
@@ -135,7 +135,7 @@ static int GMRESResidual(  KSP itP,int restart )
   ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   /* compute initial residual: f - M*x */
   /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
-  if (itP->pc_side == KSP_RIGHT_PC) {
+  if (itP->pc_side == PC_RIGHT) {
     /* we want a * binv * b * x, or just a * x for the first step */
     /* a*x into temp */
     ierr = MatMult(Amat,VEC_SOLN,VEC_TEMP ); CHKERRQ(ierr);
@@ -278,11 +278,11 @@ static int KSPSolve_GMRES(KSP itP,int *outits )
   restart = 0;
   itcount = 0;
   /* Save binv*f */
-  if (itP->pc_side == KSP_LEFT_PC) {
+  if (itP->pc_side == PC_LEFT) {
     /* inv(b)*f */
     ierr = PCApply(itP->B, VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
   }
-  else if (itP->pc_side == KSP_RIGHT_PC) {
+  else if (itP->pc_side == PC_RIGHT) {
     ierr = VecCopy( VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
   }
   /* Compute the initial (preconditioned) residual */
@@ -386,7 +386,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
 
   /* If we preconditioned on the right, we need to solve for the correction to
      the unpreconditioned problem */
-  if (itP->pc_side == KSP_RIGHT_PC) {
+  if (itP->pc_side == PC_RIGHT) {
     if (vdest != vs) {
       ierr = PCApply(itP->B, VEC_TEMP, vdest ); CHKERRQ(ierr);
       ierr = VecAXPY( &one, vs, vdest ); CHKERRQ(ierr);
@@ -396,7 +396,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
       ierr = VecAXPY(&one,VEC_TEMP_MATOP,vdest); CHKERRQ(ierr);
     }
   }
-  else if (itP->pc_side == KSP_LEFT_PC) {
+  else if (itP->pc_side == PC_LEFT) {
     if (vdest != vs) {
       ierr = VecCopy( VEC_TEMP, vdest ); CHKERRQ(ierr);
       ierr = VecAXPY( &one, vs, vdest ); CHKERRQ(ierr);

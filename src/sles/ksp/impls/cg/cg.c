@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.33 1995/11/04 23:31:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.34 1996/01/09 03:12:53 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -16,9 +16,9 @@ int KSPSetUp_CG(KSP itP)
   int    maxit = itP->max_it,ierr;
 
   /* check user parameters and functions */
-  if (itP->pc_side == KSP_RIGHT_PC)
+  if (itP->pc_side == PC_RIGHT)
     {SETERRQ(2,"KSPSetUp_CG:no right preconditioning for KSPCG");}
-  else if (itP->pc_side == KSP_SYMMETRIC_PC)
+  else if (itP->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_CG:no symmetric preconditioning for KSPCG");}
   if ((ierr = KSPCheckDef(itP))) return ierr;
 
@@ -150,7 +150,7 @@ int KSPCreate_CG(KSP itP)
   PLogObjectMemory(itP,sizeof(KSP_CG));
   itP->data                 = (void *) cgP;
   itP->type                 = KSPCG;
-  itP->pc_side              = KSP_LEFT_PC;
+  itP->pc_side              = PC_LEFT;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_CG;
   itP->solver               = KSPSolve_CG;

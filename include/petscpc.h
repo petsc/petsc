@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.44 1996/01/05 19:20:14 balay Exp curfman $ */
+/* $Id: pc.h,v 1.45 1996/01/09 01:25:57 curfman Exp curfman $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -17,13 +17,15 @@ typedef struct _PC* PC;
 typedef struct _PCNullSpace* PCNullSpace;
 #define PCNULLSPACE_COOKIE    PETSC_COOKIE+17
 
+typedef enum { PC_LEFT, PC_RIGHT, PC_SYMMETRIC } PrecondSide;
+
 extern int    PCCreate(MPI_Comm,PC*);
 extern int    PCSetType(PC,PCType);
 extern int    PCSetUp(PC);
 extern int    PCApply(PC,Vec,Vec);
 extern int    PCApplySymmLeft(PC,Vec,Vec);
 extern int    PCApplySymmRight(PC,Vec,Vec);
-extern int    PCApplyBAorAB(PC,int,Vec,Vec,Vec);
+extern int    PCApplyBAorAB(PC,PrecondSide,Vec,Vec,Vec);
 extern int    PCApplyTrans(PC,Vec,Vec);
 extern int    PCApplyBAorABTrans(PC,int,Vec,Vec,Vec);
 extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.24 1995/11/04 23:37:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: bcgs.c,v 1.25 1996/01/09 03:30:34 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -14,7 +14,7 @@ static int KSPSetUp_BCGS(KSP itP)
 {
   int ierr;
 
-  if (itP->pc_side == KSP_SYMMETRIC_PC)
+  if (itP->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_BCGS:no symmetric preconditioning for KSPBCGS");}
   ierr = KSPCheckDef( itP ); CHKERRQ(ierr);
   return KSPiDefaultGetWork( itP, 7 );
@@ -111,7 +111,7 @@ int KSPCreate_BCGS(KSP itP)
 {
   itP->data                 = (void *) 0;
   itP->type                 = KSPBCGS;
-  itP->pc_side              = KSP_LEFT_PC;
+  itP->pc_side              = PC_LEFT;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_BCGS;
   itP->solver               = KSPSolve_BCGS;
