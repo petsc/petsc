@@ -202,42 +202,6 @@ getmpiincludedirs:
 getmpirun:
 	-@echo  ${MPIRUN}
 
-etags_sourcec:
-	-@if [ "${SOURCEC}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${SOURCEC} ; fi
-etags_sourcej:
-	-@if [ "${SOURCEJ}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${SOURCEJ} ; fi
-etags_sourceh:
-	-@if [ "${SOURCEH}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${SOURCEH}; fi
-etags_sourcef:
-	-@if [ "${SOURCEF}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${SOURCEF}; fi
-etags_docs:
-	-@if [ "${DOCS}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${DOCS}; fi
-etags_bmakefiles:
-	-@if [ "${BMAKEFILES}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${BMAKEFILES}; fi
-etags_examplesc:
-	-@if [ "${EXAMPLESC}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${EXAMPLESC}; fi
-etags_examplesch:
-	-@if [ "${EXAMPLESCH}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${EXAMPLESCH}; fi
-etags_examplesf:
-	-@if [ "${EXAMPLESF}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${EXAMPLESF}; fi
-etags_examplesfh:
-	-@if [ "${EXAMPLESFH}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${EXAMPLESFH}; fi
-etags_makefile:
-	-@etags -a -f ${TAGSFILE} makefile
-etags_scripts:
-	-@if [ "${SCRIPTS}" != "" ]; then \
-		etags -a -f ${TAGSFILE} ${SCRIPTS}; fi
-
 # --------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.

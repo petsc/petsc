@@ -30,20 +30,8 @@ class Configure(config.base.Configure):
         if pd[-1]=='/': pd = pd[:-1] # etags chokes if there's a trailing /
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand('make PETSC_ARCH=solaris BOPT=g PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', timeout = 15*60.0, log = self.framework.log)
-          # filter out the normal messages
-          cnt = 0
-          for i in output.split('\n'):
-            if not (i.startswith('etags_') or i.find('TAGS') >= 0 or i.find('Entering') >= 0 or i.find('Leaving') >= 0 or i==''):
-              if not cnt:
-                self.framework.log.write('*******Error generating etags files****\n')
-              cnt = cnt + 1
-              self.framework.log.write(i+'\n')
-          if not cnt:
-            self.framework.log.write('           Completed generating etags files\n')
-            self.framework.actions.addArgument('PETSc', 'File creation', 'Generated etags files in '+pd)
-          else:
-            self.framework.log.write('*******End of error messages from generating etags files*******\n')
+          (output, error, status) = config.base.Configure.executeShellCommand('maint/generateetags.py', timeout = 15*60.0, log = self.framework.log)
+          self.framework.actions.addArgument('PETSc', 'File creation', 'Generated etags files in '+pd)
         except RuntimeError, e:
           self.framework.log.write('*******Error generating etags files: '+str(e)+'*******\n')
       else:

@@ -300,41 +300,7 @@ install_docs:
 #     To locate later occurrences, use M-,
 # Builds all etags files
 alletags:
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_noexamples
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_examples
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags_makefiles
-# Builds complete etags list
-etags:
-	-@${RM} ${TAGSDIR}/ETAGS
-	-@touch ${TAGSDIR}/ETAGS
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS ACTION="etags_sourcec etags_sourcej etags_sourceh etags_examplesc etags_examplesf etags_examplesch etags_examplesfh etags_makefile etags_docs etags_scripts" alltree
-	-@cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS ACTION=etags_sourcef alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS etags_bmakefiles
-	-@maint/fixtags.py ETAGS
-	-@${RM} ETAGS
-# Builds the etags file that excludes the examples directories
-etags_noexamples:
-	-@${RM} ${TAGSDIR}/TAGS_NO_EXAMPLES
-	-@touch ${TAGSDIR}/TAGS_NO_EXAMPLES
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION="etags_sourcec etags_sourcej etags_sourceh etags_makefile etags_docs" alltree
-	-@cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourcef alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES etags_bmakefiles
-# Builds the etags file for makefiles
-etags_makefiles: 
-	-@${RM} ${TAGSDIR}/TAGS_MAKEFILES
-	-@touch ${TAGSDIR}/TAGS_MAKEFILES
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_MAKEFILES ACTION=etags_makefile alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_MAKEFILES etags_bmakefiles
-# Builds the etags file for examples
-etags_examples: 
-	-@${RM} ${TAGSDIR}/TAGS_EXAMPLES
-	-@touch ${TAGSDIR}/TAGS_EXAMPLES
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION="etags_examplesc etags_examplesch etags_examplesf etags_examplesfh" alltree
-etags_fexamples: 
-	-@${RM} ${TAGSDIR}/TAGS_FEXAMPLES
-	-@touch ${TAGSDIR}/TAGS_FEXAMPLES
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_FEXAMPLES ACTION="etags_examplesf etags_examplesfh" alltree
+	-@maint/generateetags.py
 #
 # These are here for the target allci and allco, and etags
 #
