@@ -1,7 +1,8 @@
 IPETSCDIR = ../../../
 ALL: ex1
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS)$(CONF) $(COPT)
+#  The BS_INCLUDE is due to one example, I'd like to get that out or there
+CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) $(COPT) $(BS_INCLUDE)
 SOURCEC  = 
 SOURCEF  =
 WSOURCEC = 
