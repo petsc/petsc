@@ -301,7 +301,7 @@ EXTERN int MatGetDiagonal(Mat,Vec);
 EXTERN int MatGetRowMax(Mat,Vec);
 EXTERN int MatTranspose(Mat,Mat*);
 EXTERN int MatPermute(Mat,IS,IS,Mat *);
-EXTERN int MatPermuteSparsify(Mat,int,double,double,IS,IS,Mat *);
+EXTERN int MatPermuteSparsify(Mat,int,PetscReal,PetscReal,IS,IS,Mat *);
 EXTERN int MatDiagonalScale(Mat,Vec,Vec);
 EXTERN int MatDiagonalSet(Mat,Vec,InsertMode);
 EXTERN int MatEqual(Mat,Mat,PetscTruth*);

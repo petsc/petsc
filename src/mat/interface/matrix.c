@@ -2727,7 +2727,7 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
 
 .seealso: MatGetOrdering(), MatPermute()
 @*/
-int MatPermuteSparsify(Mat A, int band, double frac, double tol, IS rowp, IS colp, Mat *B)
+int MatPermuteSparsify(Mat A, int band, PetscReal frac, PetscReal tol, IS rowp, IS colp, Mat *B)
 {
   IS           irowp, icolp;
   int         *rows, *cols;
