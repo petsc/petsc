@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.115 2000/10/05 22:04:02 balay Exp bsmith $*/
+/*$Id: mg.c,v 1.116 2000/11/01 16:10:36 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -314,7 +314,7 @@ static int PCSetUp_MG(PC pc)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MGSetLevels"
-/*@
+/*@C
    MGSetLevels - Sets the number of levels to use with MG.
    Must be called before any other MG routine.
 
@@ -324,7 +324,7 @@ static int PCSetUp_MG(PC pc)
 +  pc - the preconditioner context
 .  levels - the number of levels
 -  comms - optional communicators for each level; this is to allow solving the coarser problems
-           on smaller sets of processors
+           on smaller sets of processors. Use PETSC_NULL_OBJECT for default in Fortran
 
    Level: intermediate
 
