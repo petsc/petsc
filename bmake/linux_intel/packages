@@ -13,8 +13,6 @@
 #BLASLAPACK_LIB = -L/home/balay/software/fblaslapack/linux_intel -lflapack -lfblas
 #
 BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_def
-PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
-
 #
 # Location of MPI (Message Passing Interface) software
 #

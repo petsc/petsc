@@ -8,8 +8,7 @@
 #
 # Location of BLAS and LAPACK
 #
-BLASLAPACK_LIB         = -L'"C:/Program Files/Intel/plsuite/lib32/dll"' mkl_c.lib
-PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
+BLASLAPACK_LIB         = -L'"C:/Program Files/Intel/MKL/ia32/lib"' mkl_c_dll.lib
 #BLASLAPACK_LIB         = -Lc:/software/f2cblaslapack -lf2clapack -lf2cblas
 #PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
 #
