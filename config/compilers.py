@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
     help.addOption('Compilers', '-with-cc=<prog>', 'Specify the C compiler')
     help.addOption('Compilers', '-with-cxx=<prog>', 'Specify the C++ compiler')
     help.addOption('Compilers', '-with-fc=<prog>', 'Specify the Fortran compiler')
-    help.addOption('Compilers', '-with-f90=<prog>', 'Specify the Fortran 90 compiler')
+    #help.addOption('Compilers', '-with-f90=<prog>', 'Specify the Fortran 90 compiler')
     help.addOption('Compilers', '-with-f90-header=<file>', 'Specify the C header for the F90 interface')
     help.addOption('Compilers', '-with-f90-source=<file>', 'Specify the C source for the F90 interface')
     return
