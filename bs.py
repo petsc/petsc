@@ -30,11 +30,11 @@ class BS (maker.Maker):
 
   def setupArgDB(self, clArgs):
     global argDB
-    argDB = nargs.ArgDict("ArgDict",sys.argv[1:])
+    argDB = nargs.ArgDict('ArgDict', clArgs)
     self.setupDefaultArgs()
     # put current package name into the database
-    package = re.split('/',os.getcwd())[-1]
-    if argDB.has_key("installedpackages"):
+    package = os.path.basename(os.getcwd())
+    if argDB.has_key('installedpackages'):
       packages = argDB['installedpackages']
       if package not in packages:
         packages.append(package)
