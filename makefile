@@ -4,7 +4,7 @@
 # See also bmake/common for additional commands.
 #
 
-PETSC_DIR = .
+#PETSC_DIR = .
 
 CFLAGS	 =
 SOURCEC	 =
