@@ -79,6 +79,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.argDB['LDFLAGS']  = ''
     self.batchIncludes       = ''
     self.batchBodies         = ''
+    self.batchIncludeDirs    = ''
     return
 
   def __getstate__(self):
