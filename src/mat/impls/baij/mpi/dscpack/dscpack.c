@@ -434,7 +434,7 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
 {
   Mat                     B;
   Mat_MPIBAIJ_DSC         *lu;   
-  int                     ierr; 
+  int                     ierr,bs; 
   PetscTruth              flg;
   char                    buff[32], *ftype[] = {"LDLT","LLT"},
                           *ltype[] = {"LBLAS1","LBLAS2","LBLAS3"},
@@ -444,13 +444,15 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
   ierr = PetscNew(Mat_MPIBAIJ_DSC,&lu);CHKERRQ(ierr); 
 
   /* Create the factorization matrix F */ 
-  ierr = MatGetBlockSize(A,&lu->bs);
+  ierr = MatGetBlockSize(A,&bs);
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATDSCPACK);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(B,lu->bs,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(B,lu->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(B,bs,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(B,bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     
-  B->spptr                       = (Mat_MPIBAIJ_DSC*)lu;
+  lu = (Mat_MPIBAIJ_DSC*)B->spptr;
+  lu->bs = bs;
+
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK;
   B->ops->solve                  = MatSolve_MPIBAIJ_DSCPACK;
   B->factor                      = FACTOR_CHOLESKY;  
