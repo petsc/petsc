@@ -107,6 +107,10 @@ build:
 #
 # Builds PETSc test examples for a given BOPT and architecture
 #
+test: chkopts
+	-@echo "Running test example to verify correct installation"
+	-@cd src/snes/examples/tutorials; ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
+
 testexamples: info chkopts
 	-@echo "BEGINNING TO COMPILE AND RUN TEST EXAMPLES"
 	-@echo "Due to different numerical round-off on certain"

@@ -1,0 +1,59 @@
+# $Id: rules,v 1.53 2001/08/22 17:57:34 balay Exp balay $ 
+#
+
+libc: ${LIBNAME}(${OBJSC})
+libf: ${OBJSF}
+	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
+
+#############
+shared_arch: shared_linux
+
+#
+#  Generates a shared library from any .a library; not just the PETSc ones
+#  This is to allow any user to generate his or her own shared library
+#
+#  
+
+oshared: 
+	-@${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+        echo "building ${LIBNAME}.${SLSUFFIX}"; \
+	${AR} x ../${LIBNAME}.a ;\
+	${SH_LD} -shared -Wl,-soname,${LIBNAME}.${SLSUFFIX} *.o -o ../${LIBNAME}.${SLSUFFIX}; \
+	cd ../ ; \
+	${RM} -rf tmp
+
+#
+# Notes:
+#
+#  -ldl is the dynamic link library that allows one to use dlopen() etc
+#
+
+CCLD    = $(CC)
+
+shared_new: chkopts_basic
+	-@echo making shared libraries in ${INSTALL_LIB_DIR} ;\
+	cd ${INSTALL_LIB_DIR}; \
+	${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in ${SHLIBS} ; \
+	do \
+          if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.a ]; then \
+	    flag=""; \
+	    if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    else \
+	      flag="true"; \
+	    fi; \
+            if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${AR} x ../$$LIBNAME.a ;\
+	      $(LIBTOOL) --mode=link $(CCLD) $(COPTFLAGS) $(LDFLAGS) -o ../$$LIBNAME.$(SLSUFFIX) *.o ${PETSC_EXTERNAL_LIB_BASIC}  ;\
+	      ${RM} -f * ; \
+	    fi; \
+	  fi; \
+	done ;\
+	cd ../ ; \
+	${RM} -rf tmp

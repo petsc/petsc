@@ -314,6 +314,19 @@ runex19:
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
+testex19: ex19.PETSc
+	@${MPIRUN} -np 1 ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
+           echo "src/snes/examples/tutorials/ex19 run successfully on 1 processor"; \
+	   else echo "Error running src/snes/examples/tutorials/ex19 on 1 processor"; \
+           cat ex19_1.tmp; fi; 
+	@if [ "${MPIRUN}" != "${PETSC_DIR}/src/sys/src/mpiuni/mpirun" ]; then \
+           ${MPIRUN} -np 2 ex19 -dmmg_nlevels 4   > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
+           echo "src/snes/examples/tutorials/ex19 run successfully on 2 processor"; \
+	   else echo "Error running src/snes/examples/tutorials/ex19 on 2 processor"; \
+           cat ex19_1.tmp; fi; fi; \
+	   ${RM} -f ex19_1.tmp ex19 ex19.o tmpfile
 runex21:
 	-@${MPIRUN} -np 4 ex21  -snes_mf -snes_smonitor -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \

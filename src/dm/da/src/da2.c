@@ -1721,6 +1721,8 @@ int DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
 
    Level: intermediate
 
+   Notes: you should call this on the coarser of the two DAs you pass to DAGetInterpolation()
+
 .keywords:  distributed array, interpolation
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAInterpolationType
