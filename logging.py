@@ -1,3 +1,13 @@
+
+class defaultWriter:
+  def __init__(self):
+    pass
+
+  def write(self,mess):
+    import sys
+    sys.std.write(mess)
+    
+    
 class Logger(object):
   debugLevel    = None
   debugSections = None
@@ -12,8 +22,13 @@ class Logger(object):
     self.debugSections     = Logger.debugSections
     self.debugIndent       = Logger.debugIndent
     self.log               = log
+    self.writer            = defaultWriter()
     return
 
+  def setWriter(self,writer):
+    '''Allows sending the debug message to an alternative than stdout'''
+    self.writer = writer
+    
   def debugListStr(self, l):
     if (self.debugLevel > 4) or (len(l) < 4):
       return str(l)
@@ -51,5 +66,6 @@ class Logger(object):
     if self.debugLevel >= level:
       if (not section) or (not self.debugSections) or (section in self.debugSections):
         for i in range(indentLevel):
-          sys.stdout.write(self.debugIndent)
-        print msg
+          self.writer.write(self.debugIndent)
+        self.writer.write(msg)
+        self.writer.write('\n')
