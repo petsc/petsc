@@ -426,6 +426,6 @@ if __name__ ==  '__main__':
   sys.stdout.flush()
   sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
   import install.installer
-  args = ['-debugSections=[install]','-debugLevel=2']
+  args = ['-debugSections=[install]','-debugLevel=2','-installedprojects=[]']
   install.installer.runinstaller(args)
       
