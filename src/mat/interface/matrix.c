@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.217 1997/01/12 04:33:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.218 1997/01/22 18:39:23 bsmith Exp curfman $";
 #endif
 
 /*
@@ -2460,20 +2460,26 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
 
 
 /*@
-     MatSetUnfactored - Resets a factored matrix to be treated as unfactored.
+   MatSetUnfactored - Resets a factored matrix to be treated as unfactored.
 
-  Input Paramter:
-.   mat - the factored matrix to be reset
+   Input Paramter:
+.  mat - the factored matrix to be reset
 
-  Notes: This should only be used with factored matrices formed with ILU(0) in place,
-    or dense matrices with LU in place. For example, one can use this when solving
-    nonlinear systems with SLES using a matrix free multiply and a matrix based 
-    preconditioner on which one uses PCType(pc,PCILU); PCILUSetUseInPlace(pc);
+   Notes: 
+   This routine should be used only with factored matrices formed by in-place
+   factorization via ILU(0) (or by in-place LU factorization for the MATSEQDENSE
+   format).  This option can save memory, for example, when solving nonlinear
+   systems with a matrix-free Newton-Krylov method and a matrix-based, in-place
+   ILU(0) preconditioner.  
+
+  Note that one can specify in-place ILU(0) factorization by calling 
+$     PCType(pc,PCILU);
+$     PCILUSeUseInPlace(pc);
+  or by using the options -pc_type ilu -pc_ilu_in_place
 
 .seealso: PCILUSetUseInPlace(), PCLUSetUseInPlace()
 
-.keywords: matrix free preconditioner, in place ILU
-
+.keywords: matrix-free, in-place ILU, in-place LU
 @*/
 int MatSetUnfactored(Mat mat)
 {
