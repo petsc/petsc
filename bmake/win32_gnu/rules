@@ -20,6 +20,8 @@ CONF     = -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
            -DHAVE_SYS_TIME_H -DHAVE_SWAPPED_BYTES \
 	   -DHAVE_UNAME $(FCONF)
 
+SYS_LIB  = -ladvapi32
+
 include $(PETSC_DIR)/bmake/common
 
 libc: $(OBJSC)
