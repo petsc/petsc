@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.4 2000/12/13 17:39:08 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.5 2000/12/13 21:27:37 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -37,7 +37,6 @@ static char help[] = "Solves PDE optimization problem\n\n";
 */
 
 typedef struct {
-  int     nredundant;
   Viewer  u_lambda_viewer;
   Viewer  fu_lambda_viewer;
 } UserCtx;
@@ -50,8 +49,7 @@ extern int Monitor(SNES,int,PetscReal,void*);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr,N = 5,its;
-  SNES    snes;
+  int     ierr,N = 5;
   UserCtx user;
   DA      da;
   DMMG    *dmmg;
@@ -62,8 +60,7 @@ int main(int argc,char **argv)
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
-  user.nredundant = 1;
-  ierr = VecPackAddArray(packer,user.nredundant);CHKERRQ(ierr);
+  ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
 
@@ -72,11 +69,12 @@ int main(int argc,char **argv)
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer);CHKERRQ(ierr);
 
   /* create nonlinear multi-level solver */
-  ierr = DMMGCreate(PETSC_COMM_WORLD,1,&user,&dmmg);CHKERRQ(ierr);
+  ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESSetMonitor(DMMGGetSNES(dmmg),Monitor,dmmg,0);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
   ierr = DADestroy(da);CHKERRQ(ierr);
   ierr = VecPackDestroy(packer);CHKERRQ(ierr);
@@ -97,7 +95,6 @@ int main(int argc,char **argv)
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   DMMG    dmmg = (DMMG)dummy;
-  UserCtx *user = (UserCtx*)dmmg->user;
   int     ierr,xs,xm,i,N,nredundant;
   Scalar  **u_lambda,*w,*fw,**fu_lambda,d;
   Vec     vu_lambda,vfu_lambda;
@@ -118,8 +115,8 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
 #define u(i)        u_lambda[i][0]
 #define lambda(i)   u_lambda[i][1]
-#define fu(i)       fu_lambda[i][0]
-#define flambda(i)  fu_lambda[i][1]
+#define fu(i)       fu_lambda[i][1]
+#define flambda(i)  fu_lambda[i][0]
 
   /* derivative of L() w.r.t. w */
   if (xs == 0) { /* only first processor computes this */
@@ -128,16 +125,16 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu(0)   = 2.*d*u(0)   + d*lambda(0)   + d*lambda(1);
-    else if (i == N-1) fu(N-1) = 2.*d*u(N-1) + d*lambda(N-1) + d*lambda(N-2);
-    else               fu(i)   = 2.*d*u(i)   + d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1));
+    if      (i == 0)   fu(0)   = 2.*u(0)   + d*lambda(0)   + d*lambda(1);
+    else if (i == N-1) fu(N-1) = 2.*u(N-1) + d*lambda(N-1) + d*lambda(N-2);
+    else               fu(i)   = -(2.*u(i)   + d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1)));
   } 
 
   /* derivative of L() w.r.t. lambda */
   for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   flambda(0)   = d*u(0) - d*w[0];
     else if (i == N-1) flambda(N-1) = d*u(N-1);
-    else               flambda(i)   = d*(u(i+1) - 2.0*u(i) + u(i-1)) - 2.0;
+    else               flambda(i)   = -(d*(u(i+1) - 2.0*u(i) + u(i-1)) - 2.0);
   } 
 
   ierr = DAVecRestoreArray(da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
