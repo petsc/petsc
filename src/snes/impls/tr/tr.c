@@ -351,6 +351,8 @@ int SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,S
    necessarily have many of the bells and whistles of other 
    implementations.  
 
+   Level: intermediate
+
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESSetTrustRegionTolerance()
 
 M*/

@@ -203,6 +203,8 @@ typedef struct {
    Synopsis:
    int  DAForEachPointBegin2d(DALocalInfo *info,int i,int j);
    
+   Level: intermediate
+
 .seealso: DAForEachPointEnd2d(), DAVecGetArray()
 M*/
 #define DAForEachPointBegin2d(info,i,j) {\
@@ -216,6 +218,8 @@ M*/
    Synopsis:
    int  DAForEachPointEnd2d;
    
+   Level: intermediate
+
 .seealso: DAForEachPointBegin2d(), DAVecGetArray()
 M*/
 #define DAForEachPointEnd2d }}}
