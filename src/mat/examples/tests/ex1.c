@@ -69,10 +69,10 @@ int main(int argc,char **argv)
   ierr = MatConvert(mat,MATSAME,&fact);CHKERRQ(ierr);
   luinfo.fill           = 5.0;
   luinfo.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
-  luinfo.damping        = 0.0;
+  luinfo.shiftnz        = 0.0;
   luinfo.zeropivot      = 1.e-12;
   luinfo.pivotinblocks  = 1.0;
-  luinfo.shift          = PETSC_FALSE;
+  luinfo.shiftpd        = PETSC_FALSE;
   luinfo.shift_fraction = 0.0;
   ierr = MatLUFactor(fact,perm,perm,&luinfo);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
@@ -81,9 +81,9 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %A\n",norm);CHKERRQ(ierr);
   ierr = MatDestroy(fact);CHKERRQ(ierr);
 
-  luinfo.fill = 2.0;
-  luinfo.dtcol = 0.0; 
-  luinfo.damping = 0.0; 
+  luinfo.fill      = 2.0;
+  luinfo.dtcol     = 0.0; 
+  luinfo.shiftnz   = 0.0; 
   luinfo.zeropivot = 1.e-14; 
   luinfo.pivotinblocks = 1.0; 
   ierr = MatLUFactorSymbolic(mat,perm,perm,&luinfo,&fact);CHKERRQ(ierr);

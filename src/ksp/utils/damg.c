@@ -539,6 +539,7 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
   KSP            iksp;
   PC             pc,ipc;
   PetscTruth     ismg,isred;
+  PC_LU          *lu=PETSC_NULL;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
@@ -577,7 +578,10 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
       if (isred) {
         ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
       }
-      ierr = PCFactorSetShiftPd(PETSC_TRUE,&((PC_LU*)ipc->data)->info);CHKERRQ(ierr);
+      lu = (PC_LU*)ipc->data;
+      if (lu){
+        ierr = PCFactorSetShiftPd(PETSC_TRUE,&lu->info);CHKERRQ(ierr);
+      }
     }
   }
   PetscFunctionReturn(0);
