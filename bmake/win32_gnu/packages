@@ -1,3 +1,4 @@
+# $Id: base,v 1.42 1998/12/04 19:34:49 bsmith Exp bsmith $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -5,19 +6,8 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# FCLIB contains the libraries for a CLINKER to use for code containing
-# FORTRAN code (such as I/O or special Fortran runtimes).  
-# The extra -lm is needed to force the C version of libm.a to 
-# be searched before the Fortran 77 version.
-#
-#FC_LIB         = c:/users/petsc/clapack/f2clibs/libF77.a \
-#		 c:/users/petsc/clapack/f2clibs/libI77.a -lm
-FC_LIB          = -lg2c
-#
 # Location of BLAS and LAPACK.  
 #
-#BLAS_LIB       = c:/users/petsc/clapack/blas_nt.a
-#LAPACK_LIB     = c:/users/petsc/clapack/lapack_nt.a
 BLAS_LIB       = c:/home/blaslapack/blas.a
 LAPACK_LIB     = c:/home/blaslapack/lapack.a
 
