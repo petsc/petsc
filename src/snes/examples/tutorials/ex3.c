@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.32 1996/03/05 16:27:35 balay Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.33 1996/03/19 21:29:18 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -23,14 +23,14 @@ typedef struct {
 
 int main( int argc, char **argv )
 {
-  SNES           snes;                  /* SNES context */
-  SNESType       method = SNES_EQ_NLS;  /* nonlinear solution method */
-  Mat            J;                     /* Jacobian matrix */
-  ApplicationCtx ctx;                   /* user-defined context */
-  Vec            x, r, U, F;
+  SNES           snes;                 /* SNES context */
+  SNESType       method = SNES_EQ_LS;  /* nonlinear solution method */
+  Mat            J;                    /* Jacobian matrix */
+  ApplicationCtx ctx;                  /* user-defined context */
+  Vec            x, r, U, F;           /* vectors */
   Scalar         xp, *FF, *UU;
   int            ierr, its, N = 5, i, start, end, n, set,flg;
-  MatType        mtype=MATMPIAIJ;
+  MatType        mtype=MATMPIAIJ;     
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&N,&flg); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.45 1996/02/08 18:28:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.46 1996/03/19 21:29:18 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -54,10 +54,10 @@ int main( int argc, char **argv )
   SLES          sles;                      /* linear solver */
   PC            pc;                        /* preconditioner */
   SNES          snes;                      /* nonlinear solver */
-  SNESType      method = SNES_EQ_NLS;      /* nonlinear solution method */
+  SNESType      method = SNES_EQ_LS;       /* nonlinear solution method */
   Vec           x, r;                      /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
-  AppCtx        user;                      /* user's work context */
+  AppCtx        user;                      /* user-defined work context */
   DAStencilType stencil = DA_STENCIL_BOX;  /* stencil type for DA */
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE,size,flg1,flg2; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;

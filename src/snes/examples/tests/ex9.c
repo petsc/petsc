@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.19 1996/01/29 21:46:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.20 1996/03/19 21:29:18 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -44,17 +44,16 @@ int FormFunction1(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
 
 int main( int argc, char **argv )
 {
-  SNES          snes;
-  SLES          sles;
-  PC            pc;
-  Mat           J;
-  SNESType      method = SNES_EQ_NLS;  /* nonlinear solution method */
-  Vec           x,r;
-  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, Nz = PETSC_DECIDE; 
-  int           flg;
-  AppCtx        user;
-  double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  SNES          snes;                 /* nonlinear solver */
+  SLES          sles;                 /* linear solver */
+  PC            pc;                   /* preconditioner */
+  Mat           J;                    /* Jacobian matrix */
+  AppCtx        user;                 /* user-defined application context */
+  Vec           x,r;                  /* vectors */
   DAStencilType stencil = DA_STENCIL_BOX;
+  int           ierr, its, N, flg;
+  int           Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, Nz = PETSC_DECIDE; 
+  double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsHasName(PETSC_NULL,"-star",&flg); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.35 1996/02/08 18:28:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.36 1996/03/19 21:29:18 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -20,15 +20,15 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 
 int main( int argc, char **argv )
 {
-  SNES         snes;                 /* SNES context */
-  SNESType     method = SNES_EQ_NLS; /* nonlinear solution method */
-  SLES         sles;                 /* SLES context */
-  PC           pc;                   /* PC context */
-  Vec          x, r, F;              /* solution, residual, work vector */
-  Mat          J, JPrec;             /* Jacobian, preconditioner matrices */
-  int          ierr, its, n = 5, i,flg;
-  double       h, xp = 0.0;
-  Scalar       v;
+  SNES     snes;                 /* SNES context */
+  SNESType method = SNES_EQ_LS;  /* default nonlinear solution method */
+  SLES     sles;                 /* SLES context */
+  PC       pc;                   /* PC context */
+  Vec      x, r, F;              /* solution, residual, work vector */
+  Mat      J, JPrec;             /* Jacobian, preconditioner matrices */
+  int      ierr, its, n = 5, i,flg;
+  double   h, xp = 0.0;
+  Scalar   v;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);

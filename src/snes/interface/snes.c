@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.68 1996/03/23 20:43:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.69 1996/03/24 22:11:36 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -114,10 +114,10 @@ int SNESSetFromOptions(SNES snes)
   }
   else if (!snes->set_method_called) {
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetType(snes,SNES_EQ_NLS); CHKERRQ(ierr);
+      ierr = SNESSetType(snes,SNES_EQ_LS); CHKERRQ(ierr);
     }
     else {
-      ierr = SNESSetType(snes,SNES_UM_NTR); CHKERRQ(ierr);
+      ierr = SNESSetType(snes,SNES_UM_TR); CHKERRQ(ierr);
     }
   }
 
@@ -985,7 +985,7 @@ int SNESSetUp(SNES snes,Vec x)
     if (snes->vec_func == snes->vec_sol) SETERRQ(1,"SNESSetUp:Solution vector cannot be function vector");
 
     /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
-    if (snes->ksp_ewconv && snes->type != SNES_EQ_NTR) {
+    if (snes->ksp_ewconv && snes->type != SNES_EQ_TR) {
       SLES sles; KSP ksp;
       ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
       ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
@@ -1178,7 +1178,8 @@ $    f - function value
 
 .keywords: SNES, nonlinear, set, convergence, test
 
-.seealso: SNESDefaultConverged()
+.seealso: SNESConverged_EQ_LS(), SNESConverged_EQ_TR(), 
+          SNESConverged_UM_LS(), SNESConverged_UM_TR()
 @*/
 int SNESSetConvergenceTest(SNES snes,
           int (*func)(SNES,double,double,double,void*),void *cctx)
@@ -1205,7 +1206,7 @@ int SNESSetConvergenceTest(SNES snes,
 .   ynorm - 2-norm of the step
 
     Note:
-    For non-trust region methods such as SNES_EQ_NLS, the parameter delta 
+    For non-trust region methods such as SNES_EQ_LS, the parameter delta 
     is set to be the maximum allowable step size.  
 
 .keywords: SNES, nonlinear, scale, step
@@ -1278,11 +1279,11 @@ static NRList *__SNESList = 0;
    Notes:
    See "petsc/include/snes.h" for available methods (for instance)
 $  Systems of nonlinear equations:
-$    SNES_EQ_NLS - Newton's method with line search
-$    SNES_EQ_NTR - Newton's method with trust region
+$    SNES_EQ_LS - Newton's method with line search
+$    SNES_EQ_TR - Newton's method with trust region
 $  Unconstrained minimization:
-$    SNES_UM_NTR - Newton's method with trust region 
-$    SNES_UM_NLS - Newton's method with line search
+$    SNES_UM_TR - Newton's method with trust region 
+$    SNES_UM_LS - Newton's method with line search
 
   Options Database Command:
 $ -snes_type  <method>
@@ -1311,8 +1312,8 @@ int SNESSetType(SNES snes,SNESType method)
    a function pointer and a nonlinear solver name of the type SNESType.
 
    Input Parameters:
-.  name - for instance SNES_EQ_NLS, SNES_EQ_NTR, ...
-.  sname - corfunPonding string for name
+.  name - for instance SNES_EQ_LS, SNES_EQ_TR, ...
+.  sname - corresponding string for name
 .  create - routine to create method context
 
 .keywords: SNES, nonlinear, register

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.38 1996/03/24 15:31:39 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.39 1996/03/24 16:05:57 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -9,12 +9,12 @@ static char vcid[] = "$Id: umtr.c,v 1.38 1996/03/24 15:31:39 curfman Exp curfman
 #include "pinclude/pviewer.h"
 
 /*
-    SNESSolve_UMTR - Implements Newton's Method with a trust region approach 
+    SNESSolve_UM_TR - Implements Newton's Method with a trust region approach 
     for solving unconstrained minimization problems.  
 
     The basic algorithm is taken from MINPACK-2 (dstrn).
 
-    NLM_NTR1 computes a local minimizer of a twice differentiable function
+    SNESSolve_UM_TR computes a local minimizer of a twice differentiable function
     f  by applying a trust region variant of Newton's method.  At each stage 
     of the algorithm, we us the prconditioned conjugate gradient method to
     determine an approximate minimizer of the quadratic equation
@@ -28,11 +28,11 @@ static char vcid[] = "$Id: umtr.c,v 1.38 1996/03/24 15:31:39 curfman Exp curfman
     where delta is the trust region radius and D is a scaling matrix.
     Here g is the gradient and H is the Hessian matrix.
 
-    Note:  SNESSolve_UMTR MUST use the iterative solver KSPQCG; thus, we
+    Note:  SNESSolve_UM_TR MUST use the iterative solver KSPQCG; thus, we
            set KSPQCG in this routine regardless of what the user may have
            previously specified.
 */
-static int SNESSolve_UMTR(SNES snes,int *outits)
+static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
   SNES_UMTR    *neP = (SNES_UMTR *) snes->data;
   int          maxits, i, history_len, nlconv, ierr, qits, newton;
@@ -68,7 +68,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPQCG); CHKERRQ(ierr);
-  PLogInfo(snes,"SNESSolve_UMTR: setting KSPType = KSPQCG\n");
+  PLogInfo(snes,"SNESSolve_UM_TR: setting KSPType = KSPQCG\n");
   qcgP = (KSP_QCG *) ksp->data;
 
   for ( i=0; i<maxits && !nlconv; i++ ) {
@@ -90,7 +90,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
           PLogInfo(snes,"Initial delta computed without matrix norm info");
         } else {
           CHKERRQ(ierr);
-          if (PetscAbsScalar(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UMTR:Hessian norm is too small");
+          if (PetscAbsScalar(max_val)<1.e-14)SETERRQ(1,"SNESSolve_UM_TR:Hessian norm is too small");
           delta = PetscMax(delta,*gnorm/max_val);
         }
       } else { 
@@ -101,7 +101,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       /* Minimize the quadratic to compute the step s */
       qcgP->delta = delta;
       ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
-      if (qits < 0) SETERRQ(1,"SNESSolve_UMTR:Failure in SLESSolve");
+      if (qits < 0) SETERRQ(1,"SNESSolve_UM_TR:Failure in SLESSolve");
       if (qcgP->info == 3) newton = 1;	            /* truncated Newton step */
       PLogInfo(snes,"%d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
                i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
@@ -178,7 +178,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESSetUp_UMTR(SNES snes)
+static int SNESSetUp_UM_TR(SNES snes)
 {
   int ierr;
 
@@ -189,7 +189,7 @@ static int SNESSetUp_UMTR(SNES snes)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESDestroy_UMTR(PetscObject obj )
+static int SNESDestroy_UM_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
   int  ierr;
@@ -199,8 +199,8 @@ static int SNESDestroy_UMTR(PetscObject obj )
 }
 /*------------------------------------------------------------*/
 /*@ 
-   SNESConverged_UMTR - Default test for monitoring the 
-   convergence of the SNESSolve_UMTR() routine. 
+   SNESConverged_UM_TR - Default test for monitoring the 
+   convergence of the SNESSolve_UM_TR() routine. 
 
    Input Parameters:
 .  snes - the SNES context
@@ -233,7 +233,7 @@ $    pred     - predicted reduction
 $    rtol     - relative function tolerance, 
 $               set with SNESSetTolerances()
 @*/
-int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
+int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,
                        void *dummy)
 {
   SNES_UMTR *neP = (SNES_UMTR *) snes->data;
@@ -241,7 +241,7 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-    "SNESConverged_UMTR:For SNES_UNCONSTRAINED_MINIMIZATION only");
+    "SNESConverged_UM_TR:For SNES_UNCONSTRAINED_MINIMIZATION only");
 
   /* Test for successful convergence */
   if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
@@ -273,7 +273,7 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESSetFromOptions_UMTR(SNES snes)
+static int SNESSetFromOptions_UM_TR(SNES snes)
 {
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
   double    tmp;
@@ -294,11 +294,11 @@ static int SNESSetFromOptions_UMTR(SNES snes)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESPrintHelp_UMTR(SNES snes,char *p)
+static int SNESPrintHelp_UM_TR(SNES snes,char *p)
 {
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
 
-  PetscPrintf(snes->comm," method SNES_UM_NTR (umtr) for unconstrained minimization:\n");
+  PetscPrintf(snes->comm," method SNES_UM_TR (umtr) for unconstrained minimization:\n");
   PetscPrintf(snes->comm,"   %ssnes_trust_region_eta1 <eta1> (default %g)\n",p,ctx->eta1);
   PetscPrintf(snes->comm,"   %ssnes_trust_region_eta2 <eta2> (default %g)\n",p,ctx->eta2);
   PetscPrintf(snes->comm,"   %ssnes_trust_region_eta3 <eta3> (default %g)\n",p,ctx->eta3);
@@ -316,7 +316,7 @@ static int SNESPrintHelp_UMTR(SNES snes,char *p)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESView_UMTR(PetscObject obj,Viewer viewer)
+static int SNESView_UM_TR(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;
   SNES_UMTR  *tr = (SNES_UMTR *)snes->data;
@@ -334,23 +334,23 @@ static int SNESView_UMTR(PetscObject obj,Viewer viewer)
   return 0;
 }
 /*------------------------------------------------------------*/
-int SNESCreate_UMTR(SNES snes)
+int SNESCreate_UM_TR(SNES snes)
 {
   SNES_UMTR *neP;
 
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) 
-    SETERRQ(1,"SNESCreate_UMTR:For SNES_UNCONSTRAINED_MINIMIZATION only");
-  snes->type 		= SNES_UM_NTR;
-  snes->setup		= SNESSetUp_UMTR;
-  snes->solve		= SNESSolve_UMTR;
-  snes->destroy		= SNESDestroy_UMTR;
-  snes->converged	= SNESConverged_UMTR;
-  snes->printhelp       = SNESPrintHelp_UMTR;
-  snes->setfromoptions  = SNESSetFromOptions_UMTR;
-  snes->view            = SNESView_UMTR;
+    SETERRQ(1,"SNESCreate_UM_TR:For SNES_UNCONSTRAINED_MINIMIZATION only");
+  snes->type 		= SNES_UM_TR;
+  snes->setup		= SNESSetUp_UM_TR;
+  snes->solve		= SNESSolve_UM_TR;
+  snes->destroy		= SNESDestroy_UM_TR;
+  snes->converged	= SNESConverged_UM_TR;
+  snes->printhelp       = SNESPrintHelp_UM_TR;
+  snes->setfromoptions  = SNESSetFromOptions_UM_TR;
+  snes->view            = SNESView_UM_TR;
 
   neP			= PetscNew(SNES_UMTR); CHKPTRQ(neP);
-  PLogObjectMemory(snes,sizeof(SNES_UMTR));
+  PLogObjectMemory(snes,sizeof(SNES_UM_TR));
   snes->data	        = (void *) neP;
   neP->delta0		= 1.0e-6;
   neP->delta 		= 0.0;

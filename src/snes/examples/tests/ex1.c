@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.36 1996/03/10 17:29:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.37 1996/03/19 21:29:18 bsmith Exp curfman $";
 #endif
 
 static char help[] =
@@ -54,14 +54,14 @@ int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 
 int main( int argc, char **argv )
 {
-  SNES         snes;
-  SNESType     method = SNES_EQ_NLS;  /* nonlinear solution method */
-  Vec          x,r;
-  Mat          J;
-  int          ierr, its, N, nfails,flg; 
-  AppCtx       user;
-  Draw         draw;
-  double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  SNES     snes;                 /* SNES context */
+  SNESType method = SNES_EQ_LS;  /* default nonlinear solution method */
+  Vec      x, r;                 /* solution, residual vectors */
+  Mat      J;                    /* Jacobian matrix */
+  AppCtx   user;                 /* user-defined application context */
+  Draw     draw;                 /* drawing context */
+  int      ierr, its, N, nfails,flg; 
+  double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);

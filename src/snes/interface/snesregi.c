@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.10 1995/08/22 16:33:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesregi.c,v 1.11 1996/01/01 01:05:05 bsmith Exp curfman $";
 #endif
 
 #include "snesimpl.h"     /*I  "snes.h"  I*/
-extern int SNESCreate_LS(SNES);
-extern int SNESCreate_TR(SNES);
-extern int SNESCreate_UMTR(SNES);
-extern int SNESCreate_UMLS(SNES);
+extern int SNESCreate_EQ_LS(SNES);
+extern int SNESCreate_EQ_TR(SNES);
+extern int SNESCreate_UM_TR(SNES);
+extern int SNESCreate_UM_LS(SNES);
 extern int SNESCreate_Test(SNES);
 
 /*@C
@@ -36,10 +36,10 @@ $       routine requires recompilation.
 @*/
 int SNESRegisterAll()
 {
-  SNESRegister((int)SNES_EQ_NLS,         "ls",      SNESCreate_LS);
-  SNESRegister((int)SNES_EQ_NTR,         "tr",      SNESCreate_TR);
-  SNESRegister((int)SNES_EQ_NTEST,       "test",    SNESCreate_Test);
-  SNESRegister((int)SNES_UM_NTR,         "umtr",    SNESCreate_UMTR);
-  SNESRegister((int)SNES_UM_NLS,         "umls",    SNESCreate_UMLS);
+  SNESRegister((int)SNES_EQ_LS,         "ls",      SNESCreate_EQ_LS);
+  SNESRegister((int)SNES_EQ_TR,         "tr",      SNESCreate_EQ_TR);
+  SNESRegister((int)SNES_EQ_TEST,       "test",    SNESCreate_Test);
+  SNESRegister((int)SNES_UM_TR,         "umtr",    SNESCreate_UM_TR);
+  SNESRegister((int)SNES_UM_LS,         "umls",    SNESCreate_UM_LS);
   return 0;
 }

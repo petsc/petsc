@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.23 1996/01/23 00:20:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.24 1996/03/19 21:29:12 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"
@@ -93,11 +93,11 @@ int SNESCreate_Test(SNES  snes )
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS)
     SETERRQ(1,"SNESCreate_Test:For SNES_NONLINEAR_EQUATIONS only");
-  snes->type		= SNES_EQ_NTEST;
+  snes->type		= SNES_EQ_TEST;
   snes->setup		= 0;
   snes->solve		= SNESSolve_Test;
   snes->destroy		= SNESDestroy_Test;
-  snes->converged	= SNESDefaultConverged;
+  snes->converged	= SNESConverged_EQ_LS;
   snes->printhelp       = SNESPrintHelp_Test;
   snes->setfromoptions  = SNESSetFromOptions_Test;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.35 1996/03/24 16:06:04 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.36 1996/03/25 23:17:49 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -147,7 +147,7 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
 
-  PetscPrintf(snes->comm," method SNES_UM_NLS (umls) for unconstrained minimization:\n");
+  PetscPrintf(snes->comm," method SNES_UM_LS (umls) for unconstrained minimization:\n");
   PetscPrintf(snes->comm,"   %ssnes_line_search_gamma_f gamma_f (default %g) damping parameter\n",
     p,ctx->gamma_factor);
   PetscPrintf(snes->comm,"   %ssnes_line_search_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);
@@ -524,7 +524,7 @@ int SNESCreate_UM_LS(SNES snes)
 
 /* @
    SNESGetLineSearchDampingParameter - Gets the damping parameter used within
-   the line search method SNES_UM_NLS for unconstrained minimization.
+   the line search method SNES_UM_LS for unconstrained minimization.
 
    Input Parameter:
 .  method - SNES method

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.47 1996/03/10 17:29:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.48 1996/03/19 21:29:18 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -19,12 +19,12 @@ typedef struct {
 
 int main( int argc, char **argv )
 {
-  SNES         snes;               /* SNES context */
-  Vec          x,r,F,U;
-  Mat          J;                  /* Jacobian matrix */
-  int          ierr, its, n = 5,i,flg;
-  Scalar       h,xp = 0.0,v;
-  MonitorCtx   monP;               /* monitoring context */
+  SNES       snes;                   /* SNES context */
+  Vec        x, r, F, U;             /* vectors */
+  Mat        J;                      /* Jacobian matrix */
+  MonitorCtx monP;                   /* monitoring context */
+  int        ierr, its, n = 5,i,flg;
+  Scalar     h, xp = 0.0, v;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);

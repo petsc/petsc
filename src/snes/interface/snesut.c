@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.15 1996/03/23 20:43:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesut.c,v 1.16 1996/03/23 23:15:25 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -69,7 +69,7 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 }
 /* ---------------------------------------------------------------- */
 /*@C 
-   SNESDefaultConverged - Default test for monitoring the convergence 
+   SNESConverged_EQ_LS - Default test for monitoring the convergence 
    of the solvers for systems of nonlinear equations.
 
    Input Parameters:
@@ -99,10 +99,10 @@ $           set with SNESSetTolerances()
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
+int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
-    "SNESDefaultConverged:For SNES_NONLINEAR_EQUATIONS only");
+    "SNESConverged_EQ_LS:For SNES_NONLINEAR_EQUATIONS only");
   /* Note:  Reserve return code 1, -1 for compatibility with SNESConverged_EQTR */
   if (fnorm <= snes->ttol) {
     PLogInfo(snes,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.51 1996/03/24 16:05:47 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.52 1996/03/25 23:17:59 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -291,11 +291,11 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   int     info;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,"SNESDefaultConverged:For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,"SNESConverged_EQ_LS:For SNES_NONLINEAR_EQUATIONS only");
 
   if (neP->delta < xnorm * snes->deltatol) {
     PLogInfo(snes,
-      "SNES:Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
+      "SNES: Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
     return 1;
   }
   if (neP->itflag) {
