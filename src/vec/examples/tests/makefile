@@ -106,71 +106,71 @@ runex17:
            else echo "Possible problem with ex17_1, diffs above"; fi;\
            $(RM) -f ex17_1.tmp
 	
-ex1: ex1.o 
+ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(SLES_LIB)
 	$(RM) -f ex1.o
 
-ex2: ex2.o 
+ex2: ex2.o  chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
 	$(RM) -f ex2.o
 
-ex3: ex3.o 
+ex3: ex3.o  chkopts
 	-$(CLINKER) -o ex3 ex3.o  $(SLES_LIB)
 	$(RM) -f ex3.o
 
-ex4: ex4.o 
+ex4: ex4.o  chkopts
 	-$(CLINKER) -o ex4 ex4.o  $(SLES_LIB)
 	$(RM) -f ex4.o
 
-ex5: ex5.o 
+ex5: ex5.o  chkopts
 	-$(CLINKER) -o ex5 ex5.o  $(SLES_LIB)
 	$(RM) -f ex5.o
 
-ex6: ex6.o 
+ex6: ex6.o  chkopts
 	-$(CLINKER) -o ex6 ex6.o  $(SLES_LIB)
 	$(RM) -f ex6.o
 
-ex7: ex7.o 
+ex7: ex7.o  chkopts
 	-$(CLINKER) -o ex7 ex7.o  $(SLES_LIB)
 	$(RM) -f ex7.o
 
-ex8: ex8.o 
+ex8: ex8.o  chkopts
 	-$(CLINKER) -o ex8 ex8.o  $(SLES_LIB)
 	$(RM) -f ex8.o
 
-ex9: ex9.o 
+ex9: ex9.o  chkopts
 	-$(CLINKER) -o ex9 ex9.o  $(SLES_LIB)
 	$(RM) -f ex9.o
 
-ex10: ex10.o 
+ex10: ex10.o  chkopts
 	-$(CLINKER) -o ex10 ex10.o  $(SLES_LIB)
 	$(RM) -f ex10.o
 
-ex11: ex11.o 
+ex11: ex11.o  chkopts
 	-$(CLINKER) -o ex11 ex11.o  $(SLES_LIB)
 	$(RM) -f ex11.o
 
-ex12: ex12.o 
+ex12: ex12.o  chkopts
 	-$(CLINKER) -o ex12 ex12.o  $(SLES_LIB)
 	$(RM) -f ex12.o
 
-ex13: ex13.o 
+ex13: ex13.o  chkopts
 	-$(CLINKER) -o ex13 ex13.o  $(SLES_LIB)
 	$(RM) -f ex13.o
 
-ex14: ex14.o 
+ex14: ex14.o  chkopts
 	-$(CLINKER) -o ex14 ex14.o  $(SLES_LIB)
 	$(RM) -f ex14.o
 
-ex15: ex15.o 
+ex15: ex15.o  chkopts
 	-$(CLINKER) -o ex15 ex15.o  $(SLES_LIB) 
 	$(RM) -f ex15.o
 
-ex16: ex16.o 
+ex16: ex16.o  chkopts
 	-$(CLINKER) -o ex16 ex16.o  $(SLES_LIB) 
 	$(RM) -f ex16.o
 
-ex17: ex17.o 
+ex17: ex17.o  chkopts
 	-$(CLINKER) -o ex17 ex17.o  $(SLES_LIB)
 	$(RM) -f ex17.o
 

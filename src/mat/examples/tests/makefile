@@ -123,99 +123,99 @@ runex22:
            else echo "Possible problem with ex22_1, diffs above"; fi; \
            $(RM) -f ex22_1.tmp
 
-ex1: ex1.o
+ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex1.o
 
-ex2: ex2.o
+ex2: ex2.o chkopts
 	-$(CLINKER) -o ex2 ex2.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex2.o
 
-ex3: ex3.o
+ex3: ex3.o chkopts
 	-$(CLINKER) -o ex3 ex3.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex3.o
 
-ex4: ex4.o
+ex4: ex4.o chkopts
 	-$(CLINKER) -o ex4 ex4.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex4.o
 
-ex5: ex5.o
+ex5: ex5.o chkopts
 	-$(CLINKER) -o ex5 ex5.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex5.o
 
-ex6: ex6.o
+ex6: ex6.o chkopts
 	-$(CLINKER) -o ex6 ex6.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex6.o
 
-ex7: ex7.o
+ex7: ex7.o chkopts
 	-$(CLINKER) -o ex7 ex7.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex7.o
 
-ex8: ex8.o
+ex8: ex8.o chkopts
 	-$(CLINKER) -o ex8 ex8.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex8.o
 
-ex9: ex9.o
+ex9: ex9.o chkopts
 	-$(CLINKER) -o ex9 ex9.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex9.o
 
-ex10: ex10.o
+ex10: ex10.o chkopts
 	-$(CLINKER) -o ex10 ex10.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex10.o
 
-ex11: ex11.o
+ex11: ex11.o chkopts
 	-$(CLINKER) -o ex11 ex11.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex11.o
 
-ex12: ex12.o
+ex12: ex12.o chkopts
 	-$(CLINKER) -o ex12 ex12.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex12.o
 
-ex13: ex13.o
+ex13: ex13.o chkopts
 	-$(CLINKER) -o ex13 ex13.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex13.o
 
-ex14: ex14.o
+ex14: ex14.o chkopts
 	-$(CLINKER) -o ex14 ex14.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex14.o
 
-ex15: ex15.o
+ex15: ex15.o chkopts
 	-$(CLINKER) -o ex15 ex15.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex15.o
 
-ex16: ex16.o
+ex16: ex16.o chkopts
 	-$(CLINKER) -o ex16 ex16.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex16.o
 
-ex17: ex17.o
+ex17: ex17.o chkopts
 	-$(CLINKER) -o ex17 ex17.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex17.o
 
-ex18: ex18.o
+ex18: ex18.o chkopts
 	-$(CLINKER) -o ex18 ex18.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex18.o
 
-ex19: ex19.o
+ex19: ex19.o chkopts
 	-$(CLINKER) -o ex19 ex19.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex19.o
 
-ex20: ex20.o
+ex20: ex20.o chkopts
 	-$(CLINKER) -o ex20 ex20.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex20.o
 
-ex21: ex21.o
+ex21: ex21.o chkopts
 	-$(CLINKER) -o ex21 ex21.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex21.o
 
-ex22: ex22.o
+ex22: ex22.o chkopts
 	-$(CLINKER) -o ex22 ex22.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex22.o
 
-ex23: ex23.o
+ex23: ex23.o chkopts
 	-$(CLINKER) -o ex23 ex23.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex23.o
 
-ex24: ex24.o
+ex24: ex24.o chkopts
 	-$(CLINKER) -o ex24 ex24.o $(LIBNAME) $(PETSC_LIB)
 	$(RM) ex24.o
 

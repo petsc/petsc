@@ -27,11 +27,11 @@ runex2:
            else echo "Possible problem with ex2_1, diffs above"; fi ;\
            $(RM) -f ex2_1.tmp
 
-ex1: ex1.o 
+ex1: ex1.o chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(SLES_LIB)
 	$(RM) -f ex1.o
 
-ex2: ex2.o 
+ex2: ex2.o chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
 	$(RM) -f ex2.o
 
