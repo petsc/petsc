@@ -2,6 +2,7 @@ import install.urlMapping
 
 import os
 import sys
+import nargs
 
 class Installer(install.urlMapping.UrlMapping):
   def __init__(self, clArgs = None, argDB = None, stamp = None, debugWriter = None):
@@ -23,7 +24,6 @@ class Installer(install.urlMapping.UrlMapping):
 
   def setupArgDB(self, argDB, clArgs):
     '''Setup argument types, using the database created by base.Base'''
-    import nargs
 
     argDB.setType('backup',            nargs.ArgBool(None, 0, 'Backup makes a tar archive of the generated source rather than installing', isTemporary = 1), forceLocal = 1)
     argDB.setType('remove',            nargs.ArgBool(None, 0, 'Remove the indicated project rather than installing', isTemporary = 1), forceLocal = 1)
