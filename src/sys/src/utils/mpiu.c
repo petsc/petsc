@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.30 1995/12/19 23:42:28 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiu.c,v 1.31 1995/12/21 22:41:34 curfman Exp gropp $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -249,8 +249,11 @@ static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
+
+  The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
+  it was MPI_Comm *comm.  
 */
-static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,void* extra_state )
+static int MPIU_DelTag(MPI_Comm comm,int* keyval,void* attr_val,void* extra_state )
 {
   PetscFree( attr_val );
   return MPI_SUCCESS;
