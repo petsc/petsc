@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1997/09/10 18:11:09 balay Exp balay $ 
+# $Id: base.site,v 1.24 1997/09/11 22:17:32 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -86,7 +86,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 PCONF         = -DHAVE_BLOCKSOLVE
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
 #
 # ---------------------------------------------------------------------------------------
 #
