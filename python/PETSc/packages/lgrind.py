@@ -63,7 +63,10 @@ class Configure(config.base.Configure):
     except RuntimeError, e:
       raise RuntimeError('Error running make on lgrind: '+str(e))
     try:
-      output  = config.base.Configure.executeShellCommand('cp '+os.path.join(lgrindDir,'source','lgrind')+' '+installDir, timeout=2500, log = self.framework.log)[0]
+      lgrindexe = os.path.join(lgrindDir,'source','lgrind')
+      if os.path.exists(lgrindexe+'.exe'):
+        lgrindexe = lgrindexe+'.exe'
+      output  = config.base.Configure.executeShellCommand('cp '+lgrindexe+' '+installDir, timeout=2500, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error copying lgrind executable: '+str(e))
     self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+installDir)
