@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.57 1997/09/10 19:02:19 balay Exp balay $ 
+# $Id: makefile,v 1.58 1998/03/19 02:13:45 balay Exp balay $ 
 
 ALL: ex1
 
@@ -50,12 +50,12 @@ ex4: ex4.o ${FOBJ4} chkopts
 	${RM} ex4.o ${FOBJ4}
 
 runex1:
-	-@${MPIRUN} -np 1 ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ex1 -snes_smonitor > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIRUN} -np 1 ex1 -nox -snes_smonitor -snes_type umls > ex1_2.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex1 -snes_smonitor -snes_type umls > ex1_2.tmp 2>&1;\
            if (diff output/ex1_2.out ex1_2.tmp) then true; \
            else echo "Possible problem with ex1_2, diffs above"; fi; \
            ${RM} -f ex1_2.tmp
