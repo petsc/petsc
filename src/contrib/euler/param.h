@@ -1,5 +1,5 @@
 c
-c  $Id: param.h,v 1.15 1997/10/11 18:39:18 curfman Exp curfman $;
+c  $Id: param.h,v 1.17 1997/10/16 03:30:02 curfman Exp curfman $;
 c
 c PETSc include files needed by Fortran routines
 c   petsc.h - basic PETSc interface
@@ -118,6 +118,7 @@ c   Common block for local ghost parameters
 
 c   Type of multi-model
         integer model
+        integer nk_boundary, nk1_boundary
 
 c   Common block for multi-model data
        common /multimodel/ model
@@ -125,3 +126,4 @@ c   Common block for multi-model data
 c   Duct problem parameters
        double precision bump
        common /duct/ bump
+       common /duct/ nk_boundary, nk1_boundary

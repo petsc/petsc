@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.43 1997/10/16 15:12:42 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.44 1997/10/16 18:27:56 curfman Exp curfman $";
 #endif
 
 /*
@@ -448,9 +448,9 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
   if (app->size != 1) SETERRQ(1,0,"Currently uniprocessor only!");
 
   istart = 1;
-  iend   = ni;
+  iend   = ni1;
   jstart = 1;
-  jend   = nj;
+  jend   = nj1;
 
   gamma1 = 1.4;
   gm1    = gamma1 - 1.0;
@@ -465,6 +465,8 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
 
   foo = 1;
   if (foo) {
+
+    /* potential and mach data are associated with different physical points */
     if (iter != -1) {
       sprintf(filename,"duct_fp_%d.m",iter);
       fp2 = fopen(filename,"w");
@@ -472,6 +474,9 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
       fp2 = fopen("duct_fp.m","w");
     }
     if (!fp2) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open output file");
+
+    /* Grid and potential data */
+
     fprintf(fp2,"X = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
@@ -498,7 +503,21 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
       fprintf(fp2,"\n");
     }
     fprintf(fp2,"];\n\n");
+    fprintf(fp2,"potential = [\n");
+    for (j=jstart; j<jend; j++) {
+      for (i=istart; i<iend; i++) {
+        fprintf(fp2,"%8.4f ",0.25 * (pot(i,j) + pot(i-1,j) + pot(i,j-1) + pot(i-1,j-1)));
+      }
+      fprintf(fp2,"\n");
+    }
+    fprintf(fp2,"];\n\n");
 
+    istart = 0;
+    iend   = ni;
+    jstart = 0;
+    jend   = nj;
+
+    fprintf(fp2,"mach = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
         ijk = k*nj1*ni1 + j*ni1 + i;
@@ -507,22 +526,7 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
         yv = app->yvel_a[ijk];
         sfluid = sqrt(xv*xv + yv*yv);
         ssound = sqrt(pow(r,gm1));
-        mach[(k)*nj1*ni1 + (j)*ni1 + (i)] = sfluid/ssound;
-      }
-    }
-
-    fprintf(fp2,"mach = [\n");
-    for (j=jstart; j<jend; j++) {
-      for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ",0.25 * (smach(i,j) + smach(i-1,j) + smach(i,j-1) + smach(i-1,j-1)));
-      }
-      fprintf(fp2,"\n");
-    }
-    fprintf(fp2,"];\n\n");
-    fprintf(fp2,"potential = [\n");
-    for (j=jstart; j<jend; j++) {
-      for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ",0.25 * (pot(i,j) + pot(i-1,j) + pot(i,j-1) + pot(i-1,j-1)));
+        fprintf(fp2,"%8.4f ",sfluid/ssound);
       }
       fprintf(fp2,"\n");
     }

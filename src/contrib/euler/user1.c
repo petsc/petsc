@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.61 1997/10/15 21:17:41 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.62 1997/10/16 04:56:30 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -416,7 +416,9 @@ int main(int argc,char **argv)
     Scalar *xa;
     ierr = VecGetArray(app->X,&xa); CHKERRQ(ierr);
     its = -1;
-    ierr = ComputeMachDuct(its,app,xa); CHKERRQ(ierr);
+    if (app->mmtype == MMFP) {
+      ierr = VisualizeFP_Matlab(its,app,xa); CHKERRQ(ierr);
+    } else SETERRQ(1,0,"Option not supported yet");
     ierr = VecRestoreArray(app->X,&xa); CHKERRQ(ierr);
   }
 
@@ -458,6 +460,7 @@ int UserDestroyEuler(Euler *app)
   if (app->matrix_free) {ierr = MatDestroy(app->Jmf); CHKERRQ(ierr);}
   if (app->Fvrml) {ierr = VecDestroy(app->Fvrml); CHKERRQ(ierr);}
   ierr = VecDestroy(app->X); CHKERRQ(ierr);
+  ierr = VecDestroy(app->Xvis); CHKERRQ(ierr);
   ierr = VecDestroy(app->Xbc); CHKERRQ(ierr);
   ierr = VecDestroy(app->F); CHKERRQ(ierr);
   ierr = VecDestroy(app->localX); CHKERRQ(ierr);
@@ -1081,6 +1084,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->Xbc); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->F); CHKERRQ(ierr);
+  ierr = VecDuplicate(app->X,&app->Xvis); CHKERRQ(ierr);
   ierr = DAGetLocalVector(app->da,&app->localX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localDX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localXBC); CHKERRQ(ierr);
@@ -1175,7 +1179,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             &app->xef01, &app->yef01, &app->zef01,
             &app->gxef01, &app->gyef01, &app->gzef01,
             &ndof, &app->global_grid, &app->bcswitch, 
-            &app->mmtype,&app->bump); CHKERRQ(ierr);
+            &app->mmtype,&app->bump,&nk1); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Allocate local Fortran work space
@@ -1283,8 +1287,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   llenb = 2*(app->size+1)*sizeof(Scalar);
   app->work_p = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->work_p);
   PetscMemzero(app->work_p,llenb);
-
-  /* Fortran work space for full potential model */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                  Set up scatters for certain BCs

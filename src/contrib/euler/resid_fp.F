@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.9 1997/10/16 13:49:29 keyes Exp curfman $";
+c  "$Id: resid_fp.F,v 1.10 1997/10/16 17:54:29 curfman Exp curfman $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -325,8 +325,6 @@ c      if (zef01 .eq. nk) then
         do 7 i=xsf2,xef01
        fbcfpk2(i,j)=
      &   fp(i,j,zefp1)-fp(i,j,zef01)
-        if (fbcfpk2(i,j) .ne. 0.0) 
-     &   write(6,*) 'j,i,f = ',j,i,fbcfpk2(i,j)
     7 CONTINUE
       endif
 c
