@@ -231,8 +231,8 @@ PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int 
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
-  if (ia && a->i != *ia) SETERRQ(1,"ia passed back is not one obtained with MatGetRowIJ()");
-  if (ja && a->j != *ja) SETERRQ(1,"ja passed back is not one obtained with MatGetRowIJ()");
+  if (ia && a->i != *ia) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");
+  if (ja && a->j != *ja) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ja passed back is not one obtained with MatGetRowIJ()");
   if (oshift) {
     for (i=0; i<=(*m); i++) (*ia)[i]--;
     for (i=0; i<(*ia)[*m]; i++) {

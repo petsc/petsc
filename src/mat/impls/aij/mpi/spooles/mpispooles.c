@@ -337,7 +337,7 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
       lu->frontETree = orderViaND(graph, lu->options.maxdomainsize, 
                      lu->options.seed + rank,lu->options.msglvl,lu->options.msgFile); break;
     default:
-      SETERRQ(1,"Unknown Spooles's ordering");
+      SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown Spooles's ordering");
     }
 
     Graph_free(graph);

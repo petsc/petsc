@@ -114,7 +114,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
     for (j=0; j<len; j++) {
       row  = idx_i[j];
       if (row < 0) {
-        SETERRQ(1,"Index set cannot have negative entries");
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
       }
       proc = rtable[row];
       w4[proc]++;
@@ -280,7 +280,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
 
     for (i=0; i<nrqr; ++i) {
       proc      = recv_status[i].MPI_SOURCE;
-      if (proc != onodes1[i]) SETERRQ(1,"MPI_SOURCE mismatch");
+      if (proc != onodes1[i]) SETERRQ(PETSC_ERR_PLIB,"MPI_SOURCE mismatch");
       rw1[proc] = isz1[i];
     }
       
@@ -602,20 +602,18 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const 
 #if defined (PETSC_USE_CTABLE)
 #undef __FUNCT__    
 #define __FUNCT__ "PetscGetProc" 
-PetscErrorCode PetscGetProc(const int gid, const int size, const int proc_gnode[], int *proc)
+PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const PetscInt proc_gnode[], PetscMPIInt *rank)
 {
-  int nGlobalNd = proc_gnode[size];
-  int fproc = (int) ((float)gid * (float)size / (float)nGlobalNd + 0.5);
+  PetscInt    nGlobalNd = proc_gnode[size];
+  PetscMPIInt fproc = (int) ((float)row * (float)size / (float)nGlobalNd + 0.5);
   
   PetscFunctionBegin;
-  /* if(fproc < 0) SETERRQ(1,"fproc < 0");*/
   if (fproc > size) fproc = size;
-  while (gid < proc_gnode[fproc] || gid >= proc_gnode[fproc+1]) {
-    if (gid < proc_gnode[fproc]) fproc--;
+  while (row < proc_gnode[fproc] || row >= proc_gnode[fproc+1]) {
+    if (row < proc_gnode[fproc]) fproc--;
     else                         fproc++;
   }
-  /* if(fproc<0 || fproc>=size) { SETERRQ(1,"fproc < 0 || fproc >= size"); }*/ 
-  *proc = fproc;
+  *rank = fproc;
   PetscFunctionReturn(0);
 }
 #endif
@@ -1127,7 +1125,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS i
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,sbuf1_i[ct1]+1,&row);CHKERRQ(ierr); 
           row--; 
-          if(row < 0) { SETERRQ(1,"row not found in table"); }
+          if(row < 0) { SETERRQ(PETSC_ERR_PLIB,"row not found in table"); }
 #else
           row  = rmap_i[sbuf1_i[ct1]]; /* the val in the new matrix to be */
 #endif
@@ -1221,7 +1219,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS i
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,row+rstart+1,&row);CHKERRQ(ierr); 
           row--; 
-          if (row < 0) { SETERRQ(1,"row not found in table"); }
+          if (row < 0) { SETERRQ(PETSC_ERR_PLIB,"row not found in table"); }
 #else
           row      = rmap_i[row + rstart];
 #endif
@@ -1316,7 +1314,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS i
 #if defined (PETSC_USE_CTABLE)
 	  ierr = PetscTableFind(lrow1_grow1,row+1,&row);CHKERRQ(ierr); 
           row--; 
-          if(row < 0) { SETERRQ(1,"row not found in table"); }
+          if(row < 0) { SETERRQ(PETSC_ERR_PLIB,"row not found in table"); }
 #else
           row   = rmap_i[row];
 #endif

@@ -263,7 +263,7 @@ PetscErrorCode MatCreate_Shell(Mat A)
   A->data = (void*)b;
 
   if (A->m == PETSC_DECIDE || A->n == PETSC_DECIDE) {
-    SETERRQ(1,"Must give local row and column count for matrix");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Must give local row and column count for matrix");
   }
 
   ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);

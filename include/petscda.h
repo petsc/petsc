@@ -77,8 +77,7 @@ EXTERN PetscErrorCode DASetInterpolationType(DA,DAInterpolationType);
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
 extern PetscCookie DA_COOKIE;
-
-extern PetscEvent DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
+extern PetscEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
 EXTERN PetscErrorCode   DACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,PetscInt*,DA *);
 EXTERN PetscErrorCode   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,DA *);
@@ -427,7 +426,7 @@ typedef struct NLF_DAAD* NLF;
 
   Concepts: multigrid, Newton-multigrid
 
-.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate()
+.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES()
 S*/
 typedef struct _p_DMMG *DMMG;
 struct _p_DMMG {
@@ -499,7 +498,27 @@ EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DALocalI
 #  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
 #endif
 
+/*MC
+   DMMGGetb - Returns the right hand side vector from a DMMG solve on the finest grid
+
+   Synopsis:
+   Vec DMMGGetb(DMMG *dmmg)
+
+   Not Collective, but resulting vector is parallel
+
+   Input Parameters:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Fortran Usage:
+.     DMMGGetb(DMMG dmmg,Vec b,PetscErrorCode ierr)
+
+.seealso: DMMGCreate(), DMMGSetSNES(), DMMGSetKSP(), DMMGSetSNESLocal(), DMMGGetb()
+
+M*/
 #define DMMGGetb(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b
+
 #define DMMGGetr(ctx)              (ctx)[(ctx)[0]->nlevels-1]->r
 
 /*MC
@@ -523,13 +542,160 @@ EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DALocalI
 M*/
 #define DMMGGetx(ctx)              (ctx)[(ctx)[0]->nlevels-1]->x
 
+/*MC
+   DMMGGetJ - Returns the Jacobian (matrix) for the finest level
+
+   Synopsis:
+   Mat DMMGGetJ(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetB()
+
+M*/
 #define DMMGGetJ(ctx)              (ctx)[(ctx)[0]->nlevels-1]->J
+
+/*MC
+   DMMGGetComm - Returns the MPI_Comm for the finest level
+
+   Synopsis:
+   MPI_Comm DMMGGetJ(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ()
+
+M*/
 #define DMMGGetComm(ctx)           (ctx)[(ctx)[0]->nlevels-1]->comm
+
+/*MC
+   DMMGGetB - Returns the matrix for the finest level used to construct the preconditioner; usually 
+              the same as the Jacobian
+
+   Synopsis:
+   Mat DMMGGetJ(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ()
+
+M*/
 #define DMMGGetB(ctx)              (ctx)[(ctx)[0]->nlevels-1]->B
+
+/*MC
+   DMMGGetFine - Returns the DMMG associated with the finest level
+
+   Synopsis:
+   DMMG DMMGGetFine(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ()
+
+M*/
 #define DMMGGetFine(ctx)           (ctx)[(ctx)[0]->nlevels-1]
+
+
+/*MC
+   DMMGGetKSP - Gets the KSP object (linear solver object) for the finest level
+
+   Synopsis:
+   KSP DMMGGetKSP(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Notes: If this is a linear problem (i.e. DMMGSetKSP() was used) then this is the 
+     master linear solver. If this is a nonlinear problem (i.e. DMMGSetSNES() was used) this
+     returns the KSP (linear solver) that is associated with the SNES (nonlinear solver)
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetSNES()
+
+M*/
 #define DMMGGetKSP(ctx)            (ctx)[(ctx)[0]->nlevels-1]->ksp
+
+/*MC
+   DMMGGetSNES - Gets the SNES object (nonlinear solver) for the finest level
+
+   Synopsis:
+   SNES DMMGGetSNES(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Notes: If this is a linear problem (i.e. DMMGSetKSP() was used) then this returns PETSC_NULL
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP()
+
+M*/
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
+
+/*MC
+   DMMGGetDA - Gets the DA object on the finest level
+
+   Synopsis:
+   DA DMMGGetDA(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Notes: Use only if the DMMG was created with a DA, not a VecPack
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetVecPack()
+
+M*/
 #define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
+
+/*MC
+   DMMGGetVecPack - Gets the VecPack object on the finest level
+
+   Synopsis:
+   VecPack DMMGGetVecPack(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+   Notes: Use only if the DMMG was created with a DA, not a VecPack
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDA()
+
+M*/
 #define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
@@ -574,6 +740,22 @@ M*/
 M*/
 #define DMMGSetUser(ctx,level,usr) ((ctx)[level]->user = usr,0)
 
+/*MC
+   DMMGGetLevels - Gets the number of levels in a DMMG object
+
+   Synopsis:
+   PetscInt DMMGGetLevels(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGGetUser()
+
+M*/
 #define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
 
 PETSC_EXTERN_CXX_END

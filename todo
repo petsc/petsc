@@ -70,8 +70,6 @@ PC/Mat
 DMMG
 
 
-   Add manual pages for DMMGGet....
-
 Testing
 
    We should compare L_2 error estimates when solving PDEs
