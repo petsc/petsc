@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.24 1995/07/09 20:32:12 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.25 1995/07/12 22:51:37 curfman Exp curfman $";
 #endif
 
 /*
@@ -79,11 +79,11 @@ int PCPrintHelp_SOR(PC pc)
 
 int PCView_SOR(PetscObject obj,Viewer viewer)
 {
-  PC pc = (PC)obj;
-  PC_SOR *jac = (PC_SOR *) pc->data;
-  FILE *fd = ViewerFileGetPointer_Private(viewer);
+  PC         pc = (PC)obj;
+  PC_SOR     *jac = (PC_SOR *) pc->data;
+  FILE       *fd = ViewerFileGetPointer_Private(viewer);
   MatSORType sym = jac->sym;
-  char *sortype;
+  char       *sortype;
 
   if (sym & SOR_ZERO_INITIAL_GUESS) 
     MPIU_fprintf(pc->comm,fd,"     SOR:  zero initial guess\n");
