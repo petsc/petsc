@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.60 1997/12/20 04:39:32 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.61 1998/01/17 17:39:51 bsmith Exp curfman $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -14,7 +14,7 @@
 typedef struct _p_KSP*     KSP;
 
 typedef enum { KSPUNKNOWN = -1,KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, KSPTCQMR, KSPBCGS, 
-               KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG, KSPNEW} KSPType;
+               KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG, KSPNEW, KSPTRLS} KSPType;
 
 extern int KSPCreate(MPI_Comm,KSP *);
 extern int KSPSetType(KSP,KSPType);
