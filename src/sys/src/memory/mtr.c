@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.77 1997/03/14 23:49:53 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.78 1997/03/20 02:11:08 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -585,6 +585,8 @@ static long nanval[2] = {-1,-1}; /* Probably a bad floating point value */
 typedef union { long l[2]; double d; } NANDouble;
 
 #include <math.h>
+#undef __FUNC__  
+#define __FUNC__ "PetscInitializeNans" /* ADIC Ignore */
 /*@
    PetscInitializeNans - Intialize certain memory locations with NANs.
    This routine is used to mark an array as unitialized so that
@@ -627,6 +629,8 @@ int PetscInitializeNans(Scalar *p,int n )
   return 0;
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscInitializeLargeInts" /* ADIC Ignore */
 /*@
    PetscInitializeLargeInts - Intializes an array of integers
    with very large values.

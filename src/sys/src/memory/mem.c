@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mem.c,v 1.3 1997/03/26 15:32:42 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.4 1997/03/26 16:00:51 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -22,6 +22,8 @@ extern int getpagesize();
 #include <fcntl.h>
 #endif
 
+#undef __FUNC__  
+#define __FUNC__ "PetscGetResidentSetSize" /* ADIC Ignore */
 /*@
    PetscGetResidentSetSize - Returns the maximum resident set size (memory used)
       for the program.
