@@ -8,9 +8,11 @@ class Options(config.base.Configure):
     return
 
   def getCFlags(self, compiler, bopt):
+    import config.setCompilers
+
     flags = []
     # GNU gcc
-    if config.compilers.Configure.isGNU(compiler):
+    if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
         flags.append('-Wall')
       elif bopt == 'g':
@@ -44,9 +46,11 @@ class Options(config.base.Configure):
     return flags
 
   def getCxxFlags(self, compiler, bopt):
+    import config.setCompilers
+
     flags = []
     # GNU g++
-    if config.compilers.Configure.isGNU(compiler):
+    if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
         flags.append('-Wall')
       elif bopt == 'g':

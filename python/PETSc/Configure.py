@@ -23,11 +23,12 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','_snprintf']
     libraries = [('dl', 'dlopen'),(['socket','nsl'],'socket')]
-    self.compilers    = self.framework.require('config.compilers', self)
-    self.types        = self.framework.require('config.types',     self)
-    self.headers      = self.framework.require('config.headers',   self)
-    self.functions    = self.framework.require('config.functions', self)
-    self.libraries    = self.framework.require('config.libraries', self)
+    self.setCompilers = self.framework.require('config.setCompilers', self)
+    self.compilers    = self.framework.require('config.compilers',    self)
+    self.types        = self.framework.require('config.types',        self)
+    self.headers      = self.framework.require('config.headers',      self)
+    self.functions    = self.framework.require('config.functions',    self)
+    self.libraries    = self.framework.require('config.libraries',    self)
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
     self.headers.headerPrefix   = self.headerPrefix
@@ -46,9 +47,9 @@ class Configure(config.base.Configure):
         packageObj.headerPrefix = self.headerPrefix
         setattr(self, packageName.lower(), packageObj)
     # Put in dependencies
+    self.framework.require('PETSc.packages.update',        self.setCompilers)
+    self.framework.require('PETSc.packages.compilerFlags', self.compilers)
     self.framework.require('PETSc.packages.fortranstubs',  self.blaslapack)
-    self.framework.require('PETSc.packages.update',        self.compilers)
-    self.framework.require('PETSc.packages.compilerFlags', self.types)
     return
 
   def configureHelp(self, help):
@@ -92,14 +93,14 @@ class Configure(config.base.Configure):
   def configureFortranPIC(self):
     '''Determine the PIC option for the Fortran compiler'''
     # We use the framework in order to remove the PETSC_ namespace
+    self.pushLanguage('F77')
     option = ''
-    if self.compilers.checkFortranFlag('-PIC'):
-      option = '-PIC'
-    elif self.compilers.checkFortranFlag('-fPIC'):
-      option = '-fPIC'
-    elif self.compilers.checkFortranFlag('-KPIC'):
-      option = '-KPIC'
+    for opt in ['-PIC', '-fPIC', '-KPIC']:
+      if self.compilers.checkCompilerFlag(opt):
+        option = opt
+        break
     self.framework.addSubstitution('FC_SHARED_OPT', option)
+    self.popLanguage()
     return
 
   def configureFortranCPP(self):
