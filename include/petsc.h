@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.171 1997/09/05 18:43:00 gropp Exp gropp $ */
+/* $Id: petsc.h,v 1.172 1997/09/05 19:36:26 gropp Exp gropp $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -46,11 +46,21 @@
 #define HAVE_BROKEN_REQUEST_FREE
 /* Use bzero instead of memset( ,0, ) */
 #define PREFER_BZERO
+/* Some versions of AIX require u_type definitions */
+#define NEED_UTYPE_TYPEDEFS
 #endif
 
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64)
 /* For some reason, we don't use readlink in grpath.c for IRIX */
 #undef HAVE_READLINK
+/* gettimeofday required sys/resource.h and C++ prototype for gettimeof
+   day */
+#define NEEDS_GETTIMEOFDAY_PROTO
+#endif
+
+#if defined(PARCH_paragon) ||  defined(PARCH_alpha)
+/* Some versions of these systems require u_type definitions */
+#define NEED_UTYPE_TYPEDEFS
 #endif
 #endif
 
