@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.18 1999/05/04 20:36:53 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.19 1999/06/30 23:54:46 balay Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -162,7 +162,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 {
   Scalar *inptr, *outptr;
-  int i, n, ierr;
+  int    i, n, ierr;
 
   IS from, to;
   int *idx;
@@ -195,9 +195,9 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   /* Extract outcome array*/
   ierr = VecGetArray(tmp_out,&outptr);CHKERRQ(ierr);
 
-  outptr[0] = 2*inptr[0]+inptr[1];
-  outptr[1] = inptr[0]+2*inptr[1]+inptr[2];
-  outptr[2] = inptr[1]+2*inptr[2];
+  outptr[0] = 2.0*inptr[0]+inptr[1];
+  outptr[1] = inptr[0]+2.0*inptr[1]+inptr[2];
+  outptr[2] = inptr[1]+2.0*inptr[2];
 
   ierr = VecRestoreArray(globalin,&inptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_out,&outptr);CHKERRQ(ierr);

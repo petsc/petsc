@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.56 1999/05/12 03:26:57 bsmith Exp balay $";
+static char vcid[] = "$Id: fp.c,v 1.57 1999/07/14 21:55:12 balay Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -173,7 +173,7 @@ int PetscSetFPTrap(int flag)
 
 /* ------------------------ IRIX64(old machines)-----------------------------*/
 
-#elif defined(HAVE_BROKEN_FP_SIG_HANDLER
+#elif defined(HAVE_BROKEN_FP_SIG_HANDLER)
 #undef __FUNC__  
 #define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
