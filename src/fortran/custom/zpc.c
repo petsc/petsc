@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.34 2000/01/11 21:03:48 bsmith Exp bsmith $*/
+/*$Id: zpc.c,v 1.35 2000/04/30 22:16:48 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
@@ -25,6 +25,7 @@
 #define pcgetoptionsprefix_        PCGETOPTIONSPREFIX
 #define pcnullspaceattach_         PCNULLSPACEATTACH
 #define pcnullspacecreate_         PCNULLSPACECREATE
+#define pcview_                    PCVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcnullspacecreate_         pcnullspacecreate
 #define pcnullspaceattach_         pcnullspaceattach
@@ -46,6 +47,7 @@
 #define pcgettype_                 pcgettype
 #define pcsettype_                 pcsettype
 #define pcgetoptionsprefix_        pcgetoptionsprefix
+#define pcview_                    pcview
 #endif
 
 EXTERN_C_BEGIN

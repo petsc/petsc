@@ -1,4 +1,4 @@
-/*$Id: ao.c,v 1.32 2000/04/09 04:39:28 bsmith Exp bsmith $*/
+/*$Id: ao.c,v 1.33 2000/04/12 04:26:11 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
@@ -6,7 +6,7 @@
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"AOView" 
-/*@
+/*@C
    AOView - Displays an application ordering.
 
    Collective on AO and Viewer

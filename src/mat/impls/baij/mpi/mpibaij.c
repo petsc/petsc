@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.194 2000/04/17 04:10:50 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.195 2000/04/20 03:27:54 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -2165,8 +2165,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,int *
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(comm,m,M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(comm,n,N,&B->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,m,M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,n,N,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   b->rowners = (int*)PetscMalloc(3*(b->size+2)*sizeof(int));CHKPTRQ(b->rowners);
@@ -2205,8 +2205,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,int *
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
-  ierr = MatStashCreate_Private(comm,1,&B->stash);CHKERRQ(ierr);
-  ierr = MatStashCreate_Private(comm,bs,&B->bstash);CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(B->comm,1,&B->stash);CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(B->comm,bs,&B->bstash);CHKERRQ(ierr);
   b->donotstash  = PETSC_FALSE;
   b->colmap      = PETSC_NULL;
   b->garray      = PETSC_NULL;

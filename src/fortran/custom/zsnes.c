@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.44 2000/01/11 21:03:48 bsmith Exp balay $*/
+/*$Id: zsnes.c,v 1.45 2000/03/23 22:30:12 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "snes.h"
@@ -56,6 +56,7 @@
 #define snesquadraticlinesearch_         SNESQUADRATICLINESEARCH
 #define snesnolinesearch_                SNESNOLINESEARCH
 #define snesnolinesearchnonorms_         SNESNOLINESEARCHNONORMS
+#define snesview_                        SNESVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define snescubiclinesearch_         snescubiclinesearch     
 #define snesquadraticlinesearch_     snesquadraticlinesearch    
@@ -102,9 +103,17 @@
 #define snesgetjacobian_                 snesgetjacobian
 #define snessetlinesearchparams_         snessetlinesearchparams
 #define snesgetlinesearchparams_         snesgetlinesearchparams
+#define snesview_                        snesview
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL snesview_(SNES *snes,Viewer *viewer, int *__ierr )
+{
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *__ierr = SNESView(*snes,v);
+}
 
 void PETSC_STDCALL snesgetconvergedreason(SNES *snes,SNESConvergedReason *r,int *ierr)
 {

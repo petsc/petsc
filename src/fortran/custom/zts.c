@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.25 2000/01/11 21:03:48 bsmith Exp balay $*/
+/*$Id: zts.c,v 1.26 2000/03/23 22:30:15 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ts.h"
@@ -20,6 +20,7 @@
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
 #define tsdefaultmonitor_                    TSDEFAULTMONITOR
+#define tsview_                              TSVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
@@ -37,9 +38,17 @@
 #define tssettype_                           tssettype
 #define tsgetoptionsprefix_                  tsgetoptionsprefix
 #define tsdefaultmonitor_                    tsdefaultmonitor
+#define tsview_                              tsview
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL tsview_(TS *ts,Viewer *viewer, int *__ierr )
+{
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *__ierr = TSView(*ts,v);
+}
 
 /* function */
 void tsdefaultcomputejacobian_(TS *ts,double *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,int *ierr)

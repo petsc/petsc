@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.26 2000/04/09 04:39:08 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.27 2000/04/12 04:25:55 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -338,7 +338,7 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"TSView"
-/*@ 
+/*@C
     TSView - Prints the TS data structure.
 
     Collective on TS

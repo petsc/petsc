@@ -1,4 +1,4 @@
-/*$Id: zao.c,v 1.13 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zao.c,v 1.14 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ao.h"
@@ -6,12 +6,21 @@
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define aocreatebasic_   AOCREATEBASIC
 #define aocreatebasicis_ AOCREATEBASICIS
+#define aoview           AOVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define aocreatebasic_   aocreatebasic
 #define aocreatebasicis_ aocreatebasicis
+#define aoview           aoview_
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL aoview_(AO *ao,Viewer *viewer, int *__ierr )
+{
+  Viewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *__ierr = AOView(*ao,v);
+}
 
 void PETSC_STDCALL aocreatebasic_(MPI_Comm *comm,int *napp,int *myapp,int *mypetsc,AO *aoout,int *ierr)
 {

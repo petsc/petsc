@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.312 2000/04/09 04:36:04 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.313 2000/04/12 04:23:11 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1826,8 +1826,8 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(comm,m,M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(comm,n,N,&B->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,m,M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,n,N,&B->cmap);CHKERRQ(ierr);
 
   /* build local table of row and column ownerships */
   b->rowners = (int*)PetscMalloc(2*(b->size+2)*sizeof(int));CHKPTRQ(b->rowners);
@@ -1856,7 +1856,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
-  ierr = MatStashCreate_Private(comm,1,&B->stash);CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(B->comm,1,&B->stash);CHKERRQ(ierr);
   b->donotstash  = PETSC_FALSE;
   b->colmap      = 0;
   b->garray      = 0;
@@ -2155,11 +2155,12 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat *newmat)
 {
   int        ierr,i,m,n,rstart,row,rend,nz,*cwork,size,rank,j;
+  int        *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend;
   Mat        *local,M,Mreuse;
   Scalar     *vwork,*aa;
   MPI_Comm   comm = mat->comm;
   Mat_SeqAIJ *aij;
-  int        *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend;
+
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -2167,7 +2168,7 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
 
   if (call ==  MAT_REUSE_MATRIX) {
     ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject *)&Mreuse);CHKERRQ(ierr);
-    if (!Mreuse) SETERRQ(1,1,"Submatrix passed in was not used before,cannot reuse");
+    if (!Mreuse) SETERRQ(1,1,"Submatrix passed in was not used before, cannot reuse");
     local = &Mreuse;
     ierr  = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&local);CHKERRQ(ierr);
   } else {

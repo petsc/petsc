@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.211 2000/04/09 04:38:32 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.212 2000/04/12 04:25:27 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
@@ -7,7 +7,7 @@ FList      SNESList = 0;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"SNESView"
-/*@ 
+/*@C
    SNESView - Prints the SNES data structure.
 
    Collective on SNES
