@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.20 1996/03/22 23:53:59 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.21 1996/03/23 00:34:05 curfman Exp curfman $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -12,14 +12,16 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  int            rank,M = 10, N = 8, m = PETSC_DECIDE,ierr,flg;
-  int            s=2, w=2,n = PETSC_DECIDE ;
+  int            rank, M = 10, N = 8, m = PETSC_DECIDE, ierr, flg;
+  int            s=2, w=2, n = PETSC_DECIDE, nloc, l, i, j, kk, ict;
+  int            xs, xm, ys, ym, Xs, Xm, Ys, Ym, iloc, *iglobal, *ltog;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
   Viewer         viewer;
   Vec            local,global;
   Scalar         value;
   DAStencilType  st = DA_STENCIL_BOX;
+  AO             ao;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRA(ierr);
@@ -71,6 +73,50 @@ int main(int argc,char **argv)
     PetscSequentialPhaseEnd(MPI_COMM_WORLD,1);
   }
 
+  /* Tests mappings betweeen application/PETSc orderings */
+  ierr = OptionsHasName(PETSC_NULL,"-test_order",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRA(ierr);
+    ierr = DAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL); CHKERRA(ierr);
+    ierr = DAGetGlobalIndices(da,&nloc,&ltog); CHKERRQ(ierr);
+    ierr = DAGetAO(da,&ao); CHKERRA(ierr);
+    /* ierr = AOView(ao,STDOUT_VIEWER_WORLD); CHKERRA(ierr); */
+    iglobal = (int *) PetscMalloc( nloc*sizeof(int) ); CHKPTRA(iglobal);
+    kk = 0;
+    for (j=Ys; j<Ys+Ym; j++) {
+      for (i=Xs; i<Xs+Xm; i++) {
+        ict = w*(j*M + i);
+        iloc = w*((j-Ys)*Xm + i-Xs); 
+        for (l=0; l<w; l++) {
+          order_app[kk] = ict+l;
+          iglobal[kk] = ltog[iloc+l];
+            printf("[%d] : j=%d, i=%d, l=%d, app=%d, petsc=%d\n",
+             rank,j,i,l,order_app[kk],iglobal[kk]);
+
+          kk++;
+        }
+      }
+    } 
+
+    /* Map to application ordering, then map back to PETSc ordering */
+    ierr = AOPetscToApplication(ao,nloc,iglobal); CHKERRA(ierr); 
+    ierr = AOApplicationToPetsc(ao,nloc,iglobal); CHKERRA(ierr); 
+    kk=0;
+    for (j=Ys; j<Ys+Ym; j++) {
+      for (i=Xs; i<Xs+Xm; i++) {
+        ict = w*(j*M + i);
+        iloc = w*((j-Ys)*Xm + i-Xs); 
+        for (l=0; l<w; l++) {
+          if (iglobal[kk] != ltog[iloc+l]) {fprintf(stdout,
+            "[%d] Problem with mapping: j=%d, i=%d, l=%d, app=%d, petsc%d\n",
+             rank,j,i,l,order_app[kk],iglobal[kk]);}
+          kk++;
+        }
+      }
+    }
+    PetscFree(iglobal);
+  } 
+
   /* Free memory */
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
@@ -80,24 +126,3 @@ int main(int argc,char **argv)
   PetscFinalize();
   return 0;
 }
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
