@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.167 1997/08/22 15:20:23 bsmith Exp gropp $ */
+/* $Id: petsc.h,v 1.168 1997/08/29 20:08:42 gropp Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -6,13 +6,15 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-/* Version text */
+/* 
+   Current PETSc Version 
+*/
 #define PETSC_VERSION_NUMBER "PETSc Version 2.0.19, Released August 13, 1997."
-/* Individual version numbers and date */
-#define PETSC_VERSION_MAJOR 2
-#define PETSC_VERSION_MINOR 0
+
+#define PETSC_VERSION_MAJOR    2
+#define PETSC_VERSION_MINOR    0
 #define PETSC_VERSION_SUBMINOT 19
-#define PETSC_VERSION_DATE  "August 13, 1997"
+#define PETSC_VERSION_DATE     "August 13, 1997"
 
 /* Before anything else, include the PETSc configuration file.  This 
    contains various definitions that handle portability issues and the 
@@ -24,79 +26,20 @@
 #endif
 
 #include <stdio.h>
+/*
+    Defines the interface to MPI allowing the use of all MPI functions.
+*/
 #include "mpi.h"
 
-#if defined(PETSC_COMPLEX)
-#if defined(HAVE_NONSTANDARD_COMPLEX_H)
-#include HAVE_NONSTANDARD_COMPLEX_H
-#else
-#include <complex.h>
-#endif
-extern  MPI_Datatype      MPIU_COMPLEX;
-#define MPIU_SCALAR       MPIU_COMPLEX
-#define PetscReal(a)      real(a)
-#define PetscImaginary(a) imag(a)
-#define PetscAbsScalar(a) abs(a)
-#define PetscConj(a)      conj(a)
 /*
-  The new complex class for GNU C++ is based on templates and is not backward
-  compatible with all previous complex class libraries.
+    Defines some elementary mathematics functions and constants.
 */
-#if defined(USES_TEMPLATED_COMPLEX)
-#define Scalar            complex<double>
-#else
-#define Scalar            complex
-#endif
-
-/* Compiling for real numbers only */
-#else
-#define MPIU_SCALAR       MPI_DOUBLE
-#define PetscReal(a)      (a)
-#define PetscImaginary(a) (a)
-#define PetscAbsScalar(a) ( ((a)<0.0)   ? -(a) : (a) )
-#define Scalar            double
-#define PetscConj(a)      (a)
-#endif
-
-/*
-   Certain objects may be created using either single
-  or double precision.
-*/
-typedef enum { SCALAR_DOUBLE, SCALAR_SINGLE } ScalarPrecision;
+#include "petscmath.h"
 
 extern MPI_Comm PETSC_COMM_WORLD;
 extern MPI_Comm PETSC_COMM_SELF;
 extern int      PetscInitializedCalled;
 extern int      PetscSetCommWorld(MPI_Comm);
-
-/* PETSC_i is the imaginary number, i */
-extern  Scalar            PETSC_i;
-
-#define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
-#define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
-#define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
-#define PetscAbsDouble(a)  ( ((a)<0)   ? -(a) : (a) )
-
-#define PETSC_MAX 1.e300
-#define PETSC_MIN -1.e300
-
-/*
-    PLogDouble variables are used to contain double precision numbers
-  that are not used in the numerical computations, but rather in logging,
-  timing etc.
-*/
-typedef double PLogDouble;
-/*
-      Once PETSc is compiling with a ADIC enhanced version of MPI
-   we will create a new MPI_Datatype for the inactive double variables.
-*/
-#if defined(AD_DERIV_H)
-/* extern  MPI_Datatype  MPIU_PLOGDOUBLE; */
-#else
-#if !defined(PETSC_USING_MPIUNI)
-#define MPIU_PLOGDOUBLE MPI_DOUBLE
-#endif
-#endif
 
 /*
     Defines the malloc employed by PETSc. Users may employ these routines as well. 
@@ -117,6 +60,9 @@ extern int   PetscTrLog();
 extern int   PetscTrLogDump(FILE *);
 extern int   PetscGetResidentSetSize(PLogDouble *);
 
+/*
+    Basic memory and string operations
+*/
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemmove(void *,void *,int);
 extern void  PetscMemzero(void *,int);
@@ -153,6 +99,10 @@ extern int LARGEST_PETSC_COOKIE;
 
 #include "viewer.h"
 #include "options.h"
+
+/*
+    Defines basic graphics available from PETSc.
+*/
 #include "draw.h"
 
 extern PLogDouble PetscGetTime();
@@ -181,8 +131,15 @@ extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
 extern int PetscObjectView(PetscObject,Viewer);
 
+/*
+    Defines PETSc error handling.
+*/
 #include "petscerror.h"
 #include "petschead.h"
+
+/*
+     Defines PETSc profiling.
+*/
 #include "petsclog.h"
 
 extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
