@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.site,v 1.11 1997/09/10 18:18:51 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -56,4 +56,4 @@ PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE
 #
 DYLIBPATH     = /opt/SUNWspro/SC4.0/lib
 
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = $(BS_LIB)  $(ADIC_LIB)
