@@ -1,4 +1,4 @@
-/*$Id: stringv.c,v 1.38 1999/10/13 20:36:25 bsmith Exp bsmith $*/
+/*$Id: stringv.c,v 1.40 1999/10/24 14:01:05 bsmith Exp bsmith $*/
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -114,6 +114,29 @@ int ViewerStringOpen(MPI_Comm comm,char string[],int len, Viewer *lab)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerGetSingleton_String"
+int ViewerGetSingleton_String(Viewer viewer,Viewer *sviewer)
+{
+  Viewer_String *vstr = (Viewer_String *) viewer->data;
+  int           ierr;
+
+  PetscFunctionBegin;
+  ierr = ViewerStringOpen(PETSC_COMM_SELF,vstr->head,vstr->maxlen-vstr->curlen,sviewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerRestoreSingleton_String"
+int ViewerRestoreSingleton_String(Viewer viewer,Viewer *sviewer)
+{
+  int           ierr;
+
+  PetscFunctionBegin;
+  ierr = ViewerDestroy(*sviewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "ViewerCreate_String"
@@ -122,12 +145,14 @@ int ViewerCreate_String(Viewer v)
   Viewer_String *vstr;
 
   PetscFunctionBegin;
-  v->ops->destroy = ViewerDestroy_String;
-  v->ops->view    = 0;
-  v->ops->flush   = 0;
-  vstr            = PetscNew(Viewer_String);CHKPTRQ(vstr);
-  v->data         = (void *) vstr;
-  vstr->string    = 0;
+  v->ops->destroy          = ViewerDestroy_String;
+  v->ops->view             = 0;
+  v->ops->flush            = 0;
+  v->ops->getsingleton     = ViewerGetSingleton_String;
+  v->ops->restoresingleton = ViewerGetSingleton_String;
+  vstr                     = PetscNew(Viewer_String);CHKPTRQ(vstr);
+  v->data                  = (void *) vstr;
+  vstr->string             = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -145,6 +170,8 @@ int ViewerStringSetString(Viewer viewer,char string[],int len)
   PetscValidCharPointer(string);
   ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);
   if (!isstring)  PetscFunctionReturn(0);
+  if (len <= 2) SETERRQ(1,1,"String must have length at least 2");
+
   ierr = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
   vstr->string      = string;
   vstr->head        = string;
