@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.21 1996/08/16 20:32:57 bsmith Exp balay $ */
+/* $Id: ptime.h,v 1.22 1996/09/24 20:36:07 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -104,6 +104,24 @@ extern UTP_readTime(struct timestruc_t *);
 #define PetscTimeAdd(v)      {static struct timestruc_t  _tp; \
                              UTP_readTime(&_tp); \
                              (v)+=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+/*
+    Dec Alpha has a very fast system clock accessible through getclock()
+*/
+#elif defined(PARCH_alpha)
+#include <sys/timers.h>
+
+#define PetscTime(v)         {static struct  timespec _tp; \
+                             UTP_readTime(&_tp); \
+                             (v)=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+
+#define PetscTimeSubtract(v) {static struct timespec  _tp; \
+                             UTP_readTime(&_tp); \
+                             (v)-=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+
+#define PetscTimeAdd(v)      {static struct timespec  _tp; \
+                             UTP_readTime(&_tp); \
+                             (v)+=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+
 /*
     Cray MPI implementation has very fast MPI_Wtime()
 */
