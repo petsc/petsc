@@ -28,6 +28,8 @@ class Configure:
     self.acCCFD     = '/dev/null'
     # Interaction with the shell
     self.shell      = '/bin/sh'
+    # Interaction with the preprocessor
+    self.cpp        = 'cpp'
     return
 
   def addDefine(self, name, value, comment = ''):
@@ -47,11 +49,12 @@ class Configure:
     self.help[name] = comment
     return
 
-  def getArgument(self, name, defaultValue = None, prefix = '', conversion = None):
+  def getArgument(self, name, defaultValue = None, prefix = '', conversion = None, comment = ''):
     '''Define "self.name" to be the argument "name" if it was given, otherwise use "defaultValue"
     - "prefix" is just a string prefix for "name"
     - "conversion" is an optional conversion function for the string value
     '''
+    if comment: self.addHelp(name, comment)
     argName = prefix+name
     value   = None
     if self.framework.argDB.has_key(argName):
@@ -65,6 +68,37 @@ class Configure:
         setattr(self, name, value)
     return
 
+  def getExecutable(self, name, path = '', getFullPath = 0, comment = ''):
+    if not path: path = os.environ['PATH']
+    for dir in path.split(':'):
+      prog = os.join(dir, name)
+
+      if os.path.isfile(prog) and os.access(prog, os.X_OK):
+        if getFullPath:
+          setattr(self, name, os.abspath(prog))
+        else:
+          setattr(self, name, name)
+        self.addSubstitution(name.upper(), getattr(self, name), comment = comment)
+        break
+    return
+
+  def checkPreprocess(self, codeStr):
+    (input, output, err) = popen3(self.cpp)
+    input.write(codeStr)
+    input.close()
+    err.close()
+    output.close()
+    return
+
+  def checkHeader(self, name):
+    found = 0
+    if self.checkPreprocess('#include <'+name+'>\n'):
+      found = 1
+    self.addDefine('HAVE_'+name.upper().replace('.', '_'), found, 'Defined if we have the header '+name)
+    return found
+
+  ######################################
+  # Methods for Autoconf Macro Execution
   def getDefaultMacros(self):
     '''Macros that seems necessary to run any given Autoconf macro'''
     return 'AC_INIT_BINSH\nAC_CONFIG_AUX_DIR(config)\n'
