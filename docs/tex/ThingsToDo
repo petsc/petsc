@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - convert Troubleshooting, Installation, FAQ, Changes etc to HTML.
+
   - Write a program in benchmarks that determines how much memory can be
     malloced on a machine and how much memory you can use before it 
     starts disk thrashing.
