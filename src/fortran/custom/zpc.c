@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.22 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.23 1999/03/02 20:12:16 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -25,6 +25,7 @@ static char vcid[] = "$Id: zpc.c,v 1.22 1998/10/19 22:15:08 bsmith Exp bsmith $"
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
 #define pcgettype_                 PCGETTYPE
 #define pcsettype_                 PCSETTYPE
+#define pcgetoptionsprefix_        PCGETOPTIONSPREFIX
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define pcregisterdestroy_         pcregisterdestroy
 #define pcdestroy_                 pcdestroy
@@ -43,6 +44,7 @@ static char vcid[] = "$Id: zpc.c,v 1.22 1998/10/19 22:15:08 bsmith Exp bsmith $"
 #define pcshellsetapply_           pcshellsetapply
 #define pcgettype_                 pcgettype
 #define pcsettype_                 pcsettype
+#define pcgetoptionsprefix_        pcgetoptionsprefix
 #endif
 
 EXTERN_C_BEGIN
@@ -203,6 +205,23 @@ void pcgettype_(PC *pc,CHAR name,int *__ierr,int len)
   PetscStrncpy(name,tname,len);
 #endif
 }
+
+void pcgetoptionsprefix_(PC *pc, CHAR prefix,int *__ierr,int len)
+{
+  char *tname;
+
+  *__ierr = PCGetOptionsPrefix(*pc,&tname);
+#if defined(USES_CPTOFCD)
+  {
+    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
+    PetscStrncpy(t,tname,len1);
+  }
+#else
+  PetscStrncpy(prefix,tname,len);
+#endif
+}
+
+
 
 EXTERN_C_END
 

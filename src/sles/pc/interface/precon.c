@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.168 1999/03/31 18:42:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.169 1999/04/02 04:17:29 bsmith Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -969,7 +969,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 
 #undef __FUNC__  
 #define __FUNC__ "PCGetOptionsPrefix"
-/*@
+/*@C
    PCGetOptionsPrefix - Gets the prefix used for searching for all 
    PC options in the database.
 
@@ -980,6 +980,9 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 
    Output Parameters:
 .  prefix - pointer to the prefix string used, is returned
+
+   Notes: On the fortran side, the user should pass in a string 'prifix' of
+   sufficient length to hold the prefix.
 
    Level: advanced
 

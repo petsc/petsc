@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsles.c,v 1.14 1998/09/21 01:44:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsles.c,v 1.15 1998/10/19 22:15:08 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -13,6 +13,7 @@ static char vcid[] = "$Id: zsles.c,v 1.14 1998/09/21 01:44:12 bsmith Exp bsmith 
 #define slessetoptionsprefix_    SLESSETOPTIONSPREFIX
 #define slesappendoptionsprefix_ SLESAPPENDOPTIONSPREFIX
 #define slesgetksp_              SLESGETKSP
+#define slesgetoptionsprefix_    SLESGETOPTIONSPREFIX
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define slessetoptionsprefix_    slessetoptionsprefix
 #define slesappendoptionsprefix_ slesappendoptionsprefix
@@ -20,6 +21,7 @@ static char vcid[] = "$Id: zsles.c,v 1.14 1998/09/21 01:44:12 bsmith Exp bsmith 
 #define slescreate_              slescreate
 #define slesgetpc_               slesgetpc
 #define slesgetksp_              slesgetksp
+#define slesgetoptionsprefix_    slesgetoptionsprefix
 #endif
 
 EXTERN_C_BEGIN
@@ -61,6 +63,21 @@ void slescreate_(MPI_Comm *comm,SLES *outsles, int *__ierr )
 {
   *__ierr = SLESCreate((MPI_Comm)PetscToPointerComm( *comm ),outsles);
 
+}
+
+void slesgetoptionsprefix_(SLES *sles, CHAR prefix,int *__ierr,int len)
+{
+  char *tname;
+
+  *__ierr = SLESGetOptionsPrefix(*sles,&tname);
+#if defined(USES_CPTOFCD)
+  {
+    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
+    PetscStrncpy(t,tname,len1);
+  }
+#else
+  PetscStrncpy(prefix,tname,len);
+#endif
 }
 
 EXTERN_C_END

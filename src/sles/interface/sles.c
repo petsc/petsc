@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.114 1999/03/16 16:19:24 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.115 1999/03/23 18:30:21 balay Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -174,7 +174,7 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 
 #undef __FUNC__  
 #define __FUNC__ "SLESGetOptionsPrefix"
-/*@
+/*@C
    SLESGetOptionsPrefix - Gets the prefix used for searching for all 
    SLES options in the database.
 
@@ -190,6 +190,9 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
    This prefix is particularly useful for nested use of SLES.  For
    example, the block Jacobi and block diagonal preconditioners use
    the prefix "sub" for options relating to the individual blocks.  
+
+   On the fortran side, the user should pass in a string 'prifix' of
+   sufficient length to hold the prefix.
 
    Level: intermediate
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.14 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zts.c,v 1.15 1999/03/02 19:43:43 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -20,21 +20,23 @@ static char vcid[] = "$Id: zts.c,v 1.14 1998/10/19 22:15:08 bsmith Exp bsmith $"
 #define tspvodegetiterations_                TSPVODEGETITERATIONS
 #define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
+#define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define tsdefaultcomputejacobian_             tsdefaultcomputejacobian
-#define tsdefaultcomputejacobiancolor_        tsdefaultcomputejacobiancolor
-#define tspvodegetiterations_                 tspvodegetiterations
-#define tssetrhsfunction_                     tssetrhsfunction
-#define tssetrhsmatrix_                       tssetrhsmatrix
-#define tssetrhsjacobian_                     tssetrhsjacobian
-#define tscreate_                             tscreate
-#define tsgetsolution_                        tsgetsolution
-#define tsgetsnes_                            tsgetsnes
-#define tsgetsles_                            tsgetsles
-#define tsgettype_                            tsgettype
-#define tsdestroy_                            tsdestroy
-#define tssetmonitor_                         tssetmonitor
-#define tssettype_                            tssettype
+#define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
+#define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
+#define tspvodegetiterations_                tspvodegetiterations
+#define tssetrhsfunction_                    tssetrhsfunction
+#define tssetrhsmatrix_                      tssetrhsmatrix
+#define tssetrhsjacobian_                    tssetrhsjacobian
+#define tscreate_                            tscreate
+#define tsgetsolution_                       tsgetsolution
+#define tsgetsnes_                           tsgetsnes
+#define tsgetsles_                           tsgetsles
+#define tsgettype_                           tsgettype
+#define tsdestroy_                           tsdestroy
+#define tssetmonitor_                        tssetmonitor
+#define tssettype_                           tssettype
+#define tsgetoptionsprefix_                  tsgetoptionsprefix
 #endif
 
 EXTERN_C_BEGIN
@@ -179,6 +181,20 @@ void tssetmonitor_(TS *ts,int (*func)(TS*,int*,double*,Vec*,void*,int*),
   *__ierr = TSSetMonitor(*ts,ourtsmonitor,mctx);
 }
 
+void tsgetoptionsprefix_(TS *ts, CHAR prefix,int *__ierr,int len)
+{
+  char *tname;
+
+  *__ierr = TSGetOptionsPrefix(*ts,&tname);
+#if defined(USES_CPTOFCD)
+  {
+    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
+    PetscStrncpy(t,tname,len1);
+  }
+#else
+  PetscStrncpy(prefix,tname,len);
+#endif
+}
 
 EXTERN_C_END
 

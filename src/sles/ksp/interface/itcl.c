@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.111 1999/01/31 21:22:07 curfman Exp balay $";
+static char vcid[] = "$Id: itcl.c,v 1.112 1999/04/05 18:06:48 balay Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -132,6 +132,9 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
+
+   Notes: On the fortran side, the user should pass in a string 'prifix' of
+   sufficient length to hold the prefix.
 
    Level: advanced
 
