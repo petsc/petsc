@@ -65,7 +65,7 @@ int main( int argc, char **argv )
       ierr = PCSetMethod(pc,PCSHELL); CHKERRA(ierr);
       ierr = PCShellSetApply(pc,MatrixFreePreconditioner,(void*)0); 
              CHKERRA(ierr);
-    } else ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
+    } else {ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);}
   }
 
   /* Set up nonlinear solver; then execute it */
