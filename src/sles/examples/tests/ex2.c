@@ -1,15 +1,22 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.2 1996/09/17 20:08:22 balay Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.3 1996/10/24 15:37:42 curfman Exp bsmith $";
 #endif
 
-static char help[] = "Solves a linear system in parallel with SLES.\n\n";
+static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 
 /*T
    Concepts: SLES (solving linear equations)
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESGetPC();
-   Routines: KSPSetTolerances(); PCSetType();
+   Routines: KSPSetTolerances(); PCSetType(); PetscSetCommWorld();
+
    Processors: n
+
+   Comments: Demonstrates how to use PetscSetCommWorld() to tell a subset of
+             processors (in this case each individual processor) to run 
+             as if it was all the processors that PETSc is using. ADVANCED
+             example, not for beginning PETSc users.
+
 T*/
 
 /* 
