@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.38 1998/05/30 01:52:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.39 1998/06/11 19:53:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -33,7 +33,15 @@ static char vcid[] = "$Id: zvec.c,v 1.38 1998/05/30 01:52:13 bsmith Exp bsmith $
 #define mapdestroy_            MAPDESTROY
 #define mapcreatempi_          MAPCREATEMPI
 #define vecgetmap_             VECGETMAP
+#define vecghostgetlocalrepresentation_     VECGHOSTGETLOCALREPRESENTATION
+#define vecghostrestorelocalrepresentation_ VECGHOSTRESTORELOCALREPRESENTATION
+#define veccreateghostwitharray_            VECCREATEGHOSTWITHARRAY
+#define veccreateghost_                     VECCREATEGHOST
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define vecghostrestorelocalrepresentation_ vecghostrestorelocalrepresentation
+#define vecghostgetlocalrepresentation_     vecghostgetlocalrepresentation
+#define veccreateghostwitharray_            veccreateghostwitharray
+#define veccreateghost_                     veccreateghost
 #define vecgetmap_             vecgetmap
 #define mapcreatempi_          mapcreatempi
 #define mapgetglobalrange_     mapgetglobalrange
@@ -299,6 +307,36 @@ void vecmaxpy_(int *nv,Scalar *alpha,Vec x,PetscFortranAddr *y, int *__ierr )
   for (i=0; i<*nv; i++) yV[i] = ((Vec)PetscToPointer(&y[i]));
   *__ierr = VecMAXPY(*nv,alpha,(Vec)PetscToPointer(x),yV);
   PetscFree(yV);
+}
+
+/* ----------------------------------------------------------------------------------------------*/
+void veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Scalar *array,
+                              Vec *vv, int *__ierr )
+{
+  Vec vec;
+  *__ierr = VecCreateGhostWithArray((MPI_Comm)PetscToPointerComm( *comm) ,*n,*N,*nghost,
+                                    ghosts,array,&vec);
+  *(PetscFortranAddr*) vv = PetscFromPointer(vec);
+}
+
+void veccreateghost_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Vec *vv, int *__ierr )
+{
+  Vec vec;
+  *__ierr = VecCreateGhost((MPI_Comm)PetscToPointerComm( *comm),*n,*N,*nghost,ghosts,&vec);
+  *(PetscFortranAddr*) vv = PetscFromPointer(vec);
+}
+
+void vecghostgetlocalrepresentation_(Vec g,Vec *l, int *__ierr )
+{
+  Vec vec;
+  *__ierr = VecGhostGetLocalRepresentation(
+	(Vec)PetscToPointer( g),&vec);
+  *(PetscFortranAddr*) l = PetscFromPointer(vec);
+}
+
+void vecghostrestorelocalrepresentation_(Vec g,Vec *l, int *__ierr )
+{
+  *__ierr = VecGhostRestoreLocalRepresentation((Vec)PetscToPointer( g ),l);
 }
 
 #if defined(__cplusplus)
