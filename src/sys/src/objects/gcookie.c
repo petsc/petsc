@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcookie.c,v 1.2 1996/02/08 18:26:06 bsmith Exp balay $";
+static char vcid[] = "$Id: gcookie.c,v 1.3 1996/12/16 21:33:57 balay Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: gcookie.c,v 1.2 1996/02/08 18:26:06 bsmith Exp balay 
 @*/
 int PetscObjectGetCookie(PetscObject obj,int *cookie)
 {
-  if (!obj) SETERRQ(1,"PetscObjectGetComm:Null object");
+  if (!obj) SETERRQ(1,"Null object");
   *cookie = obj->cookie;
   return 0;
 }

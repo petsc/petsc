@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcomm.c,v 1.2 1996/09/23 18:19:14 curfman Exp balay $";
+static char vcid[] = "$Id: pcomm.c,v 1.3 1996/12/16 21:56:21 balay Exp balay $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: pcomm.c,v 1.2 1996/09/23 18:19:14 curfman Exp balay $
 @*/
 int PetscSetCommWorld(MPI_Comm comm)
 {
-  if (PetscInitializedCalled) SETERRQ(1,"PetscSetCommWorld: Must call before PetscInitialize()");
+  if (PetscInitializedCalled) SETERRQ(1,"Must call before PetscInitialize()");
   PETSC_COMM_WORLD = comm;
   return 0;
 }

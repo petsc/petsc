@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.46 1996/11/07 04:21:40 curfman Exp balay $";
+static char vcid[] = "$Id: pcset.c,v 1.47 1996/12/16 20:14:47 balay Exp balay $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -60,9 +60,9 @@ int PCSetType(PC ctx,PCType type)
   }
   /* Get the function pointers for the method requested */
   if (!__PCList) {PCRegisterAll();}
-  if (!__PCList) {SETERRQ(1,"PCSetType:Could not get list of methods");}
+  if (!__PCList) {SETERRQ(1,"Could not get list of methods");}
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)type, (char *)0 );
-  if (!r) {SETERRQ(1,"PCSetType:Unknown type");}
+  if (!r) {SETERRQ(1,"Unknown type");}
   if (ctx->data) PetscFree(ctx->data);
   ctx->setfrom     = ( int (*)(PC) ) 0;
   ctx->printhelp   = ( int (*)(PC,char*) ) 0;

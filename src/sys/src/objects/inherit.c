@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: inherit.c,v 1.9 1996/11/07 15:08:22 bsmith Exp balay $";
+static char vcid[] = "$Id: inherit.c,v 1.10 1996/12/16 21:35:33 balay Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -82,7 +82,7 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),
 {
 /*
   if (obj->child) 
-    SETERRQ(1,"PetscObjectInherit:Child already set;object can have only 1 child");
+    SETERRQ(1,"Child already set;object can have only 1 child");
 */
   if (copy == PETSC_NULL)    copy = PetscObjectInherit_DefaultCopy;
   if (destroy == PETSC_NULL) destroy = PetscObjectInherit_DefaultDestroy;
@@ -109,7 +109,7 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),
 @*/
 int PetscObjectGetChild(PetscObject obj,void **child)
 {
-  if (!obj) SETERRQ(1,"PetscObjectGetChild:Null object");
+  if (!obj) SETERRQ(1,"Null object");
   *child = obj->child;
   return 0;
 }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.38 1996/11/07 15:11:28 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.39 1996/12/16 20:46:01 balay Exp balay $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -94,7 +94,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
     eval_fct = SNESComputeGradient;
     ierr = SNESGetGradient(snes,&F); CHKERRQ(ierr);
   }
-  else SETERRQ(1,"SNESMatrixFreeMult_Private: Invalid method class");
+  else SETERRQ(1,"Invalid method class");
 
   /* Determine a "good" step size, h */
   ierr = VecDot(U,a,&dot); CHKERRQ(ierr);

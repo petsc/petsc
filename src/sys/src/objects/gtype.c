@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gtype.c,v 1.3 1996/04/15 17:55:56 curfman Exp balay $";
+static char vcid[] = "$Id: gtype.c,v 1.4 1996/12/16 21:34:38 balay Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: gtype.c,v 1.3 1996/04/15 17:55:56 curfman Exp balay $
 @*/
 int PetscObjectGetType(PetscObject obj,int *type)
 {
-  if (!obj) SETERRQ(1,"PetscObjectGetComm:Null object");
+  if (!obj) SETERRQ(1,"Null object");
   *type = obj->type;
   return 0;
 }

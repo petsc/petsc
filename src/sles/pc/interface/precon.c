@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.109 1996/12/16 20:16:49 balay Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.110 1996/12/16 20:18:53 balay Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -140,7 +140,7 @@ int PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"PCApply:x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_Apply,pc,x,y,0);
@@ -231,8 +231,8 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"PCApplyTrans:x and y must be different vectors");
-  if (!pc->applytrans) SETERRQ(PETSC_ERR_SUP,"PCApplyTrans");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  if (!pc->applytrans) SETERRQ(PETSC_ERR_SUP,"");
   ierr = (*pc->applytrans)(pc,x,y); CHKERRQ(ierr);
   return 0;
 }
@@ -263,9 +263,9 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(work,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"PCApplyBAorAB:x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"PCApplyBAorAB:Side must be right, left, or symmetric");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
   }
   if (pc->applyBA)  return (*pc->applyBA)(pc,side,x,y,work);
   if (side == PC_RIGHT) {
@@ -313,10 +313,10 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(work,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"PCApplyBAorABTrans:x and y must be different vectors");
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,side,x,y,work);
   if (side != PC_LEFT && side != PC_RIGHT) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"PCApplyBAorABTrans:Side must be right or left");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
   }
   if (side == PC_RIGHT) {
     ierr = MatMultTrans(pc->mat,x,work); CHKERRQ(ierr);
@@ -385,7 +385,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(w,VEC_COOKIE);
-  if (!pc->applyrich) SETERRQ(PETSC_ERR_SUP,"PCApplyRichardson");
+  if (!pc->applyrich) SETERRQ(PETSC_ERR_SUP,"");
   return (*pc->applyrich)(pc,x,y,w,its);
 }
 
@@ -425,8 +425,8 @@ int PCSetUp(PC pc)
   }
   if (pc->setupcalled > 1) return 0;
   PLogEventBegin(PC_SetUp,pc,0,0,0);
-  if (!pc->vec) {SETERRQ(1,"PCSetUp:Vector must be set first");}
-  if (!pc->mat) {SETERRQ(1,"PCSetUp:Matrix must be set first");}
+  if (!pc->vec) {SETERRQ(1,"Vector must be set first");}
+  if (!pc->mat) {SETERRQ(1,"Matrix must be set first");}
   if (pc->setup) { ierr = (*pc->setup)(pc); CHKERRQ(ierr);}
   pc->setupcalled = 2;
   PLogEventEnd(PC_SetUp,pc,0,0,0);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.113 1996/12/01 17:07:40 curfman Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.114 1996/12/16 21:55:58 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -76,7 +76,7 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
       PetscStrcat(pfile,"/.petschistory");
       filename = pfile;
     }
-    *fd = fopen(filename,"a"); if (!fd) SETERRQ(1,"PLogOpenHistoryFile:");
+    *fd = fopen(filename,"a"); if (!fd) SETERRQ(1,"");
     fprintf(*fd,"---------------------------------------------------------\n");
     fprintf(*fd,"%s %s ",PETSC_VERSION_NUMBER,PetscGetDate());
     fprintf(*fd,"%s on a %s, %d proc. with options:\n",
@@ -128,7 +128,7 @@ int PetscCompareInt(int d)
 
   MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);
   if (d != work) {
-    SETERRQ(1,"PetscCompareInt:Inconsistent integer");
+    SETERRQ(1,"Inconsistent integer");
   }
   return 0;
 }
@@ -151,7 +151,7 @@ int PetscCompareDouble(double d)
   if (!d && !work) return 0;
   if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) 
       > PetscCompareTolerance) {
-    SETERRQ(1,"PetscCompareDouble:Inconsistent double");
+    SETERRQ(1,"Inconsistent double");
   }
   return 0;
 }
@@ -174,7 +174,7 @@ int PetscCompareScalar(Scalar d)
   if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) return 0;
   if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) 
       >= PetscCompareTolerance) {
-    SETERRQ(1,"PetscCompareScalar:Inconsistent scalar");
+    SETERRQ(1,"Inconsistent scalar");
   }
   return 0;
 }
@@ -220,7 +220,7 @@ int PetscCompareInitialize(double tol)
   /*   printf("[%d] my name %s basename %s mysize %d\n",rank,programname,basename,mysize); */
 
   if (mysize == 0 || mysize == size) {
-    SETERRQ(1,"PetscCompareInitialize:Need two different programs to compare");
+    SETERRQ(1,"Need two different programs to compare");
   }
 
   /* create a new communicator for each program */
@@ -714,7 +714,7 @@ int OptionsCheckInitial_Private()
       sprintf(fname,"%s.%d",mname,rank);
       file = fopen(fname,"w"); 
       if (!file) {
-        SETERRQ(1,"OptionsCreate_Private:Unable to open trace file");
+        SETERRQ(1,"Unable to open trace file");
       }
     } else {
       file = stdout;
@@ -803,7 +803,7 @@ static int OptionsInsertFile_Private(char *file)
       }
       else if (first && !PetscStrcmp(first,"alias")) {
         third = PetscStrtok(0," ");
-        if (!third) SETERRQ(1,"OptionsCreate_Private:Error in options file:alias");
+        if (!third) SETERRQ(1,"Error in options file:alias");
         len = PetscStrlen(third); 
         if (third[len-1] == '\n') third[len-1] = 0;
         ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
@@ -1060,9 +1060,9 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
 {
   int len,n = options->Naliases;
 
-  if (newname[0] != '-') SETERRQ(1,"OptionsSetAlias_Private:aliased must have -");
-  if (oldname[0] != '-') SETERRQ(1,"OptionsSetAlias_Private:aliasee must have -");
-  if (n >= MAXALIASES) {SETERRQ(1,"OptionsSetAlias_Private:Aliases overflow");}
+  if (newname[0] != '-') SETERRQ(1,"aliased must have -");
+  if (oldname[0] != '-') SETERRQ(1,"aliasee must have -");
+  if (n >= MAXALIASES) {SETERRQ(1,"Aliases overflow");}
 
   newname++; oldname++;
   len = (PetscStrlen(newname)+1)*sizeof(char);
@@ -1086,7 +1086,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
   N = options->N;
   names = options->names;
 
-  if (name[0] != '-') SETERRQ(1,"OptionsFindPair_Private:Name must begin with -");
+  if (name[0] != '-') SETERRQ(1,"Name must begin with -");
 
   /* append prefix to name */
   if (pre) {

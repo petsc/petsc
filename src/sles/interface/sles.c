@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.71 1996/11/07 15:10:13 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.72 1996/12/16 20:26:55 balay Exp balay $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -333,7 +333,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   PC  pc;
 
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
-  if (b == x) SETERRQ(1,"SLESSolve:b and x must be different vectors");
+  if (b == x) SETERRQ(1,"b and x must be different vectors");
   ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);

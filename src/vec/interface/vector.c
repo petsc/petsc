@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.95 1996/11/20 22:01:45 curfman Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.96 1996/12/16 21:04:26 balay Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -604,7 +604,7 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 @*/
 int VecDestroyVecs(Vec *vv,int m)
 {
-  if (!vv) SETERRQ(1,"VecDestroyVecs:Null vectors");
+  if (!vv) SETERRQ(1,"Null vectors");
   PetscValidHeaderSpecific(*vv,VEC_COOKIE);
   return (*(*vv)->ops.destroyvecs)( vv, m );
 }
@@ -676,7 +676,7 @@ int VecSetLocalToGlobalMapping(Vec x, int n,int *indices)
   PetscValidIntPointer(indices);
 
   if (x->mapping) {
-    SETERRQ(1,"VecSetLocalToGlobalMapping:Mapping already set for vector");
+    SETERRQ(1,"Mapping already set for vector");
   }
 
   ierr = ISLocalToGlobalMappingCreate(n,indices,&x->mapping);CHKERRQ(ierr);
@@ -720,10 +720,10 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
   if (!x->mapping) {
-    SETERRQ(1,"VecSetValuesLocal:Local to global never set with VecSetLocalToGlobalMapping");
+    SETERRQ(1,"Local to global never set with VecSetLocalToGlobalMapping");
   }
   if (ni > 128) {
-    SETERRQ(1,"VecSetValuesLocal:Number indices must be <= 128");
+    SETERRQ(1,"Number indices must be <= 128");
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
@@ -982,7 +982,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
   Scalar **q;
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidPointer(a);
-  if (n <= 0) SETERRQ(1,"VecGetArrays:Must get at least one array");
+  if (n <= 0) SETERRQ(1,"Must get at least one array");
   q = (Scalar **) PetscMalloc(n*sizeof(Scalar*)); CHKPTRQ(q);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]); CHKERRQ(ierr);
@@ -1196,7 +1196,7 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
 
   PetscValidHeaderSpecific(w,VEC_COOKIE);
   PetscValidPointer(V);
-  if (m <= 0) SETERRQ(1,"VecDuplicateVecs_Default:m must be > 0");
+  if (m <= 0) SETERRQ(1,"m must be > 0");
   *V = (Vec *) PetscMalloc( m * sizeof(Vec *)); CHKPTRQ(*V);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i); CHKERRQ(ierr);}
   return 0;
@@ -1209,7 +1209,7 @@ int VecDestroyVecs_Default( Vec *v, int m )
   int i,ierr;
 
   PetscValidPointer(v);
-  if (m <= 0) SETERRQ(1,"VecDestroyVecs_Default:m must be > 0");
+  if (m <= 0) SETERRQ(1,"m must be > 0");
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]); CHKERRQ(ierr);}
   PetscFree( v );
   return 0;

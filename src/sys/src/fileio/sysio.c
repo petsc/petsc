@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.14 1996/08/08 14:41:26 bsmith Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.15 1996/12/16 22:11:37 balay Exp balay $";
 #endif
 
 /* 
@@ -129,14 +129,14 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 #endif
   else if (type == BINARY_SCALAR) m *= sizeof(Scalar);
   else if (type == BINARY_SHORT)  m *= sizeof(short);
-  else SETERRQ(1,"PetscBinaryRead:Unknown type");
+  else SETERRQ(1,"Unknown type");
   
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err = read( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
     if (err == 0 && wsize > 0) return 1;
-    if (err < 0) SETERRQ(1,"PetscBinaryRead:Error reading from file");
+    if (err < 0) SETERRQ(1,"Error reading from file");
     m  -= err;
     pp += err;
   }
@@ -223,13 +223,13 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
 #endif
   else if (type == BINARY_SCALAR) m *= sizeof(Scalar);
   else if (type == BINARY_SHORT)  m *= sizeof(short);
-  else SETERRQ(1,"PetscBinaryWrite:Unknown type");
+  else SETERRQ(1,"Unknown type");
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err = write( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
-    if (err != wsize) SETERRQ(n,"PetscBinaryWrite:Error writing to file.");
+    if (err != wsize) SETERRQ(n,"Error writing to file.");
     m -= wsize;
     pp += wsize;
   }
