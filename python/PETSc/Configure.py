@@ -315,6 +315,11 @@ class Configure(config.base.Configure):
       self.installdir = self.framework.argDB['PETSC_DIR']
     return
 
+  def configureGCOV(self):
+    if self.framework.argDB['with-gcov']:
+      self.addDefine('USE_GCOV','1')
+    return
+
   def configure(self):
     if not os.path.samefile(self.arch.dir, os.getcwd()):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.arch.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
@@ -329,6 +334,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureDefaults)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
+    self.executeTest(self.configureGCOV)
     self.Dump()
     self.framework.log.write('================================================================================\n')
     self.logClear()

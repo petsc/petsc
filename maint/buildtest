@@ -108,6 +108,13 @@ foreach j ($JOBS $EJOBS $RJOBS)
   $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
   echo '******************************************************' >>& $nPETSC_DIR/examples.log
 end
+
+set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h`
+if ( "${GCOV}" != "" ) then
+  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT allgcov  >>& examples.log
+  tar -cfz gcov.tar.gz /tmp/gcov
+endif
+
 echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& $nPETSC_DIR/examples.log
 echo 'X******************************************************X' >>& $nPETSC_DIR/examples.log
 tar rf buildoutput.tar examples.log

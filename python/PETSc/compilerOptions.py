@@ -80,6 +80,8 @@ class compilerOptions(config.base.Configure):
       if bopt == '':
         flags.append('-Wall')
       elif bopt in ['g']:
+        if self.framework.argDB['with-gcov']:
+          flags.extend(['-fprofile-arcs', '-ftest-coverage'])
         flags.append('-g3')
       elif bopt in ['O']:
         if os.environ.has_key('USER'):
@@ -155,8 +157,17 @@ class compilerOptions(config.base.Configure):
 
   def getFortranFlags(self, compiler, bopt):
     flags = []
+    if config.setCompilers.Configure.isGNU(compiler):
+      if bopt == '':
+        flags.append('-Wall')
+      elif bopt == 'g':
+        if self.framework.argDB['with-gcov']:
+          flags.extend(['-fprofile-arcs', '-ftest-coverage'])
+        flags.append('-g3')
+      elif bopt == 'O':
+        flags.extend(['-O'])
     # Alpha
-    if re.match(r'alphaev[0-9]', self.framework.host_cpu):
+    elif re.match(r'alphaev[0-9]', self.framework.host_cpu):
       # Compaq Fortran
       if compiler == 'fort':
         if bopt == 'O':
