@@ -419,6 +419,18 @@ class SharedLinker(Linker):
         self.libExt = 'so'
     return
 
+  def getLibExt(self):
+    if self._libExt is None:
+      if self.argDB['HAVE_CYGWIN']:
+        return 'dll'
+      else:
+        return 'so'
+    return self._libExt
+
+  def setLibExt(self, ext):
+    self._libExt = ext
+  libExt = property(getLibExt, setLibExt, doc = 'The library extension')
+
   def __str__(self):
     if self.argDB['HAVE_CYGWIN']:
       return 'Cygwin Shared linker('+self.processor+') for '+str(self.inputTag)
