@@ -22,7 +22,7 @@ EXAMPLESC     = PetscTime.c PetscGetTime.c MPI_Wtime.c PLogEvent.c PetscMalloc.c
 		PetscMemcpy.c PetscMemzero.c PetscMemcmp.c Index.c PetscVecNorm.c
 EXAMPLESF     = 
 TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
-		PetscMemcpy PetscMemzero PetscMemcmp Index
+		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm
 
 PetscTime: PetscTime.o  chkopts 
 	-$(CLINKER) -o PetscTime PetscTime.o $(PETSC_LIB)
