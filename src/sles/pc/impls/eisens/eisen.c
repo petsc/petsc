@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.24 1995/07/20 15:32:49 curfman Exp curfman $";
+static char vcid[] = "$Id: eisen.c,v 1.25 1995/07/26 02:24:53 curfman Exp bsmith $";
 #endif
 
 /*
@@ -59,7 +59,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   /* if nonzero initial guess, modify x */
   if (!ksp->guess_zero) {
     KSPGetSolution(ksp,&x);
-    ierr = MatRelax(jac->A,x,jac->omega,SOR_APPLY_UPPER,0.0,1,x); CHKERRQ(ierr);
+    ierr = MatRelax(jac->A,x,jac->omega,SOR_APPLY_UPPER,0.0,1,x);CHKERRQ(ierr);
   }
 
   /* modify b by (L + D)^{-1} */
