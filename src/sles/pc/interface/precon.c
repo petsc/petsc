@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.88 1996/07/10 01:54:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.89 1996/08/04 23:11:52 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -67,7 +67,8 @@ int PCDestroy(PC pc)
 .  pc - location to put the preconditioner context
 
    Notes:
-   The default preconditioner is PCJACOBI.
+   The default preconditioner on one processor is PCILU on more 
+   then one it is PCJACOBI.
 
 .keywords: PC, create, context
 
@@ -75,24 +76,30 @@ int PCDestroy(PC pc)
 @*/
 int PCCreate(MPI_Comm comm,PC *newpc)
 {
-  PC pc;
+  PC     pc;
+  PCType initialtype = PCJACOBI;
+  int    size;
+
   *newpc          = 0;
-  PetscHeaderCreate(pc,_PC,PC_COOKIE,PCJACOBI,comm);
+  MPI_Comm_size(comm,&size);
+  if (size == 1) initialtype = PCILU;
+
+  PetscHeaderCreate(pc,_PC,PC_COOKIE,initaltype,comm);
   PLogObjectCreate(pc);
-  pc->type        = -1;
-  pc->vec         = 0;
-  pc->mat         = 0;
-  pc->setupcalled = 0;
-  pc->destroy     = 0;
-  pc->data        = 0;
-  pc->apply       = 0;
-  pc->applytrans  = 0;
-  pc->applyBA     = 0;
-  pc->applyBAtrans= 0;
-  pc->applyrich   = 0;
-  pc->view        = 0;
+  pc->type               = -1;
+  pc->vec                = 0;
+  pc->mat                = 0;
+  pc->setupcalled        = 0;
+  pc->destroy            = 0;
+  pc->data               = 0;
+  pc->apply              = 0;
+  pc->applytrans         = 0;
+  pc->applyBA            = 0;
+  pc->applyBAtrans       = 0;
+  pc->applyrich          = 0;
+  pc->view               = 0;
   pc->getfactoredmatrix  = 0;
-  *newpc          = pc;
+  *newpc                 = pc;
   /* this violates rule about seperating abstract from implementions*/
   return PCSetType(pc,PCJACOBI);
 }
