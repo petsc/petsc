@@ -1,4 +1,4 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../../..
 
 ALL: lib
 
@@ -15,5 +15,5 @@ OBJSF    = somefort.o
 LIBBASE  = libpetscfortran
 MANSEC   = 1
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
