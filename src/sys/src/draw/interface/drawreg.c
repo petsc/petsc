@@ -248,7 +248,7 @@ PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
   PetscTruth flg,nox;
   char       vtype[256];
   const char *def;
-#if !defined(PARCH_Win32) && !defined(PETSC_HAVE_X11)
+#if !defined(PARCH_win32) && !defined(PETSC_HAVE_X11)
   PetscTruth warn;
 #endif
 
