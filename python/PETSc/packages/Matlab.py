@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 from __future__ import generators
+import user
 import config.base
 import os
 import commands
@@ -34,24 +36,24 @@ class Configure(config.base.Configure):
 
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
+    import re
+
+    versionPattern = re.compile('Version ([0-9]*.[0-9]*)')
     for matlab in self.generateGuesses():
       interpreter = os.path.join(matlab,'bin','matlab')
-      (status,output) = commands.getstatusoutput(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"')
-      if status:
-        self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
-        self.framework.log.write(output)
-        self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
-        matlab = None
-      else:
-        import re
-        r = re.compile('Version ([0-9]*.[0-9]*)').search(output).group(1)
-        r = float(r)
+      output      = ''
+      try:
+        output = self.executeShellCommand(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"')
+        match  = versionPattern.search(output)
+        if not match:
+          matlab = None
+          continue
+        r = float(match.group(1))
         if r < 6.0:
           self.framework.log.write('WARNING:Matlab version must be at least 6; yours is '+str(r)+'\n')
           self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
           matlab = None
         else:
-
           # make sure this is true root of Matlab
           if not os.path.isdir(os.path.join(matlab,'extern','lib')):
             self.framework.log.write('WARNING:'+matlab+' is not the root directory for Matlab\n')
@@ -82,7 +84,11 @@ class Configure(config.base.Configure):
               matlab_sys = ''
             self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
             return
-
+      except RuntimeError:
+        self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
+        self.framework.log.write(output)
+        self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
+        matlab = None
     # if we got here we did not find one
     self.emptySubstitutions()
     return
@@ -102,3 +108,12 @@ class Configure(config.base.Configure):
       return
     self.executeTest(self.configureLibrary)
     return
+
+if __name__ == '__main__':
+  import config.framework
+  import sys
+  framework = config.framework.Framework(sys.argv[1:])
+  framework.setupLogging()
+  framework.children.append(Configure(framework))
+  framework.configure()
+  framework.dumpSubstitutions()
