@@ -208,7 +208,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   int         i,j;
 #endif
   int         flag,argc = 0;
-  PetscMPIInt dummy_tag,size;
+  PetscMPIInt size;
   char        **args = 0,*t1,name[256],hostname[64];
   
   *ierr = 1;
