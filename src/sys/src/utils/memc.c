@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.8 1995/11/08 00:12:20 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.9 1996/01/16 18:51:38 balay Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -52,7 +52,7 @@ void PetscMemzero(void *a,int n)
   memset((char*)(a),0,n);
 }
 
-/*@
+/*@C
   PetscMemcmp  - Compares two byte streams in memory.
 
   Input Parameters:
