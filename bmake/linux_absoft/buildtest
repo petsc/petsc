@@ -1,10 +1,10 @@
 #! /bin/csh
-# $Id: buildtest,v 1.3 2000/08/02 19:00:10 balay Exp balay $ 
+# $Id: buildtest,v 1.4 2000/08/02 19:22:16 balay Exp balay $ 
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
 set TMP=/sandbox/petsc/petsc
-set MACH=kilite
+set MACH=ranke
 set ARCH=linux_absoft
 set TEST=testexamples_
 set NICE=''
