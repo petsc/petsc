@@ -585,7 +585,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Compiler is not functional')
     os.rename(self.compilerObj, 'conf1.o')
     for (archiver, flags, ranlib) in self.generateArchiverGuesses():
-      self.framework.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
+      self.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
       (output, error, status) = config.base.Configure.executeShellCommand(archiver+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
       (output, error, status) = config.base.Configure.executeShellCommand(ranlib+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
       self.framework.argDB['LIBS'] = 'conf1.a'
@@ -604,10 +604,11 @@ class Configure(config.base.Configure):
       self.framework.argDB['LIBS'] = oldLibs
       self.popLanguage()
       raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
-    self.framework.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
-    self.framework.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB')
+    self.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
+    self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB')
     self.framework.argDB['AR_FLAGS']=flags
     self.framework.addArgumentSubstitution('AR_FLAGS','AR_FLAGS')
+    self.AR_FLAGS = flags
     os.remove('conf1.o')
     self.framework.argDB['LIBS'] = oldLibs
     self.popLanguage()
