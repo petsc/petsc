@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.2 2000/07/07 21:01:52 balay Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.3 2000/07/12 18:58:59 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   
 #include "src/vec/vecimpl.h"
@@ -800,8 +800,8 @@ int MatGetValues_MPISBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 int MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
-  Mat_SeqSBAIJ *amat = (Mat_SeqSBAIJ*)baij->A->data;
-  Mat_SeqBAIJ  *bmat = (Mat_SeqBAIJ*)baij->B->data;
+  /* Mat_SeqSBAIJ *amat = (Mat_SeqSBAIJ*)baij->A->data; */
+  /* Mat_SeqBAIJ  *bmat = (Mat_SeqBAIJ*)baij->B->data; */
   int        ierr;
   PetscReal  sum[2],*lnorm2;
 
@@ -1120,7 +1120,7 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     MatScalar   *a;
 
     if (!rank) {
-      ierr = MatCreateMPISBAIJ(mat->comm,baij->bs,M,M,M,M,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreateMPISBAIJ(mat->comm,baij->bs,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
     } else {
       ierr = MatCreateMPISBAIJ(mat->comm,baij->bs,0,0,M,M,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
     }
