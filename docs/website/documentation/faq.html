@@ -101,6 +101,7 @@
         time. What can I do make this process faster?</a></li>
       <li><a href="faq.html#log-summary">How can I generate performance summaries with
         PETSc?</a></li>
+      <li><a href="faq.html#parallel-roundoff">Why do I get different answers on a different numbers of processors?</a></li>
     </menu>
     <h4><a href="faq.html#Debugging">Debugging</a></h4>
     <menu>
@@ -394,6 +395,13 @@ Note that this simply concatenates in the
     interpreting the summary data. If using the PETSc (non)linear solvers, one can also
     specify -snes_view or -ksp_view for a printout of solver info. Only the highest level
     PETSc object used needs to specify the view option. </p>
+    <p><strong><a name="parallel-roundoff"><font color="#FF0000">Why do I get different answers
+    on a different numbers of processors?</font> </a></strong></p>
+    <p>Most commonly, you are using a preconditioner which behaves differently based upon the
+    number of processors, such as Block-Jacobi which is the PETSc default. However, since
+    computations are reordered in parallel, small roundoff errors will still be present with
+    identical mathematical formulations. If you set a tighter linear solver tolerance (using
+    -ksp_rtol), the differences will decrease.</p>
     <hr>
     <h3><a name="Debugging">Debugging</a></h3>
     <p><a name="debug-cray"><font color="#FF0000"><strong>How do I debug on the Cray T3D/T3E?</strong>
