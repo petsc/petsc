@@ -1384,7 +1384,7 @@ PetscErrorCode MatGetRow_MPIBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **
   PetscInt       *cmap,*idx_p,cstart = mat->cstart;
 
   PetscFunctionBegin;
-  if (mat->getrowactive == PETSC_TRUE) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
+  if (mat->getrowactive) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
   mat->getrowactive = PETSC_TRUE;
 
   if (!mat->rowvalues && (idx || v)) {
@@ -1461,7 +1461,7 @@ PetscErrorCode MatRestoreRow_MPIBAIJ(Mat mat,PetscInt row,PetscInt *nz,PetscInt 
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
 
   PetscFunctionBegin;
-  if (baij->getrowactive == PETSC_FALSE) {
+  if (!baij->getrowactive) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"MatGetRow not called");
   }
   baij->getrowactive = PETSC_FALSE;
@@ -1881,7 +1881,7 @@ PetscErrorCode MatEqual_MPIBAIJ(Mat A,Mat B,PetscTruth *flag)
   c = matB->A; d = matB->B;
 
   ierr = MatEqual(a,c,&flg);CHKERRQ(ierr);
-  if (flg == PETSC_TRUE) {
+  if (flg) {
     ierr = MatEqual(b,d,&flg);CHKERRQ(ierr);
   }
   ierr = MPI_Allreduce(&flg,flag,1,MPI_INT,MPI_LAND,A->comm);CHKERRQ(ierr);

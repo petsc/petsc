@@ -24,7 +24,7 @@ PetscErrorCode SNESInitializePackage(const char path[]) {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&SNES_COOKIE,         "SNES");CHKERRQ(ierr);
@@ -38,7 +38,7 @@ PetscErrorCode SNESInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&SNES_JacobianEval,             "SNESJacobianEval", SNES_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogInfoDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ PetscErrorCode SNESInitializePackage(const char path[]) {
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "snes", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);

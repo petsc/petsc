@@ -251,6 +251,7 @@ M*/
 extern MPI_Comm   PETSC_COMM_SELF;
 
 extern PetscTruth PetscInitializeCalled;
+extern PetscTruth PetscFinalizeCalled;
 EXTERN PetscErrorCode        PetscSetCommWorld(MPI_Comm);
 EXTERN PetscErrorCode        PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 EXTERN PetscErrorCode        PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
@@ -792,6 +793,7 @@ EXTERN PetscErrorCode PetscSleep(int);
 EXTERN PetscErrorCode  PetscInitialize(int*,char***,const char[],const char[]);
 EXTERN PetscErrorCode  PetscInitializeNoArguments(void);
 EXTERN PetscErrorCode  PetscInitialized(PetscTruth *);
+EXTERN PetscErrorCode  PetscFinalized(PetscTruth *);
 EXTERN PetscErrorCode  PetscFinalize(void);
 EXTERN PetscErrorCode  PetscInitializeFortran(void);
 EXTERN PetscErrorCode  PetscGetArgs(int*,char ***);

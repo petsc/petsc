@@ -36,15 +36,15 @@ PetscErrorCode PetscMapSetType(PetscMap map, const PetscMapType method)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject) map, method, &match);CHKERRQ(ierr);
-  if (match == PETSC_TRUE) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
-  if (PetscMapRegisterAllCalled == PETSC_FALSE) {
+  if (!PetscMapRegisterAllCalled) {
     ierr = PetscMapRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscFListFind(map->comm, PetscMapList, method, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown map type: %s", method);
-  if (map->ops->destroy != PETSC_NULL) {
+  if (map->ops->destroy) {
     ierr = (*map->ops->destroy)(map);CHKERRQ(ierr);
   }
   ierr = (*r)(map);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ PetscErrorCode PetscMapGetType(PetscMap map, PetscMapType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
   PetscValidCharPointer(type,2);
-  if (PetscMapRegisterAllCalled == PETSC_FALSE) {
+  if (!PetscMapRegisterAllCalled) {
     ierr = PetscMapRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
   *type = map->type_name;
@@ -160,7 +160,7 @@ PetscErrorCode PetscMapRegisterDestroy()
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscMapList != PETSC_NULL) {
+  if (PetscMapList) {
     ierr = PetscFListDestroy(&PetscMapList);CHKERRQ(ierr);
     PetscMapList = PETSC_NULL;
   }

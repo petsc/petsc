@@ -2682,7 +2682,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
     */
     for (i=0; i<ismax; i++) {
       PetscTypeCompare((PetscObject)(submats[i]),MATSEQAIJ,&same);
-      if (same == PETSC_FALSE) {
+      if (!same) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong type");
       }
       mat = (Mat_SeqAIJ*)(submats[i]->data);
@@ -2690,7 +2690,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemcmp(mat->ilen,lens[i],submats[i]->m*sizeof(int),&same);CHKERRQ(ierr);
-      if (same == PETSC_FALSE) {
+      if (!same) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
@@ -3268,7 +3268,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
      * matrix */
     
     PetscTypeCompare((PetscObject)(*submat),MATMPIAIJ,&same);
-    if (same == PETSC_FALSE) {
+    if (!same) {
       SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong type");
     }
     if (((*submat)->m != nrow) || ((*submat)->N != ncol)) {
@@ -3278,11 +3278,11 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
     matA=(Mat_SeqAIJ *)(mat->A->data);
     matB=(Mat_SeqAIJ *)(mat->B->data);
     ierr = PetscMemcmp(matA->ilen,d_nz,nrow*sizeof(int),&same);CHKERRQ(ierr);
-    if (same == PETSC_FALSE) {
+    if (!same) {
       SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     }
     ierr = PetscMemcmp(matB->ilen,o_nz,nrow*sizeof(int),&same);CHKERRQ(ierr);
-    if (same == PETSC_FALSE) {
+    if (!same) {
       SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     }
   /* Initial matrix as if empty */

@@ -568,10 +568,10 @@ PetscErrorCode PetscOptionsLogical(const char opt[],const char text[],const char
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetLogical(amspub.prefix,opt,flg,&iset);CHKERRQ(ierr);
-  if (iset == PETSC_FALSE) {
-    if (flg != PETSC_NULL) *flg = deflt;
+  if (!iset) {
+    if (flg) *flg = deflt;
   }
-  if (set != PETSC_NULL) *set = iset;
+  if (set) *set = iset;
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     const char *v = (deflt ? "true" : "false");
     ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,v,text,man);CHKERRQ(ierr);

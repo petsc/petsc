@@ -1078,7 +1078,7 @@ PetscErrorCode AODataSegmentGetInfo(AOData aodata,const char keyname[],const cha
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
 
   ierr = AODataSegmentFind_Private(aodata,keyname,segname,&flag,&key,&seg);CHKERRQ(ierr);
-  if (flag == PETSC_FALSE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Segment never created: %s",segname);
+  if (!flag) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Segment never created: %s",segname);
   if (bs)        *bs        = seg->bs;
   if (dtype)     *dtype     = seg->datatype;
 

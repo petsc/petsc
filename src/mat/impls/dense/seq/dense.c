@@ -976,7 +976,7 @@ PetscErrorCode MatView_SeqDense_Draw(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
-  if (isnull == PETSC_TRUE) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(0);
 
   ierr = PetscObjectCompose((PetscObject)A,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
   xr  = A->n; yr = A->m; h = yr/10.0; w = xr/10.0; 

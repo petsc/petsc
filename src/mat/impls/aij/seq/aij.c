@@ -144,7 +144,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       } else {
         value = v[k + l*m];
       }
-      if (value == 0.0 && ignorezeroentries) continue;
+      if (value == 0.0 && ignorezeroentries && (is == ADD_VALUES)) continue;
 
       if (!sorted) low = 0; high = nrow;
       while (high-low > 5) {
@@ -160,6 +160,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
           goto noinsert;
         }
       } 
+      if (value == 0.0 && ignorezeroentries) goto noinsert;
       if (nonew == 1) goto noinsert;
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero at (%D,%D) in the matrix",row,col);
       if (nrow >= rmax) {
@@ -2980,11 +2981,11 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
   
   /* if the a->i are the same */
   ierr = PetscMemcmp(a->i,b->i,(A->m+1)*sizeof(PetscInt),flg);CHKERRQ(ierr);
-  if (*flg == PETSC_FALSE) PetscFunctionReturn(0);
+  if (!*flg) PetscFunctionReturn(0);
   
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),flg);CHKERRQ(ierr);
-  if (*flg == PETSC_FALSE) PetscFunctionReturn(0);
+  if (!*flg) PetscFunctionReturn(0);
   
   /* if a->a are the same */
   ierr = PetscMemcmp(a->a,b->a,(a->nz)*sizeof(PetscScalar),flg);CHKERRQ(ierr);

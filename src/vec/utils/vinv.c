@@ -1188,7 +1188,7 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
     }
   }
 #endif
-  if (inv == PETSC_FALSE) {
+  if (!inv) {
     for(i = 0; i < x->n; i++) newArray[i]      = array[idx[i]];
   } else {
     for(i = 0; i < x->n; i++) newArray[idx[i]] = array[i];

@@ -581,7 +581,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscEvent event, int t, PetscObject o
   ierr = StageLogGetEventRegLog(stageLog, &eventRegLog);CHKERRQ(ierr);
   ierr = StageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);CHKERRQ(ierr);
   PetscTime(curTime);
-  if (logActions == PETSC_TRUE) {
+  if (logActions) {
     actions[numActions].time   = curTime - BaseTime;
     actions[numActions].action = ACTIONBEGIN;
     actions[numActions].event  = event;
@@ -637,7 +637,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscEvent event, int t, PetscObject o1,
   ierr = StageLogGetEventRegLog(stageLog, &eventRegLog);CHKERRQ(ierr);
   ierr = StageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);CHKERRQ(ierr);
   PetscTime(curTime);
-  if (logActions == PETSC_TRUE) {
+  if (logActions) {
     actions[numActions].time   = curTime - BaseTime;
     actions[numActions].action = ACTIONEND;
     actions[numActions].event  = event;

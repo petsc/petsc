@@ -50,10 +50,11 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         if (rp[_i] > col1) break; \
         if (rp[_i] == col1) { \
           if (addv == ADD_VALUES) ap[_i] += value;   \
-          else                  ap[_i] = value; \
+          else                    ap[_i] = value; \
           goto a_noinsert; \
         } \
       }  \
+      if (value == 0.0 && ignorezeroentries) goto a_noinsert; \
       if (nonew == 1) goto a_noinsert; \
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
       if (nrow >= rmax) { \
@@ -124,10 +125,11 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
         if (rp[_i] > col1) break; \
         if (rp[_i] == col1) { \
           if (addv == ADD_VALUES) ap[_i] += value;   \
-          else                  ap[_i] = value; \
+          else                    ap[_i] = value; \
           goto b_noinsert; \
         } \
       }  \
+      if (value == 0.0 && ignorezeroentries) goto b_noinsert; \
       if (nonew == 1) goto b_noinsert; \
       else if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
       if (nrow >= rmax) { \
@@ -219,7 +221,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;
           if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          if (ignorezeroentries && value == 0.0) continue;
+          if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
           MatSetValues_SeqAIJ_A_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         } else if (in[j] < 0) continue;
@@ -227,6 +229,8 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
         else if (in[j] >= mat->N) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],mat->N-1);}
 #endif
         else {
+          if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
+          if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
           if (mat->was_assembled) {
             if (!aij->colmap) {
               ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
@@ -247,8 +251,6 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
               ba = b->a;
             }
           } else col = in[j];
-          if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-          if (ignorezeroentries && value == 0.0) continue;
           MatSetValues_SeqAIJ_B_Private(row,col,value,addv);
           /* ierr = MatSetValues_SeqAIJ(aij->B,1,&row,1,&col,&value,addv);CHKERRQ(ierr); */
         }
@@ -1222,7 +1224,7 @@ PetscErrorCode MatGetRow_MPIAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **i
   PetscInt       *cmap,*idx_p;
 
   PetscFunctionBegin;
-  if (mat->getrowactive == PETSC_TRUE) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
+  if (mat->getrowactive) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
   mat->getrowactive = PETSC_TRUE;
 
   if (!mat->rowvalues && (idx || v)) {
@@ -1298,8 +1300,8 @@ PetscErrorCode MatRestoreRow_MPIAIJ(Mat mat,PetscInt row,PetscInt *nz,PetscInt *
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
 
   PetscFunctionBegin;
-  if (aij->getrowactive == PETSC_FALSE) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"MatGetRow not called");
+  if (!aij->getrowactive) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"MatGetRow() must be called first");
   }
   aij->getrowactive = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1523,7 +1525,7 @@ PetscErrorCode MatEqual_MPIAIJ(Mat A,Mat B,PetscTruth *flag)
   c = matB->A; d = matB->B;
 
   ierr = MatEqual(a,c,&flg);CHKERRQ(ierr);
-  if (flg == PETSC_TRUE) {
+  if (flg) {
     ierr = MatEqual(b,d,&flg);CHKERRQ(ierr);
   }
   ierr = MPI_Allreduce(&flg,flag,1,MPI_INT,MPI_LAND,A->comm);CHKERRQ(ierr);

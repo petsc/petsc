@@ -24,7 +24,7 @@ PetscErrorCode PCInitializePackage(const char path[]) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&PC_COOKIE,   "Preconditioner");CHKERRQ(ierr);
@@ -41,7 +41,7 @@ PetscErrorCode PCInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&PC_ModifySubMatrices,       "PCModifySubMatri", PC_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogInfoDeactivateClass(PC_COOKIE);CHKERRQ(ierr);
@@ -49,7 +49,7 @@ PetscErrorCode PCInitializePackage(const char path[]) {
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "pc", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(PC_COOKIE);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ PetscErrorCode KSPInitializePackage(const char path[]) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&KSP_COOKIE,  "Krylov Solver");CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode KSPInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&KSP_Solve,                  "KSPSolve",         KSP_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogInfoDeactivateClass(KSP_COOKIE);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ PetscErrorCode KSPInitializePackage(const char path[]) {
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "ksp", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(KSP_COOKIE);CHKERRQ(ierr);

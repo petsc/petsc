@@ -811,7 +811,7 @@ PetscErrorCode Mat_AIJ_CheckInode(Mat A,PetscTruth samestructure)
       if (nzy != nzx) break;
       idy  += nzx;             /* Same nonzero pattern */
       ierr = PetscMemcmp(idx,idy,nzx*sizeof(PetscInt),&flag);CHKERRQ(ierr);
-      if (flag == PETSC_FALSE) break;
+      if (!flag) break;
     }
     ns[node_count++] = blk_size;
     idx += blk_size*nzx;

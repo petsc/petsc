@@ -1215,7 +1215,7 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp,PetscReal a[],PetscInt na,PetscTrut
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (na != PETSC_DECIDE && a != PETSC_NULL) {
+  if (na != PETSC_DECIDE && a) {
     ksp->res_hist        = a;
     ksp->res_hist_max    = na;
   } else {

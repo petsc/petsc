@@ -27,7 +27,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->type_name != PETSC_NULL) {
+  if (ts->type_name) {
     defaultType = ts->type_name;
   } else {
     defaultType = TS_EULER;
@@ -106,7 +106,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
   ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
   /* Handle specific TS options */
-  if (ts->ops->setfromoptions != PETSC_NULL) {
+  if (ts->ops->setfromoptions) {
     ierr = (*ts->ops->setfromoptions)(ts);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -115,13 +115,13 @@ PetscErrorCode TSSetFromOptions(TS ts)
   switch(ts->problem_type) {
     /* Should check for implicit/explicit */
   case TS_LINEAR:
-    if (ts->ksp != PETSC_NULL) {
+    if (ts->ksp) {
       ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
     }
     break;
   case TS_NONLINEAR:
-    if (ts->snes != PETSC_NULL) {
+    if (ts->snes) {
       /* this is a bit of a hack, but it gets the matrix information into SNES earlier
          so that SNES and KSP have more information to pick reasonable defaults
          before they allow users to set options */
@@ -1052,11 +1052,11 @@ PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
-  if (maxsteps != PETSC_NULL) {
+  if (maxsteps) {
     PetscValidIntPointer(maxsteps,2);
     *maxsteps = ts->max_steps;
   }
-  if (maxtime  != PETSC_NULL) {
+  if (maxtime ) {
     PetscValidScalarPointer(maxtime,3);
     *maxtime  = ts->max_time;
   }

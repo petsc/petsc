@@ -169,7 +169,7 @@ PetscErrorCode StageLogPush(StageLog stageLog, int stage)
 
   /* Record flops/time of previous stage */
   ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
-  if (empty == PETSC_FALSE) {
+  if (!empty) {
     ierr = StackTop(stageLog->stack, &curStage);CHKERRQ(ierr);
     if (stageLog->stageInfo[curStage].perfInfo.active) {
       PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
@@ -245,7 +245,7 @@ PetscErrorCode StageLogPop(StageLog stageLog)
     stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
   }
   ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
-  if (empty == PETSC_FALSE) {
+  if (!empty) {
     /* Subtract current quantities so that we obtain the difference when we pop */
     ierr = StackTop(stageLog->stack, &curStage);CHKERRQ(ierr);
     if (stageLog->stageInfo[curStage].perfInfo.active) {
@@ -290,7 +290,7 @@ PetscErrorCode StageLogGetCurrent(StageLog stageLog, int *stage)
 
   PetscFunctionBegin;
   ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
-  if (empty == PETSC_TRUE) {
+  if (empty) {
     *stage = -1;
   } else {
     ierr = StackTop(stageLog->stack, stage);CHKERRQ(ierr);
@@ -566,7 +566,7 @@ PetscErrorCode StageLogGetStage(StageLog stageLog, const char name[], int *stage
   *stage = -1;
   for(s = 0; s < stageLog->numStages; s++) {
     ierr = PetscStrcasecmp(stageLog->stageInfo[s].name, name, &match);CHKERRQ(ierr);
-    if (match == PETSC_TRUE) break;
+    if (match) break;
   }
   if (s == stageLog->numStages) SETERRQ1(PETSC_ERR_ARG_WRONG, "No stage named %s", name);
   *stage = s;

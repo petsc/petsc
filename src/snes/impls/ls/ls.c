@@ -170,7 +170,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->update != PETSC_NULL) {
+    if (snes->update) {
       ierr = (*snes->update)(snes, snes->iter);CHKERRQ(ierr);
     }
 
@@ -606,7 +606,7 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
   /* Optional user-defined check for line search step validity */
   if (neP->CheckStep) {
     ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y);CHKERRQ(ierr);
-    if (change_y == PETSC_TRUE) { /* recompute the function if the step has changed */
+    if (change_y) { /* recompute the function if the step has changed */
       ierr = SNESComputeFunction(snes,y,g);CHKERRQ(ierr);
       ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);
@@ -748,7 +748,7 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
   /* Optional user-defined check for line search step validity */
   if (neP->CheckStep) {
     ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y);CHKERRQ(ierr);
-    if (change_y == PETSC_TRUE) { /* recompute the function if the step has changed */
+    if (change_y) { /* recompute the function if the step has changed */
       ierr = SNESComputeFunction(snes,y,g);CHKERRQ(ierr);
       ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);

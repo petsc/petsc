@@ -18,7 +18,7 @@ static int setupConnection(MLENV *env, MLINK *link, const char *linkhost, LinkMo
   argv[1] = "8001";
   /* Link host */
   argv[2] = "-linkhost";
-  if (linkhost == PETSC_NULL) {
+  if (!linkhost) {
     ierr = PetscGetHostName(hostname, 255);                                                               CHKERRQ(ierr);
     argv[3] = hostname;
   } else {

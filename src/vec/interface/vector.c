@@ -2409,14 +2409,14 @@ PetscErrorCode VecViewFromOptions(Vec vec, char *title)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(vec->prefix, "-vec_view", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscOptionsGetString(vec->prefix, "-vec_view", typeName, 1024, &opt);CHKERRQ(ierr);
     ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
     if (len > 0) {
       ierr = PetscViewerCreate(vec->comm, &viewer);CHKERRQ(ierr);
       ierr = PetscViewerSetType(viewer, typeName);CHKERRQ(ierr);
       ierr = PetscOptionsGetString(vec->prefix, "-vec_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
-      if (opt == PETSC_TRUE) {
+      if (opt) {
         ierr = PetscViewerSetFilename(viewer, fileName);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerSetFilename(viewer, vec->name);CHKERRQ(ierr);
@@ -2429,10 +2429,10 @@ PetscErrorCode VecViewFromOptions(Vec vec, char *title)
     }
   }
   ierr = PetscOptionsHasName(vec->prefix, "-vec_view_draw", &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscViewerDrawOpen(vec->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
-    if (title != PETSC_NULL) {
+    if (title) {
       titleStr = title;
     } else {
       ierr = PetscObjectName((PetscObject) vec);                                                          CHKERRQ(ierr);

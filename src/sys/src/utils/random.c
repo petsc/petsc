@@ -211,23 +211,23 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
   PetscValidIntPointer(val,2);
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
-    if (r->iset == PETSC_TRUE) {
+    if (r->iset) {
          *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low) +
                 (PetscImaginaryPart(r->width)*drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
     }
     else *val = drand48() + drand48()*PETSC_i;
   } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset == PETSC_TRUE) *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low);
+    if (r->iset) *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low);
     else                       *val = drand48();
   } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset == PETSC_TRUE) *val = (PetscImaginaryPart(r->width)*drand48()+PetscImaginaryPart(r->low))*PETSC_i;
-    else                       *val = drand48()*PETSC_i;
+    if (r->iset) *val = (PetscImaginaryPart(r->width)*drand48()+PetscImaginaryPart(r->low))*PETSC_i;
+    else         *val = drand48()*PETSC_i;
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid random number type");
   }
 #else
-  if (r->iset == PETSC_TRUE) *val = r->width * drand48() + r->low;
-  else                       *val = drand48();
+  if (r->iset) *val = r->width * drand48() + r->low;
+  else         *val = drand48();
 #endif
   PetscFunctionReturn(0);
 }
@@ -270,20 +270,20 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
   PetscValidScalarPointer(val,2);
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
-    if (r->iset == PETSC_TRUE)
+    if (r->iset)
          *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low) +
                 (PetscImaginaryPart(r->width)*RAND_WRAP() + PetscImaginaryPart(r->low)) * PETSC_i;
     else *val = RAND_WRAP() + RAND_WRAP()*PETSC_i;
   } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset == PETSC_TRUE) *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low);
-    else                       *val = RAND_WRAP();
+    if (r->iset) *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low);
+    else         *val = RAND_WRAP();
   } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset == PETSC_TRUE) *val = (PetscImaginaryPart(r->width)*RAND_WRAP()+PetscImaginaryPart(r->low))*PETSC_i;
-    else                       *val = RAND_WRAP()*PETSC_i;
+    if (r->iset) *val = (PetscImaginaryPart(r->width)*RAND_WRAP()+PetscImaginaryPart(r->low))*PETSC_i;
+    else         *val = RAND_WRAP()*PETSC_i;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid random number type");
 #else
-  if (r->iset == PETSC_TRUE) *val = r->width * RAND_WRAP() + r->low;
-  else                       *val = RAND_WRAP();
+  if (r->iset) *val = r->width * RAND_WRAP() + r->low;
+  else         *val = RAND_WRAP();
 #endif
   PetscFunctionReturn(0);
 }

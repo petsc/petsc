@@ -24,7 +24,7 @@ PetscErrorCode TSInitializePackage(const char path[]) {
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&TS_COOKIE, "TS");CHKERRQ(ierr);
@@ -37,7 +37,7 @@ PetscErrorCode TSInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&TS_JacobianEval,          "TSJacobianEval",   TS_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "ts", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogInfoDeactivateClass(TS_COOKIE);CHKERRQ(ierr);
@@ -45,7 +45,7 @@ PetscErrorCode TSInitializePackage(const char path[]) {
   }
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
-  if (opt == PETSC_TRUE) {
+  if (opt) {
     ierr = PetscStrstr(logList, "ts", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(TS_COOKIE);CHKERRQ(ierr);

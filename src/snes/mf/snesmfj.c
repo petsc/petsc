@@ -135,7 +135,7 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   MatSNESMFCtx   ctx = (MatSNESMFCtx)mat->data;
 
   PetscFunctionBegin;
-  if (ctx->w != PETSC_NULL) {
+  if (ctx->w) {
     ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
   }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}

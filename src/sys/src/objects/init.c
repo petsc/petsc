@@ -23,6 +23,7 @@
 */
 PetscTruth  PetscBeganMPI         = PETSC_FALSE;
 PetscTruth  PetscInitializeCalled = PETSC_FALSE;
+PetscTruth  PetscFinalizeCalled   = PETSC_FALSE;
 PetscMPIInt PetscGlobalRank = -1,PetscGlobalSize = -1;
 MPI_Comm    PETSC_COMM_WORLD = 0;
 MPI_Comm    PETSC_COMM_SELF  = 0;

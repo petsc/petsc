@@ -46,16 +46,16 @@ info:
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "------------------------------------------"
-	-@echo "Using C/C++ compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}"
+	-@echo "Using C/C++ compiler: ${CC} ${COPTFLAGS} ${CPPFLAGS}"
 	-@echo "C/C++ Compiler version: " `${CCV}`
 	-@if [ "${FC}" != "" ]; then \
-	   echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}";\
+	   echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FPPFLAGS}";\
 	   echo "Fortran Compiler version: " `${FCV}`;\
          fi
 	-@echo "-----------------------------------------"
-	-@echo "Using C/C++ linker: ${CLINKER}"
+	-@echo "Using C/C++ linker: ${CC_LINKER}"
 	-@if [ "${FC}" != "" ]; then \
-	   echo "Using Fortran linker: ${FLINKER}";\
+	   echo "Using Fortran linker: ${FC_LINKER}";\
          fi
 	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
@@ -74,10 +74,10 @@ info_h:
 	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsccompilerinfo = \"  " >> MINFO
-	-@echo  "Using C compiler: ${C_CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
+	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
 	-@echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1 ; true
 	-@echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; true
-	-@echo  "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
+	-@echo  "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
 	-@echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; true
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static const char *petsccompilerflagsinfo = \"  " >> MINFO
@@ -129,7 +129,7 @@ blaslapack:
 test: 
 	-@echo "Running test examples to verify correct installation"
 	@cd src/snes/examples/tutorials; ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
-	@if [ "${FC}" != "" ]; then cd src/snes/examples/tutorials; ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; fi;
+	if [ "${FC}" != "" ]; then cd src/snes/examples/tutorials; ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; fi;
 	-@echo "Completed test examples"
 
 testexamples: info 

@@ -6,7 +6,7 @@ if __name__ == '__main__':
     import configure
 
     configure_options = [
-    '--with-mpi-dir=/sandbox/petsc/soft/mpich-1.2.5.2-ibm',
+    '--download-mpi=1',
     '--with-gnu-compilers=0',
     '--with-vendor-compilers=ibm',
     # c++ doesn't work yet
