@@ -92,7 +92,7 @@ else # maybe use a case statement instead of if test for the entire script?
 fi
 
 if [ $# -gt 0 ]; then
-  if [ "${PETSC_DIR}" == "" ]; then
+  if [ "${PETSC_DIR}" = "" ]; then
      if [ -f `pwd`"/bin/petscarch" ]; then
         PETSC_DIR=`pwd`
         export PETSC_DIR

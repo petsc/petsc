@@ -91,6 +91,9 @@ class Configure(config.base.Configure):
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a')
     # Try MacOSX location
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
+    # Sun locations
+    yield ('Sun BLAS/LAPACK library', None, 'libsunperf.a')
+    yield ('Sun BLAS/LAPACK library', None, 'libsunmath.a')
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
