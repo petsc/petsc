@@ -4,10 +4,13 @@
 # Example usage: killnightly solaris
 #
 #
-set SSH=ssh
-set ARCH=$1
 set dir=`dirname $0`
-source $dir/buildtests/$1
 
-$SSH $MACH -n "zapall"
+foreach CONF ($*)
+  set SSH=ssh
+  source $dir/confignightly/$1
+
+  $SSH $USR@$MACH -n "zapall" &
+end
+wait
 

@@ -2,6 +2,7 @@
 
 # no bk -(alpha-glibc21) hence disabled
 
-set TMP=/sandbox/petsc/petsc-dev
 set MACH=dactyl
-set ARCH=linux_alpha
+set USR=petsc
+set LOC=/sandbox/petsc/petsc-dev
+set CONF=linux_alpha

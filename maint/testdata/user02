@@ -1,9 +1,0 @@
-#! /bin/csh
-#
-set TMP=/u/ac/balay/petsc-dev
-set MACH=balay@user02.ncsa.uiuc.edu # titan.ncsa.uiuc.edu
-set ARCH=linux64_intel
-set day=`date | cut -f1 -d" "`
-if ($day == Thu || $day == Fri) then
-  set ARCH=linux64
-endif

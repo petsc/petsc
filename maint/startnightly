@@ -1,0 +1,18 @@
+#! /bin/csh
+
+# usage startnightly test1 test2 ...
+
+
+set dir=`dirname $0`
+
+foreach CONF ($*)
+  set SSH=ssh
+  set SCP=scp
+  set DASHN=-n
+  source $dir/confignightly/$1
+
+  echo "start build: $MACH $CONF `date`"
+  $SSH $USR@$MACH $DASHN "$LOC/maint/buildtest $CONF" &
+  echo "end build: $MACH $CONF `date`"
+end
+wait

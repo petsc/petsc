@@ -1,0 +1,8 @@
+#! /bin/csh
+
+#Machine dead - disabled
+
+set MACH=hux1
+set USR=petsc
+set LOC=/sandbox/petsc/petsc-dev
+set CONF=linux_alpha_dec

@@ -1,0 +1,8 @@
+#! /bin/csh
+#
+set MACH=seaborg.nersc.gov
+set USR=kaushik
+set LOC=/scratch/scratchdirs/kaushik/petsc-dev
+set SSH='ssh -P'
+set SCP='scp -q -B -o UsePrivilegedPort=no'
+set CONF=aix5.1.0.0
