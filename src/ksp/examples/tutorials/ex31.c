@@ -45,16 +45,20 @@ extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeCorrector(DMMG,Vec,Vec);
 
 typedef struct {
-  PetscScalar rho;
-  PetscScalar rho_u;
-  PetscScalar rho_v;
-  PetscScalar rho_e;
-} Fields;
+  Vec rho;     /* The mass solution \rho */
+  Vec rho_u;   /* The x-momentum solution \rho u */
+  Vec rho_v;   /* The y-momentum solution \rho v */
+  Vec rho_e;   /* The energy solution \rho e_t */
+} SolutionContext;
 
 typedef struct {
-  /* The element-averaged solution U^{n+\phi} */
-  Vec         U_phi;
-  PetscScalar phi;
+  SolutionContext sol_n;   /* The solution at time t^n */
+  SolutionContext sol_phi; /* The element-averaged solution at time t^{n+\phi} */
+  SolutionContext sol_np1; /* The solution at time t^{n+1} */
+  Vec             u_n;     /* The original x-velocity solution u^n */
+  Vec             v_n;     /* The original y-velocity solution v^n */
+  PetscScalar     phi;     /* The time weighting parameter */
+  PetscReal       dt;      /* The timestep \Delta t */
 } UserContext;
 
 #undef __FUNCT__
@@ -70,7 +74,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);  
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);
   ierr = DADestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
@@ -80,11 +84,13 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for PCICE", "DMMG");
     user.phi = 0.5;
     ierr = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, PETSC_NULL);CHKERRQ(ierr);
+    user.dt  = 0.1;
+    ierr = PetscOptionsScalar("-dt", "The time step", "ex31.c", user.dt, &user.dt, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = DAGetElements(da,&ne,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD, &user.U_phi);CHKERRQ(ierr);
-  ierr = VecSetSizes(user.U_phi, ne*4, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetSizes(user.U_phi, ne, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = DARestoreElements(da,&ne,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = ComputeInitialGuess(DMMGGetDMMG(dmmg), DMMGGetr(dmmg));
@@ -120,12 +126,13 @@ PetscErrorCode ComputeInitialGuess(DMMG dmmg, Vec u)
 PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
 {
   DA             da   = (DA)dmmg->dm;
+  UserContext   *user = (UserContext *) dmmg->user;
   PetscScalar    zero = 0.0;
   Vec            uOldLocal, uLocal;
-  Fields        *pOld;
-  Fields        *p;
+  PetscScalar   *pOld;
+  PetscScalar   *p;
   PetscInt       i,ne;
-  const PetscInt *e;
+  const PetscInt *necon;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -136,23 +143,32 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
   ierr = VecSet(&zero, user->U_phi);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
-  ierr = VecGetArray(uOldLocal, (PetscScalar **) &pOld);CHKERRQ(ierr);
-  ierr = VecGetArray(uLocal,    (PetscScalar **) &p);CHKERRQ(ierr);
-  ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
+  ierr = VecGetArray(uOldLocal, &pOld);CHKERRQ(ierr);
+  ierr = VecGetArray(uLocal,    &p);CHKERRQ(ierr);
+  ierr = DAGetElements(da,&ne,&necon);CHKERRQ(ierr);
   /* Source terms are all zero right now */
   for(i = 0; i < ne; i++) {
-    /* Rich now is using element averages for all explicit values fed back into the finite element integrals. I think
-       we should maintain them as unassembled sums of element functions. */
-    /* Determine time-weighted values of \rho^{n+\phi} and (\rho\vu)^{n+\phi} */
+    /* Determine time-weighted values of \rho^{n+\phi} */
+    Fx_x = 0.0; Fy_y = 0.0;
     for(j = 0; j < 3; j++) {
-      Fx_x += psi_x[j]*Fx[e[3*i]+j].rho + psi_x[j]*Fx[e[3*i]+j].rho_u + psi_x[j]*Fx[e[3*i]+j].rho_v;
-      Fy_y += psi_y[j]*Fy[e[3*i]+j].rho + psi_y[j]*Fy[e[3*i]+j].rho_u + psi_y[j]*Fy[e[3*i]+j].rho_v;
+      Fx_x += psi_x[j]*rho_u_n[necon[3*i+j]];
+      Fy_y += psi_y[j]*rho_v_n[necon[3*i+j]];
     }
-    u_phi[i] += user->phi*user->dt*(-Fx_x - Fy_y);
-    /* this is nonsense, but copy each nodal value */
-    p[e[3*i]]   = pOld[e[3*i]];
-    p[e[3*i+1]] = pOld[e[3*i+1]];
-    p[e[3*i+2]] = pOld[e[3*i+2]];
+    rho_phi[i] += user->phi*user->dt*(-Fx_x - Fy_y);
+    /* Determine time-weighted values of (\rho u)^{n+\phi} */
+    Fx_x = 0.0; Fy_y = 0.0;
+    for(j = 0; j < 3; j++) {
+      Fx_x += psi_x[j]*rho_u_n[necon[3*i+j]]*u_n[necon[3*i+j]];
+      Fy_y += psi_y[j]*rho_v_n[necon[3*i+j]]*u_n[necon[3*i+j]];
+    }
+    rho_u_phi[i] += user->phi*user->dt*(-Fx_x - Fy_y);
+    /* Determine time-weighted values of (\rho v)^{n+\phi} */
+    Fx_x = 0.0; Fy_y = 0.0;
+    for(j = 0; j < 3; j++) {
+      Fx_x += psi_x[j]*rho_u_n[necon[3*i+j]]*v_n[necon[3*i+j]];
+      Fy_y += psi_y[j]*rho_v_n[necon[3*i+j]]*v_n[necon[3*i+j]];
+    }
+    rho_v_phi[i] += user->phi*user->dt*(-Fx_x - Fy_y);
   }
   /* Solve equation (9) for \delta(\rho\vu) and (\rho\vu)^* */
   /* Solve equation (13) for \delta\rho and \rho^* */
@@ -161,8 +177,8 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
   /* Determine the smoothed explicit pressure, \tilde P and temperature \tilde T using the equation of state */
   ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(uOldLocal, (PetscScalar **) &pOld);CHKERRQ(ierr);
-  ierr = VecRestoreArray(uLocal,    (PetscScalar **) &p);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uOldLocal, &pOld);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uLocal,    &p);CHKERRQ(ierr);
   ierr = DALocalToGlobalBegin(da, uLocal, u);CHKERRQ(ierr);
   ierr = DALocalToGlobalEnd(da, uLocal, u);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
@@ -188,7 +204,7 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
 PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 {
   DA             da   = (DA)dmmg->dm;
-  UserContext    *user = (UserContext *) dmmg->user;
+  UserContext   *user = (UserContext *) dmmg->user;
   PetscScalar    phi  = user->phi;
   Fields        *array;
   PetscInt       ne,i;
@@ -271,8 +287,9 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
   hx   = 1.0 / (PetscReal)(mx-1);
   hy   = 1.0 / (PetscReal)(my-1);
   area = 0.5*hx*hy;
-  hx2  = hx*hx/area;
-  hy2  = hy*hy/area;
+  phi_dt2 = user->phi*user->dt*user->dt;
+  hx2     = hx*hx/area*phi_dt2;
+  hy2     = hy*hy/area*phi_dt2;
 
   /* initially all elements have identical geometry so all element stiffness are identical */
   values[0][0] = hx2 + hy2; values[0][1] = -hy2; values[0][2] = -hx2;
