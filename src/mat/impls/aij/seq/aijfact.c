@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.153 2000/08/01 20:02:01 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.154 2000/08/17 04:51:27 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -68,7 +68,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
   if (info->dtcount == PETSC_DEFAULT) info->dtcount = (int)(1.5*a->rmax); 
   if (info->dtcol == PETSC_DEFAULT)   info->dtcol   = .01;
-  if (info->fill == PETSC_DEFAULT)    info->fill    = ((double)(n*info->dtcount))/a->nz;
+  if (info->fill == PETSC_DEFAULT)    info->fill    = ((double)(n*(info->dtcount+1)))/a->nz;
   lfill   = (int)(info->dtcount/2.0);
   jmax    = (int)(info->fill*a->nz);
   permtol = info->dtcol;
