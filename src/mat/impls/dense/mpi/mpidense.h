@@ -1,8 +1,6 @@
-/* $Id: mpiaij.h,v 1.10 1995/06/07 17:31:43 bsmith Exp curfman $ */
+/* $Id: mpidense.h,v 1.1 1995/10/19 22:14:28 curfman Exp curfman $ */
 
 #include "dense.h"
-
-/* for now this is just a copy of Mat_MPIAIJ */
 
 typedef struct {
   int           *rowners, *cowners;     /* ranges owned by each processor */
@@ -10,8 +8,7 @@ typedef struct {
   int           M, N;                   /* global rows and columns */
   int           rstart, rend;           /* starting and ending owned rows */
   int           cstart, cend;           /* starting and ending owned columns */
-  Mat           A, B;                   /* local submatrices: A (diag part),
-                                           B (off-diag part) */
+  Mat           A;                      /* local submatrix */
   int           size;                   /* size of communicator */
   int           rank;                   /* rank of proc in communicator */ 
 
@@ -25,11 +22,9 @@ typedef struct {
   int           nsends, nrecvs;         /* numbers of sends and receives */
   Scalar        *svalues, *rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
-  int           *colmap;                /* local col number of off-diag col */
-  int           *garray;                /* work array */
 
   /* The following variables are used for matrix-vector products */
 
   Vec           lvec;                   /* local vector */
-  VecScatterCtx Mvctx;                  /* scatter context for vector */
+  VecScatter    Mvctx;                  /* scatter context for vector */
 } Mat_MPIDense;
