@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.110 1997/04/04 20:12:51 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.111 1997/04/23 20:15:18 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -85,6 +85,8 @@ int VecDot(Vec x, Vec y, Scalar *val)
    Input Parameters:
 .  x - the vector
 .  type - one of NORM_1, NORM_2, NORM_INFINITY
+          NORM_1_AND_2 computes both norms and stores them
+          in a two element array.
 
    Output Parameter:
 .  val - the norm 
