@@ -4,7 +4,7 @@
       This provides a few of the MPI-uni functions that cannot be implemented
     with C macros
 */
-#include "mpi.h"
+#include "include/mpiuni/mpi.h"
 
 #if defined (MPIUNI_USE_STDCALL)
 #define MPIUNI_STDCALL __stdcall
