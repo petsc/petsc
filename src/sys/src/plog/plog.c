@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.98 1996/04/13 16:09:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.99 1996/04/15 22:13:07 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -216,6 +216,10 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "PetscBarrier    ",
                          " "," "," "," ",
                          " "," "," "," "," ",
+                         "DFVecRefineVecto",
+                         "DFVec_AssembleFu",
+                         "DFVec_GetCompone",
+                         "DFVec_DrawContou",
                          " "," "," "," "," ",
                          " "," "," "," "," ",
                          " "," "," "," "," ",
@@ -669,7 +673,7 @@ int PLogBegin()
 
 /*@C
    PLogDump - Dumps logs of objects to a file. This file is intended to 
-   be read by petsc/bin/petscview; it is not user friendly.
+   be read by petsc/bin/petscview.
 
    Input Parameter:
 .  name - an optional file name
