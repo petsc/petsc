@@ -20,7 +20,7 @@ options=$*
 # modify the following path to point to the correct locations
 #
 mpiexec=/home/petsc/soft/linux-rh73-mpich2/mpich2-0.971-CVS-200408131639/bin/mpiexec
-valgrind=/home/petsc/soft/linux-rh73-mpich2/valgrind-2.1.2/bin/valgrind
+valgrind=/usr/bin/valgrind
 mpisupp=/home/petsc/soft/linux-rh73-mpich2/valgrind-2.1.2/lib/valgrind/mpich2-0.97.supp
 #
 # Now execute the mpirun command
