@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.11 1995/09/07 22:35:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.12 1995/09/10 20:48:46 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -45,6 +45,7 @@ int VecLoad(Viewer bview,Vec *newvec)
   PETSCVALIDHEADERSPECIFIC(obj,VIEWER_COOKIE);
   if (obj->type != BINARY_FILE_VIEWER)
    SETERRQ(1,"VecLoad:Invalid viewer;open viewer with ViewerFileOpenBinary()");
+  PLogEventBegin(VEC_Load,bview,0,0,0);
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
   
   PetscObjectGetComm(obj,&comm);
@@ -94,5 +95,6 @@ int VecLoad(Viewer bview,Vec *newvec)
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
   }
   *newvec = vec;
+  PLogEventEnd(VEC_Load,bview,0,0,0);
   return 0;
 }

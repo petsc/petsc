@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.30 1995/08/03 21:58:37 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.31 1995/08/21 18:14:36 bsmith Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -17,6 +17,9 @@ typedef enum { SNES_UNKNOWN_METHOD=-1,
                SNES_UM_NTR }
   SNESMethod;
 
+typedef enum { POSITIVE_FUNCTION_VALUE, 
+               NEGATIVE_FUNCTION_VALUE } SNESFunctionSign;
+
 #define SNES_NLS         SNES_EQ_NLS
 #define SNES_NTR         SNES_EQ_NTR
 #define SNES_NTR2_LIN    SNES_EQ_NTR2_LIN
@@ -30,7 +33,8 @@ extern int SNESCreate(MPI_Comm,SNESType,SNES*);
 extern int SNESSetMethod(SNES,SNESMethod);
 extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int(*)(SNES,Vec,void*),void *);
-extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *,int);
+extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *,
+                           SNESFunctionSign);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESDestroy(SNES);
 extern int SNESSetUp(SNES);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.21 1995/08/23 17:08:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.22 1995/09/11 18:45:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -41,8 +41,8 @@ int main(int argc,char **argv)
   ierr = VecSet(&zero,y); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterBegin(x,y,ADD_VALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,y,ADD_VALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
   ierr = VecView(y,STDOUT_VIEWER_WORLD); CHKERRA(ierr);

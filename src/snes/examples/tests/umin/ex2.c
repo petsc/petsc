@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.9 1995/09/03 19:21:24 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.10 1995/09/03 22:32:39 curfman Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -215,7 +215,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 
   for (j=0; j<ndim; j++) {   /* loop over columns */
 
-    ierr = VecSetValues(user->s,1,&j,&one,INSERTVALUES); CHKERRQ(ierr);
+    ierr = VecSetValues(user->s,1,&j,&one,INSERT_VALUES); CHKERRQ(ierr);
     ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
 
@@ -225,14 +225,14 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
       ierr = HessianProduct2(ptr,user->s,user->y); CHKERRQ(ierr);
     }
 
-    ierr = VecSetValues(user->s,1,&j,&zero,INSERTVALUES); CHKERRQ(ierr);
+    ierr = VecSetValues(user->s,1,&j,&zero,INSERT_VALUES); CHKERRQ(ierr);
     ierr = VecAssemblyBegin(user->s); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->s); CHKERRQ(ierr);
 
     ierr = VecGetArray(user->y,&y); CHKERRQ(ierr);
     for (i=0; i<ndim; i++) {
       if (y[i] != zero) {
-        ierr = MatSetValues(*H,1,&i,1,&j,&y[i],INSERTVALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(*H,1,&i,1,&j,&y[i],INSERT_VALUES); CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(user->y,&y); CHKERRQ(ierr);
@@ -246,7 +246,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
     SNESGetLineSearchDampingParameter(snes,&gamma1);
     printf("  gamma1 = %g\n",gamma1);
     for (i=0; i<ndim; i++) {
-      ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADDVALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(*H,1,&i,1,&i,(Scalar*)&gamma1,ADD_VALUES); CHKERRQ(ierr);
     ierr = MatAssemblyBegin(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*H,FINAL_ASSEMBLY); CHKERRQ(ierr);
     }
@@ -328,15 +328,15 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       if (fg & GradientEval) {
         if (i != -1 && j != -1) {
           ind = k; val = - dvdx/hx - dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
         if (i != nx-1 && j != -1) {
           ind = k+1; val =  dvdx/hx - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
         if (i != -1 && j != ny-1) {
           ind = k+nx; val = dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
       }
     }
@@ -360,15 +360,15 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       } if (fg & GradientEval) {
         if (i != nx && j != 0) {
           ind = k-nx; val = - dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
         if (i != 0 && j != ny) {
           ind = k-1; val =  - dvdx/hx - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
         if (i != nx && j != ny) {
           ind = k; val =  dvdx/hx + dvdy/hy - cdiv3;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
       }
     }
@@ -414,16 +414,16 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
        if (i != nx-1 && j != -1) {
          vr = s[k+1];
          ind = k+1; val = hxhx*(vr-v);
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
        if (i != -1 && j != ny-1) {
          vt = s[k+nx];
          ind = k+nx; val = hyhy*(vt-v);
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
        if (i != -1 && j != -1) {
          ind = k; val = hxhx*(v-vr) + hyhy*(v-vt);
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
      }
    }
@@ -439,16 +439,16 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
        if (i != nx && j != 0) {
          vb = s[k-nx];
          ind = k-nx; val = hyhy*(vb-v);
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
        if (i != 0 && j != ny) {
          vl = s[k-1];
          ind = k-1; val = hxhx*(vl-v);
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
        if (i != nx && j != ny) {
          ind = k; val = hxhx*(v-vl) + hyhy*(v-vb);
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
     }
   }
@@ -555,15 +555,15 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       if (fg & GradientEval) {
         if (i>-1 && j>-1) {
           ind = k; val = -(dvdx/hx+dvdy/hy)/fl;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
         if (i<nx-1 && j>-1) {
           ind = k+1; val = (dvdx/hx)/fl;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
         if (i>-1 && j<ny-1) {
           ind = k+nx; val = (dvdy/hy)/fl;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
       }
     }
@@ -599,15 +599,15 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       } if (fg & GradientEval) {
         if (i<nx && j>0) {
           ind = k-nx; val = -(dvdy/hy)/fu;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
         if (i>0 && j<ny) {
           ind = k-1; val = -(dvdx/hx)/fu;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
         if (i<nx && j<ny) {
           ind = k; val = (dvdx/hx+dvdy/hy)/fu;
-          ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+          ierr = VecSetValues(gvec,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
         }
       }
     }
@@ -689,17 +689,17 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        if (i != -1 && j != -1) {
          ind = k;
          val = (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fl3 - (dzdxhx+dzdyhy)/fl;
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
        if (i != nx-1 && j != -1) {
          ind = k+1;
          val = dzdxhx/fl - (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fl3;
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
        if (i != -1 && j != ny-1) {
          ind = k+nx;
          val = dzdyhy/fl - (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fl3;
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
      }
    }
@@ -746,17 +746,17 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
        if (i != nx && j != ny) {
          ind = k;
          val = (dzdxhx+dzdyhy)/fu - (dvdx*dzdx+dvdy*dzdy)*(dvdxhx+dvdyhy)/fu3;
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
        if (i != 0 && j != ny) {
          ind = k-1;
          val = (dvdx*dzdx+dvdy*dzdy)*dvdxhx/fu3 - dzdxhx/fu;
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
        if (i != nx && j != 0) {
          ind = k-nx;
          val = (dvdx*dzdx+dvdy*dzdy)*dvdyhy/fu3 - dzdyhy/fu;
-         ierr = VecSetValues(y,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
+         ierr = VecSetValues(y,1,&ind,&val,ADD_VALUES); CHKERRQ(ierr);
        }
     }
   }

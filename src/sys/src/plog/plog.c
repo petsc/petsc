@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.34 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.35 1995/09/04 17:24:00 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -392,7 +392,7 @@ int PLogBegin()
   return 0;
 }
 
-/*@
+/*@C
    PLogDump - Dumps logs of objects to a file. This file is intended to 
    be read by petsc/bin/petscsim; it is not user friendly.
 
@@ -501,7 +501,11 @@ static char *(name[]) = {"MatMult         ",
                          "MatSolveTrans   ",
                          "MatSolveTransAdd",
                          "MatSetValues    ",
-                         " "," "," "," "," ",
+                         "MatForwardSolve ",
+                         "MatBackwardSolve",
+                         "MatLoad         ",
+                         "MatView         ",
+                         " ",
                          "VecDot          ",
                          "VecNorm         ",
                          "VecASum         ",
@@ -523,7 +527,9 @@ static char *(name[]) = {"MatMult         ",
                          "VecMAXPY        ",
                          "VecPMult        ",
                          "VecSetValues    ",
-                         " "," "," "," ",
+                         "VecLoad         ",
+                         "VecView         ",
+                         " "," ",
                          "SLESSolve       ",
                          "PCSetUp         ",
                          "PCApply         ",
@@ -541,7 +547,7 @@ static char *(name[]) = {"MatMult         ",
                          " "," "," "," "," ",
                          " "," "," "," "," "};
 
-/*@
+/*@C
     PLogEventRegister - Registers an event name for logging operations in 
     an application code. 
 

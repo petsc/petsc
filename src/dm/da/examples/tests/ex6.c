@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.6 1995/08/30 01:27:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.7 1995/09/06 03:06:51 bsmith Exp bsmith $";
 #endif
       
 /* Peter Mell created this file on 7/25/95 */
@@ -50,12 +50,12 @@ int main(int argc,char **argv)
   value = 1;
   ierr = VecSet(&value,global); CHKERRA(ierr);
      
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   value = mytid;
   ierr = VecScale(&value,local); CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRA(ierr);
+  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
   if (M*N*P<40)
   {
@@ -64,8 +64,8 @@ int main(int argc,char **argv)
     if (mytid == 0) printf ("\n\n");
   }
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   if (M*N*P<40) {
     printf("\nView Local Array - Processor [%d]\n",mytid);

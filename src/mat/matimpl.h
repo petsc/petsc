@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.25 1995/08/07 21:59:18 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.26 1995/08/15 20:27:54 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -36,7 +36,9 @@ struct _MatOps {
             (*getsubmatrix)(Mat,IS,IS,Mat*),
             (*getsubmatrixinplace)(Mat,IS,IS),
             (*copyprivate)(Mat,Mat *),
-            (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec);
+            (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec),
+            (*ilufactor)(Mat,IS,IS,double),
+            (*incompletecholeskyfactor)(Mat,IS,double);
 };
 
 #define FACTOR_LU       1
@@ -44,9 +46,10 @@ struct _MatOps {
 
 struct _Mat {
   PETSCHEADER
-  struct _MatOps *ops;
+  struct _MatOps ops;
   void           *data;
   int            factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
+  double         lupivotthreshold;
 };
 
 /* Since most (all?) of the parallel matrix assemblies use this stashing,
@@ -66,7 +69,7 @@ extern int StashDestroy_Private(Stash*);
    Does reorderings for sequential IJ format. By default uses 
   SparsePak routines.
 */
-extern int MatGetReorder_IJ(int,int*,int*,MatOrdering,IS *,IS*);
+extern int MatGetReordering_IJ(int,int*,int*,MatOrdering,IS *,IS*);
 
 typedef struct { 
   int               n;  /* number of processors */

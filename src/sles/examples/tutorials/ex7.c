@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.5 1995/08/23 17:17:49 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.6 1995/08/31 20:55:07 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -35,11 +35,11 @@ int main(int argc,char **args)
   for ( i=0; i<m; i++ ) {   /* assemble matrix for the five point stencil */
     for ( j=2*mytid; j<2*mytid+2; j++ ) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERTVALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERTVALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERTVALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERTVALUES);}
-      v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERTVALUES); CHKERRA(ierr);
+      if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);

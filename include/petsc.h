@@ -1,9 +1,9 @@
-/* $Id: petsc.h,v 1.56 1995/08/22 02:23:57 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.57 1995/09/06 03:06:53 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.7 Released ?, 1995."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.8 Released ?, 1995."
 
 #include <stdio.h>
 #if defined(PARCH_sun4)
@@ -57,8 +57,10 @@ extern int  TrGetMaximumAllocated(double*);
 /*
        Unable to malloc error and no supported function
 */
-#define PETSC_ERR_MEM 55
-#define PETSC_ERR_SUP 56
+#define PETSC_ERR_MEM 55   /* unalbe to allocate requested memory */
+#define PETSC_ERR_SUP 56   /* no support yet for this operation */
+#define PETSC_ERR_ARG 57   /* bad input argument */
+#define PETSC_ERR_OBJ 58   /* null or corrupt PETSc object */
 
 #if defined(PETSC_DEBUG)
 #define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}

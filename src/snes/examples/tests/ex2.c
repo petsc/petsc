@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.26 1995/08/29 13:18:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.27 1995/09/11 18:50:36 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -33,7 +33,8 @@ int main( int argc, char **argv )
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction,0,0); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,0,POSITIVE_FUNCTION_VALUE);
+         CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,0); CHKERRA(ierr);
 
@@ -78,7 +79,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
-  ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERTVALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES); CHKERRQ(ierr);
   *flag = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   return 0;

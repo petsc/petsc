@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.24 1995/08/30 23:42:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.25 1995/09/11 18:47:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -311,12 +311,12 @@ int Create1dLaplacian(int n,Mat *mat)
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERRQ(ierr);
   
   idx= n-1;
-  ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERTVALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES); CHKERRQ(ierr);
   for ( i=0; i<n-1; i++ ) {
-    ierr = MatSetValues(*mat,1,&i,1,&i,&two,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,1,&i,1,&i,&two,INSERT_VALUES); CHKERRQ(ierr);
     idx = i+1;
-    ierr = MatSetValues(*mat,1,&idx,1,&i,&mone,INSERTVALUES); CHKERRQ(ierr);
-    ierr = MatSetValues(*mat,1,&i,1,&idx,&mone,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,1,&idx,1,&i,&mone,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*mat,1,&i,1,&idx,&mone,INSERT_VALUES); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -332,7 +332,7 @@ int CalculateRhs(Vec u)
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = 2.0*h*h; 
-    ierr = VecSetValues(u,1,&i,&uu,INSERTVALUES); CHKERRQ(ierr);
+    ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES); CHKERRQ(ierr);
   }
 
   return 0;
@@ -347,7 +347,7 @@ int CalculateSolution(int n,Vec *solution)
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = x*(1.-x); 
-    ierr = VecSetValues(*solution,1,&i,&uu,INSERTVALUES); CHKERRQ(ierr);
+    ierr = VecSetValues(*solution,1,&i,&uu,INSERT_VALUES); CHKERRQ(ierr);
   }
   return 0;
 }

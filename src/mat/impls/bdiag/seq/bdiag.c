@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.50 1995/09/12 00:50:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.51 1995/09/12 03:25:38 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -34,7 +34,7 @@ static int MatSetValues_SeqBDiag(Mat matin,int m,int *idxm,int n,
 	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
 	    else           loc = row;
 	    if ((valpt = &((dmat->diagv[k])[loc]))) {
-	      if (addv == ADDVALUES) *valpt += v[j];
+	      if (addv == ADD_VALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERRQ(1,"MatSetValues_SeqBDiag: Invalid data location");
             break;
@@ -85,7 +85,7 @@ static int MatSetValues_SeqBDiag(Mat matin,int m,int *idxm,int n,
 	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
 	    else           loc = row;
 	    if ((valpt = &((dmat->diagv[dmat->nd])[loc]))) {
-	      if (addv == ADDVALUES) *valpt += v[j];
+	      if (addv == ADD_VALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERRQ(1,"MatSetValues_SeqBDiag: Invalid data location");
 
@@ -127,7 +127,7 @@ static int MatSetValues_SeqBDiag(Mat matin,int m,int *idxm,int n,
              else
 	      loc = shift;
 	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
-	      if (addv == ADDVALUES) *valpt += v[j];
+	      if (addv == ADD_VALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERRQ(1,"MatSetValues_SeqBDiag: Invalid data location");
             break;
@@ -179,7 +179,7 @@ static int MatSetValues_SeqBDiag(Mat matin,int m,int *idxm,int n,
              else
 	      loc = shift;
 	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
-	      if (addv == ADDVALUES) *valpt += v[j];
+	      if (addv == ADD_VALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERRQ(1,"MatSetValues_SeqBDiag: Invalid data location");
 
@@ -1179,7 +1179,7 @@ static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
       SETERRQ(1,"MatZeroRows_SeqBDiag:row out of range");
     ierr = MatGetRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
     PETSCMEMSET(val,0,nz*sizeof(Scalar));
-    ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(A,1,&rows[i],nz,col,val,INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(A,rows[i],&nz,&col,&val); CHKERRQ(ierr);
   }
   if (diag) {
@@ -1244,7 +1244,7 @@ static int MatGetSubMatrix_SeqBDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
         vwork[nznew++] = val[j];
       }
     }
-    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERTVALUES);
+    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERT_VALUES);
     CHKERRQ(ierr);
     ierr = MatRestoreRow(matin,i,&nz,&col,&val); CHKERRQ(ierr);
   }
@@ -1341,7 +1341,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATSEQBDIAG,comm);
   PLogObjectCreate(bmat);
   bmat->data    = (void *) (mat = PETSCNEW(Mat_SeqBDiag)); CHKPTRQ(mat);
-  bmat->ops     = &MatOps;
+  PETSCMEMCPY(&bmat->ops,&MatOps,sizeof(struct _MatOps));
   bmat->destroy = MatDestroy_SeqBDiag;
   bmat->view    = MatView_SeqBDiag;
   bmat->factor  = 0;

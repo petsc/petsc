@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.32 1995/09/07 22:37:32 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.33 1995/09/11 19:20:08 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -56,7 +56,7 @@ extern int VecDestroy(Vec);
 extern int VecGetVecs(Vec, int,Vec **);         
 extern int VecFreeVecs(Vec*,int); 
 
-typedef enum {NOTSETVALUES, INSERTVALUES, ADDVALUES} InsertMode;
+typedef enum {NOTSETVALUES, INSERT_VALUES, ADD_VALUES} InsertMode;
 
 extern int VecSetValues(Vec, int, int *,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);

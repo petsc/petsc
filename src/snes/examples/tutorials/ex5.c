@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.26 1995/09/12 03:01:25 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.27 1995/09/13 16:36:54 curfman Exp bsmith $";
 #endif
 
 static char help[] =
@@ -96,8 +96,8 @@ int main( int argc, char **argv )
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); 
          CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,0); 
-         CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,
+         POSITIVE_FUNCTION_VALUE); CHKERRA(ierr);
 
   /* Set Jacobian evaluation routine */
   if (OptionsHasName(0,"-defaultJ")) { /* default finite differences */
@@ -169,7 +169,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->da,localX,INSERTVALUES,X); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
   return 0;
 } /* --------------------  Evaluate Function F(x) --------------------- */
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
@@ -185,8 +185,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
@@ -211,7 +211,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERTVALUES,F); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
   PLogFlops(11*ym*xm);
   return 0; 
 } /* --------------------  Evaluate Jacobian F'(x) --------------------- */
@@ -231,8 +231,8 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   sc = hx*hy;               hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(user->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
@@ -245,7 +245,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       row++;
       grow = ltog[row];
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERTVALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&grow,1,&grow,&one,INSERT_VALUES); CHKERRQ(ierr);
         continue;
       }
       v[0] = -hxdhy; col[0] = ltog[row - Xm];
@@ -253,7 +253,7 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
       v[3] = -hydhx; col[3] = ltog[row + 1];
       v[4] = -hxdhy; col[4] = ltog[row + Xm];
-      ierr = MatSetValues(jac,1,&grow,5,col,v,INSERTVALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);

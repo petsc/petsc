@@ -14,7 +14,7 @@ RUNEXAMPLES_1 = runex1  runex3  runex5 runex6  runex8 runex9\
                 runex10 runex11 runex14 runex15 runex15_2 runex16\
                 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex18 ex23 ex24 ex25 ex26\
-                ex27 ex28 ex29 ex30 ex31 ex32
+                ex27 ex28 ex29 ex30 ex31 ex32 ex33
 RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
@@ -149,6 +149,10 @@ ex32: ex32.o chkopts
 	-$(CLINKER) -o ex32 ex32.o $(PETSC_LIB)
 	$(RM) ex32.o
 
+ex33: ex33.o chkopts
+	-$(CLINKER) -o ex33 ex33.o $(PETSC_LIB)
+	$(RM) ex33.o
+
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -230,12 +234,12 @@ runex14:
            else echo "Possible problem with ex14_1, diffs above"; fi; \
            $(RM) -f ex14_1.tmp
 runex15:
-	-@$(MPIRUN)  ex15 -mpi_objects > ex15_1.tmp 2>&1;   \
+	-@$(MPIRUN)  ex15  > ex15_1.tmp 2>&1;   \
            if (diff output/ex15_1.out ex15_1.tmp) then true; \
            else echo "Possible problem with ex15_1, diffs above"; fi; \
            $(RM) -f ex15_1.tmp
 runex15_2: # Note that runex15 and runex15_2 have identical output
-	-@$(MPIRUN)  ex15 -mat_row -mpi_objects > ex15_2.tmp 2>&1;   \
+	-@$(MPIRUN)  ex15 -mat_mpirow  > ex15_2.tmp 2>&1;   \
            if (diff output/ex15_1.out ex15_2.tmp) then true; \
            else echo "Possible problem with ex15_2, diffs above"; fi; \
            $(RM) -f ex15_2.tmp

@@ -1,10 +1,75 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.41 1995/09/12 03:26:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.42 1995/09/12 18:42:03 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
+
+int MatGetFormatFromOptions_Private(MPI_Comm comm,MatType *type,int *set)
+{
+  int numtid;
+  MPI_Comm_size(comm,&numtid);
+  if (OptionsHasName(0,"-help")) {
+    MPIU_printf(comm,"Matrix format options: -mat_seqaij, -mat_aij, -mat_mpiaij\n");
+    MPIU_printf(comm,"            -mat_row, -mat_seqrow, -mat_mpirow\n");
+    MPIU_printf(comm,"            -mat_mpirowbs, -mat_seqdense\n");
+    MPIU_printf(comm,"            -mat_bdiag, -mat_seqbdiag,-mat_mpibdiag\n"); 
+  }
+  if (OptionsHasName(0,"-mat_seqdense")) {
+    *type = MATSEQDENSE;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_seqbdiag")) {
+    *type = MATSEQBDIAG;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_mpibdiag")) {
+    *type = MATMPIBDIAG;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_mpirowbs")) {
+    *type = MATMPIROWBS;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_mpirow")) {
+    *type = MATMPIROW;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_seqrow")){
+    *type = MATSEQROW;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_mpiaij")) {
+    *type = MATMPIAIJ;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_seqaij")){
+    *type = MATSEQAIJ;
+    *set = 1;
+  }
+  else if (OptionsHasName(0,"-mat_aij")){
+    if (numtid == 1) *type = MATSEQAIJ;
+    else *type = MATMPIAIJ;
+    *set = 1;
+  }  
+  else if (OptionsHasName(0,"-mat_row")){
+    if (numtid == 1) *type = MATSEQROW;
+    else *type = MATMPIROW;
+    *set = 1;
+  }  
+  else if (OptionsHasName(0,"-mat_bdiag")){
+    if (numtid == 1) *type = MATSEQBDIAG;
+    else *type = MATMPIBDIAG;
+    *set = 1;
+  }  
+  else {
+    if (numtid == 1) *type = MATSEQAIJ;
+    else *type = MATMPIAIJ;
+    *set = 0;
+  }
+  return 0;
+}
 
 /*@C
    MatCreate - Creates a matrix, where the type is determined
@@ -23,14 +88,16 @@ static char vcid[] = "$Id: gcreate.c,v 1.41 1995/09/12 03:26:11 bsmith Exp curfm
 $  -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ
 $  -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ
 $  -mat_aij      : AIJ type, (Seq or MPI depending on comm) 
-$  -mat_dense    : dense type, uses MatCreateSeqDense()
-$  -mat_row      : row type, uses MatCreateSeqRow()
+$  -mat_seqdense    : dense type, uses MatCreateSeqDense()
+$  -mat_seqrow   : row type, uses MatCreateSeqRow()
 $  -mat_mpirow   : MatCreateMPIRow()
+$  -mat_row      : row type,(Seq or MPI depending on comm)  
 $  -mat_mpirowbs : rowbs type.
 $                  uses MatCreateMPIRowbs()
-$  -mat_bdiag    : block diagonal type, uses 
+$  -mat_seqbdiag    : block diagonal type, uses 
 $                   MatCreateSeqBDiag()
 $  -mat_mpibdiag : MatCreateMPIBDiag()
+$  -mat_bdiag    : block diagonal type, (Seq or MPI depending on comm)
 
    Notes:
    The default matrix type is AIJ, using MatCreateSeqAIJ() and
@@ -45,17 +112,22 @@ $  -mat_mpibdiag : MatCreateMPIBDiag()
  @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
-  int numtid;
-  MPI_Comm_size(comm,&numtid);
+  MatType type;
+  int     set,ierr;
+
   if (OptionsHasName(0,"-help")) {
-    MPIU_printf(comm,"MatCreate() options: -mat_dense, -mat_aij, -mat_mpiaij, -mat_row\n");
-    MPIU_printf(comm,"         -mat_mpirow, -mat_mpirowbs, -mat_bdiag, -mat_mpibdiag\n"); 
+    MPIU_printf(comm,"MatCreate() options: -mat_seqaij, -mat_aij, -mat_mpiaij\n");
+    MPIU_printf(comm,"            -mat_row, -mat_seqrow, -mat_mpirow\n");
+    MPIU_printf(comm,"            -mat_mpirowbs, -mat_seqdense\n");
+    MPIU_printf(comm,"            -mat_bdiag, -mat_seqbdiag,-mat_mpibdiag\n"); 
   }
-  if (OptionsHasName(0,"-mat_dense")) {
+  ierr = MatGetFormatFromOptions_Private(comm,&type,&set); CHKERRQ(ierr);
+
+  if (type == MATSEQDENSE) {
     return MatCreateSeqDense(comm,m,n,V);
   }
-  if (OptionsHasName(0,"-mat_bdiag") || OptionsHasName(0,"-mat_mpibdiag")) {
-    int nb = 1, ndiag = 0, ndiag2 = 0, *d = 0, ierr;
+  if (type == MATSEQBDIAG || type == MATMPIBDIAG) {
+    int nb = 1, ndiag = 0, ndiag2 = 0, *d = 0;
     if (OptionsHasName(0,"-help")) {
       MPIU_printf(comm,"Options with -mat_bdiag: -mat_bdiag_bsize block_size\n");
       MPIU_printf(comm,"  -mat_bdiag_ndiag number_diags \n"); 
@@ -72,7 +144,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
         SETERRQ(1,"MatCreate: Incompatible number of diags and diagonal vals");
     } else if (OptionsHasName(0,"-mat_bdiag_dvals"))
       SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
-    if (OptionsHasName(0,"-mpi_mpibdiag") || numtid>1) {
+    if (type == MATMPIBDIAG) {
       ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,0,V); CHKERRQ(ierr);
     } else {
       ierr = MatCreateSeqBDiag(comm,m,n,ndiag,nb,d,0,V); CHKERRQ(ierr);
@@ -80,16 +152,16 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     if (d) PETSCFREE(d);
     return ierr;
   }
-  if (OptionsHasName(0,"-mat_mpirowbs")) {
+  if (type == MATMPIROWBS) {
     return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,0,0,V);
   }
-  if (OptionsHasName(0,"-mat_mpirow") || (OptionsHasName(0,"-mat_row") && numtid >1)) {
+  if (type == MATMPIROW) {
     return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
   }
-  if (OptionsHasName(0,"-mat_row")) {
+  if (type == MATSEQROW) {
     return MatCreateSeqRow(comm,m,n,10,0,V);
   }
-  if (OptionsHasName(0,"-mat_mpiaij")  || (numtid >1)) { /* Default parallel format */
+  if (type == MATMPIAIJ) { 
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
   }
   return MatCreateSeqAIJ(comm,m,n,10,0,V); /* default uniprocessor format */

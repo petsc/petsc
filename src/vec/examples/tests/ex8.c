@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.21 1995/08/22 19:29:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.22 1995/09/11 18:45:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -31,13 +31,13 @@ int main(int argc,char **argv)
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,3,0,2,&is1); CHKERRA(ierr);
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,3,1,2,&is2); CHKERRA(ierr);
 
-  ierr = VecSetValues(x,6,loc,vals,INSERTVALUES); CHKERRA(ierr);
+  ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES); CHKERRA(ierr);
   VecView(x,STDOUT_VIEWER_SELF); printf("----\n");
   ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERTVALUES,SCATTERALL,ctx);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
   ierr = VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.48 1995/09/06 03:04:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.49 1995/09/07 04:25:41 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -450,11 +450,11 @@ $       the file.  All other processors send their
 $       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
-$    ViewerFileOpen() - output to a specified file
+$    ViewerFileOpenASCII() - output to a specified file
 
 .keywords: PC, view
 
-.seealso: KSPView(), ViewerFileOpen()
+.seealso: KSPView(), ViewerFileOpenASCII()
 @*/
 int PCView(PC pc,Viewer viewer)
 {

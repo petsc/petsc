@@ -1,14 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.1 1995/08/17 20:46:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.2 1995/08/27 13:44:24 bsmith Exp bsmith $";
 #endif
 
 /* 
    This file contains simple binary read/write routines that 
    are based on SYSafeRead and SYSafeWrite in old-style PETSc.
 
-   Byte swapping is not included here, but it will be incorporated soon
-   Also, the variants for different architectures (npux, MSDOS, cray) 
-   are not included.
  */
 
 #include "petsc.h"
@@ -24,14 +21,80 @@ int errno = 0;
 extern int errno;
 #endif
 
-/* Should expand to be SYSafeRead/SYSafeWrite.  See tools.n/syetem/safewr.c */
+#if defined(HAVE_SWAPPED_BYTES)
+/*
+  SYByteSwapInt - Swap bytes in an integer
+
+  Input Parameters:
+. buff - buffer
+. n    - number of integers
+*/
+void SYByteSwapInt(int *buff,int n)
+{
+  int  i,j,tmp;
+  char *ptr1,*ptr2 = (char *) &tmp;
+  for ( j=0; j<n; j++ ) {
+    ptr1 = (char *) (&buff[j]);
+    for (i=0; i<sizeof(int); i++) {
+      ptr2[i] = ptr1[sizeof(int)-1-i];
+    }
+    buff[j] = tmp;
+  }
+}
+/*
+  SYByteSwapShort - Swap bytes in a short
+
+  Input Parameters:
+. buff - buffer
+. n    - number of shorts
+*/
+void SYByteSwapShort(short *buff,int n)
+{
+  int  i,j;
+  short tmp;
+  char *ptr1,*ptr2 = (char *) &tmp;
+  for ( j=0; j<n; j++ ) {
+    ptr1 = (char *) (&buff[j]);
+    for (i=0; i<sizeof(short); i++) {
+      ptr2[i] = ptr1[sizeof(int)-1-i];
+    }
+    buff[j] = tmp;
+  }
+}
+/*
+  SYByteSwapDouble - Swap bytes in a double
+
+  Input Parameters:
+. buff - buffer
+. n    - number of doubles
+*/
+void SYByteSwapScalar(Scalar *buff,int n)
+{
+  int    i,j;
+  double tmp,*ptr3, *buff1 = (double *) buff;
+  char   *ptr1,*ptr2 = (char *) &tmp;
+#if defined(PETSC_COMPLEX)
+  n *= 2;
+#endif
+  for ( j=0; j<n; j++ ) {
+    ptr3 = &buff1[j];
+    ptr1 = (char *) ptr3;
+    for (i=0; i<sizeof(double); i++) {
+      ptr2[i] = ptr1[sizeof(double)-1-i];
+    }
+    buff[j] = tmp;
+  }
+}
+#endif
+
 int SYRead(int fd,char *p,int n,SYIOType type)
 {
-/* Note:  type is not yet used. */
 
-  int maxblock, wsize, err;
-/*  int ntmp = n; */
-/*  char *ptmp = p; */
+  int  maxblock, wsize, err;
+#if defined(HAVE_SWAPPED_BYTES)
+  int  ntmp = n; 
+  char *ptmp = p; 
+#endif
 
   maxblock = 65536;
   while (n) {
@@ -43,20 +106,29 @@ int SYRead(int fd,char *p,int n,SYIOType type)
     n -= err;
     p += err;
   }
+#if defined(HAVE_SWAPPED_BYTES)
+  if (type == SYINT) SYByteSwapInt((int*)ptmp,ntmp/sizeof(int));
+  else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp/sizeof(double));
+#endif
+
   return 0;
 }
 /* -------------------------------------------------------------------- */
 int SYWrite(int fd,char *p,int n,SYIOType type,int istemp)
 {
-/* Note:  type and istemp are not yet used. */
-
   int err, maxblock, wsize;
-/*  int  ntmp  = n; */
-/*  char *ptmp = p; */
+#if defined(HAVE_SWAPPED_BYTES)
+  int  ntmp  = n; 
+  char *ptmp = p; 
+#endif
 
   maxblock = 65536;
-  /* Write the data in blocks of 65536 (some systems don't like large writes;
-   SunOS is a particular example) */
+  /* Write the data in blocks of 65536 (some systems don't like large writes;*/
+
+#if defined(HAVE_SWAPPED_BYTES)
+  if (type == SYINT) SYByteSwapInt((int*)ptmp,ntmp/sizeof(int));
+  else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp/sizeof(double));
+#endif
 
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
@@ -66,10 +138,17 @@ int SYWrite(int fd,char *p,int n,SYIOType type,int istemp)
     n -= wsize;
     p += wsize;
   }
+
+#if defined(HAVE_SWAPPED_BYTES)
+  if (!istemp) {
+    if (type == SYINT) SYByteSwapInt((int*)ptmp,ntmp/sizeof(int));
+    else if (type == SYSCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp/sizeof(double));
+  }
+#endif
+
   return 0;
 }
 /* -------------------------------------------------------------------- */
-/* based on old PETSc SpiReadBuffer */
 /* 
    SYReadBuffer - Reads data from a file fd at:
 

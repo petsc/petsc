@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.16 1995/09/07 04:27:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.17 1995/09/10 20:53:06 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -30,11 +30,11 @@ $       the file.  All other processors send their
 $       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
-$    ViewerFileOpen() - output to a specified file
+$    ViewerFileOpenASCII() - output to a specified file
 
 .keywords: SNES, view
 
-.seealso: ViewerFileOpen()
+.seealso: ViewerFileOpenASCII()
 @*/
 int SNESView(SNES snes,Viewer viewer)
 {
@@ -459,7 +459,7 @@ int SNESCreate(MPI_Comm comm,SNESType type,SNES *outsnes)
 .  snes - the SNES context
 .  func - function evaluation routine
 .  resid_neg - indicator whether func evaluates f or -f. 
-   If resid_neg is nonzero, then func evaluates -f; otherwise, 
+   If resid_neg is NEGATIVE_FUNCTION_VALUE, then func evaluates -f; otherwise, 
    func evaluates f.
 .  ctx - optional user-defined function context 
 .  r - vector to store function value
@@ -487,13 +487,13 @@ $  where f'(x) denotes the Jacobian matrix and f(x) is the function.
 .seealso: SNESGetFunction(), SNESSetJacobian(), SNESSetSolution()
 @*/
 int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),
-                     void *ctx,int rneg)
+                     void *ctx,SNESFunctionSign rneg)
 {
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
     "SNESSetFunction: Valid for SNES_NONLINEAR_EQUATIONS methods only");
   snes->computefunction     = func; 
-  snes->rsign               = rneg;
+  snes->rsign               = (int) rneg;
   snes->vec_func            = snes->vec_func_always = r;
   snes->funP                = ctx;
   return 0;

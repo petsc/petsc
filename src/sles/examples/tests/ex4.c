@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.26 1995/07/23 18:25:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.27 1995/09/11 18:49:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -55,7 +55,7 @@ int main(int argc,char **args)
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADDVALUES); CHKERRA(ierr);
+     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES); CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -75,7 +75,7 @@ int main(int argc,char **args)
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = FormElementRhs(x,y,h*h,r); CHKERRA(ierr);
-     ierr = VecSetValues(b,4,idx,r,ADDVALUES); CHKERRA(ierr);
+     ierr = VecSetValues(b,4,idx,r,ADD_VALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(b); CHKERRA(ierr);
   ierr = VecAssemblyEnd(b); CHKERRA(ierr);
@@ -98,8 +98,8 @@ int main(int argc,char **args)
   for ( i=0; i<4*m; i++ ) {
      x = h*(rows[i] % (m+1)); y = h*(rows[i]/(m+1)); 
      val = y;
-     ierr = VecSetValues(u,1,&rows[i],&val,INSERTVALUES); CHKERRA(ierr);
-     ierr = VecSetValues(b,1,&rows[i],&val,INSERTVALUES); CHKERRA(ierr);
+     ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES); CHKERRA(ierr);
+     ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES); CHKERRA(ierr);
   }    
   PETSCFREE(rows);
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
@@ -123,7 +123,7 @@ int main(int argc,char **args)
   for ( i=0; i<N; i++ ) {
      x = h*(i % (m+1)); y = h*(i/(m+1)); 
      val = y;
-     ierr = VecSetValues(ustar,1,&i,&val,INSERTVALUES); CHKERRA(ierr);
+     ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(ustar); CHKERRA(ierr);
   ierr = VecAssemblyEnd(ustar); CHKERRA(ierr);

@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.1 1995/09/02 03:34:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.2 1995/09/12 01:15:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -98,8 +98,8 @@ int main( int argc, char **argv )
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); 
            CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,0); 
-           CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,
+                          POSITIVE_FUNCTION_VALUE); CHKERRA(ierr);
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
 
@@ -161,7 +161,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   /* stick values into global vector */
-  ierr = DALocalToGlobal(user->da,localX,INSERTVALUES,X);
+  ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X);
   return 0;
 }/* --------------------  Evaluate Function F(x) --------------------- */
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
@@ -181,8 +181,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   sc     = hx*hy*hz*lambda; hxhzdhy  = hx*hz/hy; hyhzdhx  = hy*hz/hx;
   hxhydhz = hx*hy/hz;
 
-  ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX);
-  ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX);
+  ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);
+  ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
 
@@ -211,7 +211,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
   /* stick values into global vector */
-  ierr = DALocalToGlobal(user->da,localF,INSERTVALUES,F);
+  ierr = DALocalToGlobal(user->da,localF,INSERT_VALUES,F);
   PLogFlops(11*ym*xm*zm);
   return 0; 
 }

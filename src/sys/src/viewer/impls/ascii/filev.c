@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.22 1995/09/06 13:43:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.23 1995/09/07 04:27:38 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -19,9 +19,9 @@ Viewer STDOUT_VIEWER_SELF, STDERR_VIEWER_SELF, STDOUT_VIEWER_WORLD;
 
 int ViewerInitialize_Private()
 {
-  ViewerFileOpen(MPI_COMM_SELF,"stderr",&STDERR_VIEWER_SELF);
-  ViewerFileOpen(MPI_COMM_SELF,"stdout",&STDOUT_VIEWER_SELF);
-  ViewerFileOpen(MPI_COMM_WORLD,"stdout",&STDOUT_VIEWER_WORLD);
+  ViewerFileOpenASCII(MPI_COMM_SELF,"stderr",&STDERR_VIEWER_SELF);
+  ViewerFileOpenASCII(MPI_COMM_SELF,"stdout",&STDOUT_VIEWER_SELF);
+  ViewerFileOpenASCII(MPI_COMM_WORLD,"stdout",&STDOUT_VIEWER_WORLD);
   return 0;
 }
 
@@ -64,7 +64,7 @@ int ViewerFileGetFormat_Private(Viewer viewer,int *format)
 }
 
 /*@
-   ViewerFileOpen - Opens an ASCII file as a viewer.
+   ViewerFileOpenASCII - Opens an ASCII file as a viewer.
 
    Input Parameters:
 .  comm - the communicator
@@ -81,10 +81,10 @@ int ViewerFileGetFormat_Private(Viewer viewer,int *format)
    Each processor can instead write its own independent output by
    specifying the communicator MPI_COMM_SELF.
 
-   As shown below, ViewerFileOpen() is useful in conjunction with 
+   As shown below, ViewerFileOpenASCII() is useful in conjunction with 
    MatView() and VecView()
 $
-$    ViewerFileOpen("mat.output",MPI_COMM_WORLD,&viewer);
+$    ViewerFileOpenASCII("mat.output",MPI_COMM_WORLD,&viewer);
 $    MatView(matrix,viewer);
 
    This viewer can be destroyed with ViewerDestroy().
@@ -93,7 +93,7 @@ $    MatView(matrix,viewer);
 
 .seealso: MatView(), VecView(), ViewerDestroy()
 @*/
-int ViewerFileOpen(MPI_Comm comm,char *name,Viewer *lab)
+int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
   Viewer v;
   if (comm == MPI_COMM_SELF) {
@@ -140,7 +140,7 @@ $    FILE_FORMAT_INFO - basic information about object
 
 .keywords: Viewer, file, set, format
 
-.seealso: ViewerFileOpen(), MatView(), VecView()
+.seealso: ViewerFileOpenASCII(), MatView(), VecView()
 @*/
 int ViewerFileSetFormat(Viewer v,int format,char *name)
 {

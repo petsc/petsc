@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.13 1995/08/23 17:21:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.14 1995/08/30 01:27:41 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This example tests various DA routines.\n\n";
@@ -35,13 +35,13 @@ int main(int argc,char **argv)
 
   value = -3.0;
   ierr = VecSet(&value,global); CHKERRA(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   value = mytid+1;
   ierr = VecScale(&value,local); CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,ADDVALUES,global); CHKERRA(ierr);
+  ierr = DALocalToGlobal(da,local,ADD_VALUES,global); CHKERRA(ierr);
 
   ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   ierr = DAView(da,(Viewer) win); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.58 1995/09/06 03:04:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.59 1995/09/07 04:24:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -26,11 +26,11 @@ $       the file.  All other processors send their
 $       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
-$    ViewerFileOpen() - output to a specified file
+$    ViewerFileOpenASCII() - output to a specified file
 
 .keywords: KSP, view
 
-.seealso: PCView(), ViewerFileOpen()
+.seealso: PCView(), ViewerFileOpenASCII)
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {

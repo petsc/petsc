@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.8 1995/08/31 00:33:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.9 1995/09/11 18:50:36 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -50,9 +50,9 @@ int main( int argc, char **argv )
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {
     v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
+    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
     v= xp*xp*xp;
-    ierr = VecSetValues(U,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
+    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
     xp += h;
   }
 
@@ -65,7 +65,8 @@ int main( int argc, char **argv )
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F,1); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F,
+                         NEGATIVE_FUNCTION_VALUE); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,B,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr);
 
@@ -134,19 +135,19 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   i = 0; A = 1.0; 
 
   /* do nothing with Jac since it is Matrix-free */
-  ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
   for ( i=1; i<n-1; i++ ) {
     A = d; 
     j = i - 1; 
-    ierr = MatSetValues(*B,1,&i,1,&j,&A,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*B,1,&i,1,&j,&A,INSERT_VALUES); CHKERRQ(ierr);
     j = i + 1; 
-    ierr = MatSetValues(*B,1,&i,1,&j,&A,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*B,1,&i,1,&j,&A,INSERT_VALUES); CHKERRQ(ierr);
     A = -2.0*d + 2.0*xx[i];
     j = i + 1; 
-    ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
   }
   i = n-1; A = 1.0; 
-  ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
+  ierr = MatSetValues(*B,1,&i,1,&i,&A,INSERT_VALUES); CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.11 1995/08/17 01:31:13 curfman Exp bsmith $ */
+/* $Id: aij.h,v 1.12 1995/09/12 03:25:17 bsmith Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -30,6 +30,8 @@ typedef struct {
   Scalar *a;               /* nonzero elements */
   IS     row, col;         /* index sets, used for reorderings */
   Scalar *solve_work;      /* work space used in MatSolve_AIJ */
+  void   *spptr;           /* pointer for special library like SuperLU */
+  int    indexshift;      /* zero or -one for C or Fortran indexing */
 } Mat_SeqAIJ;
 
 #endif

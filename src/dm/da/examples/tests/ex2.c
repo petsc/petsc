@@ -39,12 +39,12 @@ int main(int argc,char **argv)
   value = 1;
   ierr = VecSet(&value,global); CHKERRA(ierr);
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   value = mytid+1;
   ierr = VecScale(&value,local); CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRA(ierr);
+  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
   ierr = VecView(global,(Viewer) win1); CHKERRA(ierr); 
 
@@ -52,8 +52,8 @@ int main(int argc,char **argv)
   ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
   MPIU_printf(MPI_COMM_WORLD,"\n\n");
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   MPIU_printf(MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
   ierr = VecView(local,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 

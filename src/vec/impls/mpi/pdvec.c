@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.24 1995/09/06 03:04:21 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.25 1995/09/07 04:24:43 bsmith Exp bsmith $ */
 
 #include "pinclude/pviewer.h"
 #include "sysio.h"
@@ -309,10 +309,10 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
   Scalar     *xx = x->array;
 
 #if defined(PETSC_DEBUG)
-  if (x->insertmode == INSERTVALUES && addv == ADDVALUES) { SETERRQ(1,
+  if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { SETERRQ(1,
    "VecSetValues_MPI: You have already inserted values; you cannot now add");
   }
-  else if (x->insertmode == ADDVALUES && addv == INSERTVALUES) { SETERRQ(1,
+  else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { SETERRQ(1,
    "VecSetValues_MPI: You have already added values; you cannot now insert");
   }
 #endif
@@ -320,7 +320,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
 
   for ( i=0; i<ni; i++ ) {
     if ( ix[i] >= start && ix[i] < end) {
-      if (addv == INSERTVALUES) xx[ix[i]-start] = y[i];
+      if (addv == INSERT_VALUES) xx[ix[i]-start] = y[i];
       else                      xx[ix[i]-start] += y[i];
     }
     else {
@@ -332,7 +332,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
       alreadycached = 0;
       for ( j=0; j<x->stash.n; j++ ) {
         if (x->stash.idx[j] == ix[i]) {
-          if (addv == INSERTVALUES) x->stash.array[j] = y[i];
+          if (addv == INSERT_VALUES) x->stash.array[j] = y[i];
           else                      x->stash.array[j] += y[i];
           alreadycached = 1; 
           break;
@@ -378,7 +378,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
-  if (addv == (ADDVALUES|INSERTVALUES)) { SETERRQ(1,
+  if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
   "VecAssemblyBegin_MPI: Some processors inserted values while others added");
   }
   x->insertmode = addv; /* in case this processor had no cache */
@@ -478,12 +478,12 @@ static int VecAssemblyEnd_MPI(Vec vec)
     values = x->rvalues + 2*imdex*x->rmax;
     MPI_Get_count(&recv_status,MPIU_SCALAR,&n);
     n = n/2;
-    if (x->insertmode == ADDVALUES) {
+    if (x->insertmode == ADD_VALUES) {
       for ( i=0; i<n; i++ ) {
         x->array[((int) PETSCREAL(values[2*i])) - base] += values[2*i+1];
       }
     }
-    else if (x->insertmode == INSERTVALUES) {
+    else if (x->insertmode == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {
         x->array[((int) PETSCREAL(values[2*i])) - base] = values[2*i+1];
       }

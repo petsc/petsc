@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.47 1995/09/07 04:24:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.48 1995/09/11 18:45:43 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -158,7 +158,7 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   Scalar   *xx = x->array;
   int      i;
 
-  if (m == INSERTVALUES) {
+  if (m == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
 #if defined(PETSC_DEBUG)
       if (ix[i] < 0 || ix[i] >= x->n) 

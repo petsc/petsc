@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.30 1995/09/11 18:48:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.31 1995/09/12 03:25:41 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -54,7 +54,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &mbd->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
-  if (addv == (ADDVALUES|INSERTVALUES)) { SETERRQ(1,
+  if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
     "MatAssemblyBegin_MPIBDiag:Cannot mix adds/inserts on different procs");
     }
   mbd->insertmode = addv; /* in case this processor had no cache */
@@ -340,9 +340,9 @@ static int MatMult_MPIBDiag(Mat mat,Vec xx,Vec yy)
   int        ierr;
   if (!mbd->assembled) 
     SETERRQ(1,"MatMult_MPIBDiag:Must assemble matrix first");
-  ierr = VecScatterBegin(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterBegin(xx,mbd->lvec,INSERT_VALUES,SCATTERALL,mbd->Mvctx);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,INSERTVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterEnd(xx,mbd->lvec,INSERT_VALUES,SCATTERALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = MatMult(mbd->A,mbd->lvec,yy); CHKERRQ(ierr);
   return 0;
@@ -354,9 +354,9 @@ static int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
   int        ierr;
   if (!mbd->assembled) 
     SETERRQ(1,"MatMultAdd_MPIBDiag:Must assemble matrix first");
-  ierr = VecScatterBegin(xx,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterBegin(xx,mbd->lvec,ADD_VALUES,SCATTERALL,mbd->Mvctx);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,mbd->lvec,ADDVALUES,SCATTERALL,mbd->Mvctx);
+  ierr = VecScatterEnd(xx,mbd->lvec,ADD_VALUES,SCATTERALL,mbd->Mvctx);
   CHKERRQ(ierr);
   ierr = MatMultAdd(mbd->A,mbd->lvec,yy,zz); CHKERRQ(ierr);
   return 0;
@@ -472,7 +472,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
       row = mbd->rstart; m = Ambd->m;
       for ( i=0; i<m; i++ ) {
         ierr = MatGetRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
-        ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERTVALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(A,1,&row,nz,cols,vals,INSERT_VALUES); CHKERRQ(ierr);
         ierr = MatRestoreRow(mat,row,&nz,&cols,&vals); CHKERRQ(ierr);
         row++;
       } 
@@ -620,7 +620,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
   PLogObjectCreate(mat);
   mat->data	= (void *) (mbd = PETSCNEW(Mat_MPIBDiag)); CHKPTRQ(mbd);
-  mat->ops	= &MatOps;
+  PETSCMEMCPY(&mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy	= MatDestroy_MPIBDiag;
   mat->view	= MatView_MPIBDiag;
   mat->factor	= 0;

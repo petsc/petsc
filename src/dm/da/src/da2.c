@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.20 1995/09/07 04:28:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.21 1995/09/11 19:20:01 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -662,7 +662,7 @@ int DADestroy(DA da)
    Input Parameters:
 .  da - the distributed array context
 .  l  - the local values
-.  mode - one of INSERTVALUES or ADDVALUES
+.  mode - one of INSERT_VALUES or ADD_VALUES
 
    Output Parameter:
 .  g - the global vector
@@ -688,7 +688,7 @@ int DALocalToGlobal(DA da,Vec l, InsertMode mode,Vec g)
    Input Parameters:
 .  da - the distributed array context
 .  g - the global vector
-.  mode - one of INSERTVALUES or ADDVALUES
+.  mode - one of INSERT_VALUES or ADD_VALUES
 
    Output Parameter:
 .  l  - the local values
@@ -713,7 +713,7 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
    Input Parameters:
 .  da - the distributed array context
 .  g - the global vector
-.  mode - one of INSERTVALUES or ADDVALUES
+.  mode - one of INSERT_VALUES or ADD_VALUES
 
    Output Parameter:
 .  l  - the local values
@@ -791,7 +791,7 @@ $       the file.  All other processors send their
 $       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
-$    ViewerFileOpen() - output to a specified file
+$    ViewerFileOpenASCII() - output to a specified file
 $    DrawOpenX() - output nonzero matrix structure to 
 $         an X window display
 
@@ -806,7 +806,7 @@ $      s - stencil width
 
 .keywords: distributed array, view, visualize
 
-.seealso: ViewerFileOpen(), DrawOpenX(), 
+.seealso: ViewerFileOpenASCII(), DrawOpenX(), 
 @*/
 int DAView(DA da, Viewer v)
 {

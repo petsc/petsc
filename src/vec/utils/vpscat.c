@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.26 1995/08/04 01:50:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.27 1995/09/11 18:45:33 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -152,7 +152,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,
     }
   }
   /* take care of local scatters */
-  if (mode == SCATTERALL && addv == INSERTVALUES) {
+  if (mode == SCATTERALL && addv == INSERT_VALUES) {
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n = gen_to->local.n;
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
@@ -208,7 +208,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
       if (n != rstarts[imdex+1] - rstarts[imdex]) 
         SETERRQ(1,"PtoPScatterend:Bad message");
 
-      if (addv == INSERTVALUES) {
+      if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }
@@ -243,7 +243,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) 
         SETERRQ(1,"PtoPScatterend:Bad message");
-      if (addv == INSERTVALUES) {
+      if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }
@@ -275,7 +275,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) 
         SETERRQ(1,"PtoPScatterend:Bad message");
-      if (addv == INSERTVALUES) {
+      if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }
@@ -412,7 +412,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) 
         SETERRQ(1,"PtoPPipelinebegin:Bad message");
-      if (addv == INSERTVALUES) {
+      if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }
@@ -441,7 +441,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,
       MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) 
         SETERRQ(1,"PtoPPipelinebegin:Bad message");
-      if (addv == INSERTVALUES) {
+      if (addv == INSERT_VALUES) {
         for ( i=0; i<n; i++ ) {
           yv[indices[i+rstarts[imdex]]] = *val++;
         }

@@ -4,12 +4,12 @@ C
 #define Vec           integer
 #define VecScatterCtx integer 
 C
-      integer INSERTVALUES, ADDVALUES
+      integer INSERT_VALUES, ADD_VALUES
       integer SCATTERREVERSE,SCATTERDOWN,SCATTERUP,SCATTERALL,
      *        SCATTERALLREVERSE
       integer PIPELINEDOWN,PIPELINEUP
 
-      parameter (INSERTVALUES = 1, ADDVALUES = 2)
+      parameter (INSERT_VALUES = 1, ADD_VALUES = 2)
       parameter (SCATTERREVERSE = 1,SCATTERDOWN = 2,SCATTERUP = 4,
      *           SCATTERALL = 8, SCATTERALLREVERSE = 9)
       parameter (PIPELINEDOWN = 0,PIPELINEUP = 1)

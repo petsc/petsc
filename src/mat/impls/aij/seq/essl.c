@@ -1,147 +1,149 @@
 
 #ifndef lint
-static char vcid[] = "$Id: superlu.c,v 1.1 1995/09/13 02:22:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.1 1995/09/20 01:56:56 bsmith Exp bsmith $";
 #endif
 
 /* 
-        Provides an interface to the SuperLU sparse factorization 
-  package of Jim Demmel, John Gilbert and Xiaoye Li.
+        Provides an interface to the IBM RS6000 Essl sparse solver
+
 */
 #include "aij.h"
-#include "vec/vecimpl.h"
-#include "inline/spops.h"
 
-#if defined(HAVE_SUPERLU)
-#include "dsp_defs.h"
-#include "util.h"
+#if defined(HAVE_ESSL) && !defined(__cplusplus)
+/* #include <essl.h>  */
+#include <math.h>
 
 typedef struct {
-  SuperMatrix AC,L,U;
-  int         *perm_r,*perm_c;
-  int         *etree;
-} Mat_SeqAIJ_SuperLU;
+   int    n,nz;
+   Scalar *a;
+   int    *ia;
+   int    *ja;
+   int    lna;
+   int    iparm[5];
+   double rparm[5];
+   double oparm[5];
+   Scalar *aux;
+   int    naux;
+} Mat_SeqAIJ_EsslLU;
 
-extern LUStat_t LUStat;
 
 extern int MatDestroy_SeqAIJ(PetscObject);
 
-static int MatDestroy_SeqAIJ_SuperLU(PetscObject obj)
+static int MatGetReordering_SeqAIJ_EsslLU(Mat mat,MatOrdering type,
+                                               IS *rperm,IS *cperm)
 {
-  Mat                A = (Mat) obj;
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*) A->data;
-  Mat_SeqAIJ_SuperLU *super = (Mat_SeqAIJ_SuperLU*) a->spptr;
+  *perm = *cperm = 0;
+  return 0;
+}
 
-  /* free the SuperLU datastructures */
-  Destroy_CompCol_Permuted(&super->AC);
-  PETSCFREE(super->etree);
-  PETSCFREE(super);
+static int MatDestroy_SeqAIJ_EsslLU(PetscObject obj)
+{
+  Mat               A = (Mat) obj;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*) A->data;
+  Mat_SeqAIJ_EsslLU *essl = (Mat_SeqAIJ_EsslLU*) a->spptr;
+
+  /* free the EsslLU datastructures */
+  PETSCFREE(essl->a);
+  PETSCFREE(essl->ia);
+  PETSCFREE(essl->ja);
+  PETSCFREE(essl->aux);
+  PETSCFREE(essl);
 
   return MatDestroy_SeqAIJ(obj);
 }
 
-static int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
+static int MatSolve_SeqAIJ_EsslLU(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*) A->data;
-  Mat_SeqAIJ_SuperLU *super = (Mat_SeqAIJ_SuperLU*) a->spptr;
+  Mat_SeqAIJ_EsslLU *essl = (Mat_SeqAIJ_EsslLU*) a->spptr;
   Scalar             *xx;
-  int                ierr,m;
-  SuperMatrix        BB;
+  int                ierr,m, zero = 0;
 
   ierr = VecGetSize(b,&m); CHKERRQ(ierr);
   ierr = VecCopy(b,x); CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-  dCreate_Dense_Matrix(&BB,m,1,xx,m,DN,D,GE);
 
-  dgstrs ("T", &super->L, &super->U, super->perm_r, super->perm_c,&BB, &ierr);
+  dgss(&zero, &a->n, essl->a, essl->ia, essl->ja,&essl->lna,xx,essl->aux,
+              &essl->naux);
 
-  PLogFlops(LUStat.ops[SOLVE]);
   return 0;
 }
 
-static int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,double f,Mat *F)
+static int MatLUFactorSymbolic_SeqAIJ_EsslLU(Mat A,IS r,IS c,double f,Mat *F)
 {
   Mat                B;
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*) A->data, *b;
   int                ierr, *ridx, *cidx,i;
-  SuperMatrix        Asuper;
-  Mat_SeqAIJ_SuperLU *super;
+  Mat_SeqAIJ_EsslLU *essl;
 
-  ierr = MatCreateSeqAIJ(A->comm,a->m,a->n,0,0,F); CHKERRQ(ierr);
-  B = *F;
-  B->ops.solve  = MatSolve_SeqAIJ_SuperLU;
-  B->destroy    = MatDestroy_SeqAIJ_SuperLU;
+  if (a->m != a->n) 
+    SETERRQ(1,"MatLUFactorSymbolic_SeqAIJ_EsslLU: matrix ust be square"); 
+  ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,0,F); CHKERRQ(ierr);
+  B             = *F;
+  B->ops.solve  = MatSolve_SeqAIJ_EsslLU;
+  B->destroy    = MatDestroy_SeqAIJ_EsslLU;
   B->factor     = FACTOR_LU;
-  b = (Mat_SeqAIJ*) B->data;
-  super = PETSCNEW(Mat_SeqAIJ_SuperLU); CHKPTRQ(super);
-  b->spptr = (void*) super;
+  b             = (Mat_SeqAIJ*) B->data;
+  essl          = PETSCNEW(Mat_SeqAIJ_EsslLU); CHKPTRQ(essl);
+  b->spptr      = (void*) essl;
 
-  /* note that SuperLU is column oriented, thus we pass the row and 
-     column pointers backwards */
-  /* shift row and column indices to start at 0 */
-  if (a->indexshift) {
-    for ( i=0; i<a->m+1; i++ ) a->i[i]--;
-    for ( i=0; i<a->nz; i++ ) a->j[i]--;
-  }
 
-  dCreate_CompCol_Matrix(&Asuper,a->m,a->n,a->nz,a->a,a->j,a->i,NC,D,GE);
-    
-  ierr = ISGetIndices(r,&ridx); CHKERRQ(ierr);
-  ierr = ISGetIndices(c,&cidx); CHKERRQ(ierr);
-  super->etree = (int*) PETSCMALLOC(a->m*sizeof(int)); CHKPTRQ(super->etree);
+  /* allocate the work arrays required by ESSL */
+  essl->nz   = a->nz;
+  essl->lna  = a->nz*sqrt((double)(a->nz));
+  essl->ia   = (int*) PETSCMALLOC(essl->lna*sizeof(int)); CHKPTRQ(essl->ia);
+  essl->ja   = (int*) PETSCMALLOC(essl->lna*sizeof(int)); CHKPTRQ(essl->ja);
+  essl->a    = (Scalar*) PETSCMALLOC(essl->lna*sizeof(Scalar)); 
+               CHKPTRQ(essl->a);
+  essl->naux = 100 + 10*a->m;
+  essl->aux  = (Scalar*) PETSCMALLOC(essl->naux*sizeof(Scalar)); 
+               CHKPTRQ(essl->aux);
 
-  StatInit(sp_ienv(1)); 
-
-  sp_preorder("N", &Asuper, cidx, super->etree, &super->AC);
-
-  super->perm_r = ridx; 
-  super->perm_c = cidx;
-
-  /* shift I and J pointers back */
-  if (a->indexshift) {
-    for ( i=0; i<a->m+1; i++ ) a->i[i]++;
-    for ( i=0; i<a->nz; i++ ) a->j[i]++;
-  }
   return 0;
 }
 
-static int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
+static int MatLUFactorNumeric_SeqAIJ_EsslLU(Mat A,Mat *F)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*) (*F)->data;
-  Mat_SeqAIJ         *aa = (Mat_SeqAIJ*) (A)->data;
-  Mat_SeqAIJ_SuperLU *super = (Mat_SeqAIJ_SuperLU *) a->spptr;
-  int                i,ierr, *ridx = super->perm_r;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*) (*F)->data;
+  Mat_SeqAIJ        *aa = (Mat_SeqAIJ*) (A)->data;
+  Mat_SeqAIJ_EsslLU *essl = (Mat_SeqAIJ_EsslLU *) a->spptr;
+  int               i,ierr, one = 1;
 
-  if (a->indexshift) {
-    for ( i=0; i<aa->m+1; i++ ) aa->i[i]--;
-    for ( i=0; i<aa->nz; i++ ) aa->j[i]--;
+  /* copy matrix data into silly ESSL data structure */
+  if (!a->indexshift) {
+    for ( i=0; i<aa->m+1; i++ ) essl->ia[i] = aa->i[i] + 1;
+    for ( i=0; i<aa->nz; i++ ) essl->ja[i]  = aa->j[i] + 1;
   }
-
-  dgstrf("N",&super->AC,1.0,0.0,sp_ienv(2),sp_ienv(1),super->etree,0,0,ridx,
-         &super->L,&super->U,&ierr);  CHKERRQ(ierr);
-
-  PLogFlops(LUStat.ops[FACT]);
-
-  if (a->indexshift) {
-    for ( i=0; i<aa->m+1; i++ ) aa->i[i]++;
-    for ( i=0; i<aa->nz; i++ ) aa->j[i]++;
+  else {
+    PETSCMEMCPY(essl->ia,aa->i,(aa->m+1)*sizeof(int));
+    PETSCMEMCPY(essl->ja,aa->j,(aa->nz)*sizeof(int));
   }
+  PETSCMEMCPY(essl->a,aa->a,(aa->nz)*sizeof(Scalar));
+  
+  /* set Essl options */
+  essl->iparm[0] = 0; /* use defaults */
+
+  dgsf(&one,&aa->m,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
+               essl->rparm,essl->oparm,essl->aux,&essl->naux);
+
   return 0;
 }
 
-int MatUseSuperLU(Mat A)
+int MatUseEsslLU_SeqAIJ(Mat A)
 {
   PETSCVALIDHEADERSPECIFIC(A,MAT_COOKIE);  
   if (A->type != MATSEQAIJ) return 0;
 
-  A->ops.lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_SuperLU;
-  A->ops.lufactornumeric  = MatLUFactorNumeric_SeqAIJ_SuperLU;
+  A->ops.lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_EsslLU;
+  A->ops.lufactornumeric  = MatLUFactorNumeric_SeqAIJ_EsslLU;
+  A->ops.lugetreordering  = MatGetReordering_SeqAIJ_EsslLU;
 
   return 0;
 }
 
 #else
 
-int MatUseSuperLU(Mat A)
+int MatUseEsslLU_SeqAIJ(Mat A)
 {
   return 0;
 }

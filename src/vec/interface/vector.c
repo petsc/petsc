@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.46 1995/09/04 17:23:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.47 1995/09/06 03:04:17 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -479,12 +479,12 @@ int VecFreeVecs(Vec *vv,int m)
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
-.  iora - either INSERTVALUES or ADDVALUES
+.  iora - either INSERT_VALUES or ADD_VALUES
 
    Notes: 
    x[ix[i]] = y[i], for i=0,...,ni-1.
 
-   Calls to VecSetValues() with the INSERTVALUES and ADDVALUES 
+   Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
 
@@ -741,14 +741,14 @@ $       the file.  All other processors send their
 $       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
-$    ViewerFileOpen() - output vector to a specified file
+$    ViewerFileOpenASCII() - output vector to a specified file
 $    DrawOpenX() - output vector to an X window display
 $    DrawLGCreate() - output vector as a line graph to an X window display
 $    ViewerMatlabOpen() - output vector to Matlab viewer
 
 .keywords: Vec, view, visualize
 
-.seealso: ViewerFileOpen(), DrawOpenX(), DrawLGCreate(), ViewerMatlabOpen()
+.seealso: ViewerFileOpenASCII(), DrawOpenX(), DrawLGCreate(), ViewerMatlabOpen()
 @*/
 int VecView(Vec v,Viewer ptr)
 {

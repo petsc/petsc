@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.8 1995/08/23 17:08:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.9 1995/09/11 18:45:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -40,15 +40,15 @@ int main(int argc,char **argv)
   ierr = VecGetOwnershipRange(y,&low,&high); CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
     iglobal = i + low; value = (Scalar) (i + 10*mytid);
-    ierr = VecSetValues(y,1,&iglobal,&value,INSERTVALUES); CHKERRA(ierr);
+    ierr = VecSetValues(y,1,&iglobal,&value,INSERT_VALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(y); CHKERRA(ierr);
   ierr = VecAssemblyEnd(y); CHKERRA(ierr);
   ierr = VecView(y,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   ierr = VecScatterCtxCreate(y,is2,x,is1,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(y,x,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
-  ierr = VecScatterEnd(y,x,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterBegin(y,x,ADD_VALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(y,x,ADD_VALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
   if (!mytid) 

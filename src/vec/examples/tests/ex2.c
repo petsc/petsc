@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.25 1995/08/22 19:29:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.26 1995/09/11 18:45:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -36,15 +36,15 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,x); CHKERRA(ierr);
   ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,y,INSERTVALUES,SCATTERALL,ctx);
+  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(x,y,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTERALL,ctx); CHKERRA(ierr);
   
   ierr = VecView(y,STDOUT_VIEWER_SELF); CHKERRA(ierr);
 
-  ierr = VecScatterBegin(y,x,INSERTVALUES,SCATTERALL,ctx);
+  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
-  ierr = VecScatterEnd(y,x,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
 
   printf("-------\n"); ierr = VecView(x,STDOUT_VIEWER_SELF); CHKERRA(ierr);

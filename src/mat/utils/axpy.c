@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.7 1995/08/07 18:53:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.8 1995/08/22 16:32:04 bsmith Exp bsmith $";
 #endif
 
 #include "matimpl.h"  /*I   "mat.h"  I*/
@@ -28,7 +28,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
     for ( j=0; j<ncols; j++ ) {
       vals[j] = (*a)*val[j];
     }
-    ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADDVALUES); CHKERRQ(ierr);
+    ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES); CHKERRQ(ierr);
     MatRestoreRow(X,i,&ncols,&row,&val);
   }
   PETSCFREE(vals);

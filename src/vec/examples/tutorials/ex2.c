@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.16 1995/08/22 19:29:36 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.17 1995/08/23 17:08:34 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,x); CHKERRA(ierr);
 
   for ( i=0; i<N-mytid; i++ ) {
-    ierr = VecSetValues(x,1,&i,&one,ADDVALUES); CHKERRA(ierr);  
+    ierr = VecSetValues(x,1,&i,&one,ADD_VALUES); CHKERRA(ierr);  
   }
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);

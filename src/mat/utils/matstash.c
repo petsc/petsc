@@ -50,7 +50,7 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,
     for ( j=0; j<N; j++ ) {
       if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
         /* found a match */
-        if (addv == ADDVALUES) stash->array[j] += val;
+        if (addv == ADD_VALUES) stash->array[j] += val;
         else stash->array[j] = val;
         found = 1;
         break;

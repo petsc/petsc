@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.14 1995/07/26 01:37:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.15 1995/08/07 18:52:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -69,7 +69,7 @@ int PCCreate_Shell(PC pc)
   return 0;
 }
 
-/*@
+/*@C
    PCShellSetApply - Sets routine to use as preconditioner.
 
    Input Parameters:
@@ -97,7 +97,7 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
   return 0;
 }
 
-/*@
+/*@C
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
    in Richardson iteration.
 

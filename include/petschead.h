@@ -1,4 +1,4 @@
-/* $Id: ptscimpl.h,v 1.15 1995/08/07 18:55:04 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.16 1995/08/07 22:01:52 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -52,49 +52,49 @@ extern void *PetscLow,*PetscHigh;
 
 #if defined(PETSC_BOPT_g) && !defined(PETSC_INSIGHT)
 #define PETSCVALIDHEADERSPECIFIC(h,ck)                             \
-  {if (!h) {SETERRQ(1,"Null Object");}                 \
+  {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Object");}                 \
   if (PetscLow > (void *) h || PetscHigh < (void *)h){\
-    SETERRQ(3,"Invalid Pointer to Object");            \
+    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");            \
   }                                                   \
   if ((h)->cookie != ck) {                            \
     if ((h)->cookie == PETSCFREEDHEADER) {                 \
-      SETERRQ(1,"Object already free");                \
+      SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
     }                                                 \
     else {                                            \
-      SETERRQ(2,"Invalid or Wrong Object");            \
+      SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
     }                                                 \
   }}
 #define PETSCVALIDHEADER(h)                             \
   {if (!h) {SETERRQ(1,"Null Object");}                 \
   else if (PetscLow > (void *) h || PetscHigh < (void *)h){\
-    SETERRQ(3,"Invalid Pointer to Object");            \
+    SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");            \
   }                                                   \
   else if ((h)->cookie == PETSCFREEDHEADER) {          \
-      SETERRQ(1,"Object already free");                \
+      SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
   }                                                 \
   else if ((h)->cookie < PETSC_COOKIE ||            \
       (h)->cookie > PETSC_COOKIE+20) {           \
-      SETERRQ(2,"Invalid or Wrong Object");            \
+      SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
   }}
 #else
 #define PETSCVALIDHEADERSPECIFIC(h,ck)                             \
-  {if (!h) {SETERRQ(1,"Null Object");}                 \
+  {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Object");}                 \
   if ((h)->cookie != ck) {                            \
     if ((h)->cookie == PETSCFREEDHEADER) {             \
-      SETERRQ(1,"Object already free");                \
+      SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
     }                                                 \
     else {                                            \
-      SETERRQ(2,"Invalid or Wrong Object");            \
+      SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
     }                                                 \
   }}
 #define PETSCVALIDHEADER(h)                             \
-  {if (!h) {SETERRQ(1,"Null Object");}                 \
+  {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Object");}                 \
   else if ((h)->cookie == PETSCFREEDHEADER) {          \
-      SETERRQ(1,"Object already free");                \
+      SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
   }                                                 \
   else if ((h)->cookie < PETSC_COOKIE ||            \
       (h)->cookie > PETSC_COOKIE+20) {                   \
-      SETERRQ(2,"Invalid or Wrong Object");            \
+      SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
   }}
 #endif
 

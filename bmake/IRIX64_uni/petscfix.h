@@ -243,7 +243,6 @@ extern void   *malloc(long unsigned int );
 };
 
 #else
-extern int    getdomainname(char *,int);
 extern char   *getenv( char *);
 extern double atof(char *);
 extern int    atoi(char*);

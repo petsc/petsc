@@ -2,12 +2,12 @@ PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../.. \
+CFLAGS   =  $(PETSC_INCLUDE) -I../../.. $(SUPERLU_INCLUDE) \
            $(CONF) -D__DIR__='"mat/impls/aij/seq/"'
-SOURCEC  = aij.c aijfact.c ij.c
+SOURCEC  = aij.c aijfact.c ij.c superlu.c essl.c
 SOURCEF  =
 SOURCEH  = aij.h
-OBJSC    = aij.o aijfact.o ij.o
+OBJSC    = aij.o aijfact.o ij.o superlu.o essl.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.8 1995/08/15 20:28:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.9 1995/09/12 03:25:17 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -33,7 +33,7 @@ $    matrix.
 int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *Matrix, int **iia, int **jja )
 {
   int          *work,*ia,*ja,*j,i, nz, n, row, wr;
-  register int col;
+  int col, shift = Matrix->indexshift;
 
   n  = Matrix->m;
 
@@ -46,9 +46,9 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *Matrix, int **iia, int **jja )
   ia[0] = 1;
   for (row = 0; row < n; row++) {
     nz = Matrix->i[row+1] - Matrix->i[row];
-    j  = Matrix->j + Matrix->i[row] - 1;
+    j  = Matrix->j + Matrix->i[row] + shift;
     while (nz--) {
-       col = *j++ - 1;
+       col = *j++ + shift;
        if ( col > row ) {
           break;
        }
@@ -65,15 +65,15 @@ int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *Matrix, int **iia, int **jja )
  }
 
  /* allocate space for column pointers */
- nz = ia[n];
+ nz = ia[n] + (!shift);
  *jja = ja = (int *) PETSCMALLOC( nz*sizeof(int) ); CHKPTRQ(ja);
 
  /* loop over lower triangular part putting into ja */ 
  for (row = 0; row < n; row++) {
     nz = Matrix->i[row+1] - Matrix->i[row];
-    j  = Matrix->j + Matrix->i[row] - 1;
+    j  = Matrix->j + Matrix->i[row] + shift;
     while (nz--) {
-       col = *j++ - 1;
+       col = *j++ + shift;
        if ( col > row ) {
           break;
        }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.7 1995/08/23 17:21:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.8 1995/08/30 01:27:14 curfman Exp bsmith $";
 #endif
   
 static char help[] = 
@@ -47,19 +47,19 @@ int main(int argc,char **argv)
   value = 1;
   ierr = VecSet(&value,global); CHKERRA(ierr);
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   value = mytid;
   ierr = VecScale(&value,local); CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRA(ierr);
+  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
   MPIU_printf (MPI_COMM_WORLD,"\nGlobal Vectors:\n");
   ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr); 
   MPIU_printf (MPI_COMM_WORLD,"\n\n");
 
-  ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
   MPIU_printf (MPI_COMM_WORLD,"\nView Local Array - Processor [%d]\n",mytid);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.6 1995/08/22 02:45:51 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.7 1995/08/30 01:18:46 curfman Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   }
 
   ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,INSERTVALUES,global); CHKERRA(ierr);
+  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy); CHKERRA(ierr);
@@ -71,8 +71,8 @@ int main(int argc,char **argv)
   for (j=0; j<time_steps; j++) {  
 
     /* Global to Local */
-    ierr = DAGlobalToLocalBegin(da,global,INSERTVALUES,local); CHKERRA(ierr);
-    ierr = DAGlobalToLocalEnd(da,global,INSERTVALUES,local); CHKERRA(ierr);
+    ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+    ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
 
     /*Extract local array */ 
     ierr = VecGetArray(local,&localptr); CHKERRA(ierr);
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
     ierr = VecRestoreArray(copy,&copyptr); CHKERRA(ierr);
 
     /* Local to Global */
-    ierr = DALocalToGlobal(da,copy,INSERTVALUES,global); CHKERRA(ierr);
+    ierr = DALocalToGlobal(da,copy,INSERT_VALUES,global); CHKERRA(ierr);
   
     /* View Wave */ 
     ierr = VecView(global,(Viewer) win); CHKERRA(ierr);

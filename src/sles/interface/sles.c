@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.41 1995/09/07 04:27:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.42 1995/09/10 20:52:27 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -24,11 +24,11 @@ $       the file.  All other processors send their
 $       data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
-$    ViewerFileOpen() - output to a specified file
+$    ViewerFileOpenASCII() - output to a specified file
 
 .keywords: SLES, view
 
-.seealso: ViewerFileOpen()
+.seealso: ViewerFileOpenASCII()
 @*/
 int SLESView(SLES sles,Viewer viewer)
 {

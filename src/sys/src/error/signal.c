@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.17 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.18 1995/09/04 17:24:00 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -104,7 +104,9 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGFPE,  PetscSignalHandler );
     signal( SIGBUS,  PetscSignalHandler );
     signal( SIGSEGV, PetscSignalHandler );
+#if !defined(PARCH_linux)
     signal( SIGSYS,  PetscSignalHandler );
+#endif
 #endif
     SignalSet = 1;
   }
@@ -116,7 +118,9 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGBUS,  0 );
 #endif
     signal( SIGSEGV, 0 );
+#if !defined(PARCH_linux)
     signal( SIGSYS,  0 );
+#endif
     SignalSet = 0;
   }
   newsh = (struct SH*) PETSCMALLOC(sizeof(struct SH)); CHKPTRQ(newsh);
@@ -143,7 +147,9 @@ int PetscPopSignalHandler()
     signal( SIGBUS,  0 );
 #endif
     signal( SIGSEGV, 0 );
+#if !defined(PARCH_linux)
     signal( SIGSYS,  0 );
+#endif
     SignalSet = 0;
   }
   else {

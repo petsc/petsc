@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.17 1995/09/11 18:47:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.18 1995/09/12 03:25:20 bsmith Exp bsmith $";
 #endif
 
 
@@ -13,11 +13,12 @@ static char vcid[] = "$Id: mmaij.c,v 1.17 1995/09/11 18:47:52 bsmith Exp bsmith 
 int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat_SeqAIJ    *B = (Mat_SeqAIJ *) (aij->B->data);  
+  Mat_SeqAIJ *B = (Mat_SeqAIJ *) (aij->B->data);  
   int        N = aij->N,i,j,*indices,*aj = B->j;
   int        ierr,ec = 0,*garray;
   IS         from,to;
   Vec        gvec;
+  int        shift = B->indexshift;
 
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
@@ -25,8 +26,8 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   PETSCMEMSET(indices,0,N*sizeof(int));
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
-     if (!indices[aj[B->i[i] - 1 + j]-1]) ec++; 
-     indices[aj[B->i[i] - 1 + j]-1] = 1;}
+     if (!indices[aj[B->i[i] +shift + j] + shift]) ec++; 
+     indices[aj[B->i[i] + shift + j] + shift] = 1;}
   }
 
   /* form array of columns we need */
@@ -38,13 +39,13 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 
   /* make indices now point into garray */
   for ( i=0; i<ec; i++ ) {
-    indices[garray[i]] = i+1;
+    indices[garray[i]] = i-shift;
   }
 
   /* compact out the extra columns in B */
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
-      aj[B->i[i] - 1 + j] = indices[aj[B->i[i] - 1 + j]-1];
+      aj[B->i[i] + shift + j] = indices[aj[B->i[i] + shift + j]+shift];
     }
   }
   B->n = ec;
@@ -91,10 +92,11 @@ int DisAssemble_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) A->data;
   Mat        B = aij->B,Bnew;
-  Mat_SeqAIJ    *Baij = (Mat_SeqAIJ*)B->data;
+  Mat_SeqAIJ *Baij = (Mat_SeqAIJ*)B->data;
   int        ierr,i,j,m=Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
   int        *nz,ec;
   Scalar     v;
+  int        shift = Baij->indexshift;
 
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(aij->lvec,&ec); /* needed for PLogObjectMemory below */
@@ -117,10 +119,10 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,m,n,0,nz,&Bnew); CHKERRQ(ierr);
   PETSCFREE(nz);
   for ( i=0; i<m; i++ ) {
-    for ( j=Baij->i[i]-1; j<Baij->i[i+1]-1; j++ ) {
-      col = garray[Baij->j[ct]-1];
+    for ( j=Baij->i[i]+shift; j<Baij->i[i+1]+shift; j++ ) {
+      col = garray[Baij->j[ct]+shift];
       v = Baij->a[ct++];
-      ierr = MatSetValues(Bnew,1,&i,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
+      ierr = MatSetValues(Bnew,1,&i,1,&col,&v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
   PETSCFREE(aij->garray); aij->garray = 0;

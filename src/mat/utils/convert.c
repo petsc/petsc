@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.24 1995/09/11 18:49:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.25 1995/09/12 03:26:11 bsmith Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -160,7 +160,7 @@ int MatConvert_SeqAIJ(Mat mat, MatType newtype, Mat *newmat)
   ierr = MatGetOwnershipRange(*newmat,&rstart,&rend); CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     ierr = MatGetRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
-    ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,INSERTVALUES); 
+    ierr = MatSetValues(*newmat,1,&i,nz,cwork,vwork,INSERT_VALUES); 
            CHKERRQ(ierr);
     ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
@@ -193,7 +193,7 @@ int MatConvert_MPIAIJ(Mat mat, MatType newtype, Mat *newmat)
     ig   = i + rstart;
     ierr = MatGetRow(mat,ig,&nz,&cwork,&vwork);	CHKERRQ(ierr);
     ierr = MatSetValues(*newmat,1,&ig,nz,cwork,vwork,
-		INSERTVALUES); CHKERRQ(ierr);
+		INSERT_VALUES); CHKERRQ(ierr);
     ierr = MatRestoreRow(mat,ig,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);

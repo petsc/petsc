@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.57 1995/09/11 18:47:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.58 1995/09/12 03:25:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -308,7 +308,7 @@ static int MatInsert_SeqDense(Mat matin,int m,int *indexm,int n,
   int    i,j;
  
   if (!mat->roworiented) {
-    if (addv == INSERTVALUES) {
+    if (addv == INSERT_VALUES) {
       for ( j=0; j<n; j++ ) {
         for ( i=0; i<m; i++ ) {
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
@@ -324,7 +324,7 @@ static int MatInsert_SeqDense(Mat matin,int m,int *indexm,int n,
     }
   }
   else {
-    if (addv == INSERTVALUES) {
+    if (addv == INSERT_VALUES) {
       for ( i=0; i<m; i++ ) {
         for ( j=0; j<n; j++ ) {
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
@@ -648,7 +648,7 @@ static int MatGetSubMatrix_SeqDense(Mat matin,IS isrow,IS iscol,Mat *submat)
         vwork[nznew++] = val[j * mat->m];
       }
     }
-    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERTVALUES); 
+    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERT_VALUES); 
            CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -709,7 +709,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Mat *newmat)
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATSEQDENSE,comm);
   PLogObjectCreate(mat);
   l              = (Mat_SeqDense *) PETSCMALLOC(size); CHKPTRQ(l);
-  mat->ops       = &MatOps;
+  PETSCMEMCPY(&mat->ops,&MatOps,sizeof(struct _MatOps));
   mat->destroy   = MatDestroy_SeqDense;
   mat->view      = MatView_SeqDense;
   mat->data      = (void *) l;

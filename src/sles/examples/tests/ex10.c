@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.33 1995/09/11 18:49:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.34 1995/09/12 03:26:17 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -51,7 +51,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   for (i=rstart; i<rend; i++) {
     v = (Scalar)(i-rstart + 100*mytid); 
-    ierr = VecSetValues(u,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
+    ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
   } 
   ierr = VecAssemblyBegin(u); CHKERRA(ierr);
   ierr = VecAssemblyEnd(u); CHKERRA(ierr);
@@ -202,9 +202,9 @@ int AddElement(Mat mat,int r1,int r2,double **K,int h1,int h2)
 */
       if (PETSCABS(K[h1+l1][h2+l2]) != 0.0) {
         row = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2]; 
-	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
+	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES); CHKERRQ(ierr);
         row = r2+l2; col = r1+l1;
-	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADDVALUES); CHKERRQ(ierr);
+	ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES); CHKERRQ(ierr);
       }
     }
   }

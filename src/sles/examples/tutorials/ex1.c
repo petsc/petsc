@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.30 1995/08/23 17:17:49 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.31 1995/08/31 00:33:23 curfman Exp bsmith $";
 #endif
 
 static char help[] = "This example solves a tridiagonal linear system with SLES.\n\n";
@@ -30,12 +30,12 @@ int main(int argc,char **args)
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr = MatSetValues(A,1,&i,3,col,value,INSERTVALUES); CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
   }
   i = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERTVALUES); CHKERRA(ierr);
+  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERTVALUES); CHKERRA(ierr);
+  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);

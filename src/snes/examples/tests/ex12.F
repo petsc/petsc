@@ -59,8 +59,8 @@ C Store right-hand-side of PDE and exact solution
       do 10, i=0,nn-1
         FF = 6.d0*xp + (xp+1.d-12)**6.d0
         UU = xp*xp*xp
-        call VecSetValues(F,1,ii,FF,INSERTVALUES,ierr)
-        call VecSetValues(U,1,ii,UU,INSERTVALUES,ierr)
+        call VecSetValues(F,1,ii,FF,INSERT_VALUES,ierr)
+        call VecSetValues(U,1,ii,UU,INSERT_VALUES,ierr)
         xp = xp + h
         ii = ii + 1
  10   continue
@@ -74,7 +74,8 @@ C Create nonlinear solver
 
 C Set various routines
       call SNESSetSolution(snes,x,FormInitialGuess,0,ierr)
-      call SNESSetFunction(snes,r,FormFunction,ctx,1,ierr)
+      call SNESSetFunction(snes,r,FormFunction,ctx,
+     *                     NEGATIVE_FUNCTION_VALUE,ierr)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
 
 C Set up nonlinear solver; then execute it
@@ -114,8 +115,8 @@ C --------------------  Evaluate Function F(x) ---------------------
       mytid  = ctx(4)
       numtid = ctx(5)
       h = 1.d0/(ctx(6) - 1.d0)
-      call DAGlobalToLocalBegin(ctx(1),x,INSERTVALUES,ctx(3),ierr)
-      call DAGlobalToLocalEnd(ctx(1),x,INSERTVALUES,ctx(3),ierr)
+      call DAGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
+      call DAGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
 
       call VecGetLocalSize(ctx(3),n,ierr)
       if (n .gt. 1000) then 
@@ -184,7 +185,7 @@ C --------------------  Evaluate Jacobian F'(x) --------------------
 
       if (mytid .eq. 0) then
         A = 1.0 
-        call MatSetValues(jac,1,start,1,start,A,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,start,1,start,A,INSERT_VALUES,ierr)
         istart = 1
       else 
         istart = 0
@@ -192,7 +193,7 @@ C --------------------  Evaluate Jacobian F'(x) --------------------
       if (mytid .eq. numtid-1) then
         i = ctx(6)-1
         A = 1.0 
-        call MatSetValues(jac,1,i,1,i,A,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,i,1,i,A,INSERT_VALUES,ierr)
         iend = n-1
       else
         iend = n
@@ -200,11 +201,11 @@ C --------------------  Evaluate Jacobian F'(x) --------------------
       do 10 i=istart,iend-1
         ii = i + start
         j = start + i - 1 
-        call MatSetValues(jac,1,ii,1,j,d,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,ii,1,j,d,INSERT_VALUES,ierr)
         j = start + i + 1 
-        call MatSetValues(jac,1,ii,1,j,d,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,ii,1,j,d,INSERT_VALUES,ierr)
         A = -2.0*d + 2.0*xx(i+1)
-        call MatSetValues(jac,1,ii,1,ii,A,INSERTVALUES,ierr)
+        call MatSetValues(jac,1,ii,1,ii,A,INSERT_VALUES,ierr)
  10   continue
       call MatAssemblyBegin(jac,FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,FINAL_ASSEMBLY,ierr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.7 1995/09/07 22:36:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.8 1995/09/12 03:26:11 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -15,10 +15,12 @@ static char vcid[] = "$Id: matio.c,v 1.7 1995/09/07 22:36:56 bsmith Exp bsmith $
 #include "row.h"
 
 extern int MatLoad_MPIRowbs(Viewer,MatType,Mat *);
+extern int MatLoad_SeqAIJ(Viewer,MatType,Mat *);
 
 
 /* -------------------------------------------------------------------- */
 
+extern int MatGetFormatFromOptions_Private(MPI_Comm,MatType *,int *);
 
 /* @
    MatLoad - Loads a matrix that has been stored in binary format
@@ -53,18 +55,28 @@ extern int MatLoad_MPIRowbs(Viewer,MatType,Mat *);
 int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
 {
   PetscObject vobj = (PetscObject) bview;
+  int         ierr,set;
+  MatType     type;
   *newmat = 0;
+
+  PLogEventBegin(MAT_Load,bview,0,0,0);
+  ierr = MatGetFormatFromOptions_Private(vobj->comm,&type,&set); CHKERRQ(ierr);
+  if (!set) type = outtype;
 
   PETSCVALIDHEADERSPECIFIC(vobj,VIEWER_COOKIE);
   if (vobj->type != BINARY_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
-  if (outtype == MATMPIROWBS) {
-    return MatLoad_MPIRowbs(bview,outtype,newmat);
+  if (type == MATMPIROWBS) {
+    ierr = MatLoad_MPIRowbs(bview,type,newmat); CHKERRQ(ierr);
+  }
+  else if (type == MATSEQAIJ) {
+    ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
   }
   else {
     SETERRQ(1,"MatLoad: cannot load with that matrix type yet");
   }
 
+  PLogEventEnd(MAT_Load,bview,0,0,0);
   return 0;
 }

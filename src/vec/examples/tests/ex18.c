@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex18.c,v 1.4 1995/08/17 21:33:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.5 1995/09/11 18:45:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Compares BLAS dots on different machines. Input\n\
@@ -30,9 +30,9 @@ int main(int argc,char **argv)
 
   for ( i=0; i<n; i++ ) {
     v = ((double) i) + 1.0/(((double) i) + .35);
-    ierr = VecSetValues(x,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
+    ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
     v += 1.375547826473644376;
-    ierr = VecSetValues(y,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
+    ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(y); CHKERRA(ierr);
   ierr = VecAssemblyEnd(y); CHKERRA(ierr);
