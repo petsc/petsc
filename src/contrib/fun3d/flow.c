@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.16 2000/01/25 14:22:39 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.17 2000/01/25 20:57:49 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -12,7 +12,7 @@ and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 #include "user.h"
 
 #define ICALLOC(size,y) *(y) = (int*) PetscMalloc((PetscMax(size,1))*sizeof(int)); CHKPTRA(*(y))
-#define fcalloc(size,y) *(y) = (Scalar*) PetscMalloc((PetscMax(size,1))*sizeof(Scalar)); CHKPTRA(*(y))
+#define FCALLOC(size,y) *(y) = (Scalar*) PetscMalloc((PetscMax(size,1))*sizeof(Scalar)); CHKPTRA(*(y))
 /* These are hacks to get Fun3d to compile with version 2.0.24 and the master copy of PETSc */
 
 #if PETSC_VERSION_SUBMINOR >= 26  
@@ -565,7 +565,7 @@ int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,MatStructure *flag, void *du
      }
      ICALLOC(4*nnodes,&rows);
      ICALLOC(4*nnodes,&cols);
-     fcalloc(16*nnodes,&aij);
+     FCALLOC(16*nnodes,&aij);
      for (i = 0; i < nnodes; i++) { 
       in = 4*i;
       rows[0] = in; rows[1] = in+1; 
@@ -1057,9 +1057,9 @@ int GetLocalOrdering(GRID *grid)
 
  /* Renumber unit normals of dual face (from node1 to node2)
      and the area of the dual mesh face */
-  fcalloc(nedgeLocEst, &ftmp);
-  fcalloc(nedgeLoc, &ftmp1);
-  fcalloc(4*nedgeLoc, &grid->xyzn);
+  FCALLOC(nedgeLocEst, &ftmp);
+  FCALLOC(nedgeLoc, &ftmp1);
+  FCALLOC(4*nedgeLoc, &grid->xyzn);
   /* Do the x-component */
   i = 0; k = 0;
   remEdges = nedge;
@@ -1171,8 +1171,8 @@ int GetLocalOrdering(GRID *grid)
   /* Remap coordinates */
   /*nnodesLocEst = nnodes/CommSize;*/
   nnodesLocEst = PetscMin(nnodes,500000);
-  fcalloc(nnodesLocEst, &ftmp);
-  fcalloc(3*nvertices, &grid->xyz);
+  FCALLOC(nnodesLocEst, &ftmp);
+  FCALLOC(3*nvertices, &grid->xyz);
   remNodes = nnodes;
   i = 0;
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
@@ -1239,7 +1239,7 @@ int GetLocalOrdering(GRID *grid)
 
 
   /* Renumber dual volume */
-  fcalloc(nvertices, &grid->area);
+  FCALLOC(nvertices, &grid->area);
   remNodes = nnodes;
   i = 0;
   while (remNodes > 0) {
@@ -1275,10 +1275,10 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nnbound,   &grid->nnpts);
   ICALLOC(4*nnfacet, &grid->f2ntn);
   ICALLOC(nsnode, &grid->isnode);
-  fcalloc(nsnode, &grid->sxn);
-  fcalloc(nsnode, &grid->syn);
-  fcalloc(nsnode, &grid->szn);
-  fcalloc(nsnode, &grid->sa);
+  FCALLOC(nsnode, &grid->sxn);
+  FCALLOC(nsnode, &grid->syn);
+  FCALLOC(nsnode, &grid->szn);
+  FCALLOC(nsnode, &grid->sa);
   if (!rank) {
    ierr = PetscBinaryRead(fdes, (void *) grid->nntet, nnbound, PETSC_INT);CHKERRQ(ierr);
    ierr = PetscBinaryRead(fdes, (void *) grid->nnpts, nnbound, PETSC_INT);CHKERRQ(ierr);
@@ -1304,7 +1304,7 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(3*nnfacet, &tmp);
   ICALLOC(nsnode, &tmp1);
   ICALLOC(nnodes, &tmp2);
-  fcalloc(4*nsnode, &ftmp);
+  FCALLOC(4*nsnode, &ftmp);
   ierr = PetscMemzero(tmp,3*nnfacet*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemzero(tmp1,nsnode*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemzero(tmp2,nnodes*sizeof(int));CHKERRQ(ierr);
@@ -1350,10 +1350,10 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscFree(grid->sa);CHKERRQ(ierr);
   ICALLOC(4*nnfacetLoc, &grid->f2ntn);
   ICALLOC(nsnodeLoc, &grid->isnode);
-  fcalloc(nsnodeLoc, &grid->sxn);
-  fcalloc(nsnodeLoc, &grid->syn);
-  fcalloc(nsnodeLoc, &grid->szn);
-  fcalloc(nsnodeLoc, &grid->sa);
+  FCALLOC(nsnodeLoc, &grid->sxn);
+  FCALLOC(nsnodeLoc, &grid->syn);
+  FCALLOC(nsnodeLoc, &grid->szn);
+  FCALLOC(nsnodeLoc, &grid->sa);
   j = 0;
   for (i = 0; i < nsnodeLoc; i++) {
    grid->isnode[i] = tmp1[i] + 1;
@@ -1403,10 +1403,10 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nvbound,   &grid->nvpts);
   ICALLOC(4*nvfacet, &grid->f2ntv);
   ICALLOC(nvnode, &grid->ivnode);
-  fcalloc(nvnode, &grid->vxn);
-  fcalloc(nvnode, &grid->vyn);
-  fcalloc(nvnode, &grid->vzn);
-  fcalloc(nvnode, &grid->va);
+  FCALLOC(nvnode, &grid->vxn);
+  FCALLOC(nvnode, &grid->vyn);
+  FCALLOC(nvnode, &grid->vzn);
+  FCALLOC(nvnode, &grid->va);
   if (!rank) {
    ierr = PetscBinaryRead(fdes, (void *) grid->nvtet, nvbound, PETSC_INT);CHKERRQ(ierr);
    ierr = PetscBinaryRead(fdes, (void *) grid->nvpts, nvbound, PETSC_INT);CHKERRQ(ierr);
@@ -1433,7 +1433,7 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(3*nvfacet, &tmp);
   ICALLOC(nvnode, &tmp1);
   ICALLOC(nnodes, &tmp2);
-  fcalloc(4*nvnode, &ftmp);
+  FCALLOC(4*nvnode, &ftmp);
   ierr = PetscMemzero(tmp,3*nvfacet*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemzero(tmp1,nvnode*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemzero(tmp2,nnodes*sizeof(int));CHKERRQ(ierr);
@@ -1476,10 +1476,10 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscFree(grid->va);CHKERRQ(ierr);
   ICALLOC(4*nvfacetLoc, &grid->f2ntv);
   ICALLOC(nvnodeLoc, &grid->ivnode);
-  fcalloc(nvnodeLoc, &grid->vxn);
-  fcalloc(nvnodeLoc, &grid->vyn);
-  fcalloc(nvnodeLoc, &grid->vzn);
-  fcalloc(nvnodeLoc, &grid->va);
+  FCALLOC(nvnodeLoc, &grid->vxn);
+  FCALLOC(nvnodeLoc, &grid->vyn);
+  FCALLOC(nvnodeLoc, &grid->vzn);
+  FCALLOC(nvnodeLoc, &grid->va);
   j = 0;
   for (i = 0; i < nvnodeLoc; i++) {
    grid->ivnode[i] = tmp1[i] + 1;
@@ -1530,10 +1530,10 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nfbound,   &grid->nfpts);
   ICALLOC(4*nffacet, &grid->f2ntf);
   ICALLOC(nfnode, &grid->ifnode);
-  fcalloc(nfnode, &grid->fxn);
-  fcalloc(nfnode, &grid->fyn);
-  fcalloc(nfnode, &grid->fzn);
-  fcalloc(nfnode, &grid->fa);
+  FCALLOC(nfnode, &grid->fxn);
+  FCALLOC(nfnode, &grid->fyn);
+  FCALLOC(nfnode, &grid->fzn);
+  FCALLOC(nfnode, &grid->fa);
   if (!rank) {
    ierr = PetscBinaryRead(fdes, (void *) grid->nftet, nfbound, PETSC_INT);CHKERRQ(ierr);
    ierr = PetscBinaryRead(fdes, (void *) grid->nfpts, nfbound, PETSC_INT);CHKERRQ(ierr);
@@ -1559,7 +1559,7 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(3*nffacet, &tmp);
   ICALLOC(nfnode, &tmp1);
   ICALLOC(nnodes, &tmp2);
-  fcalloc(4*nfnode, &ftmp);
+  FCALLOC(4*nfnode, &ftmp);
   ierr = PetscMemzero(tmp,3*nffacet*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemzero(tmp1,nfnode*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemzero(tmp2,nnodes*sizeof(int));CHKERRQ(ierr);
@@ -1602,10 +1602,10 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscFree(grid->fa);CHKERRQ(ierr);
   ICALLOC(4*nffacetLoc, &grid->f2ntf);
   ICALLOC(nfnodeLoc, &grid->ifnode);
-  fcalloc(nfnodeLoc, &grid->fxn);
-  fcalloc(nfnodeLoc, &grid->fyn);
-  fcalloc(nfnodeLoc, &grid->fzn);
-  fcalloc(nfnodeLoc, &grid->fa);
+  FCALLOC(nfnodeLoc, &grid->fxn);
+  FCALLOC(nfnodeLoc, &grid->fyn);
+  FCALLOC(nfnodeLoc, &grid->fzn);
+  FCALLOC(nfnodeLoc, &grid->fa);
   j = 0;
   for (i = 0; i < nfnodeLoc; i++) {
    grid->ifnode[i] = tmp1[i] + 1;
@@ -1655,21 +1655,21 @@ int GetLocalOrdering(GRID *grid)
    grid->nvfacetLoc = nvfacetLoc;
    grid->nffacetLoc = nffacetLoc;
 /*
- * fcalloc(nvertices*4,  &grid->gradx);
- * fcalloc(nvertices*4,  &grid->grady);
- * fcalloc(nvertices*4,  &grid->gradz);
+ * FCALLOC(nvertices*4,  &grid->gradx);
+ * FCALLOC(nvertices*4,  &grid->grady);
+ * FCALLOC(nvertices*4,  &grid->gradz);
  */
-   fcalloc(nvertices,    &grid->cdt);
-   fcalloc(nvertices*4,  &grid->phi);
+   FCALLOC(nvertices,    &grid->cdt);
+   FCALLOC(nvertices*4,  &grid->phi);
 /*
-   fcalloc(nvertices,    &grid->r11);
-   fcalloc(nvertices,    &grid->r12);
-   fcalloc(nvertices,    &grid->r13);
-   fcalloc(nvertices,    &grid->r22);
-   fcalloc(nvertices,    &grid->r23);
-   fcalloc(nvertices,    &grid->r33);
+   FCALLOC(nvertices,    &grid->r11);
+   FCALLOC(nvertices,    &grid->r12);
+   FCALLOC(nvertices,    &grid->r13);
+   FCALLOC(nvertices,    &grid->r22);
+   FCALLOC(nvertices,    &grid->r23);
+   FCALLOC(nvertices,    &grid->r33);
 */
-   fcalloc(7*nnodesLoc,    &grid->rxy);
+   FCALLOC(7*nnodesLoc,    &grid->rxy);
 
 /* Print the different mappings
  *
@@ -2143,64 +2143,64 @@ PetscPrintf(MPI_COMM_WORLD, " nbface= %d\n", nbface);*/
    ICALLOC(nvface*2,  &grid->vface);
    ICALLOC(nfface*2,  &grid->fface);
    ICALLOC(lnodes,    &grid->icount);*/
-   /*fcalloc(nnodes,    &grid->x);
-   fcalloc(nnodes,    &grid->y);
-   fcalloc(nnodes,    &grid->z);
-   fcalloc(nnodes,    &grid->area);*/
+   /*FCALLOC(nnodes,    &grid->x);
+   FCALLOC(nnodes,    &grid->y);
+   FCALLOC(nnodes,    &grid->z);
+   FCALLOC(nnodes,    &grid->area);*/
 /*
- * fcalloc(nnodes*4,  &grid->gradx);
- * fcalloc(nnodes*4,  &grid->grady);
- * fcalloc(nnodes*4,  &grid->gradz);
- * fcalloc(nnodes,    &grid->cdt);
+ * FCALLOC(nnodes*4,  &grid->gradx);
+ * FCALLOC(nnodes*4,  &grid->grady);
+ * FCALLOC(nnodes*4,  &grid->gradz);
+ * FCALLOC(nnodes,    &grid->cdt);
  */
 /*
- * fcalloc(nnodes*4,  &grid->qnode);
- * fcalloc(nnodes*4,  &grid->dq);
- * fcalloc(nnodes*4,  &grid->res);
- * fcalloc(jalloc*nnodes*4*4, &grid->A);
- * fcalloc(nnodes*4,   &grid->B);
- * fcalloc(jalloc*nedge*4*4, &grid->dfp);
- * fcalloc(jalloc*nedge*4*4, &grid->dfm);
+ * FCALLOC(nnodes*4,  &grid->qnode);
+ * FCALLOC(nnodes*4,  &grid->dq);
+ * FCALLOC(nnodes*4,  &grid->res);
+ * FCALLOC(jalloc*nnodes*4*4, &grid->A);
+ * FCALLOC(nnodes*4,   &grid->B);
+ * FCALLOC(jalloc*nedge*4*4, &grid->dfp);
+ * FCALLOC(jalloc*nedge*4*4, &grid->dfm);
  */
-   /*fcalloc(nsnode,    &grid->sxn);
-   fcalloc(nsnode,    &grid->syn);
-   fcalloc(nsnode,    &grid->szn);
-   fcalloc(nsnode,    &grid->sa);
-   fcalloc(nvnode,    &grid->vxn);
-   fcalloc(nvnode,    &grid->vyn);
-   fcalloc(nvnode,    &grid->vzn);
-   fcalloc(nvnode,    &grid->va);
-   fcalloc(nfnode,    &grid->fxn);
-   fcalloc(nfnode,    &grid->fyn);
-   fcalloc(nfnode,    &grid->fzn);
-   fcalloc(nfnode,    &grid->fa);
-   fcalloc(nedge,     &grid->xn);
-   fcalloc(nedge,     &grid->yn);
-   fcalloc(nedge,     &grid->zn);
-   fcalloc(nedge,     &grid->rl);*/
+   /*FCALLOC(nsnode,    &grid->sxn);
+   FCALLOC(nsnode,    &grid->syn);
+   FCALLOC(nsnode,    &grid->szn);
+   FCALLOC(nsnode,    &grid->sa);
+   FCALLOC(nvnode,    &grid->vxn);
+   FCALLOC(nvnode,    &grid->vyn);
+   FCALLOC(nvnode,    &grid->vzn);
+   FCALLOC(nvnode,    &grid->va);
+   FCALLOC(nfnode,    &grid->fxn);
+   FCALLOC(nfnode,    &grid->fyn);
+   FCALLOC(nfnode,    &grid->fzn);
+   FCALLOC(nfnode,    &grid->fa);
+   FCALLOC(nedge,     &grid->xn);
+   FCALLOC(nedge,     &grid->yn);
+   FCALLOC(nedge,     &grid->zn);
+   FCALLOC(nedge,     &grid->rl);*/
 
-   fcalloc(nbface*15, &grid->us);
-   fcalloc(nbface*15, &grid->vs);
-   fcalloc(nbface*15, &grid->as);
+   FCALLOC(nbface*15, &grid->us);
+   FCALLOC(nbface*15, &grid->vs);
+   FCALLOC(nbface*15, &grid->as);
 /*
- * fcalloc(nnodes*4,  &grid->phi);
- * fcalloc(nnodes,    &grid->r11);
- * fcalloc(nnodes,    &grid->r12);
- * fcalloc(nnodes,    &grid->r13);
- * fcalloc(nnodes,    &grid->r22);
- * fcalloc(nnodes,    &grid->r23);
- * fcalloc(nnodes,    &grid->r33);
+ * FCALLOC(nnodes*4,  &grid->phi);
+ * FCALLOC(nnodes,    &grid->r11);
+ * FCALLOC(nnodes,    &grid->r12);
+ * FCALLOC(nnodes,    &grid->r13);
+ * FCALLOC(nnodes,    &grid->r22);
+ * FCALLOC(nnodes,    &grid->r23);
+ * FCALLOC(nnodes,    &grid->r33);
  */
 /*
  * Allocate memory for viscous length scale if turbulent 
  */
    if (grid->jvisc >= 3) {
-    fcalloc(tnode,   &grid->slen);
-    fcalloc(nnodes,  &grid->turbre);
-    fcalloc(nnodes,  &grid->amut);
-    fcalloc(tnode,   &grid->turbres);
-    fcalloc(nedge,   &grid->dft1);
-    fcalloc(nedge,   &grid->dft2);
+    FCALLOC(tnode,   &grid->slen);
+    FCALLOC(nnodes,  &grid->turbre);
+    FCALLOC(nnodes,  &grid->amut);
+    FCALLOC(tnode,   &grid->turbres);
+    FCALLOC(nedge,   &grid->dft1);
+    FCALLOC(nedge,   &grid->dft2);
    }
 /*
  * Allocate memory for MG transfer 
@@ -2221,14 +2221,14 @@ PetscPrintf(MPI_COMM_WORLD, " nbface= %d\n", nbface);*/
  * ICALLOC(nnodes,    &grid->cenc);
  * if (grid->iup == 1) {
  *    ICALLOC(mgzero*nnodes*3,  &grid->icoefup);
- *    fcalloc(mgzero*nnodes*3,  &grid->rcoefup);
+ *    FCALLOC(mgzero*nnodes*3,  &grid->rcoefup);
  * }
  * if (grid->idown == 1) {
  *    ICALLOC(mgzero*nnodes*3,  &grid->icoefdn);
- *    fcalloc(mgzero*nnodes*3,  &grid->rcoefdn);
+ *    FCALLOC(mgzero*nnodes*3,  &grid->rcoefdn);
  * }
- * fcalloc(nnodes*4,  &grid->ff);
- * fcalloc(tnode,     &grid->turbff);
+ * FCALLOC(nnodes*4,  &grid->ff);
+ * FCALLOC(tnode,     &grid->turbff);
  */
 /*
  * If using GMRES (nsrch>0) allocate memory
@@ -2236,10 +2236,10 @@ PetscPrintf(MPI_COMM_WORLD, " nbface= %d\n", nbface);*/
 /* NoEq = 0;
 *  if(nsrch > 0)NoEq = 4*nnodes;
 *  if(nsrch < 0)NoEq = nnodes;
-*  fcalloc(NoEq,           &grid->AP);
-*  fcalloc(NoEq,           &grid->Xgm);
-*  fcalloc(NoEq,           &grid->temr);
-*  fcalloc((abs(nsrch)+1)*NoEq, &grid->Fgm);
+*  FCALLOC(NoEq,           &grid->AP);
+*  FCALLOC(NoEq,           &grid->Xgm);
+*  FCALLOC(NoEq,           &grid->temr);
+*  FCALLOC((abs(nsrch)+1)*NoEq, &grid->Fgm);
 */
 /*
  * stuff to read in dave's grids
@@ -2346,7 +2346,7 @@ int write_fine_grid(GRID *grid)
 /*==========================================================================*/
 /*
 #undef __FUNC__
-#define __FUNC__ "fcalloc"
+#define __FUNC__ "FCALLOC"
 void fcalloc(int size,REAL **p)
 {
    int rsize;
