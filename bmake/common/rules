@@ -265,6 +265,6 @@ SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
 
 
 deleteshared: chkopts
-	$(RM) $(LDIR)/*.so.*  $(LDIR)/*.sl $(LDIR)/so_locations
+	$(RM) $(LDIR)/*.so*  $(LDIR)/*.sl $(LDIR)/so_locations
 
 noshared:
