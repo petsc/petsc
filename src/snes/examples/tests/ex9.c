@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.23 1997/01/01 03:41:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.24 1997/02/07 23:30:36 bsmith Exp balay $";
 #endif
 
 static char help[] =
@@ -115,14 +115,14 @@ int main( int argc, char **argv )
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i,j,k, loc, mx, my, mz, ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
-  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  double  one = 1.0, lambda, temp1, temp, Hx, Hy, HxdHy, HydHx,sc;
   Scalar  *x;
   Vec     localX = user->localX;
 
   mx	 = user->mx; my	 = user->my; mz = user->mz; lambda = user->param;
-  hx     = one / (double)(mx-1);     hy     = one / (double)(my-1);
-  sc     = hx*hy;
-  hxdhy  = hx/hy; hydhx  = hy/hx;
+  Hx     = one / (double)(mx-1);     Hy     = one / (double)(my-1);
+  sc     = Hx*Hy;
+  HxdHy  = Hx/Hy; HydHx  = Hy/Hx;
 
   ierr  = VecGetArray(localX,&x); CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
@@ -132,14 +132,14 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   for (k=zs; k<zs+zm; k++) {
     base1 = (Xm*Ym)*(k-Zs);
     for (j=ys; j<ys+ym; j++) {
-      temp = (double)(PetscMin(j,my-j-1))*hy;
+      temp = (double)(PetscMin(j,my-j-1))*Hy;
       for (i=xs; i<xs+xm; i++) {
         loc = base1 + i-Xs + (j-Ys)*Xm; 
         if (i == 0 || j == 0 || k == 0 || i==mx-1 || j==my-1 || k==mz-1) {
           x[loc] = 0.0; 
           continue;
         }
-        x[loc] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
+        x[loc] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*Hx,temp) ); 
       }
     }
   }
@@ -154,16 +154,16 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, k,loc, mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm;
   int     base1, base2;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hz, hxhzdhy, hyhzdhx,hxhydhz;
+  double  two = 2.0, one = 1.0, lambda,Hx, Hy, Hz, HxHzdHy, HyHzdHx,HxHydHz;
   Scalar  u, uxx, uyy, sc,*x,*f,uzz;
   Vec     localX = user->localX, localF = user->localF; 
 
   mx      = user->mx; my = user->my; mz = user->mz; lambda = user->param;
-  hx      = one / (double)(mx-1);
-  hy      = one / (double)(my-1);
-  hz      = one / (double)(mz-1);
-  sc      = hx*hy*hz*lambda; hxhzdhy  = hx*hz/hy; hyhzdhx  = hy*hz/hx;
-  hxhydhz = hx*hy/hz;
+  Hx      = one / (double)(mx-1);
+  Hy      = one / (double)(my-1);
+  Hz      = one / (double)(mz-1);
+  sc      = Hx*Hy*Hz*lambda; HxHzdHy  = Hx*Hz/Hy; HyHzdHx  = Hy*Hz/Hx;
+  HxHydHz = Hx*Hy/Hz;
 
   ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);
@@ -184,9 +184,9 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
         }
         else {
           u = x[loc];
-          uxx = (two*u - x[loc-1] - x[loc+1])*hyhzdhx;
-          uyy = (two*u - x[loc-Xm] - x[loc+Xm])*hxhzdhy;
-          uzz = (two*u - x[loc-Xm*Ym] - x[loc+Xm*Ym])*hxhydhz;
+          uxx = (two*u - x[loc-1] - x[loc+1])*HyHzdHx;
+          uyy = (two*u - x[loc-Xm] - x[loc+Xm])*HxHzdHy;
+          uzz = (two*u - x[loc-Xm*Ym] - x[loc+Xm*Ym])*HxHydHz;
           f[loc] = uxx + uyy + uzz - sc*exp(u);
         }
       }  
