@@ -138,6 +138,29 @@ class ArgBool(Arg):
     self.value = value
     return
 
+class ArgFuzzyBool(Arg):
+  '''Arguments that represent boolean values of an extended set'''
+  def __init__(self, key, value = None, help = '', isTemporary = 0):
+    Arg.__init__(self, key, value, help, isTemporary)
+    return
+
+  def getEntryPrompt(self):
+    return 'Please enter fuzzy boolean value for '+str(self.key)+': '
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    try:
+      if   value == 'no':    value = 0
+      elif value == 'yes':   value = 1
+      elif value == 'true':  value = 1
+      elif value == 'false': value = 0
+      elif value == 'maybe': value = 2
+      else:                  value = int(bool(value))
+    except:
+      raise TypeError('Invalid boolean value: '+str(value)+' for key '+str(self.key))
+    self.value = value
+    return
+
 class ArgInt(Arg):
   '''Arguments that represent integer numbers'''
   def __init__(self, key, value = None, help = '', min = -2147483647L, max = 2147483648L, isTemporary = 0):
@@ -213,6 +236,43 @@ class ArgDir(Arg):
     # Should check whether it is a well-formed path
     if self.mustExist and not os.path.isdir(value):
       raise TypeError('Invalid directory: '+str(value)+' for key '+str(self.key))
+    self.value = value
+    return
+
+class ArgDirList(Arg):
+  '''Arguments that represent directory lists'''
+  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
+    self.mustExist = mustExist
+    Arg.__init__(self, key, value, help, isTemporary)
+    return
+
+  def getEntryPrompt(self):
+    return 'Please enter directory list for '+str(self.key)+': '
+
+  def getValue(self):
+    '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
+    if not self.isValueSet():
+      try:
+        import GUI.FileBrowser
+        import SIDL.Loader
+        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
+        if self.help: db.setTitle(self.help)
+        else:         db.setTitle('Select the directory for '+self.key)
+        db.setMustExist(self.exist)
+        self.value = db.getDirectory()
+      except Exception:
+        return Arg.getValue(self)
+    return self.value
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    import os
+    if not isinstanceof(value, list):
+      value = [value]
+    # Should check whether it is a well-formed path
+    for dir in value:
+      if self.mustExist and not os.path.isdir(dir):
+        raise TypeError('Invalid directory: '+str(dir)+' for key '+str(self.key))
     self.value = value
     return
 
