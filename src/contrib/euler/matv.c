@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matv.c,v 1.3 1997/10/11 18:39:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: matv.c,v 1.4 1998/08/03 16:10:46 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -18,7 +18,7 @@ extern int MatView_Hybrid(Mat A,Viewer viewer)
   int         mod, bsize = 6, bsub, col, col1, base, ict;
 
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+  ierr = ViewerGetOutputname(viewer,&outputname); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   fprintf(fd,"\nFIRST SUBMATRIX\n");
   if (format == VIEWER_FORMAT_ASCII_COMMON) {
