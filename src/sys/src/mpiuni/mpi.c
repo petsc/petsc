@@ -2,7 +2,15 @@
 #include "petsc.h"
 #define MPI_SUCCESS 0
 void * MPID_TMP  = 0;
-int MPID_DUMMY =0;
+int _v_ = 0;
+void *MPID_DUMMY =(void *)&_v_;
+
+MPI_Attr_get( int comm, int key_val, void* attr_val, int* flg)
+{
+  *flg = 1;
+  (*(void**)attr_val)  = MPID_DUMMY;
+  return 0;
+}
 
 double MPI_Wtime()
 {

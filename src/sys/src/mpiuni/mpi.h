@@ -23,7 +23,7 @@ extern int abort();
 }
 #endif
 #endif
-extern int  MPID_DUMMY;
+extern void *MPID_DUMMY;
 extern void *MPID_TMP;
 extern double MPI_Wtime();
 
@@ -379,12 +379,13 @@ typedef char* MPI_Errhandler;
                       MPID_TMP = (void *) (keyval), \
                       MPID_TMP = (void *) (attribute_val), \
                       MPI_SUCCESS)
-#define MPI_Attr_get(comm, keyval, attribute_val, flag) \
+extern int  MPI_Attr_get(int, int, void*, int *);
+/*#define MPI_Attr_get(comm, keyval, attribute_val, flag) 
                       (MPID_TMP = (void *) (comm), \
                       MPID_TMP = (void *) (keyval), \
-                      *(attribute_val) = &MPID_DUMMY, \
-                      MPID_TMP = (void *) (flag), \
-                      MPI_SUCCESS) 
+                      *(attribute_val) = MPID_DUMMY, \
+                      *(flag) = 1, \
+                      MPI_SUCCESS) */
 #define MPI_Attr_delete(comm, keyval) MPI_SUCCESS
 #define MPI_Topo_test(comm, status) MPI_SUCCESS
 #define MPI_Cart_create(comm_old, ndims, dims, periods,\
