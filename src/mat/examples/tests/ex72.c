@@ -1,6 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex72.c,v 1.1 1999/02/05 22:48:06 balay Exp bsmith $";
+static char vcid[] = "$Id: ex72.c,v 1.2 1999/03/19 21:19:59 bsmith Exp balay $";
 #endif
+
+#if !defined(USE_PETSC_COMPLEX)
 
 static char help[] = "Reads in a Symmetric matrix in MatrixMarket format and writes\n\
 it using the PETSc sparse format. It also adds a Vector set to random values to the\n\
@@ -17,7 +19,7 @@ int main(int argc,char **args)
   Mat    A;
   Vec    b;
   char   filein[128],fileout[128],buf[128];
-  int    i, m, n, nnz, ierr, rank, size, col, row;
+  int    i, m, n, nnz, ierr, size, col, row;
   int    flg;
   Scalar val;
   FILE*  file;
@@ -74,4 +76,11 @@ int main(int argc,char **args)
   PetscFinalize();
   return 0;
 }
-
+#else
+#include <stdio.h>
+int main(int argc,char **args)
+{
+  fprintf(stdout,"This example does not work for complex numbers.\n");
+  return 0;
+}
+#endif
