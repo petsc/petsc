@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.132 2000/04/21 17:03:23 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.133 2000/04/22 04:57:32 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2359,6 +2359,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits;
   MPI_Status  recv_status;
+  PetscTruth  duplicate = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
@@ -2492,6 +2493,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
       if (local_inidy[i] != local_inidy[i+1]) {
         i++;
       } else { /* found a duplicate */
+        duplicate = PETSC_TRUE;
 	for (j=i; j<slen-1; j++) {
           local_inidx[j] = local_inidx[j+1];
           local_inidy[j] = local_inidy[j+1];
@@ -2501,7 +2503,10 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
         /* printf("found dup %d %d\n",local_inidx[i],local_inidy[i]);*/
       }
     }
-    start = count + 1;
+    start = count;
+  }
+  if (duplicate) {
+    PLogInfo(ctx,"VecScatterCreate_PtoP:Duplicate to from indices passed in VecScatterCreate(), they are ignored\n");
   }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,yin,ctx);CHKERRQ(ierr);
   ierr = PetscFree(local_inidx);CHKERRQ(ierr);
