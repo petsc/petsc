@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.98 1995/10/11 22:17:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.99 1995/10/13 02:05:33 curfman Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -118,7 +118,7 @@ static int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 
   ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
 
-  col_lens    = (int *) PETSCMALLOC( (4+a->nz)*sizeof(int) ); CHKPTRQ(col_lens);
+  col_lens    = (int *) PETSCMALLOC( (4+a->m )*sizeof(int) ); CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
   col_lens[1] = a->m;
   col_lens[2] = a->n;
@@ -940,6 +940,22 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
   return 0;
 }
 
+/*
+     note: this ignores row and col, should it generate an error if they
+   are passed in?
+*/
+static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill,Mat *outA)
+{
+  int ierr;
+
+  if (fill != 0) SETERRQ(1,"MatILUFactor_SeqAIJ:Only fill=0 supported");
+
+  *outA         = inA; 
+  (*outA)->factor = FACTOR_LU;
+  ierr = MatLUFactorNumeric_SeqAIJ(inA,outA); CHKERRQ(ierr);
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,int,Mat *);
 extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
@@ -965,7 +981,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatILUFactorSymbolic_SeqAIJ,0,
        0,0,MatConvert_SeqAIJ,
        MatGetSubMatrix_SeqAIJ,0,
-       MatCopyPrivate_SeqAIJ};
+       MatCopyPrivate_SeqAIJ,0,0,
+       MatILUFactor};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
