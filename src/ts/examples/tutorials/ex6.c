@@ -109,7 +109,7 @@ int main(int argc,char **argv)
  
   PetscInitialize(&argc,&argv,(char*)0,help);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
+  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
 
   m    = 60;
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);

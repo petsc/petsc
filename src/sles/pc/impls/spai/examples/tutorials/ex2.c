@@ -38,7 +38,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
 #if defined(USE_PETSC_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
+  SETERRQ(1,0,"This example does not work with complex numbers");
 #else
 
   /* 
@@ -46,7 +46,7 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = OptionsGetString(PETSC_NULL,"-f0",file,127,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
+  if (!flg) SETERRQ(1,0,"Must indicate binary file with the -f0 option");
 
 
   /* 

@@ -5,7 +5,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c util2.c ex7.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c util2.c ex7.c
 EXAMPLESF       = ex1f.F ex2f.F ex2f.h
 MANSEC          = TS
 
@@ -59,7 +59,7 @@ runex1f:
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex6.PETSc ex6.rm
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_4  =  
