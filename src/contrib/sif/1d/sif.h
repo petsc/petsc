@@ -22,6 +22,7 @@ C  routines in a Fortran program, e.g.,
 C     is.h     - index sets
 
 #include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/is.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/da.h"
 #include "include/FINCLUDE/mat.h"

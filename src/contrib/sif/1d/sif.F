@@ -1,5 +1,5 @@
 C
-C "$Id: sif.F,v 1.2 1997/10/14 19:39:34 bsmith Exp bsmith $";
+C "$Id: sif.F,v 1.3 1998/03/25 16:13:31 bsmith Exp $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -79,7 +79,7 @@ C  See the Fortran section of the PETSc users manual for details.
 
       integer           flg, ierr
       integer           time_steps, steps
-      double precision  dt, ftime, duration
+      double precision  dt, ftime, duration, errabs, errrel
       
       double precision  tda
 
@@ -104,7 +104,7 @@ C
 C  use -ts_max_steps and -ts_max_time to override limits
 C
       time_steps = 100000
-      duration   = 1.0e-4
+      duration   = 1
 C
       M          = 60
       debug      = 0
@@ -127,7 +127,7 @@ C
 
         str     = 0.0d0
         dep     = 0.0d0
-        tda     = 3.0d0
+        tda     =  3.1415926535898d0
         rpar(2) = - tan(1.57079632679490d0 - tda/2.0d0)
         rpar(4) = 1.0d0/sqrt(1.0d0 + rpar(2)**2)
         rpar(5) = 1.d0
@@ -185,10 +185,15 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create timestepping solver context; set various callback routines
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+      errabs = 1.d-6
+      errrel = 1.d-6
+      write (6,*) 'errabs, errrel = ', errabs, errrel
+1     format (1x,2e18.8)
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
       call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL,ierr)
       call TSSetType(ts,TS_PVODE,ierr)
+      call TSPvodeSetTolerance(ts,errabs,errrel,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix data structure; set Jacobian evaluation routine;
@@ -303,26 +308,15 @@ C     We initialize the solution array by simply writing the solution
 C     directly into the array locations.
 
        one  = 1.0d0
-       r1   = 1.d0
-       sqt  = sqrt(2.d0)
-       cp   = .05d0
        
-       rc       = - r1/sqt
-       rpar(6)  = rc
-       orig     = rc + sqrt(one - cp*cp)*r1
-       p1       = r1*r1
        if (mybase .eq. 1) then 
-         write (6,*) 'New origin at y=0 x=',rc
-         write (6,*) 'Radius =',r1
-         write (6,*) 'Centered at'
-         write (6,*) 'x =',rc,'  y = 0'
-         write (6,*) 'Initial neck/radius =',cp
+         write (6,*) 'Initial surface is a sinusoid curve'
        endif
 C
 C    Last value in vector gets funny non-pysical value
 C
        if (myend .eq. M) then
-         y(myend+1-mybase+idx) = orig
+         y(myend+1-mybase+idx) = 6.28318531d0 
          myend                 = myend - 1
        endif
 C
@@ -331,7 +325,7 @@ C    from mybase to myend and put in the initial condition
 C
        do 20 i=mybase,myend
          x                 = real(i-1)*h
-         y(i+1-mybase+idx) = sqrt(p1 - (x*orig - rc)**2)
+         y(i+1-mybase+idx) = cos(x*6.28318531d0)
  20    continue 
 
 
@@ -401,8 +395,8 @@ C  Print only from processor 0
       if (rank .eq. 0) then 
         write(6,100) step,time,nonlin,lin
       endif
- 100  format('Timestep = ',i5,', time = ',e9.3,' sec, Newton Steps = '
-     &       ,i5,' linear its = ',i5)
+ 100  format('Timestep = ',i6,', time = ',e16.8,' Newton Steps = '
+     &       ,i6,' linear its = ',i6)
 
       return
       end
@@ -643,9 +637,9 @@ c For the processor handling the end of symmetry.
 c
 c Fictitious points from symmetry
            p1  = - yneq*h
-           ym1 = sqrt(rpar(5) - (p1 - rpar(6))**2) 
+           ym1 = y(2)                              
            p1  =  p1*two  
-           ym2 = sqrt(rpar(5) - (p1 - rpar(6))**2) 
+           ym2 = y(3)                              
 c
            d1  = (y(1) - ym2)*d1p1
            d2  = (ym2 - two*ym1 + y(1))*hi2
