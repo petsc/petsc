@@ -3,8 +3,7 @@
 import os
 import sys
 
-
-if __name__ == '__main__':
+def runinstaller():
   import setuprc
   setuprc.setupRC(os.path.split(os.path.abspath(os.path.dirname(sys.modules['setuprc'].__file__)))[0])
 
@@ -27,3 +26,6 @@ if __name__ == '__main__':
       if installer.checkBootstrap():
         raise RuntimeError('Should not still be bootstraping')
       installer.install(url)
+  
+if __name__ == '__main__':
+  runinstaller()
