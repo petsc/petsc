@@ -1,4 +1,4 @@
-# $Id: common,v 1.198 1997/10/08 03:33:46 bsmith Exp balay $ 
+# $Id: common,v 1.199 1997/10/08 14:42:35 balay Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -371,6 +371,19 @@ countfunctions: chkpetsc_dir
            grep "define __FUNC__" $$i | cut -f2 -d\" >> $(PDIR)/countfunctions ; \
           fi; done ; \
         fi
+checkbadPetscFunctionBegin:
+	-@if [ "$(SOURCEC)" != "" ] ; then \
+	$(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) \
+	checkbadPetscFunctionBegin_private ; fi
+
+checkbadPetscFunctionBegin_private:
+	-@for filename in $(SOURCEC) ; do \
+	a=`grep '#define __FUNC__' $$filename | wc -l`; \
+	b=`grep 'PetscFunctionBegin' $$filename | wc -l`; \
+	if [ $$a -ne $$b ] ; then \
+	echo "$$filename: __FUNC__ = $$a; PetscFunctionBegin = $$b" ; \
+	fi; \
+	done
 # -------------------------------------------------------------------------------
 
 SHLIBS = libmpiuni libpetsccontrib libpetscmat libpetscsles \
