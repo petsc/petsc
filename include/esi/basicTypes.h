@@ -56,19 +56,6 @@ typedef enum { PRECONDITIONER_LEFT,
 #define ESI_PRECISION_CHARS 10
 typedef char Precision[ESI_PRECISION_CHARS];
 
-/* Since const is in disfavor, (see http://z.ca.sandia.gov/~esi-dev)
- * we have the following define to preserve visual hints regarding
- * what is in vs out/inout in some sIDLized future.
- * This is easier than trying to go back and rediscover what we think
- * should be "in" later.
- * C/C++ compilers will not see const any more this way.
- * Anywhere in a prototype that you have the urge to put const
- * or hint to developers that 'mathematically' an object is invariant
- * in its use, stick a CONST in front of it (or after in the case of
- * member functions in C++).
- */
-#define CONST
-
 #ifdef __cplusplus
 #define VD(cppclass) virtual ~cppclass(){}
 #endif /* __cplusplus */
@@ -76,7 +63,11 @@ typedef char Precision[ESI_PRECISION_CHARS];
 /* esi long is 64 bits. changes this define to whatever you must
    to make that true.
 */
+#if defined(PARCH_win32)
+#define ESI_long __int64
+#else
 #define ESI_long long long
+#endif
 
 /* ESI_int is the machine definition of int (which may vary in size*/
 #define ESI_int int
@@ -126,7 +117,11 @@ typedef struct {float a; float b;} complex8;
 #endif
 
 #if (SIZEOF_LONG_LONG == 8)
-typedef long long int8;
+#if defined(PARCH_win32)
+ typedef __int64 int8;
+#else
+ typedef long long int8;
+#endif
 #define ESI_HAVE_INT8 1
 #define ESI_INT8_MAX         (9223372036854775807LL)
 #endif
