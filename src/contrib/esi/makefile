@@ -1,17 +1,11 @@
-# $Id: makefile,v 1.36 1999/01/27 19:45:44 bsmith Exp bsmith $
+# $Id: makefile,v 1.1 1999/01/28 22:33:30 bsmith Exp bsmith $
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = vector.c map.c vnake.c
-SOURCEF  =
-SOURCEH  = 
-OBJSC    = vector.o map.o vnake.o
-OBJSF    =
-LIBBASE  = libpetscvec
-MANSEC   = 1
-LOCDIR   = src/vec/interface/
+DIRS     = src tests include
+LOCDIR   = src/contrib/esi/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/bmake/common_test
+
 
