@@ -1,3 +1,302 @@
+%
+%   Contains all papers that we are aware of that reference PETSc (including our own)
+%  Other entries belong in petsc.bib
+%
+
+@Article{chan95,
+  author    = "T. Chan and B. Smith and J. Zou",
+  title     = "Overlapping {S}chwarz Methods
+              on Unstructured Meshes using Non-matching Coarse Grids",
+  journal =   "Numer. Math.",
+  year      = "1995",
+  volume    = "73",
+  pages     = "149--167"
+}
+
+@Unpublished{mmmdcmaa-web-page,
+  title = 	 "{M}ulti-{M}odel {M}ulti-{D}omain {C}omputational {M}ethods in {A}erodynamics and {A}coustics {W}eb Page",
+  note = 	 "http://www.cs.odu.edu/\~{ }keyes/nsf",
+  author =      "David E. {Keyes et al.}",
+  Institution = "Old Dominion University",
+}
+
+
+@INPROCEEDINGS{ gropp98,
+ AUTHOR=    "William Gropp",
+ TITLE=     "Exploiting Existing Software in Libraries: Successes, Failures, and Reasons Why",
+ PUBLISHER= "SIAM",
+ BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
+                Inter-operable Scientific and Engineering Computing",
+ year      = 1999,
+ pages     = "21-29",
+}
+
+@INPROCEEDINGS{ hovland_norris_smith98,
+ AUTHOR=    "Paul Hovland and Boyana Norris and Barry Smith",
+ TITLE=     "Developing a Derivative-Enhanced Object-Oriented Toolkit for Scientific Computations",
+ PUBLISHER= "SIAM",
+ BOOKTITLE= "Proceedings of the SIAM Workshop on Object Oriented Methods for
+                Inter-operable Scientific and Engineering Computing",
+ year      = 1999,
+ pages     = "129-137"
+}
+
+
+@InProceedings{kks,
+  author =       {Dinesh Kaushik and David Keyes and Barry Smith},
+  title =        {On the Interaction of Architecture and 
+              Algorithm in the Domain Based Parallelism of an Unstructured Grid Incompressible
+              Flow Code},
+  booktitle = "Domain Decomposition Methods 10",
+  publisher = "AMS",
+  pages = "287--295",
+  year      = 1998
+}
+
+@InProceedings{efficient,
+  author    = "Satish Balay and William D. Gropp and Lois Curfman
+                  McInnes and Barry F. Smith",
+  title     = "Efficient Management of Parallelism in 
+               Object Oriented Numerical Software Libraries",
+  booktitle = "Modern Software Tools in Scientific Computing",
+  editor    = "E. Arge and A. M. Bruaset and H. P. Langtangen",
+  publisher = "Birkhauser Press",
+  pages     = "163--202",
+  year      = 1997,
+}
+
+		  
+@BOOK{1sbg,
+      AUTHOR="Barry F. Smith and Petter Bj{\o}rstad and William Gropp",
+      TITLE="Domain Decomposition: Parallel Multilevel Methods for Elliptic 
+             Partial Differential Equations",
+      YEAR="1996",
+      PUBLISHER="Cambridge University Press"
+      }
+
+@TechReport( petsc-user-ref,
+    Author = "Satish Balay and William D. Gropp and Lois Curfman McInnes
+		  and Barry F. Smith",
+    Title  = "{PETS}c 2.0 Users Manual",
+    Institution = "Argonne National Laboratory",
+    Month  = Mar,
+    Year   = 2000,
+    Number = "ANL-95/11 - Revision 2.0.28"
+    )
+
+
+@Unpublished{ petsc-mpi-paper,
+    Author = "Lois Curfman McInnes and Barry F. Smith",
+    Title  = "{PETS}c 2.0: A Case Study of Using {MPI} to Develop Numerical 
+              Software Libraries",
+    Note   = "{\em Proceedings of the MPI Developers
+              Conference}, Notre Dame, IN",
+    Month  = Jun,
+    Year   = "1995"
+}
+
+@Unpublished{ petsc-web-page,
+  Author = "Satish Balay and William D. Gropp and Lois Curfman McInnes
+		  and Barry F. Smith",
+  title = 	 "{PETSc} {W}eb page",
+  note = 	 "See {\tt http://www.mcs.anl.gov/\-petsc}",
+}
+
+@INPROCEEDINGS{ miss-paper,
+ AUTHOR=    "William D. Gropp and Barry F. Smith",
+ TITLE=     "Scalable, Extensible, and Portable
+              Numerical Libraries",
+ PUBLISHER= "IEEE",
+ YEAR=      "1994",
+ BOOKTITLE= "Proceedings of the Scalable Parallel Libraries Conference",
+ ADDRESS=   "Mississippi State University",
+ pages=     "87--93",
+ keyword=   "numerical libraries, scientific computing, parallel computing"
+}
+
+@INPROCEEDINGS{ snes-paper,
+ AUTHOR=    "William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
+ TITLE=     "Scalable Libraries for Solving Systems of Nonlinear Equations
+             and Unconstrained Minimization Problems",
+ PUBLISHER= "IEEE",
+ YEAR=      "1995",
+ BOOKTITLE= "Proceedings of the Scalable Parallel Libraries Conference",
+ ADDRESS=   "Mississippi State University",
+ pages=     "60-67",
+ keyword=   "nonlinear equations, optimization, superconductivity, parallel 
+             computing"
+}
+
+@article( dsneutral,
+    Author = "Barry F. Smith and William D. Gropp",
+    Title  = "The design of data-structure-neutral libraries for the iterative
+		solution of sparse linear systems",
+    Year   = 1996,
+    Journal = "Scientific Programming",
+    Volume = 5,
+    pages  = "329--336",
+    Key    = "GroppSmith96 ! KSP design",
+    )
+
+@inproceedings{ coral1,
+   AUTHOR	= "L. Kettunen and K. Forsman and D. Levine and W. Gropp",
+   TITLE	= "Solutions of TEAM Problem \#13 Using Integral Equations 
+                   in a Sequential and Parallel Computing Environment",
+   BOOKTITLE	= "Proceedings of the Miami TEAM Workshop",
+   LOCATION     = "Florida International University, Department of Electrical
+                   Engineering and Computing Science",
+   MONTH        = Nov,
+   YEAR		= 1993
+   }
+
+@inproceedings{ coral2,
+   AUTHOR	= "L. Kettunen and K. Forsman and D. Levine and W. Gropp",
+   TITLE	= "Solutions of TEAM Problems 13 and 20 Using a Volume 
+                   Integral Formulation",
+   BOOKTITLE	= "Proceedings of Aix-les-Bains TEAM Workshop",
+   MONTH        = Dec,
+   YEAR		= 1994
+   }
+
+@inproceedings{ coral3,
+   AUTHOR	= "L. Kettunen and K. Forsman and D. Levine and W. Gropp",
+   TITLE	= "Computational Electromagnetics and Parallel Dense
+                   Matrix Computations",
+   BOOKTITLE	= "Proceedings of the SIAM Parallel Processing for 
+                   Scientific Computing Conference",
+   LOCATION     = "Florida International University, Department of Electrical
+                   Engineering and Computing Science",
+   YEAR		= 1995
+   }
+
+@TechReport(petsc_tidriri95,
+    Author = "M. D. Tidriri",
+    Title  = "Krylov Methods for Compressible Flows",
+    Institution = "ICASE",
+    Month  = Jun,
+    Year   = 1995,
+    Number = "95-48"
+    )
+
+@INPROCEEDINGS{ pcfd97,
+ AUTHOR=    "William D. Gropp and David E. Keyes and Lois Curfman McInnes and M. D. Tidriri",
+ TITLE=     "Parallel Implicit {PDE} Computations: Algorithms and Software",
+ PUBLISHER= "Elsevier",
+ YEAR=      "1998",
+ BOOKTITLE= "Proceedings of Parallel CFD'97",
+ pages =    "333-344"
+}
+
+@Article{gkmt98,
+    Author = "William D. Gropp and David E. Keyes and Lois Curfman McInnes and M. D. Tidriri",
+    Title  = "Globalized {N}ewton-{K}rylov-{S}chwarz Algorithms and Software
+              for Parallel Implicit {CFD}",
+    journal = "Int. J. High Performance Computing Applications",
+    year    = 2000,
+    note   = "To appear (also ICASE Technical Report 98-24)"
+}
+
+@inproceedings{bgms98,
+ author=     "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
+ title=      "A Microkernel Design for Component-based Parallel Numerical Software Systems",
+ booktitle = "Proceedings of the SIAM Workshop on Object Oriented Methods for
+              Inter-operable Scientific and Engineering Computing",
+ publisher = "SIAM",
+ pages     = "58-67",
+ note=     "(Also available as Argonne preprint ANL/MCS-P727-0998)",
+ year=       "1998"
+}
+
+% -----------------------------------------------------------------------------------------------
+%  Fun3d-PETSc
+%
+
+@INPROCEEDINGS{AGKKS-SC99,  
+        AUTHOR = "W. K. Anderson and W. D. Gropp and D. K. Kaushik
+                  D. E. Keyes and B. F. Smith",
+        TITLE = "Achieving High Sustained Performance in an 
+                 Unstructured Mesh {CFD} Application",
+        BOOKTITLE = "Proceedings of SC 99",
+        EDITOR = "",
+        PUBLISHER = "",
+        NOTE = "To appear",
+        YEAR = "1999" } 
+@INPROCEEDINGS{GKKS-PCFD99,  
+        AUTHOR = "W. D. Gropp and D. K. Kaushik and 
+                  D. E. Keyes and B. F. Smith",
+        TITLE = "Toward Realistic Performance Bounds for Implicit {CFD} codes",
+        BOOKTITLE = "Proceedings of Parallel CFD'99",
+        EDITOR = "A. Ecer et al.",
+        PUBLISHER = "Elsevier",
+        NOTE = "To appear",
+        YEAR = "1999" } 
+@INPROCEEDINGS{KKS97,  
+        AUTHOR = "D. K. Kaushik and D. E. Keyes and B. F. Smith",
+        TITLE = "On the Interaction of Architecture and Algorithm in the 
+                 Domain-Based Parallelization of an Unstructured Grid 
+                 Incompressible Flow Code",
+        BOOKTITLE = "Proceedings of the 10th International Conference on 
+                     Domain Decomposition Methods",
+        EDITOR = "J. Mandel et al.",
+        PAGES = "311--319",
+        PUBLISHER = "Wiley",
+        NOTE = "",
+        YEAR = "1997" } 
+@INPROCEEDINGS{KKS99,  
+        AUTHOR = "D. K. Kaushik and D. E. Keyes and B. F. Smith",
+        TITLE = "{N}ewton-{K}rylov-{S}chwarz Methods for Aerodynamic Problems: Compressible
+                 and Incompressible Flows on Unstructured Grids",
+        BOOKTITLE = "Proceedings of the 11th International Conference on 
+                     Domain Decomposition Methods",
+        EDITOR = "C.-H. Lai et al.",
+        PUBLISHER = "Domain Decomposition Press, Bergen",
+        NOTE = "To appear",
+        YEAR = "1999" } 
+@INCOLLECTION{KKS97_cfd,
+     AUTHOR = "D. E. Keyes and D. K. Kaushik and B. F. Smith",
+     TITLE = "Perspective for CFD on Petsflops Systems",
+     BOOKTITLE = "CFD Review 1998",
+     EDITOR = "M. Hafez and K. Oshima",
+     PUBLISHER = "World Scientific, Singapore",
+     PAGES = "1079--1096",
+     NOTE = "",
+     YEAR = "1998" }
+
+@Article{hkm98,
+  author    = "M. E. Hayder and D. E. Keyes and P. Mehrotra",
+  title     = "A Comparison of the {PETSc} Library and {HPF} Implementations of 
+               an Archetypal {PDE} Computation",
+  journal   = "Advances in Engineering Software",
+  volume    = 29,
+  pages     = "415-424",
+  year      = 1998
+}
+
+@techreport{pdpta99,
+ AUTHOR=    "L. A. Freitag and W. D. Gropp and P. D. Hovland and L. C. McInnes and B. F. Smith",
+ TITLE=     "Infrastructure and Interfaces for Large-Scale Numerical Software",
+ note        = "(To appear in the Proceedings of the 1999 International Conference 
+               on Parallel and Distributed Processing Techniques and Applications, 
+               June 28 - July 1, 1999, Las Vegas, Nevada)",
+ institution =  "Mathematics and Computer Science Division, Argonne National Laboratory",
+ number      =     "ANL/MCS-P751-0599",
+ year      = 1999,
+}
+
+@Unpublished{tao-web-page,
+  title   = "{Toolkit for Advanced Optimization (TAO)} {W}eb Page",
+  author  = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
+  note    = "See {\tt http://www.mcs.anl.gov/tao}",
+}
+
+@techreport{ bmm99,
+ Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
+ TITLE       = "{GPCG}: A case study in the performance and scalability of optimization algorithms",
+ year        = 1999,
+ INSTITUTION = "Mathematics and Computer Science Division, Argonne National Laboratory",
+ number      = "ANL/MCS-P768-0799"
+}
+
 @InProceedings{Beaudoin98,
   author = 	 {A. J. Beaudoin},
   title = 	 {Use of Polycrystal Plasticity Theory in Assessing Material Performance},
@@ -35,21 +334,6 @@
   key         = "University of Texas at Austin and Argonne National Laboratory",
 }
 
-@Unpublished{spai-web-page,
-  title = 	 "{SPAI} {W}eb {P}age",
-  note = 	"http://www.sam.math.ethz.ch/\~{ }grote/spai/",
-  author      = "Steven Bernard and Marcus Grote",
-  institution = "NASA Ames Research Center and ETH Zurich"
-}
-
-@article( gh97,
-    Author  = "M. J. Grote and T. Huckle",
-    Title   = "Parallel Preconditioning with Sparse Approximate Inverses",
-    Year    = 1997,
-    Journal = "SIAM J. of Scient. Comput.",
-    Volume  = 18,
-    pages   = "838-853"
-    )
 
 @Unpublished{parpre-web-page,
   title       = "{ParPre} {W}eb {P}age",
@@ -262,21 +546,3 @@
   Institution = "Oakland University",
 }
 
-@article( zhang96,
-    Author = "Wen Zhang",
-    Title  = "Using {MOL} to Solve a high order nonlinear {PDE} with a moving
-         boundary in the simulation of a sintering process", 
-    Year   = 1996,
-    Journal = "Appl. Numer. Math.",
-    Volume = 20,
-    pages  = "235-244",
-    )
-
-@article( zhang98,
-    Author = "Wen Zhang and Ian Gladwell",
-    Title  = "The sintering of two particles by surface and grain boundary
-         diffusion - a three-dimensional numerical study",
-    Journal = "Comp. Mater. Sci.",
-    year = 1998,
-    volume = 12
-    )
