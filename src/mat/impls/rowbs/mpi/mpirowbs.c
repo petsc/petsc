@@ -1445,7 +1445,7 @@ int MatSetUpPreallocation_MPIRowbs(Mat A)
 
 /* -------------------------------------------------------------------*/
 EXTERN int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
-EXTERN int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,PetscReal,int,Mat *);
+EXTERN int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,MatFactorInfo*,Mat *);
 EXTERN int MatLUFactorNumeric_MPIRowbs(Mat,Mat*);
 EXTERN int MatILUFactorSymbolic_MPIRowbs(Mat,IS,IS,MatFactorInfo*,Mat *);
 EXTERN int MatSolve_MPIRowbs(Mat,Vec,Vec);
