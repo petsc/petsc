@@ -32,7 +32,7 @@ class Make(script.Script):
     oldDir = os.getcwd()
     os.chdir(path)
     make   = self.getModule(path, 'make').Make()
-    make.run()
+    make.run(setupOnly = 1)
     os.chdir(oldDir)
     return make
 
@@ -130,7 +130,7 @@ class Make(script.Script):
     sourceDB.save()
     return
 
-  def build(self, builder):
+  def build(self, builder, setupOnly = 0):
     '''Override this method to execute all build operations. This method does nothing.'''
     return
 
@@ -157,11 +157,11 @@ class Make(script.Script):
     if section.__doc__: self.logWrite('  '+section.__doc__+'\n')
     return section(*args)
 
-  def run(self):
+  def run(self, setupOnly = 0):
     self.setup()
     self.logPrint('Starting Build', debugSection = 'build')
     self.executeSection(self.configure, self.builder)
-    self.build(self.builder)
+    self.build(self.builder, setupOnly)
     self.updateDependencies(self.builder.sourceDB)
     self.executeSection(self.install, self.builder, self.argDB)
     self.logPrint('Ending Build', debugSection = 'build')
@@ -613,7 +613,7 @@ class SIDLMake(Make):
         self.executeSection(getattr(self, 'setup'+language+'Client'), builder, f, language)
     return
 
-  def build(self, builder):
+  def build(self, builder, setupOnly = 0):
     import shutil
 
     self.setupBootstrap(builder)
@@ -623,17 +623,18 @@ class SIDLMake(Make):
         self.executeSection(getattr(self, 'setup'+language+'Server'), builder, f, language)
       for language in self.clientLanguages:
         self.executeSection(getattr(self, 'setup'+language+'Client'), builder, f, language)
-      # We here require certain keys to be present in generatedSource, e.g. 'Server IOR Python'.
-      # These keys can be checked for, and if absent the SIDL file would be compiled
-      generatedSource = self.executeSection(self.buildSIDL, builder, f)
-      for language in self.serverLanguages:
-        self.executeSection(getattr(self, 'build'+language+'Server'), builder, f, language, generatedSource)
-      for language in self.clientLanguages:
-        self.executeSection(getattr(self, 'build'+language+'Client'), builder, f, language, generatedSource)
-      self.argDB.save(force = 1)
-      shutil.copy(self.argDB.saveFilename, self.argDB.saveFilename+'.bkp')
-      builder.sourceDB.save()
-      shutil.copy(str(builder.sourceDB.filename), str(builder.sourceDB.filename)+'.bkp')
+      if not setupOnly:
+        # We here require certain keys to be present in generatedSource, e.g. 'Server IOR Python'.
+        # These keys can be checked for, and if absent the SIDL file would be compiled
+        generatedSource = self.executeSection(self.buildSIDL, builder, f)
+        for language in self.serverLanguages:
+          self.executeSection(getattr(self, 'build'+language+'Server'), builder, f, language, generatedSource)
+        for language in self.clientLanguages:
+          self.executeSection(getattr(self, 'build'+language+'Client'), builder, f, language, generatedSource)
+        self.argDB.save(force = 1)
+        shutil.copy(self.argDB.saveFilename, self.argDB.saveFilename+'.bkp')
+        builder.sourceDB.save()
+        shutil.copy(str(builder.sourceDB.filename), str(builder.sourceDB.filename)+'.bkp')
     return
 
   def install(self, builder, argDB):
