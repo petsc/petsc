@@ -209,6 +209,17 @@ class Configure(config.base.Configure):
         if self.framework.argDB['FFLAGS_O']   == 'Unknown':
           self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
 
+    # does C++ compiler (IBM's xlC) need special for .c files as c++?
+    self.pushLanguage('C++')
+    self.compilerSource = 'conftest.c'
+    if not self.checkCompile('class somename { int i; };'):
+      oldFlags = self.framework.argDB['CXXFLAGS']
+      self.framework.argDB['CXXFLAGS'] = oldFlags+' -+'
+      if not self.checkCompile('class somename { int i; };'):
+        self.framework.argDB['CXXFLAGS'] = oldFlags
+    self.popLanguage()
+
+
     self.addSubstitution('C_VERSION',   self.framework.argDB['C_VERSION'])
     self.addSubstitution('CFLAGS_g',    self.framework.argDB['CFLAGS_g'])
     self.addSubstitution('CFLAGS_O',    self.framework.argDB['CFLAGS_O'])
