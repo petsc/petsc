@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.88 1999/06/08 22:56:43 balay Exp balay $";
+static char vcid[] = "$Id: pcset.c,v 1.89 1999/06/30 23:52:44 balay Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -93,9 +93,7 @@ int PCSetType(PC ctx,PCType type)
   ctx->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
   ierr = (*r)(ctx);CHKERRQ(ierr);
 
-  if (ctx->type_name) {ierr = PetscFree(ctx->type_name);CHKERRQ(ierr);}
-  ctx->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
-  ierr = PetscStrcpy(ctx->type_name,type);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
