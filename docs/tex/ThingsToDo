@@ -11,26 +11,40 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
+ (Barry)  - Have all preconditioners (including LU) support null space, see 
+            tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
+
+ (Bill)   - Make configure fully functional in PETSc 2.0
+
   - Chapter in users manual on how PETSc would be used with 
     different types of grid problems.
 
-  - Section on ASM in users manual.
+  - Make sure all Fortran examples run for complex on all machines, note
+    this means the bmake files must insure that -DPETSC_COMPLEX is 
+    properly set.
 
   - Fix bfort so that it correctly deals with PetscRandom. 
 
-  X Fortran doesn't read aliases from .petscrc
+  - Note fixes needed for ICASE SP (poseidon) in petsc/src/sys/src/mtr.c
+    and petsc/src/viewer/impls/matlab/send.c
 
   - Do something about viewer formats - maybe use enum?
     Make ViewerGetFormat() a real public routine (seems good to me); else
     make it obviously private.
 
-  - Fix Machines file info for IRIX64.
-  X Debugger info? fixed. 
-
+   * Test PETSc with LAM.
+    
   - Fix binary I/O for complex numbers.
 
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David.
+
+  - Fix Machines file info for IRIX64.
+  X Debugger info? fixed. 
+
+  X Fortran doesn't read aliases from .petscrc
+
+  X Section on ASM in users manual.
 
   X Make a SNESMonitor() like the KSPMonitor() in kspimpl.h and 
     insure that it is sued everywhere instead of calls to (*snes->monitor)
@@ -38,9 +52,6 @@ Additional Capabilities that PETSc Needs:
   X Make -snes_xmonitor stash the DrawLG in SNES and then have it 
     destroyed in SNESDestroy(), like as is done for KSP.
 
-  - Make sure all Fortran examples run for complex on all machines, note
-    this means the bmake files must insure that -DPETSC_COMPLEX is 
-    properly set.
 
   X Make a -ksp monitor that displays residual and true residual, like 
     the -ksp_bsmonitor. Added -ksp_truemonitor and -ksp_xtruemonitor
@@ -75,19 +86,10 @@ Additional Capabilities that PETSc Needs:
 
   X Add inode info to MatView() with info format.
 
-  - Note fixes needed for ICASE SP (poseidon) in petsc/src/sys/src/mtr.c
-    and petsc/src/viewer/impls/matlab/send.c
-
   X Remove default stuff from MatCreate() into each matrix type, including
     processing command line options.
 
   X But in jump links for WWW manpages seealso.
-
- (Barry)  - Have all preconditioners (including LU) support null space, see 
-            tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
-
- (Bill)   - Make configure fully functional in PETSc 2.0
-
    X Fix documentation for matrices in manual (also AIJ man pages).  
      Fix help info for matrices. MatPrintHelp().
 
@@ -103,14 +105,12 @@ Additional Capabilities that PETSc Needs:
      ever scaled by -1.0, but instead this is taken care of in the
      update step, x += alpha * dx   OR   x -= alpha * dx.
 
- (Lois)   - Complex versions of the Krylov subspace solvers
+   X Complex versions of the Krylov subspace solvers
 
-   X   - Complex version work from Fortran
+   X Complex version work from Fortran
 
    X Have -log_summary print percentages for different stages.
 
-   * Test PETSc with LAM.
-    
    X don't require user to set diagonal entries in mpirowbs, that is
      insane - says Barry.
    
@@ -130,7 +130,8 @@ Additional Capabilities that PETSc Needs:
      KSPGMRESSetUseUnmodifiedGramSchmidt() in favor of just
      KSPGMRESSetOrthogRoutine().
 
-   X Make symbolic part of ILU(0) out of place fast for SeqAIJ. Just copy data structures.
+   X Make symbolic part of ILU(0) out of place fast for SeqAIJ. Just copy data 
+     structures.
 
    X Change all CAPS macro to use _ between words, for example INSERT_VALUES
 
