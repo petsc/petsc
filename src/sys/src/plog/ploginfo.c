@@ -147,7 +147,8 @@ extern FILE *petsc_history;
 
     Collective over PetscObject argument
 
-       PetscErrorCode PetscLogInfo_Private(void *vobj, const char message[], ...)  
+   Synopsis:
+       PetscErrorCode PetscLogInfo((void *vobj, const char message[], ...))  
 
     Input Parameter:
 +   vobj - object most closely associated with the logging statement
@@ -159,8 +160,8 @@ $    -log_info : activates printing of PetscLogInfo() messages
     Level: intermediate
 
     Note: Since this is a macro you must wrap the arguments in TWO sets of (())
-    Fortran Note:
-    This routine is not supported in Fortran.
+
+    Fortran Note: This routine is not supported in Fortran.
 
     Example of Usage:
 $

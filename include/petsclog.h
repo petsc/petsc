@@ -27,7 +27,7 @@ EXTERN PetscErrorCode        PetscLogInfo_Private(void*,const char[],...) PETSC_
 #if defined(PETSC_USE_DEBUG)
 #define PetscLogInfo(A)      PetscLogInfo_Private A
 #else 
-#define PetscLogInfo(A)   0
+#define PetscLogInfo(A)      0
 #endif
 EXTERN PetscErrorCode        PetscLogInfoDeactivateClass(PetscCookie);
 EXTERN PetscErrorCode        PetscLogInfoActivateClass(PetscCookie);
