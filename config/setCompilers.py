@@ -97,7 +97,10 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-vendor-compilers'] == 'yes': self.framework.argDB['with-vendor-compilers'] = ''      
     if self.framework.argDB['with-vendor-compilers'] == 'false': self.framework.argDB['with-vendor-compilers'] = '0'
     if self.framework.argDB['with-vendor-compilers'] == 'true': self.framework.argDB['with-vendor-compilers'] = ''      
-    
+
+    if 'PETSC_DIR' in self.framework.argDB:
+      self.framework.searchdirs.append(os.path.join(self.framework.argDB['PETSC_DIR'],'bin','win32fe'))
+        
     if self.framework.argDB.has_key('with-cc'):
       yield self.framework.argDB['with-cc']
       raise RuntimeError('C compiler you provided with -with-cc='+self.framework.argDB['with-cc']+' does not work')
