@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.97 1996/08/19 23:02:22 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.98 1996/08/20 03:38:03 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -486,7 +486,7 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
 
    Output Parameter:
 .  submat - array of local submatrices (the entries of which may
-            be modified)
+            have been modified)
 
    Notes:
    The user should NOT generally call this routine, as it will
