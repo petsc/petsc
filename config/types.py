@@ -19,16 +19,18 @@ class Configure(config.base.Configure):
   def check(self, typeName, defaultType = None):
     '''Checks that "typeName" exists, and if not defines it to "defaultType" if given'''
     self.framework.log.write('Checking for type: '+typeName+'\n')
-    code = '''
+    include = '''
     #include <sys/types.h>
     #if STDC_HEADERS
     #include <stdlib.h>
     #include <stddef.h>
     #endif
     '''
-    found = re.search(r'(^|[^a-zA-Z_0-9])'+typeName+'[^a-zA-Z_0-9]', self.outputPreprocess(code))
+    found = self.checkCompile(include,typeName+' a;')
     if not found and defaultType:
       self.addTypedef(defaultType, typeName)
+    else:
+      self.framework.log.write(typeName+' found\n')
     return found
 
   def checkSizeTypes(self):

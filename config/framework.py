@@ -176,6 +176,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   ###############################################
   # Filtering Mechanisms
+
+  def filterPreprocessOutput(self,output):
+    lines = output.splitlines()
+    lines = filter(lambda s: s.find('license.dat') < 0, lines)
+    output = reduce(lambda s, t: s+t, lines, '')
+    return output
+  
   def filterCompileOutput(self, output):
     if self.argDB['ignoreCompileOutput']:
       output = ''
@@ -185,6 +192,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         lines = filter(lambda s: not self.warningRE.search(s), lines)
       # Ignore stupid warning from gcc about builtins
       lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
+      lines = filter(lambda s: s.find('license.dat') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')
     return output
 
@@ -195,6 +203,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = output.splitlines()
       if self.framework.argDB['ignoreWarnings']:
         lines = filter(lambda s: not self.warningRE.search(s), lines)
+      lines = filter(lambda s: s.find('license.dat') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')
     return output
         
@@ -371,7 +380,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def outputTypedefs(self, f, child, prefix = None):
     '''If the child contains a dictionary named "typedefs", the entries are output as typedefs in the config header.'''
     if not hasattr(child, 'typedefs') or not isinstance(child.defines, dict): return
-    for oldType, newType in child.typedefs.items():
+    for newType, oldType in child.typedefs.items():
       f.write('typedef ')
       f.write(oldType)
       f.write(' ')

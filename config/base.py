@@ -255,6 +255,7 @@ class Configure(script.Script):
     '''Return True if an error occurred
        - An error is signaled by a nonzero return code, or output on stderr'''
     (out, err, ret) = self.preprocess(codeStr)
+    err = self.framework.filterPreprocessOutput(err)
     return not ret and not len(err)
 
   def filterCompileOutput(self, output):
