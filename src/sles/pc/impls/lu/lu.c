@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.80 1997/07/09 20:52:42 balay Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.81 1997/08/22 15:12:37 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -111,8 +111,9 @@ static int PCPrintHelp_LU(PC pc,char *p)
   PetscPrintf(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);
   PetscPrintf(pc->comm," -mat_order <name>: ordering to reduce fill",p);
   PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
-  PetscPrintf(pc->comm," %spc_lu_nonzeros_along_diagonal: changes column ordering to \n",p);
-  PetscPrintf(pc->comm,"    reduce the change of obtaining zero pivot during LU.\n");
+  PetscPrintf(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);
+  PetscPrintf(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");
+  PetscPrintf(pc->comm,"    If <tol> not given defaults to 1.e-10.\n");
   return 0;
 }
 
@@ -177,7 +178,9 @@ static int PCSetUp_LU(PC pc)
       ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
       ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
-        ierr = MatReorderForNonzeroDiagonal(pc->pmat,1.e-10,dir->row,dir->col);CHKERRQ(ierr);
+        double tol = 1.e-10;
+        ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,&flg);CHKERRQ(ierr);
+        ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
@@ -190,7 +193,9 @@ static int PCSetUp_LU(PC pc)
       ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
       ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
-        ierr = MatReorderForNonzeroDiagonal(pc->pmat,1.e-10,dir->row,dir->col);CHKERRQ(ierr);
+        double tol = 1.e-10;
+        ierr = OptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,&flg);CHKERRQ(ierr);
+        ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.91 1997/08/22 15:12:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.92 1997/08/22 17:46:07 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -254,8 +254,9 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   PetscPrintf(pc->comm," %spc_ilu_use_drop_tolerance <dt,maxrowcount>: \n",p);
   PetscPrintf(pc->comm," %spc_ilu_reuse_reordering:                          \n",p);
   PetscPrintf(pc->comm," %spc_ilu_reuse_fill:                             \n",p);
-  PetscPrintf(pc->comm," %spc_ilu_nonzeros_along_diagonal: changes column ordering to \n",p);
-  PetscPrintf(pc->comm,"    reduce the chance of obtaining zero pivot during ILU.\n");
+  PetscPrintf(pc->comm," %spc_ilu_nonzeros_along_diagonal: <tol> changes column ordering\n",p);
+  PetscPrintf(pc->comm,"    to reduce the chance of obtaining zero pivot during ILU.\n");
+  PetscPrintf(pc->comm,"    If <tol> not given, defaults to 1.e-10.\n"); 
   return 0;
 }
 
@@ -351,7 +352,9 @@ static int PCSetUp_ILU(PC pc)
       /*  Remove zeros along diagonal?     */
       ierr = OptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
-        ierr = MatReorderForNonzeroDiagonal(pc->pmat,1.e-10,ilu->row,ilu->col);CHKERRQ(ierr);
+        double ntol = 1.e-10;
+        ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,&flg);CHKERRQ(ierr);
+        ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
       if (setups[pc->pmat->type]) {
         ierr = (*setups[pc->pmat->type])(pc);
@@ -370,7 +373,9 @@ static int PCSetUp_ILU(PC pc)
         /*  Remove zeros along diagonal?     */
         ierr = OptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
-          ierr = MatReorderForNonzeroDiagonal(pc->pmat,1.e-10,ilu->row,ilu->col);CHKERRQ(ierr);
+          double ntol = 1.e-10;
+          ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,&flg);CHKERRQ(ierr);
+          ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
         }
       }
       ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.233 1997/09/26 02:22:31 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.234 1997/10/06 00:19:43 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2465,9 +2465,11 @@ The sparse LU factorization provided in PETSc does not perform pivoting for
 numerical stability (since they are designed to preserve nonzero 
 structure), thus occasionally a LU factorization will fail with a zero 
 pivot when, in fact, the matrix is non-singular. The option
-{\tt -pc\_lu\_nonzeros\_along\_diagonal} \findex{-pc_lu_nonzeros_along_diagonal}
+{\tt -pc\_lu\_nonzeros\_along\_diagonal <tol>} \findex{-pc_lu_nonzeros_along_diagonal}
 will often help eliminate the zero pivot, by preprocessing the the 
-column ordering to remove small values from the diagonal.
+column ordering to remove small values from the diagonal. Here, {\tt tol}
+is an optional tolerance to decide if a value is nonzero; by default it
+is $ 1.e-10.$ 
 
 
 In addition, Section~\ref{sec:symbolfactor} provides information on
@@ -3901,9 +3903,11 @@ values are detected and corrected for, a nonsymmetric
 permutation of the rows and columns will result. This is not guaranteed to work, 
 but may help if one was simply unlucky in the original ordering.
 \findex{MatReorderForNonzeroDiagonal} When using the SLES solver interface
-the options {\tt -pc\_ilu\_nonzeros\_along\_diagonal} \findex{-pc_ilu_nonzeros_along_diagonal}
+the options {\tt -pc\_ilu\_nonzeros\_along\_diagonal <tol>} \findex{-pc_ilu_nonzeros_along_diagonal}
 and \findex{-pc_lu_nonzeros_along_diagonal}
-{\tt -pc\_lu\_nonzeros\_along\_diagonal} may be used.
+{\tt -pc\_lu\_nonzeros\_along\_diagonal <tol>} may be used.  Here, {\tt tol}
+is an optional tolerance to decide if a value is nonzero; by default it
+is $ 1.e-10.$ 
 
 Once a matrix has been factored, it is natural to solve linear systems.
 The following four routines enable this process: \findex{MatSolve()} 
@@ -4132,9 +4136,9 @@ command \findex{DrawSetDoubleBuffer()} \sindex{double buffer}
 \begin{verbatim}
    ierr = DrawSetDoubleBuffer(Draw win);
 \end{verbatim}
-{\em all} processors must call \findex{DrawSyncFlush()}
+{\em all} processors must call \findex{DrawSynchronizedFlush()}
 \begin{verbatim}
-   ierr = DrawSyncFlush(Draw win);
+   ierr = DrawSynchronizedFlush(Draw win);
 \end{verbatim}
 in order to swap the buffers. From the options database one may use 
 {\tt -draw\_pause n}, which \findex{-draw_pause} causes the PETSc application 
