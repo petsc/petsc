@@ -651,10 +651,14 @@ class SIDLMake(Make):
         # We here require certain keys to be present in generatedSource, e.g. 'Server IOR Python'.
         # These keys can be checked for, and if absent the SIDL file would be compiled
         generatedSource = self.executeSection(self.buildSIDL, builder, f)
+	if self.project.getUrl() == 'bk://ase.bkbits.net/Runtime':
+          for language in self.serverLanguages:
+            self.executeSection(getattr(self, 'build'+language+'Server'), builder, f, language, generatedSource)
         for language in self.clientLanguages:
           self.executeSection(getattr(self, 'build'+language+'Client'), builder, f, language, generatedSource)
-        for language in self.serverLanguages:
-          self.executeSection(getattr(self, 'build'+language+'Server'), builder, f, language, generatedSource)
+	if not self.project.getUrl() == 'bk://ase.bkbits.net/Runtime':
+          for language in self.serverLanguages:
+            self.executeSection(getattr(self, 'build'+language+'Server'), builder, f, language, generatedSource)
         self.argDB.save(force = 1)
         shutil.copy(self.argDB.saveFilename, self.argDB.saveFilename+'.bkp')
         builder.sourceDB.save()
