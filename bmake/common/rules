@@ -16,9 +16,8 @@ PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE) \
 	       -I$(PETSC_DIR)/src
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
-# and all lower level PETSc components (such as vectors and matrices
+# and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
-#
 #
 PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
 		-lpetscmat  -lpetscvec -lpetscdraw \
@@ -37,13 +36,13 @@ SLES_LIB    =	-L$(LDIR) -lpetscsles -lpetscksp \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 
 #
-#  Link if you are programming in Fortran 
+# Link if you are using the PETSc Fortran interface.
 #
 PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscfortran
 #
 # These include files set customized site, optimization, and version options.
-# Do NOT remove any of these include files.  You should have to edit only
-# $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site for your particular
+# Do NOT remove any of these include files.  You should generally have to edit
+# only $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site for your particular
 # machine configuration.  See the users manual for details.
 #
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
@@ -58,7 +57,7 @@ chkpetsc_dir:
 	-@if [ ! -d $(PDIR) ]; then \
 	  echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
 
-# checks that user has set BOPT variable
+# Checks that user has set BOPT variable
 chkopts: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
 	  echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
