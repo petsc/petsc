@@ -1,4 +1,4 @@
-!  $Id: userJac.F,v 1.9 2000/09/15 19:28:25 bsmith Exp bsmith $
+!  $Id: userJac.F,v 1.10 2000/09/15 19:30:11 bsmith Exp kaushik $
 !---------------------------------------------------------------
 ! The following subroutines are from node6t.f in the original
 ! code.
@@ -453,7 +453,7 @@
         irow(1) = node2 - 1
         icol(1) = node1 - 1
         icol(2) = node2 - 1
-        call MatSetValuesBlockedLocal(A,1,irow,2,icol,                 &
+        call MatSetValuesBlockedLocal(A,1,irow,2,icol,                  &
      &                         val1,ADD_VALUES,ierr)
 #else
         do j = 1,4
@@ -532,7 +532,7 @@
 !
 !        do 1060 j=jstart,jend
 !
-! If this isn't a diagonal zero it out
+! If this is not a diagonal zero it out
 ! (This way we dont disturb the row for the coninuity equation
 !
 !         if(j.ne.idiag)then
