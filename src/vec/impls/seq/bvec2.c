@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.118 1998/04/28 22:01:03 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.119 1998/04/28 22:07:56 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -103,6 +103,9 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
     fprintf(fd,"];\n");
   } else {
     for (i=0; i<n; i++ ) {
+      if (format == VIEWER_FORMAT_ASCII_INDEX) {
+        fprintf(fd,"%d: ",i);
+      }
 #if defined(USE_PETSC_COMPLEX)
       if (imag(x->array[i]) > 0.0) {
         fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.133 1998/04/29 03:33:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.134 1998/04/29 15:31:49 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1419,6 +1419,9 @@ int VecRestoreArray(Vec x,Scalar **a)
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
+
+   You can change the format the vector is printed using the 
+   option ViewerSetFormat().
 
    The user can open alternative vistualization contexts with
 +    ViewerFileOpenASCII() - Outputs vector to a specified file

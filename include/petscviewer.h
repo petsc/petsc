@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.50 1998/03/23 21:27:32 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.51 1998/04/03 23:19:27 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -42,6 +42,7 @@ extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 #define VIEWER_FORMAT_ASCII_INFO_LONG     4
 #define VIEWER_FORMAT_ASCII_COMMON        5
 #define VIEWER_FORMAT_ASCII_SYMMODU       6
+#define VIEWER_FORMAT_ASCII_INDEX         7
 
 #define VIEWER_FORMAT_BINARY_DEFAULT      0
 #define VIEWER_FORMAT_BINARY_NATIVE       1

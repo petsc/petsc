@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.90 1998/04/03 21:55:02 balay Exp bsmith $ */
+/* $Id: pdvec.c,v 1.91 1998/04/09 04:09:23 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -87,7 +87,7 @@ int VecView_MPI_File(Vec xin, Viewer ptr )
 int VecView_MPI_Files(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank,len, work = x->n,n,j,size,ierr,format;
+  int         i,rank,len, work = x->n,n,j,size,ierr,format,cnt;
   MPI_Status  status;
   FILE        *fd;
   Scalar      *values;
@@ -144,7 +144,11 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
       fprintf(fd,"];\n");
     } else {
       if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d]\n",rank);
+      cnt = 0;
       for ( i=0; i<x->n; i++ ) {
+        if (format == VIEWER_FORMAT_ASCII_INDEX) {
+          fprintf(fd,"%d: ",cnt++);
+        }
 #if defined(USE_PETSC_COMPLEX)
         if (imag(x->array[i]) > 0.0) {
           fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
@@ -165,6 +169,9 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
           fprintf(fd,"Processor [%d]\n",j);
         }
         for ( i=0; i<n; i++ ) {
+          if (format == VIEWER_FORMAT_ASCII_INDEX) {
+            fprintf(fd,"%d: ",cnt++);
+          }
 #if defined(USE_PETSC_COMPLEX)
           if (imag(values[i]) > 0.0) {
             fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));

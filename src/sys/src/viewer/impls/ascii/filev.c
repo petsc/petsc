@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.70 1998/04/03 23:17:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.71 1998/04/13 17:54:35 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -342,6 +342,8 @@ $    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
 $       about object
 $    VIEWER_FORMAT_ASCII_COMMON - identical output format for
 $       all objects of a particular type
+$    VIEWER_FORMAT_ASCII_INDEX - for vectors prints the vector
+$       element number next to each vector entry
 $    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
 $      file in its native format (for example, dense
 $       matrices are stored as dense)
@@ -393,6 +395,8 @@ $    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed info
 $       about object
 $    VIEWER_FORMAT_ASCII_COMMON - identical output format for
 $       all objects of a particular type
+$    VIEWER_FORMAT_ASCII_INDEX - for vectors prints the vector
+$       element number next to each vector entry
 $    VIEWER_FORMAT_BINARY_NATIVE - store the object to the binary
 $      file in its native format (for example, dense
 $       matrices are stored as dense)
