@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.50 1999/05/12 03:26:40 bsmith Exp balay $";
+static char vcid[] = "$Id: xcolor.c,v 1.51 1999/06/30 23:49:13 balay Exp bsmith $";
 #endif
 
 
@@ -55,8 +55,6 @@ extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
 extern int XiUniformHues( Draw_X *, int);
 extern int XiSetCmapHue(unsigned char*,unsigned char*,unsigned char*,int);
 
-#undef __FUNC__  
-#define __FUNC__ "XSetUpColorMap_Private"
 /*
    Sets up a color map for a display. This is shared by all the windows
   opened on that display; this is to save time when windows are open so 
@@ -214,7 +212,6 @@ int DrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colo
   XVisualInfo vinfo;
 
   PetscFunctionBegin;
-
 
   /* 
      This is wrong; it needs to take the value from the visual 
@@ -495,8 +492,7 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
     red   = PetscMin(65535,red + WHITE_AMOUNT);
     green = PetscMin(65535,green + WHITE_AMOUNT);
     blue  = PetscMin(65535,blue + WHITE_AMOUNT);
-  }
-  else {
+  } else {
     /* Subtract white from the color */
     red   = (red   < WHITE_AMOUNT) ? 0 : red - WHITE_AMOUNT;
     green = (green < WHITE_AMOUNT) ? 0 : green - WHITE_AMOUNT;
@@ -530,12 +526,9 @@ int XiSetCmapLight(unsigned char *red, unsigned char *green,unsigned char *blue,
   PetscFunctionReturn(0);
 }
 
-int XiGetNumcolors( Draw_X *XiWin )
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(XiWin->numcolors);
-}
 #else
+#undef __FUNC__  
+#define __FUNC__ "dummy_xcolor"
 int dummy_xcolor(void)
 {
   PetscFunctionBegin;
