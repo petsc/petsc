@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.34 1998/04/24 22:10:51 curfman Exp curfman $";
+static char vcid[] = "$Id: itregis.c,v 1.35 1998/07/27 02:54:53 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -16,6 +16,7 @@ extern int KSPCreate_LSQR(KSP);
 extern int KSPCreate_PREONLY(KSP);
 extern int KSPCreate_CR(KSP);
 extern int KSPCreate_QCG(KSP);
+extern int KSPCreate_BiCG(KSP);
 
   
 /*
@@ -55,5 +56,6 @@ int KSPRegisterAll(char *path)
   ierr = KSPRegister(KSPLSQR,       path,"KSPCreate_LSQR",      KSPCreate_LSQR);CHKERRQ(ierr);
   ierr = KSPRegister(KSPPREONLY,    path,"KSPCreate_PREONLY",   KSPCreate_PREONLY);CHKERRQ(ierr);
   ierr = KSPRegister(KSPQCG,        path,"KSPCreate_QCG",       KSPCreate_QCG);CHKERRQ(ierr);
+  ierr = KSPRegister(KSPBICG,       path,"KSPCreate_BICG",       KSPCreate_BICG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
