@@ -869,10 +869,10 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_Local(Mat A,Mat P_loc,Mat P_oth,Pet
   nlnk = pN+1;
   ierr = PetscLLCreate(pN,pN,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  /* Set initial free space to be nnz(A) scaled by aspect ratio of P (P->M=A->N). */
+  /* Set initial free space to be nnz(A) scaled by fill. */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
   nnz           = adi[am] + aoi[am];
-  ierr          = GetMoreSpace((PetscInt)(fill*nnz/A->N)*pN,&free_space);
+  ierr          = GetMoreSpace((PetscInt)(fill*nnz*pN+1),&free_space);
   current_space = free_space;
 
   /* determine symbolic info for each row of C: */
