@@ -21,7 +21,7 @@ template<class Scalar,class Ordinal>
 {
   public:
 
-    // Default destructor.
+    // Destructor.
     virtual ~Vector();
 
     // Construct a Vector from a Map.
@@ -59,6 +59,7 @@ template<class Scalar,class Ordinal>
     virtual esi::ErrorCode getCoefPtrReadLock(Scalar *&) ;
     virtual esi::ErrorCode getCoefPtrReadWriteLock(Scalar *&);
     virtual esi::ErrorCode releaseCoefPtrLock(Scalar *&) ;
+
     // Interface for ESI_VectorReplaceAccess
    
     virtual esi::ErrorCode setArrayPointer(Scalar* array, Ordinal length);
