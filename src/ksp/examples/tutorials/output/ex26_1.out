@@ -1,6 +1,6 @@
 KSP Object:(esi_)
   type: gmres
-    GMRES: restart=30, using Unmodified Gram-Schmidt Orthogonalization
+    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
@@ -12,13 +12,3 @@ PC Object:(esi_)
     ILU: tolerance for zero pivot 1e-12
          out-of-place factorization
          matrix ordering: natural
-         Factored matrix follows
-    Matrix Object:
-      type=seqbaij, rows=3, cols=3
-      total: nonzeros=5, allocated nonzeros=15
-          block size is 1
-  linear system matrix = precond matrix:
-  Matrix Object:(esi_)
-    type=seqbaij, rows=3, cols=3
-    total: nonzeros=5, allocated nonzeros=15
-        block size is 1

@@ -675,8 +675,8 @@ EXTERN int  PetscSynchronizedPrintf(MPI_Comm,const char[],...) PETSC_PRINTF_FORM
 EXTERN int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
 EXTERN int  PetscSynchronizedFlush(MPI_Comm);
 EXTERN int  PetscSynchronizedFGets(MPI_Comm,FILE*,int,char[]);
-EXTERN int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);
-EXTERN int  PetscStartJava(MPI_Comm,char *,char*,FILE**);
+EXTERN int  PetscStartMatlab(MPI_Comm,const char[],const char[],FILE**);
+EXTERN int  PetscStartJava(MPI_Comm,const char[],const char[],FILE**);
 EXTERN int  PetscGetPetscDir(const char*[]);
 
 EXTERN int  PetscPopUpSelect(MPI_Comm,char*,char*,int,char**,int*);

@@ -29,7 +29,7 @@
 
 .seealso: PetscPOpen(), PetscPClose()
 @*/
-int PetscStartMatlab(MPI_Comm comm,char *machine,char *script,FILE **fp)
+int PetscStartMatlab(MPI_Comm comm,const char machine[],const char script[],FILE **fp)
 {
   int  ierr;
   FILE *fd;
