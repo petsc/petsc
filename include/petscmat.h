@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.113 1996/08/22 22:25:21 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.114 1996/09/12 16:28:47 bsmith Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -214,8 +214,7 @@ typedef enum { MAT_SET_VALUES=0,
                MAT_GET_ARRAY=35,
                MAT_RESTORE_ARRAY=36,
                MAT_CONVERT=37,
-               MAT_GET_SUBMATRIX=38,
-               MAT_GET_SUBMATRIX_INPLACE=39,
+
                MAT_CONVERT_SAME_TYPE=40,
                MAT_FORWARD_SOLVE=41,
                MAT_BACKWARD_SOLVE=42,
