@@ -519,9 +519,8 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
-extern int id_norm1,id_norm2,id_normInf,id_normF,id_norm12;
 #undef __FUNCT__
-#define __FUNCT__ "VecNormBegin"
+#define __FUNCT__ "VecNormEnd"
 /*@
    VecNormEnd - Ends a split phase norm computation.
 
@@ -545,31 +544,7 @@ int VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   MPI_Comm            comm;
 
   PetscFunctionBegin;
-  switch (ntype) {
-  case NORM_1 :
-    if (id_norm1==-1) {
-      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
-    type_id = id_norm1; break;
-  case NORM_2 :
-    if (id_norm2==-1) {
-      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
-    type_id = id_norm2; break;
-  case NORM_1_AND_2 :
-    /* we don't handle this one yet */
-    if (id_norm1==-1) {
-      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
-    if (id_norm2==-1) {
-      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
-    type_id = id_norm12; break;
-  case NORM_INFINITY :
-    if (id_normInf==-1) {
-      ierr = PetscRegisterComposedData(&id_normInf); CHKERRQ(ierr);}
-    type_id = id_normInf; break;
-  case NORM_FROBENIUS :
-    if (id_normF==-1) {
-      ierr = PetscRegisterComposedData(&id_normF); CHKERRQ(ierr);}
-    type_id = id_normF; break;
-  }
+  ierr = VecNormComposedDataID(ntype,&type_id); CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
