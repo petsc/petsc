@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.43 1998/03/06 00:17:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.44 1998/03/12 23:21:18 bsmith Exp balay $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -526,16 +526,16 @@ static double PetscCopysign(double a,double b )
 #define __FUNC__ "PetscAGetNice"
 /*
     Given a value "in" and a "base", return a nice value.
-    based on "sgn", extend up (+1) or down (-1)
+    based on "sign", extend up (+1) or down (-1)
  */
-static double PetscAGetNice(double in,double base,int sgn )
+static double PetscAGetNice(double in,double base,int sign )
 {
   double  etmp;
 
   PetscFunctionBegin;
-  etmp    = in / base + 0.5 + PetscCopysign ( 0.5, (double) sgn );
+  etmp    = in / base + 0.5 + PetscCopysign ( 0.5, (double) sign );
   etmp    = etmp - 0.5 + PetscCopysign( 0.5, etmp ) -
-		       PetscCopysign ( EPS * etmp, (double) sgn );
+		       PetscCopysign ( EPS * etmp, (double) sign );
   etmp = base * ( etmp - PetscMod( etmp, 1.0 ) );
   PetscFunctionReturn(etmp);
 }
