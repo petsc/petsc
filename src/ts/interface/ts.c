@@ -1,8 +1,10 @@
-/* $Id: ts.c,v 1.19 2000/02/02 20:10:14 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.20 2000/03/01 03:02:42 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
+#undef __FUNC__  
+#define __FUNC__ "TSComputeRHSJacobian"
 /*@
-   TSComputeJacobian - Computes the Jacobian matrix that has been
+   TSComputeRHSJacobian - Computes the Jacobian matrix that has been
       set with TSSetRHSJacobian().
 
    Collective on TS and Vec
