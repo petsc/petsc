@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.79 1997/03/26 16:04:48 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.80 1997/04/02 21:00:05 bsmith Exp curfman $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -500,13 +500,14 @@ int PetscTrLog()
 #undef __FUNC__  
 #define __FUNC__ "PetscTrLogDump" /* ADIC Ignore */
 /*@C
-    PetscTrLogDump - Dumps the log of all calls to malloc.
+    PetscTrLogDump - Dumps the log of all calls to malloc; also calls 
+    PetscGetResidentSetSize().
 
-  Input Parameters:
-.    fp - file pointer; or PETSC_NULL
+    Input Parameters:
+.   fp - file pointer; or PETSC_NULL
 
-     Options Database:
-.     -trmalloc_log
+    Options Database Key:
+.   -trmalloc_log
 
 .seealso: PetscTrLog()
 @*/
@@ -589,9 +590,6 @@ typedef union { long l[2]; double d; } NANDouble;
 #define __FUNC__ "PetscInitializeNans" /* ADIC Ignore */
 /*@
    PetscInitializeNans - Intialize certain memory locations with NANs.
-   This routine is used to mark an array as unitialized so that
-   if values are used for computation without first having been set,
-   a floating point exception is generated.
 
    Input parameters:
 .  p   - pointer to data
@@ -601,6 +599,10 @@ typedef union { long l[2]; double d; } NANDouble;
 $   -trmalloc_nan
 
    Notes:
+   This routine is used to mark an array as being unitialized, so that
+   if values are used for computation without first having been set,
+   a floating point exception is generated.
+
    This routine is useful for tracking down the use of uninitialized
    array values.  If the code is run with the -fp_trap option, it will
    stop if one of the "unitialized" values is used in a computation.
@@ -645,7 +647,7 @@ $   -trmalloc_nan
    Notes:
    This routine is useful for tracking down the use of uninitialized
    array values.  If an integer array value is absurdly large, then
-   there's a good chance that it is being used before it was ever set.
+   there's a good chance that it is being used before having been set.
 
 .seealso: PetscInitializeNans()
 @*/

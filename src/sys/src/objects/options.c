@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.126 1997/03/26 15:51:21 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.127 1997/04/02 21:00:05 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -116,12 +116,19 @@ double PetscCompareTolerance = 1.e-10;
 #undef __FUNC__  
 #define __FUNC__ "PetscCompareInt" /* ADIC Ignore */
 /*@C
-   PetscCompareInt - Compares intss while running with PETSc's incremental
-        debugger; triggered with the -compare option.
+   PetscCompareInt - Compares integers while running with PETSc's incremental
+   debugger.
 
-  Input Parameter:
-.    d - integer to compare
+   Input Parameter:
+.  d - integer to compare
 
+   Options Database Key:
+.  -compare
+
+   Note:
+   This routine is activated with the -compare option.
+
+.seealso: PetscCompareDouble(), PetscCompareScalar()
 @*/
 int PetscCompareInt(int d)
 {
@@ -138,11 +145,18 @@ int PetscCompareInt(int d)
 #define __FUNC__ "PetscCompareDouble"
 /*@C
    PetscCompareDouble - Compares doubles while running with PETSc's incremental
-        debugger; triggered with the -compare <tol> flag.
+   debugger.
 
-  Input Parameter:
-.    d - double precision number to compare
+   Input Parameter:
+.  d - double precision number to compare
 
+   Options Database Key:
+.  -compare
+
+   Note:
+   This routine is activated with the -compare option.
+
+.seealso: PetscCompareInt(), PetscComparseScalar()
 @*/
 int PetscCompareDouble(double d)
 {
@@ -161,11 +175,19 @@ int PetscCompareDouble(double d)
 #define __FUNC__ "PetscCompareScalar"
 /*@C
    PetscCompareScalar - Compares scalars while running with PETSc's incremental
-        debugger; triggered with the -compare <tol> flag.
+   debugger.
 
-  Input Parameter:
-.    d - scalar to compare
+   Input Parameter:
+.  d - scalar to compare
 
+
+   Options Database Key:
+.  -compare
+
+   Note:
+   This routine is activated with the -compare option.
+
+.seealso: PetscCompareInt(), PetscComparseDouble()
 @*/
 int PetscCompareScalar(Scalar d)
 {
@@ -184,11 +206,10 @@ int PetscCompareScalar(Scalar d)
 #define __FUNC__ "PetscCompareInitialize" /* ADIC Ignore */
 /*
     PetscCompareInitialize - If there is a command line option -compare then
-       this routine calls MPI_Init() and sets up two PETSC_COMM_WORLD, one for 
-       each program being compared.
+    this routine calls MPI_Init() and sets up two PETSC_COMM_WORLD, one for 
+    each program being compared.
 
     Note: Only works with C programs.
-
 */
 int PetscCompareInitialize(double tol)
 {
