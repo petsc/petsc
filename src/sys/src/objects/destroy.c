@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.23 1996/01/13 00:42:44 balay Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.24 1996/01/23 00:18:09 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -143,6 +143,7 @@ void PetscSleep(int s)
   if (s < 0) getc(stdin);
   else       sleep(s);
 }
+
 /*
    PetscObjectSetPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database.
@@ -162,6 +163,7 @@ int PetscObjectSetPrefix(PetscObject obj, char *prefix)
   PetscStrcpy(obj->prefix,prefix);
   return 0;
 }
+
 /*
    PetscObjectAppendPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database.
@@ -184,6 +186,7 @@ int PetscObjectAppendPrefix(PetscObject obj, char *prefix)
   PetscFree(buf);
   return 0;
 }
+
 /*
    PetscObjectGetPrefix - Gets the prefix of the PetscObject.
 
@@ -200,3 +203,5 @@ int PetscObjectGetPrefix(PetscObject obj ,char** prefix)
   *prefix = obj->prefix;
   return 0;
 }
+
+
