@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.1 1998/07/10 20:17:15 bsmith Exp bsmith $;
+!  $Id: petscdef.h,v 1.2 1998/07/10 20:21:37 bsmith Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -36,10 +36,11 @@
       parameter (PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
 
 !
-!     Default Viewers
+!     Default Viewers.
+!     Some more viewers, which are initialized using common-block
+!     are declared in finclude/petsc.h
 !
-      PetscFortranAddr VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF
-      PetscFortranAddr VIEWER_STDOUT_WORLD, VIEWER_DRAWX_WORLD
+      PetscFortranAddr VIEWER_DRAWX_WORLD
       PetscFortranAddr VIEWER_DRAWX_WORLD_0,VIEWER_DRAWX_WORLD_1
       PetscFortranAddr VIEWER_DRAWX_WORLD_2,VIEWER_DRAWX_SELF
       PetscFortranAddr VIEWER_MATLAB_WORLD
@@ -71,21 +72,6 @@
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif     
 
-!
-! PETSc world communicator
-!
-      MPI_Comm PETSC_COMM_WORLD, PETSC_COMM_SELF
-
-!
-!     Macros for error checking
-!
-#if defined(USE_PETSC_DEBUG)
-#define SETERRA(n,p,s) call MPI_Abort(PETSC_COMM_WORLD,n)
-#define CHKERRA(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
-#else
-#define SETERRA(n,p,s)
-#define CHKERRA(n)
-#endif
 !
 ! ------------------------------------------------------------------------
 !     PETSc mathematics include file. Defines certain basic mathematical 
@@ -138,12 +124,7 @@
       parameter (PETSC_DEGREES_TO_RADIANS = 0.01745329251994d0)
       parameter (PETSC_MAX = 1.d300, PETSC_MIN = -1.d300)
 
-!
-!     Fortran Null
-!
-      character*(80)   PETSC_NULL_CHARACTER
-      integer          PETSC_NULL_INTEGER
-      double precision PETSC_NULL_DOUBLE
+
 !
 !     Declare PETSC_NULL_OBJECT
 !

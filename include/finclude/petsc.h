@@ -1,10 +1,31 @@
 !
-!  $Id: petsc.h,v 1.79 1998/07/08 14:47:23 balay Exp bsmith $;
+!  $Id: petsc.h,v 1.80 1998/07/10 20:21:16 bsmith Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
+!  Note that the external functions and common-block variables 
+!  are declared in this file. The rest are defined in petscdef.h file.
 !
 #include "finclude/petscdef.h"
 
+!
+!     Default Viewers.
+!     Other viewers which need not be in the common block
+!     are declared in petscdef.h file
+!
+      PetscFortranAddr VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF
+      PetscFortranAddr VIEWER_STDOUT_WORLD
+
+!
+!     PETSc world communicator
+!
+      MPI_Comm PETSC_COMM_WORLD, PETSC_COMM_SELF
+!
+!     Fortran Null
+!
+      character*(80)   PETSC_NULL_CHARACTER
+      integer          PETSC_NULL_INTEGER
+      double precision PETSC_NULL_DOUBLE
+!
 !      A PETSC_NULL_FUNCTION pointer
 !
       external PETSC_NULL_FUNCTION
@@ -24,3 +45,13 @@
       common /petscfortran6/ VIEWER_STDOUT_WORLD
       common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
 
+!
+!     Macros for error checking
+!
+#if defined(USE_PETSC_DEBUG)
+#define SETERRA(n,p,s) call MPI_Abort(PETSC_COMM_WORLD,n)
+#define CHKERRA(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
+#else
+#define SETERRA(n,p,s)
+#define CHKERRA(n)
+#endif
