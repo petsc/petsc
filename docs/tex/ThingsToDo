@@ -6,7 +6,15 @@ Additional Capabilities that PETSc Needs:
 
  o High priorities:
 
+   - Incorporate SPARSKIT strategy of Saad for managing AIJ data structure.
+     (requested by Xiao Chuan Cai; this is supposedly much faster than
+     our current code).
+
    - Develop more thorough test program suite.
+
+   - Complex versions of the Krylov subspace solvers
+
+   - Change all CAPS macro to use _ between words, for example INSERT_VALUES
 
    * Upgrade tohtml and doc2tex
 
@@ -21,15 +29,8 @@ Additional Capabilities that PETSc Needs:
 
    X Build wrapper for html manpages
 
-   - Incorporate SPARSKIT strategy of Saad for managing AIJ data structure.
-     (requested by Xiao Chuan Cai; this is supposedly much faster than
-     our current code).
 
  o Lower Priority issues:
-
-   X Fortran interface
-
-   * Automatic collection of information about the solution process
 
    - Finite difference approximations of derivatives using coloring
 
@@ -41,13 +42,13 @@ Additional Capabilities that PETSc Needs:
    - stride with multicomponent chunks in index sets, also two dimensional
      and three dimensional chunks
 
+   * Automatic collection of information about the solution process
+
+   X Fortran interface
+
 ----------------------------------------------------------------------
 
 Possible projects for summer students:
-
- X Develop TK interfaces for options and monitoring 
-
- X Develop 1 and 3D distributed array code
 
  - Develop code to rebalance matrices (and vectors) for better 
    load balance during matrix vector multiplies.
@@ -64,9 +65,12 @@ Possible projects for summer students:
 
  - Interface to ScaLAPACK and BLACS
 
- - Complex versions of the Krylov subspace solvers
-
  * 1d wave equation, heat equation, etc examples with seperate graphics 
    for each processor.
+
+ X Develop TK interfaces for options and monitoring 
+
+ X Develop 1 and 3D distributed array code
+
 
 
