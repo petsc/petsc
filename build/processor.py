@@ -41,7 +41,7 @@ class Processor(build.transform.Transform):
     if status:
       raise RuntimeError('Could not execute \''+command+'\':\n'+output)
     elif output.find('warning') >= 0:
-      pass
+      self.debugPrint('\''+command+'\': '+output, 1, 'compile')
 
   def checkTag(self, f, tag):
     '''- If the tag matches the transform tag, return True
