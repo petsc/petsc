@@ -4,11 +4,11 @@ ALL: lib
 
 CFLAGS   = ${MATLAB_INCLUDE}
 FFLAGS   =
-SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c vecreg.c dlregis.c \
+SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c dlregis.c \
            pipeline.c comb.c vecstash.c vecmpitoseq.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vinv.o gcreatev.o vscat.o vpscat.o cmesh.o vecio.o vecreg.o dlregis.o \
+OBJSC    = vinv.o gcreatev.o vscat.o vpscat.o cmesh.o vecio.o dlregis.o \
            pipeline.o comb.o vecstash.o vecmpitoseq.o
 OBJSF    =
 LIBBASE  = libpetscvec

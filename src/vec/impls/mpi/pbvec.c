@@ -213,6 +213,48 @@ int VecCreate_MPI(Vec vv, ParameterDict dict)
   ierr = VecCreate_MPI_Private(vv,0,0,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSerialize_MPI"
+int VecSerialize_MPI(MPI_Comm comm, Vec *vec, PetscViewer viewer, PetscTruth store)
+{
+  Vec          v;
+  Vec_MPI     *x;
+  PetscScalar *array;
+  int          fd;
+  int          vars, locVars, ghostVars;
+  int          size;
+  int          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryGetDescriptor(viewer, &fd);                                                     CHKERRQ(ierr);
+  if (store) {
+    v    = *vec;
+    x    = (Vec_MPI *) v->data;
+    ierr = PetscBinaryWrite(fd, &v->N,      1,                PETSC_INT,     0);                          CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd, &v->n,      1,                PETSC_INT,     0);                          CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd, &x->nghost, 1,                PETSC_INT,     0);                          CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,  x->array,  v->n + x->nghost, PETSC_SCALAR,  0);                          CHKERRQ(ierr);
+  } else {
+    ierr = PetscBinaryRead(fd, &vars,      1,                   PETSC_INT);                               CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd, &locVars,   1,                   PETSC_INT);                               CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd, &ghostVars, 1,                   PETSC_INT);                               CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&locVars, &size, 1, MPI_INT, MPI_SUM, comm);                                     CHKERRQ(ierr);
+    if (size != vars) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Invalid row partition");
+    ierr = VecCreate(comm, &v);                                                                           CHKERRQ(ierr);
+    ierr = VecSetSize(v, locVars, vars);                                                                  CHKERRQ(ierr);
+    ierr = PetscMalloc((locVars + ghostVars) * sizeof(PetscScalar), &array);                              CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,  array,     locVars + ghostVars, PETSC_SCALAR);                            CHKERRQ(ierr);
+    ierr = VecCreate_MPI_Private(v, ghostVars, array, PETSC_NULL);                                        CHKERRQ(ierr);
+    ((Vec_MPI *) v->data)->array_allocated = array;
+
+    ierr = VecAssemblyBegin(v);                                                                           CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(v);                                                                             CHKERRQ(ierr);
+    *vec = v;
+  }
+
+  PetscFunctionReturn(0);
+}
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -813,7 +855,7 @@ int VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const PetscScalar *values,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_FETI"
-int VecCreate_FETI(Vec vv)
+int VecCreate_FETI(Vec vv, ParameterDict dict)
 {
   int ierr;
 

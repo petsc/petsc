@@ -42,9 +42,9 @@ int VecCreate(MPI_Comm comm, Vec *vec)
 
   v->map          = PETSC_NULL;
   v->data         = PETSC_NULL;
-  v->n            = 0;
-  v->N            = 0;
-  v->bs           = 0;
+  v->n            = -1;
+  v->N            = -1;
+  v->bs           = -1;
   v->mapping      = PETSC_NULL;
   v->bmapping     = PETSC_NULL;
   v->array_gotten = PETSC_FALSE;

@@ -505,6 +505,41 @@ int VecCreate_Seq(Vec V, ParameterDict dict)
   s->array_allocated = array;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecSerialize_Seq"
+int VecSerialize_Seq(MPI_Comm comm, Vec *vec, PetscViewer viewer, PetscTruth store)
+{
+  Vec          v;
+  Vec_Seq     *x;
+  PetscScalar *array;
+  int          fd;
+  int          vars;
+  int          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerBinaryGetDescriptor(viewer, &fd);                                                     CHKERRQ(ierr);
+  if (store) {
+    v    = *vec;
+    x    = (Vec_Seq *) v->data;
+    ierr = PetscBinaryWrite(fd, &v->n,     1,    PETSC_INT,    0);                                        CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,  x->array, v->n, PETSC_SCALAR, 0);                                        CHKERRQ(ierr);
+  } else {
+    ierr = PetscBinaryRead(fd, &vars,  1,    PETSC_INT);                                                  CHKERRQ(ierr);
+    ierr = VecCreate(comm, &v);                                                                           CHKERRQ(ierr);
+    ierr = VecSetSize(v, vars, vars);                                                                     CHKERRQ(ierr);
+    ierr = PetscMalloc(vars * sizeof(PetscScalar), &array);                                               CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,  array, vars, PETSC_SCALAR);                                               CHKERRQ(ierr);
+    ierr = VecCreate_Seq_Private(v, array);                                                               CHKERRQ(ierr);
+    ((Vec_Seq *) v->data)->array_allocated = array;
+
+    ierr = VecAssemblyBegin(v);                                                                           CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(v);                                                                             CHKERRQ(ierr);
+    *vec = v;
+  }
+
+  PetscFunctionReturn(0);
+}
 EXTERN_C_END
 
 

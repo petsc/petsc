@@ -44,8 +44,10 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec
   } else if (ksp->pc_side == PC_LEFT) {
     ierr = KSP_PCApply(ksp,ksp->B,vb,vbinvf);CHKERRQ(ierr);
     ierr = PCDiagonalScaleLeft(ksp->B,vbinvf,vbinvf);CHKERRQ(ierr);
+  } else if (ksp->pc_side == PC_SYMMETRIC) {
+    ierr = PCApplySymmetricLeft(ksp->B, vb, vbinvf);CHKERRQ(ierr);
   } else {
-    SETERRQ(PETSC_ERR_SUP,"Only right and left preconditioning are currently supported");
+    SETERRQ1(PETSC_ERR_SUP, "Invalid preconditioning side %d", ksp->pc_side);
   }
   if (!ksp->guess_zero) {
     /* skip right scaling since current guess already has it */
