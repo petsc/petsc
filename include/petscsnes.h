@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.6 1995/04/17 03:32:56 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.7 1995/04/19 03:01:32 bsmith Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -22,7 +22,7 @@ extern int SNESSetMethod(SNES,SNESMETHOD);
 extern int SNESSetMonitor(SNES, int (*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int (*)(Vec,void*),void *);
 extern int SNESSetFunction(SNES, Vec, int (*)(Vec,Vec,void*),void *,int);
-extern int SNESSetJacobian(SNES,Mat,int (*)(Vec,Mat*,void*),void *);
+extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(Vec,Mat*,Mat*,int*,void*),void *);
 extern int SNESDestroy(SNES);
 extern int SNESSetUp(SNES);
 extern int SNESSolve(SNES,int*);
