@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.18 1996/07/08 22:20:55 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.19 1996/07/21 22:20:38 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -128,7 +128,7 @@ C
       KSP              ksp
       Vec              x
       integer          ierr, n, dummy, rank
-      double precision rnorm
+      Double           rnorm
 
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       call KSPBuildSolution(ksp,PETSC_NULL,x,ierr)

@@ -1,5 +1,5 @@
 CC       = cc -T cray-t3d -DPARCH_t3d -h jump
-FC       = /mpp/bin/cf77 -C cray-t3d
+FC       = /mpp/bin/cf77 -C cray-t3d -h jump
 AR       = ar
 RM       = rm
 RANLIB   = true
