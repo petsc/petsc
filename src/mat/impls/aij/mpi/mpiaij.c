@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.153 1996/07/08 22:19:18 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.154 1996/07/11 04:07:59 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -1506,7 +1506,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   /* build local table of row and column ownerships */
   b->rowners = (int *) PetscMalloc(2*(b->size+2)*sizeof(int)); CHKPTRQ(b->rowners);
   PLogObjectMemory(B,2*(b->size+2)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIAIJ));
-  b->cowners = b->rowners + b->size + 1;
+  b->cowners = b->rowners + b->size + 2;
   MPI_Allgather(&m,1,MPI_INT,b->rowners+1,1,MPI_INT,comm);
   b->rowners[0] = 0;
   for ( i=2; i<=b->size; i++ ) {
@@ -1579,9 +1579,10 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   a->rowvalues    = 0;
   a->getrowactive = PETSC_FALSE;
 
-  a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
-  PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIAIJ));
-  PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(int));
+  a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
+  PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIAIJ));
+  a->cowners = a->rowners + a->size + 2;
+  PetscMemcpy(a->rowners,oldmat->rowners,2*(a->size+2)*sizeof(int));
   ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
     a->colmap = (int *) PetscMalloc((a->N)*sizeof(int));CHKPTRQ(a->colmap);
