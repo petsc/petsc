@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.195 2000/05/25 15:33:45 bsmith Exp balay $ */
+/* $Id: petscmat.h,v 1.196 2000/05/25 16:00:59 balay Exp balay $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -485,6 +485,7 @@ EXTERN int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,Scalar
 
 EXTERN int MatMPIBAIJSetHashTableFactor(Mat,double);
 EXTERN int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);
+EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
 
 typedef char* MATType;
 EXTERN int MATCreate(MPI_Comm,int,int,int,int,Mat*);
