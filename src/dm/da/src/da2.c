@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.171 2001/07/07 03:28:44 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.172 2001/07/17 20:41:52 bsmith Exp balay $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1240,7 +1240,7 @@ int DASetLocalFunction(DA da,DALocalFunction1 lf)
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction()
 @*/
-int DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,Vec,Scalar*,void*))
+int DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,void*,Scalar*,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);

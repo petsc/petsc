@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.72 2001/06/21 21:19:07 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.73 2001/07/18 14:21:14 balay Exp balay $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -152,7 +152,7 @@ EXTERN int DAMultiplyByJacobian1WithAD(DA,Vec,Vec,Vec,void*);
 EXTERN int DAComputeJacobian1(DA,Vec,Mat,void*);
 EXTERN int DAGetLocalFunction(DA,DALocalFunction1*);
 EXTERN int DASetLocalFunction(DA,DALocalFunction1);
-EXTERN int DASetLocalFunctioni(DA,int (*)(DALocalInfo*,MatStencil*,Vec,Scalar*,void*));
+EXTERN int DASetLocalFunctioni(DA,int (*)(DALocalInfo*,MatStencil*,void*,Scalar*,void*));
 EXTERN int DASetLocalJacobian(DA,DALocalFunction1);
 EXTERN int DASetLocalAdicFunction_Private(DA,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
