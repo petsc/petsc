@@ -290,11 +290,13 @@ class LanguageProcessor(args.ArgumentProcessor):
     return
 
   def __getstate__(self, d = None):
-    '''We do not want to pickle the language modules'''
+    '''We only want to pickle the language module names and output files. The other objects are set by configure.'''
     if d is None:
       d = args.ArgumentProcessor.__getstate__(self)
     if 'languageModule' in d:
       d['languageModule'] = dict([(lang,mod._loadName) for lang,mod in d['languageModule'].items()])
+    for member in ['preprocessorObject', 'compilerObject', 'linkerObject', 'sharedLinkerObject', 'compilers', 'libraries', 'versionControl']:
+      del d[member]
     return d
 
   def __setstate__(self, d):
@@ -302,6 +304,13 @@ class LanguageProcessor(args.ArgumentProcessor):
     args.ArgumentProcessor.__setstate__(self, d)
     self.__dict__.update(d)
     [self.getLanguageModule(language, moduleName) for language,moduleName in self.languageModule.items()]
+    self.preprocessorObject = {}
+    self.compilerObject     = {}
+    self.linkerObject       = {}
+    self.sharedLinkerObject = {}
+    self.compilers          = None
+    self.libraries          = None
+    self.versionControl     = None
     return
 
   def setArgDB(self, argDB):
