@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.24 1998/07/28 02:43:58 bsmith Exp bsmith $ */
+/* $Id: sles.h,v 1.25 1998/10/16 03:20:10 bsmith Exp bsmith $ */
 /*
    Defines PETSc interface to the linear solvers.
 */
@@ -30,7 +30,6 @@ extern int SLESAppendOptionsPrefix(SLES,char*);
 extern int SLESGetOptionsPrefix(SLES,char**);
 
 extern int PCBJacobiGetSubSLES(PC,int*,int*,SLES**);
-extern int PCBGSGetSubSLES(PC,int*,int*,SLES**);
 extern int PCASMGetSubSLES(PC,int*,int*,SLES**);
 
 #endif
