@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.121 1999/04/21 18:17:59 bsmith Exp balay $";
+static char vcid[] = "$Id: gmres.c,v 1.122 1999/05/04 20:34:52 balay Exp bsmith $";
 #endif
 
 /*
@@ -780,7 +780,7 @@ int KSPCreate_GMRES(KSP ksp)
   gmres->Rsvd                = 0;
   gmres->nprestart           = 0;
   gmres->nprestart_requested = 0;
-
+  ksp->guess_zero            = 1; 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

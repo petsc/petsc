@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.84 1999/04/19 22:14:29 bsmith Exp balay $";
+static char vcid[] = "$Id: iterativ.c,v 1.85 1999/05/04 20:34:35 balay Exp bsmith $";
 #endif
 
 /*
@@ -258,9 +258,9 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
   ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
   if (A == B) {
     ierr = MatUnScaleSystem(A,PETSC_NULL,work);CHKERRQ(ierr);
-    ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
-    ierr = VecDestroy(work);CHKERRQ(ierr);
   }
+  ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
+  ierr = VecDestroy(work);CHKERRQ(ierr);
   ierr = PetscPrintf(ksp->comm,"%d KSP preconditioned resid norm %14.12e true resid norm %14.12e\n",n,rnorm,scnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.61 1999/04/01 17:11:05 balay Exp bsmith $ 
+# $Id: makefile,v 1.62 1999/04/02 18:53:45 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -27,7 +27,7 @@ TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm clean
 TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm clean
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
-                   runex10_5 runex10_6 ex10.rm 
+                   runex10_5 runex10_6 runex10_8 ex10.rm 
 TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
 TESTEXAMPLES_8   = 
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
@@ -322,6 +322,12 @@ runex10_7:
 	-@if (diff output/ex10_7.out ex10_7.tmp) then true; \
 	   else echo "Possible problem with ex10_7, diffs above"; fi;
 	-@${RM} -f ex10_7.tmp
+runex10_8:
+	-@${MPIRUN} -np 1 ex10 -sles_diagonal_scale -pc_type eisenstat -ksp_smonitor -sles_diagonal_scale_fix \
+	   -f0 ../../../mat/examples/matrices/medium > ex10_8.tmp 2>&1; \
+	   if (diff output/ex10_8.out ex10_8.tmp) then true; \
+	   else echo "Possible problem with ex10_8, diffs above"; fi; \
+	   ${RM} -f ex10_8.tmp
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \

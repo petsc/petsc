@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.30 1998/12/05 21:06:07 balay Exp bsmith $";
+! "$Id: ex1f.F,v 1.31 1999/04/16 16:10:54 bsmith Exp bsmith $";
 !
 !       Formatted test for TS routines.
 !
@@ -226,7 +226,7 @@
 !         copy type to string of length 5 to ensure equality test        
 !         is done correctly
 !
-        call PetscStrncpy(etype,type,5)
+        call PetscStrncpy(etype,type,5,ierr)
         if (etype .eq. TS_EULER) then
           if (abs(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
             print*,'Error in Euler method: 2-norm ',nrm_2/steps,        &

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.72 1999/04/19 22:14:51 bsmith Exp balay $";
+static char vcid[] = "$Id: cheby.c,v 1.73 1999/05/04 20:34:58 balay Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
@@ -208,6 +208,7 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->data                      = (void *) chebychevP;
   ksp->pc_side                   = PC_LEFT;
   ksp->calc_res                  = 1;
+  ksp->guess_zero                = 1; 
 
   chebychevP->emin               = 1.e-2;
   chebychevP->emax               = 1.e+2;

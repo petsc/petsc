@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.245 1999/04/02 16:38:31 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.246 1999/04/02 16:39:48 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -108,10 +108,10 @@ extern int   PetscStrcpy(char[],const char[]);
 extern int   PetscStrcat(char[],const char[]);
 extern int   PetscStrncat(char[],const char[],int);
 extern int   PetscStrncpy(char[],const char[],int);
-extern char* PetscStrchr(const char[],char);
-extern char* PetscStrrchr(const char[],char);
-extern char* PetscStrstr(const char[],const char[]);
-extern char* PetscStrtok(const char[],const char[]);
+extern int   PetscStrchr(const char[],char,char **);
+extern int   PetscStrrchr(const char[],char,char **);
+extern int   PetscStrstr(const char[],const char[],char **);
+extern int   PetscStrtok(const char[],const char[],char **);
 
 #define PetscTypeCompare(a,b) (!PetscStrcmp((char*)(a),(char *)(b)))
 

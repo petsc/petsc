@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.30 1999/04/21 18:19:20 bsmith Exp balay $";
+static char vcid[] = "$Id: zksp.c,v 1.31 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -65,15 +65,15 @@ void kspsettype_(KSP *ksp,CHAR itmethod, int *__ierr,int len )
 void kspgettype_(KSP *ksp,CHAR name,int *__ierr,int len)
 {
   char *tname;
-  int  ierr;
-  *__ierr = KSPGetType(*ksp,&tname);
+
+  *__ierr = KSPGetType(*ksp,&tname);if (*__ierr) return;
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    *__ierr = PetscStrncpy(t,tname,len1); if (*__ierr) return;
+    *__ierr = PetscStrncpy(t,tname,len1); 
   }
 #else
-  *__ierr = PetscStrncpy(name,tname,len); if (*__ierr) return;
+  *__ierr = PetscStrncpy(name,tname,len);
 #endif
 }
 

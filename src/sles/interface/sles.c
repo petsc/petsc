@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.120 1999/05/06 20:40:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.121 1999/05/06 20:45:39 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -403,7 +403,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
     if (sles->dscale) {
       ierr = PCGetOperators(pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
       if (mat == pmat) {
-        Scalar     *x;
+        Scalar     *xx;
         int        i,n;
         PetscTruth zeroflag = PETSC_FALSE;
 
@@ -413,15 +413,15 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
         }
         ierr = MatGetDiagonal(mat,sles->diagonal);CHKERRQ(ierr);
         ierr = VecGetLocalSize(sles->diagonal,&n);CHKERRQ(ierr);
-        ierr = VecGetArray(sles->diagonal,&x);CHKERRQ(ierr);
+        ierr = VecGetArray(sles->diagonal,&xx);CHKERRQ(ierr);
         for ( i=0; i<n; i++ ) {
-          if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
+          if (xx[i] != 0.0) xx[i] = 1.0/sqrt(PetscAbsScalar(xx[i]));
           else {
-            x[i]     = 1.0;
-            zeroflag = PETSC_TRUE;
+            xx[i]     = 1.0;
+            zeroflag  = PETSC_TRUE;
           }
         }
-        ierr = VecRestoreArray(sles->diagonal,&x);CHKERRQ(ierr);
+        ierr = VecRestoreArray(sles->diagonal,&xx);CHKERRQ(ierr);
         if (zeroflag) {
           PLogInfo(pc,"SLESSetUp:Zero detected in diagonal of matrix, using 1 at those locations\n");
         }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.8 1999/03/01 04:56:08 bsmith Exp balay $";
+static char vcid[] = "$Id: bicg.c,v 1.9 1999/05/04 20:35:11 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -143,6 +143,7 @@ int KSPCreate_BiCG(KSP ksp)
   ksp->data                      = (void *) 0;
   ksp->pc_side                   = PC_LEFT;
   ksp->calc_res                  = 1;
+  ksp->guess_zero                = 1; 
   ksp->ops->setup                = KSPSetUp_BiCG;
   ksp->ops->solve                = KSPSolve_BiCG;
   ksp->ops->destroy              = KSPDestroy_BiCG;

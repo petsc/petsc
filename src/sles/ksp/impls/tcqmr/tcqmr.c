@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.44 1999/01/31 16:09:02 bsmith Exp balay $";
+static char vcid[] = "$Id: tcqmr.c,v 1.45 1999/05/04 20:35:05 balay Exp bsmith $";
 #endif
 
 /*
@@ -178,6 +178,7 @@ int KSPCreate_TCQMR(KSP ksp)
   ksp->ops->solve         = KSPSolve_TCQMR;
   ksp->ops->destroy       = KSPDefaultDestroy;
   ksp->ops->view          = 0;
+  ksp->guess_zero         = 1; 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

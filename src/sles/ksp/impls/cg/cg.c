@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.87 1999/04/20 15:05:39 bsmith Exp balay $";
+static char vcid[] = "$Id: cg.c,v 1.88 1999/05/04 20:34:47 balay Exp bsmith $";
 #endif
 
 /*
@@ -354,6 +354,7 @@ int KSPCreate_CG(KSP ksp)
   ksp->data                      = (void *) cg;
   ksp->pc_side                   = PC_LEFT;
   ksp->calc_res                  = 1;
+  ksp->guess_zero                = 1; 
 
   /*
        Sets the functions that are associated with this data structure 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.5 1999/03/19 21:24:03 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.6 1999/05/04 20:37:20 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -79,8 +79,8 @@ int main( int argc, char **argv )
       printf("Enter segmentname: value (or return to end) ");
       gets(string);
       while (string[0] != 0) {
-        segname = PetscStrtok(string," ");
-        value   = PetscStrtok(0," ");
+        ierr    = PetscStrtok(string," ",&segname);CHKERRA(ierr);
+        ierr    = PetscStrtok(0," ",&value);CHKERRA(ierr);
         bs      = PetscStrlen(value);
         ierr = AODataSegmentAdd(aodata,keyname,segname,bs,1,&zero,value,PETSC_CHAR);CHKERRA(ierr);
         printf("Enter segmentname: value (or return to end) ");
@@ -109,8 +109,8 @@ int main( int argc, char **argv )
     printf("Enter keyname segment name to remove: (or return to end) ");
     gets(string);
     while (string[0] != 0) {
-      ikeyname   = PetscStrtok(string," ");
-      segname    = PetscStrtok(0," ");
+      ierr = PetscStrtok(string," ",&ikeyname);CHKERRA(ierr);
+      ierr = PetscStrtok(0," ",&segname);CHKERRA(ierr);
       ierr = AODataSegmentRemove(aodata,ikeyname,segname);CHKERRA(ierr);
       printf("Enter keyname segment name to remove: (or return to end) ");
       gets(string);

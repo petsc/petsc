@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.29 1999/03/19 21:22:11 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.30 1999/05/04 20:35:25 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -233,20 +233,20 @@ int main(int argc,char **args)
       */
       ierr = ViewerStringOpen(PETSC_COMM_WORLD,slesinfo,120,&viewer);CHKERRA(ierr);
       ierr = SLESView(sles,viewer);CHKERRA(ierr);
-      matrixname = PetscStrrchr(file[i],'/');
-      PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
-                matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);
+      ierr = PetscStrrchr(file[i],'/',&matrixname);CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
+                matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRQ(ierr);
 
       /*
          Destroy the viewer
       */
       ierr = ViewerDestroy(viewer);CHKERRA(ierr);
     } else {
-      PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
       if (norm < 1.e-10) {
-        PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-10\n");
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-10\n");CHKERRQ(ierr);
       } else {
-        PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);CHKERRQ(ierr);
       }
     }
     /* 
