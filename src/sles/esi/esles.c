@@ -10,7 +10,7 @@ esi::petsc::SolverIterative<double,int>::SolverIterative(MPI_Comm comm)
   int      ierr;
 
   ierr = SLESCreate(comm,&this->sles);if (ierr) return;
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->sles,"esi_");
+  ierr = SLESSetOptionsPrefix(this->sles,"esi_");
   ierr = SLESSetFromOptions(this->sles);
 
   ierr = PetscObjectGetComm((PetscObject)this->sles,&this->comm);if (ierr) return;

@@ -14,7 +14,13 @@ Input parameters include:\n\
 T*/
 
 /* 
-  Include "esi/petsc/solveriterative.h" so that we can use the PETSc ESI interface.
+   Currently includes the PETSc specific versions of the include file. 
+This is only because that is where the ESI factories are defined. If the 
+abstract factory classes are moved to ESI then one would include no
+PETSc specific header files except petsc.h
+
+   Note the usual PETSc objects all work. Those related to vec, mat, pc, ksp, and sles
+are prefixed with esi_
 
 */
 #include "esi/petsc/solveriterative.h"
@@ -31,7 +37,7 @@ int main(int argc,char **args)
   ::esi::SolverIterative<double,int>        *solver;    
   ::esi::MatrixRowWriteAccess<double,int>   *A;
   int                                       ierr,i,n = 3,Istart,Iend,c[3],N;
-  double                                    v[3];
+  double                                    v[3],*barray;
   ::esi::IndexSpaceFactory<int>             *ifactory;
   ::esi::VectorFactory<double,int>          *vfactory;
   ::esi::OperatorFactory<double,int>        *ofactory;
@@ -111,10 +117,6 @@ int main(int argc,char **args)
   /* 
      Create parallel vectors.i
       - We form 1 vector from scratch and then duplicate as needed.
-      - When using VecCreate(), VecSetSizes and VecSetFromOptions()
-        in this example, we specify only the
-        vector's global dimension; the parallel partitioning is determined
-        at runtime. 
       - When solving a linear system, the vectors and matrices MUST
         be partitioned accordingly.  PETSc automatically generates
         appropriately partitioned matrices and vectors when MatCreate()
@@ -126,17 +128,15 @@ int main(int argc,char **args)
   */
   ierr = vfactory->getVector(*indexspace,x);CHKERRQ(ierr);
   ierr = x->clone(b);CHKERRQ(ierr);
-  ierr = b->getCoefPtrReadWriteLock(
-  /* 
-     Set exact solution; then compute right-hand-side vector.
-     By default we use an exact solution of a vector with all
-     elements of 1.0;  Alternatively, using the runtime option
-     -random_sol forms a solution vector with random components.
-  */
 
+  ierr = b->getCoefPtrReadWriteLock(barray);CHKERRQ(ierr);
+  for (i=Istart; i<Iend; i++) {
+    barray[i-Istart] = i;
+  }
+  ierr = b->releaseCoefPtrLock(barray);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                Create the linear solver and set various options
+                Create the linear solver
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* 
