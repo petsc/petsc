@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.231 1997/03/13 21:22:12 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.232 1997/03/13 21:22:58 curfman Exp curfman $";
 #endif
 
 /*
@@ -1963,6 +1963,11 @@ int MatZeroEntries(Mat mat)
    row formats can optionally remove the main diagonal entry from the
    nonzero structure as well, by passing a null pointer as the final
    argument).
+
+   For the parallel case, all processes that share the matrix (i.e.,
+   those in the communicator used for matrix creation) MUST call this
+   routine, regardless of whether any rows being zeroed are owned by
+   them.
 
 .keywords: matrix, zero, rows, boundary conditions 
 
