@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.11 2001/01/29 21:12:45 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.12 2001/03/12 18:33:23 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -79,10 +79,10 @@ PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 # and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
 # in matrix.h (sigh)
 #
-#MATLAB_INCLUDE    = -I/software/solaris-2/com/packages/matlab-r11.1/extern/include
-#MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-#MATLAB_LIB        = ${CLINKER_SLFLAG}/software/linux/com/packages/matlab-r11.1/extern/lib/lnx86 -L/software/linux/com/packages/matlab-r11.1/extern/lib/lnx86 -leng -lmx -lmat -lmi -lut
-#PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
+MATLAB_INCLUDE    = -I/software/solaris-2/com/packages/matlab-r11.1/extern/include
+MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
+MATLAB_LIB        = ${CLINKER_SLFLAG}/software/linux/com/packages/matlab-r11.1/extern/lib/lnx86 -L/software/linux/com/packages/matlab-r11.1/extern/lib/lnx86 -leng -lmx -lmat -lmi -lut
+PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed
 #
