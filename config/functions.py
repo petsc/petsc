@@ -60,7 +60,14 @@ class Configure(config.base.Configure):
   def checkRunExecutable(self):
     '''Check we can run executable created'''
     if not self.checkRun('', ''):
-      raise RuntimeError('Cannot run created executables')
+      import os.path
+      self.pushLanguage('C')
+      if os.path.basename(self.framework.argDB['CC']) == 'mpicc':
+        msg = '\n  MPI installation '+self.framework.argDB['CC']+' is likely incorrect.\n  Use --with-mpi-dir to indicate alternative MPI'
+      else:
+        msg = ''
+      self.popLanguage()
+      raise RuntimeError('Cannot run created executables.'+msg)
     return
 
   def checkMemcmp(self):
