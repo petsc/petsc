@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.22 1995/08/03 17:38:34 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.23 1995/08/07 22:01:28 bsmith Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -110,5 +110,6 @@ typedef struct {
 
 int SNES_KSP_EW_Converged_Private(KSP,int,double,void*);
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES,KSP);
+int SNESScaleStep_Private(SNES,Vec,double*,double*,double*,double*);
 
 #endif

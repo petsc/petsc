@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.2 1995/08/17 23:42:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ex20.c,v 1.3 1995/08/20 18:12:55 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -10,7 +10,6 @@ user-defined event logging.\n\n";
 #include <fcntl.h>
 #include <unistd.h>
 #include "vec.h"
-#include "plog.h"
 
 /* Note:  Most applications would not read and write a vector within
   the same program.  This example is intended only to demonstrate
