@@ -10,8 +10,6 @@ Meta priorities:
   allow using nlocal = scale = Ng/size+1, except for last processor where it is
   in PetscSplitOwnership()
 
-X  fix ISEqual and ISGetSize LocalSize for Tao
-
    add support for .m files beginning with http: scp: ftp: in petscMatlabEngineEvaluate()
 
    add support for pseudo timestepping to kick out when fnorm < tol
@@ -21,16 +19,11 @@ X  fix ISEqual and ISGetSize LocalSize for Tao
 
   add a "element overlap" AS preconditioner to complement our "node overlap" ASP
 
-X  mv the two contrib pc things into the regular pc directory
-
   improve snes/examples/tutorials/ex8.c to use macros U(i,j) instead of U(row) etc
 
   add MatPermute_MPIAIJ() and use it to have DAGetColoring() overload the 
   MatView() to view it in its sequential ordering much like the VecView_MPI_DA
   does vectors.
-
-  add PetscSynchronizedBinaryRead() and Seek() and replace the horrible
-  if (rnk) {} broadcast nonsense in flow.;c
 
   Use macro for MatSetValuesBlock_SeqBAIJ() in MatSetValuesBlocked_MPIBAIJ()
 
@@ -1254,3 +1247,11 @@ allows reusing with different boundary conditions.
   X Have PETSc put some header information in front of -log_summary
 
 X Port to BeOS ( A Mac replacement OS) http://www.be.com
+
+X  add PetscSynchronizedBinaryRead() and Seek() and replace the horrible
+  if (rnk) {} broadcast nonsense in flow.;c
+
+X  mv the two contrib pc things into the regular pc directory
+
+X  fix ISEqual and ISGetSize LocalSize for Tao
+

@@ -1,4 +1,4 @@
-/*$Id: iscomp.c,v 1.28 2000/05/25 22:27:04 bsmith Exp bsmith $*/
+/*$Id: iscomp.c,v 1.29 2000/05/25 22:33:06 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -35,7 +35,7 @@ $    is2 = {2, 3} {0, 1}
 @*/
 int ISEqual(IS is1,IS is2,PetscTruth *flg)
 {
-  int        sz,sz1,sz2,ierr,*ptr1,*ptr2,*a1,*a2;
+  int        sz1,sz2,ierr,*ptr1,*ptr2,*a1,*a2;
   PetscTruth flag;
   MPI_Comm   comm;
 
@@ -47,29 +47,30 @@ int ISEqual(IS is1,IS is2,PetscTruth *flg)
   
   ierr = ISGetSize(is1,&sz1);CHKERRQ(ierr);
   ierr = ISGetSize(is2,&sz2);CHKERRQ(ierr);
-  if(sz1 != sz2) { *flg = PETSC_FALSE; PetscFunctionReturn(0);}
+  if (sz1 != sz2) { 
+    *flg = PETSC_FALSE;
+  } else {
+    ierr = ISGetIndices(is1,&ptr1);CHKERRQ(ierr);
+    ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
   
-  ierr = ISGetIndices(is1,&ptr1);CHKERRQ(ierr);
-  ierr = ISGetIndices(is2,&ptr2);CHKERRQ(ierr);
+    a1   = (int*)PetscMalloc((sz1+1)*sizeof(int));
+    a2   = (int*)PetscMalloc((sz2+1)*sizeof(int));
+
+    ierr = PetscMemcpy(a1,ptr1,sz1*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMemcpy(a2,ptr2,sz1*sizeof(int));CHKERRQ(ierr);
+
+    ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
+    ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
+    ierr = PetscMemcmp(a1,a2,sz1*sizeof(int),&flag);CHKERRQ(ierr);
+
+    ierr = ISRestoreIndices(is1,&ptr1);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);
   
-  sz   = sz1*sizeof(int);
-  a1   = (int*)PetscMalloc((sz1+1)*sizeof(int));
-  a2   = (int*)PetscMalloc((sz2+1)*sizeof(int));
+    ierr = PetscFree(a1);CHKERRQ(ierr);
+    ierr = PetscFree(a2);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(a1,ptr1,sz);CHKERRQ(ierr);
-  ierr = PetscMemcpy(a2,ptr2,sz);CHKERRQ(ierr);
-
-  ierr = PetscSortInt(sz1,a1);CHKERRQ(ierr);
-  ierr = PetscSortInt(sz2,a2);CHKERRQ(ierr);
-  ierr = PetscMemcmp(a1,a2,sz,&flag);CHKERRQ(ierr);
-
-  ierr = ISRestoreIndices(is1,&ptr1);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is2,&ptr2);CHKERRQ(ierr);
-  
-  ierr = PetscFree(a1);CHKERRQ(ierr);
-  ierr = PetscFree(a2);CHKERRQ(ierr);
-
-  ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);  
+    ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);  
+  }
   ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_MIN,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
