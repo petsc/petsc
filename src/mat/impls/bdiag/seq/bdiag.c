@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.48 1995/09/11 01:54:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.49 1995/09/11 18:48:38 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -42,7 +42,11 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
         }
         if (!dfound) {
           if (dmat->nonew) {
+#if !defined(PETSC_COMPLEX)
             if (dmat->user_alloc && v[j]) {
+#else
+            if (dmat->user_alloc && real(v[j]) || imag(v[j])) {
+#endif
               PLogInfo((PetscObject)matin,
                 "MatSetValues_BDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
             }
@@ -131,7 +135,11 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
         }
         if (!dfound) {
           if (dmat->nonew) {
+#if !defined(PETSC_COMPLEX)
             if (dmat->user_alloc && v[j]) {
+#else
+            if (dmat->user_alloc && real(v[j]) || imag(v[j])) {
+#endif
               PLogInfo((PetscObject)matin,
                 "MatSetValues_BDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
             }
