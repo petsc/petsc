@@ -15,7 +15,6 @@ Meta priorities:
 
   - MatZeroColumns()
 
-  - ISDuplicate()
 
   - make DrawOpenPostscript()
 
@@ -35,17 +34,11 @@ Meta priorities:
     arguments to work like MatCreateShell() now works keeping the Fortran
     function pointers in the field fortran_func_pointers.
 
-  - Add ISGlobalToLocal() that does
-    1) replace off processor with -1 and
-    2) remove all off processor entries from list
-    Perhaps change all the ISGlobalxxxx stuff to DAxxx naming?
-  
+ 
   - MatZeroRows_MPIAIJ/MPIUNI -> causes calls to MPI_Isend/recv
 
   - PetscSortIntAndPermute()/PetscSortIntAndGetPermutation()
 
-  - petsc-maint #1067:  Fix MatTranspose for parallel cases according
-    to Matt's suggestion.
     
   - Fix fortran stub generator so that it uses
         PetscToPointerComm() for communicators instead of
@@ -881,3 +874,20 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
     oonce new SeqAIJ code for one processor has been tested.
    Fix MPI factorization for one processor on aij and baij; currently they
     return a seq factored matrix should return a mpi factored matrix.
+
+  X ISDuplicate()
+
+  X petsc-maint #1067:  Fix MatTranspose for parallel cases according
+    to Matt's suggestion.
+
+  X Add ISGlobalToLocal() that does
+    1) replace off processor with -1 and/or
+    2) remove all off processor entries from list
+    Perhaps change all the ISLocalToGlobal() stuff to XXXX naming?
+       How to do: add to LocalToGlobalMapping 3 new fields 
+           globalstart - smallest global in local list
+           globalend - largest global in local list+1
+           globals - array of size (globalend - globalstart) containing
+                     local index (or -1) for each global between
+                     globalstart and globalend.
+           Have these set only if user calls ISGlobalToLocal()
