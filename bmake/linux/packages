@@ -132,6 +132,12 @@ PETSC_HAVE_PNETCDF = -DPETSC_HAVE_NETCDF
 HDF4_INCLUDE      = -I/home/petsc/soft/linux-rh73/HDF4.1r5/include
 HDF4_LIB          = -L/home/petsc/soft/linux-rh73/HDF4.1r5/lib -lmfhdf -ldf -lz -ljpeg
 PETSC_HAVE_HDF4   = -DPETSC_HAVE_HDF4
+#
+# SPAI 
+# 
+SPAI_INCLUDE    = -I/home/petsc/soft/linux-rh73/spai_3.0/lib
+SPAI_LIB        = /home/petsc/soft/linux-rh73/spai_3.0/lib/libspai.a
+PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 
 #
 # ------------------------------------------------------------------------------
