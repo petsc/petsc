@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.9 1996/08/21 19:22:16 gropp Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.10 1996/09/27 18:45:28 bsmith Exp curfman $";
 #endif
 /*
       Code for manipulating files.
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: fhost.c,v 1.9 1996/08/21 19:22:16 gropp Exp bsmith $"
 
 /*@C
     PetscGetHostName - Returns the name of the host. This attempts to
-      return the entire internet name. It may not return the same name
-      as MPI_Get_processor_name().
+    return the entire Internet name. It may not return the same name
+    as MPI_Get_processor_name().
 
     Input Parameter:
     nlen - length of name
