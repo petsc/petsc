@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.62 2001/08/06 21:19:20 bsmith Exp bsmith $ */
+/* $Id: petscsys.h,v 1.63 2001/08/07 21:32:24 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -43,6 +43,7 @@ EXTERN int PetscGetWorkingDirectory(char[],int);
 EXTERN int PetscGetRealPath(char[],char[]);
 EXTERN int PetscGetHomeDirectory(char[],int);
 EXTERN int PetscTestFile(const char[],char,PetscTruth*);
+EXTERN int PetscTestDirectory(const char[],char,PetscTruth*);
 EXTERN int PetscBinaryRead(int,void*,int,PetscDataType);
 EXTERN int PetscSynchronizedBinaryRead(MPI_Comm,int,void*,int,PetscDataType);
 EXTERN int PetscBinaryWrite(int,void*,int,PetscDataType,int);
