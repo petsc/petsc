@@ -1,0 +1,174 @@
+/*$Id: baijfact.c,v 1.86 2000/11/28 17:29:14 bsmith Exp $*/
+/*
+    Factorization code for BAIJ format. 
+*/
+#include "src/mat/impls/baij/seq/baij.h"
+#include "src/vec/vecimpl.h"
+#include "src/inline/ilu.h"
+
+/*
+    The symbolic factorization code is identical to that for AIJ format,
+  except for very small changes since this is now a SeqBAIJ datastructure.
+  NOT good code reuse.
+*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatLUFactorSymbolic_SeqBAIJ"></a>*/"MatLUFactorSymbolic_SeqBAIJ"
+int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;
+  IS          isicol;
+  int         *r,*ic,ierr,i,n = a->mbs,*ai = a->i,*aj = a->j;
+  int         *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = a->bs,bs2=a->bs2;
+  int         *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
+  PetscReal   f = 1.0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(isrow,IS_COOKIE);
+  PetscValidHeaderSpecific(iscol,IS_COOKIE);
+  if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
+
+  if (!isrow) {
+    ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&isrow);CHKERRQ(ierr);
+  }
+  if (!iscol) {
+    ierr = ISCreateStride(PETSC_COMM_SELF,A->M,0,1,&iscol);CHKERRQ(ierr);
+  }
+  ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+
+  if (info) f = info->fill;
+  /* get new row pointers */
+  ainew = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(ainew);
+  ainew[0] = 0;
+  /* don't know how many column pointers are needed so estimate */
+  jmax = (int)(f*ai[n] + 1);
+  ajnew = (int*)PetscMalloc((jmax)*sizeof(int));CHKPTRQ(ajnew);
+  /* fill is a linked list of nonzeros in active row */
+  fill = (int*)PetscMalloc((2*n+1)*sizeof(int));CHKPTRQ(fill);
+  im = fill + n + 1;
+  /* idnew is location of diagonal in factor */
+  idnew = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(idnew);
+  idnew[0] = 0;
+
+  for (i=0; i<n; i++) {
+    /* first copy previous fill into linked list */
+    nnz     = nz    = ai[r[i]+1] - ai[r[i]];
+    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
+    ajtmp   = aj + ai[r[i]];
+    fill[n] = n;
+    while (nz--) {
+      fm  = n;
+      idx = ic[*ajtmp++];
+      do {
+        m  = fm;
+        fm = fill[m];
+      } while (fm < idx);
+      fill[m]   = idx;
+      fill[idx] = fm;
+    }
+    row = fill[n];
+    while (row < i) {
+      ajtmp = ajnew + idnew[row] + 1;
+      nzbd  = 1 + idnew[row] - ainew[row];
+      nz    = im[row] - nzbd;
+      fm    = row;
+      while (nz-- > 0) {
+        idx = *ajtmp++;
+        nzbd++;
+        if (idx == i) im[row] = nzbd;
+        do {
+          m  = fm;
+          fm = fill[m];
+        } while (fm < idx);
+        if (fm != idx) {
+          fill[m]   = idx;
+          fill[idx] = fm;
+          fm        = idx;
+          nnz++;
+        }
+      }
+      row = fill[row];
+    }
+    /* copy new filled row into permanent storage */
+    ainew[i+1] = ainew[i] + nnz;
+    if (ainew[i+1] > jmax) {
+
+      /* estimate how much additional space we will need */
+      /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
+      /* just double the memory each time */
+      int maxadd = jmax;
+      /* maxadd = (int)((f*(ai[n]+1)*(n-i+5))/n); */
+      if (maxadd < nnz) maxadd = (n-i)*(nnz+1);
+      jmax += maxadd;
+
+      /* allocate a longer ajnew */
+      ajtmp = (int*)PetscMalloc(jmax*sizeof(int));CHKPTRQ(ajtmp);
+      ierr  = PetscMemcpy(ajtmp,ajnew,ainew[i]*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscFree(ajnew);CHKERRQ(ierr);
+      ajnew = ajtmp;
+      realloc++; /* count how many times we realloc */
+    }
+    ajtmp = ajnew + ainew[i];
+    fm    = fill[n];
+    nzi   = 0;
+    im[i] = nnz;
+    while (nnz--) {
+      if (fm < i) nzi++;
+      *ajtmp++ = fm;
+      fm       = fill[fm];
+    }
+    idnew[i] = ainew[i] + nzi;
+  }
+
+  if (ai[n] != 0) {
+    PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Run with -pc_lu_fill %g or use \n",af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:PCLUSetFill(pc,%g);\n",af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:for best performance.\n");
+  } else {
+     PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Empty matrix.\n");
+  }
+
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+
+  ierr = PetscFree(fill);CHKERRQ(ierr);
+
+  /* put together the new matrix */
+  ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,B);CHKERRQ(ierr);
+  PLogObjectParent(*B,isicol); 
+  b = (Mat_SeqBAIJ*)(*B)->data;
+  ierr = PetscFree(b->imax);CHKERRQ(ierr);
+  b->singlemalloc = PETSC_FALSE;
+  /* the next line frees the default space generated by the Create() */
+  ierr = PetscFree(b->a);CHKERRQ(ierr);
+  ierr = PetscFree(b->ilen);CHKERRQ(ierr);
+  b->a          = (MatScalar*)PetscMalloc((ainew[n]+1)*sizeof(MatScalar)*bs2);CHKPTRQ(b->a);
+  b->j          = ajnew;
+  b->i          = ainew;
+  b->diag       = idnew;
+  b->ilen       = 0;
+  b->imax       = 0;
+  b->row        = isrow;
+  b->col        = iscol;
+  ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
+  ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+  b->icol       = isicol;
+  b->solve_work = (Scalar*)PetscMalloc((bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+  /* In b structure:  Free imax, ilen, old a, old j.  
+     Allocate idnew, solve_work, new a, new j */
+  PLogObjectMemory(*B,(ainew[n]-n)*(sizeof(int)+sizeof(MatScalar)));
+  b->maxnz = b->nz = ainew[n];
+  
+  (*B)->factor                 = FACTOR_LU;
+  (*B)->info.factor_mallocs    = realloc;
+  (*B)->info.fill_ratio_given  = f;
+  if (ai[n] != 0) {
+    (*B)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
+  } else {
+    (*B)->info.fill_ratio_needed = 0.0;
+  }
+  PetscFunctionReturn(0); 
+}
