@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.100 1996/04/09 02:17:20 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.101 1996/04/09 04:20:39 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
 
 #include "bdiag.h"
-#include "vec/vecimpl.h"
+#include "src/vec/vecimpl.h"
 
 static int MatSetValues_SeqBDiag(Mat A,int m,int *im,int n,int *in,
                                  Scalar *v,InsertMode is)
@@ -1689,7 +1689,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
 
   /* create our matrix */
   nb = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&nb,&flg); CHKERRQ(ierr);
   ierr = MatCreateSeqBDiag(comm,M,N,0,nb,PETSC_NULL,PETSC_NULL,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBDiag *) B->data;

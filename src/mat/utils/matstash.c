@@ -1,4 +1,8 @@
-#include "vec/vecimpl.h"
+#ifndef lint
+static char vcid[] = "$Id: gcreate.c,v 1.84 1996/04/12 23:41:27 curfman Exp $";
+#endif
+
+#include "src/vec/vecimpl.h"
 #include "matimpl.h"
 
 #define CHUNCKSIZE   5000

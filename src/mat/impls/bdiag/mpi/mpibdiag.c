@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.83 1996/04/09 04:20:47 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.84 1996/04/09 20:24:03 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: mpibdiag.c,v 1.83 1996/04/09 04:20:47 curfman Exp cur
 */
 
 #include "mpibdiag.h"
-#include "vec/vecimpl.h"
+#include "src/vec/vecimpl.h"
 
 static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
@@ -1076,9 +1076,8 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     if (maxnz != nz) SETERRQ(1,"MatLoad_MPIBDiag:something is wrong with file");
   }
 
-  nb = 1;   /* uses a block size of 1 by default; maybe need a different options
-              database key, since this is used for MatCreate() also? */
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg);CHKERRQ(ierr);
+  nb = 1;   /* uses a block size of 1 by default; */
+  ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&nb,&flg);CHKERRQ(ierr);
   ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,PETSC_NULL,PETSC_NULL,newmat);CHKERRQ(ierr);
   A = *newmat;
 
