@@ -267,4 +267,22 @@ SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
 deleteshared: chkopts
 	$(RM) $(LDIR)/*.so*  $(LDIR)/*.sl $(LDIR)/so_locations
 
+
 noshared:
+
+#default shared library suffix
+SLSUFFIX = so
+
+checkshared: chkopts
+	-@for LIBNAME in  $(SHLIBS) ; do  \
+	if [ -f $(LDIR)/$$LIBNAME.a ];	then \
+	if [ -f $(LDIR)/$$LIBNAME.$(SLSUFFIX) ]; then \
+	flag=`find $(LDIR) -type f -name $$LIBNAME.a -newer $(LDIR)/$$LIBNAME.$(SLSUFFIX) -print` ;\
+	if [ "$$flag" != "" ]; then \
+	echo "shared libs in $(LDIR) out of date" ;\
+	echo "rerun: $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) shared" ;\
+	break; \
+	fi ;\
+	fi ;\
+	fi ;\
+	done
