@@ -44,6 +44,16 @@ void compiler::Parse(void) {
     i++;
     arg.pop_front();
   }
+  AddSystemFiles();
+}
+
+void compiler::AddSystemFiles(void) {
+  FindInstallation();
+  AddSystemInclude();
+  AddSystemLib();
+}
+
+void compiler::FindInstallation(void) {
     /* Find location of system libraries and headers */
     InstallDir = compilearg.front();
 
@@ -70,16 +80,20 @@ void compiler::Parse(void) {
     /* Compiler is located in InstallDir/bin/compiler.exe */
     /* Note: InstallDir includes the trailing / */
     InstallDir = InstallDir.substr(0,InstallDir.find_last_of("\\",InstallDir.find_last_of("\\")-1)+1);
+}
 
+void compiler::AddSystemInclude(void) {
     /* System headers are in InstallDir/include */
     arg.push_back("-I" + InstallDir + "include");
-    i = arg.end();
+    LI i = arg.end();
     FoundI(--i);
     arg.pop_back();
+}
 
+void compiler::AddSystemLib(void) {
     /* System libraries are in InstallDir/lib */ 
     arg.push_back("-L" + InstallDir + "lib");
-    i = arg.end();
+    LI i = arg.end();
     FoundL(--i);
     arg.pop_back();
 }

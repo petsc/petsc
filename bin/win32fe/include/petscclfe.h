@@ -14,6 +14,7 @@ namespace PETScFE {
   protected:
     virtual void Help(void);
     virtual void FoundL(LI &);
+    virtual void AddPaths(void);
   };
 
   class df : public cl {
@@ -22,6 +23,8 @@ namespace PETScFE {
     ~df() {}
   protected:
     virtual void Help(void);
+    virtual void AddPaths(void);
+    virtual void AddSystemLib(void);
   };
 
 }

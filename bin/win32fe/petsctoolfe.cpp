@@ -69,8 +69,10 @@ void tool::FoundPath(LI &i) {
       string path="PATH";
       GetEnvironmentVariable(path.c_str(),buff,length);
       string newpath = (string)buff;
+      if (verbose) cout << "win32fe: Adding to path: " << *i << endl;
       newpath = *i + ";" + newpath;
       SetEnvironmentVariable(path.c_str(),newpath.c_str());
+      i = arg.erase(i);
     } else {
       i--;
       arg.push_back("--help");
@@ -98,6 +100,7 @@ void tool::FoundVerbose(LI &i) {
   if (*i == "--verbose") {
     verbose = -1;
     i = arg.erase(i);
+    cout << endl;
   }
 }
 

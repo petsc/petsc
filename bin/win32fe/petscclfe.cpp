@@ -18,28 +18,33 @@ void cl::Parse(void) {
   if (!verbose) {
     compilearg.push_back("-nologo");
   }
+  AddPaths();
+}
+
+void cl::AddPaths(void) {
   /* Find required .dll's */
-  cout << "Install Dir = " << InstallDir << endl;
   string::size_type len_m_1 = InstallDir.length()-1;
-  string addpath,VCVersion;
-  addpath = VCVersion = InstallDir.substr(0,len_m_1);
-  VCVersion = VCVersion.substr(VCVersion.find_last_of("\\")+1,len_m_1);
+  string addpath,CLVersion;
+  addpath = CLVersion = InstallDir.substr(0,len_m_1);
+  CLVersion = CLVersion.substr(CLVersion.find_last_of("\\")+1,len_m_1);
   addpath = addpath.substr(0,addpath.find_last_of("\\")+1);
+
+  /* This is ugly and perhaps each version should have their own class */
   bool KnownVersion=FALSE;
-  if(VCVersion=="VC98") {
+  if (CLVersion=="VC98") {
     addpath += "Common\\MSDev98\\Bin";
     KnownVersion=TRUE;
-  } else if (VCVersion=="VC7") {
+  } else if (CLVersion=="VC7") {
     addpath += "Common7\\IDE";
     KnownVersion=TRUE;
   } else {
-    cerr << "Warning: win32fe cl version not recognized.";
+    cerr << "Warning: win32fe cl version not recognized." << endl;
   }
   if (KnownVersion) {
     arg.push_back("--path");
     LI i = arg.end();
     i--;
-    cout << "Adding to path " << addpath << endl;
+    GetShortPath(addpath);
     arg.push_back(addpath);
     FoundPath(i);
   }
@@ -82,3 +87,56 @@ void df::Help(void) {
   help += " -? 2>&1";
   system(help.c_str());
 }
+
+void df::AddPaths(void) {
+  string::size_type len_m_1 = InstallDir.length()-1;
+  string addpath1,addpath2,DFVersion;
+  addpath1 = DFVersion = InstallDir.substr(0,len_m_1);
+  DFVersion = DFVersion.substr(DFVersion.find_last_of("\\")+1,len_m_1);
+  addpath2 = addpath1 = addpath1.substr(0,addpath1.find_last_of("\\")+1);
+
+  bool KnownVersion=FALSE;
+  if (DFVersion=="DF98") {
+    addpath1 += "Common\\MSDev98\\Bin";
+    addpath2 += "VC98\\Bin";
+    KnownVersion=TRUE;
+  } else {
+    cerr << "Warning: win32fe df version not recognized." << endl;
+  }
+  if (KnownVersion) {
+    GetShortPath(addpath1);
+    GetShortPath(addpath2);
+    string addpath = addpath1 + ";" + addpath2;
+    arg.push_back("--path");
+    LI i = arg.end();
+    i--;
+    arg.push_back(addpath);
+    FoundPath(i);
+  }
+}
+
+void df::AddSystemLib(void) {
+  compiler::AddSystemLib();
+  string::size_type len_m_1 = InstallDir.length()-1;
+  string libdir,DFVersion;
+  libdir = DFVersion = InstallDir.substr(0,len_m_1);
+  DFVersion = DFVersion.substr(DFVersion.find_last_of("\\")+1,len_m_1);
+  libdir = libdir.substr(0,libdir.find_last_of("\\")+1);
+
+  bool KnownVersion=FALSE;
+  if (DFVersion=="DF98") {
+    libdir += "VC98\\Lib";
+    KnownVersion=TRUE;
+  } else {
+    cerr << "Warning: win32fe df version not recognized." << endl;
+  }
+  if (KnownVersion) {
+    GetShortPath(libdir);
+    libdir = "-L" + libdir;
+    LI i = arg.end();
+    arg.push_back(libdir);
+    i--;
+    FoundL(i);
+  }
+}
+    
