@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.64 1999/04/01 05:29:30 balay Exp balay $ 
+# $Id: builddist,v 1.65 1999/04/01 22:21:17 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -65,6 +65,7 @@ foreach i (bmake/*/base.site)
     sed "s/^PVODE_INCLUDE/#PVODE_INCLUDE/g" | sed "s/^PVODE_LIB/#PVODE_LIB/g" | \
     sed "s/^PARMETIS_INCLUDE/#PARMETIS_INCLUDE/g" | sed "s/^PARMETIS_LIB/#PARMETIS_LIB/g" | \
     sed "s/^AMS_INCLUDE/#AMS_INCLUDE/g" | sed "s/^AMS_LIB/#AMS_LIB/g" | \
+    sed "s/^SPAI_INCLUDE/#SPAI_INCLUDE/g" | sed "s/^SPAI_LIB/#SPAI_LIB/g" | \
     sed "s/^PCONF/#PCONF/g" > $i.tmp
   /bin/mv -f $i.tmp $i
 end
