@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.55 2000/04/09 04:34:30 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.56 2000/04/12 04:21:23 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -7,7 +7,7 @@
 #include "sys.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListGetPathAndFunction"
+#define __FUNC__ /*<a name="FListGetPathAndFunction"></a>*/"FListGetPathAndFunction"
 int FListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
   char work[256],*lfunction,ierr;
@@ -33,7 +33,7 @@ int FListGetPathAndFunction(const char name[],char *path[],char *function[])
 DLLibraryList DLLibrariesLoaded = 0;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscInitialize_DynamicLibraries"
+#define __FUNC__ /*<a name="PetscInitialize_DynamicLibraries"></a>*/"PetscInitialize_DynamicLibraries"
 /*
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
     search path.
@@ -61,7 +61,6 @@ int PetscInitialize_DynamicLibraries(void)
   } else {
     SETERRQ1(1,1,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
   }
-
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscvec");CHKERRQ(ierr);
@@ -116,7 +115,7 @@ int PetscInitialize_DynamicLibraries(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscFinalize_DynamicLibraries"
+#define __FUNC__ /*<a name="PetscFinalize_DynamicLibraries"></a>*/"PetscFinalize_DynamicLibraries"
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
 */ 
@@ -134,17 +133,22 @@ int PetscFinalize_DynamicLibraries(void)
 extern int DLLibraryRegister_Petsc(char *);
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscInitalize_DynamicLibraries"
+#define __FUNC__ /*<a name="PetscInitalize_DynamicLibraries"></a>*/"PetscInitalize_DynamicLibraries"
 int PetscInitialize_DynamicLibraries(void)
 {
   int ierr;
 
   PetscFunctionBegin;
+  /*
+      This just initializes the draw and viewer methods, since those
+    are ALWAYS available. The other classes are initialized the first
+    time an XXSetType() is called.
+  */
   ierr = DLLibraryRegister_Petsc(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscFinalize_DynamicLibraries"
+#define __FUNC__ /*<a name="PetscFinalize_DynamicLibraries"></a>*/"PetscFinalize_DynamicLibraries"
 int PetscFinalize_DynamicLibraries(void)
 {
   PetscFunctionBegin;
@@ -195,7 +199,7 @@ static FList   dlallhead = 0;
 */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListAdd"
+#define __FUNC__ /*<a name="FListAdd"></a>*/"FListAdd"
 int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 {
   FList   entry,ne;
@@ -205,7 +209,7 @@ int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
   PetscFunctionBegin;
 
   if (!*fl) {
-    entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
+    entry          = (FList)PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
     ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
@@ -242,8 +246,8 @@ int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
       if (ne->next) ne = ne->next; else break;
     }
     /* create new entry and add to end of list */
-    entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
-    ierr           = PetscStrallocpy(name,&entry->name);
+    entry          = (FList)PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
+    ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     ierr           = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->rname   = fname;
@@ -256,7 +260,7 @@ int FListAdd(FList *fl,const char name[],const char rname[],int (*fnc)(void *))
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListDestroy"
+#define __FUNC__ /*<a name="FListDestroy"></a>*/"FListDestroy"
 /*
     FListDestroy - Destroys a list of registered routines.
 
@@ -310,7 +314,7 @@ int FListDestroy(FList fl)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListDestroyAll"
+#define __FUNC__ /*<a name="FListDestroyAll"></a>*/"FListDestroyAll"
 int FListDestroyAll(void)
 {
   FList tmp2,tmp1 = dlallhead;
@@ -327,7 +331,7 @@ int FListDestroyAll(void)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListFind"
+#define __FUNC__ /*<a name="FListFind"></a>*/"FListFind"
 /*
     FListFind - Given a name, finds the matching routine.
 
@@ -433,7 +437,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[],int (**r)(void *))
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListView"
+#define __FUNC__ /*<a name="FListView"></a>*/"FListView"
 /*
    FListView - prints out contents of an FList
 
@@ -471,9 +475,10 @@ int FListView(FList list,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListGet"
+#define __FUNC__ /*<a name="FListGet"></a>*/"FListGet"
 /*
-   FListGet - Gets an array the contains the entries in FList
+   FListGet - Gets an array the contains the entries in FList, this is used
+         by help etc.
 
    Collective over MPI_Comm
 
@@ -515,7 +520,7 @@ int FListGet(FList list,char ***array,int *n)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListPrintTypes"
+#define __FUNC__ /*<a name="FListPrintTypes"></a>*/"FListPrintTypes"
 /*
    FListPrintTypes - Prints the methods available.
 
@@ -553,7 +558,7 @@ int FListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[]
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListDuplicate"
+#define __FUNC__ /*<a name="FListDuplicate"></a>*/"FListDuplicate"
 /*
     FListDuplicate - Creates a new list from a given object list.
 
@@ -588,7 +593,7 @@ int FListDuplicate(FList fl,FList *nl)
 
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"FListConcat"
+#define __FUNC__ /*<a name="FListConcat"></a>*/"FListConcat"
 /*
     FListConcat - joins name of a libary, and the path where it is located
     into a single string.
