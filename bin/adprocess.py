@@ -44,6 +44,7 @@ def setupfunctionC(filename,g = None):
 		newfile = filename + ".tmp"
 		g = open(newfile,"w")
 		g.write("#include <math.h>\n")
+		g.write("#define PetscMin(a,b) (((a)<(b)) ?  (a) : (b))\n")
 	line = f.readline()
 	while line:
 #                line = lstrip(line)+" "

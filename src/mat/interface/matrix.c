@@ -3894,6 +3894,9 @@ int MatRestoreArray(Mat mat,PetscScalar *v[])
   PetscValidType(mat);
   MatPreallocated(mat);
   PetscValidPointer(v);
+#if defined(PETSC_USE_BOPT_g)
+  CHKMEMQ;
+#endif
   if (!mat->ops->restorearray) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);

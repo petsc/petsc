@@ -565,7 +565,7 @@ int VecCreate_Seq(Vec V)
   int          ierr,n = PetscMax(V->n,V->N);
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscMalloc( ( n > 0 ? n : 1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
   s    = (Vec_Seq*)V->data;
