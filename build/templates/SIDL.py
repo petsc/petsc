@@ -7,6 +7,18 @@ import base
 import build.buildGraph
 import build.compile.SIDL
 
+class ServerRootMap (object):
+  '''This class maps SIDL files to the server root directory they would generate'''
+  def __init__(self, project, language, usingSIDL):
+    self.project   = project
+    self.language  = language
+    self.usingSIDL = usingSIDL
+    return
+
+  def __call__(self, f):
+    import os
+    return os.path.join(self.project.getRoot(), self.usingSIDL.getServerRootDir(self.language, os.path.splitext(os.path.basename(f))[0]))
+
 class Template(base.Base):
   '''This template constructs BuildGraphs capable of compiling SIDL into server and client source'''
   def __init__(self, sourceDB, project, dependenceGraph, usingSIDL = None):
@@ -41,10 +53,9 @@ class Template(base.Base):
     import build.bk
     import os
 
-    rootDir  = self.project.getRoot()
-    target   = build.buildGraph.BuildGraph()
+    target = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.serverLanguages:
-      rootFunc   = lambda f, lang = lang: os.path.join(rootDir, self.usingSIDL.getServerRootDir(lang, os.path.splitext(os.path.basename(f))[0]))
+      rootFunc   = ServerRootMap(self.project, lang, self.usingSIDL)
       lastVertex = None
       vertex     = build.bk.Tag(rootFunc = rootFunc, inputTag = ['sidl', 'old sidl'])
       target.addEdges(lastVertex, outputs = [vertex])
@@ -52,7 +63,7 @@ class Template(base.Base):
       vertex     = build.bk.Open()
       target.addEdges(lastVertex, outputs = [vertex])
       lastVertex = vertex
-      vertex     = self.addRepositoryDirs(build.compile.SIDL.Compiler(self.sourceDB, lang, rootDir, 1, self.usingSIDL))
+      vertex     = self.addRepositoryDirs(build.compile.SIDL.Compiler(self.sourceDB, lang, self.project.getRoot(), 1, self.usingSIDL))
       target.addEdges(lastVertex, outputs = [vertex])
       lastVertex = vertex
       vertex     = build.bk.Tag(rootFunc = rootFunc, inputTag = ['update sidl', 'old sidl'])

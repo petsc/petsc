@@ -1,3 +1,4 @@
+import build.fileset
 import build.processor
 
 import os
@@ -38,6 +39,7 @@ class Compiler(build.processor.Processor):
       self.action  = 'client'
     self.usingSIDL = usingSIDL
     self.repositoryDirs = []
+    self.output    = build.fileset.RootedFileSet(self.usingSIDL.project.getUrl())
     self.outputTag = self.language.lower()+' '+self.action
     return
 

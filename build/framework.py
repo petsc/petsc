@@ -33,6 +33,7 @@ class Framework(base.Base):
     argDB.setType('forceConfigure', nargs.ArgBool(None, 0, 'Force a  reconfigure', isTemporary = 1), forceLocal = 1)
     argDB.setType('displayTarget',  nargs.ArgBool(None, 0, 'Display a target',     isTemporary = 1), forceLocal = 1)
     argDB.setType('noStackTrace',   nargs.ArgBool(None, 0, 'Suppress a stack trace on error'), forceLocal = 1)
+    argDB.setType('checkpoint',     nargs.Arg(None, None,  'Pickled state of evaluation'), forceLocal = 1)
     # Source database manipulation
     argDB.setType('restart',        nargs.ArgBool(None, 0, 'Restart the build',    isTemporary = 1), forceLocal = 1)
     # Argument database manipulation
@@ -174,6 +175,15 @@ class Framework(base.Base):
     return self._compileTemplate
   compileTemplate = property(getCompileTemplate, doc = 'This is the default template for source operations')
 
+  def t_activate(self):
+    '''Load all necessary data for this project into the current RDict, without destroying previous data'''
+    # Update language specific information
+    self.compileTemplate.install()
+    # Update project in 'installedprojects'
+    self.argDB['installedprojects'] = [self.project]+self.argDB['installedprojects']
+    self.debugPrint('Activated project '+str(self.project), 2, 'install')
+    return self.project
+
   def t_configure(self):
     '''Runs configure.py if it is present, and either configure.log is missing or -forceConfigure is given'''
     if self.argDB['noConfigure']: return
@@ -205,32 +215,47 @@ class Framework(base.Base):
     '''Recompile the SIDL for this project'''
     return self.executeGraph(self.sidlTemplate.getTarget(), input = self.filesets['sidl'])
 
+  def t_sidlCheckpoint(self):
+    '''Recompile the SIDL for this project'''
+    import build.buildGraph
+
+    sidlGraph    = self.sidlTemplate.getTarget()
+    endVertex    = build.buildGraph.BuildGraph.getLeaves(sidlGraph)[0]
+    compileGraph = self.compileTemplate.getTarget()
+    compileGraph.prependGraph(sidlGraph)
+    return self.executeGraph(compileGraph, input = self.filesets['sidl'], checkpoint = endVertex)
+
   def t_compile(self):
     '''Recompile the entire source for this project'''
     import build.buildGraph
 
-    sidlGraph    = self.sidlTemplate.getTarget()
-    compileGraph = self.compileTemplate.getTarget()
-    compileGraph.prependGraph(sidlGraph)
-    return self.executeGraph(compileGraph, input = self.filesets['sidl'])
+    if 'checkpoint' in self.argDB:
+      input        = None
+      self.builder = cPickle.loads(self.argDB['checkpoint'])
+      compileGraph = self.builder.buildGraph
+      #del self.argDB['checkpoint']
+    else:
+      input        = self.filesets['sidl']
+      sidlGraph    = self.sidlTemplate.getTarget()
+      compileGraph = self.compileTemplate.getTarget()
+      compileGraph.prependGraph(sidlGraph)
+    return self.executeGraph(compileGraph, input = input)
 
   def t_install(self):
     '''Install all necessary data for this project into the current RDict'''
+    # Update language specific information
+    self.compileTemplate.install()
     # Update project in 'installedprojects'
-    p = self.getInstalledProject(self.project.getUrl())
-    if p is None:
-      self.argDB['installedprojects'] = self.argDB['installedprojects']+[self.project]
-    else:
-      projects = self.argDB['installedprojects']
-      projects.remove(p)
-      self.argDB['installedprojects'] = projects+[self.project]
+    projects = self.argDB['installedprojects']
+    map(lambda p: projects.remove(p), self.getInstalledProject(self.project.getUrl(), returnAll = 1))
+    self.argDB['installedprojects'] = projects+[self.project]
     self.debugPrint('Installed project '+str(self.project), 2, 'install')
     # Update project in 'projectDependenceGraph'
     import build.buildGraph
 
     self.argDB['projectDependenceGraph'] = self.dependenceGraph
     self.debugPrint('Updated project dependence graph with project '+str(self.project), 2, 'install')
-    return p
+    return self.project
 
   def t_uninstall(self):
     '''Remove this project from the current RDict'''
@@ -330,14 +355,18 @@ class Framework(base.Base):
     '''Hook for user operations before build'''
     return
 
-  def executeGraph(self, graph, input = None):
+  def executeGraph(self, graph, input = None, checkpoint = None):
     '''Execute a BuildGraph'''
     output = None
     if self.argDB['displayTarget']:
       graph.display()
     else:
       self.builder.buildGraph = graph
-      output = self.builder.execute(input = input)
+      for vertex in self.builder.execute(input = input):
+        output = vertex.output
+        if checkpoint == vertex:
+          self.argDB['checkpoint'] = cPickle.dumps(self.builder)
+          break
     return output
 
   def executeTarget(self, target):

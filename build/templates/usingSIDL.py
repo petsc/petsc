@@ -1,4 +1,5 @@
 import base
+import project
 
 import os
 
@@ -46,9 +47,9 @@ class UsingSIDL (base.Base):
     '''Returns a client directory name'''
     return 'client-'+lang.lower()
 
-  def getServerLibrary(self, lang, package):
+  def getServerLibrary(self, projectName, lang, package):
     '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return os.path.join(self.project.getRoot(), 'lib', 'lib'+self.project.getName()+'-'+lang.lower()+'-'+package+'-server.a')
+    return os.path.join('lib', 'lib'+projectName+'-'+lang.lower()+'-'+package+'-server.a')
 
   def getRuntimeLanguage(self):
     '''Return the implementation language for the runtime'''
@@ -70,8 +71,10 @@ class UsingSIDL (base.Base):
 
   def getRuntimeIncludes(self):
     '''Return the includes for the SIDL Runtime'''
-    return [os.path.join(self.getRuntimeProject().getRoot(), self.getServerRootDir(self.getRuntimeLanguage(), self.getRuntimePackage()))]
+    proj = self.getRuntimeProject()
+    return [project.ProjectPath(self.getServerRootDir(self.getRuntimeLanguage(), self.getRuntimePackage()), proj.getUrl())]
 
   def getRuntimeLibraries(self):
     '''Return the libraries for the SIDL Runtime'''
-    return [os.path.join(self.getRuntimeProject().getRoot(), self.getServerLibrary(self.getRuntimeLanguage(), self.getRuntimePackage()))]
+    proj = self.getRuntimeProject()
+    return [project.ProjectPath(self.getServerLibrary(proj.getName(), self.getRuntimeLanguage(), self.getRuntimePackage()), proj.getUrl())]

@@ -2,6 +2,7 @@ import base
 import build.buildGraph
 import build.processor
 import build.transform
+import project
 
 import os
 
@@ -67,7 +68,7 @@ class UsingPython (base.Base):
 
   def getServerLibrary(self, package):
     '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return os.path.join(self.project.getRoot(), 'lib', 'lib'+self.project.getName()+'-'+self.language.lower()+'-'+package+'-server.a')
+    return project.ProjectPath(os.path.join('lib', 'lib'+self.project.getName()+'-'+self.language.lower()+'-'+package+'-server.a'), self.project.getUrl())
 
   def getGenericCompileTarget(self, action):
     '''Python code does not need compilation, so only a C compiler is necessary.'''
@@ -93,7 +94,7 @@ class UsingPython (base.Base):
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
     linker.addEdges(sharedLinker, [archiver])
-    linker.addEdges(build.transform.Operation(lambda f,tag: os.remove(f), compiler.output.tag), [sharedLinker])
+    linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target
 
@@ -108,13 +109,12 @@ class UsingPython (base.Base):
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
     linker.addEdges(sharedLinker, [archiver])
-    linker.addEdges(build.transform.Operation(lambda f,tag: os.remove(f), compiler.output.tag), [sharedLinker])
+    linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target
 
   def installClient(self):
     '''Add Python paths for clients to the project'''
-    print 'Installing Python client'
     return self.project.appendPythonPath(os.path.join(self.project.getRoot(), self.usingSIDL.getClientRootDir(self.language)))
 
   def installServer(self, package):

@@ -1,3 +1,4 @@
+import base
 import build.transform
 import build.fileset
 
@@ -115,7 +116,7 @@ class Compiler(Processor):
   def getIncludeFlags(self, source = None):
     '''Return a list of the compiler flags specifying include directories'''
     flags = []
-    for dirname in self.includeDirs:
+    for dirname in map(str, self.includeDirs):
       try:
         self.checkIncludeDirectory(dirname)
         if dirname[0] == '-':
@@ -184,7 +185,7 @@ class Linker(Processor):
       if len(library) > 1: raise RuntimeError('Invalid setwise link due to incompatible libraries: '+str(library.keys()))
       return library.keys()[0]
     if not self.library is None:
-      (library, ext) = os.path.splitext(self.library)
+      (library, ext) = os.path.splitext(str(self.library))
     else:
       source      = self.getSourceFileName(object)
       (dir, file) = os.path.split(source)
@@ -196,7 +197,7 @@ class Linker(Processor):
         library = os.path.join(dir, base)
     # Ensure the directory exists
     dir = os.path.dirname(library)
-    if not os.path.exists(dir):
+    if dir and not os.path.exists(dir):
       os.makedirs(dir)
     return library+'.'+self.libExt
 
@@ -290,7 +291,7 @@ class SharedLinker(Linker):
   def getLinkerFlags(self, source):
     '''Return a list of the linker specific flags. The default is -shared.'''
     flags = ['-shared']
-    for lib in self.extraLibraries:
+    for lib in map(str, self.extraLibraries):
       # Options and object files are passed verbatim
       if lib[0] == '-' or lib.endswith('.o'):
         flags.append(lib)

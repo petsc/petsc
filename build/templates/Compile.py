@@ -5,6 +5,7 @@ Any template should have a getTarget() call which provides a BuildGraph.
 '''
 import base
 import build.buildGraph
+import project
 
 class Template(base.Base):
   '''This template constructs BuildGraphs capable of compiling source into object files'''
@@ -43,8 +44,7 @@ class Template(base.Base):
       if hasattr(vertex, 'includeDirs'):
         dft = build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project)
         # Client includes for project dependencies
-        #vertex.includeDirs.extend([os.path.join(vertex.getRoot(), self.usingSIDL.getClientRootDir(lang)) for vertex in dft if not vertex == self.project])
-        vertex.includeDirs.extend([os.path.join(v.getRoot(), self.usingSIDL.getClientRootDir(lang)) for v in dft])
+        vertex.includeDirs.extend([project.ProjectPath(self.usingSIDL.getClientRootDir(lang), v.getUrl()) for v in dft])
         # Runtime includes
         vertex.includeDirs.extend(self.usingSIDL.getRuntimeIncludes())
         # Custom includes

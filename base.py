@@ -6,6 +6,8 @@ import sys
 
 class Base(logging.Logger):
   '''The Base class handles the argument database and shell commands'''
+  defaultDB = None
+
   def __init__(self, clArgs = None, argDB = None):
     '''Setup the argument database'''
     self.argDB = self.createArgDB(argDB)
@@ -21,9 +23,11 @@ class Base(logging.Logger):
     if not initDB is None:
       argDB = initDB
     else:
-      import RDict
-      import os
-      argDB = RDict.RDict(parentDirectory = os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)))
+      if Base.defaultDB is None:
+        import RDict
+        import os
+        Base.defaultDB = RDict.RDict(parentDirectory = os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)))
+      argDB = Base.defaultDB
     return argDB
 
   def setupArgDB(self, argDB, clArgs):
@@ -60,12 +64,17 @@ class Base(logging.Logger):
       self.defaultCheckCommand(command, status, output)
     return output
 
-  def getInstalledProject(self, url):
-    if not 'installedprojects' in self.argDB:
-      self.argDB['installedprojects'] = []
+  def getInstalledProject(self, url, returnAll = 0):
+    if returnAll:
+      projects = []
+    else:
+      projects = None
     for project in self.argDB['installedprojects']:
       if project.getUrl() == url:
         self.debugPrint('Project '+project.getName()+'('+url+') is installed', 3, 'install')
-        return project
+        if not returnAll:
+          return project
+        else:
+          projects.append(project)
     self.debugPrint('Project '+url+' is not installed', 3, 'install')
-    return None
+    return projects

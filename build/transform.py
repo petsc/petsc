@@ -32,28 +32,31 @@ class Transform(base.Base):
   def handleFileSet(self, set):
     '''Process a FileSet
        - This default method calls handleFile() on each member of the set'''
+    # Preserve rooted file sets
+    if not set.tag is None and isinstance(set, build.fileset.RootedFileSet):
+      self.output.children.append(build.fileset.RootedFileSet(set.projectUrl, tag = set.tag))
     map(lambda f: self.handleFile(f, set.tag), set)
     map(self.handleFileSet, set.children)
     return self.output
 
-class Operation (Transform):
-  '''An Operation applys func to every file in sets matching inputTag'''
-  def __init__(self, func, inputTag = None):
+class Remover (Transform):
+  '''A Remover removes every file in sets matching inputTag'''
+  def __init__(self, inputTag = None):
     Transform.__init__(self)
-    self.func     = func
     self.inputTag = inputTag
     if not isinstance(self.inputTag, list):
       self.inputTag = [self.inputTag]
     return
 
   def __str__(self):
-    return 'Operation('+str(self.func)+') for '+str(self.inputTag)
+    return 'Remover for '+str(self.inputTag)
 
   def handleFile(self, f, tag):
     '''Call the supplied function on f (also giving tag)
        - If inputTag was specified, only handle files with this tag'''
     if self.inputTag is None or tag in self.inputTag:
-      self.func(f, tag)
+      import os
+      os.remove(f)
       return self.output
     return Transform.handleFile(self, f, tag)
 

@@ -1,3 +1,7 @@
+import base
+
+import os
+
 class Project:
   '''This class represents a SIDL project, and is the only BuildSystem class allowed in an RDict'''
   def __init__(self, name, url, root = None):
@@ -76,3 +80,48 @@ class Project:
   def setMatlabPath(self,path):
     '''Sets the path for the matlab directory for this project'''
     self.matlabPath = path
+
+class ProjectPath (base.Base):
+  '''This class represents a relocatable path based upon a project root. If not project is specified,
+then the path remains unchanged. If an absolute path is given which conflicts with the project root,
+a ValueError is raised.'''
+  def __init__(self, path, projectUrl = None):
+    base.Base.__init__(self)
+    self.projectUrl = projectUrl
+    self.path       = path
+    return
+
+  def __str__(self):
+    return self.path
+
+  def __getstate__(self):
+    '''Remove the cached project root directory before pickling'''
+    d = self.__dict__.copy()
+    if '_projectRoot' in d: del d['_projectRoot']
+    return d
+
+  def getProjectRoot(self):
+    if not hasattr(self, '_projectRoot'):
+      self._projectRoot = self.getInstalledProject(self.projectUrl).getRoot()
+    return self._projectRoot
+
+  def setProjectRoot(self):
+    raise RuntimeError('Cannot set the project root. It is determined by the project URL.')
+  projectRoot = property(getProjectRoot, setProjectRoot, doc = 'The project root for all files in the set')
+
+  def getPath(self):
+    path = self._path
+    if not self.projectUrl is None:
+      path = os.path.join(self.projectRoot, path)
+    return path
+
+  def setPath(self, path):
+    if not self.projectUrl is None and path[0] == '/':
+      root = self.projectRoot
+      if not path.startswith(root+os.sep):
+        raise ValueError('Absolute path '+path+' conflicts with project root '+root)
+      else:
+        path = path[len(root)+1:]
+    self._path = path
+    return
+  path = property(getPath, setPath, doc = 'The absolute path, however it can be set as a path relative to the project')
