@@ -9,7 +9,7 @@ import os
 class PetscMake(build.framework.Framework):
   def __init__(self, clArgs = None, argDB = None):
     build.framework.Framework.__init__(self, project.Project('bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
-    self.project.setWebDirectory('petsc@terra.mcs.anl.gov://mcs/www-unix/sidl')
+    self.project.setWebDirectory('petsc@terra.mcs.anl.gov://mcs/www-unix/ase')
     return
 
   def t_configure(self):
