@@ -1,10 +1,13 @@
-# $Id: makefile,v 1.3 1998/03/24 17:27:26 balay Exp balay $ 
+# $Id: makefile,v 1.4 1998/04/23 22:52:12 balay Exp balay $ 
 
 ALL: sif
 
-CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
+CFLAGS	        =
 FFLAGS	        =
+CPPFLAGS        =
+FPPFLAGS        =
 LOCDIR          = src/contrib/sif
+
 EXAMPLESC       = 
 EXAMPLESF       = sif.F
 

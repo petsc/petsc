@@ -1,12 +1,6 @@
-# $Id: makefile,v 1.44 1998/06/12 21:17:29 balay Exp balay $ 
+# $Id: makefile,v 1.45 1998/06/12 22:19:12 balay Exp balay $ 
 
 ALL: ex1
-
-CFLAGS    =
-FFLAGS	  = 
-CPPFLAGS  =
-FPPFLAGS  =
-LOCDIR    = src/is/examples/
 
 SOURCEC	  = 
 SOURCEF	  =
@@ -14,6 +8,7 @@ SOURCEH	  =
 OBJSC	  =
 OBJSF	  = 
 LIBBASE	  = libpetscvec
+LOCDIR    = src/is/examples/
 DIRS      = tests tutorials
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

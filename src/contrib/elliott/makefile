@@ -1,10 +1,12 @@
-# $Id: makefile,v 1.1 1998/04/22 18:02:53 curfman Exp balay $ 
+# $Id: makefile,v 1.2 1998/04/23 22:50:58 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	         = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-FFLAGS	         = 
-LOCDIR           = src/contrib/elliott/
+CFLAGS   =
+FFLAGS   =
+CPPFLAGS =
+FPPFLAGS =
+LOCDIR   = src/contrib/elliott/
 
 EXAMPLESC       = ex1.c
 EXAMPLESF       = 

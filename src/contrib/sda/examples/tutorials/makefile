@@ -1,15 +1,11 @@
-# $Id: makefile,v 1.5 1997/09/10 18:55:15 balay Exp balay $ 
+# $Id: makefile,v 1.6 1998/03/19 02:14:44 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS	 = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' -I../../src
-SOURCEC  = 
-SOURCEF  =
-SOURCEH  = 
-OBJSC    = 
-OBJSF    =
-LIBBASE  = libpetscvec
-DIRS     = 
+CFLAGS	 =
+FFLAGS   =
+CPPFLAGS =
+FPPFLAGS =
 LOCDIR   = src/contrib/sda/examples/tutorials/
 
 EXAMPLES_2    =

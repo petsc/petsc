@@ -1,9 +1,11 @@
-# $Id: makefile,v 1.1 1998/03/19 18:32:15 balay Exp balay $ 
+# $Id: makefile,v 1.2 1998/03/19 18:33:38 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	         = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' ${BS_INCLUDE}
+CFLAGS	         =
 FFLAGS	         = 
+CPPFLAGS         = ${BS_INCLUDE}
+FPPFLAGS         =
 LOCDIR           = src/sles/examples/tutorials/
 
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \

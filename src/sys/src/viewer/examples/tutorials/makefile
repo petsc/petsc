@@ -1,16 +1,13 @@
-# $Id: makefile,v 1.8 1998/03/19 02:12:37 balay Exp balay $ 
+# $Id: makefile,v 1.9 1998/04/23 22:50:24 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        =  ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
+CFLAGS	        =
 FFLAGS	        = 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        =
-LOCDIR          = src/viewer/examples/tutorials
-LIBBASE	        = libpetscvec
+CPPFLAGS        =
+FPPFLAGS        =
+LOCDIR          = src/viewer/examples/tutorials/
+
 TESTEXAMPLES_2  = 
 TESTEXAMPLES_4  = 
 BUILDEXAMPLES_4 = 

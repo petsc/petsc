@@ -1,9 +1,11 @@
-# $Id: makefile,v 1.94 1998/04/28 18:21:54 balay Exp bsmith $ 
+# $Id: makefile,v 1.95 1998/06/12 20:17:11 bsmith Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-FFLAGS	        =	 
+CFLAGS	        =
+FFLAGS	        =
+CPPFLAGS        =
+FPPFLAGS        =	 
 LOCDIR          = src/snes/examples/tests/
 
 TESTEXAMPLES_1  = 

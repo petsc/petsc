@@ -1,9 +1,11 @@
-# $Id: makefile,v 1.152 1998/04/23 22:48:06 balay Exp bsmith $ 
+# $Id: makefile,v 1.153 1998/06/12 20:19:22 bsmith Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	  = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' ${BS_INCLUDE}
-FFLAGS	  = 
+CFLAGS	  = 
+FFLAGS    =
+CPPFLAGS  = ${BS_INCLUDE}
+FPPFLAGS  =
 LOCDIR    = src/sles/examples/tests/
 NOADIC    = true
 
