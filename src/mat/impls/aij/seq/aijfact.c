@@ -1134,7 +1134,6 @@ int MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact
   PetscTruth          perm_identity;
  
   PetscFunctionBegin;   
-  printf(" MatCholeskyFactorSymbolic_SeqAIJ is called ..\n");
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   if (!perm_identity){
     SETERRQ(1,"Non-identity permutation is not supported yet");
