@@ -33,7 +33,7 @@ libf: $(LIBNAME)($(OBJSF))
 # This F.f rule ensures that the old *.f files are removed.
 #
 .F.f:
-        $(RM) $*.f
+	$(RM) $*.f
 	-cpp $(CPPFLAGS)  $*.F > $*.f 
 
 .F.o:
