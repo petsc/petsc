@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.231 1998/10/28 22:54:22 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.232 1998/11/20 15:31:26 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -324,6 +324,7 @@ extern int PetscCompareInt(int);
 extern int PetscGlobalRank,PetscGlobalSize;
 extern int PetscIntView(int,int[],Viewer);
 extern int PetscDoubleView(int,double[],Viewer);
+extern int PetscScalarView(int,Scalar[],Viewer);
 
 /*
     C code optimization is often enhanced by telling the compiler 
