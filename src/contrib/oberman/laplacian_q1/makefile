@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 1999/11/15 16:02:24 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1999/11/23 17:10:58 bsmith Exp hzhang $ 
 
 # -----------------------------------------------------------------------
 # Specify  user-defined compiler flags
@@ -8,7 +8,6 @@ CFLAGS    =
 # Define application source and examples
 # -----------------------------------------------------------------------
 #
-#    
 
 ALL: main
 
