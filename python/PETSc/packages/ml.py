@@ -10,7 +10,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/foobar/ml.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml.tar.gz']
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['ML_Set_PrintLevel']
     self.includes     = ['ml_include.h']
@@ -40,8 +40,9 @@ class Configure(PETSc.package.Package):
     mlDir = self.getDir()
     installDir  = os.path.join(mlDir, self.arch.arch)
     # Configure and Build ML
+    args = ['--prefix='+installDir]
     self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, '--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    CCenv = self.framework.getCompiler()
     self.framework.popLanguage()
     if 'CXX' in self.framework.argDB:
       self.framework.pushLanguage('Cxx')
@@ -49,7 +50,7 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
     if 'FC' in self.framework.argDB:
       self.framework.pushLanguage('FC')
-      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      F77env = self.framework.getCompiler()
       self.framework.popLanguage()
     if self.mpi.include:
       if len(self.mpi.include) > 1:
@@ -80,7 +81,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild ML oldargs = '+oldargs+' new args '+args+'\n')
       try:
         self.logPrint("Configuring ml; this may take several minutes\n", debugSection='screen')
-        output  = config.base.Configure.executeShellCommand('cd '+mlDir+'; ./configure '+args+' --disable-epetra --disable-aztecoo', timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; cd '+mlDir+'; ./configure '+args+' --disable-epetra --disable-aztecoo', timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
       try:
