@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.8 1995/04/12 20:54:18 curfman Exp $";
+static char vcid[] = "$Id: sor.c,v 1.8 1995/04/12 20:57:31 curfman Exp curfman $";
 #endif
 
 /*
@@ -64,13 +64,13 @@ int PCPrintHelp_SOR(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"%ssor_omega omega: relaxation factor (0 < omega < 2)\n",p);
-  fprintf(stderr,"%ssor_symmetric: use SSOR\n",p);
-  fprintf(stderr,"%ssor_backward: use backward sweep instead of forward\n",p);
-  fprintf(stderr,"%ssor_local_symmetric: use SSOR on each processor\n",p);
-  fprintf(stderr,"%ssor_local_backward: use backward sweep locally\n",p);
-  fprintf(stderr,"%ssor_local_forward: use forward sweep locally\n",p);
-  fprintf(stderr,"%ssor_its its: number of inner SOR iterations to use\n",p);
+  fprintf(stderr," %ssor_omega omega: relaxation factor (0 < omega < 2)\n",p);
+  fprintf(stderr," %ssor_symmetric: use SSOR\n",p);
+  fprintf(stderr," %ssor_backward: use backward sweep instead of forward\n",p);
+  fprintf(stderr," %ssor_local_symmetric: use SSOR on each processor\n",p);
+  fprintf(stderr," %ssor_local_backward: use backward sweep locally\n",p);
+  fprintf(stderr," %ssor_local_forward: use forward sweep locally\n",p);
+  fprintf(stderr," %ssor_its its: number of inner SOR iterations to use\n",p);
   return 0;
 }
 int PCCreate_SOR(PC pc)
