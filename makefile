@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.276 1999/03/19 16:34:05 balay Exp curfman $ 
+# $Id: makefile,v 1.277 1999/03/30 17:11:31 curfman Exp curfman $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -239,7 +239,7 @@ SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 
 # Builds all the documentation - should be done every night
 alldoc: allmanpages
-	cd docs/tex/manual; ${OMAKE} manual.dvi manual.ps manual.html manual/manual.html
+	cd docs/tex/manual; ${OMAKE} manual.dvi manual.ps manual.html splitmanual
 
 # Deletes man pages (HTML version)
 deletemanualpages:
