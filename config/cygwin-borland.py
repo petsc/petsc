@@ -14,7 +14,7 @@ if __name__ == '__main__':
     '--with-ar=win32fe tlib -C -P512',
     '-AR_FLAGS=-u',
     '--with-ranlib=true',
-    '--with-blas-lapack-dir=c:/software/f2cblaslapack/win32_borland',
+    '--with-blas-lapack-dir=/cygdrive/c/software/f2cblaslapack/win32_borland',
     '--with-mpi=0'
     ]
 
