@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.31 1996/04/08 23:51:58 balay Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.32 1996/04/09 02:23:33 curfman Exp balay $";
 #endif
 
 /*
@@ -11,8 +11,8 @@ static char vcid[] = "$Id: baij.c,v 1.31 1996/04/08 23:51:58 balay Exp curfman $
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
 #include "petsc.h"
-
-extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
+#define  max(a,b) (a>b ? a:b)
+extern   int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 
 static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
 {
@@ -564,138 +564,23 @@ static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 /* -------------------------------------------------------*/
 #include "pinclude/plapack.h"
 
-static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
+static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
-  Scalar          *xg,*yg;
-  register Scalar *x, *y, *v, sum,*xb, sum1,sum2,sum3,sum4,sum5;
-  register Scalar x1,x2,x3,x4,x5;
-  int             mbs = a->mbs, m = a->m, i, *idx,*ii;
-  int             bs = a->bs,j,n,bs2 = bs*bs;
-
-  VecGetArray(xx,&xg); x = xg;  VecGetArray(yy,&yg); y = yg;
-  PetscMemzero(y,m*sizeof(Scalar));
-  /*
-x     = x; */
-  idx   = a->j;
-  v     = a->a;
-  ii    = a->i;
-
-  switch (bs) {
-    case 1:
-     for ( i=0; i<mbs; i++ ) {
-       n    = ii[1] - ii[0]; ii++;
-       sum  = 0.0;
-       while (n--) sum += *v++ * x[*idx++];
-       y[i] = sum;
-      }
-      break;
-    case 2:
-      for ( i=0; i<mbs; i++ ) {
-        n  = ii[1] - ii[0]; ii++; 
-        sum1 = 0.0; sum2 = 0.0;
-        for ( j=0; j<n; j++ ) {
-          xb = x + 2*(*idx++); x1 = xb[0]; x2 = xb[1];
-          sum1 += v[0]*x1 + v[2]*x2;
-          sum2 += v[1]*x1 + v[3]*x2;
-          v += 4;
-        }
-        y[0] = sum1; y[1] = sum2;
-        y += 2;
-      }
-      break;
-    case 3:
-      for ( i=0; i<mbs; i++ ) {
-        n  = ii[1] - ii[0]; ii++; 
-        sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
-        for ( j=0; j<n; j++ ) {
-          xb = x + 3*(*idx++); x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
-          sum1 += v[0]*x1 + v[3]*x2 + v[6]*x3;
-          sum2 += v[1]*x1 + v[4]*x2 + v[7]*x3;
-          sum3 += v[2]*x1 + v[5]*x2 + v[8]*x3;
-          v += 9;
-        }
-        y[0] = sum1; y[1] = sum2; y[2] = sum3;
-        y += 3;
-      }
-      break;
-    case 4:
-      for ( i=0; i<mbs; i++ ) {
-        n  = ii[1] - ii[0]; ii++; 
-        sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
-        for ( j=0; j<n; j++ ) {
-          xb = x + 4*(*idx++);
-          x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
-          sum1 += v[0]*x1 + v[4]*x2 + v[8]*x3   + v[12]*x4;
-          sum2 += v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4;
-          sum3 += v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
-          sum4 += v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
-          v += 16;
-        }
-        y[0] = sum1; y[1] = sum2; y[2] = sum3; y[3] = sum4;
-        y += 4;
-      }
-      break;
-    case 5:
-      for ( i=0; i<mbs; i++ ) {
-        n  = ii[1] - ii[0]; ii++; 
-        sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
-        for ( j=0; j<n; j++ ) {
-          xb = x + 5*(*idx++);
-          x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4];
-          sum1 += v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
-          sum2 += v[1]*x1 + v[6]*x2 + v[11]*x3  + v[16]*x4 + v[21]*x5;
-          sum3 += v[2]*x1 + v[7]*x2 + v[12]*x3  + v[17]*x4 + v[22]*x5;
-          sum4 += v[3]*x1 + v[8]*x2 + v[13]*x3  + v[18]*x4 + v[23]*x5;
-          sum5 += v[4]*x1 + v[9]*x2 + v[14]*x3  + v[19]*x4 + v[24]*x5;
-          v += 25;
-        }
-        y[0] = sum1; y[1] = sum2; y[2] = sum3; y[3] = sum4; y[4] = sum5;
-        y += 5;
-      }
-      break;
-      /* block sizes larger then 5 by 5 are handled by BLAS */
-    default: {
-      int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
-      if (!a->mult_work) {
-        a->mult_work = (Scalar *) PetscMalloc(a->m*sizeof(Scalar));
-        CHKPTRQ(a->mult_work);
-      }
-      work = a->mult_work;
-      for ( i=0; i<mbs; i++ ) {
-        n     = ii[1] - ii[0]; ii++;
-        ncols = n*bs;
-        workt = work;
-        for ( j=0; j<n; j++ ) {
-          xb = x + bs*(*idx++);
-          for ( k=0; k<bs; k++ ) workt[k] = xb[k];
-          workt += bs;
-        }
-        LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DOne,y,&_One);
-        v += n*bs2;
-        y += bs;
-      }
-    }
-  }
-  PLogFlops(2*bs2* (a->nz) - m);
-  return 0;
-}
-
-static int MatMultAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
-{
-  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
-  Scalar          *xg,*yg,*zg;
-  register Scalar *x,*y,*z,*v,sum,*xb,sum1,sum2,sum3,sum4,sum5;
+  Scalar          *xg,*y,*zg;
+  register Scalar *x,*z,*v,sum,*xb,sum1,sum2,sum3,sum4,sum5;
   register Scalar x1,x2,x3,x4,x5;
   int             mbs=a->mbs,m=a->m,i,*idx,*ii;
-  int             bs=a->bs,j,n,bs2=bs*bs;
+  int             bs=a->bs,j,n,bs2=bs*bs,ierr;
 
-  VecGetArray(xx,&xg); x = xg;
-  VecGetArray(yy,&yg); y = yg;
-  VecGetArray(zz,&zg); z = zg;
+  ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
+  ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
 
-  if (yy==PETSC_NULL) PetscMemzero(z,m*sizeof(Scalar));
-  else if (zz!=yy) PetscMemcpy(z,y,m*sizeof(Scalar));
+  if (yy==PETSC_NULL) PetscMemzero(z,m*sizeof(Scalar)); /* MatMult() */
+  else if (zz!=yy){
+    ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+    PetscMemcpy(z,y,m*sizeof(Scalar));  
+  }
 
   idx   = a->j;
   v     = a->a;
@@ -778,7 +663,8 @@ static int MatMultAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   default: {
       int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
       if (!a->mult_work) {
-        a->mult_work = (Scalar *) PetscMalloc(a->m*sizeof(Scalar));
+        k = max(a->m,a->n);
+        a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));
         CHKPTRQ(a->mult_work);
       }
       work = a->mult_work;
@@ -797,24 +683,46 @@ static int MatMultAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       }
     }
   }
+  return 0;
+}
+
+static int MatMult_SeqBAIJ(Mat A,Vec xx, Vec yy)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr,bs=a->bs,bs2=bs*bs;
+
+  ierr = MatMultAdd_SeqBAIJ_Private(A,xx,PETSC_NULL,yy); CHKERRQ(ierr);
+  PLogFlops(2*bs2*(a->nz)-a->m);
+  return 0;
+}
+
+static int MatMultAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr,bs=a->bs,bs2=bs*bs;
+
+  ierr = MatMultAdd_SeqBAIJ_Private(A,xx,yy,zz); CHKERRQ(ierr);
   PLogFlops(2*bs2*(a->nz));
   return 0;
 }
 
-static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
-  Scalar          *xg,*yg,*zg,*zb;
-  register Scalar *x,*y,*z,*v,*xb,x1,x2,x3,x4,x5;
+  Scalar          *xg,*y,*zg,*zb;
+  register Scalar *x,*z,*v,*xb,x1,x2,x3,x4,x5;
   int             mbs=a->mbs,N=a->n,i,*idx,*ii,*ai=a->i,rval;
-  int             bs=a->bs,j,n,bs2=bs*bs,*ib;
+  int             bs=a->bs,j,n,bs2=bs*bs,*ib,ierr;
 
-  VecGetArray(xx,&xg); x = xg;
-  VecGetArray(yy,&yg); y = yg;
-  VecGetArray(zz,&zg); z = zg;
-  
-  if (yy==PETSC_NULL) PetscMemzero(z,N*sizeof(Scalar));
-  else if (zz!=yy) PetscMemcpy(z,y,N*sizeof(Scalar));
+
+  ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
+  ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
+
+  if (yy==PETSC_NULL) PetscMemzero(z,N*sizeof(Scalar)); /* MatMultTrans() */
+  else if (zz!=yy){
+    ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+    PetscMemcpy(z,y,N*sizeof(Scalar));  
+  }
   
   idx   = a->j;
   v     = a->a;
@@ -894,8 +802,8 @@ static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
     default: {
       int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
       if (!a->mult_work) {
-        /* must be max of m,n */
-        a->mult_work = (Scalar *) PetscMalloc(a->m*sizeof(Scalar));
+        k = max(a->m,a->n);
+        a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));
         CHKPTRQ(a->mult_work);
       }
       work = a->mult_work;
@@ -915,6 +823,26 @@ static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       }
     }
   }
+  PLogFlops(2*bs2*(a->nz));
+  return 0;
+}
+
+static int MatMultTrans_SeqBAIJ(Mat A,Vec xx, Vec yy)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr,bs=a->bs,bs2=bs*bs;
+
+  ierr = MatMultTransAdd_SeqBAIJ_Private(A,xx,PETSC_NULL,yy); CHKERRQ(ierr);
+  PLogFlops(2*bs2*(a->nz)-a->n);
+  return 0;
+}
+
+static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr,bs=a->bs,bs2=bs*bs;
+
+  ierr = MatMultTransAdd_SeqBAIJ_Private(A,xx,yy,zz); CHKERRQ(ierr);
   PLogFlops(2*bs2*(a->nz));
   return 0;
 }
@@ -1157,7 +1085,7 @@ int MatPrintHelp_SeqBAIJ(Mat A)
 static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
        MatMult_SeqBAIJ,MatMultAdd_SeqBAIJ,
-       0,MatMultTransAdd_SeqBAIJ,
+       MatMultTrans_SeqBAIJ,MatMultTransAdd_SeqBAIJ,
        MatSolve_SeqBAIJ,0,
        0,0,
        MatLUFactor_SeqBAIJ,0,
