@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: examplesindex.tcl,v 1.41 2000/07/14 03:48:38 bsmith Exp bsmith $ 
+# $Id: examplesindex.tcl,v 1.42 2000/07/14 15:07:17 bsmith Exp bsmith $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -561,13 +561,6 @@ proc main { }  {
             puts "******* Unable to modify $routines_file"
         }
         #
-        # put the two links at the bottom of the page
-        #
-        scan $routines_file "docs/manualpages/%s/$routine_name.html" sec
-        set temp [string first "/" $sec]
-        set temp [string range $sec 0 [expr $temp-1]]
- 
-        set temp [regsub  "</BODY></HTML>" $routine_file_buff "<BR><A HREF=\"./index.html\">$temp Index</A><BR><A HREF=\"../index.html\">Table of Contents for all manual pages</A> </BODY></HTML>" routine_file_buff]
         exec /bin/rm -f $routines_file
         set routines_fileid [ open $routines_file w ]
         #puts "Writing to $routines_file"
