@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.10 1995/11/27 19:02:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: zmat.c,v 1.11 1995/11/27 19:55:24 curfman Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -79,11 +79,11 @@ void matgetformatfromoptions_(MPI_Comm comm,char *prefix,MatType *type,int *set,
 	(MatType* )MPIR_ToPointer( *(int*)(type) ),set);
 }
 
-void matgetarray_(Mat mat,int *array,int *__ierr)
+void matgetarray_(Mat mat,double *fa,int *ia,int *__ierr)
 {
   Scalar *mm;
   *__ierr = MatGetArray((Mat)MPIR_ToPointer( *(int*)(mat) ),&mm);
-  *array = PetscDoubleAddressToFortran(mm);
+  *ia = PetscDoubleAddressToFortran(fa,mm);
 }
 
 void mattranspose_(Mat mat,Mat *B, int *__ierr )

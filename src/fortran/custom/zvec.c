@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.4 1995/11/23 04:23:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.5 1995/11/27 19:02:45 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -42,21 +42,21 @@ void vecload_(Viewer bview,Vec *newvec, int *__ierr )
   copy the array make sure you fix vec/examples/ex21.F and 
   snes/examples/ex12.F 
 */
-void vecrestorearray_(Vec x,int *a,int *__ierr)
+void vecrestorearray_(Vec x,double *fa,int *ia,int *__ierr)
 {
   Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
-  Scalar *lx = PetscDoubleAddressFromFortran(*a);
+  Scalar *lx = PetscDoubleAddressFromFortran(fa,*ia);
 
   *__ierr = VecRestoreArray(xin,&lx);
 }
 
-void vecgetarray_(Vec x,int *a,int *__ierr)
+void vecgetarray_(Vec x,double *fa,int *ia,int *__ierr)
 {
   Vec    xin = (Vec)MPIR_ToPointer( *(int*)(x) );
   Scalar *lx;
 
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;
-  *a      = PetscDoubleAddressToFortran(lx);
+  *ia      = PetscDoubleAddressToFortran(fa,lx);
 }
    
 
