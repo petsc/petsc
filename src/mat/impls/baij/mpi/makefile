@@ -1,0 +1,17 @@
+PETSC_DIR = ../../../../..
+
+ALL: lib
+
+CFLAGS	 = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
+	   -I../../.. -I../seq -I../../../../vec 
+SOURCEC	 = mpibaij.c mbaijfact.c
+SOURCEF	 =
+SOURCEH	 = 
+OBJSC	 = mpibaij.o  mbaijfact.o 
+OBJSF	 =
+LIBBASE	 = libpetscmat
+DIRS	 = 
+MANSEC	 = 2
+LOCDIR	 = src/mat/impls/baij/mpi/
+
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
