@@ -298,10 +298,18 @@ class LanguageProcessor(args.ArgumentProcessor):
 
   def setArgDB(self, argDB):
     args.ArgumentProcessor.setArgDB(self, argDB)
-    for obj in self.preprocessorObject.values(): obj.argDB = argDB
-    for obj in self.compilerObject.values():     obj.argDB = argDB
-    for obj in self.linkerObject.values():       obj.argDB = argDB
-    for obj in self.sharedLinkerObject.values(): obj.argDB = argDB
+    for obj in self.preprocessorObject.values():
+      if not hasattr(obj, 'argDB') or not obj.argDB == argDB:
+        obj.argDB = argDB
+    for obj in self.compilerObject.values():
+      if not hasattr(obj, 'argDB') or not obj.argDB == argDB:
+        obj.argDB = argDB
+    for obj in self.linkerObject.values():
+      if not hasattr(obj, 'argDB') or not obj.argDB == argDB:
+        obj.argDB = argDB
+    for obj in self.sharedLinkerObject.values():
+      if not hasattr(obj, 'argDB') or not obj.argDB == argDB:
+        obj.argDB = argDB
     if not self.compilers is None:
       self.compilers.argDB = argDB
       for obj in self.preprocessorObject.values():
