@@ -5,8 +5,8 @@ RM       = rm -f
 #
 # the  following is used to convert petsclib into dynamic libraries 
 #
-RANLIB   = $(PETSC_DIR)/bmake/$(PETSC_ARCH)/make_dso_IRIX $(LDIR)
-#RANLIB	 = true
+#RANLIB   = $(PETSC_DIR)/bmake/$(PETSC_ARCH)/make_dso_IRIX $(LDIR)
+RANLIB	 = true
 OMAKE    = make
 SHELL    = /bin/sh
 #
@@ -47,3 +47,19 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(RM) $*.o
 
 
+#.SUFFIXES: $(SUFFIXES) .a .so
+#.a.so:
+#	$(LD) -elf -no_library_replacement -shared -rdata_shared -all  $<  -o $@
+
+#shared: libmpiuni.so libpetsccontrib.so  libpetscksp.so libpetscmat.so libpetscsles.so libpetscsnes.so libpetscsys.so libpetscts.so libpetscvec.so
+
+SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
+	libpetscsnes libpetscsys libpetscts libpetscvec
+
+shared: chkopts
+	-@echo making shared libraries in $(LDIR) ;\
+	cd $(LDIR); \
+	for LIBNAME in $(SHLIBS) ; \
+	  do $(LD) -elf -no_library_replacement -shared -rdata_shared \
+	  -all  $$LIBNAME.a  -o $$LIBNAME.so ; \
+	done

@@ -30,3 +30,21 @@ libf: $(LIBNAME)($(OBJSF))
 	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
 	$(AR) clr $(LIBNAME) $*.o
 	$(RM) $*.o
+
+SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
+	libpetscsnes libpetscsys libpetscts libpetscvec
+
+shared: chkopts
+	-@echo making shared libraries in $(LDIR) ;\
+	cd $(LDIR); \
+	$(RM) -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in $(SHLIBS) ; \
+	  do \
+	    $(AR) x ../$$LIBNAME.a ;\
+	    $(CLINKER) -shared  ../$$LIBNAME.a  -o ../$$LIBNAME.so.1.0 ; \
+	    $(RM) -f * ; \
+	done ;\
+	cd ../ ; \
+	$(RM) -rf tmp
