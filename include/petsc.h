@@ -750,7 +750,7 @@ EXTERN PetscErrorCode  PetscPClose(MPI_Comm,FILE*);
 EXTERN PetscErrorCode  PetscSynchronizedPrintf(MPI_Comm,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN PetscErrorCode  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
 EXTERN PetscErrorCode  PetscSynchronizedFlush(MPI_Comm);
-EXTERN PetscErrorCode  PetscSynchronizedFGets(MPI_Comm,FILE*,int,char[]);
+EXTERN PetscErrorCode  PetscSynchronizedFGets(MPI_Comm,FILE*,size_t,char[]);
 EXTERN PetscErrorCode  PetscStartMatlab(MPI_Comm,const char[],const char[],FILE**);
 EXTERN PetscErrorCode  PetscStartJava(MPI_Comm,const char[],const char[],FILE**);
 EXTERN PetscErrorCode  PetscGetPetscDir(const char*[]);
@@ -775,7 +775,7 @@ EXTERN PetscErrorCode PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContai
 extern PetscTruth PetscCompare;
 EXTERN PetscErrorCode        PetscCompareDouble(double);
 EXTERN PetscErrorCode        PetscCompareScalar(PetscScalar);
-EXTERN PetscErrorCode        PetscCompareInt(int);
+EXTERN PetscErrorCode        PetscCompareInt(PetscInt);
 
 /*
    For use in debuggers 

@@ -569,7 +569,7 @@ PetscErrorCode PetscTrLogDump(FILE *fp)
   fflush(fp);
   ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
   if (rank) {
-    ierr = MPI_Recv(&dummy,1,MPI_INT,rank-1,tag,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(&dummy,1,MPIU_INT,rank-1,tag,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
   if (!fp) fp = stdout;
@@ -611,7 +611,7 @@ PetscErrorCode PetscTrLogDump(FILE *fp)
   free((char **)shortfunction);
   fflush(fp);
   if (rank != size-1) {
-    ierr = MPI_Send(&dummy,1,MPI_INT,rank+1,tag,MPI_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Send(&dummy,1,MPIU_INT,rank+1,tag,MPI_COMM_WORLD);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

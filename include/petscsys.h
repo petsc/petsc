@@ -60,9 +60,9 @@ EXTERN PetscErrorCode PetscBinaryOpen(const char[],int,int *);
 EXTERN PetscErrorCode PetscBinaryClose(int);
 EXTERN PetscErrorCode PetscSharedTmp(MPI_Comm,PetscTruth *);
 EXTERN PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
-EXTERN PetscErrorCode PetscGetTmp(MPI_Comm,char *,int);
-EXTERN PetscErrorCode PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
-EXTERN PetscErrorCode PetscLs(MPI_Comm,const char[],char*,int,PetscTruth*);
+EXTERN PetscErrorCode PetscGetTmp(MPI_Comm,char *,size_t);
+EXTERN PetscErrorCode PetscFileRetrieve(MPI_Comm,const char *,char *,size_t,PetscTruth*);
+EXTERN PetscErrorCode PetscLs(MPI_Comm,const char[],char*,size_t,PetscTruth*);
 EXTERN PetscErrorCode PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList*,const char[]);
 
 /*

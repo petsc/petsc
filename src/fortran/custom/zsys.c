@@ -456,7 +456,7 @@ void PETSC_STDCALL petscbinaryread_(int *fd,void *p,int *n,PetscDataType *type,i
   *ierr = PetscBinaryRead(*fd,p,*n,*type);
 }
 
-void PETSC_STDCALL petscbinaryseek_(int *fd,int *size,PetscBinarySeekType *whence,int *offset,int *ierr)
+void PETSC_STDCALL petscbinaryseek_(int *fd,int *size,PetscBinarySeekType *whence,off_t *offset,int *ierr)
 {
   *ierr = PetscBinarySeek(*fd,*size,*whence,offset);
 }

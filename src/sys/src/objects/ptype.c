@@ -24,7 +24,7 @@ PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtyp
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {
-    *mtype = MPI_INT;
+    *mtype = MPIU_INT;
   } else if (ptype == PETSC_DOUBLE) {
     *mtype = MPI_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)

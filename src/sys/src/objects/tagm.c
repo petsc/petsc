@@ -34,13 +34,13 @@ EXTERN_C_BEGIN
     Note: this is declared extern "C" because it is passed to the system routine signal()
           which is an extern "C" routine. 
 */
-int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
+PetscMPIInt Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscLogInfo(0,"Petsc_DelTag:Deleting tag data in an MPI_Comm %ld\n",(long)comm);
-  ierr = PetscFree(attr_val);CHKERRQ(ierr);
+  ierr = PetscFree(attr_val);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 EXTERN_C_END
@@ -171,11 +171,11 @@ PetscErrorCode PetscCommGetNewTag(MPI_Comm comm,int *tag)
 
 .seealso: PetscObjectGetNewTag(), PetscCommGetNewTag()
 @*/
-PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
+PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIInt* first_tag)
 {
   PetscErrorCode ierr;
-  int        *tagvalp,*maxval;
-  PetscTruth flg;
+  PetscMPIInt    *tagvalp,*maxval;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   if (Petsc_Tag_keyval == MPI_KEYVAL_INVALID) {
@@ -198,7 +198,7 @@ PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first
     if (!flg) {
       SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
-    ierr = PetscMalloc(2*sizeof(int),&tagvalp);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*sizeof(PetscMPIInt),&tagvalp);CHKERRQ(ierr);
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);

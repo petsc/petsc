@@ -35,7 +35,8 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
-static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) 
+{
   int m;
   
   PetscFunctionBegin;
@@ -56,13 +57,14 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
-static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
-  uid_t  uid;
-  gid_t *gid = PETSC_NULL;
-  int    numGroups;
-  int    rbit = S_IROTH;
-  int    wbit = S_IWOTH;
-  int    ebit = S_IXOTH;
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) 
+{
+  uid_t          uid;
+  gid_t          *gid = PETSC_NULL;
+  int            numGroups;
+  int            rbit = S_IROTH;
+  int            wbit = S_IWOTH;
+  int            ebit = S_IXOTH;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -116,8 +118,9 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFileStat"
-static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscTruth *exists) {
-  struct stat statbuf;
+static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscTruth *exists)
+{
+  struct stat    statbuf;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -141,11 +144,11 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 #define __FUNCT__ "PetscTestFile"
 PetscErrorCode PetscTestFile(const char fname[], char mode, PetscTruth *flg)
 {
-  uid_t      fuid;
-  gid_t      fgid;
-  int        fmode;
+  uid_t          fuid;
+  gid_t          fgid;
+  int            fmode;
   PetscErrorCode ierr;
-  PetscTruth exists;
+  PetscTruth     exists;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
@@ -165,11 +168,11 @@ PetscErrorCode PetscTestFile(const char fname[], char mode, PetscTruth *flg)
 #define __FUNCT__ "PetscTestDirectory"
 PetscErrorCode PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
 {
-  uid_t      fuid;
-  gid_t      fgid;
-  int        fmode;
+  uid_t          fuid;
+  gid_t          fgid;
+  int            fmode;
   PetscErrorCode ierr;
-  PetscTruth exists;
+  PetscTruth     exists;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
@@ -187,12 +190,12 @@ PetscErrorCode PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLs"
-PetscErrorCode PetscLs(MPI_Comm comm,const char libname[],char *found,int tlen,PetscTruth *flg)
+PetscErrorCode PetscLs(MPI_Comm comm,const char libname[],char *found,size_t tlen,PetscTruth *flg)
 {
   PetscErrorCode ierr;
-  size_t len;
-  char   *f,program[PETSC_MAX_PATH_LEN];
-  FILE   *fp;
+  size_t         len;
+  char           *f,program[PETSC_MAX_PATH_LEN];
+  FILE           *fp;
 
   PetscFunctionBegin;
   ierr   = PetscStrcpy(program,"ls ");CHKERRQ(ierr);

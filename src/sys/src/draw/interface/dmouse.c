@@ -63,9 +63,9 @@ PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw,PetscDrawButton *button,Pe
 @*/
 PetscErrorCode PetscDrawSynchronizedGetMouseButton(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
-  PetscReal bcast[4];
+  PetscReal      bcast[4];
   PetscErrorCode ierr;
-  int       rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

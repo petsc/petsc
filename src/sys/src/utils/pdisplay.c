@@ -92,7 +92,6 @@ PetscErrorCode PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  size_t         len;
   PetscTruth     flag;
   char           *str,display[256];
 
@@ -110,11 +109,8 @@ PetscErrorCode PetscSetDisplay(void)
     } else {
       ierr = PetscStrncpy(display,str,128);CHKERRQ(ierr);
     }
-    ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
   }
-  ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Bcast(display,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  display[len] = 0;
+  ierr = MPI_Bcast(display,256,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   if (rank) {
     str = getenv("DISPLAY");
     /* assume that ssh port forwarding is working */
