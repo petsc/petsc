@@ -36,10 +36,15 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
       FILE *fp;
       ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
       ierr = PetscStrcat(par,vascii->filename);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
       if (fgets(buf,1024,fp)) {
         SETERRQ2(PETSC_ERR_LIB,"Error from compression command %s\n%s",par,buf);
       }
+      ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
+#else
+      SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
     }
   }
   ierr = PetscStrfree(vascii->filename);CHKERRQ(ierr);

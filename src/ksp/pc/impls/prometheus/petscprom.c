@@ -255,7 +255,7 @@ static PetscErrorCode PCApply_Prometheus( PC pc, Vec x, Vec y )
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Prometheus"
 static PetscErrorCode PCDestroy_Prometheus(PC pc)
-{g
+{
   Prometheus_LinSysCore *lsc = (Prometheus_LinSysCore*)pc->data; 
 
   PetscFunctionBegin;

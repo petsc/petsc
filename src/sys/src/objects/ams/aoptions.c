@@ -574,7 +574,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsLogical(const char opt[],const char t
   }
   if (set) *set = iset;
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
-    const char *v = (deflt ? "true" : "false");
+    const char *v = PetscTruths[deflt];
     ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt+1,v,text,man);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -132,7 +132,7 @@ PetscErrorCode AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  %s: (%D)\n",keynames[i],N);CHKERRQ(ierr);
       for (j=0; j<nsegs; j++) {
         ierr = AODataSegmentGetInfo(ao,keynames[i],segnames[j],&bs,&dtype);CHKERRQ(ierr);
-        ierr = PetscDataTypeGetName(dtype,&stype);CHKERRQ(ierr);
+        stype = PetscDataTypes[dtype];
         if (dtype == PETSC_CHAR) {
           ierr = AODataSegmentGet(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPrintf(viewer,"      %s: (%D) %s -> %s\n",segnames[j],bs,stype,segvalue);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ PetscErrorCode AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
 
       segment = key->segments;
       while (segment) {      
-        ierr = PetscDataTypeGetName(segment->datatype,&dt);CHKERRQ(ierr);    
+        dt = PetscDataTypes[dtype];
         ierr = PetscViewerASCIIPrintf(viewer,"  AOData Segment: %s Blocksize %D datatype %s\n",segment->name,segment->bs,dt);CHKERRQ(ierr);
         if (segment->datatype == PETSC_INT) {
           PetscInt *mdata = (PetscInt*)segment->data;

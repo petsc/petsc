@@ -42,9 +42,9 @@
 PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
 {
   PetscErrorCode ierr;
-  int  rank;
-  FILE *fd;
-  char fname[PETSC_MAX_PATH_LEN],tname[PETSC_MAX_PATH_LEN];
+  PetscMPIInt    rank;
+  FILE           *fd;
+  char           fname[PETSC_MAX_PATH_LEN],tname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -93,13 +93,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const 
 PetscErrorCode PETSC_DLLEXPORT PetscFClose(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
-  int  rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank && fd != stdout && fd != stderr) fclose(fd);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_POPEN)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPClose"
@@ -123,21 +125,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscFClose(MPI_Comm comm,FILE *fd)
 PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
-  int  rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     char buf[1024];
     while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
-#if defined(PETSC_HAVE_POPEN)
     pclose(fd);
-#else
-    SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run programs, no popen() on this computing system");
-#endif
   }
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPOpen"
@@ -159,6 +158,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
    Level: intermediate
 
    Notes:
+       Use PetscPClose() to close the file pointer when you are finished with it
        Does not work under Windows
 
        The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
@@ -173,15 +173,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscPOpen(MPI_Comm comm,const char machine[],con
   PetscMPIInt    rank;
   size_t         i,len,cnt;
   char           commandt[PETSC_MAX_PATH_LEN],command[PETSC_MAX_PATH_LEN];
-#if defined(PETSC_HAVE_POPEN)
   FILE           *fd;
-#endif
 
   PetscFunctionBegin;
 
   /* all processors have to do the string manipulation because PetscStrreplace() is a collective operation */
   if (machine && machine[0]) {
-    ierr = PetscStrcpy(command,"rsh ");CHKERRQ(ierr);
+    ierr = PetscStrcpy(command,"ssh ");CHKERRQ(ierr);
     ierr = PetscStrcat(command,machine);CHKERRQ(ierr);
     ierr = PetscStrcat(command," \" setenv DISPLAY ${DISPLAY}; ");CHKERRQ(ierr);
     /*
@@ -206,15 +204,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscPOpen(MPI_Comm comm,const char machine[],con
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscLogInfo((0,"PetscPOpen:Running command :%s\n",commandt));CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_POPEN)
     if (!(fd = popen(commandt,mode))) {
        SETERRQ1(PETSC_ERR_LIB,"Cannot run command %s",commandt);
     }
     if (fp) *fp = fd;
-#else 
-    SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run programs, no popen() on this system");
-#endif
   }
   PetscFunctionReturn(0);
 }
+
+#endif

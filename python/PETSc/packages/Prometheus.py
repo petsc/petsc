@@ -35,7 +35,7 @@ class Configure(PETSc.package.Package):
     self.framework.popLanguage()
     self.framework.pushLanguage('C++')+'\n'
     args += 'CC = '+self.framework.getCompiler()+'\n'    
-    args += 'PETSCFLAGS = -DPETSC_INTERFACE_ONLY'+self.framework.getCompilerFlags()+'\n'
+    args += 'PETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
     self.framework.popLanguage()
     try:
       fd      = file(os.path.join(installDir,'makefile.in'))
@@ -57,8 +57,8 @@ class Configure(PETSc.package.Package):
       self.installDir        = installDir
     return prometheusDir
 
-def __del__(self):
-  if self.compilePrometheus:
+  def postProcess(self):
+    if self.compilePrometheus:
       self.logPrintBox('Compiling Prometheus; this may take several minutes')
       output  = config.base.Configure.executeShellCommand('cd '+self.prometheusDir+'; Make prometheus; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(self.installDir,'lib'),timeout=250, log = self.framework.log)[0]
       self.framework.log.write(output)

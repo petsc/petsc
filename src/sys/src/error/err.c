@@ -72,8 +72,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int line,const char 
   /* Note: don't check error codes since this an error handler :-) */
   ierr = PetscGetPetscDir(&pdir);CHKERRQ(ierr);
   sprintf(command,"emacsclient +%d %s/%s%s\n",line,pdir,dir,file);
+#if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
-  ierr = PetscFClose(MPI_COMM_WORLD,fp);
+  ierr = PetscPClose(MPI_COMM_WORLD,fp);
+#else
+  SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
   ierr = PetscPopErrorHandler(); /* remove this handler from the stack of handlers */
   if (!eh)     ierr = PetscTraceBackErrorHandler(line,fun,file,dir,n,p,mess,0);
   else         ierr = (*eh->handler)(line,fun,file,dir,n,p,mess,eh->ctx);
