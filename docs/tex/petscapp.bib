@@ -114,14 +114,6 @@
  origin      = mcs,
  number      = "ANL/MCS-P768-0799"
 }
-@inproceedings{oghattas2000,
-   author = "J. Antaki and G. Belloch and O. Ghattas and I. Malcevic 
-             and G. Miller and N. Walkington",
-   title  = "A Parallel Dynamic-Mesh Lagrangian Method for Simulation of Flows with Dynamic
-             Interfaces",
-   booktitle = "Procceedings of SC2000",
-   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/sc2000/sc2000.pdf"
-}
 @inproceedings{oghattas1999,
    author = "George Biros and Omar Ghattas",
    title  = "Parallel preconditioners for KKT systems arising in optimal control of viscous incompressible flows",
@@ -154,11 +146,36 @@
    year = "2001",
    url = "http://www.cs.cmu.edu/\~{ }oghattas/papers/lnks/lnks2.pdf"
 }
-
+%
+%  <a name="biology"><H3><center>Biology</center></H3>
+%
+@inproceedings{oghattas2000,
+   author = "J. Antaki and G. Belloch and O. Ghattas and I. Malcevic 
+             and G. Miller and N. Walkington",
+   title  = "A Parallel Dynamic-Mesh Lagrangian Method for Simulation of Flows with Dynamic
+             Interfaces",
+   booktitle = "Procceedings of SC2000",
+   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/sc2000/sc2000.pdf",
+   note = "Blood flow modeling at the microscale including effects on individual blood cells,
+             for designing heart assist pumps, etc."
+}
+@Unpublished{cell,
+  title = {Parallel Simulation Engines for Whole-Cell Models},
+  author = {Markus Schwehm and Nils Gehlenborg and Hendrik Post and Amelie Stein and Kirstin Weber},
+  note = {Poster at Second International Conference on Systems Biology (ICSB) 2001},
+  url = {http://www.icsb2001.org/Posters/110_schwehm2.pdf},
+  institution = {University of Tubingen, ZBIT - Zentrum fur Bioinformatik Tubingen}
+}
+@inproceedings{brain1,
+   author = "Simon K. Warfield and Matthieu Ferrant and Xavier Gallez and Arya Nabavi and 
+             Ferenc A. Jolesz and Ron Kikinis",
+   title  = "Real-Time Biomechanical Simulation of Volumetric Brain Deformation for Image Guided Neurosurgery",
+   booktitle = "Procceedings of SC2000",
+   url    ="http://www.sc2000.org/techpapr/papers/pap.pap230.pdf"
+}
 %
 %  <a name="cfd"><H3><center>CFD</center></H3>
 %
-
 @Article{Kees_Miller_02,
   author =       {C. E. Kees and C. T. Miller},
   title =        {Higher Order Time Integration Methods for Two-Phase Flow},
@@ -176,15 +193,14 @@
 }
 @INPROCEEDINGS{lepotmeersessers2001,
  AUTHOR=    "I. Lepot and F. Meers and J.A. Essers",
- TITLE=     "Multilevels Parallel High Order Schemes for Invisid Flow Computations on 3D Unstructured Meshes",
+ TITLE=     "Multilevel Parallel High Order Schemes for Invisid Flow Computations on 3D Unstructured Meshes",
  YEAR=      "2001",
  BOOKTITLE= "ECCOMAS Computational Fluid Dynamics Conference 2001",
  url     = "http://www.ulg.ac.be/aerodyn"
 }
 @Article{aba01:petsc-app,
   author = 	 {Jason Abate and Peng Wang and Kamy Sepehrnoori},
-  title = 	 {Parallel Compositional Reservior Simulation on Clusters of
-                  {PC}s},
+  title = 	 {Parallel Compositional Reservior Simulation on Clusters of {PC}s},
   journal = "Int. J. High Performance Computing Applications",
   year = 	 2001,
   volume =	 15,
@@ -302,8 +318,7 @@
 }
 @TechReport{NKS-petsc-98,
   author = 	 {W. D. Gropp and D. E. Keyes and L. C. McInnes and M. D. Tidriri},
-  title = 	 {Globalized
-     {N}ewton-{K}rylov-{S}chwarz algorithms and software for parallel implicit {CFD}},
+  title = 	 {Globalized {N}ewton-{K}rylov-{S}chwarz algorithms and software for parallel implicit {CFD}},
   institution =  {ICASE},
   year = 	 1998,
   number =	 {98-24},
@@ -318,8 +333,7 @@
  year      = 2000,
  journal =  "Parallel Computing",
   url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P796.ps.Z",
- note        = "special issue of Parallel Computing on 
-               ``Parallel Computing in Aerospace''",
+ note        = "special issue of Parallel Computing on ``Parallel Computing in Aerospace''",
  origin = petsc
 }
 @InProceedings{texas98,
@@ -523,8 +537,7 @@
  origin = petsc
 }
 @InProceedings{efficient,
-  author    = "Satish Balay and William D. Gropp and Lois Curfman McInnes
-                  and Barry F. Smith",
+  author    = "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
   title     = "Efficient Management of Parallelism in 
                Object Oriented Numerical Software Libraries",
   booktitle = "Modern Software Tools in Scientific Computing",
@@ -537,8 +550,7 @@
   origin = petsc
 }
 @TechReport{petsc-user-ref,
-    Author = "Satish Balay and William D. Gropp and Lois Curfman McInnes
-		  and Barry F. Smith",
+    Author = "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
     Title  = "{PETS}c 2.0 Users Manual",
     Institution = "Argonne National Laboratory",
     Month  = Nov,
@@ -577,8 +589,7 @@
 }
 @INPROCEEDINGS{miss-paper,
  AUTHOR=    "William D. Gropp and Barry F. Smith",
- TITLE=     "Scalable, Extensible, and Portable
-              Numerical Libraries",
+ TITLE=     "Scalable, Extensible, and Portable Numerical Libraries",
  PUBLISHER= "IEEE",
  YEAR=      "1994",
  BOOKTITLE= "Proceedings of the Scalable Parallel Libraries Conference",
@@ -646,22 +657,20 @@
 }
 
 @inproceedings{bbh:com,
-   author    ="C. H. Bischof and H. M. B{\"u}cker 
-               and P. D. Hovland",
+   author    ="C. H. Bischof and H. M. B{\"u}cker and P. D. Hovland",
    title     ="{On Combining Computational Differentiation and
                 Toolkits for Parallel Scientific Computing}",
    booktitle ="Euro-Par 2000 -- Parallel Processing, 
                Proceedings of the 6th International Euro-Par 
                Conference, Munich, Germany, August/September 2000",
    year      = 2000,
-   editor    ="A. Bode and T. Ludwig and W. Karl 
-               and R. Wism{\"u}ller", 
+   editor    ="A. Bode and T. Ludwig and W. Karl and R. Wism{\"u}ller", 
    volume    ="1900",
    series    ="Lecture Notes in Computer Science",
    pages     ="86--94",
    address   ="Berlin",
    publisher ="Springer",
-  url   = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P797.ps.Z",
+   url   = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P797.ps.Z",
    origin = mcs
 }
 
@@ -702,16 +711,16 @@
   origin = petsc
 }
 @techreport{AD-PETSC-TM,
-  title = "Using {ADIFOR} and {ADIC} to Provide a {J}acobian for the {SNES}
-        Component of {PETSc}",
+  title = "Using {ADIFOR} and {ADIC} to Provide a {J}acobian for the {SNES} Component of {PETSc}",
   author = "Christian Bischof and Paul Hovland and Po-Ting Wu",
   year = 1997,
   type = "Technical Memorandum",
   institution = anl,
   origin = mcs,
-  url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/TM233.ps.Z",
+  url  = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/TM233.ps.Z",
   number = "ANL/MCS-TM-233"
   }
+%
 %  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 %
 @inproceedings{dhsv1,
@@ -723,8 +732,7 @@
 }
 @Article{Lahaye02,
   author =       "Domenico Lahaye and S. Vandewalle and K. Hameyer",
-  title  =       "An Algebraic Multilevel Preconditioner for Field-Circuit
-                  Coupled Problems",
+  title  =       "An Algebraic Multilevel Preconditioner for Field-Circuit Coupled Problems",
   journal =      @IEEEMAGN, 
   year =         "2002",
   notes = "to appear"
@@ -764,18 +772,16 @@
       YEAR="2001",
       PUBLISHER="Katholieke Universiteit Leuven",
       NOTES="Thesis"
-      }
+}
 @Article{Adams-00a, 
   author =   {Mark F. Adams}, 
-  title =   {Evaluation of Three Unstructured Multigrid Methods on 3{D} Finite Element Problems in Solid Mechanics}, 
+  title = {Evaluation of Three Unstructured Multigrid Methods on 3{D} Finite Element Problems in Solid Mechanics}, 
   journal =   {International Journal for Numerical Methods in Engineering}, 
   year =   {To Appear}, 
-  url = 	"http://www.cs.berkeley.edu/\~{ }madams/amg.ps"
+  url = "http://www.cs.berkeley.edu/\~{ }madams/amg.ps"
 } 
-
 @Article{Lahaye00,
-  author =       "Domenico Lahaye and De Gersem, H. and 
-                  Vandewalle, S. and Hameyer, K.",
+  author =       "Domenico Lahaye and De Gersem, H. and Vandewalle, S. and Hameyer, K.",
   title  =       "Algebraic Multigrid for Complex Symmetric Systems", 
   journal =      @IEEEMAGN, 
   year =         "2000",
@@ -795,9 +801,8 @@
 } 
 @InProceedings{Adams-99c, 
   author =   {Mark F. Adams and J. Demmel}, 
-  title =   {Parallel Multigrid Solver Algorithms and 
-                  Implementations for 3{D} Unstructured Finite Element 
-                  Problem}, 
+  title =   {Parallel Multigrid Solver Algorithms and Implementations for 3{D} Unstructured Finite Element 
+                  Problems}, 
   booktitle = {Proceedings of SC99: High Performance Networking and Computing},
   address = {Portland, Oregon}, 
   month = {November}, 
@@ -806,8 +811,7 @@
 } 
 @Article{chan95,
   author    = "T. Chan and B. Smith and J. Zou",
-  title     = "Overlapping {S}chwarz Methods
-              on Unstructured Meshes using Non-matching Coarse Grids",
+  title     = "Overlapping {S}chwarz Methods on Unstructured Meshes using Non-matching Coarse Grids",
   journal =   "Numer. Math.",
   year      = "1995",
   volume    = "73",
@@ -855,13 +859,6 @@
         url        = "http://www.ddm.org/DD11/Palansuriya.ps.gz",
         YEAR = "1999"
 } 
-@Unpublished{cell,
-  title = {Parallel Simulation Engines for Whole-Cell Models},
-  author = {Markus Schwehm and Nils Gehlenborg and Hendrik Post and Amelie Stein and Kirstin Weber},
-  note = {Poster at Second International Conference on Systems Biology (ICSB) 2001},
-  url = {http://www.icsb2001.org/Posters/110_schwehm2.pdf},
-  institution = {University of Tubingen, ZBIT - Zentrum fur Bioinformatik Tubingen}
-}
 @BOOK{pacheco,
       AUTHOR="Peter Pacheco",
       TITLE="Parallel Programming with MPI",
@@ -901,13 +898,6 @@
   volume = "6",
   pages = "47--51",
   title  =       "Parallel computation for electronic waves in quantum corrals"
-}
-@inproceedings{brain1,
-   author = "Simon K. Warfield and Matthieu Ferrant and Xavier Gallez and Arya Nabavi and 
-             Ferenc A. Jolesz and Ron Kikinis",
-   title  = "Real-Time Biomechanical Simulation of Volumetric Brain Deformation for Image Guided Neurosurgery",
-   booktitle = "Procceedings of SC2000",
-   url    ="http://www.sc2000.org//techpapr/papers/pap.pap230.pdf"
 }
 @Article{Bludszuwei98,
   author =        "Mark Bludszuweit",

@@ -483,6 +483,9 @@ int DMMGView(DMMG *dmmg,PetscViewer viewer)
   }
   if (isascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"%s Object on finest level\n",dmmg[nlevels-1]->sles ? "SLES" : "SNES");CHKERRQ(ierr);
+    if (dmmg[nlevels-1]->galerkin) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Using Galerkin R^T*A*R process to compute coarser matrices");CHKERRQ(ierr);
+    }
   }
   if (dmmg[nlevels-1]->sles) {
     ierr = SLESView(dmmg[nlevels-1]->sles,viewer);CHKERRQ(ierr);
