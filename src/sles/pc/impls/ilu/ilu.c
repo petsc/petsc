@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.164 2001/04/10 19:36:15 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.165 2001/04/13 03:00:55 bsmith Exp balay $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -256,7 +256,7 @@ int PCILUSetFill(PC pc,PetscReal fill)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetMatOrdering"
-/*@
+/*@C
     PCILUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
     be used in the ILU factorization.
 
