@@ -3,7 +3,7 @@ static char help[] =
 "Demonstrates how users may insert their own event logging.\n\n";
 
 #include "petsc.h"
-#include "pinclude/plog.h"
+#include "plog.h"
 #include <stdio.h>
 
 #define USER_EVENT 75
