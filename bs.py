@@ -137,7 +137,7 @@ class BS (install.base.Base):
       newDB[new_key] = self.sourceDB[key]
     self.sourceDB = newDB
 
-    if os.path.exists(self.sourceDBFilename):
+    if os.path.exists(os.path.dirname(self.sourceDBFilename)):
       dbFile = open(self.sourceDBFilename, 'w')
       cPickle.dump(self.sourceDB, dbFile)
       dbFile.close()
