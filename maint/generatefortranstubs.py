@@ -8,7 +8,7 @@ import os
 #  Opens all generated files and fixes them; also generates list in makefile.src
 #
 def FixFile(filename):
-qimport re
+  import re
   ff = open(filename)
   data = ff.read()
   ff.close()
@@ -49,7 +49,7 @@ def processDir(arg,dirname,names):
   bfort    = arg[1]
   newls = []
   for l in names:
-    if os.path.splitext(l)[1] = ='.c' or os.path.splitext(l)[1] == '.h':
+    if os.path.splitext(l)[1] =='.c' or os.path.splitext(l)[1] == '.h':
       newls.append(l)
   if newls:
     options = ['-dir '+os.path.join(petscdir, 'src', 'fortran', 'auto'), '-mnative', '-ansi', '-nomsgs',
@@ -59,7 +59,7 @@ def processDir(arg,dirname,names):
     if status:
       raise RuntimeError('Error running bfort '+output)
   for name in ['SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear']:
-    if name in name:
+    if name in names:
       names.remove(name)
   return
 
