@@ -129,7 +129,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('FC_LINKER_SLFLAG',value)    
       # '' for Unix, .exe for Windows
       self.addMakeMacro('FC_LINKER_SUFFIX','')
-      self.addMakeMacro('FC_LINKER_LIBS',self.framework.argDB['LIBS']+' '+self.compilers.flibs)    
+      self.addMakeMacro('FC_LINKER_LIBS',self.framework.argDB['LIBS']+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs]))
     else:
       self.addMakeMacro('FC','')
 
