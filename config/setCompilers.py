@@ -218,6 +218,11 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     import os
 
+    if self.framework.argDB.has_key('with-c++'):
+      raise RuntimeError('Keyword --with-c++ is WRONG, use --with-cxx')
+    if self.framework.argDB.has_key('with-CC'):
+      raise RuntimeError('Keyword --with-CC is WRONG, use --with-cxx')
+    
     if self.framework.argDB.has_key('with-cxx'):
       if self.framework.argDB['with-cxx'] == '0':
         return
