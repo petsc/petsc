@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.109 1998/04/23 21:58:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.110 1998/04/27 03:52:38 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -48,6 +48,8 @@ static char vcid[] = "$Id: gcreate.c,v 1.109 1998/04/23 21:58:05 bsmith Exp curf
 
    Notes:
    This routine calls MatGetTypeFromOptions() to determine the matrix type.
+
+   Level: beginner
 
 .keywords: matrix, create
 
