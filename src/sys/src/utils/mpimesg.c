@@ -35,7 +35,7 @@
 @*/
 PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm,PetscMPIInt *iflags,PetscMPIInt *ilengths,PetscMPIInt *nrecvs)
 {
-  PetscMPIInt    size,rank,*recv_buf,i,*iflags_local;
+  PetscMPIInt    size,rank,*recv_buf,i,*iflags_local,*iflags_localm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -43,10 +43,12 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm,PetscMPIInt *iflags,Pet
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
+  ierr = PetscMalloc2(size,PetscMPIInt,&recv_buf,size,PetscMPIInt,&iflags_localm);CHKERRQ(ierr);
+
   /* If iflags not provided, compute iflags from ilengths */
   if (!iflags) {
     if (!ilengths) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
-    ierr = PetscMalloc(size*sizeof(PetscMPIInt),&iflags_local);CHKERRQ(ierr);
+    iflags_local = iflags_localm;
     for (i=0; i<size; i++) { 
       if (ilengths[i])  iflags_local[i] = 1;
       else iflags_local[i] = 0;
@@ -55,16 +57,11 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm,PetscMPIInt *iflags,Pet
     iflags_local = iflags;
   }
 
-  ierr = PetscMalloc(size*sizeof(PetscMPIInt),&recv_buf);CHKERRQ(ierr);
-
   /* Post an allreduce to determine the numer of messages the current node will receive */
   ierr    = MPI_Allreduce(iflags_local,recv_buf,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   *nrecvs = recv_buf[rank];
 
-  if (!iflags) {
-    ierr = PetscFree(iflags_local);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(recv_buf);CHKERRQ(ierr);
+  ierr = PetscFree2(recv_buf,iflags_localm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -15,9 +15,9 @@
  * hash table for non-zero data and keys 
  *
  */
-PetscErrorCode PetscTableCreate(const int n,PetscTable *rta)
+PetscErrorCode PetscTableCreate(const PetscInt n,PetscTable *rta)
 {
-  PetscTable ta;
+  PetscTable     ta;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -25,9 +25,9 @@ PetscErrorCode PetscTableCreate(const int n,PetscTable *rta)
   ierr          = PetscNew(struct _p_PetscTable,&ta);CHKERRQ(ierr);
   ta->tablesize = (3*n)/2 + 17;
   if (ta->tablesize < n) ta->tablesize = INT_MAX/4; /* overflow */
-  ierr          = PetscMalloc(sizeof(int)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
-  ierr          = PetscMemzero(ta->keytable,sizeof(int)*ta->tablesize);CHKERRQ(ierr);
-  ierr          = PetscMalloc(sizeof(int)*ta->tablesize,&ta->table);CHKERRQ(ierr);
+  ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
+  ierr          = PetscMemzero(ta->keytable,sizeof(PetscInt)*ta->tablesize);CHKERRQ(ierr);
+  ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);
   ta->head      = 0;
   ta->count     = 0;
   *rta          = ta;
@@ -44,14 +44,14 @@ PetscErrorCode PetscTableCreate(const int n,PetscTable *rta)
 PetscErrorCode PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
 {
   PetscErrorCode ierr;
-  int        i;
-  PetscTable ta;
+  PetscInt       i;
+  PetscTable     ta;
 
   PetscFunctionBegin;
   ierr          = PetscNew(struct _p_PetscTable,&ta);CHKERRQ(ierr);
   ta->tablesize = intable->tablesize;
-  ierr          = PetscMalloc(sizeof(int)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
-  ierr          = PetscMalloc(sizeof(int)*ta->tablesize,&ta->table);CHKERRQ(ierr);
+  ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
+  ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);
   for(i = 0 ; i < ta->tablesize ; i++){
     ta->keytable[i] = intable->keytable[i]; 
     ta->table[i]    = intable->table[i];
@@ -85,7 +85,7 @@ PetscErrorCode PetscTableDelete(PetscTable ta)
 #define __FUNCT__ "PetscTableGetCount"
 /* PetscTableGetCount() ********************************************
  */
-PetscErrorCode PetscTableGetCount(const PetscTable ta,int *count) 
+PetscErrorCode PetscTableGetCount(const PetscTable ta,PetscInt *count) 
 { 
   PetscFunctionBegin;
   *count = ta->count;
@@ -96,7 +96,7 @@ PetscErrorCode PetscTableGetCount(const PetscTable ta,int *count)
 #define __FUNCT__ "PetscTableIsEmpty"
 /* PetscTableIsEmpty() ********************************************
  */
-PetscErrorCode PetscTableIsEmpty(const PetscTable ta,int *flag) 
+PetscErrorCode PetscTableIsEmpty(const PetscTable ta,PetscInt *flag) 
 { 
   PetscFunctionBegin;
   *flag = !(ta->count); 
@@ -108,11 +108,11 @@ PetscErrorCode PetscTableIsEmpty(const PetscTable ta,int *flag)
 /* PetscTableAdd() ********************************************
  *
  */
-PetscErrorCode PetscTableAdd(PetscTable ta,const int key,const int data)
+PetscErrorCode PetscTableAdd(PetscTable ta,const PetscInt key,const PetscInt data)
 {  
   PetscErrorCode ierr;
-  int       ii = 0,hash = HASHT(ta,key);
-  const int tsize = ta->tablesize,tcount = ta->count; 
+  PetscInt       ii = 0,hash = HASHT(ta,key);
+  const PetscInt tsize = ta->tablesize,tcount = ta->count; 
   
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_ERR_COR,"key <= 0");
@@ -132,16 +132,16 @@ PetscErrorCode PetscTableAdd(PetscTable ta,const int key,const int data)
     }  
     SETERRQ(PETSC_ERR_COR,"Full table");
   } else {
-    int *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
+    PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
     /* alloc new (bigger) table */
     if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_ERR_COR,"ta->tablesize < 0");
     ta->tablesize = 2*tsize; 
     if (ta->tablesize <= tsize) ta->tablesize = INT_MAX/4;
 
-    ierr = PetscMalloc(ta->tablesize*sizeof(int),&ta->table);CHKERRQ(ierr);
-    ierr = PetscMalloc(ta->tablesize*sizeof(int),&ta->keytable);CHKERRQ(ierr);
-    ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
+    ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
+    ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
 
     ta->count     = 0;
     ta->head      = 0; 
@@ -177,7 +177,7 @@ PetscErrorCode PetscTableRemoveAll(PetscTable ta)
   ta->head = 0;
   if (ta->count) { 
     ta->count = 0;
-    ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -189,9 +189,9 @@ PetscErrorCode PetscTableRemoveAll(PetscTable ta)
  * returns data. If data==0, then no table entry exists.
  *
  */
-PetscErrorCode PetscTableFind(PetscTable ta,const int key,int *data) 
+PetscErrorCode PetscTableFind(PetscTable ta,const PetscInt key,PetscInt *data) 
 {  
-  int hash,ii = 0;
+  PetscInt hash,ii = 0;
 
   PetscFunctionBegin;
   if (!key) SETERRQ(PETSC_ERR_COR,"Null key");
@@ -215,7 +215,7 @@ PetscErrorCode PetscTableFind(PetscTable ta,const int key,int *data)
  */
 PetscErrorCode PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
 {
-  int i = 0;
+  PetscInt i = 0;
 
   PetscFunctionBegin;
   *ppos = NULL;
@@ -239,9 +239,9 @@ PetscErrorCode PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
  *  - iteration - PetscTablePosition is always valid (points to a data)
  *  
  */
-PetscErrorCode PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,int *pkey,int *data)
+PetscErrorCode PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,PetscInt *pkey,PetscInt *data)
 {
-  int                idex; 
+  PetscInt           idex; 
   PetscTablePosition pos;
 
   PetscFunctionBegin;

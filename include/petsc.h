@@ -272,6 +272,38 @@ EXTERN PetscErrorCode        PetscCommDestroy(MPI_Comm*);
 
 M*/
 #define PetscMalloc(a,b)     (*PetscTrMalloc)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__,(void**)(b))
+
+/*MC
+   PetscMalloc2 - Allocates 2 chunks of  memory
+
+   Input Parameter:
++  m1 - number of bytes to allocate in 1st chunk
+.  t1 - type of first memory elements
+.  m2 - number of bytes to allocate in 2nd chunk
+-  t2 - type of second memory elements
+
+   Output Parameter:
++  result1 - memory allocated in first chunk
+-  result2 - memory allocated in second chunk
+
+   Synopsis:
+   PetscErrorCode PetscMalloc(size_t m1,type, t1,void **result1,size_t m2,type t2,void **result2)
+
+   Level: beginner
+
+   Notes: Memory of first chunk is always allocated at least double aligned
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_BOPT_g)
+#define PetscMalloc2(m1,t1,result1,m2,t2,result2) (PetscMalloc((m1)*sizeof(t1),result1) || PetscMalloc((m2)*sizeof(t2),result2))
+#else
+#define PetscMalloc2(m1,t1,result1,m2,t2,result2) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2),result1) || (*(result2) = (t2*)((char*)(*(result1))+m1),0))
+#endif
+
 /*MC
    PetscNew - Allocates memory of a particular type
 
@@ -292,6 +324,7 @@ M*/
 
 M*/
 #define PetscNew(A,b)        PetscMalloc(sizeof(A),(b))
+
 /*MC
    PetscFree - Frees memory
 
@@ -311,6 +344,33 @@ M*/
 
 M*/
 #define PetscFree(a)   ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || ((a = 0),0))
+
+/*MC
+   PetscFree2 - Frees 2 chunks of memory obtained with PetscMalloc2()
+
+   Input Parameter:
++   memory1 - memory to free
+-   memory2 - 2nd memory to free
+
+
+   Synopsis:
+   PetscErrorCode PetscFree2(void *memory1,void *memory2)
+
+   Level: beginner
+
+   Notes: Memory must have been obtained with PetscMalloc2()
+
+.seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_BOPT_g)
+#define PetscFree2(m1,m2)   (PetscFree(m1)||PetscFree(m2))
+#else
+#define PetscFree2(m1,m2)   (PetscFree(m1))
+#endif
+
 EXTERN PetscErrorCode  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
 EXTERN PetscErrorCode  (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
 EXTERN PetscErrorCode  PetscSetMalloc(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));

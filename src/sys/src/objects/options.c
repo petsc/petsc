@@ -181,16 +181,13 @@ PetscErrorCode PetscSetProgramName(const char name[])
 @*/
 PetscErrorCode PetscOptionsInsertString(const char in_str[])
 {
-  char       *str,*first,*second,*third,*final;
-  size_t     len;
+  char           *str,*first,*second,*third,*final;
+  size_t         len;
   PetscErrorCode ierr;
-  PetscToken *token;
+  PetscToken     *token;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(in_str,&len);CHKERRQ(ierr);
-  ierr = PetscMalloc(len,&str);CHKERRQ(ierr);
-  ierr = PetscStrcpy(str, in_str);CHKERRQ(ierr);
-
+  ierr = PetscStrallocpy(in_str, &str);CHKERRQ(ierr);
   ierr = PetscTokenCreate(str,' ',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
@@ -1346,12 +1343,11 @@ PetscErrorCode PetscOptionsGetString(const char pre[],const char name[],char str
 @*/
 PetscErrorCode PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[],PetscInt *nmax,PetscTruth *flg)
 {
-  char       *value;
-  size_t     len;
+  char           *value;
   PetscErrorCode ierr;
-  int        n;
-  PetscTruth flag;
-  PetscToken *token;
+  PetscInt       n;
+  PetscTruth     flag;
+  PetscToken     *token;
  
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -1367,9 +1363,7 @@ PetscErrorCode PetscOptionsGetStringArray(const char pre[],const char name[],cha
   n = 0;
   while (n < *nmax) {
     if (!value) break;
-    ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
-    ierr = PetscMalloc((len+1)*sizeof(char),&strings[n]);CHKERRQ(ierr);
-    ierr = PetscStrcpy(strings[n],value);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(value,&strings[n]);CHKERRQ(ierr);
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
