@@ -23,7 +23,9 @@
       integer MG_V_CYCLE,MG_W_CYCLE
       parameter (MG_V_CYCLE=1,MG_W_CYCLE=2)
 
-      external MGDefaultResidual
+      external MGDEFAULTRESIDUAL
+PETSC_DEC_ATTRIBUTES(MGDEFAULTRESIDUAL,'_MGDEFAULTRESIDUAL')
+
 !
 !     End of Fortran include file for the  MG include file in PETSc
 

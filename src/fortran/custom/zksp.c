@@ -11,6 +11,7 @@
 #define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
 #define kspdefaultconverged_       KSPDEFAULTCONVERGED
 #define kspskipconverged_          KSPSKIPCONVERGED
+#define kspgmreskrylovmonitor_     KSPGMRESKRYLOVMONITOR
 #define kspdefaultmonitor_         KSPDEFAULTMONITOR
 #define ksptruemonitor_            KSPTRUEMONITOR
 #define kspvecviewmonitor_         KSPVECVIEWMONITOR
@@ -45,6 +46,7 @@
 #define kspdefaultconverged_       kspdefaultconverged
 #define kspskipconverged_          kspskipconverged
 #define kspsingularvaluemonitor_   kspsingularvaluemonitor
+#define kspgmreskrylovmonitor_     kspgmreskrylovmonitor
 #define kspdefaultmonitor_         kspdefaultmonitor
 #define ksptruemonitor_            ksptruemonitor
 #define kspvecviewmonitor_         kspvecviewmonitor
@@ -193,6 +195,11 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
    
    functions, hence no STDCALL
 */
+void kspgmreskrylovmonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
+{
+  *ierr = KSPGMRESKrylovMonitor(*ksp,*it,*norm,ctx);
+}
+
 void  kspdefaultmonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
 {
   *ierr = KSPDefaultMonitor(*ksp,*it,*norm,ctx);
