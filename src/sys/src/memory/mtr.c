@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.68 1997/01/15 02:13:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.69 1997/01/15 04:02:56 bsmith Exp curfman $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -478,21 +478,22 @@ typedef union { long l[2]; double d; } NANDouble;
 
 #include <math.h>
 /*@
-     PetscInitializeNans - Intialize certain memory locations with NANs.
-           This routine is used to mark an array as unitialized so that
-           if values are used for computation, with out being set a 
-           floating point exception is generated.
+   PetscInitializeNans - Intialize certain memory locations with NANs.
+   This routine is used to mark an array as unitialized so that
+   if values are used for computation without first having been set,
+   a floating point exception is generated.
 
-  Input parameters:
-. p   - pointer to data
-. n   - length of data (in Scalars)
+   Input parameters:
+.  p   - pointer to data
+.  n   - length of data (in Scalars)
 
-  Options Database:
-.  -trmalloc_nan
+   Options Database Key:
+$   -trmalloc_nan
 
-   Notes: This is useful to track down where one is using unitialized
-     array values. Run the code with the -fp_trap option and it will 
-     stop if one of the "unitialized" values is used in a computation.
+   Notes:
+   This routine is useful for tracking down the use of uninitialized
+   array values.  If the code is run with the -fp_trap option, it will
+   stop if one of the "unitialized" values is used in a computation.
 
 .seealso: PetscInitializeLargeInts()
 @*/
@@ -519,23 +520,22 @@ int PetscInitializeNans(Scalar *p,int n )
 }
 
 /*@
-     PetscInitializeLargeInts - Intializes an array of integers
-          with very large values.
+   PetscInitializeLargeInts - Intializes an array of integers
+   with very large values.
 
-  Input parameters:
-. p   - pointer to data
-. n   - length of data (in ints)
+   Input parameters:
+.  p   - pointer to data
+.  n   - length of data (in ints)
 
-  Options Database:
-.  -trmalloc_nan
+   Options Database Key:
+$   -trmalloc_nan
 
-   Notes: This is useful to track down where one is using unitialized
-     array values. If integer indices are absurdly large then you 
-     know that you are using an integer array value before it was ever
-     set.
+   Notes:
+   This routine is useful for tracking down the use of uninitialized
+   array values.  If an integer array value is absurdly large, then
+   there's a good chance that it is being used before it was ever set.
 
 .seealso: PetscInitializeNans()
-
 @*/
 int PetscInitializeLargeInts(int *p,int n )
 {
