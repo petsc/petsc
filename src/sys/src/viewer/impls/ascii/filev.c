@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.83 1999/01/31 16:04:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.84 1999/02/01 15:37:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -187,6 +187,8 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerSetFilename"
 /*@C
      ViewerSetFilename - Sets the name of the file the viewer uses.
 
@@ -199,8 +201,6 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 .seealso: ViewerCreate(), ViewerSetType(), ViewerASCIIOpen(), ViewerBinaryOpen()
 
 @*/
-#undef __FUNC__  
-#define __FUNC__ "ViewerSetFilename"
 int ViewerSetFilename(Viewer viewer,const char name[])
 {
   int ierr, (*f)(Viewer,const char[]);

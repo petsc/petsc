@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.58 1999/01/18 21:01:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.59 1999/01/31 16:04:42 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -125,7 +125,9 @@ int ViewerBinaryOpen(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewe
   PetscFunctionReturn(0);
 }
 
-/*@
+#undef __FUNC__  
+#define __FUNC__ "ViewerBinarySetType"
+/*@C
      ViewerBinarySetType - Sets the type of binary file to be open
 
     Collective on Viewer
@@ -140,8 +142,6 @@ $    BINARY_WRONLY - open existing file for binary output
 .seealso: ViewerCreate(), ViewerSetType(), ViewerBinaryOpen()
 
 @*/
-#undef __FUNC__  
-#define __FUNC__ "ViewerBinarySetType"
 int ViewerBinarySetType(Viewer viewer,ViewerBinaryType type)
 {
   int ierr, (*f)(Viewer,ViewerBinaryType);
