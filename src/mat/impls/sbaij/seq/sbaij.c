@@ -620,10 +620,10 @@ int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,const int im[],int n,const int in[]
     low  = 0;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)  
-      if (in[l] >= a->nbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",col,a->nbs-1);
-#endif
       col = in[l]; 
+#if defined(PETSC_USE_BOPT_g)  
+      if (col >= a->nbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",col,a->nbs-1);
+#endif
       if (col < row) continue; /* ignore lower triangular block */
       if (roworiented) { 
         value = v + k*(stepval+bs)*bs + l*bs;
