@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.3 2001/08/06 21:19:00 bsmith Exp balay $ 
+# $Id: makefile,v 1.4 2001/08/22 18:02:48 balay Exp buschelm $ 
 
 #requireslanguage  CONLY
 #requiresscalar    real 
@@ -8,10 +8,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = 
+SOURCEC  = matmatmult.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = 
+OBJSC    = matmatmult.o
 OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = PC
