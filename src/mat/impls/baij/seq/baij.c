@@ -210,7 +210,6 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-    break;
   case MAT_USE_SINGLE_PRECISION_SOLVES:
     if (a->bs==4) {
       PetscTruth sse_enabled_local,sse_enabled_global;

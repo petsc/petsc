@@ -139,7 +139,6 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
     break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
-    break;
   }
   PetscFunctionReturn(0);
 }
