@@ -316,7 +316,7 @@ int main( int argc, char **argv )
    Matrix memory preallocation such as in this routine is not necessary
    for matrix creation, since PETSc dynamically allocates memory when
    needed.  However, preallocation is crucial for fast matrix assembly!
-   See the users manual and the file petsc/Performance for details.
+   See the users manual for details.
 
    Useful Options Database Keys:
      -log_info        prints info about matrix memory allocation

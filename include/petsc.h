@@ -1,7 +1,7 @@
-/* $Id: petsc.h,v 1.126 1996/08/04 23:14:42 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.127 1996/08/06 04:04:29 bsmith Exp curfman $ */
 /*
-     This is the main PETSc include file (for C and C++) it is included 
-   by all other PETSc include files so almost never has to be specifically included.
+   This is the main PETSc include file (for C and C++).  It is included by
+   all other PETSc include files so almost never has to be specifically included.
 */
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -22,7 +22,7 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define PetscReal(a)      real(a)
 #define PetscAbsScalar(a) abs(a)
 /*
-    The new complex class for GNU C++ is based on templates and not backward
+  The new complex class for GNU C++ is based on templates and is not backward
   compatible with all previous complex class libraries.
 */
 #if defined(USES_TEMPLATED_COMPLEX)
@@ -43,7 +43,7 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define PetscAbsDouble(a)  ( ((a)<0)   ? -(a) : (a) )
 
 /*
-    Defines the malloc that PETSc uses. Users may use these as well. 
+    Defines the malloc employed by PETSc. Users may employ these routines as well. 
 */
 extern void *(*PetscTrMalloc)(unsigned int,int,char*);
 extern int  (*PetscTrFree)(void *,int,char*);
@@ -79,8 +79,8 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_DEFAULT        -2
 
 /*
-    Defines the directory were the compiled source is located; used
-  in print error messages. __DIR__ is usually defined in the makefile.
+   Defines the directory where the compiled source is located; used
+   in print error messages. __DIR__ is usually defined in the makefile.
 */
 #if !defined(__DIR__)
 #define __DIR__ 0
@@ -117,7 +117,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 /*
     Each PETSc object class has it's own cookie (internal integer in the 
   data structure used for error checking). These are all defined by an offset 
-  from the lowest one PETSC_COOKIE.
+  from the lowest one, PETSC_COOKIE.
 */
 #define PETSC_COOKIE                1211211
 #define LARGEST_PETSC_COOKIE_STATIC PETSC_COOKIE + 30
