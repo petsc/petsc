@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.250 1998/06/19 15:53:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.251 1998/06/19 15:56:02 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -278,8 +278,7 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
         if (idxn[j] >= cstart && idxn[j] < cend){
           col = idxn[j] - cstart;
           ierr = MatGetValues(aij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
-        }
-        else {
+        } else {
           if (!aij->colmap) {
             ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
           }
