@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.47 1998/04/13 17:30:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.48 1998/04/26 03:01:29 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -94,6 +94,10 @@ int PetscSetFPTrap(int flag)
   (void) ieee_flags( "clear", "exception", "all", &out );
   if (flag == PETSC_FP_TRAP_ON) {
     if (ieee_handler("set","common",PetscDefaultFPTrap)) {
+      /*
+        To trap more fp exceptions, including undrflow, change the above line to
+        if (ieee_handler("set","all",PetscDefaultFPTrap)) {
+      */
       (*PetscErrorPrintf)( "Can't set floatingpoint handler\n");
     }
   } else {

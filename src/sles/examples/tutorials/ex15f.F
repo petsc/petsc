@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.6 1998/04/14 15:06:29 balay Exp balay $";
+!    "$Id: ex15f.F,v 1.7 1998/04/15 18:01:57 balay Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -193,7 +193,8 @@
          call PCSetType(pc,PCSHELL,ierr)
 
 !  (Required) Set the user-defined routine for applying the preconditioner
-         call PCShellSetApply(pc,SampleShellPCApply,PETSC_NULL,ierr)
+         call PCShellSetApply(pc,SampleShellPCApply,PETSC_NULL_OBJECT,   &
+     &        ierr)
 
 !  (Optional) Do any setup required for the preconditioner
          call SampleShellPCSetUp(A,x,ierr)
