@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.65 1996/08/08 14:40:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.66 1996/08/15 12:45:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -594,7 +594,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->scatterend   = 0;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
-        *newctx = ctx;
+        *newctx           = ctx;
         return 0;
       }
     }
@@ -831,6 +831,8 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
   PetscHeaderCreate(*ctx,_VecScatter,VEC_SCATTER_COOKIE,0,sctx->comm);
   PLogObjectCreate(*ctx);
   PLogObjectMemory(*ctx,sizeof(struct _VecScatter));
+  (*ctx)->to_n   = sctx->to_n;
+  (*ctx)->from_n = sctx->from_n;
   return (*sctx->copy)(sctx,*ctx);
 }
 

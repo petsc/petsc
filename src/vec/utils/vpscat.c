@@ -2,7 +2,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.62 1996/08/13 19:25:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.63 1996/08/15 12:45:07 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -122,9 +122,7 @@ static int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,int mode,VecScat
   Scalar                 *xv = x->array,*yv = y->array, *val, *rvalues,*svalues;
   MPI_Request            *rwaits, *swaits;
   int                    tag = ctx->tag, i,j,*indices,*rstarts,*sstarts,*rprocs, *sprocs;
-  int                    rank,nrecvs, nsends,iend,ierr;
-
-  MPI_Comm_rank(comm,&rank);
+  int                    nrecvs, nsends,iend,ierr;
 
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
@@ -195,11 +193,9 @@ static int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,int mode,VecScatte
   Vec_MPI                *y = (Vec_MPI *)yin->data;
   Scalar                 *rvalues, *yv = y->array,*val;
   int                    nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
-  int                    rank;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  MPI_Comm_rank(ctx->comm,&rank);
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
@@ -252,13 +248,10 @@ static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecSc
 {
   VecScatter_MPI_General *gen_to, *gen_from;
   Vec_MPI                *x = (Vec_MPI *)xin->data, *y = (Vec_MPI *)yin->data;
-  MPI_Comm               comm = ctx->comm;
   Scalar                 *xv = x->array, *yv = y->array, *val, *rvalues,*svalues;
   MPI_Request            *rwaits, *swaits;
   int                    i,*indices,*sstarts,iend,j;
-  int                    rank,nrecvs, nsends,idx;
-
-  MPI_Comm_rank(comm,&rank);
+  int                    nrecvs, nsends,idx;
 
   if (mode & SCATTER_REVERSE ) SETERRQ(1,"VecScatterBegin_PtoP_5:No reverse currently");
 
@@ -275,7 +268,7 @@ static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecSc
   sstarts  = gen_to->starts;
   
   /* post receives:   */
-  MPI_Startall(nrecvs,rwaits); 
+  MPI_Startall_irecv(gen_from->starts[nrecvs],nrecvs,rwaits); 
 
   /* this version packs all the messages together and sends */
   /*
@@ -290,7 +283,7 @@ static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecSc
     val[4] = xv[idx+4];
     val      += 5;
   }
-  MPI_Startall(nsends,swaits);
+  MPI_Startall_isend(len,nsends,swaits);
   */
 
   /* this version packs and sends one at a time */
@@ -307,7 +300,7 @@ static int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecSc
       val[4] = xv[idx+4];
       val    += 5;
     } 
-    MPI_Start(swaits+i);
+    MPI_Start_isend(5*iend,swaits+i);
   }
 
   /* take care of local scatters */
@@ -342,11 +335,10 @@ static int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,int mode,VecScat
   Vec_MPI                *y = (Vec_MPI *)yin->data;
   Scalar                 *rvalues, *yv = y->array,*val;
   int                    nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
-  int                    rank,idx;
+  int                    idx;
   MPI_Request            *rwaits, *swaits;
   MPI_Status             rstatus, *sstatus;
 
-  MPI_Comm_rank(ctx->comm,&rank);
   gen_to   = (VecScatter_MPI_General *) ctx->todata;
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
   sstatus  = gen_to->sstatus;

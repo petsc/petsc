@@ -208,7 +208,7 @@ runex5:
 	   $(RM) -f ex5_1.tmp
 runex6:
 	-@$(MPIRUN) ex6 -ksp_preonly  -pc_type lu \
-	   -f ../../mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
+	   -f ../../../mat/examples/matrices/arco1 > ex6_1.tmp 2>&1; \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   $(RM) -f ex6_1.tmp

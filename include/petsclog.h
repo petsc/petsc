@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.81 1996/08/06 04:04:29 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.82 1996/08/06 12:58:25 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -243,6 +243,24 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
   isend_ct++;   TypeSize(isend_len,count,datatype); \
 }
 
+#define MPI_Startall_irecv( count,number,requests) \
+{ \
+  MPI_Startall( number, requests);\
+  irecv_ct += (double)(number); irecv_len += (double) (count*sizeof(Scalar)); \
+}
+
+#define MPI_Startall_isend( count,number,requests) \
+{ \
+  MPI_Startall( number, requests);\
+  isend_ct += (double)(number); isend_len += (double) (count*sizeof(Scalar)); \
+}
+
+#define MPI_Start_isend(count,  requests) \
+{ \
+  MPI_Start( requests);\
+  isend_ct++; isend_len += (double) (count*sizeof(Scalar)); \
+}
+
 #define MPI_Recv( buf, count,  datatype, source, tag, comm, status) \
 { \
   MPI_Recv( buf, count,  datatype, source, tag, comm, status); \
@@ -278,6 +296,23 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
   allreduce_ct++, \
   MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
 )
+#else
+
+#define MPI_Startall_irecv( count,number,requests) \
+{ \
+  MPI_Startall( number, requests);\
+}
+
+#define MPI_Startall_isend( count,number,requests) \
+{ \
+  MPI_Startall( number, requests);\
+}
+
+#define MPI_Start_isend(count,  requests) \
+{ \
+  MPI_Start( requests);\
+}
+
 #endif /* ! PETSC_USING_MPIUNI && ! PARCH_hpux */
 
 #else  /* ------------------------------------------------------------*/

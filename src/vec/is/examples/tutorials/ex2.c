@@ -1,56 +1,64 @@
 
-C      "$Id: ex2f.F,v 1.1 1996/08/14 15:15:49 bsmith Exp bsmith $";
-C
-C    Concepts: Index set, indices, stride, accessing PETSc array from Fortran
-C    Routines: ISCreateStrideSeq(), ISDestroy(), ISView()
-C    Routines: ISGetIndices(), ISRestoreIndices()
-C    
-C     Creates an index set based on a stride. Views that index set
-C  and then destroys it.
-C
-C
-C  Always include petsc.h
-C  include is.h so we can work with PETSc IS objects 
-C  include viewer.h so we can use Viewer (e.g. VIEWER_STDOUT_SELF)
+/*      "$Id: ex2.c,v 1.1 1996/08/14 15:25:09 bsmith Exp bsmith $"; */
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/is.h"
-#include "include/FINCLUDE/viewer.h"
+static char help[] = "Demonstrates creating a stride index set.\n\n";
+
+/*T
+    Concepts: Index set, indices, stride
+    Routines: ISCreateStride(), ISDestroy(), ISView()
+    Routines: ISGetIndices(), ISRestoreIndices(), ISStrideGetInfo()
+    
+      Creates an index set based on a stride. Views that index set
+  and then destroys it.
 
 
-      integer i, n, ierr, iss, index(1), first, step
-      IS      set
+T*/
 
-#define indices(ib)  index(iss + (ib))
+/*
+  Include is.h so we can use PETSc IS objects. Note that this automatically 
+  includes petsc.h.
+*/
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
-      n     = 10
-      first = 3
-      step  = 2
+#include "is.h"
 
-C  Create stride index set, starting at 3 with a stride of 2
+int main(int argc,char **argv)
+{
+  int i, n, ierr,  *indices, first, step;
+  IS  set;
 
-      call ISCreateStrideSeq(MPI_COMM_SELF,n,first,step,set,ierr)
-      call ISView(set,VIEWER_STDOUT_SELF,ierr)
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);
+      
+  n     = 10;
+  first = 3;
+  step  = 2;
 
-C  Extract indices from set. Demonstrates how a Fortran code can directly 
-C  access the array storing a PETSc index set with ISGetIndices().  The user
-C  declares an array (index(1)) and index variable (iss), which are then used
-C  together to allow the Fortran to directly manipulate the PETSc array
+  /*
+    Create stride index set, starting at 3 with a stride of 2
+    Note each processor is generating its own index set 
+    (in this case they are all identical)
+  */
+  ierr = ISCreateStride(MPI_COMM_SELF,n,first,step,&set); CHKERRA(ierr);
+  ierr = ISView(set,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
-      call ISGetIndices(set,index,iss,ierr)
-      write(6,20)
-      do 10 i=1,n
-         write(6,30) indices(i)
- 10   continue
- 20   format('Printing indices directly')
- 30   format(i3)
+  /*
+    Extract indices from set.
+  */
+  ierr = ISGetIndices(set,&indices); CHKERRA(ierr);
+  printf("Printing indices directly\n");
+  for (i=0; i<n; i++) {
+    printf("%d\n",indices[i]);
+  }
 
-C  Clean up 
-      call ISRestoreIndices(set,index,iss,ierr)
-      call ISDestroy(set,ierr)
-      call PetscFinalize(ierr)
+  ierr = ISRestoreIndices(set,&indices); CHKERRA(ierr);
 
-      stop
-      end
+  /*
+      Determine information on stride
+  */
+  ierr = ISStrideGetInfo(set,&first,&step); CHKERRA(ierr);
+  if (first != 3 || step != 2) SETERRA(1,"Stride info not correct!\n");
+  ierr = ISDestroy(set); CHKERRA(ierr);
+  PetscFinalize();
+  return 0;
+}
+
 

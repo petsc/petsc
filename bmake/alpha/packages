@@ -10,9 +10,10 @@
 #
 #FC_LIB         =  /usr/lib/libfor.a /usr/lib/libutil.a \
 #                 /usr/lib/libFutil.a /usr/lib/libots.a 
-FC_LIB         =  /usr/lib/libutil.a \
-                 /usr/lib/libFutil.a /usr/lib/libots.a 
-
+FC_LIB         =                    /usr/lib/libutil.a \
+                 /usr/lib/libFutil.a /usr/lib/libots.a  
+                 
+# /usr/lib/libUfor.a /usr/lib/libfor.a /usr/lib/libc_r.a \
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.

@@ -1,79 +1,68 @@
-#ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/08/14 02:57:35 bsmith Exp bsmith $";
-#endif
 
-static char help[] = "Demonstrates creating a general index set.\n\n";
+C  "$Id: ex2.F,v 1.1 1996/08/14 03:10:30 bsmith Exp bsmith $";
+C
+C
+C    Concepts: Index set, indices
+C    Routines: ISCreateGeneral(), ISDestroy(), ISView(), ISGetSize()
+C    Routines: ISGetIndices(), ISRestoreIndices()
+C    
+C     Creates an index set based on a set of integers. Views that index set
+C  and then destroys it.
+C
+C
+C  Always include petsc.h
+C  include is.h so we can work with PETSc IS objects 
+C  include viewer.h so we can use Viewer (e.g. VIEWER_STDOUT_SELF)
 
-/*T
+#include "FINCLUDE/petsc.h"
+#include "FINCLUDE/is.h"
+#include "FINCLUDE/viewer.h"
 
-    Concepts: Index set, indices
-    Routines: ISCreateSeq(), ISDestroy(), ISView()
-    
-     Creates an index set based on a set of integers. Views that index set
-  and then destroys it.
-T*/
- 
-#include "petsc.h"
-#include "is.h"
-#include "sys.h"
-#include <math.h>
+      integer ierr, indices(5),rank,n,ix
+      IS      is
 
-int main(int argc,char **argv)
-{
-  int      ierr,*indices,rank,n;
-  IS       is;
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+C     Create an index set with 5 entries. Each processor creates
+C   its own index set with its own list of integers.
+   
+      indices(1) = rank + 1
+      indices(2) = rank + 2 
+      indices(3) = rank + 3 
+      indices(4) = rank + 4 
+      indices(5) = rank + 5 
+      call ISCreateGeneral(MPI_COMM_SELF,5,indices,is,ierr)
 
-  /*
-     Create an index set with 5 entries. Each processor creates
-   its own index set with its own list of integers.
-  */
-  indices = (int *) PetscMalloc( 5*sizeof(int) ); CHKPTRA(indices);
-  indices[0] = rank + 1; 
-  indices[1] = rank + 2; 
-  indices[2] = rank + 3; 
-  indices[3] = rank + 4; 
-  indices[4] = rank + 5; 
-  ierr = ISCreateSeq(MPI_COMM_SELF,5,indices,&is); CHKERRA(ierr);
-  /*
-     Note that ISCreateSeq() has made a copy of the indices
-     so we may (and generally should) free indices[]
-  */
-  PetscFree(indices);
+C   Print the index set to stdout
 
-  /*
-     Print the index set to stdout
-  */
-  ierr = ISView(is,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+      call ISView(is,VIEWER_STDOUT_SELF,ierr)
 
-  /*
-     Get the number of indices in the set 
-  */
-  ierr = ISGetSize(is,&n); CHKERRA(ierr);
+C   Get the number of indices in the set 
 
-  /*
-     Get the indices in the index set
-  */
-  ierr = ISGetIndices(is,&indices); CHKERRA(ierr);
-  /*
-     No any code that needs access to the list of integers
-   has access to it here through indices[].
-   */
+      call ISGetSize(is,n,ierr)
 
-  /*
-     Once we no longer need access to the indices they should 
-     returned to the system 
-  */
-  ierr = ISRestoreIndices(is,&indices); CHKERRA(ierr);
+C   Get the indices in the index set
+
+      call ISGetIndices(is,indices,ix,ierr)
+
+C    Now any code that needs access to the list of integers
+C   has access to it here
+
+      print*, '[',rank,']First index ',indices(ix+1),' fifth index',
+     $        indices(ix+5)
+      
+C    Once we no longer need access to the indices they should 
+C   returned to the system 
+
+      call ISRestoreIndices(is,indices,ix,ierr)
   
-  /*
-     One should destroy any PETSc object once one is completely
-    done with it.
-  */
-  ierr = ISDestroy(is); CHKERRA(ierr);
-  PetscFinalize();
-  return 0;
-}
+C     One should destroy any PETSc object once one is completely
+C    done with it.
+
+      call ISDestroy(is,ierr)
+      call PetscFinalize(ierr)
+      stop
+      end
+
  

@@ -1,12 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.13 1996/07/08 22:16:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.14 1996/08/15 12:45:01 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests IS general routines\n\n";
 
-#include "petsc.h"
 #include "is.h"
-#include "sys.h"
 #include <math.h>
 
 int main(int argc,char **argv)
@@ -91,7 +89,7 @@ int main(int argc,char **argv)
   ierr = ISInvertPermutation(is,&newis); CHKERRA(ierr);
   ierr = ISGetIndices(newis,&ii); CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
-    if (ii[i] != i) SETERRA(1,0);
+    if (ii[i] != n - i - 1) SETERRA(1,0);
   }
   ierr = ISRestoreIndices(newis,&ii); CHKERRA(ierr);
   ierr = ISDestroy(newis); CHKERRA(ierr);

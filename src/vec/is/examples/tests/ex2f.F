@@ -1,51 +1,56 @@
-#ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.1 1996/08/15 19:21:36 bsmith Exp bsmith $";
-#endif
+C
+C  "$Id: ex2f.F,v 1.1 1996/08/16 19:31:32 bsmith Exp bsmith $"
+C
+C
+C  Tests IS stride routines
+C
+#include "FINCLUDE/petsc.h"
+#include "FINCLUDE/is.h"
 
-static char help[] = "Tests IS stride routines\n\n";
+      integer    i, n, ierr,ii(1),iis,start,stride
+      IS         is
+      PetscTruth flag
 
-#include "is.h"
-#include <math.h>
+      call PetscInitialize(PETSC_NULL_CHAR,ierr)
 
-int main(int argc,char **argv)
-{
-  int        i, n, ierr,rank,size,*ii,start,stride;
-  IS         is;
-  PetscTruth flag;
+C     Test IS of size 0 
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+      call ISCreateStride(MPI_COMM_SELF,0,0,2,is,ierr)
+      call ISGetSize(is,n,ierr)
+      if (n .ne. 0) then 
+        SETERRA(1,0)
+      endif
+      call ISStrideGetInfo(is,start,stride,ierr)
+      if (start .ne. 0) then 
+         SETERRA(1,0)
+      endif
+      if (stride .ne. 2) then
+        SETERRA(1,0)
+      endif
+      call ISStride(is,flag,ierr)
+      if (flag .ne. PETSC_TRUE) then 
+        SETERRA(1,0) 
+      endif
+      call ISGetIndices(is,ii,ierr)
+      call ISRestoreIndices(is,ii,ierr)
+      call ISDestroy(is,ierr)
 
-  /*
-     Test IS of size 0 
-  */
-  ierr = ISCreateStride(MPI_COMM_SELF,0,0,2,&is); CHKERRA(ierr);
-  ierr = ISGetSize(is,&n); CHKERRA(ierr);
-  if (n != 0) SETERRQ(1,0);
-  ierr = ISStrideGetInfo(is,&start,&stride); CHKERRA(ierr);
-  if (start != 0) SETERRQ(1,0);
-  if (stride != 2) SETERRQ(1,0);
-  ierr = ISStride(is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRQ(1,0);
-  ierr = ISGetIndices(is,&ii); CHKERRA(ierr);
-  ierr = ISRestoreIndices(is,&ii); CHKERRA(ierr);
-  ierr = ISDestroy(is); CHKERRA(ierr);
+C     Test ISGetIndices()
 
-  /*
-     Test ISGetIndices()
-  */
-  ierr = ISCreateStride(MPI_COMM_SELF,10000,-8,3,&is); CHKERRA(ierr);
-  ierr = ISGetSize(is,&n); CHKERRA(ierr);
-  ierr = ISGetIndices(is,&ii); CHKERRA(ierr);
-  for (i=0; i<10000; i++) {
-    if (ii[i] != -8 + 3*i) SETERRQ(1,0);
-  }
-  ierr = ISRestoreIndices(is,&ii); CHKERRA(ierr);
+      call ISCreateStride(MPI_COMM_SELF,10000,-8,3,is,ierr)
+      call ISGetSize(is,n,ierr)
+      call ISGetIndices(is,ii,iis,ierr)
+      do 10, i=1,10000
+        if (ii(i+iis) .ne. -11 + 3*i) then 
+          SETERRA(1,0)
+        endif
+ 10   continue
+      call ISRestoreIndices(is,ii,iis,ierr)
+      call ISDestroy(is)
 
-  PetscFinalize();
-  return 0;
-}
+      call PetscFinalize(ierr)
+      stop 
+      end
  
 
 

@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.27 1996/07/22 15:32:19 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.28 1996/08/05 04:14:56 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -7,6 +7,7 @@ C
 C
 #include "mpif.h"
 
+#define PetscTruth integer
 C
 C     Flags
 C

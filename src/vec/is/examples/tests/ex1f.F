@@ -1,104 +1,151 @@
-#ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.14 1996/08/15 12:45:01 bsmith Exp bsmith $";
-#endif
+C
+C static char vcid[] = "$Id: ex1f.c,v 1.1 1996/08/15 17:43:51 bsmith Exp bsmith $"
+C
+C        Tests IS general routines
+C
+#include "FINCLUDE/petsc.h"
+#include "FINCLUDE/is.h"
 
-static char help[] = "Tests IS general routines\n\n";
 
-#include "petsc.h"
-#include "is.h"
-#include "sys.h"
-#include <math.h>
+       integer    i, n, ierr,indices(1000),rank,size,ii(1),iis
+       IS         is,newis
+       PetscTruth flag
 
-int main(int argc,char **argv)
-{
-  int        i, n, ierr,*indices,rank,size,*ii;
-  IS         is,newis;
-  PetscTruth flag;
+       call PetscInitialize(PETSC_NULL_CHAR,ierr)
+            CHKERRA(ierr)
+       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+C     Test IS of size 0 
 
-  /*
-     Test IS of size 0 
-  */
-  ierr = ISCreateGeneral(MPI_COMM_SELF,0,&n,&is); CHKERRA(ierr);
-  ierr = ISGetSize(is,&n); CHKERRA(ierr);
-  if (n != 0) SETERRQ(1,0);
-  ierr = ISDestroy(is); CHKERRA(ierr);
+       call ISCreateGeneral(MPI_COMM_SELF,0,n,is,ierr) 
+            CHKERRA(ierr)
+       call ISGetSize(is,n,ierr) 
+            CHKERRA(ierr)
+       if (n .ne. 0) then
+         print*, 'Error getting size of zero IS'
+         stop
+       endif
+       call ISDestroy(is,ierr) 
 
-  /*
-     Create large IS and test ISGetIndices()
-  */
-  n = 10000 + rank;
-  indices = (int *) PetscMalloc( n*sizeof(int) ); CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
-    indices[i] = rank + i;
-  }
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
-  ierr = ISGetIndices(is,&ii); CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
-    if (ii[i] != indices[i]) SETERRA(1,0);
-  }
-  ierr = ISRestoreIndices(is,&ii); CHKERRA(ierr);
 
-  /* 
-     Check identity and permutation 
-  */
-  ierr = ISPermutation(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0);
-  ierr = ISIdentity(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0);
-  ierr = ISSetPermutation(is); CHKERRA(ierr);
-  ierr = ISSetIdentity(is);  CHKERRA(ierr);
-  ierr = ISPermutation(is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0);
-  ierr = ISIdentity(is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0);
+C     Create large IS and test ISGetIndices(,ierr)
 
-  /*
-     Check equality of index sets 
-  */
-  ierr = ISEqual(is,is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0);
+      n = 1000
+      do 10, i=1,n
+        indices(i) = rank + i
+ 10   continue
+      call ISCreateGeneral(MPI_COMM_SELF,n,indices,is,ierr) 
+            CHKERRA(ierr)
+      call ISGetIndices(is,ii,iis,ierr) 
+            CHKERRA(ierr)
+      do 20, i=1,n
+        if (ii(i+iis) .ne. indices(i)) then
+           print*, 'Error getting indices'
+           stop
+        endif
+ 20   continue
+      call ISRestoreIndices(is,ii,is,ierr) 
+            CHKERRA(ierr)
 
-  /*
-     Sorting 
-  */
-  ierr = ISSort(is); CHKERRA(ierr);
-  ierr = ISSorted(is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0);
+C     Check identity and permutation 
+  
+      call ISPermutation(is,flag,ierr) 
+            CHKERRA(ierr)
+      if (flag .eq. PETSC_TRUE) then
+         print*, 'Error checking permutation'
+         stop
+      endif
+      call ISIdentity(is,flag,ierr) 
+            CHKERRA(ierr)
+      if (flag .eq. PETSC_TRUE) then
+         print*, 'Error checking identity'
+         stop
+      endif
+      call ISSetPermutation(is,ierr) 
+            CHKERRA(ierr)
+      call ISSetIdentity(is,ierr)  
+            CHKERRA(ierr)
+      call ISPermutation(is,flag,ierr) 
+            CHKERRA(ierr)
+      if (flag .ne. PETSC_TRUE) then
+         print*, 'Error checking permutation second time'
+         stop
+      endif
+      call ISIdentity(is,flag,ierr) 
+            CHKERRA(ierr)
+      if (flag .ne. PETSC_TRUE) then
+         print*, 'Error checking identity second time'
+         stop
+      endif
 
-  /*
-     Thinks it is a different type?
-  */
-  ierr = ISStride(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0);
-  ierr = ISBlock(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0);
+C     Check equality of index sets 
 
-  ierr = ISDestroy(is); CHKERRA(ierr);
+      call ISEqual(is,is,flag,ierr) 
+            CHKERRA(ierr)
+      if (flag .ne. PETSC_TRUE) then
+         print*, 'Error checking equal'
+         stop
+      endif
 
-  /*
-     Inverting permutation
-  */
-  for ( i=0; i<n; i++ ) {
-    indices[i] = n - i - 1;
-  }
-  ierr = ISCreateGeneral(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
-  ierr = PetscFree(indices); CHKERRA(ierr);
-  ierr = ISSetPermutation(is); CHKERRA(ierr);
-  ierr = ISInvertPermutation(is,&newis); CHKERRA(ierr);
-  ierr = ISGetIndices(newis,&ii); CHKERRA(ierr);
-  for ( i=0; i<n; i++ ) {
-    if (ii[i] != n - i - 1) SETERRA(1,0);
-  }
-  ierr = ISRestoreIndices(newis,&ii); CHKERRA(ierr);
-  ierr = ISDestroy(newis); CHKERRA(ierr);
-  ierr = ISDestroy(is); CHKERRA(ierr);
-  PetscFinalize();
-  return 0;
-}
+C     Sorting 
+
+      call ISSort(is,ierr) 
+            CHKERRA(ierr)
+      call ISSorted(is,flag,ierr) 
+            CHKERRA(ierr)
+      if (flag .ne. PETSC_TRUE) then
+         print*, 'Error checking sorted'
+         stop
+      endif
+
+C     Thinks it is a different type?
+
+      call ISStride(is,flag,ierr) 
+            CHKERRA(ierr)
+      if (flag .eq. PETSC_TRUE) then
+         print*, 'Error checking stride'
+         stop
+      endif
+      call ISBlock(is,flag,ierr) 
+            CHKERRA(ierr)
+      if (flag .eq. PETSC_TRUE) then
+         print*, 'Error checking block'
+         stop
+      endif
+
+      call ISDestroy(is,ierr) 
+            CHKERRA(ierr)
+
+C     Inverting permutation
+
+      do 30, i=1,n
+        indices(i) = n - i
+ 30   continue
+
+      call ISCreateGeneral(MPI_COMM_SELF,n,indices,is,ierr) 
+            CHKERRA(ierr)
+      call ISSetPermutation(is,ierr) 
+            CHKERRA(ierr)
+      call ISInvertPermutation(is,newis,ierr) 
+            CHKERRA(ierr)
+      call ISGetIndices(newis,ii,iis,ierr) 
+            CHKERRA(ierr)
+      do 40, i=1,n
+        if (ii(iis+i) .ne. n - i) then
+          print*, 'Error getting permutation indices'
+          stop
+       endif
+ 40   continue
+      call ISRestoreIndices(newis,ii,iis,ierr) 
+            CHKERRA(ierr)
+      call ISDestroy(newis,ierr) 
+            CHKERRA(ierr)
+      call ISDestroy(is,ierr) 
+            CHKERRA(ierr)
+      call PetscFinalize(ierr)
+      stop
+      end
  
 
 

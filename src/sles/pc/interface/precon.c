@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.93 1996/08/13 23:14:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.94 1996/08/15 12:46:37 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -476,7 +476,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       Shell matrix (probably) cannot support an preconditioner
   */
   ierr = MatGetType(Pmat,&type,PETSC_NULL); CHKERRQ(ierr);
-  if (type == MATSHELL && pc->type != PCSHELL) {
+  if (type == MATSHELL && pc->type != PCSHELL && pc->type != PCMG) {
     ierr = PCSetType(pc,PCNONE); CHKERRQ(ierr);
     PLogInfo(pc,"PCSetOperators:Setting PCNONE since MATSHELL doesn't support pcs");
   }

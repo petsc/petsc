@@ -1,12 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.5 1996/08/15 12:44:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: block.c,v 1.6 1996/08/15 13:12:13 curfman Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
 */
-#include "src/is/isimpl.h"
+#include "src/is/isimpl.h"               /*I  "is.h"     I*/
 #include "pinclude/pviewer.h"
 #include "sys.h"
 
@@ -97,6 +97,7 @@ static int ISView_Block(PetscObject obj, Viewer viewer)
     }
     fprintf(fd,"Block size %d\n",sub->bs);
     fprintf(fd,"Number of block indices in set %d\n",n);
+    fprintf(fd,"The first indices of each block are\n");
     for ( i=0; i<n; i++ ) {
       fprintf(fd,"%d %d\n",i,idx[i]);
     }
@@ -185,7 +186,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 }
 
 
-/*@
+/*@C
    ISBlockGetIndices - Gets the indices associated with each block.
 
    Input Parameter:
@@ -210,7 +211,7 @@ int ISBlockGetIndices(IS in,int **idx)
   return 0;
 }
 
-/*@
+/*@C
    ISBlockRestoreIndices - Restores the indices associated with each block.
 
    Input Parameter:
@@ -256,7 +257,7 @@ int ISBlockGetBlockSize(IS is,int *size)
   return 0;
 }
 
-/*@
+/*@C
    ISBlock - Checks if an index set is blocked.
 
    Input Parameter:

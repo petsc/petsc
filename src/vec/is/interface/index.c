@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.32 1996/08/08 14:39:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.33 1996/08/15 12:44:53 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
 #include "src/is/isimpl.h"      /*I "is.h" I*/
 
-/*@
+/*@C
    ISIdentity - Determines if index set is the identity mapping.
 
    Input Parmeters:
@@ -44,7 +44,7 @@ int ISSetIdentity(IS is)
   return 0;
 }
 
-/*@
+/*@C
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on if the 
       index set has been declared to be a permutation.
 
@@ -224,7 +224,7 @@ int ISSort(IS is)
   return (*is->ops.sortindices)(is);
 }
 
-/*@
+/*@C
    ISSorted - Checks the indices to determine if they have been sorted.
 
    Input Parameters:
