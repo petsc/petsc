@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.32 1996/02/23 23:08:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.33 1996/02/29 03:22:10 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -359,7 +359,7 @@ int Mat_AIJ_CheckInode(Mat A)
       nzy     = ii[j+1] - ii[j]; /* Same number of nonzeros */
       if(nzy != nzx) break;
       idy    += nzx;             /* Same nonzero pattern */
-      if (PetscMemcmp((char *)idx,(char *)idy,nzx*sizeof(int))) break;
+      if (PetscMemcmp(idx, idy, nzx*sizeof(int))) break;
     }
     ns[node_count++] = blk_size;
     /* printf("%3d \t %d\n", i, blk_size); */

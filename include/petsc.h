@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.98 1996/02/27 00:51:44 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.99 1996/02/27 17:46:01 bsmith Exp balay $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -51,7 +51,7 @@ extern int  TrValid();
 
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemzero(void *,int);
-extern int   PetscMemcmp(char*, char*, int);
+extern int   PetscMemcmp(void*, void*, int);
 extern int   PetscStrlen(char *);
 extern int   PetscStrcmp(char *,char *);
 extern int   PetscStrncmp(char *,char *,int );
