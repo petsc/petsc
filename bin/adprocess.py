@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.7 2001/07/17 21:17:21 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.8 2001/07/17 21:19:27 bsmith Exp bsmith $ 
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -50,13 +50,15 @@ def setupfunctionC(filename):
 #
 #        if this is the AppCtx then replace double and Scalar with passive
 #
-                        reg = re.compile('[ ]*}[ ]*AppCtx[ ]*;')
+                        reg = re.compile('^[ ]*}[ ]*AppCtx[ ]*;')
                         fl = reg.search(line)
                         if fl:
                                 print "Extracting AppCtx structure"
-                                reg = re.compile('Scalar ')
+                                reg = re.compile('^[ ]*Scalar ')
                                 struct = reg.sub('PassiveScalar ',struct)
-                                reg = re.compile('double ')
+                                reg = re.compile('^[ ]*double ')
+                                struct = reg.sub('PassiveDouble ',struct)
+                                reg = re.compile('^[ ]*PetscReal ')
                                 struct = reg.sub('PassiveDouble ',struct)
                         g.write(struct)
 		line = f.readline()
@@ -71,8 +73,12 @@ def getfunctionC(g,filename,functionname):
         g.write("/* Function "+functionname+"*/\n\n")
 	line = f.readline()
 	while line:
-                if len(line) >= 5 + len(functionname): 
-                   if line[0:5+len(functionname)] == "int "+functionname+"(":
+                for i in split('int double',' '):
+                  reg = re.compile('^[ ]*'+i+'[ ]*'+functionname+'[ ]*')
+#                  reg = re.compile("^[ ]*"+"int"+"[ ]*"+functionname+'[ ]*')
+#                  print ":"+i+":"
+                  fl = reg.search(line)
+                  if fl:
                         print 'Extracting function', functionname
 			while line:
 				g.write(line)
@@ -81,17 +87,7 @@ def getfunctionC(g,filename,functionname):
  		                line = f.readline()
  		        line = f.readline()
                         continue
-                if len(line) >= 8 + len(functionname): 
-                   if line[0:8+len(functionname)] == "double "+functionname+"(":
-                        print 'Extracting ', functionname
-   		        while line:
-			        g.write(line)
-                                if line[0] == "}":
-	 	               	   break
- 		                line = f.readline()
- 		        line = f.readline()
-                        continue
-                line = f.readline()
+                  line = f.readline()
 	f.close()
 
 def getfunctionF(filename,functionname):
