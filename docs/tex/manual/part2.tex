@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.167 1996/11/09 03:02:30 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.168 1996/11/13 15:55:32 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -5366,6 +5366,16 @@ PETSc provides two additional error handlers besides
 if an error is detected. At runtime, these error handlers can be set
 with the options {\tt -on\_error\_abort} or {\tt
 -on\_error\_attach\_debugger [noxterm, dbx, xxgdb, xldb] [-display DISPLAY]}.
+
+All PETSc calls can be traced (useful for determining where a program is 
+hanging without running in the debugger) with the option
+\begin{verbatim}
+  -log_trace [filename]
+\end{verbatim}
+where {\tt filename} is optional. By default the traces are printed to the 
+screen.  This can also be set with the 
+command {\tt PLogTraceBegin(FILE*)}. \findex{-log_trace} \findex{PLogTraceBegin()}
+
 
 It is also possible to trap signals by using the \sindex{signals}
 command \findex{PetscPushSignalHandler()}

@@ -10,9 +10,26 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Write preprocessor that zips through all of PETSc finding SETERRQ()
+    setting unique error code number and save to big file: error code,
+    file, line number and error message.
 
-  - Change remotetest to use gzip instead of compress, if it 
-    is available on all machines.
+  - Have option for MatSetValues() and VecSetValues() to ignore data inserted
+    that belongs to other processors.
+
+  - Support y = alpha *y + beta *A *x
+
+  - AVS viewer via MPI, new Matlab viewer via MPI through out sockets Matlab viewer
+
+  - write SLESCompareTypes() that for a given sles runs all possible PC, KSP, options etc.
+    builds giant table.
+
+  - Have two types of error tests, one assert type and one real error type
+
+  - Have test if one passes in valid PETSc object to things like MatCreate()
+    to generate an error, for example if A already is a matrix and one
+    calls MatCreate(...... &A);
+
 
  - allow more then one TS monitor. Model on KSP.
 
@@ -39,10 +56,16 @@ Additional Capabilities that PETSc Needs:
  - Add SLES example showing multiple linear solves with same matrices but
    difference RHS.
 
+ - Add feature to SNESDefatulComputeJacobian() for user to set differencing
+   parameter (similar to matrix-free stuff)
+
 
 -----------------------------------------------------------------------
   To do sometime soon:
 -----------------------------------------------------------------------
+
+  - change KSPSetMonitor()... to use functoids with function,context,destroy in
+    one object?
 
   - More test cases that involve, zero size vectors, matrices, IS's etc.
 
@@ -55,8 +78,6 @@ Additional Capabilities that PETSc Needs:
  * Make all systems use shared libraries if possible, and document how to
            use these variants.
 
- - Add feature to SNESDefatulComputeJacobian() for user to set differencing
-   parameter (similar to matrix-free stuff)
 
  - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
    potentially different solvers on each
@@ -91,12 +112,6 @@ Additional Capabilities that PETSc Needs:
 
   - Provide easy means to use SOR as stand-alone method with convergence testing
     rather than just as preconditioner with a fixed number of iterations.
-
-  - Add logging capabilities analogous to -mpitrace.
-      -mpitrace is an option to mpicc that links against a special profiling library
-       that causes each use of an MPI routine to output what routine is being called
-       (and in some cases, the arguments) as the program is running.  Very useful for
-       finding deadlock.
 
   - Provide better registration mechanism for PC, KSP, etc (based on
     MatReroderingRegister) to replace the lame procedure described in,
@@ -573,3 +588,9 @@ Additional Capabilities that PETSc Needs:
  X Remove Unix man pages from next PETSc release. 
 
  X allow more then one KSP and SNES monitor.
+
+ X Change remotetest to use gzip instead of compress, if it 
+    is available on all machines.
+
+ X add -log_trace option, somewhat like -mpitrace stuff.
+
