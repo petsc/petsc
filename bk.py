@@ -106,6 +106,14 @@ class BKOpen (action.Action):
         self.products = [self.products]
       self.products.append(set)
 
+  def setAction(self, set):
+    if set.tag == 'bkedit':
+      action.Action.setAction(self, set)
+    else:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products]
+      self.products.append(set)
+
 class BKClose (action.Action):
   def __init__(self):
     action.Action.__init__(self, self.close, None, 1)
