@@ -333,6 +333,7 @@
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
+#include "include/finclude/petscpc.h"
 
       Vec     x,y
       integer dummy,ierr
@@ -346,7 +347,7 @@
       one = 1.0
       call PCApply(jacobi,x,y,PC_LEFT,ierr)
       call PCApply(sor,x,work,PC_LEFT,ierr)
-      call VecAXPY(one,work,y,PC_LEFT,ierr)
+      call VecAXPY(one,work,y,ierr)
 
       end
 
