@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.5 1995/05/23 14:41:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.6 1995/05/25 22:47:58 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -310,7 +310,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
                                  Ambd->diag,0,&A);
       }
       else {
-        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,Ambd->nb,0,0,&A);
+        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,0,0,&A);
       }
       CHKERR(ierr);
 
@@ -521,7 +521,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
                                   ldiag,diagv,&mbd->A); CHKERR(ierr); 
   mlocal = (Mat_BDiag *) mbd->A->data;
   mlocal->mainbd += mbd->brstart; /* fix main diagonal location */
-  if (mlocal->mainbd >= k)
+  if ((mlocal->mainbd >= k) && (nd != 0))
     SETERR(1,"Must set main diagonal location, even if zero");
   PLogObjectParent(mat,mbd->A);
   FREE(ldiag);

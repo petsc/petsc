@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.12 1995/05/17 00:44:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.13 1995/05/18 19:23:11 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -369,6 +369,7 @@ static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
   }
   return 0;
 }
+
 static int MatRestoreRow_BDiag(Mat matin,int row,int *ncols,int **cols,
                             Scalar **vals)
 {
@@ -567,7 +568,7 @@ static int MatZero_BDiag(Mat A)
 
 static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
 {
-  /*Mat_BDiag *l = (Mat_BDiag *) A->data; */
+  /* Mat_BDiag *l = (Mat_BDiag *) A->data; */
 
   return 0;
 }
@@ -576,6 +577,68 @@ static int MatGetSize_BDiag(Mat matin,int *m,int *n)
 {
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   *m = mat->m; *n = mat->n;
+  return 0;
+}
+
+extern int MatDetermineDiagonals_Private(Mat,int,int,int,int*,int*,int*,int**);
+
+static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
+{
+  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  int       nznew, *smap, i, j, ierr, oldcols = mat->n;
+  int       *irow, *icol, newr, newc, *cwork, *col;
+  int       nz, nb, ndiag, *diag;
+  Scalar    *vwork, *val;
+  Mat       newmat;
+
+  if (!mat->assembled) 
+    SETERR(1,"Cannot extract submatrix from unassembled matrix");  
+  ierr = ISGetIndices(isrow,&irow); CHKERR(ierr);
+  ierr = ISGetIndices(iscol,&icol); CHKERR(ierr);
+  ierr = ISGetSize(isrow,&newr); CHKERR(ierr);
+  ierr = ISGetSize(iscol,&newc); CHKERR(ierr);
+
+  smap  = (int *) MALLOC(oldcols*sizeof(int)); CHKPTR(smap);
+  cwork = (int *) MALLOC(newc*sizeof(int)); CHKPTR(cwork);
+  vwork = (Scalar *) MALLOC(newc*sizeof(Scalar)); CHKPTR(vwork);
+  memset((char*)smap,0,oldcols*sizeof(int));
+  for ( i=0; i<newc; i++ ) smap[icol[i]] = i+1;
+  for ( i=0; i<oldcols; i++) printf("smap[%d] = %d\n",i,smap[i]);
+
+  /* Determine diagonals; then create submatrix */
+  nb = 1; /* Default block size = 1 */
+  OptionsGetInt(0,"-mat_bdiag_bsize",&nb);     
+  ierr = MatDetermineDiagonals_Private(matin,nb,newr,newc,irow,icol,
+         &ndiag,&diag); CHKERR(ierr); 
+  ierr = MatCreateSequentialBDiag(matin->comm,newr,newc,ndiag,nb,diag,
+         0,&newmat); CHKERR(ierr); 
+  FREE(diag);
+
+  /* Fill new matrix */
+  for (i=0; i<newr; i++) {
+    ierr = MatGetRow(matin,irow[i],&nz,&col,&val); CHKERR(ierr);
+    nznew = 0;
+    for (j=0; j<nz; j++) {
+      if (smap[col[j]]) {
+        cwork[nznew]   = smap[col[j]] - 1;
+        vwork[nznew++] = val[j];
+      }
+    }
+   for (j=0; j<nznew; j++) 
+      printf("i=%d, j=%d, col=%d, val=%g\n",i,j,cwork[j],vwork[j]);
+
+    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERTVALUES);
+    CHKERR(ierr);
+    ierr = MatRestoreRow(matin,i,&nz,&col,&val); CHKERR(ierr);
+  }
+  ierr = MatAssemblyBegin(newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+
+  /* Free work space */
+  FREE(smap); FREE(cwork); FREE(vwork);
+  ierr = ISRestoreIndices(isrow,&irow); CHKERR(ierr);
+  ierr = ISRestoreIndices(iscol,&icol); CHKERR(ierr);
+  *submat = newmat;
   return 0;
 }
 
@@ -596,7 +659,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatGetSize_BDiag,MatGetSize_BDiag,MatGetOwnershipRange_BDiag,
        0, 0,
        0, 0, 0,
-       0, 0,
+       MatGetSubMatrix_BDiag, 0,
        MatCopy_BDiag_Private};
 
 /*@
@@ -693,7 +756,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     if (diag[i] == 0) mat->mainbd = i;
     printf("[%d] i=%d, diag=%d, dlen=%d\n",mytid,i,diag[i],mat->bdlen[i]);
   }
-  if ((mat->mainbd == -1))
+  if ((mat->mainbd == -1 && (nd != 0) ))
     SETERR(1,"No main diagonal.  Must set main diagonal, even if empty.")
   sizetot *= nb*nb;
   mat->maxnz  = sizetot;

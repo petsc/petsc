@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.23 1995/05/18 22:46:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.24 1995/05/25 22:48:06 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -20,16 +20,18 @@ static char vcid[] = "$Id: gcreate.c,v 1.23 1995/05/18 22:46:31 bsmith Exp bsmit
 .  V - location to stash resulting matrix
 
    Options Database Keywords:
+$  -mat_aij   : AIJ type, uses MatCreateSequentialAIJ()
+$               and MatCreateMPIAIJ()
 $  -mat_dense : dense type, uses MatCreateSequentialDense()
 $  -mat_row   : row type, uses MatCreateSequentialRow()
 $               and MatCreateMPIRow()
-$  -mat_rowbs : rowbs type (for parallel symmetric matrices),
+$  -mat_rowbs : rowbs type (for parallel symmetric matrices only),
 $               uses MatCreateMPIRowbs()
 $  -mat_bdiag : block diagonal type, uses 
 $               MatCreateSequentialBDiag() and
 $               MatCreateMPIBDiag()
 $
-$  -mpi_objects : uses MPI matrix, even for one processor
+$  -mpi_objects : uses MPI matrix (parallel format), even for one processor
 
    Notes:
    The default matrix type is AIJ, using MatCreateSequentialAIJ() and

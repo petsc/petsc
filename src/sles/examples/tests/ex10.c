@@ -65,7 +65,7 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecAXPY(&neg1,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
-  MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
+  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
 
   /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
@@ -159,6 +159,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   if (OptionsHasName(0,"-mat_dense")) type = MATDENSE;
   if (OptionsHasName(0,"-mat_mpiaij")) type = MATMPIAIJ;
   if (OptionsHasName(0,"-mat_mpirow")) type = MATMPIROW;
+  if (OptionsHasName(0,"-mat_mpirowbs")) type = MATMPIROW_BS;
   if (OptionsHasName(0,"-mat_mpibdiag")) type = MATMPIBDIAG;
   ierr = MatConvert(submat,type,newmat); CHKERR(ierr);
   ierr = MatDestroy(submat); CHKERR(ierr);
@@ -168,6 +169,8 @@ int GetElasticityMatrix(int m,Mat *newmat)
   MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
   printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
           nz,nzalloc,mem);
+
+/*  MatView(*newmat,STDOUT_VIEWER); */
   
   return 0;
 }

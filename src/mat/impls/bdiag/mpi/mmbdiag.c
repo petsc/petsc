@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.5 1995/05/15 17:50:17 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.6 1995/05/18 22:14:30 curfman Exp curfman $";
 #endif
 
 /*
@@ -12,13 +12,9 @@ static char vcid[] = "$Id: mmbdiag.c,v 1.5 1995/05/15 17:50:17 curfman Exp curfm
 int MatSetUpMultiply_MPIBDiag(Mat mat)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
-  Mat_BDiag    *A = (Mat_BDiag *) (mbd->A->data);  
   int          ierr, N = mbd->N;
   IS           from, to;
   Vec          gvec;
-
-  int i, high, low, iglobal, lsize, mytid;
-  Scalar zero = 0.0, value;
 
   /* create local vector that is used to scatter into */
   ierr = VecCreateSequential(MPI_COMM_SELF,N,&mbd->lvec); CHKERR(ierr);
