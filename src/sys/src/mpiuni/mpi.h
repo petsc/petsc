@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.80 2000/10/31 16:30:02 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.81 2001/01/15 21:44:07 bsmith Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -405,7 +405,8 @@ extern int    Petsc_MPI_Finalize(void);
      MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Type_ub(datatype,displacement) \
      MPI_Abort(MPI_COMM_WORLD,0)
-#define MPI_Type_commit(datatype) MPI_SUCCESS
+#define MPI_Type_commit(datatype) (MPIUNI_TMP = (void*)(long) (datatype),\
+     MPI_SUCCESS)
 #define MPI_Type_free(datatype) MPI_SUCCESS
 #define MPI_Get_elements(status, datatype,count) \
      MPI_Abort(MPI_COMM_WORLD,0)
