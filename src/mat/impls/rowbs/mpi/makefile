@@ -12,5 +12,6 @@ OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     =
 MANSEC   = 2
+LOCDIR   = src/mat/impls/rowbs/mpi/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

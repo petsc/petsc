@@ -11,5 +11,6 @@ OBJSC    = mmbdiag.o mpibdiag.o mpibdpc.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = 2
+LOCDIR   = src/mat/impls/bdiag/mpi/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

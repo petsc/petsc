@@ -11,5 +11,6 @@ OBJSC    = dense.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = 2
+LOCDIR   = src/mat/impls/dense/seq/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

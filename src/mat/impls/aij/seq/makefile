@@ -12,5 +12,6 @@ OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
 MANSEC   = 2
+LOCDIR   = src/mat/impls/aij/seq/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
