@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.160 1996/08/08 14:42:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.161 1996/08/12 03:41:34 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1384,10 +1384,11 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
     PLogObjectMemory(mat,(a->N)*sizeof(int));
     PetscMemcpy(a->colmap,oldmat->colmap,(a->N)*sizeof(int));
   } else a->colmap = 0;
-  if (oldmat->garray && (len = ((Mat_SeqAIJ *) (oldmat->B->data))->n)) {
-    a->garray = (int *) PetscMalloc(len*sizeof(int)); CHKPTRQ(a->garray);
+  if (oldmat->garray) {
+    len = ((Mat_SeqAIJ *) (oldmat->B->data))->n;
+    a->garray = (int *) PetscMalloc((len+1)*sizeof(int)); CHKPTRQ(a->garray);
     PLogObjectMemory(mat,len*sizeof(int));
-    PetscMemcpy(a->garray,oldmat->garray,len*sizeof(int));
+    if (len) PetscMemcpy(a->garray,oldmat->garray,len*sizeof(int));
   } else a->garray = 0;
   
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec); CHKERRQ(ierr);
