@@ -358,8 +358,8 @@ EXTERN int DAGetMatrix3d_MPIBAIJ(DA,Mat *);
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetMatrix" 
 /*@C
-    DAGetMatrix - Gets the nonzero structure required for computing the Jacobian via
-    finite differences on a function defined using a stencil on the DA.
+    DAGetMatrix - Creates a matrix with the correct parallel layout and nonzero structure required for 
+      computing the Jacobian on a function defined using the stencil set in the DA.
 
     Collective on DA
 
@@ -372,6 +372,9 @@ EXTERN int DAGetMatrix3d_MPIBAIJ(DA,Mat *);
         (obviously without the correct Jacobian values)
 
     Level: advanced
+
+    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
+       do not need to do it yourself.
 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate()
 

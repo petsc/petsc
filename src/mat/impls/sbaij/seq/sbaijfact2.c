@@ -1298,6 +1298,7 @@ int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+/* Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ"
 int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
@@ -1305,9 +1306,9 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;  
   int         *rip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
-  int         m,nzi,realloc = 0,*levtmp;
-  int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
-  int         incrlev,*lev,lev_ik,shift;
+  int         m,realloc = 0,*levtmp;
+  int         *prowl,*q,jumin,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
+  int         incrlev,*lev,shift,prow,nz;
   PetscTruth  perm_identity;
 
   PetscFunctionBegin;
@@ -1323,8 +1324,6 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   }
  
   /* initialization */  
-  /* Don't know how many column pointers are needed so estimate. 
-     Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
   ierr  = ISGetIndices(perm,&rip);CHKERRQ(ierr);
   umax  = (int)(f*ai[mbs] + 1); 
   ierr  = PetscMalloc(umax*sizeof(int),&lev);CHKERRQ(ierr);
@@ -1332,24 +1331,28 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   shift = mbs + 1;
   ierr  = PetscMalloc((mbs+1)*sizeof(int),&iu);CHKERRQ(ierr);
   ierr  = PetscMalloc(umax*sizeof(int),&ju);CHKERRQ(ierr);
-  iu[0] = mbs+1; 
-  juptr = mbs;
-  ierr  = PetscMalloc(mbs*sizeof(int),&jl);CHKERRQ(ierr);
-  ierr  = PetscMalloc(mbs*sizeof(int),&q);CHKERRQ(ierr);
-  ierr  = PetscMalloc((mbs+1)*sizeof(int),&levtmp);CHKERRQ(ierr);
+  iu[0] = mbs + 1; 
+  juidx = mbs + 1;
+  /* prowl: linked list for pivot row */
+  ierr    = PetscMalloc((3*mbs+1)*sizeof(int),&prowl);CHKERRQ(ierr); 
+  /* q: linked list for col index */
+  q       = prowl + mbs; 
+  levtmp  = q     + mbs;
+  
   for (i=0; i<mbs; i++){
-    jl[i] = mbs; q[i] = 0;
+    prowl[i] = mbs; 
+    q[i] = 0;
   }
 
   /* for each row k */
   for (k=0; k<mbs; k++){   
     nzk  = 0; 
     q[k] = mbs;
-    /* initialize nonzero structure of k-th row to row rip[k] of A */
-    jmin = ai[rip[k]];
-    jmax = ai[rip[k]+1];
-    for (j=jmin; j<jmax; j++){
-      vj = rip[aj[j]]; 
+    /* copy current row into linked list */
+    nz = ai[rip[k]+1] - ai[rip[k]];
+    j = ai[rip[k]];
+    while (nz--){
+      vj = rip[aj[j++]]; 
       if (vj > k){
         qm = k; 
         do {
@@ -1366,41 +1369,37 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
     } 
 
     /* modify nonzero structure of k-th row by computing fill-in
-       for each row i to be merged in */
-    i = k; 
-    i = jl[i]; /* next pivot row (== 0 for symbolic factorization) */
+       for each row prow to be merged in */
+    prow = k; 
+    prow = prowl[prow]; /* next pivot row (== 0 for symbolic factorization) */
    
-    while (i < mbs){
-      /* merge row i into k-th row */
-      j      = iu[i];
-      /* lev_ik = lev[j];  */
-      lev_ik = lev[j-shift]; /* old */
-      nzi    = iu[i+1] - (iu[i]+1);
-      jmin   = iu[i] + 1; jmax = iu[i] + nzi;
+    while (prow < k){
+      /* merge row prow into k-th row */
+      jmin = iu[prow] + 1; 
+      jmax = iu[prow+1];     
       qm = k;
-      for (j=jmin; j<jmax+1; j++){
-        vj      = ju[j];
-        /* incrlev = lev[j]+lev_ik+1; */
-        incrlev = lev[j-shift]+lev_ik+1; /* old */
-
+      for (j=jmin; j<jmax; j++){      
+        incrlev = lev[j-shift] + 1; 
 	if (incrlev > levels) continue; 
+
+        vj      = ju[j]; 
         do {
           m = qm; qm = q[m];
         } while (qm < vj);
         if (qm != vj){      /* a fill */
           nzk++; q[m] = vj; q[vj] = qm; qm = vj; 
           levtmp[vj] = incrlev;
-        } else {              /* already a nonzero element */
-          if (levtmp[vj]>incrlev) levtmp[vj] = incrlev;           
-        }
+        } else {
+          if (levtmp[vj] > incrlev) levtmp[vj] = incrlev;
+        }       
       } 
-      i = jl[i]; /* next pivot row */     
+      prow = prowl[prow]; /* next pivot row */     
     }  
    
     /* add k to row list for first nonzero element in k-th row */
     if (nzk > 1){
       i = q[k]; /* col value of first nonzero element in k_th row of U */    
-      jl[k] = jl[i]; jl[i] = k;
+      prowl[k] = prowl[i]; prowl[i] = k;
     } 
     iu[k+1] = iu[k] + nzk;  
 
@@ -1420,23 +1419,20 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
       ju       = jutmp;
 
       ierr     = PetscMalloc(umax*sizeof(int),&jutmp);CHKERRQ(ierr);
-      /* ierr     = PetscMemcpy(jutmp,lev,iu[k]*sizeof(int));CHKERRQ(ierr); */
-      ierr     = PetscMemcpy(jutmp,lev,(iu[k]-shift)*sizeof(int));CHKERRQ(ierr); /* old */
+      ierr     = PetscMemcpy(jutmp,lev,(iu[k]-shift)*sizeof(int));CHKERRQ(ierr); 
       ierr     = PetscFree(lev);CHKERRQ(ierr);       
       lev      = jutmp;
       realloc += 2; /* count how many times we realloc */
     }
 
     /* save nonzero structure of k-th row in ju */
-    i=k;
-    jumin = juptr + 1; juptr += nzk; 
-    /* lev[juptr] = 0; */ /* new! */
-    for (j=jumin; j<juptr+1; j++){
-      i      = q[i];
-      ju[j]  = i;
-      /* lev[j] = levtmp[i]; */
-      lev[j-shift] = levtmp[i]; /* old */
-    }    
+    i=k;    
+    while (nzk --) {
+      i                = q[i];
+      ju[juidx]        = i;
+      lev[juidx-shift] = levtmp[i]; 
+      juidx++;
+    }
   } 
   
   if (ai[mbs] != 0) {
@@ -1450,10 +1446,8 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   }
 
   ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr); 
-  ierr = PetscFree(q);CHKERRQ(ierr);
-  ierr = PetscFree(jl);CHKERRQ(ierr);
+  ierr = PetscFree(prowl);CHKERRQ(ierr);
   ierr = PetscFree(lev);CHKERRQ(ierr);
-  ierr = PetscFree(levtmp);CHKERRQ(ierr);
 
   /* put together the new matrix */
   ierr = MatCreateSeqSBAIJ(A->comm,bs,bs*mbs,bs*mbs,0,PETSC_NULL,B);CHKERRQ(ierr);

@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-import args
 import PETSc
 import PETSc.Configure
+import nargs
 
+import commands
 import cPickle
 import os
 import re
+import select
 import sys
 
 ## SECTION: Initialization
@@ -20,16 +22,18 @@ class Configure:
     self.subst     = {}
     self.help      = {}
     # Interaction with Autoconf
-    self.m4         = '/usr/bin/m4'
-    self.acMacroDir = '/usr/share/autoconf'
-    self.acLocalDir = 'config'
-    self.acReload   = '--reload'
-    self.acMsgFD    = '2'
-    self.acCCFD     = '/dev/null'
+    self.m4           = '/usr/bin/m4'
+    self.acMacroDir   = '/usr/share/autoconf'
+    self.acLocalDir   = 'config'
+    self.acReload     = '--reload'
+    self.acMsgFD      = '2'
+    self.acCCFD       = str(self.framework.log.fileno())
+    self.configAuxDir = 'config'
     # Interaction with the shell
-    self.shell      = '/bin/sh'
-    # Interaction with the preprocessor
-    self.cpp        = 'cpp'
+    self.shell = '/bin/sh'
+    # Preprocessing, compiling, and linking
+    self.language     = []
+    self.pushLanguage('C')
     return
 
   def addDefine(self, name, value, comment = ''):
@@ -68,40 +72,201 @@ class Configure:
         setattr(self, name, value)
     return
 
-  def getExecutable(self, name, path = '', getFullPath = 0, comment = ''):
+  def getExecutable(self, name, path = '', getFullPath = 0, comment = '', resultName = ''):
     if not path: path = os.environ['PATH']
+    if not resultName: resultName = name
     for dir in path.split(':'):
-      prog = os.join(dir, name)
+      prog = os.path.join(dir, name)
 
       if os.path.isfile(prog) and os.access(prog, os.X_OK):
         if getFullPath:
-          setattr(self, name, os.abspath(prog))
+          setattr(self, resultName, os.path.abspath(prog))
         else:
-          setattr(self, name, name)
-        self.addSubstitution(name.upper(), getattr(self, name), comment = comment)
+          setattr(self, resultName, name)
+        self.addSubstitution(resultName.upper(), getattr(self, resultName), comment = comment)
         break
     return
 
-  def checkPreprocess(self, codeStr):
-    (input, output, err) = popen3(self.cpp)
-    input.write(codeStr)
-    input.close()
-    err.close()
-    output.close()
+  ###############################################
+  # Preprocessor, Compiler, and Linker Operations
+  def pushLanguage(self, language):
+    self.language.append(language)
+    return self.setLanguage(language)
+
+  def popLanguage(self):
+    self.language.pop()
+    return self.setLanguage(self.language[-1])
+
+  def setLanguage(self, language):
+    self.language[-1] = language
+    if language == 'C':
+      self.compilerName = 'CC'
+    elif language == 'C++':
+      self.compilerName = 'CXX'
+    elif language == 'F77':
+      self.compilerName = 'FC'
+    else:
+      raise RuntimeError('Unknown language: '+language)
+
+    if hasattr(self.framework, 'compilers'):
+      self.compiler = getattr(self.framework.compilers, self.compilerName)
+    else:
+      self.compiler = self.framework.argDB[self.compilerName]
+
+    if language == 'C':
+      # Interaction with the preprocessor
+      self.cpp        = self.framework.argDB['CPP']
+      self.cppFlags   = self.framework.argDB['CPPFLAGS']
+      self.cppCmd     = self.cpp+' '+self.cppFlags
+      # Interaction with the compiler
+      self.compilerDefines = 'confdefs.h'
+      self.compilerSource  = 'conftest.c'
+      self.compilerObj     = 'conftest.o'
+      self.compilerFlags   = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
+      self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+      # Interaction with the linker
+      self.linker      = self.compiler
+      self.linkerObj   = 'conftest'
+      self.linkerFlags = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
+      self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
+    elif language == 'C++':
+      # Interaction with the preprocessor
+      self.cpp        = self.framework.argDB['CXXCPP']
+      self.cppFlags   = self.framework.argDB['CPPFLAGS']
+      self.cppCmd     = self.cpp+' '+self.cppFlags
+      # Interaction with the compiler
+      self.compilerDefines = 'confdefs.h'
+      self.compilerSource  = 'conftest.cc'
+      self.compilerObj     = 'conftest.o'
+      self.compilerFlags   = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
+      self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+      # Interaction with the linker
+      self.linker      = self.compiler
+      self.linkerObj   = 'conftest'
+      self.linkerFlags = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
+      self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
+    elif language == 'F77':
+      # Interaction with the preprocessor
+      self.cpp        = self.framework.argDB['CXXCPP']
+      self.cppFlags   = self.framework.argDB['CPPFLAGS']
+      self.cppCmd     = self.cpp+' '+self.cppFlags
+      # Interaction with the compiler
+      self.compilerSource = 'conftest.f'
+      self.compilerObj    = 'conftest.o'
+      self.compilerFlags  = self.framework.argDB['FFLAGS']
+      self.compilerCmd    = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+      # Interaction with the linker
+      self.linker      = self.compiler
+      self.linkerObj   = 'conftest'
+      self.linkerFlags = self.framework.argDB['FFLAGS']+' '+self.framework.argDB['LDFLAGS']
+      self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
+    else:
+      raise RuntimeError('Unknown language: '+language)
     return
 
-  def checkHeader(self, name):
-    found = 0
-    if self.checkPreprocess('#include <'+name+'>\n'):
-      found = 1
-    self.addDefine('HAVE_'+name.upper().replace('.', '_'), found, 'Defined if we have the header '+name)
-    return found
+  def getCode(self, includes, body = None):
+    language = self.language[-1]
+    if language == 'C' or language == 'C++':
+      codeStr = '#include "confdefs.h"\n'+includes
+      if not body is None:
+        codeStr += '\nint main() {\n'+body+';\n  return 0;\n}\n'
+    elif language == 'F77':
+      if not body is None:
+        codeStr = '      program main\n'+body+'\n      end\n'
+      else:
+        codeStr = includes
+    else:
+      raise RuntimeError('Invalid language: '+language)
+    return codeStr
+
+  def outputPreprocess(self, codeStr):
+    self.framework.outputHeader(self.compilerDefines)
+    (input, output, err) = os.popen3(self.cppCmd)
+    input.write(self.getCode(codeStr))
+    input.close()
+    out   = ''
+    ready = select.select([output], [], [], 0.1)
+    if len(ready[0]):
+      out = ready[0][0].read()
+    err.close()
+    output.close()
+    if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
+    return out
+
+  def checkPreprocess(self, codeStr):
+    self.framework.outputHeader(self.compilerDefines)
+    (input, output, err) = os.popen3(self.cppCmd)
+    input.write(self.getCode(codeStr))
+    input.close()
+    out   = ''
+    ready = select.select([err], [], [], 0.1)
+    if len(ready[0]):
+      # Log failure of preprocessor
+      out = ready[0][0].read()
+      if out: self.framework.log.write('ERR (preprocessor): '+out)
+    err.close()
+    output.close()
+    if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
+    return not len(out)
+
+  def checkCompile(self, includes = '', body = '', cleanup = 1):
+    self.framework.outputHeader(self.compilerDefines)
+    f = file(self.compilerSource, 'w')
+    f.write(self.getCode(includes, body))
+    f.close()
+    (input, output, err) = os.popen3(self.compilerCmd)
+    input.close()
+    out   = ''
+    ready = select.select([err], [], [], 0.1)
+    if len(ready[0]):
+      # Log failure of compiler
+      out = ready[0][0].read()
+      if out:
+        self.framework.log.write('ERR (compiler): '+out)
+        self.framework.log.write('Source:\n'+self.getCode(includes, body))
+    err.close()
+    output.close()
+    if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
+    if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
+    if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+    return not len(out)
+
+  def checkLink(self, includes, body, cleanup = 1):
+    if not self.checkCompile(includes, body, cleanup = 0): return 0
+    (input, output, err) = os.popen3(self.linkerCmd)
+    input.write(self.getCode(includes, body))
+    input.close()
+    out   = ''
+    ready = select.select([err], [], [], 0.1)
+    if len(ready[0]):
+      # Log failure of linker
+      out = ready[0][0].read()
+      if out:
+        self.framework.log.write('ERR (linker): '+out)
+        self.framework.log.write(' in '+self.linkerCmd)
+    err.close()
+    output.close()
+    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+    if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+    return not len(out)
+
+  def checkRun(self, includes, body):
+    if not self.checkLink(includes, body, cleanup = 0): return 0
+    success = 0
+    (status, output) = commands.getstatusoutput('./'+self.linkerObj)
+    if not status:
+      success = 1
+    else:
+      self.framework.log.write('ERR (executable): '+output)
+    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
+    if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
+    return success
 
   ######################################
   # Methods for Autoconf Macro Execution
   def getDefaultMacros(self):
     '''Macros that seems necessary to run any given Autoconf macro'''
-    return 'AC_INIT_BINSH\nAC_CONFIG_AUX_DIR(config)\n'
+    return 'AC_INIT_BINSH\nAC_CONFIG_AUX_DIR('+self.configAuxDir+')\n'
 
   def getMacroVersion(self, macro):
     '''This is the version of Autoconf required by the macro'''
@@ -150,11 +315,21 @@ class Configure:
     shellCode = self.replaceDefaultDescriptors(out)
     self.findUndefinedMacros(shellCode)
     output.close()
-    return (shellCode, self.getMacroVariables(macro))
+    return (re.sub('__oline__', '0', shellCode), self.getMacroVariables(macro))
 
   def getDefaultVariables(self):
     '''These shell variables are set by Autoconf, and seem to be necessary to run any given macro'''
-    return 'host=NONE\nnonopt=NONE\nCONFIG_SHELL='+self.shell+'\n'
+    return '''
+    host=NONE
+    nonopt=NONE
+    CONFIG_SHELL=%s
+    ac_ext="c"
+    ac_exeext=""
+    ac_cpp=\'$CPP $CPPFLAGS\'
+    ac_compile=\'${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&%s\'
+    ac_link=\'${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&%s\'
+    exec %s>>%s
+    ''' % (self.shell, self.acCCFD, self.acCCFD, self.acCCFD, self.framework.logName)
 
   def parseShellOutput(self, output):
     '''This retrieves the output variable values from macro shell code'''
@@ -162,8 +337,7 @@ class Configure:
     varRE   = re.compile(r'(?P<name>\w+)\s+=\s+(?P<value>.*)')
     for line in output.split('\n'):
       m = varRE.match(line)
-      if m and m.group('value'):
-        results[m.group('name')] = m.group('value')
+      if m: results[m.group('name')] = m.group('value')
     return results
 
   def executeShellCode(self, code):
@@ -172,11 +346,13 @@ class Configure:
     codeStr += code[0]
     for var in code[1]:
       codeStr += 'echo "'+var+' = " ${'+var+'}\n'
+    self.framework.outputHeader(self.compilerDefines)
     (input, output) = os.popen4(self.shell)
     input.write(codeStr)
     input.close()
     results = output.read()
     output.close()
+    if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     return self.parseShellOutput(results)
 
   def configure(self):
@@ -184,26 +360,18 @@ class Configure:
 
 class Framework(Configure):
   def __init__(self, clArgs = None):
+    self.argDB      = self.setupArgDB(clArgs)
+    self.logName    = 'configure.log'
+    self.log        = file(self.logName, 'w')
     Configure.__init__(self, self)
     self.children   = []
     self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles = {}
     self.header     = 'matt_config.h'
-    self.argDB      = self.setupArgDB(clArgs)
     return
 
   def setupArgDB(self, clArgs):
-    filename = 'configureArg.db'
-    parent   = 'bs'
-
-    if os.path.exists(filename):
-      f     = file(filename)
-      argDB = cPickle.load(f)
-      f.close()
-    else:
-      argDB = args.ArgDict(os.path.join(os.getcwd(), filename), parent)
-    argDB.input(clArgs)
-    return argDB
+    return nargs.ArgDict('ArgDict', clArgs)
 
   def addSubstitutionFile(self, inName, outName = ''):
     '''Designate that file should experience substitution
@@ -258,16 +426,26 @@ class Framework(Configure):
       return self.subst[name]
     else:
       for child in self.children:
-        if not hasattr(child, 'subst') or not isinstance(child.defines, dict): continue
-        if prefix is None: prefix = self.getSubstitutionPrefix(child)
-        if prefix:         prefix = prefix+'_'
-        if name.startswith(prefix) and child.subst.has_key(name.replace(prefix, '', 1)):
-          return child.subst[name.replace(prefix, '', 1)]
+        if not hasattr(child, 'subst') or not isinstance(child.defines, dict):
+          continue
+        if prefix is None:
+          substPrefix = self.getSubstitutionPrefix(child)
+        else:
+          substPrefix = prefix
+        if substPrefix: substPrefix = substPrefix+'_'
+        if substPrefix and name.startswith(substPrefix):
+          childName = name.replace(substPrefix, '', 1)
+        else:
+          childName = name
+        if child.subst.has_key(childName):
+          return child.subst[childName]
     return '@'+name+'_UNKNOWN@'
 
   def substituteFile(self, inName, outName):
     '''Carry out substitution on the file "inName", creating "outName"'''
     inFile  = file(inName)
+    if not os.path.exists(os.path.dirname(outName)):
+      os.makedirs(os.path.dirname(outName))
     outFile = file(outName, 'w')
     for line in inFile.xreadlines():
       outFile.write(self.substRE.sub(self.substituteName, line))
@@ -282,13 +460,14 @@ class Framework(Configure):
 
   def outputDefine(self, f, name, value = None, comment = ''):
     '''Define "name" to "value" in the configuration header'''
-    name = name.upper()
+    name  = name.upper()
+    guard = re.match(r'^(\w+)(\([\w,]+\))?', name).group(1)
     if comment:
       for line in comment.split('\n'):
         if line: f.write('/* '+line+' */\n')
-    f.write('#ifndef '+name+'\n')
+    f.write('#ifndef '+guard+'\n')
     if value:
-      f.write('#define '+name+' '+value+'\n')
+      f.write('#define '+name+' '+str(value)+'\n')
     else:
       f.write('/* #undef '+name+' */\n')
     f.write('#endif\n\n')
@@ -319,10 +498,45 @@ class Framework(Configure):
   def outputHeader(self, name):
     '''Write the configuration header'''
     f = file(name, 'w')
+    guard = 'INCLUDED_'+os.path.basename(name).upper().replace('.', '_')
+    f.write('#if !defined('+guard+')\n')
+    f.write('#define '+guard+'\n\n')
     self.outputDefines(f, self)
     for child in self.children:
       self.outputDefines(f, child)
+    f.write('#endif /* '+guard+' */\n')
     f.close()
+    return
+
+  def checkCompilers(self):
+    import config.compilers
+    self.compilers = config.compilers.Configure(self)
+    # It is important to check the compilers first
+    self.children.insert(0, self.compilers)
+    return
+
+  def checkTypes(self):
+    import config.types
+    self.types = config.types.Configure(self)
+    self.children.append(self.types)
+    return
+
+  def checkHeaders(self, headers = []):
+    import config.headers
+    self.headers = config.headers.Configure(self, headers)
+    self.children.append(self.headers)
+    return
+
+  def checkFunctions(self, functions = []):
+    import config.functions
+    self.functions = config.functions.Configure(self, functions)
+    self.children.append(self.functions)
+    return
+
+  def checkLibraries(self, libraries = []):
+    import config.libraries
+    self.libraries = config.libraries.Configure(self, libraries)
+    self.children.append(self.libraries)
     return
 
   def configure(self):
@@ -334,9 +548,10 @@ class Framework(Configure):
     return
 
 if __name__ == '__main__':
-  print 'Matt kicks ass'
   framework = Framework(sys.argv[1:])
-  framework.children.append(PETSc.Configure.Configure(framework))
-  framework.addSubstitutionFile('matt')
+  framework.argDB['LIBS'] = ''
+  conf      = PETSc.Configure.Configure(framework)
+  framework.children.append(conf)
   framework.configure()
-  print 'Finished'
+  #framework.compilers.configure()
+  #conf.configure()

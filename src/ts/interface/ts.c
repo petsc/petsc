@@ -1497,7 +1497,6 @@ int TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
 @*/
 int TSStep(TS ts,int *steps,PetscReal *ptime)
 {
-  PetscTruth opt;
   int        ierr;
 
   PetscFunctionBegin;

@@ -230,6 +230,7 @@ int SDADestroy(SDA sda)
   PetscFunctionBegin;
   ierr = VecDestroy(sda->gvec);CHKERRQ(ierr);
   ierr = VecDestroy(sda->lvec);CHKERRQ(ierr); 
+  ierr = VecDestroy(sda->Gvec);CHKERRQ(ierr); 
   ierr = DADestroy(sda->da);CHKERRQ(ierr);
   ierr = PetscFree(sda);CHKERRQ(ierr);
   PetscFunctionReturn(0);

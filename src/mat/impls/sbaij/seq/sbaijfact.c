@@ -11,6 +11,7 @@ See page 85, "Iterative Methods ..." by Saad. */
 #include "src/inline/ilu.h"
 #include "include/petscis.h"
 
+/* Use Modified Sparse Row storage for u and ju, see Sasd pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
 int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
@@ -18,8 +19,8 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   int          *rip,ierr,i,mbs = a->mbs,*ai,*aj;
   int          *jutmp,bs = a->bs,bs2=a->bs2;
-  int          m,nzi,realloc = 0;
-  int          *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
+  int          m,realloc = 0,prow;
+  int          *jl,*q,jumin,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   PetscTruth   perm_identity;
 
   PetscFunctionBegin;
@@ -38,17 +39,16 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   }
   
   /* initialization */
-  /* Don't know how many column pointers are needed so estimate. 
-     Use Modified Sparse Row storage for u and ju, see Sasd pp.85 */
   ierr  = PetscMalloc((mbs+1)*sizeof(int),&iu);CHKERRQ(ierr);
   umax  = (int)(f*ai[mbs] + 1); umax += mbs + 1; 
   ierr  = PetscMalloc(umax*sizeof(int),&ju);CHKERRQ(ierr);
   iu[0] = mbs+1; 
-  juptr = mbs;
-  ierr  = PetscMalloc(mbs*sizeof(int),&jl);CHKERRQ(ierr);
-  ierr  = PetscMalloc(mbs*sizeof(int),&q);CHKERRQ(ierr);
+  juidx = mbs + 1; /* index for ju */
+  ierr  = PetscMalloc(2*mbs*sizeof(int),&jl);CHKERRQ(ierr); /* linked list for pivot row */
+  q     = jl + mbs;   /* linked list for col index */
   for (i=0; i<mbs; i++){
-    jl[i] = mbs; q[i] = 0;
+    jl[i] = mbs; 
+    q[i] = 0;
   }
 
   /* for each row k */
@@ -76,15 +76,14 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 
     /* modify nonzero structure of k-th row by computing fill-in
        for each row i to be merged in */
-    i = k; 
-    i = jl[i]; /* next pivot row (== mbs for symbolic factorization) */
-    /* printf(" next pivot row i=%d\n",i); */
-    while (i < mbs){
-      /* merge row i into k-th row */
-      nzi = iu[i+1] - (iu[i]+1);
-      jmin = iu[i] + 1; jmax = iu[i] + nzi;
+    prow = k; 
+    prow = jl[prow]; /* next pivot row (== mbs for symbolic factorization) */
+   
+    while (prow < k){
+      /* merge row prow into k-th row */
+      jmin = iu[prow] + 1; jmax = iu[prow+1];
       qm = k;
-      for (j=jmin; j<jmax+1; j++){
+      for (j=jmin; j<jmax; j++){
         vj = ju[j];
         do {
           m = qm; qm = q[m];
@@ -93,7 +92,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
          nzk++; q[m] = vj; q[vj] = qm; qm = vj;
         }
       } 
-      i = jl[i]; /* next pivot row */     
+      prow = jl[prow]; /* next pivot row */     
     }  
    
     /* add k to row list for first nonzero element in k-th row */
@@ -101,7 +100,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
       i = q[k]; /* col value of first nonzero element in U(k, k+1:mbs-1) */    
       jl[k] = jl[i]; jl[i] = k;
     } 
-    iu[k+1] = iu[k] + nzk;   /* printf(" iu[%d]=%d, umax=%d\n", k+1, iu[k+1],umax);*/
+    iu[k+1] = iu[k] + nzk;  
 
     /* allocate more space to ju if needed */
     if (iu[k+1] > umax) {
@@ -114,18 +113,17 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 
       /* allocate a longer ju */
       ierr = PetscMalloc(umax*sizeof(int),&jutmp);CHKERRQ(ierr);
-      ierr  = PetscMemcpy(jutmp,ju,iu[k]*sizeof(int));CHKERRQ(ierr);
-      ierr  = PetscFree(ju);CHKERRQ(ierr);       
-      ju    = jutmp; 
+      ierr = PetscMemcpy(jutmp,ju,iu[k]*sizeof(int));CHKERRQ(ierr);
+      ierr = PetscFree(ju);CHKERRQ(ierr);       
+      ju   = jutmp; 
       realloc++; /* count how many times we realloc */
     }
 
     /* save nonzero structure of k-th row in ju */
     i=k;
-    jumin = juptr + 1; juptr += nzk; 
-    for (j=jumin; j<juptr+1; j++){
-      i     = q[i];
-      ju[j] = i;
+    while (nzk --) {
+      i           = q[i];
+      ju[juidx++] = i;
     }     
   } 
 
@@ -140,7 +138,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   }
 
   ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
-  ierr = PetscFree(q);CHKERRQ(ierr);
+  /* ierr = PetscFree(q);CHKERRQ(ierr); */
   ierr = PetscFree(jl);CHKERRQ(ierr);
 
   /* put together the new matrix */

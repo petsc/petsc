@@ -21,23 +21,23 @@ LIBTOOL            = @LIBTOOL@
 PETSC_LIBTOOL      = ${PETSC_DIR}/bin/petsc_libtool
 # ######################### C compiler #####################################
 #
-C_CC		   = @LT_CC@ @CC@ @CC_SHARED_OPT@
+C_CC               = @LT_CC@ @CC@ @CC_SHARED_OPT@
 C_CLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
-C_CLINKER	   = @CC@ @LDFLAGS@
-C_CCV		   = @CC@ --version | head -1
-C_SYS_LIB	   = @LIBS@
+C_CLINKER          = @CC@ @LDFLAGS@
+C_CCV              = @CC@ --version | head -1
+C_SYS_LIB          = @LIBS@
 # ---------------------------- BOPT=g options ------------------------------
 G_COPTFLAGS        = @PETSC_CFLAGS_g@
 # ----------------------------- BOPT=O options -----------------------------
 O_COPTFLAGS        = @PETSC_CFLAGS_O@
 # ############################ Fortran compiler ############################
-C_FC		   = @FC@ @FC_SHARED_OPT@
+C_FC               = @FC@ @FC_SHARED_OPT@
 C_FLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
-C_FLINKER	   = @FC@ @LDFLAGS@
-C_FCV		   = @FC@ --version | head -1
-CXX_FC		   = @FC@  @FC_SHARED_OPT@
+C_FLINKER          = @FC@ @LDFLAGS@
+C_FCV              = @FC@ --version | head -1
+CXX_FC             = @FC@  @FC_SHARED_OPT@
 CXX_FLINKER_SLFLAG = -rdynamic -Wl,-rpath,
-CXX_FLINKER	   = @CXX@ @LDFLAGS@
+CXX_FLINKER        = @CXX@ @LDFLAGS@
 # ---------------------------- BOPT=g options ------------------------------
 G_FOPTFLAGS        = @PETSC_FFLAGS_g@
 GCXX_FOPTFLAGS     = @PETSC_FFLAGS_g@
@@ -46,11 +46,11 @@ O_FOPTFLAGS        = @PETSC_FFLAGS_O@
 OCXX_FOPTFLAGS     = @PETSC_FFLAGS_O@
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = @LT_CC@ @CXX@ @CC_SHARED_OPT@
+CXX_CC             = @LT_CC@ @CXX@ @CC_SHARED_OPT@
 CXX_CLINKER_SLFLAG = -rdynamic -Wl,-rpath,
-CXX_CLINKER	   = @CXX@ @LDFLAGS@
-CXX_CCV		   = @CXX@ --version | head -1
-CXX_SYS_LIB	   = @LIBS@
+CXX_CLINKER        = @CXX@ @LDFLAGS@
+CXX_CCV            = @CXX@ --version | head -1
+CXX_SYS_LIB        = @LIBS@
 # ------------------------- BOPT=g_c++ options -----------------------------
 GCXX_COPTFLAGS     = @PETSC_CXXFLAGS_g@
 # ------------------------- BOPT=O_c++ options -----------------------------

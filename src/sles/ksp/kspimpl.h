@@ -42,9 +42,9 @@ struct _p_KSP {
   PCSide pc_side;                  /* flag for left, right, or symmetric 
                                       preconditioning */
   PetscReal rtol,                     /* relative tolerance */
-         atol,                     /* absolute tolerance */
-         ttol,                     /* (not set by user)  */
-         divtol;                   /* divergence tolerance */
+            atol,                     /* absolute tolerance */
+            ttol,                     /* (not set by user)  */
+            divtol;                   /* divergence tolerance */
   PetscReal rnorm0;                   /* initial residual norm (used for divergence testing) */
   PetscReal rnorm;                    /* current residual norm */
   KSPConvergedReason reason;     
@@ -54,9 +54,9 @@ struct _p_KSP {
                                       never touched by the code, only 
                                       passed back to the user */ 
   PetscReal     *res_hist;            /* If !0 stores residual at iterations*/
-  int        res_hist_len;         /* current size of residual history array */
-  int        res_hist_max;         /* actual amount of data in residual_history */
-  PetscTruth res_hist_reset;       /* reset history to size zero for each new solve */
+  int           res_hist_len;         /* current size of residual history array */
+  int           res_hist_max;         /* actual amount of data in residual_history */
+  PetscTruth    res_hist_reset;       /* reset history to size zero for each new solve */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
   int  (*monitor[MAXKSPMONITORS])(KSP,int,PetscReal,void*); /* returns control to user after */
@@ -64,7 +64,7 @@ struct _p_KSP {
   void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
   int  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
 
-  int  (*converged)(KSP,int,PetscReal,KSPConvergedReason*,void*);
+  int        (*converged)(KSP,int,PetscReal,KSPConvergedReason*,void*);
   void       *cnvP; 
 
   PC         B;
