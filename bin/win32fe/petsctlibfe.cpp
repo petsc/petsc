@@ -1,9 +1,11 @@
-/* $Id: petsctlibfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
+/* $Id: petsctlibfe.cpp,v 1.2 2001/03/23 19:31:16 buschelm Exp buschelm $ */
 #include <fstream>
+#include <iostream>
 #include "Windows.h"
 #include "petsctlibfe.h"
 
 using namespace PETScFE;
+using namespace std;
 
 void tlib::Execute() {
   archiver::Execute();

@@ -1,4 +1,4 @@
-/* $Id: petscarchivefe.cpp,v 1.2 2001/03/21 19:48:17 buschelm Exp buschelm $ */
+/* $Id: petscarchivefe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
 #include <iostream>
 #include <stdlib.h>
 #include "petscfe.h"
@@ -7,50 +7,41 @@ using namespace PETScFE;
 
 void archiver::GetArgs(int argc,char *argv[]) {
   tool::GetArgs(argc,argv);
-  archivearg.resize(argc-1);
-  archivearg[0]=arg[0];
-  file.resize(argc-1);
+  LI i = arg.begin();
+  archivearg.push_front(*i);
+  arg.pop_front();
 }
 
 void archiver::Parse(void) {
-  for (int i=1;i<arg.size();i++) {
-    string temp = arg[i];
-    if (temp == "") break;
+  LI i = arg.begin();
+  while (i !=arg.end()) {
+    string temp = *i;
     if (temp[0]=='-') {
-      FoundFlag(i,temp);
+      FoundFlag(i);
     } else {
-      FoundFile(i,temp);
+      FoundFile(i);
     }
+    i++;
+    arg.pop_front();
   }
-  Squeeze();
 }
 
 void archiver::Execute(void) {
   tool::Execute();
-  string archive=archivearg[0];
-  int i;
-  for (i=1;i<archivearg.size();i++) {
-    if (archivearg[i]=="") break;
-    archive += " " + archivearg[i];
-  }
-  for (i=0;i<file.size();i++) {
-    if (file[i]=="") break;
-    archive += " " + file[i];
-  }
+  LI i = archivearg.begin();
+  string archive = *i++;
+  Merge(archive,archivearg,i);
+  Merge(archive,file,file.begin());
   if (verbose) cout << archive << endl;
   system(archive.c_str());
 }
 
-void archiver::FoundFile(int &loc,string temp) {
+void archiver::FoundFile(LI &i) {
+  string temp = *i;
   ReplaceSlashWithBackslash(temp);
-  file[loc] = temp;
+  file.push_back(temp);
 }
 
-void archiver::FoundFlag(int &loc,string temp) {
-  archivearg[loc] = temp;
-}
-
-void archiver::Squeeze(void) {
-  tool::Squeeze(archivearg);
-  tool::Squeeze(file);
+void archiver::FoundFlag(LI &i) {
+  archivearg.push_back(*i);
 }

@@ -16,13 +16,13 @@ namespace PETScFE {
     virtual void Compile(void);
     virtual void Link(void);
 
-    virtual void FoundD(int &,string);
-    virtual void FoundI(int &,string);
-    virtual void FoundL(int &,string);
-    virtual void Foundl(int &,string);
-    virtual void Foundo(int &,string);
+    virtual void FoundD(LI &);
+    virtual void FoundI(LI &);
+    virtual void FoundL(LI &);
+    virtual void Foundl(LI &);
+    virtual void Foundo(LI &);
     virtual void FixOutput(void);
-    int OutputFlag;
+    LI OutputFlag;
   };
 
 }

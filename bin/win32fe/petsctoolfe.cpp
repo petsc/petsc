@@ -6,41 +6,35 @@
 using namespace PETScFE;
 
 tool::tool(void) {
-  tool::OptionTags= "use.verbose.arg";
-  tool::Options["use"] = &tool::FoundUse;
-  tool::Options["verbose"] = &tool::FoundVerbose;
-  tool::Options["unknown"] = &tool::FoundArg;
+  tool::OptionTags= "uv";
+  tool::Options['u'] = &tool::FoundUse;
+  tool::Options['v'] = &tool::FoundVerbose;
 
   verbose = 0;
 }
   
 void tool::GetArgs(int argc,char *argv[]) {
   if (argc>2) { 
-    arg.resize(argc-1); /* Skip argv[0] */ 
-    for (int i=1;i<argc;i++) arg[i-1] = argv[i];
-    tool::Parse(argc,argv);
-    ReplaceSlashWithBackslash(arg[0]);
-    Squeeze(arg);
+    for (int i=1;i<argc;i++) arg.push_back(argv[i]);
+    tool::Parse();
+    ReplaceSlashWithBackslash(*(arg.begin()));
   } else {
     cout << "Not enough arguments." << endl;
     cout << "Error: 2" << endl;
   }
 }
 
-void tool::Parse(int argc,char *argv[]) {
-  /* argv[0] = "petscfe"  -- not parsed with args */
-  /* argv[1] = The tool exe -- gotten in GetArgs */ 
-  for (int i=1;i<argc-1;i++) {
-    string temp = argv[i+1];
-    if (temp.substr(0,2)!="--") {
-      tool::FoundArg(i,temp);
-    } else {
-      string flag = temp.substr(2);
-      if (tool::OptionTags.find(flag)==string::npos) {
-        (this->*tool::Options["unknown"])(i,temp);
-      } else {
-        (this->*tool::Options[flag])(i,temp);
+void tool::Parse() {
+  LI i = arg.begin();
+  while (i!=arg.end()) {
+    string temp = *i;
+    if (temp.substr(0,2)=="--") {
+      char flag = temp[2];
+      if (tool::OptionTags.find(flag)!=string::npos) {
+        (this->*tool::Options[flag])(i);
       }
+    } else {
+      i++;
     }
   }
 }
@@ -49,19 +43,20 @@ void tool::Execute(void) {
  if (verbose) cout << "PETSc Front End" << endl;
 }
 
-void tool::FoundArg(int &loc,string temp) {
-  arg[loc] = temp;
+void tool::FoundUse(LI &i) {
+  if (*i=="--use") {
+    i = arg.erase(i);
+    ReplaceSlashWithBackslash(*i);
+    *(arg.begin()) = *i;
+    i = arg.erase(i);
+  }
 }
 
-void tool::FoundUse(int &loc,string temp) {
-  arg[loc] = "";
-  arg[0] = arg[loc+1];
-  arg[++loc] = "";
-}
-
-void tool::FoundVerbose(int &loc,string temp) {
-  verbose = -1;
-  arg[loc] = "";
+void tool::FoundVerbose(LI &i) {
+  if (*i == "--verbose") {
+    verbose = -1;
+    i = arg.erase(i);
+  }
 }
 
 void tool::ReplaceSlashWithBackslash(string &name) {
@@ -69,32 +64,33 @@ void tool::ReplaceSlashWithBackslash(string &name) {
     if (name[i]=='/') name[i]='\\';
 }
 
-void tool::PrintStringVector(vector<string> &strvec) {
-  if (verbose) {
-    cout << "Printing..." << endl;
-    int size = strvec.size()-1;
-    for (int i=0;i<size;i++) cout << strvec[i] + " ";
-    cout << strvec[size] << endl;
-  }
-}
-
-void tool::Squeeze(vector<string> &strvec) {
-  for (int i=0,current = 0;i<strvec.size();i++) {
-    if (strvec[i]!="") {
-      if (current!=i) {
-        strvec[current++]=strvec[i];
-        strvec[i]="";
-      } else {
-        current++;
-      }
+void tool::ProtectQuotes(string &name) {
+  string::size_type a,b;
+  a = name.find("\"");
+  if (a!=string::npos) {
+    string temp = name.substr(0,a+1);
+    temp += "\\\"";
+    temp += name.substr(a+1,string::npos);
+    name = temp;
+    b = name.rfind("\"");
+    if (b!=a+2) {
+      temp = name.substr(0,b);
+      temp += "\\\"";
+      temp += name.substr(b,string::npos);
+      name = temp;
     }
   }
 }
 
-void tool::Merge(string &str,vector<string> &strvec,int start) {
-  for (int i=start;i<strvec.size();i++) {
-    /* if can be eliminated if use lists i/o vectors */
-    if (strvec[i]=="") break;
-    str += " " + strvec[i];
+void tool::PrintListString(list<string> &liststr) {
+  cout << "Printing..." << endl;
+  LI i = liststr.begin();
+  while (i!=liststr.end()) cout << *i << " ";
+  cout << endl;
+}
+
+void tool::Merge(string &str,list<string> &liststr,LI i) {
+  while (i!=liststr.end()) {
+    str += " " + *i++;
   }
 }

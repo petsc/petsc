@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: petsctlibfe.h,v 1.1 2001/03/06 23:57:40 buschelm Exp $ */
 #ifndef PETScTlibFE_h
 #define PETScTlibFE_h
 
@@ -11,8 +11,9 @@ namespace PETScFE {
     tlib() {}
     ~tlib() {}
   protected:
-    void FoundFile(int &,string);
-    void FoundFlag(int &,string);
+    virtual void Execute(void);
+    virtual void FoundFile(LI &);
+    virtual void FoundFlag(LI &);
   };
 
 }

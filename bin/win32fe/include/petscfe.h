@@ -2,41 +2,40 @@
 #ifndef PETScFE_h_
 #define PETScFE_h_
 
-#include <vector>
+#include <list>
 #include <string>
 #include <map>
 
 using namespace std;
+typedef list<string>::iterator LI;
 
 namespace PETScFE {
 
   class tool {
   public:
-    static void Create(tool*&,char *);
-    virtual void Parse(void) {}
-    virtual void Parse(int,char*[]);
+    static void Create(tool*&,string);
+    virtual void Parse(void);
     virtual void Execute(void);
     virtual void GetArgs(int argc,char *argv[]);
     virtual void Destroy(void) {delete this;}
   protected:
     tool();
     virtual ~tool() {}
+    void PrintListString(list<string> &);
+    virtual void ProtectQuotes(string &);
     virtual void ReplaceSlashWithBackslash(string &);
-    void PrintStringVector(vector<string> &);
-    void Squeeze(vector<string> &);
-    void Merge(string &,vector<string> &,int);
+    void Merge(string &,list<string> &,LI);
 
-    vector<string> arg;
+    list<string> arg;
     int verbose;
   private:
-    void FoundArg(int &,string);
-    void FoundUse(int &,string);
-    void FoundVersion(int &,string);
-    void FoundVerbose(int &,string);
+    void FoundUse(LI &);
+    void FoundVerbose(LI &);
+/*      void FoundVersion(LI &); */
 
     string OptionTags;
-    typedef void (PETScFE::tool::*ptm)(int &,string);
-    map<string,ptm> Options;
+    typedef void (PETScFE::tool::*ptm)(LI &);
+    map<char,ptm> Options;
   };
 
   class compiler : public tool {
@@ -50,23 +49,22 @@ namespace PETScFE {
     virtual void Compile(void);
     virtual void Link(void);
 
-    virtual void FoundFile(int &,string);
-    virtual void FoundD(int &,string);
-    virtual void FoundI(int &,string);
-    virtual void FoundL(int &,string);
-    virtual void Foundc(int &,string);
-    virtual void Foundl(int &,string);
-    virtual void Foundo(int &,string);
-    virtual void FoundUnknown(int &,string);
+    virtual void FoundFile(LI &);
+    virtual void FoundD(LI &);
+    virtual void FoundI(LI &);
+    virtual void FoundL(LI &);
+    virtual void Foundc(LI &);
+    virtual void Foundl(LI &);
+    virtual void Foundo(LI &);
+    virtual void FoundUnknown(LI &);
 
-    void Squeeze(void);
     string OptionTags;
 
-    vector<string> compilearg;
-    vector<string> file;
-    vector<string> linkarg;
+    list<string> compilearg;
+    list<string> file;
+    list<string> linkarg;
   private:
-    typedef void (PETScFE::compiler::*ptm)(int &,string);
+    typedef void (PETScFE::compiler::*ptm)(LI &);
     map<char,ptm> Options;
   };
 
@@ -78,13 +76,11 @@ namespace PETScFE {
     virtual void Execute(void);
     virtual void GetArgs(int argc,char *argv[]);
   protected:
-    virtual void FoundFile(int &,string);
-    virtual void FoundFlag(int &,string);
+    virtual void FoundFile(LI &);
+    virtual void FoundFlag(LI &);
 
-    void Squeeze(void);
-
-    vector<string> archivearg;
-    vector<string> file;
+    list<string> archivearg;
+    list<string> file;
   };
 
 }
