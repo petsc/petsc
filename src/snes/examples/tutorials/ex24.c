@@ -204,6 +204,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "PDEFormFunctionLocal"
 PetscErrorCode PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,PassiveScalar *w)
 {
+  PetscErrorCode ierr;
   PetscInt     xs = info->xs,xm = info->xm,i,mx = info->mx;
   PetscScalar  d,h;
 

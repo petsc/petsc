@@ -451,7 +451,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       if (d<=0) {
         row_shift = 0; 
       } else {
-        row_shift = -2*d;
+        row_shift = -2*PetscAbsScalar((a->a)[ddiag[i]]);
       }
       v  = a->a+aai[i];
       nz = aai[i+1] - aai[i];
@@ -1042,7 +1042,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
 
-  ierr = MatILUFactorSymbolic_Inode(A,info,isrow,iscol,fact);CHKERRQ(ierr); 
+  ierr = MatILUFactorSymbolic_Inode(A,isrow,iscol,info,fact);CHKERRQ(ierr); 
   (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
 
   PetscFunctionReturn(0); 
