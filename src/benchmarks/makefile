@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.28 2001/08/22 18:02:54 balay Exp balay $ 
+# $Id: makefile,v 1.29 2001/08/29 20:27:59 balay Exp balay $ 
 
 ALL: 
 
@@ -71,31 +71,31 @@ test: ${TESTS}
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 PetscTime       > /dev/null
-	-@${MPIRUN} -np 1 PetscGetTime    > /dev/null
-	-@${MPIRUN} -np 1 PetscGetCPUTime > /dev/null
-	-@${MPIRUN} -np 1 MPI_Wtime       > /dev/null
+	-@${MPIRUN} -np 1 PetscTime
+	-@${MPIRUN} -np 1 PetscGetTime
+	-@${MPIRUN} -np 1 PetscGetCPUTime
+	-@${MPIRUN} -np 1 MPI_Wtime
 	-@echo " "
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 PLogEvent                    > /dev/null
-	-@${MPIRUN} -np 1 PLogEvent -log_summary       > /dev/null
-	-@${MPIRUN} -np 1 PLogEvent -log_mpe           > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent              > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent -log_summary > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent -log_mpe     > /dev/null
 	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 PetscMalloc            > /dev/null
-	-@${MPIRUN} -np 1 PetscMalloc -trmalloc  > /dev/null
+	-@${MPIRUN} -np 1 PetscMalloc
+	-@${MPIRUN} -np 1 PetscMalloc -trmalloc
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 PetscMemcpy  > /dev/null
-	-@${MPIRUN} -np 1 PetscMemzero > /dev/null
-	-@${MPIRUN} -np 1 PetscMemcmp  > /dev/null
+	-@${MPIRUN} -np 1 PetscMemcpy
+	-@${MPIRUN} -np 1 PetscMemzero
+	-@${MPIRUN} -np 1 PetscMemcmp
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 Index  > /dev/null
+	-@${MPIRUN} -np 1 Index
 	-@echo " "
 	-@echo "Datatype Sizes "
 	-@echo "------------------------------------------------"

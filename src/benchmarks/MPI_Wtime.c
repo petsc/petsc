@@ -1,4 +1,4 @@
-/*$Id: MPI_Wtime.c,v 1.16 2001/03/23 23:25:45 balay Exp balay $*/
+/*$Id: MPI_Wtime.c,v 1.17 2001/08/29 20:23:41 balay Exp balay $*/
 
 #include "petsc.h"
 
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 
   fprintf(stdout,"%-15s : %e sec\n","MPI_Wtime",(y-x)/10.0);
   y = MPI_Wtick();
-  fprintf(stderr,"%-15s : %e sec\n","MPI_Wtick",y);
+  fprintf(stdout,"%-15s : %e sec\n","MPI_Wtick",y);
 
   x = MPI_Wtime();
   ierr = PetscSleep(10);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: Index.c,v 1.33 2001/08/07 03:04:59 balay Exp balay $*/
+/*$Id: Index.c,v 1.34 2001/08/29 20:27:54 balay Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -56,14 +56,14 @@ int test1(void)
     intval  = (int)(value*20000.0);
     zi[i]   = intval;
   }
-  fprintf(stderr,"Done setup\n");
+  /* fprintf(stdout,"Done setup\n"); */
 
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   for (i=0; i<2000; i++) {  x[i] = y[i]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[i]",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[i] = y[i]",(t2-t1)/2000.0);
 
   ierr = BlastCache();CHKERRQ(ierr);
 
@@ -75,35 +75,35 @@ int test1(void)
     x[3+i] = y[z[3+i]];
   }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]] - unroll 4",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[i] = y[idx[i]] - unroll 4",(t2-t1)/2000.0);
 
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr)
   for (i=0; i<2000; i++) {  x[i] = y[z[i]]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/2000.0);
 
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   for (i=0; i<1000; i+=2) {  x[i] = y[z[i]];  x[1+i] = y[z[1+i]]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]] - unroll 2",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[i] = y[idx[i]] - unroll 2",(t2-t1)/2000.0);
 
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   for (i=0; i<2000; i++) {  x[z[i]] = y[i]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[i]",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[i]",(t2-t1)/2000.0);
 
   ierr = BlastCache();CHKERRQ(ierr);
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   for (i=0; i<2000; i++) {  x[z[i]] = y[zi[i]]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
   
   ierr = PetscMemcpy(x,y,10);CHKERRQ(ierr);
   ierr = PetscMemcpy(z,zi,10);CHKERRQ(ierr);
@@ -153,35 +153,35 @@ int test2(void)
     zi[i]  = zi[intval];
     zi[intval] = tmp;
   }
-  fprintf(stderr,"Done setup\n");
+  /* fprintf(stdout,"Done setup\n"); */
 
   /* ierr = BlastCache();CHKERRQ(ierr); */
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   for (i=0; i<2000; i++) {  x[i] = y[i]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[i]",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[i] = y[i]",(t2-t1)/2000.0);
 
   /* ierr = BlastCache();CHKERRQ(ierr); */
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   for (i=0; i<2000; i++) {  y[i] = x[z[i]]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/2000.0);
 
   /* ierr = BlastCache();CHKERRQ(ierr); */
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   for (i=0; i<2000; i++) {  x[z[i]] = y[i]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[i]",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[i]",(t2-t1)/2000.0);
 
   /* ierr = BlastCache();CHKERRQ(ierr); */
 
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   for (i=0; i<2000; i++) {  y[z[i]] = x[zi[i]]; }
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
-  fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
+  fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
 
 
   PetscRandomDestroy(r);

@@ -1,4 +1,4 @@
-/*$Id: PetscGetCPUTime.c,v 1.10 2001/01/23 20:58:37 balay Exp balay $*/
+/*$Id: PetscGetCPUTime.c,v 1.11 2001/03/23 23:25:45 balay Exp balay $*/
 
 #include "petsc.h"
 
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
       A[j]=i+j;
     }
     ierr = PetscGetCPUTime(&y);CHKERRQ(ierr);
-    fprintf(stderr,"%-15s : %e sec\n","PetscGetCPUTime",(y-x)/10.0);
+    fprintf(stdout,"%-15s : %e sec\n","PetscGetCPUTime",(y-x)/10.0);
   }
 
   ierr = PetscFinalize();CHKERRQ(ierr);

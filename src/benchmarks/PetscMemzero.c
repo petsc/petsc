@@ -1,4 +1,4 @@
-/*$Id: PetscMemzero.c,v 1.21 2001/08/07 03:04:59 balay Exp balay $*/
+/*$Id: PetscMemzero.c,v 1.22 2001/08/29 20:23:39 balay Exp balay $*/
 
 #include "petsc.h"
 
@@ -40,8 +40,8 @@ int main(int argc,char **argv)
   ierr = PetscGetTime(&z);CHKERRQ(ierr);
 
   fprintf(stdout,"%s : \n","PetscMemzero");
-  fprintf(stdout,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stdout,"    %-11s : %e sec\n","Per PetscScalar",(2*y-x-z)/100000.0);
+  fprintf(stdout,"    %-15s : %e sec\n","Latency",(z-y)/10.0);
+  fprintf(stdout,"    %-15s : %e sec\n","Per PetscScalar",(2*y-x-z)/100000.0);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

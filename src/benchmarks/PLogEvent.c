@@ -1,4 +1,4 @@
-/*$Id: PLogEvent.c,v 1.22 2001/01/23 20:58:37 balay Exp balay $*/
+/*$Id: PLogEvent.c,v 1.23 2001/03/23 23:25:45 balay Exp balay $*/
 
 #include "petsc.h"
 
@@ -41,14 +41,14 @@ int main(int argc,char **argv)
   ierr = PetscLogEventEnd(e1,&x,&e1,0,0);CHKERRQ(ierr);
 
   ierr = PetscGetTime(&y);CHKERRQ(ierr);
-  fprintf(stdout,"%-15s : %e sec, with options : ","PetscLogEvent",(y-x)/10.0);
+  fprintf(stderr,"%-15s : %e sec, with options : ","PetscLogEvent",(y-x)/10.0);
 
-  if(PetscOptionsHasName(PETSC_NULL,"-log",&flg),flg) fprintf(stdout,"-log ");
-  if(PetscOptionsHasName(PETSC_NULL,"-log_all",&flg),flg) fprintf(stdout,"-log_all ");
-  if(PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg),flg) fprintf(stdout,"-log_summary ");
-  if(PetscOptionsHasName(PETSC_NULL,"-log_mpe",&flg),flg) fprintf(stdout,"-log_mpe ");
+  if(PetscOptionsHasName(PETSC_NULL,"-log",&flg),flg) fprintf(stderr,"-log ");
+  if(PetscOptionsHasName(PETSC_NULL,"-log_all",&flg),flg) fprintf(stderr,"-log_all ");
+  if(PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg),flg) fprintf(stderr,"-log_summary ");
+  if(PetscOptionsHasName(PETSC_NULL,"-log_mpe",&flg),flg) fprintf(stderr,"-log_mpe ");
   
-  fprintf(stdout,"\n");
+  fprintf(stderr,"\n");
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
