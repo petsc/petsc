@@ -15,7 +15,6 @@ class Configure:
     self.acLocalDir   = 'config'
     self.acReload     = '--reload'
     self.acMsgFD      = '2'
-    self.acCCFD       = str(self.framework.log.fileno())
     self.configAuxDir = 'config'
     # Interaction with the shell
     self.shell = '/bin/sh'
@@ -23,6 +22,9 @@ class Configure:
     self.language = []
     self.pushLanguage('C')
     return
+
+  def getAcCCFD(self):
+    return str(self.log.fileno())
 
   def getRoot(self):
     import sys
@@ -394,7 +396,7 @@ class Configure:
   def replaceDefaultDescriptors(self, codeStr):
     '''Autoconf defines several default file descriptors, which we must assign'''
     newCode = re.sub('AC_FD_MSG', self.acMsgFD, codeStr)
-    newCode = re.sub('AC_FD_CC',  self.acCCFD,  newCode)
+    newCode = re.sub('AC_FD_CC',  self.getAcCCFD(),  newCode)
     return newCode
 
   def findUndefinedMacros(self, codeStr):
@@ -439,7 +441,7 @@ class Configure:
     ac_compile=\'${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&%s\'
     ac_link=\'${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&%s\'
     exec %s>>%s
-    ''' % (self.shell, self.acCCFD, self.acCCFD, self.acCCFD, self.framework.logName)
+    ''' % (self.shell, self.getAcCCFD(), self.getAcCCFD(), self.getAcCCFD(), self.framework.logName)
 
   def parseShellOutput(self, output):
     '''This retrieves the output variable values from macro shell code'''

@@ -55,7 +55,6 @@ class Help:
 class Framework(config.base.Configure):
   def __init__(self, clArgs = None, argDB = None):
     self.argDB = self.setupArgDB(clArgs, argDB)
-    self.setupLogging()
     config.base.Configure.__init__(self, self)
     self.children   = []
     self.substRE    = re.compile(r'@(?P<name>[^@]+)@')
@@ -75,9 +74,13 @@ class Framework(config.base.Configure):
     return argDB
 
   def setupLogging(self):
-    self.logName   = 'configure.log'
-    self.logExists = os.path.exists(self.logName)
-    self.log       = file(self.logName, 'w')
+    if not hasattr(self, 'log'):
+      self.logName   = self.argDB['log']
+      self.logExists = os.path.exists(self.logName)
+      if self.logExists:
+        self.log     = file(self.logName, 'a')
+      else:
+        self.log     = file(self.logName, 'w')
     return self.log
 
   def setupChildren(self):
@@ -290,15 +293,18 @@ class Framework(config.base.Configure):
     help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
     help.addOption('Framework', 'help', 'Print this help message', nargs.ArgBool)
     help.addOption('Framework', 'h', 'Print this help message', nargs.ArgBool)
+    help.addOption('Framework', 'log', 'The filename for the configure log', nargs.ArgString)
 
     self.argDB['h']    = 0
     self.argDB['help'] = 0
+    self.argDB['log']  = 'configure.log'
     return
 
   def configure(self):
     '''Configure the system'''
     # Delay database initialization until children have contributed variable types
     self.setupArguments(self.clArgs)
+    self.setupLogging()
     if self.argDB['help'] or self.argDB['h']:
       self.help.output()
       return

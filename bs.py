@@ -196,18 +196,22 @@ class BS (install.base.Base):
     import config.framework
     import install.base
 
+    root      = self.getRoot()
+    log       = os.path.join(root, 'configure.log')
     framework = config.framework.Framework(sys.argv[1:])
     for arg in ['debugLevel', 'debugSections']:
       framework.argDB[arg] = argDB[arg]
+    framework.argDB['log'] = log
     # Perhaps these initializations should just be local arguments
     framework.argDB['CPPFLAGS'] = ''
     framework.argDB['LIBS']     = ''
     # Load default configure module
     try:
-      framework.children.append(install.base.Base(framework.argDB).getMakeModule(self.getRoot(), 'configure').Configure(framework))
+      framework.children.append(install.base.Base(framework.argDB).getMakeModule(root, 'configure').Configure(framework))
     except ImportError:
       return
-    # Run configuration only if the log file was absent or it is forced
+    # Run configuration only if the log file was absent or it is forced (must setup logging early to check)
+    framework.setupLogging()
     if not framework.logExists or argDB['forceConfigure']:
       framework.configure()
       # Debugging
