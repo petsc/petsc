@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.49 2000/05/05 22:16:51 balay Exp bsmith $*/
+/*$Id: color.c,v 1.50 2000/05/10 16:41:33 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -188,16 +188,16 @@ int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
   (*iscoloring)->is = is;
   
   ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   for (i=0; i<start; i++) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,0,PETSC_NULL,is+i);CHKERRQ(ierr);
   }
   for (i=start; i<end; i++) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&i,is+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,1,&i,is+i);CHKERRQ(ierr);
   }
   for (i=end; i<N; i++) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,0,PETSC_NULL,is+i);CHKERRQ(ierr);
   }
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -299,7 +299,7 @@ EXTERN int MatAdjustForInodes(Mat,IS *,IS *);
    Input Parameters:
 .  mat - the matrix
 .  type - type of coloring, one of the following:
-$      MATCOLORING_NATURAL - natural
+$      MATCOLORING_NATURAL - natural (one color for each column, very slow)
 $      MATCOLORING_SL - smallest-last
 $      MATCOLORING_LF - largest-first
 $      MATCOLORING_ID - incidence-degree
@@ -316,6 +316,11 @@ $    -mat_coloring_type id
 $    -mat_coloring_view
 
    Level: intermediate
+
+   Notes:
+     These compute the graph coloring of the graph of A^{T}A. The coloring used 
+   for efficient (parallel or thread based) triangular solves etc is not yet 
+   available. 
 
    The user can define additional colorings; see MatColoringRegisterDynamic().
 
