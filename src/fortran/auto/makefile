@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.91 1999/04/04 20:10:22 bsmith Exp balay $ 
+# $Id: makefile,v 1.92 1999/04/13 15:21:24 balay Exp balay $ 
 
 ALL: lib
 
@@ -21,7 +21,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cputimef.c cgtypef.c
         snesutf.c sorf.c sortdf.c sortif.c sortipf.c stridef.c \
         trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c \
         vinvf.c vscatf.c zerodiagf.c \
-	cmeshf.c optionsf.c snesmfjdeff.c combf.c redundantf.c
+	cmeshf.c optionsf.c snesmfjdeff.c combf.c redundantf.c iterativf.c
 
 SOURCEF	 = 
 SOURCEH	 = 
@@ -42,7 +42,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cputimef.o cgtypef.o \
         snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o \
         trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o\
         vinvf.o vscatf.o zerodiagf.o \
-	cmeshf.o optionsf.o snesmfjdeff.o combf.o redundantf.o
+	cmeshf.o optionsf.o snesmfjdeff.o combf.o redundantf.o iterativf.o
 
 
 OBJSF	 =
