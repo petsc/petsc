@@ -59,14 +59,14 @@ O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = @CXX@
-CXX_FC           = @FC@   -xpp=cpp
-CXX_CLINKER_SLFLAG =
-CXX_FLINKER_SLFLAG =
+CXX_FC           = @FC@  
+CXX_CLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
+CXX_FLINKER_SLFLAG   = -rdynamic -Wl,-rpath,
 CXX_CLINKER      = @CXX@
 CXX_FLINKER      = @CXX@
 # What is CXX_CCV?
 CXX_CCV          = @CXX@ --version | head -1
-CXX_SYS_LIB      = @LIBS@ @FC_LIB@
+CXX_SYS_LIB      = @LIBS@
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g
 GCXX_FOPTFLAGS   = -g

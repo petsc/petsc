@@ -137,7 +137,7 @@ int PetscViewerASCIIGetPointer(PetscViewer viewer,FILE **fd)
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-int PetscViewerASCIISetMode(PetscViewer viewer, FileMode mode)
+int PetscViewerASCIISetMode(PetscViewer viewer, PetscFileMode mode)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
