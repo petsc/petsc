@@ -262,7 +262,7 @@ EXTERN int  PetscInitializeNoArguments(void);
 EXTERN int  PetscFinalize(void);
 EXTERN int  PetscInitializeFortran(void);
 EXTERN int  PetscGetArgs(int*,char ***);
-EXTERN int  PetscEnd();
+EXTERN int  PetscEnd(void);
 
 /*
    ParameterDict is an abstraction for arguments to interface mechanisms
