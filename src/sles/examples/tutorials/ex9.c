@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.22 1996/09/26 03:22:22 curfman Exp curfman $";
+static char vcid[] = "$Id: ex9.c,v 1.23 1996/09/28 14:09:42 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -80,7 +80,7 @@ int main(int argc,char **args)
      Create data structures for first linear system.
       - Create parallel matrix, specifying only its global dimensions.
         When using MatCreate(), the matrix format can be specified at
-        runtime. Also, the parallel partioning of the matrix is
+        runtime. Also, the parallel partitioning of the matrix is
         determined by PETSc at runtime.
       - Create parallel vectors.
         - When using VecCreate(), we specify only the vector's global

@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.6 1996/09/28 14:11:51 curfman Exp curfman $";
+C    "$Id: ex11f.F,v 1.7 1996/10/02 19:41:23 curfman Exp curfman $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -107,7 +107,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  Create parallel matrix, specifying only its global dimensions.
 C  When using MatCreate(), the matrix format can be specified at
-C  runtime. Also, the parallel partioning of the matrix is
+C  runtime. Also, the parallel partitioning of the matrix is
 C  determined by PETSc at runtime.
 
       call MatCreate(MPI_COMM_WORLD,dim,dim,A,ierr)
