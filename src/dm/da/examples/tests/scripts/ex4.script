@@ -1,25 +1,28 @@
 #! /bin/csh
 #
-#  Tests many of the DA variants
+#  Tests many of the 2-dimensional DA variants
 #
 #  w = degress of freedom per node
 #  s = stencil width
-#  M,N,P = global dimension in each direction of array
-#  m,n,p = number of processors in each dimension
-#  star = star stencil
+#  M,N = global dimension in each direction of array
+#  m,n = number of processors in each dimension
+#  np = number of processors
+#
 
-  foreach np (2 4 8 16)
-  foreach M (16 31)
-  foreach N (14 35)
-  foreach w (1 2 3)
-  foreach s (1 2 3)
-    echo 'lmpirun -np' $np' ex4 -nox -test_order -w' $w ' -s' $s
-    mpirun ex4 -nox -test_order -w $w -s $s -M $M -N $N
+  foreach m (1 2 3)
+   foreach n (1 2 3)
+    foreach M (16 17)
+     foreach N (14 15)
+      foreach w (1 2 3)
+       foreach s (1 2)
+        set np = `expr $m \* $n`
+        echo 'mpirun -np' $np' ex4 -testorder -nox -w' $w '-s' $s '-M' $M '-N' $N '-m' $m '-n' $n
+        mpirun -np $np ex4 -testorder -nox -w $w -s $s -M $M -N $N -m $m -n $n
+       end
+      end
+     end
+    end
+   end
   end
-  end
-  end
-  end
-  end
-  echo " "
 
 
