@@ -77,3 +77,8 @@ Reynolds Metal Company, Richmond, VA
   of microstructural crystal elements contained in each finite element
   (A. J. Beaudoin)
 
+
+> We are implementing an Object oriented Framework for Numerical Analysis
+> here at the Scientific Computation Research Center, Rensselaer Polytechnic
+> Institute, Troy, NY. We have incorporated a number of your Iterative
+> Solvers in the Petsc libraries into the Framework. 
