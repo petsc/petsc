@@ -93,7 +93,6 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     import os
 
-    print self.framework.argDB['with-vendor-compilers']
     if self.framework.argDB['with-vendor-compilers'] == 'no': self.framework.argDB['with-vendor-compilers'] = '0'
     if self.framework.argDB['with-vendor-compilers'] == 'yes': self.framework.argDB['with-vendor-compilers'] = ''      
     if self.framework.argDB['with-vendor-compilers'] == 'false': self.framework.argDB['with-vendor-compilers'] = '0'
