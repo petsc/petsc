@@ -91,7 +91,7 @@ chi_file -create $rundir
 #
 # Undocumented step:  copy program into rundir
 cp $programname $rundir
-cp --parents $infiles $rundir
+if [ "$infiles" != "" ] ; then cp --parents $infiles $rundir; fi
 #
 # Check if this should be a myrinet job:
 has_gm="`nm $programname | egrep 'T gm_init$'`"
