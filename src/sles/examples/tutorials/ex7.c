@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.17 1996/01/23 00:20:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.18 1996/02/08 18:27:31 bsmith Exp curfman $";
 #endif
 
-static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
-a linear system in parallel with SLES.  The code indicates the procedure for\n\
-using different linear solvers on the individual blocks.\n\n";
+static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
+solving a linear system in parallel with SLES.  The code indicates the\n\
+procedure for using different linear solvers on the individual blocks.\n\n";
 
 #include "sles.h"
 #include <stdio.h>
@@ -62,11 +62,10 @@ int main(int argc,char **args)
   /* Set options */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
-  /* Set local solvers for Block Jacobi method.  Currently only 1 block 
-     per processor is supported.  This code is intended as a simple
-     illustration of setting different linear solvers for the individual 
-     blocks.  These choices are obviously not recommended for solving this
-     particular problem. */
+  /* Set local solvers for Block Jacobi method.  This code is intended as
+     a simple illustration of setting different linear solvers for the
+     individual blocks.  These choices are obviously not recommended for
+     solving this particular problem. */
   ierr = PCGetType(pc,&pcmethod,PETSC_NULL); CHKERRA(ierr);
   if (pcmethod == PCBJACOBI) {
     /* Note that SLESSetUp() MUST be called before PCBJacobiGetSubSLES(). */
