@@ -5,9 +5,10 @@
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,adiag,aa,b)
+      subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,        
+     &           adiag,idiag,aa,b)
       implicit none
-      PetscScalar      x(0:*),aa(0:*),b(0:*)
+      PetscScalar      x(0:*),aa(0:*),b(0:*),idiag(0:*)
       PetscReal        omega
       integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
@@ -16,7 +17,7 @@
 !     
 !     Forward Solve with zero initial guess
 !
-      x(0) = omega*b(0) / aa(adiag(0))
+      x(0) = omega*b(0)*idiag(0)
       do 20 i=1,n-1
          jstart = ai(i)
          jend   = adiag(i) - 1
@@ -24,7 +25,7 @@
          do 30 j=jstart,jend
             sum  = sum -  aa(j) * x(aj(j))
  30      continue
-         x(i) = omega*sum / aa(adiag(i))
+         x(i) = omega*sum*idiag(i)
  20   continue
       
 !     return
@@ -32,9 +33,10 @@
 !
 !-------------------------------------------------------------------
 !      
-      subroutine FortranRelaxAIJBackwardZero(n,omega,x,ai,aj,adiag,aa,b)
+      subroutine FortranRelaxAIJBackwardZero(n,omega,x,ai,aj,     
+     &                                  adiag,idiag,aa,b)
       implicit none
-      PetscScalar      x(0:*),aa(0:*),b(0:*)
+      PetscScalar      x(0:*),aa(0:*),b(0:*),idiag(0:*)
       PetscReal        omega
       integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
@@ -50,7 +52,7 @@
          do 50 j=jstart,jend
             sum = sum - aa(j)* x(aj(j)) 
  50      continue
-         x(i)    = omega*sum / aa(adiag(i))
+         x(i)    = omega*sum*idiag(i)
  40   continue
       return
       end

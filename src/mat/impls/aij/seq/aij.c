@@ -1022,9 +1022,11 @@ int MatMissingDiagonal_SeqAIJ(Mat A)
 #define __FUNCT__ "MatRelax_SeqAIJ"
 int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
-  Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar  *x,*b,*bs, d,*xs,sum,*v = a->a,*t=0,scale,*ts,*xb,*idiag=0,*mdiag;
-  int          ierr,*idx,*diag,n = A->n,m = A->m,i;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar        *x,d,*xs,sum,*t,scale,*idiag=0,*mdiag;
+  const PetscScalar  *v = a->a, *b, *bs,*xb, *ts;
+  int                ierr,n = A->n,m = A->m,i;
+  const int          *idx,*diag;
 
   PetscFunctionBegin;
   its = its*lits;
@@ -1045,12 +1047,14 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
         mdiag[i]    = v[diag[i]];
         a->idiag[i] = 1.0/v[diag[i]];
       }
+      PetscLogFlops(m);
     } else {
       for (i=0; i<m; i++) {
         mdiag[i]    = v[diag[i]];
-        a->idiag[i] = omega/(fshift + v[diag[i]]);}
+        a->idiag[i] = omega/(fshift + v[diag[i]]);
+      }
+      PetscLogFlops(2*m);
     }
-
   }
   t     = a->ssor;
   idiag = a->idiag;
@@ -1058,7 +1062,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
 
   ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
   if (xx != bb) {
-    ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   } else {
     b = x;
   }
@@ -1078,7 +1082,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
         x[i] = sum;
     }
     ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);}
+    if (bb != xx) {ierr = VecRestoreArrayFast(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
     PetscLogFlops(a->nz);
     PetscFunctionReturn(0);
   }
@@ -1138,13 +1142,13 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
 
     PetscLogFlops(6*m-1 + 2*a->nz);
     ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);}
+    if (bb != xx) {ierr = VecRestoreArrayFast(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,diag,a->a,b);
+      fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,idiag,a->a,(void*)b);
 #else
       for (i=0; i<m; i++) {
         n    = diag[i] - a->i[i];
@@ -1167,7 +1171,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijbackwardzero_(&m,&omega,x,a->i,a->j,diag,a->a,xb);
+      fortranrelaxaijbackwardzero_(&m,&omega,x,a->i,a->j,idiag,a->a,(void*)xb);
 #else
       for (i=m-1; i>=0; i--) {
         n    = a->i[i+1] - diag[i] - 1;
@@ -1185,7 +1189,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijforward_(&m,&omega,x,a->i,a->j,diag,a->a,b);
+      fortranrelaxaijforward_(&m,&omega,x,a->i,a->j,diag,a->a,(void*)b);
 #else
       for (i=0; i<m; i++) {
         d    = fshift + a->a[diag[i]];
@@ -1201,7 +1205,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijbackward_(&m,&omega,x,a->i,a->j,diag,a->a,b);
+      fortranrelaxaijbackward_(&m,&omega,x,a->i,a->j,diag,a->a,(void*)b);
 #else
       for (i=m-1; i>=0; i--) {
         d    = fshift + a->a[diag[i]];
@@ -1217,7 +1221,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
     }
   }
   ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
-  if (bb != xx) {ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);}
+  if (bb != xx) {ierr = VecRestoreArrayFast(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 } 
 
