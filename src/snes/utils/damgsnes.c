@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.13 2001/04/03 03:18:28 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.14 2001/04/10 19:37:08 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -376,15 +376,19 @@ int DMMGSetSNESLocal(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocalInfo*,
   PetscFunctionReturn(0);
 }
 
-#if defined(not_yet)
+
+/* ---------------------------------------------------------------------------------------------------------------------------*/
 
 typedef struct {
 	double value;
-	double  grad[20];
+	double grad[20];
 } DERIV_TYPE;
 
 #define DERIV_val(a) ((a).value)
 #define DERIV_grad(a) ((a).grad)
+void ad_AD_Init();
+void ad_AD_Final();
+#include "ad_grad.h"
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -480,7 +484,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
     for(i=gxs;i<gxs+gxm;i++) {
       for(k=0;k<dof;k++) {
         color = colors[(j-gys)*gxm+i-gxs];
-	ad_AD_ClearGrad(DERIV_grad(ad_x[j][i*dof+k]));
+	ad_AD_ClearGrad(DERIV_grad(ad_x[j][i*dof+k])); 
 	DERIV_grad(ad_x[j][i*dof+k])[color] = 1.0;
       }
     }
@@ -494,58 +498,10 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
-  /* Assemble Jacobian - assumes star stencil of width 1
-     Could probably be simplified by using Block operations */
+  /* stick the values into the matrix */
+  ierr = MatADSetColoring_SeqAIJ(B,dmmg->iscoloring);CHKERRQ(ierr);
+  ierr = MatADSetValues_SeqAIJ(B,(Scalar**)ad_f,20);CHKERRQ(ierr);
 
-  /* might also be simpler if introduced a loop over dof and repalce row with 
-     vertex, row=vertex+idof */
-
-  for (j=ys; j<ys+ym; j++) {
-    row = (j - gys)*gxm*dof + (xs - gxs)*dof - 1;
-    for (i=dof*xs; i<dof*(xs+xm); i++) {
-      row++;
-      /* Extract row of AD Jacobian and permute */
-      color = colors[(j-gys)*gxm+i-gxs];
-      /* printf("Proc %d Row %d:",procid,row); */
-      for(k=0;k<5;k++) {
-	for(l=0;l<dof;l++) {
-	  /*	  av[k*dof+l] = DERIV_grad(ad_f[j][i])[permutation[color][k]*dof+l]; */
-	  /* printf("%g ",DERIV_grad(ad_f[j][i])[permutation[color][k]*dof+l]); */
-	}
-      }
-      /* printf("\n"); */
-      for(k=0;k<dof;k++){
-	col[0*dof+k] = (row/dof - gxm)*dof + k;
-	col[1*dof+k] = (row/dof - 1)*dof + k;
-	col[2*dof+k] = (row/dof)*dof + k;
-	col[3*dof+k] = (row/dof + 1)*dof + k;
-	col[4*dof+k] = (row/dof + gxm)*dof + k;
-	/* Tell PETSc not to insert a value if we're at a boundary */
-        if (j==0)        col[0*dof+k] = -1; /* Boundary: no south neighbor */ 
-	if (i/dof==0)    col[1*dof+k] = -1; /* Boundary: no west neighbor */
-	if (i/dof==mx-1) col[3*dof+k] = -1; /* Boundary: no east neighbor */
-	if (j==my-1)     col[4*dof+k] = -1; /* Boundary: no north neighbor */ 
-      }
-      /* Insert a row */
-      ierr = MatSetValuesLocal(jac,1,&row,stencil_size*dof,col,av,INSERT_VALUES);CHKERRQ(ierr);
-    }
-  }
-
-  /* Free DERIV_TYPE arrays - again, this should be a Restore-type operation*/
-
-  for(j=gys;j<gys+gym;j++) {
-    ierr = PetscFree(ad_x[j]+dof*gxs);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(ad_x + gys);CHKERRQ(ierr);
-
-  for(j=ys;j<ys+ym;j++) {
-    ierr = PetscFree(ad_f[j]+dof*xs);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(ad_f + ys);CHKERRQ(ierr);
-
-  /* Assemble preconditioner Jacobian */
-  ierr  = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -553,6 +509,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocalWithAD"
@@ -584,7 +541,6 @@ int DMMGSetSNESLocalWithAD(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocal
   }
   PetscFunctionReturn(0);
 }
-#endif
 
 
 
