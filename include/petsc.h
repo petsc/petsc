@@ -420,6 +420,7 @@ EXTERN int PetscSleep(int);
 */
 EXTERN int  PetscInitialize(int*,char***,const char[],const char[]);
 EXTERN int  PetscInitializeNoArguments(void);
+EXTERN int  PetscInitialized(PetscTruth *);
 EXTERN int  PetscFinalize(void);
 EXTERN int  PetscInitializeFortran(void);
 EXTERN int  PetscGetArgs(int*,char ***);

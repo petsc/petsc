@@ -83,6 +83,23 @@ int PetscInitializeNoArguments(void)
   PetscFunctionReturn(ierr);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscInitialized"
+/*@
+      PetscInitialized - Determine whether PETSc is initialized.
+  
+   Level: beginner
+
+.seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
+@*/
+int PetscInitialized(PetscTruth *isInitialized)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(isInitialized, 1);
+  *isInitialized = PetscInitializeCalled;
+  PetscFunctionReturn(0);
+}
+
 EXTERN int        PetscOptionsCheckInitial_Private(void);
 extern PetscTruth PetscBeganMPI;
 
