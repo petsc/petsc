@@ -208,7 +208,7 @@ runex8_3:
            else echo "Possible problem with ex8_3, diffs above"; fi; \
            $(RM) -f ex8_3.tmp
 runex10:
-	-@$(MPIRUN) ex10 -ksp_smonitor > ex10_1.tmp 2>&1; \
+	-@$(MPIRUN) ex10 -mat_bdiag -ksp_smonitor > ex10_1.tmp 2>&1; \
            if (diff output/ex10_1.out ex10_1.tmp) then true; \
            else echo "Possible problem with ex10_1, diffs above"; fi; \
            $(RM) -f ex10_1.tmp
