@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.8 2001/05/04 22:03:27 buschelm Exp buschelm $ 
+# $Id: makefile,v 1.8 2001/05/04 22:03:27 buschelm Exp $ 
 CXX       = cl
 CXXFLAGS  = 
 CXX_FLAGS = -nologo -GX -GR -MD $(CXXFLAGS)
@@ -20,6 +20,14 @@ INCLUDEPATHS = -Iinclude
 
 LIBS = Advapi32.lib
 
-win32fe: $(SOURCES)
-	$(CXX) $(CXX_FLAGS) -Fewin32fe.exe $(SOURCES) $(INCLUDEPATHS) $(LIBS)
+.SUFFIXES: .cpp .obj
+
+.cpp.obj:
+	$(CXX) $(CXX_FLAGS) -c $< $(INCLUDEPATHS)
+
+win32fe: $(OBJECTS)
+	$(CXX) $(CXX_FLAGS) -Fewin32fe.exe $(OBJECTS) $(LIBS)
 	$(RM) $(OBJECTS)
+
+clean:
+	$(RM) $(OBJECTS) *~
