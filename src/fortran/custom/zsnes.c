@@ -167,7 +167,7 @@ void PETSC_STDCALL snesview_(SNES *snes,PetscViewer *viewer, int *ierr)
   *ierr = SNESView(*snes,v);
 }
 
-void PETSC_STDCALL snesgetconvergedreason(SNES *snes,SNESConvergedReason *r,int *ierr)
+void PETSC_STDCALL snesgetconvergedreason_(SNES *snes,SNESConvergedReason *r,int *ierr)
 {
   *ierr = SNESGetConvergedReason(*snes,r);
 }
