@@ -634,7 +634,7 @@ runex48:
 	  ${MPIRUN} -np 1  ex48 -mat_block_size  $$bs >> ex48_1.tmp 2>&1; \
 	done; \
 	if (${DIFF} output/ex48_1.out ex48_1.tmp) then true; \
-	else echo "Possible problem with ex48_1, diffs above"; fi; \
+	else echo "Possible problem with ex48_1, diffs above with: -mat_block_size  $$bs"; fi; \
 	${RM} -f ex48_1.tmp
 
 MATSIZE        = 11 13
@@ -835,7 +835,7 @@ runex93:
 	   else echo "Possible problem with ex93_1, diffs above"; fi; \
 	   ${RM} -f ex93_1.tmp
 
-runex94_1:
+runex94:
 	-@${MPIRUN} -np 1 ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1> ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo "Possible problem with ex94_1, diffs above"; fi; \
@@ -876,7 +876,7 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
 		   runex56_2  runex56_3  runex56_4 runex56_5 ex56.rm \
 		   ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm \
-		   ex76.PETSc runex76 ex76.rm ex77.PETSc  ex77.rm \
+		   ex76.PETSc runex76 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc runex94 ex94.rm\
 		  ex78.PETSc ex78.rm
 TESTEXAMPLES_3	 = ex36f.PETSc runex36f ex36f.rm ex63f.PETSc runex63f ex63f.rm \
                    ex67f.PETSc ex67f.rm ex79f.PETSc ex79f.rm
@@ -886,7 +886,7 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   ex10.PETSc runex10 ex10.rm ex14.PETSc runex14 ex14.rm ex15.PETSc\
 		   runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
 		   ex21.rm ex35.PETSc runex35 ex35.rm  ex48.PETSc runex48 ex48.rm \
-                   ex71.PETSc ex71.rm ex93.PETSc runex93 ex93.rm ex94.PETSc runex94 ex94.rm \
+                   ex71.PETSc ex71.rm ex93.PETSc runex93 ex93.rm \
 	           ex95.PETSc runex95 ex95.rm
 TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm \
 	           ex42.PETSc runex42 ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm  \
