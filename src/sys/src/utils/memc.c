@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.26 1997/07/03 18:20:33 balay Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.27 1997/07/04 13:38:29 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -53,9 +53,6 @@ void PetscMemcpy(void *a,void *b,int n)
    Input Parameters:
 .  a - pointer to beginning memory location
 .  n - length (in bytes) of memory to initialize
-
-   Note:
-   This routine is analogous to memset().
 
 .keywords: Petsc, zero, initialize, memory
 
