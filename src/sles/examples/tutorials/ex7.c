@@ -125,7 +125,7 @@ int main(int argc,char **args)
   */
   ierr = PetscMalloc(m*sizeof(int),&blks);CHKERRQ(ierr);
   for (i=0; i<m; i++) blks[i] = n;
-  ierr = PCBJacobiSetTotalBlocks(pc,m,blks);
+  ierr = PCBJacobiSetTotalBlocks(pc,m,blks);CHKERRQ(ierr);
   ierr = PetscFree(blks);CHKERRQ(ierr);
 
 

@@ -319,6 +319,7 @@ int PCBJacobiSetTotalBlocks_BJacobi(PC pc,int blocks,int *lens)
 
   PetscFunctionBegin;
 
+  if (pc->setupcalled > 0) SETERRQ(1,"Cannot set number of blocks after PCSetUp()/SLESSetUp() has been called");
   jac->n = blocks;
   if (!lens) {
     jac->g_lens = 0;

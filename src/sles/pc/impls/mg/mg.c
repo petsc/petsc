@@ -712,6 +712,10 @@ int MGSetNumberSmoothDown(PC pc,int n)
 
    Level: advanced
 
+   Note: this does not set a value on the coarsest grid, since we assume that
+    there is no seperate smooth up on the coarsest grid. If you want to have a
+    seperate smooth up on the coarsest grid then call MGGetSmoothUp(pc,0,&sles);
+
 .keywords: MG, smooth, up, post-smoothing, steps, multigrid
 
 .seealso: MGSetNumberSmoothDown()
@@ -728,7 +732,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   levels = mg[0]->levels;
 
-  for (i=0; i<levels; i++) {  
+  for (i=1; i<levels; i++) {  
     /* make sure smoother up and down are different */
     ierr = MGGetSmootherUp(pc,i,PETSC_NULL);CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[i]->smoothu,&ksp);CHKERRQ(ierr);
