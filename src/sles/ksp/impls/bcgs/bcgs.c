@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.16 1995/07/17 03:53:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: bcgs.c,v 1.17 1995/07/26 01:08:56 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -57,16 +57,18 @@ VecSet(&zero,P);
 VecSet(&zero,V);
 
 for (i=0; i<maxit; i++) {
-    VecDot(R,RP,&rho);                       /*   rho <- rp' r     */
+    VecDot(R,RP,&rho);                             /*   rho <- rp' r       */
     if (rho == 0.0) {fprintf(stderr,"Breakdown\n"); *its = -(i+1);return 0;} 
     beta = (rho/rhoold) * (alpha/omegaold);
-    tmp = -omegaold; VecAXPY(&tmp,V,P);        /*     p <- p - w v   */
-    VecAYPX(&beta,R,P);                      /*     p <- r + p beta */
-    PCApplyBAorAB(itP->B,itP->right_pre,P,V,T);  /*     v <- K p       */
+    tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
+    VecAYPX(&beta,R,P);                            /*   p <- r + p beta    */
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,
+                         P,V,T); CHKERRQ(ierr);    /*   v <- K p           */
     VecDot(RP,V,&d1);
-    alpha = rho / d1;                     /*     a <- rho / (rp' v) */
-    tmp = -alpha; VecWAXPY(&tmp,V,R,S);       /*     s <- r - a v   */
-    PCApplyBAorAB(itP->B,itP->right_pre,S,T,R); /*     t <- K s       */
+    alpha = rho / d1;                              /*   a <- rho / (rp' v) */
+    tmp = -alpha; VecWAXPY(&tmp,V,R,S);            /*   s <- r - a v       */
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,
+                         S,T,R); CHKERRQ(ierr);    /*   t <- K s           */
     VecDot(S,T,&d1);
     VecDot(T,T,&d2);
     if (d2 == 0.0) {

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.34 1995/07/30 14:57:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.35 1995/08/07 18:51:20 bsmith Exp curfman $";
 #endif
 
 /*
@@ -127,18 +127,20 @@ static int GMRESResidual(  KSP itP,int restart )
   Scalar       mone = -1.0;
   Mat          Amat, Pmat;
   MatStructure pflag;
+  int          ierr;
 
-  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
+  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   /* compute initial residual: f - M*x */
   /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
   if (itP->right_pre) {
     /* we want a * binv * b * x, or just a * x for the first step */
     /* a*x into temp */
-    MatMult(Amat, VEC_SOLN, VEC_TEMP );
+    ierr = MatMult(Amat,VEC_SOLN,VEC_TEMP ); CHKERRQ(ierr);
   }
   else {
     /* else we do binv * a * x */
-    PCApplyBAorAB(itP->B, itP->right_pre,VEC_SOLN, VEC_TEMP, VEC_TEMP_MATOP );
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,VEC_SOLN,VEC_TEMP,
+                         VEC_TEMP_MATOP ); CHKERRQ(ierr);
   }
   /* This is an extra copy for the right-inverse case */
   VecCopy( VEC_BINVF, VEC_VV(0) );
@@ -170,7 +172,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 {
   double  res_norm, res, rtol;
   Scalar   tmp;
-  int     hist_len= itP->res_hist_size, cerr;
+  int     hist_len= itP->res_hist_size, cerr, ierr;
   double  hapbnd,*nres = itP->residual_history,tt;
   /* Note that hapend is ignored in the code */
   int     it, hapend, converged;
@@ -213,7 +215,8 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 	/* get more vectors */
 	GMRESGetNewVectors(  itP, it+1 );
 	}
-    PCApplyBAorAB(itP->B,itP->right_pre,VEC_VV(it),VEC_VV(it+1),VEC_TEMP_MATOP);
+    ierr = PCApplyBAorAB(itP->B,itP->right_pre,VEC_VV(it),VEC_VV(it+1),
+                         VEC_TEMP_MATOP); CHKERRQ(ierr);
 
     /* update hessenberg matrix and do Gram-Schmidt */
     (*gmresP->orthog)(  itP, it );
@@ -272,7 +275,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 
 static int KSPSolve_GMRES(KSP itP,int *outits )
 {
-  int err, restart, its, itcount;
+  int       ierr, restart, its, itcount;
   KSP_GMRES *gmresP = (KSP_GMRES *)itP->MethodPrivate;
 
   restart = 0;
@@ -280,20 +283,20 @@ static int KSPSolve_GMRES(KSP itP,int *outits )
   /* Save binv*f */
   if (!itP->right_pre) {
     /* inv(b)*f */
-    PCApply(itP->B, VEC_RHS, VEC_BINVF );
+    ierr = PCApply(itP->B, VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
   }
   else 
     VecCopy( VEC_RHS, VEC_BINVF );
   /* Compute the initial (preconditioned) residual */
   if (!itP->guess_zero) {
-    if ((err=GMRESResidual(  itP, restart ))) return err;
+    if ((ierr=GMRESResidual(  itP, restart ))) return ierr;
   }
   else VecCopy( VEC_BINVF, VEC_VV(0) );
     
-  while ((err = GMREScycle(  &its, itcount, restart, itP ))) {
+  while ((ierr = GMREScycle(  &its, itcount, restart, itP ))) {
     restart = 1;
     itcount += its;
-    if ((err = GMRESResidual(  itP, restart ))) return err;
+    if ((ierr = GMRESResidual(  itP, restart ))) return ierr;
     if (itcount > itP->max_it) break;
     /* need another check to make sure that gmres breaks out 
        at precisely the number of iterations chosen */
@@ -354,7 +357,7 @@ static int KSPDestroy_GMRES(PetscObject obj)
 static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
 {
   Scalar    tt, zero = 0.0, one = 1.0;
-  int       ii, k, j;
+  int       ierr, ii, k, j;
   KSP_GMRES *gmresP = (KSP_GMRES *)(itP->MethodPrivate);
 
   /* Solve for solution vector that minimizes the residual */
@@ -383,12 +386,12 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
      the unpreconditioned problem */
   if (itP->right_pre) {
     if (vdest != vs) {
-      PCApply(itP->B, VEC_TEMP, vdest );
+      ierr = PCApply(itP->B, VEC_TEMP, vdest ); CHKERRQ(ierr);
       VecAXPY( &one, vs, vdest );
     }
     else {
-      PCApply(itP->B, VEC_TEMP, VEC_TEMP_MATOP );
-      VecAXPY( &one, VEC_TEMP_MATOP, vdest );
+      ierr = PCApply(itP->B,VEC_TEMP,VEC_TEMP_MATOP); CHKERRQ(ierr);
+      VecAXPY(&one,VEC_TEMP_MATOP,vdest);
     }
   }
   else {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.24 1995/07/17 03:53:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.25 1995/07/26 01:08:51 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -58,16 +58,16 @@ int  KSPSolve_CG(KSP itP,int *its)
   P       = itP->work[2];
 
   if (eigs) {e = cgP->e; d = cgP->d; e[0] = 0.0; b = 0.0; }
-  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
+  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
 
   if (!itP->guess_zero) {
-    MatMult(Amat,X,R);              /*   r <- b - Ax      */
+    ierr = MatMult(Amat,X,R); CHKERRQ(ierr);     /*   r <- b - Ax      */
     ierr = VecAYPX(&mone,B,R); CHKERRQ(ierr);
   }
   else { 
-    VecCopy(B,R);                            /*     r <- b (x is 0)*/
+    VecCopy(B,R);                             /*     r <- b (x is 0)*/
   }
-  PCApply(itP->B,R,Z);                         /*     z <- Br        */
+  ierr = PCApply(itP->B,R,Z); CHKERRQ(ierr);  /*     z <- Br        */
   if (pres) {
       VecNorm(Z,&dp);                         /*    dp <- z'*z       */
   }
@@ -96,7 +96,7 @@ int  KSPSolve_CG(KSP itP,int *its)
          ierr = VecAYPX(&b,Z,P); CHKERRQ(ierr) /*     p <- z + b* p   */
      }
      betaold = beta;
-     MatMult(Amat,P,Z);                        /*     z <- Kp         */
+     ierr = MatMult(Amat,P,Z); CHKERRQ(ierr);  /*     z <- Kp         */
      VecDot(P,Z,&dpi);
      a = beta/dpi;                             /*     a = beta/p'z    */
      if (eigs) {
@@ -105,7 +105,7 @@ int  KSPSolve_CG(KSP itP,int *its)
      VecAXPY(&a,P,X);                          /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                /*     r <- r - az     */
      if (pres) {
-       MatMult(Amat,R,Z);                      /*     z <- Br         */
+       ierr = MatMult(Amat,R,Z); CHKERRQ(ierr); /*     z <- Br         */
        VecNorm(Z,&dp);                         /*    dp <- z'*z       */
      }
      else {
@@ -115,7 +115,8 @@ int  KSPSolve_CG(KSP itP,int *its)
      MONITOR(itP,dp,i+1);
      cerr = (*itP->converged)(itP,i+1,dp,itP->cnvP);
      if (cerr) break;
-     if (!pres) PCApply(itP->B,R,Z);           /*     z <- Br         */
+     if (!pres) 
+      {ierr = PCApply(itP->B,R,Z); CHKERRQ(ierr);} /*     z <- Br         */
   }
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
