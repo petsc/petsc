@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.9 1995/03/10 04:44:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.10 1995/04/15 03:27:16 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include <string.h>
@@ -165,7 +165,7 @@ unsigned int     nsize;
 int              l;
 
 if (TRdebugLevel > 0) {
-    if (trvalid(lineno,fname )) return 0;
+    if (Trvalid(lineno,fname )) return 0;
 }
 
 nsize = a;

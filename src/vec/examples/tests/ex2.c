@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   OptionsGetInt(0,0,"-n",&n);
 
   /* create two vector */
-  ierr = VecCreateSequential(n,&x); CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecCreate(x,&y); CHKERRA(ierr);
 
   /* create two index sets */
