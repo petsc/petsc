@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.86 2000/07/05 03:47:42 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.87 2000/07/27 15:45:58 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -16,7 +16,38 @@ typedef struct  {
   FILE             *fdes_info;      /* optional file containing info on binary file*/
   PetscTruth       storecompressed; /* gzip the write binary file when closing it*/
   char             *filename;
+  MPI_Comm         truecomm;        /* hide communicator here when we become a singleton viewer */
 } Viewer_Binary;
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="ViewerGetSingleton_Binary"></a>*/"ViewerGetSingleton_Binary" 
+int ViewerGetSingleton_Binary(Viewer viewer,Viewer *outviewer)
+{
+  int           rank,ierr;
+  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    *outviewer = viewer;
+  } else {
+    *outviewer = 0;
+  }
+  vbinary->truecomm = viewer->comm;
+  viewer->comm      = PETSC_COMM_SELF;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="ViewerRestoreSingleton_Binary"></a>*/"ViewerRestoreSingleton_Binary" 
+int ViewerRestoreSingleton_Binary(Viewer viewer,Viewer *outviewer)
+{
+  Viewer_Binary *vbinary = (Viewer_Binary*)viewer->data;
+
+  PetscFunctionBegin;
+  viewer->comm = vbinary->truecomm;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="ViewerBinaryGetDescriptor"></a>*/"ViewerBinaryGetDescriptor" 
@@ -420,6 +451,8 @@ int ViewerCreate_Binary(Viewer v)
   v->iformat         = 0;
   vbinary->fdes_info = 0;
   vbinary->fdes      = 0;
+  v->ops->getsingleton     = ViewerGetSingleton_Binary;
+  v->ops->restoresingleton = ViewerRestoreSingleton_Binary;
   vbinary->btype     = (ViewerBinaryType) -1; 
   vbinary->storecompressed = PETSC_FALSE;
   vbinary->filename        = 0;
