@@ -1,4 +1,4 @@
-# $Id: common,v 1.203.1.62 1999/01/27 18:26:04 bsmith Exp balay $ 
+# $Id: common_variables,v 1.1 1999/01/27 18:49:21 balay Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -79,5 +79,5 @@ PETSC_CONTRIB = -L${LDIR} -lpetsccontrib
 #
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site
 # (This line MUST be present for certain machines (e.g., Cray T3D))
-include ${PETSC_DIR}/bmake/common.${BOPT}
+include ${PETSC_DIR}/bmake/common_${BOPT}
 
